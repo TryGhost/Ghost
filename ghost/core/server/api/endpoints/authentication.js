@@ -7,10 +7,7 @@ const web = require('../../web');
 const models = require('../../models');
 const auth = require('../../auth');
 const invites = require('../../services/invites').default;
-const apiMail = require('./index').mail;
-const apiSettings = require('./index').settings;
-const UsersService = require('../../services/users');
-const userService = new UsersService({ models, auth, apiMail, apiSettings });
+const usersService = require('../../services/users').default;
 const adapterManager = require('../../services/adapter-manager').default;
 const schedulerAdapter = adapterManager.getAdapter('scheduling');
 
@@ -198,9 +195,11 @@ const controller = {
         ip: frame.options.ip,
       });
 
+      // userLogin counts per IP, so clear this IP's failed sign-ins
       web.shared.middleware.api.spamPrevention
         .userLogin()
-        .reset(frame.options.ip, `${tokenParts.email}login`);
+        .reset({ ip: frame.options.ip })
+        .catch((err) => logging.error(err));
       return {};
     },
   },
@@ -244,7 +243,7 @@ const controller = {
     async query(frame) {
       const result = await auth.resetAuthentication({
         schedulerAdapter,
-        userService,
+        userService: usersService.service,
         options: frame.options,
       });
 

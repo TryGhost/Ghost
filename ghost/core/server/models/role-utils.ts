@@ -16,6 +16,16 @@ type RoleFlags = {
   isEitherEditor: boolean;
 };
 
+// Staff roles a user can be given. Owner is excluded: it is only ever moved by an
+// ownership transfer, never assigned. Integration roles are not staff roles.
+export const ASSIGNABLE_ROLES: readonly string[] = Object.freeze([
+  'Administrator',
+  'Super Editor',
+  'Editor',
+  'Author',
+  'Contributor',
+]);
+
 // check if the user has an assigned role
 // so that we can stop writing this everywhere:
 //_.some(loadedPermissions.user.roles, {name: 'Administrator'})

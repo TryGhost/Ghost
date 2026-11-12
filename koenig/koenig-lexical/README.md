@@ -2,6 +2,10 @@
 
 Ghost editor, based on the Lexical framework.
 
+The package is published as an ES module only. Consuming apps import the editor
+from `@tryghost/koenig-lexical` and its stylesheet from
+`@tryghost/koenig-lexical/style.css`.
+
 ## Development
 
 The editor can be run in two modes:
@@ -61,7 +65,7 @@ All styles are scoped under `.koenig-lexical` class to avoid clashes and keep st
 - Styles located in `src/styles/` are included in the final built module.
 - Styles located in `demo/*.css` are only used in the demo and will not be included in the built module.
 
-When packaging the module, styles are included inside the JS file rather than being separate to allow for a single import of the module in the consuming app.
+When packaging the module, styles are built into a separate `dist/style.css`, which consuming apps import alongside the module.
 
 **Content fonts**
 

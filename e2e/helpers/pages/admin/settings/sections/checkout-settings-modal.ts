@@ -55,9 +55,6 @@ export class CheckoutSettingsModal {
   readonly phoneTiersPicker: Locator;
   readonly phoneFieldPicker: Locator;
   readonly previewPhone: Locator;
-  readonly taxIdSwitch: Locator;
-  readonly taxIdTiersPicker: Locator;
-  readonly previewTaxId: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -100,11 +97,6 @@ export class CheckoutSettingsModal {
       .getByRole('combobox', { name: 'Collect for' });
     this.phoneFieldPicker = this.modal.getByRole('combobox', { name: 'Save phone as' });
     this.previewPhone = this.preview.getByText('Phone', { exact: true });
-    this.taxIdSwitch = this.modal.getByRole('switch', { name: 'Tax ID or VAT' });
-    this.taxIdTiersPicker = this.modal
-      .getByRole('group', { name: 'Tax ID or VAT' })
-      .getByRole('combobox', { name: 'Collect for' });
-    this.previewTaxId = this.preview.getByText("I'm purchasing as a business");
   }
 
   /** The tiers the sketch tags a collected part with, when it's limited to some. */
@@ -129,8 +121,8 @@ export class CheckoutSettingsModal {
       await this.chooseOption(this.shipsToSelect, 'Specific countries');
       await this.pickMany(this.countriesPicker, choice.countries);
     }
-    await this.setDestination(this.addressFieldPicker, 'Save address as', choice.addressField);
-    await this.setDestination(this.nameFieldPicker, 'Save name as', choice.nameField);
+    await this.setDestination(this.addressFieldPicker, choice.addressField);
+    await this.setDestination(this.nameFieldPicker, choice.nameField);
   }
 
   async collectPhone(choice: PhoneChoice): Promise<void> {
@@ -138,15 +130,7 @@ export class CheckoutSettingsModal {
     if (choice.tiers) {
       await this.limitTiers(this.phoneTiersPicker, choice.tiers);
     }
-    await this.setDestination(this.phoneFieldPicker, 'Save phone as', choice.field);
-  }
-
-  /** Lets business buyers give a tax ID on these tiers or, left out, on every paid tier. */
-  async collectTaxId(tiers?: string[]): Promise<void> {
-    await this.taxIdSwitch.setChecked(true);
-    if (tiers) {
-      await this.limitTiers(this.taxIdTiersPicker, tiers);
-    }
+    await this.setDestination(this.phoneFieldPicker, choice.field);
   }
 
   /** Unticks every tier but these, from the default of every paid tier ticked. */
@@ -174,18 +158,16 @@ export class CheckoutSettingsModal {
     await this.page.keyboard.press('Escape');
   }
 
-  private async setDestination(picker: Locator, label: string, field: FieldChoice): Promise<void> {
+  private async setDestination(picker: Locator, field: FieldChoice): Promise<void> {
     await picker.click();
     if ('choose' in field) {
       await this.page.getByRole('option', { name: field.choose, exact: true }).click();
       return;
     }
     await this.page.getByRole('option', { name: 'Add custom field' }).click();
-    await this.page
-      .getByRole('textbox', { name: `New custom field for ${label}` })
-      .fill(field.create);
-    // The new field's Save is in the picker's popover, which opens after the modal's own Save.
-    await this.page.getByRole('button', { name: 'Save', exact: true }).last().click();
+    const form = this.page.getByRole('dialog', { name: 'New custom field' });
+    await form.getByLabel('Name').fill(field.create);
+    await form.getByRole('button', { name: 'Save', exact: true }).click();
     await picker.filter({ hasText: field.create }).waitFor();
   }
 

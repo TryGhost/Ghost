@@ -8,7 +8,6 @@ import handlebarsService from '../../../../core/frontend/services/handlebars';
 import cancel_link from '../../../../core/frontend/helpers/cancel_link';
 // @ts-expect-error This module lacks type definitions.
 import proxy from '../../../../core/frontend/services/proxy';
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../utils/config-utils';
 import logging from '@tryghost/logging';
 import { promisify } from 'node:util';

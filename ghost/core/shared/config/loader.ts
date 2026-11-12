@@ -69,18 +69,7 @@ function loadNconf(options?: LoadNconfOptions): ConfigInstance {
   // is the only representation anything reads from now on. See ./schema.ts.
   const tree = localUtils.mergeStores(nconf);
 
-  // ## Sanitization
-
-  // transform all relative paths to absolute paths
-  localUtils.makePathsAbsolute(tree.paths);
-
-  localUtils.sanitizeDatabaseProperties(tree.database);
-
-  // Check if the URL in config has a protocol
-  localUtils.checkUrlProtocol(tree.url);
-
-  // Ensure that the content path exists
-  localUtils.doesContentPathExist((tree.paths as Record<string, unknown> | undefined)?.contentPath);
+  // `paths` and `database` are normalised by the schema, in createConfig.
 
   // ## Other Stuff!
 
@@ -94,7 +83,12 @@ function loadNconf(options?: LoadNconfOptions): ConfigInstance {
 
   debug('config end');
 
-  return createConfig(tree);
+  const config = createConfig(tree);
+
+  // the schema makes contentPath absolute, so it's checked once that's happened
+  localUtils.assertContentPathExists(config.get('paths:contentPath'));
+
+  return config;
 }
 
 export { loadNconf };

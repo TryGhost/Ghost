@@ -8,8 +8,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'r
 import type { MouseEvent as ReactMouseEvent } from 'react';
 
 /**
- * Modifier-click selection for the posts list, ported from
- * `apps/ember-admin/app/components/multi-list/list.js` and `item.js`.
+ * Modifier-click selection for the posts list.
  *
  * There are no checkboxes: cmd-click, shift-click, Cmd+A, Escape, and an
  * unmodified click anywhere clears. That means window-level handlers, which is
@@ -29,7 +28,7 @@ interface UsePostSelectionOptions {
 
 /**
  * A modifier-click leaves a text selection behind across the rows it dragged
- * over, which looks broken. Ember clears it the same way.
+ * over, which looks broken.
  */
 function clearTextSelection() {
   const selection = window.getSelection();
@@ -54,14 +53,14 @@ export function usePostSelection({
   const [state, dispatch] = useReducer(postSelectionReducer, initialPostSelection);
 
   /**
-   * Whether a modifier is being held right now — Ember's `actionKeyPressed`.
+   * Whether a modifier is being held right now.
    * It puts the list into "select mode": the cursor stops being a pointer and
    * the rows stop behaving like links, so what a click is about to do is
    * visible before the click happens.
    *
    * Derived from the event's own modifier flags rather than tracked per key.
    * `keydown` and `keyup` both report the state *after* the event, so one
-   * boolean is enough where Ember keeps three.
+   * boolean is enough.
    */
   const [modifierHeld, setModifierHeld] = useState(false);
 
@@ -72,9 +71,7 @@ export function usePostSelection({
   latest.current = { orderedIds, enabled, suspended };
 
   /**
-   * Ember clears the selection on every model refresh — `clearSelection()` in
-   * `PostsRoute#setupController`, reached whenever one of the five
-   * `refreshModel: true` query params changes.
+   * Clears the selection whenever the filter changes.
    *
    * This is not tidiness. After Cmd+A the selection is *inverted* and bounded
    * by `allFilter`, which is rebuilt from the URL: select all drafts, drop
@@ -98,10 +95,7 @@ export function usePostSelection({
         return;
       }
 
-      // Cmd+A belongs to whatever is being typed into. Ember has the
-      // same flaw against its power-select search boxes, but the
-      // save-view popover is a React-only surface, so this would be a
-      // new way to lose what you were typing.
+      // Cmd+A belongs to whatever is being typed into.
       const target = event.target as HTMLElement | null;
       const isTyping =
         target instanceof HTMLInputElement ||
@@ -237,9 +231,8 @@ export function usePostSelection({
   }, []);
 
   /**
-   * Radix owns the menu's open state, so this is where Ember's
-   * freeze/unfreeze pair lands: opening on an unselected row selects just
-   * that row transiently, and closing drops it again.
+   * Radix owns the menu's open state: opening on an unselected row selects
+   * just that row transiently, and closing drops it again.
    */
   const onContextMenuOpenChange = useCallback((open: boolean, id: string) => {
     if (!latest.current.enabled) {
@@ -275,7 +268,7 @@ export function usePostSelection({
     [onContextMenuOpenChange],
   );
 
-  /** Ember's `clearUnavailableItems`, called after a bulk edit prunes rows. */
+  /** Keeps only the given ids selected, after a bulk edit prunes rows. */
   const keepOnly = useCallback((ids: Set<string>) => {
     dispatch({ type: 'keepOnly', ids });
   }, []);

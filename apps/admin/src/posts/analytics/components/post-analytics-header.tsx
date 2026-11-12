@@ -52,7 +52,6 @@ import { useCanManageGiftLink } from '@/posts/analytics/hooks/use-can-manage-gif
 import { postsDataType, useDeletePost } from '@tryghost/admin-x-framework/api/posts';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
-import { useShade } from '@tryghost/shade/app';
 import { useQueryClient } from '@tanstack/react-query';
 
 /**
@@ -81,7 +80,6 @@ interface PostAnalyticsHeaderProps {
 }
 
 const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, children }) => {
-  const { isAdmin7 } = useShade();
   // Where list pages show their titles large (admin7Design), the post's title
   // goes large too, a step down as it can run long, under the same space.
   const { largeTitles } = usePageChrome();
@@ -228,7 +226,9 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                navigate(editorPath, { state: editorReturnState(location) });
+                navigate(editorPath, {
+                  state: editorReturnState(`${location.pathname}${location.search}`),
+                });
               }}
             >
               <LucideIcon.Pen />
@@ -308,20 +308,11 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                   {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
                   {!isPostLoading && (
                     <PageHeader.ActionGroup>
-                      {isAdmin7 ? (
-                        <>
-                          {moreActions}
-                          {shareAction && (
-                            <PageHeader.ActionGroup.Primary>
-                              {shareAction}
-                            </PageHeader.ActionGroup.Primary>
-                          )}
-                        </>
-                      ) : (
-                        <>
+                      {moreActions}
+                      {shareAction && (
+                        <PageHeader.ActionGroup.Primary>
                           {shareAction}
-                          {moreActions}
-                        </>
+                        </PageHeader.ActionGroup.Primary>
                       )}
                     </PageHeader.ActionGroup>
                   )}
@@ -342,7 +333,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                       className={cn(
                         '-ml-px max-w-[920px] indent-0',
                         largeTitles
-                          ? 'text-[length:var(--large-title-size-sm)]! leading-[1.15]! font-medium! tracking-[-0.025em]!'
+                          ? 'text-[length:var(--large-title-size-sm)]! leading-[1.15]! font-title! tracking-[-0.025em]!'
                           : '!text-xl md:leading-[1.2em]',
                       )}
                       data-header="header-title"
@@ -370,7 +361,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
           )}
         >
           {!isPostLoading && (
-            <PageMenu className="min-h-[34px]" defaultValue={currentTab} responsive>
+            <PageMenu className="min-h-[34px]" value={currentTab} responsive>
               {availableTabs.includes('Overview') && (
                 <PageMenuItem
                   value="Overview"

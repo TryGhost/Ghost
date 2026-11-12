@@ -11,7 +11,6 @@ import {
   useServerNotifications,
   useUpgradeStatusAlerts,
 } from './alerts';
-import { DocsBotWidgetHost } from './docsbot/docsbot-widget-host';
 import { ClientExtensionScript } from './client-extension-script';
 import { usePreloadEditor } from './use-preload-editor';
 import { preloadSettings } from './settings/api';
@@ -53,7 +52,6 @@ function App() {
         <AdminLayout>
           <Outlet />
           <BillingFrame alerts={alerts} />
-          <DocsBotWidgetHost />
           <ClientExtensionScript />
         </AdminLayout>
       ) : bootError ? (

@@ -15,7 +15,7 @@ module.exports = function apiRoutes() {
   router.use(shared.middleware.cacheControl('private'));
 
   // rate limiter
-  router.use(shared.middleware.brute.webmentionsLimiter);
+  router.use(shared.middleware.rateLimiting.webmentionsLimiter);
 
   // Webmentions
   router.post(

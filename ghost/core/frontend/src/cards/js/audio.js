@@ -37,13 +37,17 @@
     let raf = null;
     let currentPlaybackRateIdx = 1;
 
-    const whilePlaying = () => {
+    const updatePlaybackProgress = () => {
       seekSlider.value = Math.floor(audio.currentTime);
       currentTimeContainer.textContent = calculateTime(seekSlider.value);
       audioPlayerContainer.style.setProperty(
         '--seek-before-width',
         `${(seekSlider.value / seekSlider.max) * 100}%`,
       );
+    };
+
+    const whilePlaying = () => {
+      updatePlaybackProgress();
       raf = requestAnimationFrame(whilePlaying);
     };
 
@@ -98,18 +102,27 @@
       });
     }
 
+    const showPlayIcon = () => {
+      pauseIconContainer.classList.add('kg-audio-hide');
+      playIconContainer.classList.remove('kg-audio-hide');
+      cancelAnimationFrame(raf);
+    };
+
     playIconContainer.addEventListener('click', () => {
       playIconContainer.classList.add('kg-audio-hide');
       pauseIconContainer.classList.remove('kg-audio-hide');
       audio.play();
-      requestAnimationFrame(whilePlaying);
+      raf = requestAnimationFrame(whilePlaying);
     });
 
     pauseIconContainer.addEventListener('click', () => {
-      pauseIconContainer.classList.add('kg-audio-hide');
-      playIconContainer.classList.remove('kg-audio-hide');
+      showPlayIcon();
       audio.pause();
-      cancelAnimationFrame(raf);
+    });
+
+    audio.addEventListener('ended', () => {
+      updatePlaybackProgress();
+      showPlayIcon();
     });
 
     muteIconContainer.addEventListener('click', () => {
@@ -144,7 +157,7 @@
     seekSlider.addEventListener('change', () => {
       audio.currentTime = seekSlider.value;
       if (!audio.paused) {
-        requestAnimationFrame(whilePlaying);
+        raf = requestAnimationFrame(whilePlaying);
       }
     });
 

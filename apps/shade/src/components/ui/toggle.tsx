@@ -10,16 +10,15 @@ import { useShade } from '@/providers/shade-context';
 
 const Toggle = React.forwardRef<
   React.ElementRef<typeof TogglePrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof TogglePrimitive.Root> &
-    Omit<VariantProps<typeof toggleVariants>, 'isAdmin7'>
+  React.ComponentPropsWithoutRef<typeof TogglePrimitive.Root> & VariantProps<typeof toggleVariants>
 >(({ className, variant, size, shape, ...props }, ref) => {
-  const { controlShape, isAdmin7 } = useShade();
+  const { controlShape } = useShade();
   const resolvedShape = shape ?? controlShape;
 
   return (
     <TogglePrimitive.Root
       ref={ref}
-      className={cn(toggleVariants({ variant, size, isAdmin7, shape: resolvedShape, className }))}
+      className={cn(toggleVariants({ variant, size, shape: resolvedShape, className }))}
       data-control-shape={resolvedShape}
       {...props}
     />

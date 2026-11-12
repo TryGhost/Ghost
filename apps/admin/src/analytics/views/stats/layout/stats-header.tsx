@@ -62,7 +62,7 @@ const StatsHeader: React.FC<StatsHeaderProps> = ({ children }) => {
   );
   const tabs = (
     <NavbarNavigation>
-      <PageMenu defaultValue={normalizedPath} responsive>
+      <PageMenu value={normalizedPath} responsive>
         <PageMenuItem
           value="/analytics/"
           onClick={() => {

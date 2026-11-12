@@ -20,7 +20,7 @@ describe('GiftService interface', function () {
     sinon.restore();
   });
 
-  function createService({ portalPlans = ['monthly', 'yearly'], timezone = 'Etc/UTC' } = {}) {
+  function createService({ timezone = 'Etc/UTC' } = {}) {
     const tier = {
       id: {
         toHexString: () => 'tier_1',
@@ -66,7 +66,6 @@ describe('GiftService interface', function () {
       cancelPendingForGift: sinon.stub().resolves(false),
     };
     const settingsGet = sinon.stub();
-    settingsGet.withArgs('portal_plans').returns(portalPlans);
     settingsGet.withArgs('timezone').returns(timezone);
     const service = new GiftService({
       giftRepository,
@@ -425,30 +424,6 @@ describe('GiftService interface', function () {
     assert.equal(plan.duration, 1);
     assert.equal(plan.amount, 12000);
     assert.equal(successUrl.searchParams.get('gift_duration'), '12');
-  });
-
-  it('enforces the Portal plan gate for explicit customized durations', async function () {
-    const { service, checkoutAdapter } = createService({
-      portalPlans: ['yearly'],
-    });
-
-    await assert.rejects(
-      () =>
-        service.startCheckout({
-          tierId: 'tier_1',
-          duration: 3,
-          successUrl: 'https://example.com/',
-          buyer: {
-            memberId: null,
-            email: 'buyer@example.com',
-            name: null,
-            isAuthenticated: false,
-          },
-        }),
-      { context: 'The monthly Portal plan is not available' },
-    );
-
-    sinon.assert.notCalled(checkoutAdapter.createSession);
   });
 
   it('rejects unsupported or conflicting customized durations', async function () {

@@ -534,6 +534,101 @@ describe('Posts Bulk API', function () {
       }
     });
 
+    it('Adds new tags after the tags a post already has', async function ({ onTestFinished }) {
+      const {
+        body: {
+          posts: [post],
+        },
+      } = await agent
+        .post('/posts/')
+        .body({
+          posts: [
+            { title: 'Bulk tag order', status: 'published', tags: [{ name: 'Bulk primary' }] },
+          ],
+        })
+        .expectStatus(201);
+      onTestFinished(async () => {
+        await agent.delete(`/posts/${post.id}/`).expectStatus(204);
+      });
+
+      await agent
+        .put('/posts/bulk/?filter=' + encodeURIComponent(`id:'${post.id}'`))
+        .body({
+          bulk: {
+            action: 'addTag',
+            meta: { tags: [{ name: 'Bulk second' }, { name: 'Bulk third' }] },
+          },
+        })
+        .expectStatus(200);
+
+      const {
+        body: {
+          posts: [edited],
+        },
+      } = await agent.get(`/posts/${post.id}/`).expectStatus(200);
+      assert.deepEqual(
+        edited.tags.map((t) => t.slug),
+        ['bulk-primary', 'bulk-second', 'bulk-third'],
+      );
+      assert.equal(edited.primary_tag.slug, 'bulk-primary');
+
+      const findByPrimaryTag = async (slug) => {
+        const { body } = await agent
+          .get('/posts/?filter=' + encodeURIComponent(`primary_tag:${slug}`))
+          .expectStatus(200);
+        return body.posts.map((p) => p.id);
+      };
+
+      assert.deepEqual(await findByPrimaryTag('bulk-primary'), [post.id]);
+      assert.deepEqual(await findByPrimaryTag('bulk-second'), []);
+      assert.deepEqual(await findByPrimaryTag('bulk-third'), []);
+    });
+
+    it('Keeps the order of new tags on a post without tags', async function ({ onTestFinished }) {
+      const {
+        body: {
+          posts: [post],
+        },
+      } = await agent
+        .post('/posts/')
+        .body({ posts: [{ title: 'Bulk tag order without tags', status: 'published' }] })
+        .expectStatus(201);
+      onTestFinished(async () => {
+        await agent.delete(`/posts/${post.id}/`).expectStatus(204);
+      });
+
+      await agent
+        .put('/posts/bulk/?filter=' + encodeURIComponent(`id:'${post.id}'`))
+        .body({
+          bulk: {
+            action: 'addTag',
+            meta: { tags: [{ name: 'Bulk first' }, { name: 'Bulk next' }] },
+          },
+        })
+        .expectStatus(200);
+
+      const {
+        body: {
+          posts: [edited],
+        },
+      } = await agent.get(`/posts/${post.id}/`).expectStatus(200);
+      assert.deepEqual(
+        edited.tags.map((t) => t.slug),
+        ['bulk-first', 'bulk-next'],
+      );
+      assert.equal(edited.primary_tag.slug, 'bulk-first');
+
+      const {
+        body: { posts },
+      } = await agent
+        .get('/posts/?filter=' + encodeURIComponent('primary_tag:bulk-next'))
+        .expectStatus(200);
+      assert.deepEqual(
+        posts.map((p) => p.id),
+        [],
+      );
+    });
+
     it('Can unpublish posts', async function () {
       const filter = 'status:[published]';
       const changedPosts = await models.Post.findPage({ filter, status: 'published' });

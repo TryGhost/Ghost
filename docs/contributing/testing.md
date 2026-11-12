@@ -24,7 +24,9 @@ end-to-end suite. Run them separately when your change affects that area.
 Put tests as close as possible to the code and behavior under test:
 
 - **Unit tests** cover a function, component, or package in isolation. Most
-  workspaces use Vitest and expose a `test` or `test:unit` target.
+  workspaces use Vitest and expose a `test` or `test:unit` target. App tests
+  under `apps/` assert with Vitest's `expect`; Ghost Core, the packages and
+  Koenig assert with `node:assert/strict`.
 - **Ghost Core integration tests** cover interactions between server modules
   and live against a test database. They live in `ghost/test/integration/`.
 - **Ghost Core server E2E tests** exercise the server, frontend rendering,
@@ -171,6 +173,19 @@ those adapters.
 
 If E2E tests fail with `ECONNREFUSED 127.0.0.1:3306`, start the development
 server with `pnpm dev`.
+
+## Limit Parallel Workers
+
+Ghost Core's database-backed suites boot a Ghost per worker, and the Admin
+acceptance and browser E2E suites drive a browser per worker. Each sizes its
+workers as if it had the machine to itself, so tests running in several
+worktrees at once can exhaust memory.
+
+Set `GHOST_TEST_MACHINE_SHARE` in your shell profile to the share of the
+machine one test run may use, such as `0.5` when two worktrees run tests at
+once. Each suite scales its workers to that share by what its workers cost, so
+the suites split the machine instead of each taking all of it.
+`TEST_WORKERS_COUNT` sets an exact worker count instead.
 
 ## Run Browser E2E Tests
 

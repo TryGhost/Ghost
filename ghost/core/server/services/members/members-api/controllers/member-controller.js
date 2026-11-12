@@ -1,9 +1,19 @@
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
   blockedEmailDomain: 'Memberships from this email domain are currently restricted.',
 };
+
+/** Answers to what a new tier requires that were refused, carrying the refusal to report. */
+class AnswersRefused extends Error {
+  /** @param {InstanceType<typeof errors.ValidationError>} refusal */
+  constructor(refusal) {
+    super(refusal.message);
+    this.refusal = refusal;
+  }
+}
 
 module.exports = class MemberController {
   /**
@@ -16,6 +26,7 @@ module.exports = class MemberController {
    * @param {any} deps.tokenService
    * @param {any} deps.sendEmailWithMagicLink
    * @param {any} deps.settingsCache
+   * @param {Pick<import('../../account-service').MemberAccountService, 'planAnswers' | 'saveAnswers'>} deps.account
    */
   constructor({
     memberRepository,
@@ -26,7 +37,9 @@ module.exports = class MemberController {
     tokenService,
     sendEmailWithMagicLink,
     settingsCache,
+    account,
   }) {
+    this._account = account;
     this._memberRepository = memberRepository;
     this._productRepository = productRepository;
     this._paymentsService = paymentsService;
@@ -91,6 +104,7 @@ module.exports = class MemberController {
       const ghostPriceId = req.body.priceId;
       const tierId = req.body.tierId;
       const cadence = req.body.cadence;
+      const answers = req.body.answers;
 
       if (
         cancelAtPeriodEnd === undefined &&
@@ -159,12 +173,12 @@ module.exports = class MemberController {
 
         const stripePrice = await this._paymentsService.getPriceForTierCadence(tier, cadence);
 
-        await this._memberRepository.updateSubscription({
+        await this._changePlan({
           email,
-          subscription: {
-            subscription_id: subscriptionId,
-            price: stripePrice.id,
-          },
+          subscriptionId,
+          tier: { id: tierId, type: tier.type },
+          price: stripePrice.id,
+          answers,
         });
       } else if (ghostPriceId !== undefined) {
         const price = await this._StripePrice.findOne({
@@ -184,12 +198,12 @@ module.exports = class MemberController {
           return res.end('Tier is archived.');
         }
 
-        await this._memberRepository.updateSubscription({
+        await this._changePlan({
           email,
-          subscription: {
-            subscription_id: subscriptionId,
-            price: priceId,
-          },
+          subscriptionId,
+          tier: { id: product.id, type: product.get('type') },
+          price: priceId,
+          answers,
         });
       } else if (cancelAtPeriodEnd !== undefined) {
         await this._memberRepository.updateSubscription({
@@ -231,11 +245,74 @@ module.exports = class MemberController {
       res.writeHead(204);
       res.end();
     } catch (err) {
+      // A refused answer is reported the way the rest of the members API reports a refused value,
+      // naming what it refused, so a page can show the refusal beside the input that holds it.
+      // Anything else is reported as this endpoint always has.
+      if (err instanceof AnswersRefused) {
+        throw err.refusal;
+      }
       res.writeHead(err.statusCode || 500, {
         'Content-Type': 'text/plain;charset=UTF-8',
       });
       res.end(err.message);
     }
+  }
+
+  /**
+   * Changes a member's plan to a price of a tier, saving the answers they gave to what that tier
+   * requires. The answers are checked before the change, so a refused one leaves the member on
+   * their plan to correct it, and saved once it's made, so a change that fails saves none. A save
+   * that fails after the change is logged rather than reported, as the plan has changed and nothing
+   * else waits on the answers: the member can be asked for them again.
+   *
+   * Optional: a caller that doesn't know about requirements, such as an automation or a custom
+   * page, changes plan without them, as it always has. A change that keeps the tier, such as one
+   * of billing period, saves none, as it asks for nothing.
+   *
+   * @param {object} change
+   * @param {string} change.email The member's, from their identity.
+   * @param {string} change.subscriptionId
+   * @param {{id: string, type: string}} change.tier The tier they're changing to.
+   * @param {string} change.price The Stripe price they're changing to.
+   * @param {unknown} change.answers
+   */
+  async _changePlan({ email, subscriptionId, tier, price, answers }) {
+    const changing = () =>
+      this._memberRepository.updateSubscription({
+        email,
+        subscription: { subscription_id: subscriptionId, price },
+      });
+    if (answers === undefined) {
+      return changing();
+    }
+
+    // The member's own subscription, or nothing is checked or saved: the change below would
+    // refuse anyone else's, and answers are only ever saved with a change.
+    const subscription = await this._memberRepository.getSubscription({
+      email,
+      subscription: { subscription_id: subscriptionId },
+    });
+    const [current, member] = await Promise.all([
+      // `plan` is how a subscription names the Stripe price it's on.
+      this._productRepository.get({ stripe_price_id: subscription.plan.id }),
+      this._memberRepository.get({ email }),
+    ]);
+    const plans =
+      current?.id === tier.id
+        ? []
+        : await this._account.planAnswers(answers, member.id, tier).catch((err) => {
+            throw err instanceof errors.ValidationError ? new AnswersRefused(err) : err;
+          });
+
+    await changing();
+    await this._account.saveAnswers(member.id, plans).catch((err) => {
+      logging.error({
+        event: { name: 'members.tier_change.answers_not_saved' },
+        err,
+        member_id: member.id,
+        subscription_id: subscriptionId,
+      });
+    });
   }
 
   async applyOfferToSubscription(req, res) {

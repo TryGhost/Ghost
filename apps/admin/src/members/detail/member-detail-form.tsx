@@ -31,21 +31,21 @@ const MemberDetailForm: React.FC<MemberDetailFormProps> = ({
   onEmailBlur,
   onNameBlur,
 }) => {
-  // Soft limit: the note can be typed past 500 (Ember has no hard cap); the counter
-  // just turns negative and red.
+  // Soft limit: the note can be typed past 500; the counter just turns negative
+  // and red.
   const noteCharactersLeft = getNoteCharactersLeft(draft.note);
   const usedCharacters = NOTE_MAX_LENGTH - noteCharactersLeft;
   const overLimit = noteCharactersLeft < 0;
   // Traffic-light colour progression on the used-count digit as the note
-  // fills up. Ember only had two states (green/red); this extends it with
-  // a warning band as the user gets close to the limit so there's a visual
-  // heads-up before they cross it. Thresholds are lenient by design — most
-  // notes are short, and we don't want to nag on every keystroke.
+  // fills up, with a warning band between green and red as the user gets
+  // close to the limit so there's a visual heads-up before they cross it.
+  // Thresholds are lenient by design — most notes are short, and we don't want
+  // to nag on every keystroke.
   const usedColorClass = overLimit
     ? 'text-destructive'
     : usedCharacters >= NOTE_MAX_LENGTH * 0.8
       ? 'text-state-warning'
-      : 'text-state-success';
+      : 'text-character-count';
 
   return (
     // `items-stretch` on the grid so both columns share the tallest child's
@@ -55,7 +55,7 @@ const MemberDetailForm: React.FC<MemberDetailFormProps> = ({
     // bottom border in the left column.
     <div className="grid items-stretch gap-6 md:grid-cols-2" data-testid="member-detail-form">
       <div className="flex flex-col gap-5">
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5 in-data-[admin7-design=true]:gap-2">
           <Label htmlFor="member-name">Name</Label>
           <Input
             disabled={disabled}
@@ -66,7 +66,7 @@ const MemberDetailForm: React.FC<MemberDetailFormProps> = ({
           />
         </div>
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5 in-data-[admin7-design=true]:gap-2">
           <Label htmlFor="member-email">Email</Label>
           <Input
             aria-invalid={!!emailError}
@@ -80,7 +80,7 @@ const MemberDetailForm: React.FC<MemberDetailFormProps> = ({
           {emailError && <p className="text-sm text-destructive">{emailError}</p>}
         </div>
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5 in-data-[admin7-design=true]:gap-2">
           <Label>Labels</Label>
           <MemberLabelsField
             disabled={disabled}
@@ -90,7 +90,7 @@ const MemberDetailForm: React.FC<MemberDetailFormProps> = ({
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-col gap-1.5">
+      <div className="flex min-h-0 flex-col gap-1.5 in-data-[admin7-design=true]:gap-2">
         <Label htmlFor="member-note">
           Note <span className="font-normal text-muted-foreground">(not visible to member)</span>
         </Label>

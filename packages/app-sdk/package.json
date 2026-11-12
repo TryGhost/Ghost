@@ -1,14 +1,16 @@
 {
   "name": "@tryghost/app-sdk",
-  "version": "private",
-  "private": true,
-  "description": "The SDK apps use to talk to Ghost from inside Admin",
+  "version": "0.1.0-alpha.0",
+  "description": "The SDK apps use to talk to Ghost: from their page inside Admin, from their backend, and from their tooling",
   "license": "MIT",
   "author": "Ghost Foundation",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
     "directory": "packages/app-sdk"
+  },
+  "bin": {
+    "ghost-app": "build/bin.js"
   },
   "files": [
     "build",
@@ -22,6 +24,21 @@
       "source": "./src/index.ts",
       "types": "./build/index.d.ts",
       "default": "./build/index.js"
+    },
+    "./backend": {
+      "source": "./src/backend/index.ts",
+      "types": "./build/backend.d.ts",
+      "default": "./build/backend.js"
+    },
+    "./tooling": {
+      "source": "./src/tooling/index.ts",
+      "types": "./build/tooling.d.ts",
+      "default": "./build/tooling.js"
+    },
+    "./vite": {
+      "source": "./src/vite/index.ts",
+      "types": "./build/vite.d.ts",
+      "default": "./build/vite.js"
     }
   },
   "scripts": {
@@ -34,7 +51,10 @@
     "lint": "pnpm run '/^lint:/'"
   },
   "dependencies": {
-    "@quilted/threads": "catalog:"
+    "@quilted/threads": "catalog:",
+    "commander": "catalog:",
+    "jose": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
@@ -51,12 +71,24 @@
     "vite": "catalog:",
     "vitest": "catalog:"
   },
-  "ghostPackage": {
-    "goldenPath": "exempt",
-    "reason": "A browser SDK for third-party apps: its build bundles with Vite, writing what it uses of the contracts into build/, and ships a self-contained bundle in dist/, so its build script, files and Nx outputs differ from the golden path. Everything else follows it."
+  "peerDependencies": {
+    "vite": ">=6"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=22.12"
   },
   "nx": {
     "targets": {
+      "test": {
+        "dependsOn": [
+          "build"
+        ]
+      },
       "build": {
         "outputs": [
           "{projectRoot}/build",

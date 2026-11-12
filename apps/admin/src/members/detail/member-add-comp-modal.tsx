@@ -10,7 +10,6 @@ import {
   DialogTitle,
   Input,
   Label,
-  LoadingIndicator,
   Select,
   SelectContent,
   SelectItem,
@@ -25,8 +24,7 @@ import { useEditMember, useEditMemberSubscription } from '@tryghost/admin-x-fram
 import type { CompExpiryDuration } from './member-comp-tier';
 import type { Member, MemberSubscription } from '@tryghost/admin-x-framework/api/members';
 
-// Ember cancels only subs in these Stripe states before granting a comp
-// (`modal-member-tier.js:activeSubscriptions` — the `isActive` helper allow-list).
+// Only subs in these Stripe states are canceled before granting a comp.
 const CANCELABLE_STATUSES = new Set(['active', 'trialing', 'unpaid', 'past_due']);
 
 interface MemberAddCompModalProps {
@@ -69,7 +67,7 @@ const MemberAddCompModal: React.FC<MemberAddCompModalProps> = ({ open, onOpenCha
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   // The list of Stripe subscriptions the flow needs to hard-cancel first —
-  // narrowed to the exact Ember allow-list so unusual statuses (incomplete,
+  // narrowed to the allow-list so unusual statuses (incomplete,
   // paused, etc.) aren't hard-canceled behind the admin's back.
   const activePaidSubscriptions = (member.subscriptions ?? []).filter(
     (sub: MemberSubscription) =>
@@ -87,9 +85,8 @@ const MemberAddCompModal: React.FC<MemberAddCompModalProps> = ({ open, onOpenCha
     }
     setIsSubmitting(true);
     try {
-      // 1. Cancel every active Stripe subscription immediately — matches Ember
-      //    `modal-member-tier.js:128-136`. Sequential so a failure aborts before
-      //    the tier is granted.
+      // 1. Cancel every active Stripe subscription immediately. Sequential so a
+      //    failure aborts before the tier is granted.
       for (const sub of activePaidSubscriptions) {
         await editSubscription.mutateAsync({
           memberId: member.id,
@@ -98,7 +95,7 @@ const MemberAddCompModal: React.FC<MemberAddCompModalProps> = ({ open, onOpenCha
         });
       }
 
-      // 2. Grant the comp tier via `useEditMember`. Match Ember exactly:
+      // 2. Grant the comp tier via `useEditMember`:
       //    `tiers: [newTier]` only, no existing tiers alongside. The server
       //    rejects `products.length > 1` — this is safer under data drift
       //    (concurrent tab edit) than preserving surviving tiers here.
@@ -146,7 +143,7 @@ const MemberAddCompModal: React.FC<MemberAddCompModalProps> = ({ open, onOpenCha
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 in-data-[admin7-design=true]:gap-2">
             <Label htmlFor="comp-tier">Tier</Label>
             <Select value={selectedTierId} onValueChange={setSelectedTierId}>
               <SelectTrigger
@@ -166,7 +163,7 @@ const MemberAddCompModal: React.FC<MemberAddCompModalProps> = ({ open, onOpenCha
             </Select>
           </div>
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 in-data-[admin7-design=true]:gap-2">
             <Label htmlFor="comp-duration">Duration</Label>
             <Select
               value={duration}
@@ -194,7 +191,7 @@ const MemberAddCompModal: React.FC<MemberAddCompModalProps> = ({ open, onOpenCha
           </div>
 
           {duration === 'custom' && (
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5 in-data-[admin7-design=true]:gap-2">
               <Label htmlFor="comp-custom-date">Expires on</Label>
               <Input
                 data-testid="comp-custom-date"
@@ -216,16 +213,10 @@ const MemberAddCompModal: React.FC<MemberAddCompModalProps> = ({ open, onOpenCha
           <Button
             data-testid="comp-add-confirm"
             disabled={!canSubmit}
+            loading={isSubmitting}
             onClick={() => void onSubmit()}
           >
-            {isSubmitting ? (
-              <>
-                <LoadingIndicator size="sm" />
-                <span className="sr-only">Adding</span>
-              </>
-            ) : (
-              'Add subscription'
-            )}
+            Add subscription
           </Button>
         </DialogFooter>
       </DialogContent>

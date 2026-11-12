@@ -90,9 +90,12 @@ offers "Sent" or the retry. A read that found the session gone asks for the
 password in the editor's sign-in dialog first and reads again once the writer
 is back; cancelling it leaves the error, a later background read that fails the
 same way does not ask again, and Retry asks again. A published post's status
-line reads "Published and sending to N members" while its email is on its way
-and "Published and sent to N members" once it is submitted; an email-only send
-reads "Sent to N members" throughout. Neither a publish that emails nor a retry
+line reads "Published and sending" while its email is on its way and
+"Published and sent" once it is submitted; an email-only send reads "Sent"
+throughout. Hovering either, or focusing its link or button from the keyboard,
+fades in who it reached ("…to N members of Weekly Digest"), the way a scheduled
+post's status reveals its audience, and the posts list says the same on hover;
+screen readers always read it. Neither a publish that emails nor a retry
 waits for the send, so the status line shows it as the save or retry left it.
 
 After successful completion, the editor follows the publish flow's celebration
@@ -111,15 +114,19 @@ The header's back link returns a post to the posts list and a page to the pages
 list, with the filters and sort order the list was left with. A post opened
 from its analytics screen or from the analytics overview instead reads
 "Analytics" and returns to the screen it was opened from, path and query string
-included. Those screens pass `editorReturnState()` from `api.ts` as router
-state, and the editor accepts only a path under `/posts/analytics/` or
-`/analytics`. The return survives a reload, since it lives in the history
-entry, but a new post never gets it. While the link leads to analytics, the
-status line is hidden unless the post's newsletter failed to send or a save
-failed.
+included. A post or page an app opened reads "Back" and returns to the app, at
+the route the app was on when it asked, query and fragment included. Reopening
+the app loses anything it kept only in memory, such as an open dialog. Those
+screens, and Admin's app page, pass `editorReturnState()` from `api.ts` as
+router state; apps never set it themselves. The editor accepts only a path
+under `/posts/analytics/`, `/analytics` or an app's route,
+`/apps/<installation id>`, and none with `.` or `..` segments. The return
+survives a reload, since it lives in the history entry, but a new post never
+gets it. While the link leads to analytics, the status line is hidden unless
+the post's newsletter failed to send or a save failed.
 
 The link shows its arrow alone at every width, as a square button with no
-tooltip, and "Posts", "Pages" or "Analytics" stays its accessible name.
+tooltip, and "Posts", "Pages", "Analytics" or "Back" stays its accessible name.
 
 ## Images
 
@@ -150,6 +157,23 @@ only closes the calendar. Text in another format is refused with
 have, such as 30 February, with `Invalid date`. A refused date stays in the
 field, marked invalid and described by the message, until it is corrected or
 discarded; Cmd/Ctrl+S from the field saves nothing meanwhile.
+
+The time is typed on the 24-hour clock, led by the site's timezone, as `HH:mm`,
+`H:mm`, `HHmm` or the hour alone, so `20:00`, `2000` and `20` are all 20:00.
+Surrounding spaces are ignored. A typed time is taken on blur, and an emptied
+field puts back the time already held. Anything else, including three digits
+such as `930`, is refused with `Must be in format: "15:00"` and stays in the
+field, marked invalid and described by the message, until it is corrected or
+emptied; Cmd/Ctrl+S from the field saves nothing meanwhile. Unlike the date,
+the time ignores Enter and Escape.
+
+While either field holds a refused entry, nothing goes ahead past it: the
+publish flow's Continue, and in the editor the Publish and Update flows,
+closing the settings panel and the back link, each take the writer back to the
+field instead. The field reports the refusal in the blur that makes it, so the
+click that caused the blur already meets it. Preview still opens. A field that
+goes away, as the panel's section list does when a pane opens, takes its
+refused entry with it.
 
 A new date keeps the time of day already held, and where that time does not
 exist on the new day because the clocks go forward, it moves forward with them.

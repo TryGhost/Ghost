@@ -8,7 +8,7 @@ import type { EditorRecord } from '@/editor/session/projection';
  */
 export interface PublishFlowPost {
   id: string;
-  /** 'post' or 'page' — Ember's `displayName`, used verbatim in copy. */
+  /** 'post' or 'page', used verbatim in copy. */
   displayName: 'post' | 'page';
   status: PostStatus;
   title: string;

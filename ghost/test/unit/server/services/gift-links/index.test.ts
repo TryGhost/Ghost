@@ -42,7 +42,7 @@ describe('gift-links root with its API consumers', function () {
   let addAction: sinon.SinonStub;
 
   beforeEach(function () {
-    originalModules = new Map(MODULE_PATHS.map((path) => [path, require.cache[path]]));
+    originalModules = new Map(Object.entries(require.cache));
     for (const path of MODULE_PATHS) {
       delete require.cache[path];
     }
@@ -56,14 +56,15 @@ describe('gift-links root with its API consumers', function () {
 
   afterEach(function () {
     sandbox.restore();
-    // Other loaded endpoints may retain the originals. Restore complete entries
-    // so later requires reach those same roots and consumers again.
-    for (const [path, original] of originalModules) {
-      if (original) {
-        require.cache[path] = original;
-      } else {
+    // Restore newly loaded dependencies too: they may retain the fresh root even
+    // when they are outside MODULE_PATHS.
+    for (const path of Object.keys(require.cache)) {
+      if (!originalModules.has(path)) {
         delete require.cache[path];
       }
+    }
+    for (const [path, original] of originalModules) {
+      require.cache[path] = original;
     }
   });
 

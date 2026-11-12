@@ -10,7 +10,7 @@ const {
 const { stripeMocker } = require('../../utils/e2e-framework-mock-manager');
 const models = require('../../../core/server/models');
 const membersService = require('../../../core/server/services/members');
-const tiersService = require('../../../core/server/services/tiers');
+const tiersService = require('../../../core/server/services/tiers').default;
 const urlUtils = require('../../../core/shared/url-utils').default;
 const { anyErrorId } = matchers;
 
@@ -50,10 +50,6 @@ function toWebhookMetadata(metadata) {
   }
 
   return result;
-}
-
-function enableAllGiftPlans() {
-  mockManager.mockSetting('portal_plans', ['free', 'monthly', 'yearly']);
 }
 
 function addYears(date, years) {
@@ -171,7 +167,6 @@ describe('Gift Subscriptions', function () {
 
   describe('Purchase a gift', function () {
     it('styles a gift checkout with the publisher design', async function () {
-      mockManager.mockLabsEnabled('stripeCheckoutDesign');
       await adminAgent
         .put('/stripe/checkout/config/')
         .body({
@@ -395,8 +390,6 @@ describe('Gift Subscriptions', function () {
     });
 
     it('uses the persisted buyer email when the paid gift webhook has no customer details', async function () {
-      enableAllGiftPlans();
-
       const paidTier = await getPaidTier();
       const buyerEmail = 'persisted-buyer@example.com';
 
@@ -505,8 +498,6 @@ describe('Gift Subscriptions', function () {
     });
 
     it('traces a customized 3-month gift from checkout through redemption and member access', async function () {
-      enableAllGiftPlans();
-
       const paidTier = await getPaidTier();
       const buyerEmail = `gift-multi-month-buyer-${giftSequence + 1}@example.com`;
       const redeemerEmail = `gift-multi-month-redeemer-${giftSequence + 1}@example.com`;
@@ -613,8 +604,6 @@ describe('Gift Subscriptions', function () {
     });
 
     it('rejects unsupported, malformed, conflicting and non-paid customized gift offers', async function () {
-      enableAllGiftPlans();
-
       for (const request of [
         { duration: 2 },
         { duration: '3' },
@@ -630,9 +619,36 @@ describe('Gift Subscriptions', function () {
       });
     });
 
+    it('allows gift checkout for tiers and durations hidden from Portal', async function () {
+      mockManager.mockSetting('portal_plans', ['free']);
+      const paidTier = await getPaidTier();
+      await models.Product.edit({ visibility: 'none' }, { id: paidTier.id });
+
+      try {
+        for (const duration of [3, 12]) {
+          await membersAgent
+            .post('/api/create-stripe-checkout-session/')
+            .body({
+              type: 'gift',
+              tierId: paidTier.id,
+              duration,
+              customerEmail: 'hidden-tier-gift-buyer@example.com',
+              metadata: {},
+            })
+            .expectStatus(200);
+
+          const pendingGift = await models.Gift.findOne(
+            { id: getLatestCheckoutSession().metadata.ghost_gift_id },
+            { require: true },
+          );
+          assert.equal(pendingGift.get('tier_id'), paidTier.id);
+        }
+      } finally {
+        await models.Product.edit({ visibility: 'public' }, { id: paidTier.id });
+      }
+    });
+
     it('keeps legacy cadence-only gift checkout compatible', async function () {
-      // legacy clients predate the Portal plan gate, so a disabled yearly plan must not block them
-      mockManager.mockSetting('portal_plans', ['free', 'monthly']);
       const paidTier = await getPaidTier();
 
       await membersAgent
@@ -739,7 +755,6 @@ describe('Gift Subscriptions', function () {
 
   describe('Refund a gift', function () {
     it('Marks a multi-month gift as refunded when Stripe charge.refunded webhook is received', async function () {
-      enableAllGiftPlans();
       const paidTier = await getPaidTier();
       const expectedAmount = paidTier.monthly_price * 3;
 
@@ -1685,6 +1700,29 @@ describe('Gift Subscriptions', function () {
       assert.ok(giftAfterActivation.get('consumed_at'), 'Gift should have consumed_at set');
     });
 
+    it('removes the gift end date from the tier once the paid subscription activates', async function () {
+      const { member, paidTier } = await setupGiftMember({ cadence: 'month', consumesInDays: 30 });
+
+      const customer = stripeMocker.createCustomer({ email: member.get('email') });
+      const price = await stripeMocker.getPriceForTier(paidTier.slug, 'month');
+
+      await stripeMocker.createSubscription({ customer, price });
+      await DomainEvents.allSettled();
+
+      const memberAfterActivation = await models.Member.findOne(
+        { id: member.id },
+        { withRelated: ['products'], require: true },
+      );
+      assert.equal(memberAfterActivation.get('status'), 'paid');
+      assert.deepEqual(
+        memberAfterActivation
+          .related('products')
+          .map((tier) => ({ id: tier.id, expiry_at: tier.get('expiry_at') })),
+        [{ id: paidTier.id, expiry_at: null }],
+        'The paid tier should not keep the gift end date',
+      );
+    });
+
     it('does not enqueue a second paid welcome email when a gift member upgrades to paid', async function () {
       mockManager.mockLabsDisabled('automations');
 
@@ -1814,7 +1852,7 @@ describe('Gift Subscriptions', function () {
     });
 
     it('Returns 403 when gift tier is archived', async function () {
-      const archivedTier = await tiersService.api.add({
+      const archivedTier = await tiersService.service.api.add({
         name: `Archived Gift Tier ${continueSequence + 1}`,
         type: 'paid',
         currency: 'USD',
@@ -1828,7 +1866,7 @@ describe('Gift Subscriptions', function () {
         tierId: archivedTier.id.toHexString(),
       });
 
-      await tiersService.api.edit(archivedTier.id.toHexString(), { status: 'archived' });
+      await tiersService.service.api.edit(archivedTier.id.toHexString(), { status: 'archived' });
 
       await membersAgent
         .post('/api/create-stripe-checkout-session/')

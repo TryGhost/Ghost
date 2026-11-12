@@ -1,9 +1,6 @@
 import { type Key, KeySchema } from '@tryghost/metafield-types/identity';
-// Neither package ships types.
-const { stripInvisibleChars } = require('@tryghost/string') as {
-  stripInvisibleChars(input: string): string;
-};
-const unidecode = require('unidecode') as (input: string) => string;
+import { stripInvisibleChars } from '@tryghost/string';
+import unidecode from 'unidecode';
 
 /**
  * Mint the key a field is addressed by, from the name a publisher chose.

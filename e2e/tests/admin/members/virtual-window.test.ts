@@ -1,4 +1,4 @@
-import { MemberDetailsPage, MembersPage } from '@/helpers/pages';
+import { MemberDetailsPage, MembersListPage } from '@/helpers/pages';
 import { MemberFactory, createMemberFactory } from '@/data-factory';
 import { expect, test } from '@/helpers/playwright';
 import type { Page } from '@playwright/test';
@@ -66,7 +66,7 @@ test.describe('Ghost Admin - Members Virtual Window', () => {
 
       await mockLargeMembersList(page, members);
 
-      const membersPage = new MembersPage(page, { route: 'members' });
+      const membersPage = new MembersListPage(page);
       const memberDetailsPage = new MemberDetailsPage(page);
 
       await membersPage.goto();

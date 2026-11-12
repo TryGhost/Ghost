@@ -1,7 +1,10 @@
+import { areTriggerRulesValid } from './util/are-trigger-rules-valid';
 import ObjectId from 'bson-objectid';
 import { z } from 'zod';
+import { automationTriggerRuleDefinitionSchema } from './trigger-rules';
 
 const MAX_AUTOMATION_ACTIONS = 50;
+const MAX_TRIGGER_RULES = 100;
 const MAX_WAIT_HOURS = 720; // 30 days
 
 const objectIdSchema = z.string().refine((value) => ObjectId.isValid(value));
@@ -39,41 +42,6 @@ const automationShape = {
   edges: z.array(edgeSchema),
 };
 
-const defaultTriggerShape = {
-  trigger_tier_scope: z.enum(['free', 'all_paid']).nullable().optional(),
-  trigger_tier_ids: z.null().optional(),
-};
-const selectedPaidTriggerShape = {
-  trigger_tier_scope: z.literal('selected_paid'),
-  trigger_tier_ids: z
-    .array(objectIdSchema)
-    .min(1)
-    .refine((ids) => new Set(ids).size === ids.length, {
-      error: 'Duplicate trigger_tier_ids are not allowed.',
-    }),
-};
-
-export const addAutomationDataSchema = z.discriminatedUnion('trigger_tier_scope', [
-  z.strictObject({ ...automationShape, ...defaultTriggerShape }),
-  z.strictObject({
-    ...automationShape,
-    ...selectedPaidTriggerShape,
-  }),
-]);
-
-export const editAutomationDataSchema = z
-  .object({
-    ...automationShape,
-    name: automationShape.name.optional(),
-    description: automationShape.description.optional(),
-  })
-  .and(
-    z.discriminatedUnion('trigger_tier_scope', [
-      z.object(defaultTriggerShape),
-      z.object(selectedPaidTriggerShape),
-    ]),
-  );
-
 export const editAutomationStatusOnlySchema = z.strictObject({
   // We disallow status-only activations because they could allow activations to
   // happen with an invalid graph (e.g,. an email without a subject). If we
@@ -81,3 +49,31 @@ export const editAutomationStatusOnlySchema = z.strictObject({
   // well.
   status: z.enum(['inactive', 'archived']),
 });
+
+const triggerRulesSchema = z
+  .array(automationTriggerRuleDefinitionSchema)
+  .min(1)
+  .max(MAX_TRIGGER_RULES)
+  .refine(areTriggerRulesValid, {
+    error:
+      'Trigger rules must use one trigger type and scope, with unique product IDs for specific paid tiers and exactly one rule otherwise.',
+  });
+
+export const addAutomationDataSchema = z.strictObject({
+  ...automationShape,
+  trigger_rules: triggerRulesSchema,
+});
+
+export const editAutomationDataSchema = z.object({
+  ...automationShape,
+  name: automationShape.name.optional(),
+  description: automationShape.description.optional(),
+  trigger_rules: triggerRulesSchema.optional(),
+});
+
+export type AddAutomationData = z.infer<typeof addAutomationDataSchema>;
+export type EditAutomationData = Omit<
+  z.infer<typeof editAutomationDataSchema>,
+  'actions' | 'edges'
+> &
+  (Pick<AddAutomationData, 'actions' | 'edges'> | { actions?: never; edges?: never });

@@ -4,7 +4,16 @@ import {
   MembersListPage,
   SettingsPage,
 } from '@/admin-pages';
-import { createPaidPortalTier, expect, startPaidSignupViaPortal, test } from '@/helpers/playwright';
+import { HomePage, PortalAccountPage, PortalAccountPlanPage } from '@/helpers/pages';
+import {
+  completePaidSignupViaPortal,
+  completePaidUpgradeViaPortal,
+  createPaidPortalTier,
+  expect,
+  startPaidSignupViaPortal,
+  test,
+} from '@/helpers/playwright';
+import { createMemberFactory } from '@/data-factory';
 import type { Page } from '@playwright/test';
 import type { StripeTestService } from '@/helpers/services/stripe';
 
@@ -26,6 +35,21 @@ async function paidTier(page: Page, stripe: StripeTestService, name: string): Pr
   return tier.name;
 }
 
+/** Lets members see the custom field with this name, and change it, on their own record. */
+async function openFieldToMembers(page: Page, name: string): Promise<void> {
+  const listed = await page.request.get('/ghost/api/admin/members/metafields/custom/');
+  expect(listed.ok()).toBe(true);
+  const { members_metafields: fields } = await listed.json();
+  const field = fields.find((candidate: { name: string }) => candidate.name === name);
+  const opened = await page.request.put(
+    `/ghost/api/admin/members/metafields/custom/${field.key}/`,
+    {
+      data: { members_metafields: [{ access: { member: 'write' } }] },
+    },
+  );
+  expect(opened.ok()).toBe(true);
+}
+
 /** What Ghost asked Stripe to collect on the checkout a member was most recently sent to. */
 function latestCollectionRequest(stripe: StripeTestService) {
   const session = stripe.getCheckoutSessions().at(-1);
@@ -43,14 +67,11 @@ function latestPhoneRequest(stripe: StripeTestService) {
   return latestCollectionRequest(stripe).phone_number_collection;
 }
 
-function latestTaxIdRequest(stripe: StripeTestService) {
-  return latestCollectionRequest(stripe).tax_id_collection;
-}
-
 test.describe('Ghost Admin - Checkout fields', () => {
   test.use({
     stripeEnabled: true,
-    labs: { stripeCheckoutDesign: true, stripeCheckoutCollection: true, membersCustomFields: true },
+    // Phone fields on, as checkout saves the phone number only into one.
+    labs: { stripeCheckoutCollection: true, customFieldTypePhone: true },
   });
 
   test('shipping address - a member gives one at checkout, and it lands on their record', async ({
@@ -116,6 +137,80 @@ test.describe('Ghost Admin - Checkout fields', () => {
 
     await startPaidSignupViaPortal(page, { tierName: shipped });
     expect(latestShippingRequest(stripe!)?.allowed_countries.length).toBeGreaterThan(1);
+  });
+
+  test('specific tiers - a paying member changing to one gives an address in Portal, which lands on their record and fills in a later change', async ({
+    page,
+    stripe,
+  }) => {
+    const digital = await paidTier(page, stripe!, 'Digital');
+    const shipped = await paidTier(page, stripe!, 'Print Edition');
+
+    const checkout = await openCheckoutFields(page);
+    await checkout.collectShipping({
+      tiers: [shipped],
+      addressField: { create: 'Delivery address' },
+      nameField: { create: 'Recipient' },
+    });
+    await checkout.save();
+    await checkout.close();
+
+    const { name } = await completePaidSignupViaPortal(page, stripe!, { tierName: digital });
+
+    // Changing plan has no checkout to ask for the address, so Portal asks before the change.
+    const homePage = new HomePage(page);
+    await homePage.goto();
+    await homePage.openAccountPortal();
+    const accountPage = new PortalAccountPage(page);
+    await accountPage.waitForPortalToOpen();
+    await accountPage.openPlanSelection();
+    const planPage = new PortalAccountPlanPage(page);
+    await planPage.waitUntilLoaded();
+    await planPage.selectTier(shipped);
+
+    const portal = planPage.portalFrame;
+    await portal.getByLabel('Recipient name').fill('Ada Lovelace');
+    await expect(planPage.confirmActionButton).toBeDisabled();
+    const address = portal.getByRole('group', { name: 'Shipping address' });
+    await address.getByLabel('Address line 1').fill('12 Ada Street');
+    await address.getByLabel('City').fill('London');
+    await address.getByLabel('Postal code').fill('N1 9GU');
+    await address.getByLabel('Country').selectOption('GB');
+    await planPage.confirmAction();
+    // Back on the account once the plan has changed, which saves the answers first.
+    await expect(accountPage.changePlanButton).toBeVisible();
+    await expect(portal.getByText(shipped)).toBeVisible();
+
+    const membersPage = new MembersListPage(page);
+    await membersPage.goto();
+    await membersPage.getMemberLinkByName(name).click();
+    const memberPage = new MemberDetailsPage(page);
+    await expect(memberPage.customFieldRow('Delivery address')).toHaveAccessibleName(
+      /12 Ada Street, London, N1 9GU/,
+    );
+    await expect(memberPage.customFieldRow('Recipient')).toHaveAccessibleName(
+      'Edit Recipient: Ada Lovelace',
+    );
+
+    // Once members can see the fields, changing to the tier again starts from what they gave.
+    await openFieldToMembers(page, 'Delivery address');
+    await openFieldToMembers(page, 'Recipient');
+    await homePage.goto();
+    await homePage.openAccountPortal();
+    await accountPage.waitForPortalToOpen();
+    await accountPage.openPlanSelection();
+    await planPage.waitUntilLoaded();
+    await planPage.selectTier(digital);
+    await planPage.confirmAction();
+    await expect(accountPage.changePlanButton).toBeVisible();
+    await expect(portal.getByText(digital)).toBeVisible();
+    await accountPage.openPlanSelection();
+    await planPage.waitUntilLoaded();
+    await planPage.selectTier(shipped);
+    await expect(portal.getByLabel('Recipient name')).toHaveValue('Ada Lovelace');
+    await expect(address.getByLabel('Address line 1')).toHaveValue('12 Ada Street');
+    await expect(address.getByLabel('Country')).toHaveValue('GB');
+    await expect(planPage.confirmActionButton).toBeEnabled();
   });
 
   test('preview in Stripe - asks for an address as the unsaved settings say', async ({
@@ -215,53 +310,47 @@ test.describe('Ghost Admin - Checkout fields', () => {
     expect(latestShippingRequest(stripe!)).toBeUndefined();
   });
 
-  test('tax ID - a business buyer can give one at checkout, and still becomes a member', async ({
+  test('shipping address - a free member who upgrades gives one, and it lands on their record', async ({
     page,
     stripe,
   }) => {
-    const tierName = await paidTier(page, stripe!, 'Business');
+    const tierName = await paidTier(page, stripe!, 'Print Edition');
+    const name = `Free Member ${Date.now()}`;
+    const member = await createMemberFactory(page.request).create({
+      email: `upgrade-${Date.now()}@example.com`,
+      name,
+      status: 'free',
+    });
 
     const checkout = await openCheckoutFields(page);
-    await checkout.collectTaxId();
-    await expect(checkout.previewTaxId).toBeVisible();
+    await checkout.collectShipping({
+      addressField: { create: 'Delivery address' },
+      nameField: { create: 'Recipient' },
+    });
     await checkout.save();
     await checkout.close();
 
-    const { name } = await startPaidSignupViaPortal(page, { tierName });
-    expect(latestTaxIdRequest(stripe!)).toEqual({ enabled: true });
-
-    // Stripe keeps the tax ID on the customer, so there is nothing of it to see in Ghost.
-    await stripe!.completeLatestSubscriptionCheckout({
-      name,
-      collected: { taxId: 'GB123456789' },
+    await completePaidUpgradeViaPortal(page, stripe!, member, {
+      cadence: 'monthly',
+      tierName,
+      collected: {
+        shipping: {
+          name: 'Ada Lovelace',
+          line1: '12 Ada Street',
+          city: 'London',
+          postal_code: 'N1 9GU',
+          country: 'GB',
+        },
+      },
     });
 
     const membersPage = new MembersListPage(page);
     await membersPage.goto();
-    await expect(membersPage.getMemberLinkByName(name)).toBeVisible();
-  });
-
-  test('tax ID on specific tiers - only their checkouts offer it, previewed before saving', async ({
-    page,
-    stripe,
-  }) => {
-    const business = await paidTier(page, stripe!, 'Business');
-    const personal = await paidTier(page, stripe!, 'Personal');
-
-    const checkout = await openCheckoutFields(page);
-    await checkout.collectTaxId([business]);
-    await expect(checkout.previewTierTag(business)).toBeVisible();
-    const tab = await checkout.previewInStripe(business);
-    await tab.close();
-    expect(latestTaxIdRequest(stripe!)).toEqual({ enabled: true });
-    await checkout.save();
-    await checkout.close();
-
-    await startPaidSignupViaPortal(page, { tierName: personal });
-    expect(latestTaxIdRequest(stripe!)).toBeUndefined();
-
-    await startPaidSignupViaPortal(page, { tierName: business });
-    expect(latestTaxIdRequest(stripe!)).toEqual({ enabled: true });
+    await membersPage.getMemberLinkByName(name).click();
+    const memberPage = new MemberDetailsPage(page);
+    await expect(memberPage.customFieldRow('Delivery address')).toHaveAccessibleName(
+      /12 Ada Street, London, N1 9GU/,
+    );
   });
 
   test('incomplete - saving says which fields are missing, and saves nothing', async ({
@@ -284,7 +373,7 @@ test.describe('Ghost Admin - Checkout fields', () => {
 });
 
 test.describe('Ghost Admin - Checkout fields without the collection flag', () => {
-  test.use({ stripeEnabled: true, labs: { stripeCheckoutDesign: true } });
+  test.use({ stripeEnabled: true });
 
   test('labs flag off - only the design is offered, without tabs', async ({ page }) => {
     const settingsPage = new SettingsPage(page);

@@ -3,7 +3,7 @@ import { closeSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:f
 import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { parseArgs } from 'node:util';
-import { createCodexMarker, watchedDevCommand } from './lib/dev-lifecycle.ts';
+import { createCodexMarker, watchedDevScript } from './lib/dev-lifecycle.ts';
 import {
   checkoutSettings,
   devPorts,
@@ -65,7 +65,7 @@ const log = openSync(logFile, 'w');
 const codexSession = process.env.CODEX_SESSION_ID ?? process.env.CODEX_THREAD_ID;
 const marker = createCodexMarker(checkoutRoot, codexSession);
 const args = [checkoutRoot, command, process.env.CLAUDE_PID ?? '', marker];
-const child = spawn('sh', ['-c', watchedDevCommand, 'sh', ...args], {
+const child = spawn('sh', [watchedDevScript, ...args], {
   cwd: checkoutRoot,
   detached: true,
   stdio: ['ignore', log, log],

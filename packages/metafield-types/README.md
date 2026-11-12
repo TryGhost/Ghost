@@ -1,9 +1,9 @@
 # @tryghost/metafield-types
 
-The types of member custom field Ghost supports: which types exist, which parts a
-type is made of, the type of value each part holds, and how a value of each type is
-validated. Ghost, its Admin and Portal use it, and so can an integration that offers
-inputs for a site's custom fields, such as the Ghost Zapier integration.
+The types of member custom field Ghost supports: which types exist, what each type
+is composed of, and how a value of each type is validated. Ghost, its Admin and Portal
+use it, and so can an integration that offers inputs for a site's custom fields, such
+as the Ghost Zapier integration.
 
 ```bash
 npm install @tryghost/metafield-types
@@ -11,31 +11,45 @@ npm install @tryghost/metafield-types
 
 ## Entry points
 
-- `@tryghost/metafield-types/structure`: the type ids, each type's parts and the
-  type of value each part holds. It depends on nothing.
-- `@tryghost/metafield-types/countries`: the two-letter country codes a country
-  part accepts. It depends on nothing.
+- `@tryghost/metafield-types/structure`: the type ids and what each type is composed
+  of. A type is one leaf, a record of named leaves, or a set of options its field
+  offers, and a leaf is text of a format or a choice from a list, such as a country. A
+  field of a set type is set up with its options, which a field carries as its
+  `settings`. It depends on nothing.
+- `@tryghost/metafield-types/countries`: the two-letter country codes the list of
+  countries offers. It depends on nothing.
+- `@tryghost/metafield-types/phone`: each country's calling code, and what a phone input
+  needs to sit beside a choice of country: the country a number is from, telling apart the
+  countries that share a code, such as the US and Canada, the number with the chosen country's
+  code in front, and the country of the reader's language. It depends on nothing, so a browser
+  app can draw a phone input without the rules.
 - `@tryghost/metafield-types/identity`: how a field is named everywhere: its
   namespace, its key, the parts of a record value, and the identity they make
   together (`custom.shipping_address.country`). Each is a type that only its
   check produces. It loads `zod/mini`, a small fraction of zod's size, so a
   browser app can check identities without paying for the rest.
-- `@tryghost/metafield-types`: the structure above, plus the rules that validate
-  a value of each type. These are built on [zod](https://zod.dev), and only this
-  entry point loads all of it, so an integration that only draws inputs can use
-  `./structure` and `./countries` without loading zod at all.
+- `@tryghost/metafield-types`: the structure above, plus `valueSchemaFor(field)`,
+  the rule a value of a field must satisfy given its type and settings. The rules are built on
+  [zod](https://zod.dev), and a phone number's on
+  [libphonenumber-js](https://gitlab.com/catamphetamine/libphonenumber-js). Only this
+  entry point loads all of zod or any of libphonenumber-js, so an integration that only
+  draws inputs can use `./structure` and `./countries` without loading either.
 
 ## Compatibility
 
 An integration using this package talks to sites on many Ghost versions, so a type
-never changes once it has shipped: it keeps its parts and the type of value each
-holds. New structure arrives as a new type. An integration should skip a type it
-doesn't recognise, which is what happens when a site is on a newer Ghost than the
-package the integration was built with.
+never changes once it has shipped. It keeps what it is composed of: its shape, its
+leaves, and the names of any parts. New structure arrives as a new type. An integration
+should skip a type it doesn't recognise, which is what happens when a site is on a newer
+Ghost than the package the integration was built with. A type `FIELD_TYPE_FLAGS` lists is
+still in development: sites offer it only where its Labs flag is on, and it can still change
+until that flag is switched on for customers' sites.
 
 ## Develop
 
-This is a workspace package in the Ghost monorepo. From the repo root:
+This is a workspace package in the Ghost monorepo. Adding a field type to Ghost, and why
+types are built the way they are, is covered in [`docs/`](docs/README.md). From the repo
+root:
 
 ```bash
 pnpm --filter @tryghost/metafield-types build   # compile to build/ with tsc (ESM)
@@ -52,9 +66,9 @@ imports in `src/` must carry an explicit extension; write the real `.ts` one —
 `import {x} from './x.ts'` — and `tsc` rewrites it to `.js` on emit
 (`rewriteRelativeImportExtensions`).
 
-`./structure` is the half of the catalog a renderer needs — which parts a field type
-has, and what each holds — and it stands apart from `./index` so that importing it
-costs a bundle almost nothing. The rules in `./index` are built on zod, some
+`./structure` is the half of the catalog a renderer needs, what each field type is
+composed of, and it stands apart from `./index` so that importing it costs a bundle
+almost nothing. The rules in `./index` are built on zod, some
 seventeen kilobytes gzipped that a renderer never runs. Portal imports `./structure`
 and loads on every page view of every themed site, so the difference reaches every
 visitor of every Ghost site.

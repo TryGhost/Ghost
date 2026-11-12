@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import type { SinonSpy, SinonStub } from 'sinon';
-// @ts-expect-error This module lacks type definitions.
+import type { GhostLogger } from '@tryghost/logging';
+import type { SinonSpy, SinonStubbedInstance } from 'sinon';
 import configUtils from '../../../utils/config-utils';
 import loggingLib from '@tryghost/logging';
 
@@ -15,7 +15,7 @@ describe('{{#collection}} helper', function () {
   let fn: SinonSpy;
   let inverse: SinonSpy;
   let locals: { root: { _locals?: { degradedRender?: boolean } } } = { root: {} };
-  let logging: { error: SinonStub; warn: SinonStub };
+  let logging: Pick<SinonStubbedInstance<GhostLogger>, 'error' | 'warn'>;
 
   beforeEach(function () {
     fn = sinon.spy();

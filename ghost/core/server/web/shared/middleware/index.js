@@ -3,10 +3,6 @@ module.exports = {
     return require('./api');
   },
 
-  get brute() {
-    return require('./brute');
-  },
-
   get cacheControl() {
     return require('./cache-control').cacheControl;
   },
@@ -17,6 +13,10 @@ module.exports = {
 
   get prettyUrls() {
     return require('./pretty-urls');
+  },
+
+  get rateLimiting() {
+    return require('./rate-limiting');
   },
 
   get urlRedirects() {

@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { MoreHorizontal } from 'lucide-react';
+import { useShade } from '@/providers/shade-context';
+import { tabSurfaceVariants } from '@/components/ui/tabs-variants';
 import { Button, type ButtonProps } from './button';
 import {
   DropdownMenu,
@@ -9,13 +11,21 @@ import {
   DropdownMenuTrigger,
 } from './dropdown-menu';
 
-const PageMenuContext = React.createContext<{ defaultValue?: string } | null>(null);
+interface PageMenuContextValue {
+  value?: string;
+  onSelect: (value: string) => void;
+}
+
+const PageMenuContext = React.createContext<PageMenuContextValue | null>(null);
 
 export interface PageMenuProps {
   children: React.ReactNode;
   responsive?: boolean;
+  /** The active item's value. Pass with `onValueChange` to control the menu, e.g. from the current route. */
   value?: string;
+  /** The item active on first render when the menu manages its own selection. */
   defaultValue?: string;
+  /** Called with the item's value when the user picks a different item. */
   onValueChange?: (value: string) => void;
   className?: string;
 }
@@ -30,10 +40,38 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
     { children, responsive = false, value, defaultValue, onValueChange, className, ...props },
     ref,
   ) => {
+    const { admin7Design } = useShade();
     const [visibleCount, setVisibleCount] = React.useState(React.Children.count(children));
     const [resizeKey, setResizeKey] = React.useState(0);
     const containerRef = React.useRef<HTMLDivElement>(null);
     const measureRef = React.useRef<HTMLDivElement>(null);
+    const overflowTriggerRef = React.useRef<HTMLButtonElement>(null);
+
+    // Controlled when `value` is passed, otherwise tracks its own selection
+    // starting from `defaultValue` (same contract as Radix Tabs).
+    const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue);
+    const isControlled = value !== undefined;
+    const activeValue = isControlled ? value : uncontrolledValue;
+    const measuredActiveValue = admin7Design ? activeValue : undefined;
+    const measuredVisibleCount = admin7Design ? visibleCount : undefined;
+
+    const handleSelect = React.useCallback(
+      (nextValue: string) => {
+        if (nextValue === activeValue) {
+          return;
+        }
+        if (!isControlled) {
+          setUncontrolledValue(nextValue);
+        }
+        onValueChange?.(nextValue);
+      },
+      [activeValue, isControlled, onValueChange],
+    );
+
+    const contextValue = React.useMemo(
+      () => ({ value: activeValue, onSelect: handleSelect }),
+      [activeValue, handleSelect],
+    );
 
     React.useLayoutEffect(() => {
       if (!responsive || !containerRef.current || !measureRef.current) {
@@ -50,8 +88,12 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
         const container = containerRef.current;
         const measureContainer = measureRef.current;
         const containerWidth = container.clientWidth;
-        const dropdownWidth = 60; // Space needed for dropdown button
-        const gap = 6; // Gap between items (gap-1.5)
+        const dropdownWidth = admin7Design
+          ? overflowTriggerRef.current?.getBoundingClientRect().width || 60
+          : 60;
+        const gap = admin7Design
+          ? Number.parseFloat(getComputedStyle(container).columnGap) || 0
+          : 6;
 
         // Get all child elements from the measure container
         const items = Array.from(measureContainer.children) as HTMLElement[];
@@ -81,7 +123,7 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
           const newWidth = currentWidth + gapWidth + itemWidth;
 
           // Reserve space for dropdown (since we know not all items fit)
-          const totalNeededWidth = newWidth + dropdownWidth;
+          const totalNeededWidth = newWidth + (admin7Design ? gap : 0) + dropdownWidth;
 
           if (totalNeededWidth <= containerWidth) {
             currentWidth = newWidth;
@@ -95,7 +137,7 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
       };
 
       requestAnimationFrame(calculateSizes);
-    }, [responsive, children, resizeKey]);
+    }, [responsive, children, resizeKey, admin7Design, measuredActiveValue, measuredVisibleCount]);
 
     React.useLayoutEffect(() => {
       if (!responsive || !containerRef.current) {
@@ -118,12 +160,12 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
 
     // Find selected hidden item
     const selectedHiddenItem = hiddenItems.find(
-      (child) => React.isValidElement(child) && child.props?.value === value,
+      (child) => React.isValidElement(child) && child.props?.value === activeValue,
     ) as React.ReactElement | undefined;
 
     if (!responsive) {
       return (
-        <PageMenuContext.Provider value={{ defaultValue }}>
+        <PageMenuContext.Provider value={contextValue}>
           <div ref={ref} className={cn('flex items-center gap-2', className)} {...props}>
             {children}
           </div>
@@ -132,7 +174,7 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
     }
 
     return (
-      <PageMenuContext.Provider value={{ defaultValue }}>
+      <PageMenuContext.Provider value={contextValue}>
         {/* Hidden container to measure all items */}
         <div
           ref={measureRef}
@@ -153,10 +195,16 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
+                  ref={overflowTriggerRef}
                   className={cn(
                     'h-[30px] flex-shrink-0 px-3 py-2',
-                    selectedHiddenItem && 'bg-accent text-accent-foreground',
+                    admin7Design
+                      ? tabSurfaceVariants({ admin7Design })
+                      : selectedHiddenItem && 'bg-accent text-accent-foreground',
                   )}
+                  {...(admin7Design
+                    ? { 'data-state': selectedHiddenItem ? 'active' : undefined }
+                    : {})}
                   variant="ghost"
                 >
                   {selectedHiddenItem ? (
@@ -178,11 +226,18 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
                     <DropdownMenuItem
                       key={item.props.value || index}
                       className={cn(
-                        item.props.value === value && 'bg-accent text-accent-foreground',
+                        item.props.value === activeValue && 'bg-accent text-accent-foreground',
                       )}
-                      onClick={() => {
-                        onValueChange?.(item.props.value);
-                        item.props.onClick?.();
+                      disabled={item.props.disabled}
+                      onClick={(event) => {
+                        // Radix still fires onClick on disabled items and relies on CSS to block pointer clicks
+                        if (item.props.disabled) {
+                          return;
+                        }
+                        item.props.onClick?.(event);
+                        if (!event.defaultPrevented) {
+                          handleSelect(item.props.value);
+                        }
                       }}
                     >
                       {item.props.children}
@@ -201,21 +256,30 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
 PageMenu.displayName = 'PageMenu';
 
 const PageMenuItem = React.forwardRef<HTMLButtonElement, PageMenuItemProps>(
-  ({ children, value, className, ...props }, ref) => {
-    const pageMenuProps = React.useContext(PageMenuContext);
-    const isActive = pageMenuProps?.defaultValue === value;
+  ({ children, value, className, onClick, ...props }, ref) => {
+    const pageMenu = React.useContext(PageMenuContext);
+    const { admin7Design } = useShade();
+    const isActive = pageMenu?.value === value;
 
     return (
       <Button
         ref={ref}
+        aria-current={isActive ? 'page' : undefined}
         className={cn(
-          'relative gap-1.5 px-3 text-control font-medium text-text-secondary hover:text-foreground focus-visible:ring-0',
-          'data-[state=active]:bg-muted-foreground/10 data-[state=active]:text-foreground',
-          'dark:hover:bg-tab-hover dark:data-[state=active]:bg-tab-active dark:data-[state=active]:hover:bg-tab-active',
+          'relative gap-1.5 px-3 text-control font-medium',
+          admin7Design
+            ? tabSurfaceVariants({ admin7Design })
+            : 'text-text-secondary hover:text-foreground focus-visible:ring-0 data-[state=active]:bg-muted-foreground/10 data-[state=active]:text-foreground dark:hover:bg-tab-hover dark:data-[state=active]:bg-tab-active dark:data-[state=active]:hover:bg-tab-active',
           className,
         )}
         data-state={isActive ? 'active' : undefined}
         variant="ghost"
+        onClick={(event) => {
+          onClick?.(event);
+          if (!event.defaultPrevented) {
+            pageMenu?.onSelect(value);
+          }
+        }}
         {...props}
       >
         {children}

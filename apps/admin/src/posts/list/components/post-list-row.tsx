@@ -3,6 +3,7 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
 import { AdminLink } from '@/shared/admin-link';
+import { FadingText } from '@/shared/fading-text';
 import { PostsContextMenu } from '@/posts/list/components/posts-context-menu';
 import type { PostContextMenuItem, PostContextMenuKey } from '@/posts/list/post-context-menu-items';
 import {
@@ -25,7 +26,6 @@ import { forwardRef, memo, useState } from 'react';
 import type { ComponentPropsWithoutRef, MouseEvent as ReactMouseEvent } from 'react';
 import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
 import type { PostResource } from '@/posts/list/post-resource';
-import { useShade } from '@tryghost/shade/app';
 
 interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick'> {
   post: PostListItem;
@@ -36,7 +36,7 @@ interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick
    * published posts they can no longer edit.
    */
   isContributor?: boolean;
-  /** Owner or Administrator — the roles Ember's `isAdmin` covers. */
+  /** Owner or Administrator. */
   hasAdminAccess?: boolean;
   paidMembersEnabled?: boolean;
   isSelected?: boolean;
@@ -67,17 +67,12 @@ interface PostListRowComponentProps extends PostListRowProps {
 }
 
 /**
- * Status colour, following `app/styles/layouts/content.css`. Only three states
- * are coloured there — `.draft` pink (985), `.scheduled` green (992), `.error`
- * red (1017). Published and sent have **no** rule, so they inherit the muted
- * grey of `.gh-content-entry-status` (#99a3ad, ≈ `muted-foreground`). That is
- * most rows on a real site, so colouring them would change the whole feel of
- * the screen.
+ * Status colour. Only draft (pink), scheduled (green) and failed (red) are
+ * coloured; published and sent, most rows on a real site, stay muted.
  *
  * Red uses Shade's semantic danger token; pink and green have no semantic
  * equivalent (a draft is not a warning, a schedule is not a success) so they
- * use the aliases that resolve to the same values Ember's `var(--pink)` and
- * `var(--green)` do.
+ * use the palette aliases.
  */
 function statusTone(post: PostListItem, isFailed: boolean): string {
   if (isFailed) {
@@ -96,8 +91,7 @@ function statusTone(post: PostListItem, isFailed: boolean): string {
 
 /**
  * The thumbnail, matched to the analytics dashboard's: a 16/10 landscape
- * thumbnail rather than the square this list used to draw, at the same widths
- * and corner radius, as Ember's list drew it.
+ * thumbnail at the same widths and corner radius.
  *
  * The empty state is analytics' shared placeholder component rather than a
  * restyle of it, so the two lists cannot drift apart.
@@ -165,7 +159,6 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
     },
     ref,
   ) {
-    const { isAdmin7 } = useShade();
     const [isHovered, setIsHovered] = useState(false);
 
     const metaParts = getPostMetaParts(post, { timezone });
@@ -183,8 +176,8 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
         ? getPostStatusLabel(displayedPost, resource)
         : statusLabel;
 
-    // Strictly `published`, matching Ember's `isPublished`. An email-only
-    // `sent` post still opens in the editor for a contributor.
+    // Strictly `published`: an email-only `sent` post still opens in the
+    // editor for a contributor.
     const isPublished = post.status === 'published';
     const editorType = resource === 'pages' ? 'page' : 'post';
     const linksOffsite = Boolean(isContributor && isPublished);
@@ -204,8 +197,8 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
           Icon: LucideIcon.ChartNoAxesColumn,
         }
       : linksOffsite
-        ? // "View post" on both resources, as Ember hardcodes it. Only ever
-          // reached by a contributor, who has no page access anyway.
+        ? // "View post" on both resources. Only ever reached by a
+          // contributor, who has no page access anyway.
           { to: post.url, label: 'View post', offsite: true, Icon: LucideIcon.ArrowUpRight }
         : { to: editorPath, label: 'Edit', offsite: false, Icon: LucideIcon.Pen };
 
@@ -217,11 +210,10 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
           'group border-b border-border-default',
           // A light blue rather than a grey: selection is a different
           // kind of state from hover, and two greys a step apart read as
-          // degrees of the same thing. Ember paints a 10% indigo overlay
-          // for the same reason.
+          // degrees of the same thing.
           //
-          // `select-none` matches Ember: a modifier-drag across rows
-          // shouldn't leave text highlighted behind the selection.
+          // `select-none`: a modifier-drag across rows shouldn't leave
+          // text highlighted behind the selection.
           //
           // Hover applies only when the row is *not* selected — a hover
           // rule would otherwise outrank the selected background and make
@@ -241,7 +233,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
           setIsHovered(false);
         }}
       >
-        {/* `center`, not `start`: Ember centres everything on the right
+        {/* `center`, not `start`: everything on the right centres
                 against the feature image.
 
                 Padding is even on all four sides. It lives on the children
@@ -261,7 +253,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                 {post.featured && (
                   <LucideIcon.Star
                     aria-label="Featured"
-                    className="size-4 shrink-0 fill-state-warning text-state-warning"
+                    className="size-4 shrink-0 fill-state-warning-fill text-state-warning-fill"
                     data-testid="post-featured"
                   />
                 )}
@@ -300,12 +292,12 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                   }
                 >
                   {displayedStatusLabel}
-                  {/* Mounted only while hovered, as Ember does. A CSS
-                                  opacity fade would keep it in the DOM, so a screen
-                                  reader would read every scheduled row's full
-                                  dispatch details aloud, always. */}
-                  {emailSendingState.status !== 'failed' && isHovered && statusDetail && (
-                    <span> {statusDetail}</span>
+                  {/* Mounted only while hovered, fading in and out. A CSS
+                                  opacity fade alone would keep it in the DOM, so a screen
+                                  reader would read every row's full dispatch details
+                                  aloud, always. */}
+                  {emailSendingState.status !== 'failed' && statusDetail && (
+                    <FadingText show={isHovered}> {statusDetail}</FadingText>
                   )}
                 </Text>
               )}
@@ -334,14 +326,12 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                 // title away from the metrics too.
                 className={cn(
                   'my-4 shrink-0',
-                  isAdmin7 ? 'ms-8' : 'ms-2',
-                  isAdmin7
-                    ? 'text-muted-foreground hover:bg-background hover:text-foreground'
-                    : 'bg-control-surface px-4',
-                  isAdmin7 && isHovered && 'bg-background',
+                  'ms-8',
+                  'text-muted-foreground hover:bg-background hover:text-foreground',
+                  isHovered && 'bg-background',
                 )}
-                size={isAdmin7 ? 'icon' : undefined}
-                variant={isAdmin7 ? (isHovered ? 'outline' : 'ghost') : 'outline'}
+                size="icon"
+                variant={isHovered ? 'outline' : 'ghost'}
                 asChild
               >
                 <RowLink

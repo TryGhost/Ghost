@@ -7,7 +7,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  LoadingIndicator,
   Switch,
 } from '@tryghost/shade/components';
 import { toast } from 'sonner';
@@ -20,14 +19,13 @@ interface MemberDisableCommentingModalProps {
   member: Pick<Member, 'id' | 'name' | 'email'>;
 }
 
-// Matches Ember `disable-commenting.js:23` verbatim so the audit trail on the
-// server stays consistent across the migration.
+// Kept verbatim so the audit trail on the server stays consistent.
 const DISABLE_REASON = 'Disabled from member settings';
 
 /**
- * Confirms "Disable commenting" for a member. Ember parity:
+ * Confirms "Disable commenting" for a member:
  *   - Optional "Hide all previous comments" checkbox → `hide_comments=true`.
- *   - Reason is the fixed string above (Ember hardcodes the same).
+ *   - Reason is the fixed string above.
  *   - Success toast reads "Commenting has been disabled for <name-or-email>."
  *
  * Uses Shade Dialog (not AlertDialog) because it hosts a form control that
@@ -105,17 +103,10 @@ const MemberDisableCommentingModal: React.FC<MemberDisableCommentingModalProps> 
           </Button>
           <Button
             data-testid="confirm-disable-commenting"
-            disabled={disable.isPending}
+            loading={disable.isPending}
             onClick={() => void onConfirm()}
           >
-            {disable.isPending ? (
-              <>
-                <LoadingIndicator size="sm" />
-                <span className="sr-only">Disabling</span>
-              </>
-            ) : (
-              'Disable commenting'
-            )}
+            Disable commenting
           </Button>
         </DialogFooter>
       </DialogContent>

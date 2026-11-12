@@ -205,6 +205,32 @@ describe('useFetchApi', () => {
     ).rejects.toBeInstanceOf(TimeoutError);
   });
 
+  it('cancels an in-flight request without treating it as a timeout', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+    const controller = new AbortController();
+    const request = result.current(`${baseUrl}/ghost/api/admin/slow/`, {
+      signal: controller.signal,
+      retry: false,
+    });
+    controller.abort();
+
+    await expect(request).rejects.toMatchObject({ name: 'AbortError' });
+  });
+
+  it('cancels a request during retry backoff without starting another attempt', async () => {
+    const { result } = renderHook(() => useFetchApi(), { wrapper });
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('Offline'));
+    const controller = new AbortController();
+    const request = result.current(`${baseUrl}/ghost/api/admin/test/`, {
+      signal: controller.signal,
+    });
+    const rejection = expect(request).rejects.toMatchObject({ name: 'AbortError' });
+    await vi.waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
+    controller.abort();
+    await rejection;
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
+
   it('resolves a 204 response when upload progress is enabled', async () => {
     const { result } = renderHook(() => useFetchApi(), { wrapper });
 

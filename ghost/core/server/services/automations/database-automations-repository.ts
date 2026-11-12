@@ -1,3 +1,9 @@
+import {
+  automationTriggerRuleSchema,
+  automationTriggerRuleDefinitionSchema,
+  type AutomationTriggerRule,
+  type AutomationTriggerRuleDefinition,
+} from './trigger-rules';
 import errors from '@tryghost/errors';
 import { z } from 'zod';
 import { AUTOMATION_STEP_TERMINAL_STATUSES } from './automations-repository';
@@ -6,7 +12,7 @@ import crypto from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import ObjectId from 'bson-objectid';
 import { type Knex } from 'knex';
-import { DefaultMap } from '../../../shared/default-map';
+import { AutoFillingMap } from '../../lib/auto-filling-map';
 // @ts-expect-error This module currently lacks type definitions.
 import lexicalLib from '../../lib/lexical';
 import urlUtils from '../../../shared/url-utils';
@@ -29,15 +35,10 @@ import type {
   AutomationStepTerminalStatus,
   AutomationStepToRun,
   AutomationsRepository,
-  EditAutomationData,
   Page,
 } from './automations-repository';
-import type {
-  ActionToInsert,
-  EdgeRow,
-  AutomationsRepository2,
-  AutomationTriggerTierScope,
-} from './automations-repository-2';
+import type { ActionToInsert, EdgeRow, AutomationsRepository2 } from './automations-repository-2';
+import type { EditAutomationData } from './automations-schemas';
 import {
   DbDate,
   fromDatabaseDate,
@@ -73,13 +74,18 @@ const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [
     name: 'Free member welcome flow',
     description: 'Welcome new free members after they sign up.',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
-    trigger_tier_scope: 'free',
+    triggerRule: { trigger_type: 'free_signup', scope: null, product_id: null, direction: null },
   },
   {
     name: 'Paid member welcome flow',
     description: 'Welcome new paid members after they start their subscription.',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
-    trigger_tier_scope: 'all_paid',
+    triggerRule: {
+      trigger_type: 'paid_subscription_started',
+      scope: 'any_paid_tier',
+      product_id: null,
+      direction: null,
+    },
   },
 ] as const;
 
@@ -93,9 +99,7 @@ const messages = {
   defaultEmailDesignSettingNotFound: 'Default automated email design setting not found.',
 };
 
-const DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE = DEFAULT_EMAIL_DESIGN_SETTING_SLUG;
-
-type AutomationSummaryRow = {
+type AutomationRow = {
   id: string;
   slug: null | string;
   name: string;
@@ -103,11 +107,6 @@ type AutomationSummaryRow = {
   status: AutomationStatus;
   created_at: DatabaseDate;
   updated_at: DatabaseDate;
-};
-
-type AutomationRow = AutomationSummaryRow & {
-  trigger_type: 'membership_started';
-  trigger_tier_scope: AutomationTriggerTierScope | null;
 };
 
 const runHistoryRowSchema = z.object({
@@ -172,15 +171,6 @@ type ActionRevisionRow = {
   email_design_setting_id: string | null;
 };
 
-type StepToInsert = {
-  id: string;
-  created_at: DatabaseDate;
-  updated_at: DatabaseDate;
-  automation_run_id: string;
-  automation_action_revision_id: string;
-  ready_at: DatabaseDate;
-};
-
 type NextActionRevisionRow = {
   automation_id: string;
   action_id: string;
@@ -194,7 +184,6 @@ type StepToRunRow = {
   locked_by: string;
   automation_run_id: string;
   automation_id: string;
-  automation_trigger_tier_scope: null | AutomationTriggerTierScope;
   automation_status: AutomationStatus;
   member_id: string | null;
   member_email: string;
@@ -250,12 +239,6 @@ export function createDatabaseAutomationsRepository({
           },
         };
       });
-    },
-
-    async getNumberOfAutomations() {
-      return await repository2.withConnection((connection) =>
-        repository2.getNumberOfAutomations(connection),
-      );
     },
 
     async exists(id) {
@@ -359,10 +342,25 @@ export function createDatabaseAutomationsRepository({
     async add(data) {
       return await knex.transaction(async (trx) => {
         await lockAutomationLimit(trx, data.status);
-        if (data.status === 'active') {
-          await limitService.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
+        switch (data.status) {
+          case 'active':
+            await limitService.errorIfWouldGoOverLimit('limitAutomations', { transacting: trx });
+            break;
+          case 'inactive':
+          case 'archived':
+            break;
+          default: {
+            const _exhaustive: never = data.status;
+            throw new errors.InternalServerError({
+              message: `Unexpected automation status: ${_exhaustive}`,
+            });
+          }
         }
-        const tierIds = data.trigger_tier_ids ?? [];
+        const tierIds = [
+          ...new Set(
+            data.trigger_rules.flatMap((rule) => (rule.product_id ? [rule.product_id] : [])),
+          ),
+        ];
         if (tierIds.length > 0) {
           // Lock the products so they aren't archived or deleted while we're adding.
           const tiers = await trx('products')
@@ -374,31 +372,31 @@ export function createDatabaseAutomationsRepository({
           if (tiers.length !== tierIds.length) {
             throw new errors.ValidationError({
               message: 'Trigger tiers must all be active paid tiers.',
-              property: 'trigger_tier_ids',
+              property: 'trigger_rules',
             });
           }
         }
 
-        const now = toDatabaseDate(new Date());
+        const now = new Date();
         const automation: AutomationRow = {
           id: ObjectId().toHexString(),
           slug: null,
           name: data.name,
           description: data.description,
           status: data.status,
-          trigger_type: 'membership_started',
-          trigger_tier_scope: data.trigger_tier_scope ?? null,
-          created_at: now,
-          updated_at: now,
+          created_at: toDatabaseDate(now),
+          updated_at: toDatabaseDate(now),
         };
 
         await trx('automations').insert(automation);
 
-        if (tierIds.length > 0) {
-          await trx('automation_trigger_tiers').insert(
-            tierIds.map((productId) => ({ automation_id: automation.id, product_id: productId })),
-          );
-        }
+        const rules = data.trigger_rules.map((rule) => ({
+          ...rule,
+          id: ObjectId().toHexString(),
+          automation_id: automation.id,
+          created_at: now,
+        }));
+        await repository2.insertTriggerRules(trx, rules);
 
         await replaceAutomationGraph(repository2, trx, automation.id, data.actions, data.edges);
 
@@ -433,18 +431,22 @@ export function createDatabaseAutomationsRepository({
 
         const now = new Date();
 
-        if (data.trigger_tier_scope === 'selected_paid') {
+        const triggerRules = data.trigger_rules ?? [];
+        const tierIds = [
+          ...new Set(triggerRules.flatMap((rule) => (rule.product_id ? [rule.product_id] : []))),
+        ];
+        if (tierIds.length > 0) {
           // Lock the products so they aren't deleted while we're editing.
           const tiers = await trx('products')
             .select('id')
-            .whereIn('id', data.trigger_tier_ids)
+            .whereIn('id', tierIds)
             .where('type', 'paid')
             .orderBy('id')
             .forUpdate();
-          if (tiers.length !== new Set(data.trigger_tier_ids).size) {
+          if (tiers.length !== new Set(tierIds).size) {
             throw new errors.ValidationError({
               message: 'Trigger tiers must all be paid tiers.',
-              property: 'trigger_tier_ids',
+              property: 'trigger_rules',
             });
           }
         }
@@ -454,23 +456,18 @@ export function createDatabaseAutomationsRepository({
           name: data.name ?? automation.name,
           description: data.description ?? automation.description,
           status: data.status,
-          trigger_tier_scope:
-            data.trigger_tier_scope === undefined
-              ? automation.trigger_tier_scope
-              : data.trigger_tier_scope,
           updated_at: toDatabaseDate(now),
         });
 
-        if (data.trigger_tier_scope !== undefined) {
-          await trx('automation_trigger_tiers').where('automation_id', id).delete();
-          if (data.trigger_tier_scope === 'selected_paid') {
-            await trx('automation_trigger_tiers').insert(
-              [...new Set(data.trigger_tier_ids)].map((productId) => ({
-                automation_id: id,
-                product_id: productId,
-              })),
-            );
-          }
+        if (data.trigger_rules !== undefined) {
+          await repository2.deleteTriggerRules(trx, id);
+          const rules = triggerRules.map((rule) => ({
+            ...rule,
+            id: ObjectId().toHexString(),
+            automation_id: id,
+            created_at: now,
+          }));
+          await repository2.insertTriggerRules(trx, rules);
         }
 
         if (data.actions !== undefined) {
@@ -570,21 +567,21 @@ export function createDatabaseAutomationsRepository({
         return;
       }
 
-      await knex.transaction(async (trx) => {
-        const revisionIds = new Set<string>();
-        for (const {
-          openedAt,
-          automationActionRevisionId,
-        } of eventsByAutomatedEmailRecipientId.values()) {
-          if (openedAt) {
-            revisionIds.add(automationActionRevisionId);
-          }
+      const revisionIds = new Set<string>();
+      for (const {
+        openedAt,
+        automationActionRevisionId,
+      } of eventsByAutomatedEmailRecipientId.values()) {
+        if (openedAt) {
+          revisionIds.add(automationActionRevisionId);
         }
+      }
 
-        const orderedRevisionIds = await lockActionRevisions(trx, revisionIds);
+      await knex.transaction(async (trx) => {
+        await repository2.lockActionRevisions(trx, revisionIds);
 
         const notYetOpened = await lockNotYetOpened(trx, eventsByAutomatedEmailRecipientId);
-        const newOpensPerRevision = new DefaultMap<string, number>(() => 0);
+        const newOpensPerRevision = new AutoFillingMap<string, number>(() => 0);
 
         for (const [
           id,
@@ -616,7 +613,7 @@ export function createDatabaseAutomationsRepository({
           }
         }
 
-        for (const id of orderedRevisionIds) {
+        for (const id of revisionIds) {
           const opens = newOpensPerRevision.get(id);
           if (!opens) {
             continue;
@@ -628,52 +625,6 @@ export function createDatabaseAutomationsRepository({
             });
         }
       });
-    },
-
-    async trackEmailClicked(
-      { automationActionRevisionId, automationRunStepId, memberId, clickedAt },
-      { transacting } = {},
-    ) {
-      const trackClick = async (trx: Knex.Transaction) => {
-        await lockActionRevisions(trx, [automationActionRevisionId]);
-
-        const recipient = await trx('automated_email_recipients')
-          .select('id', 'clicked_at')
-          .where({
-            automation_action_revision_id: automationActionRevisionId,
-            automation_run_step_id: automationRunStepId,
-            member_id: memberId,
-            track_clicks: true,
-          })
-          .forUpdate()
-          .first();
-
-        if (!recipient || recipient.clicked_at !== null) {
-          return;
-        }
-
-        const updated = await trx('automated_email_recipients')
-          .where({ id: recipient.id })
-          .whereNull('clicked_at')
-          .update({ clicked_at: clickedAt });
-
-        if (updated === 0) {
-          return;
-        }
-
-        await trx('automation_action_revisions')
-          .where({ id: automationActionRevisionId })
-          .update({
-            email_clicked_count: trx.raw('COALESCE(email_clicked_count, 0) + 1'),
-          });
-      };
-
-      if (transacting) {
-        await trackClick(transacting);
-        return;
-      }
-
-      await knex.transaction(trackClick);
     },
   };
 }
@@ -802,6 +753,7 @@ function getRunHistoryStatus(steps: AutomationRunHistoryStep[]): AutomationRunHi
       case 'automation disabled':
       case 'failed':
       case 'member changed status':
+      case 'member changed tier':
       case 'member unsubscribed':
         if (status !== 'in_progress') {
           status = 'exited_early';
@@ -835,30 +787,6 @@ function buildRunHistory(
     failed: status === 'exited_early' && steps.some((step) => step.status === 'failed'),
     steps,
   };
-}
-
-/**
- * Lock revisions before recipients because inserting a recipient takes a shared
- * foreign-key lock on its revision. Updating that revision later can deadlock
- * with another transaction that has already locked the revision and is waiting
- * for the recipient. Keep multi-revision lock acquisition deterministic.
- */
-async function lockActionRevisions(
-  trx: Knex.Transaction,
-  revisionIds: Iterable<string>,
-): Promise<string[]> {
-  const sortedRevisionIds = [...new Set(revisionIds)].sort((left, right) =>
-    left.localeCompare(right),
-  );
-
-  if (sortedRevisionIds.length > 0) {
-    await trx('automation_action_revisions')
-      .select('id')
-      .whereIn('id', sortedRevisionIds)
-      .forUpdate();
-  }
-
-  return sortedRevisionIds;
 }
 
 /**
@@ -920,7 +848,7 @@ async function ensureDefaultAutomations(
 
   // Fixed free-then-paid order makes the subset deterministic.
   for (const defaults of DEFAULT_WELCOME_EMAIL_AUTOMATIONS) {
-    const automation = await ensureAutomation(trx, defaults);
+    const automation = await ensureAutomation(repository2, trx, defaults);
     await ensureWelcomeEmailAction(repository2, trx, automation.id);
     if (
       candidates.includes(automation.id) &&
@@ -932,28 +860,28 @@ async function ensureDefaultAutomations(
 }
 
 async function ensureAutomation(
+  repository2: AutomationsRepository2<Knex | Knex.Transaction>,
   trx: Knex.Transaction,
   defaults: Readonly<{
     name: string;
     description: string;
     slug: string;
-    trigger_tier_scope: AutomationTriggerTierScope;
+    triggerRule: AutomationTriggerRuleDefinition;
   }>,
 ): Promise<Pick<AutomationRow, 'id'>> {
-  const now = toDatabaseDate(new Date());
+  const now = new Date();
 
+  const id = ObjectId().toHexString();
   // Insert the automation if it doesn't exist.
   await trx('automations')
     .insert({
-      id: ObjectId().toHexString(),
+      id,
       status: 'inactive',
       name: defaults.name,
       description: defaults.description,
       slug: defaults.slug,
-      trigger_type: 'membership_started',
-      trigger_tier_scope: defaults.trigger_tier_scope,
-      created_at: now,
-      updated_at: now,
+      created_at: toDatabaseDate(now),
+      updated_at: toDatabaseDate(now),
     })
     .onConflict('slug')
     .ignore();
@@ -964,6 +892,19 @@ async function ensureAutomation(
       message: `Default automation ${defaults.slug} was missing`,
     });
   }
+
+  const didJustAddAutomation = row.id === id;
+  if (didJustAddAutomation) {
+    await repository2.insertTriggerRules(trx, [
+      {
+        ...defaults.triggerRule,
+        id: ObjectId().toHexString(),
+        automation_id: id,
+        created_at: now,
+      },
+    ]);
+  }
+
   return row;
 }
 
@@ -1020,41 +961,6 @@ async function ensureWelcomeEmailAction(
       createdAt: getNextRevisionCreatedAt(null, toDatabaseDate(now)),
     },
   ]);
-}
-
-async function insertRunStep(
-  trx: Knex.Transaction,
-  options: ReadonlyDeep<{
-    automationRunId: string;
-    automationActionRevisionId: string;
-    now: Date;
-    readyAt: Date;
-  }>,
-): Promise<void> {
-  await trx('automation_run_steps').insert(createRunStep(options));
-}
-
-function createRunStep({
-  automationRunId,
-  automationActionRevisionId,
-  now,
-  readyAt,
-}: ReadonlyDeep<{
-  automationRunId: string;
-  automationActionRevisionId: string;
-  now: Date;
-  readyAt: Date;
-}>): StepToInsert {
-  const nowString = toDatabaseDate(now);
-
-  return {
-    id: ObjectId().toHexString(),
-    created_at: nowString,
-    updated_at: nowString,
-    automation_run_id: automationRunId,
-    automation_action_revision_id: automationActionRevisionId,
-    ready_at: toDatabaseDate(readyAt),
-  };
 }
 
 async function fetchAndLockSteps(
@@ -1123,7 +1029,6 @@ async function fetchAndLockSteps(
       'step.locked_by as locked_by',
       'step.automation_run_id as automation_run_id',
       'run.automation_id as automation_id',
-      'automation.trigger_tier_scope as automation_trigger_tier_scope',
       'automation.status as automation_status',
       'run.member_id as member_id',
       'run.member_email as member_email',
@@ -1149,39 +1054,30 @@ async function fetchAndLockSteps(
     .where('step.locked_by', lockId)
     .orderBy(['step.ready_at', 'step.created_at', 'step.id']);
 
-  const tierIdsByAutomation = await getTierIdsByAutomation(trx, rows);
+  const rulesByAutomation = await getRulesByAutomation(trx, rows);
 
   return {
-    steps: rows.map((row) => buildStepToRun(row, tierIdsByAutomation.get(row.automation_id))),
+    steps: rows.map((row) => buildStepToRun(row, rulesByAutomation.get(row.automation_id))),
     nextStepReadyAt: await findNextPendingReadyAt(trx, staleLockCutoff),
   };
 }
 
-async function getTierIdsByAutomation(
+async function getRulesByAutomation(
   trx: Knex.Transaction,
   stepsToRun: ReadonlyDeep<StepToRunRow[]>,
-): Promise<DefaultMap<string, string[]>> {
-  const result = new DefaultMap<string, string[]>(() => []);
+): Promise<AutoFillingMap<string, AutomationTriggerRule[]>> {
+  const result = new AutoFillingMap<string, AutomationTriggerRule[]>(() => []);
 
-  const automationIdsToLookAt = new Set<string>();
-  for (const stepToRun of stepsToRun) {
-    if (stepToRun.automation_trigger_tier_scope === 'selected_paid') {
-      automationIdsToLookAt.add(stepToRun.automation_id);
-    }
-  }
-
-  if (automationIdsToLookAt.size === 0) {
+  const automationIds = [...new Set(stepsToRun.map((step) => step.automation_id))];
+  if (automationIds.length === 0) {
     return result;
   }
 
-  const triggerTiers: { automation_id: string; product_id: string }[] = await trx(
-    'automation_trigger_tiers',
-  )
-    .select('automation_id', 'product_id')
-    .whereIn('automation_id', [...automationIdsToLookAt]);
-
-  for (const triggerTier of triggerTiers) {
-    result.get(triggerTier.automation_id).push(triggerTier.product_id);
+  const rules = await trx('automation_trigger_rules')
+    .select('id', 'automation_id', 'created_at', 'trigger_type', 'scope', 'product_id', 'direction')
+    .whereIn('automation_id', automationIds);
+  for (const rule of rules) {
+    result.get(rule.automation_id).push(automationTriggerRuleSchema.parse(rule));
   }
 
   return result;
@@ -1204,7 +1100,7 @@ async function findNextPendingReadyAt(
 
 function buildStepToRun(
   row: ReadonlyDeep<StepToRunRow>,
-  triggerTierIds: string[],
+  triggerRules: AutomationTriggerRule[],
 ): AutomationStepToRun {
   const base = {
     id: row.id,
@@ -1213,8 +1109,7 @@ function buildStepToRun(
     locked_by: row.locked_by,
     automation_run_id: row.automation_run_id,
     automation_id: row.automation_id,
-    automation_trigger_tier_scope: row.automation_trigger_tier_scope,
-    automation_trigger_tier_ids: triggerTierIds,
+    automation_trigger_rules: triggerRules,
     automation_status: row.automation_status,
     member_id: row.member_id,
     member_email: row.member_email,
@@ -1272,12 +1167,16 @@ async function finishStepAndEnqueueNext(
   const now = new Date();
   const nextReadyAt = getReadyAtForAction(next, now, fakeWaitHoursMultiplier);
 
-  await insertRunStep(trx, {
-    automationRunId: step.automation_run_id,
-    automationActionRevisionId: next.automation_action_revision_id,
-    now,
-    readyAt: nextReadyAt,
-  });
+  await repository2.insertRunSteps(trx, [
+    {
+      id: ObjectId().toHexString(),
+      created_at: now,
+      updated_at: now,
+      automation_run_id: step.automation_run_id,
+      automation_action_revision_id: next.automation_action_revision_id,
+      ready_at: nextReadyAt,
+    },
+  ]);
 
   return nextReadyAt;
 }
@@ -1444,23 +1343,13 @@ async function loadAutomation(
   automationId: string,
 ): Promise<AutomationRow | null> {
   const row = await trx('automations')
-    .select(
-      'id',
-      'slug',
-      'name',
-      'description',
-      'status',
-      'trigger_type',
-      'trigger_tier_scope',
-      'created_at',
-      'updated_at',
-    )
+    .select('id', 'slug', 'name', 'description', 'status', 'created_at', 'updated_at')
     .where('id', automationId)
     .first();
   return row ?? null;
 }
 
-async function loadAutomations(trx: Knex.Transaction): Promise<AutomationSummaryRow[]> {
+async function loadAutomations(trx: Knex.Transaction): Promise<AutomationRow[]> {
   return await trx('automations')
     .select('id', 'slug', 'name', 'description', 'status', 'created_at', 'updated_at')
     .orderBy('created_at', 'desc')
@@ -1476,7 +1365,6 @@ async function updateAutomation(
       name: automation.name,
       description: automation.description,
       status: automation.status,
-      trigger_tier_scope: automation.trigger_tier_scope,
       updated_at: automation.updated_at,
     })
     .where('id', automation.id);
@@ -1587,7 +1475,7 @@ async function resolveEmailDesignSettingIds(
     !actions.some(
       (action) =>
         action.type === 'send_email' &&
-        action.data.email_design_setting_id === DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE,
+        action.data.email_design_setting_id === DEFAULT_EMAIL_DESIGN_SETTING_SLUG,
     )
   ) {
     return [...actions];
@@ -1598,7 +1486,7 @@ async function resolveEmailDesignSettingIds(
   return actions.map((action) => {
     if (
       action.type !== 'send_email' ||
-      action.data.email_design_setting_id !== DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE
+      action.data.email_design_setting_id !== DEFAULT_EMAIL_DESIGN_SETTING_SLUG
     ) {
       return action;
     }
@@ -1844,38 +1732,28 @@ async function buildAutomation(
     actionRows.map((row) => row.id),
   );
   const edgeRows = await repository2.loadEdgeRows(trx, automation.id);
+  const rules = (
+    await trx('automation_trigger_rules')
+      .select('trigger_type', 'scope', 'product_id', 'direction')
+      .where('automation_id', automation.id)
+      .orderBy(['product_id', 'direction'])
+  ).map((rule) => automationTriggerRuleDefinitionSchema.parse(rule));
 
-  let triggerData;
-  switch (automation.trigger_tier_scope) {
-    case null:
-    case 'free':
-    case 'all_paid':
-      triggerData = { trigger_tier_scope: automation.trigger_tier_scope, trigger_tier_ids: null };
-      break;
-    case 'selected_paid':
-      triggerData = {
-        trigger_tier_scope: automation.trigger_tier_scope,
-        trigger_tier_ids: await trx('automation_trigger_tiers')
-          .where('automation_id', automation.id)
-          .orderBy('product_id')
-          .pluck<string[]>('product_id'),
-      };
-      break;
-    default:
-      throw new errors.InternalServerError({
-        message: `Unexpected trigger_tier_scope value from database: ${automation.trigger_tier_scope}`,
-      });
+  if (rules.length === 0) {
+    throw new errors.InternalServerError({
+      message: `No trigger rules for automation ${automation.id}`,
+    });
   }
 
   return {
     ...buildAutomationSummary(automation),
-    ...triggerData,
+    trigger_rules: rules,
     actions: actionRows.map((row) => buildActionPayload(row, actionStats.get(row.id) ?? null)),
     edges: edgeRows.map((row) => buildEdgePayload(row)),
   };
 }
 
-function buildAutomationSummary(automation: AutomationSummaryRow): AutomationSummary {
+function buildAutomationSummary(automation: AutomationRow): AutomationSummary {
   return {
     id: automation.id,
     slug: automation.slug,

@@ -37,7 +37,10 @@ function Countdown({ id, value, recommended }: { id: string; value: string; reco
     <Text id={id} size="sm" tone="secondary">
       Recommended: <b>{formatNumber(recommended)}</b> characters. You&apos;ve used{' '}
       <span
-        className={cn('font-bold', used > recommended ? 'text-destructive' : 'text-state-success')}
+        className={cn(
+          'font-bold',
+          used > recommended ? 'text-destructive' : 'text-character-count',
+        )}
       >
         {formatNumber(used)}
       </span>

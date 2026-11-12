@@ -4,7 +4,6 @@ import { assertExists } from '../../../utils/assertions';
 import handlebarsService from '../../../../core/frontend/services/handlebars';
 // @ts-expect-error This module lacks type definitions.
 import proxy from '../../../../core/frontend/services/proxy';
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../utils/config-utils';
 import path from 'path';
 import { promisify } from 'node:util';

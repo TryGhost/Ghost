@@ -21,7 +21,6 @@ import {
 } from '@/shared/virtual-list';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { forwardRef, useEffect, useRef, useState } from 'react';
-import { useShade } from '@tryghost/shade/app';
 
 const SpacerRow = ({ height }: { height: number }) => (
   <div aria-hidden="true" className="flex">
@@ -61,7 +60,6 @@ function CommentsList({
   isLoading?: boolean;
   dislikesEnabled: boolean;
 }) {
-  const { isAdmin7 } = useShade();
   const parentRef = useRef<HTMLDivElement>(null);
   const { visibleItemCount, canLoadMore, loadMore } = useVirtualListWindow(totalItems, {
     resetKey,
@@ -204,10 +202,7 @@ function CommentsList({
                       <div className="flex flex-row flex-nowrap items-center gap-3">
                         {item.status === 'published' && (
                           <Button
-                            className={cn(
-                              'text-foreground',
-                              isAdmin7 && 'group-hover/comment:bg-background',
-                            )}
+                            className={cn('text-foreground', 'group-hover/comment:bg-background')}
                             size="sm"
                             variant="outline"
                             onClick={() => hideComment({ id: item.id })}
@@ -218,10 +213,7 @@ function CommentsList({
                         )}
                         {item.status === 'hidden' && (
                           <Button
-                            className={cn(
-                              'text-foreground',
-                              isAdmin7 && 'group-hover/comment:bg-background',
-                            )}
+                            className={cn('text-foreground', 'group-hover/comment:bg-background')}
                             size="sm"
                             variant="outline"
                             onClick={() => showComment({ id: item.id })}

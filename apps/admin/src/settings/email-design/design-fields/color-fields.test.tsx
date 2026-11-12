@@ -1,4 +1,3 @@
-import assert from 'node:assert/strict';
 import { BackgroundColorField } from '@/settings/email-design/design-fields/background-color-field';
 import { ButtonColorField } from '@/settings/email-design/design-fields/button-color-field';
 import { DEFAULT_EMAIL_DESIGN } from '@/settings/email-design/types';
@@ -39,59 +38,59 @@ describe('Email design color fields', function () {
     renderField(<ButtonColorField />, { ...DEFAULT_EMAIL_DESIGN, button_color: 'accent' });
 
     const trigger = screen.getByRole('button', { name: 'Button color' });
-    const swatch = trigger.querySelector(String.raw`.inset-\[3px\]`);
+    const swatch = trigger.querySelector(String.raw`.inset-\[3px\]`)!;
 
-    assert.ok(swatch);
-    assert.equal(swatch.getAttribute('style')?.includes('rgb(255, 0, 136)'), true);
+    expect(swatch).toBeTruthy();
+    expect(swatch.getAttribute('style')?.includes('rgb(255, 0, 136)')).toBe(true);
   });
 
   it('renders accent-backed link colors using the resolved accent color', function () {
     renderField(<LinkColorField />, { ...DEFAULT_EMAIL_DESIGN, link_color: 'accent' }, '#00aaee');
 
     const trigger = screen.getByRole('button', { name: 'Link color' });
-    const swatch = trigger.querySelector(String.raw`.inset-\[3px\]`);
+    const swatch = trigger.querySelector(String.raw`.inset-\[3px\]`)!;
 
-    assert.ok(swatch);
-    assert.equal(swatch.getAttribute('style')?.includes('rgb(0, 170, 238)'), true);
+    expect(swatch).toBeTruthy();
+    expect(swatch.getAttribute('style')?.includes('rgb(0, 170, 238)')).toBe(true);
   });
 
   it('shows semantic swatches for each configured welcome-email color field', function () {
     const background = renderField(<BackgroundColorField />);
     openPicker('Background color');
-    assert.ok(screen.getByRole('button', { name: 'White' }));
+    expect(screen.getByRole('button', { name: 'White' })).toBeTruthy();
     background.unmount();
 
     const header = renderField(<HeaderBackgroundField />);
     openPicker('Header background color');
     const transparentSwatch = screen.getByRole('button', { name: 'Transparent' });
     const pickerTrigger = screen.getByRole('button', { name: 'Header background color' });
-    assert.ok(transparentSwatch);
-    assert.ok(transparentSwatch.querySelector('[data-testid="transparent-indicator"]'));
-    assert.equal(pickerTrigger.querySelector('[data-testid="transparent-indicator"]'), null);
+    expect(transparentSwatch).toBeTruthy();
+    expect(transparentSwatch.querySelector('[data-testid="transparent-indicator"]')).toBeTruthy();
+    expect(pickerTrigger.querySelector('[data-testid="transparent-indicator"]')).toBeNull();
     header.unmount();
 
     const sectionTitle = renderField(<SectionTitleColorField />);
     openPicker('Section title color');
-    assert.ok(screen.getByRole('button', { name: 'Auto' }));
-    assert.ok(screen.getByRole('button', { name: 'Accent' }));
+    expect(screen.getByRole('button', { name: 'Auto' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Accent' })).toBeTruthy();
     sectionTitle.unmount();
 
     const button = renderField(<ButtonColorField />);
     openPicker('Button color');
-    assert.ok(screen.getByRole('button', { name: 'Auto' }));
-    assert.ok(screen.getByRole('button', { name: 'Accent' }));
+    expect(screen.getByRole('button', { name: 'Auto' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Accent' })).toBeTruthy();
     button.unmount();
 
     const link = renderField(<LinkColorField />);
     openPicker('Link color');
-    assert.ok(screen.getByRole('button', { name: 'Auto' }));
-    assert.ok(screen.getByRole('button', { name: 'Accent' }));
+    expect(screen.getByRole('button', { name: 'Auto' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Accent' })).toBeTruthy();
     link.unmount();
 
     const divider = renderField(<DividerColorField />);
     openPicker('Divider color');
-    assert.ok(screen.getByRole('button', { name: 'Light' }));
-    assert.ok(screen.getByRole('button', { name: 'Accent' }));
+    expect(screen.getByRole('button', { name: 'Light' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Accent' })).toBeTruthy();
     divider.unmount();
   });
 
@@ -107,12 +106,12 @@ describe('Email design color fields', function () {
     openPicker('Button color');
     updates.length = 0;
     fireEvent.click(screen.getByRole('button', { name: 'Accent' }));
-    assert.equal(updates.at(-1)?.button_color, 'accent');
+    expect(updates.at(-1)?.button_color).toBe('accent');
 
     openPicker('Button color');
     updates.length = 0;
     fireEvent.click(screen.getByRole('button', { name: 'Auto' }));
-    assert.equal(updates.at(-1)?.button_color, null);
+    expect(updates.at(-1)?.button_color).toBeNull();
   });
 
   it('stores semantic values for light and transparent swatches', function () {
@@ -130,12 +129,12 @@ describe('Email design color fields', function () {
     openPicker('Background color');
     updates.length = 0;
     fireEvent.click(screen.getByRole('button', { name: 'White' }));
-    assert.equal(updates.at(-1)?.background_color, 'light');
+    expect(updates.at(-1)?.background_color).toBe('light');
 
     openPicker('Header background color');
     updates.length = 0;
     fireEvent.click(screen.getByRole('button', { name: 'Transparent' }));
-    assert.equal(updates.at(-1)?.header_background_color, 'transparent');
+    expect(updates.at(-1)?.header_background_color).toBe('transparent');
   });
 
   it('stores null when selecting divider Light swatch', function () {
@@ -151,7 +150,7 @@ describe('Email design color fields', function () {
     updates.length = 0;
     fireEvent.click(screen.getByRole('button', { name: 'Light' }));
 
-    assert.equal(updates.at(-1)?.divider_color, null);
+    expect(updates.at(-1)?.divider_color).toBeNull();
   });
 
   it('uses background contrast to render Auto swatch color', function () {
@@ -164,7 +163,7 @@ describe('Email design color fields', function () {
     openPicker('Section title color');
     const autoSwatch = screen.getByRole('button', { name: 'Auto' });
 
-    assert.equal(autoSwatch.getAttribute('style')?.includes('rgb(255, 255, 255)'), true);
+    expect(autoSwatch.getAttribute('style')?.includes('rgb(255, 255, 255)')).toBe(true);
   });
 
   it('stores hex values when choosing a custom color in the picker', function () {
@@ -183,10 +182,7 @@ describe('Email design color fields', function () {
     fireEvent.input(hexInput, { target: { value: '#123456' } });
     fireEvent.change(hexInput, { target: { value: '#123456' } });
 
-    assert.equal(
-      updates.some((update) => update.button_color?.toLowerCase() === '#123456'),
-      true,
-    );
+    expect(updates.some((update) => update.button_color?.toLowerCase() === '#123456')).toBe(true);
   });
 
   it('does not mutate transparent header background when opening the picker', async function () {
@@ -207,7 +203,7 @@ describe('Email design color fields', function () {
     });
 
     const hexInput = screen.getByRole('textbox');
-    assert.equal(updates.length, 0);
-    assert.equal(hexInput.getAttribute('value')?.toLowerCase(), '#000000');
+    expect(updates.length).toBe(0);
+    expect(hexInput.getAttribute('value')?.toLowerCase()).toBe('#000000');
   });
 });

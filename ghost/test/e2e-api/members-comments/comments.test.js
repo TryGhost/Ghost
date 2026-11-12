@@ -573,6 +573,116 @@ describe('Comments API', function () {
         });
       });
 
+      describe('withheld content of hidden and deleted comments', function () {
+        const commentIds = (response) => response.body.comments.map((c) => c.id).sort();
+        const withFilter = (path, filter) =>
+          membersAgent.get(`${path}?filter=${encodeURIComponent(filter)}`).expectStatus(200);
+
+        async function setupPlaceholderComments() {
+          const hiddenComment = await dbFns.addComment({
+            post_id: postId,
+            member_id: fixtureManager.get('members', 2).id,
+            html: '<p>hidden placeholder secret</p>',
+            status: 'hidden',
+          });
+
+          const deletedComment = await dbFns.addComment({
+            post_id: postId,
+            member_id: fixtureManager.get('members', 2).id,
+            html: '<p>deleted placeholder secret</p>',
+            status: 'deleted',
+          });
+
+          await dbFns.addComment({
+            post_id: postId,
+            member_id: fixtureManager.get('members', 1).id,
+            parent_id: hiddenComment.get('id'),
+            html: '<p>Reply to hidden</p>',
+          });
+
+          await dbFns.addComment({
+            post_id: postId,
+            member_id: fixtureManager.get('members', 1).id,
+            parent_id: deletedComment.get('id'),
+            html: '<p>Reply to deleted</p>',
+          });
+
+          return { hiddenComment, deletedComment };
+        }
+
+        it('ignores filters on the content of placeholders when browsing by post', async function () {
+          const { hiddenComment, deletedComment } = await setupPlaceholderComments();
+          const path = `/api/comments/post/${postId}/`;
+
+          const matching = await withFilter(path, "html:~'placeholder secret'");
+          const notMatching = await withFilter(path, "html:~'no such text'");
+
+          assert.deepEqual(commentIds(matching), commentIds(notMatching));
+          assert.deepEqual(
+            commentIds(matching),
+            [hiddenComment.get('id'), deletedComment.get('id')].sort(),
+          );
+          matching.body.comments.forEach((comment) => assert.equal(comment.html, null));
+        });
+
+        it('ignores filters on the content of placeholders when browsing all comments', async function () {
+          await setupPlaceholderComments();
+
+          const matching = await withFilter(
+            '/api/comments/',
+            `post_id:'${postId}'+html:~'placeholder secret'`,
+          );
+          const notMatching = await withFilter(
+            '/api/comments/',
+            `post_id:'${postId}'+html:~'no such text'`,
+          );
+
+          assert.deepEqual(commentIds(matching), commentIds(notMatching));
+          assert.equal(matching.body.meta.pagination.total, notMatching.body.meta.pagination.total);
+        });
+
+        it('ignores ordering by the content of placeholders', async function () {
+          await setupPlaceholderComments();
+          const path = `/api/comments/post/${postId}/`;
+          const orderedIds = (response) => response.body.comments.map((c) => c.id);
+
+          const defaultOrder = await membersAgent.get(path).expectStatus(200);
+          const ascending = await membersAgent.get(`${path}?order=html%20asc`).expectStatus(200);
+          const descending = await membersAgent.get(`${path}?order=html%20desc`).expectStatus(200);
+
+          assert.deepEqual(orderedIds(ascending), orderedIds(defaultOrder));
+          assert.deepEqual(orderedIds(descending), orderedIds(defaultOrder));
+        });
+
+        it('ignores filters on the content of reply placeholders', async function () {
+          const root = await dbFns.addComment({
+            member_id: fixtureManager.get('members', 0).id,
+            html: '<p>Root</p>',
+          });
+
+          const deletedReply = await dbFns.addComment({
+            member_id: fixtureManager.get('members', 1).id,
+            parent_id: root.get('id'),
+            status: 'deleted',
+            html: '<p>deleted reply secret</p>',
+          });
+
+          await dbFns.addComment({
+            member_id: fixtureManager.get('members', 1).id,
+            parent_id: root.get('id'),
+            in_reply_to_id: deletedReply.get('id'),
+            html: '<p>Published reply</p>',
+          });
+
+          const path = `/api/comments/${root.get('id')}/replies/`;
+          const matching = await withFilter(path, "html:~'reply secret'");
+          const notMatching = await withFilter(path, "html:~'no such text'");
+
+          assert.deepEqual(commentIds(matching), commentIds(notMatching));
+          assert(commentIds(matching).includes(deletedReply.get('id')));
+        });
+      });
+
       it('Returns nothing if both parent and reply are hidden', async function () {
         const hiddenComment = await dbFns.addComment({
           post_id: postId,

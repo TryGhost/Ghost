@@ -165,7 +165,7 @@ function forget(attempt: Promise<Ghost>) {
  * app. Safe to call as soon as the page loads.
  *
  * Every call shares one connection, and the first call's options apply. Only one copy of the
- * SDK in a page can connect; any other copy rejects with `duplicate_sdk`. Admin answers each
+ * SDK in a page can connect. Any other copy rejects with `duplicate_sdk`. Admin answers each
  * document only once, so after it answers, that connection is the page's only one. Once it
  * fails or its session ends, every call rejects with the error it ended with, and only a new
  * document (after a reload, for example) can connect again. A failure before Admin answered,

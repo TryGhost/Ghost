@@ -1,10 +1,3 @@
-const {
-  MemberCreatedEvent,
-  SubscriptionCancelledEvent,
-  SubscriptionActivatedEvent,
-} = require('../../../shared/events');
-const MilestoneCreatedEvent = require('../milestones/milestone-created-event');
-
 // @NOTE: 'StaffService' is a vague name that does not describe what it's actually doing.
 //         Possibly, "StaffNotificationService" or "StaffEventNotificationService" would be a more accurate name
 class StaffService {
@@ -19,6 +12,8 @@ class StaffService {
     DomainEvents,
     labs,
     memberAttributionService,
+    events,
+    templateFiles,
   }) {
     this.logging = logging;
     this.labs = labs;
@@ -27,6 +22,8 @@ class StaffService {
     this.models = models;
     this.DomainEvents = DomainEvents;
     this.memberAttributionService = memberAttributionService;
+    /** @private */
+    this.events = events;
 
     const Emails = require('./staff-service-emails');
 
@@ -39,6 +36,7 @@ class StaffService {
       urlUtils,
       blogIcon,
       labs,
+      templateFiles,
     });
   }
 
@@ -106,6 +104,13 @@ class StaffService {
 
   /** @private */
   async handleEvent(type, event) {
+    const {
+      MemberCreatedEvent,
+      SubscriptionActivatedEvent,
+      SubscriptionCancelledEvent,
+      MilestoneCreatedEvent,
+    } = this.events;
+
     if (type === MilestoneCreatedEvent && event.data.milestone) {
       await this.emails.notifyMilestoneReceived(event.data);
     }
@@ -169,6 +174,13 @@ class StaffService {
   }
 
   subscribeEvents() {
+    const {
+      MemberCreatedEvent,
+      SubscriptionActivatedEvent,
+      SubscriptionCancelledEvent,
+      MilestoneCreatedEvent,
+    } = this.events;
+
     // Trigger email for free member signup
     this.DomainEvents.subscribe(MemberCreatedEvent, async (event) => {
       try {

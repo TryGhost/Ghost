@@ -3,6 +3,7 @@ import { Button, Card, CardContent, LoadingIndicator, Switch } from '@tryghost/s
 import { LucideIcon } from '@tryghost/shade/utils';
 import { getMemberSuppressionInfo, toggleMemberNewsletter } from './member-detail-edit';
 import { toast } from 'sonner';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import {
   useRemoveMemberEmailSuppression,
@@ -12,9 +13,8 @@ import type { Member } from '@tryghost/admin-x-framework/api/members';
 
 interface MemberNewslettersFieldProps {
   // Optional so the create screen (/members/new) can render the toggles
-  // without a saved member yet — matches Ember, which shows the newsletter
-  // preferences on new members (`gh-member-settings-form.hbs:74-80`).
-  // Suppression logic is skipped when the member doesn't exist.
+  // without a saved member yet. Suppression logic is skipped when the member
+  // doesn't exist.
   memberId?: string;
   emailSuppression?: Member['email_suppression'];
   subscribedIds: string[];
@@ -29,12 +29,13 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
   disabled,
   onChange,
 }) => {
+  const admin7Design = useFeatureFlag('admin7Design');
   // A new member can't be suppressed yet — skip the suppression branch
   // entirely by treating a missing memberId as "not suppressed".
   const suppression = memberId ? getMemberSuppressionInfo(emailSuppression) : null;
   const removeSuppression = useRemoveMemberEmailSuppression();
 
-  // Ember only shows active newsletters; archived ones are managed elsewhere and
+  // Only active newsletters are shown; archived ones are managed elsewhere and
   // must not be flipped through this UI. If a member is subscribed to an archived
   // newsletter, the server keeps it silently (`member-repository.js:791-798`).
   // TODO: pagination — `useBrowseNewsletters` is an infinite query but this field
@@ -79,14 +80,14 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
   return (
     <section
       aria-labelledby="member-newsletters-heading"
-      className="flex flex-col gap-3"
+      className="flex flex-col gap-3 in-data-[admin7-design=true]:gap-4"
       data-testid="member-newsletters-field"
     >
-      <h3 className="text-base font-semibold" id="member-newsletters-heading">
+      <h3 className="section-heading text-base font-semibold" id="member-newsletters-heading">
         Newsletters
       </h3>
-      <Card>
-        <CardContent className="p-6">
+      <Card variant={admin7Design ? 'ruled' : 'outline'}>
+        <CardContent className={admin7Design ? 'pt-3' : 'p-6'}>
           {suppression ? (
             <div
               className="flex items-center justify-between gap-4"
@@ -128,12 +129,14 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
                   return (
                     <li
                       key={newsletter.id}
-                      className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
+                      className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0 in-data-[admin7-design=true]:py-4"
                     >
                       <div className="min-w-0">
-                        <div className="font-medium">{newsletter.name}</div>
+                        <div className="font-medium in-data-[admin7-design=true]:text-md">
+                          {newsletter.name}
+                        </div>
                         {newsletter.description && (
-                          <p className="truncate text-sm text-muted-foreground">
+                          <p className="truncate text-sm text-muted-foreground in-data-[admin7-design=true]:text-base">
                             {newsletter.description}
                           </p>
                         )}
@@ -151,7 +154,7 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
                   );
                 })}
               </ul>
-              <p className="mt-4 text-sm text-muted-foreground">
+              <p className="mt-4 text-sm text-muted-foreground in-data-[admin7-design=true]:border-t in-data-[admin7-design=true]:border-border in-data-[admin7-design=true]:pt-3 in-data-[admin7-design=true]:text-base in-data-[admin7-design=true]:italic">
                 If disabled, member will <em>not</em> receive newsletter emails
               </p>
             </>

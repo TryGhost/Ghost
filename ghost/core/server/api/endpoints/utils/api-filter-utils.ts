@@ -86,6 +86,7 @@ function getOrderAttributes(tableName: string): string[] {
 const CONTENT_API_AUTHOR_ORDER_ATTRIBUTES = getOrderAttributes('users');
 const CONTENT_API_TAG_ORDER_ATTRIBUTES = getOrderAttributes('tags');
 const CONTENT_API_NEWSLETTER_ORDER_ATTRIBUTES = getOrderAttributes('newsletters');
+const CONTENT_API_COMMENT_ORDER_ATTRIBUTES = getOrderAttributes('comments');
 const CONTENT_API_POST_ORDER_ATTRIBUTES = [
   ...getOrderAttributes('posts'),
   ...getOrderAttributes('posts_meta').filter(
@@ -346,5 +347,18 @@ export function rejectNewslettersContentApiRestrictedOrderFields(
     order,
     CONTENT_API_NEWSLETTER_ORDER_ATTRIBUTES,
     isNewslettersContentApiRestrictedKey,
+  );
+}
+
+// Members comments endpoints are public: comments that are deleted or hidden still
+// appear as placeholders when they have published replies, with their `html` withheld
+// from the response. `filter` and `order` must not be able to reference it either.
+export function rejectCommentsContentApiRestrictedOrderFields(
+  order: string | string[] | undefined,
+): string | undefined {
+  return rejectRestrictedOrderFields(
+    order,
+    CONTENT_API_COMMENT_ORDER_ATTRIBUTES,
+    isContentApiRestrictedKey,
   );
 }

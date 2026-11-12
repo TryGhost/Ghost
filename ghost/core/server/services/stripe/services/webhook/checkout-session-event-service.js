@@ -5,7 +5,8 @@ const {
   SIGNUP_CONTEXTS,
   canWelcomeEmailReplaceSignupPaidEmail,
 } = require('../../../../lib/member-signup-contexts');
-const { collectedAnswers } = require('../checkout/completed-session');
+const { CHECKOUT_PORT } = require('@tryghost/checkout');
+const { collectedFrom } = require('../checkout/completed-session');
 const { COLLECTION_FLAG } = require('../../../stripe-checkout-config/models');
 /** @typedef {import('../../../../lib/member-signup-contexts').SignupContext} SignupContext */
 
@@ -32,6 +33,44 @@ function isDonationCheckoutSession(session) {
 // donation marker alongside a true gift marker still counts as a conflict.
 function hasConflictingCheckoutFlowMetadata(session) {
   return hasStripeMetadataKey(session.metadata, 'ghost_donation') && isGiftCheckoutSession(session);
+}
+
+/**
+ * The wallet the buyer paid for the checkout's subscription with, as Stripe names it, such as
+ * `apple_pay` or `google_pay`: `none` for a card or another method, and `unknown` when the
+ * customer's subscriptions don't include it, as Stripe lists only some. Read from the payment
+ * method the customer is fetched with, so it costs no request of its own.
+ *
+ * @param {import('stripe').Stripe.Customer} customer
+ * @param {import('stripe').Stripe.Checkout.Session} session
+ * @returns {import('../../tracking').CheckoutWallet}
+ */
+function walletOf(customer, session) {
+  const subscription = customer.subscriptions?.data.find(
+    ({ id }) => id === getStripeResourceId(session.subscription),
+  );
+  if (!subscription) {
+    return 'unknown';
+  }
+  const method = subscription.default_payment_method;
+  return (typeof method === 'object' && method?.card?.wallet?.type) || 'none';
+}
+
+/**
+ * What became of the phone number a checkout collected, from what its bindings kept and refused,
+ * a refusal naming the phone's port or a part of its value.
+ *
+ * @param {Set<string>} kept
+ * @param {{property: string}[]} refused
+ * @returns {import('../../tracking').CollectedPhoneOutcome}
+ */
+function phoneOutcome(kept, refused) {
+  const port = CHECKOUT_PORT.phone;
+  if (!kept.has(port)) {
+    return 'no_destination';
+  }
+  const ofPhone = ({ property }) => property === port || property.startsWith(`${port}.`);
+  return refused.some(ofPhone) ? 'refused' : 'saved';
 }
 
 function getStripeResourceId(resource) {
@@ -82,6 +121,7 @@ module.exports = class CheckoutSessionEventService {
   /**
    * @param {object} deps
    * @param {import('../../stripe-api')} deps.api
+   * @param {Pick<import('../../tracking').StripeTracking, 'collectedPhone'>} deps.tracking
    * @param {object} deps.memberRepository
    * @param {object} deps.donationRepository
    * @param {object} deps.giftService
@@ -89,7 +129,7 @@ module.exports = class CheckoutSessionEventService {
    * @param {function} deps.sendSignupEmail
    * @param {function} deps.isPaidWelcomeEmailActive
    * @param {{isSet(flag: string): boolean}} deps.labs
-   * @param {Pick<import('../../../members-metafields/bindings-service').MetafieldBindingsService, 'planCollected'>} deps.metafieldBindings
+   * @param {Pick<import('../../../members-metafields/bindings-service').MetafieldBindingsService, 'planThrough'>} deps.metafieldBindings
    * @param {{updateWithMetafields: (data: object, options: {id: string}, plans: import('../../../members-metafields/values-service').MetafieldPlan[]) => Promise<unknown>}} deps.memberBREADService
    */
   constructor(deps) {
@@ -137,7 +177,13 @@ module.exports = class CheckoutSessionEventService {
    */
   async handlePaymentEvent(session) {
     if (hasConflictingCheckoutFlowMetadata(session)) {
-      logging.warn('Ignoring checkout session with conflicting payment flow metadata');
+      logging.warn(
+        {
+          event: { name: 'stripe_checkout.session.payment_flow_conflict' },
+          session_id: session.id,
+        },
+        'Ignored a checkout session marked as both a donation and a gift',
+      );
       return;
     }
 
@@ -376,8 +422,13 @@ module.exports = class CheckoutSessionEventService {
       if (metadataNewsletters) {
         try {
           memberData.newsletters = JSON.parse(metadataNewsletters);
-        } catch (e) {
-          logging.error(`Ignoring invalid newsletters data - ${metadataNewsletters}.`);
+        } catch (err) {
+          logging.error({
+            event: { name: 'stripe_checkout.session.newsletters_unreadable' },
+            err,
+            newsletters: metadataNewsletters,
+            session_id: session.id,
+          });
         }
       }
 
@@ -442,7 +493,10 @@ module.exports = class CheckoutSessionEventService {
 
     // After the subscription work and apart from it: a throw here would fail the webhook, and
     // Stripe's retry could repeat the payment work.
-    await this.saveCollected(member.id, session, { canUpdateMember });
+    await this.saveCollected(member.id, session, {
+      canUpdateMember,
+      wallet: walletOf(customer, session),
+    });
 
     if (checkoutType !== 'upgrade') {
       const ghostSignupContext = /** @type {SignupContext | undefined} */ (
@@ -472,16 +526,25 @@ module.exports = class CheckoutSessionEventService {
    * @param {import('stripe').Stripe.Checkout.Session} session
    * @param {object} options
    * @param {boolean} options.canUpdateMember Whether this checkout may write to the member's record
+   * @param {import('../../tracking').CheckoutWallet} options.wallet The wallet the buyer paid with
    */
-  async saveCollected(memberId, session, { canUpdateMember }) {
+  async saveCollected(memberId, session, { canUpdateMember, wallet }) {
     try {
       if (!this.deps.labs.isSet(COLLECTION_FLAG)) {
         return;
       }
-      const collected = collectedAnswers.parse(session);
+      const { answers: collected, phone } = collectedFrom.parse(session);
       if (collected.length === 0) {
         return;
       }
+      // Counted so how often a wallet's number needs a country to be read, and what then becomes
+      // of it, can be watched.
+      /** @param {import('../../tracking').CollectedPhoneOutcome} outcome */
+      const countPhone = (outcome) => {
+        if (phone) {
+          this.deps.tracking.collectedPhone({ wallet, phone, outcome });
+        }
+      };
 
       if (!canUpdateMember) {
         logging.warn(
@@ -492,14 +555,20 @@ module.exports = class CheckoutSessionEventService {
           },
           'Skipped saving what an unverified checkout collected for an existing member',
         );
+        countPhone('skipped');
         return;
       }
 
-      const { plans, failure } = await this.deps.metafieldBindings.planCollected(collected);
+      // Each value recorded against the binding that routed it, and what a field refuses is
+      // logged rather than thrown, as the money is already taken: the rest are still saved.
+      const { plans, refused, kept } = await this.deps.metafieldBindings.planThrough(collected, {
+        type: 'binding',
+      });
       if (plans.length > 0) {
         // Through the members service, like any other edit, so the change reaches webhooks.
         await this.deps.memberBREADService.updateWithMetafields({}, { id: memberId }, plans);
-      } else if (!failure) {
+      }
+      if (kept.size === 0) {
         // The checkout asked, but collection was switched off or its fields deleted since.
         logging.warn(
           {
@@ -510,9 +579,19 @@ module.exports = class CheckoutSessionEventService {
           'Dropped what a checkout collected, as no custom field takes it now',
         );
       }
-      if (failure) {
-        throw failure;
+      if (refused.length > 0) {
+        // Named by port and part, never with what was given, which is the member's.
+        logging.error(
+          {
+            event: { name: 'stripe_checkout.collection.refused' },
+            refused: refused.map(({ property }) => property),
+            member_id: memberId,
+            session_id: session.id,
+          },
+          'Saved what a checkout collected, apart from what its custom fields refused',
+        );
       }
+      countPhone(phoneOutcome(kept, refused));
     } catch (err) {
       logging.error(
         {

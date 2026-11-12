@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs-extra');
 const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
+const { IncorrectUsageError } = require('@tryghost/errors');
 const KnexMigrator = require('knex-migrator');
 // Resolve MigratorConfig.js from the package root, not process.cwd() — see db-utils.js.
 const knexMigrator = new KnexMigrator({ knexMigratorFilePath: path.join(__dirname, '../..') });
@@ -19,6 +20,7 @@ const {
 } = require('../../core/server/services/email-analytics/lib/queries');
 
 // Other Test Utilities
+const baseUtils = require('../../core/server/models/base/utils');
 const context = require('./fixtures/context');
 const DataGenerator = require('./fixtures/data-generator');
 const filterData = require('./fixtures/filter-param');
@@ -284,6 +286,23 @@ const fixtures = {
     });
   },
 
+  /**
+   * User.add refuses the Owner role, so the owner is created without a role and
+   * the Owner role is attached directly, the same way fixtures.json does it.
+   */
+  addUser: async function addUser(user) {
+    const ownerRole = _.find(user.roles, { name: 'Owner' });
+
+    if (!ownerRole) {
+      return models.User.add(user, context.internal);
+    }
+
+    const addedUser = await models.User.add({ ...user, roles: [] }, context.internal);
+    await baseUtils.attach(models.User, addedUser.id, 'roles', [ownerRole.id], context.internal);
+
+    return models.User.findOne({ id: addedUser.id, status: 'all' }, context.internal);
+  },
+
   insertRoles: function insertRoles() {
     return Promise.all(
       DataGenerator.forKnex.roles.map((role) => {
@@ -305,14 +324,14 @@ const fixtures = {
     ).then(function () {
       const userRolesRelation = _.cloneDeep(DataGenerator.forKnex.roles_users[0]);
       user.roles = _.filter(DataGenerator.forKnex.roles, { id: userRolesRelation.role_id });
-      return models.User.add(user, context.internal);
+      return fixtures.addUser(user);
     });
   },
 
   insertOwnerUser: function insertOwnerUser() {
     const user = _.cloneDeep(DataGenerator.forKnex.users[0]);
     user.roles = [DataGenerator.forKnex.roles[3]];
-    return models.User.add(user, context.internal);
+    return fixtures.addUser(user);
   },
 
   overrideOwnerUser: async function overrideOwnerUser(slug) {
@@ -366,7 +385,7 @@ const fixtures = {
           });
 
           user.roles = userRolesRelations;
-          return models.User.add(user, context.internal);
+          return fixtures.addUser(user);
         }),
       );
     });
@@ -440,7 +459,7 @@ const fixtures = {
     // Concurrent user fixture inserts can deadlock on MySQL, so create them in order.
     const users = [];
     for (const user of extraUsers) {
-      user.roles = roles[user.id];
+      user.roles = [roles[user.id]];
       users.push(await models.User.add(user, context.internal));
     }
     return users;
@@ -1059,7 +1078,18 @@ const getFixtureOps = (toDos) => {
   });
 
   fixtureOps.push(() => {
-    return require('../../core/server/services/tiers').repository?.init();
+    const tiers = require('../../core/server/services/tiers').default;
+    let service;
+    try {
+      service = tiers.service;
+    } catch (error) {
+      // Before Ghost boots there is no tier cache to reload; boot loads these rows itself.
+      if (error instanceof IncorrectUsageError) {
+        return;
+      }
+      throw error;
+    }
+    return service.repository.init();
   });
 
   return fixtureOps;

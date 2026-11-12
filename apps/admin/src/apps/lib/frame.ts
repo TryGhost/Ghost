@@ -28,9 +28,18 @@ export const APP_FRAME_SANDBOX =
   'allow-scripts allow-same-origin allow-forms allow-popups allow-downloads';
 
 /**
+ * Features the app's page is allowed to use. `'src'` grants them only to the app's own origin, not
+ * pages on other origins the frame navigates to.
+ *
+ * Web Share lets an app open the device's share sheet. It needs no approval because the publisher
+ * starts and finishes every share themselves.
+ */
+const GRANTED = ['web-share'];
+
+/**
  * Features that default to the top document's own origin. Being cross-origin already
  * keeps them from the frame; they're listed so that granting one is a deliberate change
- * here, with the app's origin, rather than an omission.
+ * to `GRANTED` rather than an omission.
  */
 const SELF_BY_DEFAULT = [
   'autoplay',
@@ -44,7 +53,6 @@ const SELF_BY_DEFAULT = [
   'publickey-credentials-get',
   'screen-wake-lock',
   'usb',
-  'web-share',
 ];
 
 /**
@@ -69,16 +77,20 @@ const EVERYONE_BY_DEFAULT = [
   'unload',
 ];
 
-/** Which browser features the frame gets: none. */
-export const APP_FRAME_ALLOW = [...SELF_BY_DEFAULT, ...EVERYONE_BY_DEFAULT]
-  .map((feature) => `${feature} 'none'`)
-  .join('; ');
+/** Which browser features the frame gets: the granted ones, on the app's origin, and no others. */
+export const APP_FRAME_ALLOW = [
+  ...GRANTED.map((feature) => `${feature} 'src'`),
+  ...[...SELF_BY_DEFAULT, ...EVERYONE_BY_DEFAULT].map((feature) => `${feature} 'none'`),
+].join('; ');
 
 /**
- * Whether a page is on an origin Ghost itself is served from. Ghost refuses such a URL
- * when it accepts a manifest, but the site's or Admin's URL can change afterwards, and a
- * frame on Admin's own origin would be Admin, sandbox or not. So the same rule is asked
- * again where the frame is made, against the origins Admin knows itself by.
+ * Whether a page is on a host Ghost itself is served from, on any port. Ghost refuses such
+ * a manifest when it accepts one, but the site's or Admin's URL can change afterwards, and
+ * an older Ghost refused only their exact origins. A frame on Admin's own origin would be
+ * Admin, sandbox or not, and a page on another port of its host is sent the staff user's
+ * session cookie, as cookies ignore ports. So the same rule is asked again where the frame
+ * is made, against the URLs Admin knows itself by. Admin bundles the rule, so it holds
+ * whichever Ghost it runs with.
  *
  * It covers the URL the frame is given, not where the frame goes from there: the app's
  * server can redirect, and the page can set its own location, which the sandbox allows.
@@ -87,7 +99,8 @@ export const APP_FRAME_ALLOW = [...SELF_BY_DEFAULT, ...EVERYONE_BY_DEFAULT]
  * bypassing the allowlist. The handshake only withholds the bridge from it, and Admin reloads the
  * app once it notices, after that script has already run. The fix belongs in Core, which can
  * sandbox what it serves into another origin's frame (BER-3992). That doesn't cover a popup, which
- * is a top-level document: the allowlist's checks on what a write may contain keep script out of
- * the site instead.
+ * is a top-level document. Nothing keeps script out of the site either: the allowlist lets an app
+ * write HTML and script into a post or page, which runs for whoever opens it, a popup included, on
+ * the site's origin, and on Admin's where the two share one.
  */
-export { isGhostOrigin } from '@tryghost/app-contracts';
+export { isGhostHost } from '@tryghost/app-contracts';

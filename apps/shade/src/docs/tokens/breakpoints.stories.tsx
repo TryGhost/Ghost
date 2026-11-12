@@ -9,7 +9,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Responsive breakpoints. Use Tailwind responsive variants (`md:`, `lg:`…) backed by these tokens — don't hardcode pixel widths.",
+          "Responsive breakpoints, in px (not rem). Use Tailwind responsive variants (`md:`, `lg:`…) backed by these tokens — don't hardcode pixel widths.",
       },
     },
   },

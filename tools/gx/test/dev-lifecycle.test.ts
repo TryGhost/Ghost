@@ -14,11 +14,11 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, it, type TestContext } from 'node:test';
 import { setTimeout as sleep } from 'node:timers/promises';
-import { createCodexMarker, endCodexSession, watchedDevCommand } from '../lib/dev-lifecycle.ts';
+import { createCodexMarker, endCodexSession, watchedDevScript } from '../lib/dev-lifecycle.ts';
 import { isListening } from '../lib/dev-stack.ts';
 
-function checkout(t: TestContext) {
-  const root = mkdtempSync(join(tmpdir(), 'ghost-dev-lifecycle-'));
+function checkout(t: TestContext, prefix = 'ghost-dev-lifecycle-') {
+  const root = mkdtempSync(join(tmpdir(), prefix));
   writeFileSync(join(root, '.git'), '');
   t.after(() => rmSync(root, { recursive: true, force: true }));
   return root;
@@ -59,7 +59,7 @@ async function stack(
   // The shell stays the leader with the listener as its child, unless it's an Nx-style `task`
   const child = spawn(
     'sh',
-    ['-c', watchedDevCommand, 'sh', root, command, String(options.claudePid ?? ''), marker],
+    [watchedDevScript, root, command, String(options.claudePid ?? ''), marker],
     {
       cwd: root,
       detached: true,
@@ -173,6 +173,33 @@ describe('Codex session markers', () => {
 });
 
 describe('dev process watcher', { concurrency: true, skip: process.platform === 'win32' }, () => {
+  it('treats shell metacharacters in script, checkout and marker paths literally', async (t) => {
+    const root = checkout(t, 'ghost dev \' " `touch INJECTED` $(touch INJECTED); ');
+    const marker = createCodexMarker(root, 'owner');
+    const watcher = join(root, 'dev-watch.sh');
+    copyFileSync(watchedDevScript, watcher);
+    const server = "require('node:fs').writeFileSync('ready', ''); setInterval(() => {}, 1000);";
+    const command = `exec ${quote(process.execPath)} -e ${quote(server)}`;
+    const child = spawn('sh', [watcher, root, command, '', marker], {
+      cwd: root,
+      detached: true,
+      stdio: 'ignore',
+    });
+    t.after(() => {
+      try {
+        process.kill(-child.pid!, 'SIGKILL');
+      } catch {
+        // Already stopped.
+      }
+    });
+    await waitFor(() => existsSync(join(root, 'ready')));
+    assert.equal(existsSync(join(root, 'INJECTED')), false);
+    endCodexSession(root, { session_id: 'owner' });
+    await waitFor(() => child.signalCode !== null || child.exitCode !== null, 8000);
+    assert.equal(child.signalCode, 'SIGTERM');
+    assert.equal(existsSync(join(root, 'INJECTED')), false);
+  });
+
   it('runs the shutdown shortcut without installed dependencies', async (t) => {
     const dev = await stack(t);
     const manifest = JSON.parse(

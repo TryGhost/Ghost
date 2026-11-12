@@ -7,7 +7,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  LoadingIndicator,
 } from '@tryghost/shade/components';
 import { useDeleteTag } from '@tryghost/admin-x-framework/api/tags';
 import { useHandleError, useNavigate } from '@tryghost/admin-x-framework';
@@ -29,9 +28,9 @@ interface TagDeleteModalProps {
 }
 
 /**
- * Confirms permanent tag deletion, porting Ember's `delete-tag-modal`: the
- * body names the tag, reports how many posts it will be removed from, and a
- * successful delete returns to the tags list.
+ * Confirms permanent tag deletion: the body names the tag, reports how many
+ * posts it will be removed from, and a successful delete returns to the tags
+ * list.
  */
 const TagDeleteModal: React.FC<TagDeleteModalProps> = ({
   open,
@@ -114,19 +113,12 @@ const TagDeleteModal: React.FC<TagDeleteModalProps> = ({
           </Button>
           <Button
             data-testid="confirm-delete-tag"
-            disabled={deleteTag.isPending}
+            loading={deleteTag.isPending}
             variant="destructive"
             autoFocus
             onClick={() => void onConfirm()}
           >
-            {deleteTag.isPending ? (
-              <>
-                <LoadingIndicator size="sm" />
-                <span className="sr-only">Deleting</span>
-              </>
-            ) : (
-              'Delete'
-            )}
+            Delete
           </Button>
         </DialogFooter>
       </DialogContent>

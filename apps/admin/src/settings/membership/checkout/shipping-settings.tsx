@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tryghost/shade/components';
-import { PORT_FIELD, STRIPE_ALLOWED_COUNTRIES, STRIPE_PORT } from '@tryghost/checkout';
+import { PORT_FIELD, STRIPE_ALLOWED_COUNTRIES, CHECKOUT_PORT } from '@tryghost/checkout';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type { Tier } from '@tryghost/admin-x-framework/api/tiers';
 import { countryName } from '@tryghost/admin-x-framework/utils/countries';
@@ -19,17 +19,17 @@ const COUNTRY_OPTIONS = STRIPE_ALLOWED_COUNTRIES.map((code) => ({
 })).sort((a, b) => a.label.localeCompare(b.label));
 
 const AllOrSpecific: React.FC<{
-  id: string;
+  label: string;
   all: string;
   specific: string;
   value: 'all' | 'specific';
   onChange: (value: 'all' | 'specific') => void;
-}> = ({ id, all, specific, value, onChange }) => (
+}> = ({ label, all, specific, value, onChange }) => (
   <Select
     value={value}
     onValueChange={(next) => onChange(next === 'specific' ? 'specific' : 'all')}
   >
-    <SelectTrigger id={id}>
+    <SelectTrigger aria-label={label}>
       <SelectValue />
     </SelectTrigger>
     <SelectContent>
@@ -65,10 +65,10 @@ const ShippingSettings: React.FC<{
       tiersError={errors.shippingTiers}
       onChange={set}
     >
-      <SubRow htmlFor="checkout-shipping-countries" label="Ships to">
+      <SubRow label="Ships to">
         <AllOrSpecific
           all="All countries"
-          id="checkout-shipping-countries"
+          label="Ships to"
           specific="Specific countries"
           value={state.countries}
           onChange={(countries) => set({ countries })}
@@ -91,9 +91,8 @@ const ShippingSettings: React.FC<{
         chosen={chosenFields}
         error={errors.shippingAddressField}
         fields={fields}
-        id="checkout-shipping-address-field"
         label="Save address as"
-        type={PORT_FIELD[STRIPE_PORT.shippingAddress].type}
+        type={PORT_FIELD[CHECKOUT_PORT.shippingAddress].type}
         value={state.addressFieldKey}
         onChange={(addressFieldKey) => set({ addressFieldKey })}
       />
@@ -101,9 +100,8 @@ const ShippingSettings: React.FC<{
         chosen={chosenFields}
         error={errors.shippingNameField}
         fields={fields}
-        id="checkout-shipping-name-field"
         label="Save name as"
-        type={PORT_FIELD[STRIPE_PORT.shippingName].type}
+        type={PORT_FIELD[CHECKOUT_PORT.shippingName].type}
         value={state.nameFieldKey}
         onChange={(nameFieldKey) => set({ nameFieldKey })}
       />

@@ -29,6 +29,7 @@ import { AdminFrame, type AdminFrameMode } from './admin-frame';
 import { AdminFrameTopBar } from './admin-frame-top-bar';
 import { FloatingSidebarContentSync } from './floating-sidebar-content-sync';
 import { GlobalSearchProvider } from '@/global-search/global-search-provider';
+import { SidePanel } from './side-panel/side-panel';
 
 const networkPageChrome = {
   contentClassName: 'max-w-[1920px]',
@@ -87,6 +88,22 @@ const compactPageChromeClassName = [
  * FloatingSidebarContentSync).
  */
 const pinnedPageChromeClassName = '[--page-bleed-start:var(--floating-sidebar-gap)]';
+
+/*
+ * Large titles follow the width of the page area, so they settle together as
+ * the window narrows. It's worked out from the viewport because making the page
+ * a size container would trap its fixed descendants.
+ * - space above: the space beside the page's content, up to 100px, matching the
+ *   gutter once the column can't reach its full width
+ * - size: 44px from a 1400px page area, already smaller by the time the space
+ *   has settled, and 28px from 1000px
+ */
+const largeTitleClassName = [
+  '[--page-area-width:calc(100vw_-_2_*_var(--admin-frame-side)_-_var(--floating-sidebar-gap))]',
+  '[--large-title-space:clamp(var(--page-gutter),calc((var(--page-area-width)_-_var(--content-width))_/_2_+_var(--page-gutter)),100px)]',
+  '[--large-title-size:clamp(28px,calc(0.04_*_var(--page-area-width)_-_12px),44px)]',
+  '[--large-title-size-sm:max(20px,calc(var(--large-title-size)_*_8_/_11))]',
+].join(' ');
 // The inset is the scrollport: its padding box is what clips. It stays put
 // while the page inside it slides, so a backdrop never shows an edge.
 const backdropInsetClassName = [
@@ -95,6 +112,8 @@ const backdropInsetClassName = [
   // Beneath the pinned capsule too, it keeps the page's stacking under it
   'has-[[data-page-backdrop]]:isolate',
 ].join(' ');
+
+const SIDEBAR_WIDTH = '316px';
 
 const SIDEBAR_PANEL_CLASS_NAME = '[&>[data-sidebar=sidebar]]:relative';
 // Lands on the desktop panel only; the mobile sidebar is a sheet that ignores it.
@@ -307,7 +326,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           '[&_[data-sidebar=sidebar]]:rounded-xl [&_[data-sidebar=sidebar]]:border-border [&_[data-sidebar=sidebar]]:shadow-none',
       )}
       open={sidebarOpen}
-      style={sidebarVisible ? ({ '--sidebar-width': '316px' } as React.CSSProperties) : undefined}
+      style={
+        sidebarVisible ? ({ '--sidebar-width': SIDEBAR_WIDTH } as React.CSSProperties) : undefined
+      }
       onOpenChange={floatingSidebar ? onSidebarOpenChange : undefined}
     >
       {floatingSidebar ? (
@@ -359,6 +380,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           className={cn(
             'flex-1 focus:outline-hidden',
             sidebarVisible ? pageChromeClassName : 'min-h-0',
+            floatingSidebar && largeTitleClassName,
             floatingSidebar &&
               (sidebarPinned ? pinnedPageChromeClassName : compactPageChromeClassName),
             isSettingsRoute && 'min-h-0',
@@ -400,20 +422,43 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     </SidebarProvider>
   );
 
+  // The side panel shows only where the main navigation does, as that's where
+  // it's opened from: not on full-screen screens, nor in Settings, which swaps
+  // the navigation for its own. In the Admin 7 frame it sits beside the card,
+  // below the top bar, and otherwise runs the full height on the right. It
+  // stays in one place across the mobile breakpoint, so its content isn't
+  // reloaded.
+  const sidePanel = (
+    <SidePanel
+      framed={adminFrame}
+      locked={dunningLocked}
+      visible={sidebarVisible && !isSettingsRoute && !isMobile}
+    />
+  );
+
   return (
     <GlobalSearchProvider>
       {!dunningLocked && <SkipLink target={mainRef} />}
-      {adminFrame ? (
-        <AdminFrame
-          locked={dunningLocked}
-          mode={frameMode}
-          topBar={<AdminFrameTopBar hidden={frameMode === 'hidden'} />}
-        >
-          {sidebarLayout}
-        </AdminFrame>
-      ) : (
-        sidebarLayout
-      )}
+      <div
+        className="flex size-full"
+        style={{ '--side-panel-navigation-width': SIDEBAR_WIDTH } as React.CSSProperties}
+      >
+        <div className="h-full min-w-0 flex-1">
+          {adminFrame ? (
+            <AdminFrame
+              aside={sidePanel}
+              locked={dunningLocked}
+              mode={frameMode}
+              topBar={<AdminFrameTopBar hidden={frameMode === 'hidden'} />}
+            >
+              {sidebarLayout}
+            </AdminFrame>
+          ) : (
+            sidebarLayout
+          )}
+        </div>
+        {!adminFrame && sidePanel}
+      </div>
     </GlobalSearchProvider>
   );
 }

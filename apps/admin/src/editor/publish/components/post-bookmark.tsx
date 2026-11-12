@@ -7,7 +7,7 @@ export interface PostBookmarkProps {
   siteTitle?: string;
 }
 
-/** The link-preview card Ember renders as `GhPostBookmark`. */
+/** A link-preview card for the post. */
 export function PostBookmark({ post, siteTitle }: PostBookmarkProps) {
   return (
     <a

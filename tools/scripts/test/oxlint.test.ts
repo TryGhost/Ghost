@@ -593,6 +593,44 @@ test('shares the dependency-cruiser allowlist, including exact local files and p
   assert.ok(result.diagnostics.some((d) => d.message.includes('node:os')));
 });
 
+test('recognizes exact JavaScript library paths without approving siblings', () => {
+  const allowances = [
+    String.raw`^ghost/core/server/lib/fixture-helper\.js$`,
+    String.raw`^fixture-library$|(^|/)node_modules/fixture-library/index\.js$`,
+  ];
+  const boundarySource = readFileSync(path.join(root, '.dependency-cruiser.cjs'), 'utf8').replace(
+    'const serviceDependencyAllowlist = [',
+    () =>
+      `const serviceDependencyAllowlist = [${allowances.map((pattern) => JSON.stringify(pattern)).join(',')},`,
+  );
+  const libraries = [
+    '../../lib/fixture-helper',
+    '../../lib/fixture-helper.js',
+    'fixture-library',
+    'fixture-library/index',
+    'fixture-library/index.js',
+  ];
+  const siblings = [
+    '../../lib/fixture-helper-extra',
+    'fixture-library/other',
+    'fixture-library-extra',
+  ];
+  const source = `
+    import Service from './service';
+    ${[...libraries, ...siblings].map((name, i) => `import dep${i} from '${name}';`).join('\n')}
+    new Service({${[...libraries, ...siblings].map((_, i) => `dep${i}`).join(',')}});
+  `;
+  const result = lint(source, serviceRoot, false, undefined, boundarySource);
+  assert.equal(result.status, 1);
+  assert.equal(result.diagnostics.length, libraries.length);
+  for (const library of libraries) {
+    assert.ok(
+      result.diagnostics.some((d) => d.message.includes(`Import ${library} directly`)),
+      library,
+    );
+  }
+});
+
 test('keeps the guard bounded to direct constructor wiring and supports explicit exceptions', () => {
   const result = lint(
     `
@@ -628,4 +666,305 @@ test('handles TypeScript require imports and literal dynamic imports', () => {
   assert.equal(result.status, 1);
   assert.equal(result.diagnostics.length, 3);
   assert.ok(result.diagnostics.every((d) => d.code === injectionCode));
+});
+
+const canonicalCode = 'ghost(prefer-canonical-types)';
+const canonicalFile = 'ghost/core/server/services/alpha/alpha-service';
+
+test('flags hand-written logger shapes whatever they are called', () => {
+  const source = [
+    'type Logging = {',
+    '  info(...args: unknown[]): void;',
+    '  error(...args: unknown[]): void;',
+    '};',
+    'interface Logger {',
+    '  warn(message: string): void;',
+    '}',
+    'type Reporter = { debug: (message: string) => void; fatal: Function };',
+    'type Deps = { logging: { trace(message: string): void } };',
+  ].join('\n');
+  const result = lint(source, `${canonicalFile}.ts`);
+  assert.equal(result.status, 1);
+  assert.ok(result.diagnostics.every((d) => d.code === canonicalCode && d.severity === 'error'));
+  assert.deepEqual(
+    result.diagnostics.map((d) => d.labels[0]?.span.line).sort((a, b) => a! - b!),
+    [1, 5, 8, 9],
+  );
+  assert.ok(
+    result.diagnostics.every((d) =>
+      d.message.includes("import type { GhostLogger } from '@tryghost/logging'"),
+    ),
+  );
+});
+
+test('allows the library logger type and shapes that are not loggers', () => {
+  const source = [
+    "import type { GhostLogger } from '@tryghost/logging';",
+    "type Deps = { logging: Pick<GhostLogger, 'info' | 'error'>; other: GhostLogger };",
+    'type Failure = { error: string; info: { code: number } };',
+    'type Store = { info(): void; get(key: string): unknown };',
+    'interface Extended extends Deps { warn(message: string): void }',
+    'type Empty = {};',
+  ].join('\n');
+  assert.deepEqual(lint(source, `${canonicalFile}.ts`).diagnostics, []);
+});
+
+test('flags JSDoc logger shapes in JavaScript but not library or data types', () => {
+  const source = [
+    '/**',
+    ' * @param {{info: (message: string) => unknown, warn: Function}} logging',
+    " * @param {Pick<import('@tryghost/logging').GhostLogger, 'info'>} other",
+    ' * @param {{id: string, error: {code: number; message: string} | null}} event',
+    ' * @param {{logging: {error(err: unknown): void}, name: string}} deps',
+    ' * @param {{',
+    ' *   info: Function,',
+    ' *   warn(message: string): void',
+    ' * }} multiline',
+    ' * @param {{',
+    ' *   warn(message: string):',
+    " *     import('./result').Result",
+    ' *   error: (message: string)',
+    ' *     => void',
+    ' * }} newlines',
+    ' * @param {{',
+    ' *   info(): void',
+    ' *   get(): string',
+    ' * }} mixed',
+    ' * @param {{',
+    ' *   warn(): void',
+    ' *   import(file: string): void',
+    ' * }} importer',
+    ' */',
+    'function example(logging, other, event, deps, multiline, newlines, mixed, importer) {}',
+  ].join('\n');
+  const result = lint(source, `${canonicalFile}.js`);
+  assert.equal(result.status, 1);
+  assert.deepEqual(
+    result.diagnostics.map((d) => [d.code, d.labels[0]?.span.line]),
+    [
+      [canonicalCode, 2],
+      [canonicalCode, 5],
+      [canonicalCode, 6],
+      [canonicalCode, 10],
+    ],
+  );
+  assert.ok(
+    result.diagnostics.every((d) => d.message.includes("import('@tryghost/logging').GhostLogger")),
+  );
+});
+
+test('limits canonical type checks to Ghost Core and its tests', () => {
+  const source = 'type Logging = { info(message: string): void };';
+  assert.equal(lint(source, `${canonicalFile}.ts`).status, 1);
+  assert.equal(lint(source, 'ghost/test/utils/example.ts').status, 1);
+  assert.equal(lint(source, 'apps/admin/src/example.ts').status, 0);
+});
+
+test('treats sinon stubs as callable logger members', () => {
+  const source = [
+    "import type { SinonStub } from 'sinon';",
+    'let logging: { error: SinonStub; warn: SinonStub };',
+    'let other: { get: SinonStub };',
+  ].join('\n');
+  assert.deepEqual(
+    lint(source, 'ghost/test/unit/example.test.ts').diagnostics.map((d) => d.labels[0]?.span.line),
+    [2],
+  );
+});
+
+test('rejects vague types on injected logging only', () => {
+  const typescript = [
+    'type Deps = { logging: object; logger: any; other: object };',
+    'type Fine = { logging: unknown extends never ? never : string };',
+  ].join('\n');
+  assert.deepEqual(
+    lint(typescript, `${canonicalFile}.ts`).diagnostics.map((d) => [
+      d.code,
+      d.labels[0]?.span.line,
+    ]),
+    [
+      [canonicalCode, 1],
+      [canonicalCode, 1],
+    ],
+  );
+  const jsdoc = [
+    '/**',
+    ' * @param {object} deps.logging',
+    ' * @param {Object} logger',
+    ' * @param {object} deps.models',
+    " * @param {import('@tryghost/logging').GhostLogger} deps.logging",
+    ' */',
+    'export function make() {}',
+  ].join('\n');
+  assert.deepEqual(
+    lint(jsdoc, `${canonicalFile}.js`).diagnostics.map((d) => d.labels[0]?.span.line),
+    [2, 3],
+  );
+});
+
+const testFile = 'ghost/test/unit/example.test.ts';
+
+test('rejects comparing a shared error object in assert.rejects and assert.throws', () => {
+  const source = [
+    "const failure = new Error('x');",
+    'let later;',
+    "later = new TypeError('y');",
+    'assert.rejects(run, failure);',
+    'assert.throws(run, later);',
+    'assert.rejects(run, (error) => error === failure);',
+    'assert.rejects(run, TypeError);',
+    "assert.rejects(run, { message: 'x' });",
+    'other.rejects(run, failure);',
+    "const matcher = { message: 'x' };",
+    "function elsewhere() { const matcher = new Error('x'); return matcher; }",
+    'assert.rejects(run, matcher);',
+  ].join('\n');
+  const result = lint(source, testFile);
+  assert.deepEqual(
+    result.diagnostics.map((d) => [d.code, d.labels[0]?.span.line]),
+    [
+      ['ghost(no-assert-error-instance)', 4],
+      ['ghost(no-assert-error-instance)', 5],
+    ],
+  );
+  assert.deepEqual(
+    lint(source, 'ghost/core/server/example.ts').diagnostics.filter((d) =>
+      d.code.includes('no-assert-error-instance'),
+    ),
+    [],
+  );
+});
+
+test('requires a stop for the server getAgentsWithFrontend starts', () => {
+  const code = 'ghost(stop-frontend-agents)';
+  const starts = 'const agents = await e2e.getAgentsWithFrontend();';
+  const result = lint(starts, testFile);
+  assert.deepEqual(
+    result.diagnostics.map((d) => d.code),
+    [code],
+  );
+  assert.equal(lint(`${starts}\nawait agents.ghostServer.stop();`, testFile).status, 0);
+  assert.equal(lint(`${starts}\nawait stopGhost();`, testFile).status, 0);
+  assert.equal(
+    lint(
+      `({ ghostServer: server } = await e2e.getAgentsWithFrontend());\nawait server?.stop();`,
+      testFile,
+    ).status,
+    0,
+  );
+  assert.deepEqual(
+    lint(`${starts}\ntimer.stop();`, testFile).diagnostics.map((d) => d.code),
+    [code],
+  );
+  assert.equal(
+    lint(`${starts}\nconst { ghostServer: server } = agents;\nawait server.stop();`, testFile)
+      .status,
+    0,
+  );
+  assert.equal(
+    lint(
+      'let agents;\nagents = await e2e.getAgentsWithFrontend();\n({ ghostServer: server } = agents);\nawait server.stop();',
+      testFile,
+    ).status,
+    0,
+  );
+  assert.deepEqual(
+    lint(
+      `${starts}\nconst { ghostServer: timer } = unrelated;\ntimer.stop();`,
+      testFile,
+    ).diagnostics.map((d) => d.code),
+    [code],
+  );
+  assert.deepEqual(
+    lint(
+      [
+        'const first = await e2e.getAgentsWithFrontend();',
+        'await first.ghostServer.stop();',
+        'let ghostServer;',
+        'const second = await e2e.getAgentsWithFrontend();',
+        'ghostServer = second.ghostServer;',
+        'const third = await e2e.getAgentsWithFrontend();',
+        'await ghostServer.stop();',
+      ].join('\n'),
+      testFile,
+    ).diagnostics.map((d) => [d.code, d.labels[0]?.span.line]),
+    [[code, 6]],
+  );
+  assert.deepEqual(
+    lint(
+      [
+        'let agents = await e2e.getAgentsWithFrontend();',
+        'await agents.ghostServer.stop();',
+        'agents = await e2e.getAgentsWithFrontend();',
+      ].join('\n'),
+      testFile,
+    ).diagnostics.map((d) => [d.code, d.labels[0]?.span.line]),
+    [[code, 3]],
+  );
+  assert.equal(lint('const other = 1;', testFile).status, 0);
+});
+
+test('rejects passing the real logger to a class under test', () => {
+  const code = 'ghost(no-real-logger-injection)';
+  const source = [
+    "import logging from '@tryghost/logging';",
+    "const required = require('@tryghost/logging');",
+    'new One({ logging });',
+    'new Two(model, { logger: required, other: 1 });',
+    'new Three({ logging: createLoggingFake() });',
+    'run({ logging });',
+  ].join('\n');
+  assert.deepEqual(
+    lint(source, testFile).diagnostics.map((d) => [d.code, d.labels[0]?.span.line]),
+    [
+      [code, 3],
+      [code, 4],
+    ],
+  );
+  assert.equal(
+    lint('const logging = createLoggingFake();\nnew One({ logging });', testFile).status,
+    0,
+  );
+  assert.equal(
+    lint(
+      [
+        "import logging from '@tryghost/logging';",
+        'function check(logging = createLoggingFake()) { new One({ logging }); }',
+      ].join('\n'),
+      testFile,
+    ).status,
+    0,
+  );
+});
+
+test('rejects any in exported service types only', () => {
+  const code = 'ghost(no-any-in-exported-types)';
+  const source = [
+    'export type One = { value: any };',
+    'export interface Two { run(input: any): void }',
+    'type Local = { value: any };',
+    'export function run(input: any) { return input; }',
+    'export type Fine = { value: unknown };',
+    'type Public = { value: any };',
+    'export type { Public };',
+  ].join('\n');
+  const file = 'ghost/core/server/services/alpha/types.ts';
+  assert.deepEqual(
+    lint(source, file).diagnostics.map((d) => [d.code, d.labels[0]?.span.line]),
+    [
+      [code, 1],
+      [code, 2],
+      [code, 6],
+    ],
+  );
+  assert.equal(lint(source, 'ghost/core/server/lib/types.ts').status, 0);
+  const shadowed = [
+    'type Shared = { value: string };',
+    'function example() {',
+    '  type Shared = any;',
+    '  return {} as Shared;',
+    '}',
+    'export type { Shared };',
+  ].join('\n');
+  assert.equal(lint(shadowed, file).status, 0);
 });

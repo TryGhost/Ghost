@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Text } from '@tryghost/shade/primitives';
 import { Button, buttonVariants } from '@tryghost/shade/components';
-import { useShade } from '@tryghost/shade/app';
 import { cn, formatNumber } from '@tryghost/shade/utils';
 import { membersCountString, useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import {
@@ -10,6 +9,7 @@ import {
   editorStatus,
 } from '@tryghost/test-data/selectors/editor';
 import { formatPostTime } from '@/posts/list/post-time';
+import { FadingText } from '@/shared/fading-text';
 import { ErrorLine, FailureMessage } from './publish/components/failure-banner';
 import { hostLimitFailure } from './publish/completion-message';
 import { usePublishInputs } from './publish/use-publish-inputs';
@@ -27,6 +27,25 @@ import {
 
 function members(count: number): string {
   return `${formatNumber(count)} ${count === 1 ? 'member' : 'members'}`;
+}
+
+/** Who a send reached: shown when revealed, always read by screen readers. */
+function SendDetail({
+  count,
+  newsletterName,
+  isRevealed,
+}: {
+  count: number;
+  newsletterName: string | null;
+  isRevealed: boolean;
+}) {
+  return (
+    <FadingText show={isRevealed} keepForScreenReaders>
+      {' '}
+      to {members(count)}
+      {newsletterName ? ` of ${newsletterName}` : null}
+    </FadingText>
+  );
 }
 
 /** The send's audience, counted the way the publish flow counts it. */
@@ -136,14 +155,15 @@ function SaveProblem({
 function StatusBody({
   view,
   timezone,
-  isHovered,
+  isRevealed,
   onOpenPublishFlow,
   onOpenUpdateFlow,
   onRetrySave,
 }: {
   view: Exclude<EditorStatusView, { kind: 'new' }>;
   timezone: string;
-  isHovered: boolean;
+  /** Hovered, or focused from the keyboard: shows the details the line otherwise hides. */
+  isRevealed: boolean;
   onOpenPublishFlow?: () => void;
   onOpenUpdateFlow?: () => void;
   onRetrySave?: () => void;
@@ -165,27 +185,37 @@ function StatusBody({
         </ErrorLine>
       ) : onOpenUpdateFlow ? (
         <>
-          <SentAction onOpen={onOpenUpdateFlow} /> to {members(view.count)}
+          <SentAction onOpen={onOpenUpdateFlow} />
+          <SendDetail
+            count={view.count}
+            isRevealed={isRevealed}
+            newsletterName={view.newsletterName}
+          />
         </>
       ) : (
-        <>Sent to {members(view.count)}</>
+        <>
+          Sent
+          <SendDetail
+            count={view.count}
+            isRevealed={isRevealed}
+            newsletterName={view.newsletterName}
+          />
+        </>
       );
     case 'scheduled':
       return (
         <span className="text-state-success">
           Scheduled
-          {isHovered && (
-            <>
-              {' '}
-              <ScheduleCountdown
-                emailOnly={view.emailOnly}
-                publishedAt={view.publishedAt}
-                recipientFilter={view.recipientFilter}
-                recipientSegment={view.recipientSegment}
-                timezone={timezone}
-              />
-            </>
-          )}
+          <FadingText show={isRevealed}>
+            {' '}
+            <ScheduleCountdown
+              emailOnly={view.emailOnly}
+              publishedAt={view.publishedAt}
+              recipientFilter={view.recipientFilter}
+              recipientSegment={view.recipientSegment}
+              timezone={timezone}
+            />
+          </FadingText>
         </span>
       );
     default: {
@@ -216,8 +246,15 @@ function StatusBody({
       return (
         <>
           {published}
-          {view.email === 'sending' && ` and sending to ${members(view.count)}`}
-          {view.email === 'sent' && ` and sent to ${members(view.count)}`}
+          {view.email === 'sending' && ' and sending'}
+          {view.email === 'sent' && ' and sent'}
+          {view.email !== 'none' && (
+            <SendDetail
+              count={view.count}
+              isRevealed={isRevealed}
+              newsletterName={view.newsletterName}
+            />
+          )}
         </>
       );
     }
@@ -251,10 +288,11 @@ export function EditorStatus({
   onOpenUpdateFlow,
   onRetrySave,
 }: EditorStatusProps) {
-  const { isAdmin7 } = useShade();
   const timezone = useSiteTimezone();
   const isSaving = useSavingHold(state.kind === 'saving' || state.kind === 'pending-coalesced');
   const [isHovered, setIsHovered] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const isRevealed = isHovered || isFocused;
   const [, setTick] = useState(0);
 
   useScheduledBoundary(
@@ -262,14 +300,14 @@ export function EditorStatus({
     record?.status === 'scheduled' && record.emailOnly !== true,
   );
 
-  // The countdown only reads while hovered, so it only has to tick then.
+  // The countdown only reads while revealed, so it only has to tick then.
   useEffect(() => {
-    if (!isHovered) {
+    if (!isRevealed) {
       return;
     }
     const interval = setInterval(() => setTick((tick) => tick + 1), 1000);
     return () => clearInterval(interval);
-  }, [isHovered]);
+  }, [isRevealed]);
 
   const view = deriveEditorStatus({ state, pendingSave, record, isDirty, isSaving });
   // A post that has never been saved has no status yet. Its first save still
@@ -286,24 +324,28 @@ export function EditorStatus({
       className={cn(
         buttonVariants({
           variant: null,
-          size: isAdmin7 ? 'default' : 'sm',
+          size: 'default',
           shape: 'pill',
-          isAdmin7,
         }),
         'pointer-events-auto h-auto max-w-full min-w-0 items-start justify-self-start bg-background/80 px-3 text-(length:--text-control) whitespace-normal text-text-secondary backdrop-blur-sm',
-        isAdmin7
-          ? 'min-h-(--control-height) py-[calc((var(--control-height)-1lh)/2)]'
-          : 'min-h-7 py-[calc((--spacing(7)-1lh)/2)]',
+        'min-h-(--control-height) py-[calc((var(--control-height)-1lh)/2)]',
       )}
       data-testid={editorStatus}
       tone="secondary"
       weight="medium"
+      onBlur={(event) => {
+        // Focus moving between the line's own link and button keeps it revealed.
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setIsFocused(false);
+        }
+      }}
+      onFocus={() => setIsFocused(true)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <span className="min-w-0 break-words">
         <StatusBody
-          isHovered={isHovered}
+          isRevealed={isRevealed}
           timezone={timezone}
           view={view}
           onOpenPublishFlow={onOpenPublishFlow}

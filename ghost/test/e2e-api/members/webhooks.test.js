@@ -10,9 +10,14 @@ const {
   mockManager,
   fixtureManager,
   matchers,
+  hostLimits,
 } = require('../../utils/e2e-framework');
+const moment = require('moment');
 const models = require('../../../core/server/models');
+const db = require('../../../core/server/data/db');
 const modelEvents = require('../../../core/server/lib/common/events');
+const cleanExpiredComped =
+  require('../../../core/server/services/members/jobs/clean-expired-comped-task').default;
 const createWebhookSerializer = require('../../../core/server/services/webhooks/serialize');
 // No routing relations to load, and a member with no custom fields.
 const serializeWebhook = createWebhookSerializer({
@@ -2116,6 +2121,196 @@ describe('Members API', function () {
         'canceled',
         'The subscription should be canceled',
       );
+    });
+
+    describe('when the comped member has a complimentary end date', function () {
+      // The complimentary access ends in 10 days; the cleanup runs as of 12 days from now
+      const compExpiry = () => moment.utc().add(10, 'days').startOf('second').toISOString();
+      const cleanupDate = () => moment.utc().add(12, 'days').toDate();
+
+      async function createTierWithStripePrice(slug) {
+        const tier = await Product.add({
+          name: `Tier ${slug}`,
+          slug,
+          type: 'paid',
+          active: true,
+          currency: 'usd',
+          monthly_price: 500,
+          yearly_price: 5000,
+        });
+        const stripeProductId = createStripeID('prod');
+        const stripePriceId = createStripeID('price');
+
+        await models.StripeProduct.add({ product_id: tier.id, stripe_product_id: stripeProductId });
+        await models.StripePrice.add({
+          stripe_price_id: stripePriceId,
+          stripe_product_id: stripeProductId,
+          active: true,
+          nickname: 'Monthly',
+          currency: 'usd',
+          amount: 500,
+          type: 'recurring',
+          interval: 'month',
+        });
+
+        return {
+          id: tier.id,
+          price: {
+            id: stripePriceId,
+            product: stripeProductId,
+            active: true,
+            nickname: 'Monthly',
+            currency: 'usd',
+            recurring: { interval: 'month' },
+            unit_amount: 500,
+            type: 'recurring',
+          },
+        };
+      }
+
+      async function createCompedMember(email, tierId) {
+        const { body: createBody } = await adminAgent
+          .post('/members/')
+          .body({ members: [{ name: email, email, subscribed: true }] })
+          .expectStatus(201);
+        const memberId = createBody.members[0].id;
+
+        const { body: compBody } = await adminAgent
+          .put(`/members/${memberId}/`)
+          .body({ members: [{ id: memberId, tiers: [{ id: tierId, expiry_at: compExpiry() }] }] })
+          .expectStatus(200);
+        assert.equal(compBody.members[0].status, 'comped');
+
+        return memberId;
+      }
+
+      async function completePaidCheckout(email, price) {
+        const customerId = createStripeID('cust');
+        const subscriptionId = createStripeID('sub');
+        const paidSubscription = {
+          id: subscriptionId,
+          customer: customerId,
+          status: 'active',
+          items: { type: 'list', data: [{ id: createStripeID('si'), price }] },
+          start_date: beforeNow / 1000,
+          current_period_end: Math.floor(beforeNow / 1000) + 60 * 60 * 24 * 31,
+          cancel_at_period_end: false,
+        };
+
+        set(subscription, paidSubscription);
+        set(customer, {
+          id: customerId,
+          name: email,
+          email,
+          subscriptions: { type: 'list', data: [paidSubscription] },
+        });
+
+        const webhookPayload = JSON.stringify({
+          type: 'checkout.session.completed',
+          data: {
+            object: {
+              mode: 'subscription',
+              customer: customerId,
+              subscription: subscriptionId,
+              metadata: {},
+            },
+          },
+        });
+        const webhookSignature = stripe.webhooks.generateTestHeaderString({
+          payload: webhookPayload,
+          secret: process.env.WEBHOOK_SECRET,
+        });
+
+        await membersAgent
+          .post('/webhooks/stripe/')
+          .body(webhookPayload)
+          .header('content-type', 'application/json')
+          .header('stripe-signature', webhookSignature)
+          .expectStatus(200);
+
+        await DomainEvents.allSettled();
+      }
+
+      async function getMemberTiers(memberId) {
+        return db
+          .knex('members_products')
+          .where({ member_id: memberId })
+          .select('product_id', 'expiry_at');
+      }
+
+      async function getMemberStatus(memberId) {
+        const member = await db.knex('members').where({ id: memberId }).first('status');
+        return member.status;
+      }
+
+      async function runExpiredCompCleanupAfterCompEnds() {
+        const clock = sinon.useFakeTimers({ now: cleanupDate(), toFake: ['Date'] });
+
+        try {
+          await cleanExpiredComped({
+            db,
+            models,
+            events: modelEvents,
+            logging: { info: sinon.stub(), warn: sinon.stub(), error: sinon.stub() },
+            sentry: { captureException: sinon.stub() },
+          });
+        } finally {
+          clock.restore();
+        }
+      }
+
+      it('Keeps the tier after the end date passes when the member buys the same tier', async function () {
+        const tier = await createTierWithStripePrice('comp-end-date-same-tier');
+        const email = 'comp-end-date-same-tier@email.com';
+        const memberId = await createCompedMember(email, tier.id);
+
+        const [compTier] = await getMemberTiers(memberId);
+        assert.equal(compTier.product_id, tier.id);
+        assert.ok(compTier.expiry_at, 'The complimentary tier has an end date');
+
+        await completePaidCheckout(email, tier.price);
+
+        assert.equal(await getMemberStatus(memberId), 'paid');
+        assert.deepEqual(
+          await getMemberTiers(memberId),
+          [{ product_id: tier.id, expiry_at: null }],
+          'The paid tier replaces the complimentary one and has no end date',
+        );
+
+        await runExpiredCompCleanupAfterCompEnds();
+
+        assert.equal(await getMemberStatus(memberId), 'paid');
+        assert.deepEqual(
+          (await getMemberTiers(memberId)).map((row) => row.product_id),
+          [tier.id],
+          'The paid tier is kept after the complimentary end date passes',
+        );
+      });
+
+      it('Keeps the paid tier after the end date passes when the member buys a different tier', async function () {
+        const compTier = await createTierWithStripePrice('comp-end-date-comp-tier');
+        const paidTier = await createTierWithStripePrice('comp-end-date-paid-tier');
+        const email = 'comp-end-date-other-tier@email.com';
+        const memberId = await createCompedMember(email, compTier.id);
+
+        await completePaidCheckout(email, paidTier.price);
+
+        assert.equal(await getMemberStatus(memberId), 'paid');
+        assert.deepEqual(
+          await getMemberTiers(memberId),
+          [{ product_id: paidTier.id, expiry_at: null }],
+          'The complimentary tier is removed and the paid tier has no end date',
+        );
+
+        await runExpiredCompCleanupAfterCompEnds();
+
+        assert.equal(await getMemberStatus(memberId), 'paid');
+        assert.deepEqual(
+          (await getMemberTiers(memberId)).map((row) => row.product_id),
+          [paidTier.id],
+          'The paid tier is kept after the complimentary end date passes',
+        );
+      });
     });
   });
 
@@ -4322,11 +4517,11 @@ describe('Members API', function () {
     beforeEach(async function () {
       mockManager.mockMail();
       mockManager.mockLabsEnabled('stripeCheckoutCollection');
-      mockManager.mockLabsEnabled('membersCustomFields');
+      mockManager.mockLabsEnabled('customFieldTypePhone');
       for (const field of [
         { name: 'Delivery address', type: 'address' },
         { name: 'Recipient name', type: 'short_text' },
-        { name: 'Contact phone', type: 'short_text' },
+        { name: 'Contact phone', type: 'phone' },
       ]) {
         await adminAgent
           .post('/members/metafields/custom/')
@@ -4353,9 +4548,10 @@ describe('Members API', function () {
     afterEach(async function () {
       mockManager.restore();
       await models.Base.knex('webhooks').del();
-      await models.Base.knex('stripe_checkout_config_tiers').del();
       await models.Base.knex('stripe_checkout_config').del();
       await models.Base.knex('members_metafield_bindings').del();
+      await models.Base.knex('tier_requirement_tiers').del();
+      await models.Base.knex('tier_requirements').del();
       await models.Base.knex('members_metafield_values').del();
       await models.Base.knex('members_metafields').del();
     });
@@ -4363,13 +4559,35 @@ describe('Members API', function () {
     // What the checkout asked for, as Stripe reports it on the completed session.
     async function completeCheckout(
       email,
-      { asked = { shipping: true }, metadata = {}, created = Math.floor(Date.now() / 1000) } = {},
+      {
+        asked = { shipping: true },
+        metadata = {},
+        created = Math.floor(Date.now() / 1000),
+        name = 'Jamie Doe',
+        phone = '+442079460000',
+        billingCountry = 'GB',
+        // The wallet the buyer paid with, as Stripe names it, if they paid with one.
+        wallet = undefined,
+      } = {},
     ) {
+      const walletMethod = wallet && {
+        id: 'pm_wallet',
+        card: {
+          brand: 'visa',
+          last4: '4242',
+          exp_month: 1,
+          exp_year: 2030,
+          wallet: { type: wallet },
+        },
+      };
       set(customer, {
         id: 'cus_shipping',
         name: 'Jamie Doe',
         email,
-        subscriptions: { type: 'list', data: [subscription] },
+        subscriptions: {
+          type: 'list',
+          data: [{ ...subscription, default_payment_method: walletMethod ?? null }],
+        },
       });
       const payload = JSON.stringify({
         type: 'checkout.session.completed',
@@ -4381,9 +4599,9 @@ describe('Members API', function () {
             subscription: subscription.id,
             metadata,
             shipping_address_collection: asked.shipping ? { allowed_countries: ['GB'] } : null,
-            shipping: { name: 'Jamie Doe', address },
+            shipping: { name, address },
             phone_number_collection: { enabled: Boolean(asked.phone) },
-            customer_details: { email, phone: '+442079460000' },
+            customer_details: { email, phone, address: { country: billingCountry } },
           },
         },
       });
@@ -4420,6 +4638,126 @@ describe('Members API', function () {
       });
     });
 
+    // How often a wallet's number needs a country to be read, whether the checkout knew one, and
+    // what became of it, never with the number itself.
+    it("counts how a checkout's phone number came back and what became of it", async function () {
+      const metrics = mockManager.mockMetrics();
+
+      await completeCheckout('collected-card@example.com', { asked: { phone: true } });
+      await completeCheckout('collected-wallet@example.com', {
+        asked: { phone: true },
+        phone: '020 7946 0000',
+        wallet: 'apple_pay',
+      });
+      await completeCheckout('collected-no-country@example.com', {
+        asked: { phone: true },
+        phone: '020 7946 0000',
+        billingCountry: null,
+        wallet: 'google_pay',
+      });
+
+      assert.deepEqual(
+        metrics.tracked('stripe_checkout.collected_phones').map(({ value, labels }) => ({
+          value,
+          wallet: labels.wallet,
+          form: labels.phone_form,
+          country: labels.phone_country,
+          outcome: labels.phone_outcome,
+        })),
+        [
+          { value: 1, wallet: 'none', form: 'e164', country: 'billing', outcome: 'saved' },
+          { value: 1, wallet: 'apple_pay', form: 'national', country: 'billing', outcome: 'saved' },
+          {
+            value: 1,
+            wallet: 'google_pay',
+            form: 'unreadable',
+            country: 'none',
+            outcome: 'refused',
+          },
+        ],
+      );
+    });
+
+    it("keeps a wallet's phone number in international form", async function () {
+      // Apple Pay and Google Pay pass a number on as the wallet kept it, rather than in E.164.
+      const saved = await completeCheckout('wallet-phone@example.com', {
+        asked: { shipping: true, phone: true },
+        phone: '+44 (0)20 7946 0000',
+      });
+
+      assert.equal(saved.contact_phone, '+442079460000');
+    });
+
+    // Apple Pay and Google Pay can pass a number on as the wallet keeps it, without its country
+    // code. The buyer's billing country says where it is dialled, as the country Stripe's own
+    // phone input starts from says it for a number typed into Checkout.
+    it("reads a wallet's number without its country code in the buyer's billing country", async function () {
+      const saved = await completeCheckout('national-phone@example.com', {
+        asked: { shipping: true, phone: true },
+        phone: '020 7946 0000',
+        billingCountry: 'GB',
+      });
+
+      assert.equal(saved.contact_phone, '+442079460000');
+    });
+
+    it("still saves the address when a wallet's number isn't one in the billing country", async function () {
+      // The phone field refuses it, and the payment has already been taken, so nothing else the
+      // checkout collected is lost.
+      const saved = await completeCheckout('unreadable-phone@example.com', {
+        asked: { shipping: true, phone: true },
+        phone: '020 7946 0000',
+        billingCountry: 'US',
+      });
+
+      assert.deepEqual(saved, {
+        delivery_address: {
+          line1: '1 High Street',
+          city: 'London',
+          postal_code: 'N1 1AA',
+          country: 'GB',
+        },
+        recipient_name: 'Jamie Doe',
+      });
+    });
+
+    it('records what it saved as written in Stripe Checkout', async function () {
+      const metrics = mockManager.mockMetrics();
+      await completeCheckout('shipping-metric@example.com');
+
+      const writes = metrics.tracked('members.metafields.values');
+      assert.deepEqual(
+        new Set(writes.map(({ event, labels }) => `${event.outcome} ${labels.source}`)),
+        new Set(['success checkout']),
+      );
+      assert.deepEqual(
+        new Set(writes.flatMap(({ labels }) => labels.field_types)),
+        new Set(['address', 'short_text']),
+      );
+    });
+
+    it('saves what a field accepts when another refuses what the checkout collected, as each binding', async function () {
+      // Longer than the recipient's short text field takes. The money is taken, so the address
+      // is still saved.
+      const saved = await completeCheckout('shipping-refused@example.com', {
+        name: 'x'.repeat(300),
+      });
+
+      assert.equal(saved.delivery_address.line1, '1 High Street');
+      assert.equal(saved.recipient_name, undefined);
+      const {
+        body: { members },
+      } = await adminAgent.get('/members/?search=shipping-refused%40example.com');
+      const filter = encodeURIComponent(
+        `data.member_id:'${members[0].id}'+type:metafield_change_event`,
+      );
+      const { body } = await adminAgent.get(`/members/events/?filter=${filter}`).expectStatus(200);
+      assert.deepEqual(
+        body.events.map(({ data }) => [data.written_by_type, data.source]),
+        [['binding', 'checkout']],
+      );
+    });
+
     it('keeps the address but not the name while the name field is archived', async function () {
       await adminAgent
         .put('/members/metafields/custom/recipient_name/')
@@ -4430,6 +4768,28 @@ describe('Members API', function () {
 
       assert.equal(saved.delivery_address.line1, '1 High Street');
       assert.equal(saved.recipient_name, undefined);
+    });
+
+    // A checkout that asked before the host switched custom fields off. Every field then
+    // reads as archived, so what it collected lands in none of them.
+    describe('while the host switches custom fields off', function () {
+      afterEach(async function () {
+        await hostLimits.restoreHostLimits();
+      });
+
+      it('saves nothing into any field', async function () {
+        await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+        await completeCheckout('shipping-switched-off@example.com', {
+          asked: { shipping: true, phone: true },
+        });
+
+        await hostLimits.restoreHostLimits();
+        const {
+          body: { members },
+        } = await adminAgent.get('/members/?search=shipping-switched-off%40example.com');
+        const { body } = await adminAgent.get(`/members/${members[0].id}/`);
+        assert.equal(body.members[0].metafields, undefined);
+      });
     });
 
     it('saves nothing from a checkout that did not ask for it', async function () {

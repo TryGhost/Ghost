@@ -11,26 +11,21 @@ import {
 } from './models';
 import type { RequestedParts, StripeCheckoutConfigService } from './service';
 
-/** The private flag the config is behind. The collected parts are behind their own flag too. */
-const DESIGN_FLAG = 'stripeCheckoutDesign';
-
 /** Every collected part asking for nothing. */
 export const NOTHING_COLLECTED = Object.freeze({
   shipping: null,
   phone: null,
-  taxNumber: null,
 } satisfies Record<CollectedSection, null>);
 
 /** How a checkout asks for each collected part: as set, without the tiers it covers. */
 const ASKING: { [Section in CollectedSection]: (part: AskedParts[Section]) => Asking[Section] } = {
   shipping: ({ allowedCountries }) => ({ allowedCountries }),
   phone: () => ({}),
-  taxNumber: () => ({}),
 };
 
 /**
  * The checkout the config makes for a subscription to this paid tier: its design, asking for
- * each collected part that covers the tier and has somewhere to keep the answer.
+ * each collected part that covers the tier.
  */
 function checkoutForTier(config: CheckoutSessionConfig, tierId: string): CheckoutDefinition {
   const ask = <Section extends CollectedSection>(
@@ -43,14 +38,13 @@ function checkoutForTier(config: CheckoutSessionConfig, tierId: string): Checkou
     asks: {
       shipping: ask('shipping', config.shipping),
       phone: ask('phone', config.phone),
-      taxNumber: ask('taxNumber', config.taxNumber),
     },
   };
 }
 
 /** Whether a checkout for this paid tier asks for what a collected part collects. */
 function asksOn(part: AskedPart, tierId: string) {
-  return part.collectable && (part.tierIds === null || part.tierIds.includes(tierId));
+  return part.tierIds === null || part.tierIds.includes(tierId);
 }
 
 /** What deciding checkouts needs. */
@@ -62,8 +56,8 @@ export interface CheckoutServiceDeps {
 
 /**
  * Decides the Stripe Checkout pages Ghost opens from the site's config: the checkout a buyer
- * gets, and previews of settings not saved yet. Nothing from the config applies while its
- * flags are off, and a checkout Ghost has no settings for is null, so Stripe uses the
+ * gets, and previews of settings not saved yet. The collected parts don't apply while their
+ * flag is off, and a checkout Ghost has no settings for is null, so Stripe uses the
  * merchant's own.
  */
 export class CheckoutService {
@@ -102,13 +96,9 @@ export class CheckoutService {
 
   /**
    * The config as checkouts use it, without the collected parts while their flag is off. Null
-   * while the design flag is off or the config can't be read.
+   * when the config can't be read.
    */
   private async readConfig(): Promise<CheckoutSessionConfig | null> {
-    // The collected parts only release after the design, so nothing is read while it's off.
-    if (!this.deps.labs.isSet(DESIGN_FLAG)) {
-      return null;
-    }
     const config = await this.readSaved();
     if (!config) {
       return null;

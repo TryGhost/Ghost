@@ -11,7 +11,7 @@ const urlUtils = require('../../../core/shared/url-utils').default;
 const nock = require('nock');
 const sinon = require('sinon');
 const supertest = require('supertest');
-const mentionsService = require('../../../core/server/services/mentions');
+const mentionsService = require('../../../core/server/services/mentions').default;
 const DomainEvents = require('@tryghost/domain-events');
 
 let processedJobs;
@@ -34,7 +34,7 @@ function recordProcessed(job) {
 // Wrap the seam the job handler calls: completion here means the job ran,
 // without coupling the test to log output or polling on a timer.
 function trackWebmentionProcessing() {
-  const controller = mentionsService.controller;
+  const controller = mentionsService.service.controller;
   const original = controller.processWebmention.bind(controller);
   sinon.stub(controller, 'processWebmention').callsFake(async (job) => {
     try {
@@ -94,7 +94,7 @@ describe('Webmentions (receiving)', function () {
   afterEach(async function () {
     await DomainEvents.allSettled();
     mockManager.restore();
-    await dbUtils.truncate('brute');
+    await dbUtils.truncate('rate_limits');
   });
 
   it('can receive a webmention', async function () {
@@ -499,7 +499,7 @@ describe('Webmentions (receiving)', function () {
   // NOTE: this test needs to be last; it will disrupt other tests based on the fact we can't
   //  await the jobService completion for multiple concurrent requests
   it('is rate limited against spamming mention requests', async function () {
-    await dbUtils.truncate('brute');
+    await dbUtils.truncate('rate_limits');
     const webmentionBlock = configUtils.config.get('spam').webmentions_block;
     const targetUrl = new URL(urlUtils.getSiteUrl());
     const sourceUrl = new URL('http://testpage.com/external-article-brute-test/');

@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseMemberEvent } from './member-event';
 
-// Ports Ember `helpers/parse-member-event.js`. The Ember helper is a Glimmer
-// component with injected services (`membersUtils`, `feature`); we take those
-// as an explicit context object so the pure function stays testable.
-
 function ev(type: string, data: Record<string, unknown> = {}) {
   return {
     type,
@@ -20,6 +16,29 @@ const defaultCtx = {
   hasMultipleTiers: false,
   paidMembersEnabled: false,
 };
+
+describe('member creation source', () => {
+  it.each([
+    ['admin', 'signed up via Admin'],
+    ['api', 'signed up via API'],
+    ['import', 'signed up via import'],
+    ['system', 'signed up via system'],
+    ['member', 'signed up'],
+  ])('describes creation from %s', (source, action) => {
+    const parsed = parseMemberEvent(ev('signup_event', { source }), defaultCtx);
+    expect(parsed.action).toBe(action);
+    expect(parsed.actionTitle).toBe(action);
+  });
+
+  it.each([undefined, null, 'agent', '', 'constructor', '__proto__', 42, {}, ['admin']])(
+    'falls back to signed up for an unrecognized source: %j',
+    (source) => {
+      const parsed = parseMemberEvent(ev('signup_event', { source }), defaultCtx);
+      expect(parsed.action).toBe('signed up');
+      expect(parsed.actionTitle).toBe('signed up');
+    },
+  );
+});
 
 describe('parseMemberEvent — subject', () => {
   it('uses member.name when trimmed non-empty', () => {
@@ -48,7 +67,7 @@ describe('parseMemberEvent — subject', () => {
 });
 
 describe('parseMemberEvent — icon', () => {
-  // Icon names are prefixed with `event-` (Ember `getIcon` return).
+  // Icon names are prefixed with `event-`.
   const cases: Array<[string, Record<string, unknown>, string]> = [
     ['login_event', {}, 'event-logged-in'],
     ['signup_event', {}, 'event-signed-up'],
@@ -57,7 +76,7 @@ describe('parseMemberEvent — icon', () => {
     ['newsletter_event', { subscribed: false }, 'event-unsubscribed-from-email'],
     ['subscription_event', { type: 'created' }, 'event-subscriptions'],
     ['subscription_event', { type: 'canceled' }, 'event-canceled-subscription'],
-    // Ember special-case: subscription_event + signup flag renders as signup.
+    // Special case: subscription_event + signup flag renders as signup.
     ['subscription_event', { type: 'created', signup: true }, 'event-signed-up'],
     ['email_opened_event', {}, 'event-opened-email'],
     ['email_delivered_event', {}, 'event-received-email'],
@@ -87,7 +106,7 @@ describe('parseMemberEvent — action text', () => {
   });
 
   it('subscription_event created with signup flag → "signed up"', () => {
-    // Ember-parity — the same event type covers both flows depending on context.
+    // The same event type covers both flows depending on context.
     expect(
       parseMemberEvent(ev('subscription_event', { type: 'created', signup: true }), defaultCtx)
         .action,
@@ -313,7 +332,7 @@ describe('parseMemberEvent — object / url / route', () => {
     );
     expect(parsed.object).toBe('Post');
     expect(parsed.url).toBe('/post/');
-    // Ember `getRoute` doesn't include comment_event.
+    // comment_event has no internal route.
     expect(parsed.route).toBeUndefined();
   });
 
@@ -363,7 +382,7 @@ describe('parseMemberEvent — info', () => {
 });
 
 describe('parseMemberEvent — gift purchase amount formatting', () => {
-  it('formats gift purchase with amount, tier, and duration (Ember parity)', () => {
+  it('formats gift purchase with amount, tier, and duration', () => {
     const parsed = parseMemberEvent(
       ev('gift_purchase_event', {
         amount: 5000,
@@ -374,7 +393,6 @@ describe('parseMemberEvent — gift purchase amount formatting', () => {
       }),
       defaultCtx,
     );
-    // Ember: "Purchased gift subscription for $50 (Gold, 3 months)"
     expect(parsed.action).toBe('Purchased gift subscription for $50 (Gold, 3 months)');
   });
 

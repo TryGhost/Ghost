@@ -18,7 +18,7 @@ const SearchableSection: React.FC<SearchableSectionProps> = ({ children, keyword
       {title && (
         <Text
           as="h2"
-          className="z-20 mt-[-5px] mb-px pb-10 tracking-tight"
+          className="settings-heading z-20 mt-[-5px] mb-px pb-10 tracking-tight in-data-[admin7-design=true]:text-[length:var(--large-title-size-sm)] in-data-[admin7-design=true]:leading-[1.15]!"
           leading="heading"
           size="2xl"
           weight="semibold"

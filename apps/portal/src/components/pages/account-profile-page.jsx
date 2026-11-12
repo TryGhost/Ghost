@@ -8,7 +8,7 @@ import InputForm from '../common/input-form';
 import { ValidateInputForm } from '../../utils/form';
 import { t } from '../../utils/i18n';
 import MemberCustomFields from '../common/member-custom-fields';
-import { changedCustomFields, drawableCustomFields } from '../../utils/custom-fields';
+import { changedCustomFields, customFieldTexts, fieldInput } from '../../utils/custom-fields';
 
 export default class AccountProfilePage extends React.Component {
   static contextType = AppContext;
@@ -19,7 +19,10 @@ export default class AccountProfilePage extends React.Component {
     this.state = {
       name,
       email,
-      metafields: metafields?.custom || {},
+      metafields: customFieldTexts(
+        (context.customFields ?? []).map(fieldInput),
+        metafields?.custom || {},
+      ),
     };
   }
 
@@ -147,18 +150,15 @@ export default class AccountProfilePage extends React.Component {
     });
   }
 
-  handleCustomFieldChange(field, part, value) {
+  handleCustomFieldChange(field, value) {
     this.setState(({ metafields }) => ({
-      metafields: {
-        ...metafields,
-        [field.key]: part ? { ...(metafields[field.key] || {}), [part]: value } : value,
-      },
+      metafields: { ...metafields, [field.key]: value },
     }));
   }
 
-  /** The opened fields this build can draw. */
+  /** The fields the publisher has opened to members. */
   customFields() {
-    return drawableCustomFields(this.context.customFields);
+    return (this.context.customFields ?? []).map(fieldInput);
   }
 
   getInputFields({ state, fieldNames }) {
@@ -211,7 +211,7 @@ export default class AccountProfilePage extends React.Component {
           <MemberCustomFields
             errors={this.context.fieldErrors || {}}
             fields={customFields}
-            onChange={(field, part, value) => this.handleCustomFieldChange(field, part, value)}
+            onChange={(field, value) => this.handleCustomFieldChange(field, value)}
             onKeyDown={(e) => this.onKeyDown(e)}
             values={this.state.metafields}
           />

@@ -98,7 +98,8 @@ export function TagPicker({
     <ChipPicker<Tag, TagLike>
       chipClassName={(tag) =>
         cn(
-          isInternalTag(tag) && 'border-border bg-secondary/30 text-secondary-foreground/70',
+          isInternalTag(tag) &&
+            'border-field-chip-internal-border bg-field-chip-internal-surface text-secondary-foreground/70',
           chipClassName,
         ) || undefined
       }

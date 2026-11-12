@@ -19,7 +19,8 @@ const inventorySchema = z.object({
     z
       .object({
         migrated: z.boolean().optional(),
-        disposition: z.enum(['retain', 'relocate', 'review']),
+        disposition: z.enum(['migrate', 'relocate', 'split', 'review']),
+        futureHome: z.string().trim().min(1).optional(),
         notes: z.string().optional(),
         migration: assessment.extend({
           modelImpact: z.enum(['fits', 'may-change', 'not-applicable']),
@@ -32,7 +33,14 @@ const inventorySchema = z.object({
       })
       .refine((entry) => entry.migrated || entry.migration.dependencies, {
         message: 'Unmigrated entries need a dependency assessment.',
-      }),
+      })
+      .refine(
+        (entry) =>
+          entry.disposition === 'relocate' || entry.migration.modelImpact !== 'not-applicable',
+        {
+          message: 'Only supporting code marked for relocation can skip migration assessment.',
+        },
+      ),
   ),
 });
 const violation = z.object({
@@ -48,26 +56,22 @@ const auditSchema = z.object({
 });
 
 type Entry = z.infer<typeof inventorySchema>['services'][string];
-type Category =
+type MigrationStatus =
   | 'Migrated'
-  | 'Move or split planned'
-  | 'Ownership undecided'
   | 'Needs preparation'
   | 'Straightforward'
+  | 'Not applicable'
   | 'Not inventoried';
 
-function category(entry?: Entry): Category {
+function migrationStatus(entry?: Entry): MigrationStatus {
   if (!entry) {
     return 'Not inventoried';
   }
   if (entry.migrated) {
     return 'Migrated';
   }
-  if (entry.disposition === 'relocate') {
-    return 'Move or split planned';
-  }
-  if (entry.disposition === 'review') {
-    return 'Ownership undecided';
+  if (entry.migration.modelImpact === 'not-applicable') {
+    return 'Not applicable';
   }
   return entry.migration.complexity === 'straightforward' &&
     entry.migration.dependencies?.complexity === 'straightforward' &&
@@ -75,6 +79,13 @@ function category(entry?: Entry): Category {
     ? 'Straightforward'
     : 'Needs preparation';
 }
+
+const ownership = {
+  migrate: 'Migrate',
+  relocate: 'Relocate',
+  split: 'Split',
+  review: 'Undecided',
+} as const;
 
 function entryName(source: string) {
   return source.startsWith(servicesRoot)
@@ -112,7 +123,8 @@ export function buildServiceReport(inventory: unknown, audit: unknown) {
     const wasAnalyzed = analyzed.has(name);
     return {
       name,
-      category: category(entry),
+      ownership: entry ? ownership[entry.disposition] : 'Not inventoried',
+      migrationStatus: migrationStatus(entry),
       analyzed: wasAnalyzed,
       dependencies: wasAnalyzed
         ? [
@@ -151,10 +163,11 @@ function table(headers: string[], rows: string[][]) {
 
 function list(rows: Service[]) {
   return table(
-    ['SERVICE', 'CATEGORY', 'DISALLOWED DEPS', 'UNRESOLVED', 'OWN ROOT'],
+    ['SERVICE', 'OWNERSHIP', 'MIGRATION', 'DISALLOWED DEPS', 'UNRESOLVED', 'OWN ROOT'],
     rows.map((row) => [
       row.name,
-      row.category,
+      row.ownership,
+      row.migrationStatus,
       String(row.dependencies?.length ?? '?'),
       String(row.unresolved ?? '?'),
       String(row.ownRoot ?? '?'),
@@ -165,50 +178,64 @@ function list(rows: Service[]) {
 const groups: { name: string; label: string; matches: (row: Service) => boolean }[] = [
   { name: 'catalogued', label: 'Catalogued entries', matches: (row) => !!row.entry },
   {
-    name: 'retained',
-    label: 'Staying in services/',
-    matches: (row) => row.entry?.disposition === 'retain',
+    name: 'migrate',
+    label: 'Migrate',
+    matches: (row) => row.entry?.disposition === 'migrate',
   },
-  { name: 'migrated', label: 'Migrated', matches: (row) => row.category === 'Migrated' },
+  { name: 'migrated', label: 'Migrated', matches: (row) => row.migrationStatus === 'Migrated' },
   {
     name: 'unmigrated',
     label: 'Unmigrated entries',
     matches: (row) => !!row.entry && !row.entry.migrated,
   },
   {
-    name: 'unmigrated-retained',
-    label: 'Unmigrated — staying in services/',
-    matches: (row) => row.entry?.disposition === 'retain' && !row.entry.migrated,
+    name: 'to-migrate',
+    label: 'Left to migrate',
+    matches: (row) => row.entry?.disposition === 'migrate' && !row.entry.migrated,
   },
   {
-    name: 'relocation',
-    label: 'Move or split planned',
-    matches: (row) => row.category === 'Move or split planned',
+    name: 'relocate',
+    label: 'Relocate',
+    matches: (row) => row.entry?.disposition === 'relocate',
   },
   {
-    name: 'ownership-undecided',
-    label: 'Ownership undecided',
-    matches: (row) => row.category === 'Ownership undecided',
+    name: 'split',
+    label: 'Split',
+    matches: (row) => row.entry?.disposition === 'split',
+  },
+  {
+    name: 'undecided',
+    label: 'Undecided',
+    matches: (row) => row.entry?.disposition === 'review',
   },
   {
     name: 'needs-preparation',
     label: 'Needs preparation',
-    matches: (row) => row.category === 'Needs preparation',
+    matches: (row) =>
+      row.entry?.disposition === 'migrate' && row.migrationStatus === 'Needs preparation',
   },
   {
     name: 'straightforward',
     label: 'Straightforward migrations',
-    matches: (row) => row.category === 'Straightforward',
+    matches: (row) =>
+      row.entry?.disposition === 'migrate' && row.migrationStatus === 'Straightforward',
   },
   {
     name: 'straightforward-with-violations',
     label: 'Straightforward — dependency violations',
-    matches: (row) => row.category === 'Straightforward' && row.findings.length > 0,
+    matches: (row) =>
+      row.entry?.disposition === 'migrate' &&
+      row.migrationStatus === 'Straightforward' &&
+      row.findings.length > 0,
   },
   {
     name: 'straightforward-clear',
     label: 'Straightforward — no dependency violations',
-    matches: (row) => row.category === 'Straightforward' && row.analyzed && !row.findings.length,
+    matches: (row) =>
+      row.entry?.disposition === 'migrate' &&
+      row.migrationStatus === 'Straightforward' &&
+      row.analyzed &&
+      !row.findings.length,
   },
   {
     name: 'unmigrated-with-violations',
@@ -216,21 +243,21 @@ const groups: { name: string; label: string; matches: (row: Service) => boolean 
     matches: (row) => !!row.entry && !row.entry.migrated && row.findings.length > 0,
   },
   {
-    name: 'unmigrated-retained-with-violations',
-    label: 'Unmigrated — staying in services/ with dependency violations',
+    name: 'to-migrate-with-violations',
+    label: 'Left to migrate with dependency violations',
     matches: (row) =>
-      row.entry?.disposition === 'retain' && !row.entry.migrated && row.findings.length > 0,
+      row.entry?.disposition === 'migrate' && !row.entry.migrated && row.findings.length > 0,
   },
   {
     name: 'migrated-with-violations',
     label: 'Migrated services with dependency violations',
-    matches: (row) => row.category === 'Migrated' && row.findings.length > 0,
+    matches: (row) => row.migrationStatus === 'Migrated' && row.findings.length > 0,
   },
   { name: 'not-analyzed', label: 'Not analyzed', matches: (row) => !row.analyzed },
   {
     name: 'not-inventoried',
     label: 'Not inventoried',
-    matches: (row) => row.category === 'Not inventoried',
+    matches: (row) => !row.entry,
   },
 ];
 
@@ -243,7 +270,10 @@ function summary(rows: Service[]) {
 function details(row: Service) {
   const lines = [list([row])];
   if (row.entry) {
-    const { migration, notes, blockers, unverified } = row.entry;
+    const { migration, futureHome, notes, blockers, unverified } = row.entry;
+    if (futureHome) {
+      lines.push(`\nSuggested future home (after this migration): ${futureHome}`);
+    }
     if (notes?.trim()) {
       lines.push(`\nInventory notes:\n${notes.trim()}`);
     }
@@ -358,7 +388,7 @@ export function runServices(command: string, args: string[]) {
       if (command === 'list') {
         process.stdout.write(
           `\n${table(
-            ['GROUP', 'MIGRATION'],
+            ['GROUP', 'DESCRIPTION'],
             groups.map((group) => [group.name, group.label]),
           )}\n`,
         );
@@ -405,12 +435,14 @@ export function runServices(command: string, args: string[]) {
       output = counts;
       text = table(
         ['MIGRATION', 'COUNT', 'GROUP'],
-        groups.map((item) => [item.label, String(counts[item.label]), item.name]),
+        groups
+          .filter((item) => !['not-analyzed', 'not-inventoried'].includes(item.name))
+          .map((item) => [item.label, String(counts[item.label]), item.name]),
       );
       text += '\n\nList a group: pnpm gx services list --group <group>';
     }
     process.stdout.write(`${values.json ? JSON.stringify(output, null, 2) : text}\n`);
-    if (!values.json && command !== 'dependencies') {
+    if (!values.json && (command === 'list' || selected)) {
       process.stdout.write(
         '\nDependency counts are distinct disallowed targets; ? means not analyzed. Assessments do not establish test coverage or migration readiness.\n',
       );

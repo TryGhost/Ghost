@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import type { SinonFakeTimers, SinonStub } from 'sinon';
+import type { GhostLogger } from '@tryghost/logging';
+import type { SinonFakeTimers, SinonStub, SinonStubbedInstance } from 'sinon';
 // @ts-expect-error This module lacks type definitions.
 import { endpoints as api } from '../../../../core/server/api';
 // @ts-expect-error This module lacks type definitions.
 import handlebarsService from '../../../../core/frontend/services/handlebars';
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../utils/config-utils';
 import { html } from 'common-tags';
 import loggingLib from '@tryghost/logging';
@@ -28,7 +28,7 @@ function trimSpaces(string: string) {
 }
 
 describe('{{#recommendations}} helper', function () {
-  let logging: { error: SinonStub; warn: SinonStub };
+  let logging: Pick<SinonStubbedInstance<GhostLogger>, 'error' | 'warn'>;
   /** @type {sinon.SinonStub} */
   let settingsCacheGetStub: SinonStub;
 

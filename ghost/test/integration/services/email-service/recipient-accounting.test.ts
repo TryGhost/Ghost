@@ -325,16 +325,17 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     const refresh = models.Email.prototype.refresh;
     let failed = false;
     const readError = new Error('Lost retry refresh');
-    const refreshStub = sinon
-      .stub(models.Email.prototype, 'refresh')
-      .callsFake(async function (this: Email, options) {
-        if (!failed && this.id === email.id && this.get('status') === 'pending') {
-          failed = true;
-          throw readError;
-        }
-        return refresh.call(this, options);
-      });
-    await assert.rejects(retryService.retryEmail(failedEmail), readError);
+    const refreshStub = sinon.stub(models.Email.prototype, 'refresh').callsFake(async function (
+      this: Email,
+      options,
+    ) {
+      if (!failed && this.id === email.id && this.get('status') === 'pending') {
+        failed = true;
+        throw readError;
+      }
+      return refresh.call(this, options);
+    });
+    await assert.rejects(retryService.retryEmail(failedEmail), (thrown) => thrown === readError);
     refreshStub.restore();
     assert.equal((await db.knex('emails').where({ id: email.id }).first()).status, 'failed');
     sinon.assert.notCalled(scheduleEmail);

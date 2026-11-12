@@ -371,6 +371,40 @@ describe('Email Preview API', function () {
     });
   });
 
+  describe('Transistor card', function () {
+    it('links to the example member Transistor page', async function () {
+      const lexical = JSON.stringify({
+        root: {
+          children: [{ type: 'transistor', version: 1 }],
+          direction: 'ltr',
+          format: '',
+          indent: 0,
+          type: 'root',
+          version: 1,
+        },
+      });
+
+      const { body: draftBody } = await agent
+        .post('posts/')
+        .body({
+          posts: [{ title: 'Transistor email preview post', status: 'draft', lexical }],
+        })
+        .expectStatus(201);
+      const [draft] = draftBody.posts;
+
+      await agent
+        .get(`email_previews/posts/${draft.id}/`)
+        .expectStatus(200)
+        .expect(({ body }) => {
+          const { html } = body.email_previews[0];
+          assert.ok(
+            html.includes('href="https://partner.transistor.fm/ghost/example-uuid"'),
+            'Transistor card should link to the example member page',
+          );
+        });
+    });
+  });
+
   describe('Tier-restricted posts', function () {
     let post;
     let paidTierSlug;

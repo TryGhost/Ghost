@@ -135,8 +135,13 @@ export const noInjectedServiceLibraries: CreateRule = {
         ? path.posix.normalize(path.posix.join(directory, specifier))
         : specifier;
       const candidates = specifier.startsWith('.')
-        ? [target, `${target}.ts`, target.replace(/\.js$/, '.ts')]
-        : [target, `node_modules/${target}/`];
+        ? [target, `${target}.ts`, `${target}.js`, target.replace(/\.js$/, '.ts')]
+        : [
+            target,
+            `node_modules/${target}/`,
+            `node_modules/${target}`,
+            `node_modules/${target}.js`,
+          ];
       return libraries.some((pattern) => candidates.some((candidate) => pattern.test(candidate)));
     }
 

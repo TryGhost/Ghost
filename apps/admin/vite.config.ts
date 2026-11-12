@@ -125,7 +125,11 @@ export default defineConfig(({ command, mode }) => ({
   build: {
     sourcemap: 'hidden',
   },
-  define: sharedDefine,
+  define: {
+    ...sharedDefine,
+    // CI sets it on non-tag builds; About then shows it as the Admin version
+    'import.meta.env.GHOST_BUILD_VERSION': JSON.stringify(process.env.GHOST_BUILD_VERSION || ''),
+  },
   server: {
     // Containers on Linux reach the host through the Docker bridge, and a devcontainer's
     // published port reaches its network interface: those set GHOST_DEV_LISTEN=0.0.0.0
@@ -144,6 +148,12 @@ export default defineConfig(({ command, mode }) => ({
   resolve: sharedResolve,
   test: {
     environment: 'jsdom',
+    // Reuses workers and isolates each file in a VM context, skipping the
+    // per-file jsdom and module reload that dominated the forks pool
+    pool: 'vmThreads',
+    // VM contexts accumulate memory until a worker recycles; 1GB keeps peak
+    // RSS ~5GB at 4 workers without slowing the run
+    vmMemoryLimit: '1GB',
     globals: true,
     setupFiles: ['./test-utils/setup.ts'],
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'test-utils/**/*.test.ts'],

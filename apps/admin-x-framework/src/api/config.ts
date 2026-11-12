@@ -42,6 +42,8 @@ export type Config = {
       customIntegrations?: {
         disabled: boolean;
       };
+      allStaff?: { max?: number; error?: string };
+      inviteEmails?: { maxPeriodic?: number; disabled?: boolean; error?: string };
       staff?: {
         max?: number;
         error?: string;
@@ -56,6 +58,10 @@ export type Config = {
       };
       newsletters?: {
         max?: number;
+        error?: string;
+      };
+      uploads?: {
+        max?: number; // Bytes, enforced on file and media uploads but not images
         error?: string;
       };
       emails?: {
@@ -153,10 +159,6 @@ export type Config = {
   featurebase?: {
     enabled?: boolean;
     organization?: string;
-  };
-  docsbot?: {
-    enabled?: boolean;
-    id?: string;
   };
   clientExtensions?: {
     script?: {

@@ -11,13 +11,13 @@ This lightweight image:
 - Enables `nodemon` for automatic restarts on file changes
 - Works with the Caddy gateway to proxy frontend assets from host dev servers
 
-## Key Differences from Main Dockerfile
+## Key Differences from the Production Dockerfile
 
-**Main `Dockerfile`** (for E2E tests, full builds):
+**[`Dockerfile.production`](../../Dockerfile.production)** (for E2E tests and published images):
 
-- Builds all frontend apps (Admin, Portal, AdminX apps, etc.)
-- Bundles everything into the image
-- ~15 build stages, 5-10 minute build time
+- Builds Ghost Core and its workspace dependencies into a production-only app
+- Builds no frontend apps; the `full` target copies in a prebuilt Admin and embed renderer
+- Bakes everything into the image
 
 **This `Dockerfile`** (for local development):
 
@@ -31,7 +31,7 @@ This lightweight image:
 This image is used automatically when running:
 
 ```bash
-pnpm dev:docker       # Starts Docker backend + React/shared/Portal watchers
+pnpm dev:docker       # Starts Docker backend + Admin/Portal watchers
 ```
 
 `pnpm dev` and its variants run Ghost on the host instead.

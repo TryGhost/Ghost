@@ -64,35 +64,55 @@ test('shows root and generator help, and rejects unknown commands', async () => 
       assert.match(result.stdout, /Usage: pnpm gx generate package <name> \[options\]/);
     }
   }
-  for (const args of [
-    ['unknown'],
-    ['generate'],
-    ['generate', 'unknown'],
-    ['generate', '--help'],
-    ['dev'],
-    ['dev', 'unknown'],
-    ['dev', '--help'],
-    ['services'],
-    ['services', 'unknown'],
-    ['services', '--help'],
-    ['db'],
-    ['db', 'unknown'],
-    ['db', '--help'],
-    ['data'],
-    ['data', 'unknown'],
-    ['data', '--help'],
-    ['benchmark'],
-    ['benchmark', 'unknown'],
-    ['benchmark', '--help'],
-    ['--help', 'unknown'],
-    ['--version'],
-  ]) {
+  for (const args of [['unknown'], ['unknown', '--help'], ['--help', 'unknown'], ['--version']]) {
     const result = run(root, args);
     assert.equal(result.status, 1, args.join(' '));
     assert.equal(result.stdout, '');
     assert.match(stripVTControlCharacters(result.stderr), /Usage:\s+pnpm gx/);
   }
 });
+
+const menus = {
+  generate: ['package', 'service', 'golden-email', 'migration'],
+  dev: ['up', 'down', 'status', 'gc'],
+  services: ['list', 'report', 'dependencies', 'audit'],
+  db: ['rebuild-development-tables'],
+  data: ['generate', 'shift-dates', 'multi-sub-scenarios'],
+  benchmark: ['automations-drain', 'recipient-preparation'],
+};
+
+for (const [menu, commands] of Object.entries(menus)) {
+  test(`${menu} shows its own help without loading a command`, async () => {
+    const root = await fixture();
+    const result = run(root, [menu]);
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stderr, '');
+    const output = stripVTControlCharacters(result.stdout);
+    assert.ok(output.includes(`pnpm gx ${menu} <command>`), output);
+    assert.ok(!output.includes('pnpm gx <command>'), output);
+    for (const command of commands) {
+      assert.ok(output.includes(command), `Missing ${command}`);
+    }
+    for (const flag of ['--help', '-h']) {
+      const explicit = run(root, [menu, flag]);
+      assert.equal(explicit.status, 0, explicit.stderr);
+      assert.equal(explicit.stderr, '');
+      assert.equal(explicit.stdout, result.stdout);
+    }
+  });
+
+  test(`${menu} rejects invalid input with its own help`, async () => {
+    const root = await fixture();
+    for (const args of [['unknown'], ['--unknown'], ['--help', 'unexpected']]) {
+      const result = run(root, [menu, ...args]);
+      assert.equal(result.status, 1, result.stdout);
+      assert.equal(result.stdout, '');
+      const output = stripVTControlCharacters(result.stderr);
+      assert.ok(output.includes(`pnpm gx ${menu} <command>`), output);
+      assert.ok(!output.includes('pnpm gx <command>'), output);
+    }
+  });
+}
 
 test('generates the existing template and registers a nested private package', async () => {
   const root = await fixture();

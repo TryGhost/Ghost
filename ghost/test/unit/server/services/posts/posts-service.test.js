@@ -1,4 +1,5 @@
 const PostsService = require('../../../../../core/server/services/posts/posts-service');
+const schema = require('../../../../../core/server/data/schema/schema');
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
@@ -37,9 +38,12 @@ describe('Posts Service', function () {
       existingPostModel = {
         attributes: {
           id: POST_ID,
+          uuid: 'a5b2c3d4-0000-4000-8000-000000000000',
           title: 'Test Post',
           slug: 'test-post',
+          comment_id: POST_ID,
           status: 'published',
+          canonical_url: 'https://example.com/original/',
           newsletter_id: 'abc123',
         },
         related: sinon.stub(),
@@ -95,7 +99,11 @@ describe('Posts Service', function () {
       const copiedPostData = postModelStub.add.getCall(0).args[0];
 
       assert.equal(copiedPostData.id, undefined);
+      assert.equal(copiedPostData.uuid, undefined);
       assert.equal(copiedPostData.slug, undefined);
+      assert.equal(copiedPostData.comment_id, undefined);
+      assert.equal(copiedPostData.canonical_url, undefined);
+      assert.equal(copiedPostData.newsletter_id, undefined);
     });
 
     it('updates the title of the copied post', async function () {
@@ -189,6 +197,43 @@ describe('Posts Service', function () {
       assert.deepEqual(copiedPostData.posts_meta, {
         meta_title: postMetaModel.attributes.meta_title,
         meta_description: postMetaModel.attributes.meta_description,
+      });
+    });
+
+    describe('copied fields', function () {
+      const columns = (table) => Object.keys(schema[table]).filter((key) => !key.startsWith('@@'));
+
+      it('decides whether to copy every posts column', function () {
+        const excluded = [
+          'id',
+          'uuid',
+          'slug',
+          'comment_id',
+          'status',
+          'created_at',
+          'updated_at',
+          'published_at',
+          'published_by',
+          'auto_excerpt',
+          'reading_time',
+          'canonical_url',
+          'newsletter_id',
+        ];
+
+        assert.deepEqual(
+          [...PostsService.COPIED_POSTS_FIELDS, ...excluded].sort(),
+          columns('posts').sort(),
+        );
+      });
+
+      it('decides whether to copy every posts_meta column', function () {
+        // Newsletter fields stay behind: copying them made published copies look like sent emails
+        const excluded = ['id', 'post_id', 'email_subject', 'email_only'];
+
+        assert.deepEqual(
+          [...PostsService.COPIED_POSTS_META_FIELDS, ...excluded].sort(),
+          columns('posts_meta').sort(),
+        );
       });
     });
   });

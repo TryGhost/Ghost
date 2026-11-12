@@ -13,13 +13,7 @@
   "targetDefaults": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": [
-        {
-          "env": "GHOST_CDN_URL"
-        },
-        "default",
-        "^default"
-      ],
+      "inputs": ["default", "^default"],
       "outputs": [
         "{projectRoot}/build",
         "{projectRoot}/dist",
@@ -38,7 +32,13 @@
     "test:unit": {
       "cache": true,
       "dependsOn": ["build"],
-      "inputs": ["default", "^default", { "runtime": "node -v" }]
+      "inputs": [
+        "default",
+        "^default",
+        {
+          "runtime": "node -v"
+        }
+      ]
     },
     "test:types": {
       "cache": true,
@@ -54,5 +54,8 @@
     }
   },
   "analytics": true,
-  "nxCloudId": "6a146249a88a39d9ffa5046c"
+  "nxCloudId": "6a146249a88a39d9ffa5046c",
+  "affected": {
+    "legacy": true
+  }
 }

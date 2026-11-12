@@ -8,6 +8,10 @@ pnpm gx generate package email-utils --description "Email utilities for Ghost."
 pnpm gx generate package parser --dir packages/email/parser
 ```
 
+Run a command group without a subcommand, such as `pnpm gx generate`, to see
+that group's help. `--help` and `-h` show the same menu. Unknown commands still
+exit with an error and show help for the relevant group.
+
 Package generation uses `packages/_template` and the shared helpers in
 `tools/scripts/lib/`. `pnpm create-package` remains a forwarding alias.
 Run `pnpm install` after generating a package; custom destinations must be covered
@@ -46,6 +50,24 @@ next minor-version folder and promotes package versions to RC when needed.
 See [database migrations](../../docs/practices/database-migrations.md) for the
 workflow.
 
+## Service generator
+
+Run `pnpm gx generate service <name>` to create a boot-owned TypeScript service.
+Use lowercase kebab-case beginning with a letter, for example:
+
+```sh
+pnpm gx generate service delivery-receipts
+```
+
+It creates a `defineService` root, a separate implementation with typed logging
+injection, and a starter root test. It adds `migrated: true` to the service
+inventory and registers the root in Oxlint, enabling root and dependency checks
+immediately. Existing service files, directories and tests are never overwritten.
+
+The command prints the remaining steps, including choosing the right place for
+`init()` in boot. See [creating a service](../../ghost/core/server/services/README.md#creating-a-service)
+for the ownership, implementation and testing requirements.
+
 ## Rebuild development tables
 
 Run `pnpm gx db rebuild-development-tables` after editing development-only table
@@ -81,11 +103,35 @@ Clearing the REPL restores those bindings; exiting closes the connection.
 
 Run `pnpm gx data shift-dates` to shift database dates up to the present day, or
 pass `--offset=<days>` to choose an offset. This modifies all dateTime columns.
+The default offset is the number of whole UTC days since the last member login.
 It asks for confirmation unless `--force` is supplied. Both commands retain
 their development/local environment restriction and use the same Core runner.
 
 The former `node index.js repl` and `node index.js timetravel` entrypoints report
 their gx replacements. The old `ghost/core/cli` framework has been removed.
+
+## Automation drain benchmark
+
+Run `pnpm gx benchmark automations-drain --numberOfRuns [n] --steps
+[wait,send_email,...]` to measure how long it takes to drain the automations
+queue.
+
+Example:
+
+```sh
+pnpm gx benchmark automations-drain --numberOfRuns 1000 --steps wait,send_email
+```
+
+Benchmark boots Ghost, creates one free member per run, one automation, and
+pending runs. Timer starts when runs become ready and ends after all steps
+finish.
+
+Wait steps use one millisecond per configured hour.
+
+Email steps use configured development mail transport.
+
+Automation and members remain in development database under `Drain benchmark
+<automation-id>` and member emails beginning `benchmark-<automation-id>-`.
 
 ## Recipient preparation benchmark
 
@@ -106,18 +152,20 @@ Dependency Cruiser audit. Run them from the repository root:
 
 | Command                                 | Output                                                         |
 | --------------------------------------- | -------------------------------------------------------------- |
-| `pnpm gx services report`               | Migration totals and categories                                |
-| `pnpm gx services list`                 | Entries, migration categories and dependency counts            |
+| `pnpm gx services report`               | Ownership totals, migration progress and remaining work        |
+| `pnpm gx services list`                 | Entries, ownership, migration status and dependency counts     |
 | `pnpm gx services report email-address` | One entry's notes, assessments, blockers and offending imports |
 | `pnpm gx services dependencies`         | Disallowed dependencies ranked by distinct importing files     |
 | `pnpm gx services audit`                | Dependency Cruiser's full native report                        |
 
-List any group from the report with `list --group <group>`. Each report row
-shows its group ID; `list --help` lists all groups. For example:
+List a group with `list --group <group>`. Report tables show group IDs;
+`list --help` lists all groups. For example:
 
 ```sh
 pnpm gx services list --group straightforward-clear
 pnpm gx services list --group needs-preparation
+pnpm gx services list --group to-migrate
+pnpm gx services list --group undecided
 pnpm gx services list --group migrated --json
 ```
 
@@ -129,25 +177,35 @@ It replaces `pnpm audit:services`; `services dependencies` replaces
 
 ### Interpreting the reports
 
-Counts are calculated from the checkout, not stored in the inventory. Categories
-come from the inventory's ownership and migration assessments:
+Counts are calculated from the checkout, not stored in the inventory. The report
+shows one table with `MIGRATION`, `COUNT` and `GROUP` columns. Disposition
+(**Migrate**, **Relocate**, **Split** or **Undecided**) and migration progress
+are counted independently. See the [services README](../../ghost/core/server/services/README.md)
+for what each disposition means.
 
-- **Migrated:** marked `migrated: true`.
-- **Move or split planned:** marked `disposition: relocate`; this records intended
-  ownership, not completed work.
-- **Ownership undecided:** marked `disposition: review`.
-- **Needs preparation:** either assessment is complex, or the overall assessment
-  identifies a possible model change.
-- **Straightforward:** both assessments are straightforward and the existing
-  model fits. This can still include dependency violations.
+Migration progress has three groups:
 
-Migration and ownership categories take precedence over complexity.
-**Staying in services/** counts entries marked `disposition: retain`, not all
-runtime services. Entries planned for a move or split can still be configured
-runtime services with dependency, readiness and lifetime contracts. Groups can
-overlap: an entry staying here can also be unmigrated and need preparation.
-The filter names remain `retained`, `unmigrated-retained`,
-`unmigrated-retained-with-violations` and `relocation`.
+- **Migrated:** marked `migrated: true`, whatever the disposition, so this
+  group can overlap Relocate and Split.
+- **Needs preparation:** not migrated, and either assessment is
+  complex or identifies a possible model change.
+- **Straightforward:** not migrated, both assessments are
+  straightforward, and the existing model fits. This can still include
+  dependency violations and test gaps.
+
+The `to-migrate` filter shows what's left to migrate:
+**needs preparation + straightforward**. Relocations, splits and undecided
+entries are listed by the `relocate`, `split` and `undecided` filters; their
+notes and migration assessments explain the work needed.
+
+Per-service reports show an entry's optional `futureHome`, a suggested home
+after this migration. It does not change the entry's group.
+
+Lists and per-service JSON expose independent `ownership` and `migrationStatus`
+fields instead of a combined category. Summary JSON retains labelled counts;
+ownership counts sum to **Catalogued entries**, and **Migrated + Unmigrated
+entries** gives the same total. Diagnostic counts are overlapping subsets,
+not additional services.
 
 Per-service reports show inventory notes before the migration assessments, so
 planned ownership changes are visible alongside earlier assessments. Notes are
@@ -156,6 +214,8 @@ also included in JSON output as `entry.notes`.
 Entries found by the audit but absent from the inventory are **Not inventoried**;
 entries absent from the dependency graph have unknown counts. Malformed or
 incomplete assessments fail the report.
+The `not-analyzed` and `not-inventoried` diagnostic counts are available in
+summary JSON and list filters, but omitted from the text summary.
 
 `list` counts distinct disallowed dependency targets per entry, with unresolved
 and own-root imports in separate columns. `dependencies` counts distinct

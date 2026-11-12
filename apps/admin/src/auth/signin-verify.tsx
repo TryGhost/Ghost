@@ -64,7 +64,7 @@ export default function SigninVerify() {
     <AuthLayout>
       <form noValidate onSubmit={(event) => void verify(event)}>
         <Stack gap="lg">
-          <AuthHeader title={twoFactorRequired ? '2FA confirmation' : "Verify it's really you"}>
+          <AuthHeader title={twoFactorRequired ? '2FA confirmation' : 'Verify it’s really you'}>
             <p className="text-lg text-muted-foreground">
               {twoFactorRequired ? (
                 <>
@@ -73,7 +73,7 @@ export default function SigninVerify() {
                 </>
               ) : (
                 <>
-                  It looks like you&apos;re signing in from a new device. A{' '}
+                  It looks like you’re signing in from a new device. A{' '}
                   <span className="whitespace-nowrap">6-digit</span>{' '}
                   <span className="whitespace-nowrap">sign-in</span> verification code has been sent
                   to your email to keep your account safe.

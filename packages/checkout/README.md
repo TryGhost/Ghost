@@ -2,18 +2,33 @@
 
 What Ghost's Stripe Checkout can collect, where it lands, and how the page can be styled.
 
-Three parties have to agree on this and none of them can import another's source:
+Four parties have to agree on this and none of them can import another's source:
 Ghost Core builds the checkout session and validates what a publisher saves, Admin
-offers the publisher only what that save would accept, and the end-to-end harness
-models Stripe. A divergence between the first two is a setting that looks saved and
-collects nothing.
+offers the publisher only what that save would accept, Portal asks a member changing
+tier for what the new tier requires, and the end-to-end harness models Stripe. A
+divergence between the first two is a setting that looks saved and collects nothing.
+
+Portal imports the requirements on their own, from `@tryghost/checkout/field-ports`,
+as the rest of the package is built out of zod, which Portal's bundle leaves out.
 
 ## What is in here
 
 - `STRIPE_ALLOWED_COUNTRIES` / `isStripeAllowedCountry` — the countries Stripe
   Checkout accepts in `shipping_address_collection`.
-- `STRIPE_PORTS` / `STRIPE_PORT` / `isStripePort` — the names Stripe returns
-  collected values under.
+- `CHECKOUT_PORTS` / `CHECKOUT_PORT` / `isCheckoutPort` — the fixed names a checkout
+  collects values under, such as `checkout.shipping.address`, whichever page asks.
+- `REQUIREMENTS` / `isRequirementName` / `portsOf` — what a tier can require its
+  members to give, by name, and the port each of its answers is collected under, by
+  the role it plays in the requirement.
+- `RequirementSettings` — what each requirement is set to beyond its tiers, such as
+  the countries shipping is limited to.
+- `ListedRequirement` / `ListedPort` — a requirement as tiers list it, each port with
+  the custom field it saves into while members can read it there, and its own
+  settings, each requirement in its own shape told apart by name. Ghost Core lists
+  them and Portal reads them, so both build against this one shape.
+- `matchRequirement` / `RequirementHandlers` — handles a requirement by its name,
+  given in its own shape, so a requirement added here has to be handled wherever
+  requirements are.
 - `PORT_FIELD` — what each port supplies, and the custom field type that can hold it.
 - `STRIPE_CHECKOUT_BORDER_STYLES` / `STRIPE_CHECKOUT_FONTS` — what Checkout's
   `branding_settings` accepts for the parts of the page a publisher can style.

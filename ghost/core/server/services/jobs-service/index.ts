@@ -3,11 +3,8 @@ import type { Knex } from 'knex';
 import { JobsService, JobsOutboxWiring } from './jobs-service';
 import { JobsOutbox } from './jobs-outbox';
 import { OutboxRelay } from './outbox-relay';
+import { OutboxTracker } from './outbox-tracker';
 import { getOutboxConfig } from './outbox-config';
-import {
-  isInDevelopmentTable,
-  shouldCreateInDevelopmentTables,
-} from '../../data/schema/in-development';
 import type { JobsShutdownOptions } from '@tryghost/adapter-base-jobs';
 
 const DatabaseInfo = require('@tryghost/database-info');
@@ -37,15 +34,11 @@ export function init({ knex, config }: JobsServiceInitOptions): JobsService {
   const outboxConfig = getOutboxConfig(config);
   // The relay claims rows with FOR UPDATE SKIP LOCKED, which SQLite does not have.
   const isMySQL = DatabaseInfo.isMySQL(knex);
-  // jobs_outbox is still in development, so until its migration lands it only
-  // exists where in-development tables are created. Enabling the flag elsewhere
-  // must not make every dispatch fail on a missing table.
-  const tableAvailable = !isInDevelopmentTable('jobs_outbox') || shouldCreateInDevelopmentTables();
-  const active = outboxConfig.enabled && isMySQL && tableAvailable;
+  const active = outboxConfig.enabled && isMySQL;
 
   let outbox: JobsOutboxWiring | undefined;
   if (active) {
-    const store = new JobsOutbox({ knex });
+    const store = new JobsOutbox({ knex, keepUntilSettled: outboxConfig.keepUntilSettled });
     const relay = new OutboxRelay({
       outbox: store,
       backend,
@@ -55,7 +48,11 @@ export function init({ knex, config }: JobsServiceInitOptions): JobsService {
       submissionTimeoutMs: outboxConfig.submissionTimeoutMs,
       retryDelayMs: outboxConfig.retryDelayMs,
     });
-    outbox = { store, relay };
+    // With rows deleted at hand-off, there is nothing left for a settlement to remove
+    const tracker = outboxConfig.keepUntilSettled
+      ? new OutboxTracker({ store, logging })
+      : undefined;
+    outbox = { store, relay, tracker };
   }
 
   instance = new JobsService({

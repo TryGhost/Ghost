@@ -4,7 +4,7 @@ const { sessionFromToken } = require('./session-from-token');
 const createSessionMiddleware = require('./middleware');
 const settingsCache = require('../../../shared/settings-cache');
 const { GhostMailer } = require('../../lib/mail');
-const { t } = require('../../services/i18n');
+const { t } = require('../../../shared/i18n');
 
 const expressSession = require('./express-session');
 
@@ -12,7 +12,25 @@ const models = require('../../models');
 const urlUtils = require('../../../shared/url-utils').default;
 const config = require('../../../shared/config');
 const { blogIcon } = require('../../lib/image');
+const spamPrevention = require('../../web/shared/middleware/api/spam-prevention');
+const errors = require('@tryghost/errors');
+const moment = require('moment');
 const url = require('url');
+
+// Share the email budget across sessions, IPs and Ghost instances.
+async function limitVerificationEmailForUser(userId) {
+  const result = await spamPrevention.verificationEmail().consume({ key: userId });
+  if (!result.allowed) {
+    throw new errors.TooManyRequestsError({
+      message: `Too many verification emails requested, try again in ${moment.duration(result.retryAfterMs).humanize()}`,
+      context: 'Too many attempts.',
+    });
+  }
+}
+
+function resetVerificationEmailForUser(userId) {
+  return spamPrevention.verificationEmail().reset({ key: userId });
+}
 
 // TODO: We have too many lines here, should move functions out into a utils module
 
@@ -52,6 +70,15 @@ function getOriginOfRequest(req) {
 const mailer = new GhostMailer();
 
 const sessionService = createSessionService({
+  async consumeAuthCodeAttempt(challenge) {
+    const result = await spamPrevention.userVerificationChallenge().consume({ key: challenge });
+    if (!result.allowed) {
+      throw new errors.TooManyRequestsError({
+        message: 'Too many verification attempts. Please request a new code.',
+        code: 'STAFF_VERIFICATION_ATTEMPTS_RATE_LIMITED',
+      });
+    }
+  },
   getOriginOfRequest,
   getSession: expressSession.getSession,
   findUserById({ id }) {
@@ -70,6 +97,8 @@ const sessionService = createSessionService({
       'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png'
     );
   },
+  limitVerificationEmailForUser,
+  resetVerificationEmailForUser,
   mailer,
   urlUtils,
   t,

@@ -26,6 +26,7 @@
     "knex": "catalog:",
     "knex-migrator": "catalog:",
     "luxon": "catalog:",
+    "oxfmt": "catalog:",
     "semver": "catalog:",
     "tsx": "catalog:",
     "zod": "catalog:"
@@ -68,6 +69,19 @@
       "serviceReports": [
         "{workspaceRoot}/.dependency-cruiser.cjs",
         "{workspaceRoot}/tools/scripts/ci/service-dependency-resolver.mjs"
+      ],
+      "serviceGenerator": [
+        "{workspaceRoot}/.editorconfig",
+        "{workspaceRoot}/.oxfmtrc.json",
+        "{workspaceRoot}/.oxlintrc.json",
+        "{workspaceRoot}/tools/configs/oxlint/**/*",
+        "{workspaceRoot}/ghost/eslint.config.mjs",
+        "{workspaceRoot}/ghost/package.json",
+        "{workspaceRoot}/ghost/tsconfig.json",
+        "{workspaceRoot}/ghost/test/tsconfig.json",
+        "{workspaceRoot}/ghost/core/kernel/define-service.ts",
+        "{workspaceRoot}/ghost/core/server/services/README.md",
+        "{workspaceRoot}/ghost/test/unit/server/services/service-inventory.test.ts"
       ]
     },
     "targets": {
@@ -81,6 +95,7 @@
           "dataCommands",
           "developmentStackCommands",
           "serviceReports",
+          "serviceGenerator",
           {
             "runtime": "node -v"
           }

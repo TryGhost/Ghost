@@ -1,4 +1,4 @@
-const recommendations = require('../../services/recommendations');
+const recommendations = require('../../services/recommendations').default;
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -12,7 +12,7 @@ const controller = {
     permissions: true,
     validation: {},
     async query(frame) {
-      return await recommendations.incomingRecommendationController.browse(frame);
+      return await recommendations.service.incomingRecommendationController.browse(frame);
     },
   },
 };

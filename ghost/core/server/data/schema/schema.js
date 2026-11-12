@@ -521,6 +521,12 @@ module.exports = {
     lifetime: { type: 'bigInteger' },
     count: { type: 'integer' },
   },
+  rate_limits: {
+    key: { type: 'string', maxlength: 191, nullable: false, primary: true },
+    points: { type: 'integer', nullable: false, defaultTo: 0 },
+    expire: { type: 'bigInteger', nullable: true },
+    '@@INDEXES@@': [['expire']],
+  },
   sessions: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     session_id: { type: 'string', maxlength: 32, nullable: false, unique: true },
@@ -528,6 +534,73 @@ module.exports = {
     session_data: { type: 'string', maxlength: 2000, nullable: false },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
+  },
+  // Better Auth's account, session and verification models (in development).
+  // Dates keep milliseconds because Better Auth expects them to round-trip.
+  user_accounts: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    user_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'users.id',
+      cascadeDelete: true,
+    },
+    account_id: { type: 'string', maxlength: 191, nullable: false },
+    provider_id: { type: 'string', maxlength: 191, nullable: false },
+    access_token: { type: 'text', maxlength: 65535, nullable: true },
+    refresh_token: { type: 'text', maxlength: 65535, nullable: true },
+    id_token: { type: 'text', maxlength: 65535, nullable: true },
+    access_token_expires_at: { type: 'dateTime', precision: 3, nullable: true },
+    refresh_token_expires_at: { type: 'dateTime', precision: 3, nullable: true },
+    scope: { type: 'text', maxlength: 65535, nullable: true },
+    password: { type: 'string', maxlength: 191, nullable: true },
+    created_at: { type: 'dateTime', precision: 3, nullable: false },
+    updated_at: { type: 'dateTime', precision: 3, nullable: false },
+    '@@UNIQUE_CONSTRAINTS@@': [['provider_id', 'account_id']],
+  },
+  user_sessions: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    user_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'users.id',
+      cascadeDelete: true,
+    },
+    token: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    expires_at: { type: 'dateTime', precision: 3, nullable: false, index: true },
+    ip_address: { type: 'string', maxlength: 45, nullable: true },
+    user_agent: { type: 'text', maxlength: 65535, nullable: true },
+    origin: { type: 'string', maxlength: 2000, nullable: true },
+    verified: { type: 'boolean', nullable: false, defaultTo: false },
+    created_at: { type: 'dateTime', precision: 3, nullable: false },
+    updated_at: { type: 'dateTime', precision: 3, nullable: false },
+  },
+  verifications: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    identifier: { type: 'string', maxlength: 191, nullable: false, index: true },
+    value: { type: 'text', maxlength: 65535, nullable: false },
+    expires_at: { type: 'dateTime', precision: 3, nullable: false, index: true },
+    created_at: { type: 'dateTime', precision: 3, nullable: false },
+    updated_at: { type: 'dateTime', precision: 3, nullable: false },
+  },
+  // Better Auth's twoFactor plugin model (in development). A verified row is
+  // what the virtual users.two_factor_enabled reads.
+  user_two_factors: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    user_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'users.id',
+      cascadeDelete: true,
+    },
+    secret: { type: 'text', maxlength: 65535, nullable: false },
+    backup_codes: { type: 'text', maxlength: 65535, nullable: false },
+    verified: { type: 'boolean', nullable: false, defaultTo: false },
+    failed_verification_count: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
+    locked_until: { type: 'dateTime', precision: 3, nullable: true },
   },
   integrations: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -790,6 +863,46 @@ module.exports = {
       cascadeDelete: true,
     },
     sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
+    '@@UNIQUE_CONSTRAINTS@@': [['product_id', 'benefit_id']],
+  },
+  // What a tier's members must give, by name, such as `shipping`: on every paid tier, including
+  // tiers added later, or only on the tiers listed for it. The name is fixed in code, not a
+  // reference to a row, and the custom field each of its answers is kept in is the binding of the
+  // port it's collected under. Stored as a choice rather than read off an empty list, so a
+  // requirement limited to some tiers never quietly widens to all of them. `countries` limits
+  // shipping's address to these countries, as a JSON list of ISO codes, or is null for anywhere,
+  // and only shipping keeps any.
+  tier_requirements: {
+    requirement: { type: 'string', maxlength: 50, nullable: false, primary: true },
+    tier_scope: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      validations: { isIn: [['all_paid', 'selected_paid']] },
+    },
+    countries: { type: 'text', maxlength: 65535, nullable: true },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
+  },
+  // The tiers a requirement is limited to, when it is limited to some rather than every paid
+  // tier. Deleting a tier takes it out of every list, so a requirement never stops a tier being
+  // deleted. One whose last tier is deleted requires nothing, rather than widening to every tier.
+  tier_requirement_tiers: {
+    requirement: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      references: 'tier_requirements.requirement',
+      cascadeDelete: true,
+    },
+    product_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'products.id',
+      cascadeDelete: true,
+    },
+    '@@PRIMARY_KEY@@': ['requirement', 'product_id'],
   },
   members_products: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -1083,9 +1196,14 @@ module.exports = {
       // Keep in sync with FIELD_TYPE_IDS in @tryghost/metafield-types,
       // the source of truth (this static schema can't import it).
       validations: {
-        isIn: [['short_text', 'long_text', 'address']],
+        isIn: [['short_text', 'long_text', 'list', 'address', 'phone']],
       },
     },
+    // What the field is set up with beyond its name, as JSON: a list field's options and
+    // whether a member picks several. Null for a type with nothing to set up. Each type's
+    // settings are checked by @tryghost/metafield-types. MEDIUMTEXT because a list's options
+    // can outgrow TEXT's 65,535 bytes.
+    settings: { type: 'text', maxlength: 16777215, fieldtype: 'medium', nullable: true },
     status: {
       type: 'string',
       maxlength: 50,
@@ -1564,37 +1682,16 @@ module.exports = {
     updated_at: { type: 'dateTime', nullable: true },
   },
   // The site-wide Stripe Checkout config. It is a single row found by its slug, so the first
-  // save inserts it and later saves update it. Each part of the config has its own JSON
-  // column, which is null until that part is set.
+  // save inserts it and later saves update it. Each part with settings of Stripe's own has its
+  // own JSON column, which is null until that part is set. Which tiers ask for what checkout
+  // collects into custom fields, and the countries a shipping address must be in, are tier
+  // requirements.
   stripe_checkout_config: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     slug: { type: 'string', maxlength: 191, nullable: false, unique: true },
     design: { type: 'text', maxlength: 65535, nullable: true },
-    shipping: { type: 'text', maxlength: 65535, nullable: true },
-    phone: { type: 'text', maxlength: 65535, nullable: true },
-    tax_number: { type: 'text', maxlength: 65535, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
-  },
-  // The tiers a section of `stripe_checkout_config` is limited to, when it is limited to some
-  // rather than every paid tier. Deleting a tier takes it out of every list, so the config never
-  // stops a tier being deleted and never names one that is gone. A section whose last tier is
-  // deleted reads as switched off, rather than widening to every tier.
-  stripe_checkout_config_tiers: {
-    section: {
-      type: 'string',
-      maxlength: 50,
-      nullable: false,
-      validations: { isIn: [['shipping', 'phone', 'tax_number']] },
-    },
-    product_id: {
-      type: 'string',
-      maxlength: 24,
-      nullable: false,
-      references: 'products.id',
-      cascadeDelete: true,
-    },
-    '@@PRIMARY_KEY@@': ['section', 'product_id'],
   },
   actions: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -1683,7 +1780,7 @@ module.exports = {
   email_recipients: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     email_id: { type: 'string', maxlength: 24, nullable: false, references: 'emails.id' },
-    member_id: { type: 'string', maxlength: 24, nullable: false, index: true },
+    member_id: { type: 'string', maxlength: 24, nullable: false },
     batch_id: { type: 'string', maxlength: 24, nullable: false, references: 'email_batches.id' },
     processed_at: { type: 'dateTime', nullable: true },
     delivered_at: { type: 'dateTime', nullable: true },
@@ -1697,6 +1794,7 @@ module.exports = {
       ['email_id', 'delivered_at'],
       ['email_id', 'opened_at'],
       ['email_id', 'failed_at'],
+      ['member_id', 'opened_at', 'email_id'],
     ],
   },
   email_recipient_failures: {
@@ -2173,24 +2271,13 @@ module.exports = {
       validations: { isIn: [['active', 'inactive', 'archived']] },
     },
     name: { type: 'string', maxlength: 191, nullable: false },
-    trigger_type: {
-      type: 'string',
-      maxlength: 50,
-      nullable: false,
-      validations: { isIn: [['membership_started']] },
-    },
     description: { type: 'string', maxlength: 2000, nullable: false, defaultTo: '' },
     slug: { type: 'string', maxlength: 191, nullable: true, unique: true },
-    trigger_tier_scope: {
-      type: 'string',
-      maxlength: 50,
-      nullable: true,
-      validations: { isIn: [['free', 'all_paid', 'selected_paid']] },
-    },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
-  automation_trigger_tiers: {
+  automation_trigger_rules: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     automation_id: {
       type: 'string',
       maxlength: 24,
@@ -2198,12 +2285,35 @@ module.exports = {
       references: 'automations.id',
       cascadeDelete: true,
     },
+    trigger_type: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      validations: {
+        isIn: [['free_signup', 'paid_subscription_started', 'paid_subscription_changed']],
+      },
+    },
+    scope: {
+      type: 'string',
+      maxlength: 50,
+      nullable: true,
+      validations: { isIn: [['any_paid_tier', 'specific_paid_tier', 'free']] },
+    },
+    direction: {
+      type: 'string',
+      maxlength: 50,
+      nullable: true,
+      validations: { isIn: [['from', 'to']] },
+    },
     product_id: {
       type: 'string',
       maxlength: 24,
-      nullable: false,
+      nullable: true,
       references: 'products.id',
+      cascadeDelete: true,
     },
+    created_at: { type: 'dateTime', nullable: false },
+    // Note that this UNIQUE constraint allows duplicates if `product_id` is NULL. This is intentional.
     '@@UNIQUE_CONSTRAINTS@@': [['automation_id', 'product_id']],
   },
   automation_actions: {
@@ -2371,6 +2481,7 @@ module.exports = {
             'failed',
             'finished',
             'member changed status',
+            'member changed tier',
             'member unsubscribed',
           ],
         ],
@@ -2662,6 +2773,9 @@ module.exports = {
     // Being unique, it is what lets a site have only one installation per app however two
     // installs race, while any number of ended ones share the null.
     current_app_id: { type: 'string', maxlength: 191, nullable: true, unique: true },
+    // The RFC 7638 thumbprint of the identity key the app was installed with. It never
+    // changes: a manifest signed with any other key is a different app.
+    identity_key_thumbprint: { type: 'string', maxlength: 64, nullable: false },
     status: {
       type: 'string',
       maxlength: 50,
@@ -2693,12 +2807,20 @@ module.exports = {
     },
     // As wide as the contract's URL limit, which is what refuses a longer one.
     manifest_url: { type: 'string', maxlength: 2000, nullable: false },
-    // The validated manifest, with its URLs resolved, as JSON.
+    // The validated manifest, as JSON.
     manifest: { type: 'text', maxlength: 65535, nullable: false },
-    // SHA-256 of `manifest_url` and `manifest` together, in hex: what a publisher confirms,
+    // SHA-256 of `manifest`, which names its own URL, in hex: what a publisher confirms,
     // and what tells two versions apart without parsing them. Defined by
     // services/app-installations/load-manifest.ts.
     digest: { type: 'string', maxlength: 64, nullable: false },
+    // A copy of the app's own icon as a data URL, taken when the row was added, so staff
+    // browsers never request it from the app. Null for a named icon. Defined by
+    // services/app-installations/fetch-icon.ts.
+    icon_data_url: { type: 'text', maxlength: 65535, nullable: true },
+    // The RFC 7638 thumbprint of the manifest's backend key. For each app and identity key,
+    // every key named on any installation is retired, other than the one named by the newest
+    // installation's pending or else approved manifest: a manifest naming one is refused.
+    backend_key_thumbprint: { type: 'string', maxlength: 64, nullable: false },
     // How the row was added: the app was installed, an Administrator approved changes, the
     // re-check applied a newer manifest or stored one for approval (`update`), or the
     // re-check lifted a suspension because the app reverted the pending changes (`resume`).
@@ -2712,13 +2834,12 @@ module.exports = {
     requires_approval: { type: 'boolean', nullable: false, defaultTo: false },
     created_at: { type: 'dateTime', nullable: false },
   },
-  // Committed dispatches waiting for the relay to hand them to the jobs backend. Still in
-  // development: see ./in-development.ts.
   jobs_outbox: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     envelope: { type: 'text', maxlength: 65535, nullable: false },
     created_at: { type: 'dateTime', nullable: false },
     available_at: { type: 'dateTime', nullable: false },
-    '@@INDEXES@@': [['available_at']],
+    submitted_at: { type: 'dateTime', nullable: true },
+    '@@INDEXES@@': [['submitted_at', 'available_at']],
   },
 };

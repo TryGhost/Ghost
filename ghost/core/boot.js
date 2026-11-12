@@ -17,7 +17,7 @@ const debug = require('@tryghost/debug')('boot');
  */
 class BootLogger {
   /**
-   * @param {{info: (message: string) => unknown}} logging
+   * @param {Pick<import('@tryghost/logging').GhostLogger, 'info'>} logging
    * @param {{metric: (name: string, time: number) => unknown}} metrics
    * @param {number} startTime
    */
@@ -157,9 +157,17 @@ async function initCore({ ghostServer, config }) {
   debug('End: Internal Keys Service');
 
   debug('Begin: i18n');
-  const i18n = require('./server/services/i18n');
-  await i18n.init();
+  const i18n = require('./shared/i18n');
+  await i18n.init({ events: require('./server/lib/common/events') });
   debug('End: i18n');
+
+  // Reads admin_session_secret, so it follows settings. Under legacy nothing loads
+  // Better Auth or reads its tables.
+  if (config.get('auth:engine') === 'better-auth') {
+    debug('Begin: Better Auth');
+    await require('./server/auth').betterAuth.init();
+    debug('End: Better Auth');
+  }
 
   // Gift links service: wires the (knex-backed) repository once the DB is ready.
   debug('Begin: Gift Links Service');
@@ -189,10 +197,10 @@ async function initCore({ ghostServer, config }) {
   await invites.init();
   debug('End: Invites Service');
 
-  debug('Begin: Support Requests Service');
-  const supportRequests = require('./server/services/support-requests').default;
-  await supportRequests.init();
-  debug('End: Support Requests Service');
+  debug('Begin: Integrations Service');
+  const integrations = require('./server/services/integrations').default;
+  await integrations.init();
+  debug('End: Integrations Service');
 
   // Stripe Checkout config service: knex-backed, wired once the DB is ready.
   debug('Begin: Stripe Checkout Config Service');
@@ -234,14 +242,14 @@ async function initServicesForFrontend({ bootLogger }) {
   debug('End: Redirects');
 
   debug('Begin: Link Redirects');
-  const linkRedirects = require('./server/services/link-redirection');
+  const linkRedirects = require('./server/services/link-redirection').default;
   await linkRedirects.init();
   debug('End: Link Redirects');
 
   debug('Begin: Themes');
-  // customThemeSettingsService.api must be initialized before any theme activation occurs
-  const customThemeSettingsService = require('./server/services/custom-theme-settings');
-  customThemeSettingsService.init();
+  // Custom theme settings must be initialized before any theme activation occurs
+  const customThemeSettingsService = require('./server/services/custom-theme-settings').default;
+  await customThemeSettingsService.init();
 
   const themeService = require('./server/services/themes');
   const themeServiceStart = Date.now();
@@ -373,35 +381,37 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const identityTokens = require('./server/services/identity-tokens');
   const stripe = require('./server/services/stripe');
   const members = require('./server/services/members');
-  const tiers = require('./server/services/tiers');
+  const tiers = require('./server/services/tiers').default;
   const permissions = require('./server/services/permissions');
   const indexnow = require('./server/services/indexnow-ping').default;
   const upgrades = require('./server/services/upgrades').default;
   const slack = require('./server/services/slack-ping').default;
   const webhooks = require('./server/services/webhooks');
   const postScheduling = require('./server/services/post-scheduling').default;
-  const comments = require('./server/services/comments');
-  const staffService = require('./server/services/staff');
-  const memberAttribution = require('./server/services/member-attribution');
+  const comments = require('./server/services/comments').default;
+  const staffService = require('./server/services/staff').default;
+  const memberAttribution = require('./server/services/member-attribution').default;
   const membersEvents = require('./server/services/members-events');
   const linkTracking = require('./server/services/link-tracking');
-  const audienceFeedback = require('./server/services/audience-feedback');
+  const audienceFeedback = require('./server/services/audience-feedback').default;
   const emailSuppressionList = require('./server/services/email-suppression-list');
   const emailService = require('./server/services/email-service');
   const emailAnalytics = require('./server/services/email-analytics');
-  const mentionsService = require('./server/services/mentions');
-  const tagsPublic = require('./server/services/tags-public');
+  const mentionsService = require('./server/services/mentions').default;
+  const tagsPublic = require('./server/services/tags-public').default;
   const postsPublic = require('./server/services/posts-public').default;
-  const slackNotifications = require('./server/services/slack-notifications');
-  const mediaInliner = require('./server/services/media-inliner');
+  const mediaInliner = require('./server/services/media-inliner').default;
   const contentImport = require('./server/services/content-import');
   const donationService = require('./server/services/donations').default;
   const giftService = require('./server/services/gifts');
   const machinePaymentsService = require('./server/services/machine-payments');
-  const recommendationsService = require('./server/services/recommendations');
+  const recommendationsService = require('./server/services/recommendations').default;
   const emailAddressService = require('./server/services/email-address');
-  const statsService = require('./server/services/stats');
-  const explorePingService = require('./server/services/explore-ping');
+  const newsletters = require('./server/services/newsletters').default;
+  const statsService = require('./server/services/stats').default;
+  const explorePingService = require('./server/services/explore-ping').default;
+  const users = require('./server/services/users').default;
+  const memberWelcomeEmails = require('./server/services/member-welcome-emails').default;
   const domainEvents = require('@tryghost/domain-events');
   const { automationsService } = require('./server/services/automations');
   const automationsApi = require('./server/services/automations/automations-api');
@@ -437,10 +447,18 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     }, 'Stripe');
   }
 
+  await memberAttribution.init();
+  // Email captures Audience Feedback's ready link service during initialization.
+  await audienceFeedback.init();
+  // Members captures the ready Newsletters instance during initialization.
+  await newsletters.init();
+  // Recommendations reads the ready Mentions instance during initialization.
+  await mentionsService.init();
+  // Explore captures the ready Stats aggregate during initialization.
+  await statsService.init();
+
   await Promise.all([
     identityTokens.init(),
-    memberAttribution.init(),
-    mentionsService.init({ jobsService }),
     staffService.init(),
     members.init(),
     tiers.init(),
@@ -451,7 +469,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     indexnow.init(),
     upgrades.init(),
     slack.init(),
-    audienceFeedback.init(),
     emailService.init({ ghostServer, jobsService }),
     emailAnalytics.init({
       automationsApi,
@@ -470,15 +487,17 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     comments.init(),
     linkTracking.init(),
     emailSuppressionList.init(),
-    slackNotifications.init(),
     mediaInliner.init(),
     contentImport.init(),
     donationService.init(),
     recommendationsService.init(),
-    statsService.init(),
     explorePingService.init(),
+    users.init(),
     machinePaymentsService.init(),
   ]);
+  // Member welcome emails captures the ready Email address and Link tracking instances during
+  // initialization, and automation polling sends through it once jobs start.
+  await memberWelcomeEmails.init();
 
   debug('Begin: Register job handlers');
   const registerJobHandlers =
@@ -489,8 +508,8 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   memberJobs.init();
   const siteImporter = require('./server/data/importer').init({ jobsService });
   assert(giftService.service, 'Gift service should be initialized');
-  assert(mentionsService.controller, 'Mentions controller should be initialized');
-  assert(mentionsService.sendingService, 'Mentions sending service should be initialized');
+  assert(mentionsService.service.controller, 'Mentions controller should be initialized');
+  assert(mentionsService.service.sendingService, 'Mentions sending service should be initialized');
   assert(membersService.handleImportJob, 'Members service should be initialized');
   assert(emailService.service, 'Email service should be initialized');
   registerJobHandlers({
@@ -500,9 +519,9 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     jobsService,
     memberJobs,
     giftService: giftService.service,
-    mediaInliner: mediaInliner.getInstance(),
-    mentionsController: mentionsService.controller,
-    mentionsSendingService: mentionsService.sendingService,
+    mediaInliner: mediaInliner.service,
+    mentionsController: mentionsService.service.controller,
+    mentionsSendingService: mentionsService.service.sendingService,
     membersService,
     emailService: emailService.service,
     siteImporter,

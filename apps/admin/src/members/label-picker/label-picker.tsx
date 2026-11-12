@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { autoUpdate, flip, offset, shift, size, useFloating } from '@floating-ui/react-dom';
 import {
   Badge,
+  Button,
   tokenFieldClasses,
   type ComboboxOptionSource,
   Command,
@@ -12,7 +13,6 @@ import {
   CommandList,
   CommandSeparator,
 } from '@tryghost/shade/components';
-import { useShade } from '@tryghost/shade/app';
 import { EditRow } from './edit-row';
 import { type Label } from '@tryghost/admin-x-framework/api/labels';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
@@ -24,6 +24,7 @@ const PREFERRED_HEIGHT = 256;
 const MIN_HEIGHT = 120;
 // Kept clear of the viewport edge so the list never sits flush against it.
 const GUTTER = 16;
+const HIGHLIGHT_MS = 1000;
 
 type PickerLabel = Pick<Label, 'id' | 'name' | 'slug'> & {
   /** Optional heading for related options; omitted for a flat label list. */
@@ -102,6 +103,8 @@ interface LabelListItemsProps {
   labels: PickerLabel[];
   selectedSlugs: string[];
   search: string;
+  /** False when the source already narrowed the list to the search. */
+  shouldClientFilter: boolean;
   onToggle: (slug: string) => void;
   onEdit?: (id: string, name: string) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
@@ -114,6 +117,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
   labels,
   selectedSlugs,
   search,
+  shouldClientFilter,
   onToggle,
   onEdit,
   onDelete,
@@ -121,11 +125,16 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
   isCreating,
   onSearchClear,
 }) => {
-  const { isAdmin7 } = useShade();
   const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
   const normalizedSearch = search.trim().toLowerCase();
+  // When the source searches for itself, only the selected labels are checked
+  // against the search here. Narrowing the matches again would empty the list
+  // between a keystroke and its answer, which asks for the next page of stale results.
+  const matchesSearch = (label: PickerLabel) => label.name.toLowerCase().includes(normalizedSearch);
   const visibleLabels = normalizedSearch
-    ? labels.filter((label) => label.name.toLowerCase().includes(normalizedSearch))
+    ? labels.filter((label) =>
+        shouldClientFilter || selectedSlugs.includes(label.slug) ? matchesSearch(label) : true,
+      )
     : labels;
   const showCreate = !!onCreate && canCreateLabel(labels, search);
   const groups = new Map<string, PickerLabel[]>();
@@ -136,6 +145,12 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
     groups.set(group, groupLabels);
   }
   const showEdit = !!onEdit;
+  const handleToggle = (slug: string) => {
+    onToggle(slug);
+    if (search) {
+      onSearchClear?.();
+    }
+  };
   const handleCreate = async () => {
     if (!onCreate) {
       return;
@@ -169,7 +184,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
       {[...groups].map(([group, groupLabels], index) => (
         <React.Fragment key={group}>
           {index > 0 && <CommandSeparator className="my-1" />}
-          <CommandGroup className={cn(isAdmin7 && 'p-0')} heading={group || undefined}>
+          <CommandGroup className="p-0" heading={group || undefined}>
             {groupLabels.map((label) =>
               editingLabelId === label.id ? (
                 <EditRow
@@ -186,7 +201,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
                   label={label}
                   showEdit={showEdit}
                   onEditClick={() => setEditingLabelId(label.id)}
-                  onToggle={onToggle}
+                  onToggle={handleToggle}
                 />
               ),
             )}
@@ -194,7 +209,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
         </React.Fragment>
       ))}
       {showCreate && (
-        <CommandGroup className={cn('[&_[cmdk-group-heading]]:hidden', isAdmin7 && 'p-0')}>
+        <CommandGroup className={cn('[&_[cmdk-group-heading]]:hidden', 'p-0')}>
           <CommandItem disabled={isCreating} onSelect={() => void handleCreate()}>
             <LucideIcon.Plus className="mt-0.5 size-4 self-start" />
             <span className="min-w-0 [overflow-wrap:anywhere]">
@@ -207,24 +222,107 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
   );
 };
 
+// --- Load-more sentinel: asks for the next page once scrolled into view ---
+
+interface LoadMoreSentinelProps {
+  isLoading: boolean;
+  /** A page that adds no rows is taken as failed. */
+  itemCount: number;
+  onVisible: () => void;
+}
+
+interface PendingPage {
+  itemCount: number;
+  started: boolean;
+}
+
+// A failed page is offered as a retry rather than asked for again. The query
+// client doesn't retry, and re-observing the still-visible sentinel would ask
+// again at once, with no pause between failures.
+const LoadMoreSentinel: React.FC<LoadMoreSentinelProps> = ({ isLoading, itemCount, onVisible }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const pending = useRef<PendingPage | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  const requestPage = useCallback(() => {
+    pending.current = { itemCount, started: false };
+    onVisible();
+  }, [itemCount, onVisible]);
+
+  // One effect settles the pending page and observes, so a failed page is
+  // never observed, even for a frame.
+  useEffect(() => {
+    const page = pending.current;
+    if (page) {
+      if (isLoading) {
+        page.started = true;
+        return;
+      }
+      if (!page.started && itemCount <= page.itemCount) {
+        // Requested, not yet in flight.
+        return;
+      }
+      pending.current = null;
+      const arrived = itemCount > page.itemCount;
+      setFailed(!arrived);
+      if (!arrived) {
+        return;
+      }
+    }
+
+    const node = ref.current;
+    if (!node || isLoading || failed || typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        requestPage();
+      }
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [failed, isLoading, itemCount, requestPage]);
+
+  return (
+    <div
+      ref={ref}
+      aria-live="polite"
+      className="py-2 text-center text-sm text-muted-foreground"
+      data-testid="label-picker-load-more"
+    >
+      {isLoading ? 'Loading more...' : null}
+      {!isLoading && failed ? (
+        <>
+          Couldn&apos;t load more labels.{' '}
+          <Button className="h-auto p-0" size="sm" variant="link" onClick={requestPage}>
+            Retry
+          </Button>
+        </>
+      ) : null}
+    </div>
+  );
+};
+
 // --- Selected labels as removable pills ---
 
 interface SelectedPillsProps {
   labels: PickerLabel[];
+  highlightedSlug?: string;
   onToggle: (slug: string) => void;
 }
 
-const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, onToggle }) => {
-  const { isAdmin7 } = useShade();
+const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, highlightedSlug, onToggle }) => {
   return (
     <>
       {labels.map((label) => (
         <Badge
           key={label.id}
           className={cn(
-            'cursor-pointer gap-1 pr-1',
-            isAdmin7 && cn(tokenFieldClasses.chip, 'bg-secondary'),
+            'cursor-pointer gap-1 pr-1 transition-shadow duration-500',
+            tokenFieldClasses.chip,
+            label.slug === highlightedSlug && 'ring-2 ring-focus-ring',
           )}
+          data-highlighted={label.slug === highlightedSlug || undefined}
           variant="outline"
           asChild
         >
@@ -238,8 +336,8 @@ const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, onToggle }) => {
             }}
             onKeyDown={(event) => event.stopPropagation()}
           >
-            <span className={cn(isAdmin7 && 'min-w-0 [overflow-wrap:anywhere]')}>{label.name}</span>
-            <LucideIcon.X className={cn('size-3', isAdmin7 && 'mt-0.5 shrink-0 self-start')} />
+            <span className="min-w-0 [overflow-wrap:anywhere]">{label.name}</span>
+            <LucideIcon.X className={cn('size-3', 'mt-0.5 shrink-0 self-start')} />
           </button>
         </Badge>
       ))}
@@ -310,7 +408,6 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
   onDelete,
   placeholder = 'Search labels...',
 }) => {
-  const { isAdmin7 } = useShade();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -344,12 +441,13 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     ],
   });
 
+  const { onSearchChange } = optionSource;
   const handleSearchChange = useCallback(
     (value: string) => {
       setSearch(value);
-      optionSource.onSearchChange?.(value);
+      onSearchChange?.(value);
     },
-    [optionSource],
+    [onSearchChange],
   );
 
   // Close on click outside — no Radix Popover portal needed since this
@@ -385,7 +483,37 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     return () => window.removeEventListener('keydown', handleEscape, true);
   }, [open]);
 
+  // Enter on an already-added label highlights its pill instead of removing it.
+  const [highlight, setHighlight] = useState<{ slug: string; at: number } | null>(null);
+  const [announcement, setAnnouncement] = useState('');
+  useEffect(() => {
+    if (!highlight) {
+      return;
+    }
+    const timer = setTimeout(() => setHighlight(null), HIGHLIGHT_MS);
+    return () => clearTimeout(timer);
+  }, [highlight]);
+
+  const pointAtAddedLabel = (e: React.KeyboardEvent) => {
+    if (e.key !== 'Enter' || !search.trim() || e.nativeEvent.isComposing) {
+      return;
+    }
+    const slug = containerRef.current
+      ?.querySelector('[cmdk-item][data-selected="true"]')
+      ?.getAttribute('data-value');
+    if (!slug || !selectedSlugs.includes(slug)) {
+      return;
+    }
+    // Stops cmdk from toggling the row.
+    e.preventDefault();
+    handleSearchChange('');
+    setHighlight({ slug, at: Date.now() });
+    const name = selectedLabels.find((label) => label.slug === slug)?.name ?? slug;
+    setAnnouncement(`${name} is already added`);
+  };
+
   const handleInputKeyDown = (e: React.KeyboardEvent) => {
+    pointAtAddedLabel(e);
     if (e.key === 'Backspace' && !search && selectedSlugs.length > 0) {
       onToggle(selectedSlugs[selectedSlugs.length - 1]);
     }
@@ -403,18 +531,14 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
       >
         <div
           ref={refs.setReference}
-          className={cn(
-            isAdmin7
-              ? tokenFieldClasses.field
-              : 'flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-control-border bg-control-surface px-3 py-1 text-control transition-colors focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring/25',
-            'relative pr-8',
-          )}
+          className={cn(tokenFieldClasses.field, 'relative pr-8')}
           onClick={() => {
             inputRef.current?.focus();
             setOpen(true);
           }}
         >
           <SelectedPills
+            highlightedSlug={highlight?.slug}
             labels={selectedLabels}
             onToggle={(slug) => {
               onToggle(slug);
@@ -422,12 +546,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
             }}
           />
           <CommandInput
-            className={cn(
-              'size-auto rounded-none py-0',
-              isAdmin7
-                ? tokenFieldClasses.input
-                : 'min-w-20 flex-1 bg-transparent text-control outline-hidden placeholder:text-muted-foreground',
-            )}
+            className={cn('size-auto rounded-none py-0', tokenFieldClasses.input)}
             value={search}
             asChild
             onFocus={() => setOpen(true)}
@@ -445,10 +564,11 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
               placeholder={selectedLabels.length === 0 ? placeholder : ''}
             />
           </CommandInput>
-          <LucideIcon.ChevronDown
-            className={cn(tokenFieldClasses.chevron, !isAdmin7 && 'top-2.5')}
-          />
+          <LucideIcon.ChevronDown className={tokenFieldClasses.chevron} />
         </div>
+        <span aria-live="polite" className="sr-only">
+          {announcement}
+        </span>
         {open && (
           // As wide as its longest row, from the field's width up to 480px, past which a
           // row wraps: a long name reads whole rather than cut short.
@@ -456,7 +576,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
             ref={refs.setFloating}
             className={cn(
               'z-50 w-max max-w-[min(480px,calc(100vw-32px))] border bg-white shadow-md dark:bg-gray-950',
-              isAdmin7 ? 'rounded-menu' : 'rounded-md',
+              'rounded-menu',
             )}
             style={floatingStyles}
           >
@@ -471,12 +591,22 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                   labels={labels}
                   search={search}
                   selectedSlugs={selectedSlugs}
+                  shouldClientFilter={optionSource.shouldClientFilter}
                   onCreate={onCreate}
                   onDelete={onDelete}
                   onEdit={onEdit}
                   onSearchClear={() => handleSearchChange('')}
                   onToggle={onToggle}
                 />
+                {optionSource.hasMore && (
+                  // A new search is a new list, so the sentinel starts over with it.
+                  <LoadMoreSentinel
+                    key={search}
+                    isLoading={optionSource.isLoadingMore}
+                    itemCount={labels.length}
+                    onVisible={optionSource.loadMore}
+                  />
+                )}
               </CommandList>
             )}
           </div>
