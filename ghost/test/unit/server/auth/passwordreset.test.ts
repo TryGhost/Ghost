@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import * as security from '@tryghost/security';
-// @ts-expect-error This module lacks type definitions.
 import passwordreset from '../../../../core/server/auth/passwordreset';
 // @ts-expect-error This module lacks type definitions.
 import models from '../../../../core/server/models';
@@ -79,6 +78,7 @@ describe('Password reset token compatibility', function () {
       },
     };
     const parts = security.tokens.resetToken.extract({ token: legacyToken });
+    assert.ok(parts);
     const result = await passwordreset.doReset(options, parts, settingsAPI);
     assert.equal(result.user, user);
     sinon.assert.calledOnce(changePassword);
@@ -97,12 +97,10 @@ describe('Password reset token compatibility', function () {
     const options = {
       data: { password_reset: [{ token: legacyToken, newPassword: 'replacement-test-only' }] },
     };
+    const parts = security.tokens.resetToken.extract({ token: legacyToken });
+    assert.ok(parts);
     await assert.rejects(
-      passwordreset.doReset(
-        options,
-        security.tokens.resetToken.extract({ token: legacyToken }),
-        settingsAPI,
-      ),
+      passwordreset.doReset(options, parts, settingsAPI),
       /Cannot reset password/,
     );
     sinon.assert.notCalled(changePassword);

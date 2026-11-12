@@ -50,7 +50,7 @@ path, and secure on HTTPS sites.
 
 Creating a session and authenticating later requests are separate steps:
 
-- [`api/endpoints/session.js`](../../ghost/core/server/api/endpoints/session.js)
+- [`api/endpoints/session.ts`](../../ghost/core/server/api/endpoints/session.ts)
   checks the credentials and begins the session.
 - [`auth/session/`](../../ghost/core/server/auth/session/)
   creates, verifies, reads, and destroys Admin sessions.
