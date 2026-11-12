@@ -7,7 +7,9 @@ import { HostLimitError } from '@tryghost/admin-x-framework/errors';
 import { useBrowseConfig, upgradeRoute } from '@tryghost/admin-x-framework/api/config';
 import { LimitModalContent } from '@/settings/api';
 import NewAutomation from './new-automation';
-import AutomationStatusDialog from './components/automation-status-dialog';
+import AutomationStatusDialog, {
+  type PublishLabelTrigger,
+} from './components/automation-status-dialog';
 import { TRIGGER_CANVAS_ID } from './components/canvas/nodes';
 import AutomationCanvas from './components/canvas/automation-canvas';
 import AutomationHeader, { type AutomationValidationAction } from './components/automation-header';
@@ -28,6 +30,8 @@ import {
 } from '@tryghost/shade/components';
 import { DirtyConfirmDialog, useDirtyConfirmation } from '@tryghost/shade/patterns';
 import { useAddAutomation, useEditAutomation } from '@tryghost/admin-x-framework/api/automations';
+import { useBrowseLabelsInfinite } from '@tryghost/admin-x-framework/api/labels';
+import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import type {
   AutomationDetail,
   AutomationStatus,
@@ -39,14 +43,23 @@ import { toast } from 'sonner';
 import { useLocation, useMatches, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { navigateTo } from '@/utils/navigation';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
-import type { AutomationEditState } from './types';
+import type { AutomationEditState, LabelSelection } from './types';
 import { hasMissingTierSelection } from './utils/tier-selection';
 import { isAutomationStatusActive } from './utils/is-automation-status-active';
 import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
+// PROTOTYPE ONLY (NY-1750): the label trigger's fake backend. Don't merge.
+import {
+  endLeadMagnetRuns,
+  getLeadMagnetDeletedLabelName,
+  getLeadMagnetLabel,
+  setLeadMagnetLabel,
+  useLeadMagnetInProgressCount,
+} from './prototype/lead-magnets';
 
 const AUTOMATION_LIMITS = ['limitAutomations'] as const;
 
 const SUBJECT_REQUIRED_MESSAGE = 'Add a subject line.';
+const DELETED_LABEL_MESSAGE = 'Select a different label';
 const BODY_REQUIRED_MESSAGE = 'Add an email body.';
 const SUBJECT_AND_BODY_REQUIRED_MESSAGE = 'Add a subject line and email body.';
 
@@ -62,7 +75,16 @@ const editableSlice = (automation: AutomationDetail) => ({
 const getTriggerErrors = (
   automation: AutomationDetail,
   triggerType: AutomationTriggerRule['trigger_type'] | undefined,
+  labelSelection: LabelSelection | undefined,
+  // The label no longer exists (NY-1750).
+  isLabelMissing = false,
 ): Record<string, string> => {
+  if (labelSelection !== undefined) {
+    if (labelSelection === null) {
+      return { [TRIGGER_CANVAS_ID]: 'Select a label' };
+    }
+    return isLabelMissing ? { [TRIGGER_CANVAS_ID]: DELETED_LABEL_MESSAGE } : {};
+  }
   if (triggerType === 'paid_subscription_changed') {
     return hasMissingTierSelection(subscriptionChangedSelectionFromRules(automation.trigger_rules))
       ? { [TRIGGER_CANVAS_ID]: 'Select at least one tier.' }
@@ -106,6 +128,7 @@ const AutomationEditorContent: React.FC<{
     initialAutomation: AutomationDetail;
     triggerTop?: number;
     triggerType: AutomationTriggerRule['trigger_type'];
+    labelSelection?: LabelSelection;
     onCreated: (id: string) => void;
   };
 }> = ({ automationId, creation }) => {
@@ -153,6 +176,41 @@ const AutomationEditorContent: React.FC<{
   const [triggerType, setTriggerType] = React.useState<
     AutomationTriggerRule['trigger_type'] | undefined
   >(creation?.triggerType);
+  // Kept outside the draft until the API can hold it (NY-1750).
+  // PROTOTYPE ONLY (NY-1750): a saved label automation gets its label back from the prototype's
+  // fake store. Don't merge.
+  const [labelSelection, setLabelSelection] = React.useState<LabelSelection | undefined>(
+    // A new label trigger starts on `null` (no label yet), which must not fall through.
+    () => (creation ? creation.labelSelection : getLeadMagnetLabel(automationId)),
+  );
+  const [savedLabelSelection, setSavedLabelSelection] = React.useState(labelSelection);
+  // The publish confirmation names the trigger's label and how many members already have it.
+  const { data: labelData } = useBrowseLabelsInfinite({
+    searchParams: { limit: 'all' },
+    enabled: Boolean(labelSelection),
+  });
+  // A label deleted while this automation was off: an error until another label is picked. Only
+  // the saved label can be gone; one just picked or created may not be in `labelData` yet.
+  const isLabelMissing = Boolean(
+    labelSelection &&
+    labelSelection === savedLabelSelection &&
+    labelData &&
+    !labelData.labels.some((label) => label.slug === labelSelection),
+  );
+  React.useEffect(() => {
+    setActionErrors((oldErrors) => {
+      if (isLabelMissing) {
+        return { ...oldErrors, [TRIGGER_CANVAS_ID]: DELETED_LABEL_MESSAGE };
+      }
+      // Clears it once the label resolves, without touching other trigger errors.
+      if (oldErrors[TRIGGER_CANVAS_ID] !== DELETED_LABEL_MESSAGE) {
+        return oldErrors;
+      }
+      return Object.fromEntries(
+        Object.entries(oldErrors).filter(([stepId]) => stepId !== TRIGGER_CANVAS_ID),
+      );
+    });
+  }, [isLabelMissing]);
   React.useEffect(() => {
     if (!automation) {
       return;
@@ -171,6 +229,7 @@ const AutomationEditorContent: React.FC<{
   const hasUnsavedChanges =
     isNew ||
     invalidWaitIds.size > 0 ||
+    labelSelection !== savedLabelSelection ||
     (!!draft && !!savedAutomation && !dequal(editableSlice(draft), editableSlice(savedAutomation)));
 
   // The canvas rebuilds every card whenever this or `savedTriggerTierIds` changes, so both stay
@@ -193,7 +252,7 @@ const AutomationEditorContent: React.FC<{
 
         const nextErrors = {
           ...getActionErrors(next),
-          ...getTriggerErrors(next, triggerType),
+          ...getTriggerErrors(next, triggerType, labelSelection, isLabelMissing),
         };
         return Object.fromEntries(
           Object.entries(oldErrors).filter(([actionId]) => nextErrors[actionId]),
@@ -201,12 +260,55 @@ const AutomationEditorContent: React.FC<{
       });
       setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));
     },
-    [triggerType],
+    [triggerType, labelSelection, isLabelMissing],
   );
   const savedTriggerTierIds = React.useMemo(
     () => (savedAutomation ? getTriggerTierIds(savedAutomation.trigger_rules) : []),
     [savedAutomation],
   );
+
+  const onLabelSelectionChange = React.useCallback((next: LabelSelection) => {
+    setValidationFeedback(null);
+    setLabelSelection(next);
+    setActionErrors((oldErrors) =>
+      oldErrors[TRIGGER_CANVAS_ID] && next !== null
+        ? Object.fromEntries(
+            Object.entries(oldErrors).filter(([stepId]) => stepId !== TRIGGER_CANVAS_ID),
+          )
+        : oldErrors,
+    );
+    setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));
+  }, []);
+  const { count: labelMemberCount } = useMembersCount(
+    labelSelection ? `label:${labelSelection}` : null,
+  );
+  const publishLabelTrigger: PublishLabelTrigger | undefined = labelSelection
+    ? {
+        name:
+          labelData?.labels.find((label) => label.slug === labelSelection)?.name ?? labelSelection,
+        memberCount: labelMemberCount,
+      }
+    : undefined;
+  // An active automation's label can't change: the card says to turn it off first.
+  const isTriggerLocked = draft?.status === 'active';
+  const triggerLabelSelection = React.useMemo(
+    () =>
+      labelSelection !== undefined
+        ? {
+            value: labelSelection,
+            onChange: onLabelSelectionChange,
+            locked: isTriggerLocked,
+            // PROTOTYPE ONLY (NY-1750): the deleted label's name, from the fake store.
+            deletedName:
+              isLabelMissing && labelSelection
+                ? getLeadMagnetDeletedLabelName(labelSelection)
+                : undefined,
+          }
+        : undefined,
+    [labelSelection, onLabelSelectionChange, isTriggerLocked, isLabelMissing],
+  );
+  // PROTOTYPE ONLY (NY-1750): members in this automation, from the prototype's fake store.
+  const labelInProgressCount = useLeadMagnetInProgressCount(draft?.id);
 
   const validateForAction = (
     automationToValidate: AutomationDetail,
@@ -219,7 +321,7 @@ const AutomationEditorContent: React.FC<{
     }
     const nextActionErrors = {
       ...(action === 'publish' ? getActionErrors(automationToValidate) : {}),
-      ...getTriggerErrors(automationToValidate, triggerType),
+      ...getTriggerErrors(automationToValidate, triggerType, labelSelection, isLabelMissing),
     };
     if (Object.keys(nextActionErrors).length > 0 || invalidWaitIds.size > 0) {
       setActionErrors(nextActionErrors);
@@ -284,6 +386,9 @@ const AutomationEditorContent: React.FC<{
       toast.error('Automation couldn’t be saved');
     };
 
+    // PROTOTYPE ONLY (NY-1750): a label trigger saves its stand-in free signup rule, and the
+    // prototype's fake store keeps the label (in onSuccess below). Don't merge.
+
     setEditState(requestState);
 
     // An existing active automation consumes its slot already. New active automations
@@ -308,6 +413,18 @@ const AutomationEditorContent: React.FC<{
         onSuccess: (response) => {
           const savedDraft = response.automations[0];
           setSavedAutomation(savedDraft);
+          // PROTOTYPE ONLY (NY-1750): remember the label, and turning off removes everyone in
+          // the fake store. Don't merge.
+          if (labelSelection) {
+            setLeadMagnetLabel(savedDraft.id, labelSelection, {
+              name: savedDraft.name,
+              active: savedDraft.status === 'active',
+            });
+            setSavedLabelSelection(labelSelection);
+            if (oldStatus === 'active' && newStatus !== 'active') {
+              endLeadMagnetRuns(savedDraft.id);
+            }
+          }
           // A save acknowledges the submitted snapshot, not edits made while it was pending.
           // Keep those edits dirty, adopting only the server identity and status transition.
           setDraft((current) =>
@@ -547,6 +664,7 @@ const AutomationEditorContent: React.FC<{
         initialTriggerTop={creation?.triggerTop}
         isError={isEditorError}
         isLoading={isEditorLoading}
+        labelSelection={triggerLabelSelection}
         savedTriggerTierIds={savedTriggerTierIds}
         selectedRunId={selectedRunId}
         triggerType={triggerType}
@@ -575,8 +693,10 @@ const AutomationEditorContent: React.FC<{
         />
       )}
       <AutomationStatusDialog
+        inProgressCount={labelSelection ? labelInProgressCount : undefined}
         isError={editState.phase === 'failed'}
         isPending={isEditRequestActive}
+        labelTrigger={publishLabelTrigger}
         open={isConfirmPublishAlertOpen || isConfirmUnpublishAlertOpen}
         status={isConfirmUnpublishAlertOpen ? 'inactive' : 'active'}
         onConfirm={() => void save(isConfirmUnpublishAlertOpen ? 'inactive' : 'active')}
@@ -647,13 +767,14 @@ const AutomationEditor: React.FC = () => {
     <ScreenEntranceProvider>
       {automationId === 'new' || automationId === session.createdId ? (
         <NewAutomation key={session.key}>
-          {({ automation: initialAutomation, triggerType, triggerTop }) => (
+          {({ automation: initialAutomation, triggerType, triggerTop, labelSelection }) => (
             <AutomationEditorContent
               automationId={null}
               creation={{
                 initialAutomation,
                 triggerTop,
                 triggerType,
+                labelSelection,
                 onCreated: (createdId) => setSession((current) => ({ ...current, createdId })),
               }}
             />

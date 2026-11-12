@@ -10,6 +10,9 @@ import { LabelPicker } from '@/members/label-picker';
 import { formatNumber } from '@tryghost/shade/utils';
 import { useCallback, useState } from 'react';
 import { useLabelPicker } from '@/members/hooks/use-label-picker';
+import { Stack } from '@tryghost/shade/primitives';
+// PROTOTYPE ONLY (NY-1750): which label automations this starts. Don't merge.
+import { LeadMagnetBulkNote } from '@/automations/api';
 
 interface AddLabelModalProps {
   open: boolean;
@@ -59,17 +62,26 @@ export function AddLabelModal({
           </DialogTitle>
         </DialogHeader>
 
-        <LabelPicker
-          isCreating={picker.isCreating}
-          labels={picker.labels}
-          optionSource={picker.optionSource}
-          resolvedSelectedLabels={picker.resolvedSelectedLabels}
-          selectedSlugs={selectedSlugs}
-          onCreate={picker.createLabel}
-          onDelete={picker.deleteLabel}
-          onEdit={picker.editLabel}
-          onToggle={picker.toggleLabel}
-        />
+        <Stack gap="sm">
+          <LabelPicker
+            isCreating={picker.isCreating}
+            labels={picker.labels}
+            optionSource={picker.optionSource}
+            resolvedSelectedLabels={picker.resolvedSelectedLabels}
+            selectedSlugs={selectedSlugs}
+            onCreate={picker.createLabel}
+            onDelete={picker.deleteLabel}
+            onEdit={picker.editLabel}
+            onToggle={picker.toggleLabel}
+          />
+          {/* PROTOTYPE ONLY (NY-1750) */}
+          <LeadMagnetBulkNote
+            labels={picker.labels}
+            memberCount={memberCount}
+            selectedSlugs={selectedSlugs}
+            source="bulk"
+          />
+        </Stack>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => handleOpenChange(false)}>

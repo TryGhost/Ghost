@@ -12,6 +12,8 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useLabelValueSource } from '@/shared/filter-sources';
 import type { ComboboxOptionSource } from '@tryghost/shade/components';
+// PROTOTYPE ONLY (NY-1750): keeps label automations' fake backend in step. Don't merge.
+import { recordLeadMagnetLabelDeleted, recordLeadMagnetLabelRenamed } from '@/automations/api';
 
 export interface UseLabelPickerOptions {
   selectedSlugs: string[];
@@ -158,6 +160,7 @@ export function useLabelPicker({
       const updatedLabel = result?.labels?.[0];
       // If the slug changed and the old slug was selected, swap it
       if (oldLabel && updatedLabel && oldLabel.slug !== updatedLabel.slug) {
+        recordLeadMagnetLabelRenamed(oldLabel.slug, updatedLabel.slug); // PROTOTYPE ONLY (NY-1750)
         const current = selectedSlugsRef.current;
         if (current.includes(oldLabel.slug)) {
           onSelectionChange(current.map((s) => (s === oldLabel.slug ? updatedLabel.slug : s)));
@@ -184,6 +187,7 @@ export function useLabelPicker({
         }
       }
       if (label) {
+        recordLeadMagnetLabelDeleted(label.slug, label.name); // PROTOTYPE ONLY (NY-1750)
         const current = selectedSlugsRef.current;
         if (current.includes(label.slug)) {
           onSelectionChange(current.filter((s) => s !== label.slug));

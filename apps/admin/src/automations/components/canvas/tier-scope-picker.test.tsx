@@ -34,9 +34,9 @@ function Picker({ initial = [] }: { initial?: 'any_paid' | string[] }) {
       <TierScopePicker<'any_paid'>
         emptyMessage="No tiers found"
         inputLabel="From"
+        options={TIERS}
         placeholder="Select tiers..."
         standalone={{ value: 'any_paid', label: 'Any paid tier' }}
-        tiers={TIERS}
         value={value}
         onChange={setValue}
       />
@@ -203,9 +203,9 @@ describe('TierScopePicker', () => {
         emptyMessage="No tiers found"
         inputLabel="From"
         notice={<p>Loading tiers...</p>}
+        options={TIERS}
         placeholder="Select tiers..."
         standalone={{ value: 'any_paid', label: 'Any paid tier' }}
-        tiers={TIERS}
         value={[]}
         onChange={vi.fn()}
       />,
@@ -214,5 +214,129 @@ describe('TierScopePicker', () => {
 
     expect(screen.getByText('Loading tiers...')).toBeVisible();
     expect(screen.queryAllByRole('option')).toHaveLength(0);
+  });
+});
+
+const LABELS = [
+  { id: 'free-trial', name: 'Free trial' },
+  { id: 'vip', name: 'VIP' },
+];
+
+function SinglePicker({
+  initial = [],
+  onCreate = vi.fn(),
+  onSearchChange,
+  onEndReached,
+}: {
+  initial?: string[];
+  onCreate?: (term: string) => void;
+  onSearchChange?: (search: string) => void;
+  onEndReached?: () => void;
+}) {
+  const [chosen, setChosen] = useState<string[]>(initial);
+  return (
+    <>
+      <TierScopePicker<never>
+        createRow={{
+          offer: (term) =>
+            term !== '' && !LABELS.some((label) => label.name.toLowerCase() === term.toLowerCase()),
+          label: (term) => `Create "${term}"`,
+          onCreate,
+        }}
+        emptyMessage="No labels found"
+        inputLabel="Label"
+        options={LABELS}
+        placeholder="Search or create a label..."
+        value={chosen}
+        single
+        onChange={(next) => setChosen(typeof next === 'string' ? [] : next)}
+        onEndReached={onEndReached}
+        onSearchChange={onSearchChange}
+      />
+      <output data-testid="value">{JSON.stringify(chosen)}</output>
+    </>
+  );
+}
+
+const labelField = () => screen.getByRole('combobox', { name: 'Label' });
+const openLabels = () => fireEvent.click(labelField());
+
+describe('TierScopePicker with one choice', () => {
+  it('shows the chosen option as the field text, and replaces it on picking another', () => {
+    render(<SinglePicker />);
+    expect(labelField()).toHaveValue('');
+    expect(labelField()).toHaveAttribute('placeholder', 'Search or create a label...');
+
+    openLabels();
+    fireEvent.click(option('VIP'));
+    expect(value()).toEqual(['vip']);
+    expect(labelField()).toHaveValue('VIP');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+
+    openLabels();
+    fireEvent.click(option('Free trial'));
+    expect(value()).toEqual(['free-trial']);
+    expect(labelField()).toHaveValue('Free trial');
+  });
+
+  it('selects the chosen text on click, so typing replaces it', () => {
+    render(<SinglePicker initial={['vip']} />);
+    openLabels();
+
+    expect(labelField()).toHaveProperty('selectionStart', 0);
+    expect(labelField()).toHaveProperty('selectionEnd', 3);
+  });
+
+  it('searches over the chosen text, and puts it back on leaving without a pick', () => {
+    render(<SinglePicker initial={['vip']} />);
+    openLabels();
+    fireEvent.change(labelField(), { target: { value: 'fr' } });
+
+    expect(screen.getAllByRole('option').map((row) => row.textContent)).toEqual([
+      'Free trial',
+      'Create "fr"',
+    ]);
+
+    fireEvent.keyDown(labelField(), { key: 'Escape' });
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(labelField()).toHaveValue('VIP');
+    expect(value()).toEqual(['vip']);
+  });
+
+  it('clears the choice on Backspace and lists every option', () => {
+    render(<SinglePicker initial={['vip']} />);
+    fireEvent.keyDown(labelField(), { key: 'Backspace' });
+
+    expect(value()).toEqual([]);
+    expect(labelField()).toHaveValue('');
+    expect(screen.getAllByRole('option').map((row) => row.textContent)).toEqual([
+      'Free trial',
+      'VIP',
+    ]);
+  });
+
+  it('offers to create what is typed in place of the empty message', () => {
+    const onCreate = vi.fn();
+    render(<SinglePicker onCreate={onCreate} />);
+    openLabels();
+    fireEvent.change(labelField(), { target: { value: 'Lead magnet' } });
+
+    expect(screen.queryByText('No labels found')).not.toBeInTheDocument();
+    fireEvent.click(option('Create "Lead magnet"'));
+
+    expect(onCreate).toHaveBeenCalledWith('Lead magnet');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  });
+
+  it('reports the typed search and asks for more rows at the end of the list', () => {
+    const onSearchChange = vi.fn();
+    const onEndReached = vi.fn();
+    render(<SinglePicker onEndReached={onEndReached} onSearchChange={onSearchChange} />);
+    openLabels();
+    fireEvent.change(labelField(), { target: { value: 'vi' } });
+    expect(onSearchChange).toHaveBeenLastCalledWith('vi');
+
+    fireEvent.scroll(screen.getByRole('listbox').parentElement as HTMLElement);
+    expect(onEndReached).toHaveBeenCalled();
   });
 });

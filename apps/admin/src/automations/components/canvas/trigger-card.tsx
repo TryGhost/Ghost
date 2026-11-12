@@ -11,6 +11,9 @@ import type {
 import type { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import {
   Button,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
   Label,
   Select,
   SelectContent,
@@ -23,7 +26,8 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { AutomationCard, AutomationCardHeader } from './automation-card';
 import { TierScopePicker } from './tier-scope-picker';
 import { ChipPicker } from '@/shared/pickers/chip-picker';
-import type { TierSelection } from '@/automations/types';
+import { canCreateLabel, useLabelPicker } from '@/members/api';
+import type { LabelSelection, TierSelection } from '@/automations/types';
 import { isTierSelectionEmpty, updateFromSelection } from '@/automations/utils/tier-selection';
 
 export type TriggerData = {
@@ -32,6 +36,15 @@ export type TriggerData = {
   rules: readonly AutomationTriggerRule[];
   savedTierIds: readonly string[];
   onUpdate: (trigger: AutomationTrigger) => void;
+  // Set for the `member_label_added` trigger, which picks a label instead of tiers (NY-1750).
+  labelSelection?: {
+    value: LabelSelection;
+    onChange: (next: LabelSelection) => void;
+    // The chosen label's name, kept by the automation after the label is deleted.
+    deletedName?: string;
+    // An active automation's label can't change until it's turned off.
+    locked?: boolean;
+  };
 };
 
 function tierQueryNotice({ isLoading, isError, refetch }: TriggerData['tierQuery']) {
@@ -186,7 +199,8 @@ const SubscriptionChangedPicker: React.FC<{ trigger: TriggerData; errorMessage?:
 
   return (
     <Stack aria-labelledby={`${id}-label`} className="nowheel" gap="lg" role="group">
-      <Text as="p" id={`${id}-label`} size="sm">
+      {/* Not a Label, as it names both fields; sized like the other triggers' field labels. */}
+      <Text as="p" className="text-[length:var(--text-control)] leading-normal" id={`${id}-label`}>
         Triggered when a member&apos;s subscription changes:
       </Text>
       <Stack gap="sm">
@@ -205,9 +219,9 @@ const SubscriptionChangedPicker: React.FC<{ trigger: TriggerData; errorMessage?:
           invalid={Boolean(errorMessage) && isTierSelectionEmpty(value.from)}
           missingTierLabel={missingTierLabel}
           notice={notice}
+          options={fromTiers}
           placeholder="Select tiers..."
           standalone={{ value: 'any_paid', label: 'Any paid tier' }}
-          tiers={fromTiers}
           value={value.from}
           onChange={(from) => onChange(updateFromSelection(value, from))}
         />
@@ -228,9 +242,9 @@ const SubscriptionChangedPicker: React.FC<{ trigger: TriggerData; errorMessage?:
           invalid={Boolean(errorMessage) && isTierSelectionEmpty(value.to)}
           missingTierLabel={missingTierLabel}
           notice={notice}
+          options={toTiers}
           placeholder="Select tiers..."
           standalone={{ value: 'downgraded_to_free', label: 'Free' }}
-          tiers={toTiers}
           value={value.to}
           onChange={(to) => onChange({ ...value, to })}
         />
@@ -251,7 +265,123 @@ const SubscriptionChangedPicker: React.FC<{ trigger: TriggerData; errorMessage?:
   );
 };
 
+// One label, on the "Paid subscription changed" field in its one-choice mode, with a row to create
+// the typed label. Picking or creating a label replaces the current one.
+const LabelAddedPicker: React.FC<{
+  labelSelection: NonNullable<TriggerData['labelSelection']>;
+  errorMessage?: string;
+}> = ({ labelSelection, errorMessage }) => {
+  const id = useId();
+  const { value, onChange, deletedName, locked } = labelSelection;
+  const selectedSlugs = React.useMemo(() => (value === null ? [] : [value]), [value]);
+  const picker = useLabelPicker({
+    selectedSlugs,
+    onSelectionChange: (slugs) => onChange(slugs.at(-1) ?? null),
+  });
+  const { isInitialLoad, hasMore, isLoadingMore, loadMore, onSearchChange } = picker.optionSource;
+  // In name order: the label source lists the chosen label first, which would move it on each pick.
+  // A deleted label stays listed while it's chosen, as archived tiers do.
+  const options = React.useMemo(() => {
+    const labels = picker.labels.map((label) => ({ id: label.slug, name: label.name }));
+    if (deletedName && value !== null && !labels.some((label) => label.id === value)) {
+      labels.push({ id: value, name: `${deletedName} (deleted)` });
+    }
+    return labels.sort((a, b) => a.name.localeCompare(b.name));
+  }, [picker.labels, deletedName, value]);
+
+  if (locked) {
+    return (
+      <Stack className="nowheel" gap="sm">
+        <Label className="leading-normal font-normal" htmlFor={`${id}-label`}>
+          Triggered when this label is added to a member:
+        </Label>
+        <InputGroup data-disabled="true">
+          <InputGroupInput
+            aria-describedby={`${id}-locked`}
+            id={`${id}-label`}
+            value={options.find((option) => option.id === value)?.name ?? value ?? ''}
+            disabled
+          />
+          <InputGroupAddon align="inline-end">
+            <LucideIcon.Lock />
+          </InputGroupAddon>
+        </InputGroup>
+        <Text as="p" id={`${id}-locked`} size="sm" tone="secondary">
+          Turn off automation to edit trigger
+        </Text>
+      </Stack>
+    );
+  }
+
+  return (
+    <Stack className="nowheel" gap="sm">
+      <Label className="leading-normal font-normal" htmlFor={`${id}-label`}>
+        Triggered when this label is added to a member:
+      </Label>
+      <TierScopePicker<never>
+        createRow={{
+          offer: (term) => !picker.isCreating && canCreateLabel(picker.labels, term),
+          label: (term) => `Create "${term}"`,
+          onCreate: (term) => {
+            picker
+              .createLabel(term)
+              .then((label) => {
+                if (label) {
+                  onChange(label.slug);
+                }
+              })
+              .catch(() => {
+                // Already reported via toast.
+              });
+          },
+        }}
+        describedBy={errorMessage ? `${id}-error` : undefined}
+        emptyMessage="No labels found"
+        inputId={`${id}-label`}
+        inputLabel="Label"
+        invalid={Boolean(errorMessage)}
+        missingTierLabel={
+          // Like an archived tier's "Silver (archived)".
+          deletedName
+            ? `${deletedName} (deleted)`
+            : isInitialLoad
+              ? 'Loading label...'
+              : 'Label deleted'
+        }
+        notice={isInitialLoad ? <Text size="md">Loading labels...</Text> : undefined}
+        options={options}
+        optionsHeading="Labels"
+        placeholder="Search or create a label..."
+        value={selectedSlugs}
+        single
+        onChange={(next) => onChange(typeof next === 'string' ? null : (next[0] ?? null))}
+        onEndReached={() => {
+          if (hasMore && !isLoadingMore) {
+            loadMore();
+          }
+        }}
+        onSearchChange={onSearchChange}
+      />
+      {errorMessage && (
+        <Text as="p" className="text-destructive" id={`${id}-error`} role="alert" size="sm">
+          {errorMessage}
+        </Text>
+      )}
+    </Stack>
+  );
+};
+
 function getTriggerPresentation(trigger: TriggerData, errorMessage?: string) {
+  if (trigger.labelSelection) {
+    return {
+      title: 'Label added to a member',
+      Icon: LucideIcon.Tag,
+      content: (
+        <LabelAddedPicker errorMessage={errorMessage} labelSelection={trigger.labelSelection} />
+      ),
+    };
+  }
+
   switch (trigger.triggerType) {
     case 'paid_subscription_changed':
       return {
