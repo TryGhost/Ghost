@@ -4,6 +4,8 @@ import {
   ComboboxContent,
   ComboboxTrigger,
   ComboboxValue,
+  CommandCheck,
+  CommandItem,
   Field,
   FieldContent,
   FieldError,
@@ -12,6 +14,7 @@ import {
   MultiSelectCombobox,
   Switch,
 } from '@tryghost/shade/components';
+import { ArchivedBadge } from '@/shared/archived-badge';
 import { CustomFieldPicker } from '@/shared/member-custom-fields/custom-field-picker';
 import {
   type MemberCustomField,
@@ -43,7 +46,8 @@ export const SubRow: React.FC<{
 export const MultiPicker: React.FC<{
   label: string;
   searchPlaceholder: string;
-  options: Array<{ value: string; label: string }>;
+  /** Each option, and whether it's archived, which shows as a badge on the picker and its row. */
+  options: Array<{ value: string; label: string; archived?: boolean }>;
   values: string[];
   /** Shown while nothing is chosen, as a placeholder. */
   empty: string;
@@ -54,6 +58,7 @@ export const MultiPicker: React.FC<{
 }> = ({ label, searchPlaceholder, options, values, empty, summary, invalid, onChange }) => {
   const [open, setOpen] = useState(false);
   const chosen = options.filter((option) => values.includes(option.value));
+  const chosenArchived = chosen.filter((option) => option.archived);
   const shown =
     summary ??
     (chosen.length
@@ -62,17 +67,63 @@ export const MultiPicker: React.FC<{
         values.length
         ? `${values.length} unavailable`
         : empty);
+  // The list searches an archived option as "Name (archived)", as it was labelled before it had a
+  // badge, so it's still found that way and told apart from an active one with the same name.
+  const archived = new Set(options.filter((option) => option.archived).map(({ value }) => value));
+  const names = new Map(options.map((option) => [option.value, option.label]));
   return (
     // Modal, like a select, so clicking away only closes it. The rows sit close together, and the
     // click would otherwise go on to whatever it lands on, such as switching a part off.
     <Combobox open={open} modal onOpenChange={setOpen}>
       <ComboboxTrigger aria-invalid={invalid || undefined} aria-label={label}>
-        <ComboboxValue placeholder={!values.length}>{shown}</ComboboxValue>
+        <ComboboxValue placeholder={!values.length}>
+          {!summary && chosenArchived.length ? (
+            // One line, cut off when long, with the archived options first, then one badge that
+            // always shows: "Archived" for a single choice, or how many of several are. The list
+            // says which.
+            <span className="flex items-center gap-2">
+              <span className="truncate">
+                {[...chosenArchived, ...chosen.filter((option) => !option.archived)]
+                  .map((option) => option.label)
+                  .join(', ')}
+              </span>
+              <ArchivedBadge>
+                {chosen.length === 1 ? 'Archived' : `${chosenArchived.length} archived`}
+              </ArchivedBadge>
+            </span>
+          ) : (
+            shown
+          )}
+        </ComboboxValue>
       </ComboboxTrigger>
       <ComboboxContent>
         <MultiSelectCombobox
           i18n={{ searchPlaceholder }}
-          options={options}
+          options={
+            archived.size
+              ? options.map((option) =>
+                  option.archived ? { ...option, label: `${option.label} (archived)` } : option,
+                )
+              : options
+          }
+          // Its own row only where an option is archived, with the badge after the name; every
+          // other list keeps the default row.
+          renderItem={
+            archived.size
+              ? ({ option, isSelected, onSelect }) => (
+                  <CommandItem key={option.value} value={option.label} onSelect={onSelect}>
+                    <span
+                      className="truncate text-accent-foreground"
+                      title={names.get(option.value)}
+                    >
+                      {names.get(option.value)}
+                    </span>
+                    {archived.has(option.value) && <ArchivedBadge />}
+                    <CommandCheck className={isSelected ? undefined : 'opacity-0'} />
+                  </CommandItem>
+                )
+              : undefined
+          }
           values={values}
           onChange={onChange}
           onClose={() => setOpen(false)}
@@ -168,10 +219,7 @@ export const CollectRow: React.FC<{
                 .filter(
                   (tier) => tier.active || (!state.allTiers && state.tierIds.includes(tier.id)),
                 )
-                .map((tier) => ({
-                  value: tier.id,
-                  label: tier.active ? tier.name : `${tier.name} (archived)`,
-                }))}
+                .map((tier) => ({ value: tier.id, label: tier.name, archived: !tier.active }))}
               searchPlaceholder="Search tiers..."
               summary={state.allTiers ? 'All paid tiers' : undefined}
               values={state.allTiers ? activeTierIds : state.tierIds}
