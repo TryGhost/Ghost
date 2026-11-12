@@ -608,7 +608,7 @@ export const AppPage: React.FC = () => {
   // scrolls, so the footer stays in view. Like Admin's own screens, the app brings its page gutter
   // (Shade's page templates do), so it can bleed a sticky header or a scrolling row to the edge.
   return (
-    <div className="@container/app-page size-full" data-testid="app-page">
+    <div className="size-full" data-testid="app-page">
       {body}
     </div>
   );

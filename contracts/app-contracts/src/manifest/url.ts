@@ -118,10 +118,10 @@ export function urlField({ allowLocalhost, base }: UrlRules, linkOnly = false) {
 }
 
 const MAILTO_PROBLEM = 'Expected a mailto: link to one email address';
-// No separators, and no control or format characters, which could hide or reorder what the mail
-// client shows in its To field.
-const EMAIL_ADDRESS =
-  /^[^\s\p{Cc}\p{Cf}@,;:<>()[\]\\"?#%/]+@[^\s\p{Cc}\p{Cf}@,;:<>()[\]\\"?#%/]+\.[^\s\p{Cc}\p{Cf}@,;:<>()[\]\\"?#%/]+$/u;
+// No separators, and no control, format or invisible characters, which could hide or reorder what
+// the mail client shows in its To field.
+const EMAIL_PART = String.raw`[^\s\p{Cc}\p{Cf}\p{Default_Ignorable_Code_Point}\u2800@,;:<>()[\]\\"?#%/]+`;
+const EMAIL_ADDRESS = new RegExp(String.raw`^${EMAIL_PART}@${EMAIL_PART}\.${EMAIL_PART}$`, 'u');
 
 /**
  * Everything after a `mailto:` link's scheme, decoded as a mail client decodes it. That's the
