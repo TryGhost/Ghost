@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 
-import { readBytes } from '../src/backend/body.ts';
+import { readBytes } from '../src/shared/body.ts';
 
 /** A body whose cancel fails, as a broken connection's can. */
 function unCancellable(chunk: Uint8Array) {
