@@ -40,7 +40,7 @@ function PostsNavItemContent({ isActive, to }: { isActive: boolean; to: string }
         className={cn(
           'absolute top-0 right-0 flex size-8 items-center justify-center rounded-full p-0 ring-sidebar-ring outline-hidden transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2',
           admin7Design
-            ? 'text-muted-foreground sidebar:[@media(hover:hover)_and_(pointer:fine)]:pointer-events-none sidebar:[@media(hover:hover)_and_(pointer:fine)]:opacity-0 [[data-sidebar=sidebar]:focus-within_&]:pointer-events-auto [[data-sidebar=sidebar]:focus-within_&]:opacity-100 [[data-sidebar=sidebar]:hover_&]:pointer-events-auto [[data-sidebar=sidebar]:hover_&]:opacity-100'
+            ? 'text-muted-foreground transition-[opacity,color,background-color] duration-200 focus-visible:pointer-events-auto focus-visible:opacity-100 sidebar:[@media(hover:hover)_and_(pointer:fine)]:pointer-events-none sidebar:[@media(hover:hover)_and_(pointer:fine)]:opacity-0 [[data-controls-visible=true]_&]:pointer-events-auto [[data-controls-visible=true]_&]:opacity-100 [[data-controls-visible=true]_&]:delay-75'
             : 'text-gray-700 dark:text-gray-800 dark:hover:text-white',
         )}
         to="/editor/post"

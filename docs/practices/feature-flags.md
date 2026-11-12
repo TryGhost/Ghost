@@ -169,6 +169,17 @@ status sits below the publication name, and the sidebar omits the member count
 already shown in the top bar. The Posts create action appears on sidebar hover
 or keyboard focus and stays visible on touch devices.
 
+The floating panel is 269px wide in both the main navigation and Settings.
+Main navigation uses 12px side insets, 4px item corners and 24px group gaps;
+group labels use 10px medium text with 0.04em tracking. The Posts create action
+shares the pin control's hover intent and transition timing. Submenus retain
+their rows during collapse, immediately make them inert and hidden from
+assistive technology, and stagger their entrances like the Settings navigation.
+Reduced motion skips the submenu transitions and stagger.
+The footer overlaps scrolling navigation with a 24px background gradient; matching
+top padding keeps the banner and avatar in place, while navigation bottom padding
+lets its final item scroll clear of the fade.
+
 The `admin7Design` milestone also sets column headers in a small uppercase label
 style. Section headings on member details, tag details and Settings share one
 style, and member stats and list text follow the prototype. Settings sidebar

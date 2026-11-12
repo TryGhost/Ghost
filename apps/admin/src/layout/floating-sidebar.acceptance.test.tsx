@@ -79,10 +79,16 @@ describe('Floating sidebar (admin7Design)', () => {
       const banner = whatsNewScreen.banner();
       await expect.element(banner).toBeVisible();
       await expect.element(sidebarScreen.userMenuTrigger()).toBeVisible();
+      const bannerRegion = banner.element().parentElement;
+      if (!(bannerRegion instanceof HTMLElement)) {
+        throw new Error('Expected the banner scroll region');
+      }
+      expect(getComputedStyle(bannerRegion).overflowY).toBe('auto');
+      expect(bannerRegion.clientHeight).toBeGreaterThan(0);
       await expect
         .poll(
           () =>
-            banner.element().getBoundingClientRect().bottom <=
+            bannerRegion.getBoundingClientRect().bottom <=
             sidebarScreen.userMenuTrigger().element().getBoundingClientRect().top,
         )
         .toBe(true);
@@ -92,14 +98,71 @@ describe('Floating sidebar (admin7Design)', () => {
         throw new Error('Expected scrollable sidebar navigation');
       }
       await expect.poll(() => nav.scrollHeight > nav.clientHeight).toBe(true);
-      const bannerTop = banner.element().getBoundingClientRect().top;
+      const footer = nav.parentElement?.querySelector('[data-sidebar=footer-region]');
+      if (!(footer instanceof HTMLElement)) {
+        throw new Error('Expected the fixed sidebar footer region');
+      }
+      expect(nav.getBoundingClientRect().bottom).toBeGreaterThan(
+        footer.getBoundingClientRect().top,
+      );
+      const bannerTop = bannerRegion.getBoundingClientRect().top;
+      const avatarBottom = sidebarScreen.userMenuTrigger().element().getBoundingClientRect().bottom;
       nav.scrollTop = nav.scrollHeight;
 
-      expect(banner.element().getBoundingClientRect().top).toBe(bannerTop);
+      expect(bannerRegion.getBoundingClientRect().top).toBe(bannerTop);
       await expect.element(sidebarScreen.navLink('Settings')).toBeVisible();
+      await expect
+        .poll(
+          () =>
+            sidebarScreen.navLink('Settings').element().getBoundingClientRect().bottom <=
+            footer.getBoundingClientRect().top + 1,
+        )
+        .toBe(true);
       await expect.element(banner).toBeVisible();
+      await whatsNewScreen.dismissButton().click();
+      await expect(whatsNewScreen.banner()).toHaveCount(0);
+      expect(sidebarScreen.userMenuTrigger().element().getBoundingClientRect().bottom).toBe(
+        avatarBottom,
+      );
       await sidebarScreen.userMenuTrigger().click();
       await expect.element(sidebarScreen.profileMenuItem()).toBeVisible();
+    } finally {
+      await page.viewport(1280, 800);
+    }
+  });
+
+  it('lets the last menu item scroll clear of the footer gradient without a banner', async () => {
+    await page.viewport(1280, 420);
+    fakeTags([]);
+    try {
+      await renderAdminApp('/tags', floatingSidebar());
+      await expect.poll(sidebarScreen.floatingState).toBe('pinned');
+      const nav = sidebarScreen.shellNav().element().querySelector('[data-sidebar=content]');
+      const footer = sidebarScreen
+        .shellNav()
+        .element()
+        .querySelector('[data-sidebar=footer-region]');
+      if (!(nav instanceof HTMLElement) || !(footer instanceof HTMLElement)) {
+        throw new Error('Expected the scrolling navigation and fixed footer');
+      }
+      await expect.poll(() => nav.scrollHeight > nav.clientHeight).toBe(true);
+      expect(nav.getBoundingClientRect().bottom).toBeGreaterThan(
+        footer.getBoundingClientRect().top,
+      );
+      const avatarBottom = sidebarScreen.userMenuTrigger().element().getBoundingClientRect().bottom;
+
+      nav.scrollTop = nav.scrollHeight;
+
+      await expect
+        .poll(
+          () =>
+            sidebarScreen.navLink('Settings').element().getBoundingClientRect().bottom <=
+            footer.getBoundingClientRect().top + 1,
+        )
+        .toBe(true);
+      expect(sidebarScreen.userMenuTrigger().element().getBoundingClientRect().bottom).toBe(
+        avatarBottom,
+      );
     } finally {
       await page.viewport(1280, 800);
     }

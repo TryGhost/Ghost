@@ -594,6 +594,9 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
     }, [morph, morphDuration, pinned]);
 
     const state = pinned ? 'pinned' : open ? 'open' : 'closed';
+    // Descendant secondary actions share the pin's hover intent and keyboard
+    // state instead of retaining mouse-click focus through :focus-within.
+    const controlsVisible = open && !pinLocked;
 
     return (
       <div ref={ref} className="shrink-0 text-foreground" data-state={state} role="navigation">
@@ -643,6 +646,7 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
               'relative flex shrink-0 flex-col overflow-hidden [interpolate-size:allow-keywords]',
               GLASS,
             )}
+            data-controls-visible={controlsVisible}
             data-sidebar="sidebar"
             data-slot="floating-sidebar"
             data-state={state}
@@ -759,7 +763,7 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
                   'absolute z-10 flex size-8 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-[opacity,color,background-color] duration-200 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:pointer-events-auto focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-hidden',
                   // Follows the hover state, not pinning, so it hides when the
                   // pointer leaves a pinned panel too
-                  open && !pinLocked
+                  controlsVisible
                     ? 'pointer-events-auto opacity-100 delay-75'
                     : 'pointer-events-none opacity-0',
                 )}

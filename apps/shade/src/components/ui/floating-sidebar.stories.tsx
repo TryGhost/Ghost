@@ -20,7 +20,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A glass capsule that morphs between a circle around an icon (closed), a full-height panel floating over the content (open: hover the circle or the left screen edge, focus or click it) and the same panel docked (pinned). Use inside a SidebarProvider on desktop, with the sidebar menu primitives in its body. Pinned, its gap offsets the content at once; content that should glide in step, or keep clear of the closed circle, uses the exported metrics and `getFloatingSidebarTiming`.',
+          'A glass capsule that morphs between a circle around an icon (closed), a full-height panel floating over the content (open: hover the circle or the left screen edge, focus or click it) and the same panel docked (pinned). Use inside a SidebarProvider on desktop, with the sidebar menu primitives in its body. Pinned, its gap offsets the content at once; content that should glide in step, or keep clear of the closed circle, uses the exported metrics and `getFloatingSidebarTiming`. The capsule exposes `data-controls-visible="true"` when secondary actions should show, sharing the pin’s hover intent and keyboard focus state. Descendant actions can follow that attribute with the same 200ms opacity transition and 75ms reveal delay; mouse-click focus alone does not keep them visible.',
       },
     },
   },

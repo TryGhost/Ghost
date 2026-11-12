@@ -1,6 +1,8 @@
 import React from 'react';
 import { SidebarMenuButton, SidebarMenuItem, useSidebar } from '@tryghost/shade/components';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { Grid, Stack } from '@tryghost/shade/primitives';
 import { useIsActiveLink } from './use-is-active-link';
 import { AdminLink } from '@/shared/admin-link';
 
@@ -84,6 +86,15 @@ interface NavMenuCollapsibleMenuProps {
 
 function NavMenuCollapsibleMenu({ children }: NavMenuCollapsibleMenuProps) {
   const { expanded, id } = useNavMenuCollapsibleContext();
+  const admin7Design = useFeatureFlag('admin7Design');
+
+  if (admin7Design) {
+    return (
+      <AnimatedNavMenuCollapsibleMenu expanded={expanded} id={id}>
+        {children}
+      </AnimatedNavMenuCollapsibleMenu>
+    );
+  }
 
   return (
     <div
@@ -92,6 +103,79 @@ function NavMenuCollapsibleMenu({ children }: NavMenuCollapsibleMenuProps) {
     >
       <div className="flex flex-col gap-px overflow-hidden">{expanded ? children : null}</div>
     </div>
+  );
+}
+
+/** Keeps the rows in place so the grid can close around their full height. */
+function AnimatedNavMenuCollapsibleMenu({
+  children,
+  expanded,
+  id,
+}: NavMenuCollapsibleMenuProps & { expanded: boolean; id: string }) {
+  const menuRef = React.useRef<HTMLDivElement>(null);
+  const wasExpanded = React.useRef(expanded);
+  const animations = React.useRef<Animation[]>([]);
+
+  React.useLayoutEffect(() => {
+    const menu = menuRef.current;
+    if (!menu) {
+      return;
+    }
+    menu.inert = !expanded;
+    const opening = expanded && !wasExpanded.current;
+    wasExpanded.current = expanded;
+    if (!opening) {
+      return;
+    }
+
+    animations.current.forEach((animation) => animation.cancel());
+    animations.current = [];
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
+    // Match the Settings sidebar's row entrances: 300ms, 18ms apart, from 24px left.
+    menu.querySelectorAll<HTMLElement>('[data-sidebar=menu-item]').forEach((row, index) => {
+      animations.current.push(
+        row.animate(
+          [
+            { opacity: 0, transform: 'translateX(-24px)' },
+            { opacity: 1, transform: 'none' },
+          ],
+          {
+            duration: 300,
+            delay: Math.min(index * 18, 300),
+            easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+            fill: 'backwards',
+          },
+        ),
+      );
+    });
+  }, [expanded]);
+
+  React.useEffect(() => () => animations.current.forEach((animation) => animation.cancel()), []);
+
+  return (
+    <Grid
+      ref={menuRef}
+      aria-hidden={!expanded || undefined}
+      className={cn(
+        'transition-[grid-template-rows] duration-260 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none',
+        expanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+      )}
+      gap="none"
+      id={id}
+    >
+      <Stack
+        className={cn(
+          'min-h-0 overflow-hidden transition-opacity duration-150 motion-reduce:transition-none',
+          expanded ? 'opacity-100' : 'opacity-0',
+        )}
+        gap="none"
+      >
+        {children}
+      </Stack>
+    </Grid>
   );
 }
 
@@ -165,8 +249,15 @@ function NavMenuLabel({ children, ...props }: NavMenuLabelProps) {
 
 type NavSubmenuItemProps = NavMenuLinkProps;
 function NavSubmenuItem({ children, className, ...props }: NavSubmenuItemProps) {
+  const admin7Design = useFeatureFlag('admin7Design');
+
   return (
-    <NavMenuItem className="before:absolute before:inset-y-0 before:left-5 before:z-10 before:w-px before:bg-sidebar-accent">
+    <NavMenuItem
+      className={cn(
+        !admin7Design &&
+          'before:absolute before:inset-y-0 before:left-5 before:z-10 before:w-px before:bg-sidebar-accent',
+      )}
+    >
       <div className="min-w-0 pl-7">
         <NavMenuItem.Link
           className={cn('w-full min-w-0 pl-2 focus-visible:ring-inset', className)}

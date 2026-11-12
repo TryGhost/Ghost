@@ -7,6 +7,7 @@ import {
   useSidebar,
 } from '@tryghost/shade/components';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { AdminLink } from '@/shared/admin-link';
 
 /**
@@ -25,7 +26,19 @@ const EYEBROW_CLASS_NAME = 'h-6 text-xs font-semibold tracking-[0.08em] uppercas
 
 /** The eyebrow over a group: small caps, a little tracked out. */
 function NavGroupLabel({ className, ...props }: React.ComponentProps<typeof SidebarGroupLabel>) {
-  return <SidebarGroupLabel className={cn(EYEBROW_CLASS_NAME, className)} {...props} />;
+  const admin7Design = useFeatureFlag('admin7Design');
+
+  return (
+    <SidebarGroupLabel
+      className={cn(
+        admin7Design
+          ? 'mb-1 h-8 text-2xs leading-none font-medium tracking-[0.04em] uppercase'
+          : EYEBROW_CLASS_NAME,
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 interface NavGroupLabelLinkProps {

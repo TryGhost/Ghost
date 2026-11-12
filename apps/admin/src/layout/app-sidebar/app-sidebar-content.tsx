@@ -26,22 +26,14 @@ function AppSidebarContent({ floating = false }: AppSidebarContentProps) {
     <SidebarContent
       className={cn(
         admin7Design ? 'min-h-16' : 'justify-between',
-        // Menu rows line up with the capsule's site icon (its body has the side
-        // padding), the first close under its header row. It scrolls out to the
-        // capsule's edges, where the scrolling content is clipped.
-        floating
-          ? '-mx-5 px-5 pt-0 pb-1 [&_[data-sidebar=group]]:px-0 [&>div:first-child>[data-sidebar=group]:first-child]:pt-0'
-          : 'px-3 pt-4 pb-1',
+        // The capsule body has 20px padding; the navigation reaches its edges
+        // and adds the vision's narrower 12px inset around the menu rows.
+        floating ? '-mx-5 px-3 pt-0 pb-6' : 'px-3 pt-4 pb-1',
+        admin7Design && '[&_[data-sidebar=group]]:p-0 [&_[data-sidebar=menu-button]]:rounded-sm',
         admin7Design && ADMIN7_NAV_ICON_CLASS_NAME,
       )}
     >
-      <Stack
-        className={cn(
-          !admin7Design && groupGap,
-          admin7Design && '[&>[data-sidebar=group]+[data-sidebar=group]]:pt-4',
-        )}
-        gap="sm"
-      >
+      <Stack className={cn(!admin7Design && groupGap)} gap={admin7Design ? 'xl' : 'sm'}>
         <NavMain />
         <NavContent />
         <NavApps />
