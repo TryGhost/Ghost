@@ -9,7 +9,6 @@ import {
   statSync,
 } from 'node:fs';
 import http from 'node:http';
-import net from 'node:net';
 import { join, resolve as resolvePath, sep } from 'node:path';
 import { promisify } from 'node:util';
 import {
@@ -18,6 +17,8 @@ import {
   parseEnv,
   worktreeDatabases,
 } from '../../scripts/lib/ghost-dev-env.ts';
+
+export { isListening } from '../../scripts/lib/ghost-dev-env.ts';
 
 export const PID_FILE = '.ghost-dev.pid';
 export const LOG_FILE = '.ghost-dev.log';
@@ -182,21 +183,6 @@ export function unusedE2eNames(names: string[], worktreeRoots: string[]): string
   return names.filter((name) => {
     const key = E2E_KEYED_NAMES.map((pattern) => pattern.exec(name)?.[1]).find(Boolean);
     return key !== undefined && !used.has(key);
-  });
-}
-
-export function isListening(port: number): Promise<boolean> {
-  return new Promise((resolve) => {
-    const socket = net.connect({ host: 'localhost', port, timeout: 1000 });
-    socket.once('connect', () => {
-      socket.destroy();
-      resolve(true);
-    });
-    socket.once('timeout', () => {
-      socket.destroy();
-      resolve(false);
-    });
-    socket.once('error', () => resolve(false));
   });
 }
 
