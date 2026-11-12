@@ -68,7 +68,9 @@
       ],
       "serviceReports": [
         "{workspaceRoot}/.dependency-cruiser.cjs",
-        "{workspaceRoot}/tools/scripts/ci/service-dependency-resolver.mjs"
+        "{workspaceRoot}/tools/scripts/ci/service-dependency-resolver.mjs",
+        "{workspaceRoot}/.dependency-cruiser-known-violations.json",
+        "{workspaceRoot}/ghost/core/server/services/service-inventory.yaml"
       ],
       "serviceGenerator": [
         "{workspaceRoot}/.editorconfig",

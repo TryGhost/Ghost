@@ -276,6 +276,13 @@
       }
     },
     {
+      "files": ["ghost/core/server/services/**/*.{js,ts}"],
+      "plugins": ["import"],
+      "rules": {
+        "import/no-dynamic-require": ["error", { "esmodule": true }]
+      }
+    },
+    {
       "files": ["ghost/core/**/*.{js,ts}", "ghost/test/**/*.{js,ts}"],
       "rules": {
         "ghost/prefer-canonical-types": "error"

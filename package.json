@@ -49,7 +49,7 @@
     "lint:agent-skills": "node tools/scripts/ci/check-agent-skill-links.ts",
     "lint:doc-links": "git ls-files -z '*.md' ':(exclude,glob).changeset/**' ':(exclude,glob)**/fixture/**' ':(exclude,glob)**/fixtures/**' | xargs -0 remark --use remark-validate-links --frail --quiet",
     "lint:markdown": "git ls-files -z '*.md' ':(exclude,glob).changeset/**' ':(exclude,glob)**/fixture/**' ':(exclude,glob)**/fixtures/**' | xargs -0 markdownlint-cli2 --config .markdownlint-cli2.jsonc",
-    "lint:boundaries": "depcruise ghost/core apps --config .dependency-cruiser.cjs",
+    "lint:boundaries": "node tools/scripts/ci/check-boundaries.ts",
     "lint:packages": "node tools/scripts/ci/check-internal-packages.ts",
     "lint:versioning": "node tools/scripts/ci/check-versioning-ignore.ts",
     "lint:docs": "pnpm lint:agent-skills && pnpm lint:agent-guidance && pnpm lint:markdown && pnpm lint:doc-links",
@@ -127,20 +127,20 @@
         "cache": true,
         "inputs": [
           "{workspaceRoot}/.dependency-cruiser.cjs",
+          "{workspaceRoot}/.dependency-cruiser-known-violations.json",
+          "{workspaceRoot}/tools/scripts/ci/check-boundaries.ts",
+          "{workspaceRoot}/tools/scripts/lib/dependency-boundaries.ts",
           "{workspaceRoot}/tools/scripts/ci/service-dependency-resolver.mjs",
           "{workspaceRoot}/ghost/core/**/*",
           "{workspaceRoot}/ghost/package.json",
           "{workspaceRoot}/packages/**/*",
           "{workspaceRoot}/koenig/**/*",
           "{workspaceRoot}/apps/**/*",
-          "sharedGlobals",
-          {
-            "env": "GHOST_SERVICE_DEPENDENCY_AUDIT"
-          }
+          "sharedGlobals"
         ],
         "outputs": [],
         "options": {
-          "command": "depcruise ghost/core apps --config .dependency-cruiser.cjs"
+          "command": "node tools/scripts/ci/check-boundaries.ts"
         }
       },
       "docker:up": {

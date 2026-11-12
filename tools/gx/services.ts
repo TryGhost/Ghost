@@ -4,6 +4,7 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 import yaml from 'js-yaml';
 import { z } from 'zod';
+import { readDependencyBoundaries } from '../scripts/lib/dependency-boundaries.ts';
 
 const servicesRoot = 'ghost/core/server/services/';
 const repository = path.resolve(import.meta.dirname, '../..');
@@ -325,36 +326,9 @@ function frequencies(rows: Service[]) {
 }
 
 function readAudit() {
-  const result = spawnSync(
-    'pnpm',
-    [
-      'exec',
-      'depcruise',
-      servicesRoot,
-      '--config',
-      '.dependency-cruiser.cjs',
-      '--output-type',
-      'json',
-    ],
-    {
-      cwd: repository,
-      env: { ...process.env, GHOST_SERVICE_DEPENDENCY_AUDIT: '1' },
-      encoding: 'utf8',
-      maxBuffer: 32 * 1024 * 1024,
-    },
-  );
-  if (result.error) {
-    throw result.error;
-  }
-  if (result.status !== 0) {
-    throw new Error(result.stderr.trim() || `Dependency audit failed (exit ${result.status}).`);
-  }
-  if (result.stderr) {
-    process.stderr.write(result.stderr);
-  }
-  const data: unknown = JSON.parse(result.stdout);
+  const { graph: data } = readDependencyBoundaries(repository);
   auditSchema.parse(data);
-  return { data, json: result.stdout };
+  return { data, json: JSON.stringify(data) };
 }
 
 export function runServices(command: string, args: string[]) {

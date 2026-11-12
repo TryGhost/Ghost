@@ -71,7 +71,7 @@ in `.oxlintrc.json`. Its standalone implementation is
 a root migrated; a tooling test compares them with the service inventory.
 Catalogue metadata validation remains separate from linting.
 
-The Oxlint-only `ghost/no-injected-service-libraries` rule checks migrated
+The Oxlint-only `ghost/no-injected-service-libraries` rule checks all TypeScript
 service roots for allowlisted libraries passed into local constructors. It
 reuses the service dependency policy in `.dependency-cruiser.cjs`; see the
 [services guide](../../../ghost/core/server/services/README.md#dependency-boundaries)

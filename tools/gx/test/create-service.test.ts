@@ -17,6 +17,7 @@ import { afterEach, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import { createService } from '../create-service.ts';
+import { readDependencyBoundaries } from '../../scripts/lib/dependency-boundaries.ts';
 
 const repo = fileURLToPath(new URL('../../..', import.meta.url));
 const requireRoot = createRequire(path.join(repo, 'package.json'));
@@ -86,7 +87,6 @@ function run(root: string, binary: string, args: string[]) {
       ...process.env,
       FORCE_COLOR: undefined,
       NO_COLOR: '1',
-      GHOST_SERVICE_DEPENDENCY_AUDIT: undefined,
     },
   });
   assert.ifError(result.error);
@@ -261,6 +261,8 @@ test('generated output passes real lint, boundary and inventory checks, which re
   });
   symlinkSync(path.join(repo, 'node_modules'), path.join(root, 'node_modules'));
   symlinkSync(path.join(repo, 'ghost/node_modules'), path.join(root, 'ghost/node_modules'));
+  mkdirSync(path.join(root, 'apps'));
+  writeFileSync(path.join(root, '.dependency-cruiser-known-violations.json'), '[]');
   createService({ name, rootDir: root });
   // Keep the generated entry intact while removing the placeholder used by unit fixtures.
   writeFileSync(
@@ -317,6 +319,9 @@ test('generated output passes real lint, boundary and inventory checks, which re
     graph.modules.some((module: { source: string }) => module.source === implementation),
     'The implementation must actually be analyzed',
   );
+  const boundaries = readDependencyBoundaries(root);
+  assert.deepEqual(boundaries.newViolations, []);
+  assert.deepEqual(boundaries.stale, []);
   success(run(path.join(root, 'ghost'), vitest, ['run', '--config', 'vitest.config.mts']));
   success(run(path.join(root, 'ghost'), tsc, ['--noEmit']));
   success(run(path.join(root, 'ghost'), tsc, ['--noEmit', '-p', 'test/tsconfig.json']));
@@ -342,6 +347,12 @@ test('generated output passes real lint, boundary and inventory checks, which re
   ]);
   assert.equal(invalidDependency.status, 1, invalidDependency.stdout + invalidDependency.stderr);
   assert.match(invalidDependency.stdout + invalidDependency.stderr, /service-dependencies/);
+  assert.ok(
+    readDependencyBoundaries(root).newViolations.some(
+      (violation) =>
+        violation.from === implementation && violation.rule.name === 'service-dependencies',
+    ),
+  );
   const inventory = yaml.load(read(root, inventoryPath)) as { services: Record<string, unknown> };
   delete inventory.services[name];
   writeFileSync(path.join(root, inventoryPath), yaml.dump(inventory));
