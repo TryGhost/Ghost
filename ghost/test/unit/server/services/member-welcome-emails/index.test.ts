@@ -85,7 +85,6 @@ function newsletter(sender: string) {
 const automationEmail = {
   email: { designSettingId: 'design-id', lexical: lexical('Hello'), subject: 'Automation' },
   member,
-  memberStatus: 'free',
   trackOpens: true,
   trackClicks: false,
   automationActionRevisionId: 'revision-id',
