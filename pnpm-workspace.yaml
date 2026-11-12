@@ -171,7 +171,7 @@ catalog:
   glob: 14.0.4
   globals: 17.14.0
   got: 16.0.0
-  html-minifier-next: 8.10.7
+  html-minifier-next: 8.11.0
   html-to-text: 10.0.1
   ipaddr.js: 2.5.0
   jiti: 2.7.0

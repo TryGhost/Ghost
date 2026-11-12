@@ -606,8 +606,8 @@ catalogs:
       specifier: 4.13.16
       version: 4.13.16
     html-minifier-next:
-      specifier: 8.10.7
-      version: 8.10.7
+      specifier: 8.11.0
+      version: 8.11.0
     html-to-text:
       specifier: 10.0.1
       version: 10.0.1
@@ -2988,7 +2988,7 @@ importers:
         version: 4.0.1(@typescript-eslint/eslint-plugin@8.72.1(@typescript-eslint/parser@8.72.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(@typescript-eslint/parser@8.72.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(ts-declaration-location@1.0.7(@typescript/typescript6@6.0.2))
       html-minifier-next:
         specifier: 'catalog:'
-        version: 8.10.7
+        version: 8.11.0
       jsdom:
         specifier: 'catalog:'
         version: 30.0.1(@noble/hashes@1.8.0)
@@ -12226,8 +12226,8 @@ packages:
   html-escaper@3.0.3:
     resolution: {integrity: sha512-RuMffC89BOWQoY0WKGpIhn5gX3iI54O6nRA0yC124NYVtzjmFWBIiFd8M0x+ZdX0P9R4lADg1mgP8C7PxGOWuQ==}
 
-  html-minifier-next@8.10.7:
-    resolution: {integrity: sha512-Pbh0fcJJTj8udwfs3bBuFmqlaixKprDDRcuQiP1E9h6KKKixk55yM1lZR2iHz0sSc7Nc+E8X/fXoUCFkrJiuaw==}
+  html-minifier-next@8.11.0:
+    resolution: {integrity: sha512-DOdvMAS4B2mrIiy5M8sMVtp/Z8Z4K1cSon58i4pPxl4gY0eCb0/7IZs2B97IQI0zKvHej3wEnWabri4UN/8XGw==}
     engines: {node: '>=22.13'}
     hasBin: true
     peerDependencies:
@@ -25028,7 +25028,7 @@ snapshots:
 
   html-escaper@3.0.3: {}
 
-  html-minifier-next@8.10.7:
+  html-minifier-next@8.11.0:
     dependencies:
       commander: 15.0.0
       entities: 8.1.0
