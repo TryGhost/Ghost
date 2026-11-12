@@ -94,9 +94,16 @@ export const Destination: React.FC<{
   chosen: Array<string | null>;
   value: string | null;
   error?: string;
+  /** The name a field created here starts with. */
+  suggestedName?: string;
   onChange: (key: string) => void;
-}> = ({ label, type, fields, chosen, value, error, onChange }) => {
+}> = ({ label, type, fields, chosen, value, error, suggestedName, onChange }) => {
   const creatableTypes = useCreatableMemberCustomFieldTypes();
+  // Ghost refuses a name another field has, in any case, archived or not, so a taken name isn't
+  // suggested: the form starts empty instead of with a name that can't be saved.
+  const nameIsFree =
+    suggestedName !== undefined &&
+    !fields.some((field) => field.name.toLowerCase() === suggestedName.toLowerCase());
   return (
     <SubRow error={error} label={label}>
       <CustomFieldPicker
@@ -114,6 +121,7 @@ export const Destination: React.FC<{
         )}
         invalid={Boolean(error)}
         label={label}
+        suggestedName={nameIsFree ? suggestedName : undefined}
         value={value}
         onChange={onChange}
       />

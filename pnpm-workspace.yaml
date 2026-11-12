@@ -81,11 +81,11 @@ catalog:
   '@sentry/bundler-plugin-core': 5.3.0
   '@sentry/react': 7.120.4
   '@sentry/vite-plugin': 5.4.1
-  '@storybook/addon-docs': 10.6.5
-  '@storybook/addon-links': 10.6.5
-  '@storybook/preact-vite': 10.6.5
-  '@storybook/react': 10.6.5
-  '@storybook/react-vite': 10.6.5
+  '@storybook/addon-docs': 10.6.6
+  '@storybook/addon-links': 10.6.6
+  '@storybook/preact-vite': 10.6.6
+  '@storybook/react': 10.6.6
+  '@storybook/react-vite': 10.6.6
   '@tailwindcss/postcss': 4.3.3
   '@tailwindcss/vite': 4.3.3
   '@tanstack/react-query': 5.105.1
@@ -104,8 +104,8 @@ catalog:
   '@tryghost/mg-clean-html': 0.12.7
   '@tryghost/metrics': 3.7.4
   '@tryghost/mongo-knex': 0.11.2
-  '@tryghost/nql': 0.13.4
-  '@tryghost/nql-lang': 0.7.0
+  '@tryghost/nql': 0.13.5
+  '@tryghost/nql-lang': 0.7.1
   '@tryghost/pretty-cli': 3.4.3
   '@tryghost/promise': 2.3.21
   '@tryghost/request': 4.0.15
@@ -163,7 +163,7 @@ catalog:
   eslint-plugin-react: 7.37.5
   eslint-plugin-react-hooks: 5.2.0
   eslint-plugin-react-refresh: 0.5.7
-  eslint-plugin-storybook: 10.6.5
+  eslint-plugin-storybook: 10.6.6
   eslint-plugin-tailwindcss: 4.4.0
   express: 4.22.3
   flexsearch: 0.7.43
@@ -196,9 +196,9 @@ catalog:
   msw: 2.14.6
   nock: 14.0.17
   node-html-markdown: 2.0.0
-  oxfmt: 0.63.0
-  '@oxlint/plugins': 1.86.0
-  oxlint: 1.86.0
+  oxfmt: 0.77.0
+  '@oxlint/plugins': 1.92.0
+  oxlint: 1.92.0
   postcss: 8.5.32
   preact: ^10.29.2
   prettier: 3.9.10
@@ -214,8 +214,8 @@ catalog:
   sirv: 3.0.2
   snakecase-keys: 9.0.2
   sonner: 2.0.8
-  storybook: 10.6.5
-  stylelint: 17.14.1
+  storybook: 10.6.6
+  stylelint: 18.0.0
   supertest: 7.3.1
   tailwindcss: 4.3.3
   temporal-polyfill: 0.3.2
@@ -232,7 +232,7 @@ catalog:
   # `typescript: <7.x>` entry once typescript-eslint supports the TS7.1 API.
   typescript: 'npm:@typescript/typescript6@6.0.2'
   '@typescript/native': 'npm:typescript@7.0.2'
-  typescript-eslint: 8.71.1
+  typescript-eslint: 8.72.1
   undici: 8.12.3
   validator: 13.15.35
   vite: 8.1.6
@@ -256,11 +256,11 @@ catalog:
   '@octokit/core': 7.0.8
   '@octokit/plugin-retry': 8.1.1
   '@octokit/plugin-throttling': 11.0.5
-  '@secretlint/secretlint-rule-pattern': 13.0.7
-  '@secretlint/secretlint-rule-preset-recommend': 13.0.7
-  knip: 6.32.1
-  lint-staged: 17.3.0
-  secretlint: 13.0.7
+  '@secretlint/secretlint-rule-pattern': 13.1.0
+  '@secretlint/secretlint-rule-preset-recommend': 13.1.0
+  knip: 6.44.2
+  lint-staged: 17.6.0
+  secretlint: 13.1.0
   '@pnpm/releasing.versioning': 1100.3.8
   '@pnpm/workspace.workspace-manifest-reader': 1100.3.2
   execa: 10.2.1
@@ -336,6 +336,7 @@ overrides:
   body-parser: 'catalog:'
   express: 'catalog:'
   qs: 'catalog:'
+  readdir-glob: '^4.0.0'
 
 packageExtensions:
   # These import packages they don't declare.
@@ -431,6 +432,7 @@ minimumReleaseAgeExclude:
   # nx pins its platform binaries to its own exact version, so the release age
   # of nx itself still gates them
   - '@nx/nx-*'
+  - 'readdir-glob@4.0.0' # audit fix bump
 
 # configuration for pnpm's native versioning (changesets). Private packages opt out
 # by carrying the non-semver placeholder version "private", so only published

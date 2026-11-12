@@ -11,6 +11,13 @@
  */
 
 export {
+  APP_FAILURE_CODES,
+  OUTDATED_REVIEW_CODES,
+  isAppFailureCode,
+  isOutdatedReviewCode,
+  type AppFailureCode,
+} from './failure-codes.ts';
+export {
   UNCONFIRMED_APP_CODES,
   isUnconfirmedAppCode,
   type UnconfirmedAppCode,

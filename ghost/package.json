@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.77.0-rc.0",
+  "version": "6.77.1-rc.0",
   "description": "The professional publishing platform",
   "keywords": [
     "blog",
@@ -297,7 +297,7 @@
   },
   "engines": {
     "cli": "^1.29.1",
-    "node": "^22.23.4 || ^24.22.1"
+    "node": "^22.23.5 || ^24.22.3"
   },
   "nx": {
     "tags": [

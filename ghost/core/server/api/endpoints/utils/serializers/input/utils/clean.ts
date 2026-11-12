@@ -1,6 +1,6 @@
-const _ = require('lodash');
+import _ from 'lodash';
 
-const tagRelation = (attrs) => {
+const tagRelation = (attrs: object) => {
   return _.pick(attrs, ['id', 'name', 'slug']);
 };
 
