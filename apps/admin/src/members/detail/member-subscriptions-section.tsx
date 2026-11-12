@@ -248,25 +248,36 @@ const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
         <CardContent className={admin7Design ? undefined : 'pt-6'}>
           {hasSubscriptions ? (
             <>
-              {groups.map((group) => (
-                <div key={group.tier.id} className="flex flex-col">
-                  {group.subscriptions.map((sub, i) => (
-                    // For a member with 2+ subs on the same tier, the second key
-                    // needs a fallback since comp/gift subs have `id: ''`.
-                    <SubscriptionRow
-                      key={sub.id || `${group.tier.id}-${i}`}
-                      member={member}
-                      showDivider={i > 0}
-                      sub={sub}
-                    />
-                  ))}
-                  {group.subscriptions.length > 1 && (
-                    <div className="pt-3 text-sm text-muted-foreground">
-                      {group.subscriptions.length} subscriptions
-                    </div>
-                  )}
-                </div>
-              ))}
+              {/* Rows only space and rule themselves within their own tier group, so
+                  each group after the first needs the same divider and padding to
+                  keep it from sitting flush against the group above. */}
+              <div className="flex flex-col">
+                {groups.map((group, groupIndex) => (
+                  <div
+                    key={group.tier.id}
+                    className={cn(
+                      'flex flex-col py-5 first:pt-0 last:pb-0',
+                      groupIndex > 0 && 'border-t border-border',
+                    )}
+                  >
+                    {group.subscriptions.map((sub, i) => (
+                      // For a member with 2+ subs on the same tier, the second key
+                      // needs a fallback since comp/gift subs have `id: ''`.
+                      <SubscriptionRow
+                        key={sub.id || `${group.tier.id}-${i}`}
+                        member={member}
+                        showDivider={i > 0}
+                        sub={sub}
+                      />
+                    ))}
+                    {group.subscriptions.length > 1 && (
+                      <div className="pt-3 text-sm text-muted-foreground">
+                        {group.subscriptions.length} subscriptions
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
               {addCompButton && (
                 <div className="mt-4 flex justify-center border-t border-border pt-4">
                   {addCompButton}
