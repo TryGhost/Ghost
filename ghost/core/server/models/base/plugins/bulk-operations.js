@@ -13,7 +13,8 @@ async function insert(knex, table, data, options) {
     errors: [],
   };
 
-  for (const chunkedData of _.chunk(data, CHUNK_SIZE)) {
+  for (let offset = 0; offset < data.length; offset += CHUNK_SIZE) {
+    const chunkedData = data.slice(offset, offset + CHUNK_SIZE);
     try {
       await insertRecords(knex, table, chunkedData, options);
       result.successful += chunkedData.length;
