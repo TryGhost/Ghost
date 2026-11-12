@@ -2373,6 +2373,27 @@ describe('App installations Admin API', function () {
       assert.equal(JSON.parse(action.context).primary_name, 'Podcast');
     });
 
+    // The action is part of the uninstall, so failing to write it keeps the app installed.
+    it('keeps the app installed when its action cannot be written', async function () {
+      const installation = await install();
+      sinon.stub(logging, 'error');
+      await models.Base.knex.raw(`
+        CREATE TRIGGER fail_app_installation_action
+        BEFORE INSERT ON actions FOR EACH ROW
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'action write failed'
+      `);
+      try {
+        await agent.delete(`apps/installations/${installation.id}/`).expectStatus(500);
+      } finally {
+        await models.Base.knex.raw('DROP TRIGGER fail_app_installation_action');
+      }
+
+      const row = await installationRow(installation.id);
+      assert.equal(row.status, 'active');
+      assert.equal(row.current_app_id, 'com.example.podcast');
+      assert.equal((await actions()).length, 1);
+    });
+
     it('does nothing, and records nothing, the second time', async function () {
       const installation = await install();
 

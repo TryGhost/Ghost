@@ -12,6 +12,7 @@ import {
   type WriteOutcome,
 } from './app-installations-repository';
 import type { AppInstallationHistoryEntry, Installation, InstallationWithHistory } from './codec';
+import { ensureTransaction, transactionOf } from '../../lib/ensure-transaction';
 import {
   approvalWrite,
   changesFrom,
@@ -202,9 +203,12 @@ export class AppInstallationsService {
    */
   async read(
     id: string,
-    { withHistory = false }: { withHistory?: boolean } = {},
+    { withHistory = false, executor = this.knex }: { withHistory?: boolean; executor?: Knex } = {},
   ): Promise<InstallationWithHistory> {
-    const installation: InstallationWithHistory | undefined = await this.repository.find(id);
+    const installation: InstallationWithHistory | undefined = await this.repository.find(
+      id,
+      executor,
+    );
     if (!installation) {
       throw notFound();
     }
@@ -223,10 +227,15 @@ export class AppInstallationsService {
     return this.previewOf(await this.review(loaded, started));
   }
 
-  /** Installs an app after the publisher has reviewed its manifest, as previewed. */
+  /**
+   * Installs an app after the publisher has reviewed its manifest, as previewed. Given a
+   * transaction as `executor` it joins that transaction; given a plain connection it opens its
+   * own.
+   */
   async create(
     context: RequestContext,
     { manifestUrl, digest }: { manifestUrl: string; digest: string },
+    executor: Knex = this.knex,
   ): Promise<Installation> {
     const { loaded } = await this.fetchReviewed(manifestUrl, digest);
     const iconDataUrl = await this.fetchIcon(loaded.manifest.icon).catch(async (error: unknown) => {
@@ -236,8 +245,8 @@ export class AppInstallationsService {
         ? alreadyInstalled(loaded.manifest.id)
         : error;
     });
-    return retryOnDeadlock(() =>
-      this.knex.transaction(async (transacting) => {
+    const install = () =>
+      ensureTransaction(executor, async (transacting) => {
         const installation = await this.repository.insert(loaded, iconDataUrl, { transacting });
         await this.actionLog.record(
           transacting,
@@ -245,8 +254,10 @@ export class AppInstallationsService {
           appAction('installed', installation.id, loaded.manifest),
         );
         return installation;
-      }),
-    );
+      });
+    // A deadlock rolls back the whole transaction, so only one this command opened can be run
+    // again. A caller's transaction is the caller's to retry.
+    return transactionOf(executor) ? install() : retryOnDeadlock(install);
   }
 
   /**
@@ -259,13 +270,17 @@ export class AppInstallationsService {
    *
    * Approving the manifest that's already approved, with nothing pending, writes and
    * records nothing.
+   *
+   * Given a transaction as `executor` it joins that transaction; given a plain connection it
+   * opens its own.
    */
   async approve(
     context: RequestContext,
     id: string,
     { manifestUrl, digest, revision }: { manifestUrl: string; digest: string; revision: number },
+    executor: Knex = this.knex,
   ): Promise<Installation> {
-    const current = await this.repository.find(id);
+    const current = await this.repository.find(id, executor);
     if (!current) {
       throw notFound();
     }
@@ -283,7 +298,7 @@ export class AppInstallationsService {
     const write = await this.withIconCopy(
       approvalWrite({ current, pending: await this.pendingManifestOf(current), loaded }),
     ).catch((iconError: unknown) => ({ iconError }));
-    const stored = await this.knex.transaction(async (transacting) => {
+    const stored = await ensureTransaction(executor, async (transacting) => {
       const outcome = await this.store(current, write, { transacting });
       if (outcome.status === 'written' && outcome.value) {
         await this.actionLog.record(
@@ -303,7 +318,7 @@ export class AppInstallationsService {
     if (stored.status === 'changed') {
       throw await this.changedSinceReview(checked, id);
     }
-    return this.read(id);
+    return this.read(id, { executor });
   }
 
   /**
@@ -326,20 +341,25 @@ export class AppInstallationsService {
    *
    * Uninstalling an app that's already uninstalled does nothing, so a repeated request
    * doesn't add a second entry to the history.
+   *
+   * Given a transaction as `executor` it joins that transaction; given a plain connection it
+   * opens its own.
    */
-  async uninstall(context: RequestContext, id: string): Promise<void> {
-    const installation = await this.read(id);
+  async uninstall(context: RequestContext, id: string, executor: Knex = this.knex): Promise<void> {
+    return ensureTransaction(executor, async (transacting) => {
+      const installation = await this.read(id, { executor: transacting });
 
-    const ended = await this.repository.uninstall(id);
-    if (!ended) {
-      return;
-    }
+      const ended = await this.repository.uninstall(id, { transacting });
+      if (!ended) {
+        return;
+      }
 
-    await this.actionLog.record(
-      this.knex,
-      context,
-      appAction('uninstalled', id, { id: installation.app_id, name: installation.manifest.name }),
-    );
+      await this.actionLog.record(
+        transacting,
+        context,
+        appAction('uninstalled', id, { id: installation.app_id, name: installation.manifest.name }),
+      );
+    });
   }
 
   private async historyOf(id: string): Promise<AppInstallationHistoryEntry[]> {
