@@ -2387,17 +2387,17 @@ describe('PostsStatsService', function () {
 
       const stats = result.data[0];
       assert.equal(stats.values.length, 3, 'Should backfill all dates in range');
-      // Starting point: total (3) - changes in range (1 on Jan 5) = 2
+      // Historical counts should exclude subscriptions after date_to.
       assert.equal(stats.values[0].date, '2024-01-04');
       assert.equal(
         stats.values[0].value,
-        2,
+        1,
         'Day 1 (Jan 4): Should show 2 (starting value before Jan 5 event)',
       );
       assert.equal(stats.values[1].date, '2024-01-05');
-      assert.equal(stats.values[1].value, 3, 'Day 2 (Jan 5): Should show 3 (2 + 1 new subscriber)');
+      assert.equal(stats.values[1].value, 2, 'Day 2 (Jan 5): Should show 3 (2 + 1 new subscriber)');
       assert.equal(stats.values[2].date, '2024-01-06');
-      assert.equal(stats.values[2].value, 3, 'Day 3 (Jan 6): Should carry forward 3 (no events)');
+      assert.equal(stats.values[2].value, 2, 'Day 3 (Jan 6): Should carry forward 3 (no events)');
     });
   });
 
