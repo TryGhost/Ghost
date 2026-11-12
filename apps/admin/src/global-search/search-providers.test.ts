@@ -159,13 +159,21 @@ describe('flex search provider', () => {
 describe('basic search provider', () => {
   it('sorts by status before capping', () => {
     const posts = [
-      ...postsTitled(Array.from({ length: 150 }, (_, index) => `Post ${index}`)),
+      ...postsTitled(Array.from({ length: 50 }, (_, index) => `Post ${index}`)),
       { id: 'd1', title: 'Draft post', status: 'draft' },
     ];
     const [group] = createBasicSearchProvider([contentSearchSource('posts', posts)]).search('post');
 
-    expect(group.items).toHaveLength(100);
+    expect(group.items).toHaveLength(51);
     expect(group.items[0].title).toBe('Draft post');
+  });
+
+  it('caps per field before sorting by status', () => {
+    const published = postsTitled(Array.from({ length: 150 }, (_, index) => `Post ${index}`));
+    const posts = [...published, { id: 'd1', title: 'Draft post', status: 'draft' }];
+    const groups = createBasicSearchProvider([contentSearchSource('posts', posts)]).search('post');
+
+    expect(titles(groups, 'Posts')).toEqual(published.slice(0, 100).map(({ title }) => title));
   });
 });
 
