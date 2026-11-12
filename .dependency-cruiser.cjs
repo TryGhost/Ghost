@@ -77,6 +77,32 @@ const serviceDependencyDecisions = {
     '^ghost/core/server/data/db/', // The database connection.
     '^@tryghost/domain-events$|^ghost/core/server/lib/common/events\\.js$|^ghost/core/shared/events(-ts)?/index\\.(js|ts)$', // Event buses.
     `^${servicesRoot}/`, // Other services, including the events and helpers they own.
+    '^ghost/core/shared/url-utils\\.ts$', // URL utils, built from config.
+    '^ghost/core/shared/labs\\.js$', // Labs flags, read from settings and config.
+    '^ghost/core/shared/sentry\\.js$', // Sentry client, set up from config.
+    '^ghost/core/shared/i18n/index\\.js$', // Translations for the site's locale; reads settings and locale files.
+    '^@tryghost/i18n$|^packages/i18n/(src|build)/index\\.(ts|js)$', // Loads locale files.
+    '^ghost/core/server/lib/tracing/index\\.ts$', // Tracing; logs.
+    '^ghost/core/server/lib/request-external\\.js$', // Outbound HTTP, limited by config.
+    '^got$|^@tryghost/request$', // Outbound HTTP.
+    '^(node:)?dns/promises$', // DNS lookups.
+    '^stripe$', // Stripe client; calls the Stripe API.
+    '^ghost/core/server/lib/mailgun/mailgun-client\\.js$', // Mailgun client; calls the Mailgun API and logs.
+    '^ghost/core/server/lib/mail/index\\.js$', // Mailer, built from config and settings.
+    '^ghost/core/server/lib/image/index\\.js$', // Image tools, built from config, storage and outbound HTTP.
+    '^ghost/core/server/lib/lexical\\.js$', // Lexical renderer, wired to config, labs, settings and services.
+    '^ghost/core/server/lib/get-inbox-links\\.ts$', // Logs.
+    '^ghost/core/server/lib/package-json/index\\.js$', // Reads package files.
+    '^@tryghost/image-transform$|^packages/image-transform/(src|build)/index\\.(ts|js)$', // Reads and writes image files.
+    '^glob$|^@tryghost/zip$|^gscan$', // Read or write files.
+    '^@tryghost/metrics$', // Process-wide metrics, set up from the logging config.
+    '^ghost/core/server/data/schema/index\\.js$', // Reaches the database through schema commands.
+    '^ghost/core/server/data/importer/(content-files|import-archive)\\.ts$', // Importer code; reads files and config.
+    '^ghost/core/server/adapters/scheduling/build-signed-job\\.ts$', // Uses URL utils.
+    '^ghost/core/server/adapters/storage/(utils|LocalStorageBase)\\.ts$', // Storage code; reads config, URL utils and files.
+    '^ghost/core/server/api/index\\.js$|^ghost/core/server/api/endpoints/utils/(api-filter-utils\\.ts|serializers/output/utils/url\\.js)$', // The API layer and its helpers.
+    '^ghost/core/server/web/shared/middleware/api/spam-prevention\\.ts$', // Rate limiting, built from config and the database.
+    '^ghost/core/bridge\\.js$', // The bridge to the frontend.
   ],
   // Allowed only in another form.
   importForm: [

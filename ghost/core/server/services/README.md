@@ -151,6 +151,14 @@ Implementation files may import:
 - The libraries and individual shared files in the
   [dependency-cruiser config](../../../../.dependency-cruiser.cjs).
 
+A library or shared file is allowed only when it, and everything it imports,
+works only on what the caller gives it. It holds no state of the running
+application, such as config, settings, connections, subscriptions or
+registries. It does no I/O of its own: no files, network or database. A class
+is fine when the caller builds the instance and passes in anything stateful.
+Time, randomness and `DEBUG` tracing are not application state. Everything else
+is wired in the root.
+
 The shared [clock](../../kernel/clock.ts) is allowed directly, including its
 deprecated `moment` export for existing date logic. Service migration does not
 require rewriting those date operations.
@@ -181,10 +189,19 @@ Some dependencies look like libraries but are treated as instances:
 - `@tryghost/domain-events` is a process-wide event bus. Roots inject it, and
   the event classes they publish, as [comments](comments/index.ts) and
   [users](users/index.ts) do.
-- Implementations don't import `fs`. A root that needs files passes a loader
-  limited to those files, like `readTemplate` in the comments root.
+- Implementations don't import `fs` or `fs-extra`. A root that needs files
+  passes a loader limited to those files, like `readTemplate` in the comments
+  root. Libraries that read or write files themselves, such as `glob`,
+  `@tryghost/zip` and `gscan`, are passed in the same way.
 - Lodash is allowed only as individual functions, such as `lodash/isEmpty`.
   Plain JavaScript is often simpler.
+- URL utils, labs, Sentry and i18n in `shared/` are built from config or
+  settings. Roots pass the instance or the value they need, such as `siteUrl`.
+- Anything that makes its own requests is an instance: `request-external`,
+  `@tryghost/request`, `got`, the Stripe and Mailgun clients and the mailer.
+- A shared file that reaches any of these is an instance too. Tracing logs;
+  the Lexical and image libraries, the schema, the API layer and the bridge
+  read config, settings or the database.
 
 The config's `serviceDependencyDecisions` records these for
 [`gx services report`](../../../../tools/gx/README.md#interpreting-the-reports),
