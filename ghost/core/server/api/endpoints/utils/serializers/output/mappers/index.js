@@ -1,5 +1,4 @@
 module.exports = {
-  actions: require('./actions'),
   activityFeedEvents: require('./activity-feed-events'),
   authors: require('./authors'),
   comments: require('./comments'),

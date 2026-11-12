@@ -1,26 +1,12 @@
 const ghostBookshelf = require('./base');
+const { ACTION_KINDS } = require('../services/action-log/models');
 
-// Member metafields are owned by a raw-knex service rather than the Bookshelf
-// registry. Actions still need a read model for `include=resource` to recognise
-// their polymorphic resource type and load the current field definition.
-const MemberMetafieldResource = ghostBookshelf.Model.extend({
-  tableName: 'members_metafields',
-});
-
-// App installations are owned by a raw-knex service too, and need the same.
-const AppInstallationResource = ghostBookshelf.Model.extend({
-  tableName: 'app_installations',
-});
-
-// Gift links are too. Their entries point at the post a link belongs to.
-const GiftLinkResource = ghostBookshelf.Model.extend({
-  tableName: 'posts',
-});
-
-// And the site-wide Stripe Checkout config.
-const StripeCheckoutConfigResource = ghostBookshelf.Model.extend({
-  tableName: 'stripe_checkout_config',
-});
+// A kind of resource that a service logs actions about is not a Bookshelf model. Each gets a
+// read model over the table its kind declares, so `include=resource` can load its resource.
+const kindCandidates = Object.entries(ACTION_KINDS).map(([resourceType, kind]) => [
+  ghostBookshelf.Model.extend({ tableName: kind.table }),
+  resourceType,
+]);
 
 const Action = ghostBookshelf.Model.extend(
   {
@@ -34,19 +20,7 @@ const Action = ghostBookshelf.Model.extend(
     },
 
     resourceCandidates() {
-      const candidates = this.candidates();
-
-      const User = ghostBookshelf.registry.models.User;
-      if (User) {
-        candidates.push([User, 'security_action']);
-      }
-
-      candidates.push([MemberMetafieldResource, 'member_custom_field']);
-      candidates.push([AppInstallationResource, 'app_installation']);
-      candidates.push([GiftLinkResource, 'gift_link']);
-      candidates.push([StripeCheckoutConfigResource, 'stripe_checkout_config']);
-
-      return candidates;
+      return [...this.candidates(), ...kindCandidates];
     },
 
     actor() {
