@@ -5990,8 +5990,8 @@ services:
           - core/server/services/settings-helpers/settings-helpers.js
           - core/server/services/themes/installer.js
           - core/server/api/endpoints/themes.js
-          - core/server/api/endpoints/utils/validators/input/files.js
-          - core/server/api/endpoints/utils/validators/input/media.js
+          - core/server/api/endpoints/utils/validators/input/files.ts
+          - core/server/api/endpoints/utils/validators/input/media.ts
           - core/server/services/members-metafields/index.ts
           - core/server/services/members-metafields/custom-fields.ts
         tests:
@@ -6073,8 +6073,8 @@ services:
           - core/server/data/db/connection.ts
           - core/server/services/newsletters/newsletters-service.js
           - core/server/services/email-service/email-service.js
-          - core/server/api/endpoints/utils/validators/input/files.js
-          - core/server/api/endpoints/utils/validators/input/media.js
+          - core/server/api/endpoints/utils/validators/input/files.ts
+          - core/server/api/endpoints/utils/validators/input/media.ts
         tests:
           - test/e2e-api/admin/host-limits.test.ts
           - test/e2e-api/admin/newsletters.test.js
@@ -9843,7 +9843,7 @@ services:
           fields; a JSON mention page yields null metadata with its body and content type.
         sources:
           - core/server/api/endpoints/oembed.js
-          - core/server/api/endpoints/utils/validators/input/oembed.js
+          - core/server/api/endpoints/utils/validators/input/oembed.ts
           - core/server/api/endpoints/utils/serializers/output/oembed.js
           - core/server/api/endpoints/utils/serializers/output/mappers/oembed.js
           - core/server/web/api/endpoints/admin/routes.js
