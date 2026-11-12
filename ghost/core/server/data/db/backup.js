@@ -33,9 +33,13 @@ const writeExportFile = async (exportResult) => {
 };
 
 /**
+ * Opens a backup written by `backup()` as a stream, so a large backup is never
+ * read into memory as one string.
+ *
  * @param {string} filename
+ * @returns {Promise<import('stream').Readable | null>} null when no such backup exists
  */
-const readBackup = async (filename) => {
+const readBackupStream = async (filename) => {
   const parsedFileName = path.parse(filename);
   const sanitized = `${parsedFileName.name}${parsedFileName.ext}`;
   const backupPath = path.resolve(
@@ -44,12 +48,11 @@ const readBackup = async (filename) => {
 
   const exists = await fs.pathExists(backupPath);
 
-  if (exists) {
-    const backupFile = await fs.readFile(backupPath, 'utf8');
-    return JSON.parse(backupFile);
-  } else {
+  if (!exists) {
     return null;
   }
+
+  return fs.createReadStream(backupPath);
 };
 
 /**
@@ -81,5 +84,5 @@ const backup = async function backup(options = {}) {
 
 module.exports = {
   backup,
-  readBackup,
+  readBackupStream,
 };

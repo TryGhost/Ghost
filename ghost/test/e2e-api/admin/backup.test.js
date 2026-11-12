@@ -79,6 +79,29 @@ describe('Backup Integration', function () {
           });
       });
 
+      it('Can download a stored DB backup by filename', async function () {
+        const { body: backupBody } = await agent
+          .post('db/backup?filename=download-test')
+          .expectStatus(200);
+        const backupPath = backupBody.db[0].filename;
+
+        try {
+          const stored = JSON.parse(await fs.readFile(backupPath, 'utf8'));
+
+          await agent
+            .get('db/?filename=download-test.json')
+            .expectStatus(200)
+            .expect(({ headers, body }) => {
+              assert.equal(headers['content-type'], 'application/json; charset=utf-8');
+              assert.match(headers['content-disposition'], /^Attachment; filename=".+\.json"$/);
+              // The stored backup is sent as written, inside the export envelope
+              assert.deepEqual(body, { db: [stored] });
+            });
+        } finally {
+          await fs.remove(backupPath);
+        }
+      });
+
       it('Can export members CSV', async function () {
         await agent
           .get('members/upload/?limit=all')
