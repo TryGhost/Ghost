@@ -148,4 +148,22 @@ describe('createAutomationsReplay', () => {
       document.documentElement.append(body);
     }
   });
+
+  it('masks a body that appears before the deferred recording starts', async () => {
+    const replay = fakeReplay();
+    const body = document.body;
+    body.remove();
+
+    try {
+      automationsReplay = createAutomationsReplay(replay, true, '/automations');
+    } finally {
+      document.documentElement.append(body);
+    }
+    expect(document.body.hasAttribute(MASK)).toBe(false);
+
+    await vi.runAllTimersAsync();
+
+    expect(document.body.getAttribute(MASK)).toBe('true');
+    expect(replay.start).toHaveBeenCalledTimes(1);
+  });
 });

@@ -55,6 +55,8 @@ export function createAutomationsReplay(
       return;
     }
     recordingStarted = true;
+    // The body may have appeared after the last mask write, such as before the deferred check
+    updateMask();
 
     replay
       .stop()
