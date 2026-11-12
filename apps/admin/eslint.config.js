@@ -93,6 +93,17 @@ export default tseslint.config(
               message:
                 'Import routing APIs (and their types) from @tryghost/admin-x-framework instead of react-router directly.',
             },
+            {
+              // Same-folder and parent-relative bypasses of the @/shared/text-search path ban.
+              group: [
+                './text-search',
+                './text-search.*',
+                '../**/text-search',
+                '../**/text-search.*',
+              ],
+              message:
+                'Pulls in FlexSearch. Import only from a lazily loaded module via @/shared/text-search, and disable this rule on that import with that reason.',
+            },
           ],
         },
       ],

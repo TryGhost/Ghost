@@ -16,7 +16,8 @@ export interface TextSearchOptions {
    * How many matches to keep from each searchable field (`title`, then
    * `keywords`). Results are merged in that order and deduped by id, so the
    * total can be up to twice this number when items have keywords. Omit it to
-   * keep every match in item order.
+   * keep every match: substring search stays in source order, and word search
+   * stays in FlexSearch's ranked order.
    */
   limitPerField?: number;
 }
@@ -37,7 +38,10 @@ function mergeFieldMatches<T extends Searchable>(
   return [...ids].flatMap((id) => itemsById.get(id) ?? []);
 }
 
-/** Matches word prefixes in any order, ranked by FlexSearch. */
+/**
+ * Matches word prefixes in any order, ranked by FlexSearch. Indexes titles and
+ * keywords at creation; rebuild when the list changes — in-place edits are not seen.
+ */
 export function createWordSearch<T extends Searchable>(items: readonly T[]): TextSearch<T> {
   const index = new FlexSearch.Document<T>({
     tokenize: 'forward',
@@ -57,7 +61,10 @@ export function createWordSearch<T extends Searchable>(items: readonly T[]): Tex
   };
 }
 
-/** Matches the term as a case-insensitive substring. */
+/**
+ * Matches the term as a case-insensitive substring. Reads the items array on
+ * each search, so in-place edits are visible without rebuilding.
+ */
 export function createSubstringSearch<T extends Searchable>(items: readonly T[]): TextSearch<T> {
   return {
     search(term, { limitPerField } = {}) {
@@ -76,7 +83,8 @@ export function createSubstringSearch<T extends Searchable>(items: readonly T[])
         return items.filter((item) => SEARCH_FIELDS.some((field) => matchesField(item, field)));
       }
 
-      // Per-field caps merge title matches first, then keyword-only matches.
+      // Per-field caps merge title matches first, then keyword matches. A hit on
+      // both fields takes a slot in each before dedupe.
       const fieldMatches = SEARCH_FIELDS.map((field) => {
         const matches: T[] = [];
         for (const item of items) {
@@ -100,7 +108,10 @@ export function isWordSearchLocale(locale: string | null | undefined): boolean {
   return locale?.toLowerCase().startsWith('en') ?? true;
 }
 
-/** Picks word or substring search from the site's locale. */
+/**
+ * Picks word or substring search from the site's locale. Rebuild when the list
+ * identity changes; word search snapshots at create time.
+ */
 export function createTextSearch<T extends Searchable>(
   items: readonly T[],
   locale: string | null | undefined,
