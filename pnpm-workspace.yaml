@@ -161,7 +161,7 @@ catalog:
   eslint: 9.39.5
   eslint-plugin-ghost: 4.0.1
   eslint-plugin-react: 7.37.5
-  eslint-plugin-react-hooks: 5.2.0
+  eslint-plugin-react-hooks: 7.1.1
   eslint-plugin-react-refresh: 0.5.7
   eslint-plugin-storybook: 10.6.6
   eslint-plugin-tailwindcss: 4.4.0
