@@ -1521,11 +1521,11 @@ services:
           metadata/mapping and the current user's email, and returns HTTP 202 with import_id
           and total after staging, preflight and dispatch. Authentication, feature flag,
           upload validation and content-import permission belong to HTTP/API layers. Jobs
-          registration awaits root handleJob for content-csv-import; the separate
+          registration, given the root by boot, awaits handleJob for content-csv-import; the separate
           site-content-import job is outside this root. Production shutdown does not call
           its test-facing allSettled. Real booted HTTP tests assert role/flag gates, report
           mail through a mocked transport, persisted posts/relations and intercepted remote
-          media. The handler unit only reaches the real root's pre-init error. Webhook tests
+          media. The handler unit uses a stub root to assert forwarding and rejection. Webhook tests
           include a normal-publish control, then assert two imported rows including an
           update, two completion emails, no Email rows and bounded webhook silence.
         sources:
@@ -1547,7 +1547,7 @@ services:
           dispatch and processing require them later. The request needs owner lookup when
           no caller email exists, readable local staging and settings for batch tags; jobs
           additionally need converters, models/storage and optional URL lookup. Real HTTP
-          tests establish selected normal boot-to-job outcomes, while root/handler units
+          tests establish selected normal boot-to-job outcomes, while root units
           establish early errors. Root units additionally assert late dependency acquisition
           and failed-construction retry; held boot readiness and same-process boot contracts
           remain outside their coverage.
@@ -1558,7 +1558,6 @@ services:
           - core/server/services/jobs-service/register-job-handlers.ts
         tests:
           - test/unit/server/services/content-import/index.test.ts
-          - test/unit/server/services/jobs-service/register-job-handlers.test.ts
           - test/e2e-api/admin/posts-importer.test.js
       lifetime:
         summary: >-
@@ -5694,8 +5693,8 @@ services:
         complexity: complex
         reason: >-
           Queue/backend, logging, reporting and outbox dependencies are mostly injected, but
-          register-job-handlers imports job classes across services and directly reaches Content
-          Import, Update Check and Signing Keys. It is application composition inside the queue
+          register-job-handlers imports job classes across services and receives every handler's
+          service from boot. It is application composition inside the queue
           implementation, and registration must occur after its service dependencies exist.
         preparation:
           - >-
@@ -12740,10 +12739,10 @@ services:
         summary: >-
           Boot initializes the root and later supplies the jobs instance. Identity tokens and
           the staff JWKS app retain staff providers; members API construction retains a
-          members provider for signing, verification and public keys. The check-signing-keys
-          job handler instead reads the root service getter for each run. Handler tests register
-          before root initialization, then verify deferred access, awaiting the check and propagation
-          of its original rejection. Existing HTTP tests cover
+          members provider for signing, verification and public keys. Boot passes the ready
+          service to the check-signing-keys job handler. A boot unit asserts that forwarding; readiness
+          before registration remains source evidence. Handler tests use a stub service to
+          verify the check runs and its rejection propagates. Existing HTTP tests cover
           both JWKS responses and staff-token verification, not live rotation through those
           retained HTTP consumers.
         sources:
@@ -12757,6 +12756,7 @@ services:
           - test/e2e-server/well-known.test.ts
           - test/e2e-api/members/well-known.test.js
           - test/legacy/api/admin/identities.test.js
+          - test/unit/boot/init-services.test.ts
           - test/unit/server/services/jobs-service/register-job-handlers.test.ts
       startup:
         summary: >-
@@ -15450,8 +15450,8 @@ services:
         tests: []
       consumers:
         summary: >-
-          Boot calls scheduleJobs and centrally registers UpdateCheckJob with a handler that
-          awaits the root with rethrowErrors true on the shared default jobs lane. The current
+          Boot calls scheduleJobs and passes the root to the central UpdateCheckJob handler, which
+          awaits it with rethrowErrors true on the shared default jobs lane. The current
           in-memory backend invokes that handler in-process; no separate update-check worker,
           CLI or HTTP consumer was found. The checker itself calls API pipelines with internal
           context to read/write the due date, resolve active Owner/Administrator recipients

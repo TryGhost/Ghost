@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
 import { describe, it, beforeEach, afterEach } from 'vitest';
 import { JobsService } from '../../../../../core/server/services/jobs-service/jobs-service';
@@ -13,21 +12,10 @@ import ProcessWebmentionJob from '../../../../../core/server/services/mentions/p
 import SendWebmentionsJob from '../../../../../core/server/services/mentions/send-webmentions-job';
 import SendEmailJob from '../../../../../core/server/services/email-service/jobs/send-email-job';
 
-const REGISTRATION_PATH =
-  require.resolve('../../../../../core/server/services/jobs-service/register-job-handlers');
-const SIGNING_KEYS_PATH = require.resolve('../../../../../core/server/services/signing-keys');
-const {
-  SigningKeyService,
-} = require('../../../../../core/server/services/signing-keys/signing-key-service');
-const MODULE_PATHS = [REGISTRATION_PATH, SIGNING_KEYS_PATH];
-
-// Load shared dependencies before isolating the root, as the original suite did.
-// Any consumers they import must retain the original signing-keys module.
-require(REGISTRATION_PATH);
+const registerJobHandlers =
+  require('../../../../../core/server/services/jobs-service/register-job-handlers').default;
 
 describe('register-job-handlers', function () {
-  let originalModules: Map<string, NodeJS.Module | undefined>;
-  let signingKeys: typeof import('../../../../../core/server/services/signing-keys').default;
   let jobsService: sinon.SinonStubbedInstance<JobsService>;
   let mediaInliner: sinon.SinonStubbedInstance<ExternalMediaInliner>;
   let memberJobs: { cleanTokens: sinon.SinonStub; cleanExpiredComped: sinon.SinonStub };
@@ -38,6 +26,9 @@ describe('register-job-handlers', function () {
   let siteImporter: { executeImport: sinon.SinonStub };
   let emailService: { handleSendEmailJob: sinon.SinonStub };
   let tinybirdSync: { sync: sinon.SinonStub };
+  let contentImport: { handleJob: sinon.SinonStub };
+  let updateCheck: sinon.SinonStub;
+  let signingKeys: { check: sinon.SinonStub };
 
   // Handlers are looked up by their job type rather than registration order,
   // so adding a handler does not silently shift which one a test exercises.
@@ -54,14 +45,6 @@ describe('register-job-handlers', function () {
   }
 
   beforeEach(function () {
-    // Keep the root uninitialized to prove registration defers access until execution.
-    // Restore complete cache entries so existing consumers retain their original modules.
-    originalModules = new Map(Object.entries(require.cache));
-    for (const path of MODULE_PATHS) {
-      delete require.cache[path];
-    }
-    signingKeys = require(SIGNING_KEYS_PATH).default;
-    const registerJobHandlers = require(REGISTRATION_PATH).default;
     jobsService = sinon.createStubInstance(JobsService);
     mediaInliner = sinon.createStubInstance(ExternalMediaInliner);
     memberJobs = {
@@ -75,6 +58,9 @@ describe('register-job-handlers', function () {
     siteImporter = { executeImport: sinon.stub().resolves() };
     emailService = { handleSendEmailJob: sinon.stub().resolves() };
     tinybirdSync = { sync: sinon.stub().resolves() };
+    contentImport = { handleJob: sinon.stub().resolves() };
+    updateCheck = sinon.stub().resolves();
+    signingKeys = { check: sinon.stub().resolves() };
 
     registerJobHandlers({
       gifts: { startFetch: sinon.stub().resolves() },
@@ -90,20 +76,14 @@ describe('register-job-handlers', function () {
       emailService,
       siteImporter,
       tinybirdSync,
+      contentImport,
+      updateCheck,
+      signingKeys,
     });
   });
 
   afterEach(function () {
     sinon.restore();
-    // Restore newly loaded dependencies too, not just the roots we reloaded.
-    for (const path of Object.keys(require.cache)) {
-      if (!originalModules.has(path)) {
-        delete require.cache[path];
-      }
-    }
-    for (const [path, original] of originalModules) {
-      require.cache[path] = original;
-    }
   });
 
   it('registers site content imports once in the default lane and awaits the injected executor', async function () {
@@ -212,7 +192,7 @@ describe('register-job-handlers', function () {
     );
   });
 
-  it('routes content CSV import jobs to the content import service', async function () {
+  it('runs content-csv-import with the injected content import service', async function () {
     const job = new ContentCSVImportJob({
       importId: 'run_test',
       file: { path: '/tmp/staged-import', name: 'posts.zip' },
@@ -220,12 +200,17 @@ describe('register-job-handlers', function () {
       importTagNames: ['#Import 2026-01-01 10:30', '#Import Run run_test'],
       emailRecipient: 'owner@example.com',
     });
-    const contentImportHandler = handlerFor('content-csv-import');
 
-    await assert.rejects(
-      () => contentImportHandler(job),
-      /Content import service used before init/,
-    );
+    await handlerFor('content-csv-import')(job);
+
+    sinon.assert.calledOnceWithExactly(contentImport.handleJob, job);
+  });
+
+  it('propagates content-csv-import failures', async function () {
+    const error = new Error('Content import failed');
+    contentImport.handleJob.rejects(error);
+
+    await assert.rejects(handlerFor('content-csv-import')({}), (thrown) => thrown === error);
   });
 
   it('runs members-import with the injected members service', async function () {
@@ -250,55 +235,31 @@ describe('register-job-handlers', function () {
     assert.equal(registration.args[2], undefined);
   });
 
-  // Under the test env the update check executor exits at its environment
-  // gate, so invoking the registered handler proves the wiring without
-  // touching the network.
-  it('registers the update-check handler', async function () {
-    // handlerFor matches on the type string, not class identity: the module
-    // under test loads its job class through the CJS cache, a different
-    // instance from this file's ESM import.
-    const updateCheckHandler = handlerFor('update-check');
+  it('runs update-check with errors rethrown', async function () {
+    await handlerFor('update-check')(new UpdateCheckJob());
 
-    await updateCheckHandler(new UpdateCheckJob());
+    sinon.assert.calledOnceWithExactly(updateCheck, { rethrowErrors: true });
   });
 
-  it('resolves signing keys when the job runs and awaits its check', async function () {
-    const handler = handlerFor('check-signing-keys');
-    await assert.rejects(handler({}), /Signing keys used before init/);
+  it('propagates update-check failures', async function () {
+    const error = new Error('Update check failed');
+    updateCheck.rejects(error);
 
-    const check = sinon.stub(SigningKeyService.prototype, 'check').resolves();
-    await signingKeys.init();
-    check.resetHistory();
-    const ready = Promise.withResolvers<void>();
-    check.returns(ready.promise);
-    let completed = false;
-    const delivery = handler({}).then(() => {
-      completed = true;
-    });
-
-    try {
-      await setImmediate();
-      sinon.assert.calledOnceWithExactly(check);
-      sinon.assert.calledOn(check, signingKeys.service);
-      assert.equal(completed, false);
-    } finally {
-      ready.resolve();
-      await Promise.allSettled([delivery]);
-    }
-    await delivery;
-    assert.equal(completed, true);
+    await assert.rejects(handlerFor('update-check')({}), (thrown) => thrown === error);
   });
 
-  it('propagates the original signing-key check failure from the registered handler', async function () {
-    const check = sinon.stub(SigningKeyService.prototype, 'check').resolves();
-    await signingKeys.init();
-    check.resetHistory();
-    const failure = new Error('Signing-key check failed');
-    check.rejects(failure);
+  it('runs check-signing-keys with the injected signing keys service', async function () {
+    await handlerFor('check-signing-keys')({});
 
-    await assert.rejects(handlerFor('check-signing-keys')({}), (error) => error === failure);
+    sinon.assert.calledOnceWithExactly(signingKeys.check);
+    sinon.assert.calledOn(signingKeys.check, signingKeys);
+  });
 
-    sinon.assert.calledOnceWithExactly(check);
+  it('propagates check-signing-keys failures', async function () {
+    const error = new Error('Signing-key check failed');
+    signingKeys.check.rejects(error);
+
+    await assert.rejects(handlerFor('check-signing-keys')({}), (thrown) => thrown === error);
   });
 
   it('runs process-webmention with the injected mentions controller', async function () {
