@@ -38,7 +38,8 @@ import {
   type FieldSource,
 } from './queries';
 import { mintableKey } from './key';
-import { type RecordMetafieldAction, type RequestContext } from './actions';
+import type { CustomFieldReactions } from './changes';
+import type { RequestContext } from '../../lib/actor';
 import type { MetafieldsTracking } from './tracking';
 import { ensureTransaction } from '../../lib/ensure-transaction';
 
@@ -136,7 +137,7 @@ export interface EditedField {
 export class MetafieldDefinitionsService {
   private knex: Knex;
   private fields: FieldSource;
-  private recordAction: RecordMetafieldAction;
+  private reactions: CustomFieldReactions;
   private namespaces: Namespaces;
   private tracking: MetafieldsTracking;
   private labs: { isSet(flag: string): boolean };
@@ -144,14 +145,14 @@ export class MetafieldDefinitionsService {
   constructor({
     knex,
     fields,
-    recordAction,
+    reactions,
     namespaces,
     tracking,
     labs,
   }: {
     knex: Knex;
     fields: FieldSource;
-    recordAction: RecordMetafieldAction;
+    reactions: CustomFieldReactions;
     namespaces: Namespaces;
     tracking: MetafieldsTracking;
     /** Asked on every create, as a type's flag can be switched on while Ghost runs. */
@@ -159,7 +160,7 @@ export class MetafieldDefinitionsService {
   }) {
     this.knex = knex;
     this.fields = fields;
-    this.recordAction = recordAction;
+    this.reactions = reactions;
     this.namespaces = namespaces;
     this.tracking = tracking;
     this.labs = labs;
@@ -304,15 +305,15 @@ export class MetafieldDefinitionsService {
             keys.push(key);
           }
           const added = await this.readMany(trx, namespace, keys);
-          await this.record(
-            trx,
-            added.map((field) => ({
-              context,
-              verb: 'create',
-              subject: field.id,
-              details: { primary_name: field.name, key: field.key },
+          await this.reactions.onCustomFieldUpdated(trx, context, {
+            type: 'CustomFieldsAdded',
+            change: 'added',
+            changes: added.map((field) => ({
+              type: 'CustomFieldAdded',
+              change: 'added',
+              next: field,
             })),
-          );
+          });
           return added;
         });
       } catch (err) {
@@ -370,19 +371,6 @@ export class MetafieldDefinitionsService {
   }
 
   /**
-   * Writes the staff history entries for a command, inside the command's transaction, so they are
-   * saved when the change is saved and never without it.
-   */
-  private async record(
-    trx: Knex.Transaction,
-    actions: Array<Parameters<RecordMetafieldAction>[1]>,
-  ): Promise<void> {
-    for (const action of actions) {
-      await this.recordAction(trx, action);
-    }
-  }
-
-  /**
    * Refuses adding `adding` fields to a namespace its limits leave no room in, counting every
    * field it holds, archived ones included.
    *
@@ -423,6 +411,12 @@ export class MetafieldDefinitionsService {
 
       return ensureTransaction(executor, async (trx) => {
         await this.assertNamesEveryField(trx, namespace, keys);
+        // An order covers the whole list, archived definitions included.
+        const everyField = () =>
+          this.list(
+            this.fields.definitions(trx, { audience: ADMIN, status: ANY_STATUS, namespace }),
+          );
+        const previous = await everyField();
 
         // Ranks come from the request's order; the statements go out in key order, so
         // two concurrent reorders take their row locks in the same sequence and
@@ -435,18 +429,13 @@ export class MetafieldDefinitionsService {
           await trx(FIELDS_TABLE).where({ namespace, key }).update({ sort_order: rank });
         }
 
-        // An order covers the whole list, archived definitions included.
-        const ordered = await this.list(
-          this.fields.definitions(trx, { audience: ADMIN, status: ANY_STATUS, namespace }),
-        );
-        await this.record(trx, [
-          {
-            context,
-            verb: 'reorder',
-            subject: null,
-            details: { action_name: 'reordered', count: ordered.length },
-          },
-        ]);
+        const ordered = await everyField();
+        await this.reactions.onCustomFieldUpdated(trx, context, {
+          type: 'CustomFieldsReordered',
+          change: 'edited',
+          previous,
+          next: ordered,
+        });
         return ordered;
       });
     });
@@ -627,11 +616,9 @@ export class MetafieldDefinitionsService {
           });
         }
 
-        // Only what actually changes is written and logged, so re-saving an unchanged field is a
-        // no-op rather than a spurious edit.
-        const recorded: Array<Parameters<RecordMetafieldAction>[1]> = [];
-        const name = patch.name ?? existing.name;
-
+        // Only what actually changes is written, so re-saving an unchanged field writes nothing.
+        // The edit is reported once, when it is whole, from the field as it was to the field as
+        // it now is.
         if (patch.name !== undefined && patch.name !== existing.name) {
           attempt.changing('rename');
           await this.assertNameAvailable(trx, namespace, patch.name, key);
@@ -647,12 +634,6 @@ export class MetafieldDefinitionsService {
             }
             throw err;
           }
-          recorded.push({
-            context,
-            verb: 'rename',
-            subject: existing.id,
-            details: { primary_name: patch.name, key, previous_name: existing.name },
-          });
         }
 
         if (settings && !isDeepStrictEqual(settings.data.settings, existing.settings)) {
@@ -660,12 +641,6 @@ export class MetafieldDefinitionsService {
           await trx(FIELDS_TABLE)
             .where({ namespace, key })
             .update({ ...z.encode(DbTypedSettings, settings.data), updated_at: new Date() });
-          recorded.push({
-            context,
-            verb: 'changeSettings',
-            subject: existing.id,
-            details: { primary_name: name, key },
-          });
         }
 
         if (patch.access !== undefined && patch.access.member !== existing.access.member) {
@@ -673,17 +648,6 @@ export class MetafieldDefinitionsService {
           await trx(FIELDS_TABLE)
             .where({ namespace, key })
             .update({ member_access: patch.access.member, updated_at: new Date() });
-          recorded.push({
-            context,
-            verb: 'changeAccess',
-            subject: existing.id,
-            details: {
-              primary_name: name,
-              key,
-              member_access: patch.access.member,
-              previous_member_access: existing.access.member,
-            },
-          });
         }
 
         // A status change is the archive/restore transition.
@@ -693,17 +657,17 @@ export class MetafieldDefinitionsService {
           await trx(FIELDS_TABLE)
             .where({ namespace, key })
             .update({ status: patch.status, updated_at: new Date() });
-          recorded.push({
-            context,
-            verb,
-            subject: existing.id,
-            details: { primary_name: name, key },
-          });
         }
 
-        await this.record(trx, recorded);
+        const field = await this.read(namespace, key, ADMIN, trx);
+        await this.reactions.onCustomFieldUpdated(trx, context, {
+          type: 'CustomFieldEdited',
+          change: 'edited',
+          previous: existing,
+          next: field,
+        });
         return {
-          field: await this.read(namespace, key, ADMIN, trx),
+          field,
           changedForMembers:
             (await this.isReadByMembers(trx, { namespace, key })) !== readByMembers,
         };
@@ -743,37 +707,38 @@ export class MetafieldDefinitionsService {
    * field already being archived: a publisher must archive first, then delete,
    * which makes accidental data loss a deliberate two-step. Archiving is the
    * reversible soft state (see `edit` with a status change).
+   *
+   * Returns the field as it was. A field that can't be read, even with its type's defaults, is
+   * not found, as it is for an edit.
    */
   async destroy(
     context: RequestContext,
     namespace: Namespace,
     key: Key,
     executor: Knex = this.knex,
-  ): Promise<void> {
+  ): Promise<Metafield> {
     return this.tracking.definition('delete', async (attempt) => {
       await this.namespaces.assertChangeable(namespace);
-      await ensureTransaction(executor, async (trx) => {
+      return ensureTransaction(executor, async (trx) => {
         // Locked, so a restore that lands between this check and the delete waits, rather than
         // having the field it just restored deleted.
-        const stored = await trx(FIELDS_TABLE).where({ namespace, key }).forUpdate().first();
-        if (!stored) {
+        const deleted = await this.lockedField(trx, { namespace, key });
+        if (!deleted) {
           throw new errors.NotFoundError({ message: 'Custom field not found.' });
         }
-        attempt.fields([stored]);
-        if (stored.status !== FIELD_STATUS.archived) {
+        attempt.fields([deleted]);
+        if (deleted.status !== FIELD_STATUS.archived) {
           throw new errors.ValidationError({
             message: 'Only archived custom fields can be deleted. Archive the field first.',
           });
         }
         await trx(FIELDS_TABLE).where({ namespace, key }).del();
-        await this.record(trx, [
-          {
-            context,
-            verb: 'delete',
-            subject: stored.id,
-            details: { primary_name: stored.name, key },
-          },
-        ]);
+        await this.reactions.onCustomFieldUpdated(trx, context, {
+          type: 'CustomFieldDeleted',
+          change: 'deleted',
+          previous: deleted,
+        });
+        return deleted;
       });
     });
   }

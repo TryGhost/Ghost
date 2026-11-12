@@ -14,6 +14,7 @@ import { toDatabaseDate } from '../../lib/db-types/date';
  */
 export interface ActionEvents {
   gift_link: 'added' | 'edited' | 'deleted';
+  member_custom_field: 'added' | 'edited' | 'archived' | 'restored' | 'deleted';
 }
 
 export type ActionKind = keyof ActionEvents;

@@ -1,6 +1,8 @@
 import type { GhostLogger } from '@tryghost/logging';
 import type { GiftLinkReactions } from '../gift-links/changes';
+import type { CustomFieldReactions } from '../members-metafields/changes';
 import { ActionLog } from './action-log';
+import { customFieldActions } from './custom-fields';
 import { giftLinkActions } from './gift-links';
 
 interface ActionsServiceDeps {
@@ -21,10 +23,13 @@ export class ActionsService {
   readonly logging: GhostLogger;
   /** Logs the changes the gift links service makes. */
   readonly giftLinks: GiftLinkReactions;
+  /** Logs the changes the custom field definitions service makes. */
+  readonly customFields: CustomFieldReactions;
 
   constructor({ logging }: ActionsServiceDeps) {
     this.logging = logging;
     const actionLog = new ActionLog({ logging });
     this.giftLinks = giftLinkActions(actionLog);
+    this.customFields = customFieldActions(actionLog);
   }
 }

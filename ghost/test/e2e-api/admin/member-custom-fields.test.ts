@@ -497,6 +497,22 @@ describe('Member Custom Fields Admin API', function () {
       const fresh = await createField({ name: 'Favourite topic' });
       assert.equal(fresh.key, 'favourite_topic');
     });
+
+    it('does not find a field to delete once its stored type cannot be read', async function () {
+      // A field is deleted as it was read, so one that can't be read at all is not found, as
+      // it is for an edit, and stays where it is.
+      const stale = await createField({ name: 'Legacy field' });
+      await setStatus(stale.key, 'archived');
+      // Corrupt the stored field's type directly, past the service's immutability.
+      await models.Base.knex('members_metafields')
+        .where('key', stale.key)
+        .update({ type: 'no_longer_a_type' });
+
+      await agent.delete(`members/metafields/custom/${stale.key}/`).expectStatus(404);
+
+      const stored = await models.Base.knex('members_metafields').where('key', stale.key);
+      assert.equal(stored.length, 1);
+    });
   });
 
   // Written straight to the table: the database has to refuse these whoever writes them.
