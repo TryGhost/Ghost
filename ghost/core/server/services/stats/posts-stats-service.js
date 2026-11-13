@@ -1081,7 +1081,7 @@ class PostsStatsService {
           }),
 
         // Get daily deltas (optimized query)
-        this._getNewsletterSubscriberDeltas(newsletterId, options),
+        this._getNewsletterSubscriberDeltas(newsletterId, options, true),
       ]);
 
       const totalValue = totalResult[0] ? totalResult[0].total : 0;
@@ -1109,14 +1109,23 @@ class PostsStatsService {
       cumulativeTotal = total - totalChange;
       const startingTotal = cumulativeTotal;
 
-      // Second pass: build cumulative values from daily changes
-      for (const dayData of dailyChanges) {
-        cumulativeTotal += dayData.change;
-        values.push({
-          date: dayData.date,
-          value: cumulativeTotal,
-        });
-      }
+      // Second pass: build cumulative values only within the requested date range.
+// Changes after dateTo are included in the starting-total calculation,
+// but must not appear in the returned historical values.
+const endDate = dateTo ? dateTo.split('T')[0] : null;
+
+for (const dayData of dailyChanges) {
+  if (endDate && dayData.date > endDate) {
+    continue;
+  }
+
+  cumulativeTotal += dayData.change;
+
+  values.push({
+    date: dayData.date,
+    value: cumulativeTotal,
+  });
+}
 
       // Fill in missing dates to ensure the frontend has a complete time series
       // This is critical for percent change calculations which need consecutive days
@@ -1158,30 +1167,37 @@ class PostsStatsService {
    * @param {string} [options.date_to] - Optional end date filter (YYYY-MM-DD)
    * @param {string} [options.timezone] - Timezone to use for date interpretation
    */
-  async _getNewsletterSubscriberDeltas(newsletterId, options = {}) {
-    const { dateFrom, dateTo } = getDateBoundaries(options);
+async _getNewsletterSubscriberDeltas(newsletterId, options = {}, includeAfterDateTo = false) {
+  const {dateFrom, dateTo} = getDateBoundaries(options);
 
-    // Build optimized deltas query - avoid expensive JOIN
-    const deltasQuery = this.knex('members_subscribe_events as mse')
-      .select(
-        this.knex.raw(`DATE(mse.created_at) as date`),
-        this.knex.raw(`SUM(CASE WHEN mse.subscribed = 1 THEN 1 ELSE -1 END) as value`),
-      )
-      .where('mse.newsletter_id', newsletterId)
-      .whereNotExists(function () {
-        this.select('*')
-          .from('members as m')
-          .whereRaw('m.id = mse.member_id')
-          .where('m.email_disabled', 1);
-      })
-      .groupByRaw('DATE(mse.created_at)')
-      .orderBy('date', 'asc');
+  // Build optimized deltas query - avoid expensive JOIN
+  const deltasQuery = this.knex('members_subscribe_events as mse')
+    .select(
+      this.knex.raw(`DATE(mse.created_at) as date`),
+      this.knex.raw(`SUM(CASE WHEN mse.subscribed = 1 THEN 1 ELSE -1 END) as value`),
+    )
+    .where('mse.newsletter_id', newsletterId)
+    .whereNotExists(function () {
+      this.select('*')
+        .from('members as m')
+        .whereRaw('m.id = mse.member_id')
+        .where('m.email_disabled', 1);
+    })
+    .groupByRaw('DATE(mse.created_at)')
+    .orderBy('date', 'asc');
 
-    // Apply timezone-aware date filters
-    applyDateFilter(deltasQuery, dateFrom, dateTo, 'mse.created_at');
+  // Include changes after dateTo when calculating historical totals.
+  // The caller will exclude those dates from the returned time series.
+  applyDateFilter(
+    deltasQuery,
+    dateFrom,
+    includeAfterDateTo ? null : dateTo,
+    'mse.created_at',
+  );
 
-    return await deltasQuery;
-  }
+  return await deltasQuery;
+}
+
 
   /**
    * Fill missing dates in a time series with carried-forward values
