@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import request from 'supertest';
-import { seedCredentialAccounts } from '../../core/server/auth/better-auth/seed-credential-accounts';
 
 const {
   startGhost,
@@ -67,8 +66,6 @@ describe.skipIf(isSQLite)('Admin API /session under auth:engine better-auth', fu
     await db.knex('users').update({ status: 'active' });
     await db.knex('users').where({ id: locked.id }).update({ status: 'locked' });
     await db.knex('users').where({ id: inactive.id }).update({ status: 'inactive' });
-    await db.knex('user_accounts').del();
-    await seedCredentialAccounts(db.knex);
     mockManager.mockMail();
   });
 

@@ -1,8 +1,8 @@
 import logging from '@tryghost/logging';
 import * as security from '@tryghost/security';
 import { defineService } from '../../../kernel/define-service';
-import { shouldCreateInDevelopmentTables } from '../../data/schema/in-development';
 import { assertDatabaseSupported, createAuth, type GhostAuth } from './create-auth';
+import { usesBetterAuth } from './enabled';
 
 export type { GhostAuth } from './create-auth';
 
@@ -17,7 +17,7 @@ export default defineService('Better Auth', async (): Promise<GhostAuth> => {
 
   assertDatabaseSupported({
     client: config.get('database:client'),
-    inDevelopmentTables: shouldCreateInDevelopmentTables(),
+    usesBetterAuth: usesBetterAuth(),
   });
 
   const auth = createAuth({
@@ -35,7 +35,7 @@ export default defineService('Better Auth', async (): Promise<GhostAuth> => {
     },
     // The legacy reset email and token, until the reset flow moves (plan Phase 2)
     async sendPasswordResetEmail(email) {
-      const passwordreset = require('../passwordreset');
+      const passwordreset = require('../passwordreset').default;
       const api = require('../../api').endpoints;
       const token = await passwordreset.generateToken(email, api.settings);
       await passwordreset.sendResetNotification(token, api.mail);

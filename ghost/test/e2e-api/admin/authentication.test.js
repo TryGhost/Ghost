@@ -6,6 +6,7 @@ const {
 } = require('../../utils/e2e-framework');
 const { mockMail, restore } = require('../../utils/e2e-framework-mock-manager');
 const models = require('../../../core/server/models');
+const { passwordHashOf } = require('../../utils/password-hash');
 const mailService = require('../../../core/server/lib/mail');
 const security = require('@tryghost/security');
 const settingsCache = require('../../../core/shared/settings-cache');
@@ -120,7 +121,7 @@ describe('Authentication API', function () {
         expires: moment().add(1, 'days').valueOf(),
         email: ownerUser.email,
         dbHash: dbHash,
-        passwordHash: user.get('password'),
+        passwordHash: await passwordHashOf(user),
       });
       const encodedToken = security.url.encodeBase64(resetToken);
 
@@ -192,7 +193,7 @@ describe('Authentication API', function () {
         });
         assert.equal(updatedUser.get('status'), 'active');
         assert.equal(
-          await security.password.compare(newPassword, updatedUser.get('password')),
+          await security.password.compare(newPassword, await passwordHashOf(updatedUser)),
           true,
         );
 
@@ -202,7 +203,7 @@ describe('Authentication API', function () {
 
       it('rejects a reset token issued before the user was suspended', async function () {
         const token = await requestResetToken();
-        const originalPassword = user.get('password');
+        const originalPassword = await passwordHashOf(user);
         await models.User.edit(
           { status: 'inactive' },
           { id: user.id, context: { internal: true } },
@@ -222,7 +223,7 @@ describe('Authentication API', function () {
           context: { internal: true },
         });
         assert.equal(suspendedUser.get('status'), 'inactive');
-        assert.equal(suspendedUser.get('password'), originalPassword);
+        assert.equal(await passwordHashOf(suspendedUser), originalPassword);
         await agent.get('/users/me/').expectStatus(403);
       });
     });

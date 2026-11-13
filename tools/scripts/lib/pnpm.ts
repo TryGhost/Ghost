@@ -1,18 +1,19 @@
-import { glob, mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, realpath, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 import { $ as $$ } from 'execa';
-import {
-  readWorkspaceManifest,
-  type WorkspaceManifest,
-} from '@pnpm/workspace.workspace-manifest-reader';
-import { readChangeIntents, CHANGES_DIR } from '@pnpm/releasing.versioning';
+import yaml from 'js-yaml';
 
 import { ROOT_DIR } from './constants.ts';
 import { getChangedFiles } from './git.ts';
 import { readJson } from './utils.ts';
 
-export type { WorkspaceManifest };
+const CHANGES_DIR = '.changeset';
+
+/** The pnpm-workspace.yaml settings these scripts read. */
+export interface WorkspaceManifest {
+  versioning?: { ignore?: string[] };
+}
 
 type DependencyMap = Record<string, string>;
 
@@ -37,35 +38,41 @@ export interface WorkspacePackage {
   dir: string;
 }
 
-export const getWorkspace = (rootDir = ROOT_DIR) => readWorkspaceManifest(rootDir);
-
-/**
- * Lists every package in the workspace by expanding the `packages` globs in
- * pnpm-workspace.yaml.
- */
-export async function getWorkspacePackages(
-  workspace: WorkspaceManifest,
+/** Reads the pnpm-workspace.yaml settings these scripts need, via pnpm itself. */
+export async function getWorkspace(
   rootDir = ROOT_DIR,
+  env = process.env,
+): Promise<WorkspaceManifest> {
+  const { stdout } = await $$({
+    cwd: rootDir,
+    env,
+    extendEnv: false,
+  })`pnpm config get versioning --json`;
+  const versioning = JSON.parse(stdout || 'null') as WorkspaceManifest['versioning'] | null;
+  return versioning ? { versioning } : {};
+}
+
+/** Lists every workspace package except the root, as pnpm resolves them. */
+export async function getWorkspacePackages(
+  rootDir = ROOT_DIR,
+  env = process.env,
 ): Promise<WorkspacePackage[]> {
-  const { packages } = workspace;
-
-  const exclude = packages.filter((p) => p.startsWith('!')).map((p) => p.slice(1));
-  const patterns = packages.filter((p) => !p.startsWith('!')).map((p) => `${p}/package.json`);
-
-  // `exclude`, not `ignore` — node:fs/promises.glob silently ignores unknown
-  // options, so `ignore` would be a no-op and the negated workspace entries
-  // wouldn't be pruned.
-  const files = await Array.fromAsync(glob(patterns, { exclude, cwd: rootDir }));
+  const { stdout } = await $$({
+    cwd: rootDir,
+    env,
+    extendEnv: false,
+  })`pnpm ls --recursive --depth -1 --json --ignore-pnpmfile`;
+  // pnpm prints real paths, so a symlinked root (macOS /tmp) must be resolved.
+  const root = await realpath(rootDir);
+  const dirs = (JSON.parse(stdout || '[]') as { path: string }[])
+    .map(({ path }) => relative(root, path))
+    .filter((dir) => dir !== '');
 
   return Promise.all(
-    files.map(async (file) => {
-      const manifest = await readJson<WorkspacePackage['manifest']>(resolve(rootDir, file));
-      return {
-        name: manifest.name,
-        manifest,
-        pkgPath: file,
-        dir: dirname(file),
-      };
+    dirs.map(async (dir) => {
+      const pkgPath = join(dir, 'package.json');
+      const manifest = await readJson<WorkspacePackage['manifest']>(resolve(rootDir, pkgPath));
+      return { name: manifest.name, manifest, pkgPath, dir };
     }),
   );
 }
@@ -77,9 +84,10 @@ export async function getWorkspacePackages(
 export async function getPublishablePackages(
   workspace: WorkspaceManifest,
   rootDir = ROOT_DIR,
+  env = process.env,
 ): Promise<WorkspacePackage[]> {
   const ignoredPackages = new Set(workspace.versioning?.ignore ?? []);
-  const pkgs = await getWorkspacePackages(workspace, rootDir);
+  const pkgs = await getWorkspacePackages(rootDir, env);
 
   return pkgs.filter((pkg) => !pkg.manifest.private && !ignoredPackages.has(pkg.name));
 }
@@ -98,22 +106,40 @@ export async function getPackagesWithChangset(
   rootDir = ROOT_DIR,
   env = process.env,
 ): Promise<Set<string>> {
-  const [changes, newChangesets] = await Promise.all([
-    readChangeIntents(rootDir),
-    getChangedFiles(CHANGES_DIR, baseCommit, headCommit, { onlyNew: true, cwd: rootDir, env }),
-  ]);
-
-  const newChangesetFiles = new Set(newChangesets.map((file) => resolve(rootDir, file)));
-
-  return new Set(
-    changes.flatMap((change) => {
-      if (!newChangesetFiles.has(change.filePath)) {
-        return [];
-      }
-
-      return Object.keys(change.releases);
-    }),
+  const newFiles = await getChangedFiles(CHANGES_DIR, baseCommit, headCommit, {
+    onlyNew: true,
+    cwd: rootDir,
+    env,
+  });
+  // Change intents are the top-level .md files other than a README.
+  const intents = newFiles.filter(
+    (file) =>
+      dirname(file) === CHANGES_DIR &&
+      file.endsWith('.md') &&
+      basename(file).toLowerCase() !== 'readme.md',
   );
+
+  const packages = await Promise.all(
+    intents.map((file) => readIntentPackages(resolve(rootDir, file))),
+  );
+  return new Set(packages.flat());
+}
+
+/**
+ * The package names a change intent's `"package": bump` frontmatter covers.
+ * Bump values are left to `pnpm change check`.
+ */
+async function readIntentPackages(filePath: string): Promise<string[]> {
+  const content = await readFile(filePath, 'utf8');
+  const source = /^\uFEFF?---\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/.exec(content)?.[1];
+  if (source === undefined) {
+    throw new Error(`Change intent file ${filePath} has no YAML frontmatter`);
+  }
+  const frontmatter: unknown = yaml.load(source) ?? {};
+  if (typeof frontmatter !== 'object' || frontmatter === null || Array.isArray(frontmatter)) {
+    throw new Error(`Change intent file ${filePath} frontmatter must map package names to bumps`);
+  }
+  return Object.keys(frontmatter);
 }
 
 // The files read to list projects, compare catalogs and collect change
@@ -199,13 +225,10 @@ async function findInWorkingTree(
   rootDir: string,
   env: NodeJS.ProcessEnv,
 ): Promise<string[]> {
-  const workspace = await getWorkspace(rootDir);
-  if (!workspace) {
-    throw new Error('Could not load workspace manifest');
-  }
+  const workspace = await getWorkspace(rootDir, env);
 
   const [projects, changed, covered] = await Promise.all([
-    getPublishablePackages(workspace, rootDir),
+    getPublishablePackages(workspace, rootDir, env),
     listChangedProjects(baseCommit, ignorePatterns, rootDir, env),
     getPackagesWithChangset(baseCommit, '', rootDir, env),
   ]);

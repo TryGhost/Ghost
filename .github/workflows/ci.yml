@@ -434,14 +434,18 @@ jobs:
         run: node tools/scripts/ci/check-app-version-bump.ts
 
       # Fail the PR if a publishable package changed (source or a catalog entry
-      # it consumes) but the branch adds no changeset covering it. Prototype of
-      # pnpm's forthcoming `pnpm change check`.
+      # it consumes) but the branch adds no changeset covering it.
       - name: Check for missing changesets
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
         run: node tools/scripts/ci/change-check.ts
+
+      # Validate every pending changeset with pnpm's own parser: known
+      # packages, valid bump types, and versions within the versioning config.
+      - name: Check changesets are valid
+        run: pnpm change check
 
       - name: Check private packages are excluded from versioning
         run: node tools/scripts/ci/check-versioning-ignore.ts

@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   mockLoading,
   mockNull,
@@ -19,14 +19,6 @@ vi.mock('@tryghost/admin-x-framework', () => ({
   getSymbol: vi.fn(),
 }));
 
-vi.mock('@tryghost/shade/utils', async () => {
-  const actual = await vi.importActual('@tryghost/shade/utils');
-  return {
-    ...actual,
-    formatPercentage: vi.fn(),
-  };
-});
-
 vi.mock('@/shared/analytics/chart-helpers', async () => {
   const actual = await vi.importActual('@/shared/analytics/chart-helpers');
   return {
@@ -35,9 +27,9 @@ vi.mock('@/shared/analytics/chart-helpers', async () => {
   };
 });
 
-import { formatPercentage } from '@tryghost/shade/utils';
 import { getRangeDates } from '@/shared/analytics/chart-helpers';
 import { getSymbol } from '@tryghost/admin-x-framework';
+import { STATS_RANGES } from '@/shared/analytics/constants';
 import {
   useMemberCountHistory,
   useMrrHistory,
@@ -48,7 +40,6 @@ const mockedUseMemberCountHistory = useMemberCountHistory as ReturnType<typeof v
 const mockedUseMrrHistory = useMrrHistory as ReturnType<typeof vi.fn>;
 const mockedUseSubscriptionStats = useSubscriptionStats as ReturnType<typeof vi.fn>;
 const mockedGetSymbol = getSymbol as ReturnType<typeof vi.fn>;
-const mockedFormatPercentage = formatPercentage as ReturnType<typeof vi.fn>;
 const mockedGetRangeDates = getRangeDates as ReturnType<typeof vi.fn>;
 
 // Mock data for testing
@@ -97,11 +88,7 @@ const mockSubscriptionData = [
 describe('useGrowthStats', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-
-    // Mock formatPercentage to return a consistent format
-    mockedFormatPercentage.mockImplementation(
-      (value: number) => `${Math.abs(value * 100).toFixed(1)}%`,
-    );
+    vi.setSystemTime(new Date(2024, 5, 27, 12));
 
     // Mock getRangeDates with realistic behavior
     mockedGetRangeDates.mockImplementation((range: number) => {
@@ -131,6 +118,61 @@ describe('useGrowthStats', () => {
     });
 
     mockedGetSymbol.mockReturnValue('$');
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it.each([
+    STATS_RANGES.last7Days,
+    STATS_RANGES.last30Days,
+    STATS_RANGES.last3Months,
+    STATS_RANGES.last12Months,
+    STATS_RANGES.yearToDate,
+  ])('includes first-day growth in $name', ({ value }) => {
+    const { startDate, endDate } = getRangeDates(value);
+    const firstDay = startDate.format('YYYY-MM-DD');
+    const previousDay = startDate.clone().subtract(1, 'day').format('YYYY-MM-DD');
+    const lastDay = endDate.format('YYYY-MM-DD');
+    const before = { ...mockMemberData[0], date: previousDay, free: 130 };
+    const first = { ...mockMemberData[2], date: firstDay, free: 139 };
+    const last = { ...first, date: lastDay, paid_subscribed: 0, paid_canceled: 0 };
+
+    // Member history starts on the requested date. MRR history also includes
+    // the closing balance immediately before its first change.
+    mockedUseMemberCountHistory.mockImplementation(
+      ({ searchParams }: { searchParams: { date_from: string } }) => ({
+        data: {
+          stats: [before, first, last].filter(({ date }) => date >= searchParams.date_from),
+        },
+        isLoading: false,
+      }),
+    );
+    mockSuccess(mockedUseMrrHistory, {
+      stats: [
+        { date: previousDay, mrr: 5000, currency: 'usd' },
+        { date: firstDay, mrr: 5500, currency: 'usd' },
+      ],
+      meta: { totals: [{ mrr: 5500, currency: 'usd' }] },
+    });
+
+    const { result } = renderHook(() => useGrowthStats(value));
+
+    expect(result.current.totals.percentChanges).toEqual({
+      total: '8%',
+      free: '7%',
+      paid: '11%',
+      mrr: '10%',
+    });
+    expect(result.current.totals.directions).toEqual({
+      total: 'up',
+      free: 'up',
+      paid: 'up',
+      mrr: 'up',
+    });
+    expect(result.current.chartData.map(({ date }) => date)).toEqual([firstDay, lastDay]);
+    expect(result.current.chartData[0]).toMatchObject({ free: 139, mrr: 5500, paid_subscribed: 4 });
   });
 
   describe('hook basic functionality', () => {
@@ -300,6 +342,21 @@ describe('useGrowthStats', () => {
   });
 
   describe('MRR data processing', () => {
+    it('uses the opening balance when the first MRR change is later in the range', () => {
+      mockSuccess(mockedUseMrrHistory, {
+        stats: [
+          { date: '2024-06-25', mrr: 5000, currency: 'usd' },
+          { date: '2024-06-26', mrr: 5500, currency: 'usd' },
+        ],
+        meta: { totals: [{ mrr: 5500, currency: 'usd' }] },
+      });
+
+      const { result } = renderHook(() => useGrowthStats(STATS_RANGES.last7Days.value));
+
+      expect(result.current.totals.percentChanges.mrr).toBe('10%');
+      expect(result.current.totals.directions.mrr).toBe('up');
+    });
+
     it('adds start point when missing', async () => {
       const earlierMrrData = [
         { date: '2024-06-20', mrr: 5000, currency: 'usd' },
@@ -365,15 +422,21 @@ describe('useGrowthStats', () => {
       expect(result.current.mrrData[0].mrr).toBe(17286);
     });
 
-    it('handles range=1 correctly', async () => {
-      const { result } = renderHook(() => useGrowthStats(1));
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
+    it('retains the date-based MRR request and trend for Today', () => {
+      const today = { date: '2024-06-27', mrr: 9500, currency: 'usd' };
+      mockSuccess(mockedUseMrrHistory, {
+        stats: [{ ...today, date: '2024-06-26', mrr: 10000 }, today],
+        meta: { totals: [{ mrr: 9500, currency: 'usd' }] },
       });
 
-      // For range=1, should use appropriate date logic
-      expect(result.current.mrrData).toBeDefined();
+      const { result } = renderHook(() => useGrowthStats(STATS_RANGES.today.value));
+
+      expect(mockedUseMrrHistory).toHaveBeenCalledWith({
+        searchParams: { date_from: '2024-06-26' },
+      });
+      expect(result.current.mrrData).toEqual([today]);
+      expect(result.current.totals.percentChanges.mrr).toBe('0%');
+      expect(result.current.totals.directions.mrr).toBe('same');
     });
   });
 

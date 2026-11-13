@@ -373,21 +373,21 @@ const fixtures = {
       DataGenerator.forKnex.roles.map((role) => {
         return models.Role.add(role, context.internal);
       }),
-    ).then(function () {
-      return Promise.all(
-        _.cloneDeep(DataGenerator.forKnex.users).map((user) => {
-          let userRolesRelations = _.filter(DataGenerator.forKnex.roles_users, {
-            user_id: user.id,
-          });
+    ).then(async function () {
+      // One at a time: concurrent credential inserts over keys the reset just
+      // deleted deadlock in MySQL
+      for (const user of _.cloneDeep(DataGenerator.forKnex.users)) {
+        let userRolesRelations = _.filter(DataGenerator.forKnex.roles_users, {
+          user_id: user.id,
+        });
 
-          userRolesRelations = _.map(userRolesRelations, function (userRolesRelation) {
-            return _.find(DataGenerator.forKnex.roles, { id: userRolesRelation.role_id });
-          });
+        userRolesRelations = _.map(userRolesRelations, function (userRolesRelation) {
+          return _.find(DataGenerator.forKnex.roles, { id: userRolesRelation.role_id });
+        });
 
-          user.roles = userRolesRelations;
-          return fixtures.addUser(user);
-        }),
-      );
+        user.roles = userRolesRelations;
+        await fixtures.addUser(user);
+      }
     });
   },
 
@@ -397,19 +397,19 @@ const fixtures = {
     let roles = await models.Role.fetchAll();
     roles = roles.toJSON();
 
-    const users = await Promise.all(
-      usersWithoutOwner.map((user) => {
-        let userRolesRelations = _.filter(DataGenerator.forKnex.roles_users, { user_id: user.id });
+    // One at a time, as in createUsersWithRoles
+    const users = [];
+    for (const user of usersWithoutOwner) {
+      let userRolesRelations = _.filter(DataGenerator.forKnex.roles_users, { user_id: user.id });
 
-        userRolesRelations = _.map(userRolesRelations, function (userRolesRelation) {
-          return _.find(roles, { name: userRolesRelation.role_name });
-        });
+      userRolesRelations = _.map(userRolesRelations, function (userRolesRelation) {
+        return _.find(roles, { name: userRolesRelation.role_name });
+      });
 
-        user.roles = userRolesRelations;
+      user.roles = userRolesRelations;
 
-        return models.User.add(user, context.internal);
-      }),
-    );
+      users.push(await models.User.add(user, context.internal));
+    }
 
     // // Add API key for each user
     await Promise.all(
@@ -1092,30 +1092,8 @@ const getFixtureOps = (toDos) => {
     return service.repository.init();
   });
 
-  fixtureOps.push(syncCredentialAccounts);
-
   return fixtureOps;
 };
-
-/**
- * Under better-auth, sign-in reads `user_accounts`, which the fixtures' password
- * writes don't reach until legacy password writes move there (plan Phase 2).
- */
-async function syncCredentialAccounts() {
-  const config = require('../../core/shared/config');
-  const { knex } = require('../../core/server/data/db');
-  if (
-    config.get('auth:engine') !== 'better-auth' ||
-    !(await knex.schema.hasTable('user_accounts'))
-  ) {
-    return;
-  }
-  const {
-    seedCredentialAccounts,
-  } = require('../../core/server/auth/better-auth/seed-credential-accounts');
-  await knex('user_accounts').where({ provider_id: 'credential' }).del();
-  await seedCredentialAccounts(knex);
-}
 
 const getCurrentOwnerUser = async () => {
   return await models.User.getOwnerUser(context.internal);

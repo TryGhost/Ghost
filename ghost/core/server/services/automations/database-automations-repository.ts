@@ -21,7 +21,6 @@ import {
   MEMBER_WELCOME_EMAIL_SLUGS,
 } from '../member-welcome-emails/constants';
 import type {
-  AutomatedEmailEvents,
   Automation,
   AutomationAction,
   AutomationEdge,
@@ -561,71 +560,6 @@ export function createDatabaseAutomationsRepository({
         .whereNotNull('automation_action_revision_id')
         .whereIn('mailgun_message_id', mailgunMessageIds);
     },
-
-    async trackEmailDeliveredAndOpened(eventsByAutomatedEmailRecipientId) {
-      if (eventsByAutomatedEmailRecipientId.size === 0) {
-        return;
-      }
-
-      const revisionIds = new Set<string>();
-      for (const {
-        openedAt,
-        automationActionRevisionId,
-      } of eventsByAutomatedEmailRecipientId.values()) {
-        if (openedAt) {
-          revisionIds.add(automationActionRevisionId);
-        }
-      }
-
-      await knex.transaction(async (trx) => {
-        await repository2.lockActionRevisions(trx, revisionIds);
-
-        const notYetOpened = await lockNotYetOpened(trx, eventsByAutomatedEmailRecipientId);
-        const newOpensPerRevision = new AutoFillingMap<string, number>(() => 0);
-
-        for (const [
-          id,
-          { deliveredAt, openedAt, automationActionRevisionId },
-        ] of eventsByAutomatedEmailRecipientId) {
-          const updates: Record<string, Knex.Raw> = {};
-          if (deliveredAt) {
-            updates.delivered_at = trx.raw(
-              'CASE WHEN delivered_at IS NULL OR delivered_at > ? THEN ? ELSE delivered_at END',
-              [deliveredAt, deliveredAt],
-            );
-          }
-          if (openedAt) {
-            updates.opened_at = trx.raw(
-              'CASE WHEN opened_at IS NULL OR opened_at > ? THEN ? ELSE opened_at END',
-              [openedAt, openedAt],
-            );
-          }
-          if (Object.keys(updates).length === 0) {
-            continue;
-          }
-          await trx('automated_email_recipients').where({ id }).update(updates);
-
-          if (openedAt && notYetOpened.has(id)) {
-            newOpensPerRevision.set(
-              automationActionRevisionId,
-              newOpensPerRevision.get(automationActionRevisionId) + 1,
-            );
-          }
-        }
-
-        for (const id of revisionIds) {
-          const opens = newOpensPerRevision.get(id);
-          if (!opens) {
-            continue;
-          }
-          await trx('automation_action_revisions')
-            .where({ id })
-            .update({
-              email_opened_count: trx.raw('COALESCE(email_opened_count, 0) + ?', [opens]),
-            });
-        }
-      });
-    },
   };
 }
 
@@ -787,35 +721,6 @@ function buildRunHistory(
     failed: status === 'exited_early' && steps.some((step) => step.status === 'failed'),
     steps,
   };
-}
-
-/**
- * Which of these recipients have yet to open, and so should count towards their
- * revision's open count. Locks them for the transaction, so a worker racing on
- * the same open reads them as opened and doesn't count them a second time.
- */
-async function lockNotYetOpened(
-  trx: Knex.Transaction,
-  eventsByAutomatedEmailRecipientId: ReadonlyDeep<Map<string, AutomatedEmailEvents>>,
-): Promise<Set<string>> {
-  const ids: string[] = [];
-  for (const [id, { openedAt }] of eventsByAutomatedEmailRecipientId) {
-    if (openedAt) {
-      ids.push(id);
-    }
-  }
-
-  if (ids.length === 0) {
-    return new Set();
-  }
-
-  const rows = await trx('automated_email_recipients')
-    .select('id')
-    .whereIn('id', ids)
-    .whereNull('opened_at')
-    .forUpdate();
-
-  return new Set(rows.map((row) => row.id));
 }
 
 async function ensureDefaultAutomations(

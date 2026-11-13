@@ -11,6 +11,7 @@ import type {
 import type { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import {
   Button,
+  FieldError,
   Label,
   Select,
   SelectContent,
@@ -146,11 +147,7 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
           onRemove={(removedId) => updateTiers(tierIds.filter((tierId) => tierId !== removedId))}
         />
       )}
-      {errorMessage && (
-        <Text as="p" className="text-destructive" id={`${id}-error`} role="alert" size="sm">
-          {errorMessage}
-        </Text>
-      )}
+      {errorMessage && <FieldError id={`${id}-error`}>{errorMessage}</FieldError>}
     </Stack>
   );
 };
@@ -242,11 +239,7 @@ const SubscriptionChangedPicker: React.FC<{ trigger: TriggerData; errorMessage?:
           </Text>
         )}
       </Stack>
-      {errorMessage && (
-        <Text as="p" className="text-destructive" id={`${id}-error`} role="alert" size="sm">
-          {errorMessage}
-        </Text>
-      )}
+      {errorMessage && <FieldError id={`${id}-error`}>{errorMessage}</FieldError>}
     </Stack>
   );
 };

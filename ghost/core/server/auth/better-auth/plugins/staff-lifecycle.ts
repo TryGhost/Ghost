@@ -136,7 +136,7 @@ export const ghostStaffLifecycle = (options: StaffLifecycleOptions) => {
             // any attempt emails a reset link. The response stays as it is, and
             // the email isn't awaited, so neither reveals the status
             const found = await ctx.context.internalAdapter.findUserByEmail(ctx.body.email);
-            if (found && (found.user as StaffUser).status === 'locked') {
+            if (found && 'status' in found.user && found.user.status === 'locked') {
               options
                 .sendPasswordResetEmail(found.user.email)
                 .catch((err: unknown) =>

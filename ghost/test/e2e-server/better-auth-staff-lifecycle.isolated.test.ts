@@ -1,8 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import request from 'supertest';
-import { seedCredentialAccounts } from '../../core/server/auth/better-auth/seed-credential-accounts';
-
 const {
   startGhost,
   fixtureManager,
@@ -28,6 +26,7 @@ describe.skipIf(isSQLite)('ghostStaffLifecycle under auth:engine better-auth', f
   const host = new URL(adminOrigin).host;
   let app: Parameters<typeof request>[0];
   let mail: ReturnType<typeof mockManager.mockMail>;
+  let credentials: Record<string, unknown>[];
 
   const signIn = (email: string, password: string) =>
     request(app)
@@ -57,6 +56,7 @@ describe.skipIf(isSQLite)('ghostStaffLifecycle under auth:engine better-auth', f
 
     app = await startGhost({ backend: true, frontend: false, server: false });
     await fixtureManager.init('users');
+    credentials = await db.knex('user_accounts').select();
   });
 
   beforeEach(async function () {
@@ -65,9 +65,9 @@ describe.skipIf(isSQLite)('ghostStaffLifecycle under auth:engine better-auth', f
     await db.knex('users').update({ status: 'active', last_seen: null });
     await db.knex('users').where({ id: locked.id }).update({ status: 'locked' });
     await db.knex('users').where({ id: inactive.id }).update({ status: 'inactive' });
-    // From the fixtures' passwords, which replaced the ones boot seeded
+    // lockAllUsers replaces every password
     await db.knex('user_accounts').del();
-    await seedCredentialAccounts(db.knex);
+    await db.knex('user_accounts').insert(credentials);
     mail = mockManager.mockMail();
   });
 

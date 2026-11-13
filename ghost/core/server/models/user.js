@@ -8,10 +8,32 @@ const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
 const { validatePassword } = require('../lib/validate-password');
 const { generatePassword } = require('../lib/generate-password');
+const {
+  PASSWORD_PLACEHOLDER,
+  readPasswordHash,
+  writePasswordHash,
+} = require('../auth/better-auth/credential-password');
+const { usesBetterAuth } = require('../auth/better-auth/enabled');
 const urlUtils = require('../../shared/url-utils').default;
 const { ASSIGNABLE_ROLES, setIsRoles } = require('./role-utils');
 const activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'];
 const DEFAULT_ACCESSIBILITY_PREFERENCES = JSON.stringify({ nightShift: 'system' });
+
+/**
+ * With auth:betterAuthDev the hash goes to the credential row (written in
+ * onSaved) and `users.password` keeps the placeholder (plan §4.5).
+ * A patch save writes `attrs`, not the model's attributes.
+ */
+function moveHashToCredentialAccount(model, attrs, hash) {
+  if (!usesBetterAuth()) {
+    return;
+  }
+  model._credentialHash = hash;
+  model.set('password', PASSWORD_PLACEHOLDER);
+  if (attrs) {
+    attrs.password = PASSWORD_PLACEHOLDER;
+  }
+}
 
 const messages = {
   valueCannotBeBlank: 'Value in [{tableName}.{columnKey}] cannot be blank.',
@@ -202,7 +224,12 @@ const User = ghostBookshelf.Model.extend(
      * suspended-signin path — but their password is still rotated so a
      * compromised credential cannot survive a future unsuspend.
      */
-    lock: function lock(options) {
+    lock: function lock(options = {}) {
+      // The credential row is written with the user, in one transaction
+      if (!options.transacting && usesBetterAuth()) {
+        return ghostBookshelf.transaction((transacting) => this.lock({ ...options, transacting }));
+      }
+
       const update = {
         password: generatePassword(this.get('email') || ''),
       };
@@ -297,6 +324,7 @@ const User = ghostBookshelf.Model.extend(
         // and won't re-hash or overwrite it.
         // In case the password is not bcrypt hashed we fall back to the standard behavior.
         if (options.importPersistUser && this.get('password').match(/^\$2[ayb]\$.{56}$/i)) {
+          moveHashToCredentialAccount(self, attr, self.get('password'));
           return;
         }
 
@@ -325,12 +353,28 @@ const User = ghostBookshelf.Model.extend(
           (function hashPassword() {
             return security.password.hash(self.get('password')).then(function (hash) {
               self.set('password', hash);
+              moveHashToCredentialAccount(self, attr, hash);
             });
           })(),
         );
       }
 
       return Promise.all(tasks);
+    },
+
+    // After the write: a new user's credential row references users.id
+    onSaved: function onSaved(model, options) {
+      const result = ghostBookshelf.Model.prototype.onSaved.apply(this, arguments);
+      const hash = model._credentialHash;
+
+      if (!hash) {
+        return result;
+      }
+
+      delete model._credentialHash;
+      return writePasswordHash(options.transacting || ghostBookshelf.knex, model.id, hash, {
+        isNew: options.method === 'insert',
+      });
     },
 
     toJSON: function toJSON(unfilteredOptions) {
@@ -587,6 +631,13 @@ const User = ghostBookshelf.Model.extend(
       const options = this.filterOptions(unfilteredOptions, 'edit');
       const self = this;
 
+      // The credential row is written with the user, in one transaction
+      if (data.password && !options.transacting && usesBetterAuth()) {
+        return ghostBookshelf.transaction((transacting) => {
+          return self.edit(data, { ...unfilteredOptions, transacting });
+        });
+      }
+
       if (data.roles && data.roles.length > 1) {
         throw new errors.ValidationError({
           message: tpl(messages.onlyOneRolePerUserSupported),
@@ -609,20 +660,21 @@ const User = ghostBookshelf.Model.extend(
       }
 
       const roleId = data.roles[0].id || data.roles[0];
-      const roles = await user.roles().fetch();
+      // Role changes join the edit's transaction, if any
+      const roles = await user.roles().fetch({ transacting: options.transacting });
       let roleToAssign;
 
       if (roles.models[0].id !== roleId) {
         if (ASSIGNABLE_ROLES.includes(roleId)) {
           if (roles.models[0].get('name') !== roleId) {
-            roleToAssign = await ghostBookshelf.model('Role').findOne({
-              name: roleId,
-            });
+            roleToAssign = await ghostBookshelf
+              .model('Role')
+              .findOne({ name: roleId }, { transacting: options.transacting });
           }
         } else if (ObjectId.isValid(roleId)) {
-          roleToAssign = await ghostBookshelf.model('Role').findOne({
-            id: roleId,
-          });
+          roleToAssign = await ghostBookshelf
+            .model('Role')
+            .findOne({ id: roleId }, { transacting: options.transacting });
         } else {
           throw new errors.ValidationError({
             message: tpl(messages.invalidRoleValue.message),
@@ -638,7 +690,9 @@ const User = ghostBookshelf.Model.extend(
         });
       } else if (roleToAssign) {
         // assign all other roles
-        await user.roles().updatePivot({ role_id: roleToAssign.id });
+        await user
+          .roles()
+          .updatePivot({ role_id: roleToAssign.id }, { transacting: options.transacting });
       }
 
       options.status = 'all';
@@ -663,6 +717,13 @@ const User = ghostBookshelf.Model.extend(
     add: function add(dataToClone, unfilteredOptions) {
       const options = this.filterOptions(unfilteredOptions, 'add');
       const self = this;
+
+      // Every new user has a password, from the data or the defaults
+      if (!options.transacting && usesBetterAuth()) {
+        return ghostBookshelf.transaction((transacting) => {
+          return self.add(dataToClone, { ...unfilteredOptions, transacting });
+        });
+      }
       const data = JSON.parse(JSON.stringify(dataToClone));
       let userData = this.filterData(data);
       let roles;
@@ -1142,10 +1203,15 @@ const User = ghostBookshelf.Model.extend(
             });
           }
 
-          return self
-            .isPasswordCorrect({
-              plainPassword: object.password,
-              hashedPassword: user.get('password'),
+          return readPasswordHash(ghostBookshelf.knex, {
+            id: user.id,
+            password: user.get('password'),
+          })
+            .then((hash) => {
+              return self.isPasswordCorrect({
+                plainPassword: object.password,
+                hashedPassword: hash,
+              });
             })
             .then(() => {
               return user.updateLastSeen();
@@ -1201,6 +1267,12 @@ const User = ghostBookshelf.Model.extend(
      */
     changePassword: async function changePassword(object, unfilteredOptions) {
       const options = this.filterOptions(unfilteredOptions, 'changePassword');
+
+      if (!options.transacting && usesBetterAuth()) {
+        return ghostBookshelf.transaction((transacting) => {
+          return this.changePassword(object, { ...unfilteredOptions, transacting });
+        });
+      }
       const newPassword = object.newPassword;
       const userId = object.user_id;
       const oldPassword = object.oldPassword;
@@ -1214,7 +1286,10 @@ const User = ghostBookshelf.Model.extend(
       if (isLoggedInUser) {
         await this.isPasswordCorrect({
           plainPassword: oldPassword,
-          hashedPassword: user.get('password'),
+          hashedPassword: await readPasswordHash(options.transacting || ghostBookshelf.knex, {
+            id: user.id,
+            password: user.get('password'),
+          }),
         });
       }
 
