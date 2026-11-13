@@ -37,6 +37,8 @@ test('puts every removed known violation in one bucket and pairs moves and rule 
     entry('alpha/reclassified.ts', 'stripe'),
     entry('alpha/kept.ts', 'ghost/core/shared/config.ts'),
     entry('alpha/untracked.ts', 'ghost/core/shared/config.ts'),
+    entry('alpha/two-rules.ts', 'stripe'),
+    entry('alpha/two-rules.ts', 'stripe', 'specialist-dependencies'),
   ];
   const after = [
     entry('alpha/kept.ts', 'ghost/core/shared/config.ts'),
@@ -45,6 +47,7 @@ test('puts every removed known violation in one bucket and pairs moves and rule 
     entry('alpha/target.ts', 'ghost/core/server/lib/new-target.ts'),
     entry('alpha/reclassified.ts', 'stripe', 'specialist-dependencies'),
     entry('alpha/added.ts', 'ghost/core/shared/config.ts'),
+    entry('alpha/two-rules.ts', 'stripe', 'specialist-dependencies'),
   ];
   const renames = new Map([
     [`${services}/alpha/old-name.ts`, `${services}/alpha/new-name.ts`],
@@ -64,9 +67,23 @@ test('puts every removed known violation in one bucket and pairs moves and rule 
       module('alpha/untracked.ts', [
         ['../../../shared/config', 'ghost/core/shared/config.ts', ['local']],
       ]),
+      module('alpha/two-rules.ts', [['stripe', 'node_modules/stripe/index.js', ['npm']]]),
     ],
     summary: {
-      violations: [{ from: `${services}/alpha/untracked.ts`, to: 'ghost/core/shared/config.ts' }],
+      violations: [
+        {
+          from: `${services}/alpha/untracked.ts`,
+          to: 'ghost/core/shared/config.ts',
+          rule: { name: 'service-dependencies' },
+        },
+        // Still rejected, but only under the rule whose entry is kept.
+        {
+          from: `${services}/alpha/two-rules.ts`,
+          to: 'node_modules/stripe/index.js',
+          unresolvedTo: 'stripe',
+          rule: { name: 'specialist-dependencies' },
+        },
+      ],
     },
   };
   const progress = classifyProgress({
@@ -80,7 +97,11 @@ test('puts every removed known violation in one bucket and pairs moves and rule 
   const froms = (entries: Array<{ from: string }>) =>
     entries.map(({ from }) => from.slice(services.length + 1)).sort();
   assert.deepEqual(froms(progress.fixed), ['alpha/fixed.ts', 'alpha/types.ts']);
-  assert.deepEqual(froms(progress.allowed), ['alpha/allowed-file.ts', 'alpha/allowed.ts']);
+  assert.deepEqual(froms(progress.allowed), [
+    'alpha/allowed-file.ts',
+    'alpha/allowed.ts',
+    'alpha/two-rules.ts',
+  ]);
   assert.deepEqual(froms(progress.deleted), ['alpha/gone.ts']);
   assert.deepEqual(
     progress.moved.map(({ before: from, after: to, services: names }) => [
@@ -110,7 +131,7 @@ test('puts every removed known violation in one bucket and pairs moves and rule 
   assert.equal(progress.after, after.length);
 
   // Every removed entry is counted once.
-  const removed = before.length - 1;
+  const removed = before.length - 2;
   assert.equal(
     progress.fixed.length +
       progress.allowed.length +
@@ -122,9 +143,9 @@ test('puts every removed known violation in one bucket and pairs moves and rule 
   );
 
   const text = formatProgress(progress);
-  assert.match(text, /^Known violations since base: 11 → 6$/m);
+  assert.match(text, /^Known violations since base: 13 → 7$/m);
   assert.match(text, /^Fixed\s+2$/m);
-  assert.match(text, /^Allowed by a rule change\s+2$/m);
+  assert.match(text, /^Allowed by a rule change\s+3$/m);
   assert.match(text, /^Moved or split\s+3$/m);
   assert.match(text, /^File deleted\s+1$/m);
   assert.match(text, /^Recorded under another rule\s+1$/m);

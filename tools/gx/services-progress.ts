@@ -16,7 +16,9 @@ type Entry = z.infer<typeof entrySchema>;
 type Dependency = { module: string; resolved: string; dependencyTypes?: string[] };
 type Graph = {
   modules: Array<{ source: string; dependencies: Dependency[] }>;
-  summary: { violations: Array<{ from: string; to: string; unresolvedTo?: string }> };
+  summary: {
+    violations: Array<{ from: string; to: string; unresolvedTo?: string; rule: { name: string } }>;
+  };
 };
 type Move = { before: Entry; after: Entry; services: [string, string] };
 
@@ -77,12 +79,12 @@ export function classifyProgress({
   );
   const modules = new Map(graph.modules.map((module) => [module.source, module]));
   // External packages are recorded by specifier and local files by path, so
-  // match a current violation on either.
+  // match a current violation on either, under the same rule as the entry.
   const rejected = new Set(
-    graph.summary.violations.flatMap(({ from, to, unresolvedTo }) =>
+    graph.summary.violations.flatMap(({ from, to, unresolvedTo, rule }) =>
       [to, unresolvedTo]
         .filter((target) => target !== undefined)
-        .map((target) => JSON.stringify([from, target])),
+        .map((target) => JSON.stringify([rule.name, from, target])),
     ),
   );
   const progress: Progress = {
@@ -130,7 +132,7 @@ export function classifyProgress({
     );
     if (!stillImported) {
       progress.fixed.push(entry);
-    } else if (rejected.has(JSON.stringify([from, to]))) {
+    } else if (rejected.has(JSON.stringify([entry.rule, from, to]))) {
       progress.stillRejected.push(entry);
     } else {
       progress.allowed.push(entry);
