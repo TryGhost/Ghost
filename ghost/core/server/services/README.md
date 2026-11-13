@@ -181,9 +181,11 @@ event classes they publish, as [comments](comments/index.ts) and
 [users](users/index.ts) do.
 
 A provider client used by one service lives in that service, like the Machine
-Payments adapters, and the root passes it in. `providerClients` in the
-dependency-cruiser config names each SDK and its client, and
-`service-provider-clients` rejects an import from anywhere else in Ghost Core.
+Payments adapters, and the root passes it in. `specialistDependencies` in the
+dependency-cruiser config names each specialist dependency and its owners, and
+`specialist-dependencies` rejects an import from anywhere else in Ghost Core.
+Its violations in legacy services are recorded in the known-violations file
+like any other.
 
 The config's `serviceDependencyDecisions` records these for
 [`gx services report`](../../../../tools/gx/README.md#interpreting-the-reports),

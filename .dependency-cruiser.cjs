@@ -61,35 +61,198 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/mail/format-address-for-delivery\\.ts$', // Mailbox formatting for delivery; no sender policy or application instances.
 ];
 
-// SDKs for one outside system. Each is imported only by its provider client:
-// the file or folder that wraps it in the API Ghost needs. Everything else,
-// including service roots, uses the provider client. A provider client used
-// by one service lives in that service; one shared by several lives in
-// server/lib. Adding a consumer means changing this list.
-const providerClients = [
+// Specialist dependencies serve one capability: a file format, a protocol or an
+// outside system. Each is imported only by the files or folders listed as its
+// owners; adding a consumer means changing this list, so it gets reviewed. A
+// specialist dependency that does its own I/O has one owner, its provider
+// client: the file that wraps it in the API Ghost needs. Everything else,
+// including service roots, uses the provider client. See
+// docs/practices/dependencies.md.
+const escape = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// An installed package, by import specifier or by its location in node_modules.
+const npm = (name) => `(^|/)node_modules/${escape(name)}/|^${escape(name)}(/|$)`;
+// A workspace package, by specifier or by the source or build entry it resolves to.
+const workspace = (name, directory) =>
+  `^${escape(name)}$|^${escape(directory)}/(src/index\\.ts|build/((cjs|esm)/)?index\\.js)$`;
+// A file in Ghost Core, or a folder when the path ends with a slash.
+const core = (file) => `^ghost/core/${escape(file)}${file.endsWith('/') ? '' : '$'}`;
+const service = (file) => core(`server/services/${file}`);
+
+const specialistDependencies = [
+  // Provider clients.
   {
     // Machine Payments Protocol server.
-    sdk: '(^|/)node_modules/mppx/|^mppx(/|$)',
-    clients: [`^${servicesRoot}/machine-payments/adapters/mpp-adapter\\.ts$`],
+    dependency: npm('mppx'),
+    owners: [service('machine-payments/adapters/mpp-adapter.ts')],
   },
   {
     // x402 payment protocol and the Hono app its middleware runs on.
-    sdk: '(^|/)node_modules/(@x402/[^/]+|hono)/|^(@x402/[^/]+|hono)(/|$)',
-    clients: [`^${servicesRoot}/machine-payments/adapters/x402-adapter\\.ts$`],
+    dependency: `${npm('hono')}|(^|/)node_modules/@x402/[^/]+/|^@x402/`,
+    owners: [service('machine-payments/adapters/x402-adapter.ts')],
   },
   {
     // Stripe API. Members and Stripe use the Stripe service's client; Machine
     // Payments has its own for the API version it needs.
-    sdk: '(^|/)node_modules/stripe/|^stripe(/|$)',
-    clients: [
-      `^${servicesRoot}/stripe/stripe-api\\.js$`,
-      `^${servicesRoot}/machine-payments/stripe/`,
-    ],
+    dependency: npm('stripe'),
+    owners: [service('stripe/stripe-api.js'), service('machine-payments/stripe/')],
   },
   {
     // oEmbed provider lookup and fetching, through a fetcher the caller passes.
-    sdk: '(^|/)node_modules/@extractus/oembed-extractor/|^@extractus/oembed-extractor(/|$)',
-    clients: [`^${servicesRoot}/oembed/extract-oembed\\.ts$`],
+    dependency: npm('@extractus/oembed-extractor'),
+    owners: [service('oembed/extract-oembed.ts')],
+  },
+
+  // oEmbed and link metadata.
+  {
+    // Repairing JSON-LD, reading domains, decoding pages and parsing dates in
+    // fetched metadata.
+    dependency: [npm('jsonrepair'), npm('tldts'), npm('iconv-lite'), npm('chrono-node')].join('|'),
+    owners: [service('oembed/')],
+  },
+  {
+    // HTML entity decoding for link rewriting and fetched metadata.
+    dependency: npm('entities'),
+    owners: [core('server/lib/link-replacer.js'), service('oembed/')],
+  },
+
+  // File and token formats.
+  {
+    // CSV parsing and writing.
+    dependency: npm('papaparse'),
+    owners: [
+      service('members/import-export/csv/'),
+      service('content-import/csv/'),
+      core('server/api/endpoints/utils/serializers/output/posts-csv-transform.ts'),
+      core('server/data/importer/importers/data/revue-subscriber-importer.js'),
+      core('server/data/importer/importers/importer-revue.js'),
+      core('server/data/seeders/importers/table-importer.ts'),
+    ],
+  },
+  {
+    // Custom-field CSV columns for member import and export.
+    dependency: workspace('@tryghost/metafield-csv', 'packages/metafield-csv'),
+    owners: [service('members/import-export/')],
+  },
+  {
+    // YAML redirects and routes files.
+    dependency: npm('js-yaml'),
+    owners: [
+      service('custom-redirects/redirect-config-parser.ts'),
+      service('route-settings/route-settings-parser.ts'),
+      service('route-settings/yaml-parser.js'),
+    ],
+  },
+  {
+    // Signing and verifying JSON Web Tokens.
+    dependency: npm('jsonwebtoken'),
+    owners: [
+      core('server/auth/api-key/admin.js'),
+      core('server/adapters/scheduling/utils.ts'),
+      core('server/api/endpoints/featurebase.js'),
+      service('identity-tokens/identity-token-service.ts'),
+      service('members/members-api/services/token-service.js'),
+      service('tinybird/tinybird-service.js'),
+    ],
+  },
+  {
+    // One-time codes for staff two-factor sign-in and member sign-in.
+    dependency: npm('otplib'),
+    owners: [core('server/auth/totp.ts'), service('members/single-use-token-provider.js')],
+  },
+
+  // Content and rendering.
+  {
+    // Converting Mobiledoc and Lexical content.
+    dependency: workspace('@tryghost/kg-converters', 'koenig/kg-converters'),
+    owners: [
+      core('server/models/post.js'),
+      core('server/data/migrations/'),
+      service('email-service/email-renderer.js'),
+    ],
+  },
+  {
+    // Sanitising untrusted HTML.
+    dependency: npm('sanitize-html'),
+    owners: [
+      core('server/models/comment.js'),
+      core('frontend/services/proxy.js'),
+      core('server/data/importer/importers/json-to-html.js'),
+      service('members/members-api/controllers/router-controller.js'),
+      service('notifications/sanitize-notification-html.ts'),
+    ],
+  },
+  {
+    // Class names in email templates.
+    dependency: npm('clsx'),
+    owners: [service('email-service/email-renderer.js')],
+  },
+  {
+    // Colour maths for email design and theme helpers.
+    dependency: npm('@tryghost/color-utils'),
+    owners: [
+      core('server/lib/email-rendering/email-design.js'),
+      core('frontend/helpers/color_to_rgba.ts'),
+      core('frontend/helpers/contrast_text_color.js'),
+      service('gifts/gift-email-service.ts'),
+    ],
+  },
+  {
+    // Matching URLs against route patterns.
+    dependency: npm('path-match'),
+    owners: [
+      core('frontend/services/data/match-permalink-params.js'),
+      core('server/web/api/middleware/api-version-compatibility/legacy-api-path-match.js'),
+      service('url/permalink-matcher.ts'),
+    ],
+  },
+  {
+    // Comparing Ghost and import versions.
+    dependency: npm('semver'),
+    owners: [
+      core('server/data/importer/importers/data/data-importer.js'),
+      core('server/web/api/middleware/check-version-match.ts'),
+      service('notifications/notifications.js'),
+    ],
+  },
+
+  // Database.
+  {
+    // Telling SQLite from MySQL on a connection the caller passes.
+    dependency: npm('@tryghost/database-info'),
+    owners: [
+      core('server/data/'),
+      core('server/models/label.js'),
+      service('jobs-service/index.ts'),
+      service('members/service.js'),
+      service('url/routable-resources.js'),
+    ],
+  },
+
+  // One service each.
+  {
+    // Custom field keys and filters.
+    dependency: `${npm('unidecode')}|${npm('@tryghost/mongo-knex')}`,
+    owners: [service('members-metafields/')],
+  },
+  {
+    // Cron expressions for scheduled jobs.
+    dependency: npm('cron-validate'),
+    owners: [service('jobs-service/jobs-service.ts')],
+  },
+  {
+    // Filtering member events in memory.
+    dependency: npm('mingo'),
+    owners: [service('members/members-api/repositories/event-repository.js')],
+  },
+  {
+    // Pacing Stripe API requests.
+    dependency: npm('leaky-bucket'),
+    owners: [service('stripe/stripe-api.js')],
+  },
+  {
+    // Plan limits.
+    dependency: workspace('@tryghost/limit-service', 'packages/limit-service'),
+    owners: [service('limits.ts'), service('invites/index.ts')],
   },
 ];
 
@@ -135,11 +298,11 @@ const serviceDependencyDecisions = {
     '^ghost/core/server/web/shared/middleware/api/spam-prevention\\.ts$', // Rate limiting, built from config and the database.
     '^ghost/core/bridge\\.js$', // The bridge to the frontend.
   ],
-  // Allowed only in another form. A provider SDK imported outside its provider
-  // client is counted here too, without a pattern.
+  // Allowed only in another form. A specialist dependency imported outside its
+  // owners is counted here too, without a pattern.
   importForm: [
     '^lodash$', // Import individual functions, such as lodash/isEmpty.
-    '^(moment(-timezone)?|luxon|temporal-polyfill|chrono-node)$', // Dates and times go through the kernel clock, which exports moment for existing date logic.
+    '^(moment(-timezone)?|luxon|temporal-polyfill)$', // Dates and times go through the kernel clock, which exports moment for existing date logic.
     '^(node:)?fs(/promises)?$|^fs-extra$', // The root passes a loader limited to the files needed.
   ],
 };
@@ -175,21 +338,22 @@ module.exports = {
       from: serviceImplementations,
       to: {
         // $1 is the service name captured by from.path.
-        // Provider SDKs are checked by service-provider-clients instead.
+        // Specialist dependencies are checked by specialist-dependencies instead.
         pathNot: [
           ...serviceDependencyAllowlist,
-          ...providerClients.map(({ sdk }) => sdk),
+          ...specialistDependencies.map(({ dependency }) => dependency),
           `^${servicesRoot}/$1/`,
         ],
         dependencyTypesNot: ['type-only', 'type-import'],
       },
     },
-    ...providerClients.map(({ sdk, clients }) => ({
-      name: 'service-provider-clients',
-      comment: 'Use the provider client for this SDK. Only that client may import it.',
+    ...specialistDependencies.map(({ dependency, owners }) => ({
+      name: 'specialist-dependencies',
+      comment:
+        'Only the owners listed in specialistDependencies may import this. Use the owning code, or add the consumer to the list for review.',
       severity: 'error',
-      from: { path: '^ghost/core/', pathNot: clients },
-      to: { path: sdk, dependencyTypesNot: ['type-only', 'type-import'] },
+      from: { path: '^ghost/core/', pathNot: owners },
+      to: { path: dependency, dependencyTypesNot: ['type-only', 'type-import'] },
     })),
     {
       name: 'service-own-root',

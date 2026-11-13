@@ -889,7 +889,7 @@ it('allows each provider SDK only from its provider client, across Core and serv
     f.write(`node_modules/${name}/server.js`, 'module.exports = {};');
   }
   const graph = f.graph('ghost/core');
-  const provider = (from: string, to: string) => ['service-provider-clients', from, to];
+  const provider = (from: string, to: string) => ['specialist-dependencies', from, to];
   assert.deepEqual(
     violations(graph),
     [
@@ -925,6 +925,51 @@ it('allows each provider SDK only from its provider client, across Core and serv
         from !== undefined && [mpp, x402, stripeApi, machineStripe, oembed].includes(from),
     ).length,
     8,
+  );
+});
+
+it('allows specialist dependencies only from their owning files and folders', (t) => {
+  const csv = `${services}/content-import/csv/parse.ts`;
+  const importer = 'ghost/core/server/data/importer/importers/importer-revue.js';
+  const oembed = `${services}/oembed/nested/extract.ts`;
+  const limits = `${services}/limits.ts`;
+  const workspaceEntry = 'packages/limit-service/src/index.ts';
+  const f = fixture(t, {
+    [csv]: "import 'papaparse';",
+    [importer]: "require('papaparse');",
+    [oembed]: "import 'jsonrepair'; import 'chrono-node';",
+    [limits]: "import '../../../../packages/limit-service/src/index';",
+    [workspaceEntry]: 'export {};',
+    // Owned elsewhere: another file in the same service, another service, Core
+    // code outside services and a service root.
+    [`${services}/content-import/import/rows.ts`]: "import 'papaparse';",
+    [`${services}/members/parse.js`]: "require('jsonrepair');",
+    'ghost/core/server/lib/dates.js': "require('chrono-node');",
+    [`${services}/members/index.js`]: "require('../../../../../packages/limit-service/src/index');",
+    // A type-only import is not a dependency.
+    [`${services}/members/types.ts`]: "import type Papa from 'papaparse';",
+  });
+  for (const name of ['papaparse', 'jsonrepair', 'chrono-node']) {
+    f.write(`node_modules/${name}/package.json`, JSON.stringify({ name, main: 'index.js' }));
+    f.write(`node_modules/${name}/index.js`, 'module.exports = {};');
+  }
+  const graph = f.graph('ghost/core');
+  assert.deepEqual(
+    violations(graph),
+    [
+      [`${services}/content-import/import/rows.ts`, 'node_modules/papaparse/index.js'],
+      [`${services}/members/parse.js`, 'node_modules/jsonrepair/index.js'],
+      ['ghost/core/server/lib/dates.js', 'node_modules/chrono-node/index.js'],
+      [`${services}/members/index.js`, workspaceEntry],
+    ]
+      .map(([from, to]) => ['specialist-dependencies', from, to])
+      .sort(),
+  );
+  assert.equal(
+    edges(graph).filter(
+      ([from]) => from !== undefined && [csv, importer, oembed, limits].includes(from),
+    ).length,
+    5,
   );
 });
 

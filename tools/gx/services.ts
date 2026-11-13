@@ -123,7 +123,9 @@ export function buildServiceReport(
       .map((module) => entryName(module.source))
       .filter((name) => name !== undefined),
   );
-  const findings = graph.summary.violations.filter((item) => item.rule.name.startsWith('service-'));
+  const findings = graph.summary.violations.filter(
+    (item) => item.rule.name.startsWith('service-') || item.rule.name === 'specialist-dependencies',
+  );
   const names = new Set([
     ...Object.keys(services),
     ...analyzed,
@@ -142,11 +144,11 @@ export function buildServiceReport(
           to,
           rule: item.rule.name,
           // Only a rejected dependency has a kind; unresolved and own-root imports do not.
-          // A provider SDK imported outside its provider client is in the wrong form:
-          // the fix is to use the client.
+          // A specialist dependency imported outside its owners is in the wrong form:
+          // the fix is to use the owning code.
           ...(item.rule.name === 'service-dependencies'
             ? { kind: kindOf(to) }
-            : item.rule.name === 'service-provider-clients'
+            : item.rule.name === 'specialist-dependencies'
               ? { kind: 'import-form' as const }
               : {}),
         };

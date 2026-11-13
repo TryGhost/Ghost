@@ -17,7 +17,7 @@ const knownViolationSchema = z.strictObject({
     'service-dependencies',
     'service-own-root',
     'service-unresolved',
-    'service-provider-clients',
+    'specialist-dependencies',
   ]),
   from: z.string().startsWith(servicePrefix),
   to: z.string().min(1),

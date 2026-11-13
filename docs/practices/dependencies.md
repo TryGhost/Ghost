@@ -43,9 +43,9 @@ passes the stateless rule.
 
 A specialist dependency serves one capability: a file format, a protocol or an
 outside system. Most packages used in only one or two places are specialist,
-such as CSV parsing, oEmbed metadata or one-time codes. A specialist dependency
-is used only by the code that owns its capability. Adding another consumer is a
-change to the rules, so it gets reviewed.
+such as CSV parsing, oEmbed metadata or one-time codes. Only the files or
+folders that own its capability may import it. To use one somewhere else, use
+the owning code, or add the new consumer to the owners so it gets reviewed.
 
 When a specialist dependency does its own I/O, such as the Stripe SDK or a
 payment protocol, only its provider client imports it. A provider client is the
@@ -76,12 +76,12 @@ Some libraries are allowed only in one form:
 The [dependency-cruiser config](../../.dependency-cruiser.cjs) holds:
 
 - the allowlist of general dependencies and shared files;
-- `providerClients`, which names each SDK and the provider client that may
-  import it;
+- `specialistDependencies`, which names each specialist dependency and its
+  owners. The `specialist-dependencies` rule rejects an import from anywhere
+  else in Ghost Core, including service roots;
 - `serviceDependencyDecisions`, which records whether each rejected dependency
   must be injected or imported in another form.
 
 `pnpm gx services report` groups the remaining violations by those decisions.
-Specialist dependencies without I/O are not yet limited to their owners, and
-code outside services is not checked yet. Apply the same rules when you change
-it.
+Apart from specialist dependencies, code outside services is not checked yet.
+Apply the same rules when you change it.

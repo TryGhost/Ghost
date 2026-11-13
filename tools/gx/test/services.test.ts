@@ -185,7 +185,7 @@ test('classifies each rejected dependency by the first decision that matches it'
         finding('alpha/a.ts', `${services}/beta/index.ts`),
         finding('alpha/a.ts', `${services}/alpha/index.ts`, 'service-own-root'),
         finding('alpha/a.ts', './missing', 'service-unresolved'),
-        finding('alpha/a.ts', 'node_modules/stripe/index.js', 'service-provider-clients', {
+        finding('alpha/a.ts', 'node_modules/stripe/index.js', 'specialist-dependencies', {
           unresolvedTo: 'stripe',
           dependencyTypes: ['npm'],
         }),
