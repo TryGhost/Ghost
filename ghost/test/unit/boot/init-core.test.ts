@@ -13,13 +13,11 @@ function createCoreHarness() {
   const giftLinks = { init: sinon.stub().resolves() };
   const integrations = { init: sinon.stub().resolves() };
   const stripeCheckoutConfig = { init: sinon.stub().resolves() };
+  const applyImageUploadConfig = sinon.stub();
+  const uploads = {};
   const initCore = loadBootFunction('initCore', {
     './server/services/adapter-manager': { default: { init() {} } },
-    './server/lib/image/image-decoders': { restrictImageDecoders() {} },
-    './server/lib/image/image-content': {
-      IMAGE_UPLOAD_TYPES: [],
-      getIgnoredImageContentTypes: () => [],
-    },
+    './server/lib/image/image-upload-config': { applyImageUploadConfig },
     './shared/url-utils': {},
     './server/services/limits': { init: async () => {} },
     './server/services/settings/settings-service': settings,
@@ -36,7 +34,10 @@ function createCoreHarness() {
     './server/services/stripe-checkout-config': { default: stripeCheckoutConfig },
   });
   return {
-    init: (): Promise<void> => initCore({ config: { get: () => ({}) } }),
+    init: (): Promise<void> =>
+      initCore({ config: { get: (key: string) => (key === 'uploads' ? uploads : {}) } }),
+    applyImageUploadConfig,
+    uploads,
     settings,
     signingKeys,
     i18n,
@@ -175,4 +176,12 @@ it('propagates the original Integrations initialization error without continuing
 
   sinon.assert.calledOnce(boot.integrations.init);
   sinon.assert.notCalled(boot.stripeCheckoutConfig.init);
+});
+
+it('applies the uploads config to image handling before anything initializes', async function () {
+  const boot = createCoreHarness();
+  await boot.init();
+
+  sinon.assert.calledOnceWithExactly(boot.applyImageUploadConfig, sinon.match.same(boot.uploads));
+  sinon.assert.callOrder(boot.applyImageUploadConfig, boot.settings.init);
 });
