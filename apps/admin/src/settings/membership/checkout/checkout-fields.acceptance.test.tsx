@@ -236,6 +236,22 @@ describe('Checkout settings', () => {
     await expect.element(type).toBeDisabled();
   });
 
+  // A long name is cut off in the list, so hovering it shows it in full, as the tier and country
+  // lists' rows do.
+  it('shows a field name in full when hovering it in the list', async () => {
+    const longName = 'Contact phone for couriers and delivery drivers';
+    const { modal } = await openCheckoutFields(
+      { design: { customize: false }, shipping: { collect: false }, phone: { collect: false } },
+      [{ ...phoneField, name: longName }],
+    );
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    await modal.getByRole('combobox', { name: 'Save phone as' }).click();
+
+    await expect
+      .element(page.getByRole('option', { name: longName }).getByTitle(longName))
+      .toBeVisible();
+  });
+
   // Each of these pickers only ever makes one kind of field, so its form starts from the name
   // that field almost always has. A name searched for is still the one the publisher meant.
   it('starts a new field with the name it usually has, unless one was searched for', async () => {
