@@ -14,7 +14,8 @@ const config = require('../../../../../core/shared/config');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
-const ghostVersion = require('@tryghost/version');
+// Read independently of the @tryghost/version module the service uses.
+const expectedVersion = require('../../../../../package.json').version.split('+')[0];
 const members = require('../../../../../core/server/services/members');
 const statsRoot = require('../../../../../core/server/services/stats').default;
 const models = require('../../../../../core/server/models');
@@ -185,7 +186,7 @@ describe('explore-ping root', function () {
       sinon.assert.calledOnceWithExactly(send, EXPLORE_URL, {
         method: 'POST',
         body: JSON.stringify({
-          ghost: ghostVersion.full,
+          ghost: expectedVersion,
           site_uuid: 'site-uuid',
           url: 'https://publication.example/',
           theme: 'source',

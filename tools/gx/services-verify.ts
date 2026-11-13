@@ -3,6 +3,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
+import { compileFunction } from 'node:vm';
 import {
   legacyInventoryFile as inventoryPath,
   parseLegacyServices,
@@ -24,6 +25,7 @@ export type Cruise = {
   summary: { violations: Array<{ from: string; to: string; rule: { name: string } }> };
 };
 export type ServiceRule = { from: { path: string; pathNot: string }; to: { pathNot: string[] } };
+export type SpecialistEntry = { dependency: string; owners: string[] };
 export type RunCommand = (
   command: string,
   args: string[],
@@ -99,8 +101,8 @@ function serviceViolations(cruise: Cruise) {
     ),
   );
   return cruise.summary.violations
-    .filter(
-      ({ rule }) => rule.name === 'service-dependencies' || rule.name === 'service-unresolved',
+    .filter(({ rule }) =>
+      ['service-dependencies', 'service-unresolved', 'specialist-dependencies'].includes(rule.name),
     )
     .map((violation) => ({
       ...violation,
@@ -161,6 +163,102 @@ export function allowanceProblems({
       .filter((target) => !regressionCases.includes(target))
       .map((target) => `${target} has no regression case naming it in full.`);
     return [...unused, ...untested];
+  });
+}
+
+// Evaluates a version of the boundary config, such as the one at the base commit,
+// resolving its requires from the repository as the real file would.
+export function evaluateConfig(source: string, repository: string): unknown {
+  const filename = path.join(repository, allowlistPath);
+  const module = { exports: {} as unknown };
+  compileFunction(source, ['module', 'exports', 'require', '__filename', '__dirname'], {
+    filename,
+  })(module, module.exports, createRequire(filename), filename, repository);
+  return module.exports;
+}
+
+function readSpecialists(config: unknown): SpecialistEntry[] {
+  const entries = (config as { specialistDependencies?: unknown } | undefined)
+    ?.specialistDependencies;
+  return Array.isArray(entries)
+    ? entries.filter(
+        (entry): entry is SpecialistEntry =>
+          typeof entry?.dependency === 'string' &&
+          Array.isArray(entry.owners) &&
+          entry.owners.every((owner: unknown) => typeof owner === 'string'),
+      )
+    : [];
+}
+
+// Specialist entries that are new, or whose owners changed, since the base.
+// Only the owners added to an existing entry need checking.
+export function changedSpecialists(base: SpecialistEntry[], head: SpecialistEntry[]) {
+  return head.flatMap(({ dependency, owners }) => {
+    const before = base.find((entry) => entry.dependency === dependency);
+    const added = owners.filter((owner) => !before?.owners.includes(owner));
+    return added.length ? [{ dependency, owners: added }] : [];
+  });
+}
+
+// Checks changed specialist entries against the imports dependency-cruiser resolved:
+// each new owner must import the dependency, every alternative of a new dependency
+// pattern must match an import from its owners, and each resolved target needs a
+// regression case. The verify scan covers services only, so owners outside them
+// are not checked.
+export function specialistProblems({
+  entries,
+  isNew,
+  cruises,
+  regressionCases,
+}: {
+  entries: SpecialistEntry[];
+  isNew: (dependency: string) => boolean;
+  cruises: Cruise[];
+  regressionCases: string;
+}) {
+  const scanned = new RegExp(`^${servicesRoot}/`);
+  return entries.flatMap(({ dependency, owners }) => {
+    const ownerPatterns = owners
+      .filter((owner) => scanned.test(owner.replace(/^\^/, '')))
+      .map((owner) => ({ owner, pattern: new RegExp(owner) }));
+    const pattern = new RegExp(dependency);
+    const importsBy = (matcher: RegExp) =>
+      cruises.flatMap(({ modules }) =>
+        modules
+          .filter(({ source }) => matcher.test(source))
+          .flatMap(({ dependencies }) =>
+            dependencies.filter(
+              ({ dependencyTypes }) =>
+                !dependencyTypes.some((type) => type === 'type-only' || type === 'type-import'),
+            ),
+          ),
+      );
+    const problems: string[] = [];
+    const imports = ownerPatterns.flatMap(({ owner, pattern: ownerPattern }) => {
+      const found = importsBy(ownerPattern).filter(
+        ({ module, resolved }) => pattern.test(module) || pattern.test(resolved),
+      );
+      if (!found.length) {
+        problems.push(`${owner} does not import ${dependency}.`);
+      }
+      return found;
+    });
+    if (ownerPatterns.length && isNew(dependency)) {
+      for (const alternative of splitAlternatives(dependency)) {
+        const matcher = new RegExp(alternative);
+        if (
+          !imports.some(({ module, resolved }) => matcher.test(module) || matcher.test(resolved))
+        ) {
+          problems.push(`${alternative} matches no import from its owners in services.`);
+        }
+      }
+    }
+    for (const target of new Set(imports.map(({ resolved }) => fixturePath(resolved)))) {
+      if (!regressionCases.includes(target)) {
+        problems.push(`${target} has no regression case naming it in full.`);
+      }
+    }
+    return problems;
   });
 }
 
@@ -281,28 +379,42 @@ export function verifyService({
   }
 
   const written = addedAllowances(diff(allowlistPath));
-  if (written.length && cruises.length === 2) {
-    const config = createRequire(import.meta.url)(path.join(repository, allowlistPath)) as {
-      forbidden: Array<ServiceRule & { name: string }>;
-    };
-    const rule = config.forbidden.find(({ name }) => name === 'service-dependencies');
-    // The diff shows each entry as written, with its backslashes escaped.
+  const configPath = path.join(repository, allowlistPath);
+  const config = existsSync(configPath)
+    ? (createRequire(import.meta.url)(configPath) as {
+        forbidden: Array<ServiceRule & { name: string }>;
+      })
+    : undefined;
+  const baseSource = git('show', `${base}:${allowlistPath}`);
+  const baseSpecialists =
+    baseSource.status === 0
+      ? readSpecialists(evaluateConfig(baseSource.stdout ?? baseSource.output, repository))
+      : [];
+  const specialists = changedSpecialists(baseSpecialists, readSpecialists(config));
+  if ((written.length || specialists.length) && cruises.length === 2) {
+    const rule = config?.forbidden.find(({ name }) => name === 'service-dependencies');
+    // The diff shows each entry as written, with its backslashes escaped. Specialist
+    // patterns are exempt from the service rule too, but are checked below.
     const allowances = (rule?.to.pathNot ?? []).filter(
       (pattern) => !pattern.includes('$1') && written.includes(pattern.replaceAll('\\', '\\\\')),
     );
-    const problems = rule
-      ? allowanceProblems({
-          allowances,
-          rule,
-          cruises,
-          regressionCases: existsSync(path.join(repository, allowanceTestPath))
-            ? read(allowanceTestPath)
-            : '',
-        })
-      : ['No service-dependencies rule in the dependency-cruiser config.'];
+    const regressionCases = existsSync(path.join(repository, allowanceTestPath))
+      ? read(allowanceTestPath)
+      : '';
+    const problems = [
+      ...(rule
+        ? allowanceProblems({ allowances, rule, cruises, regressionCases })
+        : ['No service-dependencies rule in the dependency-cruiser config.']),
+      ...specialistProblems({
+        entries: specialists,
+        isNew: (dependency) => !baseSpecialists.some((entry) => entry.dependency === dependency),
+        cruises,
+        regressionCases,
+      }),
+    ];
     record('allowances-accurate', problems.length ? 'fail' : 'pass', problems);
   } else {
-    record('allowances-accurate', written.length ? 'skip' : 'pass');
+    record('allowances-accurate', written.length || specialists.length ? 'skip' : 'pass');
   }
 
   const references = findInventoryReferences(inventory, service).map(

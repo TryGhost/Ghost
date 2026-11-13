@@ -97,21 +97,22 @@ function lint(...args: Parameters<typeof runLint>) {
 test('explains missing or malformed service dependency policy', () => {
   for (const policy of [
     {},
-    { forbidden: {} },
-    { forbidden: [] },
-    { forbidden: [{ name: 'renamed-service-dependencies' }] },
-    { forbidden: [{ name: 'service-dependencies', to: { pathNot: [] } }] },
-    { forbidden: [{ name: 'service-dependencies', from: { path: 42 }, to: { pathNot: [] } }] },
+    { forbidden: {}, serviceDependencyAllowlist: [] },
+    { forbidden: [], serviceDependencyAllowlist: [] },
+    { forbidden: [{ name: 'renamed-service-dependencies' }], serviceDependencyAllowlist: [] },
+    { forbidden: [{ name: 'service-dependencies' }], serviceDependencyAllowlist: [] },
+    {
+      forbidden: [{ name: 'service-dependencies', from: { path: 42 } }],
+      serviceDependencyAllowlist: [],
+    },
     { forbidden: [{ name: 'service-dependencies', from: { path: '^services/' } }] },
     {
-      forbidden: [
-        { name: 'service-dependencies', from: { path: '^services/' }, to: { pathNot: '' } },
-      ],
+      forbidden: [{ name: 'service-dependencies', from: { path: '^services/' } }],
+      serviceDependencyAllowlist: '',
     },
     {
-      forbidden: [
-        { name: 'service-dependencies', from: { path: '^services/' }, to: { pathNot: [42] } },
-      ],
+      forbidden: [{ name: 'service-dependencies', from: { path: '^services/' } }],
+      serviceDependencyAllowlist: [42],
     },
   ]) {
     const result = runLint(
@@ -124,7 +125,7 @@ test('explains missing or malformed service dependency policy', () => {
     assert.equal(result.status, 1);
     assert.match(
       result.stdout + result.stderr,
-      /ghost\/no-injected-service-libraries: \.dependency-cruiser\.cjs must define service-dependencies with a string from\.path and a string array to\.pathNot/,
+      /ghost\/no-injected-service-libraries: \.dependency-cruiser\.cjs must define service-dependencies with a string from\.path and expose serviceDependencyAllowlist/,
     );
   }
 });
@@ -597,6 +598,26 @@ test('shares the dependency-cruiser allowlist, including exact local files and p
   const result = lint(source, serviceRoot, false, undefined, changed);
   assert.equal(result.diagnostics.length, 6);
   assert.ok(result.diagnostics.some((d) => d.message.includes('node:os')));
+});
+
+test('lets a root pass in a specialist dependency it owns', () => {
+  // Specialist dependencies are exempt from the service rule, but only their
+  // owners may import them, so the implementation could not import one directly.
+  // An allowlisted library passed the same way is still reported.
+  const source = `
+    import Service from './service';
+    import { z } from 'zod';
+    const stripe = require('stripe');
+    import { extract } from '@extractus/oembed-extractor';
+    new Service({ z, stripe, extract });
+  `;
+  const messages = lint(source, serviceRoot).diagnostics.map((d) => d.message);
+  assert.deepEqual(
+    messages.filter((message) => message.includes('directly')),
+    [
+      'Import zod directly in the implementation instead of passing it into this service constructor.',
+    ],
+  );
 });
 
 test('recognizes exact JavaScript library paths without approving siblings', () => {

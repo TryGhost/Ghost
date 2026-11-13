@@ -10,12 +10,15 @@ import {
   allowanceProblems,
   builtOnlyViolations,
   changedAuditShas,
+  changedSpecialists,
+  evaluateConfig,
   findInventoryReferences,
   fetchMain,
   findNewJavaScript,
   fixturePath,
   mutateBootInit,
   serviceTerms,
+  specialistProblems,
   verifyService,
   type Cruise,
   type RunCommand,
@@ -198,6 +201,7 @@ test('only service rule violations new to built output are reported', () => {
     [
       [service, 'pkg', 'packages/pkg/build/index.js'],
       [service, 'known', 'lib/known.js'],
+      [service, 'special', 'lib/special.js'],
       ['b.ts', 'missing', 'missing'],
       ['c.ts', 'd', 'd.ts'],
     ],
@@ -206,12 +210,86 @@ test('only service rule violations new to built output are reported', () => {
       { from: service, to: 'packages/pkg/build/index.js', rule: { name: 'service-dependencies' } },
       { from: 'b.ts', to: 'missing', rule: { name: 'service-unresolved' } },
       { from: 'c.ts', to: 'd.ts', rule: { name: 'shared-not-server-or-frontend' } },
+      { from: service, to: 'lib/special.js', rule: { name: 'specialist-dependencies' } },
     ],
   );
   assert.deepEqual(builtOnlyViolations(source, built), [
     `${service} → packages/pkg/build/index.js breaks service-dependencies.`,
     'b.ts → missing breaks service-unresolved.',
+    `${service} → lib/special.js breaks specialist-dependencies.`,
   ]);
+});
+
+test('changed specialist entries are new entries or the owners added to existing ones', () => {
+  const base = [
+    { dependency: '^kept$', owners: ['^a$'] },
+    { dependency: '^widened$', owners: ['^a$'] },
+  ];
+  const head = [
+    { dependency: '^kept$', owners: ['^a$'] },
+    { dependency: '^widened$', owners: ['^a$', '^b$'] },
+    { dependency: '^new$', owners: ['^c$'] },
+  ];
+  assert.deepEqual(changedSpecialists(base, head), [
+    { dependency: '^widened$', owners: ['^b$'] },
+    { dependency: '^new$', owners: ['^c$'] },
+  ]);
+});
+
+test('changed specialist entries need imports from their owners and regression cases', () => {
+  const services = 'ghost/core/server/services';
+  const source = cruise([
+    [`${services}/alpha/client.ts`, 'sdk', 'node_modules/.pnpm/sdk@1/node_modules/sdk/index.js'],
+    [`${services}/beta/other.ts`, 'unused-owner', 'lib/unrelated.js'],
+    [`${services}/alpha/types.ts`, 'typed', 'node_modules/typed/index.js', 'type-only'],
+  ]);
+  const problems = specialistProblems({
+    entries: [
+      // A new entry with a second alternative nothing imports.
+      { dependency: '^sdk$|^sdk-extra$', owners: [`^${services}/alpha/client\\.ts$`] },
+      // A new owner that does not import the dependency.
+      { dependency: '^lib/thing\\.js$', owners: [`^${services}/beta/`] },
+      // A type-only import does not count.
+      { dependency: '^typed$', owners: [`^${services}/alpha/types\\.ts$`] },
+      // Owners outside services are not in the verify scan.
+      { dependency: '^web-only$', owners: ['^ghost/core/server/web/'] },
+    ],
+    isNew: (dependency) => dependency !== '^lib/thing\\.js$',
+    cruises: [source],
+    regressionCases: '',
+  });
+  assert.deepEqual(problems, [
+    '^sdk-extra$ matches no import from its owners in services.',
+    'node_modules/sdk/index.js has no regression case naming it in full.',
+    `^${services}/beta/ does not import ^lib/thing\\.js$.`,
+    `^${services}/alpha/types\\.ts$ does not import ^typed$.`,
+    '^typed$ matches no import from its owners in services.',
+  ]);
+  assert.deepEqual(
+    specialistProblems({
+      entries: [{ dependency: '^sdk$', owners: [`^${services}/alpha/`] }],
+      isNew: () => true,
+      cruises: [source],
+      regressionCases: "'node_modules/sdk/index.js'",
+    }),
+    [],
+  );
+});
+
+test('the base config is evaluated with requires resolved from the repository', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'gx-verify-config-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(join(root, 'lib'), { recursive: true });
+  await writeFile(join(root, 'lib/owners.cjs'), "module.exports = ['^owner$'];");
+  const config = evaluateConfig(
+    "const owners = require('./lib/owners.cjs');\n" +
+      "module.exports = { specialistDependencies: [{ dependency: '^sdk$', owners }], dir: __dirname };",
+    root,
+  );
+  assert.deepEqual(config, {
+    specialistDependencies: [{ dependency: '^sdk$', owners: ['^owner$'] }],
+    dir: root,
+  });
 });
 
 test('the boot mutation stops boot waiting but keeps rejections', async () => {
@@ -362,6 +440,43 @@ test('an added allowance that only holds for authored source fails on built outp
   f.cruises.source = empty;
   f.cruises.built = empty;
   assert.equal(f.status()['allowances-accurate'], 'fail');
+});
+
+test('a specialist owner added since the base is checked against the scan', async (t) => {
+  const f = await fixture(t);
+  const config = (owners: string[]) =>
+    [
+      `const from = ${JSON.stringify(rule.from)};`,
+      "module.exports = { forbidden: [{ name: 'service-dependencies', from, to: { pathNot: [] } }] };",
+      'Object.defineProperty(module.exports, "specialistDependencies", {',
+      `  value: [{ dependency: '^sdk$|(^|/)node_modules/sdk/', owners: ${JSON.stringify(owners)} }],`,
+      '});',
+      '',
+    ].join('\n');
+  await f.write('.dependency-cruiser.cjs', config(['^ghost/core/server/services/other/']));
+  const base = f.commit('base config');
+  await f.write(
+    '.dependency-cruiser.cjs',
+    config(['^ghost/core/server/services/other/', '^ghost/core/server/services/staff/']),
+  );
+  await f.write('tools/scripts/test/service-dependencies.test.ts', 'node_modules/sdk/index.js');
+  f.commit('new owner');
+  const status = () =>
+    Object.fromEntries(
+      verifyService({
+        repository: f.root,
+        service: 'staff',
+        base,
+        staticOnly: true,
+        run: f.run,
+      }).map((check) => [check.name, check.status]),
+    );
+  // The new owner imports nothing from the package yet.
+  assert.equal(status()['allowances-accurate'], 'fail');
+  const service = 'ghost/core/server/services/staff/a.ts';
+  f.cruises.source = cruise([[service, 'sdk', 'node_modules/sdk/index.js']]);
+  f.cruises.built = f.cruises.source;
+  assert.equal(status()['allowances-accurate'], 'pass');
 });
 
 test('unreadable dependency-cruiser output fails the run that produced it', async (t) => {

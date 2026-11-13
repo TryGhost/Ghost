@@ -76,16 +76,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/content-import/csv/parse.ts",
-    "to": "papaparse"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/content-import/csv/serialize.ts",
-    "to": "papaparse"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/content-import/import/assets.ts",
     "to": "ghost/core/server/data/importer/content-files.ts"
   },
@@ -103,11 +93,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/content-import/import/media.ts",
     "to": "ghost/core/server/services/media-inliner/origin-schemes.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/content-import/import/relations.ts",
-    "to": "@tryghost/validator"
   },
   {
     "rule": "service-dependencies",
@@ -131,11 +116,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/custom-redirects/redirect-config-parser.ts",
-    "to": "js-yaml"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/custom-redirects/redirects-service.ts",
     "to": "@tryghost/logging"
   },
@@ -146,11 +126,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/custom-redirects/redirects-service.ts",
-    "to": "ghost/core/shared/errify.ts"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/custom-redirects/utils.ts",
     "to": "moment-timezone"
   },
@@ -158,11 +133,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/custom-redirects/validation.js",
     "to": "lodash"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-address/email-address-service-wrapper.js",
-    "to": "@tryghost/validator"
   },
   {
     "rule": "service-dependencies",
@@ -186,11 +156,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-analytics/automation-email-analytics-batch-processor.ts",
-    "to": "ghost/core/server/lib/mailgun/mailgun-message-id.ts"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-analytics/email-analytics-service-wrapper.ts",
     "to": "@tryghost/logging"
   },
@@ -203,11 +168,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-analytics/fetch-mailgun-events.ts",
     "to": "ghost/core/server/lib/mailgun/mailgun-client.js"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-analytics/gift-email-analytics-batch-processor.ts",
-    "to": "ghost/core/server/lib/mailgun/mailgun-message-id.ts"
   },
   {
     "rule": "service-dependencies",
@@ -261,11 +221,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-service/batch-sending-service.js",
-    "to": "ghost/core/server/lib/promise-pool.ts"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-service/email-event-processor.js",
     "to": "@tryghost/logging"
   },
@@ -273,11 +228,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-service/email-renderer.js",
     "to": "@tryghost/logging"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-service/email-renderer.js",
-    "to": "clsx"
   },
   {
     "rule": "service-dependencies",
@@ -292,17 +242,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-service/email-renderer.js",
-    "to": "koenig/kg-converters/src/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-service/email-renderer.js",
     "to": "luxon"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
-    "to": "assert/strict"
   },
   {
     "rule": "service-dependencies",
@@ -437,16 +377,6 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-service/newsletter-email-event-storage.js",
-    "to": "ghost/core/server/lib/db-types/affected-rows.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-service/newsletter-email-event-storage.js",
-    "to": "ghost/core/server/lib/db-types/count.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-service/newsletter-email-event-storage.js",
     "to": "moment-timezone"
   },
   {
@@ -458,21 +388,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-service/sending-service.js",
     "to": "@tryghost/logging"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-service/sending-service.js",
-    "to": "@tryghost/validator"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-service/sending-status-schema.ts",
-    "to": "ghost/core/server/lib/db-types/count.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-suppression-list/email-suppression-list.js",
-    "to": "assert/strict"
   },
   {
     "rule": "service-dependencies",
@@ -541,16 +456,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/gifts/gift-email-service.ts",
-    "to": "@tryghost/color-utils"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/gifts/gift-email-service.ts",
-    "to": "ghost/core/server/lib/mailgun/mailgun-message-id.ts"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/gifts/gift-service.ts",
     "to": "@tryghost/logging"
   },
@@ -578,21 +483,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/identity-tokens/identity-token-service-wrapper.js",
     "to": "ghost/core/shared/url-utils.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/identity-tokens/identity-token-service.ts",
-    "to": "jsonwebtoken"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/jobs-service/jobs-service.ts",
-    "to": "cron-validate"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/jobs-service/jobs-service.ts",
-    "to": "ghost/core/server/lib/after-commit.ts"
   },
   {
     "rule": "service-dependencies",
@@ -696,11 +586,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/limits.ts",
-    "to": "packages/limit-service/src/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/link-tracking/link-click-repository.js",
     "to": "ghost/core/shared/config/index.ts"
   },
@@ -731,11 +616,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/link-tracking/link-click-tracking-service.js",
-    "to": "packages/nql-string/src/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/link-tracking/post-link-repository.js",
     "to": "lodash"
   },
@@ -760,12 +640,7 @@
     "to": "ghost/core/shared/settings-cache/index.js"
   },
   {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/machine-payments/adapters/mpp-adapter.ts",
-    "to": "mppx/server"
-  },
-  {
-    "rule": "service-dependencies",
+    "rule": "specialist-dependencies",
     "from": "ghost/core/server/services/machine-payments/adapters/mpp-adapter.ts",
     "to": "stripe"
   },
@@ -777,37 +652,12 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/machine-payments/adapters/x402-adapter.ts",
-    "to": "@x402/core/server"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/machine-payments/adapters/x402-adapter.ts",
-    "to": "@x402/evm/exact/server"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/machine-payments/adapters/x402-adapter.ts",
-    "to": "@x402/hono"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/machine-payments/adapters/x402-adapter.ts",
     "to": "ghost/core/shared/config/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/machine-payments/adapters/x402-adapter.ts",
-    "to": "hono"
   },
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/machine-payments/content-loader.ts",
     "to": "ghost/core/server/models/index.js"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/machine-payments/eligibility.ts",
-    "to": "ghost/core/shared/machine-payments.ts"
   },
   {
     "rule": "service-dependencies",
@@ -846,18 +696,8 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/machine-payments/stripe/deposit-address-store.ts",
-    "to": "stripe"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/machine-payments/stripe/payment-recorder.ts",
     "to": "ghost/core/server/services/settings-helpers/index.js"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/machine-payments/stripe/payment-recorder.ts",
-    "to": "stripe"
   },
   {
     "rule": "service-dependencies",
@@ -942,27 +782,12 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/milestones/slack-notifications/slack-notifications.js",
-    "to": "@tryghost/validator"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/milestones/slack-notifications/slack-notifications.js",
-    "to": "@tryghost/version"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/milestones/slack-notifications/slack-notifications.js",
     "to": "ghost/core/server/lib/request-external.js"
   },
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/milestones/slack-notifications/slack-notifications.js",
     "to": "moment"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/notifications/notifications.js",
-    "to": "@tryghost/version"
   },
   {
     "rule": "service-dependencies",
@@ -975,42 +800,7 @@
     "to": "moment-timezone"
   },
   {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/notifications/notifications.js",
-    "to": "semver"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/notifications/sanitize-notification-html.ts",
-    "to": "sanitize-html"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/oembed/extract-metadata.ts",
-    "to": "chrono-node"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/oembed/extract-metadata.ts",
-    "to": "entities"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/oembed/extract-metadata.ts",
-    "to": "jsonrepair"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/oembed/extract-metadata.ts",
-    "to": "tldts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/oembed/extract-oembed.ts",
-    "to": "@extractus/oembed-extractor"
-  },
-  {
-    "rule": "service-dependencies",
+    "rule": "specialist-dependencies",
     "from": "ghost/core/server/services/oembed/oembed-service.js",
     "to": "@extractus/oembed-extractor"
   },
@@ -1018,11 +808,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/oembed/oembed-service.js",
     "to": "@tryghost/logging"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/oembed/oembed-service.js",
-    "to": "iconv-lite"
   },
   {
     "rule": "service-dependencies",
@@ -1147,11 +932,6 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/post-scheduling/post-scheduling.ts",
-    "to": "ghost/core/server/adapters/scheduling/get-scheduler-idempotency-key.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/post-scheduling/post-scheduling.ts",
     "to": "ghost/core/server/lib/common/events.js"
   },
   {
@@ -1206,11 +986,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/posts/posts-exporter.js",
-    "to": "stream"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/posts/posts-service-instance.js",
     "to": "ghost/core/server/api/endpoints/utils/serializers/output/utils/url.js"
   },
@@ -1262,17 +1037,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/posts/posts-service.js",
-    "to": "ghost/core/server/lib/after-commit.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/posts/posts-service.js",
     "to": "ghost/core/shared/events-ts/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/posts/posts-service.js",
-    "to": "lodash/pick"
   },
   {
     "rule": "service-dependencies",
@@ -1298,16 +1063,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/route-settings/dynamic-routing-service.js",
     "to": "ghost/core/server/services/url/index.js"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/route-settings/route-settings-parser.ts",
-    "to": "js-yaml"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/route-settings/yaml-parser.js",
-    "to": "js-yaml"
   },
   {
     "rule": "service-dependencies",
@@ -1413,11 +1168,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/settings/settings-utils.js",
     "to": "@tryghost/logging"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/settings/settings-utils.js",
-    "to": "@tryghost/validator"
   },
   {
     "rule": "service-dependencies",
@@ -1557,11 +1307,6 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/themes/validate.js",
-    "to": "@tryghost/version"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/themes/validate.js",
     "to": "fs-extra"
   },
   {
@@ -1611,11 +1356,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/tinybird/tinybird-service.js",
-    "to": "jsonwebtoken"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/update-check/update-check-service.js",
     "to": "@tryghost/logging"
   },
@@ -1643,16 +1383,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/url/lazy-url-service.ts",
     "to": "ghost/core/shared/url-utils.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/url/permalink-matcher.ts",
-    "to": "path-match"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/url/routable-resources.js",
-    "to": "@tryghost/database-info"
   },
   {
     "rule": "service-dependencies",
@@ -1715,7 +1445,7 @@
     "to": "lodash"
   },
   {
-    "rule": "service-dependencies",
+    "rule": "specialist-dependencies",
     "from": "ghost/core/server/services/webhooks/serialize.js",
     "to": "packages/api-framework/src/index.ts"
   },
@@ -1728,11 +1458,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/webhooks/webhook-trigger.js",
     "to": "@tryghost/request"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/webhooks/webhook-trigger.js",
-    "to": "@tryghost/version"
   },
   {
     "rule": "service-dependencies",

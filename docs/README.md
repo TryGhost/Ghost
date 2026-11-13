@@ -93,6 +93,7 @@ Practice and contributor guides explain how to make and verify changes:
 
 - [API design](practices/api-design.md)
 - [Database migrations](practices/database-migrations.md)
+- [Dependencies](practices/dependencies.md)
 - [Browser E2E testing](contributing/e2e-testing.md)
 - [Codebase documentation](contributing/documentation.md)
 - [Email testing](contributing/testing-email.md)

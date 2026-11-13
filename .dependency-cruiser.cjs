@@ -23,12 +23,16 @@ const serviceDependencyAllowlist = [
   '^@tryghost/app-contracts/identity$|^packages/app-contracts/(src|build)/identity/index\\.(ts|js)$', // Signed-manifest and challenge formats, signing and verification.
   '^@tryghost/adapter-base-upgrade$|^packages/adapters/upgrade-base/(src|build)/index\\.(ts|js)$', // Upgrade adapter contract schemas and error class.
   '^@tryghost/checkout$|^packages/checkout/(src|build)/index\\.(ts|js)$', // Measured Stripe Checkout countries, ports and fonts shared with Admin; no application instances.
-  '^@tryghost/parse-email-address/mailbox$|^packages/parse-email-address/(src|build)/mailbox\\.(ts|js)$', // Mailbox parsing and text formatting; no sender policy or application instances.
-  '^@tryghost/metafield-types/identity$|^packages/metafield-types/(src|build)/identity\\.(ts|js)$', // Metafield namespace, key and part schemas and the identity codec.
+  '^@tryghost/parse-email-address(/mailbox)?$|^packages/parse-email-address/(src|build)/(index|mailbox)\\.(ts|js)$', // Email address and mailbox parsing and formatting; no sender policy or application instances.
+  '^contracts/', // Contracts define the shape of data crossing a boundary and, like types, may be imported anywhere.
+  '^@tryghost/metafield-types(/(structure|shapes|identity|countries|phone))?$|^packages/metafield-types/(src|build)/(index|structure|shapes|identity|countries|phone)\\.(ts|js)$', // Custom field contract until it moves into contracts/: field types, schemas, value rules and the identity codec; only its public entries.
   '^@tryghost/string$|(^|/)node_modules/@tryghost/string/lib/index\\.js$', // String normalization, slugification and HTML escaping.
+  '^@tryghost/version$|(^|/)node_modules/@tryghost/version/index\\.js$', // Ghost's version, a process fact fixed when Ghost is built; reads its own package.json once.
   '^@tryghost/referrer-parser$|(^|/)node_modules/@tryghost/referrer-parser/dist/index\\.(cjs|js)$', // Referrer classification from supplied URLs and static lookup data.
-  '^lodash/isEmpty(?:\\.js)?$|(^|/)node_modules/lodash/isEmpty\\.js$', // Pure value/collection inspection; only the isEmpty helper.
+  '^lodash/(?!(?:index|lodash|core|fp)(?:\\.js)?$)[a-zA-Z]+(?:\\.js)?$|(^|/)node_modules/lodash/(?!(?:index|lodash|core|fp)\\.js$)[a-zA-Z]+\\.js$', // Individual Lodash functions; not the whole library, its builds or lodash/fp.
   '^@tryghost/nql$|(^|/)node_modules/@tryghost/nql/index\\.js$', // Caller-local query parsing and JSON matching; no application instances or I/O.
+  '^@tryghost/nql-string$|^packages/nql-string/(src/index\\.ts|build/index\\.js)$', // Builds NQL filter strings from supplied values.
+  '^@tryghost/validator$|(^|/)node_modules/@tryghost/validator/index\\.js$', // String validation and sanitising of supplied values.
   '^@tryghost/mongo-utils$|(^|/)node_modules/@tryghost/mongo-utils/index\\.js$', // Pure helpers over a parsed NQL tree; no application instances or I/O.
   '^@tryghost/html-to-plaintext$|(^|/)node_modules/@tryghost/html-to-plaintext/index\\.js$', // Stateless HTML to plain-text conversion of supplied markup.
   '^handlebars$|(^|/)node_modules/handlebars/lib/index\\.js$', // Template compilation on a caller-created instance; no application instances.
@@ -38,6 +42,7 @@ const serviceDependencyAllowlist = [
   '^(node:)?util$', // Node utilities, including promisify.
   '^(node:)?path$', // Path string parsing and joining.
   '^(node:)?vm$', // Bounded script execution for caller-owned regex matching with a timeout.
+  '^(node:)?(assert/strict|stream|stream/promises|buffer|timers/promises)$', // Node's in-memory primitives: assertions, streams, buffers and timers; no I/O of their own.
   '^ghost/core/kernel/clock\\.ts$', // Shared clock helpers and legacy date compatibility.
   '^ghost/core/server/lib/db-types/date\\.ts$', // Database date codec.
   '^ghost/core/server/lib/db-types/boolean\\.ts$', // Database boolean codec.
@@ -55,11 +60,315 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/image/image-content\\.ts$', // Image extension and content predicates; no application instances.
   '^ghost/core/server/lib/image/svg-sanitizer\\.ts$', // SVG buffer sanitization; no application instances.
   '^ghost/core/server/services/jobs-service/job\\.ts$', // Job base class, not the running service.
+  '^ghost/core/server/lib/after-commit\\.ts$', // Runs a callback after the caller's transaction commits.
+  '^ghost/core/server/lib/db-types/count\\.ts$', // Database count codec.
+  '^ghost/core/server/lib/db-types/affected-rows\\.ts$', // Database affected-rows codec.
+  '^ghost/core/server/lib/db-types/object-id\\.ts$', // Database ObjectId codec.
+  '^ghost/core/server/lib/mailgun/mailgun-message-id\\.ts$', // Mailgun message ID normalisation; no client.
+  '^ghost/core/server/lib/mailgun/mailgun-error\\.ts$', // Mailgun error class; no client.
+  '^ghost/core/server/lib/promise-pool\\.ts$', // Runs caller-supplied tasks with a concurrency limit.
+  '^ghost/core/server/lib/soonest-timer\\.ts$', // Timer class the caller builds and owns.
+  '^ghost/core/server/lib/auto-filling-map\\.ts$', // Map that fills missing keys from a caller-supplied factory.
+  '^ghost/core/server/lib/member-signup-contexts\\.ts$', // Member signup context constants and one predicate.
+  '^ghost/core/shared/errify\\.ts$', // Turns any thrown value into an Error.
+  '^ghost/core/shared/timing-safe-string-equal\\.ts$', // Constant-time string comparison.
+  '^ghost/core/shared/one-at-a-time\\.ts$', // Wraps a caller's function so calls do not overlap.
+  '^ghost/core/shared/machine-payments\\.ts$', // Machine payment predicates over supplied data.
+  '^ghost/core/server/adapters/scheduling/get-scheduler-idempotency-key\\.ts$', // Derives a scheduler job's idempotency key from the values the caller passes.
   '^@tryghost/kg-default-nodes$|^koenig/kg-default-nodes/(src/index\\.ts|build/(cjs|esm)/index\\.js)$', // Whole Koenig default-nodes entry (node classes, renderers and the replacement-string helpers welcome emails use); the package has no narrower export and holds no application instances.
   '^ghost/core/server/lib/email-rendering/email-design\\.js$', // Email design token computation from supplied settings.
   '^ghost/core/server/lib/email-rendering/finalize\\.ts$', // Email CSS inlining and plaintext generation; no application instances.
   '^ghost/core/server/lib/mail/format-address-for-delivery\\.ts$', // Mailbox formatting for delivery; no sender policy or application instances.
 ];
+
+// Specialist dependencies serve one capability: a file format, a protocol or an
+// outside system. Each is imported only by the files or folders listed as its
+// owners; adding a consumer means changing this list, so it gets reviewed. A
+// specialist dependency that does its own I/O has one owner, its provider
+// client: the file that wraps it in the API Ghost needs. Everything else,
+// including service roots, uses the provider client. See
+// docs/practices/dependencies.md.
+const escape = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// An installed package, by import specifier or by its location in node_modules.
+const npm = (name) => `(^|/)node_modules/${escape(name)}/|^${escape(name)}(/|$)`;
+// A workspace package, by specifier or by the source or build entry it resolves to.
+const workspace = (name, directory) =>
+  `^${escape(name)}$|^${escape(directory)}/(src/index\\.ts|build/((cjs|esm)/)?index\\.js)$`;
+// A folder in Ghost Core when the path ends with a slash, or a file in either its
+// JavaScript or TypeScript form, so converting an owner does not break the rule.
+const core = (file) =>
+  file.endsWith('/')
+    ? `^ghost/core/${escape(file)}`
+    : `^ghost/core/${escape(file.replace(/\.(js|ts)$/, ''))}\\.(js|ts)$`;
+const service = (file) => core(`server/services/${file}`);
+
+const specialistDependencies = [
+  // Provider clients.
+  {
+    // Machine Payments Protocol server.
+    dependency: npm('mppx'),
+    owners: [service('machine-payments/adapters/mpp-adapter.ts')],
+  },
+  {
+    // x402 payment protocol and the Hono app its middleware runs on.
+    dependency: `${npm('hono')}|(^|/)node_modules/@x402/[^/]+/|^@x402/`,
+    owners: [service('machine-payments/adapters/x402-adapter.ts')],
+  },
+  {
+    // Stripe API. Members and Stripe use the Stripe service's client; Machine
+    // Payments has its own for the API version it needs.
+    dependency: npm('stripe'),
+    owners: [service('stripe/stripe-api.js'), service('machine-payments/stripe/')],
+  },
+  {
+    // oEmbed provider lookup and fetching, through a fetcher the caller passes.
+    dependency: npm('@extractus/oembed-extractor'),
+    owners: [service('oembed/extract-oembed.ts')],
+  },
+
+  // oEmbed and link metadata.
+  {
+    // Repairing JSON-LD, reading domains, decoding pages and parsing dates in
+    // fetched metadata.
+    dependency: [npm('jsonrepair'), npm('tldts'), npm('iconv-lite'), npm('chrono-node')].join('|'),
+    owners: [service('oembed/')],
+  },
+  {
+    // HTML entity decoding for link rewriting and fetched metadata.
+    dependency: npm('entities'),
+    owners: [core('server/lib/link-replacer.ts'), service('oembed/')],
+  },
+
+  // File and token formats.
+  {
+    // CSV parsing and writing.
+    dependency: npm('papaparse'),
+    owners: [
+      service('members/import-export/csv/'),
+      service('content-import/csv/'),
+      core('server/api/endpoints/utils/serializers/output/posts-csv-transform.ts'),
+      core('server/data/importer/importers/data/revue-subscriber-importer.js'),
+      core('server/data/importer/importers/importer-revue.js'),
+      core('server/data/seeders/importers/table-importer.ts'),
+    ],
+  },
+  {
+    // Custom-field CSV columns for member import and export.
+    dependency: workspace('@tryghost/metafield-csv', 'packages/metafield-csv'),
+    owners: [service('members/import-export/')],
+  },
+  {
+    // YAML redirects and routes files.
+    dependency: npm('js-yaml'),
+    owners: [
+      service('custom-redirects/redirect-config-parser.ts'),
+      service('route-settings/route-settings-parser.ts'),
+      service('route-settings/yaml-parser.js'),
+    ],
+  },
+  {
+    // Signing and verifying JSON Web Tokens.
+    dependency: npm('jsonwebtoken'),
+    owners: [
+      core('server/auth/api-key/admin.js'),
+      core('server/adapters/scheduling/utils.ts'),
+      core('server/api/endpoints/featurebase.js'),
+      service('identity-tokens/identity-token-service.ts'),
+      service('members/members-api/services/token-service.js'),
+      service('tinybird/tinybird-service.js'),
+    ],
+  },
+  {
+    // One-time codes for staff two-factor sign-in and member sign-in.
+    dependency: npm('otplib'),
+    owners: [core('server/auth/totp.ts'), service('members/single-use-token-provider.js')],
+  },
+
+  // HTTP. The web layer builds routers, parses bodies and handles cookies;
+  // services export handlers that take req, res and next.
+  {
+    // Express and its middleware packages.
+    dependency: ['express', 'body-parser', 'cookies', 'on-headers', 'cors', 'multer']
+      .map(npm)
+      .join('|'),
+    owners: [core('server/web/'), core('frontend/'), core('shared/express.js')],
+  },
+
+  // The API layer.
+  {
+    // Ghost's API framework: pipelines, frames, serializers and the HTTP
+    // adapter that mounts controllers on routes.
+    dependency: workspace('@tryghost/api-framework', 'packages/api-framework'),
+    owners: [core('server/api/'), core('server/web/')],
+  },
+
+  // Content and rendering.
+  {
+    // Converting Mobiledoc and Lexical content.
+    dependency: workspace('@tryghost/kg-converters', 'koenig/kg-converters'),
+    owners: [
+      core('server/models/post.js'),
+      core('server/data/migrations/'),
+      service('email-service/email-renderer.js'),
+    ],
+  },
+  {
+    // Sanitising untrusted HTML.
+    dependency: npm('sanitize-html'),
+    owners: [
+      core('server/models/comment.js'),
+      core('frontend/services/proxy.js'),
+      core('server/data/importer/importers/json-to-html.js'),
+      service('members/members-api/controllers/router-controller.js'),
+      service('notifications/sanitize-notification-html.ts'),
+    ],
+  },
+  {
+    // Class names in email templates.
+    dependency: npm('clsx'),
+    owners: [service('email-service/email-renderer.js')],
+  },
+  {
+    // Colour maths for email design and theme helpers.
+    dependency: npm('@tryghost/color-utils'),
+    owners: [
+      core('server/lib/email-rendering/email-design.js'),
+      core('frontend/helpers/color_to_rgba.ts'),
+      core('frontend/helpers/contrast_text_color.js'),
+      service('gifts/gift-email-service.ts'),
+    ],
+  },
+  {
+    // Matching URLs against route patterns.
+    dependency: npm('path-match'),
+    owners: [
+      core('frontend/services/data/match-permalink-params.js'),
+      core('server/web/api/middleware/api-version-compatibility/legacy-api-path-match.js'),
+      service('url/permalink-matcher.ts'),
+    ],
+  },
+  {
+    // Comparing Ghost and import versions.
+    dependency: npm('semver'),
+    owners: [
+      core('server/data/importer/importers/data/data-importer.js'),
+      core('server/web/api/middleware/check-version-match.ts'),
+      service('notifications/notifications.js'),
+    ],
+  },
+
+  // Database.
+  {
+    // Telling SQLite from MySQL on a connection the caller passes.
+    dependency: npm('@tryghost/database-info'),
+    owners: [
+      core('server/data/'),
+      core('server/models/label.js'),
+      service('jobs-service/index.ts'),
+      service('members/service.js'),
+      service('url/routable-resources.js'),
+    ],
+  },
+
+  // One service each.
+  {
+    // Custom field keys and filters.
+    dependency: `${npm('unidecode')}|${npm('@tryghost/mongo-knex')}`,
+    owners: [service('members-metafields/')],
+  },
+  {
+    // Cron expressions for scheduled jobs.
+    dependency: npm('cron-validate'),
+    owners: [service('jobs-service/jobs-service.ts')],
+  },
+  {
+    // Filtering member events in memory.
+    dependency: npm('mingo'),
+    owners: [service('members/members-api/repositories/event-repository.js')],
+  },
+  {
+    // Pacing Stripe API requests.
+    dependency: npm('leaky-bucket'),
+    owners: [service('stripe/stripe-api.js')],
+  },
+  {
+    // Plan limits.
+    dependency: workspace('@tryghost/limit-service', 'packages/limit-service'),
+    owners: [service('limits.ts'), service('invites/index.ts')],
+  },
+];
+
+// What to do about a dependency the service rule rejects, read by
+// `pnpm gx services report`. The services guide states the rule. A rejected
+// dependency that matches nothing here has no decision yet. Patterns match the
+// dependency as the report names it: the import specifier for an external
+// package, the resolved source path for anything else.
+const serviceDependencyDecisions = {
+  // Holds state of the running application or does its own I/O: the root wires
+  // it and passes it in.
+  inject: [
+    '^@tryghost/logging$', // Logging.
+    '^ghost/core/shared/config/', // Config.
+    '^ghost/core/shared/settings-cache/', // Settings.
+    '^ghost/core/server/models/index\\.js$', // Models.
+    '^ghost/core/server/data/db/', // The database connection.
+    '^@tryghost/domain-events$|^ghost/core/server/lib/common/events\\.js$|^ghost/core/shared/events(-ts)?/index\\.(js|ts)$', // Event buses.
+    `^${servicesRoot}/`, // Other services, including the events and helpers they own.
+    '^ghost/core/shared/url-utils\\.ts$', // URL utils, built from config.
+    '^ghost/core/shared/labs\\.js$', // Labs flags, read from settings and config.
+    '^ghost/core/shared/sentry\\.js$', // Sentry client, set up from config.
+    '^ghost/core/shared/i18n/index\\.js$', // Translations for the site's locale; reads settings and locale files.
+    '^@tryghost/i18n$|^packages/i18n/(src|build)/index\\.(ts|js)$', // Loads locale files.
+    '^ghost/core/server/lib/tracing/index\\.ts$', // Tracing; logs.
+    '^ghost/core/server/lib/request-external\\.js$', // Outbound HTTP, limited by config.
+    '^got$|^@tryghost/request$', // Outbound HTTP.
+    '^(node:)?dns/promises$', // DNS lookups.
+    '^ghost/core/server/lib/mailgun/mailgun-client\\.js$', // Mailgun client; calls the Mailgun API and logs.
+    '^ghost/core/server/lib/mail/index\\.js$', // Mailer, built from config and settings.
+    '^ghost/core/server/lib/image/index\\.js$', // Image tools, built from config, storage and outbound HTTP.
+    '^ghost/core/server/lib/lexical\\.js$', // Lexical renderer, wired to config, labs, settings and services.
+    '^ghost/core/server/lib/get-inbox-links\\.ts$', // Logs.
+    '^ghost/core/server/lib/package-json/index\\.js$', // Reads package files.
+    '^@tryghost/image-transform$|^packages/image-transform/(src|build)/index\\.(ts|js)$', // Reads and writes image files.
+    '^glob$|^@tryghost/zip$|^gscan$', // Read or write files.
+    '^@tryghost/metrics$', // Process-wide metrics, set up from the logging config.
+    '^ghost/core/server/data/schema/index\\.js$', // Reaches the database through schema commands.
+    '^ghost/core/server/data/importer/(content-files|import-archive)\\.ts$', // Importer code; reads files and config.
+    '^ghost/core/server/adapters/scheduling/build-signed-job\\.ts$', // Uses URL utils.
+    '^ghost/core/server/adapters/storage/(utils|LocalStorageBase)\\.ts$', // Storage code; reads config, URL utils and files.
+    '^ghost/core/server/api/index\\.js$|^ghost/core/server/api/endpoints/utils/(api-filter-utils\\.ts|serializers/output/utils/url\\.js)$', // The API layer and its helpers.
+    '^ghost/core/server/web/shared/middleware/api/spam-prevention\\.ts$', // Rate limiting, built from config and the database.
+    '^ghost/core/bridge\\.js$', // The bridge to the frontend.
+    '^ghost/core/server/web/shared/dynamic-redirect-manager\\.js$', // Holds the site's redirects and an Express router shared with the web layer; roots build it.
+  ],
+  // Left as known violations until a planned refactor moves the importing file.
+  // Each names the file, its dependencies and the refactor.
+  deferred: [
+    {
+      from: '^ghost/core/server/services/adapter-manager/base-classes\\.ts$',
+      to: '^packages/adapters/[^/]+-base/',
+      until: "PLA-541 moves Ghost's adapter registry into boot",
+    },
+    {
+      from: '^ghost/core/server/services/jobs-service/register-job-handlers\\.ts$',
+      to: '-job\\.(ts|js)$',
+      until: 'PLA-543 moves job handler registration into boot',
+    },
+    {
+      from: '^ghost/core/server/services/permissions/can-this\\.js$',
+      to: '^ghost/core/server/models/role-utils\\.ts$',
+      until: 'Permissions moves to server/auth/permissions and settles where role checks live',
+    },
+  ],
+  // Allowed only in another form. A specialist dependency imported outside its
+  // owners is counted here too, without a pattern.
+  importForm: [
+    '^lodash$', // Import individual functions, such as lodash/isEmpty.
+    '^(moment(-timezone)?|luxon|temporal-polyfill)$', // Dates and times go through the kernel clock, which exports moment for existing date logic.
+    '^(node:)?url$', // Use the global URL; url.parse is deprecated.
+    '^(node:)?(fs(/promises)?|os|net)$|^fs-extra$', // No file system, operating system or networking modules: the root passes a loader limited to what is needed.
+  ],
+};
 
 /*
  * Architectural boundary rules for the monorepo, enforced on the resolved
@@ -92,10 +401,23 @@ module.exports = {
       from: serviceImplementations,
       to: {
         // $1 is the service name captured by from.path.
-        pathNot: [...serviceDependencyAllowlist, `^${servicesRoot}/$1/`],
+        // Specialist dependencies are checked by specialist-dependencies instead.
+        pathNot: [
+          ...serviceDependencyAllowlist,
+          ...specialistDependencies.map(({ dependency }) => dependency),
+          `^${servicesRoot}/$1/`,
+        ],
         dependencyTypesNot: ['type-only', 'type-import'],
       },
     },
+    ...specialistDependencies.map(({ dependency, owners }) => ({
+      name: 'specialist-dependencies',
+      comment:
+        'Only the owners listed in specialistDependencies may import this. Use the owning code, or add the consumer to the list for review.',
+      severity: 'error',
+      from: { path: '^ghost/core/', pathNot: owners },
+      to: { path: dependency, dependencyTypesNot: ['type-only', 'type-import'] },
+    })),
     {
       name: 'service-own-root',
       comment: 'Service implementations must not retrieve dependencies from their own wiring root.',
@@ -377,3 +699,11 @@ module.exports = {
     },
   },
 };
+
+// dependency-cruiser rejects configuration keys it does not know, so the lists
+// other tools read are properties its validation does not see.
+Object.defineProperties(module.exports, {
+  serviceDependencyAllowlist: { value: serviceDependencyAllowlist },
+  specialistDependencies: { value: specialistDependencies },
+  serviceDependencyDecisions: { value: serviceDependencyDecisions },
+});

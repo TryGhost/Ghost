@@ -143,17 +143,20 @@ the second section.
 ### Dependency boundaries
 
 The root `index.ts` wires runtime dependencies and passes them to the
-implementation. Dependency rules apply to every service, legacy or standard.
+implementation. The [dependency rules](../../../../docs/practices/dependencies.md)
+decide what an implementation may import directly; this section covers how
+services apply them. They apply to every service, legacy or standard.
 Implementation files may import:
 
 - Files within the same service, except its root `index.ts` or `index.js`.
 - Types, using explicit type-only imports.
+- [Contracts](../../../../docs/practices/dependencies.md#contracts) in the
+  top-level `contracts/` folder.
 - The libraries and individual shared files in the
   [dependency-cruiser config](../../../../.dependency-cruiser.cjs).
 
-The shared [clock](../../kernel/clock.ts) is allowed directly, including its
-deprecated `moment` export for existing date logic. Service migration does not
-require rewriting those date operations.
+Migrating a service does not require rewriting date logic that uses the
+[clock's](../../kernel/clock.ts) deprecated `moment` export.
 
 Import allowlisted libraries directly where they are used; do not pass the
 library or its exports through the service's dependencies. Local use in the
@@ -168,23 +171,29 @@ and arrays. It reads the same allowlist and service scope as the boundary rule.
 Factories, forwarding callbacks, indirect aliases and separately assembled
 options objects still need review; this is not general data-flow analysis.
 
-Logging, config, settings, models, event buses and other service instances
-belong in the root wiring. Nested `index.ts` files are implementation files, not
+Instances belong in the root wiring. Nested `index.ts` files are implementation files, not
 extra wiring roots. The rule covers static imports, `require()`, literal dynamic
 imports and re-exports. All implementation source inside a service is checked, including
 nested folders named `test` or `fixtures`. The scan cannot follow a computed
 `require()` or `import()` argument, so `import/no-dynamic-require` rejects those
 in every service file.
 
-Some dependencies look like libraries but are treated as instances:
+`@tryghost/domain-events` is a process-wide event bus. Roots inject it, and the
+event classes they publish, as [comments](comments/index.ts) and
+[users](users/index.ts) do.
 
-- `@tryghost/domain-events` is a process-wide event bus. Roots inject it, and
-  the event classes they publish, as [comments](comments/index.ts) and
-  [users](users/index.ts) do.
-- Implementations don't import `fs`. A root that needs files passes a loader
-  limited to those files, like `readTemplate` in the comments root.
-- Lodash is allowed only as individual functions, such as `lodash/isEmpty`.
-  Plain JavaScript is often simpler.
+A [provider client](../../../../docs/practices/dependencies.md#specialist-dependencies)
+used by one service lives in that service, like the Machine Payments adapters,
+and the root passes it in. `specialistDependencies` in the dependency-cruiser
+config names each specialist dependency and its owners, and
+`specialist-dependencies` rejects an import from anywhere else in Ghost Core.
+Violations of that rule in legacy services are recorded in the known-violations
+file like any other.
+
+The config's `serviceDependencyDecisions` records these for
+[`gx services report`](../../../../tools/gx/README.md#interpreting-the-reports),
+which groups every rejected dependency as an instance to inject, a wrong
+import form, one deferred to a named refactor or one with no decision yet.
 
 Require models, the database and other services inside the `create` callback
 rather than at module scope, so importing a root doesn't depend on how far boot
@@ -194,10 +203,11 @@ has got. Keep each dependency's existing timing:
   on use and say why in a comment.
   [Stripe Checkout config](stripe-checkout-config/index.ts) reaches Stripe,
   tiers and members this way.
-- When a setting or config value is read on each use today, pass a function
-  rather than the value, as [member attribution](member-attribution/index.ts)
-  does for `outbound_link_tagging`. Capturing it in `create` changes when edits
-  take effect.
+- Pass a [site fact](../../../../docs/practices/dependencies.md#site-facts-and-process-facts),
+  such as a setting or the site URL, as a function rather than the value, as
+  [member attribution](member-attribution/index.ts) does for
+  `outbound_link_tagging`. Capturing it in `create` changes when edits take
+  effect and ties the instance to one site.
 - A dependency loaded with `require()` in a TypeScript root has no type. Keep
   its type with `typeof import()`, as the users root does for post revisions.
 
@@ -253,7 +263,7 @@ show the remaining work.
 
 The allowlist names individual packages or files, with a reason for each.
 Review additions individually; do not allow whole shared directories or all
-`@tryghost/*` packages.
+`@tryghost/*` packages. The `contracts/` folder is the one exception.
 
 When several services make the same call to a library, move that call into one
 shared file and allow the file rather than the library.
