@@ -1550,7 +1550,7 @@
     "to": "lodash"
   },
   {
-    "rule": "service-dependencies",
+    "rule": "specialist-dependencies",
     "from": "ghost/core/server/services/webhooks/serialize.js",
     "to": "packages/api-framework/src/index.ts"
   },

@@ -161,6 +161,14 @@ const specialistDependencies = [
     owners: [core('server/auth/totp.ts'), service('members/single-use-token-provider.js')],
   },
 
+  // The API layer.
+  {
+    // Ghost's API framework: pipelines, frames, serializers and the HTTP
+    // adapter that mounts controllers on routes.
+    dependency: workspace('@tryghost/api-framework', 'packages/api-framework'),
+    owners: [core('server/api/'), core('server/web/')],
+  },
+
   // Content and rendering.
   {
     // Converting Mobiledoc and Lexical content.

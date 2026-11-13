@@ -997,6 +997,32 @@ it('allows specialist dependencies only from their owning files and folders', (t
   );
 });
 
+it('allows the API framework only from the API and web layers', (t) => {
+  const entry = 'packages/api-framework/src/index.ts';
+  const endpoint = 'ghost/core/server/api/endpoints/posts.js';
+  const routes = 'ghost/core/server/web/api/endpoints/admin/routes.js';
+  const f = fixture(t, {
+    [entry]: 'export {};',
+    [endpoint]: "require('../../../../../packages/api-framework/src/index');",
+    [routes]: "require('../../../../../../../packages/api-framework/src/index');",
+    [`${services}/webhooks/serialize.js`]:
+      "require('../../../../../packages/api-framework/src/index');",
+    'ghost/core/server/lib/frames.js': "require('../../../../packages/api-framework/src/index');",
+  });
+  const graph = f.graph('ghost/core');
+  assert.deepEqual(
+    violations(graph),
+    [`${services}/webhooks/serialize.js`, 'ghost/core/server/lib/frames.js']
+      .map((from) => ['specialist-dependencies', from, entry])
+      .sort(),
+  );
+  assert.equal(
+    edges(graph).filter(([from, , to]) => [endpoint, routes].includes(from ?? '') && to === entry)
+      .length,
+    2,
+  );
+});
+
 it('rejects outside dependencies, own roots and unresolved imports without folder or package-prefix escapes', (t) => {
   const imports = {
     'require.ts': "require('../../../shared/config');",
