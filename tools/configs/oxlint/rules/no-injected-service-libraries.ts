@@ -5,34 +5,33 @@ import { fileURLToPath } from 'node:url';
 import boundaries from '../../../../.dependency-cruiser.cjs';
 
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
-type ServiceRule = { name: string; from: { path: string }; to: { pathNot: string[] } };
+type ServiceRule = { name: string; from: { path: string } };
 
 // The config is read as untyped data: its rules have different shapes.
 function isServiceRule(rule: unknown): rule is ServiceRule {
-  const { name, from, to } = (rule ?? {}) as Record<string, unknown>;
+  const { name, from } = (rule ?? {}) as Record<string, unknown>;
   const { path: fromPath } = (from ?? {}) as Record<string, unknown>;
-  const { pathNot } = (to ?? {}) as Record<string, unknown>;
-  return (
-    name === 'service-dependencies' &&
-    typeof fromPath === 'string' &&
-    Array.isArray(pathNot) &&
-    pathNot.every((pattern) => typeof pattern === 'string')
-  );
+  return name === 'service-dependencies' && typeof fromPath === 'string';
 }
 
-// Reuse the native boundary rule: $1 denotes internal service files, not libraries.
-const forbidden: unknown = (boundaries as { forbidden?: unknown } | undefined)?.forbidden;
-const boundary = Array.isArray(forbidden) ? forbidden.find(isServiceRule) : undefined;
-if (!boundary) {
+// Reuse the native boundary rule's service scope and its allowlist. Specialist
+// dependencies are also exempt from that rule, but only their owners may import
+// them, so a root that owns one may still pass it in.
+const config = (boundaries ?? {}) as { forbidden?: unknown; serviceDependencyAllowlist?: unknown };
+const boundary = Array.isArray(config.forbidden) ? config.forbidden.find(isServiceRule) : undefined;
+const allowlist = config.serviceDependencyAllowlist;
+if (
+  !boundary ||
+  !Array.isArray(allowlist) ||
+  !allowlist.every((pattern) => typeof pattern === 'string')
+) {
   throw new Error(
     'ghost/no-injected-service-libraries: .dependency-cruiser.cjs must define ' +
-      'service-dependencies with a string from.path and a string array to.pathNot',
+      'service-dependencies with a string from.path and expose serviceDependencyAllowlist',
   );
 }
 const services = new RegExp(boundary.from.path);
-const libraries = boundary.to.pathNot
-  .filter((pattern) => !pattern.includes('$1'))
-  .map((pattern) => new RegExp(pattern));
+const libraries = allowlist.map((pattern: string) => new RegExp(pattern));
 
 function unwrap(node: ESTree.Node | null | undefined) {
   while (
