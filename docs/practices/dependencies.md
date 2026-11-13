@@ -74,6 +74,12 @@ including service roots, uses the provider client. A provider client used by
 one service lives in that service; one shared by several belongs in
 `server/lib`.
 
+The web layer owns HTTP. Express and its middleware packages, such as
+`body-parser` and `cookies`, are specialist dependencies of `server/web/`,
+`frontend/` and Ghost's Express factory. A service may export a handler that
+takes `req`, `res` and `next`; the web layer builds the router, parses the body
+and handles cookies before calling it.
+
 ## Contracts
 
 A contract defines the shape of data that crosses a boundary, such as the

@@ -1168,6 +1168,35 @@ it('allows the API framework only from the API and web layers', (t) => {
   );
 });
 
+it('allows HTTP framework packages only in the web layer', (t) => {
+  const owners = [
+    'ghost/core/server/web/members/app.js',
+    'ghost/core/frontend/web/site.js',
+    'ghost/core/shared/express.js',
+  ];
+  const others = [`${services}/members/members-api.js`, 'ghost/core/server/lib/router.js'];
+  const packages = ['express', 'body-parser', 'cookies', 'on-headers', 'cors', 'multer'];
+  const source = packages.map((name) => `require('${name}');`).join('\n');
+  const f = fixture(t, Object.fromEntries([...owners, ...others].map((file) => [file, source])));
+  for (const name of packages) {
+    f.write(`node_modules/${name}/package.json`, JSON.stringify({ name, main: 'index.js' }));
+    f.write(`node_modules/${name}/index.js`, 'module.exports = {};');
+  }
+  const graph = f.graph('ghost/core');
+  assert.equal(
+    edges(graph).filter(([from]) => owners.includes(from ?? '')).length,
+    owners.length * packages.length,
+  );
+  assert.deepEqual(
+    violations(graph),
+    others
+      .flatMap((from) =>
+        packages.map((name) => ['specialist-dependencies', from, `node_modules/${name}/index.js`]),
+      )
+      .sort(),
+  );
+});
+
 it('rejects outside dependencies, own roots and unresolved imports without folder or package-prefix escapes', (t) => {
   const imports = {
     'require.ts': "require('../../../shared/config');",

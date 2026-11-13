@@ -180,6 +180,16 @@ const specialistDependencies = [
     owners: [core('server/auth/totp.ts'), service('members/single-use-token-provider.js')],
   },
 
+  // HTTP. The web layer builds routers, parses bodies and handles cookies;
+  // services export handlers that take req, res and next.
+  {
+    // Express and its middleware packages.
+    dependency: ['express', 'body-parser', 'cookies', 'on-headers', 'cors', 'multer']
+      .map(npm)
+      .join('|'),
+    owners: [core('server/web/'), core('frontend/'), core('shared/express.js')],
+  },
+
   // The API layer.
   {
     // Ghost's API framework: pipelines, frames, serializers and the HTTP
