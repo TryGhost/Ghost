@@ -1,17 +1,21 @@
 import * as React from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 
+import { useHostedModal, useModalOpen } from '@/lib/app-overlay';
 import { cn } from '@/lib/utils';
 import { ShadeScope } from '@/shade-scope';
 
 // Radix keeps whether a dialog is modal to itself, and the overlay scroll layout needs to know.
 const DialogModalContext = React.createContext(true);
 
-const Dialog = ({ modal = true, ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) => (
-  <DialogModalContext.Provider value={modal}>
-    <DialogPrimitive.Root modal={modal} {...props} />
-  </DialogModalContext.Provider>
-);
+const Dialog = ({ modal = true, ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) => {
+  const [rootProps, provideOpen] = useModalOpen(props);
+  return (
+    <DialogModalContext.Provider value={modal}>
+      {provideOpen(<DialogPrimitive.Root modal={modal} {...rootProps} />)}
+    </DialogModalContext.Provider>
+  );
+};
 
 const DialogTrigger = DialogPrimitive.Trigger;
 
@@ -56,10 +60,13 @@ const DialogContent = React.forwardRef<
   DialogContentProps
 >(({ className, children, scroll = 'fixed', ...props }, ref) => {
   const modal = React.useContext(DialogModalContext);
+  // In an app inside Ghost Admin, the dialog renders in the app's overlay, over all of Admin,
+  // and Admin draws the backdrop, which shows through the dialog's own.
+  const { container, overlayStyle, ref: contentRef, wrap } = useHostedModal('dialog', ref, modal);
 
   const panel = (
     <DialogPrimitive.Content
-      ref={ref}
+      ref={contentRef}
       className={cn(
         scroll === 'overlay'
           ? 'pointer-events-auto relative rounded-lg'
@@ -69,7 +76,7 @@ const DialogContent = React.forwardRef<
       )}
       {...props}
     >
-      {children}
+      {wrap(children)}
     </DialogPrimitive.Content>
   );
 
@@ -81,13 +88,15 @@ const DialogContent = React.forwardRef<
   );
 
   return (
-    <DialogPortal>
+    <DialogPortal container={container}>
       <ShadeScope>
         {scroll === 'overlay' ? (
           modal ? (
             // The dialog sits inside the backdrop here, so the backdrop animates as long as the
             // dialog does; otherwise closing unmounts the dialog part-way through its animation.
-            <DialogOverlay className="overflow-y-auto duration-200">{scrollingPanel}</DialogOverlay>
+            <DialogOverlay className="overflow-y-auto duration-200" style={overlayStyle}>
+              {scrollingPanel}
+            </DialogOverlay>
           ) : (
             // Radix renders no backdrop for a non-modal dialog, and the page behind stays
             // usable, so this scroll container lets presses beside the dialog through.
@@ -100,7 +109,7 @@ const DialogContent = React.forwardRef<
           )
         ) : (
           <>
-            <DialogOverlay />
+            <DialogOverlay style={overlayStyle} />
             {panel}
           </>
         )}

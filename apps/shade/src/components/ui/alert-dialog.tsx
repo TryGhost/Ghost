@@ -1,13 +1,17 @@
 import * as React from 'react';
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 
+import { useHostedModal, useModalOpen } from '@/lib/app-overlay';
 import { cn } from '@/lib/utils';
 import type { ButtonProps } from '@/components/ui/button';
 import { buttonVariants } from '@/components/ui/button-variants';
 import { useShade } from '@/providers/shade-context';
 import { ShadeScope } from '@/shade-scope';
 
-const AlertDialog = AlertDialogPrimitive.Root;
+const AlertDialog = (props: React.ComponentProps<typeof AlertDialogPrimitive.Root>) => {
+  const [rootProps, provideOpen] = useModalOpen(props);
+  return provideOpen(<AlertDialogPrimitive.Root {...rootProps} />);
+};
 
 const AlertDialogTrigger = AlertDialogPrimitive.Trigger;
 
@@ -37,21 +41,32 @@ type AlertDialogContentProps = React.ComponentPropsWithoutRef<
 const AlertDialogContent = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Content>,
   AlertDialogContentProps
->(({ className, overlayClassName, ...props }, ref) => (
-  <AlertDialogPortal>
-    <ShadeScope>
-      <AlertDialogOverlay className={overlayClassName} onClick={(e) => e.stopPropagation()} />
-      <AlertDialogPrimitive.Content
-        ref={ref}
-        className={cn(
-          'fixed top-[20%] left-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-20%] gap-6 bg-surface-elevated-2 p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:slide-out-to-top-[18%] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:slide-in-from-top-[18%] sm:rounded-lg',
-          className,
-        )}
-        {...props}
-      />
-    </ShadeScope>
-  </AlertDialogPortal>
-));
+>(({ className, overlayClassName, children, ...props }, ref) => {
+  // In an app inside Ghost Admin, the alert dialog renders in the app's overlay, over all of
+  // Admin, and Admin draws the backdrop, which shows through the alert dialog's own.
+  const { container, overlayStyle, ref: contentRef, wrap } = useHostedModal('dialog', ref);
+  return (
+    <AlertDialogPortal container={container}>
+      <ShadeScope>
+        <AlertDialogOverlay
+          className={overlayClassName}
+          style={overlayStyle}
+          onClick={(e) => e.stopPropagation()}
+        />
+        <AlertDialogPrimitive.Content
+          ref={contentRef}
+          className={cn(
+            'fixed top-[20%] left-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-20%] gap-6 bg-surface-elevated-2 p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:slide-out-to-top-[18%] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:slide-in-from-top-[18%] sm:rounded-lg',
+            className,
+          )}
+          {...props}
+        >
+          {wrap(children)}
+        </AlertDialogPrimitive.Content>
+      </ShadeScope>
+    </AlertDialogPortal>
+  );
+});
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName;
 
 const AlertDialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
