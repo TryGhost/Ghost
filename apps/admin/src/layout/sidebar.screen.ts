@@ -51,6 +51,18 @@ export const sidebarScreen = {
       .query()
       ?.querySelector('[data-slot=floating-sidebar]')
       ?.getAttribute('data-state') ?? undefined,
+  /**
+   * Whether the floating sidebar is still morphing, e.g. its body unfurling as the panel opens.
+   * Until it's done, the body is clipped, and scrolling a link into view moves it under the
+   * pointer only for the panel to slide it away again mid-click.
+   */
+  floatingMorphing: () =>
+    sidebarScreen
+      .shellNav()
+      .query()
+      ?.querySelector('[data-slot=floating-sidebar]')
+      ?.getAnimations({ subtree: true })
+      .some((animation) => animation instanceof CSSTransition) ?? false,
   /** The floating sidebar's closed circle, named after the site. */
   floatingTrigger: (siteTitle: string) =>
     sidebarScreen.shellNav().getByRole('button', { name: siteTitle, exact: true }),

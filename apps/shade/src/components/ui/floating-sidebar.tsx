@@ -222,8 +222,9 @@ interface FloatingSidebarProps extends Omit<React.ComponentProps<'div'>, 'childr
    */
   armHoverOnRest?: boolean;
   /**
-   * Changing it (e.g. to the route's path) cancels a pending close: a layout
-   * shift inside the panel can fire a mouseleave though the pointer never left.
+   * Changing it (e.g. to the route's path) cancels a pending close while the
+   * pointer is over the panel: a layout shift inside the panel can fire a
+   * mouseleave though the pointer never left.
    */
   resetKey?: unknown;
   pinLabel?: string;
@@ -331,8 +332,12 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
         hide();
       }
     }, [disabled, hide]);
+    // A pointer that really left closes the panel, though the change it
+    // started renders after (e.g. moving off as Back to app navigates)
     React.useEffect(() => {
-      cancel();
+      if (wrapperRef.current?.matches(':hover')) {
+        cancel();
+      }
     }, [resetKey, cancel]);
 
     // The capsule and the hot zone act as one hover target. It only arms once

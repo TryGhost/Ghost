@@ -178,7 +178,11 @@ describe('Floating sidebar (admin7Design)', () => {
     const preferences = fakePreferencesApi();
     await renderAdminApp('/tags', floatingSidebar({ mode: 'compact' }));
 
+    // Hover intent arms once the pointer has been outside the sidebar, so
+    // leaving it closes the panel later on
+    await userEvent.hover(sidebarScreen.shellMain());
     await sidebarScreen.floatingTrigger(SITE_TITLE).click();
+    await expect.poll(sidebarScreen.floatingMorphing).toBe(false);
     await sidebarScreen.navLink('Settings').click();
 
     await expect.poll(currentRoute).toMatch(/^\/settings/);
