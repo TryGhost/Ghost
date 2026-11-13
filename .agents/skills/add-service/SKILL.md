@@ -82,17 +82,18 @@ The generator leaves [boot.js](../../../ghost/core/boot.js) to you.
   await deliveryReceipts.init();
   ```
 
-  `gx services verify` finds the call through that binding. It does not
-  recognise the inline `await require(...).default.init()`.
+  `pnpm lint:oxlint` and `gx services verify` find the call through that
+  binding. Lint fails until it is there, and neither recognises the inline
+  `await require(...).default.init()`.
 
 - **Comments.** Replace the generated comment above `defineService` with what
   `create` needs ready. Where the order matters, say why beside the call in
   boot, as the existing comments there do.
-- **Boot test.** Add the root to the test for its phase in
-  `ghost/test/unit/boot/`. Hold `init()` pending and assert boot does not move
-  on, then assert its rejection fails boot. `init-services.test.ts` has a loop
-  for both; the `initCore` and `initServicesForFrontend` tests fail on a root
-  they do not list.
+- **Boot test.** `ghost/test/unit/boot/standard-services.test.ts` already
+  checks that boot waits for the root's `init()` and that its failure fails
+  boot; do not write that test again. Add a boot test only where order
+  matters. The `initCore` and `initServicesForFrontend` tests fail on a root
+  they do not list, so add a stub there for a root in those phases.
 - **Resources.** Finish startup work before returning the instance. Acquire
   listeners, timers and work to drain in `start` and release them in `stop`,
   following
@@ -124,7 +125,8 @@ pnpm lint:boundaries
 pnpm check
 ```
 
-`pnpm lint:oxlint` applies `ghost/service-root-shape` to the root.
+`pnpm lint:oxlint` applies `ghost/service-root-shape` to the root and
+`ghost/boot-awaits-service-init` to `boot.js`.
 `pnpm lint:boundaries` checks the implementation's imports. The inventory test
 checks the directory has an `index.ts` root and that extras match the catalogue.
 

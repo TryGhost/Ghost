@@ -262,28 +262,44 @@ export function specialistProblems({
   });
 }
 
+// Finds a root's init() through its binding in boot.js, the one form the generator
+// and the guides give: `const x = require('./server/services/<name>').default;`
+// followed by `x.init()`. An inline `require(...).default.init()` is not found.
 export function mutateBootInit(boot: string, service: string) {
   const folder = service.replace(/\.[a-z]+$/, '');
-  const required = new RegExp(
-    `const (\\w+) = require\\('\\./server/services/${folder}(?:/index)?'\\)(?:\\.default)?;`,
-  ).exec(boot);
-  if (!required) {
-    return undefined;
+  const bindings = boot.matchAll(
+    new RegExp(
+      `const (\\w+) = require\\('\\./server/services/${folder}(?:/index)?'\\)(?:\\.default)?;`,
+      'g',
+    ),
+  );
+  // A binding is local to its boot phase and other phases reuse names, such as
+  // themeService. Look for its init() only from the binding to the end of that phase.
+  let found: { variable: string; index: number; length: number } | undefined;
+  for (const required of bindings) {
+    const from = required.index + required[0].length;
+    const next = /^(?:async )?function /m.exec(boot.slice(from));
+    const call = new RegExp(`\\b${required[1]}\\.init\\(`).exec(
+      boot.slice(from, next ? from + next.index : undefined),
+    );
+    if (call) {
+      found = { variable: required[1] as string, index: from + call.index, length: call[0].length };
+      break;
+    }
   }
-  const start = new RegExp(`\\b${required[1]}\\.init\\(`).exec(boot);
-  if (!start) {
+  if (!found) {
     return undefined;
   }
   // Find the end of the call, including its arguments.
   let depth = 0;
-  let end = start.index + start[0].length - 1;
+  let end = found.index + found.length - 1;
   for (; end < boot.length; end++) {
     depth += boot[end] === '(' ? 1 : boot[end] === ')' ? -1 : 0;
     if (depth === 0) {
       break;
     }
   }
-  const call = boot.slice(start.index, end + 1);
+  const call = boot.slice(found.index, end + 1);
   // Boot moves on after a chain of promise steps. An init that rejects within them,
   // like a stub behind an async wrapper, still fails boot; one a test holds pending
   // until a timer or setImmediate does not stop it. Only a test that holds init
@@ -291,8 +307,8 @@ export function mutateBootInit(boot: string, service: string) {
   // Node globals, so this uses Promise alone.
   const movedOn = 'Array.from({ length: 50 }).reduce((step) => step.then(), Promise.resolve())';
   return {
-    variable: required[1] as string,
-    source: `${boot.slice(0, start.index)}Promise.race([${call}, ${movedOn}])${boot.slice(end + 1)}`,
+    variable: found.variable,
+    source: `${boot.slice(0, found.index)}Promise.race([${call}, ${movedOn}])${boot.slice(end + 1)}`,
   };
 }
 
@@ -496,7 +512,12 @@ export function verifyService({
     const original = readFileSync(absolute, 'utf8');
     const mutated = mutateBootInit(original, service);
     if (!mutated) {
-      record('boot-waits-for-init', 'fail', [`No init call for ${service} found in boot.js.`]);
+      record('boot-waits-for-init', 'fail', [
+        `No init call for ${service} found in boot.js.`,
+        `Bind the root, then await init() on the binding:`,
+        `  const example = require('./server/services/${service}').default;`,
+        `  await example.init();`,
+      ]);
     } else {
       try {
         writeFileSync(absolute, mutated.source);

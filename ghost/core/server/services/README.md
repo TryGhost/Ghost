@@ -82,21 +82,46 @@ Complete the steps printed by the command:
 
 1. Implement the capability and wire only its required dependencies in the root.
    Preserve live settings reads and explain any deferred dependency lookups.
-2. Add and await `require('./server/services/delivery-receipts').default.init()`
-   in `ghost/core/boot.js`, after its dependencies are ready and before its
-   consumers run. Document those requirements above `defineService`. Consumers
-   read `.service` after initialization.
-3. Await required startup work before returning the instance. If the service
+2. In `ghost/core/boot.js`, bind the root and await its `init()`, as the roots
+   around it do:
+
+   ```js
+   const deliveryReceipts = require('./server/services/delivery-receipts').default;
+   await deliveryReceipts.init();
+   ```
+
+   Most roots belong in `initServices`. `initCore` and `initServicesForFrontend`
+   run earlier, for roots that later phases or the frontend read. Place the call
+   after its dependencies are ready and before its consumers run, on its own or
+   inside the phase's awaited `Promise.all`. Document those requirements above
+   `defineService`. Consumers read `.service` after initialization. Keep this
+   form: `pnpm lint:oxlint` and `gx services verify` find the call through the
+   binding, not through an inline `require(...).default.init()`.
+
+3. The [standard services boot test](../../../test/unit/boot/standard-services.test.ts)
+   already checks that boot waits for the root's `init()` and that its failure
+   fails boot. Add a test in `ghost/test/unit/boot/` only where order matters,
+   as for Mentions before Recommendations. The `initCore` and
+   `initServicesForFrontend` tests reject a root they do not list, so a root in
+   those phases needs a stub there.
+4. Await required startup work before returning the instance. If the service
    owns listeners, timers or work to drain, acquire and release them in
    [`start` and `stop` hooks](#starting-and-stopping).
-4. Extend the starter test with behavior, dependency timing, and failure/retry
+5. Extend the starter test with behavior, dependency timing, and failure/retry
    coverage. If the root declares extras, [catalogue them](#standard-root-contract).
-5. Run the generated root test and the repository checks:
+6. Run the generated root test, the boot tests and the repository checks:
 
    ```sh
    pnpm nx run ghost:test:unit test/unit/server/services/delivery-receipts/index.test.ts
+   pnpm nx run ghost:test:unit test/unit/boot/
    pnpm check
    ```
+
+7. Commit, then run `pnpm gx services verify delivery-receipts`. It needs a
+   clean tree on a branch that contains the fetched `origin/main`. It repeats
+   the checks and confirms a boot test fails when boot stops waiting for the
+   root's `init()`. See the
+   [gx guide](../../../../tools/gx/README.md#service-migration-reports).
 
 The generator rejects invalid names and existing service or test paths. See the
 [gx guide](../../../../tools/gx/README.md#service-generator) for command details and
@@ -139,6 +164,21 @@ The inventory is temporary and boot never reads it. It has two sections:
 Migrating a service means deleting its `services` entry and its known
 violations. Git history keeps the audit record. Move any extra it declares into
 the second section.
+
+### Roots outside this directory
+
+The service checks apply to this directory only. A `defineService` root
+anywhere else gets none of them: no root-shape rule, no dependency rules and no
+boot checks. [Better Auth](../auth/better-auth/index.ts) is the one such root.
+It follows the [kernel contract](../../kernel/README.md#service-initialization)
+by review.
+
+Extending the checks to roots elsewhere is out of scope for this migration. It
+belongs with the later work on where capabilities live. Until then, boundary
+lint (`service-roots-in-services`) rejects a runtime import of `defineService`
+from anywhere but a service root. Adding a root to the rule's list in the
+[dependency-cruiser config](../../../../.dependency-cruiser.cjs) needs review;
+CODEOWNERS covers that file.
 
 ### Dependency boundaries
 
@@ -224,7 +264,8 @@ types may not contain `any`.
 Where JavaScript has a matching TypeScript sibling, the audit and boundary
 checks inspect the TypeScript source and resolve imports back to it. This keeps
 adjacent `build:tsc` output out of the report; ordinary JavaScript implementations
-remain checked. Package exports resolve through their `source` condition when
+remain checked. Node loads the JavaScript file of such a pair, so boundary lint
+rejects one that is committed. Package exports resolve through their `source` condition when
 available, so workspace contracts are checked without relying on build output.
 
 `pnpm lint:boundaries`, also run by `pnpm check` and CI, checks all service
@@ -474,6 +515,12 @@ entry applies the rule to that root. The separate inventory test requires
 declared extras names to match the catalogue exactly. Behavioural tests still establish readiness,
 boot ordering, resource cleanup and each extra's semantics.
 
+An inline `oxlint-disable` or `eslint-disable` comment switches these rules off
+for a line, as it does any rule. Nothing disables `ghost/service-root-shape`,
+`ghost/no-injected-service-libraries` or `ghost/boot-awaits-service-init` today.
+Nothing but review stops one, so treat it as an exception: give the reason in
+the comment and expect it to be questioned.
+
 ## Initialization
 
 Ghost's boot sequence owns service construction. A new service root must
@@ -482,6 +529,16 @@ default-export the
 and have its `init()` awaited from `ghost/core/boot.js` in the appropriate boot
 phase. Existing legacy roots keep their shape until migrated. Do not make the
 first request responsible for constructing the service.
+
+The Oxlint rule `ghost/boot-awaits-service-init` checks this in `boot.js`. Every
+service that is not legacy must be bound there and have its `init()` awaited as
+a statement of a boot phase that `bootGhost` awaits, on its own or inside an
+awaited `Promise.all`. A new service directory fails lint until boot awaits it.
+The rule reads source only. The
+[standard services boot test](../../../test/unit/boot/standard-services.test.ts)
+runs each phase: for every standard service it holds `init()` pending and checks
+the phase waits, then checks a failed `init()` fails the phase. Neither can tell
+whether the order between services is right; that needs its own boot test.
 
 With `defineService`, the service author supplies a `create` callback that constructs and returns a
 ready instance. Boot awaits the root's `init()`; consumers then read `.service`.

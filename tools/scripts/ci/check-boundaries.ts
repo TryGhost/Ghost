@@ -10,7 +10,7 @@ import {
 const files = process.argv.slice(2).filter((argument) => argument !== '--');
 
 try {
-  const { graph, newViolations, stale, deferred } = readDependencyBoundaries(
+  const { graph, newViolations, stale, deferred, buildOutput } = readDependencyBoundaries(
     path.resolve(import.meta.dirname, '../../..'),
     files,
   );
@@ -23,7 +23,12 @@ try {
       `error stale known violation: ${from} → ${to} [${rule}]. Remove it from ${knownViolationsFile}.`,
     );
   }
-  if (newViolations.length || stale.length) {
+  for (const { file, source } of buildOutput) {
+    console.error(
+      `error committed build output: ${file} sits beside ${source}. Node loads the JavaScript file and this scan reads only the TypeScript. Remove one.`,
+    );
+  }
+  if (newViolations.length || stale.length || buildOutput.length) {
     process.exitCode = 1;
   } else {
     console.log(

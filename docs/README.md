@@ -79,6 +79,8 @@ Codebase guides explain how the main systems fit together:
 
 - [Codebase direction](codebase/direction.md)
 - [Runtime architecture](codebase/runtime-architecture.md)
+- [Ghost Core services](../ghost/core/server/services/README.md)
+- [Kernel](../ghost/core/kernel/README.md)
 - [Authentication](codebase/authentication.md)
 - [Configuration](codebase/configuration.md)
 - [Database structure](codebase/database.md)

@@ -67,7 +67,8 @@ Every difference needs a reason in the PR description. Look hardest at:
 - fixtures and consumer tests that still use the old shape
 - failures that moved between boot and the first request
 - anything left half-started when init fails and is retried
-- whether a boot test holds init pending, rather than only checking call order
+- whether order between services has a boot test; the standard services boot
+  test only covers that boot waits for this root and fails when it fails
 
 Then check the shape of the change:
 

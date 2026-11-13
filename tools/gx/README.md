@@ -65,8 +65,10 @@ lint, boundary lint and the inventory test apply to every service that is not
 listed in the legacy service inventory. Existing service files, directories and
 tests are never overwritten, and a name that is still listed as legacy is refused.
 
-The command prints the remaining steps, including choosing the right place for
-`init()` in boot. See [creating a service](../../ghost/core/server/services/README.md#creating-a-service)
+The command prints the remaining steps: the lines that bind the root and await
+its `init()` in boot, when a boot test is needed, and
+`pnpm gx services verify <name>` on the committed result. `services verify` finds the `init()` call through that binding,
+so keep the printed form. See [creating a service](../../ghost/core/server/services/README.md#creating-a-service)
 for the ownership, implementation and testing requirements.
 
 ## Rebuild development tables

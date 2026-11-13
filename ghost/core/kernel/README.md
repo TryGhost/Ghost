@@ -68,9 +68,15 @@ called, not when the service root is declared.
 
 ### Responsibilities
 
-- **Boot** calls and awaits `init()` in the appropriate startup phase, before
-  code uses the service. It must await `init()` even when `create` returns
-  synchronously.
+- **Boot** binds the root and awaits `init()` in the appropriate startup phase,
+  before code uses the service. It must await `init()` even when `create`
+  returns synchronously:
+
+  ```js
+  const example = require('./server/services/example').default;
+  await example.init();
+  ```
+
 - **The author of the `create` callback** constructs the instance, completes
   any required startup work, and returns the ready instance. The callback may
   return it synchronously or through a promise. It must not recursively

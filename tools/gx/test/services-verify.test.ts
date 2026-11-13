@@ -31,8 +31,9 @@ const inventory = `services:
   other:
     disposition: migrate
 `;
-const boot = `const staffService = require('./server/services/staff').default;
-async function initServices() {
+// The root is bound inside its phase, as lint requires of boot.js.
+const boot = `async function initServices() {
+  const staffService = require('./server/services/staff').default;
   await Promise.all([staffService.init()]);
 }
 `;
@@ -334,6 +335,56 @@ test('the boot mutation stops boot waiting but keeps rejections', async () => {
   );
 });
 
+test('the boot mutation follows a binding only within its own phase', () => {
+  // The generator names a one-word service <name>Service, which earlier phases
+  // already use for other roots.
+  const earlier = `async function initServicesForFrontend() {
+  const themeService = require('./server/services/themes');
+  await themeService.init();
+}
+`;
+  const later = (body: string) => `async function initServices() {
+  const themeService = require('./server/services/theme').default;
+${body}
+}
+`;
+  const mutated = mutateBootInit(earlier + later('  await themeService.init();'), 'theme');
+  assert.ok(mutated, 'The binding in the later phase must be found');
+  assert.ok(mutated.source.startsWith(earlier), 'The earlier phase must be left alone');
+  assert.match(
+    mutated.source.slice(earlier.length),
+    /await Promise\.race\(\[themeService\.init\(\)/,
+  );
+  // A binding with no init() in its own phase is not found through another phase's call.
+  assert.equal(mutateBootInit(earlier + later('  use(themeService.service);'), 'theme'), undefined);
+  assert.equal(
+    mutateBootInit(later('  use(themeService.service);') + earlier, 'theme'),
+    undefined,
+    'A later phase with the same binding name must not be mutated either',
+  );
+  // A root bound again, only to read the ready instance, does not hide its init().
+  const twice = `async function initCore() {
+  const keys = require('./server/services/keys').default;
+  await keys.init();
+}
+async function initServices() {
+  const keys = require('./server/services/keys').default;
+  use(keys.service);
+}
+`;
+  assert.match(
+    mutateBootInit(twice, 'keys')?.source ?? '',
+    /await Promise\.race\(\[keys\.init\(\)/,
+  );
+  const reversed = twice
+    .replace('await keys.init();', 'use(keys.service);')
+    .replace(/use\(keys\.service\);\n\}\n$/, 'await keys.init();\n}\n');
+  assert.match(
+    mutateBootInit(reversed, 'keys')?.source.split('async function initServices')[1] ?? '',
+    /await Promise\.race\(\[keys\.init\(\)/,
+  );
+});
+
 test('a dirty tree or stale base stops before any other check', async (t) => {
   const f = await fixture(t);
   await f.write('untracked.txt', 'x');
@@ -554,6 +605,27 @@ test('the boot check fails when tests survive the mutation and restores boot.js'
   assert.equal(check?.status, 'fail');
   assert.match(during, /Promise\.race\(\[staffService\.init\(\)/);
   assert.equal(await readFile(join(f.root, 'ghost/core/boot.js'), 'utf8'), boot);
+});
+
+test('the boot check says how to write the call when it cannot find one', async (t) => {
+  const f = await fixture(t);
+  // The inline form runs, but the check cannot follow it to mutate it.
+  await f.write(
+    'ghost/core/boot.js',
+    `async function initServices() {
+  await require('./server/services/staff').default.init();
+}
+`,
+  );
+  f.commit('inline');
+  const check = f.verify('staff', false).at(-1);
+  assert.equal(check?.name, 'boot-waits-for-init');
+  assert.equal(check?.status, 'fail');
+  assert.match(check?.details.join('\n') ?? '', /No init call for staff found in boot\.js/);
+  assert.match(
+    check?.details.join('\n') ?? '',
+    /const example = require\('\.\/server\/services\/staff'\)\.default;\n\s+await example\.init\(\);/,
+  );
 });
 
 test('a failing tool reports its failure and the end of its output', async (t) => {

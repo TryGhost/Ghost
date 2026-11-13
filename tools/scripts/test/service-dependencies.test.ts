@@ -9,13 +9,17 @@ import {
   symlinkSync,
   writeFileSync,
 } from 'node:fs';
-import { findPackageJSON } from 'node:module';
+import { createRequire, findPackageJSON } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { it, type TestContext } from 'node:test';
 import type { ICruiseResult } from 'dependency-cruiser';
 import ts from 'typescript';
-import { dependencyIdentity, readKnownViolations } from '../lib/dependency-boundaries.ts';
+import {
+  committedBuildOutput,
+  dependencyIdentity,
+  readKnownViolations,
+} from '../lib/dependency-boundaries.ts';
 import { legacyInventoryFile, readLegacyServices } from '../../configs/oxlint/legacy-services.ts';
 
 const repository = path.resolve(import.meta.dirname, '../../..');
@@ -319,6 +323,56 @@ it('continues enforcing non-service boundaries in the same scan', (t) => {
   const result = f.lint();
   assert.equal(result.status, 1, result.stderr);
   assert.match(result.stderr, /kernel-not-application/);
+});
+
+it('rejects a defineService root outside the services directory unless it is a listed exception', (t) => {
+  const helper = 'ghost/core/kernel/define-service.ts';
+  const use = (depth: number) =>
+    `import { defineService } from '${'../'.repeat(depth)}kernel/define-service'; export default defineService;`;
+  const outside = 'ghost/core/server/lib/capability/index.ts';
+  const nested = `${alpha}/nested/index.ts`;
+  const f = fixture(t, {
+    [helper]: 'export const defineService = () => ({});',
+    [`${alpha}/index.ts`]: use(3),
+    'ghost/core/server/auth/better-auth/index.ts': use(3),
+    // Types say nothing about where an instance is built.
+    'ghost/core/server/web/consumer.ts':
+      "import type { defineService } from '../../kernel/define-service'; export type Root = typeof defineService;",
+  });
+  const allowed = f.lint();
+  assert.equal(allowed.status, 0, allowed.stderr);
+  f.write(outside, use(3));
+  f.write(nested, use(4));
+  const rejected = f.lint();
+  assert.equal(rejected.status, 1, rejected.stderr);
+  for (const file of [outside, nested]) {
+    assert.ok(
+      rejected.stderr.includes(`error service-roots-in-services: ${file} → ${helper}`),
+      rejected.stderr,
+    );
+  }
+  assert.equal(rejected.stderr.match(/service-roots-in-services/g)?.length, 2, rejected.stderr);
+  // Known violations are for legacy service dependencies, so this cannot be recorded as one.
+  f.write(
+    '.dependency-cruiser-known-violations.json',
+    JSON.stringify([{ rule: 'service-roots-in-services', from: outside, to: helper }]),
+  );
+  assert.throws(() => readKnownViolations(f.root));
+});
+
+it('lists only roots outside the services directory that exist and use defineService', () => {
+  const { forbidden } = createRequire(import.meta.url)(
+    path.join(repository, '.dependency-cruiser.cjs'),
+  ) as { forbidden: { name: string; from: { pathNot?: string[] } }[] };
+  const rule = forbidden.find(({ name }) => name === 'service-roots-in-services');
+  const listed = (rule?.from.pathNot ?? []).slice(2).map((pattern) => {
+    assert.match(pattern, /^\^[\w./\\-]+\$$/, 'List each root as one exact path');
+    return pattern.slice(1, -1).replaceAll('\\', '');
+  });
+  assert.deepEqual(listed, ['ghost/core/server/auth/better-auth/index.ts']);
+  for (const file of listed) {
+    assert.match(readFileSync(path.join(repository, file), 'utf8'), /kernel\/define-service'/);
+  }
 });
 
 it('keeps native ignore-known behavior documented: moves fail but stale entries are accepted', (t) => {
@@ -1313,6 +1367,69 @@ it('preserves source edges and violations after adjacent TypeScript emission', (
   const after = f.graph();
   assert.deepEqual(edges(after), edges(before));
   assert.deepEqual(violations(after), violations(before));
+});
+
+it('rejects committed JavaScript beside TypeScript of the same name, which the scan skips as build output', (t) => {
+  const f = fixture(t, {
+    [`${alpha}/index.ts`]: 'export {};',
+    [`${alpha}/implementation.ts`]: 'export {};',
+    // Node loads these instead of the TypeScript beside them.
+    [`${alpha}/index.js`]: "require('../../../shared/config');",
+    [`${alpha}/implementation.js`]: "require('../../../shared/config');",
+  });
+  const git = (...args: string[]) => {
+    const result = spawnSync('git', args, { cwd: f.root, encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+  };
+  // The scan skips both files, so it reports no violation.
+  assert.deepEqual(violations(f.graph()), []);
+  // Uncommitted build output is expected and passes.
+  const built = f.lint();
+  assert.equal(built.status, 0, built.stderr);
+  git('init', '-q');
+  git('add', 'ghost');
+  const committed = f.lint();
+  assert.equal(committed.status, 1, committed.stderr);
+  for (const file of ['index', 'implementation']) {
+    assert.match(
+      committed.stderr,
+      new RegExp(`committed build output: ${alpha}/${file}\\.js sits beside ${alpha}/${file}\\.ts`),
+    );
+  }
+  // The commit hook passes only the staged files and still reports it.
+  const staged = f.lint([`${alpha}/implementation.js`]);
+  assert.equal(staged.status, 1, staged.stderr);
+  git('rm', '-q', '--cached', `${alpha}/index.js`, `${alpha}/implementation.js`);
+  assert.equal(f.lint().status, 0);
+  for (const file of ['index', 'implementation']) {
+    rmSync(path.join(f.root, `${alpha}/${file}.js`));
+  }
+  // Only the pairs the scan skips count: a .tsx file emits .js, never .mjs or .cjs.
+  f.write(`${alpha}/view.tsx`, 'export {};');
+  f.write(`${alpha}/view.mjs`, 'export {};');
+  f.write(`${alpha}/view.cjs`, '');
+  f.write(`${alpha}/module.mts`, 'export {};');
+  f.write(`${alpha}/module.mjs`, 'export {};');
+  git('add', 'ghost');
+  assert.deepEqual(committedBuildOutput(f.root), [
+    { file: `${alpha}/module.mjs`, source: `${alpha}/module.mts` },
+  ]);
+});
+
+it('fails instead of passing when Git cannot list the tracked files', (t) => {
+  const f = fixture(t, { [`${alpha}/index.ts`]: 'export {};' });
+  // Not a repository: nothing is committed, so there is nothing to check.
+  assert.deepEqual(committedBuildOutput(f.root), []);
+  assert.equal(f.lint().status, 0);
+  // A repository Git refuses to read must not look the same as a clean one.
+  f.write('.git', 'not a gitfile');
+  assert.throws(
+    () => committedBuildOutput(f.root),
+    /Could not list tracked files \(git exit \d+\)/,
+  );
+  const refused = f.lint();
+  assert.equal(refused.status, 1, refused.stderr);
+  assert.match(refused.stderr, /Could not list tracked files/);
 });
 
 it('resolves the approved workspace export to source without a build and keeps other exports restricted', (t) => {
