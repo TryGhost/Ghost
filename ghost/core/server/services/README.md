@@ -98,9 +98,12 @@ Complete the steps printed by the command:
    form: `pnpm lint:oxlint` and `gx services verify` find the call through the
    binding, not through an inline `require(...).default.init()`.
 
-3. Add the root to that phase's test in `ghost/test/unit/boot/`. Hold `init()`
-   pending and assert boot does not move on, then assert that its rejection
-   fails boot.
+3. The [standard services boot test](../../../test/unit/boot/standard-services.test.ts)
+   already checks that boot waits for the root's `init()` and that its failure
+   fails boot. Add a test in `ghost/test/unit/boot/` only where order matters,
+   as for Mentions before Recommendations. The `initCore` and
+   `initServicesForFrontend` tests reject a root they do not list, so a root in
+   those phases needs a stub there.
 4. Await required startup work before returning the instance. If the service
    owns listeners, timers or work to drain, acquire and release them in
    [`start` and `stop` hooks](#starting-and-stopping).

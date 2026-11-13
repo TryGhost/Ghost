@@ -133,8 +133,9 @@ ${bootLines(name)
   .map((line) => `       ${line}`)
   .join('\n')}
      Document that order above defineService.
-  3. Add the root to that phase's test in ghost/test/unit/boot/: hold init() pending
-     and assert boot waits, then assert that its rejection fails boot.
+  3. The boot tests already check that boot waits for init() and that its failure
+     fails boot. Add one in ghost/test/unit/boot/ only where order matters. A root in
+     initCore or initServicesForFrontend needs a stub in that phase's test.
   4. Add startup failure cleanup and shutdown wiring if the service owns resources.
   5. Extend the root test. If the root declares extras, catalogue them in
      ${legacyInventoryFile}.
