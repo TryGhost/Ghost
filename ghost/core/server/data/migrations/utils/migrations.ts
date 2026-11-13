@@ -1,37 +1,39 @@
-const errors = require('@tryghost/errors');
+import errors from '@tryghost/errors';
+import type { Knex } from 'knex';
+import type KnexMigrator from 'knex-migrator';
 
-/**
- * @param {(connection: import('knex').Knex) => Promise<void>} up
- * @param {(connection: import('knex').Knex) => Promise<void>} down
- *
- * @returns {Migration}
- */
-function createNonTransactionalMigration(up, down) {
+export type MigrationFunction = (connection: Knex) => Promise<unknown>;
+
+export interface Migration {
+  config: KnexMigrator.MigrationConfig;
+  up(options: KnexMigrator.MigrationContext): Promise<void>;
+  down(options: KnexMigrator.MigrationContext): Promise<void>;
+}
+
+export function createNonTransactionalMigration(
+  up: MigrationFunction,
+  down: MigrationFunction,
+): Migration {
   return {
     config: {
       transaction: false,
     },
     async up(config) {
-      await up(config.connection);
+      await up(config.connection!);
     },
     async down(config) {
-      await down(config.connection);
+      await down(config.connection!);
     },
   };
 }
 
-/**
- * @param {(connection: import('knex').Knex) => Promise<void>} up
- *
- * @returns {Migration}
- */
-function createIrreversibleMigration(up) {
+export function createIrreversibleMigration(up: MigrationFunction): Migration {
   return {
     config: {
       irreversible: true,
     },
     async up(config) {
-      await up(config.connection);
+      await up(config.connection!);
     },
     async down() {
       return Promise.reject();
@@ -39,32 +41,24 @@ function createIrreversibleMigration(up) {
   };
 }
 
-/**
- * @param {(connection: import('knex').Knex) => Promise<void>} up
- * @param {(connection: import('knex').Knex) => Promise<void>} down
- *
- * @returns {Migration}
- */
-function createTransactionalMigration(up, down) {
+export function createTransactionalMigration(
+  up: MigrationFunction,
+  down: MigrationFunction,
+): Migration {
   return {
     config: {
       transaction: true,
     },
     async up(config) {
-      await up(config.transacting);
+      await up(config.transacting!);
     },
     async down(config) {
-      await down(config.transacting);
+      await down(config.transacting!);
     },
   };
 }
 
-/**
- * @param {Migration[]} migrations
- *
- * @returns {Migration}
- */
-function combineTransactionalMigrations(...migrations) {
+export function combineTransactionalMigrations(...migrations: Migration[]): Migration {
   return {
     config: {
       transaction: true,
@@ -76,20 +70,14 @@ function combineTransactionalMigrations(...migrations) {
     },
     async down(config) {
       // Down migrations must be run backwards!!
-      const reverseMigrations = migrations.slice().reverse();
-      for (const migration of reverseMigrations) {
+      for (const migration of migrations.toReversed()) {
         await migration.down(config);
       }
     },
   };
 }
 
-/**
- * @param {Migration[]} migrations
- *
- * @returns {Migration}
- */
-function combineNonTransactionalMigrations(...migrations) {
+export function combineNonTransactionalMigrations(...migrations: Migration[]): Migration {
   return {
     config: {
       transaction: false,
@@ -101,18 +89,14 @@ function combineNonTransactionalMigrations(...migrations) {
     },
     async down(config) {
       // Down migrations must be run backwards!!
-      const reverseMigrations = migrations.slice().reverse();
-      for (const migration of reverseMigrations) {
+      for (const migration of migrations.toReversed()) {
         await migration.down(config);
       }
     },
   };
 }
 
-/**
- * @param {number} major
- */
-function createFinalMigration(major) {
+export function createFinalMigration(major: number): Migration {
   return createTransactionalMigration(
     async function up() {
       throw new errors.InternalServerError({
@@ -126,32 +110,3 @@ function createFinalMigration(major) {
     },
   );
 }
-
-module.exports = {
-  createFinalMigration,
-  createTransactionalMigration,
-  createNonTransactionalMigration,
-  createIrreversibleMigration,
-  combineTransactionalMigrations,
-  combineNonTransactionalMigrations,
-};
-
-/**
- * @typedef {Object} TransactionalMigrationFunctionOptions
- *
- * @prop {import('knex').Knex} transacting
- */
-
-/**
- * @typedef {(options: TransactionalMigrationFunctionOptions) => Promise<void>} TransactionalMigrationFunction
- */
-
-/**
- * @typedef {Object} Migration
- *
- * @prop {Object} config
- * @prop {boolean} config.transaction
- *
- * @prop {TransactionalMigrationFunction} up
- * @prop {TransactionalMigrationFunction} down
- */

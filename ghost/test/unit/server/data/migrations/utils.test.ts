@@ -7,7 +7,6 @@ import sinon from 'sinon';
 // @ts-expect-error database-info has no TypeScript declarations
 import DatabaseInfo from '@tryghost/database-info';
 import * as db from '../../../../../core/server/data/db';
-// @ts-expect-error migration utils has no TypeScript declarations
 import * as utils from '../../../../../core/server/data/migrations/utils';
 
 // Nullable migrations run in a transaction on MySQL but not on SQLite (SQLite
@@ -42,7 +41,7 @@ describe('migrations/utils', function () {
   describe('createTransactionalMigration', function () {
     it('Accepts two functions and creates a transactional migration from them', function () {
       const config = {
-        transacting: {},
+        transacting: {} as KnexInstance.Transaction,
       };
       const up = sinon.spy();
       const down = sinon.spy();
@@ -70,7 +69,7 @@ describe('migrations/utils', function () {
   describe('combineTransactionalMigrations', function () {
     it('Accepts a number of migrations and returns a single migration', async function () {
       const config = {
-        transacting: {},
+        transacting: {} as KnexInstance.Transaction,
       };
       const upA = sinon.stub().resolves();
       const downA = sinon.stub().resolves();
@@ -120,7 +119,7 @@ describe('migrations/utils', function () {
 
     it('Waits for each migration to finish before executing the next', async function () {
       const config = {
-        transacting: {},
+        transacting: {} as KnexInstance.Transaction,
       };
       const upDeferredA = new Deferred();
       const upDeferredB = new Deferred();
@@ -157,7 +156,7 @@ describe('migrations/utils', function () {
 
     it('Stops execution if a migration errors, and propagates error', async function () {
       const config = {
-        transacting: {},
+        transacting: {} as KnexInstance.Transaction,
       };
       const upDeferredA = new Deferred();
       const upDeferredB = new Deferred();
