@@ -155,6 +155,18 @@ export function resolveRouteData(routeData?: RouteData): Record<string, ApiCallS
 }
 
 /**
+ * The post or page read a route's `data` block stands in for, or `null` when it
+ * reads none or more than one.
+ */
+export function resolveRouteEntry(routeData?: RouteData): ApiCallSpec | null {
+  const reads = Object.values(resolveRouteData(routeData)).filter(
+    ({ type, resource }) => type === 'read' && (resource === 'posts' || resource === 'pages'),
+  );
+
+  return reads.length === 1 ? reads[0] : null;
+}
+
+/**
  * The resource read a data entry claims, or `null` if it claims none.
  *
  * Only a `read` names a single resource; a `browse` pulls a set and claims

@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const configUtils = require('../../../../utils/config-utils');
+const urlUtilsHelper = require('../../../../utils/url-utils');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const ParentRouter = require('../../../../../core/frontend/services/routing/parent-router');
 
@@ -30,6 +31,7 @@ describe('services/routing/ParentRouter', function () {
   afterEach(async function () {
     sinon.restore();
     await configUtils.restore();
+    await urlUtilsHelper.restore();
   });
 
   describe('fn: _getSiteRouter', function () {
@@ -312,6 +314,116 @@ describe('services/routing/ParentRouter', function () {
       parentRouter._respectDominantRouter(req, res, next, 'welcome');
       sinon.assert.notCalled(next);
       sinon.assert.calledOnce(redirect301Stub.withArgs(res, '/route/?x=y'));
+    });
+
+    describe('markdown requests', function () {
+      let target;
+      let parentRouter;
+
+      beforeEach(function () {
+        parentRouter = new ParentRouter('StaticPagesRouter');
+        parentRouter.getResourceType = sinon.stub().returns('pages');
+        parentRouter.permalinks = {
+          getValue: sinon.stub().returns('/:slug/'),
+        };
+
+        target = {
+          isRedirectEnabled: sinon.stub().returns(true),
+          getRoute: sinon.stub().returns('/rubrique/'),
+          getMarkdownRoute: sinon.stub().returns('/rubrique.md'),
+        };
+
+        req.app._router.stack = [
+          {
+            name: 'SiteRouter',
+            handle: { stack: [{ name: 'CollectionRouter', handle: { parent: target } }] },
+          },
+        ];
+      });
+
+      it('redirects to the markdown route of the dominant router', function () {
+        req.url = '/contact.md';
+        req.originalUrl = '/contact.md';
+
+        parentRouter._respectDominantRouter(req, res, next, 'contact');
+        sinon.assert.notCalled(next);
+        sinon.assert.calledOnceWithExactly(redirect301Stub, res, '/rubrique.md');
+      });
+
+      it('keeps the query string', function () {
+        req.url = '/contact.md?a=b';
+        req.originalUrl = '/contact.md?a=b';
+
+        parentRouter._respectDominantRouter(req, res, next, 'contact');
+        sinon.assert.calledOnceWithExactly(redirect301Stub, res, '/rubrique.md?a=b');
+      });
+
+      it('redirects a root route to /index.md', function () {
+        target.getRoute.returns('/');
+        target.getMarkdownRoute.returns('/index.md');
+        req.url = '/about.md';
+        req.originalUrl = '/about.md';
+
+        parentRouter._respectDominantRouter(req, res, next, 'about');
+        sinon.assert.calledOnceWithExactly(redirect301Stub, res, '/index.md');
+      });
+
+      it('falls back to the html redirect when the dominant router has no markdown route', function () {
+        target.getMarkdownRoute.returns(null);
+        req.url = '/contact.md';
+        req.originalUrl = '/contact.md';
+
+        parentRouter._respectDominantRouter(req, res, next, 'contact');
+        sinon.assert.calledOnceWithExactly(redirect301Stub, res, '/rubrique/contact.md');
+      });
+
+      it('does not use the markdown route for html requests', function () {
+        req.url = '/contact/';
+        req.originalUrl = '/contact/';
+
+        parentRouter._respectDominantRouter(req, res, next, 'contact');
+        sinon.assert.notCalled(target.getMarkdownRoute);
+        sinon.assert.calledOnceWithExactly(redirect301Stub, res, '/rubrique/');
+      });
+    });
+  });
+
+  describe('fn: getMarkdownRoute', function () {
+    function routerFor(route, data) {
+      const parentRouter = new ParentRouter();
+      parentRouter.route = { value: route };
+      parentRouter.data = data;
+      return parentRouter;
+    }
+
+    it('is the route path with a .md suffix for a single post or page read', function () {
+      assert.equal(routerFor('/rubrique/', 'page.contact').getMarkdownRoute(), '/rubrique.md');
+      assert.equal(
+        routerFor('/start/', {
+          entry: { type: 'read', resource: 'posts', slug: 'welcome' },
+        }).getMarkdownRoute(),
+        '/start.md',
+      );
+    });
+
+    it('is /index.md for the root route', function () {
+      assert.equal(routerFor('/', 'page.about').getMarkdownRoute(), '/index.md');
+    });
+
+    it('includes the subdirectory', function () {
+      redirect301Stub.restore();
+      configUtils.set('url', 'http://localhost:2368/blog/');
+      urlUtilsHelper.stubUrlUtilsFromConfig();
+
+      assert.equal(routerFor('/', 'page.about').getMarkdownRoute(), '/blog/index.md');
+      assert.equal(routerFor('/rubrique/', 'page.contact').getMarkdownRoute(), '/blog/rubrique.md');
+    });
+
+    it('is null without a single post or page read', function () {
+      assert.equal(routerFor('/', {}).getMarkdownRoute(), null);
+      assert.equal(routerFor('/kitchen/', 'tag.kitchen').getMarkdownRoute(), null);
+      assert.equal(routerFor('/multi/', { a: 'page.one', b: 'page.two' }).getMarkdownRoute(), null);
+      assert.equal(new ParentRouter().getMarkdownRoute(), null);
     });
   });
 

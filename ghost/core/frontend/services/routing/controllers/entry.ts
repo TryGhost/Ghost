@@ -1,4 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
+import type { RouteData } from '@tryghost/adapter-base-route-settings';
+import { resolveRouteEntry } from '../api-adapter';
 import * as markdown from './entry/markdown';
 import * as giftLinks from './entry/gift-links';
 import buildCanonicalUrl from './entry/canonical-url';
@@ -13,6 +15,10 @@ const renderer = require('../../rendering');
 export interface RouterOptions {
   isMarkdownRequest?: boolean;
   context?: string[];
+  data?: RouteData;
+  // Set when a routes.yaml route stands in for the entry.
+  canonicalPath?: string;
+  markdownPath?: string;
   [key: string]: unknown;
 }
 
@@ -114,6 +120,35 @@ export async function entryController(
     }
 
     return renderer.renderEntry(req, res)(entry);
+  } catch (err) {
+    return renderer.handleError(next)(err);
+  }
+}
+
+/**
+ * `<route>.md` for a routes.yaml route whose data reads a single post or page.
+ */
+export async function routeMarkdownController(
+  req: Request,
+  res: EntryResponse,
+  next: NextFunction,
+): Promise<void | Response> {
+  debug('routeMarkdownController', res.routerOptions);
+
+  try {
+    if (giftLinks.isGiftRequest(req)) {
+      return giftLinks.stripGiftAndRedirect(req, res);
+    }
+
+    const query = resolveRouteEntry(res.routerOptions.data);
+    const entry = query ? await dataService.fetchEntry(query, res.locals) : null;
+
+    if (!query || !entry) {
+      return next();
+    }
+
+    res.routerOptions.resourceType = query.resource;
+    return await markdown.serveMdRequest(req, res, entry);
   } catch (err) {
     return renderer.handleError(next)(err);
   }
