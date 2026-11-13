@@ -107,6 +107,15 @@ registerCommand({
       });
     }
     group.command({
+      flags: 'progress',
+      desc: 'Count known violations fixed, allowed, moved or added since a commit.',
+      async run() {
+        commandRun = true;
+        const { runServicesProgress } = await import('./services-progress.ts');
+        runServicesProgress(args.slice(2));
+      },
+    });
+    group.command({
       flags: 'verify',
       desc: 'Check a committed service change before reporting or pushing it.',
       async run() {

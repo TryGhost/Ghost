@@ -162,6 +162,7 @@ Dependency Cruiser audit. Run them from the repository root:
 | `pnpm gx services report email-address` | One legacy entry's notes, assessments, blockers and offending imports |
 | `pnpm gx services dependencies`         | Disallowed dependencies and their kind, ranked by importing files     |
 | `pnpm gx services audit`                | Dependency Cruiser's full native report                               |
+| `pnpm gx services progress`             | Known violations fixed, allowed, moved or added since a commit        |
 | `pnpm gx services verify email-address` | Pass or fail checks on a committed service change                     |
 
 List a group with `list --group <group>`. Report tables show group IDs;
@@ -255,7 +256,23 @@ The kinds come from `serviceDependencyDecisions` in
 [`.dependency-cruiser.cjs`](../../.dependency-cruiser.cjs), next to the allowlist;
 a dependency that matches no pattern there has no decision. Record a decision by
 adding a pattern with its reason. `dependencies --kind no-decision` lists what is
-left to decide, and per-service reports show each finding's kind. The native `audit` counts rule violations, so one import
+left to decide, and per-service reports show each finding's kind.
+
+`progress` compares the known-violations file at a commit (`--since`, by default
+where the branch meets `origin/main`) with the current checkout. Each entry that
+has gone is counted once:
+
+- **Fixed:** the file no longer imports the target at runtime.
+- **Allowed by a rule change:** the file still imports it, but a rule now
+  permits it.
+- **Moved or split:** Git detected a rename of the file or its target, and the
+  same violation is recorded at the new path. Moves between services are listed.
+- **File deleted:** the file is gone and was not renamed.
+- **Recorded under another rule:** the same import is now recorded under a
+  different rule.
+
+Entries that pair with none of these are listed as added, for review. Services
+with deferred checks have no entries, so only their current total is shown. The native `audit` counts rule violations, so one import
 can appear under more than one rule.
 
 All service commands use the same full dependency-cruiser scan and
