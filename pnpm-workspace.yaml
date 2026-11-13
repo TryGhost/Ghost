@@ -88,7 +88,7 @@ catalog:
   '@storybook/react-vite': 10.6.6
   '@tailwindcss/postcss': 4.3.3
   '@tailwindcss/vite': 4.3.3
-  '@tanstack/react-query': 5.105.1
+  '@tanstack/react-query': 5.107.1
   '@tanstack/react-virtual': 3.14.13
   '@testing-library/dom': 10.4.2
   '@testing-library/jest-dom': 6.9.1
