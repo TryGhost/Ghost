@@ -62,6 +62,23 @@ export class EmailAnalyticsJobScheduler {
     );
   }
 
+  /**
+   * Schedules every recurring analytics job at startup. Each failure is logged rather than
+   * thrown, so one failed registration cannot hide a sibling's or stop what the caller starts next.
+   */
+  async scheduleRecurringJobs(): Promise<void> {
+    const results = await Promise.allSettled([
+      this.scheduleRecurringNewslettersJob(),
+      this.scheduleRecurringAutomationsJob(),
+      this.scheduleRecurringGiftDeliveriesJob(),
+    ]);
+    for (const result of results) {
+      if (result.status === 'rejected') {
+        logging.error(result.reason);
+      }
+    }
+  }
+
   async scheduleRecurringNewslettersJob(skipNewsletterEmailCheck: boolean = false): Promise<void> {
     // Don't register email analytics job if we have no emails,
     // processor usage from many sites spinning up threads can be high.

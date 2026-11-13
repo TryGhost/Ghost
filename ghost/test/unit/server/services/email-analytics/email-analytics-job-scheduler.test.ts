@@ -5,6 +5,8 @@ import sinon from 'sinon';
 import EmailAnalyticsFetchLatestJob from '../../../../../core/server/services/email-analytics/jobs/email-analytics-fetch-latest-job';
 import { EmailAnalyticsJobScheduler } from '../../../../../core/server/services/email-analytics/jobs/email-analytics-job-scheduler';
 
+const logging = require('@tryghost/logging');
+
 function buildNewsletterQuery(emailCount: string | number = 1) {
   const query = {
     where: sinon.stub(),
@@ -198,6 +200,59 @@ describe('EmailAnalyticsJobScheduler', function () {
     await scheduler.scheduleRecurringNewslettersJob(true);
 
     sinon.assert.calledTwice(jobsService.scheduleRecurring);
+  });
+
+  it('schedules every recurring job at startup', async function () {
+    const { scheduler, jobsService } = buildScheduler({
+      automatedEmailRecipient: { id: 'recipient' },
+      giftDelivery: { id: 'delivery' },
+    });
+
+    await scheduler.scheduleRecurringJobs();
+
+    sinon.assert.calledThrice(jobsService.scheduleRecurring);
+    for (const job of [
+      new EmailAnalyticsFetchLatestJob(),
+      new EmailAnalyticsAutomationFetchLatestJob(),
+      new EmailAnalyticsGiftFetchLatestJob(),
+    ]) {
+      sinon.assert.calledWith(jobsService.scheduleRecurring, job);
+    }
+  });
+
+  it('schedules nothing at startup when config options are disabled', async function () {
+    const { scheduler, jobsService, newsletterQuery, models } = buildScheduler({
+      backgroundJobEnabled: false,
+    });
+
+    await scheduler.scheduleRecurringJobs();
+
+    sinon.assert.notCalled(jobsService.scheduleRecurring);
+    sinon.assert.notCalled(newsletterQuery.count);
+    sinon.assert.notCalled(models.AutomatedEmailRecipient.query);
+    sinon.assert.notCalled(models.GiftDelivery.query);
+  });
+
+  it('logs each failed registration at startup and still schedules the others', async function () {
+    const error = sinon.stub(logging, 'error');
+    const newsletterFailure = new Error('newsletter backend unavailable');
+    const giftFailure = new Error('gift lookup failed');
+    const { scheduler, jobsService, newsletterQuery, giftQuery } = buildScheduler({
+      automatedEmailRecipient: { id: 'recipient' },
+    });
+    newsletterQuery.count.rejects(newsletterFailure);
+    giftQuery.first.rejects(giftFailure);
+
+    await scheduler.scheduleRecurringJobs();
+
+    sinon.assert.calledTwice(error);
+    sinon.assert.calledWithExactly(error, newsletterFailure);
+    sinon.assert.calledWithExactly(error, giftFailure);
+    sinon.assert.calledOnceWithExactly(
+      jobsService.scheduleRecurring,
+      new EmailAnalyticsAutomationFetchLatestJob(),
+      sinon.match.object,
+    );
   });
 
   it('does not add a job when no emails are found', async function () {
