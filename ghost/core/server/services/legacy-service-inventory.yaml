@@ -10072,10 +10072,13 @@ followUps:
   slack-ping:
     lifecycle:
       - >-
-        Decide and test listener ownership across restart/replacement and externally cleared
+        Decide and test listener ownership across replacement and externally cleared
         emitters. Stable callbacks prevent duplication only for one implementation object;
-        successful init does not restore externally removed callbacks. Failed-start rollback
-        and explicit retry are covered, but there is still no normal shutdown/reset contract.
+        successful init does not restore externally removed callbacks. Stop removes the
+        listeners and the next init restores them on the same instance; root units cover
+        that, failed-start cleanup and explicit retry. Boot registers stop only when a server
+        exists; boot units cover both cases and that boot waits for init and fails with its
+        error. An isolated server test covers a stop followed by boots without a server.
       - >-
         Characterize shutdown with pending or overlapping sends through the real request helper,
         plus production timeout, cancellation, DNS and shared-agent disposal behavior. The HTTP

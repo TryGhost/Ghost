@@ -496,8 +496,9 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     machinePaymentsService.init(),
   ]);
   if (ghostServer) {
-    // Releases what IndexNow's start acquired; the next boot in this process starts it again.
+    // Each releases what its start acquired; the next boot in this process starts it again.
     ghostServer.registerCleanupTask(() => indexnow.stop(), 'IndexNow');
+    ghostServer.registerCleanupTask(() => slack.stop(), 'Slack ping');
   }
   // Member welcome emails captures the ready Email address and Link tracking instances during
   // initialization, and automation polling sends through it once jobs start.
