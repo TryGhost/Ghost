@@ -6205,7 +6205,7 @@ services:
           - core/boot.js
           - core/server/ghost-server.ts
         tests:
-          - test/unit/server/adapters/scheduling/scheduling-default.test.js
+          - test/unit/server/adapters/scheduling/scheduling-default.test.ts
       failures:
         summary: >-
           Adapter resolution/registration can fail import, and registration occurs after
@@ -6228,7 +6228,7 @@ services:
           - core/server/auth/reset-authentication.ts
         tests:
           - test/unit/server/adapters/scheduling/error-capture.test.ts
-          - test/unit/server/adapters/scheduling/scheduling-default.test.js
+          - test/unit/server/adapters/scheduling/scheduling-default.test.ts
     unverified: []
     blockers:
       - >-
