@@ -1,11 +1,4 @@
 import React from 'react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@tryghost/shade/components';
 import { PORT_FIELD, STRIPE_ALLOWED_COUNTRIES, CHECKOUT_PORT } from '@tryghost/checkout';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type { Tier } from '@tryghost/admin-x-framework/api/tiers';
@@ -17,27 +10,6 @@ const COUNTRY_OPTIONS = STRIPE_ALLOWED_COUNTRIES.map((code) => ({
   value: code,
   label: countryName(code),
 })).sort((a, b) => a.label.localeCompare(b.label));
-
-const AllOrSpecific: React.FC<{
-  label: string;
-  all: string;
-  specific: string;
-  value: 'all' | 'specific';
-  onChange: (value: 'all' | 'specific') => void;
-}> = ({ label, all, specific, value, onChange }) => (
-  <Select
-    value={value}
-    onValueChange={(next) => onChange(next === 'specific' ? 'specific' : 'all')}
-  >
-    <SelectTrigger aria-label={label}>
-      <SelectValue />
-    </SelectTrigger>
-    <SelectContent>
-      <SelectItem value="all">{all}</SelectItem>
-      <SelectItem value="specific">{specific}</SelectItem>
-    </SelectContent>
-  </Select>
-);
 
 /**
  * Collecting a shipping address at checkout: which paid tiers ask for it, where Stripe ships,
@@ -65,28 +37,22 @@ const ShippingSettings: React.FC<{
       tiersError={errors.shippingTiers}
       onChange={set}
     >
-      <SubRow label="Ships to">
-        <AllOrSpecific
-          all="All countries"
-          label="Ships to"
-          specific="Specific countries"
-          value={state.countries}
-          onChange={(countries) => set({ countries })}
+      <SubRow error={errors.shippingCountries} label="Allow purchases in">
+        <MultiPicker
+          all={{
+            label: 'All countries',
+            chosen: state.countries === 'all',
+            onChoose: () => set({ countries: 'all' }),
+          }}
+          empty="Select..."
+          invalid={Boolean(errors.shippingCountries)}
+          label="Allow purchases in"
+          options={COUNTRY_OPTIONS}
+          searchPlaceholder="Search countries..."
+          values={state.allowedCountries}
+          onChange={(allowedCountries) => set({ countries: 'specific', allowedCountries })}
         />
       </SubRow>
-      {state.countries === 'specific' && (
-        <SubRow error={errors.shippingCountries} label="Countries">
-          <MultiPicker
-            empty="Select..."
-            invalid={Boolean(errors.shippingCountries)}
-            label="Countries"
-            options={COUNTRY_OPTIONS}
-            searchPlaceholder="Search countries..."
-            values={state.allowedCountries}
-            onChange={(allowedCountries) => set({ allowedCountries })}
-          />
-        </SubRow>
-      )}
       <Destination
         chosen={chosenFields}
         error={errors.shippingAddressField}
