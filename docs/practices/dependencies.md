@@ -75,10 +75,11 @@ one service lives in that service; one shared by several belongs in
 ## Contracts
 
 A contract defines the shape of data that crosses a boundary, such as the
-custom field types shared by Admin, the API and member services. Contracts
-belong in a top-level `contracts/` folder, and Ghost Core may import their
-public entries anywhere. `@tryghost/metafield-types` is the first; it is still
-in `packages/` until it moves.
+custom field types shared by Admin, the API and member services. Contracts live
+in the top-level `contracts/` folder. Like types, they may be imported
+anywhere, so nothing needs to be added to an allowlist to use one.
+`@tryghost/metafield-types` is the first; until it moves out of `packages/`, the
+allowlist names it.
 
 ## Import forms
 

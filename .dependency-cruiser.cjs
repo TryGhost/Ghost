@@ -24,7 +24,8 @@ const serviceDependencyAllowlist = [
   '^@tryghost/adapter-base-upgrade$|^packages/adapters/upgrade-base/(src|build)/index\\.(ts|js)$', // Upgrade adapter contract schemas and error class.
   '^@tryghost/checkout$|^packages/checkout/(src|build)/index\\.(ts|js)$', // Measured Stripe Checkout countries, ports and fonts shared with Admin; no application instances.
   '^@tryghost/parse-email-address/mailbox$|^packages/parse-email-address/(src|build)/mailbox\\.(ts|js)$', // Mailbox parsing and text formatting; no sender policy or application instances.
-  '^@tryghost/metafield-types(/(structure|shapes|identity|countries|phone))?$|^packages/metafield-types/(src|build)/(index|structure|shapes|identity|countries|phone)\\.(ts|js)$', // Custom field contract: field types, schemas, value rules and the identity codec; only its public entries.
+  '^contracts/', // Contracts define the shape of data crossing a boundary and, like types, may be imported anywhere.
+  '^@tryghost/metafield-types(/(structure|shapes|identity|countries|phone))?$|^packages/metafield-types/(src|build)/(index|structure|shapes|identity|countries|phone)\\.(ts|js)$', // Custom field contract until it moves into contracts/: field types, schemas, value rules and the identity codec; only its public entries.
   '^@tryghost/string$|(^|/)node_modules/@tryghost/string/lib/index\\.js$', // String normalization, slugification and HTML escaping.
   '^@tryghost/version$|(^|/)node_modules/@tryghost/version/index\\.js$', // Ghost's version, a process fact fixed when Ghost is built; reads its own package.json once.
   '^@tryghost/referrer-parser$|(^|/)node_modules/@tryghost/referrer-parser/dist/index\\.(cjs|js)$', // Referrer classification from supplied URLs and static lookup data.

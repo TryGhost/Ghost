@@ -150,6 +150,8 @@ Implementation files may import:
 
 - Files within the same service, except its root `index.ts` or `index.js`.
 - Types, using explicit type-only imports.
+- [Contracts](../../../../docs/practices/dependencies.md#contracts) in the
+  top-level `contracts/` folder.
 - The libraries and individual shared files in the
   [dependency-cruiser config](../../../../.dependency-cruiser.cjs).
 
@@ -260,7 +262,7 @@ show the remaining work.
 
 The allowlist names individual packages or files, with a reason for each.
 Review additions individually; do not allow whole shared directories or all
-`@tryghost/*` packages.
+`@tryghost/*` packages. The `contracts/` folder is the one exception.
 
 When several services make the same call to a library, move that call into one
 shared file and allow the file rather than the library.

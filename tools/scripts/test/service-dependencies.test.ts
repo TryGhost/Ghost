@@ -637,6 +637,25 @@ it('allows the validator and NQL strings without their siblings or internals', (
   );
 });
 
+it('allows anything in the contracts folder, like types', (t) => {
+  const contract = 'contracts/example/src/index.ts';
+  const nested = 'contracts/example/src/fields/phone.ts';
+  const lookalike = 'contracts-extra/example/src/index.ts';
+  const f = fixture(t, {
+    [contract]: 'export {};',
+    [nested]: 'export {};',
+    [lookalike]: 'export {};',
+    [`${alpha}/approved.js`]:
+      "require('../../../../../contracts/example/src/index'); require('../../../../../contracts/example/src/fields/phone');",
+    [`${alpha}/rejected.js`]: "require('../../../../../contracts-extra/example/src/index');",
+  });
+  const graph = f.graph();
+  assert.equal(edges(graph).filter(([from]) => from === `${alpha}/approved.js`).length, 2);
+  assert.deepEqual(violations(graph), [
+    ['service-dependencies', `${alpha}/rejected.js`, lookalike],
+  ]);
+});
+
 it('allows the custom field contract through its public entries only', (t) => {
   const entries = ['index', 'structure', 'shapes', 'identity', 'countries', 'phone'];
   const internal = 'packages/metafield-types/src/internal.ts';
