@@ -10,6 +10,7 @@ import {
   CustomFieldForm,
   NameField,
   TypeField,
+  VisibilityField,
 } from '@/shared/member-custom-fields/custom-field-form';
 import { ListField } from '@/shared/member-custom-fields/list-settings';
 import type { CreateAttempt } from '@/shared/member-custom-fields/use-custom-field-create-attempt';
@@ -40,6 +41,9 @@ interface CreateCustomFieldPopoverProps {
   suggestList?: () => ListSuggestion;
   // The types this place can use, of those the site can create a field with; one pins it.
   types: CreatableMemberCustomFieldTypes;
+  // Whether this place asks if members can see the field, with Settings' switch. Without it, the
+  // field is always made staff-only.
+  withVisibility?: boolean;
   // The request in flight and what came back of it. Owned by the place, which runs the create:
   // this asks for a field and shows what it is told, and knows nothing about how either happens.
   attempt: CreateAttempt;
@@ -57,11 +61,12 @@ const isListType = (type: MemberCustomFieldUserType) =>
 
 /**
  * Where a field is made from anywhere outside Settings: a popover under the control it is for,
- * with Settings' form and buttons of its own. A field made in passing starts staff-only, and is
- * opened to members in Settings. A place that knows what a list made there will hold, such as an
- * import column, suggests its settings, so a publisher reviews what is already there rather than
- * typing it out again. It can also start the field out as a list, or say why a list can't be made
- * there, which the form shows under the type as soon as List is chosen.
+ * with Settings' form and buttons of its own. A field made in passing starts staff-only. It is
+ * opened to members in Settings, or here when the place asks who can see it (`withVisibility`).
+ * A place that knows what a list made there will hold, such as an import column, suggests its
+ * settings, so a publisher reviews what is already there rather than typing it out again. It can
+ * also start the field out as a list, or say why a list can't be made there, which the form shows
+ * under the type as soon as List is chosen.
  *
  * Opens leftward from the control, which sits in the right-hand column wherever it is used, and is
  * as tall as the room below or above allows, with the form scrolling inside it once a list's
@@ -74,6 +79,7 @@ export function CreateCustomFieldPopover({
   initialName,
   suggestList,
   types,
+  withVisibility,
   attempt,
   onSubmit,
   onEdit,
@@ -213,6 +219,7 @@ export function CreateCustomFieldPopover({
             <NameField />
             <TypeField problem={typeProblem} types={types} />
             <ListField />
+            {withVisibility && <VisibilityField />}
           </CustomFieldForm>
           <div className="flex items-center justify-end gap-2">
             <Button
