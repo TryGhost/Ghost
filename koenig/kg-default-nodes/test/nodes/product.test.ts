@@ -354,6 +354,43 @@ describe('ProductNode', function () {
     });
 
     describe('importDOM', function () {
+        it('imports a product button after a linked description', editorTest(function () {
+            const description = '<p>Read <a href="/guide">the guide</a> for <strong>details</strong></p>';
+            const document = createDocument(html`
+                <div class="kg-card kg-product-card">
+                    <div class="kg-product-card-container">
+                        <div class="kg-product-card-description">${description}</div>
+                        <a href="/buy" class="kg-product-card-button kg-product-card-btn-accent"><span>Buy</span></a>
+                    </div>
+                </div>
+            `);
+            const [productNode] = $generateNodesFromDOM(editor, document) as ProductNode[];
+
+            expect($isProductNode(productNode)).toBe(true);
+            expect(productNode.productDescription).toBe(description);
+            expect(productNode.productButtonEnabled).toBe(true);
+            expect(productNode.productButton).toBe('Buy');
+            expect(productNode.productUrl).toBe('/buy');
+        }));
+
+        it('keeps a product button disabled when only description is linked', editorTest(function () {
+            const description = '<p>Read <a href="/guide">the guide</a> for <strong>details</strong></p>';
+            const document = createDocument(html`
+                <div class="kg-card kg-product-card">
+                    <div class="kg-product-card-container">
+                        <div class="kg-product-card-description">${description}</div>
+                    </div>
+                </div>
+            `);
+            const [productNode] = $generateNodesFromDOM(editor, document) as ProductNode[];
+
+            expect($isProductNode(productNode)).toBe(true);
+            expect(productNode.productDescription).toBe(description);
+            expect(productNode.productButtonEnabled).toBe(false);
+            expect(productNode.productButton).toBe('');
+            expect(productNode.productUrl).toBe('');
+        }));
+
         it('parses product card', editorTest(function () {
             const document = createDocument(html`
                 <div class="kg-card kg-product-card"><div class="kg-product-card-container"><img src="https://example.com/images/ok.jpg" class="kg-product-card-image" /><div class="kg-product-card-header"><div class="kg-product-card-title-container"><h4 class="kg-product-card-title">Product title!</h4></div><div class="kg-product-card-rating"><span class="kg-product-card-rating-active kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"/></svg></span><span class="kg-product-card-rating-active kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"/></svg></span><span class="kg-product-card-rating-active kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"/></svg></span><span class=" kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"/></svg></span><span class=" kg-product-card-rating-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.729,1.2l3.346,6.629,6.44.638a.805.805,0,0,1,.5,1.374l-5.3,5.253,1.965,7.138a.813.813,0,0,1-1.151.935L12,19.934,5.48,23.163a.813.813,0,0,1-1.151-.935L6.294,15.09.99,9.837a.805.805,0,0,1,.5-1.374l6.44-.638L11.271,1.2A.819.819,0,0,1,12.729,1.2Z"/></svg></span></div></div><p class="kg-product-card-description">This product is ok</p><a href="https://example.com/product/ok" class="kg-btn kg-btn-accent kg-product-card-button" target="_blank" rel="noopener noreferrer"><span>Click me</span></a></div></div>
