@@ -1,10 +1,10 @@
 {
-    "Authors": "",
-    "Cancel": "",
-    "Clear search": "",
-    "No matches found": "",
-    "Posts": "",
-    "Search posts, tags and authors": "",
-    "Show more results": "",
-    "Tags": ""
+    "Authors": "লেখক",
+    "Cancel": "বাতিল",
+    "Clear search": "অনুসন্ধান মুছুন",
+    "No matches found": "কোনো ফলাফল পাওয়া যায়নি",
+    "Posts": "পোস্ট",
+    "Search posts, tags and authors": "পোস্ট, ট্যাগ ও লেখক খুঁজুন",
+    "Show more results": "আরও ফলাফল দেখুন",
+    "Tags": "ট্যাগ"
 }
