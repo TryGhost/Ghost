@@ -46,7 +46,10 @@ and CSRF checks are pinned on, since Better Auth turns them off when
 - `rate-limit.ts`: the `customStorage` that maps native credential routes to
   Ghost's limiters.
 - `index.ts`: the boot-owned service root, exposed as `auth.betterAuth`. Boot
-  calls `init()`; consumers read `.service`.
+  calls `init()`; consumers read `.service`. It is the one `defineService` root
+  outside `server/services`, so the
+  [service checks](../../services/README.md#roots-outside-this-directory) do
+  not apply to it.
 
 Ghost mounts at the subdirectory, so on a subdirectory install requests reach
 Better Auth as `/blog/ghost/api/admin/auth/...`. `basePath` therefore carries
