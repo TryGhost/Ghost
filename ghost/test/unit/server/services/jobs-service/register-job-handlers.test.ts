@@ -198,7 +198,7 @@ describe('register-job-handlers', function () {
   it('runs content-csv-import with the injected content import service', async function () {
     const job = new ContentCSVImportJob({
       importId: 'run_test',
-      file: { path: '/tmp/staged-import', name: 'posts.zip' },
+      file: { key: 'staged-import', name: 'posts.zip' },
       mapping: { Headline: 'title' },
       importTagNames: ['#Import 2026-01-01 10:30', '#Import Run run_test'],
       emailRecipient: 'owner@example.com',

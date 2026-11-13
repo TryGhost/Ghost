@@ -13,7 +13,7 @@ import type { Clock, ImportRun, ImportRunStore, RowOutcome } from './store';
 import type { PreparedImportSource } from './source';
 import type { PreparedPostRow, PreparedPostRows } from './reader';
 import { MediaInliningFailure, type PostMediaInlining } from './media';
-import type { ImportFileStager, StagedImportFile } from './staged-file';
+import type { DownloadedImportFile, ImportFileStager, StagedImportFile } from './staged-file';
 import ContentCSVImportJob from '../jobs/content-csv-import-job';
 
 export type { ImportRequest } from './schema';
@@ -147,29 +147,15 @@ class ContentCSVImporter {
 
   async importCSV(request: ImportRequest): Promise<ImportAccepted> {
     const emailRecipient = request.requestUserEmail ?? (await this._email.getDefaultRecipient());
-    let stagedFile: StagedImportFile;
-    try {
-      stagedFile = await this._fileStager.stage(request);
-    } catch (error) {
-      throw new errors.ValidationError({
-        message: tpl(messages.unreadableFile),
-        err: error,
-      });
-    }
+    const { source, preparedRows } = await this.readPreparedRows(request);
+    await this.cleanupSource(source.cleanup);
+
+    this.assertWithinPostLimit(preparedRows.rows);
+
+    const stagedFile = await this._fileStager.stage(request);
     let handedOff = false;
 
     try {
-      const stagedRequest = {
-        filePath: stagedFile.path,
-        fileName: stagedFile.name,
-        mapping: request.mapping,
-        requestUserEmail: request.requestUserEmail,
-      };
-      const { source, preparedRows } = await this.readPreparedRows(stagedRequest);
-      await this.cleanupSource(source.cleanup);
-
-      this.assertWithinPostLimit(preparedRows.rows);
-
       const runId = this._newRunId();
       const importTagNames = buildImportTagNames(runId, this._getTimezone(), this._now());
       const job = new ContentCSVImportJob({
@@ -194,12 +180,14 @@ class ContentCSVImporter {
   }
 
   async handle(job: ContentCSVImportJob): Promise<void> {
+    let download: DownloadedImportFile | undefined;
     let source: PreparedImportSource | undefined;
 
     try {
       const run = this._store.create(job.importId, job.total);
+      download = await this._fileStager.download(job.file);
       const prepared = await this.readPreparedRows({
-        filePath: job.file.path,
+        filePath: download.path,
         fileName: job.file.name,
         mapping: job.mapping,
       });
@@ -218,6 +206,9 @@ class ContentCSVImporter {
     } finally {
       if (source) {
         await this.cleanupSource(source.cleanup);
+      }
+      if (download) {
+        await this.cleanupSource(download.cleanup);
       }
       const run = this._store.get(job.importId);
       if (run) {

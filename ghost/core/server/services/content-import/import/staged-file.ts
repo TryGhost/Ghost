@@ -1,20 +1,31 @@
 import crypto from 'node:crypto';
-import path from 'node:path';
+import type { Readable } from 'node:stream';
 import type { StorageBase } from 'ghost-storage-base';
 
 export interface StagedImportFile {
-  path: string;
+  key: string;
   name: string;
+}
+
+export interface DownloadedImportFile {
+  path: string;
+  cleanup(): Promise<void>;
 }
 
 export interface ImportFileStager {
   stage(file: { filePath: string; fileName: string }): Promise<StagedImportFile>;
+  download(file: StagedImportFile): Promise<DownloadedImportFile>;
   remove(file: StagedImportFile): Promise<void>;
 }
 
-// Stages uploads at the root of the imports storage adapter. The job reads the staged
-// file from its path, so the adapter is the local store storage:imports defaults to.
-export function createImportFileStager(getStorage: () => StorageBase): ImportFileStager {
+type ImportsStorage = StorageBase & {
+  readStream(options: { path: string }): Promise<Readable>;
+};
+
+export function createImportFileStager(
+  getStorage: () => ImportsStorage,
+  downloadToTempFile: (open: () => Promise<Readable>) => Promise<DownloadedImportFile>,
+): ImportFileStager {
   return {
     async stage({ filePath, fileName }) {
       const storage = getStorage();
@@ -22,15 +33,19 @@ export function createImportFileStager(getStorage: () => StorageBase): ImportFil
 
       try {
         const url = await storage.save({ name, path: filePath }, storage.storagePath);
-        return { path: path.join(storage.storagePath, storage.urlToPath(url)), name: fileName };
+        return { key: storage.urlToPath(url), name: fileName };
       } catch (error) {
         await storage.delete(name).catch(() => {});
         throw error;
       }
     },
 
+    download(file) {
+      return downloadToTempFile(() => getStorage().readStream({ path: file.key }));
+    },
+
     async remove(file) {
-      await getStorage().delete(path.basename(file.path));
+      await getStorage().delete(file.key);
     },
   };
 }

@@ -1,3 +1,8 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import type { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import { z } from 'zod';
 import ContentCSVImporter, {
   type ImportAccepted,
@@ -13,7 +18,7 @@ import { prepareImportSource } from './import/source';
 import { PostMediaInliner } from './import/media';
 import { isLocalMediaUrl } from './import/local-media-url';
 import { urlForImportedPost } from './import/post-link';
-import { createImportFileStager } from './import/staged-file';
+import { createImportFileStager, type DownloadedImportFile } from './import/staged-file';
 import ContentCSVImportJob from './jobs/content-csv-import-job';
 import { getInstance as getJobsService } from '../jobs-service';
 
@@ -25,6 +30,20 @@ const timezoneSchema = z.string().min(1).catch('Etc/UTC');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const sentry = require('../../../shared/sentry');
+
+async function downloadToTempFile(open: () => Promise<Readable>): Promise<DownloadedImportFile> {
+  const directory = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'content-csv-download-'));
+  const cleanup = () => fs.promises.rm(directory, { recursive: true, force: true });
+  const downloadPath = path.join(directory, 'upload');
+
+  try {
+    await pipeline(await open(), fs.createWriteStream(downloadPath));
+    return { path: downloadPath, cleanup };
+  } catch (error) {
+    await cleanup().catch(() => {});
+    throw error;
+  }
+}
 
 // Composition root: models and services are wired behind the collaborators the
 // importer declares.
@@ -85,8 +104,9 @@ function makeImporter(): ContentCSVImporter {
       }),
     email,
     dispatchJob: (job) => getJobsService().dispatch(job),
-    fileStager: createImportFileStager(() =>
-      require('../adapter-manager').default.getAdapter('storage:imports'),
+    fileStager: createImportFileStager(
+      () => require('../adapter-manager').default.getAdapter('storage:imports'),
+      downloadToTempFile,
     ),
     report,
     store: new ImportRunStore(),
