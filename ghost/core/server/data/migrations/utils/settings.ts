@@ -1,20 +1,21 @@
-const ObjectId = require('bson-objectid').default;
-const logging = require('@tryghost/logging');
+import ObjectId from 'bson-objectid';
+import logging from '@tryghost/logging';
+import { createTransactionalMigration, type Migration } from './migrations';
 
-const { createTransactionalMigration } = require('./migrations');
 const MIGRATION_USER = 1;
+
+interface SettingSpec {
+  key: string;
+  value: unknown;
+  type: 'array' | 'string' | 'number' | 'boolean' | 'object';
+  group: string;
+  flags?: 'PUBLIC' | 'RO' | 'PUBLIC,RO' | null;
+}
 
 /**
  * Creates a migration which will insert a new setting in settings table
- * @param {object} settingSpec - setting type and group
- * @param {string} settingSpec.key - settings key
- * @param {*} settingSpec.value - settings value
- * @param {'array' | 'string' | 'number' | 'boolean' | 'object'} settingSpec.type - settings type
- * @param {string} settingSpec.group - settings group
- * @param {'PUBLIC' | 'RO' | 'PUBLIC,RO'} [settingSpec.flags] - settings flag
- * @returns {Object} migration object returning config/up/down properties
  */
-function addSetting({ key, value, type, group, flags = null }) {
+export function addSetting({ key, value, type, group, flags = null }: SettingSpec): Migration {
   return createTransactionalMigration(
     async function up(connection) {
       const settingExists = await connection('settings').where('key', '=', key).first();
@@ -26,7 +27,7 @@ function addSetting({ key, value, type, group, flags = null }) {
       logging.info(`Adding setting: ${key}`);
       const now = connection.raw('CURRENT_TIMESTAMP');
 
-      const data = {
+      const data: Record<string, unknown> = {
         id: ObjectId().toHexString(),
         key,
         value,
@@ -59,12 +60,8 @@ function addSetting({ key, value, type, group, flags = null }) {
   );
 }
 
-/**
- * @param {string} key - The key of the setting to remove
- * @returns {Object} - A migration object with up and down functions
- */
-function removeSetting(key) {
-  let originalSetting = null;
+export function removeSetting(key: string): Migration {
+  let originalSetting: Record<string, unknown> | null = null;
 
   return createTransactionalMigration(
     async function up(connection) {
@@ -95,7 +92,7 @@ function removeSetting(key) {
       logging.info(`Restoring setting: ${key}`);
       const now = connection.raw('CURRENT_TIMESTAMP');
 
-      const data = {
+      const data: Record<string, unknown> = {
         id: ObjectId().toHexString(),
         key,
         value: originalSetting.value,
@@ -117,8 +114,3 @@ function removeSetting(key) {
     },
   );
 }
-
-module.exports = {
-  addSetting,
-  removeSetting,
-};

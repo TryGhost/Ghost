@@ -1,1 +1,1 @@
-exports.shutdown = require('./shutdown');
+export { default as shutdown } from './shutdown';

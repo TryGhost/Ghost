@@ -1,7 +1,8 @@
-const _ = require('lodash');
-const database = require('../../../db');
+import _ from 'lodash';
+import type KnexMigrator from 'knex-migrator';
+import * as database from '../../../db';
 
-module.exports = function shutdown(options = {}) {
+export default function shutdown(options: KnexMigrator.ShutdownHookContext = {}) {
   if (options.executedFromShell === true) {
     // running knex-migrator migrate --init in the shell does two different migration calls within a single process
     // we have to ensure that we clear the Ghost cache afterwards, otherwise we operate on a destroyed connection
@@ -17,4 +18,4 @@ module.exports = function shutdown(options = {}) {
      */
     return database.knex.destroy();
   }
-};
+}

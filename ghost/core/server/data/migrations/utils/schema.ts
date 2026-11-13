@@ -1,9 +1,30 @@
-const logging = require('@tryghost/logging');
-const { commands } = require('../../schema');
-const DatabaseInfo = require('@tryghost/database-info');
-const db = require('../../db');
+import logging from '@tryghost/logging';
+import type { Knex } from 'knex';
+import * as db from '../../db';
+import {
+  createNonTransactionalMigration,
+  createTransactionalMigration,
+  type Migration,
+  type MigrationFunction,
+} from './migrations';
 
-const { createNonTransactionalMigration, createTransactionalMigration } = require('./migrations');
+const DatabaseInfo = require('@tryghost/database-info');
+const { commands } = require('../../schema');
+
+interface SQLiteColumnInfo {
+  name: string;
+  notnull: 0 | 1;
+}
+
+interface MySQLColumnInfo {
+  Field: string;
+  Null: 'YES' | 'NO';
+}
+
+interface NullableMigrationOptions {
+  /** MySQL only: disable foreign key checks while dropping nullable */
+  disableForeignKeyChecks?: boolean;
+}
 
 /**
  * Builds a migration that runs inside a transaction on MySQL but NOT on SQLite.
@@ -13,12 +34,8 @@ const { createNonTransactionalMigration, createTransactionalMigration } = requir
  * a transaction is open. So on SQLite the migration must run non-transactionally
  * (see applyNullableChange). MySQL alters the column in place and keeps the
  * transaction it has always used.
- *
- * @param {(connection: import('knex').Knex) => Promise<void>} up
- * @param {(connection: import('knex').Knex) => Promise<void>} down
- * @returns {Migration}
  */
-function createNullableMigration(up, down) {
+function createNullableMigration(up: MigrationFunction, down: MigrationFunction): Migration {
   const transaction = !DatabaseInfo.isSQLite(db.knex);
 
   return {
@@ -26,28 +43,26 @@ function createNullableMigration(up, down) {
       transaction,
     },
     async up(config) {
-      await up(config.transacting || config.connection);
+      await up((config.transacting || config.connection)!);
     },
     async down(config) {
-      await down(config.transacting || config.connection);
+      await down((config.transacting || config.connection)!);
     },
   };
 }
 
-/**
- * @param {string} table
- * @param {string} column
- * @param {Object} columnDefinition
- *
- * @returns {Migration}
- */
-function createAddColumnMigration(table, column, columnDefinition, options = {}) {
+export function createAddColumnMigration(
+  table: string,
+  column: string,
+  columnDefinition: Record<string, unknown>,
+  options: Record<string, unknown> = {},
+): Migration {
   return createNonTransactionalMigration(
     // up
     commands.createColumnMigration({
       table,
       column,
-      dbIsInCorrectState: (hasColumn) => hasColumn === true,
+      dbIsInCorrectState: (hasColumn: boolean) => hasColumn === true,
       operation: commands.addColumn,
       operationVerb: 'Adding',
       columnDefinition,
@@ -57,7 +72,7 @@ function createAddColumnMigration(table, column, columnDefinition, options = {})
     commands.createColumnMigration({
       table,
       column,
-      dbIsInCorrectState: (hasColumn) => hasColumn === false,
+      dbIsInCorrectState: (hasColumn: boolean) => hasColumn === false,
       operation: commands.dropColumn,
       operationVerb: 'Removing',
       columnDefinition,
@@ -66,20 +81,18 @@ function createAddColumnMigration(table, column, columnDefinition, options = {})
   );
 }
 
-/**
- * @param {string} table
- * @param {string} column
- * @param {Object} columnDefinition
- *
- * @returns {Migration}
- */
-function createDropColumnMigration(table, column, columnDefinition, options = {}) {
+export function createDropColumnMigration(
+  table: string,
+  column: string,
+  columnDefinition: Record<string, unknown>,
+  options: Record<string, unknown> = {},
+): Migration {
   return createNonTransactionalMigration(
     // up
     commands.createColumnMigration({
       table,
       column,
-      dbIsInCorrectState: (hasColumn) => hasColumn === false,
+      dbIsInCorrectState: (hasColumn: boolean) => hasColumn === false,
       operation: commands.dropColumn,
       operationVerb: 'Removing',
       columnDefinition,
@@ -89,7 +102,7 @@ function createDropColumnMigration(table, column, columnDefinition, options = {}
     commands.createColumnMigration({
       table,
       column,
-      dbIsInCorrectState: (hasColumn) => hasColumn === true,
+      dbIsInCorrectState: (hasColumn: boolean) => hasColumn === true,
       operation: commands.addColumn,
       operationVerb: 'Adding',
       columnDefinition,
@@ -114,19 +127,13 @@ function createDropColumnMigration(table, column, columnDefinition, options = {}
  * MySQL alters the column in place inside the migration's transaction, so `knex`
  * here is already that transaction. We only disable foreign key checks when the
  * caller opts in; running `SET FOREIGN_KEY_CHECKS` on the transaction keeps it on
- * the same connection as the ALTER.
- *
- * @param {import('knex').Knex} knex
- * @param {'setNullable'|'dropNullable'} operation
- * @param {string} table
- * @param {string} column
- * @param {boolean} [disableForeignKeyChecks] MySQL only; ignored on SQLite
+ * the same connection as the ALTER. `disableForeignKeyChecks` is MySQL only.
  */
 async function applyNullableChange(
-  knex,
-  operation,
-  table,
-  column,
+  knex: Knex,
+  operation: 'setNullable' | 'dropNullable',
+  table: string,
+  column: string,
   disableForeignKeyChecks = false,
 ) {
   if (DatabaseInfo.isSQLite(knex)) {
@@ -149,13 +156,13 @@ async function applyNullableChange(
 }
 
 /**
- * @param {string} table
- * @param {string} column
- * @param {Object} options
- * @param {boolean} options.disableForeignKeyChecks Disable foreign key checks for the down operation (when dropping nullable)
- * @returns {Migration}
+ * `disableForeignKeyChecks` applies to the down operation (when dropping nullable).
  */
-function createSetNullableMigration(table, column, options = {}) {
+export function createSetNullableMigration(
+  table: string,
+  column: string,
+  options: NullableMigrationOptions = {},
+): Migration {
   return createNullableMigration(
     async function up(knex) {
       try {
@@ -171,7 +178,7 @@ function createSetNullableMigration(table, column, options = {}) {
         // If we can't check the column status, proceed with the migration
         // This maintains backward compatibility with implementation before checks were added
         logging.warn(
-          `Could not check nullable status for ${table}.${column}, proceeding with migration: ${error.message}`,
+          `Could not check nullable status for ${table}.${column}, proceeding with migration: ${(error as Error).message}`,
         );
       }
 
@@ -192,7 +199,7 @@ function createSetNullableMigration(table, column, options = {}) {
         // If we can't check the column status, proceed with the migration
         // This maintains backward compatibility with implementation before checks were added
         logging.warn(
-          `Could not check nullable status for ${table}.${column}, proceeding with migration: ${error.message}`,
+          `Could not check nullable status for ${table}.${column}, proceeding with migration: ${(error as Error).message}`,
         );
       }
 
@@ -211,13 +218,14 @@ function createSetNullableMigration(table, column, options = {}) {
 }
 
 /**
- * @param {string} table
- * @param {string[]|string} columns One or multiple columns (in case the index should be for multiple columns)
- * @param {object} [options]
- * @param {number} [options.length] MySQL only: create a prefix index of this many characters
- * @returns {Migration}
+ * @param columns One or multiple columns (in case the index should be for multiple columns)
+ * @param options.length MySQL only: create a prefix index of this many characters
  */
-function createAddIndexMigration(table, columns, options = {}) {
+export function createAddIndexMigration(
+  table: string,
+  columns: string[] | string,
+  options: { length?: number } = {},
+): Migration {
   return createTransactionalMigration(
     async function up(knex) {
       await commands.addIndex(table, columns, knex, options);
@@ -229,15 +237,14 @@ function createAddIndexMigration(table, columns, options = {}) {
 }
 
 /**
- * @param {string} table
- * @param {string} from
- * @param {string} to
- * @param {object} [options]
- * @param {'instant'|'inplace'|'copy'|'auto'} [options.algorithm] - MySQL only
- *
- * @returns {Migration}
+ * @param options.algorithm MySQL only
  */
-function createRenameColumnMigration(table, from, to, options = {}) {
+export function createRenameColumnMigration(
+  table: string,
+  from: string,
+  to: string,
+  options: { algorithm?: 'instant' | 'inplace' | 'copy' | 'auto' } = {},
+): Migration {
   return createNonTransactionalMigration(
     async function up(knex) {
       const hasColumn = await knex.schema.hasColumn(table, to);
@@ -264,50 +271,42 @@ function createRenameColumnMigration(table, from, to, options = {}) {
 
 /**
  * Check if a column is already not nullable
- * @param {string} table
- * @param {string} column
- * @param {import('knex').Knex} knex
- * @returns {Promise<boolean>}
  */
-async function isColumnNotNullable(table, column, knex) {
+async function isColumnNotNullable(table: string, column: string, knex: Knex): Promise<boolean> {
   if (DatabaseInfo.isSQLite(knex)) {
     const response = await knex.raw('PRAGMA table_info(??)', [table]);
-    const columnInfo = response.find((col) => col.name === column);
-    return columnInfo && columnInfo.notnull === 1;
+    const columnInfo = response.find((col: SQLiteColumnInfo) => col.name === column);
+    return columnInfo?.notnull === 1;
   } else {
     const response = await knex.raw('SHOW COLUMNS FROM ??', [table]);
-    const columnInfo = response[0].find((col) => col.Field === column);
-    return columnInfo && columnInfo.Null === 'NO';
+    const columnInfo = response[0].find((col: MySQLColumnInfo) => col.Field === column);
+    return columnInfo?.Null === 'NO';
   }
 }
 
 /**
  * Check if a column is already nullable
- * @param {string} table
- * @param {string} column
- * @param {import('knex').Knex} knex
- * @returns {Promise<boolean>}
  */
-async function isColumnNullable(table, column, knex) {
+async function isColumnNullable(table: string, column: string, knex: Knex): Promise<boolean> {
   if (DatabaseInfo.isSQLite(knex)) {
     const response = await knex.raw('PRAGMA table_info(??)', [table]);
-    const columnInfo = response.find((col) => col.name === column);
-    return columnInfo && columnInfo.notnull === 0;
+    const columnInfo = response.find((col: SQLiteColumnInfo) => col.name === column);
+    return columnInfo?.notnull === 0;
   } else {
     const response = await knex.raw('SHOW COLUMNS FROM ??', [table]);
-    const columnInfo = response[0].find((col) => col.Field === column);
-    return columnInfo && columnInfo.Null === 'YES';
+    const columnInfo = response[0].find((col: MySQLColumnInfo) => col.Field === column);
+    return columnInfo?.Null === 'YES';
   }
 }
 
 /**
- * @param {string} table
- * @param {string} column
- * @param {Object} options
- * @param {boolean} options.disableForeignKeyChecks Disable foreign key checks for the up operation (when dropping nullable)
- * @returns {Migration}
+ * `disableForeignKeyChecks` applies to the up operation (when dropping nullable).
  */
-function createDropNullableMigration(table, column, options = {}) {
+export function createDropNullableMigration(
+  table: string,
+  column: string,
+  options: NullableMigrationOptions = {},
+): Migration {
   return createNullableMigration(
     async function up(knex) {
       try {
@@ -323,7 +322,7 @@ function createDropNullableMigration(table, column, options = {}) {
         // If we can't check the column status, proceed with the migration
         // This maintains backward compatibility with implementation before checks were added
         logging.warn(
-          `Could not check nullable status for ${table}.${column}, proceeding with migration: ${error.message}`,
+          `Could not check nullable status for ${table}.${column}, proceeding with migration: ${(error as Error).message}`,
         );
       }
 
@@ -352,7 +351,7 @@ function createDropNullableMigration(table, column, options = {}) {
         // If we can't check the column status, proceed with the migration
         // This maintains backward compatibility with implementation before checks were added
         logging.warn(
-          `Could not check nullable status for ${table}.${column}, proceeding with migration: ${error.message}`,
+          `Could not check nullable status for ${table}.${column}, proceeding with migration: ${(error as Error).message}`,
         );
       }
 
@@ -361,32 +360,3 @@ function createDropNullableMigration(table, column, options = {}) {
     },
   );
 }
-
-module.exports = {
-  createAddColumnMigration,
-  createDropColumnMigration,
-  createSetNullableMigration,
-  createDropNullableMigration,
-  createRenameColumnMigration,
-  createAddIndexMigration,
-};
-
-/**
- * @typedef {Object} TransactionalMigrationFunctionOptions
- *
- * @prop {import('knex').Knex} transacting
- */
-
-/**
- * @typedef {(options: TransactionalMigrationFunctionOptions) => Promise<void>} TransactionalMigrationFunction
- */
-
-/**
- * @typedef {Object} Migration
- *
- * @prop {Object} config
- * @prop {boolean} config.transaction
- *
- * @prop {TransactionalMigrationFunction} up
- * @prop {TransactionalMigrationFunction} down
- */

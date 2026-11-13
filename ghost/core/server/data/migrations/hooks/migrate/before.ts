@@ -1,8 +1,9 @@
-const logging = require('@tryghost/logging');
-const config = require('../../../../../shared/config');
+import logging from '@tryghost/logging';
+import config from '../../../../../shared/config';
+
 const dbBackup = require('../../../db/backup');
 
-module.exports = function before() {
+export default function before() {
   // Skip the pre-migration backup when disabled at the platform level. This is
   // distinct from `disableJSBackups` (which disables all JS backups, e.g. the
   // importer path) — it only skips backups taken before running migrations.
@@ -12,4 +13,4 @@ module.exports = function before() {
   }
 
   return dbBackup.backup();
-};
+}
