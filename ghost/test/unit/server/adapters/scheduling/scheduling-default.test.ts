@@ -1,13 +1,12 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const moment = require('moment');
-const _ = require('lodash');
-const logging = require('@tryghost/logging');
-const SchedulingDefault =
-  require('../../../../../core/server/adapters/scheduling/scheduling-default').default;
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import moment from 'moment';
+import _ from 'lodash';
+import logging from '@tryghost/logging';
+import SchedulingDefault from '../../../../../core/server/adapters/scheduling/scheduling-default';
 
 describe('Scheduling Default Adapter', function () {
-  const scope = {};
+  const scope: { adapter: SchedulingDefault } = { adapter: new SchedulingDefault() };
 
   beforeEach(function () {
     scope.adapter = new SchedulingDefault();
@@ -21,15 +20,14 @@ describe('Scheduling Default Adapter', function () {
     // The fake-timer tests below use clock.tick() to step Ghost's
     // setTimeout-driven scheduler; install fake timers here only so the
     // sibling pingUrl group doesn't see them.
-    /** @type {import('sinon').SinonFakeTimers} */
-    let clock;
+    let clock: sinon.SinonFakeTimers;
     beforeEach(function () {
       clock = sinon.useFakeTimers({ shouldAdvanceTime: true });
     });
 
     it('addJob (schedule)', function () {
       sinon.stub(scope.adapter, 'run');
-      sinon.stub(scope.adapter, '_execute');
+      const executeStub = sinon.stub(scope.adapter, '_execute');
 
       const dates = [
         moment().add(1, 'day').subtract(30, 'seconds').toDate(),
@@ -46,15 +44,16 @@ describe('Scheduling Default Adapter', function () {
 
       dates.forEach(function (time) {
         scope.adapter.schedule({
-          time: time,
+          time: time.valueOf(),
           url: 'something',
+          extra: { httpMethod: 'PUT' },
         });
       });
 
       // 2 jobs get immediately executed
       assert.equal(scope.adapter.allJobs[moment(dates[1]).valueOf()], undefined);
       assert.equal(scope.adapter.allJobs[moment(dates[7]).valueOf()], undefined);
-      sinon.assert.calledTwice(scope.adapter._execute);
+      sinon.assert.calledTwice(executeStub);
 
       assert.equal(Object.keys(scope.adapter.allJobs).length, dates.length - 2);
       assert.deepEqual(Object.keys(scope.adapter.allJobs), [
@@ -68,7 +67,7 @@ describe('Scheduling Default Adapter', function () {
     });
 
     it('reschedule: default', function () {
-      sinon.stub(scope.adapter, '_pingUrl');
+      const pingStub = sinon.stub(scope.adapter, '_pingUrl');
 
       const time = moment().add(20, 'milliseconds').valueOf();
 
@@ -77,7 +76,7 @@ describe('Scheduling Default Adapter', function () {
         url: 'something',
         extra: {
           oldTime: null,
-          method: 'PUT',
+          httpMethod: 'PUT',
         },
       });
 
@@ -87,7 +86,7 @@ describe('Scheduling Default Adapter', function () {
         url: 'something',
         extra: {
           oldTime: time,
-          method: 'PUT',
+          httpMethod: 'PUT',
         },
       });
       scope.adapter.schedule({
@@ -95,17 +94,17 @@ describe('Scheduling Default Adapter', function () {
         url: 'something',
         extra: {
           oldTime: null,
-          method: 'PUT',
+          httpMethod: 'PUT',
         },
       });
 
       clock.tick(50);
 
-      sinon.assert.calledOnce(scope.adapter._pingUrl);
+      sinon.assert.calledOnce(pingStub);
     });
 
     it('reschedule: simulate restart', function () {
-      sinon.stub(scope.adapter, '_pingUrl');
+      const pingStub = sinon.stub(scope.adapter, '_pingUrl');
 
       const time = moment().add(20, 'milliseconds').valueOf();
 
@@ -115,7 +114,7 @@ describe('Scheduling Default Adapter', function () {
           url: 'something',
           extra: {
             oldTime: time,
-            method: 'PUT',
+            httpMethod: 'PUT',
           },
         },
         { bootstrap: true },
@@ -126,12 +125,12 @@ describe('Scheduling Default Adapter', function () {
         url: 'something',
         extra: {
           oldTime: null,
-          method: 'PUT',
+          httpMethod: 'PUT',
         },
       });
 
       clock.tick(50);
-      sinon.assert.calledOnce(scope.adapter._pingUrl);
+      sinon.assert.calledOnce(pingStub);
     });
 
     it('run', function () {
@@ -140,10 +139,10 @@ describe('Scheduling Default Adapter', function () {
         return moment().add(i, 'seconds').valueOf();
       });
 
-      const allJobs = {};
+      const allJobs: SchedulingDefault['allJobs'] = {};
 
       timestamps.forEach(function (timestamp) {
-        allJobs[timestamp] = [{ url: 'xxx' }];
+        allJobs[timestamp] = [{ url: 'xxx', time: timestamp, extra: { httpMethod: 'PUT' } }];
       });
 
       const executeStub = sinon.stub(scope.adapter, '_execute');
@@ -164,7 +163,7 @@ describe('Scheduling Default Adapter', function () {
     });
 
     it('ensure recursive run works', function () {
-      sinon.spy(scope.adapter, '_execute');
+      const executeSpy = sinon.spy(scope.adapter, '_execute');
 
       scope.adapter.allJobs = {};
       scope.adapter.runTimeoutInMs = 10;
@@ -173,7 +172,7 @@ describe('Scheduling Default Adapter', function () {
 
       clock.tick(200);
 
-      assert(scope.adapter._execute.callCount > 1);
+      assert(executeSpy.callCount > 1);
     });
 
     it('execute', function () {
@@ -186,15 +185,15 @@ describe('Scheduling Default Adapter', function () {
           .valueOf();
       });
 
-      const nextJobs = {};
+      const nextJobs: SchedulingDefault['allJobs'] = {};
 
       sinon.stub(scope.adapter, 'run');
-      sinon.stub(scope.adapter, '_pingUrl').callsFake(function () {
+      sinon.stub(scope.adapter, '_pingUrl').callsFake(async function () {
         pinged = pinged + 1;
       });
 
       timestamps.forEach(function (timestamp) {
-        nextJobs[timestamp] = [{ url: 'xxx' }];
+        nextJobs[timestamp] = [{ url: 'xxx', time: timestamp, extra: { httpMethod: 'PUT' } }];
       });
 
       scope.adapter._execute(nextJobs);
@@ -210,29 +209,45 @@ describe('Scheduling Default Adapter', function () {
 
     it('delete job (unschedule)', function () {
       let pinged = 0;
-      const jobsToDelete = {};
-      const jobsToExecute = {};
+      const jobsToDelete: SchedulingDefault['allJobs'] = {};
+      const jobsToExecute: SchedulingDefault['allJobs'] = {};
 
       sinon.stub(scope.adapter, 'run');
-      sinon.stub(scope.adapter, '_pingUrl').callsFake(function () {
+      sinon.stub(scope.adapter, '_pingUrl').callsFake(async function () {
         pinged = pinged + 1;
       });
 
       // add jobs to delete
-      jobsToDelete[moment().add(10, 'milliseconds').valueOf()] = [{ url: '/1', time: 1234 }];
-      jobsToDelete[moment().add(20, 'milliseconds').valueOf()] = [{ url: '/2', time: 1235 }];
-      jobsToDelete[moment().add(30, 'milliseconds').valueOf()] = [{ url: '/1', time: 1234 }];
-      jobsToDelete[moment().add(40, 'milliseconds').valueOf()] = [{ url: '/3', time: 1236 }];
+      jobsToDelete[moment().add(10, 'milliseconds').valueOf()] = [
+        { url: '/1', time: 1234, extra: { httpMethod: 'PUT' } },
+      ];
+      jobsToDelete[moment().add(20, 'milliseconds').valueOf()] = [
+        { url: '/2', time: 1235, extra: { httpMethod: 'PUT' } },
+      ];
+      jobsToDelete[moment().add(30, 'milliseconds').valueOf()] = [
+        { url: '/1', time: 1234, extra: { httpMethod: 'PUT' } },
+      ];
+      jobsToDelete[moment().add(40, 'milliseconds').valueOf()] = [
+        { url: '/3', time: 1236, extra: { httpMethod: 'PUT' } },
+      ];
 
       _.map(jobsToDelete, function (value) {
         scope.adapter.unschedule(value[0]);
       });
 
       // add jobs, which will be pinged
-      jobsToExecute[moment().add(50, 'milliseconds').valueOf()] = [{ url: '/1', time: 1234 }];
-      jobsToExecute[moment().add(60, 'milliseconds').valueOf()] = [{ url: '/1', time: 1234 }];
-      jobsToExecute[moment().add(70, 'milliseconds').valueOf()] = [{ url: '/1', time: 1234 }];
-      jobsToExecute[moment().add(80, 'milliseconds').valueOf()] = [{ url: '/4', time: 1237 }];
+      jobsToExecute[moment().add(50, 'milliseconds').valueOf()] = [
+        { url: '/1', time: 1234, extra: { httpMethod: 'PUT' } },
+      ];
+      jobsToExecute[moment().add(60, 'milliseconds').valueOf()] = [
+        { url: '/1', time: 1234, extra: { httpMethod: 'PUT' } },
+      ];
+      jobsToExecute[moment().add(70, 'milliseconds').valueOf()] = [
+        { url: '/1', time: 1234, extra: { httpMethod: 'PUT' } },
+      ];
+      jobsToExecute[moment().add(80, 'milliseconds').valueOf()] = [
+        { url: '/4', time: 1237, extra: { httpMethod: 'PUT' } },
+      ];
 
       // simulate execute is called
       scope.adapter._execute(jobsToExecute);
@@ -247,7 +262,8 @@ describe('Scheduling Default Adapter', function () {
     });
 
     it('delete job (unschedule): time is null', function () {
-      scope.adapter.unschedule({ time: null, url: '/test' });
+      // @ts-expect-error Deliberately exercise a missing schedule time.
+      scope.adapter.unschedule({ time: null, url: '/test', extra: { httpMethod: 'PUT' } });
       assert.equal(Object.keys(scope.adapter.deletedJobs).length, 0);
     });
   });
@@ -260,7 +276,7 @@ describe('Scheduling Default Adapter', function () {
     // racy — the request occasionally never reached the interceptor and
     // the test hit vitest's 5s testTimeout. The adapter exposes the
     // HTTP client as `this.request` so we can swap it for a sync stub.
-    let requestStub;
+    let requestStub: sinon.SinonStub;
     beforeEach(function () {
       requestStub = sinon.stub().resolves({ statusCode: 200 });
       scope.adapter.request = requestStub;
@@ -351,7 +367,7 @@ describe('Scheduling Default Adapter', function () {
 
       // Wait for the nth _pingUrl attempt to be made, then for the
       // promise it returned to settle.
-      const settle = async (callIndex) => {
+      const settle = async (callIndex: number) => {
         for (let i = 0; i < 200 && pingSpy.callCount <= callIndex; i = i + 1) {
           await new Promise((resolve) => {
             setTimeout(resolve, 10);
