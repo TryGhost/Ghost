@@ -1,6 +1,6 @@
 import type { CreateRule, ESTree } from '@oxlint/plugins';
 
-import { readdirSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readLegacyServices, servicesRoot } from '../legacy-services.ts';
@@ -9,15 +9,24 @@ const root = fileURLToPath(new URL('../../../../', import.meta.url));
 const bootFile = 'ghost/core/boot.js';
 const entry = 'bootGhost';
 const servicePath = /^\.\/server\/services\/([^/]+?)(?:\/index)?$/;
-// Read once per process, so one run checks boot against one list.
-let standardServices: Set<string> | undefined;
 
 // A service directory that the legacy service inventory does not list is standard.
+// A directory with no root is not a service: switching branches can leave one
+// behind holding only untracked files. This is read each time boot.js is linted,
+// so an editor's long-lived lint process sees a new service or an inventory edit.
 function readStandardServices() {
   const legacy = readLegacyServices(root);
+  const directory = path.join(root, servicesRoot);
   return new Set(
-    readdirSync(path.join(root, servicesRoot), { withFileTypes: true })
-      .filter((item) => item.isDirectory() && !legacy.has(item.name))
+    readdirSync(directory, { withFileTypes: true })
+      .filter(
+        (item) =>
+          item.isDirectory() &&
+          !legacy.has(item.name) &&
+          ['index.ts', 'index.js'].some((file) =>
+            existsSync(path.join(directory, item.name, file)),
+          ),
+      )
       .map((item) => item.name),
   );
 }
@@ -52,8 +61,7 @@ export const bootAwaitsServiceInit: CreateRule = {
     if (filename !== bootFile) {
       return {};
     }
-    standardServices ??= readStandardServices();
-    const services = standardServices;
+    const services = readStandardServices();
 
     // Roots bound as `const x = require('./server/services/<name>').default;`
     // directly in a boot phase.

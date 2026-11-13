@@ -65,6 +65,10 @@ function lint(
     }
     for (const directory of directories) {
       mkdirSync(path.join(cwd, servicesRoot, directory), { recursive: true });
+      // A name ending in / is a directory with no root.
+      if (!directory.endsWith('/')) {
+        writeFileSync(path.join(cwd, servicesRoot, directory, 'index.ts'), '');
+      }
     }
     writeFileSync(path.join(cwd, servicesRoot, 'README.md'), '');
     writeFileSync(path.join(cwd, servicesRoot, 'standalone.ts'), '');
@@ -246,6 +250,11 @@ test('requires a new service directory to be initialized without any registratio
     result.diagnostics[0]?.message ?? '',
     /require\('\.\/server\/services\/brand-new'\)\.default; await example\.init\(\);/,
   );
+});
+
+test('ignores a directory with no root, such as one left behind by another branch', () => {
+  const result = lint(boot(), { directories: ['alpha', 'beta', 'legacy', 'leftover/'] });
+  assert.equal(result.status, 0, JSON.stringify(result.diagnostics));
 });
 
 test('applies to a service once its legacy entry is deleted', () => {

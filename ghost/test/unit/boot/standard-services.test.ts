@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { setImmediate } from 'node:timers/promises';
 import yaml from 'js-yaml';
@@ -15,8 +15,14 @@ const legacy = Object.keys(
   ).services,
 );
 // A service directory that the legacy service inventory does not list is standard.
+// A directory with no root is not a service: switching branches can leave one behind.
 const standard = readdirSync(servicesRoot, { withFileTypes: true })
-  .filter((item) => item.isDirectory() && !legacy.includes(item.name))
+  .filter(
+    (item) =>
+      item.isDirectory() &&
+      !legacy.includes(item.name) &&
+      ['index.ts', 'index.js'].some((file) => existsSync(path.join(servicesRoot, item.name, file))),
+  )
   .map((item) => item.name);
 const boot = readFileSync(path.join(core, 'boot.js'), 'utf8');
 const phases = [...boot.matchAll(/^(?:async )?function (\w+)\(/gm)];
