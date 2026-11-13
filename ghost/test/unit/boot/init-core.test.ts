@@ -24,13 +24,11 @@ function createCoreHarness({ isBetterAuth = false } = {}) {
   // The step that follows Better Auth in initCore.
   const metafields = { init: sinon.stub() };
   const betterAuth = { start: sinon.stub().resolves() };
+  const applyImageUploadConfig = sinon.stub();
+  const uploads = {};
   const initCore = loadBootFunction('initCore', {
     './server/services/adapter-manager': { default: { init() {} } },
-    './server/lib/image/image-decoders': { restrictImageDecoders() {} },
-    './server/lib/image/image-content': {
-      IMAGE_UPLOAD_TYPES: [],
-      getIgnoredImageContentTypes: () => [],
-    },
+    './server/lib/image/image-upload-config': { applyImageUploadConfig },
     './shared/url-utils': {},
     './server/services/limits': { init: async () => {} },
     './server/services/settings/settings-service': settings,
@@ -46,7 +44,12 @@ function createCoreHarness({ isBetterAuth = false } = {}) {
   });
   return {
     init: (ghostServer?: { registerCleanupTask: sinon.SinonStub }): Promise<void> =>
-      initCore({ config: { get: () => ({}) }, ghostServer }),
+      initCore({
+        config: { get: (key: string) => (key === 'uploads' ? uploads : {}) },
+        ghostServer,
+      }),
+    applyImageUploadConfig,
+    uploads,
     settings,
     signingKeys,
     i18n,
@@ -228,4 +231,12 @@ it('closes the services when the server shuts down', async function () {
   sinon.assert.notCalled(close);
   await registration.args[0]();
   sinon.assert.calledOnce(close);
+});
+
+it('applies the uploads config to image handling before anything initializes', async function () {
+  const boot = createCoreHarness();
+  await boot.init();
+
+  sinon.assert.calledOnceWithExactly(boot.applyImageUploadConfig, sinon.match.same(boot.uploads));
+  sinon.assert.callOrder(boot.applyImageUploadConfig, boot.settings.init);
 });
