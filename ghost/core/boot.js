@@ -822,4 +822,4 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
   }
 }
 
-module.exports = bootGhost;
+module.exports = { bootGhost };
