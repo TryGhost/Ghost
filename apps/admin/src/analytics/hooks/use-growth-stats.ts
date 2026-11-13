@@ -190,7 +190,11 @@ export const useGrowthStats = (range: number) => {
     },
   });
 
-  const { data: mrrHistoryResponse, isLoading: isMrrLoading } = useMrrHistory({
+  const {
+    data: mrrHistoryResponse,
+    isLoading: isMrrLoading,
+    isError: isMrrError,
+  } = useMrrHistory({
     searchParams: {
       date_from: range === 1 ? openingBalanceDate : dateFrom,
     },
@@ -379,6 +383,7 @@ export const useGrowthStats = (range: number) => {
 
   return {
     isLoading,
+    isMrrError,
     memberData,
     mrrData,
     dateFrom,
