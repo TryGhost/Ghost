@@ -165,6 +165,21 @@ Migrating a service means deleting its `services` entry and its known
 violations. Git history keeps the audit record. Move any extra it declares into
 the second section.
 
+### Roots outside this directory
+
+The service checks apply to this directory only. A `defineService` root
+anywhere else gets none of them: no root-shape rule, no dependency rules and no
+boot checks. [Better Auth](../auth/better-auth/index.ts) is the one such root.
+It follows the [kernel contract](../../kernel/README.md#service-initialization)
+by review.
+
+Extending the checks to roots elsewhere is out of scope for this migration. It
+belongs with the later work on where capabilities live. Until then, boundary
+lint (`service-roots-in-services`) rejects a runtime import of `defineService`
+from anywhere but a service root. Adding a root to the rule's list in the
+[dependency-cruiser config](../../../../.dependency-cruiser.cjs) needs review;
+CODEOWNERS covers that file.
+
 ### Dependency boundaries
 
 The root `index.ts` wires runtime dependencies and passes them to the

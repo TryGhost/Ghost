@@ -9,7 +9,7 @@ import {
   symlinkSync,
   writeFileSync,
 } from 'node:fs';
-import { findPackageJSON } from 'node:module';
+import { createRequire, findPackageJSON } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { it, type TestContext } from 'node:test';
@@ -319,6 +319,56 @@ it('continues enforcing non-service boundaries in the same scan', (t) => {
   const result = f.lint();
   assert.equal(result.status, 1, result.stderr);
   assert.match(result.stderr, /kernel-not-application/);
+});
+
+it('rejects a defineService root outside the services directory unless it is a listed exception', (t) => {
+  const helper = 'ghost/core/kernel/define-service.ts';
+  const use = (depth: number) =>
+    `import { defineService } from '${'../'.repeat(depth)}kernel/define-service'; export default defineService;`;
+  const outside = 'ghost/core/server/lib/capability/index.ts';
+  const nested = `${alpha}/nested/index.ts`;
+  const f = fixture(t, {
+    [helper]: 'export const defineService = () => ({});',
+    [`${alpha}/index.ts`]: use(3),
+    'ghost/core/server/auth/better-auth/index.ts': use(3),
+    // Types say nothing about where an instance is built.
+    'ghost/core/server/web/consumer.ts':
+      "import type { defineService } from '../../kernel/define-service'; export type Root = typeof defineService;",
+  });
+  const allowed = f.lint();
+  assert.equal(allowed.status, 0, allowed.stderr);
+  f.write(outside, use(3));
+  f.write(nested, use(4));
+  const rejected = f.lint();
+  assert.equal(rejected.status, 1, rejected.stderr);
+  for (const file of [outside, nested]) {
+    assert.ok(
+      rejected.stderr.includes(`error service-roots-in-services: ${file} → ${helper}`),
+      rejected.stderr,
+    );
+  }
+  assert.equal(rejected.stderr.match(/service-roots-in-services/g)?.length, 2, rejected.stderr);
+  // Known violations are for legacy service dependencies, so this cannot be recorded as one.
+  f.write(
+    '.dependency-cruiser-known-violations.json',
+    JSON.stringify([{ rule: 'service-roots-in-services', from: outside, to: helper }]),
+  );
+  assert.throws(() => readKnownViolations(f.root));
+});
+
+it('lists only roots outside the services directory that exist and use defineService', () => {
+  const { forbidden } = createRequire(import.meta.url)(
+    path.join(repository, '.dependency-cruiser.cjs'),
+  ) as { forbidden: { name: string; from: { pathNot?: string[] } }[] };
+  const rule = forbidden.find(({ name }) => name === 'service-roots-in-services');
+  const listed = (rule?.from.pathNot ?? []).slice(2).map((pattern) => {
+    assert.match(pattern, /^\^[\w./\\-]+\$$/, 'List each root as one exact path');
+    return pattern.slice(1, -1).replaceAll('\\', '');
+  });
+  assert.deepEqual(listed, ['ghost/core/server/auth/better-auth/index.ts']);
+  for (const file of listed) {
+    assert.match(readFileSync(path.join(repository, file), 'utf8'), /kernel\/define-service'/);
+  }
 });
 
 it('keeps native ignore-known behavior documented: moves fail but stale entries are accepted', (t) => {
