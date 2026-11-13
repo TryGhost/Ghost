@@ -707,13 +707,14 @@ describe('Checkout settings', () => {
   // No setting's name opens its dropdown, and clicking away from an open dropdown only closes it,
   // so a click aimed between the close-set rows never acts on another one.
   describe('with every setting showing', () => {
-    async function openEverySetting() {
+    // Shipping is limited to the given countries, or open to every country with null.
+    async function openEverySetting(allowedCountries: string[] | null = ['GB']) {
       return openCheckoutFields(
         {
           design: { customize: false },
           shipping: {
             collect: true,
-            allowed_countries: ['GB'],
+            ...(allowedCountries ? { allowed_countries: allowedCountries } : {}),
             address: { custom_field_key: 'delivery_address' },
             name: { custom_field_key: 'recipient_name' },
           },
@@ -732,12 +733,12 @@ describe('Checkout settings', () => {
       );
     }
 
-    // Nothing chosen is archived, so nothing says so, and the countries list is searched as before.
+    // Nothing chosen is archived, so nothing says so, and the countries list is searched by name.
     it('shows no archived badge when nothing chosen is archived', async () => {
       const { modal } = await openEverySetting();
       await expect.element(modal.getByText(/archived/i)).not.toBeInTheDocument();
 
-      await modal.getByRole('combobox', { name: 'Countries' }).click();
+      await modal.getByRole('combobox', { name: 'Allow purchases in' }).click();
       await userEvent.fill(page.getByPlaceholder('Search countries...'), 'United St');
       await expect
         .element(page.getByRole('option', { name: 'United States', exact: true }))
@@ -747,13 +748,105 @@ describe('Checkout settings', () => {
         .not.toBeInTheDocument();
     });
 
+    // "All countries" and the countries are one choice: either every country, or some.
+    it('allows purchases in every country once "All countries" is chosen', async () => {
+      const { modal, saveApi } = await openEverySetting();
+      const countries = modal.getByRole('combobox', { name: 'Allow purchases in' });
+      await expect.element(countries).toHaveTextContent('United Kingdom');
+
+      await countries.click();
+      await page.getByRole('option', { name: 'All countries' }).click();
+      // A single answer, so the list closes.
+      await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+      await expect.element(countries).toHaveTextContent('All countries');
+
+      await modal.getByRole('button', { name: 'Save' }).click();
+      await expect.poll(() => saveApi.lastRequest?.body).toBeDefined();
+      expect(saveApi.lastRequest?.body).not.toHaveProperty(
+        'checkout_config.0.shipping.allowed_countries',
+      );
+    });
+
+    it('picks a country alone when it is chosen over "All countries"', async () => {
+      // The United Kingdom stays kept while "All countries" is chosen, and Canada replaces it.
+      const { modal, saveApi } = await openEverySetting();
+      const countries = modal.getByRole('combobox', { name: 'Allow purchases in' });
+      await countries.click();
+      await page.getByRole('option', { name: 'All countries' }).click();
+
+      await countries.click();
+      await userEvent.fill(page.getByPlaceholder('Search countries...'), 'Canada');
+      await page.getByRole('option', { name: 'Canada', exact: true }).click();
+      await userEvent.keyboard('{Escape}');
+      await expect.element(countries).toHaveTextContent('Canada');
+
+      await modal.getByRole('button', { name: 'Save' }).click();
+      await expect
+        .poll(() => saveApi.lastRequest?.body)
+        .toMatchObject({ checkout_config: [{ shipping: { allowed_countries: ['CA'] } }] });
+    });
+
+    it('goes back to the countries chosen before when "All countries" is unchosen', async () => {
+      const { modal, saveApi } = await openEverySetting();
+      const countries = modal.getByRole('combobox', { name: 'Allow purchases in' });
+      await countries.click();
+      await page.getByRole('option', { name: 'All countries' }).click();
+
+      await countries.click();
+      await page.getByRole('option', { name: 'All countries' }).click();
+      await userEvent.keyboard('{Escape}');
+      await expect.element(countries).toHaveTextContent('United Kingdom');
+
+      await modal.getByRole('button', { name: 'Save' }).click();
+      await expect
+        .poll(() => saveApi.lastRequest?.body)
+        .toMatchObject({ checkout_config: [{ shipping: { allowed_countries: ['GB'] } }] });
+    });
+
+    // Neither unticking the last country nor "All countries" quietly opens checkout to every
+    // country.
+    it.each([
+      ['the last country', ['GB'], 'United Kingdom'],
+      ['"All countries" with no countries chosen before', null, 'All countries'],
+    ])('saves nothing once %s is unticked', async (_, allowedCountries, unticked) => {
+      const { modal, saveApi } = await openEverySetting(allowedCountries);
+      await modal.getByRole('combobox', { name: 'Allow purchases in' }).click();
+      await page.getByRole('option', { name: unticked }).click();
+      await userEvent.keyboard('{Escape}');
+
+      await modal.getByRole('button', { name: 'Save' }).click();
+      await expect.element(modal.getByText('Choose at least one country')).toBeVisible();
+      expect(saveApi.lastRequest).toBeUndefined();
+    });
+
+    // A search filters the list without reordering it, so once it's cleared "All countries" heads
+    // the list again.
+    it('keeps "All countries" first after a search', async () => {
+      const { modal } = await openEverySetting();
+      await modal.getByRole('combobox', { name: 'Allow purchases in' }).click();
+      const search = page.getByPlaceholder('Search countries...');
+      await userEvent.fill(search, 'al');
+      await expect.element(page.getByRole('option', { name: 'Albania' })).toBeVisible();
+      await userEvent.fill(search, '');
+
+      // The chosen country, then "All countries", then the rest in order.
+      await expect
+        .poll(() =>
+          page
+            .getByRole('option')
+            .elements()
+            .slice(0, 3)
+            .map((option) => option.textContent),
+        )
+        .toEqual(['United Kingdom', 'All countries', 'Afghanistan']);
+    });
+
     it("opens a setting's dropdown from the dropdown only, never from its name", async () => {
       const { modal } = await openEverySetting();
 
       for (const setting of [
         'Collect for',
-        'Ships to',
-        'Countries',
+        'Allow purchases in',
         'Save address as',
         'Save name as',
         'Save phone as',
