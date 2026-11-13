@@ -375,24 +375,17 @@ it('allows same-service code, explicit types, approved libraries and root wiring
 });
 
 it('allows the exact libraries required by Custom Theme Settings without allowing siblings', (t) => {
-  const approved = [
-    'lodash/isEmpty',
-    'lodash/isEmpty.js',
-    '@tryghost/nql',
-    '@tryghost/nql/index.js',
-  ];
-  const rejected = ['lodash', 'lodash/isEqual', '@tryghost/nql/other', '@tryghost/nql-extra'];
+  const approved = ['@tryghost/nql', '@tryghost/nql/index.js'];
+  const rejected = ['@tryghost/nql/other', '@tryghost/nql-extra'];
   const f = fixture(t, {
     [`${alpha}/approved.js`]: approved.map((name) => `require('${name}');`).join('\n'),
     [`${alpha}/rejected.ts`]: rejected.map((name) => `import '${name}';`).join('\n'),
   });
-  for (const name of ['lodash', '@tryghost/nql', '@tryghost/nql-extra']) {
+  for (const name of ['@tryghost/nql', '@tryghost/nql-extra']) {
     f.write(`node_modules/${name}/package.json`, JSON.stringify({ name, main: 'index.js' }));
     f.write(`node_modules/${name}/index.js`, 'module.exports = {};');
     f.write(`node_modules/${name}/other.js`, 'module.exports = {};');
   }
-  f.write('node_modules/lodash/isEmpty.js', 'module.exports = () => false;');
-  f.write('node_modules/lodash/isEqual.js', 'module.exports = () => false;');
   const graph = f.graph();
   assert.equal(
     edges(graph).filter(([from]) => from === `${alpha}/approved.js`).length,
@@ -400,13 +393,52 @@ it('allows the exact libraries required by Custom Theme Settings without allowin
   );
   assert.deepEqual(
     violations(graph),
-    [
-      'node_modules/lodash/index.js',
-      'node_modules/lodash/isEqual.js',
-      'node_modules/@tryghost/nql/other.js',
-      'node_modules/@tryghost/nql-extra/index.js',
-    ]
+    ['node_modules/@tryghost/nql/other.js', 'node_modules/@tryghost/nql-extra/index.js']
       .map((to) => ['service-dependencies', `${alpha}/rejected.ts`, to])
+      .sort(),
+  );
+});
+
+it('allows individual Lodash functions without allowing the whole library, its builds or lodash/fp', (t) => {
+  const approved = ['lodash/isEmpty', 'lodash/isEmpty.js', 'lodash/pick', 'lodash/indexOf'];
+  const rejected = {
+    lodash: 'index.js',
+    'lodash/index': 'index.js',
+    'lodash/lodash': 'lodash.js',
+    'lodash/core': 'core.js',
+    'lodash/core.min': 'core.min.js',
+    'lodash/fp': 'fp.js',
+    'lodash/fp/map': 'fp/map.js',
+    'lodash/_baseGet': '_baseGet.js',
+    'lodash-es/pick': '../lodash-es/pick.js',
+  };
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]: approved.map((name) => `require('${name}');`).join('\n'),
+    [`${alpha}/rejected.js`]: Object.keys(rejected)
+      .map((name) => `require('${name}');`)
+      .join('\n'),
+  });
+  f.write('node_modules/lodash/package.json', JSON.stringify({ name: 'lodash', main: 'index.js' }));
+  f.write('node_modules/lodash-es/package.json', JSON.stringify({ name: 'lodash-es' }));
+  for (const file of [
+    'isEmpty.js',
+    'pick.js',
+    'indexOf.js',
+    ...Object.values(rejected).filter((target) => !target.startsWith('..')),
+  ]) {
+    f.write(`node_modules/lodash/${file}`, 'module.exports = {};');
+  }
+  f.write('node_modules/lodash-es/pick.js', 'module.exports = {};');
+  const graph = f.graph();
+  assert.equal(edges(graph).filter(([from]) => from === `${alpha}/approved.js`).length, 4);
+  assert.deepEqual(
+    violations(graph),
+    [...new Set(Object.values(rejected))]
+      .map((file) => [
+        'service-dependencies',
+        `${alpha}/rejected.js`,
+        `node_modules/${file.startsWith('..') ? file.slice(3) : `lodash/${file}`}`,
+      ])
       .sort(),
   );
 });

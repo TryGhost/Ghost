@@ -1231,11 +1231,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/posts/posts-service.js",
-    "to": "lodash/pick"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/posts/stats/post-stats.js",
     "to": "ghost/core/server/data/db/index.js"
   },

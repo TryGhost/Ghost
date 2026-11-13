@@ -27,7 +27,7 @@ const serviceDependencyAllowlist = [
   '^@tryghost/metafield-types/identity$|^packages/metafield-types/(src|build)/identity\\.(ts|js)$', // Metafield namespace, key and part schemas and the identity codec.
   '^@tryghost/string$|(^|/)node_modules/@tryghost/string/lib/index\\.js$', // String normalization, slugification and HTML escaping.
   '^@tryghost/referrer-parser$|(^|/)node_modules/@tryghost/referrer-parser/dist/index\\.(cjs|js)$', // Referrer classification from supplied URLs and static lookup data.
-  '^lodash/isEmpty(?:\\.js)?$|(^|/)node_modules/lodash/isEmpty\\.js$', // Pure value/collection inspection; only the isEmpty helper.
+  '^lodash/(?!(?:index|lodash|core|fp)(?:\\.js)?$)[a-zA-Z]+(?:\\.js)?$|(^|/)node_modules/lodash/(?!(?:index|lodash|core|fp)\\.js$)[a-zA-Z]+\\.js$', // Individual Lodash functions; not the whole library, its builds or lodash/fp.
   '^@tryghost/nql$|(^|/)node_modules/@tryghost/nql/index\\.js$', // Caller-local query parsing and JSON matching; no application instances or I/O.
   '^@tryghost/mongo-utils$|(^|/)node_modules/@tryghost/mongo-utils/index\\.js$', // Pure helpers over a parsed NQL tree; no application instances or I/O.
   '^@tryghost/html-to-plaintext$|(^|/)node_modules/@tryghost/html-to-plaintext/index\\.js$', // Stateless HTML to plain-text conversion of supplied markup.
