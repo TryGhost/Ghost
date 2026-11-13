@@ -23,7 +23,7 @@ const serviceDependencyAllowlist = [
   '^@tryghost/app-contracts/identity$|^packages/app-contracts/(src|build)/identity/index\\.(ts|js)$', // Signed-manifest and challenge formats, signing and verification.
   '^@tryghost/adapter-base-upgrade$|^packages/adapters/upgrade-base/(src|build)/index\\.(ts|js)$', // Upgrade adapter contract schemas and error class.
   '^@tryghost/checkout$|^packages/checkout/(src|build)/index\\.(ts|js)$', // Measured Stripe Checkout countries, ports and fonts shared with Admin; no application instances.
-  '^@tryghost/parse-email-address/mailbox$|^packages/parse-email-address/(src|build)/mailbox\\.(ts|js)$', // Mailbox parsing and text formatting; no sender policy or application instances.
+  '^@tryghost/parse-email-address(/mailbox)?$|^packages/parse-email-address/(src|build)/(index|mailbox)\\.(ts|js)$', // Email address and mailbox parsing and formatting; no sender policy or application instances.
   '^contracts/', // Contracts define the shape of data crossing a boundary and, like types, may be imported anywhere.
   '^@tryghost/metafield-types(/(structure|shapes|identity|countries|phone))?$|^packages/metafield-types/(src|build)/(index|structure|shapes|identity|countries|phone)\\.(ts|js)$', // Custom field contract until it moves into contracts/: field types, schemas, value rules and the identity codec; only its public entries.
   '^@tryghost/string$|(^|/)node_modules/@tryghost/string/lib/index\\.js$', // String normalization, slugification and HTML escaping.
@@ -59,6 +59,20 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/image/image-content\\.ts$', // Image extension and content predicates; no application instances.
   '^ghost/core/server/lib/image/svg-sanitizer\\.ts$', // SVG buffer sanitization; no application instances.
   '^ghost/core/server/services/jobs-service/job\\.ts$', // Job base class, not the running service.
+  '^ghost/core/server/lib/after-commit\\.ts$', // Runs a callback after the caller's transaction commits.
+  '^ghost/core/server/lib/db-types/count\\.ts$', // Database count codec.
+  '^ghost/core/server/lib/db-types/affected-rows\\.ts$', // Database affected-rows codec.
+  '^ghost/core/server/lib/db-types/object-id\\.ts$', // Database ObjectId codec.
+  '^ghost/core/server/lib/mailgun/mailgun-message-id\\.ts$', // Mailgun message ID normalisation; no client.
+  '^ghost/core/server/lib/mailgun/mailgun-error\\.ts$', // Mailgun error class; no client.
+  '^ghost/core/server/lib/promise-pool\\.ts$', // Runs caller-supplied tasks with a concurrency limit.
+  '^ghost/core/server/lib/soonest-timer\\.ts$', // Timer class the caller builds and owns.
+  '^ghost/core/server/lib/auto-filling-map\\.ts$', // Map that fills missing keys from a caller-supplied factory.
+  '^ghost/core/server/lib/member-signup-contexts\\.ts$', // Member signup context constants and one predicate.
+  '^ghost/core/shared/errify\\.ts$', // Turns any thrown value into an Error.
+  '^ghost/core/shared/timing-safe-string-equal\\.ts$', // Constant-time string comparison.
+  '^ghost/core/shared/one-at-a-time\\.ts$', // Wraps a caller's function so calls do not overlap.
+  '^ghost/core/shared/machine-payments\\.ts$', // Machine payment predicates over supplied data.
   '^@tryghost/kg-default-nodes$|^koenig/kg-default-nodes/(src/index\\.ts|build/(cjs|esm)/index\\.js)$', // Whole Koenig default-nodes entry (node classes, renderers and the replacement-string helpers welcome emails use); the package has no narrower export and holds no application instances.
   '^ghost/core/server/lib/email-rendering/email-design\\.js$', // Email design token computation from supplied settings.
   '^ghost/core/server/lib/email-rendering/finalize\\.ts$', // Email CSS inlining and plaintext generation; no application instances.

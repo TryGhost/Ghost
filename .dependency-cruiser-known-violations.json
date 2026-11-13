@@ -126,11 +126,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/custom-redirects/redirects-service.ts",
-    "to": "ghost/core/shared/errify.ts"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/custom-redirects/utils.ts",
     "to": "moment-timezone"
   },
@@ -161,11 +156,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-analytics/automation-email-analytics-batch-processor.ts",
-    "to": "ghost/core/server/lib/mailgun/mailgun-message-id.ts"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-analytics/email-analytics-service-wrapper.ts",
     "to": "@tryghost/logging"
   },
@@ -178,11 +168,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-analytics/fetch-mailgun-events.ts",
     "to": "ghost/core/server/lib/mailgun/mailgun-client.js"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-analytics/gift-email-analytics-batch-processor.ts",
-    "to": "ghost/core/server/lib/mailgun/mailgun-message-id.ts"
   },
   {
     "rule": "service-dependencies",
@@ -233,11 +218,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-service/batch-sending-service.js",
     "to": "@tryghost/logging"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-service/batch-sending-service.js",
-    "to": "ghost/core/server/lib/promise-pool.ts"
   },
   {
     "rule": "service-dependencies",
@@ -402,16 +382,6 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-service/newsletter-email-event-storage.js",
-    "to": "ghost/core/server/lib/db-types/affected-rows.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-service/newsletter-email-event-storage.js",
-    "to": "ghost/core/server/lib/db-types/count.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-service/newsletter-email-event-storage.js",
     "to": "moment-timezone"
   },
   {
@@ -423,11 +393,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-service/sending-service.js",
     "to": "@tryghost/logging"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-service/sending-status-schema.ts",
-    "to": "ghost/core/server/lib/db-types/count.ts"
   },
   {
     "rule": "service-dependencies",
@@ -501,11 +466,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/gifts/gift-email-service.ts",
-    "to": "ghost/core/server/lib/mailgun/mailgun-message-id.ts"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/gifts/gift-service.ts",
     "to": "@tryghost/logging"
   },
@@ -533,11 +493,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/identity-tokens/identity-token-service-wrapper.js",
     "to": "ghost/core/shared/url-utils.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/jobs-service/jobs-service.ts",
-    "to": "ghost/core/server/lib/after-commit.ts"
   },
   {
     "rule": "service-dependencies",
@@ -713,11 +668,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/machine-payments/content-loader.ts",
     "to": "ghost/core/server/models/index.js"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/machine-payments/eligibility.ts",
-    "to": "ghost/core/shared/machine-payments.ts"
   },
   {
     "rule": "service-dependencies",
@@ -1103,11 +1053,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/posts/posts-service.js",
     "to": "ghost/core/server/api/endpoints/utils/api-filter-utils.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/posts/posts-service.js",
-    "to": "ghost/core/server/lib/after-commit.ts"
   },
   {
     "rule": "service-dependencies",

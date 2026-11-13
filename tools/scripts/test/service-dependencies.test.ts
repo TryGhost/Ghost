@@ -678,6 +678,49 @@ it('allows the custom field contract through its public entries only', (t) => {
   assert.deepEqual(violations(graph), [['service-dependencies', `${alpha}/rejected.js`, internal]]);
 });
 
+it('allows the shared stateless helpers without allowing their siblings', (t) => {
+  const approved = [
+    'ghost/core/server/lib/after-commit.ts',
+    'ghost/core/server/lib/db-types/count.ts',
+    'ghost/core/server/lib/db-types/affected-rows.ts',
+    'ghost/core/server/lib/db-types/object-id.ts',
+    'ghost/core/server/lib/mailgun/mailgun-message-id.ts',
+    'ghost/core/server/lib/mailgun/mailgun-error.ts',
+    'ghost/core/server/lib/promise-pool.ts',
+    'ghost/core/server/lib/soonest-timer.ts',
+    'ghost/core/server/lib/auto-filling-map.ts',
+    'ghost/core/server/lib/member-signup-contexts.ts',
+    'ghost/core/shared/errify.ts',
+    'ghost/core/shared/timing-safe-string-equal.ts',
+    'ghost/core/shared/one-at-a-time.ts',
+    'ghost/core/shared/machine-payments.ts',
+    'packages/parse-email-address/src/index.ts',
+    'packages/parse-email-address/src/mailbox.ts',
+  ];
+  const rejected = [
+    'ghost/core/server/lib/mailgun/mailgun-client.ts',
+    'ghost/core/server/lib/after-commit-extra.ts',
+    'ghost/core/shared/errify-extra.ts',
+    'packages/parse-email-address/src/internal.ts',
+  ];
+  const requireAll = (files: string[]) =>
+    files.map((file) => `require('../../../../../${file.replace(/\.ts$/, '')}');`).join('\n');
+  const f = fixture(t, {
+    ...Object.fromEntries([...approved, ...rejected].map((file) => [file, 'export {};'])),
+    [`${alpha}/approved.js`]: requireAll(approved),
+    [`${alpha}/rejected.js`]: requireAll(rejected),
+  });
+  const graph = f.graph();
+  assert.equal(
+    edges(graph).filter(([from]) => from === `${alpha}/approved.js`).length,
+    approved.length,
+  );
+  assert.deepEqual(
+    violations(graph),
+    rejected.map((to) => ['service-dependencies', `${alpha}/rejected.js`, to]).sort(),
+  );
+});
+
 it('allows the cheerio slim entry required by Mentions without allowing the main entry', (t) => {
   const f = fixture(t, {
     [`${alpha}/approved.js`]: "require('cheerio/slim');",
