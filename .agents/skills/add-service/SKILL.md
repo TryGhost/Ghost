@@ -93,11 +93,11 @@ The generator leaves [boot.js](../../../ghost/core/boot.js) to you.
   on, then assert its rejection fails boot. `init-services.test.ts` has a loop
   for both; the `initCore` and `initServicesForFrontend` tests fail on a root
   they do not list.
-- **Resources.** Finish startup work before returning the instance. If
-  `create` acquires resources, follow
-  [failed startup](../../../ghost/core/server/services/README.md#failed-startup).
-  `defineService` runs no cleanup: register shutdown with
-  `ghostServer.registerCleanupTask` in boot when the service needs it.
+- **Resources.** Finish startup work before returning the instance. Acquire
+  listeners, timers and work to drain in `start` and release them in `stop`,
+  following
+  [starting and stopping](../../../ghost/core/server/services/README.md#starting-and-stopping).
+  Register `root.stop()` with `ghostServer.registerCleanupTask` in boot.
 
 ## 5. Test and check
 

@@ -495,6 +495,10 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     users.init(),
     machinePaymentsService.init(),
   ]);
+  if (ghostServer) {
+    // Releases what IndexNow's start acquired; the next boot in this process starts it again.
+    ghostServer.registerCleanupTask(() => indexnow.stop(), 'IndexNow');
+  }
   // Member welcome emails captures the ready Email address and Link tracking instances during
   // initialization, and automation polling sends through it once jobs start.
   await memberWelcomeEmails.init();

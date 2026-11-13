@@ -9940,9 +9940,12 @@ followUps:
   indexnow-ping:
     lifecycle:
       - >-
-        Decide listener disposal, restart after external listener removal and pending-request
-        drain ownership. Partial-startup cleanup and repeated init are covered; normal shutdown
-        has no cleanup hook. Backend-only startup and failed required boot still need coverage.
+        Decide restart after external listener removal and pending-request drain ownership.
+        Stop removes the listeners and the next init restores them on the same instance; root
+        units cover that, partial-startup cleanup and repeated init. Stop does not wait for
+        pings in flight. Boot registers stop only when a server exists; boot units cover
+        both cases and that boot waits for init and fails with its error. An isolated
+        server test covers a stop followed by boots without a server.
   integrations:
     lifecycle:
       - >-

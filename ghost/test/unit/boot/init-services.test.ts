@@ -22,6 +22,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const staff = sinon.stub().resolves();
   const linkTracking = sinon.stub().resolves();
   const memberWelcomeEmails = sinon.stub().resolves();
+  const indexnow = sinon.stub().resolves();
+  const indexnowStop = sinon.stub().resolves();
   // Webhook listener registration is synchronous in production; boot awaits whatever it returns.
   const webhooks = sinon.stub();
   const register = sinon.stub();
@@ -76,6 +78,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './server/services/link-tracking': { init: linkTracking },
       './server/services/member-welcome-emails': { default: { init: memberWelcomeEmails } },
       './server/services/webhooks': { listen: webhooks },
+      './server/services/indexnow-ping': { default: { init: indexnow, stop: indexnowStop } },
       './server/services/media-inliner': { default: { init: media, service: {} } },
       './server/services/post-scheduling': { default: { rescheduleAll: reschedule } },
       './server/services/jobs-service/register-job-handlers': { default: register },
@@ -85,8 +88,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     { fallback: () => ({ ...genericService, default: genericService }) },
   );
   return {
-    initServices: (): Promise<void> =>
-      initServices({ config: {}, prometheusClient: null, jobsService }),
+    initServices: (ghostServer?: { registerCleanupTask: sinon.SinonStub }): Promise<void> =>
+      initServices({ config: {}, prometheusClient: null, jobsService, ghostServer }),
     stripe,
     emailAddress,
     gifts,
@@ -103,6 +106,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     linkTracking,
     memberWelcomeEmails,
     webhooks,
+    indexnow,
+    indexnowStop,
     register,
     signingKeys,
     start,
@@ -238,6 +243,32 @@ it('registers the webhook listeners once, after mentions initialization', async 
   sinon.assert.callOrder(boot.mentions, boot.webhooks);
 });
 
+it('registers IndexNow stop as a server cleanup task once IndexNow has initialized', async function () {
+  const boot = createServicesHarness();
+  const registerCleanupTask = sinon.stub();
+
+  await boot.initServices({ registerCleanupTask });
+
+  const registrations = registerCleanupTask
+    .getCalls()
+    .filter((call) => call.args[1] === 'IndexNow');
+  assert.equal(registrations.length, 1);
+  assert.ok(boot.indexnow.firstCall.calledBefore(registrations[0]));
+  sinon.assert.notCalled(boot.indexnowStop);
+
+  await registrations[0].args[0]();
+  sinon.assert.calledOnceWithExactly(boot.indexnowStop);
+});
+
+it('does not stop IndexNow when boot has no server to register with', async function () {
+  const boot = createServicesHarness();
+
+  await boot.initServices();
+
+  sinon.assert.calledOnce(boot.indexnow);
+  sinon.assert.notCalled(boot.indexnowStop);
+});
+
 it('constructs gifts over the tiers root before tiers initialization starts', async function () {
   const boot = createServicesHarness();
 
@@ -282,6 +313,7 @@ for (const dependency of [
   'tiers',
   'webhooks',
   'staff',
+  'indexnow',
 ] as const) {
   it(`waits for ${dependency} initialization to finish before registering or starting jobs`, async function () {
     const boot = createServicesHarness();

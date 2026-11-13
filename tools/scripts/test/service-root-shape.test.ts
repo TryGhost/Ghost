@@ -88,6 +88,14 @@ const valid = [
     `const extras = { isAvailable, actingContext }; const root = defineService('Example', create, extras); export default root;`,
   ],
   ['inline extras', `export default defineService('Example', create, { scheduleCheckJob });`],
+  [
+    'lifecycle hooks',
+    `export default defineService('Example', { create: () => new Service(), start: (service) => service.listen(), stop: (service) => service.close() });`,
+  ],
+  [
+    'lifecycle hooks with extras',
+    `export default defineService('Example', { create, start, stop }, { scheduleCheckJob });`,
+  ],
   ['initializer alias', `const first = ${factory}; const second = first; export default second;`],
   [
     'shadowed root',
