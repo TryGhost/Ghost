@@ -1590,6 +1590,7 @@ it('invalidates cached boundary checks and fixture tests when their configuratio
     'ghost/core/**/*',
     'ghost/package.json',
     'packages/**/*',
+    'contracts/**/*',
     'koenig/**/*',
     '.dependency-cruiser-known-violations.json',
     'tools/scripts/lib/dependency-boundaries.ts',

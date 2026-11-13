@@ -43,7 +43,7 @@ async function createRepository() {
   });
   await writeFile(
     path.join(rootDirectory, 'pnpm-workspace.yaml'),
-    "packages:\n  - 'packages/**'\n  - '!packages/_template'\n  - 'koenig/*'\n",
+    "packages:\n  - 'packages/**'\n  - '!packages/_template'\n  - 'contracts/*'\n  - 'koenig/*'\n",
   );
   const templateManifest = compliantManifest('packages/template');
   templateManifest.name = '@tryghost/{{NAME}}';
@@ -146,6 +146,17 @@ test('accepts a compliant nested private package', async () => {
   await createCompliantPackage(rootDirectory, 'packages/adapters/example');
 
   assert.deepEqual(await checkInternalPackages(rootDirectory), []);
+});
+
+test('applies the golden path to packages under contracts/', async () => {
+  const rootDirectory = await createRepository();
+  const manifest = compliantManifest('contracts/example');
+  delete manifest.ghostPackage;
+  await createCompliantPackage(rootDirectory, 'contracts/example', manifest);
+
+  assert.deepEqual(await checkInternalPackages(rootDirectory), [
+    'contracts/example/package.json: ghostPackage.goldenPath must be one of compliant, migration, exempt',
+  ]);
 });
 
 test('reports workspace discovery failures through the checker interface', async () => {

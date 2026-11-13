@@ -13,6 +13,7 @@ apps/**/build
 ghost/**/build
 koenig/**/build
 packages/**/build
+contracts/*/build
 e2e/build
 dist
 

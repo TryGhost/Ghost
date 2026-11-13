@@ -26,7 +26,7 @@
     "../packages/image-transform/src",
     "../packages/limit-service/src",
     "../packages/metafield-csv/src",
-    "../packages/metafield-types/src",
+    "../contracts/metafield-types/src",
     "../packages/nql-string/src",
     "../packages/parse-email-address/src"
   ],

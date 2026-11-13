@@ -7,7 +7,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
-    "directory": "packages/metafield-types"
+    "directory": "contracts/metafield-types"
   },
   "files": [
     "build"
