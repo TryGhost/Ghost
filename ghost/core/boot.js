@@ -533,8 +533,9 @@ async function initBackgroundServices({ config }) {
   const jobsService = require('./server/services/jobs-service').getInstance();
 
   // These run before activitypub.init for the same reason as the send recovery above: gifts,
-  // reminders, tokens, expired comped subscriptions, signing keys and expired auth rows would
-  // otherwise go unhandled for the life of the process if an unrelated background service fails.
+  // reminders, tokens, expired comped subscriptions, signing keys, expired auth rows and email
+  // analytics would otherwise go unhandled for the life of the process if an unrelated background
+  // service fails.
   // Each is scheduled in turn and isolated from the others.
   const jobsBeforeActivityPub = [
     () => require('./server/services/gifts/jobs').scheduleGiftCleanupJob(jobsService),
@@ -543,28 +544,10 @@ async function initBackgroundServices({ config }) {
     () => require('./server/services/members/jobs').scheduleExpiredCompCleanupJob(jobsService),
     () => require('./server/services/signing-keys').default.extras.scheduleCheckJob(jobsService),
     () => require('./server/auth/better-auth/cleanup').scheduleClearExpiredJob(jobsService),
+    () => require('./server/services/email-analytics/jobs').scheduleRecurringJobs(),
   ];
   for (const scheduleJob of jobsBeforeActivityPub) {
     await runIsolated(scheduleJob);
-  }
-
-  // Load email analytics recurring jobs. Runs before activitypub.init for the
-  // same reason as the schedules above. Each failure is logged rather than
-  // thrown so one failed registration cannot hide a sibling's or stop the
-  // remaining background services from starting.
-  if (config.get('backgroundJobs:emailAnalytics')) {
-    const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
-    const results = await Promise.allSettled([
-      emailAnalyticsJobs.scheduleRecurringNewslettersJob(),
-      emailAnalyticsJobs.scheduleRecurringAutomationsJob(),
-      emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob(),
-    ]);
-    const logging = require('@tryghost/logging');
-    for (const result of results) {
-      if (result.status === 'rejected') {
-        logging.error(result.reason);
-      }
-    }
   }
 
   // Isolated like the jobs around it: a failed start is logged and the work below still starts.
