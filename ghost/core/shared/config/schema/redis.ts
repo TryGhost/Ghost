@@ -2,7 +2,10 @@ import { z } from 'zod';
 import { tcpPort } from './primitives';
 
 // the config loader turns all-digit environment values into numbers
-const credential = z.union([z.string(), z.number()]).transform(String).optional();
+const credential = z
+  .union([z.string(), z.number()])
+  .nullish()
+  .transform((value) => (value === null || value === undefined ? undefined : String(value)));
 
 /**
  * Connection settings for one Redis client, for any area that talks to Redis.

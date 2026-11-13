@@ -1,67 +1,137 @@
-const crypto = require('crypto');
-const { CacheBase } = require('@tryghost/adapter-base-cache');
-const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
-const metrics = require('@tryghost/metrics');
-const debug = require('@tryghost/debug')('redis-cache');
-const cacheManager = require('cache-manager');
-const redisStoreFactory = require('./redis-store-factory');
+import crypto from 'node:crypto';
+import { z } from 'zod';
+import { CacheBase } from '@tryghost/adapter-base-cache';
+import * as errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
+import metrics from '@tryghost/metrics';
+import createDebug from '@tryghost/debug';
+import cacheManager from 'cache-manager';
+import { redisConnection } from '../../../../shared/config/schema/redis';
+import redisStoreFactory from './redis-store-factory';
+
+const debug = createDebug('redis-cache');
 
 const PREFIX_HASH_KEY = 'prefix_hash';
 
-class AdapterCacheRedis extends CacheBase {
+/** The parts of the ioredis client this adapter uses. */
+interface RedisClient {
+  on(event: 'error', listener: (error: Error) => void): unknown;
+  get(key: string): Promise<string | null>;
+  set(key: string, value: string, mode?: 'NX'): Promise<'OK' | null>;
+}
+
+/** The parts of a cache-manager cache over a Redis store this adapter uses. */
+interface RedisCacheManager {
+  store: { getClient(): RedisClient };
+  get(key: string): Promise<unknown>;
+  set(key: string, value: unknown, options?: { ttl: number }): Promise<unknown>;
+  ttl(key: string): Promise<number>;
+}
+
+const plainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/**
+ * Connection keys come from the shared Redis connection schema, so any other
+ * top-level key passes through to ioredis.
+ */
+const configSchema = redisConnection.extend({
+  /** A cache-manager cache to use instead of connecting; tests inject one. */
+  cache: z
+    .custom<RedisCacheManager>(
+      (value) =>
+        plainObject(value) &&
+        plainObject(value.store) &&
+        typeof value.store.getClient === 'function',
+      { error: 'Must be a cache-manager cache over a Redis store' },
+    )
+    .optional(),
+  /** Default time to live in seconds. */
+  ttl: z.number().nonnegative().nullish(),
+  /** Read timeout in milliseconds, after which a read counts as a miss. */
+  getTimeoutMilliseconds: z.number().nonnegative().nullish(),
+  /** How far through its ttl an entry is refreshed in the background, from 0 to 1. */
+  refreshAheadFactor: z.number().min(0).max(1).nullish(),
+  /** Prefix for every key, e.g. `2368:image-sizes:`. */
+  keyPrefix: z.string().nullish(),
+  /** Feature name added to metrics, e.g. `postsPublic`. */
+  featureName: z.string().nullish(),
+  /** Share one Redis store across every adapter in the process. Defaults to true. */
+  reuseConnection: z.boolean().nullish(),
+  /** cache-manager-ioredis cluster config. Passed through as given. */
+  clusterConfig: z.custom<Record<string, unknown>>(plainObject).nullish(),
+  /** Extra ioredis options, applied over the top-level ones, so checked the same way. */
+  storeConfig: redisConnection
+    .extend({
+      /** Seconds between reconnect attempts. Defaults to 10. */
+      retryConnectSeconds: z.number().positive().nullish(),
+    })
+    .nullish(),
+});
+
+export type AdapterCacheRedisOptions = z.input<typeof configSchema>;
+
+export default class AdapterCacheRedis extends CacheBase {
+  cache: RedisCacheManager;
+  ttl: number | null | undefined;
+  refreshAheadFactor: number;
+  getTimeoutMilliseconds: number | null;
+  currentlyExecutingBackgroundRefreshes: Set<string>;
+  currentlyExecutingReads: Map<string, Promise<unknown>>;
+  private _keyPrefix: string;
+  private _featureName: string | null | undefined;
+  private _prefixHashInitInFlight: Promise<string | null> | null;
+
   /**
-   *
-   * @param {Object} config
-   * @param {Object} [config.cache] - caching instance compatible with cache-manager's redis store
-   * @param {string} [config.host] - redis host used in case no cache instance provided
-   * @param {number} [config.port] - redis port used in case no cache instance provided
-   * @param {string} [config.username] - redis username used in case no cache instance provided
-   * @param {string} [config.password] - redis password used in case no cache instance provided
-   * @param {Object} [config.clusterConfig] - redis cluster config used in case no cache instance provided
-   * @param {Object} [config.storeConfig] - extra redis client config used in case no cache instance provided
-   * @param {number} [config.ttl] - default cached value Time To Live (expiration) in *seconds*
-   * @param {number} [config.getTimeoutMilliseconds] - default timeout for cache get operations in *milliseconds*
-   * @param {number} [config.refreshAheadFactor] - 0-1 number to use to determine how old (as a percentage of ttl) an entry should be before refreshing it
-   * @param {string} [config.keyPrefix] - prefix to use when building a unique cache key, e.g.: 'some_id:image-sizes:'
-   * @param {string} [config.featureName] - name of the cache feature (e.g. 'postsPublic') used for dashboard filtering
-   * @param {boolean} [config.reuseConnection] - specifies if the redis store/connection should be reused within the process
+   * Parse the adapter's config, throwing an IncorrectUsageError naming every
+   * bad key. Shared by `validate` (boot) and the constructor.
    */
-  constructor(config) {
+  private static parseConfig(config: unknown) {
+    const result = configSchema.safeParse(config ?? {});
+    if (!result.success) {
+      throw new errors.IncorrectUsageError({
+        message: result.error.issues
+          .map((issue) => `${issue.path.join('.') || 'config'}: ${issue.message}`)
+          .join('; '),
+      });
+    }
+    return result.data;
+  }
+
+  /** Validate the options this adapter would be constructed with, without connecting. */
+  static validate(config: unknown): asserts config is AdapterCacheRedisOptions {
+    AdapterCacheRedis.parseConfig(config);
+  }
+
+  constructor(config?: unknown) {
     super();
 
-    this.cache = config.cache;
+    const {
+      cache,
+      ttl,
+      getTimeoutMilliseconds,
+      refreshAheadFactor,
+      keyPrefix,
+      featureName,
+      reuseConnection,
+      clusterConfig,
+      storeConfig,
+      ...connection
+    } = AdapterCacheRedis.parseConfig(config);
 
-    if (!this.cache) {
-      // @NOTE: this condition can be avoided if we add merging of nested options
-      //        to adapter configuration. Than adding adapter-specific {clusterConfig: {options: {ttl: XXX}}}
-      //        will be enough to set ttl for redis cluster.
-      //
-      // Derived rather than assigned into: `config` here is the adapter's slice
-      // of Ghost config itself, so folding ttl in place wrote through to every
-      // later reader of `adapters:...`.
-      let clusterConfig = config.clusterConfig;
-
-      if (config.ttl && clusterConfig) {
-        clusterConfig = {
-          ...clusterConfig,
-          options: { ...clusterConfig.options, ttl: config.ttl },
-        };
-      }
-
+    if (cache) {
+      this.cache = cache;
+    } else {
       const storeOptions = {
-        ttl: config.ttl,
-        host: config.host,
-        port: config.port,
-        username: config.username,
-        password: config.password,
+        ttl,
+        ...connection,
         retryStrategy: () => {
-          return (config.storeConfig?.retryConnectSeconds || 10) * 1000;
+          return (storeConfig?.retryConnectSeconds || 10) * 1000;
         },
-        ...config.storeConfig,
+        ...storeConfig,
         clusterConfig,
       };
-      const store = redisStoreFactory.getRedisStore(storeOptions, config.reuseConnection);
+      const store = redisStoreFactory.getRedisStore(storeOptions, reuseConnection ?? true);
 
       this.cache = cacheManager.caching({
         store: store,
@@ -69,13 +139,13 @@ class AdapterCacheRedis extends CacheBase {
       });
     }
 
-    this.ttl = config.ttl;
-    this.refreshAheadFactor = config.refreshAheadFactor || 0;
-    this.getTimeoutMilliseconds = config.getTimeoutMilliseconds || null;
+    this.ttl = ttl;
+    this.refreshAheadFactor = refreshAheadFactor || 0;
+    this.getTimeoutMilliseconds = getTimeoutMilliseconds || null;
     this.currentlyExecutingBackgroundRefreshes = new Set();
     this.currentlyExecutingReads = new Map();
-    this._keyPrefix = config.keyPrefix || '';
-    this._featureName = config.featureName;
+    this._keyPrefix = keyPrefix || '';
+    this._featureName = featureName;
     this._prefixHashInitInFlight = null;
     this.redisClient.on('error', this.handleRedisError);
   }
@@ -85,9 +155,9 @@ class AdapterCacheRedis extends CacheBase {
    * controller (and this adapter). See the "survives deep cloning"
    * suite — `#`-private methods break on clones.
    */
-  _metric(name, extra = {}) {
-    const value = { ...extra };
-    if (this._featureName !== undefined) {
+  private _metric(name: string, extra: Record<string, unknown> = {}) {
+    const value: Record<string, unknown> = { ...extra };
+    if (this._featureName !== undefined && this._featureName !== null) {
       value.feature = this._featureName;
     }
     metrics.metric(name, value);
@@ -101,7 +171,7 @@ class AdapterCacheRedis extends CacheBase {
    * `store.getClient()` works because that function captures the original
    * client via closure, so even on a clone it returns the live one.
    */
-  get redisClient() {
+  get redisClient(): RedisClient {
     return this.cache.store.getClient();
   }
 
@@ -154,7 +224,7 @@ class AdapterCacheRedis extends CacheBase {
     return this._keyPrefix + prefixHash;
   }
 
-  handleRedisError(error) {
+  handleRedisError(error: Error) {
     logging.error(error);
   }
 
@@ -162,10 +232,8 @@ class AdapterCacheRedis extends CacheBase {
    * This is a recommended way to build cache key prefixes from
    * the cache-manager package. Might be a good contribution to make
    * in the package itself (https://github.com/node-cache-manager/node-cache-manager/issues/158)
-   * @param {string} key
-   * @returns {Promise<string>}
    */
-  async _buildKey(key) {
+  async _buildKey(key: string): Promise<string> {
     const keyPrefix = await this.keyPrefix();
     return `${keyPrefix}${key}`;
   }
@@ -176,22 +244,15 @@ class AdapterCacheRedis extends CacheBase {
    * adapter in the process shares one store, and the store-level TTL is
    * whatever the first-instantiated adapter was configured with — so relying
    * on it would silently apply that adapter's TTL to every feature.
-   *
-   * @param {string} internalKey
-   * @param {*} value
    */
-  async _cacheSet(internalKey, value) {
+  async _cacheSet(internalKey: string, value: unknown) {
     if (typeof this.ttl === 'number') {
       return await this.cache.set(internalKey, value, { ttl: this.ttl });
     }
     return await this.cache.set(internalKey, value);
   }
 
-  /**
-   *
-   * @param {string} internalKey
-   */
-  async shouldRefresh(internalKey) {
+  async shouldRefresh(internalKey: string) {
     if (this.refreshAheadFactor === 0) {
       debug(`shouldRefresh ${internalKey}: false - refreshAheadFactor = 0`);
       return false;
@@ -202,7 +263,7 @@ class AdapterCacheRedis extends CacheBase {
     }
     try {
       const ttlRemainingForEntry = await this.cache.ttl(internalKey);
-      const shouldRefresh = ttlRemainingForEntry < this.refreshAheadFactor * this.ttl;
+      const shouldRefresh = ttlRemainingForEntry < this.refreshAheadFactor * (this.ttl ?? NaN);
       debug(
         `shouldRefresh ${internalKey}: ${shouldRefresh} - TTL remaining = ${ttlRemainingForEntry}`,
       );
@@ -217,18 +278,16 @@ class AdapterCacheRedis extends CacheBase {
    * Performs the buildKey + cache.get sequence, bounded by
    * getTimeoutMilliseconds if configured. On timeout resolves with
    * {internalKey: null, result: null} so the caller treats it as a MISS.
-   *
-   * @param {string} key
-   * @returns {Promise<{internalKey: string|null, result: any}>}
    */
-  _lookupWithTimeout(key) {
+  _lookupWithTimeout(key: string): Promise<{ internalKey: string | null; result: unknown }> {
     const lookup = (async () => {
       const internalKey = await this._buildKey(key);
       const result = await this.cache.get(internalKey);
       return { internalKey, result };
     })();
 
-    if (typeof this.getTimeoutMilliseconds !== 'number') {
+    const timeoutMs = this.getTimeoutMilliseconds;
+    if (typeof timeoutMs !== 'number') {
       return lookup;
     }
 
@@ -245,7 +304,7 @@ class AdapterCacheRedis extends CacheBase {
         debug('get', key, 'timeout');
         this._metric('cache-timeout');
         resolve({ internalKey: null, result: null });
-      }, this.getTimeoutMilliseconds);
+      }, timeoutMs);
       lookup.then(
         (value) => {
           if (settled) {
@@ -271,11 +330,9 @@ class AdapterCacheRedis extends CacheBase {
   }
 
   /**
-   *
-   * @param {string} key
-   * @param {() => Promise<any>} [fetchData] An optional function to fetch the data, which will be used in the case of a cache MISS or a background refresh
+   * @param fetchData An optional function to fetch the data, which will be used in the case of a cache MISS or a background refresh
    */
-  async get(key, fetchData) {
+  async get(key: string, fetchData?: () => Promise<unknown>): Promise<unknown> {
     try {
       const { internalKey, result } = await this._lookupWithTimeout(key);
       debug(`get ${key}: Cache ${result ? 'HIT' : 'MISS'}`);
@@ -290,26 +347,28 @@ class AdapterCacheRedis extends CacheBase {
         return result;
       }
       if (result) {
-        const shouldRefresh = await this.shouldRefresh(internalKey);
-        const isRefreshing = this.currentlyExecutingBackgroundRefreshes.has(internalKey);
+        // a hit always came through a lookup that built its key
+        const hitKey = internalKey as string;
+        const shouldRefresh = await this.shouldRefresh(hitKey);
+        const isRefreshing = this.currentlyExecutingBackgroundRefreshes.has(hitKey);
         if (isRefreshing) {
           debug(`Background refresh already happening for ${key}`);
         }
         if (!isRefreshing && shouldRefresh) {
           debug(`Doing background refresh for ${key}`);
-          this.currentlyExecutingBackgroundRefreshes.add(internalKey);
+          this.currentlyExecutingBackgroundRefreshes.add(hitKey);
           this._metric('cache-background-refresh-triggered');
           const refreshStart = performance.now();
           fetchData()
             .then(async (data) => {
               await this.set(key, data, { throwOnError: true }); // We don't use `internalKey` here because `set` handles it
-              this.currentlyExecutingBackgroundRefreshes.delete(internalKey);
+              this.currentlyExecutingBackgroundRefreshes.delete(hitKey);
               this._metric('cache-background-refresh-succeeded', {
                 value: performance.now() - refreshStart,
               });
             })
             .catch((error) => {
-              this.currentlyExecutingBackgroundRefreshes.delete(internalKey);
+              this.currentlyExecutingBackgroundRefreshes.delete(hitKey);
               this._metric('cache-background-refresh-failed');
               logging.error({
                 message: 'There was an error refreshing cache data in the background',
@@ -355,13 +414,9 @@ class AdapterCacheRedis extends CacheBase {
   }
 
   /**
-   *
-   * @param {string} key
-   * @param {*} value
-   * @param {Object} [options]
-   * @param {boolean} [options.throwOnError] - if true, rethrow write errors after logging. Used by the background refresh path so success is only emitted after a write that actually succeeded.
+   * @param options.throwOnError if true, rethrow write errors after logging. Used by the background refresh path so success is only emitted after a write that actually succeeded.
    */
-  async set(key, value, { throwOnError = false } = {}) {
+  async set(key: string, value: unknown, { throwOnError = false } = {}) {
     try {
       const internalKey = await this._buildKey(key);
       debug('set', internalKey);
@@ -399,11 +454,9 @@ class AdapterCacheRedis extends CacheBase {
    *             (see @tryghost/adapter-base-cache#requiredFns), but the
    *             redis adapter does not support enumerating its keys.
    */
-  keys() {
+  keys(): never {
     throw new errors.IncorrectUsageError({
       message: 'AdapterCacheRedis does not support keys()',
     });
   }
 }
-
-module.exports = AdapterCacheRedis;
