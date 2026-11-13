@@ -21,6 +21,10 @@ const { afterCommit } = require('../../../../lib/after-commit');
 const {
   StartAutomationsPollEvent,
 } = require('../../../automations/events/start-automations-poll-event');
+const {
+  getLoadTestAutomationId,
+  enrollLoadTestMembers,
+} = require('../../../automations/staging-load-test');
 const { MEMBER_WELCOME_EMAIL_SLUGS } = require('../../../member-welcome-emails/constants');
 const db = require('../../../../data/db');
 const schema = require('../../../../data/schema');
@@ -1349,6 +1353,13 @@ module.exports = class MemberRepository {
       .distinct();
 
     const memberIds = memberRows.map((row) => row.id);
+    const loadTestAutomationId =
+      data.action === 'addLabel' && (await getLoadTestAutomationId(data.meta?.label?.id));
+    if (loadTestAutomationId && (!labs.isSet('automations') || memberIds.length > 100000)) {
+      throw new errors.IncorrectUsageError({
+        message: 'The staging load test requires Automations and at most 100,000 selected members.',
+      });
+    }
 
     // Each action changes the members' relations, so lock them as an edit would.
     // A chunk at a time, so a bulk action across every member doesn't hold
@@ -1361,7 +1372,7 @@ module.exports = class MemberRepository {
         results.push(
           await this._Member.transaction(async (transacting) => {
             await this._Member.lockForUpdate(chunk, { transacting });
-            return this.#bulkEditChunk(data, chunk, { transacting });
+            return this.#bulkEditChunk(data, chunk, { transacting, loadTestAutomationId });
           }),
         );
       } catch (err) {
@@ -1386,7 +1397,7 @@ module.exports = class MemberRepository {
     };
   }
 
-  async #bulkEditChunk(data, memberIds, { transacting }) {
+  async #bulkEditChunk(data, memberIds, { transacting, loadTestAutomationId }) {
     if (data.action === 'unsubscribe') {
       const hasNewsletterSelected = Object.hasOwn(data, 'newsletter') && data.newsletter !== null;
       if (hasNewsletterSelected) {
@@ -1428,7 +1439,19 @@ module.exports = class MemberRepository {
       };
     });
 
-    return this._Member.bulkAdd(relations, 'members_labels', { transacting });
+    const result = await this._Member.bulkAdd(relations, 'members_labels', { transacting });
+    if (
+      loadTestAutomationId &&
+      result.successful &&
+      (await enrollLoadTestMembers(
+        transacting,
+        loadTestAutomationId,
+        relations.map((relation) => relation.id),
+      ))
+    ) {
+      this.dispatchEvent(StartAutomationsPollEvent.create(), { transacting });
+    }
+    return result;
   }
 
   async upsertCustomer(data) {

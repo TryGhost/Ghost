@@ -9,6 +9,7 @@ import type {
   RunStepToInsert,
 } from '../../../../core/server/services/automations/automations-repository-2';
 import { createDatabaseAutomationsRepository2 } from '../../../../core/server/services/automations/database-automations-repository-2';
+import { enrollLoadTestMembers } from '../../../../core/server/services/automations/staging-load-test';
 // @ts-expect-error This module lacks type definitions.
 import testUtils from '../../../utils';
 import { alphabeticalDescribe } from '../../../utils/alphabetical-describe';
@@ -512,6 +513,62 @@ describe('database automations repository', function () {
       await insertAutomationTriggerTiers(selected.automation_id, [tierId]);
 
       await expect(findFirstActionRevisions('free', [tierId])).resolves.toEqual([free]);
+    });
+
+    it('enrolls only eligible synthetic members once in the selected load test automation', async function () {
+      const target = await insertAutomation();
+      await insertAutomation();
+      const trx = await knex.transaction();
+
+      try {
+        const labelId = ObjectId().toHexString();
+        await trx('labels').insert({ id: labelId, name: labelId, slug: labelId, created_at: now });
+        const members = [
+          { email: 'seeded-member@example.com', status: 'free' },
+          { email: 'paid-member@example.com', status: 'paid' },
+          { email: 'other-member@example.com.invalid', status: 'free' },
+        ].map(({ email, status }) => ({
+          ...createMember(ObjectId().toHexString()),
+          email,
+          status,
+        }));
+        await trx('members').insert(members);
+        const relations = members.map((member) => ({
+          id: ObjectId().toHexString(),
+          member_id: member.id,
+          label_id: labelId,
+        }));
+        await trx('members_labels').insert(relations);
+        const relationIds = relations.map((relation) => relation.id);
+
+        await expect(enrollLoadTestMembers(trx, target.automation_id, relationIds)).resolves.toBe(
+          true,
+        );
+        await expect(enrollLoadTestMembers(trx, target.automation_id, relationIds)).resolves.toBe(
+          false,
+        );
+
+        const runs = await trx('automation_runs')
+          .whereIn(
+            'member_id',
+            members.map((member) => member.id),
+          )
+          .select('id', 'automation_id', 'member_id');
+        expect(runs).toEqual([
+          { id: expect.any(String), automation_id: target.automation_id, member_id: members[0].id },
+        ]);
+        const steps = await trx('automation_run_steps')
+          .where('automation_run_id', runs[0].id)
+          .select('automation_action_revision_id', 'status');
+        expect(steps).toEqual([
+          {
+            automation_action_revision_id: target.automation_action_revision_id,
+            status: 'pending',
+          },
+        ]);
+      } finally {
+        await trx.rollback();
+      }
     });
 
     it('returns only all-paid automations for paid members without tier IDs', async function () {

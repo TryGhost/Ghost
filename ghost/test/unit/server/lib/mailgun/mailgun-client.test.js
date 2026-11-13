@@ -447,48 +447,56 @@ describe('MailgunClient', function () {
       assert(sendMock.isDone());
     });
 
-    it('sends an email in test mode', async function () {
-      const configStub = sinon.stub(config, 'get');
-      configStub.withArgs('bulkEmail').returns({
-        mailgun: {
-          apiKey: 'apiKey',
-          domain: 'domain.com',
-          baseUrl: 'https://api.mailgun.net/v3',
-          testmode: true,
-        },
-        batchSize: 1000,
-      });
-      const message = {
-        subject: 'Test Subject',
-        from: 'from@example.com',
-        replyTo: 'replyTo@example.com',
-        html: '<p>Test Content</p>',
-        plaintext: 'Test Content',
-      };
-      const recipientData = {
-        'test@example.com': {
-          name: 'Test User',
-          unsubscribe_url: 'https://example.com/unsubscribe',
-          list_unsubscribe: 'https://example.com/unsubscribe',
-        },
-      };
-      // Request body is multipart/form-data, so we need to check the body manually with some regex
-      // We can't use nock's JSON body matching because it doesn't support multipart/form-data
-      const sendMock = nock('https://api.mailgun.net')
-        // .post('/v3/domain.com/messages', /form-data; name="subject"[^]*Test Subject/m)
-        .post('/v3/domain.com/messages', function (body) {
-          const regexList = [/form-data; name="o:testmode"[^]*yes/m];
-          return regexList.every((regex) => regex.test(body));
-        })
-        .replyWithFile(200, `${__dirname}/fixtures/send-success.json`, {
-          'Content-Type': 'application/json',
+    it.each([
+      ['explicit test mode', true, 123, 'https://other.ghost.is', true],
+      ['the staging load test site', false, 367317, 'https://load-test.ghost.is', true],
+      ['another staging site', false, 367318, 'https://other.ghost.is', false],
+      ['the same site ID outside staging', false, 367317, 'https://other.ghost.io', false],
+    ])(
+      'sets Mailgun test mode correctly for %s',
+      async function (_scenario, testmode, siteId, adminUrl, expected) {
+        const configStub = sinon.stub(config, 'get');
+        configStub.withArgs('blog_id').returns(siteId);
+        configStub.withArgs('admin:url').returns(adminUrl);
+        configStub.withArgs('bulkEmail').returns({
+          mailgun: {
+            apiKey: 'apiKey',
+            domain: 'domain.com',
+            baseUrl: 'https://api.mailgun.net/v3',
+            testmode,
+          },
+          batchSize: 1000,
         });
+        const message = {
+          subject: 'Test Subject',
+          from: 'from@example.com',
+          replyTo: 'replyTo@example.com',
+          html: '<p>Test Content</p>',
+          plaintext: 'Test Content',
+        };
+        const recipientData = {
+          'test@example.com': {
+            name: 'Test User',
+            unsubscribe_url: 'https://example.com/unsubscribe',
+            list_unsubscribe: 'https://example.com/unsubscribe',
+          },
+        };
+        // Request body is multipart/form-data, so we need to check the body manually with some regex
+        // We can't use nock's JSON body matching because it doesn't support multipart/form-data
+        const sendMock = nock('https://api.mailgun.net')
+          .post('/v3/domain.com/messages', function (body) {
+            return /form-data; name="o:testmode"[^]*yes/m.test(body) === expected;
+          })
+          .replyWithFile(200, `${__dirname}/fixtures/send-success.json`, {
+            'Content-Type': 'application/json',
+          });
 
-      const mailgunClient = new MailgunClient({ config, settings });
-      const response = await mailgunClient.send(message, recipientData, []);
-      assert(response.id === 'message-id');
-      assert(sendMock.isDone());
-    });
+        const mailgunClient = new MailgunClient({ config, settings });
+        const response = await mailgunClient.send(message, recipientData, []);
+        assert(response.id === 'message-id');
+        assert(sendMock.isDone());
+      },
+    );
 
     it('sends an email with a custom tag', async function () {
       const configStub = sinon.stub(config, 'get');
