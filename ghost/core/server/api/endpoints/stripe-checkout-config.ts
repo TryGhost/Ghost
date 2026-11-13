@@ -1,4 +1,5 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
+import { actingContext } from '../../lib/actor';
 import stripeCheckoutConfig from '../../services/stripe-checkout-config';
 import type { StripeCheckoutConfig } from '../../services/stripe-checkout-config';
 import { COLLECTION_FLAG } from '../../services/stripe-checkout-config/models';
@@ -35,7 +36,7 @@ const controller = {
       refuseCollectionWhileOff(input, labs.isSet(COLLECTION_FLAG));
       const { config } = stripeCheckoutConfig.service;
       const { changedRequirements } = await config.edit(
-        stripeCheckoutConfig.extras.actingContext(frame.options.context),
+        actingContext(frame.options.context),
         input,
       );
       if (changedRequirements) {

@@ -38,7 +38,9 @@ import {
   type FieldSource,
 } from './queries';
 import { mintableKey } from './key';
-import { type RecordMetafieldAction, type RequestContext } from './actions';
+import type { ActionLog } from '../../lib/action-log/action-log';
+import type { RequestContext } from '../../lib/actor';
+import { fieldAction, reorderAction, type FieldAction } from './field-actions';
 import type { MetafieldsTracking } from './tracking';
 import { ensureTransaction } from '../../lib/ensure-transaction';
 
@@ -136,7 +138,7 @@ export interface EditedField {
 export class MetafieldDefinitionsService {
   private knex: Knex;
   private fields: FieldSource;
-  private recordAction: RecordMetafieldAction;
+  private actionLog: ActionLog;
   private namespaces: Namespaces;
   private tracking: MetafieldsTracking;
   private labs: { isSet(flag: string): boolean };
@@ -144,14 +146,14 @@ export class MetafieldDefinitionsService {
   constructor({
     knex,
     fields,
-    recordAction,
+    actionLog,
     namespaces,
     tracking,
     labs,
   }: {
     knex: Knex;
     fields: FieldSource;
-    recordAction: RecordMetafieldAction;
+    actionLog: ActionLog;
     namespaces: Namespaces;
     tracking: MetafieldsTracking;
     /** Asked on every create, as a type's flag can be switched on while Ghost runs. */
@@ -159,7 +161,7 @@ export class MetafieldDefinitionsService {
   }) {
     this.knex = knex;
     this.fields = fields;
-    this.recordAction = recordAction;
+    this.actionLog = actionLog;
     this.namespaces = namespaces;
     this.tracking = tracking;
     this.labs = labs;
@@ -306,12 +308,8 @@ export class MetafieldDefinitionsService {
           const added = await this.readMany(trx, namespace, keys);
           await this.record(
             trx,
-            added.map((field) => ({
-              context,
-              verb: 'create',
-              subject: field.id,
-              details: { primary_name: field.name, key: field.key },
-            })),
+            context,
+            added.map((field) => fieldAction('create', field)),
           );
           return added;
         });
@@ -375,10 +373,11 @@ export class MetafieldDefinitionsService {
    */
   private async record(
     trx: Knex.Transaction,
-    actions: Array<Parameters<RecordMetafieldAction>[1]>,
+    context: RequestContext,
+    actions: FieldAction[],
   ): Promise<void> {
     for (const action of actions) {
-      await this.recordAction(trx, action);
+      await this.actionLog.record(trx, context, action);
     }
   }
 
@@ -439,14 +438,7 @@ export class MetafieldDefinitionsService {
         const ordered = await this.list(
           this.fields.definitions(trx, { audience: ADMIN, status: ANY_STATUS, namespace }),
         );
-        await this.record(trx, [
-          {
-            context,
-            verb: 'reorder',
-            subject: null,
-            details: { action_name: 'reordered', count: ordered.length },
-          },
-        ]);
+        await this.record(trx, context, [reorderAction(ordered.length)]);
         return ordered;
       });
     });
@@ -629,7 +621,7 @@ export class MetafieldDefinitionsService {
 
         // Only what actually changes is written and logged, so re-saving an unchanged field is a
         // no-op rather than a spurious edit.
-        const recorded: Array<Parameters<RecordMetafieldAction>[1]> = [];
+        const recorded: FieldAction[] = [];
         const name = patch.name ?? existing.name;
 
         if (patch.name !== undefined && patch.name !== existing.name) {
@@ -647,12 +639,13 @@ export class MetafieldDefinitionsService {
             }
             throw err;
           }
-          recorded.push({
-            context,
-            verb: 'rename',
-            subject: existing.id,
-            details: { primary_name: patch.name, key, previous_name: existing.name },
-          });
+          recorded.push(
+            fieldAction(
+              'rename',
+              { id: existing.id, name: patch.name, key },
+              { previous_name: existing.name },
+            ),
+          );
         }
 
         if (settings && !isDeepStrictEqual(settings.data.settings, existing.settings)) {
@@ -660,12 +653,7 @@ export class MetafieldDefinitionsService {
           await trx(FIELDS_TABLE)
             .where({ namespace, key })
             .update({ ...z.encode(DbTypedSettings, settings.data), updated_at: new Date() });
-          recorded.push({
-            context,
-            verb: 'changeSettings',
-            subject: existing.id,
-            details: { primary_name: name, key },
-          });
+          recorded.push(fieldAction('changeSettings', { id: existing.id, name, key }));
         }
 
         if (patch.access !== undefined && patch.access.member !== existing.access.member) {
@@ -673,17 +661,16 @@ export class MetafieldDefinitionsService {
           await trx(FIELDS_TABLE)
             .where({ namespace, key })
             .update({ member_access: patch.access.member, updated_at: new Date() });
-          recorded.push({
-            context,
-            verb: 'changeAccess',
-            subject: existing.id,
-            details: {
-              primary_name: name,
-              key,
-              member_access: patch.access.member,
-              previous_member_access: existing.access.member,
-            },
-          });
+          recorded.push(
+            fieldAction(
+              'changeAccess',
+              { id: existing.id, name, key },
+              {
+                member_access: patch.access.member,
+                previous_member_access: existing.access.member,
+              },
+            ),
+          );
         }
 
         // A status change is the archive/restore transition.
@@ -693,15 +680,10 @@ export class MetafieldDefinitionsService {
           await trx(FIELDS_TABLE)
             .where({ namespace, key })
             .update({ status: patch.status, updated_at: new Date() });
-          recorded.push({
-            context,
-            verb,
-            subject: existing.id,
-            details: { primary_name: name, key },
-          });
+          recorded.push(fieldAction(verb, { id: existing.id, name, key }));
         }
 
-        await this.record(trx, recorded);
+        await this.record(trx, context, recorded);
         return {
           field: await this.read(namespace, key, ADMIN, trx),
           changedForMembers:
@@ -766,13 +748,8 @@ export class MetafieldDefinitionsService {
           });
         }
         await trx(FIELDS_TABLE).where({ namespace, key }).del();
-        await this.record(trx, [
-          {
-            context,
-            verb: 'delete',
-            subject: stored.id,
-            details: { primary_name: stored.name, key },
-          },
+        await this.record(trx, context, [
+          fieldAction('delete', { id: stored.id, name: stored.name, key }),
         ]);
       });
     });
