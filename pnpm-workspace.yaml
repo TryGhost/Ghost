@@ -260,8 +260,6 @@ catalog:
   knip: 6.44.2
   lint-staged: 17.6.0
   secretlint: 13.1.0
-  '@pnpm/releasing.versioning': 1100.3.8
-  '@pnpm/workspace.workspace-manifest-reader': 1100.3.2
   execa: 10.2.1
   remark-cli: 12.0.1
   remark-validate-links: 13.1.0

@@ -10,7 +10,7 @@ import { getWorkspace as loadWorkspace, type WorkspaceManifest } from '../lib/pn
 
 async function getWorkspace(): Promise<WorkspaceManifest> {
   const workspace = await loadWorkspace();
-  assert.ok(workspace, 'pnpm-workspace.yaml should load');
+  assert.ok(workspace.versioning, 'pnpm-workspace.yaml should set versioning');
   return workspace;
 }
 
@@ -23,7 +23,7 @@ async function workspaceWithIgnore(update: (ignore: string[]) => string[]) {
 }
 
 async function manifestsWith(name: string, update: Partial<Omit<NamedManifest, 'name'>>) {
-  const manifests = await loadManifests(await getWorkspace());
+  const manifests = await loadManifests();
   return manifests.map((manifest) =>
     manifest.name === name ? { ...manifest, ...update } : manifest,
   );
