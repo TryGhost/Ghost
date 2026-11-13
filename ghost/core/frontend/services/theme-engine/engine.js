@@ -9,7 +9,7 @@ if (config.get('env') !== 'production') {
 
 instance.escapeExpression = instance.handlebars.Utils.escapeExpression;
 
-instance.configure = function configure(partialsPath, themePath) {
+function configure(hbsInstance, partialsPath, themePath) {
   const hbsOptions = {
     partialsDir: [config.get('paths').helperTemplates],
     onCompile: function onCompile(exhbs, source) {
@@ -22,7 +22,31 @@ instance.configure = function configure(partialsPath, themePath) {
     hbsOptions.partialsDir.push(partialsPath);
   }
 
-  return instance.express4(hbsOptions);
+  return hbsInstance.express4(hbsOptions);
+}
+
+instance.configure = function (partialsPath, themePath) {
+  return configure(instance, partialsPath, themePath);
+};
+
+/**
+ * An engine for previewing a theme that isn't active. It has its own Handlebars
+ * environment, so the theme's partials never mix with the active theme's, and
+ * carries the helpers registered on the main engine.
+ *
+ * @param {string|null} partialsPath
+ * @param {string} themePath
+ * @returns {{hbs: object, render: Function}}
+ */
+instance.createPreviewEngine = function (partialsPath, themePath) {
+  const previewInstance = instance.create();
+  previewInstance.escapeExpression = instance.escapeExpression;
+  Object.assign(previewInstance.handlebars.helpers, instance.handlebars.helpers);
+
+  // Configuring re-registers express-hbs's own block helpers, bound to this instance
+  const render = configure(previewInstance, partialsPath, themePath);
+
+  return { hbs: previewInstance, render };
 };
 
 module.exports = instance;

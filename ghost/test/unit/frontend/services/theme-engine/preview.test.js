@@ -49,4 +49,31 @@ describe('Theme Preview', function () {
     assert.equal(siteData.logo, null);
     assert.equal(siteData.cover_image, null);
   });
+
+  describe('theme previews', function () {
+    const header = (value) => (name) => (name === 'x-ghost-preview' ? value : undefined);
+
+    it('takes the token of a page from the preview header of a POST', function () {
+      assert.equal(
+        preview.getPageToken({ method: 'POST', header: header('c=%23fff&theme_token=abc.def') }),
+        'abc.def',
+      );
+    });
+
+    it('never takes a token from a GET, which could be cached as the page', function () {
+      assert.equal(
+        preview.getPageToken({ method: 'GET', header: header('theme_token=abc.def') }),
+        null,
+      );
+    });
+
+    it('reads a preview asset path as the token and the asset in the theme', function () {
+      assert.deepEqual(
+        preview.getAssetRequest({ path: '/assets/_preview/abc.def/fonts/x.woff2' }),
+        { token: 'abc.def', assetPath: '/assets/fonts/x.woff2' },
+      );
+      assert.equal(preview.getAssetRequest({ path: '/assets/built/screen.css' }), null);
+      assert.equal(preview.getAssetRequest({ path: '/assets/_preview/not-a-token/x.css' }), null);
+    });
+  });
 });

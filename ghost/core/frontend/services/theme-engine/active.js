@@ -21,6 +21,7 @@ const themeI18n = require('./i18n');
 const themeI18next = require('./i18next');
 const labs = require('../../../shared/labs');
 const assetHash = require('../asset-hash');
+const previewContext = require('./preview-context');
 // Current instance of ActiveTheme
 let currentActiveTheme;
 
@@ -83,6 +84,21 @@ class ActiveTheme {
     return this._error;
   }
 
+  /** The Handlebars engine this theme renders with */
+  get engine() {
+    return engine;
+  }
+
+  /** Whether this theme is only being previewed, not active */
+  get isPreview() {
+    return false;
+  }
+
+  /** The theme's custom settings as declared in its package.json, by key */
+  get customSettingDefinitions() {
+    return this._packageInfo?.config?.custom || {};
+  }
+
   hasTemplate(templateName) {
     return this._templates.indexOf(templateName) > -1;
   }
@@ -133,8 +149,13 @@ class ActiveTheme {
 }
 
 module.exports = {
+  ActiveTheme,
+  /**
+   * The theme the current request renders with: the active theme, or the
+   * theme it previews (see preview-context.js)
+   */
   get() {
-    return currentActiveTheme;
+    return previewContext.get() || currentActiveTheme;
   },
   /**
    * Set theme

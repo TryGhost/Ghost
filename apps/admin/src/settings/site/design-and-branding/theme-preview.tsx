@@ -17,6 +17,8 @@ type GlobalSettings = {
   themeSettings?: Array<CustomThemeSetting & { dirty?: boolean }>;
   bodyFont: string;
   headingFont: string;
+  /** Lets the site render an installed theme instead of the active one (a preview token) */
+  themeToken?: string;
 };
 
 interface ThemePreviewProps {
@@ -34,6 +36,11 @@ interface ThemePreviewProps {
    * that page (to preview in turn). Without it, the preview ignores the pointer.
    */
   onNavigate?: (url: string) => void;
+  /**
+   * The site turned down the preview's theme token (it expired): the page isn't
+   * shown, and a new token is wanted
+   */
+  onThemeTokenRejected?: () => void;
 }
 
 function getPreviewData({
@@ -45,6 +52,7 @@ function getPreviewData({
   themeSettings,
   bodyFont,
   headingFont,
+  themeToken,
 }: {
   description: string;
   accentColor: string;
@@ -54,6 +62,7 @@ function getPreviewData({
   themeSettings?: Array<CustomThemeSetting & { dirty?: boolean }>;
   bodyFont: string;
   headingFont: string;
+  themeToken?: string;
 }) {
   // Don't render twice while theme settings are loading
   if (!themeSettings) {
@@ -81,6 +90,9 @@ function getPreviewData({
       : hiddenCustomThemeSettingValue;
   });
   params.append('custom', JSON.stringify(custom));
+  if (themeToken) {
+    params.append('theme_token', themeToken);
+  }
 
   return params.toString();
 }
@@ -91,11 +103,14 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({
   isVisible = true,
   scaled = true,
   onNavigate,
+  onThemeTokenRejected,
 }) => {
   const previewData = getPreviewData({ ...settings });
   const browsable = Boolean(onNavigate);
   const onNavigateRef = useRef(onNavigate);
   onNavigateRef.current = onNavigate;
+  const onThemeTokenRejectedRef = useRef(onThemeTokenRejected);
+  onThemeTokenRejectedRef.current = onThemeTokenRejected;
   // Browsable, only the latest request writes: an earlier one (e.g. for the
   // page it navigated away from) can answer after it
   const latestRequest = useRef(0);
@@ -123,8 +138,17 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({
         mode: 'cors',
         credentials: 'include',
       })
-        .then((response) => response.text())
+        .then((response) => {
+          if (response.status === 403 && previewData.includes('theme_token=')) {
+            onThemeTokenRejectedRef.current?.();
+            return null;
+          }
+          return response.text();
+        })
         .then((data) => {
+          if (data === null) {
+            return;
+          }
           if (browsable && request !== latestRequest.current) {
             return;
           }

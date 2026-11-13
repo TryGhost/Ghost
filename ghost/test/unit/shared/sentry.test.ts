@@ -16,6 +16,10 @@ type SentryTestEvent = {
     }>;
   };
   contexts?: Record<string, Record<string, unknown>>;
+  request?: {
+    url?: string;
+    headers?: Record<string, string>;
+  };
 };
 
 type SentryTestHint = {
@@ -121,6 +125,25 @@ describe('sentry', function () {
       delete localRequire.cache[localRequire.resolve('../../../core/shared/sentry')];
 
       sentry = localRequire('../../../core/shared/sentry');
+    });
+
+    it('removes theme preview tokens from the request it reports', function () {
+      sinon.stub(errors.utils, 'isGhostError').returns(false);
+      const event = {
+        tags: {},
+        request: {
+          url: 'https://site.test/assets/_preview/abc.def/built/screen.css',
+          headers: { 'x-ghost-preview': 'theme_token=abc.def' },
+        },
+      };
+
+      const result = sentry.beforeSend(event, {});
+
+      assert.equal(
+        result?.request?.url,
+        'https://site.test/assets/_preview/[redacted]/built/screen.css',
+      );
+      assert.equal(result?.request?.headers?.['x-ghost-preview'], 'theme_token=[redacted]');
     });
 
     it('returns the event', function () {

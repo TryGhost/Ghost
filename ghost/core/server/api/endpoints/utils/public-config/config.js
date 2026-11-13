@@ -68,6 +68,9 @@ module.exports = function getConfigProperties() {
     security: config.get('security'),
     // Allowlisted, unlike `security`, which is exposed verbatim
     auth: pick(config.get('auth'), ['engine']),
+    // This server can render an installed theme that isn't active, for Admin's
+    // previews of it; Admin needs this as well as the themePreview labs flag
+    themePreview: true,
   };
 
   if (config.get('explore') && config.get('explore:testimonials_url')) {

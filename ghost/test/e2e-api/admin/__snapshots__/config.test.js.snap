@@ -28,6 +28,7 @@ Object {
       "version": "0.4",
     },
     "stripeDirect": false,
+    "themePreview": true,
     "useGravatar": false,
     "version": StringMatching /\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+/,
   },

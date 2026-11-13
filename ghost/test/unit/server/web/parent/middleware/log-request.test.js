@@ -94,4 +94,21 @@ describe('Log request middleware', function () {
     assert.equal(logging.info.getCall(0).args[0].res.statusCode, 499);
     assert.equal(res.statusCode, 499);
   });
+
+  it('never logs theme preview tokens, in a preview asset path or a preview header', function () {
+    const req = {
+      url: '/assets/built/screen.css',
+      originalUrl: '/assets/_preview/abc.def/built/screen.css?v=1',
+      headers: { 'x-ghost-preview': 'c=%23fff&theme_token=abc.def', accept: 'text/css' },
+    };
+    run(req);
+
+    sinon.assert.calledOnce(logging.info);
+    const logged = logging.info.firstCall.args[0].req;
+    assert.equal(logged.originalUrl, '/assets/_preview/[redacted]/built/screen.css?v=1');
+    assert.equal(logged.headers['x-ghost-preview'], 'c=%23fff&theme_token=[redacted]');
+    assert.equal(logged.headers.accept, 'text/css');
+    // The request itself is untouched
+    assert.equal(req.originalUrl, '/assets/_preview/abc.def/built/screen.css?v=1');
+  });
 });

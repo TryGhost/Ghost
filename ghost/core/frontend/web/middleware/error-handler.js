@@ -124,7 +124,7 @@ const themeErrorRenderer = function themeErrorRenderer(err, req, res, next) {
 
   // @TODO use renderer here?!
   // Render Call - featuring an error handler for what happens if rendering fails
-  res.render(res._template, data, (_err, html) => {
+  themeEngine.render(res, res._template, data, (_err, html) => {
     if (!_err) {
       return res.send(html);
     }

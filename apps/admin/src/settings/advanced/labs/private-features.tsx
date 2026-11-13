@@ -57,6 +57,12 @@ const features: Feature[] = [
     flag: 'admin7CustomizeFromViewSite',
   },
   {
+    title: 'Theme preview',
+    description:
+      'Preview any installed theme on your own content, and set it up, before activating it.',
+    flag: 'themePreview',
+  },
+  {
     title: 'Email Unique ID',
     description:
       'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',

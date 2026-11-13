@@ -360,6 +360,7 @@ module.exports = function apiRoutes() {
   router.get('/themes/', mw.authAdminApi, http(api.themes.browse));
 
   router.get('/themes/:name/download', mw.authAdminApi, http(api.themes.download));
+  router.get('/themes/:name/preview-token', mw.authAdminApi, http(api.themes.previewToken));
 
   router.get('/themes/active', mw.authAdminApi, http(api.themes.readActive));
 

@@ -1,8 +1,8 @@
-const hbs = require('../engine');
 const urlUtils = require('../../../../shared/url-utils').default;
 const settingsCache = require('../../../../shared/settings-cache');
 const customThemeSettingsCache = require('../../../../shared/custom-theme-settings-cache');
 const labs = require('../../../../shared/labs');
+const engine = require('../engine');
 const activeTheme = require('../active');
 
 function getSiteData() {
@@ -26,15 +26,20 @@ async function updateGlobalTemplateOptions(req, res, next) {
   const siteData = getSiteData();
   const labsData = labs.getAll();
 
+  const theme = activeTheme.get();
   const themeData = {
-    posts_per_page: activeTheme.get().config('posts_per_page'),
-    image_sizes: activeTheme.get().config('image_sizes'),
+    posts_per_page: theme.config('posts_per_page'),
+    image_sizes: theme.config('image_sizes'),
   };
-  const themeSettingsData = customThemeSettingsCache.getAll();
+  // A previewed theme starts from its own defaults; Admin's values come with the request
+  const themeSettingsData = theme.isPreview
+    ? theme.customSettingDefaults
+    : customThemeSettingsCache.getAll();
 
   // @TODO: only do this if something changed?
   {
-    hbs.updateTemplateOptions({
+    // A previewed theme has its own engine; the live site's never sees its options
+    (theme.isPreview ? theme.engine : engine).updateTemplateOptions({
       data: {
         site: {
           ...siteData,

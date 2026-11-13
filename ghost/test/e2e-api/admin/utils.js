@@ -51,6 +51,7 @@ const expectedProperties = {
     'emailAnalytics',
     'klipy',
     'mailgunIsConfigured',
+    'themePreview',
     'signupForm',
   ],
 

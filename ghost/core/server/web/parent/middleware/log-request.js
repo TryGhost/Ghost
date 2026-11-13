@@ -1,5 +1,29 @@
 const logging = require('@tryghost/logging');
 const config = require('../../../../shared/config');
+const themePreviewToken = require('../../../../shared/theme-preview-token');
+
+/**
+ * The request as it is logged: theme preview tokens (in a preview asset's path,
+ * or a preview's header) are replaced, as they grant access while they last
+ *
+ * @param {import('express').Request} req
+ */
+function loggedRequest(req) {
+  const previewHeader = req.headers?.['x-ghost-preview'];
+  if (!String(req.originalUrl).includes('/_preview/') && !previewHeader) {
+    return req;
+  }
+
+  return Object.create(req, {
+    url: { value: themePreviewToken.redact(req.url) },
+    originalUrl: { value: themePreviewToken.redact(req.originalUrl) },
+    headers: {
+      value: previewHeader
+        ? { ...req.headers, 'x-ghost-preview': themePreviewToken.redact(previewHeader) }
+        : req.headers,
+    },
+  });
+}
 
 /**
  * @TODO: move this middleware to Framework monorepo?
@@ -28,12 +52,12 @@ module.exports = function logRequest(req, res, next) {
       // would otherwise log a redundant line.
       const isClientError = req.err.statusCode >= 400 && req.err.statusCode < 500;
       if (isClientError && config.get('logging:logClientErrorsAsError') === false) {
-        logging.warn({ req: req, res: res, err: req.err });
+        logging.warn({ req: loggedRequest(req), res: res, err: req.err });
       } else {
-        logging.error({ req: req, res: res, err: req.err });
+        logging.error({ req: loggedRequest(req), res: res, err: req.err });
       }
     } else {
-      logging.info({ req: req, res: res });
+      logging.info({ req: loggedRequest(req), res: res });
     }
 
     res.removeListener('finish', logResponse);

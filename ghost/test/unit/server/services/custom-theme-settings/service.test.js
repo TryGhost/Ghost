@@ -1072,4 +1072,102 @@ describe('Service', function () {
       });
     });
   });
+
+  describe('validateSettings()', function () {
+    const definitions = {
+      layout: { type: 'select', options: ['a', 'b'], default: 'a' },
+      dark: { type: 'boolean', default: false },
+      accent: { type: 'color', default: '#000000' },
+      heading: { type: 'text' },
+    };
+
+    it('accepts settings the theme declares, with values it allows', function () {
+      service.validateSettings(
+        [
+          { key: 'layout', value: 'b' },
+          { key: 'dark', value: true },
+          { key: 'accent', value: '#1234AF' },
+          { key: 'heading', value: 'Anything' },
+        ],
+        definitions,
+      );
+    });
+
+    it('refuses a setting the theme does not declare', function () {
+      assert.throws(() => service.validateSettings([{ key: 'unknown', value: 'x' }], definitions), {
+        errorType: 'ValidationError',
+      });
+    });
+
+    it("refuses keys every object has, and settings that aren't well formed", function () {
+      for (const setting of [
+        { key: 'constructor', value: 'x' },
+        { key: '__proto__', value: 'x' },
+        { key: 'toString', value: 'x' },
+        null,
+        { value: 'x' },
+        { key: 'heading', value: { not: 'a value' } },
+      ]) {
+        assert.throws(() => service.validateSettings([setting], definitions), {
+          errorType: 'ValidationError',
+        });
+      }
+    });
+
+    it('refuses values the setting does not allow', function () {
+      for (const setting of [
+        { key: 'layout', value: 'c' },
+        { key: 'dark', value: 'yes' },
+        { key: 'accent', value: 'red' },
+      ]) {
+        assert.throws(() => service.validateSettings([setting], definitions), {
+          errorType: 'ValidationError',
+        });
+      }
+    });
+  });
+
+  describe('listSettingsForTheme()', function () {
+    it("lists an inactive theme's settings with the values stored for it", async function () {
+      const settings = await service.listSettingsForTheme('test', {
+        one: { type: 'select', options: ['1', '2'], default: '2' },
+        two: { type: 'select', options: ['1', '2'], default: '1' },
+      });
+
+      assert.deepEqual(
+        settings.map(({ key, value, id }) => ({ key, value, id })),
+        [
+          { key: 'one', value: '1', id: 1 },
+          { key: 'two', value: '2', id: 2 },
+        ],
+      );
+    });
+
+    it('falls back to defaults where nothing usable is stored, as activation would', async function () {
+      const settings = await service.listSettingsForTheme('test', {
+        // stored value '1' is no longer an option
+        one: { type: 'select', options: ['x', 'y'], default: 'y' },
+        // stored as a select, now a boolean
+        two: { type: 'boolean', default: true },
+        three: { type: 'text' },
+      });
+
+      assert.deepEqual(
+        settings.map(({ key, value, id }) => ({ key, value, id })),
+        [
+          { key: 'one', value: 'y', id: null },
+          { key: 'two', value: true, id: null },
+          { key: 'three', value: null, id: null },
+        ],
+      );
+    });
+
+    it('stores nothing: reading an inactive theme leaves its settings as they were', async function () {
+      await service.listSettingsForTheme('test', { new: { type: 'text', default: 'x' } });
+
+      sinon.assert.notCalled(model.add);
+      sinon.assert.notCalled(model.edit);
+      sinon.assert.notCalled(model.destroy);
+    });
+  });
 });

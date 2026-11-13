@@ -26,6 +26,7 @@ const allowedKeys = [
   'signupForm',
   'security',
   'auth',
+  'themePreview',
 ];
 
 describe('Public-config response builders', function () {
