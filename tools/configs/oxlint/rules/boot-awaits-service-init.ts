@@ -6,13 +6,13 @@ import { fileURLToPath } from 'node:url';
 import { readLegacyServices, servicesRoot } from '../legacy-services.ts';
 
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
-const bootFile = 'ghost/core/boot.js';
+const bootFile = 'ghost/core/boot.ts';
 const entry = 'bootGhost';
 const servicePath = /^\.\/server\/services\/([^/]+?)(?:\/index)?$/;
 
 // A service directory that the legacy service inventory does not list is standard.
 // A directory with no root is not a service: switching branches can leave one
-// behind holding only untracked files. This is read each time boot.js is linted,
+// behind holding only untracked files. This is read each time boot.ts is linted,
 // so an editor's long-lived lint process sees a new service or an inventory edit.
 function readStandardServices() {
   const legacy = readLegacyServices(root);
@@ -36,7 +36,7 @@ type CallExpression = ESTree.CallExpression;
 
 /**
  * Requires boot to await the init() of every service that is not a legacy
- * service. It reads boot.js only: it cannot tell whether the order is right,
+ * service. It reads boot.ts only: it cannot tell whether the order is right,
  * which the boot tests cover.
  */
 export const bootAwaitsServiceInit: CreateRule = {
@@ -91,7 +91,7 @@ export const bootAwaitsServiceInit: CreateRule = {
           : undefined;
       return service !== undefined && services.has(service) ? service : undefined;
     }
-    // A boot phase is a function declared at the top of boot.js.
+    // A boot phase is a function declared at the top of boot.ts.
     function phaseWithBody(node: ESTree.Node | null | undefined) {
       return node?.type === 'BlockStatement' &&
         node.parent?.type === 'FunctionDeclaration' &&

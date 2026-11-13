@@ -10,7 +10,7 @@ import {
   servicesRoot,
 } from '../configs/oxlint/legacy-services.ts';
 
-const bootPath = 'ghost/core/boot.js';
+const bootPath = 'ghost/core/boot.ts';
 const allowlistPath = '.dependency-cruiser.cjs';
 const allowanceTestPath = 'tools/scripts/test/service-dependencies.test.ts';
 const lifecycleWords = /\binit|on[- ]demand|lazy|lazily|boot|wrapper|construct|captur|import/i;
@@ -262,14 +262,15 @@ export function specialistProblems({
   });
 }
 
-// Finds a root's init() through its binding in boot.js, the one form the generator
-// and the guides give: `const x = require('./server/services/<name>').default;`
-// followed by `x.init()`. An inline `require(...).default.init()` is not found.
+// Finds a root's init() through its binding in boot.ts, the one form the generator
+// and the guides give: `const x = require('./server/services/<name>').default;`,
+// with or without a type on the binding, followed by `x.init()`. An inline
+// `require(...).default.init()` is not found.
 export function mutateBootInit(boot: string, service: string) {
   const folder = service.replace(/\.[a-z]+$/, '');
   const bindings = boot.matchAll(
     new RegExp(
-      `const (\\w+) = require\\('\\./server/services/${folder}(?:/index)?'\\)(?:\\.default)?;`,
+      `const (\\w+)(?:: [^=]+?)? =\\s+require\\('\\./server/services/${folder}(?:/index)?'\\)(?:\\.default)?;`,
       'g',
     ),
   );
@@ -303,7 +304,7 @@ export function mutateBootInit(boot: string, service: string) {
   // Boot moves on after a chain of promise steps. An init that rejects within them,
   // like a stub behind an async wrapper, still fails boot; one a test holds pending
   // until a timer or setImmediate does not stop it. Only a test that holds init
-  // pending can tell the difference. Boot tests run boot.js in a vm context without
+  // pending can tell the difference. Boot tests run boot.ts in a vm context without
   // Node globals, so this uses Promise alone.
   const movedOn = 'Array.from({ length: 50 }).reduce((step) => step.then(), Promise.resolve())';
   return {
@@ -513,7 +514,7 @@ export function verifyService({
     const mutated = mutateBootInit(original, service);
     if (!mutated) {
       record('boot-waits-for-init', 'fail', [
-        `No init call for ${service} found in boot.js.`,
+        `No init call for ${service} found in boot.ts.`,
         `Bind the root, then await init() on the binding:`,
         `  const example = require('./server/services/${service}').default;`,
         `  await example.init();`,

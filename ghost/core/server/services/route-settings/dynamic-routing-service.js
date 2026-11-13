@@ -32,7 +32,7 @@ class DynamicRoutingService {
 
   /**
    * Wire the routing dependencies and load route settings into the router.
-   * Called from initDynamicRouting in boot.js on every boot: the URL service
+   * Called from initDynamicRouting in boot.ts on every boot: the URL service
    * has to learn the routes even where no page is served, so that the APIs and
    * background services can build URLs.
    *

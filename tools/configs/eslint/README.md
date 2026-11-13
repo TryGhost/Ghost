@@ -96,7 +96,7 @@ reads the legacy names from the inventory, so a new root needs no configuration
 and deleting a legacy entry applies the rule. Lint fails if the inventory cannot
 be read. Catalogue metadata validation remains separate from linting.
 
-The Oxlint-only `ghost/boot-awaits-service-init` rule checks `ghost/core/boot.js`.
+The Oxlint-only `ghost/boot-awaits-service-init` rule checks `ghost/core/boot.ts`.
 Every service that is not listed in the legacy service inventory must be bound
 there and have its `init()` awaited in a boot phase that `bootGhost` awaits. It
 reads the service directories and the inventory, so a new service needs no

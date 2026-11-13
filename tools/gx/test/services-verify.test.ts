@@ -31,7 +31,7 @@ const inventory = `services:
   other:
     disposition: migrate
 `;
-// The root is bound inside its phase, as lint requires of boot.js.
+// The root is bound inside its phase, as lint requires of boot.ts.
 const boot = `async function initServices() {
   const staffService = require('./server/services/staff').default;
   await Promise.all([staffService.init()]);
@@ -81,7 +81,7 @@ async function fixture(t: TestContext) {
   git('init', '-q');
   await write(inventoryPath, inventory);
   await write('ghost/core/server/services/staff/index.ts', 'export {};\n');
-  await write('ghost/core/boot.js', boot);
+  await write('ghost/core/boot.ts', boot);
   const base = commit('base');
   const calls: string[] = [];
   const cruises: Record<string, Cruise> = { source: empty, built: empty };
@@ -586,12 +586,12 @@ test('changed unit tests run shuffled and alone after the full suite', async (t)
   assert.ok(checks.every((check) => check.status !== 'fail'));
 });
 
-test('the boot check fails when tests survive the mutation and restores boot.js', async (t) => {
+test('the boot check fails when tests survive the mutation and restores boot.ts', async (t) => {
   const f = await fixture(t);
   let during = '';
   const runner: RunCommand = (command, args, options) => {
     if (command !== 'git' && args[1] !== 'depcruise' && args.includes('test/unit/boot')) {
-      during = execFileSync('cat', ['ghost/core/boot.js'], { cwd: f.root, encoding: 'utf8' });
+      during = execFileSync('cat', ['ghost/core/boot.ts'], { cwd: f.root, encoding: 'utf8' });
       return { status: 0, output: '' };
     }
     return command === 'git' || args[1] === 'depcruise'
@@ -604,14 +604,14 @@ test('the boot check fails when tests survive the mutation and restores boot.js'
   assert.equal(check?.name, 'boot-waits-for-init');
   assert.equal(check?.status, 'fail');
   assert.match(during, /Promise\.race\(\[staffService\.init\(\)/);
-  assert.equal(await readFile(join(f.root, 'ghost/core/boot.js'), 'utf8'), boot);
+  assert.equal(await readFile(join(f.root, 'ghost/core/boot.ts'), 'utf8'), boot);
 });
 
 test('the boot check says how to write the call when it cannot find one', async (t) => {
   const f = await fixture(t);
   // The inline form runs, but the check cannot follow it to mutate it.
   await f.write(
-    'ghost/core/boot.js',
+    'ghost/core/boot.ts',
     `async function initServices() {
   await require('./server/services/staff').default.init();
 }
@@ -621,7 +621,7 @@ test('the boot check says how to write the call when it cannot find one', async 
   const check = f.verify('staff', false).at(-1);
   assert.equal(check?.name, 'boot-waits-for-init');
   assert.equal(check?.status, 'fail');
-  assert.match(check?.details.join('\n') ?? '', /No init call for staff found in boot\.js/);
+  assert.match(check?.details.join('\n') ?? '', /No init call for staff found in boot\.ts/);
   assert.match(
     check?.details.join('\n') ?? '',
     /const example = require\('\.\/server\/services\/staff'\)\.default;\n\s+await example\.init\(\);/,

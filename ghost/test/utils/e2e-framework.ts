@@ -28,7 +28,6 @@ import configUtils from './config-utils';
 import * as urlServiceUtils from './url-service-utils';
 // @ts-expect-error This module lacks type definitions.
 import mockManager from './e2e-framework-mock-manager';
-// @ts-expect-error This module lacks type definitions.
 import { bootGhost } from '../../core/boot';
 import {
   AdminAPITestAgent,

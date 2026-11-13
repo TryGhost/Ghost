@@ -89,9 +89,12 @@ function setEnvironmentVariables() {
 
 // Ghost config reads environment during module loading. Keep these imports after setup.
 async function loadRuntime() {
-  // @ts-expect-error Ghost boot has no TypeScript declarations.
-  const { bootGhost } = await import('../../ghost/core/boot.js');
-  await bootGhost({ backend: false, frontend: false, server: false });
+  // Boot's types reach every service, and not all of them pass this package's stricter
+  // compiler settings, so boot is located at runtime and only its entry point is described.
+  const boot: {
+    bootGhost(options: { backend: boolean; frontend: boolean; server: boolean }): Promise<unknown>;
+  } = await import(new URL('../../ghost/core/boot.ts', import.meta.url).href);
+  await boot.bootGhost({ backend: false, frontend: false, server: false });
 
   const { default: db } = await import('../../ghost/core/server/data/db/index.js');
   const knex: Knex = db.knex;

@@ -127,7 +127,7 @@ export function bootLines(name: string) {
 export function nextSteps(name: string) {
   return `Next steps:
   1. Implement the capability and inject its application dependencies in index.ts.
-  2. In ghost/core/boot.js, bind the root and await its init() in the right phase,
+  2. In ghost/core/boot.ts, bind the root and await its init() in the right phase,
      after its dependencies are ready and before its consumers run:
 ${bootLines(name)
   .map((line) => `       ${line}`)

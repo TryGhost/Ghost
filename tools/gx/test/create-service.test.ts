@@ -227,7 +227,7 @@ test('gx routes service generation to its checkout and prints boot instructions'
   const cli = path.join(root, 'tools/gx/cli.ts');
   const result = run(tmpdir(), cli, ['generate', 'service', name]);
   success(result);
-  assert.match(result.stdout, /ghost\/core\/boot\.js/);
+  assert.match(result.stdout, /ghost\/core\/boot\.ts/);
   for (const line of bootLines(name)) {
     assert.ok(result.stdout.includes(line), line);
   }

@@ -7,39 +7,46 @@
 //
 // IMPORTANT:
 // ----------
-// The only global requires here should be overrides + debug so we can monitor timings with DEBUG = ghost: boot * node ghost
-require('./server/overrides');
-const debug = require('@tryghost/debug')('boot');
-// END OF GLOBAL REQUIRES
+// The only global imports here should be overrides + debug so we can monitor timings with DEBUG = ghost: boot * node ghost
+// Everything else is loaded with require() at the point boot needs it. Type imports are erased, so they load nothing.
+import './server/overrides';
+import createDebug from '@tryghost/debug';
+import type { GhostLogger } from '@tryghost/logging';
+import type { GhostServer } from './server/ghost-server';
+import type { JobsService } from './server/services/jobs-service/jobs-service';
+// END OF GLOBAL IMPORTS
+
+const debug = createDebug('boot');
+
+type Config = typeof import('./shared/config');
+type Metrics = { metric: (name: string, time: number) => unknown };
+// The client has no type declarations, so this describes the parts boot and the services it is handed to use.
+type PrometheusClient = {
+  stop(): void;
+  instrumentKnex(connection: unknown): void;
+} & NonNullable<
+  Parameters<(typeof import('./server/services/email-analytics'))['init']>[0]['prometheusClient']
+>;
 
 /**
  * Helper class to create consistent log messages
  */
 class BootLogger {
-  /**
-   * @param {Pick<import('@tryghost/logging').GhostLogger, 'info'>} logging
-   * @param {{metric: (name: string, time: number) => unknown}} metrics
-   * @param {number} startTime
-   */
-  constructor(logging, metrics, startTime) {
+  logging: Pick<GhostLogger, 'info'>;
+  metrics: Metrics;
+  startTime: number;
+
+  constructor(logging: Pick<GhostLogger, 'info'>, metrics: Metrics, startTime: number) {
     this.logging = logging;
     this.metrics = metrics;
     this.startTime = startTime;
   }
-  /**
-   * @param {string} message
-   * @returns {void}
-   */
-  log(message) {
+
+  log(message: string): void {
     const { logging, startTime } = this;
     logging.info(`Ghost ${message} in ${(Date.now() - startTime) / 1000}s`);
   }
-  /**
-   * @param {string} name
-   * @param {number} [initialTime]
-   * @returns {void}
-   */
-  metric(name, initialTime) {
+  metric(name: string, initialTime?: number): void {
     const { metrics, startTime } = this;
 
     if (!initialTime) {
@@ -52,9 +59,8 @@ class BootLogger {
 
 /**
  * Helper function to handle sending server ready notifications
- * @param {string} [error]
  */
-function notifyServerReady(error) {
+function notifyServerReady(error?: unknown): void {
   const notify = require('./server/notify');
 
   if (error) {
@@ -70,11 +76,9 @@ function notifyServerReady(error) {
  * Get the Database into a ready state
  * - DatabaseStateManager handles doing all this for us
  *
- * @param {object} options
- * @param {object} options.config
- * @returns {Promise<string|null>} a warning to log once boot completes
+ * @returns a warning to log once boot completes
  */
-async function initDatabase({ config }) {
+async function initDatabase({ config }: { config: Config }): Promise<string | null> {
   const DatabaseStateManager = require('./server/data/db/database-state-manager');
   const dbStateManager = new DatabaseStateManager({
     knexMigratorFilePath: config.get('paths:appRoot'),
@@ -90,25 +94,29 @@ async function initDatabase({ config }) {
 /**
  * Core is intended to be all the bits of Ghost that are fundamental and we can't do anything without them!
  * (There's more to do to make this true)
- * @param {object} options
- * @param {object} options.ghostServer
- * @param {object} options.config
  */
-async function initCore({ ghostServer, config }) {
+async function initCore({
+  ghostServer,
+  config,
+}: {
+  ghostServer?: GhostServer;
+  config: Config;
+}): Promise<void> {
   debug('Begin: initCore');
 
   // Validate configured adapters up-front so misconfiguration fails at boot
   // rather than on first lazy use (e.g. first image upload or scheduled job)
   debug('Begin: adapters');
-  const adapterManager = require('./server/services/adapter-manager').default;
+  const adapterManager: typeof import('./server/services/adapter-manager').default =
+    require('./server/services/adapter-manager').default;
   adapterManager.init();
   debug('End: adapters');
 
   // Limit image processing to the configured image formats before anything
   // can process an image
   debug('Begin: image upload config');
-  const { applyImageUploadConfig } = require('./server/lib/image/image-upload-config');
-  applyImageUploadConfig(config.get('uploads'));
+  const imageUploadConfig: typeof import('./server/lib/image/image-upload-config') = require('./server/lib/image/image-upload-config');
+  imageUploadConfig.applyImageUploadConfig(config.get('uploads'));
   debug('End: image upload config');
 
   // URL Utils is a bit slow, put it here so the timing is visible separate from models
@@ -118,7 +126,7 @@ async function initCore({ ghostServer, config }) {
 
   // Limit service is booted before settings, so that limits are available for calculated settings
   debug('Begin: limits');
-  const limits = require('./server/services/limits');
+  const limits: typeof import('./server/services/limits') = require('./server/services/limits');
   await limits.init();
   debug('End: limits');
 
@@ -131,12 +139,14 @@ async function initCore({ ghostServer, config }) {
 
   // Signing keys come from settings and must be ready before anything signs or serves a JWKS
   debug('Begin: signing keys');
-  const signingKeys = require('./server/services/signing-keys').default;
+  const signingKeys: typeof import('./server/services/signing-keys').default =
+    require('./server/services/signing-keys').default;
   await signingKeys.init();
   debug('End: signing keys');
 
   debug('Begin: Internal Keys Service');
-  const internalKeys = require('./server/services/internal-keys').default;
+  const internalKeys: typeof import('./server/services/internal-keys').default =
+    require('./server/services/internal-keys').default;
   await internalKeys.init();
   debug('End: Internal Keys Service');
 
@@ -155,47 +165,53 @@ async function initCore({ ghostServer, config }) {
 
   // Gift links service: wires the (knex-backed) repository once the DB is ready.
   debug('Begin: Gift Links Service');
-  const giftLinksService = require('./server/services/gift-links').default;
+  const giftLinksService: typeof import('./server/services/gift-links').default =
+    require('./server/services/gift-links').default;
   await giftLinksService.init();
   debug('End: Gift Links Service');
 
   // Member metafields service: knex-backed, wired once the DB is ready.
   debug('Begin: Member Metafields Service');
-  const memberMetafieldsService = require('./server/services/members-metafields');
+  const memberMetafieldsService: typeof import('./server/services/members-metafields') = require('./server/services/members-metafields');
   memberMetafieldsService.init();
   debug('End: Member Metafields Service');
 
   // App installations service: knex-backed, wired once the DB is ready.
   debug('Begin: App Installations Service');
-  const appInstallationsService = require('./server/services/app-installations').default;
+  const appInstallationsService: typeof import('./server/services/app-installations').default =
+    require('./server/services/app-installations').default;
   await appInstallationsService.init();
   debug('End: App Installations Service');
 
   debug('Begin: Export Requests Service');
-  const exportRequests = require('./server/services/export-requests').default;
+  const exportRequests: typeof import('./server/services/export-requests').default =
+    require('./server/services/export-requests').default;
   await exportRequests.init();
   debug('End: Export Requests Service');
 
   debug('Begin: Invites Service');
-  const invites = require('./server/services/invites').default;
+  const invites: typeof import('./server/services/invites').default =
+    require('./server/services/invites').default;
   await invites.init();
   debug('End: Invites Service');
 
   debug('Begin: Integrations Service');
-  const integrations = require('./server/services/integrations').default;
+  const integrations: typeof import('./server/services/integrations').default =
+    require('./server/services/integrations').default;
   await integrations.init();
   debug('End: Integrations Service');
 
   // Stripe Checkout config service: knex-backed, wired once the DB is ready.
   debug('Begin: Stripe Checkout Config Service');
-  const stripeCheckoutConfig = require('./server/services/stripe-checkout-config').default;
+  const stripeCheckoutConfig: typeof import('./server/services/stripe-checkout-config').default =
+    require('./server/services/stripe-checkout-config').default;
   await stripeCheckoutConfig.init();
   debug('End: Stripe Checkout Config Service');
 
   if (ghostServer) {
     // Jobs Service allows parts of Ghost to run in the background
     debug('Begin: Jobs Service');
-    const jobsService = require('./server/services/jobs-service');
+    const jobsService: typeof import('./server/services/jobs-service') = require('./server/services/jobs-service');
 
     ghostServer.registerCleanupTask(async () => {
       await jobsService.shutdown({ timeoutMs: config.get('server:shutdownTimeout') });
@@ -208,11 +224,9 @@ async function initCore({ ghostServer, config }) {
 
 /**
  * These are services required by Ghost's frontend.
- * @param {object} options
- * @param {BootLogger} options.bootLogger
 
  */
-async function initServicesForFrontend({ bootLogger }) {
+async function initServicesForFrontend({ bootLogger }: { bootLogger: BootLogger }): Promise<void> {
   debug('Begin: initServicesForFrontend');
 
   debug('Begin: Routing Settings');
@@ -226,13 +240,15 @@ async function initServicesForFrontend({ bootLogger }) {
   debug('End: Redirects');
 
   debug('Begin: Link Redirects');
-  const linkRedirects = require('./server/services/link-redirection').default;
+  const linkRedirects: typeof import('./server/services/link-redirection').default =
+    require('./server/services/link-redirection').default;
   await linkRedirects.init();
   debug('End: Link Redirects');
 
   debug('Begin: Themes');
   // Custom theme settings must be initialized before any theme activation occurs
-  const customThemeSettingsService = require('./server/services/custom-theme-settings').default;
+  const customThemeSettingsService: typeof import('./server/services/custom-theme-settings').default =
+    require('./server/services/custom-theme-settings').default;
   await customThemeSettingsService.init();
 
   const themeService = require('./server/services/themes');
@@ -252,7 +268,7 @@ async function initServicesForFrontend({ bootLogger }) {
 /**
  * Frontend is intended to be just Ghost's frontend
  */
-function initFrontend() {
+function initFrontend(): void {
   debug('Begin: initFrontend');
 
   const helperService = require('./frontend/services/helpers');
@@ -265,12 +281,16 @@ function initFrontend() {
  * At the moment we load our express apps all in one go, they require themselves and are co-located
  * What we want is to be able to optionally load various components and mount them
  * So eventually this function should go away
- * @param {Object} options
- * @param {boolean} options.backend
- * @param {boolean} options.frontend
- * @param {Object} options.config
  */
-async function initExpressApps({ frontend, backend, config }) {
+async function initExpressApps({
+  frontend,
+  backend,
+  config,
+}: {
+  frontend: boolean;
+  backend: boolean;
+  config: Config;
+}) {
   debug('Begin: initExpressApps');
 
   const parentApp = require('./server/web/parent/app')();
@@ -297,7 +317,7 @@ async function initExpressApps({ frontend, backend, config }) {
 /**
  * Initialize prometheus client
  */
-function initPrometheusClient({ config }) {
+function initPrometheusClient({ config }: { config: Config }): PrometheusClient | null {
   if (config.get('prometheus:enabled')) {
     debug('Begin: initPrometheusClient');
     const prometheusClient = require('./shared/prometheus-client');
@@ -318,7 +338,7 @@ function initPrometheusClient({ config }) {
  * frontend. The APIs, the email service and webhooks all build URLs, so a
  * backend-only boot that skipped this resolved every resource to /404/.
  */
-async function initDynamicRouting({ frontend }) {
+async function initDynamicRouting({ frontend }: { frontend: boolean }): Promise<void> {
   debug('Begin: Dynamic Routing');
   const routing = require('./frontend/services/routing');
   const routeSettingsModule = require('./server/services/route-settings');
@@ -346,7 +366,7 @@ async function initDynamicRouting({ frontend }) {
  * The app service cannot be loaded unless the frontend is enabled
  * In future, the logic to determine whether this should be loaded should be in the service loader
  */
-async function initAppService() {
+async function initAppService(): Promise<void> {
   debug('Begin: App Service');
   const appService = require('./frontend/services/apps');
   await appService.init();
@@ -358,63 +378,99 @@ async function initAppService() {
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
  */
-async function initServices({ ghostServer, config, prometheusClient, jobsService }) {
+async function initServices({
+  ghostServer,
+  config,
+  prometheusClient,
+  jobsService,
+}: {
+  ghostServer?: GhostServer;
+  config: Config;
+  prometheusClient: PrometheusClient | null;
+  jobsService: JobsService;
+}): Promise<void> {
   debug('Begin: initServices');
 
   debug('Begin: Services');
   const identityTokens = require('./server/services/identity-tokens');
   const stripe = require('./server/services/stripe');
   const members = require('./server/services/members');
-  const tiers = require('./server/services/tiers').default;
+  const tiers: typeof import('./server/services/tiers').default =
+    require('./server/services/tiers').default;
   const permissions = require('./server/services/permissions');
-  const indexnow = require('./server/services/indexnow-ping').default;
-  const upgrades = require('./server/services/upgrades').default;
-  const slack = require('./server/services/slack-ping').default;
+  const indexnow: typeof import('./server/services/indexnow-ping').default =
+    require('./server/services/indexnow-ping').default;
+  const upgrades: typeof import('./server/services/upgrades').default =
+    require('./server/services/upgrades').default;
+  const slack: typeof import('./server/services/slack-ping').default =
+    require('./server/services/slack-ping').default;
   const webhooks = require('./server/services/webhooks');
-  const postScheduling = require('./server/services/post-scheduling').default;
-  const comments = require('./server/services/comments').default;
-  const staffService = require('./server/services/staff').default;
-  const memberAttribution = require('./server/services/member-attribution').default;
+  const postScheduling: typeof import('./server/services/post-scheduling').default =
+    require('./server/services/post-scheduling').default;
+  const comments: typeof import('./server/services/comments').default =
+    require('./server/services/comments').default;
+  const staffService: typeof import('./server/services/staff').default =
+    require('./server/services/staff').default;
+  const memberAttribution: typeof import('./server/services/member-attribution').default =
+    require('./server/services/member-attribution').default;
   const membersEvents = require('./server/services/members-events');
   const linkTracking = require('./server/services/link-tracking');
-  const audienceFeedback = require('./server/services/audience-feedback').default;
+  const audienceFeedback: typeof import('./server/services/audience-feedback').default =
+    require('./server/services/audience-feedback').default;
   const emailSuppressionList = require('./server/services/email-suppression-list');
   const emailService = require('./server/services/email-service');
-  const emailAnalytics = require('./server/services/email-analytics');
-  const mentionsService = require('./server/services/mentions').default;
-  const tagsPublic = require('./server/services/tags-public').default;
-  const postsPublic = require('./server/services/posts-public').default;
-  const mediaInliner = require('./server/services/media-inliner').default;
-  const contentImport = require('./server/services/content-import');
-  const donationService = require('./server/services/donations').default;
-  const giftService = require('./server/services/gifts');
+  const emailAnalytics: typeof import('./server/services/email-analytics') = require('./server/services/email-analytics');
+  const mentionsService: typeof import('./server/services/mentions').default =
+    require('./server/services/mentions').default;
+  const tagsPublic: typeof import('./server/services/tags-public').default =
+    require('./server/services/tags-public').default;
+  const postsPublic: typeof import('./server/services/posts-public').default =
+    require('./server/services/posts-public').default;
+  const mediaInliner: typeof import('./server/services/media-inliner').default =
+    require('./server/services/media-inliner').default;
+  const contentImport: typeof import('./server/services/content-import') = require('./server/services/content-import');
+  const donationService: typeof import('./server/services/donations').default =
+    require('./server/services/donations').default;
+  const giftService: typeof import('./server/services/gifts') = require('./server/services/gifts');
   const machinePaymentsService = require('./server/services/machine-payments');
-  const recommendationsService = require('./server/services/recommendations').default;
+  const recommendationsService: typeof import('./server/services/recommendations').default =
+    require('./server/services/recommendations').default;
   const emailAddressService = require('./server/services/email-address');
-  const newsletters = require('./server/services/newsletters').default;
-  const statsService = require('./server/services/stats').default;
-  const explorePingService = require('./server/services/explore-ping').default;
-  const users = require('./server/services/users').default;
-  const memberWelcomeEmails = require('./server/services/member-welcome-emails').default;
+  const newsletters: typeof import('./server/services/newsletters').default =
+    require('./server/services/newsletters').default;
+  const statsService: typeof import('./server/services/stats').default =
+    require('./server/services/stats').default;
+  const explorePingService: typeof import('./server/services/explore-ping').default =
+    require('./server/services/explore-ping').default;
+  const users: typeof import('./server/services/users').default =
+    require('./server/services/users').default;
+  const memberWelcomeEmails: typeof import('./server/services/member-welcome-emails').default =
+    require('./server/services/member-welcome-emails').default;
   const domainEvents = require('@tryghost/domain-events');
-  const { automationsService } = require('./server/services/automations');
-  const automationsApi = require('./server/services/automations/automations-api');
-  const adapterManager = require('./server/services/adapter-manager').default;
-  const { withErrorCapture } = require('./server/adapters/scheduling/error-capture');
+  const automations: typeof import('./server/services/automations') = require('./server/services/automations');
+  const automationsApi: typeof import('./server/services/automations/automations-api') = require('./server/services/automations/automations-api');
+  const adapterManager: typeof import('./server/services/adapter-manager').default =
+    require('./server/services/adapter-manager').default;
+  const schedulingErrorCapture: typeof import('./server/adapters/scheduling/error-capture') = require('./server/adapters/scheduling/error-capture');
 
-  const assert = require('node:assert/strict');
-  const metrics = require('@tryghost/metrics');
+  const assert: typeof import('node:assert/strict') = require('node:assert/strict');
+  const metrics: typeof import('@tryghost/metrics') = require('@tryghost/metrics');
   const db = require('./server/data/db');
   const models = require('./server/models');
-  const urlUtils = require('./shared/url-utils').default;
+  const urlUtils: typeof import('./shared/url-utils').default =
+    require('./shared/url-utils').default;
   const settingsCache = require('./shared/settings-cache');
-  const internalKeys = require('./server/services/internal-keys').default.service;
-  const { checkouts } = require('./server/services/stripe-checkout-config').default.service;
+  const internalKeys: typeof import('./server/services/internal-keys').default.service =
+    require('./server/services/internal-keys').default.service;
+  const { checkouts }: typeof import('./server/services/stripe-checkout-config').default.service =
+    require('./server/services/stripe-checkout-config').default.service;
 
   // Initialize things that other services depend on first.
   emailAddressService.init();
   const apiUrl = urlUtils.urlFor('api', { type: 'admin' }, true);
-  const schedulerAdapter = withErrorCapture(adapterManager.getAdapter('scheduling'));
+  const schedulerAdapter = schedulingErrorCapture.withErrorCapture(
+    adapterManager.getAdapter('scheduling'),
+  );
   schedulerAdapter.run();
   await stripe.init();
   giftService.init({
@@ -489,13 +545,14 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   await memberWelcomeEmails.init();
 
   debug('Begin: Register job handlers');
-  const registerJobHandlers =
+  const registerJobHandlers: typeof import('./server/services/jobs-service/register-job-handlers').default =
     require('./server/services/jobs-service/register-job-handlers').default;
   const memberJobs = require('./server/services/members/jobs');
   const membersService = require('./server/services/members');
-  const tinybirdSync = require('./server/services/tinybird-sync');
+  const tinybirdSync: typeof import('./server/services/tinybird-sync') = require('./server/services/tinybird-sync');
   const updateCheck = require('./server/services/update-check');
-  const signingKeys = require('./server/services/signing-keys').default;
+  const signingKeys: typeof import('./server/services/signing-keys').default =
+    require('./server/services/signing-keys').default;
   memberJobs.init();
   const siteImporter = require('./server/data/importer').init({ jobsService });
   assert(giftService.service, 'Gift service should be initialized');
@@ -524,7 +581,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   await jobsService.start();
   debug('End: Register job handlers');
 
-  await automationsService.init({
+  await automations.automationsService.init({
     domainEvents,
     apiUrl,
     schedulerAdapter,
@@ -544,14 +601,12 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
 /**
  * Runs one background startup step, logging its failure instead of throwing, so that a step
  * which fails cannot stop the steps after it.
- * @param {() => unknown} step
- * @returns {Promise<void>}
  */
-async function runIsolated(step) {
+async function runIsolated(step: () => unknown): Promise<void> {
   try {
     await step();
   } catch (err) {
-    const logging = require('@tryghost/logging');
+    const logging: typeof import('@tryghost/logging') = require('@tryghost/logging');
     logging.error(err);
   }
 }
@@ -561,10 +616,8 @@ async function runIsolated(step) {
  * These are things that happen on boot, but we don't need to wait for them to finish
  * Later, this might be a service hook
 
- * @param {object} options
- * @param {object} options.config
  */
-async function initBackgroundServices({ config }) {
+async function initBackgroundServices({ config }: { config: Config }): Promise<void> {
   debug('Begin: initBackgroundServices');
 
   // Load all inactive themes
@@ -572,7 +625,7 @@ async function initBackgroundServices({ config }) {
   themeService.loadInactiveThemes();
 
   // we don't want to kick off background services that will interfere with tests
-  if (process.env.NODE_ENV.startsWith('test')) {
+  if (process.env.NODE_ENV?.startsWith('test')) {
     return;
   }
 
@@ -584,10 +637,11 @@ async function initBackgroundServices({ config }) {
 
   // Retry gift deliveries interrupted by a prior shutdown. Not awaited: recovery
   // sends sequentially and must not hold up the remaining background services.
-  const giftService = require('./server/services/gifts');
+  const giftService: typeof import('./server/services/gifts') = require('./server/services/gifts');
   giftService.recoverPendingDeliveries();
 
-  const jobsService = require('./server/services/jobs-service').getInstance();
+  const jobsServiceRoot: typeof import('./server/services/jobs-service') = require('./server/services/jobs-service');
+  const jobsService = jobsServiceRoot.getInstance();
 
   // These run before activitypub.init for the same reason as the send recovery above: gifts,
   // reminders, tokens, expired comped subscriptions, signing keys and email analytics would
@@ -598,7 +652,11 @@ async function initBackgroundServices({ config }) {
     () => require('./server/services/gifts/jobs').scheduleGiftReminderJob(jobsService),
     () => require('./server/services/members/jobs').scheduleTokenCleanupJob(jobsService),
     () => require('./server/services/members/jobs').scheduleExpiredCompCleanupJob(jobsService),
-    () => require('./server/services/signing-keys').default.extras.scheduleCheckJob(jobsService),
+    () => {
+      const signingKeys: typeof import('./server/services/signing-keys').default =
+        require('./server/services/signing-keys').default;
+      return signingKeys.extras.scheduleCheckJob(jobsService);
+    },
     () => require('./server/services/email-analytics/jobs').scheduleRecurringJobs(),
   ];
   for (const scheduleJob of jobsBeforeActivityPub) {
@@ -609,7 +667,10 @@ async function initBackgroundServices({ config }) {
   await activitypub.init();
 
   const jobsAfterActivityPub = [
-    () => require('./server/services/tinybird-sync').scheduleJob(jobsService),
+    () => {
+      const tinybirdSync: typeof import('./server/services/tinybird-sync') = require('./server/services/tinybird-sync');
+      return tinybirdSync.scheduleJob(jobsService);
+    },
     () => require('./server/services/update-check').scheduleJobs(jobsService),
   ];
   for (const scheduleJob of jobsAfterActivityPub) {
@@ -617,7 +678,7 @@ async function initBackgroundServices({ config }) {
   }
 
   // Remote feature-flag overrides (config-gated; inert unless explicitly configured).
-  const remoteFlags = require('./server/services/remote-flags');
+  const remoteFlags: typeof import('./server/services/remote-flags') = require('./server/services/remote-flags');
   remoteFlags.init(config);
 
   const milestonesService = require('./server/services/milestones');
@@ -634,7 +695,7 @@ async function initBackgroundServices({ config }) {
  * - This function is written with async/await so you can read, line by line, what happens on boot
  * - All the functions above handle init/boot logic for a single component
 
- * @returns {Promise<object>} ghostServer
+ * @returns the Ghost server, or the root app when booted without a server
  */
 async function bootGhost({ backend = true, frontend = true, server = true } = {}) {
   // Metrics
@@ -642,12 +703,12 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
   debug('Begin Boot');
 
   // We need access to these variables in both the try and catch block
-  let bootLogger;
-  let config;
-  let flushLogsAndMetrics;
-  let ghostServer;
-  let logging;
-  let metrics;
+  let bootLogger: BootLogger;
+  let config: Config;
+  let flushLogsAndMetrics: (typeof import('./shared/flush'))['flushLogsAndMetrics'];
+  let ghostServer: GhostServer | undefined;
+  let logging: typeof import('@tryghost/logging');
+  let metrics: typeof import('@tryghost/metrics');
 
   // These require their own try-catch block and error format, because we can't log an error if logging isn't working
   try {
@@ -701,8 +762,8 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     const rootApp = require('./app')();
 
     if (server) {
-      const { GhostServer } = require('./server/ghost-server');
-      ghostServer = new GhostServer({
+      const ghostServerModule: typeof import('./server/ghost-server') = require('./server/ghost-server');
+      ghostServer = new ghostServerModule.GhostServer({
         url: config.getSiteUrl(),
         env: config.get('env'),
         serverConfig: config.get('server'),
@@ -723,7 +784,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     debug('Begin: Get DB ready');
     const databaseWarning = await initDatabase({ config });
     bootLogger.log('database ready');
-    const connection = require('./server/data/db/connection');
+    const connection: typeof import('./server/data/db/connection') = require('./server/data/db/connection');
     sentry.initQueryTracing(connection);
     debug('End: Get DB ready');
 
@@ -751,7 +812,8 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     }
 
     const knex = require('./server/data/db').knex;
-    const jobsService = require('./server/services/jobs-service').init({ knex, config });
+    const jobsServiceRoot: typeof import('./server/services/jobs-service') = require('./server/services/jobs-service');
+    const jobsService = jobsServiceRoot.init({ knex, config });
 
     await initServices({ ghostServer, config, prometheusClient, jobsService });
 
@@ -790,16 +852,16 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
       return rootApp;
     }
   } catch (error) {
-    const errors = require('@tryghost/errors');
+    const errors: typeof import('@tryghost/errors') = require('@tryghost/errors');
 
     // Ensure the error we have is an ignition error
-    let serverStartError = error;
-    if (!errors.utils.isGhostError(serverStartError)) {
-      serverStartError = new errors.InternalServerError({
-        message: serverStartError.message,
-        err: serverStartError,
-      });
-    }
+    const serverStartError =
+      error instanceof Error && errors.utils.isGhostError(error)
+        ? error
+        : new errors.InternalServerError({
+            message: error instanceof Error ? error.message : undefined,
+            err: error instanceof Error || typeof error === 'string' ? error : undefined,
+          });
 
     logging.error(serverStartError);
     // fallback in case logger fails to flush before exit
@@ -817,4 +879,4 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
   }
 }
 
-module.exports = { bootGhost };
+export { bootGhost };

@@ -82,7 +82,7 @@ Complete the steps printed by the command:
 
 1. Implement the capability and wire only its required dependencies in the root.
    Preserve live settings reads and explain any deferred dependency lookups.
-2. In `ghost/core/boot.js`, bind the root and await its `init()`, as the roots
+2. In `ghost/core/boot.ts`, bind the root and await its `init()`, as the roots
    around it do:
 
    ```js
@@ -526,11 +526,11 @@ the comment and expect it to be questioned.
 Ghost's boot sequence owns service construction. A new service root must
 default-export the
 [kernel's `defineService` helper](../../kernel/README.md#service-initialization)
-and have its `init()` awaited from `ghost/core/boot.js` in the appropriate boot
+and have its `init()` awaited from `ghost/core/boot.ts` in the appropriate boot
 phase. Existing legacy roots keep their shape until migrated. Do not make the
 first request responsible for constructing the service.
 
-The Oxlint rule `ghost/boot-awaits-service-init` checks this in `boot.js`. Every
+The Oxlint rule `ghost/boot-awaits-service-init` checks this in `boot.ts`. Every
 service that is not legacy must be bound there and have its `init()` awaited as
 a statement of a boot phase that `bootGhost` awaits, on its own or inside an
 awaited `Promise.all`. A new service directory fails lint until boot awaits it.
@@ -567,7 +567,7 @@ Await any work callers rely on before returning, such as loading data
 (`check()` in signing keys).
 
 Initialize a root after everything its `create` callback reads. Say what it
-needs in a comment above `defineService` and keep that order in `boot.js`. For
+needs in a comment above `defineService` and keep that order in `boot.ts`. For
 example, recommendations reads the Mentions root during `create`, so boot
 initializes Mentions first. Roots that don't depend on each other can start
 together.

@@ -65,7 +65,7 @@ import, fix the wiring; do not widen the allowlist to make lint pass.
 
 ## 4. Initialize in boot
 
-The generator leaves [boot.js](../../../ghost/core/boot.js) to you.
+The generator leaves [boot.ts](../../../ghost/core/boot.ts) to you.
 
 - **Phase.** Most roots belong in `initServices`. `initCore` and
   `initServicesForFrontend` run earlier, for roots that the frontend or later
@@ -126,7 +126,7 @@ pnpm check
 ```
 
 `pnpm lint:oxlint` applies `ghost/service-root-shape` to the root and
-`ghost/boot-awaits-service-init` to `boot.js`.
+`ghost/boot-awaits-service-init` to `boot.ts`.
 `pnpm lint:boundaries` checks the implementation's imports. The inventory test
 checks the directory has an `index.ts` root and that extras match the catalogue.
 

@@ -24,13 +24,13 @@ const standard = readdirSync(servicesRoot, { withFileTypes: true })
       ['index.ts', 'index.js'].some((file) => existsSync(path.join(servicesRoot, item.name, file))),
   )
   .map((item) => item.name);
-const boot = readFileSync(path.join(core, 'boot.js'), 'utf8');
+const boot = readFileSync(path.join(core, 'boot.ts'), 'utf8');
 const phases = [...boot.matchAll(/^(?:async )?function (\w+)\(/gm)];
 
 // The phase that binds a root and calls init() on the binding. Lint requires this form.
 function phaseOf(service: string) {
   const bound = new RegExp(
-    `const (\\w+) = require\\('\\./server/services/${service}(?:/index)?'\\)\\.default;`,
+    `const (\\w+)(?:: [^=]+?)? =\\s+require\\('\\./server/services/${service}(?:/index)?'\\)\\.default;`,
     'g',
   );
   for (const binding of boot.matchAll(bound)) {

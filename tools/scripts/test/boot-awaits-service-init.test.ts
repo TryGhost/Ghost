@@ -13,7 +13,7 @@ const requireRoot = createRequire(path.join(root, 'package.json'));
 const binary = path.join(path.dirname(requireRoot.resolve('oxlint/package.json')), 'bin/oxlint');
 const config = JSON.parse(readFileSync(path.join(root, '.oxlintrc.json'), 'utf8'));
 const ruleName = 'ghost/boot-awaits-service-init';
-const bootFile = 'ghost/core/boot.js';
+const bootFile = 'ghost/core/boot.ts';
 
 interface Diagnostic {
   code: string;
@@ -274,7 +274,7 @@ test('fails instead of passing when the legacy service inventory cannot be read'
   }
 });
 
-test('the checked-in boot.js awaits every standard service and the rule is configured for it', () => {
+test('the checked-in boot.ts awaits every standard service and the rule is configured for it', () => {
   const overrides = config.overrides.filter(
     (override: { rules: Record<string, unknown> }) => override.rules[ruleName],
   );

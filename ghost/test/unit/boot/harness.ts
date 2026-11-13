@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
 
-const BOOT_PATH = resolve(__dirname, '../../../core/boot.js');
+const BOOT_PATH = resolve(__dirname, '../../../core/boot.ts');
 
 const compiled = new Map<string, string>();
 
@@ -34,12 +34,12 @@ export type BootFunction = (args: Record<string, unknown>) => Promise<void>;
 type Options = {
   // Answers a dependency the test did not list. Without it, an unlisted dependency fails the test.
   fallback?: (name: string) => unknown;
-  // Extra globals for boot.js, such as `process`.
+  // Extra globals for boot.ts, such as `process`.
   globals?: Record<string, unknown>;
 };
 
 /**
- * Loads one boot phase from core/boot.js with `require` answered from `modules`, so a test can
+ * Loads one boot phase from core/boot.ts with `require` answered from `modules`, so a test can
  * drive that phase's orchestration without booting the services it calls.
  */
 export function loadBootFunction(
@@ -48,7 +48,7 @@ export function loadBootFunction(
   { fallback, globals = {} }: Options = {},
 ): BootFunction {
   const available: Record<string, unknown> = {
-    // Loaded at the top of boot.js by every phase.
+    // Loaded at the top of boot.ts by every phase.
     './server/overrides': {},
     '@tryghost/debug': () => () => {},
     ...modules,
