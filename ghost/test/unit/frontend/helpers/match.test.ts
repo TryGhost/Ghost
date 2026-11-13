@@ -4,7 +4,6 @@ import _ from 'lodash';
 
 // @ts-expect-error This module lacks type definitions.
 import { registerHelper, shouldCompileToExpected } from './utils/handlebars';
-// @ts-expect-error This module lacks type definitions.
 import { SafeString } from 'express-hbs';
 import { restoreHandlebarsAfterSuite } from '../../../utils/handlebars-state';
 
@@ -49,7 +48,9 @@ describe('Match helper', function () {
       string_false: 'false',
       safestring_string_true: new SafeString('true'),
       safestring_string_false: new SafeString('false'),
+      // @ts-expect-error covers non-string input at runtime
       safestring_bool_true: new SafeString(true),
+      // @ts-expect-error covers non-string input at runtime
       safestring_bool_false: new SafeString(false),
       five: 5,
       string_five: '5',
