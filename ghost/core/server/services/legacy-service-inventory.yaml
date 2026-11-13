@@ -5838,7 +5838,9 @@ services:
       policy, not Kernel machinery. Boot still owns readiness; no source has moved. Preserve
       boot-loaded action definitions, per-check permission loading and model overrides. Returned
       maps and retained checks have different lifetimes; reload, early calls and failures still
-      need focused contracts before changing initialization.
+      need focused contracts before changing initialization. can-this.js imports the role checks
+      in models/role-utils.ts; that dependency violation stays until this move settles where role
+      checks live.
     contracts:
       exports:
         summary: >-
