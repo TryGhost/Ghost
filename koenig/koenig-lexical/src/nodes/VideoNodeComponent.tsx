@@ -12,6 +12,7 @@ import {VideoThumbnailPicker} from '../components/ui/VideoThumbnailPicker';
 import {getImageDimensions} from '../utils/getImageDimensions';
 import {isCardWidth} from '@tryghost/kg-default-nodes';
 import {openFileSelection} from '../utils/openFileSelection';
+import {useCardVisibilitySettings} from '../hooks/useCardVisibilitySettings';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function VideoNodeComponent({
@@ -33,6 +34,7 @@ export function VideoNodeComponent({
     const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
     const cardContext = React.useContext(CardContext);
     const videoFileInputRef = React.useRef();
+    const {visibilitySettings, showVisibilitySettings} = useCardVisibilitySettings(nodeKey);
     const [previewThumbnail, setPreviewThumbnail] = useState('');
     const videoUploader = fileUploader.useFileUpload('video');
     const thumbnailUploader = fileUploader.useFileUpload('mediaThumbnail');
@@ -230,6 +232,7 @@ export function VideoNodeComponent({
                 isEditing={cardContext.isEditing}
                 isLoopChecked={isLoopChecked}
                 isSelected={cardContext.isSelected}
+                showVisibilitySettings={showVisibilitySettings}
                 thumbnail={previewThumbnail || thumbnail}
                 thumbnailDragHandler={thumbnailDragHandler}
                 thumbnailMimeTypes={fileUploader.fileTypes.image.mimeTypes}
@@ -238,6 +241,7 @@ export function VideoNodeComponent({
                 videoMimeTypes={videoMimeTypes}
                 videoUploader={videoUploader}
                 videoUploadErrors={[...thumbnailUploader.errors, ...metadataExtractionErrors, ...videoUploader.errors]}
+                visibilitySettings={visibilitySettings}
                 onCardWidthChange={onCardWidthChange}
                 onCustomThumbnailChange={onCustomThumbnailChange}
                 onLoopChange={onLoopChange}

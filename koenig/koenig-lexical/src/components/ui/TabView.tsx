@@ -3,6 +3,14 @@ import {useState} from 'react';
 
 const TabView = ({tabs, defaultTab, tabContent}) => {
     const [activeTab, setActiveTab] = useState(defaultTab || tabs[0].id);
+    const [previousDefaultTab, setPreviousDefaultTab] = useState(defaultTab);
+
+    // follow a change of default tab, e.g. clicking a card's visibility
+    // indicator while its panel is already open
+    if (defaultTab !== previousDefaultTab) {
+        setPreviousDefaultTab(defaultTab);
+        setActiveTab(defaultTab || tabs[0].id);
+    }
 
     const handleTabChange = (tabId) => {
         setActiveTab(tabId);

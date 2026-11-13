@@ -4,6 +4,7 @@ import React from 'react';
 import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
+import {CardSettingsPanel} from '../components/CardSettingsPanel';
 import {FileCard} from '../components/ui/cards/FileCard';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
@@ -27,7 +28,7 @@ function FileNodeComponent({
     const [editor] = useLexicalComposerContext();
     const [isPopulated, setIsPopulated] = React.useState(false);
     const {fileUploader} = React.useContext(KoenigComposerContext);
-    const {isSelected, isEditing} = React.useContext(CardContext);
+    const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
     const fileInputRef = React.useRef();
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
@@ -74,7 +75,7 @@ function FileNodeComponent({
         e.preventDefault();
         // prevent card from propagating click event to the editor
         e.stopPropagation();
-        // TODO make it go to the first input field in the card
+        setEditing(true);
     };
 
     const handleFileTitle = (e) => {
@@ -168,6 +169,8 @@ function FileNodeComponent({
                     />
                 </ToolbarMenu>
             </ActionToolbar>
+
+            <CardSettingsPanel />
         </>
     );
 }

@@ -10,10 +10,11 @@ const audioProperties = {
     thumbnailSrc: {default: ''}
 } satisfies DecoratorNodePropertyMap;
 
-export type AudioData = DecoratorNodeData<typeof audioProperties>;
+export type AudioData = DecoratorNodeData<typeof audioProperties, true>;
 
 export class AudioNode extends generateDecoratorNode({
     nodeType: 'audio',
+    hasVisibility: true,
     properties: audioProperties,
     defaultRenderFn: renderAudioNode
 }) {

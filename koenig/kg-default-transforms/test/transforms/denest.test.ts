@@ -29,6 +29,10 @@ describe('Denest transform', function () {
                 caption: '',
                 cardWidth: 'regular',
                 href: '',
+                visibility: {
+                  web: { nonMember: true, memberSegment: 'status:free,status:-free' },
+                  email: { memberSegment: 'status:free,status:-free' },
+                },
               },
             ],
             direction: null,
@@ -61,6 +65,10 @@ describe('Denest transform', function () {
             caption: '',
             cardWidth: 'regular',
             href: '',
+            visibility: {
+              web: { nonMember: true, memberSegment: 'status:free,status:-free' },
+              email: { memberSegment: 'status:free,status:-free' },
+            },
           },
         ],
         direction: null,
@@ -103,6 +111,10 @@ describe('Denest transform', function () {
                     caption: '',
                     cardWidth: 'regular',
                     href: '',
+                    visibility: {
+                      web: { nonMember: true, memberSegment: 'status:free,status:-free' },
+                      email: { memberSegment: 'status:free,status:-free' },
+                    },
                   },
                 ],
                 direction: null,
@@ -146,6 +158,10 @@ describe('Denest transform', function () {
             caption: '',
             cardWidth: 'regular',
             href: '',
+            visibility: {
+              web: { nonMember: true, memberSegment: 'status:free,status:-free' },
+              email: { memberSegment: 'status:free,status:-free' },
+            },
           },
         ],
         direction: null,
@@ -231,6 +247,10 @@ describe('Denest transform', function () {
                             caption: '',
                             cardWidth: 'regular',
                             href: '',
+                            visibility: {
+                              web: { nonMember: true, memberSegment: 'status:free,status:-free' },
+                              email: { memberSegment: 'status:free,status:-free' },
+                            },
                           },
                         ],
                         direction: null,
@@ -366,6 +386,10 @@ describe('Denest transform', function () {
             caption: '',
             cardWidth: 'regular',
             href: '',
+            visibility: {
+              web: { nonMember: true, memberSegment: 'status:free,status:-free' },
+              email: { memberSegment: 'status:free,status:-free' },
+            },
           },
         ],
         direction: 'ltr',
@@ -405,6 +429,10 @@ describe('Denest transform', function () {
                     caption: '',
                     cardWidth: 'regular',
                     href: '',
+                    visibility: {
+                      web: { nonMember: true, memberSegment: 'status:free,status:-free' },
+                      email: { memberSegment: 'status:free,status:-free' },
+                    },
                   },
                 ],
                 direction: null,
@@ -444,6 +472,10 @@ describe('Denest transform', function () {
             caption: '',
             cardWidth: 'regular',
             href: '',
+            visibility: {
+              web: { nonMember: true, memberSegment: 'status:free,status:-free' },
+              email: { memberSegment: 'status:free,status:-free' },
+            },
           },
         ],
         direction: null,
@@ -637,6 +669,10 @@ describe('Denest transform', function () {
                 caption: '',
                 cardWidth: 'regular',
                 href: '',
+                visibility: {
+                  web: { nonMember: true, memberSegment: 'status:free,status:-free' },
+                  email: { memberSegment: 'status:free,status:-free' },
+                },
               },
             ],
             direction: 'ltr',
@@ -709,6 +745,10 @@ describe('Denest transform', function () {
             caption: '',
             cardWidth: 'regular',
             href: '',
+            visibility: {
+              web: { nonMember: true, memberSegment: 'status:free,status:-free' },
+              email: { memberSegment: 'status:free,status:-free' },
+            },
           },
         ],
         direction: null,
@@ -755,6 +795,10 @@ describe('Denest transform', function () {
                 caption: '',
                 cardWidth: 'regular',
                 href: '',
+                visibility: {
+                  web: { nonMember: true, memberSegment: 'status:free,status:-free' },
+                  email: { memberSegment: 'status:free,status:-free' },
+                },
               },
               {
                 detail: 0,
@@ -814,6 +858,10 @@ describe('Denest transform', function () {
             caption: '',
             cardWidth: 'regular',
             href: '',
+            visibility: {
+              web: { nonMember: true, memberSegment: 'status:free,status:-free' },
+              email: { memberSegment: 'status:free,status:-free' },
+            },
           },
           {
             children: [

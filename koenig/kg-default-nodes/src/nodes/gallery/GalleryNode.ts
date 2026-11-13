@@ -19,11 +19,12 @@ const galleryProperties = {
     caption: {default: '', wordCount: true}
 } satisfies DecoratorNodePropertyMap;
 
-export type GalleryData = DecoratorNodeData<typeof galleryProperties>;
+export type GalleryData = DecoratorNodeData<typeof galleryProperties, true>;
 export type GalleryNodeData = Required<GalleryData>;
 
 export class GalleryNode extends generateDecoratorNode({
     nodeType: 'gallery',
+    hasVisibility: true,
     properties: galleryProperties,
     defaultRenderFn: renderGalleryNode
 }) {
