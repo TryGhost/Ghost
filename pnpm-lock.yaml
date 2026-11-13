@@ -2392,8 +2392,8 @@ importers:
         specifier: 4.22.3
         version: 4.22.3(supports-color@10.2.2)
       express-hbs:
-        specifier: 4.0.2
-        version: 4.0.2
+        specifier: 4.1.0
+        version: 4.1.0
       express-jwt:
         specifier: 8.5.1
         version: 8.5.1
@@ -11636,8 +11636,8 @@ packages:
     resolution: {integrity: sha512-PMARsyh/JtqC20HoGqlFcIlQAyqUtW4PlI1rup1uhYJtKuwAjbvWi3GQMAn+STdHum/dk8xrKfUM1+5SAwpolA==}
     engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
 
-  express-hbs@4.0.2:
-    resolution: {integrity: sha512-WsCeTTVmwJ3qkzIeG+VVoj32eCtbhmOWMy2pxlEWyueD/cJhxl8utxajwbBgLq5L2tTWIvHqBelr7iaAKXsIww==}
+  express-hbs@4.1.0:
+    resolution: {integrity: sha512-5DDOJzfrXPjZa0n9Y8H8wQA1HxPU0fKbdjRdka1bkcxuvNidRUG+zGGVSnH3KXyA46e9LOu8hZLADAGKAuEeaQ==}
     engines: {node: '>=22'}
 
   express-jwt@8.5.1:
@@ -24014,7 +24014,7 @@ snapshots:
       jest-util: 30.4.1
     optional: true
 
-  express-hbs@4.0.2:
+  express-hbs@4.1.0:
     dependencies:
       handlebars: 4.7.10
       lodash: 4.18.1
