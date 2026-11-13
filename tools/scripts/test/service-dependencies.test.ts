@@ -723,6 +723,32 @@ it('allows the shared stateless helpers without allowing their siblings', (t) =>
   );
 });
 
+it('allows Node in-memory primitives without allowing modules that reach the machine', (t) => {
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]: `
+      require('node:assert/strict'); require('stream'); require('node:stream/promises');
+      require('buffer'); require('node:timers/promises');
+    `,
+    [`${alpha}/rejected.js`]: `
+      require('assert'); require('events'); require('url'); require('timers');
+      require('node:fs'); require('os'); require('net'); require('child_process');
+    `,
+  });
+  const graph = f.graph();
+  assert.equal(edges(graph).filter(([from]) => from === `${alpha}/approved.js`).length, 5);
+  assert.deepEqual(
+    violations(graph).filter(([, from]) => from === `${alpha}/approved.js`),
+    [],
+  );
+  assert.deepEqual(
+    violations(graph)
+      .filter(([, from]) => from === `${alpha}/rejected.js`)
+      .map(([, , to]) => (to ?? '').replace(/^node:/, ''))
+      .sort(),
+    ['assert', 'child_process', 'events', 'fs', 'net', 'os', 'timers', 'url'],
+  );
+});
+
 it('allows the cheerio slim entry required by Mentions without allowing the main entry', (t) => {
   const f = fixture(t, {
     [`${alpha}/approved.js`]: "require('cheerio/slim');",

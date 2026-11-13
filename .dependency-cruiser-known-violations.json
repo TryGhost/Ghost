@@ -247,11 +247,6 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
-    "to": "assert/strict"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
     "to": "ghost/core/server/adapters/storage/utils.ts"
   },
   {
@@ -393,11 +388,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-service/sending-service.js",
     "to": "@tryghost/logging"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-suppression-list/email-suppression-list.js",
-    "to": "assert/strict"
   },
   {
     "rule": "service-dependencies",
@@ -993,11 +983,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/posts/posts-exporter.js",
     "to": "@tryghost/logging"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/posts/posts-exporter.js",
-    "to": "stream"
   },
   {
     "rule": "service-dependencies",

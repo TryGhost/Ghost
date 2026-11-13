@@ -42,6 +42,7 @@ const serviceDependencyAllowlist = [
   '^(node:)?util$', // Node utilities, including promisify.
   '^(node:)?path$', // Path string parsing and joining.
   '^(node:)?vm$', // Bounded script execution for caller-owned regex matching with a timeout.
+  '^(node:)?(assert/strict|stream|stream/promises|buffer|timers/promises)$', // Node's in-memory primitives: assertions, streams, buffers and timers; no I/O of their own.
   '^ghost/core/kernel/clock\\.ts$', // Shared clock helpers and legacy date compatibility.
   '^ghost/core/server/lib/db-types/date\\.ts$', // Database date codec.
   '^ghost/core/server/lib/db-types/boolean\\.ts$', // Database boolean codec.
@@ -331,6 +332,7 @@ const serviceDependencyDecisions = {
   importForm: [
     '^lodash$', // Import individual functions, such as lodash/isEmpty.
     '^(moment(-timezone)?|luxon|temporal-polyfill)$', // Dates and times go through the kernel clock, which exports moment for existing date logic.
+    '^(node:)?url$', // Use the global URL; url.parse is deprecated.
     '^(node:)?(fs(/promises)?|os|net)$|^fs-extra$', // No file system, operating system or networking modules: the root passes a loader limited to what is needed.
   ],
 };
