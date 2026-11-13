@@ -132,7 +132,7 @@ const specialistDependencies = [
   {
     // HTML entity decoding for link rewriting and fetched metadata.
     dependency: npm('entities'),
-    owners: [core('server/lib/link-replacer.js'), service('oembed/')],
+    owners: [core('server/lib/link-replacer.ts'), service('oembed/')],
   },
 
   // File and token formats.
