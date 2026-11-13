@@ -57,11 +57,7 @@ class MailgunEmailSuppressionList {
     }
 
     try {
-      await this.Suppression.destroy({
-        destroyBy: {
-          email: email,
-        },
-      });
+      await this.Suppression.where({ email: email }).destroy({ require: false });
     } catch (err) {
       logging.error(err);
       return false;
