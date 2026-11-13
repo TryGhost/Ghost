@@ -117,3 +117,27 @@ describe('image inline source-map pruning', () => {
     assert.deepEqual(report.total, report.packages['example@1.0.0']);
   });
 });
+
+describe('image prebuild pruning', () => {
+  it("keeps only the running platform's better-sqlite3 binary", async (t) => {
+    const prebuilds =
+      'node_modules/.pnpm/better-sqlite3@13.0.3/node_modules/better-sqlite3/prebuilds';
+    const own = `${process.platform}-${process.arch}.node`;
+    const foreign = process.platform === 'win32' ? 'darwin-arm64.node' : 'win32-x64.node';
+    const root = await fixture(t, {
+      [`${prebuilds}/${own}`]: 'own',
+      [`${prebuilds}/${foreign}`]: 'foreign',
+      [`${prebuilds}/linuxmusl-x64.node`]: 'musl',
+      [`${packagePath}/prebuilds/${foreign}`]: 'other package',
+    });
+
+    const archive = await prune(root, { profile: 'archive' });
+    assert.equal(archive.removed, 0);
+
+    const image = await prune(root, { profile: 'image' });
+    assert.deepEqual(image.byRule.prebuilds, { files: 2, bytes: 11 });
+    await fs.access(path.join(root, prebuilds, own));
+    await fs.access(path.join(root, packagePath, 'prebuilds', foreign));
+    await assert.rejects(fs.access(path.join(root, prebuilds, foreign)));
+  });
+});
