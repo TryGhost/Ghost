@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { setImmediate } from 'node:timers/promises';
 import { IncorrectUsageError } from '@tryghost/errors';
 import sinon from 'sinon';
 import { expectTypeOf } from 'vitest';
@@ -132,7 +133,7 @@ describe('defineService', function () {
       // Preserve boot ordering: a synchronous factory still runs as init is called.
       sinon.assert.calledOnce(create);
       try {
-        await Promise.resolve();
+        await setImmediate();
         sinon.assert.calledOnceWithExactly(start, instance);
         assert.throws(() => root.service, IncorrectUsageError);
       } finally {
