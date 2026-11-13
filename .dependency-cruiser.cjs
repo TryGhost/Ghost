@@ -312,7 +312,7 @@ const serviceDependencyDecisions = {
   importForm: [
     '^lodash$', // Import individual functions, such as lodash/isEmpty.
     '^(moment(-timezone)?|luxon|temporal-polyfill)$', // Dates and times go through the kernel clock, which exports moment for existing date logic.
-    '^(node:)?fs(/promises)?$|^fs-extra$', // The root passes a loader limited to the files needed.
+    '^(node:)?(fs(/promises)?|os|net)$|^fs-extra$', // No file system, operating system or networking modules: the root passes a loader limited to what is needed.
   ],
 };
 

@@ -82,11 +82,13 @@ Some libraries are allowed only in one form:
   Do not import Moment, Moment Timezone, Luxon or any other date library
   elsewhere. The clock's deprecated `moment` export keeps existing date logic
   working while it moves.
-- **Files:** do not import `fs` or `fs-extra`. Code that needs files is given a
-  loader limited to those files, like `readTemplate` in the
+- **Files, the operating system and networking:** do not import `fs`,
+  `fs-extra`, `os` or `net`. Code that needs files is given a loader limited to
+  those files, like `readTemplate` in the
   [comments service root](../../ghost/core/server/services/comments/index.ts).
   A library that reads or writes files itself, such as `glob` or `gscan`, is
-  passed in the same way.
+  passed in the same way. So is anything taken from the machine or the network,
+  such as a temporary folder.
 
 ## Where the rules are checked
 
