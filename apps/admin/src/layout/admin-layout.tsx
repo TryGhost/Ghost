@@ -436,6 +436,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     />
   );
 
+  // The page never gets narrower than it is beside the panel at its default
+  // size. As the panel expands over it, what holds the page clips it instead,
+  // so the page keeps its layout under the panel, where it would otherwise be
+  // squashed and laid out again on every frame. The width is worked out from
+  // the viewport: the panel's, and in the frame its bezels and the panel's.
+  const page = (
+    <div className="h-full w-[max(100%,calc(100vw_-_var(--side-panel-navigation-width)_-_3_*_var(--admin-frame-side)))]">
+      {sidebarLayout}
+    </div>
+  );
+
   return (
     <GlobalSearchProvider>
       {!dunningLocked && <SkipLink target={mainRef} />}
@@ -443,7 +454,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         className="flex size-full"
         style={{ '--side-panel-navigation-width': SIDEBAR_WIDTH } as React.CSSProperties}
       >
-        <div className="h-full min-w-0 flex-1">
+        <div className="h-full min-w-0 flex-1 overflow-hidden">
           {adminFrame ? (
             <AdminFrame
               aside={sidePanel}
@@ -451,10 +462,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               mode={frameMode}
               topBar={<AdminFrameTopBar hidden={frameMode === 'hidden'} />}
             >
-              {sidebarLayout}
+              {page}
             </AdminFrame>
           ) : (
-            sidebarLayout
+            page
           )}
         </div>
         {!adminFrame && sidePanel}
