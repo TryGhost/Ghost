@@ -72,6 +72,14 @@ including service roots, uses the provider client. A provider client used by
 one service lives in that service; one shared by several belongs in
 `server/lib`.
 
+## Contracts
+
+A contract defines the shape of data that crosses a boundary, such as the
+custom field types shared by Admin, the API and member services. Contracts
+belong in a top-level `contracts/` folder, and Ghost Core may import their
+public entries anywhere. `@tryghost/metafield-types` is the first; it is still
+in `packages/` until it moves.
+
 ## Import forms
 
 Some libraries are allowed only in one form:

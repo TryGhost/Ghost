@@ -637,6 +637,28 @@ it('allows the validator and NQL strings without their siblings or internals', (
   );
 });
 
+it('allows the custom field contract through its public entries only', (t) => {
+  const entries = ['index', 'structure', 'shapes', 'identity', 'countries', 'phone'];
+  const internal = 'packages/metafield-types/src/internal.ts';
+  const f = fixture(t, {
+    ...Object.fromEntries(
+      [...entries.map((entry) => `packages/metafield-types/src/${entry}.ts`), internal].map(
+        (file) => [file, 'export {};'],
+      ),
+    ),
+    [`${alpha}/approved.js`]: entries
+      .map((entry) => `require('../../../../../packages/metafield-types/src/${entry}');`)
+      .join('\n'),
+    [`${alpha}/rejected.js`]: "require('../../../../../packages/metafield-types/src/internal');",
+  });
+  const graph = f.graph();
+  assert.equal(
+    edges(graph).filter(([from]) => from === `${alpha}/approved.js`).length,
+    entries.length,
+  );
+  assert.deepEqual(violations(graph), [['service-dependencies', `${alpha}/rejected.js`, internal]]);
+});
+
 it('allows the cheerio slim entry required by Mentions without allowing the main entry', (t) => {
   const f = fixture(t, {
     [`${alpha}/approved.js`]: "require('cheerio/slim');",
