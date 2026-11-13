@@ -47,7 +47,7 @@ allowBuilds:
   protobufjs: false
 
 catalog:
-  '@better-auth/test-utils': 1.7.18
+  '@better-auth/test-utils': 1.7.19
   '@codemirror/autocomplete': 6.20.4
   '@codemirror/commands': 6.11.1
   '@codemirror/lang-css': 6.3.1
@@ -138,7 +138,7 @@ catalog:
   '@vitest/ui': 4.1.12
   ajv: 8.20.0
   ajv-formats: 3.0.1
-  better-auth: 1.7.18
+  better-auth: 1.7.19
   better-sqlite3: 12.11.1
   body-parser: 1.20.9
   bson-objectid: 2.0.4
