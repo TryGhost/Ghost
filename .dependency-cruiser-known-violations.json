@@ -96,11 +96,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/content-import/import/relations.ts",
-    "to": "@tryghost/validator"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/content-import/import/row.ts",
     "to": "temporal-polyfill"
   },
@@ -143,11 +138,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/custom-redirects/validation.js",
     "to": "lodash"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-address/email-address-service-wrapper.js",
-    "to": "@tryghost/validator"
   },
   {
     "rule": "service-dependencies",
@@ -436,11 +426,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/email-service/sending-service.js",
-    "to": "@tryghost/validator"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-service/sending-status-schema.ts",
     "to": "ghost/core/server/lib/db-types/count.ts"
   },
@@ -686,11 +671,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/link-tracking/link-click-tracking-service.js",
-    "to": "packages/nql-string/src/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/link-tracking/post-link-repository.js",
     "to": "lodash"
   },
@@ -858,11 +838,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/milestones/slack-notifications/service.js",
     "to": "ghost/core/shared/url-utils.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/milestones/slack-notifications/slack-notifications.js",
-    "to": "@tryghost/validator"
   },
   {
     "rule": "service-dependencies",
@@ -1268,11 +1243,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/settings/settings-utils.js",
     "to": "@tryghost/logging"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/settings/settings-utils.js",
-    "to": "@tryghost/validator"
   },
   {
     "rule": "service-dependencies",

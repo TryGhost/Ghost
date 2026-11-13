@@ -604,6 +604,39 @@ it('allows the Ghost version as a process fact without allowing sibling packages
   );
 });
 
+it('allows the validator and NQL strings without their siblings or internals', (t) => {
+  const nqlString = 'packages/nql-string/src/index.ts';
+  const nqlInternal = 'packages/nql-string/src/other.ts';
+  const f = fixture(t, {
+    [nqlString]: 'export {};',
+    [nqlInternal]: 'export {};',
+    [`${alpha}/approved.js`]:
+      "require('@tryghost/validator'); require('../../../../../packages/nql-string/src/index');",
+    [`${alpha}/rejected.js`]: `
+      require('@tryghost/validator/lib/is-email');
+      require('@tryghost/validator-extra');
+      require('../../../../../packages/nql-string/src/other');
+    `,
+  });
+  for (const name of ['@tryghost/validator', '@tryghost/validator-extra']) {
+    f.write(`node_modules/${name}/package.json`, JSON.stringify({ name, main: 'index.js' }));
+    f.write(`node_modules/${name}/index.js`, 'module.exports = {};');
+  }
+  f.write('node_modules/@tryghost/validator/lib/is-email.js', 'module.exports = {};');
+  const graph = f.graph();
+  assert.equal(edges(graph).filter(([from]) => from === `${alpha}/approved.js`).length, 2);
+  assert.deepEqual(
+    violations(graph),
+    [
+      'node_modules/@tryghost/validator/lib/is-email.js',
+      'node_modules/@tryghost/validator-extra/index.js',
+      nqlInternal,
+    ]
+      .map((to) => ['service-dependencies', `${alpha}/rejected.js`, to])
+      .sort(),
+  );
+});
+
 it('allows the cheerio slim entry required by Mentions without allowing the main entry', (t) => {
   const f = fixture(t, {
     [`${alpha}/approved.js`]: "require('cheerio/slim');",

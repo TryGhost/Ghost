@@ -30,6 +30,8 @@ const serviceDependencyAllowlist = [
   '^@tryghost/referrer-parser$|(^|/)node_modules/@tryghost/referrer-parser/dist/index\\.(cjs|js)$', // Referrer classification from supplied URLs and static lookup data.
   '^lodash/(?!(?:index|lodash|core|fp)(?:\\.js)?$)[a-zA-Z]+(?:\\.js)?$|(^|/)node_modules/lodash/(?!(?:index|lodash|core|fp)\\.js$)[a-zA-Z]+\\.js$', // Individual Lodash functions; not the whole library, its builds or lodash/fp.
   '^@tryghost/nql$|(^|/)node_modules/@tryghost/nql/index\\.js$', // Caller-local query parsing and JSON matching; no application instances or I/O.
+  '^@tryghost/nql-string$|^packages/nql-string/(src/index\\.ts|build/index\\.js)$', // Builds NQL filter strings from supplied values.
+  '^@tryghost/validator$|(^|/)node_modules/@tryghost/validator/index\\.js$', // String validation and sanitising of supplied values.
   '^@tryghost/mongo-utils$|(^|/)node_modules/@tryghost/mongo-utils/index\\.js$', // Pure helpers over a parsed NQL tree; no application instances or I/O.
   '^@tryghost/html-to-plaintext$|(^|/)node_modules/@tryghost/html-to-plaintext/index\\.js$', // Stateless HTML to plain-text conversion of supplied markup.
   '^handlebars$|(^|/)node_modules/handlebars/lib/index\\.js$', // Template compilation on a caller-created instance; no application instances.
