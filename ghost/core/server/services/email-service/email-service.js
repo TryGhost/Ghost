@@ -581,7 +581,7 @@ class EmailService {
       post,
       newsletter,
       renderSegment,
-      { clickTrackingEnabled: false },
+      { clickTrackingEnabled: false, previewAudience: { memberStatus, memberTier } },
     );
 
     return {
@@ -620,6 +620,7 @@ class EmailService {
         clickTrackingEnabled: false,
         openTrackingEnabled: false,
         isTestEmail: true,
+        previewAudience: { memberStatus, memberTier },
       },
     );
   }
