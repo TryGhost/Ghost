@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import type {
   AppInstallation,
@@ -1030,6 +1030,167 @@ describe('Managing apps', () => {
         );
       }
       expect(currentRoute()).toBe(APP_ROUTE);
+    });
+  });
+
+  describe('the app’s overlay', () => {
+    const tintClasses = (): string[] =>
+      (appsScreen.overlayTint().element() as HTMLElement).className.split(' ');
+
+    it('covers Admin with its tint and the overlay frame while the page has a dialog open', async () => {
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      await expect.element(appsScreen.overlayFrame()).not.toBeVisible();
+
+      answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'sheet' }));
+
+      await expect.element(appsScreen.overlayFrame()).toBeVisible();
+      await expect.poll(() => tintClasses()).toContain('opacity-100');
+      expect(tintClasses()).toContain('bg-black/10');
+
+      answer(await callHostRaw(APP_ORIGIN, 'overlayHidden'));
+
+      await expect.poll(() => tintClasses()).toContain('opacity-0');
+      await expect.element(appsScreen.overlayFrame()).not.toBeVisible();
+    });
+
+    it('loads the overlay frame at the page’s route, and keeps it there as the app moves', async () => {
+      await fakeAppPage(installation());
+      await renderAdminApp(`${APP_ROUTE}/episodes/12`, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      await expect
+        .element(appsScreen.overlayFrame())
+        .toHaveAttribute('src', `${APP_ORIGIN}/episodes/12`);
+
+      answer(await callAppFrame(APP_ORIGIN, 'navigate', '/episodes/13'));
+
+      await expect.poll(() => currentRoute()).toBe(`${APP_ROUTE}/episodes/13`);
+      await expect
+        .element(appsScreen.overlayFrame())
+        .toHaveAttribute('src', `${APP_ORIGIN}/episodes/12`);
+    });
+
+    it('leaves the overlay to the page when the publisher presses the tint', async () => {
+      // A raw page answers nothing Admin tells it, as a page whose dialog stays open.
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'dialog' }));
+      await expect.element(appsScreen.overlayFrame()).toBeVisible();
+
+      await userEvent.click(appsScreen.overlayTint(), { position: { x: 5, y: 5 } });
+
+      await expect.element(appsScreen.overlayFrame()).toBeVisible();
+      expect(tintClasses()).not.toContain('opacity-0');
+    });
+
+    it('reaches over the padding right of the page, so a sheet docks at the content’s edge', async () => {
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      // As Admin pads the page with the sidebar collapsed.
+      const main = (appsScreen.frame().element() as HTMLElement).closest('main') as HTMLElement;
+      main.style.paddingRight = '40px';
+
+      answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'sheet' }));
+
+      await expect.element(appsScreen.overlayFrame()).toBeVisible();
+      const frame = (appsScreen.frame().element() as HTMLElement).getBoundingClientRect();
+      const overlay = (appsScreen.overlayFrame().element() as HTMLElement).getBoundingClientRect();
+      expect(overlay.left).toBe(frame.left);
+      expect(overlay.right).toBe(frame.right + 40);
+    });
+
+    it('keeps focus in the overlay frame when the publisher presses the tint', async () => {
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'dialog' }));
+      await expect.element(appsScreen.overlayFrame()).toBeVisible();
+      const overlayFrame = appsScreen.overlayFrame().element();
+      await expect.poll(() => document.activeElement).toBe(overlayFrame);
+
+      // Over Admin's sidebar, outside the app's area.
+      await userEvent.click(appsScreen.overlayTint(), { position: { x: 5, y: 5 } });
+
+      expect(document.activeElement).toBe(overlayFrame);
+    });
+
+    it('puts focus back in the page frame as the overlay hides', async () => {
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'dialog' }));
+      await expect.poll(() => document.activeElement).toBe(appsScreen.overlayFrame().element());
+
+      answer(await callHostRaw(APP_ORIGIN, 'overlayHidden'));
+
+      // So the page can put it back on what opened the dialog.
+      await expect.poll(() => document.activeElement).toBe(appsScreen.frame().element());
+    });
+
+    it('leaves focus that left the overlay where it went as the overlay hides', async () => {
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'dialog' }));
+      await expect.poll(() => document.activeElement).toBe(appsScreen.overlayFrame().element());
+      const elsewhere = document.createElement('button');
+      document.body.append(elsewhere);
+      onTestFinished(() => elsewhere.remove());
+      elsewhere.focus();
+
+      answer(await callHostRaw(APP_ORIGIN, 'overlayHidden'));
+
+      await expect.element(appsScreen.overlayFrame()).not.toBeVisible();
+      expect(document.activeElement).toBe(elsewhere);
+    });
+
+    it('makes the rest of Admin inert and hidden from assistive technology while the overlay shows', async () => {
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      // The part of Admin with its sidebar and the app's page.
+      const admin = [...document.body.children].find((element) =>
+        element.contains(appsScreen.frame().element()),
+      ) as HTMLElement | undefined;
+      const state = () => ({ hidden: admin?.getAttribute('aria-hidden'), inert: admin?.inert });
+      expect(state()).toEqual({ hidden: null, inert: false });
+
+      answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'dialog' }));
+      // The page frame too, so focus can't land in the page behind the dialog.
+      await expect.poll(state).toEqual({ hidden: 'true', inert: true });
+      expect(appsScreen.overlayFrame().element().closest('[inert]')).toBeNull();
+
+      answer(await callHostRaw(APP_ORIGIN, 'overlayHidden'));
+      await expect.poll(state).toEqual({ hidden: null, inert: false });
+    });
+
+    it('loads the app’s page again when the overlay frame holds a document on Admin’s origin', async () => {
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.overlayFrame()).toBeInTheDocument();
+      const overlayFrame = appsScreen.overlayFrame().element() as HTMLIFrameElement;
+
+      // A `srcdoc` document is on Admin's origin, as one the app navigated to would be.
+      overlayFrame.srcdoc = '<p>Admin’s own</p>';
+
+      await expect.poll(() => overlayFrame.isConnected).toBe(false);
+      await expect.element(appsScreen.frame()).toBeVisible();
+    });
+
+    it('refuses a tint Admin doesn’t know, or a size or position, which Admin decides', async () => {
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+
+      for (const options of [{ tint: 'none' }, { tint: 'dialog', rect: { x: 0, y: 0 } }]) {
+        expect(refusal(await callHostRaw(APP_ORIGIN, 'overlayShown', options))).toMatch(
+          /^invalid_argument: /,
+        );
+      }
+      expect(tintClasses()).toContain('opacity-0');
     });
   });
 

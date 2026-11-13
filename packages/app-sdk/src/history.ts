@@ -15,11 +15,20 @@ export function currentRoute(): string {
   return routeOf(window.location);
 }
 
-/** Whether a node is an HTML or SVG link, which the browser follows when it's clicked. */
+const WEB_PROTOCOLS = new Set(['http:', 'https:']);
+
+const LINK_NAMESPACES = new Set(['http://www.w3.org/1999/xhtml', 'http://www.w3.org/2000/svg']);
+
+/**
+ * Whether a node is an HTML or SVG link, which the browser follows when it's clicked. Read from
+ * its name, not its class, so a link in the app's overlay, another document, counts too.
+ */
 function isLink(node: EventTarget): node is Element {
+  const element = node as Partial<Element>;
   return (
-    (node instanceof HTMLAnchorElement || (node instanceof SVGElement && node.localName === 'a')) &&
-    node.hasAttribute('href')
+    element.localName === 'a' &&
+    LINK_NAMESPACES.has(element.namespaceURI ?? '') &&
+    element.hasAttribute?.('href') === true
   );
 }
 
@@ -29,6 +38,13 @@ export interface HistoryWatch {
    * dispatches `popstate` so the app's router shows it.
    */
   follow(path: string): void;
+  /**
+   * Treats links in `overlay`, the app's overlay document that the page renders its dialogs
+   * into, as the page's own, in place of the overlay's previous document. The overlay stays on
+   * the app's page: the page follows each link to a web page instead.
+   * Nothing once stopped.
+   */
+  watchLinks(overlay: Document): void;
   /** Gives the page its own history methods and links back. */
   stop(): void;
 }
@@ -118,7 +134,7 @@ export function watchHistory(
   history.pushState = push;
   history.replaceState = replace;
 
-  const onClick = (event: MouseEvent) => {
+  const followLink = (event: MouseEvent, inOverlay: boolean) => {
     if (
       event.defaultPrevented ||
       event.button !== 0 ||
@@ -137,7 +153,13 @@ export function watchHistory(
       return;
     }
     const url = new URL(link.getAttribute('href') as string, document.baseURI);
-    if (url.origin !== window.location.origin) {
+    if (url.origin !== window.location.origin || !WEB_PROTOCOLS.has(url.protocol)) {
+      // A web page loads in the page's frame, in place of the overlay's. Any other link, such as
+      // a `mailto:`, opens as it is, with the click's activation, which is the overlay's.
+      if (inOverlay && WEB_PROTOCOLS.has(url.protocol)) {
+        event.preventDefault();
+        load(url.href);
+      }
       return;
     }
     event.preventDefault();
@@ -154,7 +176,11 @@ export function watchHistory(
     // Admin records the move before the page leaves, so the next document starts where it is.
     moved(next, 'push').then(go, go);
   };
+  const onClick = (event: MouseEvent) => followLink(event, false);
+  const onOverlayClick = (event: MouseEvent) => followLink(event, true);
   document.addEventListener('click', onClick);
+  let overlay: Document | undefined;
+  let stopped = false;
 
   return {
     follow(path) {
@@ -162,6 +188,15 @@ export function watchHistory(
       const state = states.get(path) ?? null;
       replaceState.call(history, state, '', path);
       window.dispatchEvent(new PopStateEvent('popstate', { state }));
+    },
+    watchLinks(next) {
+      if (stopped || next === overlay) {
+        return;
+      }
+      // The overlay's previous document, if Admin loaded it again, is done with.
+      overlay?.removeEventListener('click', onOverlayClick);
+      overlay = next;
+      overlay.addEventListener('click', onOverlayClick);
     },
     stop() {
       if (history.pushState === push) {
@@ -171,6 +206,9 @@ export function watchHistory(
         history.replaceState = replaceState;
       }
       document.removeEventListener('click', onClick);
+      overlay?.removeEventListener('click', onOverlayClick);
+      overlay = undefined;
+      stopped = true;
     },
   };
 }

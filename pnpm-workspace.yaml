@@ -138,6 +138,7 @@ catalog:
   '@vitest/ui': 4.1.12
   ajv: 8.20.0
   ajv-formats: 3.0.1
+  aria-hidden: 1.2.6
   better-auth: 1.7.18
   better-sqlite3: 12.11.1
   body-parser: 1.20.9

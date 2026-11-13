@@ -1,8 +1,8 @@
-import type { Place, StartContext, Theme } from '@tryghost/app-contracts';
+import type { OverlayTint, Place, StartContext, Theme } from '@tryghost/app-contracts';
 
 import type { GhostAppError } from './errors.ts';
 
-export type { Place, StartContext, Theme };
+export type { OverlayTint, Place, StartContext, Theme };
 
 // The context is read-only: the SDK hands out frozen copies, so no part of a page can change
 // what every other part reads.
@@ -55,6 +55,45 @@ export interface GhostPath {
 
 export type Unsubscribe = () => void;
 
+/** A dialog or sheet's hold on the overlay, from when it mounts until it unmounts. */
+export interface OverlayHold {
+  /**
+   * Whether the dialog is open: true from when it opens, false once it starts to close. Admin
+   * shows the overlay while any dialog holding it is open.
+   */
+  setOpen(open: boolean): void;
+  /** Called once the dialog has unmounted, after its closing animation. */
+  release(): void;
+}
+
+/**
+ * Where the app's dialogs and sheets render so they cover all of Admin, not just the app's
+ * page: a second document on the app's origin that Admin shows above its own chrome, over a
+ * tint.
+ *
+ * That document is the app's page, loaded a second time. It never connects, but code that runs
+ * before `connect()` resolves runs there too, so start fetches, analytics and the like once
+ * `connect()` has resolved.
+ */
+export interface GhostOverlay {
+  /**
+   * The element to render a dialog or sheet into, or undefined to render it in the page as
+   * before: when Admin has no overlay, while it's still loading, or when the dialog opens
+   * without the publisher having just clicked or typed in the app.
+   */
+  container(): HTMLElement | undefined;
+  /**
+   * Called by a dialog or sheet rendered into `container()` when it mounts, with its content
+   * element: the one that has `role="dialog"`, and holds its focus.
+   *
+   * `refused` is called if Admin won't show the overlay as the dialog opens, such as when the
+   * publisher's click has run out by the time Admin hears of it. The dialog then renders in the
+   * page instead, where it's seen, until it next opens, and releases this hold as it leaves the
+   * overlay. It has only just opened, so it loses nothing by mounting again.
+   */
+  hold(tint: OverlayTint, element: HTMLElement, refused: () => void): OverlayHold;
+}
+
 /** The connection to Ghost, once Admin has started the app. */
 export interface Ghost {
   /** The site the app is running in: its URL, title, timezone and locale. */
@@ -93,4 +132,6 @@ export interface Ghost {
   fetch(path: string, init?: GhostFetchInit): Promise<Response>;
   /** Sends the person using the app to a place in Admin, such as `{ post: { id } }`. */
   open(place: Place): Promise<void>;
+  /** Where dialogs and sheets render to cover all of Admin. */
+  readonly overlay: GhostOverlay;
 }

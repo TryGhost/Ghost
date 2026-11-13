@@ -9,6 +9,7 @@ import {
   isTheme,
   type AppExports,
   type HostExports,
+  type OverlayTint,
   type PathMove,
   type Place,
   type Theme,
@@ -23,10 +24,12 @@ import {
 } from './errors.ts';
 import { toFetchRequest, toResponse } from './fetch.ts';
 import { currentRoute, watchHistory, type HistoryWatch } from './history.ts';
+import { PageOverlay } from './overlay.ts';
 import { watchTitle } from './title.ts';
 import type {
   Ghost,
   GhostFetchInit,
+  GhostOverlay,
   GhostPath,
   Session,
   Site,
@@ -125,16 +128,30 @@ export class Channel {
   #history: HistoryWatch | undefined;
   // Counts the page's moves, so an answer to one the page has since moved on from is ignored.
   #moves = 0;
+  readonly #overlay: PageOverlay;
 
   constructor(port: MessagePort, hostExports: readonly string[], events: ChannelEvents) {
     this.#port = port;
     this.#hostExports = new Set(hostExports);
     this.#events = events;
+    this.#overlay = new PageOverlay({
+      supported: this.#hostExports.has('overlayShown') && this.#hostExports.has('overlayHidden'),
+      mode: () => this.#theme?.mode ?? 'light',
+      show: (tint) => this.#call('overlayShown', { tint }),
+      hide: () => this.#call('overlayHidden'),
+      found: (overlay) => this.#history?.watchLinks(overlay),
+      // The page starts again, rather than hold a dialog no one can see or close.
+      lost: () => window.location.reload(),
+    });
     this.#thread = new ThreadMessagePort<HostExports, AppExports>(port, {
       exports: {
         start: async (context) => this.#start(context),
         themeChanged: async (theme) => this.#themeChanged(theme),
         pathChanged: async (path) => this.#pathChanged(path),
+        overlayDismissed: async () => {
+          this.#assertStarted();
+          this.#overlay.dismissed();
+        },
       },
     });
     port.addEventListener('close', () => this.end(sessionEnded()));
@@ -188,6 +205,7 @@ export class Channel {
     }
     this.#theme = Object.freeze({ ...theme });
     notify(this.#themeListeners, this.#theme);
+    this.#overlay.themeChanged();
   }
 
   #pathChanged(path: unknown) {
@@ -286,6 +304,15 @@ export class Channel {
     const context = () => this.#context as StartedContext;
     const theme = () => this.#theme as Readonly<Theme>;
     const connected = () => this.#ended === undefined;
+    // Made in the constructor, after this object. Only the members `GhostOverlay` declares
+    // reach the app.
+    let overlay: GhostOverlay | undefined;
+    const getOverlay = (): GhostOverlay =>
+      (overlay ??= Object.freeze({
+        container: () => this.#overlay.container(),
+        hold: (tint: OverlayTint, element: HTMLElement, refused: () => void) =>
+          this.#overlay.hold(tint, element, refused),
+      }));
     return Object.freeze({
       get site(): Site {
         return context().site;
@@ -311,6 +338,9 @@ export class Channel {
         this.#onSessionEnd(callback),
       fetch: (path: string, init?: GhostFetchInit): Promise<Response> => this.#fetch(path, init),
       open: (place: Place): Promise<void> => this.#open(place),
+      get overlay(): GhostOverlay {
+        return getOverlay();
+      },
     });
   }
 
