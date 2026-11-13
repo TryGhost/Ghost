@@ -696,8 +696,10 @@ it('allows the shared stateless helpers without allowing their siblings', (t) =>
     'ghost/core/shared/machine-payments.ts',
     'packages/parse-email-address/src/index.ts',
     'packages/parse-email-address/src/mailbox.ts',
+    'ghost/core/server/adapters/scheduling/get-scheduler-idempotency-key.ts',
   ];
   const rejected = [
+    'ghost/core/server/adapters/scheduling/build-signed-job.ts',
     'ghost/core/server/lib/mailgun/mailgun-client.ts',
     'ghost/core/server/lib/after-commit-extra.ts',
     'ghost/core/shared/errify-extra.ts',

@@ -942,11 +942,6 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/post-scheduling/post-scheduling.ts",
-    "to": "ghost/core/server/adapters/scheduling/get-scheduler-idempotency-key.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/post-scheduling/post-scheduling.ts",
     "to": "ghost/core/server/lib/common/events.js"
   },
   {
