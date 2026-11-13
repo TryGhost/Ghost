@@ -27,13 +27,31 @@ built from config or settings. So is a file that imports any of these, and
 anything that makes its own requests, such as `request-external`, `got` or the
 mailer.
 
-## Values that change while Ghost runs
+## Site facts and process facts
 
-Config is fixed when the process starts, so the composing code can read it
-once. Settings can be edited while Ghost runs. When code needs a setting each
-time it runs, pass a function that reads it rather than the value, such as
-`getTimezone: () => settingsCache.get('timezone')`. Passing the value captures
-it at startup, so later edits would not take effect.
+Ghost is moving towards one process serving many sites, so a fact about the
+site may differ from one request to the next. Code must not assume it serves
+one site.
+
+- A **site fact** belongs to one site: its settings, such as the timezone,
+  locale and labs flags, and its URL, ID and any config that could differ
+  between sites. Code reaches a site fact through a function it calls each time
+  it needs the value, such as `getTimezone()` or `getSiteUrl()`. Never keep the
+  value: not when a module loads, not when a service is created and not in an
+  instance field. Today those functions read the settings cache or config;
+  later they will read the site serving the request, without changing the code
+  that calls them.
+- A **process fact** is the same for every site the process serves: the
+  database connection, where logs are written, the environment and the Ghost
+  version. It can be read once.
+
+A service's `create` callback may keep process facts only. A cache of site data
+is keyed by site.
+
+Logging is a process fact: the composing code passes the logger in. The Ghost
+version is fixed when Ghost is built, so `@tryghost/version` may be imported
+directly. Date code gets the site's timezone from `getTimezone()` each time it
+needs it; the process default is UTC.
 
 ## Specialist dependencies
 

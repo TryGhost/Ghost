@@ -200,10 +200,11 @@ has got. Keep each dependency's existing timing:
   on use and say why in a comment.
   [Stripe Checkout config](stripe-checkout-config/index.ts) reaches Stripe,
   tiers and members this way.
-- When a setting or config value is read on each use today, pass a function
-  rather than the value, as [member attribution](member-attribution/index.ts)
-  does for `outbound_link_tagging`. Capturing it in `create` changes when edits
-  take effect.
+- Pass a [site fact](../../../../docs/practices/dependencies.md#site-facts-and-process-facts),
+  such as a setting or the site URL, as a function rather than the value, as
+  [member attribution](member-attribution/index.ts) does for
+  `outbound_link_tagging`. Capturing it in `create` changes when edits take
+  effect and ties the instance to one site.
 - A dependency loaded with `require()` in a TypeScript root has no type. Keep
   its type with `typeof import()`, as the users root does for post revisions.
 
