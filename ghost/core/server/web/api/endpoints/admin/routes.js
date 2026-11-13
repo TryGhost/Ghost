@@ -5,6 +5,20 @@ const auth = require('../../../../auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
 const labs = require('../../../../../shared/labs');
+const config = require('../../../../../shared/config');
+
+// Chosen once at load, as in auth/authenticate.ts
+const isBetterAuth = config.get('auth:engine') === 'better-auth';
+
+// Better Auth loads only under its engine
+function betterAuthAdminOrigin() {
+  const { requireAdminOrigin } = require('../../../../auth/better-auth/session-controller');
+  const urlUtils = require('../../../../../shared/url-utils').default;
+  return requireAdminOrigin({
+    getOriginOfRequest: auth.session.getOriginOfRequest,
+    getAdminOrigin: () => urlUtils.getAdminOrigin(),
+  });
+}
 
 const shared = require('../../../shared');
 
@@ -446,7 +460,9 @@ module.exports = function apiRoutes() {
   router.put(
     '/authentication/password_reset',
     shared.middleware.rateLimiting.globalBlock,
-    auth.session.initSession,
+    // Better Auth sets its own session cookie in the controller, which can't
+    // check the origin as the legacy session does
+    ...(isBetterAuth ? [betterAuthAdminOrigin()] : [auth.session.initSession]),
     http(api.authentication.resetPassword),
   );
   router.post('/authentication/invitation', http(api.authentication.acceptInvitation));

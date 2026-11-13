@@ -38,9 +38,40 @@ const isSessionCookie = (cookie: string) => {
   return name === SESSION_COOKIE_NAME || name === `__Secure-${SESSION_COOKIE_NAME}`;
 };
 
+/** Better Auth's `Set-Cookie` headers, without the cookies Ghost never sets */
+export const sessionCookies = (headers: Headers) => headers.getSetCookie().filter(isSessionCookie);
+
 function forwardSessionCookie(headers: Headers, res: Response) {
   // An array, as express-session sends it
-  res.setHeader('Set-Cookie', headers.getSetCookie().filter(isSessionCookie));
+  res.setHeader('Set-Cookie', sessionCookies(headers));
+}
+
+type OriginDeps = Pick<SessionControllerDeps, 'getOriginOfRequest' | 'getAdminOrigin'>;
+
+// Server-side calls skip Better Auth's origin checks, so this is the login-CSRF check
+function assertAdminOrigin(deps: OriginDeps, req: Request) {
+  const origin = deps.getOriginOfRequest(req);
+  if (!origin) {
+    throw new errors.BadRequestError({ message: messages.noOrigin });
+  }
+  const adminOrigin = deps.getAdminOrigin();
+  if (origin !== adminOrigin) {
+    throw new errors.BadRequestError({
+      message: `Request made from incorrect origin. Expected '${adminOrigin}' received '${origin}'.`,
+    });
+  }
+}
+
+/** The login-CSRF check for a route whose controller creates a session it can't see the request of */
+export function requireAdminOrigin(deps: OriginDeps) {
+  return function requireAdminOriginMw(req: Request, _res: Response, next: NextFunction) {
+    try {
+      assertAdminOrigin(deps, req);
+      next();
+    } catch (err) {
+      next(err);
+    }
+  };
 }
 
 /**
@@ -48,20 +79,6 @@ function forwardSessionCookie(headers: Headers, res: Response) {
  * errors (plan §5.1, §5.3).
  */
 export function createSessionController(deps: SessionControllerDeps) {
-  // Server-side calls skip Better Auth's origin checks, so this is the login-CSRF check
-  function assertAdminOrigin(req: Request) {
-    const origin = deps.getOriginOfRequest(req);
-    if (!origin) {
-      throw new errors.BadRequestError({ message: messages.noOrigin });
-    }
-    const adminOrigin = deps.getAdminOrigin();
-    if (origin !== adminOrigin) {
-      throw new errors.BadRequestError({
-        message: `Request made from incorrect origin. Expected '${adminOrigin}' received '${origin}'.`,
-      });
-    }
-  }
-
   /**
    * Better Auth's generic sign-in failure, as legacy sign-in reports it: status
    * before password, so this still enumerates staff (SC-90). The lifecycle
@@ -117,7 +134,7 @@ export function createSessionController(deps: SessionControllerDeps) {
     { email, password }: { email: string; password: string },
   ) {
     try {
-      assertAdminOrigin(req);
+      assertAdminOrigin(deps, req);
 
       let headers: Headers;
       try {
