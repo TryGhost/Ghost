@@ -323,6 +323,7 @@ const serviceDependencyDecisions = {
     '^ghost/core/server/api/index\\.js$|^ghost/core/server/api/endpoints/utils/(api-filter-utils\\.ts|serializers/output/utils/url\\.js)$', // The API layer and its helpers.
     '^ghost/core/server/web/shared/middleware/api/spam-prevention\\.ts$', // Rate limiting, built from config and the database.
     '^ghost/core/bridge\\.js$', // The bridge to the frontend.
+    '^ghost/core/server/web/shared/dynamic-redirect-manager\\.js$', // Holds the site's redirects and an Express router shared with the web layer; roots build it.
   ],
   // Allowed only in another form. A specialist dependency imported outside its
   // owners is counted here too, without a pattern.

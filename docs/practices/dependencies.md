@@ -25,7 +25,9 @@ config, settings, models, the database, event buses and other services. Shared
 files built from them are instances too: URL utils, labs, Sentry and i18n are
 built from config or settings. So is a file that imports any of these, and
 anything that makes its own requests, such as `request-external`, `got` or the
-mailer.
+mailer. An object the service shares with another part of Ghost is an instance
+too, even when its class needs nothing stateful: the redirect manager holds the
+site's redirects and is mounted by the web layer, so only the root builds it.
 
 ## Site facts and process facts
 
