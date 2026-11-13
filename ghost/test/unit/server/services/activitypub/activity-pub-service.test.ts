@@ -503,4 +503,51 @@ describe('ActivityPubService', function () {
 
     await knexInstance.destroy();
   });
+
+  it('Can disable Social Web by clearing webhooks and disconnecting the site', async function () {
+    const knexInstance = await getKnexInstance();
+    await addOwnerUser(knexInstance);
+    await addActivityPubIntegration(knexInstance);
+
+    await knexInstance
+      .insert({
+        id: 'webhook_id',
+        event: 'post.published',
+        target_url: 'http://fake-site-url/.ghost/activitypub/v1/webhooks/post/published',
+        api_version: 'v5.100.0',
+        name: 'ActivityPub post.published Webhook',
+        secret: 'webhook_secret',
+        integration_id: 'integration_id',
+        created_at: knexInstance.fn.now(),
+      })
+      .into('webhooks');
+
+    const siteUrl = new URL('http://fake-site-url');
+    const scope = nock(siteUrl)
+      .delete('/.ghost/activitypub/v1/site/')
+      .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
+      .reply(200);
+
+    const identityTokenService = {
+      getTokenForUser(email: string, role: string) {
+        return `token:${email}:${role}`;
+      },
+    };
+
+    const service = new ActivityPubService(
+      knexInstance,
+      siteUrl,
+      logging,
+      identityTokenService as unknown as IdentityTokenService,
+    );
+
+    await service.disable();
+
+    assert(scope.isDone(), 'Expected the ActivityPub site endpoint to be called');
+
+    const webhooks = await knexInstance.select('*').from('webhooks');
+    assert.equal(webhooks.length, 0, 'Expected ActivityPub webhooks to be removed');
+
+    await knexInstance.destroy();
+  });
 });

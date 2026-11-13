@@ -47,6 +47,10 @@ module.exports = {
     return apiFramework.pipeline(require('./identities'), localUtils);
   },
 
+  get activitypub() {
+    return apiFramework.pipeline(require('./activitypub'), localUtils);
+  },
+
   get integrations() {
     return apiFramework.pipeline(require('./integrations'), localUtils);
   },
