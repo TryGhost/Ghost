@@ -1,9 +1,63 @@
 import { describe, expect, it } from 'vitest';
 
-import { fakeEditSettings, fakeSettingsScreens, renderAdminApp } from '@test-utils/acceptance';
+import {
+  fakeAdminEndpoint,
+  fakeEditSettings,
+  fakeSettingsScreens,
+  renderAdminApp,
+  settingsResponse,
+} from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
 
 describe('Title and description settings', () => {
+  it('keeps edits made while saving available for another save', async () => {
+    fakeSettingsScreens();
+    let release!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const settingsApi = fakeAdminEndpoint('PUT', '/settings/', async ({ body }) => {
+      await pending;
+      const { settings } = body as {
+        settings: Array<{ key: string; value: string }>;
+      };
+      return settingsResponse({
+        settings: Object.fromEntries(settings.map(({ key, value }) => [key, value])),
+      });
+    });
+    const section = settingsScreen.titleAndDescription();
+    try {
+      await renderAdminApp('/settings');
+      await section.getByRole('button', { name: 'Edit' }).click();
+      await section.getByLabelText('Site title').fill('Title A');
+      await section.getByRole('button', { name: 'Save', exact: true }).click();
+      await expect.poll(() => settingsApi.requests).toHaveLength(1);
+      expect(settingsApi.requests[0].body).toEqual({
+        settings: [{ key: 'title', value: 'Title A' }],
+      });
+
+      await section.getByLabelText('Site title').fill('Title B');
+      await expect.element(section.getByRole('button', { name: 'Saving...' })).toBeDisabled();
+      release();
+
+      await expect
+        .element(section.getByRole('button', { name: 'Save', exact: true }))
+        .toBeEnabled();
+      await expect.element(section.getByLabelText('Site title')).toHaveValue('Title B');
+      expect(settingsApi.requests).toHaveLength(1);
+
+      await section.getByRole('button', { name: 'Save', exact: true }).click();
+      await expect.poll(() => settingsApi.requests).toHaveLength(2);
+      expect(settingsApi.requests[1].body).toEqual({
+        settings: [{ key: 'title', value: 'Title B' }],
+      });
+      await expect(section.getByLabelText('Site title')).toHaveCount(0);
+      await expect.element(section.getByText('Title B', { exact: true })).toBeVisible();
+    } finally {
+      release();
+    }
+  });
+
   it('edits the title and description', async () => {
     fakeSettingsScreens();
     const settingsApi = fakeEditSettings();
