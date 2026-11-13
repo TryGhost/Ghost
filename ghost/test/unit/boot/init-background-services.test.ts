@@ -3,12 +3,8 @@ import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
 import { loadBootFunction } from './harness';
 
-function createBackgroundHarness(environment = 'production', { emailAnalytics = true } = {}) {
-  const emailAnalyticsJobs = {
-    scheduleRecurringNewslettersJob: sinon.stub().resolves(),
-    scheduleRecurringAutomationsJob: sinon.stub().resolves(),
-    scheduleRecurringGiftDeliveriesJob: sinon.stub().resolves(),
-  };
+function createBackgroundHarness(environment = 'production') {
+  const emailAnalyticsJobs = { scheduleRecurringJobs: sinon.stub().resolves() };
   const recovery = sinon.stub().resolves();
   const giftRecovery = sinon.stub().resolves();
   const activity = sinon.stub().resolves();
@@ -49,10 +45,7 @@ function createBackgroundHarness(environment = 'production', { emailAnalytics = 
     { globals: { process: { env: { NODE_ENV: environment } } } },
   );
   return {
-    init: (): Promise<void> =>
-      initBackgroundServices({
-        config: { get: (key: string) => key !== 'backgroundJobs:emailAnalytics' || emailAnalytics },
-      }),
+    init: (): Promise<void> => initBackgroundServices({ config: { get: () => true } }),
     themes,
     recovery,
     giftRecovery,
@@ -82,6 +75,8 @@ const isolatedSteps: [string, (boot: BackgroundHarness) => sinon.SinonStub][] = 
     'expired complimentary cleanup scheduling',
     (boot) => boot.memberJobs.scheduleExpiredCompCleanupJob,
   ],
+  ['signing-key check scheduling', (boot) => boot.signingKeys.extras.scheduleCheckJob],
+  ['email analytics scheduling', (boot) => boot.emailAnalyticsJobs.scheduleRecurringJobs],
   ['Tinybird sync scheduling', (boot) => boot.tinybirdSync.scheduleJob],
   ['update check scheduling', (boot) => boot.updateCheck.scheduleJobs],
 ];
@@ -96,9 +91,7 @@ function backgroundSteps(boot: BackgroundHarness): sinon.SinonStub[] {
     boot.memberJobs.scheduleTokenCleanupJob,
     boot.memberJobs.scheduleExpiredCompCleanupJob,
     boot.signingKeys.extras.scheduleCheckJob,
-    boot.emailAnalyticsJobs.scheduleRecurringNewslettersJob,
-    boot.emailAnalyticsJobs.scheduleRecurringAutomationsJob,
-    boot.emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob,
+    boot.emailAnalyticsJobs.scheduleRecurringJobs,
     boot.activity,
     boot.tinybirdSync.scheduleJob,
     boot.updateCheck.scheduleJobs,
@@ -150,22 +143,6 @@ for (const environment of ['development', 'production']) {
   });
 }
 
-it('keeps starting background services when email analytics scheduling fails', async function () {
-  const boot = createBackgroundHarness();
-  const newsletterError = new Error('newsletter backend unavailable');
-  const giftError = new Error('gift lookup failed');
-  boot.emailAnalyticsJobs.scheduleRecurringNewslettersJob.rejects(newsletterError);
-  boot.emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob.rejects(giftError);
-  await boot.init();
-
-  sinon.assert.calledTwice(boot.logging.error);
-  sinon.assert.calledWithExactly(boot.logging.error, newsletterError);
-  sinon.assert.calledWithExactly(boot.logging.error, giftError);
-  sinon.assert.calledOnce(boot.updateCheck.scheduleJobs);
-  sinon.assert.calledOnce(boot.tinybirdSync.scheduleJob);
-  sinon.assert.calledOnce(boot.milestones.initAndRun);
-});
-
 it('awaits signing-key job registration before later background work using the shared jobs instance', async function () {
   const boot = createBackgroundHarness();
   const ready = Promise.withResolvers<void>();
@@ -178,9 +155,7 @@ it('awaits signing-key job registration before later background work using the s
       boot.signingKeys.extras.scheduleCheckJob,
       sinon.match.same(boot.jobsInstance),
     );
-    sinon.assert.notCalled(boot.emailAnalyticsJobs.scheduleRecurringNewslettersJob);
-    sinon.assert.notCalled(boot.emailAnalyticsJobs.scheduleRecurringAutomationsJob);
-    sinon.assert.notCalled(boot.emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob);
+    sinon.assert.notCalled(boot.emailAnalyticsJobs.scheduleRecurringJobs);
     sinon.assert.notCalled(boot.activity);
     sinon.assert.notCalled(boot.tinybirdSync.scheduleJob);
     sinon.assert.notCalled(boot.updateCheck.scheduleJobs);
@@ -215,9 +190,7 @@ it('logs signing-key job registration failures and continues background startup'
     sinon.match.same(boot.jobsInstance),
   );
   sinon.assert.calledOnceWithExactly(boot.logging.error, failure);
-  sinon.assert.calledOnce(boot.emailAnalyticsJobs.scheduleRecurringNewslettersJob);
-  sinon.assert.calledOnce(boot.emailAnalyticsJobs.scheduleRecurringAutomationsJob);
-  sinon.assert.calledOnce(boot.emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob);
+  sinon.assert.calledOnce(boot.emailAnalyticsJobs.scheduleRecurringJobs);
   sinon.assert.calledOnce(boot.activity);
   sinon.assert.calledOnceWithExactly(
     boot.tinybirdSync.scheduleJob,
@@ -320,15 +293,4 @@ it('stops background startup when ActivityPub fails, after the earlier jobs are 
     sinon.assert.notCalled(step);
   }
   sinon.assert.notCalled(boot.logging.error);
-});
-
-it('skips email analytics scheduling when its background jobs are disabled', async function () {
-  const boot = createBackgroundHarness('production', { emailAnalytics: false });
-  await boot.init();
-
-  sinon.assert.notCalled(boot.emailAnalyticsJobs.scheduleRecurringNewslettersJob);
-  sinon.assert.notCalled(boot.emailAnalyticsJobs.scheduleRecurringAutomationsJob);
-  sinon.assert.notCalled(boot.emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob);
-  sinon.assert.calledOnce(boot.activity);
-  sinon.assert.calledOnce(boot.milestones.initAndRun);
 });
