@@ -41,21 +41,21 @@ export type CreateAuthDeps = {
 
 /**
  * Refuses a database Better Auth can't run on (plan §3.2): SQLite, or one
- * without the in-development tables. Boot creates those tables before this
- * runs whenever `createInDevelopmentTables` applies, so the flag stands in for
- * a table check until they graduate to a migration.
+ * that doesn't keep Better Auth's data. `auth:betterAuthDev` only applies where
+ * boot creates the in-development tables, so it stands in for a table check
+ * until they graduate to a migration.
  */
 export function assertDatabaseSupported({
   client,
-  inDevelopmentTables,
+  usesBetterAuth,
 }: {
   /** `config.get('database:client')`, where the loader normalizes `mysql` to `mysql2` */
   client: string;
-  /** `shouldCreateInDevelopmentTables()` */
-  inDevelopmentTables: boolean;
+  /** `usesBetterAuth()` */
+  usesBetterAuth: boolean;
 }): void {
   const help =
-    'Set auth:engine to legacy, or use MySQL in development with createInDevelopmentTables enabled.';
+    'Set auth:engine to legacy, or use MySQL in development with createInDevelopmentTables and auth:betterAuthDev enabled.';
 
   if (client !== 'mysql2') {
     throw new errors.IncorrectUsageError({
@@ -64,10 +64,10 @@ export function assertDatabaseSupported({
     });
   }
 
-  if (!inDevelopmentTables) {
+  if (!usesBetterAuth) {
     throw new errors.IncorrectUsageError({
       message:
-        'auth:engine better-auth requires the in-development auth tables, which only exist in development and testing with createInDevelopmentTables enabled.',
+        'auth:engine better-auth requires auth:betterAuthDev and the in-development auth tables, which only exist in development and testing with createInDevelopmentTables enabled.',
       help,
     });
   }

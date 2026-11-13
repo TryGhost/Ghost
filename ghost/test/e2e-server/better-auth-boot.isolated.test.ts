@@ -9,6 +9,7 @@ const auth = require('../../core/server/auth');
 const jobsService = require('../../core/server/services/jobs-service');
 const stripe = require('../../core/server/services/stripe');
 const sentry = require('../../core/shared/sentry');
+const logging = require('@tryghost/logging');
 
 const AUTH_TABLES = ['verifications', 'user_accounts', 'user_sessions'];
 const isSQLite = ['sqlite3', 'better-sqlite3'].includes(db.knex.client.config.client);
@@ -50,6 +51,7 @@ describe.skipIf(isSQLite)('Better Auth boot', function () {
   it('boots under legacy without the in-development tables and never builds Better Auth', async function () {
     configUtils.set('auth:engine', 'legacy');
     configUtils.set('createInDevelopmentTables', false);
+    configUtils.set('auth:betterAuthDev', false);
     const reset = dbUtils.reset;
     const resetStub = sinon.stub(dbUtils, 'reset').callsFake(async (...args: unknown[]) => {
       await reset(...args);
@@ -78,17 +80,42 @@ describe.skipIf(isSQLite)('Better Auth boot', function () {
     await admin.get('users/me/').expectStatus(200);
   });
 
-  it('refuses to build Better Auth without the in-development tables', async function () {
+  it('refuses auth:betterAuthDev without the in-development tables', async function () {
+    configUtils.set('auth:engine', 'legacy');
     configUtils.set('createInDevelopmentTables', false);
+    configUtils.set('auth:betterAuthDev', true);
+
+    // Boot logs a fatal error and exits
+    const logError = sinon.stub(logging, 'error');
+    const consoleError = sinon.stub(console, 'error');
+    const exit = sinon.stub(process, 'exit').throws(new Error('exited'));
+    try {
+      await assert.rejects(boot(), { message: 'exited' });
+    } finally {
+      logError.restore();
+      consoleError.restore();
+      exit.restore();
+    }
+
+    assert.equal(exit.firstCall.args[0], 2);
+    sinon.assert.calledWithMatch(logError, {
+      name: 'IncorrectUsageError',
+      message: sinon.match(/auth:betterAuthDev requires the in-development auth tables/),
+    });
+  });
+
+  it('refuses to build Better Auth without auth:betterAuthDev', async function () {
+    configUtils.set('auth:betterAuthDev', false);
     await assert.rejects(auth.betterAuth.init(), {
       name: 'IncorrectUsageError',
-      message: /requires the in-development auth tables/,
+      message: /requires auth:betterAuthDev/,
     });
   });
 
   it('builds Better Auth at boot under better-auth', async function () {
     configUtils.set('auth:engine', 'better-auth');
     configUtils.set('createInDevelopmentTables', true);
+    configUtils.set('auth:betterAuthDev', true);
 
     await boot();
 
