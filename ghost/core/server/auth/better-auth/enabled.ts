@@ -4,9 +4,9 @@ import { shouldCreateInDevelopmentTables } from '../../data/schema/in-developmen
 
 /**
  * Whether Ghost keeps Better Auth's data under either engine (auth:betterAuthDev):
- * boot seeds credential rows from `users.password`. Opt-in, so an install
- * that only has the in-development tables (an old Ghost-CLI local install runs
- * as development) doesn't copy its password hashes into them.
+ * boot seeds credential rows and the legacy engine stores passwords in them.
+ * Opt-in, so an install that only has the in-development tables (an old
+ * Ghost-CLI local install runs as development) leaves its passwords alone.
  * Boot's seeder calls this, so a misconfiguration fails boot.
  */
 export function usesBetterAuth(): boolean {

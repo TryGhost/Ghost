@@ -13,16 +13,17 @@ builds the instance after settings and refuses to start on SQLite or without
 `auth:betterAuthDev`.
 
 `auth:betterAuthDev` (default `false`) decides whether Ghost keeps Better
-Auth's data, under either engine: boot seeds credential rows from
-`users.password`. It only applies where the in-development tables exist, and
-boot refuses it elsewhere. It's hidden from generated config docs, and it's an
-opt-in separate from `createInDevelopmentTables` because the published
-`config.development.json` turns that on, and an older Ghost-CLI local install
-runs as development; such an install gets the tables but no copies of its
-password hashes. The testing configs and the monorepo's
-`ghost/config.development.json` turn it on. Boot creates the tables before
-anything reads them, so these checks read config rather than the database; they
-and the flag go away when the tables get a migration.
+Auth's data, under either engine: boot seeds credential rows and the legacy
+engine stores passwords in them (see [Passwords](#passwords)). It only applies
+where the in-development tables exist, and boot refuses it elsewhere. It's
+hidden from generated config docs, and it's an opt-in separate from
+`createInDevelopmentTables` because the published `config.development.json`
+turns that on, and an older Ghost-CLI local install runs as development; such
+an install gets the tables but keeps its passwords in `users.password`. The
+testing configs and the monorepo's `ghost/config.development.json` turn it on.
+Boot creates the tables before anything reads them, so these checks read config
+rather than the database; they and the flag go away when the tables get a
+migration.
 
 Under `better-auth` the Admin API serves the handler on `/auth/*`
 (`web/api/endpoints/admin/better-auth.ts`), after the private cache header and ahead of body parsing because
@@ -32,8 +33,7 @@ credential route counts against its compatibility route's limiters, sharing
 their counters, and a successful sign-in or password reset clears `userLogin`
 as the compatibility routes do. `/change-password` and `/verify-password`,
 which check the current password, count against `globalBlock` under their own
-paths. `/change-password` stays disabled until legacy sign-in reads
-`user_accounts` (plan Phase 2). Other paths are not limited. An after-hook strips
+paths. Other paths are not limited. An after-hook strips
 session tokens from native response bodies, by shape: a top-level `token`,
 `session.token`, and each list item's `token`. The token still travels in the
 `httpOnly` session cookie, and server-side `auth.api` calls keep it. Origin
@@ -86,6 +86,47 @@ IPv6 counts per /64, the block a single subscriber usually holds.
   it with `auth:betterAuthDev`; it skips users that already have one.
 - `enabled.ts`: `usesBetterAuth()`, which throws where `auth:betterAuthDev`
   is on without the tables. Boot's seeder calls it, so that fails boot.
+- `credential-password.ts`: the legacy engine's password store. See
+  [Passwords](#passwords).
+
+## Passwords
+
+Both engines hash with bcrypt and read and write the same `credential` row in
+`user_accounts` with `auth:betterAuthDev` (plan §4.5), so a password changed
+through one engine works in the other. There is no dual write: `users.password`
+holds the `!` placeholder once the row has the hash, and only users the seeder
+copied still carry their old hash there, unread.
+
+- The `User` model hashes in `onSaving`, then `onSaved` writes the row with
+  the save's transaction, inserting it for a new user. `add`, `changePassword`
+  and `edit` with a password open a transaction when the caller has none.
+  Setup, invitations, imports, resets and `lock()` all save through the model.
+- Sign-in, `changePassword`'s current-password check and reset tokens
+  (`auth/passwordreset.ts`) read the hash from the row. A reset token is signed
+  with the hash, so a password change through either engine invalidates it.
+- A user without a credential row has no password.
+
+Without `auth:betterAuthDev` (the default, and always in production until the
+table graduates), all of this uses `users.password` as before.
+
+> [!WARNING]
+> With the flag on, the credential row is the only copy of a user's current
+> password. On a development database, anything that drops it or stops reading
+> it can lock users out or bring back an old password:
+>
+> - **Turning `auth:betterAuthDev` off** puts `users.password` back in use as
+>   it stands. A user whose password changed through legacy has the `!`
+>   placeholder there and can't sign in. A seeded user whose password changed
+>   only through Better Auth signs in with their old password.
+> - **Turning it back on** keeps any credential rows left from before, so a
+>   password changed while it was off is ignored for those users.
+> - **`pnpm gx db rebuild-development-tables`** drops `user_accounts`. The
+>   seeder then copies `users.password`, placeholders included, so anyone
+>   whose password changed is locked out.
+>
+> There's no migration path between these states. Reset the database instead
+> (`pnpm reset:db`, or `pnpm reset:data` for generated content), or reset the
+> affected users' passwords.
 
 ## Tables
 
