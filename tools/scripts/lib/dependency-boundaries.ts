@@ -102,22 +102,37 @@ export function compareKnownViolations(
 // build output: it skips the JavaScript and reads the TypeScript. Node loads the
 // JavaScript, so a committed one would run without being checked. Build output
 // is never committed, so every tracked pair is an error. Outside a Git
-// repository nothing is committed and there is nothing to report.
+// repository nothing is committed and there is nothing to report. Any other
+// Git failure stops the check, so it cannot pass without having looked.
 export function committedBuildOutput(repository: string) {
   const result = spawnSync('git', ['ls-files', '-z', '--', 'ghost/core'], {
     cwd: repository,
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024,
+    // Git's messages are matched below, so keep them untranslated.
+    env: { ...process.env, LC_ALL: 'C' },
   });
-  if (result.error || result.status !== 0) {
-    return [];
+  if (result.error) {
+    throw new Error(`Could not list tracked files: ${result.error.message}`);
+  }
+  if (result.status !== 0) {
+    if (/not a git repository/i.test(result.stderr)) {
+      return [];
+    }
+    throw new Error(
+      `Could not list tracked files (git exit ${result.status}): ${result.stderr.trim()}`,
+    );
   }
   const tracked = new Set(result.stdout.split('\0'));
   return [...tracked].flatMap((file) => {
     const match = /^(.*)\.([cm]?)js$/.exec(file);
-    const source =
-      match &&
-      [`${match[1]}.${match[2]}ts`, `${match[1]}.tsx`].find((candidate) => tracked.has(candidate));
+    if (!match) {
+      return [];
+    }
+    // The same pairs the scan skips: .ts and .tsx emit .js, .mts .mjs and .cts .cjs.
+    const [, stem, kind] = match;
+    const sources = kind ? [`${stem}.${kind}ts`] : [`${stem}.ts`, `${stem}.tsx`];
+    const source = sources.find((candidate) => tracked.has(candidate));
     return source ? [{ file, source }] : [];
   });
 }

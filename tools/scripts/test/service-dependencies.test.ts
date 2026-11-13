@@ -15,7 +15,11 @@ import path from 'node:path';
 import { it, type TestContext } from 'node:test';
 import type { ICruiseResult } from 'dependency-cruiser';
 import ts from 'typescript';
-import { dependencyIdentity, readKnownViolations } from '../lib/dependency-boundaries.ts';
+import {
+  committedBuildOutput,
+  dependencyIdentity,
+  readKnownViolations,
+} from '../lib/dependency-boundaries.ts';
 import { legacyInventoryFile, readLegacyServices } from '../../configs/oxlint/legacy-services.ts';
 
 const repository = path.resolve(import.meta.dirname, '../../..');
@@ -1397,6 +1401,35 @@ it('rejects committed JavaScript beside TypeScript of the same name, which the s
   assert.equal(staged.status, 1, staged.stderr);
   git('rm', '-q', '--cached', `${alpha}/index.js`, `${alpha}/implementation.js`);
   assert.equal(f.lint().status, 0);
+  for (const file of ['index', 'implementation']) {
+    rmSync(path.join(f.root, `${alpha}/${file}.js`));
+  }
+  // Only the pairs the scan skips count: a .tsx file emits .js, never .mjs or .cjs.
+  f.write(`${alpha}/view.tsx`, 'export {};');
+  f.write(`${alpha}/view.mjs`, 'export {};');
+  f.write(`${alpha}/view.cjs`, '');
+  f.write(`${alpha}/module.mts`, 'export {};');
+  f.write(`${alpha}/module.mjs`, 'export {};');
+  git('add', 'ghost');
+  assert.deepEqual(committedBuildOutput(f.root), [
+    { file: `${alpha}/module.mjs`, source: `${alpha}/module.mts` },
+  ]);
+});
+
+it('fails instead of passing when Git cannot list the tracked files', (t) => {
+  const f = fixture(t, { [`${alpha}/index.ts`]: 'export {};' });
+  // Not a repository: nothing is committed, so there is nothing to check.
+  assert.deepEqual(committedBuildOutput(f.root), []);
+  assert.equal(f.lint().status, 0);
+  // A repository Git refuses to read must not look the same as a clean one.
+  f.write('.git', 'not a gitfile');
+  assert.throws(
+    () => committedBuildOutput(f.root),
+    /Could not list tracked files \(git exit \d+\)/,
+  );
+  const refused = f.lint();
+  assert.equal(refused.status, 1, refused.stderr);
+  assert.match(refused.stderr, /Could not list tracked files/);
 });
 
 it('resolves the approved workspace export to source without a build and keeps other exports restricted', (t) => {
