@@ -24,12 +24,14 @@ const messages = {
  * @param {import('knex').knex.TableBuilder} tableBuilder
  * @param {string} columnName
  * @param {object} [columnSpec]
+ * @param {string} [collation] - collation to give a string column, instead of the table's default
  */
 function addTableColumn(
   tableName,
   tableBuilder,
   columnName,
   columnSpec = schema[tableName][columnName],
+  collation,
 ) {
   let column;
 
@@ -51,6 +53,10 @@ function addTableColumn(
     column = tableBuilder.dateTime(columnName, { precision: columnSpec.precision });
   } else {
     column = tableBuilder[columnSpec.type](columnName);
+  }
+
+  if (collation && columnSpec.type === 'string') {
+    column.collate(collation);
   }
 
   if (Object.hasOwn(columnSpec, 'nullable') && columnSpec.nullable === true) {
@@ -666,20 +672,73 @@ async function addPrimaryKey(tableName, columns, transaction = db.knex) {
 }
 
 /**
- * Adds a table according to the provided spec, or falls back to the current schema
+ * The collation MySQL gives each column of a table's foreign keys, read from the columns they
+ * reference. A foreign key needs both columns to share a collation, but a table created
+ * without one takes the server's default for its character set, and that is not always what
+ * the existing tables were created with: the default changed between MySQL 5.7 and 8, and
+ * differs again on MariaDB. Creating the table with the collation of the columns it
+ * references keeps it compatible, whatever the default.
  *
- * NOTE: this function does NOT check if the table already exists - use the migration
- * utils if you want that
+ * Empty on SQLite, and when `database.connection.collate` is set: knex then creates every
+ * table with that collation, so the operator has chosen it.
+ *
+ * @param {Object} tableSpec - table schema the table is created with
+ * @param {import('knex').Knex} transaction - connection to the DB
+ * @returns {Promise<Object<string, string>>} the collation to give each foreign key column, by column name
+ */
+async function getForeignKeyCollations(tableSpec, transaction) {
+  if (!DatabaseInfo.isMySQL(transaction) || transaction.client.connectionSettings?.collate) {
+    return {};
+  }
+
+  // Each column of a key over several is paired with the column it references at the same
+  // position. A column in more than one key takes the collation of the last.
+  const referencedBy = new Map();
+  foreignKeySpecsOf(tableSpec).forEach(({ columns, references }) => {
+    columns.forEach((column, index) => {
+      referencedBy.set(column, { table: references.table, column: references.columns[index] });
+    });
+  });
+
+  if (referencedBy.size === 0) {
+    return {};
+  }
+
+  const referenced = [...referencedBy.values()];
+  const [rows] = await transaction.raw(
+    `SELECT TABLE_NAME AS tableName, COLUMN_NAME AS columnName, COLLATION_NAME AS collation
+     FROM information_schema.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE()
+       AND COLLATION_NAME IS NOT NULL
+       AND (TABLE_NAME, COLUMN_NAME) IN (${referenced.map(() => '(?, ?)').join(', ')})`,
+    referenced.flatMap(({ table, column }) => [table, column]),
+  );
+
+  const collations = {};
+  for (const [column, reference] of referencedBy) {
+    const match = rows.find(
+      (row) => row.tableName === reference.table && row.columnName === reference.column,
+    );
+    if (match) {
+      collations[column] = match.collation;
+    }
+  }
+  return collations;
+}
+
+/**
+ * Builds the statement that adds a table according to the provided spec, without running it
  *
  * @param {string} table - name of the table to create
- * @param {import('knex').Knex} [transaction] - connection to the DB
- * @param {Object} [tableSpec] - table schema to generate table with
+ * @param {import('knex').Knex} transaction - connection to the DB
+ * @param {Object} tableSpec - table schema to generate table with
+ * @param {Object<string, string>} [collations] - the collation to give each string column, by column name
  */
-function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
+function buildTable(table, transaction, tableSpec, collations = {}) {
   return transaction.schema.createTable(table, function (t) {
     Object.keys(tableSpec)
       .filter((column) => !column.startsWith('@@'))
-      .forEach((column) => addTableColumn(table, t, column, tableSpec[column]));
+      .forEach((column) => addTableColumn(table, t, column, tableSpec[column], collations[column]));
 
     if (tableSpec['@@INDEXES@@']) {
       tableSpec['@@INDEXES@@'].forEach((index) => {
@@ -720,6 +779,21 @@ function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
       t.check('?? REGEXP ?', [check.column, check.pattern], check.constraintName),
     );
   });
+}
+
+/**
+ * Adds a table according to the provided spec, or falls back to the current schema
+ *
+ * NOTE: this function does NOT check if the table already exists - use the migration
+ * utils if you want that
+ *
+ * @param {string} table - name of the table to create
+ * @param {import('knex').Knex} [transaction] - connection to the DB
+ * @param {Object} [tableSpec] - table schema to generate table with
+ */
+async function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
+  const collations = await getForeignKeyCollations(tableSpec, transaction);
+  return buildTable(table, transaction, tableSpec, collations);
 }
 
 /**
@@ -866,6 +940,8 @@ module.exports = {
   getColumns,
   createColumnMigration,
   // NOTE: below are exposed for testing purposes only
+  _buildTable: buildTable,
+  _getForeignKeyCollations: getForeignKeyCollations,
   _hasForeignSQLite: hasForeignSQLite,
   _hasPrimaryKeySQLite: hasPrimaryKeySQLite,
 };
