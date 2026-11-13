@@ -24,13 +24,10 @@ const serviceDependencyAllowlist = [
   '(^|/)node_modules/@tryghost/security/|^@tryghost/security$', // Token, URL and password primitives; no application instances.
   '(^|/)node_modules/zod/|^zod$', // Schema construction and validation.
   '(^|/)node_modules/bson-objectid/|^bson-objectid$', // ObjectId generation and conversion.
-  '^@tryghost/app-contracts/manifest$|^packages/app-contracts/(src|build)/manifest/index\\.(ts|js)$', // Shared manifest schemas and validation.
-  '^@tryghost/app-contracts/identity$|^packages/app-contracts/(src|build)/identity/index\\.(ts|js)$', // Signed-manifest and challenge formats, signing and verification.
   '^@tryghost/adapter-base-upgrade$|^packages/adapters/upgrade-base/(src|build)/index\\.(ts|js)$', // Upgrade adapter contract schemas and error class.
   '^@tryghost/checkout$|^packages/checkout/(src|build)/index\\.(ts|js)$', // Measured Stripe Checkout countries, ports and fonts shared with Admin; no application instances.
   '^@tryghost/parse-email-address(/mailbox)?$|^packages/parse-email-address/(src|build)/(index|mailbox)\\.(ts|js)$', // Email address and mailbox parsing and formatting; no sender policy or application instances.
   '^contracts/', // Contracts define the shape of data crossing a boundary and, like types, may be imported anywhere.
-  '^@tryghost/metafield-types(/(structure|shapes|identity|countries|phone))?$|^packages/metafield-types/(src|build)/(index|structure|shapes|identity|countries|phone)\\.(ts|js)$', // Custom field contract until it moves into contracts/: field types, schemas, value rules and the identity codec; only its public entries.
   '^@tryghost/string$|(^|/)node_modules/@tryghost/string/lib/index\\.js$', // String normalization, slugification and HTML escaping.
   '^@tryghost/version$|(^|/)node_modules/@tryghost/version/index\\.js$', // Ghost's version, a process fact fixed when Ghost is built; reads its own package.json once.
   '^@tryghost/referrer-parser$|(^|/)node_modules/@tryghost/referrer-parser/dist/index\\.(cjs|js)$', // Referrer classification from supplied URLs and static lookup data.
@@ -592,7 +589,7 @@ module.exports = {
         path: '^apps/(portal|comments-ui|signup-form|sodo-search|announcement-bar|admin-toolbar)/',
       },
       to: {
-        path: '^@tryghost/metafield-types$|^packages/metafield-types/(src|build)/index\\.(ts|js)$|^libphonenumber-js($|/)|(^|/)node_modules/libphonenumber-js/',
+        path: '^@tryghost/metafield-types$|^contracts/metafield-types/(src|build)/index\\.(ts|js)$|^libphonenumber-js($|/)|(^|/)node_modules/libphonenumber-js/',
         dependencyTypesNot: ['type-only', 'type-import'],
       },
     },
@@ -709,14 +706,14 @@ module.exports = {
     doNotFollow: {
       path: [
         'node_modules',
-        '^(?!ghost/core/server/services/)(apps|ghost|packages|koenig)/.*/(build|built|dist)/',
+        '^(?!ghost/core/server/services/)(apps|ghost|packages|contracts|koenig)/.*/(build|built|dist)/',
       ],
     },
     // Skip our own tests and emitted companions. All source inside services stays visible:
     // a nested directory name must not hide a production dependency.
     exclude: {
       path: [
-        '^(?!ghost/core/server/services/)(apps|ghost|packages)/.*/(coverage|coverage-next|test)/',
+        '^(?!ghost/core/server/services/)(apps|ghost|packages|contracts)/.*/(coverage|coverage-next|test)/',
         ...sourceExclusions(__dirname),
       ],
     },

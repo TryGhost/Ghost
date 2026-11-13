@@ -78,7 +78,7 @@ the message should explain what changed because of them. See this
 
 ## Changesets
 
-Ghost publishes several workspace packages to npm — the `@tryghost/*` editor and adapter packages under `koenig/` and `packages/`. When your change affects one of these publishable packages, including by changing a catalog entry it consumes, add a **changeset** so it gets a version bump and a changelog entry:
+Ghost publishes several workspace packages to npm — the `@tryghost/*` editor, adapter and contract packages under `koenig/`, `packages/` and `contracts/`. When your change affects one of these publishable packages, including by changing a catalog entry it consumes, add a **changeset** so it gets a version bump and a changelog entry:
 
 ```bash
 pnpm change

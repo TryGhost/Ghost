@@ -27,7 +27,7 @@ import type { GhostConfig } from '@/helpers/playwright/fixture';
 const debug = baseDebug('e2e:GhostManager');
 
 // Backend source mounted into dev-mode Ghost containers
-const DEV_SOURCE_DIRS = ['ghost', 'koenig', 'configs', 'packages'];
+const DEV_SOURCE_DIRS = ['ghost', 'koenig', 'configs', 'packages', 'contracts'];
 
 type GhostEnvOverrides = GhostConfig | Record<string, string>;
 const READINESS_POLL_INTERVAL_MS = 250;

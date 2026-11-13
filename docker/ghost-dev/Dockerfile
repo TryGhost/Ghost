@@ -49,6 +49,7 @@ COPY --parents \
     koenig/*/package.json \
     tools/configs/*/package.json \
     packages/**/package.json \
+    contracts/*/package.json \
     ./
 
 # Copy root lifecycle scripts/hooks needed by `pnpm install`. Only the preinstall

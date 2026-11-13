@@ -4502,9 +4502,9 @@ services:
           composition is simple.
         preparation:
           - >-
-            Review exact @tryghost/metafield-types and /identity contract allowances, plus
-            case-keys, independently of migration; without them introduce explicit helper factories
-            rather than hidden global dependency initialization.
+            Review the case-keys allowance independently of migration; @tryghost/metafield-types
+            is a contract and may be imported anywhere. Without case-keys introduce explicit helper
+            factories rather than hidden global dependency initialization.
           - >-
             Supply logging, database column metadata, key/query helpers, configured/default limit
             resolution and the host limit service from index.ts, preserving the live limit getter

@@ -9,9 +9,9 @@ import { findPackagesNeedingChangeset } from '../lib/pnpm.ts';
  * a dependency update touched.
  *
  * Wired into Renovate's postUpgradeTasks (.github/renovate.json5): when a bump
- * lands in a koenig/* or packages/* package (directly, or via a catalog entry
- * it references), this writes a changeset so the PR clears the "Check app
- * version bump" gate without a human authoring one.
+ * lands in a koenig/*, packages/* or contracts/* package (directly, or via a
+ * catalog entry it references), this writes a changeset so the PR clears the
+ * "Check app version bump" gate without a human authoring one.
  *
  * Renovate runs this with its edits applied to the working tree but not yet
  * committed, so detection compares the working tree against the base branch

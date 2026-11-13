@@ -178,6 +178,7 @@ jobs:
               - '.github/workflows/ci.yml'
             package-standards:
               - 'packages/**'
+              - 'contracts/**'
               - 'package.json'
               - 'pnpm-workspace.yaml'
               - 'tools/scripts/ci/check-internal-packages.ts'
@@ -2682,7 +2683,7 @@ jobs:
   # (public apps, and anything else that ships on every change) to npm via OIDC
   # trusted publishing. Runs only on push-to-main — never on pull_request — so
   # the `id-token: write` permission is never exposed to PR-controlled code
-  # (ref: ONC-1677). The changeset lane (koenig/*, packages/*) is the separate
+  # (ref: ONC-1677). The changeset lane (koenig/*, packages/*, contracts/*) is the separate
   # publish-packages.yml, which runs off release tags.
   publish_continuous:
     needs: [job_setup, job_lint, job_typecheck, job_unit-tests, job_build_e2e_public_apps]
@@ -2912,7 +2913,7 @@ jobs:
       - name: Publish to npm
         run: npm publish ghost-*-npm.tgz --access public --provenance
 
-  # NOTE: Publishing the other workspace packages (koenig/*, packages/*, ...) is
+  # NOTE: Publishing the other workspace packages (koenig/*, packages/*, contracts/*, ...) is
   # NOT a job here. The release tag triggers publish-packages.yml directly, in
   # parallel with this workflow — npm trusted publishing validates the
   # entry-point workflow, so that publish must be its own entry point rather than

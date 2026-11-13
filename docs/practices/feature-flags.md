@@ -27,7 +27,7 @@ One exception: a new member custom field type is built behind a Labs flag that
 also decides when Admin offers it. That holds only because the flag is switched
 on after every Ghost(Pro) server has the type's code, and only creating a field
 of the type is gated. See
-[why a new field type starts behind a flag](../../packages/metafield-types/docs/explanation/why-a-new-field-type-starts-behind-a-flag.md).
+[why a new field type starts behind a flag](../../contracts/metafield-types/docs/explanation/why-a-new-field-type-starts-behind-a-flag.md).
 
 ## Flag stages
 

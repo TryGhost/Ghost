@@ -23,6 +23,7 @@ reviews:
     - '!ghost/**/build/**'
     - '!koenig/**/build/**'
     - '!packages/**/build/**'
+    - '!contracts/**/build/**'
     - '!e2e/build/**'
     - '!**/built/**'
     - '!**/umd/**'
@@ -157,7 +158,7 @@ reviews:
         shape and volume, deploy/rollback compatibility, transaction and locking risk,
         idempotency, export/integrity updates, and preservation of constraints/defaults.
         Do not duplicate migration filename, loop, schema-field, or integrity-check CI.
-    - path: 'packages/**'
+    - path: '{packages,contracts}/**'
       instructions: |
         Review package boundaries and production consumption: minimal explicit exports,
         declared runtime dependencies, source-condition versus built-output parity,
@@ -259,7 +260,7 @@ knowledge_base:
       - files: 'docs/contributing/testing.md'
         applyTo: '**/{test,tests}/**,**/*{.,-}{test,spec}.{js,jsx,ts,tsx}'
       - files: 'docs/codebase/monorepo-structure.md'
-        applyTo: 'package.json,pnpm-workspace.yaml,nx.json,apps/**,packages/**,ghost/**,koenig/**'
+        applyTo: 'package.json,pnpm-workspace.yaml,nx.json,apps/**,packages/**,contracts/**,ghost/**,koenig/**'
       - files: 'docs/codebase/configuration.md'
         applyTo: 'ghost/core/shared/config/**,ghost/config*.json*'
       - files: 'docs/codebase/internal-caching.md'
@@ -269,7 +270,9 @@ knowledge_base:
       - files: 'ghost/core/server/services/README.md'
         applyTo: 'ghost/core/server/services/**'
       - files: 'packages/README.md'
-        applyTo: 'packages/**'
+        applyTo: 'packages/**,contracts/**'
+      - files: 'contracts/README.md'
+        applyTo: 'contracts/**'
       - files: 'apps/shade/AGENTS.md'
         applyTo: 'apps/admin/**,apps/activitypub/**,apps/admin-x-framework/**,apps/shade/**'
       - files: 'e2e/README.md,e2e/AGENTS.md'

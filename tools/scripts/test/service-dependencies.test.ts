@@ -710,28 +710,6 @@ it('allows anything in the contracts folder, like types', (t) => {
   ]);
 });
 
-it('allows the custom field contract through its public entries only', (t) => {
-  const entries = ['index', 'structure', 'shapes', 'identity', 'countries', 'phone'];
-  const internal = 'packages/metafield-types/src/internal.ts';
-  const f = fixture(t, {
-    ...Object.fromEntries(
-      [...entries.map((entry) => `packages/metafield-types/src/${entry}.ts`), internal].map(
-        (file) => [file, 'export {};'],
-      ),
-    ),
-    [`${alpha}/approved.js`]: entries
-      .map((entry) => `require('../../../../../packages/metafield-types/src/${entry}');`)
-      .join('\n'),
-    [`${alpha}/rejected.js`]: "require('../../../../../packages/metafield-types/src/internal');",
-  });
-  const graph = f.graph();
-  assert.equal(
-    edges(graph).filter(([from]) => from === `${alpha}/approved.js`).length,
-    entries.length,
-  );
-  assert.deepEqual(violations(graph), [['service-dependencies', `${alpha}/rejected.js`, internal]]);
-});
-
 it('allows the shared stateless helpers without allowing their siblings', (t) => {
   const approved = [
     'ghost/core/server/lib/after-commit.ts',
@@ -1433,34 +1411,31 @@ it('fails instead of passing when Git cannot list the tracked files', (t) => {
 });
 
 it('resolves the approved workspace export to source without a build and keeps other exports restricted', (t) => {
-  const contract = 'packages/app-contracts';
-  const manifest = `${contract}/src/manifest/index.ts`;
+  const workspace = 'packages/parse-email-address';
+  const mailbox = `${workspace}/src/mailbox.ts`;
   const f = fixture(t, {
     [`${alpha}/implementation.ts`]: `
-      import '@tryghost/app-contracts/manifest';
+      import '@tryghost/parse-email-address/mailbox';
       import '@tryghost/errors';
     `,
-    [`${alpha}/other.ts`]: "import '@tryghost/app-contracts/other';",
-    [`${alpha}/root.ts`]: "import '@tryghost/app-contracts';",
-    [`${alpha}/private.ts`]: "import '@tryghost/app-contracts/private';",
-    [`${contract}/package.json`]: JSON.stringify({
-      name: '@tryghost/app-contracts',
+    [`${alpha}/other.ts`]: "import '@tryghost/parse-email-address/other';",
+    [`${alpha}/private.ts`]: "import '@tryghost/parse-email-address/private';",
+    [`${workspace}/package.json`]: JSON.stringify({
+      name: '@tryghost/parse-email-address',
       type: 'module',
       exports: {
-        '.': { source: './src/index.ts', default: './build/index.js' },
-        './manifest': {
-          types: './build/manifest/index.d.ts',
-          source: './src/manifest/index.ts',
-          default: './build/manifest/index.js',
+        './mailbox': {
+          types: './build/mailbox.d.ts',
+          source: './src/mailbox.ts',
+          default: './build/mailbox.js',
         },
         './other': { source: './src/other.ts', default: './build/other.js' },
       },
     }),
-    [manifest]: 'export const schema = {};',
-    [`${contract}/build/manifest/index.d.ts`]: 'export declare const schema: object;',
-    [`${contract}/src/index.ts`]: 'export const other = true;',
-    [`${contract}/src/other.ts`]: 'export const other = true;',
-    [`${contract}/private.js`]: 'module.exports = {};',
+    [mailbox]: 'export const parseMailbox = () => null;',
+    [`${workspace}/build/mailbox.d.ts`]: 'export declare const parseMailbox: () => null;',
+    [`${workspace}/src/other.ts`]: 'export const other = true;',
+    [`${workspace}/private.js`]: 'module.exports = {};',
     'node_modules/@tryghost/errors/package.json': JSON.stringify({
       name: '@tryghost/errors',
       exports: { '.': { types: './index.d.ts', default: './index.js' } },
@@ -1468,14 +1443,14 @@ it('resolves the approved workspace export to source without a build and keeps o
     'node_modules/@tryghost/errors/index.d.ts': 'export declare class GhostError {}',
     'node_modules/@tryghost/errors/index.js': 'module.exports = {};',
   });
-  f.link(contract, 'node_modules/@tryghost/app-contracts');
+  f.link(workspace, 'node_modules/@tryghost/parse-email-address');
   const before = f.graph();
   assert.ok(
     edges(before).some(
       ([from, specifier, to]) =>
         from === `${alpha}/implementation.ts` &&
-        specifier === '@tryghost/app-contracts/manifest' &&
-        to === manifest,
+        specifier === '@tryghost/parse-email-address/mailbox' &&
+        to === mailbox,
     ),
   );
   assert.ok(
@@ -1485,14 +1460,12 @@ it('resolves the approved workspace export to source without a build and keeps o
     ),
   );
   assert.deepEqual(violations(before), [
-    ['service-dependencies', `${alpha}/other.ts`, `${contract}/src/other.ts`],
-    ['service-dependencies', `${alpha}/private.ts`, '@tryghost/app-contracts/private'],
-    ['service-dependencies', `${alpha}/root.ts`, `${contract}/src/index.ts`],
-    ['service-unresolved', `${alpha}/private.ts`, '@tryghost/app-contracts/private'],
+    ['service-dependencies', `${alpha}/other.ts`, `${workspace}/src/other.ts`],
+    ['service-dependencies', `${alpha}/private.ts`, '@tryghost/parse-email-address/private'],
+    ['service-unresolved', `${alpha}/private.ts`, '@tryghost/parse-email-address/private'],
   ]);
-  f.write(`${contract}/build/manifest/index.js`, 'export const schema = {};');
-  f.write(`${contract}/build/index.js`, 'export const other = true;');
-  f.write(`${contract}/build/other.js`, 'export const other = true;');
+  f.write(`${workspace}/build/mailbox.js`, 'export const parseMailbox = () => null;');
+  f.write(`${workspace}/build/other.js`, 'export const other = true;');
   const after = f.graph();
   assert.deepEqual(edges(after), edges(before));
   assert.deepEqual(violations(after), violations(before));
@@ -1590,6 +1563,7 @@ it('invalidates cached boundary checks and fixture tests when their configuratio
     'ghost/core/**/*',
     'ghost/package.json',
     'packages/**/*',
+    'contracts/**/*',
     'koenig/**/*',
     '.dependency-cruiser-known-violations.json',
     'tools/scripts/lib/dependency-boundaries.ts',

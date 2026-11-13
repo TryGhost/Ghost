@@ -89,8 +89,8 @@ git config --local blame.ignoreRevsFile .git-blame-ignore-revs
 
 ## Record package release intent
 
-Changes that affect a publishable `@tryghost/*` package under `koenig/` or
-`packages/`, including changes to catalog entries consumed by that package, need
+Changes that affect a publishable `@tryghost/*` package under `koenig/`,
+`packages/` or `contracts/`, including changes to catalog entries consumed by that package, need
 a changeset so the package receives an appropriate version and changelog entry:
 
 ```bash
