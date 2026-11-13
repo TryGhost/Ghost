@@ -1,6 +1,8 @@
 import assert from 'assert/strict';
 import crypto from 'crypto';
+import nock from 'nock';
 import sinon from 'sinon';
+import ghostRequest from '@tryghost/request';
 import { createLoggingFake } from '../../../../utils/logging-utils';
 import { ExportRequestsService } from '../../../../../core/server/services/export-requests/export-requests-service';
 
@@ -196,9 +198,26 @@ describe('ExportRequestsService', function () {
       .digest('base64');
 
     assert.equal(requestOptions.headers['X-Ghost-Signature'], expectedSignature);
+  });
 
-    // The request must never retry: each delivery can schedule an export.
-    assert.deepEqual(requestOptions.retry, { limit: 0 });
+  it('sends a request once, even when it fails outside the test environment', async function () {
+    // Each delivery can schedule an export, so a failure must never be retried.
+    const generator = nock('https://export-generator.example.com')
+      .post('/api/generate/')
+      .reply(503)
+      .post('/api/generate/')
+      .reply(202);
+    const service = createService({ request: ghostRequest });
+    const environment = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    try {
+      await assert.rejects(service.requestExport({ components: allComponents, requestedByUserId }));
+      // The 202 that a retry would have taken is still waiting.
+      assert.equal(generator.pendingMocks().length, 1);
+    } finally {
+      process.env.NODE_ENV = environment;
+      nock.cleanAll();
+    }
   });
 
   it('computes the documented HMAC for a known secret, timestamp and body', async function () {

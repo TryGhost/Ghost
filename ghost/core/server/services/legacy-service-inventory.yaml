@@ -9126,10 +9126,9 @@ services:
       resources:
         summary: >-
           Each send awaits shared HTTP infrastructure with a 30-second request timeout and
-          retry.limit zero in test environments or five elsewhere. The installed request/got
-          defaults exclude POST from normal retries, so that option alone does not establish
-          retry delivery. The request module owns a shared DNS cache/resolver and unref'd
-          housekeeping timers; this root owns no dedicated transport, timer or listener.
+          sets no retries; got never retries a POST. The request module owns a shared DNS
+          cache/resolver and unref'd housekeeping timers; this root owns no dedicated
+          transport, timer or listener.
           It exposes no abort, outstanding-request tracking or shutdown drain. Trigger event
           subscriptions and database work belong to its consumer. Existing tests intercept
           successful HTTP or inject a rejection; they do not exercise timeout/retry/drain.
@@ -9583,9 +9582,8 @@ services:
           members API are read during serialization. Every delivery reads stored target/secret,
           sends current Ghost Content-Version rather than stored api_version, and optionally
           signs JSON body plus timestamp with HMAC-SHA256. Request options ask for two seconds
-          and retry limit five outside tests, zero in tests; installed Got excludes POST from
-          retry methods, so the limit alone does not enable retries. Units assert transport,
-          exact request options and retry limits, body/headers and exact signature; root units
+          and set no retries; got never retries a POST. Units assert transport,
+          exact request options, body/headers and exact signature; root units
           assert each transport's user agent and the safe-version Content-Version on the wire;
           the integration suite shows @tryghost/request abandoning a target slower than two
           seconds and not retrying a POST outside tests. request-external's test-only init hook
@@ -9697,9 +9695,10 @@ followUps:
     lifecycle:
       - >-
         Establish pending-delivery and shared transport ownership before adding disposal.
-        Retry limit zero is asserted, but actual timeout, redirect and shutdown behavior is
-        not. The installed transport follows redirects; zero retries alone is not proof of
-        one outbound request or safe cancellation after a lost response.
+        A unit sends through the real request client and shows a failed delivery is not
+        retried; actual timeout, redirect and shutdown behavior is not asserted. The client
+        follows redirects, and one attempt is no proof of safe cancellation after a lost
+        response.
   gift-links:
     lifecycle:
       - >-
