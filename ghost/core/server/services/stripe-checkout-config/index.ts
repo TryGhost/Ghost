@@ -4,6 +4,7 @@ import { defineService } from '../../../kernel/define-service';
 import urlUtils from '../../../shared/url-utils';
 import * as metafields from '../members-metafields';
 import { ActionLog } from '../../lib/action-log/action-log';
+import { stripeCheckoutConfigActions } from './actions';
 import { CheckoutBrandingService } from './branding-service';
 import { CheckoutService } from './checkout-service';
 import { CheckoutPreviewService, type PreviewableTier } from './preview-service';
@@ -49,7 +50,7 @@ export default defineService('Stripe Checkout Config', (): StripeCheckoutService
 
   const config = new StripeCheckoutConfigService({
     knex,
-    actionLog: new ActionLog(),
+    actionLog: new ActionLog().for(stripeCheckoutConfigActions),
     bindings: metafields.bindings,
     fields: metafields.fields,
     // Looked up on each use: tiers are set up later in boot, and throw if they aren't.

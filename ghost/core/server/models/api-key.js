@@ -58,7 +58,7 @@ const ApiKey = ghostBookshelf.Model.extend(
     },
     onUpdated(model, options) {
       if (this.previous('secret') !== this.get('secret')) {
-        this.addAction(model, 'refreshed', options);
+        this.addAction(model, 'edited', { ...options, actionName: 'refreshed' });
       }
     },
   },

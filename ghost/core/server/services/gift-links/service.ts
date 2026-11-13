@@ -3,9 +3,10 @@ import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { GiftLinkRow, giftLinkCodec, giftLinkColumns } from './codec';
 import { generateGiftLinkToken, type GiftLink, type Post } from './models';
-import type { ActionLog, ActionRow } from '../../lib/action-log/action-log';
+import type { ActionChange, ResourceActionLog } from '../../lib/action-log/action-log';
 import type { RequestContext } from '../../lib/actor';
 import { ensureTransaction } from '../../lib/ensure-transaction';
+import type { giftLinkActions } from './actions';
 
 // The LEFT JOIN leaves every link column nullable; the explicit generic names a row shape knex
 // can't infer from a dynamic column list.
@@ -15,22 +16,17 @@ type LiveLinkRow = {
 
 const PostTitle = z.object({ title: z.string() });
 
-type GiftLinkAction = Pick<
-  Extract<ActionRow, { resourceType: 'gift_link' }>,
-  'event' | 'actionName'
->;
-
-// Admin's History only shows an action name for 'edited' actions; 'added' and 'deleted' show
-// the bare event. So a reset is an edit named "reset", while adding and revoking read as
-// plain "added" and "deleted".
-const ADDED: GiftLinkAction = { event: 'added' };
-const RESET: GiftLinkAction = { event: 'edited', actionName: 'reset' };
-
 export class GiftLinksService {
   private knex: Knex;
-  private actionLog: ActionLog;
+  private actionLog: ResourceActionLog<typeof giftLinkActions>;
 
-  constructor({ knex, actionLog }: { knex: Knex; actionLog: ActionLog }) {
+  constructor({
+    knex,
+    actionLog,
+  }: {
+    knex: Knex;
+    actionLog: ResourceActionLog<typeof giftLinkActions>;
+  }) {
     this.knex = knex;
     this.actionLog = actionLog;
   }
@@ -82,7 +78,7 @@ export class GiftLinksService {
         return existing;
       }
       const post = await this.mint(trx, postId);
-      await this.recordMint(trx, context, postId, title, ADDED);
+      await this.recordMint(trx, context, postId, title, { event: 'added' });
       return post;
     });
   }
@@ -95,7 +91,7 @@ export class GiftLinksService {
     return ensureTransaction(executor, async (trx) => {
       const { title } = await this.lockedPost(trx, postId);
       const post = await this.mint(trx, postId);
-      await this.recordMint(trx, context, postId, title, RESET);
+      await this.recordMint(trx, context, postId, title, { actionName: 'reset' });
       return post;
     });
   }
@@ -110,9 +106,9 @@ export class GiftLinksService {
       const removed = await trx('post_gift_links').del();
       if (removed > 0) {
         await this.actionLog.record(trx, context, {
-          resourceType: 'gift_link',
           event: 'deleted',
           resourceId: null,
+          count: removed,
         });
       }
       return removed;
@@ -143,11 +139,10 @@ export class GiftLinksService {
     context: RequestContext,
     postId: string,
     title: string,
-    action: GiftLinkAction,
+    change: ActionChange<typeof giftLinkActions>,
   ) {
     return this.actionLog.record(trx, context, {
-      resourceType: 'gift_link',
-      ...action,
+      ...change,
       resourceId: postId,
       primaryName: title,
     });

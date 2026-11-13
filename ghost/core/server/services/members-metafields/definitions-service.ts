@@ -38,7 +38,8 @@ import {
   type FieldSource,
 } from './queries';
 import { mintableKey } from './key';
-import type { ActionLog } from '../../lib/action-log/action-log';
+import type { ResourceActionLog } from '../../lib/action-log/action-log';
+import type { customFieldActions } from './actions';
 import type { RequestContext } from '../../lib/actor';
 import { fieldAction, reorderAction, type FieldAction } from './field-actions';
 import type { MetafieldsTracking } from './tracking';
@@ -138,7 +139,7 @@ export interface EditedField {
 export class MetafieldDefinitionsService {
   private knex: Knex;
   private fields: FieldSource;
-  private actionLog: ActionLog;
+  private actionLog: ResourceActionLog<typeof customFieldActions>;
   private namespaces: Namespaces;
   private tracking: MetafieldsTracking;
   private labs: { isSet(flag: string): boolean };
@@ -153,7 +154,7 @@ export class MetafieldDefinitionsService {
   }: {
     knex: Knex;
     fields: FieldSource;
-    actionLog: ActionLog;
+    actionLog: ResourceActionLog<typeof customFieldActions>;
     namespaces: Namespaces;
     tracking: MetafieldsTracking;
     /** Asked on every create, as a type's flag can be switched on while Ghost runs. */

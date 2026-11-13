@@ -160,7 +160,7 @@ describe('gift-links root with its API consumers', function () {
         actor_id: 'actor-id',
         actor_type: 'user',
         event: 'deleted',
-        context: null,
+        context: JSON.stringify({ count: 2 }),
         created_at: undefined,
       },
     );

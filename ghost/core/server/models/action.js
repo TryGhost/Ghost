@@ -1,13 +1,17 @@
 const ghostBookshelf = require('./base');
-const { ACTION_KINDS } = require('../lib/action-log/kinds');
+const { registeredKinds } = require('../lib/action-log/action-log');
 
 // The kinds logged by services built without Bookshelf point into tables outside the
 // Bookshelf registry. Each gets a plain read model, so `include=resource` can load an
-// action's resource from its kind's table.
-const loggedKinds = Object.entries(ACTION_KINDS).map(([kind, { table }]) => [
-  ghostBookshelf.Model.extend({ tableName: table }),
-  kind,
-]);
+// action's resource from its kind's table. Services register their kinds at boot, so these
+// are read per query rather than when models load.
+const readModels = new Map();
+function readModelOf(table) {
+  if (!readModels.has(table)) {
+    readModels.set(table, ghostBookshelf.Model.extend({ tableName: table }));
+  }
+  return readModels.get(table);
+}
 
 const Action = ghostBookshelf.Model.extend(
   {
@@ -28,7 +32,10 @@ const Action = ghostBookshelf.Model.extend(
         candidates.push([User, 'security_action']);
       }
 
-      return [...candidates, ...loggedKinds];
+      return [
+        ...candidates,
+        ...registeredKinds().map(({ resourceType, table }) => [readModelOf(table), resourceType]),
+      ];
     },
 
     actor() {

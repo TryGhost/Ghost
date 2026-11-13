@@ -4,6 +4,7 @@ import sinon from 'sinon';
 import type { Knex } from 'knex';
 import { GiftLinksService } from '../../../core/server/services/gift-links/service';
 import { ActionLog } from '../../../core/server/lib/action-log/action-log';
+import { giftLinkActions } from '../../../core/server/services/gift-links/actions';
 import type { RequestContext } from '../../../core/server/lib/actor';
 import type { GiftLink } from '../../../core/server/services/gift-links/models';
 
@@ -24,7 +25,7 @@ describe('GiftLinksService (integration)', function () {
 
   const liveLinks = async (id: string): Promise<GiftLink[]> =>
     (await service.getPost(id)).giftLinks;
-  const giftLinkActions = () => models.Base.knex('actions').where('resource_type', 'gift_link');
+  const loggedActions = () => models.Base.knex('actions').where('resource_type', 'gift_link');
 
   afterAll(testUtils.teardownDb);
 
@@ -36,7 +37,7 @@ describe('GiftLinksService (integration)', function () {
     // Mirror init()'s wiring.
     service = new GiftLinksService({
       knex: models.Base.knex,
-      actionLog: new ActionLog(),
+      actionLog: new ActionLog().for(giftLinkActions),
     });
   });
 
@@ -60,7 +61,7 @@ describe('GiftLinksService (integration)', function () {
     await service.create(CTX, postId);
 
     const { title } = await models.Base.knex('posts').where('id', postId).first('title');
-    const contexts = (await giftLinkActions().orderBy('id')).map(
+    const contexts = (await loggedActions().orderBy('id')).map(
       ({ event, context }: { event: string; context: string }) => ({
         event,
         context: JSON.parse(context),
@@ -123,7 +124,7 @@ describe('GiftLinksService (integration)', function () {
       const existing = command === 'create' ? await service.create(CTX, postId) : undefined;
       const before = await models.Base.knex('gift_links').where('post_id', postId);
       const previousLiveLinks = await liveLinks(postId);
-      const actionsBefore = (await giftLinkActions()).length;
+      const actionsBefore = (await loggedActions()).length;
       // Fail the second write in the real transaction, after the history row
       // has been inserted. A rejected transaction stub cannot prove rollback.
       await models.Base.knex.raw(`
@@ -139,7 +140,7 @@ describe('GiftLinksService (integration)', function () {
 
       assert.deepEqual(await models.Base.knex('gift_links').where('post_id', postId), before);
       assert.deepEqual(await liveLinks(postId), previousLiveLinks);
-      assert.equal((await giftLinkActions()).length, actionsBefore);
+      assert.equal((await loggedActions()).length, actionsBefore);
       if (existing) {
         assert.equal((await service.getPostByToken(existing.giftLinks[0]!.token))?.id, postId);
       }
@@ -147,7 +148,7 @@ describe('GiftLinksService (integration)', function () {
       // The failed command must not leave the connection or transaction stuck.
       const recovered = await service[command](CTX, postId);
       assert.equal((await liveLinks(postId))[0]?.token, recovered.giftLinks[0]?.token);
-      assert.equal((await giftLinkActions()).length, actionsBefore + 1);
+      assert.equal((await loggedActions()).length, actionsBefore + 1);
     });
   }
 
@@ -168,7 +169,7 @@ describe('GiftLinksService (integration)', function () {
     // The action is part of the change, so a failed insert inside the command's transaction
     // rolls the link back with it.
     const linksBefore = await liveLinks(postId);
-    const actionsBefore = (await giftLinkActions()).length;
+    const actionsBefore = (await loggedActions()).length;
     await models.Base.knex.raw(`
       CREATE TRIGGER fail_gift_link_action
       BEFORE INSERT ON actions FOR EACH ROW
@@ -181,7 +182,7 @@ describe('GiftLinksService (integration)', function () {
     }
 
     assert.deepEqual(await liveLinks(postId), linksBefore, 'the gift link is rolled back');
-    assert.equal((await giftLinkActions()).length, actionsBefore);
+    assert.equal((await loggedActions()).length, actionsBefore);
   });
 
   it('writes no staff history entry for a command with no actor', async function () {

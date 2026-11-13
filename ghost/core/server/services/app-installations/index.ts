@@ -5,6 +5,7 @@ import { defineService } from '../../../kernel/define-service';
 import config from '../../../shared/config';
 import urlUtils from '../../../shared/url-utils';
 import { ActionLog } from '../../lib/action-log/action-log';
+import { appInstallationActions } from './actions';
 import { createAppFetcher } from './fetch-from-app';
 import { createIconFetcher } from './fetch-icon';
 import { createIdentityChecker, readTrustedOrigins } from './identity-check';
@@ -103,7 +104,7 @@ export default defineService('App Installations', () => {
 
   return new AppInstallationsService({
     knex,
-    actionLog: new ActionLog(),
+    actionLog: new ActionLog().for(appInstallationActions),
     loadManifest: createManifestLoader({ fetchFromApp, logging, getManifestRules }),
     identity: createIdentityChecker({
       fetchFromApp,

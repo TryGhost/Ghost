@@ -27,7 +27,8 @@ import {
 } from '@tryghost/metafield-types/identity';
 import { toDatabaseDate } from '../../lib/db-types/date';
 import type { RequestContext } from '../../lib/actor';
-import type { ActionLog } from '../../lib/action-log/action-log';
+import type { ResourceActionLog } from '../../lib/action-log/action-log';
+import type { stripeCheckoutConfigActions } from './actions';
 import { configRow, type ConfigRowSchema } from './codec';
 import {
   COLLECTED_NOUNS,
@@ -269,7 +270,7 @@ export type TierRequirements = Pick<TierRequirementsService, 'browse' | 'require
 /** Reads and saves the site-wide Stripe Checkout config. */
 export class StripeCheckoutConfigService {
   private knex: Knex;
-  private actionLog: ActionLog;
+  private actionLog: ResourceActionLog<typeof stripeCheckoutConfigActions>;
   private bindings: PortBinder;
   private fields: FieldReads;
   private requirements: () => TierRequirements;
@@ -284,7 +285,7 @@ export class StripeCheckoutConfigService {
     logging,
   }: {
     knex: Knex;
-    actionLog: ActionLog;
+    actionLog: ResourceActionLog<typeof stripeCheckoutConfigActions>;
     bindings: PortBinder;
     fields: FieldReads;
     /** Looked up on each use, as tiers are set up after the config. */
@@ -441,7 +442,6 @@ export class StripeCheckoutConfigService {
         });
       }
       await this.actionLog.record(trx, context, {
-        resourceType: 'stripe_checkout_config',
         event: 'edited',
         resourceId: saved.id,
         // The config has no name of its own, so the entry is named after what it configures.
