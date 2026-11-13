@@ -61,6 +61,38 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/mail/format-address-for-delivery\\.ts$', // Mailbox formatting for delivery; no sender policy or application instances.
 ];
 
+// SDKs for one outside system. Each is imported only by its provider client:
+// the file or folder that wraps it in the API Ghost needs. Everything else,
+// including service roots, uses the provider client. A provider client used
+// by one service lives in that service; one shared by several lives in
+// server/lib. Adding a consumer means changing this list.
+const providerClients = [
+  {
+    // Machine Payments Protocol server.
+    sdk: '(^|/)node_modules/mppx/|^mppx(/|$)',
+    clients: [`^${servicesRoot}/machine-payments/adapters/mpp-adapter\\.ts$`],
+  },
+  {
+    // x402 payment protocol and the Hono app its middleware runs on.
+    sdk: '(^|/)node_modules/(@x402/[^/]+|hono)/|^(@x402/[^/]+|hono)(/|$)',
+    clients: [`^${servicesRoot}/machine-payments/adapters/x402-adapter\\.ts$`],
+  },
+  {
+    // Stripe API. Members and Stripe use the Stripe service's client; Machine
+    // Payments has its own for the API version it needs.
+    sdk: '(^|/)node_modules/stripe/|^stripe(/|$)',
+    clients: [
+      `^${servicesRoot}/stripe/stripe-api\\.js$`,
+      `^${servicesRoot}/machine-payments/stripe/`,
+    ],
+  },
+  {
+    // oEmbed provider lookup and fetching, through a fetcher the caller passes.
+    sdk: '(^|/)node_modules/@extractus/oembed-extractor/|^@extractus/oembed-extractor(/|$)',
+    clients: [`^${servicesRoot}/oembed/extract-oembed\\.ts$`],
+  },
+];
+
 // What to do about a dependency the service rule rejects, read by
 // `pnpm gx services report`. The services guide states the rule. A rejected
 // dependency that matches nothing here has no decision yet. Patterns match the
@@ -86,7 +118,6 @@ const serviceDependencyDecisions = {
     '^ghost/core/server/lib/request-external\\.js$', // Outbound HTTP, limited by config.
     '^got$|^@tryghost/request$', // Outbound HTTP.
     '^(node:)?dns/promises$', // DNS lookups.
-    '^stripe$', // Stripe client; calls the Stripe API.
     '^ghost/core/server/lib/mailgun/mailgun-client\\.js$', // Mailgun client; calls the Mailgun API and logs.
     '^ghost/core/server/lib/mail/index\\.js$', // Mailer, built from config and settings.
     '^ghost/core/server/lib/image/index\\.js$', // Image tools, built from config, storage and outbound HTTP.
@@ -104,7 +135,8 @@ const serviceDependencyDecisions = {
     '^ghost/core/server/web/shared/middleware/api/spam-prevention\\.ts$', // Rate limiting, built from config and the database.
     '^ghost/core/bridge\\.js$', // The bridge to the frontend.
   ],
-  // Allowed only in another form.
+  // Allowed only in another form. A provider SDK imported outside its provider
+  // client is counted here too, without a pattern.
   importForm: [
     '^lodash$', // Import individual functions, such as lodash/isEmpty.
     '^moment(-timezone)?$', // Use the kernel clock, which exports moment for existing date logic.
@@ -143,10 +175,22 @@ module.exports = {
       from: serviceImplementations,
       to: {
         // $1 is the service name captured by from.path.
-        pathNot: [...serviceDependencyAllowlist, `^${servicesRoot}/$1/`],
+        // Provider SDKs are checked by service-provider-clients instead.
+        pathNot: [
+          ...serviceDependencyAllowlist,
+          ...providerClients.map(({ sdk }) => sdk),
+          `^${servicesRoot}/$1/`,
+        ],
         dependencyTypesNot: ['type-only', 'type-import'],
       },
     },
+    ...providerClients.map(({ sdk, clients }) => ({
+      name: 'service-provider-clients',
+      comment: 'Use the provider client for this SDK. Only that client may import it.',
+      severity: 'error',
+      from: { path: '^ghost/core/', pathNot: clients },
+      to: { path: sdk, dependencyTypesNot: ['type-only', 'type-import'] },
+    })),
     {
       name: 'service-own-root',
       comment: 'Service implementations must not retrieve dependencies from their own wiring root.',

@@ -807,6 +807,95 @@ it('allows the delivery address formatter required by Member welcome emails with
   assert.deepEqual(violations(graph), [['service-dependencies', `${alpha}/rejected.ts`, rejected]]);
 });
 
+it('allows each provider SDK only from its provider client, across Core and service roots', (t) => {
+  const mpp = `${services}/machine-payments/adapters/mpp-adapter.ts`;
+  const x402 = `${services}/machine-payments/adapters/x402-adapter.ts`;
+  const stripeApi = `${services}/stripe/stripe-api.js`;
+  const machineStripe = `${services}/machine-payments/stripe/payment-recorder.ts`;
+  const oembed = `${services}/oembed/extract-oembed.ts`;
+  const f = fixture(t, {
+    [mpp]: "require('mppx/server');",
+    [x402]:
+      "require('@x402/core/server'); require('@x402/evm/exact/server'); require('@x402/hono'); require('hono');",
+    [stripeApi]: "require('stripe');",
+    [machineStripe]: "import 'stripe';",
+    [oembed]: "import '@extractus/oembed-extractor';",
+    // A type-only import of a provider SDK is not a dependency on it.
+    [`${services}/members/types.ts`]: "import type Stripe from 'stripe';",
+    // The same imports anywhere else fail, including in another file of the same
+    // service, a service root and Core code outside services.
+    [`${services}/machine-payments/service.ts`]: "import 'mppx/server'; import 'hono';",
+    [`${services}/machine-payments/adapters/other.ts`]: "import '@x402/hono';",
+    [`${services}/members/router.js`]: "require('stripe');",
+    [`${services}/stripe/index.js`]: "require('stripe');",
+    [`${services}/oembed/oembed-service.js`]: "require('@extractus/oembed-extractor');",
+    'ghost/core/server/lib/payments.js': "require('stripe'); require('mppx/server');",
+    // A package that only shares a name prefix is not a provider SDK.
+    [`${services}/machine-payments/adapters/prefix.ts`]:
+      "import 'stripe-extra'; import 'mppx-extra';",
+  });
+  for (const name of [
+    'mppx',
+    '@x402/core',
+    '@x402/evm',
+    '@x402/hono',
+    'hono',
+    'stripe',
+    '@extractus/oembed-extractor',
+    'stripe-extra',
+    'mppx-extra',
+  ]) {
+    f.write(
+      `node_modules/${name}/package.json`,
+      JSON.stringify({
+        name,
+        main: 'index.js',
+        exports: { '.': './index.js', './server': './server.js', './exact/server': './server.js' },
+      }),
+    );
+    f.write(`node_modules/${name}/index.js`, 'module.exports = {};');
+    f.write(`node_modules/${name}/server.js`, 'module.exports = {};');
+  }
+  const graph = f.graph('ghost/core');
+  const provider = (from: string, to: string) => ['service-provider-clients', from, to];
+  assert.deepEqual(
+    violations(graph),
+    [
+      provider(`${services}/machine-payments/service.ts`, 'node_modules/mppx/server.js'),
+      provider(`${services}/machine-payments/service.ts`, 'node_modules/hono/index.js'),
+      provider(
+        `${services}/machine-payments/adapters/other.ts`,
+        'node_modules/@x402/hono/index.js',
+      ),
+      provider(`${services}/members/router.js`, 'node_modules/stripe/index.js'),
+      provider(`${services}/stripe/index.js`, 'node_modules/stripe/index.js'),
+      provider(
+        `${services}/oembed/oembed-service.js`,
+        'node_modules/@extractus/oembed-extractor/index.js',
+      ),
+      provider('ghost/core/server/lib/payments.js', 'node_modules/stripe/index.js'),
+      provider('ghost/core/server/lib/payments.js', 'node_modules/mppx/server.js'),
+      [
+        'service-dependencies',
+        `${services}/machine-payments/adapters/prefix.ts`,
+        'node_modules/stripe-extra/index.js',
+      ],
+      [
+        'service-dependencies',
+        `${services}/machine-payments/adapters/prefix.ts`,
+        'node_modules/mppx-extra/index.js',
+      ],
+    ].sort(),
+  );
+  assert.equal(
+    edges(graph).filter(
+      ([from]) =>
+        from !== undefined && [mpp, x402, stripeApi, machineStripe, oembed].includes(from),
+    ).length,
+    8,
+  );
+});
+
 it('rejects outside dependencies, own roots and unresolved imports without folder or package-prefix escapes', (t) => {
   const imports = {
     'require.ts': "require('../../../shared/config');",

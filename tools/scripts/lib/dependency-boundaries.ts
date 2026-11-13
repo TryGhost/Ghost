@@ -13,7 +13,12 @@ import {
 export const knownViolationsFile = '.dependency-cruiser-known-violations.json';
 const servicePrefix = `${servicesRoot}/`;
 const knownViolationSchema = z.strictObject({
-  rule: z.enum(['service-dependencies', 'service-own-root', 'service-unresolved']),
+  rule: z.enum([
+    'service-dependencies',
+    'service-own-root',
+    'service-unresolved',
+    'service-provider-clients',
+  ]),
   from: z.string().startsWith(servicePrefix),
   to: z.string().min(1),
 });

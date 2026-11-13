@@ -760,12 +760,7 @@
     "to": "ghost/core/shared/settings-cache/index.js"
   },
   {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/machine-payments/adapters/mpp-adapter.ts",
-    "to": "mppx/server"
-  },
-  {
-    "rule": "service-dependencies",
+    "rule": "service-provider-clients",
     "from": "ghost/core/server/services/machine-payments/adapters/mpp-adapter.ts",
     "to": "stripe"
   },
@@ -777,27 +772,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/machine-payments/adapters/x402-adapter.ts",
-    "to": "@x402/core/server"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/machine-payments/adapters/x402-adapter.ts",
-    "to": "@x402/evm/exact/server"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/machine-payments/adapters/x402-adapter.ts",
-    "to": "@x402/hono"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/machine-payments/adapters/x402-adapter.ts",
     "to": "ghost/core/shared/config/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/machine-payments/adapters/x402-adapter.ts",
-    "to": "hono"
   },
   {
     "rule": "service-dependencies",
@@ -846,18 +821,8 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/machine-payments/stripe/deposit-address-store.ts",
-    "to": "stripe"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/machine-payments/stripe/payment-recorder.ts",
     "to": "ghost/core/server/services/settings-helpers/index.js"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/machine-payments/stripe/payment-recorder.ts",
-    "to": "stripe"
   },
   {
     "rule": "service-dependencies",
@@ -1005,12 +970,7 @@
     "to": "tldts"
   },
   {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/oembed/extract-oembed.ts",
-    "to": "@extractus/oembed-extractor"
-  },
-  {
-    "rule": "service-dependencies",
+    "rule": "service-provider-clients",
     "from": "ghost/core/server/services/oembed/oembed-service.js",
     "to": "@extractus/oembed-extractor"
   },

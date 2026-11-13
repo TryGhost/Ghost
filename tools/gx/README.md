@@ -247,7 +247,8 @@ kinds, which add up to its total:
 - **Instances to inject** (`inject`): the dependency holds application state or
   does its own I/O, so the root wires it.
 - **Wrong import form** (`import-form`): the library is allowed only in another
-  form, such as individual Lodash functions.
+  form, such as individual Lodash functions, or a provider SDK is imported
+  outside its provider client.
 - **No decision yet** (`no-decision`): nothing has been decided.
 
 The kinds come from `serviceDependencyDecisions` in

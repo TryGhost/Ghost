@@ -185,6 +185,10 @@ test('classifies each rejected dependency by the first decision that matches it'
         finding('alpha/a.ts', `${services}/beta/index.ts`),
         finding('alpha/a.ts', `${services}/alpha/index.ts`, 'service-own-root'),
         finding('alpha/a.ts', './missing', 'service-unresolved'),
+        finding('alpha/a.ts', 'node_modules/stripe/index.js', 'service-provider-clients', {
+          unresolvedTo: 'stripe',
+          dependencyTypes: ['npm'],
+        }),
       ],
     ),
     {
@@ -201,6 +205,7 @@ test('classifies each rejected dependency by the first decision that matches it'
       [`${services}/beta/index.ts`, 'inject'],
       [`${services}/alpha/index.ts`, undefined],
       ['./missing', undefined],
+      ['stripe', 'import-form'],
     ],
   );
   assert.throws(() =>

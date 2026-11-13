@@ -5,15 +5,25 @@ import { fileURLToPath } from 'node:url';
 import boundaries from '../../../../.dependency-cruiser.cjs';
 
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
+type ServiceRule = { name: string; from: { path: string }; to: { pathNot: string[] } };
+
+// The config is read as untyped data: its rules have different shapes.
+function isServiceRule(rule: unknown): rule is ServiceRule {
+  const { name, from, to } = (rule ?? {}) as Record<string, unknown>;
+  const { path: fromPath } = (from ?? {}) as Record<string, unknown>;
+  const { pathNot } = (to ?? {}) as Record<string, unknown>;
+  return (
+    name === 'service-dependencies' &&
+    typeof fromPath === 'string' &&
+    Array.isArray(pathNot) &&
+    pathNot.every((pattern) => typeof pattern === 'string')
+  );
+}
+
 // Reuse the native boundary rule: $1 denotes internal service files, not libraries.
-const boundary = Array.isArray(boundaries?.forbidden)
-  ? boundaries.forbidden.find((rule) => rule?.name === 'service-dependencies')
-  : undefined;
-if (
-  typeof boundary?.from?.path !== 'string' ||
-  !Array.isArray(boundary.to?.pathNot) ||
-  !boundary.to.pathNot.every((pattern) => typeof pattern === 'string')
-) {
+const forbidden: unknown = (boundaries as { forbidden?: unknown } | undefined)?.forbidden;
+const boundary = Array.isArray(forbidden) ? forbidden.find(isServiceRule) : undefined;
+if (!boundary) {
   throw new Error(
     'ghost/no-injected-service-libraries: .dependency-cruiser.cjs must define ' +
       'service-dependencies with a string from.path and a string array to.pathNot',

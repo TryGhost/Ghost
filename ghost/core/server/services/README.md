@@ -203,6 +203,16 @@ Some dependencies look like libraries but are treated as instances:
   the Lexical and image libraries, the schema, the API layer and the bridge
   read config, settings or the database.
 
+Some services need an SDK for one outside system, such as the Stripe API or a
+payment protocol. Each SDK is imported only by its provider client: the one
+file or folder that wraps it in the API Ghost needs. Everything else, including
+service roots, uses the provider client, which the root passes in. A provider
+client used by one service lives in that service, like the Machine Payments
+adapters; one shared by several belongs in `server/lib`. `providerClients` in
+the dependency-cruiser config names each SDK and its client, and
+`service-provider-clients` rejects an import from anywhere else in Ghost Core.
+Adding a consumer means changing that list, so it gets reviewed.
+
 The config's `serviceDependencyDecisions` records these for
 [`gx services report`](../../../../tools/gx/README.md#interpreting-the-reports),
 which groups every rejected dependency as an instance to inject, a wrong

@@ -142,7 +142,13 @@ export function buildServiceReport(
           to,
           rule: item.rule.name,
           // Only a rejected dependency has a kind; unresolved and own-root imports do not.
-          ...(item.rule.name === 'service-dependencies' ? { kind: kindOf(to) } : {}),
+          // A provider SDK imported outside its provider client is in the wrong form:
+          // the fix is to use the client.
+          ...(item.rule.name === 'service-dependencies'
+            ? { kind: kindOf(to) }
+            : item.rule.name === 'service-provider-clients'
+              ? { kind: 'import-form' as const }
+              : {}),
         };
       });
     const wasAnalyzed = analyzed.has(name);
