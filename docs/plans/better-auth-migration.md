@@ -270,9 +270,9 @@ the session (Phase 2), so they create a Better Auth session directly.
 **`ghostStaffLifecycle`** (Phase 2). Ghost's status rules layered on Better
 Auth core.
 
-- Before `/sign-in/email`: `locked` sends the reset email and throws
-  `PASSWORD_RESET_REQUIRED`; `inactive` throws `ACCOUNT_SUSPENDED`; unknown
-  email and wrong password map to today's messages (§5.3).
+- `/sign-in/email` does not enumerate staff (§5.3): an unknown email and a
+  wrong password are both `INVALID_EMAIL_OR_PASSWORD`. A failed attempt for a
+  `locked` user still sends the reset email, without changing the response.
 - Before magic-link, passkey and SSO sign-in: refuse `inactive`, and set a
   `locked` user's `status` to `active` (as reset does today). This runs before
   the session is created, so the session guard below admits them.
@@ -574,9 +574,14 @@ with today's messages, so older Admin builds keep working:
 | `INVALID_TOKEN` / expired                | existing reset-token messages                                        |
 | `TOO_MANY_REQUESTS`                      | `TooManyRequestsError`                                               |
 
-The native endpoints emit the codes the React `AuthClient` already expects
-(`USER_NOT_FOUND`, `INVALID_PASSWORD`, `PASSWORD_RESET_REQUIRED`,
-`INVALID_CODE`, `twoFactorRedirect` + `twoFactorReason`).
+The native endpoints emit the codes the React `AuthClient` expects
+(`PASSWORD_RESET_REQUIRED`, `INVALID_CODE`, `twoFactorRedirect` +
+`twoFactorReason`), except that sign-in does not enumerate staff: an unknown
+email, a wrong password and a wrong password on a suspended account are all
+Better Auth's `INVALID_EMAIL_OR_PASSWORD`, so `USER_NOT_FOUND` and
+`INVALID_PASSWORD` are not used. Suspension and `PASSWORD_RESET_REQUIRED`
+only show after a matching password. Today's messages enumerate staff (SC-90);
+whether the compatibility controllers keep them is decided with SC-90.
 
 ### 5.4 Behaviour
 

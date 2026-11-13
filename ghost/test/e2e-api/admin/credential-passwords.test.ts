@@ -39,6 +39,7 @@ function betterAuth() {
     password: security.password,
     logger: { debug() {}, info() {}, warn() {}, error() {} },
     limiters: { globalBlock: allow, globalReset: allow, userLogin: allow, userReset: allow },
+    sendPasswordResetEmail: async () => {},
   });
   const origin = urlUtils.getAdminOrigin();
 

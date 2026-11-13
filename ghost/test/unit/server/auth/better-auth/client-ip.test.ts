@@ -53,6 +53,7 @@ describe('setClientIPHeader', function () {
       password: { hash: async () => '', compare: async () => false },
       logger: { debug() {}, info() {}, warn() {}, error() {} },
       limiters,
+      sendPasswordResetEmail: async () => {},
     });
     const { options } = await auth.$context;
 
