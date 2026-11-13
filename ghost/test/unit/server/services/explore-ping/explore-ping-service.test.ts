@@ -7,8 +7,10 @@ import {
 } from '../../../../../core/server/services/explore-ping/explore-ping-service';
 import { createLoggingFake } from '../../../../utils/logging-utils';
 
-// @tryghost/version has no type definitions.
-const ghostVersion: { full: string } = require('@tryghost/version');
+// The Ghost version the payload must report: package.json's version without any
+// build suffix, read independently of the @tryghost/version module the service uses.
+const { version: packageVersion }: { version: string } = require('../../../../../package.json');
+const expectedVersion = packageVersion.split('+')[0];
 
 type RequestFn = ExplorePingServiceDeps['request'];
 type StatsApi = NonNullable<NonNullable<ExplorePingServiceDeps['statsService']>['api']>;
@@ -112,7 +114,7 @@ describe('ExplorePingService', function () {
       const payload = await explorePingService.constructPayload();
 
       assert.deepEqual(payload, {
-        ghost: ghostVersion.full,
+        ghost: expectedVersion,
         site_uuid: '123e4567-e89b-12d3-a456-426614174000',
         url: 'https://example.com',
         theme: 'alto',
@@ -153,7 +155,7 @@ describe('ExplorePingService', function () {
       const payload = await explorePingService.constructPayload();
 
       assert.deepEqual(payload, {
-        ghost: ghostVersion.full,
+        ghost: expectedVersion,
         site_uuid: '123e4567-e89b-12d3-a456-426614174000',
         url: 'https://example.com',
         theme: 'alto',
@@ -180,7 +182,7 @@ describe('ExplorePingService', function () {
       const payload = await explorePingService.constructPayload();
 
       assert.deepEqual(payload, {
-        ghost: ghostVersion.full,
+        ghost: expectedVersion,
         site_uuid: '123e4567-e89b-12d3-a456-426614174000',
         url: 'https://example.com',
         theme: 'alto',
