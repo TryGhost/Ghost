@@ -7,7 +7,6 @@ const MembersConfigProvider = require('./members-config-provider');
 const { makeImporter, makeExporter } = require('./import-export');
 const { resolveInlineThreshold } = require('./import-export/config');
 const MembersStats = require('./stats/members-stats');
-const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils').default;
 const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
@@ -170,10 +169,6 @@ module.exports = {
 
     if (!membersApi) {
       membersApi = createMembersApiInstance(membersConfig);
-
-      membersApi.bus.on('error', function (err) {
-        logging.error(err);
-      });
     }
 
     module.exports.requestIntegrityTokenProvider = new RequestIntegrityTokenProvider({
