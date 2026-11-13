@@ -341,6 +341,8 @@ describe('Import members custom fields', () => {
     // outlives its exit animation, and has twice pulled the focus back out of this form.
     await expect.element(dialog.getByLabelText('Name')).toHaveValue('Nickname');
     await expect.element(dialog.getByLabelText('Name')).toHaveFocus();
+    // A field made from an import starts staff-only, without asking.
+    await expect.element(dialog.getByLabelText('Visible to members')).not.toBeInTheDocument();
     await dialog.getByRole('button', { name: 'Save' }).click();
 
     await expect
