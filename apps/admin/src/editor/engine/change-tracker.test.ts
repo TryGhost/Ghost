@@ -91,6 +91,7 @@ function post(overrides: Partial<EditablePostProjection> = {}): EditablePostProj
     twitter_title: null,
     twitter_description: null,
     show_title_and_feature_image: null,
+    comments_enabled: true,
     updated_at: T0,
     ...overrides,
   };

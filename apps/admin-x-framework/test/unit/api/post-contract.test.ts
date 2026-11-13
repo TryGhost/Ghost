@@ -69,7 +69,7 @@ const sharedTypeAssertions: [
   Assert<
     Equal<
       keyof PostEditableData,
-      ExpectedContentEditableKey | 'status' | 'email_subject' | 'email_only'
+      ExpectedContentEditableKey | 'status' | 'email_subject' | 'email_only' | 'comments_enabled'
     >
   >,
   Assert<
@@ -446,13 +446,31 @@ describe('post request contract', () => {
       expect(serializePostPayload(data, 'page')).toEqual(data);
     });
 
-    it('strips email fields from page payloads', () => {
+    it('strips email and comment fields from page payloads', () => {
       expect(
         serializePostPayload(
-          { title: 'Hello', email_subject: 'Subject', email_only: false, email_id: 'email-1' },
+          {
+            title: 'Hello',
+            email_subject: 'Subject',
+            email_only: false,
+            email_id: 'email-1',
+            comments_enabled: true,
+          },
           'page',
         ),
       ).toEqual({ title: 'Hello' });
+    });
+
+    it('keeps comments_enabled on post payloads', () => {
+      expect(
+        serializePostPayload(
+          {
+            title: 'Hello',
+            comments_enabled: false,
+          },
+          'post',
+        ),
+      ).toEqual({ title: 'Hello', comments_enabled: false });
     });
 
     it('drops visibility, filter and tiers when visibility is null', () => {

@@ -50,6 +50,12 @@ module.exports = async (model, frame, options = {}) => {
   // back to jsonModel.type in that case (no fields stripping in unit
   // tests).
   const dbType = typeof model.get === 'function' ? model.get('type') : jsonModel.type;
+  if (dbType === 'post') {
+    jsonModel.comments_enabled =
+      jsonModel.comments_enabled !== undefined && jsonModel.comments_enabled !== null
+        ? Boolean(jsonModel.comments_enabled)
+        : true;
+  }
   const routerType = dbType === 'page' ? 'pages' : 'posts';
   url.forPost(model.id, jsonModel, frame, routerType);
 
