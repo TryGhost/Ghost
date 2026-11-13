@@ -26,6 +26,7 @@ const serviceDependencyAllowlist = [
   '^@tryghost/parse-email-address/mailbox$|^packages/parse-email-address/(src|build)/mailbox\\.(ts|js)$', // Mailbox parsing and text formatting; no sender policy or application instances.
   '^@tryghost/metafield-types/identity$|^packages/metafield-types/(src|build)/identity\\.(ts|js)$', // Metafield namespace, key and part schemas and the identity codec.
   '^@tryghost/string$|(^|/)node_modules/@tryghost/string/lib/index\\.js$', // String normalization, slugification and HTML escaping.
+  '^@tryghost/version$|(^|/)node_modules/@tryghost/version/index\\.js$', // Ghost's version, a process fact fixed when Ghost is built; reads its own package.json once.
   '^@tryghost/referrer-parser$|(^|/)node_modules/@tryghost/referrer-parser/dist/index\\.(cjs|js)$', // Referrer classification from supplied URLs and static lookup data.
   '^lodash/(?!(?:index|lodash|core|fp)(?:\\.js)?$)[a-zA-Z]+(?:\\.js)?$|(^|/)node_modules/lodash/(?!(?:index|lodash|core|fp)\\.js$)[a-zA-Z]+\\.js$', // Individual Lodash functions; not the whole library, its builds or lodash/fp.
   '^@tryghost/nql$|(^|/)node_modules/@tryghost/nql/index\\.js$', // Caller-local query parsing and JSON matching; no application instances or I/O.

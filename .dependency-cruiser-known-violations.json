@@ -867,22 +867,12 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/milestones/slack-notifications/slack-notifications.js",
-    "to": "@tryghost/version"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/milestones/slack-notifications/slack-notifications.js",
     "to": "ghost/core/server/lib/request-external.js"
   },
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/milestones/slack-notifications/slack-notifications.js",
     "to": "moment"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/notifications/notifications.js",
-    "to": "@tryghost/version"
   },
   {
     "rule": "service-dependencies",
@@ -1422,11 +1412,6 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/themes/validate.js",
-    "to": "@tryghost/version"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/themes/validate.js",
     "to": "fs-extra"
   },
   {
@@ -1578,11 +1563,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/webhooks/webhook-trigger.js",
     "to": "@tryghost/request"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/webhooks/webhook-trigger.js",
-    "to": "@tryghost/version"
   },
   {
     "rule": "service-dependencies",

@@ -580,6 +580,30 @@ it('allows the debug tracing library without allowing sibling packages', (t) => 
   );
 });
 
+it('allows the Ghost version as a process fact without allowing sibling packages or internals', (t) => {
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]: "require('@tryghost/version');",
+    [`${alpha}/rejected.ts`]:
+      "import '@tryghost/version/lib/version'; import '@tryghost/version-extra';",
+  });
+  for (const name of ['@tryghost/version', '@tryghost/version-extra']) {
+    f.write(`node_modules/${name}/package.json`, JSON.stringify({ name, main: 'index.js' }));
+    f.write(`node_modules/${name}/index.js`, 'module.exports = {};');
+  }
+  f.write('node_modules/@tryghost/version/lib/version.js', 'module.exports = {};');
+  const graph = f.graph();
+  assert.equal(edges(graph).filter(([from]) => from === `${alpha}/approved.js`).length, 1);
+  assert.deepEqual(
+    violations(graph),
+    [
+      'node_modules/@tryghost/version/lib/version.js',
+      'node_modules/@tryghost/version-extra/index.js',
+    ]
+      .map((to) => ['service-dependencies', `${alpha}/rejected.ts`, to])
+      .sort(),
+  );
+});
+
 it('allows the cheerio slim entry required by Mentions without allowing the main entry', (t) => {
   const f = fixture(t, {
     [`${alpha}/approved.js`]: "require('cheerio/slim');",
