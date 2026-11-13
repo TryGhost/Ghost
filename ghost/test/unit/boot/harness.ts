@@ -2,8 +2,32 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { runInNewContext } from 'node:vm';
+import ts from 'typescript';
 
 const BOOT_PATH = resolve(__dirname, '../../../core/boot.js');
+
+const compiled = new Map<string, string>();
+
+/**
+ * Boot's source compiled to the CommonJS the build produces, so that it runs here whether it is
+ * written in JavaScript or TypeScript. Compiled once for each version of the source.
+ */
+function compileBoot(): string {
+  const source = readFileSync(BOOT_PATH, 'utf8');
+  let output = compiled.get(source);
+  if (output === undefined) {
+    output = ts.transpileModule(source, {
+      fileName: BOOT_PATH,
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        target: ts.ScriptTarget.ES2024,
+        esModuleInterop: true,
+      },
+    }).outputText;
+    compiled.set(source, output);
+  }
+  return output;
+}
 
 export type BootFunction = (args: Record<string, unknown>) => Promise<void>;
 
@@ -29,6 +53,7 @@ export function loadBootFunction(
     '@tryghost/debug': () => () => {},
     ...modules,
   };
+  const module = { exports: {} };
   const context = {
     ...globals,
     require(dependency: string) {
@@ -38,7 +63,8 @@ export function loadBootFunction(
       assert.ok(fallback, `Unexpected boot dependency: ${dependency}`);
       return fallback(dependency);
     },
-    module: { exports: {} },
+    module,
+    exports: module.exports,
   };
-  return runInNewContext(`${readFileSync(BOOT_PATH, 'utf8')}\n${name};`, context);
+  return runInNewContext(`${compileBoot()}\n${name};`, context);
 }
