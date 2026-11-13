@@ -136,7 +136,8 @@ ${bootLines(name)
   3. The boot tests already check that boot waits for init() and that its failure
      fails boot. Add one in ghost/test/unit/boot/ only where order matters. A root in
      initCore or initServicesForFrontend needs a stub in that phase's test.
-  4. Add startup failure cleanup and shutdown wiring if the service owns resources.
+  4. If the service owns listeners, timers or work to drain, acquire and release them
+     in start and stop hooks, and register stop() with the server in boot.
   5. Extend the root test. If the root declares extras, catalogue them in
      ${legacyInventoryFile}.
   6. Run pnpm nx run ghost:test:unit test/unit/server/services/${name}/index.test.ts,
