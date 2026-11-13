@@ -114,6 +114,7 @@ const backdropInsetClassName = [
 ].join(' ');
 
 const SIDEBAR_WIDTH = '316px';
+const ADMIN7_SIDEBAR_WIDTH = 269;
 
 const SIDEBAR_PANEL_CLASS_NAME = '[&>[data-sidebar=sidebar]]:relative';
 // Lands on the desktop panel only; the mobile sidebar is a sheet that ignores it.
@@ -339,6 +340,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           className={floatingSidebarClassName}
           disabled={dunningLocked}
           morphStyle={settingsPinMorph.morphStyle}
+          openWidth={ADMIN7_SIDEBAR_WIDTH}
           settingsNavigation={settingsNavigation}
           settingsNavigationRef={setSettingsNavigationSlot}
           onPinnedMorphEnd={settingsPinMorph.onPinnedMorphEnd}
@@ -415,6 +417,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           animate={sidebarModeLoaded}
           contentRef={insetRef}
           morphStyle={settingsPinMorph.morphStyle}
+          openWidth={ADMIN7_SIDEBAR_WIDTH}
           pinned={sidebarOpen}
           slideRef={mainRef}
         />

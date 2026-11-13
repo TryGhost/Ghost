@@ -683,6 +683,7 @@ const Sidebar: React.FC = () => {
                 <span
                   aria-hidden="true"
                   className="size-4 shrink-0 bg-current"
+                  data-slot="nav-icon"
                   style={{
                     maskImage: `url(${GhostLogo})`,
                     maskPosition: 'center',

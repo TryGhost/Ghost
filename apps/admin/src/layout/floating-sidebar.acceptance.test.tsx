@@ -1,18 +1,21 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import {
   allowUnhandledRequests,
+  changelogEntry,
   configResponse,
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
   fakeAdminStats,
+  fakeEndpoint,
   fakeTags,
   renderAdminApp,
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { sidebarScreen } from './sidebar.screen';
+import { whatsNewScreen } from '@/whats-new/whats-new.screen';
 
 // The floating sidebar's closed circle is named after the site (the site fixture's title).
 const SITE_TITLE = 'Test Site';
@@ -53,6 +56,116 @@ describe('Floating sidebar (admin7Design)', () => {
   beforeEach(() => {
     fakeAdminStats.memberCount();
     fakeAdminStats.mrr();
+  });
+
+  it('keeps the banner and account usable while the navigation scrolls in a short viewport', async () => {
+    await page.viewport(1280, 420);
+    fakeTags([]);
+    fakeEndpoint('GET', 'https://ghost.org/changelog.json', {
+      posts: [changelogEntry({ published_at: '2025-06-01T00:00:00.000Z' })],
+    });
+    const options = floatingSidebar();
+    const me = currentUserResponse();
+    me.users[0].accessibility = JSON.stringify({
+      whatsNew: { lastSeenDate: '2025-01-01T00:00:00.000Z' },
+      navigation: { expanded: { posts: true, members: true } },
+    });
+    try {
+      await renderAdminApp('/tags', {
+        ...options,
+        boot: { browseMe: { response: me } },
+      });
+      await expect.poll(sidebarScreen.floatingState).toBe('pinned');
+      const banner = whatsNewScreen.banner();
+      await expect.element(banner).toBeVisible();
+      await expect.element(sidebarScreen.userMenuTrigger()).toBeVisible();
+      const bannerRegion = banner.element().parentElement;
+      if (!(bannerRegion instanceof HTMLElement)) {
+        throw new Error('Expected the banner scroll region');
+      }
+      expect(getComputedStyle(bannerRegion).overflowY).toBe('auto');
+      expect(bannerRegion.clientHeight).toBeGreaterThan(0);
+      await expect
+        .poll(
+          () =>
+            bannerRegion.getBoundingClientRect().bottom <=
+            sidebarScreen.userMenuTrigger().element().getBoundingClientRect().top,
+        )
+        .toBe(true);
+
+      const nav = sidebarScreen.shellNav().element().querySelector('[data-sidebar=content]');
+      if (!(nav instanceof HTMLElement)) {
+        throw new Error('Expected scrollable sidebar navigation');
+      }
+      await expect.poll(() => nav.scrollHeight > nav.clientHeight).toBe(true);
+      const footer = nav.parentElement?.querySelector('[data-sidebar=footer-region]');
+      if (!(footer instanceof HTMLElement)) {
+        throw new Error('Expected the fixed sidebar footer region');
+      }
+      expect(nav.getBoundingClientRect().bottom).toBeGreaterThan(
+        footer.getBoundingClientRect().top,
+      );
+      const bannerTop = bannerRegion.getBoundingClientRect().top;
+      const avatarBottom = sidebarScreen.userMenuTrigger().element().getBoundingClientRect().bottom;
+      nav.scrollTop = nav.scrollHeight;
+
+      expect(bannerRegion.getBoundingClientRect().top).toBe(bannerTop);
+      await expect.element(sidebarScreen.navLink('Settings')).toBeVisible();
+      await expect
+        .poll(
+          () =>
+            sidebarScreen.navLink('Settings').element().getBoundingClientRect().bottom <=
+            footer.getBoundingClientRect().top + 1,
+        )
+        .toBe(true);
+      await expect.element(banner).toBeVisible();
+      await whatsNewScreen.dismissButton().click();
+      await expect(whatsNewScreen.banner()).toHaveCount(0);
+      expect(sidebarScreen.userMenuTrigger().element().getBoundingClientRect().bottom).toBe(
+        avatarBottom,
+      );
+      await sidebarScreen.userMenuTrigger().click();
+      await expect.element(sidebarScreen.profileMenuItem()).toBeVisible();
+    } finally {
+      await page.viewport(1280, 800);
+    }
+  });
+
+  it('lets the last menu item scroll clear of the footer gradient without a banner', async () => {
+    await page.viewport(1280, 420);
+    fakeTags([]);
+    try {
+      await renderAdminApp('/tags', floatingSidebar());
+      await expect.poll(sidebarScreen.floatingState).toBe('pinned');
+      const nav = sidebarScreen.shellNav().element().querySelector('[data-sidebar=content]');
+      const footer = sidebarScreen
+        .shellNav()
+        .element()
+        .querySelector('[data-sidebar=footer-region]');
+      if (!(nav instanceof HTMLElement) || !(footer instanceof HTMLElement)) {
+        throw new Error('Expected the scrolling navigation and fixed footer');
+      }
+      await expect.poll(() => nav.scrollHeight > nav.clientHeight).toBe(true);
+      expect(nav.getBoundingClientRect().bottom).toBeGreaterThan(
+        footer.getBoundingClientRect().top,
+      );
+      const avatarBottom = sidebarScreen.userMenuTrigger().element().getBoundingClientRect().bottom;
+
+      nav.scrollTop = nav.scrollHeight;
+
+      await expect
+        .poll(
+          () =>
+            sidebarScreen.navLink('Settings').element().getBoundingClientRect().bottom <=
+            footer.getBoundingClientRect().top + 1,
+        )
+        .toBe(true);
+      expect(sidebarScreen.userMenuTrigger().element().getBoundingClientRect().bottom).toBe(
+        avatarBottom,
+      );
+    } finally {
+      await page.viewport(1280, 800);
+    }
   });
 
   it.each([

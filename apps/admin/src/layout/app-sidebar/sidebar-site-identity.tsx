@@ -1,5 +1,6 @@
 import { Badge } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { Stack } from '@tryghost/shade/primitives';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { Link } from '@tryghost/admin-x-framework';
@@ -25,7 +26,7 @@ export function SidebarSiteIcon() {
 interface SidebarSiteIdentityProps {
   /**
    * `capsule`: beside the icon in the floating sidebar's header row: the
-   * title and badge only, the title truncating to fit.
+   * title above the private badge, the title truncating to fit.
    * `header`: the docked sidebar's (or mobile sheet's) header row, icon included.
    */
   variant: 'capsule' | 'header';
@@ -46,8 +47,12 @@ export function SidebarSiteIdentity({ variant }: SidebarSiteIdentityProps) {
       to="/settings/members"
     >
       <Badge
-        className="gap-1 border-transparent bg-orange-100 px-1.5 py-0 text-[11px] leading-5 font-semibold text-orange-700 transition-colors hover:bg-orange-200 dark:bg-orange-500/20 dark:text-orange-300 dark:hover:bg-orange-500/30"
-        variant="secondary"
+        className={cn(
+          'gap-1 border-transparent px-1.5 py-0 text-[11px] leading-5 font-semibold',
+          variant === 'header' &&
+            'bg-orange-100 text-orange-700 transition-colors hover:bg-orange-200 dark:bg-orange-500/20 dark:text-orange-300 dark:hover:bg-orange-500/30',
+        )}
+        variant={variant === 'capsule' ? 'warning' : 'secondary'}
       >
         <LucideIcon.Lock className="size-3" strokeWidth={2.25} />
         Private
@@ -57,12 +62,12 @@ export function SidebarSiteIdentity({ variant }: SidebarSiteIdentityProps) {
 
   if (variant === 'capsule') {
     return (
-      <>
-        <span className="heading-font-features min-w-0 truncate text-[18px] leading-[1.15] font-medium tracking-[-0.01em] whitespace-nowrap text-foreground">
+      <Stack align="start" className="min-w-0 flex-1" gap="xs">
+        <span className="heading-font-features w-full min-w-0 truncate text-[18px] leading-[1.15] font-medium tracking-[-0.01em] whitespace-nowrap text-foreground">
           {title}
         </span>
         {privateBadge}
-      </>
+      </Stack>
     );
   }
 

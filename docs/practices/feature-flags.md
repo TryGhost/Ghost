@@ -160,6 +160,29 @@ Settings, the editor, the automation editor, mobile and pages without a
 navigation inside the same sidebar, pinned without changing the stored mode. Mobile keeps the sidebar sheet, and the flag-off path
 preserves the docked sidebar and the separate Settings sidebar.
 
+With `admin7Design` on, spacing separates the sidebar's navigation groups;
+Content, Audience and Apps keep their headings when apps are enabled.
+Ghost(Pro) and Settings follow the last group in the scrolling navigation.
+The active banner stays above the bottom account avatar, with flat upgrade and
+What's New banners. The account trigger shows only the avatar, private-site
+status sits below the publication name, and the sidebar omits the member count
+already shown in the top bar. The Posts create action appears on sidebar hover
+or keyboard focus and stays visible on touch devices.
+
+The floating panel is 269px wide in both the main navigation and Settings.
+Main navigation uses 12px side insets, 4px item corners and 24px group gaps;
+group labels use 10px medium text with 0.04em tracking. The Posts create action
+shares the pin control's hover intent and transition timing. Submenus retain
+their rows during collapse, immediately make them inert and hidden from
+assistive technology, and stagger their entrances like the Settings navigation.
+Reduced motion skips the submenu transitions and stagger.
+Submenu entries use variable-font weight 425. Their expansion follows the active
+navigation section automatically, with only one open at a time and no manual
+arrow controls. The flag-off sidebar keeps its saved expansion preferences.
+The footer overlaps scrolling navigation with a 24px background gradient; matching
+top padding keeps the banner and avatar in place, while navigation bottom padding
+lets its final item scroll clear of the fade.
+
 The `admin7Design` milestone also sets column headers in a small uppercase label
 style. Section headings on member details, tag details and Settings share one
 style, and member stats and list text follow the prototype. Settings sidebar

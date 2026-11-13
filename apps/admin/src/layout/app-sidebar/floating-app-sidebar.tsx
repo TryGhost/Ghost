@@ -1,11 +1,13 @@
 import React from 'react';
 
 import { FloatingSidebar, useSidebar } from '@tryghost/shade/components';
+import { Stack } from '@tryghost/shade/primitives';
 import { useLocation } from '@tryghost/admin-x-framework';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 
 import AppSidebarFooter from './app-sidebar-footer';
 import AppSidebarContent from './app-sidebar-content';
+import AppSidebarBanner from './app-sidebar-banner';
 import { SidebarBodySwap } from './sidebar-body-swap';
 import { SidebarSiteIcon, SidebarSiteIdentity } from './sidebar-site-identity';
 
@@ -56,7 +58,16 @@ const FloatingAppSidebar = React.forwardRef<HTMLDivElement, FloatingAppSidebarPr
       () => (
         <SidebarBodySwap settings={settingsNavigation} settingsSlotRef={settingsNavigationRef}>
           <AppSidebarContent floating />
-          <AppSidebarFooter className="gap-0 p-0 [&_[data-sidebar=group]]:px-0 [&_[data-sidebar=group]]:pb-0" />
+          {/* Matching margins/padding fade navigation above the footer and paint
+              through the capsule's bottom padding without moving the avatar. */}
+          <Stack
+            className="pointer-events-none relative z-10 -mx-5 -mt-6 -mb-4 min-h-0 shrink bg-linear-to-b from-transparent to-[rgb(from_var(--surface-glass)_r_g_b_/_1)] to-[calc(var(--spacing)*6)] px-5 pt-6 pb-4"
+            data-sidebar="footer-region"
+            gap="none"
+          >
+            <AppSidebarBanner className="pointer-events-auto min-h-0 shrink overflow-y-auto" />
+            <AppSidebarFooter className="pointer-events-auto shrink-0 gap-0 p-0 [&_[data-sidebar=group]]:px-0 [&_[data-sidebar=group]]:pb-0" />
+          </Stack>
         </SidebarBodySwap>
       ),
       [settingsNavigation, settingsNavigationRef],
