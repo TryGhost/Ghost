@@ -582,8 +582,8 @@ catalogs:
       specifier: ^1.20.1
       version: 1.20.3
     flexsearch:
-      specifier: 0.7.43
-      version: 0.7.43
+      specifier: 0.8.212
+      version: 0.8.212
     form-data:
       specifier: 4.0.6
       version: 4.0.6
@@ -1151,7 +1151,7 @@ importers:
         version: 3.4.17
       flexsearch:
         specifier: 'catalog:'
-        version: 0.7.43
+        version: 0.8.212
       i18n-iso-countries:
         specifier: 7.14.0
         version: 7.14.0
@@ -11873,9 +11873,6 @@ packages:
 
   flatted@3.4.2:
     resolution: {integrity: sha512-PjDse7RzhcPkIJwy5t7KPWQSZ9cAbzQXcafsetQoD7sOJRQlGikNbx7yZp2OotDnJyrDcbyRq3Ttb18iYOqkxA==}
-
-  flexsearch@0.7.43:
-    resolution: {integrity: sha512-c5o/+Um8aqCSOXGcZoqZOm+NqtVwNsvVpWv6lfmSclU954O3wvQKxxK8zj74fPaSJbXpSLTs4PRhh+wnoCXnKg==}
 
   flexsearch@0.8.212:
     resolution: {integrity: sha512-wSyJr1GUWoOOIISRu+X2IXiOcVfg9qqBRyCPRUdLMIGJqPzMo+jMRlvE83t14v1j0dRMEaBbER/adQjp6Du2pw==}
@@ -24450,8 +24447,6 @@ snapshots:
       keyv: 4.5.4
 
   flatted@3.4.2: {}
-
-  flexsearch@0.7.43: {}
 
   flexsearch@0.8.212: {}
 

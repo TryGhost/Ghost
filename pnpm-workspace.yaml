@@ -165,7 +165,7 @@ catalog:
   eslint-plugin-storybook: 10.6.6
   eslint-plugin-tailwindcss: 4.4.0
   express: 4.22.3
-  flexsearch: 0.7.43
+  flexsearch: 0.8.212
   fs-extra: 11.4.1
   glob: 14.0.4
   globals: 17.14.0
