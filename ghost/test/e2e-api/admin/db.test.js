@@ -5,7 +5,7 @@ const {
   assertions,
   mockManager,
 } = require('../../utils/e2e-framework');
-const { anyContentVersion, anyErrorId, anyEtag, anyContentLength, stringMatching } = matchers;
+const { anyContentVersion, anyErrorId, anyEtag, stringMatching } = matchers;
 const { cacheInvalidateHeaderNotSet, cacheInvalidateHeaderSetToWildcard } = assertions;
 const { exportedBodyLatest } = require('../../utils/fixtures/export/body-generator');
 const path = require('path');
@@ -34,14 +34,15 @@ describe('DB API', function () {
       .expectStatus(200)
       .matchHeaderSnapshot({
         'content-version': anyContentVersion,
-        'content-length': anyContentLength,
         'content-disposition': stringMatching(/^Attachment; filename="[A-Za-z0-9._-]+\.json"$/),
-        etag: anyEtag,
       })
       .expect(cacheInvalidateHeaderNotSet())
       .expect(({ body }) => {
         assert.equal(body.db.length, 1);
         assert.ok(body.db[0].data);
+        // The export is streamed past the shared serializer, which removes published_by
+        assert.ok(body.db[0].data.posts.length > 0);
+        assert.ok(body.db[0].data.posts.every((post) => !('published_by' in post)));
         const dataKeys = Object.keys(exportedBodyLatest().db[0].data).sort();
 
         // NOTE: using `Object.keys` here instead of `should.have.only.keys` assertion

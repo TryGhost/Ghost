@@ -50,18 +50,15 @@ const controller = {
         },
       },
     },
+    // The output serializer streams the response and sets its own disposition
     headers: {
-      disposition: {
-        type: 'file',
-        value: () => exporter.fileName(),
-      },
       cacheInvalidate: false,
     },
     permissions: true,
     // oxlint-disable-next-line ghost/ghost-custom/max-api-complexity
     async query(frame) {
       if (frame.options.filename) {
-        const backup = await dbBackup.readBackup(frame.options.filename);
+        const backup = await dbBackup.readBackupStream(frame.options.filename);
 
         if (!backup) {
           throw new errors.NotFoundError();
