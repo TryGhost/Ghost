@@ -75,7 +75,7 @@ test('shows root and generator help, and rejects unknown commands', async () => 
 const menus = {
   generate: ['package', 'service', 'golden-email', 'migration'],
   dev: ['up', 'down', 'status', 'gc'],
-  services: ['list', 'report', 'dependencies', 'audit', 'progress'],
+  services: ['list', 'report', 'dependencies', 'audit'],
   db: ['rebuild-development-tables'],
   data: ['generate', 'shift-dates', 'multi-sub-scenarios'],
   benchmark: ['automations-drain', 'recipient-preparation'],
