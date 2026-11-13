@@ -242,7 +242,7 @@ and own-root imports in separate columns. `dependencies` counts distinct
 importing implementation files per target, largest first; it excludes unresolved
 and own-root findings.
 
-The report's second table groups every rejected dependency into one of three
+The report's second table groups every rejected dependency into one of four
 kinds, which add up to its total:
 
 - **Instances to inject** (`inject`): the dependency holds application state or
@@ -250,12 +250,17 @@ kinds, which add up to its total:
 - **Wrong import form** (`import-form`): the library is allowed only in another
   form, such as individual Lodash functions, or a specialist dependency is
   imported outside its owners.
+- **Deferred to a planned refactor** (`deferred`): the import stays a known
+  violation until a named refactor moves the importing file, such as job
+  handler registration moving into boot. Per-service reports show the refactor.
 - **No decision yet** (`no-decision`): nothing has been decided.
 
 The kinds come from `serviceDependencyDecisions` in
 [`.dependency-cruiser.cjs`](../../.dependency-cruiser.cjs), next to the allowlist;
 a dependency that matches no pattern there has no decision. Record a decision by
-adding a pattern with its reason. `dependencies --kind no-decision` lists what is
+adding a pattern with its reason. A deferral names the importing file, the
+dependencies and the refactor, and takes precedence over the other kinds for
+that file. `dependencies --kind no-decision` lists what is
 left to decide, and per-service reports show each finding's kind.
 
 `progress` compares the known-violations file at a commit (`--since`, by default

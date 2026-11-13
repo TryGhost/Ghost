@@ -337,6 +337,25 @@ const serviceDependencyDecisions = {
     '^ghost/core/bridge\\.js$', // The bridge to the frontend.
     '^ghost/core/server/web/shared/dynamic-redirect-manager\\.js$', // Holds the site's redirects and an Express router shared with the web layer; roots build it.
   ],
+  // Left as known violations until a planned refactor moves the importing file.
+  // Each names the file, its dependencies and the refactor.
+  deferred: [
+    {
+      from: '^ghost/core/server/services/adapter-manager/base-classes\\.ts$',
+      to: '^packages/adapters/[^/]+-base/',
+      until: "PLA-541 moves Ghost's adapter registry into boot",
+    },
+    {
+      from: '^ghost/core/server/services/jobs-service/register-job-handlers\\.ts$',
+      to: '-job\\.(ts|js)$',
+      until: 'PLA-543 moves job handler registration into boot',
+    },
+    {
+      from: '^ghost/core/server/services/permissions/can-this\\.js$',
+      to: '^ghost/core/server/models/role-utils\\.ts$',
+      until: 'Permissions moves to server/auth/permissions and settles where role checks live',
+    },
+  ],
   // Allowed only in another form. A specialist dependency imported outside its
   // owners is counted here too, without a pattern.
   importForm: [

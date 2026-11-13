@@ -192,7 +192,7 @@ like any other.
 The config's `serviceDependencyDecisions` records these for
 [`gx services report`](../../../../tools/gx/README.md#interpreting-the-reports),
 which groups every rejected dependency as an instance to inject, a wrong
-import form or one with no decision yet.
+import form, one deferred to a named refactor or one with no decision yet.
 
 Require models, the database and other services inside the `create` callback
 rather than at module scope, so importing a root doesn't depend on how far boot

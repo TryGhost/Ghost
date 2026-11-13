@@ -58,14 +58,19 @@ const auditSchema = z.object({
 });
 
 // The boundary config records what each rejected dependency needs. One that
-// matches nothing there has no decision yet.
+// matches nothing there has no decision yet. A deferral names the importing file
+// as well, because it waits for a planned refactor of that file.
 const decisionsSchema = z.object({
   inject: z.array(z.string()),
   importForm: z.array(z.string()),
+  deferred: z
+    .array(z.object({ from: z.string(), to: z.string(), until: z.string().min(1) }))
+    .default([]),
 });
 const kinds = [
   { name: 'inject', label: 'Instances to inject' },
   { name: 'import-form', label: 'Wrong import form' },
+  { name: 'deferred', label: 'Deferred to a planned refactor' },
   { name: 'no-decision', label: 'No decision yet' },
 ] as const;
 type Kind = (typeof kinds)[number]['name'];
@@ -109,14 +114,29 @@ export function buildServiceReport(
 ) {
   const { services } = inventorySchema.parse(inventory);
   const graph = auditSchema.parse(audit);
-  const { inject, importForm } = decisionsSchema.parse(decisions);
+  const { inject, importForm, deferred } = decisionsSchema.parse(decisions);
   const patterns: [Kind, RegExp[]][] = [
     ['inject', inject.map((pattern) => new RegExp(pattern))],
     ['import-form', importForm.map((pattern) => new RegExp(pattern))],
   ];
-  const kindOf = (dependency: string): Kind =>
-    patterns.find(([, matchers]) => matchers.some((matcher) => matcher.test(dependency)))?.[0] ??
-    'no-decision';
+  const deferrals = deferred.map(({ from, to, until }) => ({
+    from: new RegExp(from),
+    to: new RegExp(to),
+    until,
+  }));
+  // A deferral comes first: it records a decision about that file's imports.
+  const decide = (from: string, dependency: string): { kind: Kind; until?: string } => {
+    const deferral = deferrals.find((item) => item.from.test(from) && item.to.test(dependency));
+    if (deferral) {
+      return { kind: 'deferred', until: deferral.until };
+    }
+    return {
+      kind:
+        patterns.find(([, matchers]) =>
+          matchers.some((matcher) => matcher.test(dependency)),
+        )?.[0] ?? 'no-decision',
+    };
+  };
   const analyzed = new Set(
     graph.modules
       .filter((module) => !module.couldNotResolve)
@@ -147,7 +167,7 @@ export function buildServiceReport(
           // A specialist dependency imported outside its owners is in the wrong form:
           // the fix is to use the owning code.
           ...(item.rule.name === 'service-dependencies'
-            ? { kind: kindOf(to) }
+            ? decide(item.from, to)
             : item.rule.name === 'specialist-dependencies'
               ? { kind: 'import-form' as const }
               : {}),
@@ -326,7 +346,7 @@ function details(row: Service) {
   if (row.findings.length) {
     for (const finding of row.findings) {
       lines.push(
-        `- ${finding.from}\n  → ${finding.to} [${finding.rule}${finding.kind ? `, ${finding.kind}` : ''}]`,
+        `- ${finding.from}\n  → ${finding.to} [${finding.rule}${finding.kind ? `, ${finding.kind}` : ''}]${finding.until ? `\n  Until: ${finding.until}` : ''}`,
       );
     }
   } else {
@@ -365,7 +385,7 @@ function readDecisions() {
   const decisions = z.object({ serviceDependencyDecisions: decisionsSchema }).safeParse(config);
   if (!decisions.success) {
     throw new Error(
-      '.dependency-cruiser.cjs must define serviceDependencyDecisions with inject and importForm pattern lists.',
+      '.dependency-cruiser.cjs must define serviceDependencyDecisions with inject and importForm pattern lists and deferred entries that name a refactor.',
     );
   }
   return decisions.data.serviceDependencyDecisions;

@@ -117,7 +117,8 @@ The [dependency-cruiser config](../../.dependency-cruiser.cjs) holds:
   owners. The `specialist-dependencies` rule rejects an import from anywhere
   else in Ghost Core, including service roots;
 - `serviceDependencyDecisions`, which records whether each rejected dependency
-  must be injected or imported in another form.
+  must be injected, imported in another form, or left until a named refactor
+  moves the file that imports it.
 
 `pnpm gx services report` groups the remaining violations by those decisions.
 Apart from specialist dependencies, code outside services is not checked yet.

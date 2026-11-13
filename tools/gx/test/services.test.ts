@@ -189,11 +189,16 @@ test('classifies each rejected dependency by the first decision that matches it'
           unresolvedTo: 'stripe',
           dependencyTypes: ['npm'],
         }),
+        finding('alpha/registry.ts', `${services}/beta/beta-job.ts`),
+        finding('alpha/a.ts', `${services}/beta/other-job.ts`),
       ],
     ),
     {
       inject: ['^ghost/core/shared/labs\\.js$', `^${services}/`],
       importForm: ['^lodash$', '^ghost/core/shared/labs\\.js$'],
+      deferred: [
+        { from: '/alpha/registry\\.ts$', to: '-job\\.ts$', until: 'Registration moves to boot' },
+      ],
     },
   );
   assert.deepEqual(
@@ -206,10 +211,24 @@ test('classifies each rejected dependency by the first decision that matches it'
       [`${services}/alpha/index.ts`, undefined],
       ['./missing', undefined],
       ['stripe', 'import-form'],
+      [`${services}/beta/beta-job.ts`, 'deferred'],
+      [`${services}/beta/other-job.ts`, 'inject'],
     ],
+  );
+  assert.equal(
+    alpha?.findings.find(({ to }) => to.endsWith('beta-job.ts'))?.until,
+    'Registration moves to boot',
   );
   assert.throws(() =>
     buildServiceReport({ services: { alpha: entry() } }, audit(['alpha']), { inject: ['^a$'] }),
+  );
+  // A deferral must name the refactor it waits for.
+  assert.throws(() =>
+    buildServiceReport({ services: { alpha: entry() } }, audit(['alpha']), {
+      inject: [],
+      importForm: [],
+      deferred: [{ from: 'a', to: 'b', until: '' }],
+    }),
   );
 });
 
@@ -280,6 +299,7 @@ test('CLI reports classifications, per-service evidence and distinct dependency 
     'Dependency violations': {
       'Instances to inject': 0,
       'Wrong import form': 0,
+      'Deferred to a planned refactor': 0,
       'No decision yet': 2,
       Total: 2,
     },
@@ -353,6 +373,7 @@ test('CLI groups rejected dependencies by the decisions in the boundary config',
   assert.deepEqual(violations, {
     'Instances to inject': 1,
     'Wrong import form': 0,
+    'Deferred to a planned refactor': 0,
     'No decision yet': 3,
     Total: 4,
   });
@@ -373,7 +394,7 @@ test('CLI groups rejected dependencies by the decisions in the boundary config',
   assert.ok(details.stdout.includes('ghost/core/shared/labs.js [service-dependencies, inject]'));
 
   const help = f.run(['dependencies', '--help']);
-  for (const kind of ['inject', 'import-form', 'no-decision']) {
+  for (const kind of ['inject', 'import-form', 'deferred', 'no-decision']) {
     assert.ok(help.stdout.includes(kind), kind);
   }
   for (const [command, args] of [
@@ -546,11 +567,12 @@ test('list filters match every report group, including unknown analysis and ever
   assert.deepEqual(footer, [
     'List a group: pnpm gx services list --group <group>',
     [
-      'DEPENDENCY VIOLATIONS  COUNT  KIND',
-      'Instances to inject    0      inject',
-      'Wrong import form      0      import-form',
-      'No decision yet        5      no-decision',
-      'Total                  5',
+      'DEPENDENCY VIOLATIONS           COUNT  KIND',
+      'Instances to inject             0      inject',
+      'Wrong import form               0      import-form',
+      'Deferred to a planned refactor  0      deferred',
+      'No decision yet                 5      no-decision',
+      'Total                           5',
     ].join('\n'),
     'List a kind: pnpm gx services dependencies --kind <kind>',
   ]);
