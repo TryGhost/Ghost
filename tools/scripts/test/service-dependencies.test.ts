@@ -1168,6 +1168,23 @@ it('allows the API framework only from the API and web layers', (t) => {
   );
 });
 
+it('keeps a file owner when it is converted between JavaScript and TypeScript', (t) => {
+  // The specialist list names the comment model as comment.js.
+  const converted = 'ghost/core/server/models/comment.ts';
+  const sibling = 'ghost/core/server/models/comment-extra.ts';
+  const f = fixture(t, {
+    [converted]: "import 'sanitize-html';",
+    [sibling]: "import 'sanitize-html';",
+  });
+  f.write('node_modules/sanitize-html/package.json', '{"name":"sanitize-html","main":"index.js"}');
+  f.write('node_modules/sanitize-html/index.js', 'module.exports = {};');
+  const graph = f.graph('ghost/core');
+  assert.equal(edges(graph).filter(([from]) => from === converted).length, 1);
+  assert.deepEqual(violations(graph), [
+    ['specialist-dependencies', sibling, 'node_modules/sanitize-html/index.js'],
+  ]);
+});
+
 it('allows HTTP framework packages only in the web layer', (t) => {
   const owners = [
     'ghost/core/server/web/members/app.js',

@@ -94,8 +94,12 @@ const npm = (name) => `(^|/)node_modules/${escape(name)}/|^${escape(name)}(/|$)`
 // A workspace package, by specifier or by the source or build entry it resolves to.
 const workspace = (name, directory) =>
   `^${escape(name)}$|^${escape(directory)}/(src/index\\.ts|build/((cjs|esm)/)?index\\.js)$`;
-// A file in Ghost Core, or a folder when the path ends with a slash.
-const core = (file) => `^ghost/core/${escape(file)}${file.endsWith('/') ? '' : '$'}`;
+// A folder in Ghost Core when the path ends with a slash, or a file in either its
+// JavaScript or TypeScript form, so converting an owner does not break the rule.
+const core = (file) =>
+  file.endsWith('/')
+    ? `^ghost/core/${escape(file)}`
+    : `^ghost/core/${escape(file.replace(/\.(js|ts)$/, ''))}\\.(js|ts)$`;
 const service = (file) => core(`server/services/${file}`);
 
 const specialistDependencies = [
@@ -696,8 +700,10 @@ module.exports = {
   },
 };
 
-// dependency-cruiser rejects configuration keys it does not know, so the
-// decisions are a property its validation does not see.
-Object.defineProperty(module.exports, 'serviceDependencyDecisions', {
-  value: serviceDependencyDecisions,
+// dependency-cruiser rejects configuration keys it does not know, so the lists
+// other tools read are properties its validation does not see.
+Object.defineProperties(module.exports, {
+  serviceDependencyAllowlist: { value: serviceDependencyAllowlist },
+  specialistDependencies: { value: specialistDependencies },
+  serviceDependencyDecisions: { value: serviceDependencyDecisions },
 });
