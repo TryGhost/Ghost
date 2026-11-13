@@ -57,9 +57,10 @@ Then check that:
 - Its handler gets its service from boot through `registerJobHandlers`, not
   from an import.
 - It has no `NODE_ENV` checks. Boot starts no schedules under test. A schedule
-  started later needs a `backgroundJobs` config key, set to `true` in
+  started later needs its own key under `backgroundJobs`, set to `true` in
   `ghost/core/shared/config/defaults.json` and to `false` in both testing
-  configs in `ghost/core/shared/config/env/`, as email analytics does.
+  configs in `ghost/core/shared/config/env/`, as
+  `backgroundJobs.emailAnalytics` does.
 - It uses the shared default lane unless it can flood the shared workers, must
   not wait behind other jobs, or must run one at a time. See [Queues](#queues).
 - Its handler is safe to run more than once. See [Scheduling](#scheduling) and
