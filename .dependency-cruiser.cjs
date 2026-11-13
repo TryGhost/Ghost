@@ -139,7 +139,7 @@ const serviceDependencyDecisions = {
   // client is counted here too, without a pattern.
   importForm: [
     '^lodash$', // Import individual functions, such as lodash/isEmpty.
-    '^moment(-timezone)?$', // Use the kernel clock, which exports moment for existing date logic.
+    '^(moment(-timezone)?|luxon|temporal-polyfill|chrono-node)$', // Dates and times go through the kernel clock, which exports moment for existing date logic.
     '^(node:)?fs(/promises)?$|^fs-extra$', // The root passes a loader limited to the files needed.
   ],
 };
