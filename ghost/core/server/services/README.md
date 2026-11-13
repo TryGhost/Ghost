@@ -515,10 +515,11 @@ entry applies the rule to that root. The separate inventory test requires
 declared extras names to match the catalogue exactly. Behavioural tests still establish readiness,
 boot ordering, resource cleanup and each extra's semantics.
 
-An inline `oxlint-disable` comment switches these rules off for a line, as it
-does any rule. No root or `boot.js` has one. Nothing but review stops one, so
-treat it as an exception: give the reason in the comment and expect it to be
-questioned.
+An inline `oxlint-disable` or `eslint-disable` comment switches these rules off
+for a line, as it does any rule. Nothing disables `ghost/service-root-shape`,
+`ghost/no-injected-service-libraries` or `ghost/boot-awaits-service-init` today.
+Nothing but review stops one, so treat it as an exception: give the reason in
+the comment and expect it to be questioned.
 
 ## Initialization
 
