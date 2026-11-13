@@ -225,7 +225,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       });
       process.stdout.write(`Created:\n${files.map((file) => `  ${file}`).join('\n')}\n
 Lint, boundary lint and the inventory test already check it: a service needs
-no inventory entry or lint registration.
+no inventory entry or lint registration. Lint fails until boot awaits its init().
 
 ${nextSteps(name)}
 See ghost/core/server/services/README.md for the service contract.\n`);

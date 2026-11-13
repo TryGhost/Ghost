@@ -241,6 +241,12 @@
       }
     },
     {
+      "files": ["ghost/core/boot.js"],
+      "rules": {
+        "ghost/boot-awaits-service-init": "error"
+      }
+    },
+    {
       "files": ["ghost/core/server/services/**/*.{js,ts}"],
       "plugins": ["import"],
       "rules": {

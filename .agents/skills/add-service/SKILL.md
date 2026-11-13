@@ -82,8 +82,9 @@ The generator leaves [boot.js](../../../ghost/core/boot.js) to you.
   await deliveryReceipts.init();
   ```
 
-  `gx services verify` finds the call through that binding. It does not
-  recognise the inline `await require(...).default.init()`.
+  `pnpm lint:oxlint` and `gx services verify` find the call through that
+  binding. Lint fails until it is there, and neither recognises the inline
+  `await require(...).default.init()`.
 
 - **Comments.** Replace the generated comment above `defineService` with what
   `create` needs ready. Where the order matters, say why beside the call in
@@ -124,7 +125,8 @@ pnpm lint:boundaries
 pnpm check
 ```
 
-`pnpm lint:oxlint` applies `ghost/service-root-shape` to the root.
+`pnpm lint:oxlint` applies `ghost/service-root-shape` to the root and
+`ghost/boot-awaits-service-init` to `boot.js`.
 `pnpm lint:boundaries` checks the implementation's imports. The inventory test
 checks the directory has an `index.ts` root and that extras match the catalogue.
 

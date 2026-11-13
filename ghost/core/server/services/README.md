@@ -95,8 +95,8 @@ Complete the steps printed by the command:
    after its dependencies are ready and before its consumers run, on its own or
    inside the phase's awaited `Promise.all`. Document those requirements above
    `defineService`. Consumers read `.service` after initialization. Keep this
-   form: `gx services verify` finds the call through the binding, not through
-   an inline `require(...).default.init()`.
+   form: `pnpm lint:oxlint` and `gx services verify` find the call through the
+   binding, not through an inline `require(...).default.init()`.
 
 3. Add the root to that phase's test in `ghost/test/unit/boot/`. Hold `init()`
    pending and assert boot does not move on, then assert that its rejection
@@ -505,6 +505,13 @@ default-export the
 and have its `init()` awaited from `ghost/core/boot.js` in the appropriate boot
 phase. Existing legacy roots keep their shape until migrated. Do not make the
 first request responsible for constructing the service.
+
+The Oxlint rule `ghost/boot-awaits-service-init` checks this in `boot.js`. Every
+service that is not legacy must be bound there and have its `init()` awaited as
+a statement of a boot phase that `bootGhost` awaits, on its own or inside an
+awaited `Promise.all`. A new service directory fails lint until boot awaits it.
+The rule reads source only, so it cannot tell whether the order is right; the
+boot tests cover that.
 
 With `defineService`, the service author supplies a `create` callback that constructs and returns a
 ready instance. Boot awaits the root's `init()`; consumers then read `.service`.
