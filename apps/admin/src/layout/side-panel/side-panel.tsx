@@ -3,6 +3,10 @@ import { cn } from '@tryghost/shade/utils';
 import { type SidePanelSize, sidePanelStore } from './side-panel-store';
 import { useSidePanel } from './use-side-panel';
 
+// How long the panel takes to expand or collapse, in milliseconds: longer than
+// it takes to open or close, as it crosses most of the page
+const RESIZE_DURATION = 300;
+
 // At its default size the panel is as wide as the navigation across the page from it
 const DEFAULT_WIDTH = 'w-(--side-panel-navigation-width)';
 
@@ -34,6 +38,72 @@ export function SidePanel({ visible, framed, locked }: SidePanelProps) {
   React.useLayoutEffect(() => {
     sidePanelStore.setAvailable(visible);
   }, [visible]);
+
+  // The panel animates when it's opened, closed or resized, and not when a
+  // route hides or shows it. A screen change has a transition of its own, and
+  // the page beside the panel would otherwise be laid out again on every
+  // frame of the panel's: the editor opens at its full width, as it does with
+  // the panel closed. Reading the width while transitions are off settles it
+  // there, so none starts once they're back on.
+  const lastVisible = React.useRef(visible);
+  React.useLayoutEffect(() => {
+    const region = regionRef.current;
+    if (!region || lastVisible.current === visible) {
+      return;
+    }
+    lastVisible.current = visible;
+    region.style.transition = 'none';
+    void region.offsetWidth;
+    region.style.transition = '';
+  }, [visible]);
+
+  // Expanding and collapsing cover most of the page, so they take longer than
+  // opening and closing, on the same easing. The content doesn't follow the panel's edge, which
+  // would lay it out again on every frame: it takes its new width at once,
+  // against the right edge, and fades in as the panel uncovers or leaves it.
+  const lastSize = React.useRef(state.size);
+  React.useLayoutEffect(() => {
+    const region = regionRef.current;
+    const content = contentRef.current;
+    if (!region || !content || lastSize.current === state.size) {
+      return;
+    }
+    lastSize.current = state.size;
+    if (!shown || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+    // Before anything reads the panel's styles, which starts its transition
+    region.style.transitionDuration = `${RESIZE_DURATION}ms`;
+    if (state.size === 'full') {
+      // The width the panel is growing to: the row it's in, less the
+      // navigation's width and the bezel beside the panel
+      const style = getComputedStyle(region);
+      const width =
+        (region.parentElement?.clientWidth ?? 0) -
+        parseFloat(style.getPropertyValue('--side-panel-navigation-width')) -
+        parseFloat(style.marginLeft);
+      if (width > 0) {
+        content.style.width = `${width}px`;
+      }
+    }
+    const fade =
+      typeof content.animate === 'function'
+        ? content.animate([{ opacity: 0 }, { opacity: 1 }], {
+            duration: RESIZE_DURATION / 2,
+            easing: 'ease-out',
+          })
+        : null;
+    const settle = () => {
+      region.style.transitionDuration = '';
+      content.style.width = '';
+    };
+    const timer = window.setTimeout(settle, RESIZE_DURATION + 50);
+    return () => {
+      window.clearTimeout(timer);
+      settle();
+      fade?.cancel();
+    };
+  }, [state.size, shown]);
 
   // The layout can swap this panel for a new one, e.g. when the Admin 7 frame
   // appears once the Labs config loads. This cleanup has to run before the new
@@ -110,7 +180,8 @@ export function SidePanel({ visible, framed, locked }: SidePanelProps) {
     <div
       ref={regionRef}
       className={cn(
-        'flex h-full shrink-0 justify-end overflow-hidden bg-background duration-200 ease-out motion-reduce:transition-none',
+        // On the easing the Admin 7 frame opens and closes with
+        'flex h-full shrink-0 justify-end overflow-hidden bg-background duration-200 ease-emphasized motion-reduce:transition-none',
         // Visible as soon as it opens, so it can take focus, and hidden once it has closed
         shown
           ? cn(
@@ -126,8 +197,8 @@ export function SidePanel({ visible, framed, locked }: SidePanelProps) {
       )}
       data-side-panel={shown ? state.size : 'closed'}
     >
-      {/* At its full width while the panel animates, so the content doesn't reflow, and against
-          the right edge, where it ends up as the panel opens, closes or collapses */}
+      {/* At the width it's heading for while the panel animates, so the content doesn't reflow,
+          and against the right edge, where it ends up as the panel opens, closes or resizes */}
       <div
         ref={contentRef}
         className={cn(
