@@ -15,7 +15,7 @@ describe('Retired internal CLI entrypoints', function () {
     );
     fs.writeFileSync(
       path.join(directory, 'core/boot.js'),
-      "module.exports = () => process.stdout.write('SERVER_BOOT\\n');",
+      "module.exports = { bootGhost: () => process.stdout.write('SERVER_BOOT\\n') };",
     );
   });
   afterAll(function () {

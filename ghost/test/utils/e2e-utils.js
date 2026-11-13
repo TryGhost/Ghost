@@ -7,7 +7,7 @@ const os = require('os');
 const crypto = require('crypto');
 
 // Ghost Internals
-const boot = require('../../core/boot');
+const { bootGhost } = require('../../core/boot');
 const models = require('../../core/server/models');
 const settingsService = require('../../core/server/services/settings/settings-service');
 const adapterManager = require('../../core/server/services/adapter-manager').default;
@@ -126,7 +126,7 @@ const _startGhost = async (options) => {
   await settingsService.init();
 
   // Actually boot Ghost
-  ghostServer = await boot({
+  ghostServer = await bootGhost({
     backend: options.backend,
     frontend: options.frontend,
     server: options.server,
