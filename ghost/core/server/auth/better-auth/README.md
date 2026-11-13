@@ -8,12 +8,21 @@ for the design.
 ## Engine
 
 `auth:engine` is `legacy` (default) or `better-auth`. Under `legacy` boot never
-loads Better Auth or reads its tables, so Ghost runs without them. Under
-`better-auth` boot builds the instance after settings and refuses to start on
-SQLite or where in-development tables are off (`createInDevelopmentTables`
-outside development and testing). Boot creates those tables before it builds
-the instance, so the check reads config rather than the database; it becomes a
-real table check, or goes away, when the tables get a migration.
+loads Better Auth, so Ghost runs without its tables. Under `better-auth` boot
+builds the instance after settings and refuses to start on SQLite or without
+`auth:betterAuthDev`.
+
+`auth:betterAuthDev` (default `false`) decides whether Ghost keeps Better
+Auth's data, under either engine: boot seeds credential rows from
+`users.password`. It only applies where the in-development tables exist, and
+boot refuses it elsewhere. It's hidden from generated config docs, and it's an
+opt-in separate from `createInDevelopmentTables` because the published
+`config.development.json` turns that on, and an older Ghost-CLI local install
+runs as development; such an install gets the tables but no copies of its
+password hashes. The testing configs and the monorepo's
+`ghost/config.development.json` turn it on. Boot creates the tables before
+anything reads them, so these checks read config rather than the database; they
+and the flag go away when the tables get a migration.
 
 Under `better-auth` the Admin API serves the handler on `/auth/*`
 (`web/api/endpoints/admin/better-auth.ts`), after the private cache header and ahead of body parsing because
@@ -74,8 +83,9 @@ IPv6 counts per /64, the block a single subscriber usually holds.
   `verifications`, plus the `users` gaps described below.
 - `seed-credential-accounts.ts`: gives each user a `credential` row in
   `user_accounts` with the hash from `users.password` (plan §4.4). Boot runs
-  it wherever the in-development tables are created (development and testing
-  with `createInDevelopmentTables`); it skips users that already have one.
+  it with `auth:betterAuthDev`; it skips users that already have one.
+- `enabled.ts`: `usesBetterAuth()`, which throws where `auth:betterAuthDev`
+  is on without the tables. Boot's seeder calls it, so that fails boot.
 
 ## Tables
 

@@ -129,7 +129,7 @@ describe('createAuth', function () {
     assert.equal(context.options.session?.disableSessionRefresh, true);
   });
 
-  it('disables sign-up, account and password changes, social sign-in and telemetry', async function () {
+  it('disables sign-up, account changes, social sign-in and telemetry', async function () {
     const { options } = await createAuth(deps()).$context;
 
     assert.equal(options.emailAndPassword?.disableSignUp, true);
@@ -207,23 +207,23 @@ describe('createAuth', function () {
 });
 
 describe('assertDatabaseSupported', function () {
-  it('accepts MySQL with the in-development tables', function () {
-    assertDatabaseSupported({ client: 'mysql2', inDevelopmentTables: true });
+  it('accepts MySQL with auth:betterAuthDev', function () {
+    assertDatabaseSupported({ client: 'mysql2', usesBetterAuth: true });
   });
 
   for (const client of ['sqlite3', 'better-sqlite3']) {
     it(`refuses ${client}`, function () {
-      assert.throws(() => assertDatabaseSupported({ client, inDevelopmentTables: true }), {
+      assert.throws(() => assertDatabaseSupported({ client, usesBetterAuth: true }), {
         name: 'IncorrectUsageError',
         message: 'auth:engine better-auth requires MySQL; SQLite is not supported.',
       });
     });
   }
 
-  it('refuses a database without the in-development tables', function () {
-    assert.throws(() => assertDatabaseSupported({ client: 'mysql2', inDevelopmentTables: false }), {
+  it('refuses a database without auth:betterAuthDev', function () {
+    assert.throws(() => assertDatabaseSupported({ client: 'mysql2', usesBetterAuth: false }), {
       name: 'IncorrectUsageError',
-      message: /requires the in-development auth tables/,
+      message: /requires auth:betterAuthDev/,
     });
   });
 });

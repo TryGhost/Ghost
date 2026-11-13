@@ -129,6 +129,10 @@ a number, or assumed a key is always present, stops compiling.
   `GHOST_CONFIG_SCHEMA_STRICT` says. `url` is the only one today; it replaced a
   loader check that had always thrown.
 
+- **Some keys are hidden.** Mark a key `.meta({hidden: true})` when it is for
+  developing Ghost rather than running it, such as a switch for in-development
+  work. A generated reference for self-hosters must leave hidden keys out; the
+  key is still validated like any other.
 - **Nothing may be stricter than the loader already was.** Tightening beyond
   that is its own change, with its own release note.
 - **Adding a key reorders its parent's keys.** `z.looseObject` emits the keys the
