@@ -1,4 +1,7 @@
 import assert from 'assert/strict';
+import { createHeadlessEditor } from '@lexical/headless';
+import { $createToggleNode, ToggleNode } from '@tryghost/kg-default-nodes';
+import { JSDOM } from 'jsdom';
 import * as converter from '../src/index.js';
 import type { SerializedEditorState, SerializedElementNode } from 'lexical';
 
@@ -660,6 +663,69 @@ describe('HTMLtoLexical', function () {
   });
 
   describe('HTML from Lexical cards', function () {
+    it('keeps plain toggle heading and content when importing', function () {
+      const html =
+        '<div class="kg-card kg-toggle-card"><h4 class="kg-toggle-heading-text">Heading</h4><div class="kg-toggle-content">Content</div></div>';
+      const lexical = htmlToLexical(html, options);
+      assert.equal(lexical.root.children.length, 1);
+      const node = lexical.root.children[0];
+      assert.equal(node.type, 'toggle');
+      assert.equal(node.heading, 'Heading');
+      assert.equal(node.content, 'Content');
+    });
+
+    it('preserves rich toggle HTML through render and import', function () {
+      const payload = {
+        heading: 'Read <em>more</em>',
+        content:
+          '<p>Read <a href="https://example.com/doc">documentation</a></p><p><strong>Second</strong> paragraph</p>',
+      };
+      const dom = new JSDOM();
+      try {
+        const editor = createHeadlessEditor({ nodes: [ToggleNode] });
+        let rendered = '';
+        editor.update(
+          () => {
+            const node = $createToggleNode(payload);
+            const { element } = node.exportDOM(editor, { dom });
+            assert.ok(element);
+            rendered = element.outerHTML;
+          },
+          { discrete: true },
+        );
+
+        const lexical = htmlToLexical(rendered, options);
+        assert.equal(lexical.root.children.length, 1);
+        const node = lexical.root.children[0];
+        assert.equal(node.type, 'toggle');
+        assert.equal(node.heading, payload.heading);
+        assert.equal(node.content, payload.content);
+
+        editor.update(
+          () => {
+            const imported = $createToggleNode({
+              heading: node.heading as string,
+              content: node.content as string,
+            });
+            const { element } = imported.exportDOM(editor, { dom });
+            assert.ok(element);
+            rendered = element.outerHTML;
+          },
+          { discrete: true },
+        );
+        const document = new dom.window.DOMParser().parseFromString(rendered, 'text/html');
+        assert.equal(document.querySelector('.kg-toggle-heading-text em')?.textContent, 'more');
+        assert.equal(document.querySelectorAll('.kg-toggle-content p').length, 2);
+        assert.equal(
+          document.querySelector('.kg-toggle-content a')?.getAttribute('href'),
+          'https://example.com/doc',
+        );
+        assert.equal(document.querySelector('.kg-toggle-content strong')?.textContent, 'Second');
+      } finally {
+        dom.window.close();
+      }
+    });
+
     // note: some cards are not intended to convert from html: markdown and email-only cards
     //  this test is to make sure our parser methods do not intercept the cards they are not intended to handle
     it('can convert a post containing one of each card type', function () {
