@@ -510,8 +510,11 @@ The Oxlint rule `ghost/boot-awaits-service-init` checks this in `boot.js`. Every
 service that is not legacy must be bound there and have its `init()` awaited as
 a statement of a boot phase that `bootGhost` awaits, on its own or inside an
 awaited `Promise.all`. A new service directory fails lint until boot awaits it.
-The rule reads source only, so it cannot tell whether the order is right; the
-boot tests cover that.
+The rule reads source only. The
+[standard services boot test](../../../test/unit/boot/standard-services.test.ts)
+runs each phase: for every standard service it holds `init()` pending and checks
+the phase waits, then checks a failed `init()` fails the phase. Neither can tell
+whether the order between services is right; that needs its own boot test.
 
 With `defineService`, the service author supplies a `create` callback that constructs and returns a
 ready instance. Boot awaits the root's `init()`; consumers then read `.service`.
