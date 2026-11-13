@@ -61,9 +61,9 @@ that need resolution without a manager, such as the validation CLI.
 
 ## Service initialization
 
-[`defineService(name, create)`](define-service.ts) gives a service root `init()`
-and a `.service` getter. `name` identifies the service in the error raised when
-it is used before initialization. The `create` callback runs when `init()` is
+[`defineService(name, create)`](define-service.ts) gives a service root `init()`,
+`stop()` and a `.service` getter. `name` identifies the service in the error raised
+when it is used before initialization. The `create` callback runs when `init()` is
 called, not when the service root is declared.
 
 ### Responsibilities
@@ -94,10 +94,45 @@ release those resources: it has no knowledge of the callback's startup work and
 has not received a ready instance. Without cleanup, a retry could leave both the
 failed and successful instances listening for the same event.
 
+A service that acquires resources can leave this cleanup to `defineService` by
+acquiring them in a `start` hook instead.
+
+### Starting and stopping
+
+Pass an object instead of a callback to separate what a service builds once from
+what it acquires on each boot:
+
+```ts
+defineService('Example', {
+  create: () => new ExampleService(dependencies),
+  start: (service) => service.subscribeEvents(),
+  stop: (service) => service.unsubscribeEvents(),
+});
+```
+
+- **`create`** runs once per process. The instance survives `stop()`, so consumers
+  that hold it keep a valid reference.
+- **`start`** runs after `create`, and again on each `init()` that follows a
+  `stop()`. `.service` is unavailable until the first `start` resolves.
+- **`stop`** drains pending work and releases what `start` acquired. `root.stop()`
+  does nothing unless the service is started. `.service` stays readable afterwards.
+
+Call `stop()` only after `init()` has resolved, and `init()` only after a `stop()`
+has resolved. Overlapping the two is not supported.
+
+If `start` fails, `defineService` calls `stop` and rejects `init()` with the
+original error, so `stop` must be safe after a partial `start`. A retry runs
+`start` again without calling `create`. If that cleanup throws, its error
+replaces the original. If `stop` fails, `stop()` rejects and a later `init()`
+still starts the service.
+
+`defineService` does not know when the application stops. Boot connects the two,
+for example by registering `root.stop()` as a server cleanup task. Hooks run with
+no deadline of their own. A root without hooks has a `stop()` that does nothing.
+
 See the [service-author example](../server/services/README.md#initialization)
-for IndexNow's partial-subscription cleanup and its test. This failure handling
-is separate from normal shutdown. Shutdown and background job registration
-remain with their existing owners; `defineService` does not provide those hooks.
+for IndexNow's hooks and their tests. Background job registration remains with its
+existing owners; `defineService` does not provide that hook.
 
 ### Transitional extras
 
@@ -109,7 +144,7 @@ example.extras.isAvailable();
 ```
 
 The supplied object and its member types are retained. Without that argument the
-root exposes only `init` and `service`. The helper never invokes extras or assigns
+root exposes only `init`, `stop` and `service`. The helper never invokes extras or assigns
 them lifecycle meaning. They do not change readiness, initialization retries or
 resource ownership; each caller must respect the extra's documented timing.
 

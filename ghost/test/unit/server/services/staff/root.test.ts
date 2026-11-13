@@ -105,10 +105,10 @@ describe('Staff service root', function () {
   }
 
   describe('exports and initialization', function () {
-    it('default-exports a root with only init and a service getter that throws until init resolves', async function () {
+    it('default-exports a root with only init, stop and a service getter that throws until init resolves', async function () {
       assert.deepEqual(Object.keys(require(STAFF_PATH)), ['default']);
       const root = createRoot();
-      assert.deepEqual(Object.keys(root), ['init', 'service']);
+      assert.deepEqual(Object.keys(root), ['init', 'stop', 'service']);
       assert.throws(() => root.service, BEFORE_INIT);
 
       const initialization = root.init();

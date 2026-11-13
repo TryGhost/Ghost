@@ -86,9 +86,9 @@ Complete the steps printed by the command:
    in `ghost/core/boot.js`, after its dependencies are ready and before its
    consumers run. Document those requirements above `defineService`. Consumers
    read `.service` after initialization.
-3. Await required startup work before returning the instance. If startup can
-   fail after acquiring resources, clean them up before rethrowing. Arrange
-   normal shutdown separately when needed.
+3. Await required startup work before returning the instance. If the service
+   owns listeners, timers or work to drain, acquire and release them in
+   [`start` and `stop` hooks](#starting-and-stopping).
 4. Extend the starter test with behavior, dependency timing, and failure/retry
    coverage. If the root declares extras, [catalogue them](#standard-root-contract).
 5. Run the generated root test and the repository checks:
@@ -425,7 +425,7 @@ because boot still uses `require()`.
 ## Standard root contract
 
 Every root that is not a legacy service default-exports a `defineService`
-initializer with `init`, a guarded `service` getter, and optional typed `extras`. Type-only named
+initializer with `init`, `stop`, a guarded `service` getter, and optional typed `extras`. Type-only named
 exports are allowed; other runtime exports belong in `extras` during migration.
 Implementation files may still export their classes and supporting contracts.
 
@@ -505,38 +505,51 @@ example, recommendations reads the Mentions root during `create`, so boot
 initializes Mentions first. Roots that don't depend on each other can start
 together.
 
-### Failed startup
+### Starting and stopping
 
-If startup fails partway through, the `create` callback must release resources
-it already acquired before passing the error back. The helper cannot remove the
-callback's listeners or close its connections. A retry runs the callback again,
-so resources left by the failed attempt could remain active alongside any new
-instance.
-
-The simplest approach is to acquire resources last, so nothing after them can
-fail. [Mentions](mentions/index.ts) starts listening for events as its final
-step. When that isn't possible, undo the partial work before rethrowing. The
-[IndexNow callback](indexnow-ping/index.ts) removes any partially registered
-listeners before rethrowing a subscription error:
+A service that owns listeners, timers or work to drain passes
+[lifecycle hooks](../../kernel/README.md#starting-and-stopping) instead of a
+callback. `create` builds the instance once per process; `start` and `stop`
+acquire and release what it needs on each boot. [IndexNow](indexnow-ping/index.ts)
+subscribes in `start` and unsubscribes in `stop`:
 
 ```ts
-try {
-  service.subscribeEvents();
-} catch (error) {
-  service.unsubscribeEvents();
-  throw error;
-}
-return service;
+export default defineService('IndexNow', {
+  create: () => new IndexNowPingService(dependencies),
+  start: (service) => service.subscribeEvents(),
+  stop: (service) => service.unsubscribeEvents(),
+});
 ```
 
-Its [startup test](../../../test/unit/server/services/indexnow-ping/index.test.ts)
-checks that failure removes only that attempt's listeners and that a later
-`init()` succeeds without duplicate subscriptions. Cover the equivalent failure
-and retry behavior when a callback acquires resources.
+Boot registers `stop()` with the server beside the root's `init()`:
+
+```js
+ghostServer.registerCleanupTask(() => indexnow.stop(), 'IndexNow');
+```
+
+Cleanup tasks run together after the HTTP server has drained. Tests stop and boot
+Ghost again in one process, so the next `init()` runs `start` on the same
+instance. Anything `stop` releases must therefore be acquired in `start`, not in
+`create`.
+
+### Failed startup
+
+If `start` fails, `defineService` calls `stop` before rejecting, so `stop` must
+be safe after a partial `start`. IndexNow's
+[root test](../../../test/unit/server/services/indexnow-ping/index.test.ts)
+checks that a failed subscription removes only that attempt's listeners, that a
+later `init()` succeeds without duplicates, and that `stop()` followed by
+`init()` delivers each event once. Cover the equivalent behavior when a root
+has hooks.
+
+The helper cannot clean up after `create`. If `create` acquires resources and
+then fails, it must release them before passing the error back, because a retry
+runs it again. Prefer acquiring them in `start`. Otherwise acquire them last, so
+nothing after them can fail, as [Mentions](mentions/index.ts) does when it
+starts listening for events as its final step.
 
 Keep wrapper initialization idempotent when callers may safely reach it more
-than once. Arrange normal shutdown separately through the boot lifecycle when
-the service owns resources that must be released.
+than once.
 
 ## Related guidance
 

@@ -143,8 +143,8 @@ describe('Member welcome emails root', function () {
   }
 
   describe('initialization', function () {
-    it('exposes only init and a guarded service getter', function () {
-      assert.deepEqual(Object.keys(root).sort(), ['init', 'service']);
+    it('exposes only init, stop and a guarded service getter', function () {
+      assert.deepEqual(Object.keys(root).sort(), ['init', 'service', 'stop']);
       assert.equal(typeof root.init, 'function');
       assert.throws(() => root.service, {
         errorType: 'IncorrectUsageError',
