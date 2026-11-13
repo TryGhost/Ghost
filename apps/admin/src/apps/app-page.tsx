@@ -35,6 +35,7 @@ import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-time
 import { editorReturnState } from '@/editor/api';
 import { usePageTitle } from '@/hooks/use-document-title';
 import { useThemeContext } from '@/providers/theme-context';
+import { WithAppFooter } from './components/app-footer';
 import { AppsGate } from './components/apps-gate';
 import { InstallDialog, type InstallDone } from './components/install-dialog/install-dialog';
 import { createAppFrameSession } from './lib/app-frame-session';
@@ -47,6 +48,7 @@ import {
 } from './lib/app-path';
 import { createAdminApiFetch } from './lib/bridge-fetch';
 import { placeRoute } from './lib/bridge-places';
+import { supportLink } from './lib/developer';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostHost } from './lib/frame';
 import { isInstallationNotFound, sessionFailureOf, type SessionFailure } from './lib/not-found';
 import { reportAppsError } from './lib/report-error';
@@ -62,6 +64,22 @@ const Centered: React.FC<{ children: React.ReactNode; testId?: string }> = ({
   </div>
 );
 
+/** How a publisher reaches the developer from a screen where the app couldn't open. */
+const ContactSupport: React.FC<{ manifest: AppInstallation['manifest'] }> = ({ manifest }) => {
+  const support = supportLink(manifest);
+  return (
+    <Button variant="outline" asChild>
+      <a
+        href={support.href}
+        rel="noopener noreferrer"
+        target={support.opensPage ? '_blank' : undefined}
+      >
+        Contact support
+      </a>
+    </Button>
+  );
+};
+
 const NotResponding: React.FC<{
   installation: AppInstallation;
   startedAt: Date;
@@ -72,9 +90,7 @@ const NotResponding: React.FC<{
       <EmptyIndicator
         actions={
           <>
-            <Button variant="outline" asChild>
-              <Link to="/apps">Back to Apps</Link>
-            </Button>
+            <ContactSupport manifest={installation.manifest} />
             <Button onClick={onRetry}>Try again</Button>
           </>
         }
@@ -97,15 +113,19 @@ const NotResponding: React.FC<{
  * There's no Uninstall here. When Ghost couldn't confirm the app, uninstalling it and installing
  * it again from a link is the one way another developer's key gets pinned, so the screen sends the
  * publisher to the developer instead. Uninstall stays on the app's details page.
+ *
+ * Nor is there a Contact support link then. The developer's link often lives on the app's own
+ * origin, which is the one Ghost couldn't confirm, so the screen offers Back to Apps.
  */
 const Unavailable: React.FC<{
   installationId: string;
   failure: SessionFailure;
   onRetry: () => void;
 }> = ({ installationId, failure, onRetry }) => {
-  const { data } = useBrowseAppInstallations({ defaultErrorHandler: false });
+  const { data, isLoading } = useBrowseAppInstallations({ defaultErrorHandler: false });
   const installation = data?.app_installations.find(({ id }) => id === installationId);
   const name = installation?.manifest.name ?? 'This app';
+  const offersSupport = !failure.unconfirmed;
   const at = installation ? ` at ${servedFrom(installation.manifest)}` : '';
   const explanation = failure.unconfirmed
     ? `Ghost couldn’t confirm the app${at} is the one you installed. Contact its developer, and don’t install it again from a link until they’ve fixed it. Your site isn’t affected.`
@@ -115,9 +135,18 @@ const Unavailable: React.FC<{
       <EmptyIndicator
         actions={
           <>
-            <Button variant="outline" asChild>
-              <Link to="/apps">Back to Apps</Link>
-            </Button>
+            {/* Held in place until the list arrives, so no button changes or moves under the cursor. */}
+            {offersSupport && isLoading ? (
+              <Button className="invisible" tabIndex={-1} variant="outline" aria-hidden>
+                Contact support
+              </Button>
+            ) : offersSupport && installation ? (
+              <ContactSupport manifest={installation.manifest} />
+            ) : (
+              <Button variant="outline" asChild>
+                <Link to="/apps">Back to Apps</Link>
+              </Button>
+            )}
             <Button onClick={onRetry}>Try again</Button>
           </>
         }
@@ -302,28 +331,30 @@ const AppFrame: React.FC<{
   }
 
   return (
-    <div className="relative size-full">
-      {status === 'loading' && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <LoadingIndicator size="lg" />
-        </div>
-      )}
-      <iframe
-        key={attempt}
-        ref={frameSession.attach}
-        allow={APP_FRAME_ALLOW}
-        aria-hidden={status !== 'ready'}
-        // Hidden, not transparent: a frame that's still loading mustn't take focus or clicks.
-        // A block, with no border: inline, the frame would sit on the text baseline and
-        // leave a gap under itself for the page to scroll.
-        className={cn('block size-full border-0', status !== 'ready' && 'invisible')}
-        data-testid="app-frame"
-        referrerPolicy="strict-origin-when-cross-origin"
-        sandbox={APP_FRAME_SANDBOX}
-        src={frameSource.src}
-        title={manifest.name}
-      />
-    </div>
+    <WithAppFooter app={installation}>
+      <div className="relative size-full">
+        {status === 'loading' && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <LoadingIndicator size="lg" />
+          </div>
+        )}
+        <iframe
+          key={attempt}
+          ref={frameSession.attach}
+          allow={APP_FRAME_ALLOW}
+          aria-hidden={status !== 'ready'}
+          // Hidden, not transparent: a frame that's still loading mustn't take focus or clicks.
+          // A block, with no border: inline, the frame would sit on the text baseline and
+          // leave a gap under itself for the page to scroll.
+          className={cn('block size-full border-0', status !== 'ready' && 'invisible')}
+          data-testid="app-frame"
+          referrerPolicy="strict-origin-when-cross-origin"
+          sandbox={APP_FRAME_SANDBOX}
+          src={frameSource.src}
+          title={manifest.name}
+        />
+      </div>
+    </WithAppFooter>
   );
 };
 
@@ -389,23 +420,29 @@ const ActiveApp: React.FC<{ session: AppSession; onEnded: () => void }> = ({
       };
     }
     return (
-      <Centered>
-        {failure ? (
-          <Stack align="center" gap="md">
-            <Text tone="secondary">{failure.message}</Text>
-            <Button variant="outline" onClick={() => void failure.retry()}>
-              Retry
-            </Button>
-          </Stack>
-        ) : (
-          <LoadingIndicator size="md" />
-        )}
-      </Centered>
+      <WithAppFooter app={installation}>
+        <Centered>
+          {failure ? (
+            <Stack align="center" gap="md">
+              <Text tone="secondary">{failure.message}</Text>
+              <Button variant="outline" onClick={() => void failure.retry()}>
+                Retry
+              </Button>
+            </Stack>
+          ) : (
+            <LoadingIndicator size="md" />
+          )}
+        </Centered>
+      </WithAppFooter>
     );
   }
   const ghostUrls = [window.location.href, site.data.site.url];
   if (isGhostHost(appPageUrl(installation.manifest), ghostUrls)) {
-    return <NotFramed installation={installation} />;
+    return (
+      <WithAppFooter app={installation}>
+        <NotFramed installation={installation} />
+      </WithAppFooter>
+    );
   }
   const { settings: values } = settings.data;
   const surfaceOrigin = new URL(appPageUrl(installation.manifest)).origin;
@@ -544,7 +581,11 @@ export const AppPage: React.FC = () => {
   } else if (session && installation?.status === 'active') {
     body = <ActiveApp session={session} onEnded={restart} />;
   } else if (installation?.status === 'suspended') {
-    body = <NeedsApproval installation={installation} onApproved={restart} />;
+    body = (
+      <WithAppFooter app={installation}>
+        <NeedsApproval installation={installation} onApproved={restart} />
+      </WithAppFooter>
+    );
   } else if (failure) {
     body = <Unavailable failure={failure} installationId={installationId} onRetry={restart} />;
   } else if (error && !notFound) {
@@ -563,9 +604,9 @@ export const AppPage: React.FC = () => {
     body = <NotInstalled />;
   }
 
-  // Ghost keeps only the nav; the rest is the app's, edge to edge. Like Admin's own screens,
-  // the app brings its page gutter (Shade's page templates do), so it can bleed a sticky
-  // header or a scrolling row to the edge.
+  // Ghost keeps the nav and the footer; the rest is the app's, edge to edge. Only the frame
+  // scrolls, so the footer stays in view. Like Admin's own screens, the app brings its page gutter
+  // (Shade's page templates do), so it can bleed a sticky header or a scrolling row to the edge.
   return (
     <div className="size-full" data-testid="app-page">
       {body}

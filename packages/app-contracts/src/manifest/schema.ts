@@ -8,6 +8,7 @@ import { surfacesField } from './surfaces.ts';
 import { plainText, storedText } from './text.ts';
 import {
   absoluteUrl,
+  contactField,
   FRAGMENT_PROBLEM,
   hasFragment,
   urlField,
@@ -44,9 +45,10 @@ const parsedFields =
  * Defined once, with the URL and text rules left open. What a valid URL is depends on whether
  * the manifest is being parsed, when where Ghost is served from matters, or read back after it
  * was, when it doesn't. Text is held to today's rules when parsed, and read back under the
- * rules it was stored under.
+ * rules it was stored under. The author's link is held to its own rule when parsed, which
+ * allows a mailto: link, and read back as any absolute URL.
  */
-function manifestShape(url: UrlField, text: typeof plainText) {
+function manifestShape(url: UrlField, text: typeof plainText, contact: UrlField) {
   return (
     z
       .strictObject({
@@ -58,8 +60,9 @@ function manifestShape(url: UrlField, text: typeof plainText) {
         author: z.strictObject(
           {
             name: text(AUTHOR_NAME_MAX_LENGTH),
-            // Only ever linked to, so it may point at the publisher's own site.
-            url: url(true),
+            // Where publishers reach the developer: a web page, which may be on the publisher's
+            // own site, or a mailto: link. Only ever linked to.
+            url: contact(),
           },
           'Expected an author with a name and a url',
         ),
@@ -107,7 +110,8 @@ function manifestShape(url: UrlField, text: typeof plainText) {
 
 /** The manifest as an app serves it. Built per parse, as its URL rule depends on the parse. */
 export function manifestSchema(rules: UrlRules) {
-  return manifestShape((linkOnly) => urlField(rules, linkOnly), plainText);
+  const url: UrlField = (linkOnly) => urlField(rules, linkOnly);
+  return manifestShape(url, plainText, () => contactField(url));
 }
 
 /**
@@ -116,7 +120,7 @@ export function manifestSchema(rules: UrlRules) {
  * whatever the site's URL has become since, and it encodes a manifest back to the same
  * shape, so what is stored is what will be read.
  */
-export const AppManifestSchema = manifestShape(absoluteUrl, storedText);
+export const AppManifestSchema = manifestShape(absoluteUrl, storedText, absoluteUrl);
 
 /**
  * A parsed manifest. Every URL in it is absolute, and a surface's origin is the only one
