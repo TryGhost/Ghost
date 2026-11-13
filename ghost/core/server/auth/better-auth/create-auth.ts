@@ -41,6 +41,8 @@ export type CreateAuthDeps = {
   limiters: Limiters;
   /** Emails a legacy password reset link; a locked user's sign-in sends one */
   sendPasswordResetEmail(email: string): Promise<void>;
+  /** `security:staffDeviceVerification`, read per session so config changes apply */
+  isStaffDeviceVerificationEnabled(): boolean;
 };
 
 /**
@@ -194,6 +196,18 @@ export function createAuth(deps: CreateAuthDeps) {
           return ctx.json(stripSessionTokens(returned) as Record<string, unknown>);
         }
       }),
+    },
+    databaseHooks: {
+      session: {
+        create: {
+          // As legacy: with device verification off, every session is verified
+          async before() {
+            if (!deps.isStaffDeviceVerificationEnabled()) {
+              return { data: { verified: true } };
+            }
+          },
+        },
+      },
     },
     plugins: [ghostStaffLifecycle({ sendPasswordResetEmail: deps.sendPasswordResetEmail })],
     telemetry: { enabled: false },

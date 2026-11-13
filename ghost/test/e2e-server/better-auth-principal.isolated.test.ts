@@ -45,6 +45,8 @@ describe.skipIf(isSQLite)('Admin API session principal under auth:engine better-
     configUtils.set('createInDevelopmentTables', true);
     configUtils.set('url', `${siteOrigin}/`);
     configUtils.set('admin:url', `${adminOrigin}/`);
+    // Native sign-in then starts unverified; each test sets the state it needs
+    configUtils.set('security:staffDeviceVerification', true);
 
     app = await startGhost({ backend: true, frontend: false, server: false });
     await fixtureManager.init('users');
