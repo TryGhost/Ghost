@@ -20,7 +20,7 @@
     "../packages/adapters/storage-base/src",
     "../packages/admin-api-schema/src",
     "../packages/api-framework/src",
-    "../packages/app-contracts/src",
+    "../contracts/app-contracts/src",
     "../packages/checkout/src",
     "../packages/i18n/src",
     "../packages/image-transform/src",

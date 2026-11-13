@@ -1433,7 +1433,7 @@ it('fails instead of passing when Git cannot list the tracked files', (t) => {
 });
 
 it('resolves the approved workspace export to source without a build and keeps other exports restricted', (t) => {
-  const contract = 'packages/app-contracts';
+  const contract = 'contracts/app-contracts';
   const manifest = `${contract}/src/manifest/index.ts`;
   const f = fixture(t, {
     [`${alpha}/implementation.ts`]: `

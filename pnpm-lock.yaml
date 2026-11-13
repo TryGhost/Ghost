@@ -1082,7 +1082,7 @@ importers:
         version: link:../admin-x-framework
       '@tryghost/app-contracts':
         specifier: workspace:*
-        version: link:../../packages/app-contracts
+        version: link:../../contracts/app-contracts
       '@tryghost/checkout':
         specifier: workspace:*
         version: link:../../packages/checkout
@@ -1351,7 +1351,7 @@ importers:
         version: link:../../packages/adapters/upgrade-base
       '@tryghost/app-contracts':
         specifier: workspace:*
-        version: link:../../packages/app-contracts
+        version: link:../../contracts/app-contracts
       '@tryghost/checkout':
         specifier: workspace:*
         version: link:../../packages/checkout
@@ -2029,6 +2029,43 @@ importers:
         specifier: 'catalog:'
         version: 4.1.12(@opentelemetry/api@1.9.1)(@types/node@22.20.5)(@vitest/browser-playwright@4.1.12)(@vitest/coverage-v8@4.1.12)(@vitest/ui@4.1.12)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.5)(@typescript/typescript6@6.0.2))(vite@8.1.6(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
 
+  contracts/app-contracts:
+    dependencies:
+      jose:
+        specifier: 'catalog:'
+        version: 6.2.17
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@internal/cfg-eslint':
+        specifier: workspace:*
+        version: link:../../tools/configs/eslint
+      '@internal/cfg-typescript':
+        specifier: workspace:*
+        version: link:../../tools/configs/typescript
+      '@internal/cfg-vitest':
+        specifier: workspace:*
+        version: link:../../tools/configs/vitest
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.5
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 4.1.12(@vitest/browser@4.1.12)(vitest@4.1.12)
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.12(@opentelemetry/api@1.9.1)(@types/node@22.20.5)(@vitest/browser-playwright@4.1.12)(@vitest/coverage-v8@4.1.12)(@vitest/ui@4.1.12)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.5)(@typescript/typescript6@6.0.2))(vite@8.1.6(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
+
   contracts/metafield-types:
     dependencies:
       libphonenumber-js:
@@ -2199,7 +2236,7 @@ importers:
         version: link:../packages/api-framework
       '@tryghost/app-contracts':
         specifier: workspace:*
-        version: link:../packages/app-contracts
+        version: link:../contracts/app-contracts
       '@tryghost/bookshelf-plugins':
         specifier: 2.3.23
         version: 2.3.23(supports-color@10.2.2)
@@ -4026,43 +4063,6 @@ importers:
         specifier: 'catalog:'
         version: 4.1.12(@opentelemetry/api@1.9.1)(@types/node@22.20.5)(@vitest/browser-playwright@4.1.12)(@vitest/coverage-v8@4.1.12)(@vitest/ui@4.1.12)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.5)(@typescript/typescript6@6.0.2))(vite@8.1.6(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
 
-  packages/app-contracts:
-    dependencies:
-      jose:
-        specifier: 'catalog:'
-        version: 6.2.17
-      zod:
-        specifier: 'catalog:'
-        version: 4.6.7
-    devDependencies:
-      '@internal/cfg-eslint':
-        specifier: workspace:*
-        version: link:../../tools/configs/eslint
-      '@internal/cfg-typescript':
-        specifier: workspace:*
-        version: link:../../tools/configs/typescript
-      '@internal/cfg-vitest':
-        specifier: workspace:*
-        version: link:../../tools/configs/vitest
-      '@types/node':
-        specifier: 'catalog:'
-        version: 22.20.5
-      '@typescript/native':
-        specifier: 'catalog:'
-        version: typescript@7.0.2
-      '@vitest/coverage-v8':
-        specifier: 'catalog:'
-        version: 4.1.12(@vitest/browser@4.1.12)(vitest@4.1.12)
-      eslint:
-        specifier: 'catalog:'
-        version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
-      typescript:
-        specifier: 'catalog:'
-        version: '@typescript/typescript6@6.0.2'
-      vitest:
-        specifier: 'catalog:'
-        version: 4.1.12(@opentelemetry/api@1.9.1)(@types/node@22.20.5)(@vitest/browser-playwright@4.1.12)(@vitest/coverage-v8@4.1.12)(@vitest/ui@4.1.12)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.5)(@typescript/typescript6@6.0.2))(vite@8.1.6(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
-
   packages/app-sdk:
     dependencies:
       '@quilted/threads':
@@ -4089,7 +4089,7 @@ importers:
         version: link:../../tools/configs/vitest
       '@tryghost/app-contracts':
         specifier: workspace:*
-        version: link:../app-contracts
+        version: link:../../contracts/app-contracts
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.5

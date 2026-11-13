@@ -4,7 +4,7 @@ The contracts between Ghost and apps: formats, types and validation shared by
 Ghost core and admin
 
 This is an internal workspace package. See the
-[internal package golden path](../README.md) for its standing architecture and
+[internal package golden path](../../packages/README.md) for its standing architecture and
 maintenance rules.
 
 Apps run on their developer's own servers and show up inside Ghost. Everything

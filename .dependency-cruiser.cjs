@@ -24,8 +24,8 @@ const serviceDependencyAllowlist = [
   '(^|/)node_modules/@tryghost/security/|^@tryghost/security$', // Token, URL and password primitives; no application instances.
   '(^|/)node_modules/zod/|^zod$', // Schema construction and validation.
   '(^|/)node_modules/bson-objectid/|^bson-objectid$', // ObjectId generation and conversion.
-  '^@tryghost/app-contracts/manifest$|^packages/app-contracts/(src|build)/manifest/index\\.(ts|js)$', // Shared manifest schemas and validation.
-  '^@tryghost/app-contracts/identity$|^packages/app-contracts/(src|build)/identity/index\\.(ts|js)$', // Signed-manifest and challenge formats, signing and verification.
+  '^@tryghost/app-contracts/manifest$|^contracts/app-contracts/(src|build)/manifest/index\\.(ts|js)$', // Shared manifest schemas and validation.
+  '^@tryghost/app-contracts/identity$|^contracts/app-contracts/(src|build)/identity/index\\.(ts|js)$', // Signed-manifest and challenge formats, signing and verification.
   '^@tryghost/adapter-base-upgrade$|^packages/adapters/upgrade-base/(src|build)/index\\.(ts|js)$', // Upgrade adapter contract schemas and error class.
   '^@tryghost/checkout$|^packages/checkout/(src|build)/index\\.(ts|js)$', // Measured Stripe Checkout countries, ports and fonts shared with Admin; no application instances.
   '^@tryghost/parse-email-address(/mailbox)?$|^packages/parse-email-address/(src|build)/(index|mailbox)\\.(ts|js)$', // Email address and mailbox parsing and formatting; no sender policy or application instances.

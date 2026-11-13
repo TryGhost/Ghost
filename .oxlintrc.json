@@ -56,7 +56,7 @@
       "excludeFiles": ["apps/admin/src/**/*.test.*"]
     },
     {
-      "files": ["packages/app-sdk/**/*.ts", "packages/app-contracts/**/*.ts"],
+      "files": ["packages/app-sdk/**/*.ts", "contracts/app-contracts/**/*.ts"],
       "plugins": ["unicorn"],
       "rules": {
         "unicorn/prefer-node-protocol": "error"
@@ -95,8 +95,8 @@
         "packages/admin-api-schema/src/**/*.ts",
         "packages/admin-api-schema/test/**/*.ts",
         "packages/api-framework/src/**/*.ts",
-        "packages/app-contracts/src/**/*.ts",
-        "packages/app-contracts/test/**/*.ts",
+        "contracts/app-contracts/src/**/*.ts",
+        "contracts/app-contracts/test/**/*.ts",
         "packages/checkout/src/**/*.ts",
         "packages/checkout/test/**/*.ts",
         "packages/i18n/src/**/*.ts",
@@ -326,7 +326,7 @@
     "packages/adapters/storage-base/build/**/*",
     "packages/admin-api-schema/build/**/*",
     "packages/api-framework/build/**/*",
-    "packages/app-contracts/build/**/*",
+    "contracts/app-contracts/build/**/*",
     "packages/checkout/build/**/*",
     "packages/i18n/build/**/*",
     "packages/image-transform/build/**/*",
