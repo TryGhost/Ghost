@@ -7,11 +7,11 @@
   background: transparent;
   box-shadow: inset 0 0 0 1px rgba(124, 139, 154, 0.25);
   border-radius: 4px;
-  padding: 1.2em;
 }
 
 .kg-toggle-card[data-kg-toggle-state='close'] .kg-toggle-content {
   height: 0;
+  padding-bottom: 0;
   overflow: hidden;
   transition:
     opacity 0.5s ease,
@@ -22,6 +22,7 @@
 }
 
 .kg-toggle-content {
+  padding: 0 1.2em 1.2em;
   height: auto;
   opacity: 1;
   transition:
@@ -36,6 +37,9 @@
 }
 
 .kg-toggle-heading {
+  position: relative;
+  z-index: 1;
+  padding: 1.2em;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
@@ -50,10 +54,6 @@
   margin-bottom: 0;
 }
 
-.kg-toggle-content p:first-of-type {
-  margin-top: 0.5em;
-}
-
 .kg-toggle-card .kg-toggle-content p,
 .kg-toggle-card .kg-toggle-content ol,
 .kg-toggle-card .kg-toggle-content ul {
@@ -61,6 +61,10 @@
   line-height: 1.5em;
   margin-top: 0.95em;
   margin-bottom: 0;
+}
+
+.kg-toggle-card .kg-toggle-content > :first-child {
+  margin-top: 0;
 }
 
 .kg-toggle-card li + li {
