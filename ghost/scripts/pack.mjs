@@ -41,6 +41,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import yaml from 'js-yaml';
 import { prune, reportPrune } from './prune.mts';
+import { loadArchiveWorkspace } from './archive-workspace.mts';
 
 const execFileAsync = promisify(execFile);
 
@@ -100,7 +101,7 @@ function parsePackJson(output) {
 // packageManager is required by corepack and verified by CI release checks.
 const [rootPkg, rootWorkspace] = await Promise.all([
   readJson(path.join(ROOT_DIR, 'package.json')),
-  readYaml(path.join(ROOT_DIR, 'pnpm-workspace.yaml')),
+  loadArchiveWorkspace(ROOT_DIR),
 ]);
 if (!rootPkg.packageManager) {
   throw new Error('Root package.json is missing required "packageManager" field');
@@ -244,25 +245,7 @@ if (patchSpecs.length > 0) {
 //     supply-chain policies not meaningful at end-user install (the bundled
 //     @tryghost/* component tarballs aren't on npm, so an age check would 404)
 console.log('\nWriting pnpm-workspace.yaml...');
-const buildWorkspace = {};
-for (const key of [
-  'catalog',
-  'catalogs',
-  'allowBuilds',
-  'strictDepBuilds',
-  'overrides',
-  'packageExtensions',
-  'ignoredOptionalDependencies',
-  'patchedDependencies',
-]) {
-  if (rootWorkspace[key] !== undefined) {
-    buildWorkspace[key] = rootWorkspace[key];
-  }
-}
-buildWorkspace.minimumReleaseAge = 0;
-// Root patches can target packages the archive doesn't ship (admin-only deps). The
-// root install still fails on a stale patch, so here it only has to tolerate absence.
-buildWorkspace.allowUnusedPatches = true;
+const buildWorkspace = rootWorkspace;
 
 // Force every component to resolve to its bundled tarball wherever it appears in
 // the graph. pnpm pack rewrote the components' own workspace: specs to registry
