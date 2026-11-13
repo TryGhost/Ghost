@@ -441,7 +441,7 @@ test('CLI groups rejected dependencies by the decisions in the boundary config',
   // A config without the decisions cannot produce a report that calls everything undecided.
   const config = await readFile(join(f.root, '.dependency-cruiser.cjs'), 'utf8');
   const withoutDecisions = config.replace(
-    /\nObject\.defineProperty\(module\.exports[\s\S]*$/,
+    /\nObject\.defineProperties?\(module\.exports[\s\S]*$/,
     '\n',
   );
   assert.notEqual(withoutDecisions, config);
