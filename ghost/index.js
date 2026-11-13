@@ -24,5 +24,5 @@ switch (mode) {
     break;
   }
   default:
-    require('./core/boot')();
+    require('./core/boot').bootGhost();
 }

@@ -19,7 +19,7 @@ const {
   waitForEmailStatus,
 } = require('../utils/batch-email-utils');
 const urlServiceUtils = require('../utils/url-service-utils');
-const boot = require('../../core/boot');
+const { bootGhost } = require('../../core/boot');
 const models = require('../../core/server/models');
 const adapterManager = require('../../core/server/services/adapter-manager').default;
 const settingsService = require('../../core/server/services/settings/settings-service');
@@ -61,7 +61,7 @@ describe('Newsletter sends under failure', function () {
     adapterManager.clearCache();
     urlServiceUtils.resetRouters();
     settingsService.reset();
-    ghostServer = await boot({ backend: true, frontend: false, server: true });
+    ghostServer = await bootGhost({ backend: true, frontend: false, server: true });
     await emailService.service.resumeInterruptedSends();
   }
 
