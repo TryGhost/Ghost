@@ -182,7 +182,8 @@ export function buildServiceReport(
       dependencies: wasAnalyzed
         ? [
             ...new Set(
-              matches.filter((item) => item.rule === 'service-dependencies').map((item) => item.to),
+              // Every rejected dependency has a kind; unresolved and own-root imports do not.
+              matches.filter((item) => item.kind).map((item) => item.to),
             ),
           ].sort()
         : null,
@@ -355,20 +356,27 @@ function details(row: Service) {
   return lines.join('\n');
 }
 
-function frequencies(rows: Service[]) {
-  const targets = new Map<string, { kind: Kind; files: Set<string> }>();
+export function frequencies(rows: Service[]) {
+  // One target can have different kinds in different files, such as a deferral
+  // for one importer, so count each target and kind separately.
+  const targets = new Map<string, { dependency: string; kind: Kind; files: Set<string> }>();
   for (const row of rows) {
     for (const finding of row.findings) {
       if (!finding.kind) {
         continue;
       }
-      const target = targets.get(finding.to) ?? { kind: finding.kind, files: new Set<string>() };
+      const id = JSON.stringify([finding.to, finding.kind]);
+      const target = targets.get(id) ?? {
+        dependency: finding.to,
+        kind: finding.kind,
+        files: new Set<string>(),
+      };
       target.files.add(finding.from);
-      targets.set(finding.to, target);
+      targets.set(id, target);
     }
   }
-  return [...targets]
-    .map(([dependency, { kind, files }]) => ({ dependency, files: files.size, kind }))
+  return [...targets.values()]
+    .map(({ dependency, kind, files }) => ({ dependency, files: files.size, kind }))
     .sort((a, b) => b.files - a.files || a.dependency.localeCompare(b.dependency));
 }
 

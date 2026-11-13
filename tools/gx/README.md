@@ -275,6 +275,8 @@ has gone is counted once:
 - **File deleted:** the file is gone and was not renamed.
 - **Recorded under another rule:** the same import is now recorded under a
   different rule.
+- **Still rejected, not recorded:** the import is still rejected but its entry
+  was removed. Boundary lint should have failed, so these are listed for review.
 
 Entries that pair with none of these are listed as added, for review. Services
 with deferred checks have no entries, so only their current total is shown. The native `audit` counts rule violations, so one import

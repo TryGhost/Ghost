@@ -14,7 +14,10 @@ const entrySchema = z.object({ rule: z.string(), from: z.string(), to: z.string(
 type Entry = z.infer<typeof entrySchema>;
 
 type Dependency = { module: string; resolved: string; dependencyTypes?: string[] };
-type Graph = { modules: Array<{ source: string; dependencies: Dependency[] }> };
+type Graph = {
+  modules: Array<{ source: string; dependencies: Dependency[] }>;
+  summary: { violations: Array<{ from: string; to: string; unresolvedTo?: string }> };
+};
 type Move = { before: Entry; after: Entry; services: [string, string] };
 
 export type Progress = {
@@ -26,6 +29,7 @@ export type Progress = {
   moved: Move[];
   deleted: Entry[];
   ruleChanged: Array<{ before: Entry; after: Entry }>;
+  stillRejected: Entry[];
   added: Entry[];
   deferred: number;
 };
@@ -45,6 +49,8 @@ const typeOnly = (dependency: Dependency) =>
 //   is recorded at the new path (between services, this is a split);
 // - ruleChanged: the same import is now recorded under another rule;
 // - deleted: the importing file is gone and was not renamed;
+// - stillRejected: the import is still rejected but no longer recorded, which
+//   needs review because boundary lint should have failed;
 // - allowed: the file still imports the target at runtime, so a rule changed;
 // - fixed: the file no longer imports the target at runtime.
 // New entries that pair with none of these are added, which needs review.
@@ -70,6 +76,15 @@ export function classifyProgress({
     after.filter((entry) => !beforeKeys.has(key(entry))).map((entry) => [key(entry), entry]),
   );
   const modules = new Map(graph.modules.map((module) => [module.source, module]));
+  // External packages are recorded by specifier and local files by path, so
+  // match a current violation on either.
+  const rejected = new Set(
+    graph.summary.violations.flatMap(({ from, to, unresolvedTo }) =>
+      [to, unresolvedTo]
+        .filter((target) => target !== undefined)
+        .map((target) => JSON.stringify([from, target])),
+    ),
+  );
   const progress: Progress = {
     since,
     before: before.length,
@@ -79,6 +94,7 @@ export function classifyProgress({
     moved: [],
     deleted: [],
     ruleChanged: [],
+    stillRejected: [],
     added: [],
     deferred,
   };
@@ -112,7 +128,13 @@ export function classifyProgress({
       (dependency) =>
         !typeOnly(dependency) && (dependency.module === to || dependency.resolved === to),
     );
-    (stillImported ? progress.allowed : progress.fixed).push(entry);
+    if (!stillImported) {
+      progress.fixed.push(entry);
+    } else if (rejected.has(JSON.stringify([from, to]))) {
+      progress.stillRejected.push(entry);
+    } else {
+      progress.allowed.push(entry);
+    }
   }
   progress.added = [...added.values()];
   return progress;
@@ -164,6 +186,7 @@ const labels: Array<[keyof Progress, string]> = [
   ['moved', 'Moved or split'],
   ['deleted', 'File deleted'],
   ['ruleChanged', 'Recorded under another rule'],
+  ['stillRejected', 'Still rejected, not recorded'],
   ['added', 'Added'],
 ];
 
@@ -182,6 +205,12 @@ export function formatProgress(progress: Progress) {
       lines.push(
         `- ${services[0]} → ${services[1]}: ${before.from} → ${after.from} (${before.to})`,
       );
+    }
+  }
+  if (progress.stillRejected.length) {
+    lines.push('', 'Still rejected but no longer recorded (needs review):');
+    for (const entry of progress.stillRejected) {
+      lines.push(`- ${entry.from} → ${entry.to} [${entry.rule}]`);
     }
   }
   if (progress.added.length) {

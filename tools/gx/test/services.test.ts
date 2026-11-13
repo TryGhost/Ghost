@@ -4,7 +4,7 @@ import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/pr
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test, type TestContext } from 'node:test';
-import { buildServiceReport } from '../services.ts';
+import { buildServiceReport, frequencies } from '../services.ts';
 import {
   legacyInventoryFile,
   servicesRoot as services,
@@ -219,6 +219,8 @@ test('classifies each rejected dependency by the first decision that matches it'
     alpha?.findings.find(({ to }) => to.endsWith('beta-job.ts'))?.until,
     'Registration moves to boot',
   );
+  // Distinct rejected targets include specialist dependencies outside their owners.
+  assert.ok(alpha?.dependencies?.includes('stripe'));
   assert.throws(() =>
     buildServiceReport({ services: { alpha: entry() } }, audit(['alpha']), { inject: ['^a$'] }),
   );
@@ -229,6 +231,34 @@ test('classifies each rejected dependency by the first decision that matches it'
       importForm: [],
       deferred: [{ from: 'a', to: 'b', until: '' }],
     }),
+  );
+});
+
+test('counts each dependency separately for each kind it has', () => {
+  const rows = buildServiceReport(
+    { services: { alpha: entry() } },
+    audit(
+      ['alpha'],
+      [
+        finding('alpha/registry.ts', `${services}/beta/beta-job.ts`),
+        finding('alpha/other.ts', `${services}/beta/beta-job.ts`),
+        finding('alpha/third.ts', `${services}/beta/beta-job.ts`),
+      ],
+    ),
+    {
+      inject: [`^${services}/`],
+      importForm: [],
+      deferred: [
+        { from: '/alpha/registry\\.ts$', to: '-job\\.ts$', until: 'Registration moves to boot' },
+      ],
+    },
+  );
+  assert.deepEqual(
+    frequencies(rows).map(({ dependency, kind, files }) => [dependency, kind, files]),
+    [
+      [`${services}/beta/beta-job.ts`, 'inject', 2],
+      [`${services}/beta/beta-job.ts`, 'deferred', 1],
+    ],
   );
 });
 
@@ -336,9 +366,9 @@ test('CLI reports classifications, per-service evidence and distinct dependency 
   const jsonDetails = f.run(['report', 'alpha', '--json']);
   assert.equal(jsonDetails.status, 0, jsonDetails.stderr);
   assert.deepEqual(JSON.parse(jsonDetails.stdout), rows[0]);
-  const frequencies = f.run(['dependencies', '--json']);
-  assert.equal(frequencies.status, 0, frequencies.stderr);
-  assert.deepEqual(JSON.parse(frequencies.stdout), [
+  const ranked = f.run(['dependencies', '--json']);
+  assert.equal(ranked.status, 0, ranked.stderr);
+  assert.deepEqual(JSON.parse(ranked.stdout), [
     { dependency: 'ghost/core/shared/client.js', files: 2, kind: 'no-decision' },
   ]);
   const markdown = f.run(['audit', '--output-type', 'markdown']);

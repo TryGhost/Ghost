@@ -36,6 +36,7 @@ test('puts every removed known violation in one bucket and pairs moves and rule 
     entry('alpha/gone.ts', 'ghost/core/shared/config.ts'),
     entry('alpha/reclassified.ts', 'stripe'),
     entry('alpha/kept.ts', 'ghost/core/shared/config.ts'),
+    entry('alpha/untracked.ts', 'ghost/core/shared/config.ts'),
   ];
   const after = [
     entry('alpha/kept.ts', 'ghost/core/shared/config.ts'),
@@ -60,7 +61,13 @@ test('puts every removed known violation in one bucket and pairs moves and rule 
       module('alpha/allowed-file.ts', [
         ['../../lib/helper', 'ghost/core/server/lib/helper.ts', ['local']],
       ]),
+      module('alpha/untracked.ts', [
+        ['../../../shared/config', 'ghost/core/shared/config.ts', ['local']],
+      ]),
     ],
+    summary: {
+      violations: [{ from: `${services}/alpha/untracked.ts`, to: 'ghost/core/shared/config.ts' }],
+    },
   };
   const progress = classifyProgress({
     since: 'base',
@@ -97,6 +104,7 @@ test('puts every removed known violation in one bucket and pairs moves and rule 
     progress.ruleChanged.map(({ before: from, after: to }) => [from.rule, to.rule]),
     [['service-dependencies', 'specialist-dependencies']],
   );
+  assert.deepEqual(froms(progress.stillRejected), ['alpha/untracked.ts']);
   assert.deepEqual(froms(progress.added), ['alpha/added.ts']);
   assert.equal(progress.before, before.length);
   assert.equal(progress.after, after.length);
@@ -108,18 +116,21 @@ test('puts every removed known violation in one bucket and pairs moves and rule 
       progress.allowed.length +
       progress.deleted.length +
       progress.moved.length +
-      progress.ruleChanged.length,
+      progress.ruleChanged.length +
+      progress.stillRejected.length,
     removed,
   );
 
   const text = formatProgress(progress);
-  assert.match(text, /^Known violations since base: 10 → 6$/m);
+  assert.match(text, /^Known violations since base: 11 → 6$/m);
   assert.match(text, /^Fixed\s+2$/m);
   assert.match(text, /^Allowed by a rule change\s+2$/m);
   assert.match(text, /^Moved or split\s+3$/m);
   assert.match(text, /^File deleted\s+1$/m);
   assert.match(text, /^Recorded under another rule\s+1$/m);
+  assert.match(text, /^Still rejected, not recorded\s+1$/m);
   assert.match(text, /^Added\s+1$/m);
+  assert.ok(text.includes(`- ${services}/alpha/untracked.ts → ghost/core/shared/config.ts`));
   assert.ok(
     text.includes(`- alpha → beta: ${services}/alpha/split.ts → ${services}/beta/split.ts`),
   );
@@ -214,7 +225,10 @@ test('CLI compares the known violations at a commit with the checkout', async (t
     progress.added.map(({ from }: { from: string }) => from),
     [`${services}/alpha/added.ts`],
   );
-  assert.deepEqual([progress.allowed, progress.deleted, progress.ruleChanged], [[], [], []]);
+  assert.deepEqual(
+    [progress.allowed, progress.deleted, progress.ruleChanged, progress.stillRejected],
+    [[], [], [], []],
+  );
 
   const missing = spawnSync(
     process.execPath,
