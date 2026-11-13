@@ -143,7 +143,9 @@ the second section.
 ### Dependency boundaries
 
 The root `index.ts` wires runtime dependencies and passes them to the
-implementation. Dependency rules apply to every service, legacy or standard.
+implementation. The [dependency rules](../../../../docs/practices/dependencies.md)
+decide what an implementation may import directly; this section covers how
+services apply them. They apply to every service, legacy or standard.
 Implementation files may import:
 
 - Files within the same service, except its root `index.ts` or `index.js`.
@@ -151,17 +153,8 @@ Implementation files may import:
 - The libraries and individual shared files in the
   [dependency-cruiser config](../../../../.dependency-cruiser.cjs).
 
-A library or shared file is allowed only when it, and everything it imports,
-works only on what the caller gives it. It holds no state of the running
-application, such as config, settings, connections, subscriptions or
-registries. It does no I/O of its own: no files, network or database. A class
-is fine when the caller builds the instance and passes in anything stateful.
-Time, randomness and `DEBUG` tracing are not application state. Everything else
-is wired in the root.
-
-The shared [clock](../../kernel/clock.ts) is allowed directly, including its
-deprecated `moment` export for existing date logic. Service migration does not
-require rewriting those date operations.
+Migrating a service does not require rewriting date logic that uses the
+[clock's](../../kernel/clock.ts) deprecated `moment` export.
 
 Import allowlisted libraries directly where they are used; do not pass the
 library or its exports through the service's dependencies. Local use in the
@@ -176,42 +169,21 @@ and arrays. It reads the same allowlist and service scope as the boundary rule.
 Factories, forwarding callbacks, indirect aliases and separately assembled
 options objects still need review; this is not general data-flow analysis.
 
-Logging, config, settings, models, event buses and other service instances
-belong in the root wiring. Nested `index.ts` files are implementation files, not
+Instances belong in the root wiring. Nested `index.ts` files are implementation files, not
 extra wiring roots. The rule covers static imports, `require()`, literal dynamic
 imports and re-exports. All implementation source inside a service is checked, including
 nested folders named `test` or `fixtures`. The scan cannot follow a computed
 `require()` or `import()` argument, so `import/no-dynamic-require` rejects those
 in every service file.
 
-Some dependencies look like libraries but are treated as instances:
+`@tryghost/domain-events` is a process-wide event bus. Roots inject it, and the
+event classes they publish, as [comments](comments/index.ts) and
+[users](users/index.ts) do.
 
-- `@tryghost/domain-events` is a process-wide event bus. Roots inject it, and
-  the event classes they publish, as [comments](comments/index.ts) and
-  [users](users/index.ts) do.
-- Implementations don't import `fs` or `fs-extra`. A root that needs files
-  passes a loader limited to those files, like `readTemplate` in the comments
-  root. Libraries that read or write files themselves, such as `glob`,
-  `@tryghost/zip` and `gscan`, are passed in the same way.
-- Lodash is allowed only as individual functions, such as `lodash/isEmpty`.
-  Plain JavaScript is often simpler.
-- URL utils, labs, Sentry and i18n in `shared/` are built from config or
-  settings. Roots pass the instance or the value they need, such as `siteUrl`.
-- Anything that makes its own requests is an instance: `request-external`,
-  `@tryghost/request`, `got`, the Stripe and Mailgun clients and the mailer.
-- A shared file that reaches any of these is an instance too. Tracing logs;
-  the Lexical and image libraries, the schema, the API layer and the bridge
-  read config, settings or the database.
-
-Some services need an SDK for one outside system, such as the Stripe API or a
-payment protocol. Each SDK is imported only by its provider client: the one
-file or folder that wraps it in the API Ghost needs. Everything else, including
-service roots, uses the provider client, which the root passes in. A provider
-client used by one service lives in that service, like the Machine Payments
-adapters; one shared by several belongs in `server/lib`. `providerClients` in
-the dependency-cruiser config names each SDK and its client, and
+A provider client used by one service lives in that service, like the Machine
+Payments adapters, and the root passes it in. `providerClients` in the
+dependency-cruiser config names each SDK and its client, and
 `service-provider-clients` rejects an import from anywhere else in Ghost Core.
-Adding a consumer means changing that list, so it gets reviewed.
 
 The config's `serviceDependencyDecisions` records these for
 [`gx services report`](../../../../tools/gx/README.md#interpreting-the-reports),
