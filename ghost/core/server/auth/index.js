@@ -27,4 +27,9 @@ module.exports = {
   get betterAuth() {
     return require('./better-auth').default;
   },
+
+  // Better Auth's session revocation; only under auth:engine better-auth
+  get staffSessions() {
+    return require('./better-auth/staff-sessions').default();
+  },
 };
