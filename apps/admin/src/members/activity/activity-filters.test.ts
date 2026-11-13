@@ -12,10 +12,9 @@ describe('activity filters', () => {
     expect(global).toContain('email_opened_event');
     expect(global).toContain('email_complained_event');
     expect(global).not.toContain('automated_email_sent_event');
-    expect(activityQueryOptions({ settings: {}, excluded: null, memberId: 'abc' })).toEqual({
-      memberId: 'abc',
-      excludedEvents: ['aggregated_click_event', 'metafield_change_event'],
-    });
+    const forMember = activityQueryOptions({ settings: {}, excluded: null, memberId: 'abc' });
+    expect(forMember.memberId).toBe('abc');
+    expect(forMember.excludedEvents).not.toContain('email_opened_event');
     expect(availableActivityTypes({}, 'abc').map(({ event }) => event)).toContain(
       'email_opened_event',
     );

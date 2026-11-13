@@ -5,7 +5,6 @@ import {
   hasMultipleNewsletters,
   isEmailSuppressed,
   hasNewsletterSendingEnabled,
-  hasCustomFieldsEnabled,
 } from '../../../../utils/helpers';
 
 import PaidAccountActions from './paid-account-actions';
@@ -34,7 +33,7 @@ const shouldShowEmailNewsletterAction = (site) => {
 
 const AccountActions = () => {
   const { member, doAction, site } = useContext(AppContext);
-  const { name, email } = member;
+  const { email } = member;
   const { transistor } = useIntegrations();
 
   const openEditProfile = () => {
@@ -66,9 +65,9 @@ const AccountActions = () => {
           }}
         >
           <div className="gh-portal-list-detail">
-            {/* With custom fields, the row is about more than the name, so it is named
+            {/* The row opens more than the name, custom fields among it, so it is named
                 for what it opens rather than for the member. */}
-            <h3>{name && !hasCustomFieldsEnabled({ site }) ? name : t('Account')}</h3>
+            <h3>{t('Account')}</h3>
             <p>{email}</p>
           </div>
           <span
