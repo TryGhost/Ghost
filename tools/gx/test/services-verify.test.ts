@@ -31,8 +31,9 @@ const inventory = `services:
   other:
     disposition: migrate
 `;
-const boot = `const staffService = require('./server/services/staff').default;
-async function initServices() {
+// The root is bound inside its phase, as lint requires of boot.js.
+const boot = `async function initServices() {
+  const staffService = require('./server/services/staff').default;
   await Promise.all([staffService.init()]);
 }
 `;
@@ -331,6 +332,56 @@ test('the boot mutation stops boot waiting but keeps rejections', async () => {
       throw failure;
     }),
     (error) => error === failure,
+  );
+});
+
+test('the boot mutation follows a binding only within its own phase', () => {
+  // The generator names a one-word service <name>Service, which earlier phases
+  // already use for other roots.
+  const earlier = `async function initServicesForFrontend() {
+  const themeService = require('./server/services/themes');
+  await themeService.init();
+}
+`;
+  const later = (body: string) => `async function initServices() {
+  const themeService = require('./server/services/theme').default;
+${body}
+}
+`;
+  const mutated = mutateBootInit(earlier + later('  await themeService.init();'), 'theme');
+  assert.ok(mutated, 'The binding in the later phase must be found');
+  assert.ok(mutated.source.startsWith(earlier), 'The earlier phase must be left alone');
+  assert.match(
+    mutated.source.slice(earlier.length),
+    /await Promise\.race\(\[themeService\.init\(\)/,
+  );
+  // A binding with no init() in its own phase is not found through another phase's call.
+  assert.equal(mutateBootInit(earlier + later('  use(themeService.service);'), 'theme'), undefined);
+  assert.equal(
+    mutateBootInit(later('  use(themeService.service);') + earlier, 'theme'),
+    undefined,
+    'A later phase with the same binding name must not be mutated either',
+  );
+  // A root bound again, only to read the ready instance, does not hide its init().
+  const twice = `async function initCore() {
+  const keys = require('./server/services/keys').default;
+  await keys.init();
+}
+async function initServices() {
+  const keys = require('./server/services/keys').default;
+  use(keys.service);
+}
+`;
+  assert.match(
+    mutateBootInit(twice, 'keys')?.source ?? '',
+    /await Promise\.race\(\[keys\.init\(\)/,
+  );
+  const reversed = twice
+    .replace('await keys.init();', 'use(keys.service);')
+    .replace(/use\(keys\.service\);\n\}\n$/, 'await keys.init();\n}\n');
+  assert.match(
+    mutateBootInit(reversed, 'keys')?.source.split('async function initServices')[1] ?? '',
+    /await Promise\.race\(\[keys\.init\(\)/,
   );
 });
 
