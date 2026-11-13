@@ -140,7 +140,6 @@ describe('createAuth', function () {
       '/change-email',
       '/delete-user',
       '/sign-in/social',
-      '/change-password',
     ]);
     assert.equal(options.telemetry?.enabled, false);
   });

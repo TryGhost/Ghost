@@ -7,8 +7,14 @@ import moment from 'moment';
 import urlUtils from '../../shared/url-utils';
 
 const models = require('../models');
+// require, not import: tests override config through the require graph
+const {
+  readPasswordHash,
+}: typeof import('./better-auth/credential-password') = require('./better-auth/credential-password');
 const ghostBookshelf = require('../models/base');
 const mail = require('../lib/mail');
+
+type ResetUser = { id: string; get(key: 'password'): string; isInactive(): boolean };
 
 const messages = {
   userNotFound: 'User not found.',
@@ -67,7 +73,7 @@ function generateToken(
 
       return models.User.getByEmail(email, options);
     })
-    .then((user: { get(key: 'password'): string; isInactive(): boolean } | null) => {
+    .then(async (user: ResetUser | null) => {
       if (!user) {
         throw new errors.NotFoundError({ message: tpl(messages.userNotFound) });
       }
@@ -84,7 +90,10 @@ function generateToken(
         expires: moment().add(1, 'days').valueOf(),
         email: email,
         dbHash: dbHash,
-        passwordHash: user.get('password'),
+        passwordHash: await readPasswordHash(transaction || ghostBookshelf.knex, {
+          id: user.id,
+          password: user.get('password'),
+        }),
       });
 
       return {
@@ -146,10 +155,16 @@ function doReset(
         require: true,
       });
 
+      // Better Auth writes the credential row without touching users, so lock it too
+      const passwordHash = await readPasswordHash(
+        transacting,
+        { id: user.id, password: user.get('password') },
+        { forUpdate: true },
+      );
       const compareResult = security.tokens.resetToken.compare({
         token: resetToken,
         dbHash: dbHash,
-        passwordHash: user.get('password'),
+        passwordHash,
       });
 
       if (!compareResult.correct) {

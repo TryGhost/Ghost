@@ -73,6 +73,10 @@ for the ownership, implementation and testing requirements.
 
 Run `pnpm gx db rebuild-development-tables` after editing development-only table
 schemas. This drops and recreates the listed tables, discarding their data.
+With `auth:betterAuthDev` on, that includes passwords: `user_accounts` holds
+the only copy, so users whose passwords changed are locked out afterwards. Reset
+the database (`pnpm reset:db`) or their passwords. See the
+[Better Auth README](../../ghost/core/server/auth/better-auth/README.md#passwords).
 Start the development database first. gx uses the existing development-environment
 runner and the checkout's Ghost working directory; it does not start services.
 

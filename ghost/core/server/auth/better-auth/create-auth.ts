@@ -165,8 +165,6 @@ export function createAuth(deps: CreateAuthDeps) {
       '/change-email',
       '/delete-user',
       '/sign-in/social',
-      // Writes `user_accounts`, which legacy sign-in doesn't read until Phase 2
-      '/change-password',
     ],
     hooks: {
       after: createAuthMiddleware(async (ctx) => {

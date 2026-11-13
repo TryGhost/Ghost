@@ -1,6 +1,7 @@
 const { agentProvider, fixtureManager, resetRateLimits } = require('../../utils/e2e-framework');
 const { mockMail, restore } = require('../../utils/e2e-framework-mock-manager');
 const models = require('../../../core/server/models');
+const { passwordHashOf } = require('../../utils/password-hash');
 const security = require('@tryghost/security');
 const settingsCache = require('../../../core/shared/settings-cache');
 const moment = require('moment');
@@ -153,7 +154,7 @@ describe('Session invalidation on password change', function () {
       expires: moment().add(1, 'days').valueOf(),
       email: ownerFixture.email,
       dbHash,
-      passwordHash: user.get('password'),
+      passwordHash: await passwordHashOf(user),
     });
     const encodedToken = security.url.encodeBase64(resetToken);
     const newPassword = 'Sl1m3rson99-reset!';

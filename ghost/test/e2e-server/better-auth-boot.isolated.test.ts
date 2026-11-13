@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import * as security from '@tryghost/security';
 import type { GhostAuth } from '../../core/server/auth/better-auth';
 
 const { startGhost, fixtureManager, configUtils, dbUtils } = require('../utils/e2e-framework');
@@ -10,6 +11,7 @@ const jobsService = require('../../core/server/services/jobs-service');
 const stripe = require('../../core/server/services/stripe');
 const sentry = require('../../core/shared/sentry');
 const logging = require('@tryghost/logging');
+const DataGenerator = require('../utils/fixtures/data-generator');
 
 const AUTH_TABLES = ['verifications', 'user_accounts', 'user_sessions'];
 const isSQLite = ['sqlite3', 'better-sqlite3'].includes(db.knex.client.config.client);
@@ -18,6 +20,28 @@ async function dropAuthTables() {
   for (const table of AUTH_TABLES) {
     await db.knex.schema.dropTableIfExists(table);
   }
+}
+
+/** Changes the owner's password through legacy; it lands in users.password and signs in */
+async function assertPasswordInUsersTable(app: unknown, newPassword: string) {
+  const admin = new AdminAPITestAgent(app, {
+    apiURL: '/ghost/api/admin/',
+    originURL: configUtils.config.get('url'),
+  });
+  const owner = DataGenerator.Content.users[0];
+  await admin.loginAsOwner();
+  await admin
+    .put('users/password/')
+    .body({
+      password: [
+        { user_id: owner.id, oldPassword: owner.password, newPassword, ne2Password: newPassword },
+      ],
+    })
+    .expectStatus(200);
+  const { password } = await db.knex('users').where({ id: owner.id }).first('password');
+  assert.equal(await security.password.compare(newPassword, password), true);
+  await admin.loginAs(owner.email, newPassword);
+  await admin.get('users/me/').expectStatus(200);
 }
 
 async function boot() {
@@ -72,12 +96,22 @@ describe.skipIf(isSQLite)('Better Auth boot', function () {
       message: 'Better Auth used before init(). Call init() from boot first.',
     });
 
-    const admin = new AdminAPITestAgent(app, {
-      apiURL: '/ghost/api/admin/',
-      originURL: configUtils.config.get('url'),
-    });
-    await admin.loginAsOwner();
-    await admin.get('users/me/').expectStatus(200);
+    await assertPasswordInUsersTable(app, 'changed-without-tables-1');
+  });
+
+  it('keeps passwords in users.password with the tables but without auth:betterAuthDev', async function () {
+    configUtils.set('auth:engine', 'legacy');
+    configUtils.set('createInDevelopmentTables', true);
+    configUtils.set('auth:betterAuthDev', false);
+
+    const app = await boot();
+
+    const newPassword = 'changed-without-better-auth-1';
+    assert.equal(await db.knex.schema.hasTable('user_accounts'), true);
+    await assertPasswordInUsersTable(app, newPassword);
+    for (const hash of await db.knex('user_accounts').pluck('password')) {
+      assert.equal(await security.password.compare(newPassword, hash ?? ''), false);
+    }
   });
 
   it('refuses auth:betterAuthDev without the in-development tables', async function () {
