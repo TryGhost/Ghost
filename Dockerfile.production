@@ -57,10 +57,10 @@ COPY --exclude=ghost/core/built . .
 
 # Install only ghost and its dependency subgraph (`ghost...`), not the whole
 # monorepo (admin, apps, ...). Dev deps are included — tsc etc. are needed to build
-# the closure. Scripts are NOT ignored: better-sqlite3's install script runs and
-# prebuild-install fetches its prebuilt binary (permitted by allowBuilds in
-# pnpm-workspace.yaml). No build-essential/python3 is installed, so a node-gyp
-# source-compile fallback fails loudly instead of silently pulling a toolchain into
+# the closure. Scripts are NOT ignored, for the dependencies allowBuilds in
+# pnpm-workspace.yaml permits; better-sqlite3 ships its prebuilt binaries in the
+# package and has no install script. No build-essential/python3 is installed, so a
+# node-gyp source-compile fails loudly instead of silently pulling a toolchain into
 # a discarded layer. --no-runtime skips downloading the devEngines.runtime Node
 # from nodejs.org: the base image already runs NODE_VERSION.
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
