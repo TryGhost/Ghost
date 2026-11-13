@@ -47,6 +47,7 @@
     "build:assets:js": "node scripts/minify-assets.mts",
     "build:assets:cards": "node scripts/build-card-assets.mts",
     "query-parameter-policy:export": "node --import=tsx scripts/export-query-parameter-policy.ts",
+    "config:reference": "node --import=tsx scripts/generate-config-reference.ts",
     "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
     "build:tsc": "tsc",
     "pretest": "pnpm build:assets",

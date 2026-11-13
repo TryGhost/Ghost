@@ -50,6 +50,7 @@ export const configSchema = z.looseObject({
       description:
         'The environment Ghost is running as, from NODE_ENV. Set by the loader, not by a config file.',
       examples: ['production', 'development'],
+      internal: true,
     }),
 
   /**

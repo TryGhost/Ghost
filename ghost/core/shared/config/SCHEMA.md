@@ -72,9 +72,10 @@ schema cannot say who owns a shared one.
    **no stricter than what Ghost already accepts**. Look at `defaults.json`,
    `overrides.json`, `env/*.json`, and how the key is actually read first.
 2. Describe it with `.meta({description})`, and `examples` where the shape is not
-   obvious. `z.toJSONSchema()` carries both through, so this is what a generated
-   reference for self-hosters will be built from. Writing it now costs a line;
-   retrofitting it across every key later is a sweep nobody will volunteer for.
+   obvious. `z.toJSONSchema()` carries both through, and
+   [`REFERENCE.md`](REFERENCE.md), the reference for self-hosters, is generated
+   from them. Mark a key self-hosters shouldn't set with `internal: true` to
+   leave it out; keys `overrides.json` pins are left out already.
 3. Run `pnpm --dir ghost test:types` and fix what the new types catch.
    Those are real mismatches between what the code assumes and what the schema
    says — one of the two is wrong.
@@ -82,6 +83,11 @@ schema cannot say who owns a shared one.
    It parses `defaults.json` with every shipped env config and fails if the
    output differs from what Ghost produced before - a value the schema changed
    that it should only have checked.
+5. Run `pnpm --dir ghost config:reference` to regenerate
+   [`REFERENCE.md`](REFERENCE.md). If the key is a new top level, remove it from
+   [`uncovered-keys.json`](uncovered-keys.json). That list may only shrink:
+   `reference.test.ts` fails when the reference is stale, when a shipped
+   top-level key has no schema and isn't listed, or when a listed key has one.
 
 Adding a key to the schema enforces its type: a caller that treated a string as
 a number, or assumed a key is always present, stops compiling.
