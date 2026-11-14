@@ -1,4 +1,5 @@
 import type { GhostLogger } from '@tryghost/logging';
+import type { ActionWriter } from '../action-log/models';
 
 export interface Actor {
   id: string;
@@ -21,10 +22,6 @@ export function actingContext(context: unknown): RequestContext {
     return { actor: { id: frame.user, type: 'user' } };
   }
   return { actor: null };
-}
-
-export interface ActionRecorder {
-  add(data: Record<string, unknown>, options: { autoRefresh: boolean }): Promise<unknown>;
 }
 
 export type AppInstallationEvent = 'installed' | 'uninstalled' | 'changes_approved';
@@ -52,14 +49,14 @@ export type RecordAppInstallationAction = (input: {
  * or uninstall that triggered it.
  */
 export async function recordAppInstallationAction({
-  Action,
+  actionLog,
   logging,
   context,
   event,
   subject,
   details,
 }: {
-  Action: ActionRecorder;
+  actionLog: ActionWriter;
   logging: Pick<GhostLogger, 'error'>;
   context: RequestContext;
   event: AppInstallationEvent;
@@ -70,17 +67,14 @@ export async function recordAppInstallationAction({
     return;
   }
   try {
-    await Action.add(
-      {
-        event,
-        resource_type: 'app_installation',
-        resource_id: subject,
-        actor_type: context.actor.type,
-        actor_id: context.actor.id,
-        context: details,
-      },
-      { autoRefresh: false },
-    );
+    await actionLog.write({
+      event,
+      resource_type: 'app_installation',
+      resource_id: subject,
+      actor_type: context.actor.type,
+      actor_id: context.actor.id,
+      context: { ...details },
+    });
   } catch (err) {
     logging.error(err);
   }

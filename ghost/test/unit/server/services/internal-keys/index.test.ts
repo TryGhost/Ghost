@@ -154,6 +154,7 @@ describe('Internal keys root', function () {
     const rotation = resetAuthentication({
       schedulerAdapter: { rescheduleAll },
       userService: { lockAll: async () => ({ count: 1 }) },
+      actionLog: { write: async () => {} },
       options: {},
       models: domain,
       deleteAllSessions,

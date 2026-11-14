@@ -141,7 +141,9 @@ describe('Users service', function () {
     let originalModules: Map<string, NodeJS.Module | undefined>;
     let root: Root;
 
-    beforeEach(function () {
+    beforeEach(async function () {
+      // Boot initializes the action log before the endpoints run. A reset writes through it.
+      await require('../../../../../core/server/services/action-log').default.init();
       originalModules = new Map(paths.map((path) => [path, require.cache[path]]));
       for (const path of paths) {
         delete require.cache[path];

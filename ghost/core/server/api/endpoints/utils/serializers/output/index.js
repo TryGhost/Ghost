@@ -40,6 +40,10 @@ module.exports = {
     return require('./pages');
   },
 
+  get actions() {
+    return require('./actions');
+  },
+
   get gift_links() {
     return require('./gift-links');
   },

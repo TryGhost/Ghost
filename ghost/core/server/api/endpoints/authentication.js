@@ -8,6 +8,7 @@ const models = require('../../models');
 const auth = require('../../auth');
 const invites = require('../../services/invites').default;
 const usersService = require('../../services/users').default;
+const actionLog = require('../../services/action-log').default;
 const adapterManager = require('../../services/adapter-manager').default;
 const schedulerAdapter = adapterManager.getAdapter('scheduling');
 
@@ -244,6 +245,7 @@ const controller = {
       const result = await auth.resetAuthentication({
         schedulerAdapter,
         userService: usersService.service,
+        actionLog: actionLog.service,
         options: frame.options,
       });
 

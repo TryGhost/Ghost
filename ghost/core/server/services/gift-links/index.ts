@@ -8,9 +8,17 @@ export type { RequestContext } from './actions';
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
 export default defineService('Gift Links', () => {
   const { knex } = require('../../data/db');
-  const models = require('../../models');
+  // Boot initializes the action log before this service, which writes its actions through it.
+  const actionLog: typeof import('../action-log').default = require('../action-log').default;
 
   const recordAction: RecordGiftLinkAction = (transacting, { context, verb, subject }) =>
-    recordGiftLinkAction({ Action: models.Action, logging, transacting, context, verb, subject });
+    recordGiftLinkAction({
+      actionLog: actionLog.service,
+      logging,
+      transacting,
+      context,
+      verb,
+      subject,
+    });
   return new GiftLinksService({ knex, recordAction });
 });

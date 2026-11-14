@@ -46,7 +46,8 @@ export default defineService(
   'Stripe Checkout Config',
   (): StripeCheckoutServices => {
     const { knex } = require('../../data/db');
-    const models = require('../../models');
+    // Boot initializes the action log before this service, which writes its actions through it.
+    const actionLog: typeof import('../action-log').default = require('../action-log').default;
     const labs = require('../../../shared/labs');
 
     // Boot sets up the custom fields services first, as shipping saves into custom fields.
@@ -57,7 +58,7 @@ export default defineService(
     }
     const tiersRoot: typeof import('../tiers') = require('../tiers');
     const recordAction: RecordCheckoutConfigAction = (transacting, input) =>
-      recordCheckoutConfigAction({ Action: models.Action, logging, transacting, ...input });
+      recordCheckoutConfigAction({ actionLog: actionLog.service, logging, transacting, ...input });
 
     const config = new StripeCheckoutConfigService({
       knex,

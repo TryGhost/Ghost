@@ -1,4 +1,5 @@
 import type { GhostLogger } from '@tryghost/logging';
+import type { ActionWriter } from '../action-log/models';
 import type { Knex } from 'knex';
 import { z } from 'zod';
 
@@ -30,13 +31,6 @@ export function actingContext(context: unknown): RequestContext {
   return { actor: null };
 }
 
-export interface ActionRecorder {
-  add(
-    data: Record<string, unknown>,
-    options: { transacting: Knex.Transaction; autoRefresh: boolean },
-  ): Promise<unknown>;
-}
-
 // `subject` is the config row's id.
 export type RecordCheckoutConfigAction = (
   transacting: Knex.Transaction,
@@ -54,13 +48,13 @@ export type RecordCheckoutConfigAction = (
  * rolled back with it. Nothing is written for a request that has no actor.
  */
 export async function recordCheckoutConfigAction({
-  Action,
+  actionLog,
   logging,
   transacting,
   context,
   subject,
 }: {
-  Action: ActionRecorder;
+  actionLog: ActionWriter;
   logging: GhostLogger;
   transacting: Knex.Transaction;
   context: RequestContext;
@@ -70,7 +64,7 @@ export async function recordCheckoutConfigAction({
     return;
   }
   try {
-    await Action.add(
+    await actionLog.write(
       {
         event: 'edited',
         resource_type: 'stripe_checkout_config',
@@ -80,7 +74,7 @@ export async function recordCheckoutConfigAction({
         // The config has no name of its own, so the entry is named after what it configures.
         context: { primary_name: 'Stripe Checkout' },
       },
-      { transacting, autoRefresh: false },
+      transacting,
     );
   } catch (err) {
     logging.error(

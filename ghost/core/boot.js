@@ -169,6 +169,13 @@ async function initCore({ ghostServer, config }) {
     debug('End: Better Auth');
   }
 
+  // Action log service: the services below that write actions read it while they are created,
+  // so it is ready before the first of them.
+  debug('Begin: Action Log Service');
+  const actionLogService = require('./server/services/action-log').default;
+  await actionLogService.init();
+  debug('End: Action Log Service');
+
   // Gift links service: wires the (knex-backed) repository once the DB is ready.
   debug('Begin: Gift Links Service');
   const giftLinksService = require('./server/services/gift-links').default;
