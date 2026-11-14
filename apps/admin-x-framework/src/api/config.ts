@@ -20,6 +20,8 @@ export type Config = {
   blogUrl?: string;
   labs: Record<string, boolean>;
   stripeDirect: boolean;
+  /** Whether Stripe connections go through account.ghost.org; absent on an older Ghost Core. */
+  stripeConnectBridge?: boolean;
   mail: string;
   stats?: JSONObject & {
     endpoint?: string;

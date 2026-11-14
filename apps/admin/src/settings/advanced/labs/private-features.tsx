@@ -3,6 +3,8 @@ import LabItem from './lab-item';
 import React, { useEffect, useState } from 'react';
 import { ActionList } from '@tryghost/shade/components';
 import { HostLimitError } from '@tryghost/admin-x-framework/errors';
+import type { Config } from '@tryghost/admin-x-framework/api/config';
+import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useLimiter } from '@tryghost/admin-x-framework/hooks';
 
 type Feature = {
@@ -10,6 +12,8 @@ type Feature = {
   description: string;
   flag: string;
   limitName?: string;
+  /** Hides the feature when Ghost Core leaves this config value out (an older Core). */
+  configKey?: keyof Config;
 };
 
 const features: Feature[] = [
@@ -108,10 +112,18 @@ const features: Feature[] = [
       'Open Help in a sidebar inside Admin instead of a new tab. Needs a host script that provides the support app.',
     flag: 'inAppSupport',
   },
+  {
+    title: 'OAuth bridge',
+    description:
+      'Connect Stripe through account.ghost.org, which sends the connection back to Admin, instead of pasting a secure key.',
+    flag: 'oauthBridge',
+    configKey: 'stripeConnectBridge',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {
   const limiter = useLimiter();
+  const { config } = useGlobalData();
   const [allowedFeatures, setAllowedFeatures] = useState<Feature[]>([]);
 
   useEffect(() => {
@@ -119,6 +131,9 @@ const AlphaFeatures: React.FC = () => {
       const filtered = [];
       // Remove all features that are limited according to the subscribed plan (given these are beta, is optional to use)
       for (const feature of features) {
+        if (feature.configKey && config?.[feature.configKey] === undefined) {
+          continue;
+        }
         if (feature.limitName && limiter?.isLimited(feature.limitName)) {
           try {
             await limiter.errorIfWouldGoOverLimit(feature.limitName);
@@ -135,7 +150,7 @@ const AlphaFeatures: React.FC = () => {
       setAllowedFeatures(filtered);
     };
     void filterFeatures();
-  }, [limiter]);
+  }, [limiter, config]);
 
   return (
     <ActionList>

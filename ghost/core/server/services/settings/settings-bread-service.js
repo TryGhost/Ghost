@@ -331,17 +331,23 @@ class SettingsBREADService {
    *
    * @param {Object} stripeConnectIntegrationToken
    * @param {Function} getSessionProp sync function fetching property from session store
+   * @param {Function} deleteSessionProp sync function removing property from session store
    * @param {Function} getStripeConnectTokenData async function retreiving Stripe Connect data for settings
    * @returns {Promise<Object>} resolves with an object with following keys: public_key, secret_key, livemode, display_name, account_id
    */
   async getStripeConnectData(
     stripeConnectIntegrationToken,
     getSessionProp,
+    deleteSessionProp,
     getStripeConnectTokenData,
   ) {
     if (stripeConnectIntegrationToken && stripeConnectIntegrationToken.value) {
       try {
-        return await getStripeConnectTokenData(stripeConnectIntegrationToken.value, getSessionProp);
+        return await getStripeConnectTokenData(
+          stripeConnectIntegrationToken.value,
+          getSessionProp,
+          deleteSessionProp,
+        );
       } catch (err) {
         throw new BadRequestError({
           err,

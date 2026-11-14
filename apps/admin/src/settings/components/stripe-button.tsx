@@ -44,7 +44,13 @@ const StripeButton: React.FC<StripeButtonProps> = ({
   if (href) {
     return (
       <Button className={classNames} variant={variant ?? null} asChild {...props}>
-        <a href={href} rel="noopener noreferrer" target={target}>
+        <a
+          href={href}
+          // The only link is Ghost's own Connect start, which checks the
+          // Referer where browsers don't say a request is same-origin.
+          rel={target === '_blank' ? 'noopener' : undefined}
+          target={target}
+        >
           {label}
         </a>
       </Button>
