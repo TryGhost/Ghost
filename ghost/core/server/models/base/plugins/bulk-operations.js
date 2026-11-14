@@ -101,7 +101,8 @@ module.exports = function (Bookshelf) {
         const sortedIds = _.uniq(ids).sort();
         const rows = [];
 
-        for (const chunk of _.chunk(sortedIds, CHUNK_SIZE)) {
+        for (let offset = 0; offset < sortedIds.length; offset += CHUNK_SIZE) {
+          const chunk = sortedIds.slice(offset, offset + CHUNK_SIZE);
           rows.push(
             ...(await Bookshelf.knex(this.prototype.tableName)
               .transacting(transacting)
