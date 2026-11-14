@@ -101,10 +101,8 @@ export type MrrTotalItem = {
 export type MrrHistoryResponseType = {
   stats: MrrHistoryItem[];
   meta: {
-    totals: {
-      mrr: number;
-      currency: string;
-    }[];
+    totals: MrrTotalItem[];
+    opening_totals?: MrrTotalItem[];
   };
 };
 

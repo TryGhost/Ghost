@@ -7,6 +7,8 @@ const {
 const { mockStripe, stripeMocker } = require('../../utils/e2e-framework-mock-manager');
 const { anyContentVersion, anyEtag, anyISODate, anyObjectId, anyContentLength } = matchers;
 const assert = require('node:assert/strict');
+const { randomBytes } = require('node:crypto');
+const { knex } = require('../../../core/server/data/db');
 
 let agent;
 
@@ -82,6 +84,86 @@ describe('Stats API', function () {
         'content-version': anyContentVersion,
         etag: anyEtag,
       });
+  });
+
+  it('rejects an invalid MRR start time', async function () {
+    await agent.get('/stats/mrr/?start_at=2024-06-27').expectStatus(422);
+  });
+
+  it('returns MRR immediately before an exact start time', async function () {
+    const memberId = fixtureManager.get('members', 0).id;
+    const customerId = 'cus_mrr_cutoff';
+    const currency = 'cad';
+    const id = () => randomBytes(12).toString('hex');
+    const events = [
+      { created_at: '2024-06-26 18:00:00', mrr_delta: 500 },
+      { created_at: '2024-06-26 18:30:00', mrr_delta: 1000 },
+      { created_at: '2024-06-27 02:00:00', mrr_delta: 2000 },
+      { created_at: '2024-06-27 05:00:00', mrr_delta: 500 },
+    ].map((event) => ({ ...event, id: id(), member_id: memberId, currency, source: 'stripe' }));
+
+    await knex.transaction(async (tx) => {
+      await tx('members_stripe_customers').insert({
+        id: id(),
+        member_id: memberId,
+        customer_id: customerId,
+        created_at: '2024-06-01 00:00:00',
+      });
+      await tx('members_stripe_customers_subscriptions').insert({
+        id: id(),
+        customer_id: customerId,
+        subscription_id: 'sub_mrr_cutoff',
+        status: 'active',
+        start_date: '2024-06-01 00:00:00',
+        current_period_end: '2024-07-01 00:00:00',
+        created_at: '2024-06-01 00:00:00',
+        mrr: 14000,
+        plan_id: 'price_mrr_cutoff',
+        plan_nickname: 'MRR cutoff',
+        plan_interval: 'month',
+        plan_amount: 14000,
+        plan_currency: currency,
+      });
+      await tx('members_paid_subscription_events').insert(events);
+    });
+
+    try {
+      const path = '/stats/mrr/?date_from=2024-06-27';
+      const { body: legacy } = await agent.get(path).expectStatus(200);
+      assert.equal(legacy.meta.opening_totals, undefined);
+      assert.equal(legacy.stats.find((row) => row.currency === currency).mrr, 11500);
+
+      for (const [startAt, openingMrr] of [
+        ['2024-06-26T18:30:00Z', 10500], // Midnight in Kolkata. Includes the event at midnight.
+        ['2024-06-27T04:00:00Z', 13500], // Midnight in New York. Excludes the previous evening.
+        ['2024-06-27T06:00:00Z', 14000], // No activity after the cutoff.
+      ]) {
+        const { body } = await agent
+          .get(`${path}&start_at=${encodeURIComponent(startAt)}`)
+          .expectStatus(200);
+        assert.deepEqual(
+          body.meta.opening_totals?.find((row) => row.currency === currency),
+          {
+            currency,
+            mrr: openingMrr,
+          },
+        );
+        assert.equal(body.meta.totals.find((row) => row.currency === currency).mrr, 14000);
+      }
+    } finally {
+      await knex.transaction(async (tx) => {
+        await tx('members_paid_subscription_events')
+          .whereIn(
+            'id',
+            events.map((event) => event.id),
+          )
+          .delete();
+        await tx('members_stripe_customers_subscriptions')
+          .where({ customer_id: customerId })
+          .delete();
+        await tx('members_stripe_customers').where({ customer_id: customerId }).delete();
+      });
+    }
   });
 
   describe('Subscriptions history', function () {
