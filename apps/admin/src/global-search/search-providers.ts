@@ -1,4 +1,13 @@
-import FlexSearch from 'flexsearch';
+// Lazily loaded with the Cmd-K modal: a static import from shell code would
+// put FlexSearch in Admin's main bundle.
+// eslint-disable-next-line no-restricted-imports -- see comment above
+import {
+  type TextSearch,
+  type TextSearchOptions,
+  createSubstringSearch,
+  createWordSearch,
+  isWordSearchLocale,
+} from '@/shared/text-search';
 import type { SearchItem, SearchResultGroup, SearchSource } from './search-source';
 
 export interface SearchProvider {
@@ -23,58 +32,37 @@ function groupResults(
   });
 }
 
-/** Matches word prefixes in any order, ranked by FlexSearch. */
+function createProvider(
+  sources: readonly SearchSource[],
+  createSearch: (items: readonly SearchItem[]) => TextSearch<SearchItem>,
+  searchOptions: TextSearchOptions = {},
+): SearchProvider {
+  const searches = sources.map((source) => createSearch(source.items));
+
+  return {
+    search(term) {
+      return groupResults(sources, (_source, index) => searches[index].search(term, searchOptions));
+    },
+  };
+}
+
+/** Groups each source's word-prefix matches. */
 export function createFlexSearchProvider(sources: readonly SearchSource[]): SearchProvider {
-  const indexes = sources.map((source) => {
-    const index = new FlexSearch.Document<SearchItem>({
-      tokenize: 'forward',
-      document: { id: 'id', index: ['title', 'keywords'] },
-    });
-    source.items.forEach((item) => index.add(item));
-    return { index, itemsById: new Map(source.items.map((item) => [item.id, item])) };
-  });
-
-  return {
-    search(term) {
-      return groupResults(sources, (_source, sourceIndex) => {
-        const { index, itemsById } = indexes[sourceIndex];
-        const ids = new Set(
-          index.search(term, RESULT_LIMIT).flatMap((field) => field.result.map(String)),
-        );
-
-        return [...ids].flatMap((id) => itemsById.get(id) ?? []);
-      });
-    },
-  };
+  return createProvider(sources, createWordSearch, { limitPerField: RESULT_LIMIT });
 }
 
-/** Matches the term as a case-insensitive substring, in source order. */
+/** Groups each source's substring matches. */
 export function createBasicSearchProvider(sources: readonly SearchSource[]): SearchProvider {
-  return {
-    search(term) {
-      if (!term.trim()) {
-        return [];
-      }
-
-      const needle = term.toLowerCase();
-
-      return groupResults(sources, (source) =>
-        source.items.filter(
-          (item) =>
-            item.title.toLowerCase().includes(needle) ||
-            Boolean(item.keywords?.toLowerCase().includes(needle)),
-        ),
-      );
-    },
-  };
+  // No early cut: every match reaches the status sort, then groupResults caps.
+  return createProvider(sources, createSubstringSearch);
 }
 
-/** FlexSearch's word tokenizer only suits English; substring matching works for any language. */
+/** Groups each source's matches, matched as the site's locale suits. */
 export function createSearchProvider(
   sources: readonly SearchSource[],
   locale: string | null | undefined,
 ): SearchProvider {
-  const isEnglish = locale?.toLowerCase().startsWith('en') ?? true;
-
-  return isEnglish ? createFlexSearchProvider(sources) : createBasicSearchProvider(sources);
+  return isWordSearchLocale(locale)
+    ? createFlexSearchProvider(sources)
+    : createBasicSearchProvider(sources);
 }
