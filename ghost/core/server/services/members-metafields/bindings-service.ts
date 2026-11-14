@@ -4,7 +4,13 @@ import type { Knex } from 'knex';
 import { z } from 'zod';
 import type { FieldType } from '@tryghost/metafield-types';
 import { isRecordValue, matchShape } from '@tryghost/metafield-types/structure';
-import { IdentityTextSchema, type Key, type Namespace } from '@tryghost/metafield-types/identity';
+import {
+  IdentityTextSchema,
+  KeySchema,
+  NamespaceSchema,
+  type Key,
+  type Namespace,
+} from '@tryghost/metafield-types/identity';
 import { INTERNAL, MEMBERS } from './access';
 import {
   ACTIVE_ONLY,
@@ -19,6 +25,26 @@ import type { MetafieldPlan, MetafieldValuesService } from './values-service';
 import { ensureTransaction } from '../../lib/ensure-transaction';
 
 const BINDINGS_TABLE = 'members_metafield_bindings';
+
+/** A port pointed at a field: what a source collects under that name is written into the field. */
+export interface Binding {
+  id: string;
+  port: string;
+  field: FieldIdentity;
+}
+
+const DbBinding = z
+  .object({
+    id: z.string(),
+    port: z.string(),
+    metafield_namespace: NamespaceSchema,
+    metafield_key: KeySchema,
+  })
+  .transform((row): Binding => ({
+    id: row.id,
+    port: row.port,
+    field: { namespace: row.metafield_namespace, key: row.metafield_key },
+  }));
 
 export interface BoundField {
   bindingId: string;
@@ -76,7 +102,7 @@ export class MetafieldBindingsService {
 
   /**
    * Points a port at a field, in place of whichever field the port wrote into before, and returns
-   * the binding's id. Given a transaction as `executor` it joins that transaction; given a plain
+   * the binding. Given a transaction as `executor` it joins that transaction; given a plain
    * connection it opens its own.
    */
   async bind(
@@ -84,7 +110,7 @@ export class MetafieldBindingsService {
     field: FieldIdentity,
     now: Date,
     executor: Knex = this.knex,
-  ): Promise<string> {
+  ): Promise<Binding> {
     return ensureTransaction(executor, async (trx) => {
       const existing = await trx(BINDINGS_TABLE).where({ port }).first();
       if (
@@ -92,7 +118,7 @@ export class MetafieldBindingsService {
         existing.metafield_key === field.key
       ) {
         await trx(BINDINGS_TABLE).where('id', existing.id).update({ updated_at: now });
-        return existing.id;
+        return { id: existing.id, port, field };
       }
       if (existing) {
         await trx(BINDINGS_TABLE).where('id', existing.id).del();
@@ -106,7 +132,7 @@ export class MetafieldBindingsService {
         created_at: now,
         updated_at: now,
       });
-      return bindingId;
+      return { id: bindingId, port, field };
     });
   }
 
@@ -152,11 +178,19 @@ export class MetafieldBindingsService {
   }
 
   /**
-   * Stops the writing. Whatever hangs off the binding cascades with it. Given a transaction as
-   * `executor` it joins that transaction; given a plain connection it opens its own.
+   * Stops the writing, and returns the binding as it was, or null for a port that was bound
+   * nowhere. Whatever hangs off the binding cascades with it. Given a transaction as `executor`
+   * it joins that transaction; given a plain connection it opens its own.
    */
-  async remove(port: string, executor: Knex = this.knex): Promise<void> {
-    await ensureTransaction(executor, (trx) => trx(BINDINGS_TABLE).where({ port }).del());
+  async remove(port: string, executor: Knex = this.knex): Promise<Binding | null> {
+    return ensureTransaction(executor, async (trx) => {
+      const existing = await trx(BINDINGS_TABLE).where({ port }).first();
+      if (!existing) {
+        return null;
+      }
+      await trx(BINDINGS_TABLE).where('id', existing.id).del();
+      return DbBinding.parse(existing);
+    });
   }
 
   /**

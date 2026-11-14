@@ -26,7 +26,9 @@ describe('Stripe Checkout config root', function () {
     return require(rootPath).default;
   }
 
-  beforeEach(function () {
+  beforeEach(async function () {
+    // Boot initializes the actions service before this root, which reads it while created.
+    await require('../../../../../core/server/services/actions').default.init();
     previousRoot = require.cache[rootPath];
     delete require.cache[rootPath];
     readKnex = sandbox.stub().returns(sandbox.stub());

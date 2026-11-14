@@ -166,12 +166,16 @@ export class TierRequirements {
    * settings, in place of whatever it was set to before. Given a transaction as `executor` it
    * joins that transaction; given a plain connection it opens its own.
    */
-  async require(requirement: SetRequirement, now: Date, executor: Knex = this.knex): Promise<void> {
+  async require(
+    requirement: SetRequirement,
+    now: Date,
+    executor: Knex = this.knex,
+  ): Promise<SetRequirement> {
     const { name, tierIds } = requirement;
     const tierScope = tierScopeOf(tierIds);
     const countries = storedCountries(requirement);
     const at = toDatabaseDate(now);
-    await ensureTransaction(executor, async (trx) => {
+    return ensureTransaction(executor, async (trx) => {
       await trx(REQUIREMENTS_TABLE)
         .insert({
           requirement: name,
@@ -189,17 +193,24 @@ export class TierRequirements {
           tierIds.map((productId) => ({ requirement: name, product_id: productId })),
         );
       }
+      return requirement;
     });
   }
 
   /**
-   * Stops requiring this on any tier. Given a transaction as `executor` it joins that
-   * transaction; given a plain connection it opens its own.
+   * Stops requiring this on any tier, and returns the requirement as it was set, or null when
+   * nothing required it. Given a transaction as `executor` it joins that transaction; given a
+   * plain connection it opens its own.
    */
-  async release(requirement: RequirementName, executor: Knex = this.knex): Promise<void> {
-    await ensureTransaction(executor, async (trx) => {
+  async release(
+    requirement: RequirementName,
+    executor: Knex = this.knex,
+  ): Promise<SetRequirement | null> {
+    return ensureTransaction(executor, async (trx) => {
+      const released = (await this.readRequired(trx)).find(({ name }) => name === requirement);
       await trx(REQUIREMENT_TIERS_TABLE).where('requirement', requirement).del();
       await trx(REQUIREMENTS_TABLE).where('requirement', requirement).del();
+      return released ?? null;
     });
   }
 

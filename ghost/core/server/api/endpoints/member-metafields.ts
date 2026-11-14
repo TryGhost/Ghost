@@ -1,5 +1,6 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
-import { ADMIN, actingContext, booted } from '../../services/members-metafields';
+import { ADMIN, booted } from '../../services/members-metafields';
+import { actingContext } from '../../lib/actor';
 import { fieldRoute, namespaceRoute } from '../../services/members-metafields/serializers';
 
 const permissionsService = require('../../services/permissions');

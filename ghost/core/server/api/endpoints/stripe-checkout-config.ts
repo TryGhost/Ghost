@@ -3,6 +3,7 @@ import stripeCheckoutConfig from '../../services/stripe-checkout-config';
 import type { StripeCheckoutConfig } from '../../services/stripe-checkout-config';
 import { COLLECTION_FLAG } from '../../services/stripe-checkout-config/models';
 import { refuseCollectionWhileOff } from '../../services/stripe-checkout-config/serializers';
+import { actingContext } from '../../lib/actor';
 
 const labs = require('../../../shared/labs');
 
@@ -33,15 +34,14 @@ const controller = {
     async query(frame: EditFrame): Promise<StripeCheckoutConfig> {
       const [input] = frame.data.checkout_config;
       refuseCollectionWhileOff(input, labs.isSet(COLLECTION_FLAG));
-      const { config } = stripeCheckoutConfig.service;
-      const { changedRequirements } = await config.edit(
-        stripeCheckoutConfig.extras.actingContext(frame.options.context),
+      const { config, changedRequirements } = await stripeCheckoutConfig.service.config.edit(
+        actingContext(frame.options.context),
         input,
       );
       if (changedRequirements) {
         frame.setHeader('X-Cache-Invalidate', '/*');
       }
-      return config.read();
+      return config;
     },
   },
 } satisfies Controller<{

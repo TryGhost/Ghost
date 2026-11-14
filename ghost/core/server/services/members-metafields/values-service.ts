@@ -195,6 +195,15 @@ const IMPORTED: Extract<WriteOrigin, { source: 'import' }> = {
  * because a value belongs to the member and a definition belongs to the site's settings,
  * which are different aggregates rather than different layers.
  */
+/**
+ * A member's values before and after a write, as staff read them: each active field's value, by
+ * namespace and then key.
+ */
+export interface WrittenValues {
+  previous: Record<string, Record<string, unknown>>;
+  next: Record<string, Record<string, unknown>>;
+}
+
 export class MetafieldValuesService {
   private knex: Knex;
   private fields: FieldSource;
@@ -567,17 +576,25 @@ export class MetafieldValuesService {
    * Every write is reported to the metafields tracking, saying where it was made and whether it
    * was stored, so a dashboard can follow how each place saves values. A value `planWrite`
    * refuses never gets here: the refusal is answered to whoever wrote it.
+   *
+   * Returns the member's values before and after the write, or null when there was nothing to
+   * write.
    */
   async applyWrite(
     memberId: string,
     writes: PlannedWrite[],
     origin: SingleWriteOrigin,
     executor: Knex = this.knex,
-  ): Promise<void> {
+  ): Promise<WrittenValues | null> {
     if (writes.length === 0) {
-      return;
+      return null;
     }
-    const stored = ensureTransaction(executor, (trx) => this.store(trx, memberId, writes, origin));
+    const stored = ensureTransaction(executor, async (trx) => {
+      const previous = (await this.getValuesForMember(memberId, ADMIN, trx)) ?? {};
+      await this.store(trx, memberId, writes, origin);
+      const next = (await this.getValuesForMember(memberId, ADMIN, trx)) ?? {};
+      return { previous, next };
+    });
 
     // A write that joined the caller's transaction is only stored once that transaction
     // finishes without an error.
@@ -586,7 +603,7 @@ export class MetafieldValuesService {
       { source: origin.source, fields: writes.map(({ field }) => field) },
       joined ? stored.then(() => joined.executionPromise) : stored,
     );
-    await stored;
+    return stored;
   }
 
   /**

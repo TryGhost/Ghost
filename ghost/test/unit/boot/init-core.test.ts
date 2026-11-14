@@ -10,6 +10,7 @@ function createCoreHarness() {
   };
   const signingKeys = { init: sinon.stub().resolves() };
   const i18n = { init: sinon.stub().resolves() };
+  const actions = { init: sinon.stub().resolves() };
   const giftLinks = { init: sinon.stub().resolves() };
   const integrations = { init: sinon.stub().resolves() };
   const stripeCheckoutConfig = { init: sinon.stub().resolves() };
@@ -27,6 +28,7 @@ function createCoreHarness() {
     './server/services/internal-keys': { default: { init() {} } },
     './server/lib/common/events': {},
     './shared/i18n': i18n,
+    './server/services/actions': { default: actions },
     './server/services/gift-links': { default: giftLinks },
     './server/services/members-metafields': { init() {} },
     './server/services/app-installations': { default: { init() {} } },
@@ -40,6 +42,7 @@ function createCoreHarness() {
     settings,
     signingKeys,
     i18n,
+    actions,
     giftLinks,
     integrations,
     stripeCheckoutConfig,
@@ -119,7 +122,7 @@ it('waits for i18n initialization before continuing or resolving initCore', asyn
   try {
     await setImmediate();
     sinon.assert.calledOnce(boot.i18n.init);
-    sinon.assert.notCalled(boot.giftLinks.init);
+    sinon.assert.notCalled(boot.actions.init);
     assert.equal(completed, false);
   } finally {
     ready.resolve();
@@ -139,6 +142,41 @@ it('propagates the original i18n initialization error without continuing initCor
   await assert.rejects(boot.init(), (error) => error === failure);
 
   sinon.assert.calledOnce(boot.i18n.init);
+  sinon.assert.notCalled(boot.actions.init);
+});
+
+it('waits for Actions initialization before initializing the services that report to it', async function () {
+  const boot = createCoreHarness();
+  const ready = Promise.withResolvers<void>();
+  boot.actions.init.returns(ready.promise);
+  let completed = false;
+  const startup = boot.init().then(() => {
+    completed = true;
+  });
+
+  try {
+    await setImmediate();
+    sinon.assert.calledOnce(boot.actions.init);
+    sinon.assert.notCalled(boot.giftLinks.init);
+    assert.equal(completed, false);
+  } finally {
+    ready.resolve();
+    await Promise.allSettled([startup]);
+  }
+  await startup;
+
+  sinon.assert.calledOnce(boot.giftLinks.init);
+  assert.equal(completed, true);
+});
+
+it('propagates the original Actions initialization error without continuing initCore', async function () {
+  const boot = createCoreHarness();
+  const failure = new Error('actions initialization failed');
+  boot.actions.init.rejects(failure);
+
+  await assert.rejects(boot.init(), (error) => error === failure);
+
+  sinon.assert.calledOnce(boot.actions.init);
   sinon.assert.notCalled(boot.giftLinks.init);
 });
 

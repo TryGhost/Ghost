@@ -3,7 +3,8 @@ import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { GiftLinkRow, giftLinkCodec, giftLinkColumns } from './codec';
 import { generateGiftLinkToken, type GiftLink, type Post } from './models';
-import { type RecordGiftLinkAction, type RequestContext } from './actions';
+import type { GiftLinkReactions } from './changes';
+import type { RequestContext } from '../../lib/actor';
 import { ensureTransaction } from '../../lib/ensure-transaction';
 
 // The LEFT JOIN leaves every link column nullable; the explicit generic names a row shape knex
@@ -14,11 +15,11 @@ type LiveLinkRow = {
 
 export class GiftLinksService {
   private knex: Knex;
-  private recordAction: RecordGiftLinkAction;
+  private reactions: GiftLinkReactions;
 
-  constructor({ knex, recordAction }: { knex: Knex; recordAction: RecordGiftLinkAction }) {
+  constructor({ knex, reactions }: { knex: Knex; reactions: GiftLinkReactions }) {
     this.knex = knex;
-    this.recordAction = recordAction;
+    this.reactions = reactions;
   }
 
   async getPost(postId: string, executor: Knex = this.knex): Promise<Post> {
@@ -68,7 +69,11 @@ export class GiftLinksService {
         return existing;
       }
       const post = await this.mint(trx, postId);
-      await this.recordAction(trx, { context, verb: 'add', subject: postId });
+      await this.reactions.onGiftLinkUpdated(trx, context, {
+        type: 'GiftLinkAdded',
+        change: 'added',
+        next: post,
+      });
       return post;
     });
   }
@@ -79,25 +84,50 @@ export class GiftLinksService {
    */
   async create(context: RequestContext, postId: string, executor: Knex = this.knex): Promise<Post> {
     return ensureTransaction(executor, async (trx) => {
-      await this.lockedPost(trx, postId);
+      const previous = await this.lockedPost(trx, postId);
       const post = await this.mint(trx, postId);
-      await this.recordAction(trx, { context, verb: 'reset', subject: postId });
+      await this.reactions.onGiftLinkUpdated(trx, context, {
+        type: 'GiftLinkReset',
+        change: 'edited',
+        previous,
+        next: post,
+      });
       return post;
     });
   }
 
   /**
-   * Removes every post's live link. The `gift_links` rows are kept as history; only the live
-   * association is removed. Given a transaction as `executor` it joins that transaction; given a
-   * plain connection it opens its own.
+   * Removes every post's live link, and returns each post as it was, with the link it lost. The
+   * `gift_links` rows are kept as history; only the live association is removed. Given a
+   * transaction as `executor` it joins that transaction; given a plain connection it opens its own.
    */
-  async removeAll(context: RequestContext, executor: Knex = this.knex): Promise<number> {
+  async removeAll(context: RequestContext, executor: Knex = this.knex): Promise<Post[]> {
     return ensureTransaction(executor, async (trx) => {
-      const removed = await trx('post_gift_links').del();
-      if (removed > 0) {
-        await this.recordAction(trx, { context, verb: 'remove', subject: null });
+      // Read with a lock, so the links returned are the ones the delete removes.
+      const rows = await trx('post_gift_links')
+        .join('gift_links', 'gift_links.token', 'post_gift_links.gift_link_token')
+        .forUpdate()
+        .select<Array<z.input<typeof GiftLinkRow> & { post_id: string }>>([
+          ...giftLinkColumns,
+          'post_gift_links.post_id as post_id',
+        ]);
+      const posts: Post[] = rows.map((row) => ({
+        id: row.post_id,
+        giftLinks: [z.decode(giftLinkCodec, row)],
+      }));
+      await trx('post_gift_links').del();
+      if (posts.length > 0) {
+        await this.reactions.onGiftLinkUpdated(trx, context, {
+          type: 'GiftLinksRemoved',
+          change: 'deleted',
+          changes: posts.map((previous) => ({
+            type: 'GiftLinkRemoved',
+            change: 'deleted',
+            previous,
+          })),
+        });
       }
-      return removed;
+      return posts;
     });
   }
 
