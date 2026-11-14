@@ -1,4 +1,8 @@
 import assert from 'node:assert/strict';
+import sinon from 'sinon';
+// @ts-expect-error Module has no type declarations.
+import DomainEvents from '@tryghost/domain-events';
+import { LabelAddedToMembersEvent } from '../../../core/shared/events/label-added-to-members-event';
 
 interface LabelRow {
   id: string;
@@ -154,5 +158,106 @@ describe('Member Model: saving labels', function () {
       lookups[0].rows.map((row) => row.name),
       ['VIP'],
     );
+  });
+
+  describe('label addition events', function () {
+    let dispatch: sinon.SinonSpy;
+
+    beforeEach(function () {
+      dispatch = sinon.spy(DomainEvents, 'dispatch');
+    });
+
+    afterEach(function () {
+      dispatch.restore();
+    });
+
+    const getLabelAddedToMembersDomainEvents = () =>
+      dispatch.args
+        .map(([event]) => event)
+        // CommonJS server and Vitest can load separate event constructors.
+        .filter((event) => event.constructor.name === LabelAddedToMembersEvent.name)
+        .map((event) => event.data);
+
+    it('emits a "label added to members" domain event', async function () {
+      const memberId: string = await models.Member.transaction(async (transacting: unknown) => {
+        const member = await models.Member.add(
+          {
+            email_disabled: false,
+            email: 'label-event-import@example.com',
+            labels: [{ name: 'VIP' }, { name: 'Import Event' }],
+          },
+          { ...testUtils.context.internal, importing: true, transacting },
+        );
+        assert.deepEqual(
+          getLabelAddedToMembersDomainEvents(),
+          [],
+          'events should only happen after the transaction ends',
+        );
+        return member.id;
+      });
+
+      const labels = await attachedLabels(memberId);
+
+      const compare = (a: { labelId: string }, b: { labelId: string }) =>
+        a.labelId.localeCompare(b.labelId);
+      const actualDomainEvents = getLabelAddedToMembersDomainEvents().toSorted(compare);
+      const expectedDomainEvents = labels
+        .map((label) => ({ labelId: label.id, memberIds: [memberId] }))
+        .toSorted(compare);
+      assert.deepEqual(actualDomainEvents, expectedDomainEvents);
+    });
+
+    it('ignores existing assignments, removal, and unrelated edits; emits again on re-add', async function () {
+      const member = await models.Member.add(
+        { email_disabled: false, email: 'label-event-edit@example.com', labels: [{ name: 'VIP' }] },
+        testUtils.context.internal,
+      );
+      const options = { ...testUtils.context.internal, id: member.id };
+
+      dispatch.resetHistory();
+
+      await models.Member.edit({ labels: [{ name: 'vip' }], name: 'Changed name' }, options);
+      await models.Member.edit({ labels: [] }, options);
+
+      assert.deepEqual(getLabelAddedToMembersDomainEvents(), []);
+
+      await models.Member.edit({ labels: [{ name: 'VIP' }, { name: 'Added Event' }] }, options);
+
+      assert.equal(getLabelAddedToMembersDomainEvents().length, 2);
+      assert.ok(
+        getLabelAddedToMembersDomainEvents().every((event) => event.memberIds[0] === member.id),
+      );
+    });
+
+    it('emits nothing if transaction fails', async function () {
+      const email = 'label-event-rollback@example.com';
+      await assert.rejects(
+        models.Member.transaction(async (transacting: unknown) => {
+          await models.Member.add(
+            { email_disabled: false, email, labels: [{ name: 'VIP' }] },
+            { ...testUtils.context.internal, transacting },
+          );
+          throw new Error('rollback');
+        }),
+        /rollback/,
+      );
+      assert.equal(await models.Member.findOne({ email }), null);
+
+      assert.deepEqual(getLabelAddedToMembersDomainEvents(), []);
+    });
+
+    it('dedupes repeated edits in the same transaction', async function () {
+      const member = await models.Member.add(
+        { email_disabled: false, email: 'label-event-repeated@example.com' },
+        testUtils.context.internal,
+      );
+      await models.Member.transaction(async (transacting: unknown) => {
+        const options = { ...testUtils.context.internal, id: member.id, transacting };
+        await models.Member.edit({ labels: [{ name: 'VIP' }] }, options);
+        await models.Member.edit({ labels: [] }, options);
+      });
+
+      assert.equal(getLabelAddedToMembersDomainEvents().length, 1);
+    });
   });
 });

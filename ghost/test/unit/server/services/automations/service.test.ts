@@ -9,7 +9,17 @@ import type {
   InternalIntegrationSlug,
 } from '../../../../../core/server/services/internal-keys';
 import { StartAutomationsPollEvent } from '../../../../../core/server/services/automations/events/start-automations-poll-event';
+import * as automationsApi from '../../../../../core/server/services/automations/automations-api';
+import { LabelAddedToMembersEvent } from '../../../../../core/shared/events/label-added-to-members-event';
 import { AutomationsService } from '../../../../../core/server/services/automations/service';
+
+vi.mock(
+  '../../../../../core/server/services/automations/automations-api',
+  async (importOriginal) => ({
+    ...(await importOriginal<typeof automationsApi>()),
+    notify: vi.fn(),
+  }),
+);
 
 type InitOptions = Parameters<AutomationsService['init']>[0];
 type DomainEvents = InitOptions['domainEvents'];
@@ -48,6 +58,7 @@ describe('automations service', function () {
 
   afterEach(function () {
     sinon.restore();
+    vi.resetAllMocks();
   });
 
   describe('init', function () {
@@ -63,22 +74,40 @@ describe('automations service', function () {
     it('subscribes to StartAutomationsPollEvent', function () {
       automations.init(initOptions);
       sinon.assert.called(domainEvents.subscribe);
-      sinon.assert.alwaysCalledWith(
-        domainEvents.subscribe,
-        StartAutomationsPollEvent,
-        sinon.match.func,
-      );
+      sinon.assert.calledWith(domainEvents.subscribe, StartAutomationsPollEvent, sinon.match.func);
+    });
+
+    it('subscribes to LabelAddedToMembersEvent', function () {
+      automations.init(initOptions);
+      sinon.assert.called(domainEvents.subscribe);
+      sinon.assert.calledWith(domainEvents.subscribe, LabelAddedToMembersEvent, sinon.match.func);
     });
 
     it('subscribes each poller only once when init is called multiple times', function () {
       automations.init(initOptions);
-      sinon.assert.calledTwice(domainEvents.subscribe);
+      sinon.assert.calledThrice(domainEvents.subscribe);
 
       automations.init(initOptions);
       automations.init(initOptions);
       automations.init(initOptions);
       automations.init(initOptions);
-      sinon.assert.calledTwice(domainEvents.subscribe);
+      sinon.assert.calledThrice(domainEvents.subscribe);
+    });
+  });
+
+  describe('label additions', function () {
+    it('notifies automations with the label and members', async function () {
+      const notify = vi.mocked(automationsApi.notify).mockResolvedValue(undefined);
+      automations.init(initOptions);
+      const subscription = domainEvents.subscribe
+        .getCalls()
+        .find((call: sinon.SinonSpyCall) => call.args[0] === LabelAddedToMembersEvent);
+      assert.ok(subscription);
+
+      const event = new LabelAddedToMembersEvent('label', ['member-1', 'member-2']);
+      await subscription.args[1](event);
+
+      expect(notify).toHaveBeenCalledExactlyOnceWith({ eventName: 'label_added', ...event.data });
     });
   });
 

@@ -1,9 +1,13 @@
+const DomainEvents = require('@tryghost/domain-events');
+const logging = require('@tryghost/logging');
+const { afterCommit } = require('../lib/after-commit');
 const ghostBookshelf = require('./base');
 const crypto = require('crypto');
 const _ = require('lodash');
 const { chainTransformers } = require('@tryghost/mongo-utils');
 const { memberAvatarImage } = require('../services/members/member-avatar');
 const { MemberCommentingCodec } = require('../services/members/commenting');
+const { LabelAddedToMembersEvent } = require('../../shared/events/label-added-to-members-event');
 const {
   METAFIELDS_RELATION,
   createMetafieldsFilterTransformer,
@@ -573,6 +577,13 @@ const Member = ghostBookshelf.Model.extend(
             labels.forEach((label) => {
               label.emitChange('attached', options);
               model.emitChange('label.attached', options);
+
+              const event = new LabelAddedToMembersEvent(label.id, [model.id]);
+              afterCommit(
+                options.transacting,
+                () => DomainEvents.dispatch(event),
+                (err) => logging.error(err),
+              );
             });
           });
       });
@@ -700,7 +711,7 @@ const Member = ghostBookshelf.Model.extend(
     getLabelRelations(data, unfilteredOptions = {}) {
       const query = ghostBookshelf
         .knex('members_labels')
-        .select('id')
+        .select('id', 'member_id')
         .where('label_id', data.labelId)
         .whereIn('member_id', data.memberIds);
 

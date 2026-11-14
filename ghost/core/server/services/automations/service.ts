@@ -12,6 +12,7 @@ import * as automationsApi from './automations-api';
 import { poll } from './poll';
 import { getSchedulerPollTime } from './scheduler-poll-time';
 import logging from '@tryghost/logging';
+import { LabelAddedToMembersEvent } from '../../../shared/events/label-added-to-members-event';
 // @ts-expect-error This module currently lacks type definitions.
 import emailAnalyticsJobs from '../email-analytics/jobs';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
@@ -117,6 +118,10 @@ export class AutomationsService {
           enqueueAnotherPollAt: enqueuePollAt,
         }),
       ),
+    );
+
+    domainEvents.subscribe(LabelAddedToMembersEvent, (event: LabelAddedToMembersEvent) =>
+      automationsApi.notify({ eventName: 'label_added', ...event.data }),
     );
 
     schedulerAdapter.register(this);
