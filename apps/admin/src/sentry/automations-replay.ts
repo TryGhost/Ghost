@@ -33,19 +33,30 @@ export function createAutomationsReplay(
   let initialCheckDone = false;
   let recordingStarted = false;
 
+  // `document.body` can be null when something outside Admin has removed it, and Admin must
+  // not crash on a replay mask
   const updateMask = () => {
     if (isAutomationsPath(currentPathname)) {
-      document.body.setAttribute(AUTOMATIONS_MASK_ATTRIBUTE, 'true');
+      document.body?.setAttribute(AUTOMATIONS_MASK_ATTRIBUTE, 'true');
     } else {
-      document.body.removeAttribute(AUTOMATIONS_MASK_ATTRIBUTE);
+      document.body?.removeAttribute(AUTOMATIONS_MASK_ATTRIBUTE);
     }
   };
 
   const maybeStartRecording = () => {
-    if (!shouldStartRecording || !isAutomationsPath(currentPathname) || recordingStarted) {
+    // Without a body there is nothing to carry the mask, so a recording would capture
+    // Automations unmasked if a body appeared later; a later route update retries
+    if (
+      !shouldStartRecording ||
+      !isAutomationsPath(currentPathname) ||
+      recordingStarted ||
+      !document.body
+    ) {
       return;
     }
     recordingStarted = true;
+    // The body may have appeared after the last mask write, such as before the deferred check
+    updateMask();
 
     replay
       .stop()
@@ -81,7 +92,7 @@ export function createAutomationsReplay(
     },
     dispose() {
       clearTimeout(initialCheck);
-      document.body.removeAttribute(AUTOMATIONS_MASK_ATTRIBUTE);
+      document.body?.removeAttribute(AUTOMATIONS_MASK_ATTRIBUTE);
     },
   };
 }
