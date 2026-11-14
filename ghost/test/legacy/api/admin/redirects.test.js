@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const supertest = require('supertest');
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const path = require('path');
 const os = require('os');
 const crypto = require('crypto');
@@ -24,8 +24,8 @@ describe('Redirects API', function () {
         //       The test itself should be broken down into a unit test for the
         //       Redirects service class.
         const contentFolder = path.join(os.tmpdir(), crypto.randomUUID(), 'ghost-test');
-        fs.ensureDirSync(contentFolder);
-        fs.ensureDirSync(path.join(contentFolder, 'data'));
+        fs.mkdirSync(contentFolder, { recursive: true });
+        fs.mkdirSync(path.join(contentFolder, 'data'), { recursive: true });
         fs.writeFileSync(path.join(contentFolder, 'data', 'redirects.json'), JSON.stringify([]));
 
         return startGhost({

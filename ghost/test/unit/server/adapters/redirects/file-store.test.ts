@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import path from 'path';
 import os from 'os';
 import crypto from 'crypto';
@@ -15,11 +16,11 @@ describe('FileStore', function () {
 
   beforeEach(async function () {
     basePath = path.join(os.tmpdir(), `redirects-filestore-${crypto.randomUUID()}`);
-    await fs.ensureDir(basePath);
+    await fs.mkdir(basePath, { recursive: true });
   });
 
   afterEach(async function () {
-    await fs.remove(basePath);
+    await fs.rm(basePath, { recursive: true, force: true });
   });
 
   runStoreContract({
@@ -114,8 +115,8 @@ describe('FileStore', function () {
       const store = new FileStore({ basePath });
       await store.replaceAll([{ from: '/x', to: '/y', permanent: false }]);
 
-      assert.equal(await fs.pathExists(path.join(basePath, 'redirects.yaml')), false);
-      assert.equal(await fs.pathExists(path.join(basePath, 'redirects.json')), true);
+      assert.equal(existsSync(path.join(basePath, 'redirects.yaml')), false);
+      assert.equal(existsSync(path.join(basePath, 'redirects.json')), true);
 
       const entries = await fs.readdir(basePath);
       assert.ok(
@@ -196,7 +197,7 @@ describe('FileStore', function () {
       // Without rollback, getAll() would prefer the surviving
       // yaml and the operator's upload would look like it never
       // happened.
-      assert.equal(await fs.pathExists(path.join(basePath, 'redirects.json')), false);
+      assert.equal(existsSync(path.join(basePath, 'redirects.json')), false);
       assert.deepEqual(await store.getAll(), [
         { from: '/old/', to: '/old-target/', permanent: true },
       ]);

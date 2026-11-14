@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import sinon from 'sinon';
 
 const ImportArchive = require('../../../core/server/data/importer/import-archive').default;
@@ -18,7 +19,7 @@ describe('ImportArchive', function () {
 
   afterEach(async function () {
     sinon.restore();
-    await fs.remove(directory);
+    await fs.rm(directory, { recursive: true, force: true });
   });
 
   function archive(options: { extensions?: string[]; directories?: string[] } = {}) {
@@ -30,7 +31,7 @@ describe('ImportArchive', function () {
 
   async function write(fileName: string, contents = ''): Promise<void> {
     const filePath = path.join(directory, fileName);
-    await fs.ensureDir(path.dirname(filePath));
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
     await fs.writeFile(filePath, contents);
   }
 
@@ -85,7 +86,8 @@ describe('ImportArchive', function () {
     await write('POSTS.JSON');
     assert.equal(subject.isValid(directory), true);
 
-    await fs.emptyDir(directory);
+    await fs.rm(directory, { recursive: true, force: true });
+    await fs.mkdir(directory, { recursive: true });
     await write('export/posts.json');
     assert.equal(subject.isValid(directory), true);
   });
@@ -117,12 +119,14 @@ describe('ImportArchive', function () {
     await write('export/posts.json');
     assert.equal(subject.getBaseDirectory(directory), 'export');
 
-    await fs.emptyDir(directory);
+    await fs.rm(directory, { recursive: true, force: true });
+    await fs.mkdir(directory, { recursive: true });
     await write('posts.json');
     assert.equal(subject.getBaseDirectory(directory), undefined);
 
-    await fs.emptyDir(directory);
-    await fs.ensureDir(path.join(directory, 'content'));
+    await fs.rm(directory, { recursive: true, force: true });
+    await fs.mkdir(directory, { recursive: true });
+    await fs.mkdir(path.join(directory, 'content'), { recursive: true });
     assert.equal(subject.getBaseDirectory(directory), undefined);
   });
 
@@ -146,7 +150,9 @@ describe('ImportArchive', function () {
       { extensions: ['.json'], directories: [] },
       {
         extract: async (_filePath: string, target: string) => {
-          await fs.outputFile(path.join(target, 'export/posts.json'), '{}');
+          const outputPath = path.join(target, 'export/posts.json');
+          await fs.mkdir(path.dirname(outputPath), { recursive: true });
+          await fs.writeFile(outputPath, '{}');
           await fs.chmod(path.join(target, 'export/posts.json'), 0o600);
         },
       },
@@ -157,7 +163,7 @@ describe('ImportArchive', function () {
       const mode = (await fs.stat(path.join(extracted, 'export/posts.json'))).mode & 0o777;
       assert.equal(mode, 0o644);
     } finally {
-      await fs.remove(extracted);
+      await fs.rm(extracted, { recursive: true, force: true });
     }
   });
 
@@ -168,7 +174,9 @@ describe('ImportArchive', function () {
       {
         extract: async (_filePath: string, target: string) => {
           extracted = target;
-          await fs.outputFile(path.join(target, 'partial.json'), '{}');
+          const outputPath = path.join(target, 'partial.json');
+          await fs.mkdir(path.dirname(outputPath), { recursive: true });
+          await fs.writeFile(outputPath, '{}');
           throw new Error('ENAMETOOLONG: invalid filename');
         },
       },
@@ -183,7 +191,7 @@ describe('ImportArchive', function () {
         return true;
       },
     );
-    assert.equal(await fs.pathExists(extracted), false);
+    assert.equal(existsSync(extracted), false);
   });
 
   for (const message of [

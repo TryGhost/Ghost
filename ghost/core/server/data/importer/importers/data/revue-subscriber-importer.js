@@ -3,7 +3,7 @@ const BaseImporter = require('./base');
 
 const papaparse = require('papaparse');
 const path = require('path');
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 
 const config = require('../../../../../shared/config');
 

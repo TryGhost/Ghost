@@ -1,6 +1,6 @@
 import { pipeline } from 'node:stream';
 import papaparse from 'papaparse';
-import fs from 'fs-extra';
+import fs from 'node:fs';
 
 // A parsed CSV row: raw string cells, keyed by (renamed) column. Parsing is mechanical;
 // giving the columns meaning and coercing their values is the domain's job (the import

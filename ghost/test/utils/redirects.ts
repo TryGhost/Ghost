@@ -1,4 +1,5 @@
-import * as fs from 'fs-extra';
+import fs from 'node:fs/promises';
+import { existsSync, rmSync } from 'node:fs';
 import * as path from 'node:path';
 
 /**
@@ -12,25 +13,29 @@ export const setupFile = async (
   const jsonPath = path.join(contentFolderForTests, 'data', 'redirects.json');
 
   if (ext === '.json') {
-    if (fs.existsSync(yamlPath)) {
-      fs.removeSync(yamlPath);
+    if (existsSync(yamlPath)) {
+      rmSync(yamlPath, { recursive: true, force: true });
     }
-    await fs.copy(path.join(__dirname, 'fixtures', 'data', 'redirects.json'), jsonPath);
+    await fs.cp(path.join(__dirname, 'fixtures', 'data', 'redirects.json'), jsonPath, {
+      recursive: true,
+    });
   }
 
   if (ext === '.yaml') {
-    if (fs.existsSync(jsonPath)) {
-      fs.removeSync(jsonPath);
+    if (existsSync(jsonPath)) {
+      rmSync(jsonPath, { recursive: true, force: true });
     }
-    await fs.copy(path.join(__dirname, 'fixtures', 'data', 'redirects.yaml'), yamlPath);
+    await fs.cp(path.join(__dirname, 'fixtures', 'data', 'redirects.yaml'), yamlPath, {
+      recursive: true,
+    });
   }
 
   if (ext === null) {
-    if (fs.existsSync(yamlPath)) {
-      fs.removeSync(yamlPath);
+    if (existsSync(yamlPath)) {
+      rmSync(yamlPath, { recursive: true, force: true });
     }
-    if (fs.existsSync(jsonPath)) {
-      fs.removeSync(jsonPath);
+    if (existsSync(jsonPath)) {
+      rmSync(jsonPath, { recursive: true, force: true });
     }
   }
 };

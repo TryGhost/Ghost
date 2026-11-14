@@ -1,9 +1,15 @@
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import path from 'path';
 import { RedirectsStoreBase, RedirectConfig } from '@tryghost/adapter-base-redirects';
 
 import { parseJson, parseYaml } from '../../services/custom-redirects/redirect-config-parser';
 import { getBackupRedirectsFilePath } from '../../services/custom-redirects/utils';
+
+const exists = (filePath: string) =>
+  fs.access(filePath).then(
+    () => true,
+    () => false,
+  );
 
 const YAML_FILENAME = 'redirects.yaml';
 const JSON_FILENAME = 'redirects.json';
@@ -69,7 +75,7 @@ export default class FileStore extends RedirectsStoreBase {
       try {
         await this._backup(existingPath);
       } catch (err) {
-        await fs.remove(targetPath).catch(() => {});
+        await fs.rm(targetPath, { recursive: true, force: true }).catch(() => {});
         throw err;
       }
     }
@@ -77,12 +83,12 @@ export default class FileStore extends RedirectsStoreBase {
 
   private async _findExistingFile(): Promise<string | null> {
     const yamlPath = path.join(this.basePath, YAML_FILENAME);
-    if (await fs.pathExists(yamlPath)) {
+    if (await exists(yamlPath)) {
       return yamlPath;
     }
 
     const jsonPath = path.join(this.basePath, JSON_FILENAME);
-    if (await fs.pathExists(jsonPath)) {
+    if (await exists(jsonPath)) {
       return jsonPath;
     }
 
@@ -92,19 +98,17 @@ export default class FileStore extends RedirectsStoreBase {
   private async _backup(existingPath: string): Promise<void> {
     const backupPath = this.getBackupFilePath(existingPath);
     // Per-second timestamp granularity → same-second writes collide.
-    // Overwrite rather than fail.
-    await fs.move(existingPath, backupPath, { overwrite: true });
+    // rename() overwrites rather than fails.
+    await fs.rename(existingPath, backupPath);
   }
 
-  // `fs-extra.move({overwrite: true})` handles the Windows EPERM/EEXIST
-  // path that bare `fs.rename` doesn't.
   private async _writeAtomic(targetPath: string, content: string): Promise<void> {
     const tmpPath = `${targetPath}.tmp.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2)}`;
     await fs.writeFile(tmpPath, content, 'utf-8');
     try {
-      await fs.move(tmpPath, targetPath, { overwrite: true });
+      await fs.rename(tmpPath, targetPath);
     } catch (err) {
-      await fs.remove(tmpPath).catch(() => {});
+      await fs.rm(tmpPath, { recursive: true, force: true }).catch(() => {});
       throw err;
     }
   }

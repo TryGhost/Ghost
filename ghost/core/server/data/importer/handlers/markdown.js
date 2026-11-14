@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 const moment = require('moment');
 const featuredImageRegex = /^(!\[]\(([^)]*?)\)\s+)(?=#)/;
 const titleRegex = /^#\s?([\w\W]*?)(?=\n)/;

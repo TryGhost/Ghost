@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
+import { existsSync, readFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { prepareAssetBatch } from '../../../core/server/services/content-import/import/assets';
@@ -11,9 +12,7 @@ import {
 const { compress } = require('@tryghost/zip');
 
 // Imported images must have image contents, not just an image extension
-const imageBytes = fs.readFileSync(
-  path.join(__dirname, '../../utils/fixtures/images/ghosticon.jpg'),
-);
+const imageBytes = readFileSync(path.join(__dirname, '../../utils/fixtures/images/ghosticon.jpg'));
 
 describe('content import source', function () {
   let directory: string;
@@ -23,7 +22,7 @@ describe('content import source', function () {
   });
 
   afterEach(async function () {
-    await fs.remove(directory);
+    await fs.rm(directory, { recursive: true, force: true });
   });
 
   async function archive(
@@ -31,10 +30,10 @@ describe('content import source', function () {
     name = 'posts.zip',
   ): Promise<string> {
     const contents = path.join(directory, 'contents');
-    await fs.ensureDir(contents);
+    await fs.mkdir(contents, { recursive: true });
     for (const [fileName, value] of Object.entries(files)) {
       const filePath = path.join(contents, fileName);
-      await fs.ensureDir(path.dirname(filePath));
+      await fs.mkdir(path.dirname(filePath), { recursive: true });
       await fs.writeFile(filePath, value);
     }
     const zipPath = path.join(directory, name);
@@ -50,7 +49,7 @@ describe('content import source', function () {
 
     assert.equal(source.filePath, filePath);
     await source.cleanup();
-    assert.equal(await fs.pathExists(filePath), true);
+    assert.equal(existsSync(filePath), true);
   });
 
   it('classifies only root and single-wrapper import data files', function () {
@@ -103,7 +102,7 @@ describe('content import source', function () {
     const extractedDirectory = path.dirname(source.filePath);
     await source.cleanup();
     await source.cleanup();
-    assert.equal(await fs.pathExists(extractedDirectory), false, 'cleanup is idempotent');
+    assert.equal(existsSync(extractedDirectory), false, 'cleanup is idempotent');
   });
 
   it('extracts a wrapped CSV and prepares wrapped image, media, and file assets', async function () {
@@ -247,7 +246,7 @@ describe('content import source', function () {
         prepareImportSource({ filePath: zipPath, fileName: archiveName }),
         /cannot contain CSV, JSON, or Markdown import files together/,
       );
-      await fs.remove(path.join(directory, 'contents'));
+      await fs.rm(path.join(directory, 'contents'), { recursive: true, force: true });
     }
   });
 

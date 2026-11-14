@@ -1,6 +1,6 @@
 const os = require('os');
 const path = require('path');
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const security = require('@tryghost/security');
@@ -68,14 +68,14 @@ function toCSVStream(label, rows, transform) {
  */
 async function zipThemeToTempFile(name) {
   const tmpDir = path.join(os.tmpdir(), `ghost-export-${security.identifier.uid(10)}`);
-  await fs.ensureDir(tmpDir);
+  await fs.mkdir(tmpDir, { recursive: true });
 
   try {
     const zipPath = path.join(tmpDir, `${name}.zip`);
     await themeService.api.zipToFile(name, zipPath);
-    return { zipPath, cleanup: () => fs.remove(tmpDir) };
+    return { zipPath, cleanup: () => fs.rm(tmpDir, { recursive: true, force: true }) };
   } catch (err) {
-    await fs.remove(tmpDir);
+    await fs.rm(tmpDir, { recursive: true, force: true });
     throw err;
   }
 }

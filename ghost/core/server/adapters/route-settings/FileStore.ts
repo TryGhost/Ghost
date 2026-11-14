@@ -1,4 +1,4 @@
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import path from 'path';
 import { z } from 'zod';
 import * as errors from '@tryghost/errors';
@@ -134,11 +134,11 @@ export default class FileStore extends RouteSettingsStoreBase {
   private async writeAtomic(targetPath: string, content: string): Promise<void> {
     const tmpPath = `${targetPath}.tmp.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2)}`;
     try {
-      await fs.ensureDir(path.dirname(targetPath));
+      await fs.mkdir(path.dirname(targetPath), { recursive: true });
       await fs.writeFile(tmpPath, content, 'utf-8');
-      await fs.move(tmpPath, targetPath, { overwrite: true });
+      await fs.rename(tmpPath, targetPath);
     } catch (err) {
-      await fs.remove(tmpPath).catch(() => {});
+      await fs.rm(tmpPath, { recursive: true, force: true }).catch(() => {});
       throw new errors.InternalServerError({
         message: tpl(messages.ensureSettings, { path: this.basePath }),
         err: err as Error,
