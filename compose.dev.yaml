@@ -52,7 +52,7 @@ services:
       retries: 120
 
   mailpit:
-    image: axllent/mailpit@sha256:9b3a463be15354c0f0eba91697d80e3e0d8a5623ef0e627cacc836bc17fd5231
+    image: axllent/mailpit@sha256:aef2aacc11f075ec0fb6874275ee4a421e688e11a96ebb296134d1735c7761ce
     container_name: ghost-dev-mailpit
     # Tags each message with the SMTP username, which `pnpm dev` sets to the checkout's name
     command: ['--quiet', '--smtp-auth-accept-any', '--smtp-auth-allow-insecure', '--tags-username']
@@ -182,7 +182,7 @@ services:
         condition: service_healthy
 
   stripe:
-    image: stripe/stripe-cli:latest@sha256:c8e5a48108fb4c1e83583912c85810e9ac3bc8db91070da3f915ac369ceecf31
+    image: stripe/stripe-cli:latest@sha256:b72ef98b2c4e0d1ad81f7a0183c0506c63663fa3f8645226b954a9aca3046552
     container_name: ghost-dev-stripe
     entrypoint: ['/entrypoint.sh']
     profiles: ['stripe']
