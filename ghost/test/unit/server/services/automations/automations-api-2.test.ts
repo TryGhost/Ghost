@@ -69,7 +69,10 @@ describe('automations API', function () {
 
     let repository: ReturnType<typeof createTestAutomationsRepository2>;
     let domainEvents: { dispatch: ReturnType<typeof vi.fn<(event: unknown) => unknown>> };
-    let event: Parameters<ReturnType<typeof createApi>['notify']>[0];
+    let event: Extract<
+      Parameters<ReturnType<typeof createApi>['notify']>[0],
+      { eventName: 'membership_started' }
+    >;
     let firstActions: FirstAction[];
     let runs: Array<Pick<RunToInsert, 'id' | 'automation_id' | 'member_id'>>;
     let steps: RunStepToInsert[];
@@ -95,7 +98,6 @@ describe('automations API', function () {
       event = {
         eventName: 'membership_started',
         source: 'member',
-        memberEmail: 'member@example.com',
         memberId: ObjectId().toHexString(),
         memberStatus: 'free',
         previousMemberStatus: null,
@@ -103,10 +105,12 @@ describe('automations API', function () {
       };
 
       repository = createTestAutomationsRepository2({
-        lockMember: noop,
+        fetchAndLockMembers: () => [{ id: event.memberId, email: 'stored@example.com' }],
+        findAutomationMemberEnrollments: (_connection, automationIds, memberIds) =>
+          runs.filter(
+            (run) => automationIds.includes(run.automation_id) && memberIds.includes(run.member_id),
+          ),
         findFirstActionRevisions: () => firstActions,
-        hasMemberEnteredAutomation: (_connection, automationId, memberId) =>
-          runs.some((run) => run.automation_id === automationId && run.member_id === memberId),
         insertRuns: (_connection, toInsert) => {
           runs.push(...toInsert);
         },
@@ -131,7 +135,6 @@ describe('automations API', function () {
             api.notify({
               ...event,
               eventName: eventName as any,
-              memberEmail: 'foo@example.com',
               memberId: 'abc',
               memberStatus: 'free',
               memberTierIds: [],
@@ -158,6 +161,11 @@ describe('automations API', function () {
         eventName: 'paid_subscription_changed',
         previousMemberStatus: 'paid',
         previousMemberTierIds: ['basic'],
+      });
+      await api.notify({
+        eventName: 'label_added',
+        labelId: 'label',
+        memberIds: ['member'],
       });
 
       expect(withTransaction).not.toHaveBeenCalled();
@@ -257,30 +265,29 @@ describe('automations API', function () {
       });
     });
 
-    it('locks the member before any other repository operation', async function () {
-      const lockMember = vi.fn();
-      const findFirstActionRevisions = vi.fn().mockReturnValue([createFirstAction()]);
-      const hasMemberEnteredAutomation = vi.fn().mockReturnValue(false);
+    it('locks the members before any other repository operation', async function () {
+      firstActions = [createFirstAction()];
+      const findFirstActionRevisions = vi.fn(repository.findFirstActionRevisions);
+      const fetchAndLockMembers = vi.fn(repository.fetchAndLockMembers);
+      const findAutomationMemberEnrollments = vi.fn(repository.findAutomationMemberEnrollments);
       const insertRuns = vi.fn();
       const insertRunSteps = vi.fn();
-
       const api = createApi({
-        repository: createTestAutomationsRepository2({
-          lockMember,
+        repository: {
+          ...repository,
+          findAutomationMemberEnrollments,
+          fetchAndLockMembers,
           findFirstActionRevisions,
-          hasMemberEnteredAutomation,
           insertRuns,
           insertRunSteps,
-        }),
+        },
         domainEvents,
       });
-
       await api.notify(event);
-
-      expect(lockMember).toHaveBeenCalledBefore(findFirstActionRevisions);
-      expect(lockMember).toHaveBeenCalledBefore(hasMemberEnteredAutomation);
-      expect(lockMember).toHaveBeenCalledBefore(insertRunSteps);
-      expect(lockMember).toHaveBeenCalledBefore(insertRuns);
+      expect(fetchAndLockMembers).toHaveBeenCalledBefore(findFirstActionRevisions);
+      expect(fetchAndLockMembers).toHaveBeenCalledBefore(findAutomationMemberEnrollments);
+      expect(fetchAndLockMembers).toHaveBeenCalledBefore(insertRuns);
+      expect(fetchAndLockMembers).toHaveBeenCalledBefore(insertRunSteps);
     });
 
     it('enrolls the member in matching automations and queues their first actions', async function () {
@@ -296,7 +303,7 @@ describe('automations API', function () {
           id: expect.any(String),
           automation_id: action.automation_id,
           member_id: event.memberId,
-          member_email: event.memberEmail,
+          member_email: 'stored@example.com',
           created_at: now,
           updated_at: now,
         })),
@@ -323,6 +330,134 @@ describe('automations API', function () {
       expect(domainEvents.dispatch).toHaveBeenCalledExactlyOnceWith(
         expect.any(StartAutomationsPollEvent),
       );
+    });
+
+    it.each(['membership_started', 'paid_subscription_changed'] as const)(
+      'reads the member email for %s events',
+      async function (eventName) {
+        firstActions = [createFirstAction()];
+        const api = createApi({ repository, domainEvents });
+        await api.notify({
+          ...event,
+          eventName,
+          previousMemberStatus: 'paid',
+          previousMemberTierIds: ['previous-tier'],
+        });
+        expect(runs).toEqual([expect.objectContaining({ member_email: 'stored@example.com' })]);
+      },
+    );
+
+    it.each(['member', 'admin', 'api', 'import', 'system'] as const)(
+      'enrolls labeled members from %s events',
+      async function (source) {
+        const members = [
+          { id: 'member-1', email: 'first@example.com' },
+          { id: 'member-2', email: 'second@example.com' },
+        ];
+        const wait = createFirstAction();
+        const email: FirstAction = { ...createFirstAction(), type: 'send_email' };
+        firstActions = [wait, email];
+        const findAutomationMemberEnrollments = vi.fn(repository.findAutomationMemberEnrollments);
+        const findFirstActionRevisions = vi.fn(() => firstActions);
+        const api = createApi({
+          repository: {
+            ...repository,
+            findAutomationMemberEnrollments,
+            fetchAndLockMembers: () => members,
+            findFirstActionRevisions,
+          },
+          domainEvents,
+        });
+
+        await api.notify({
+          eventName: 'label_added',
+          labelId: 'label',
+          memberIds: members.map(({ id }) => id),
+        });
+
+        expect(findAutomationMemberEnrollments).toHaveBeenCalledExactlyOnceWith(
+          expect.anything(),
+          firstActions.map((action) => action.automation_id),
+          ['member-1', 'member-2'],
+        );
+        expect(findFirstActionRevisions).toHaveBeenCalledExactlyOnceWith(expect.anything(), {
+          eventName: 'label_added',
+          labelId: 'label',
+        });
+        expect(runs).toEqual(
+          members.flatMap((member) =>
+            firstActions.map((action) => ({
+              id: expect.any(String),
+              automation_id: action.automation_id,
+              member_id: member.id,
+              member_email: member.email,
+              created_at: now,
+              updated_at: now,
+            })),
+          ),
+        );
+        expect(steps).toEqual(
+          runs.map((run) => ({
+            id: expect.any(String),
+            automation_run_id: run.id,
+            automation_action_revision_id:
+              run.automation_id === wait.automation_id
+                ? wait.automation_action_revision_id
+                : email.automation_action_revision_id,
+            created_at: now,
+            updated_at: now,
+            ready_at:
+              run.automation_id === wait.automation_id ? new Date('2026-01-02T05:04:05Z') : now,
+          })),
+        );
+        expect(domainEvents.dispatch).toHaveBeenCalledExactlyOnceWith(
+          expect.any(StartAutomationsPollEvent),
+        );
+      },
+    );
+
+    it('does nothing for an empty label event', async function () {
+      const api = createApi();
+      await api.notify({
+        eventName: 'label_added',
+        labelId: 'label',
+        memberIds: [],
+      });
+    });
+
+    it('does not trigger when label has no matching automations', async function () {
+      firstActions = [];
+      const api = createApi({
+        repository: {
+          ...repository,
+          fetchAndLockMembers: () => [{ id: 'member', email: 'member@example.com' }],
+        },
+        domainEvents,
+      });
+      await api.notify({
+        eventName: 'label_added',
+        labelId: 'label',
+        memberIds: ['member'],
+      });
+      expect(runs).toEqual([]);
+      expect(steps).toEqual([]);
+      expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('does not trigger when label members are missing', async function () {
+      firstActions = [createFirstAction()];
+      const api = createApi({
+        repository: { ...repository, fetchAndLockMembers: () => [] },
+        domainEvents,
+      });
+      await api.notify({
+        eventName: 'label_added',
+        labelId: 'label',
+        memberIds: ['member'],
+      });
+      expect(runs).toEqual([]);
+      expect(steps).toEqual([]);
+      expect(domainEvents.dispatch).not.toHaveBeenCalled();
     });
 
     it.each(['free', 'paid'] as const)(
@@ -419,11 +554,11 @@ describe('automations API', function () {
     });
 
     it.each([
-      'lockMember',
+      'fetchAndLockMembers',
+      'findAutomationMemberEnrollments',
       'findFirstActionRevisions',
-      'hasMemberEnteredAutomation',
-      'insertRuns',
       'insertRunSteps',
+      'insertRuns',
     ] as const)('propagates %s failures without requesting a poll', async function (method) {
       firstActions = [createFirstAction()];
       const failure = new Error(`${method} failed`);
