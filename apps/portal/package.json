@@ -39,7 +39,7 @@
     "@sentry/react": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:react17",
-    "@testing-library/user-event": "14.6.8",
+    "@testing-library/user-event": "14.6.9",
     "@tryghost/checkout": "workspace:*",
     "@tryghost/i18n": "workspace:*",
     "@tryghost/metafield-types": "workspace:*",
