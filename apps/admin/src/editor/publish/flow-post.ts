@@ -30,7 +30,7 @@ export interface PublishFlowPost {
   email?: Email | null;
   /** When the post's email was created, for the update flow's historic sentence. */
   emailCreatedAt?: string | null;
-  /** The unsaved body when the editor has one; read only by the public-preview predicate. */
+  /** The unsaved body when the editor has one; read only by the flow's pre-publish gates. */
   lexical?: string | null;
   /** The version of the server's copy, absent until there is one. */
   updatedAt?: string | null;
@@ -53,7 +53,7 @@ export interface PublishFlowPostSources {
   /** The site's tiers as far as they have loaded, which name a tier picked before its save lands. */
   knownTiers?: ReadonlyArray<{ id: string; slug?: string | null }>;
   displayName: 'post' | 'page';
-  /** The body the writer is looking at, which the public-preview predicate reads. */
+  /** The body the writer is looking at, which the flow's pre-publish gates read. */
   lexical?: string | null;
 }
 
