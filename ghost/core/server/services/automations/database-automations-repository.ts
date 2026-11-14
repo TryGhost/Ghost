@@ -979,7 +979,16 @@ async function getRulesByAutomation(
   }
 
   const rules = await trx('automation_trigger_rules')
-    .select('id', 'automation_id', 'created_at', 'trigger_type', 'scope', 'product_id', 'direction')
+    .select(
+      'id',
+      'automation_id',
+      'created_at',
+      'trigger_type',
+      'scope',
+      'product_id',
+      'direction',
+      'label_id',
+    )
     .whereIn('automation_id', automationIds);
   for (const rule of rules) {
     result.get(rule.automation_id).push(automationTriggerRuleSchema.parse(rule));
@@ -1643,7 +1652,7 @@ async function buildAutomation(
   const edgeRows = await repository2.loadEdgeRows(trx, automation.id);
   const rules = (
     await trx('automation_trigger_rules')
-      .select('trigger_type', 'scope', 'product_id', 'direction')
+      .select('trigger_type', 'scope', 'product_id', 'direction', 'label_id')
       .where('automation_id', automation.id)
       .orderBy(['product_id', 'direction'])
   ).map((rule) => automationTriggerRuleDefinitionSchema.parse(rule));
