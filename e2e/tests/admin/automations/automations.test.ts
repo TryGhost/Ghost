@@ -5,6 +5,7 @@ import {
   completePaidSignupViaPortal,
   createPaidPortalTier,
   expect,
+  switchPlanViaPortal,
   test,
   withIsolatedPage,
 } from '@/helpers/playwright';
@@ -96,6 +97,64 @@ test.describe('Ghost Admin - Automations', () => {
         expect(email.To.map((recipient) => recipient.Address)).toContain(emailAddress);
         expect(email.Subject).toBe(subject);
         expect(email.HTML).toContain(body);
+      });
+    });
+
+    test.describe('subscription changes', () => {
+      test.use({ labs: { automations: true, automationsLifecycleTriggers: true } });
+
+      test('Bronze to Gold sends the published subscription changed email', async ({
+        page,
+        browser,
+        baseURL,
+        stripe,
+      }) => {
+        test.setTimeout(90000);
+        const subject = 'Welcome to Gold';
+        const body = 'Your subscription has changed from Bronze to Gold.';
+        const bronze = await createPaidPortalTier(
+          page.request,
+          { name: 'Bronze', currency: 'usd', monthly_price: 500, yearly_price: 5000 },
+          { stripe },
+        );
+        const gold = await createPaidPortalTier(
+          page.request,
+          { name: 'Gold', currency: 'usd', monthly_price: 1000, yearly_price: 10000 },
+          { stripe },
+        );
+
+        await new AutomationsPage(page).goto();
+        await page.getByRole('button', { name: 'New automation', exact: true }).click();
+        await page.getByRole('button', { name: /^Paid subscription changed/ }).click();
+        await page.getByRole('combobox', { name: 'From', exact: true }).click();
+        await page.getByRole('option', { name: bronze.name, exact: true }).click();
+        await page.keyboard.press('Escape');
+        await page.getByRole('combobox', { name: 'To', exact: true }).click();
+        await page.getByRole('option', { name: gold.name, exact: true }).click();
+        await page.keyboard.press('Escape');
+
+        const editor = new AutomationEditorPage(page);
+        await editor.nameInput.fill('Bronze to Gold');
+        await editor.addEmail(subject, body);
+        await editor.publish();
+        await expect(editor.publishedButton).toBeVisible();
+
+        await withIsolatedPage(browser, { baseURL }, async ({ page: memberPage }) => {
+          const { emailAddress } = await completePaidSignupViaPortal(memberPage, stripe!, {
+            cadence: 'monthly',
+            tierName: bronze.name,
+          });
+          await expect(new HomePage(memberPage).accountButton).toBeVisible();
+          await switchPlanViaPortal(memberPage, { cadence: 'monthly', tierName: gold.name });
+
+          const inbox = new MailPit('http://localhost:8025');
+          const messages = await inbox.search({ to: emailAddress, subject }, { timeoutMs: 30000 });
+          expect(messages).toHaveLength(1);
+          const email = await inbox.getMessageDetailed(messages[0]);
+          expect(email.To.map((recipient) => recipient.Address)).toContain(emailAddress);
+          expect(email.Subject).toBe(subject);
+          expect(email.HTML).toContain(body);
+        });
       });
     });
   });
