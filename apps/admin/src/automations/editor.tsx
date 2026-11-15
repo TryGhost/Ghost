@@ -1,9 +1,11 @@
 import {
   comparableTriggerRules,
+  getTriggerLabelId,
   getTriggerTierIds,
   subscriptionChangedSelectionFromRules,
 } from './utils/trigger-rules';
-import { HostLimitError } from '@tryghost/admin-x-framework/errors';
+import { APIError, HostLimitError } from '@tryghost/admin-x-framework/errors';
+import { useReadLabel } from '@tryghost/admin-x-framework/api/labels';
 import { useBrowseConfig, upgradeRoute } from '@tryghost/admin-x-framework/api/config';
 import { LimitModalContent } from '@/settings/api';
 import NewAutomation from './new-automation';
@@ -49,6 +51,7 @@ const AUTOMATION_LIMITS = ['limitAutomations'] as const;
 const SUBJECT_REQUIRED_MESSAGE = 'Add a subject line.';
 const BODY_REQUIRED_MESSAGE = 'Add an email body.';
 const SUBJECT_AND_BODY_REQUIRED_MESSAGE = 'Add a subject line and email body.';
+const DELETED_LABEL_MESSAGE = 'Select a different label';
 
 const editableSlice = (automation: AutomationDetail) => ({
   name: automation.name,
@@ -140,7 +143,7 @@ const AutomationEditorContent: React.FC<{
       return next;
     });
   }, []);
-  const [actionErrors, setActionErrors] = React.useState<Record<string, string>>({});
+  const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({});
 
   // Keep the saved snapshot separate from the live query result. Later query updates or errors
   // must not redefine the dirty state or overwrite edits made during this editing session.
@@ -154,6 +157,31 @@ const AutomationEditorContent: React.FC<{
   const [triggerType, setTriggerType] = React.useState<
     AutomationTriggerRule['trigger_type'] | undefined
   >(creation?.triggerType);
+  const selectedLabelId = draft && getTriggerLabelId(draft.trigger_rules);
+  const labelQuery = useReadLabel(selectedLabelId ?? '', {
+    enabled: Boolean(selectedLabelId),
+    defaultErrorHandler: false,
+    staleTime: 0,
+  });
+  const labelDeleted =
+    labelQuery.error instanceof APIError && labelQuery.error.response?.status === 404;
+  const labelName = labelQuery.data?.labels[0]?.name;
+  const refreshLabel = labelQuery.refetch;
+  const selectedTriggerLabel = React.useMemo(
+    () =>
+      selectedLabelId
+        ? { name: labelName, deleted: labelDeleted, refresh: refreshLabel }
+        : undefined,
+    [selectedLabelId, labelName, labelDeleted, refreshLabel],
+  );
+  // A label can disappear while the draft is open, before the next save attempt.
+  const canvasErrors = React.useMemo(
+    () =>
+      labelDeleted
+        ? { ...validationErrors, [TRIGGER_CANVAS_ID]: DELETED_LABEL_MESSAGE }
+        : validationErrors,
+    [validationErrors, labelDeleted],
+  );
   React.useEffect(() => {
     if (!automation) {
       return;
@@ -187,7 +215,7 @@ const AutomationEditorContent: React.FC<{
         );
         return remaining.size === current.size ? current : remaining;
       });
-      setActionErrors((oldErrors) => {
+      setValidationErrors((oldErrors) => {
         if (Object.keys(oldErrors).length === 0) {
           return oldErrors;
         }
@@ -218,12 +246,12 @@ const AutomationEditorContent: React.FC<{
       toast.error('Add an automation name.');
       return false;
     }
-    const nextActionErrors = {
+    const nextValidationErrors = {
       ...(action === 'publish' ? getActionErrors(automationToValidate) : {}),
       ...getTriggerErrors(automationToValidate, triggerType),
     };
-    if (Object.keys(nextActionErrors).length > 0 || invalidWaitIds.size > 0) {
-      setActionErrors(nextActionErrors);
+    if (Object.keys(nextValidationErrors).length > 0 || invalidWaitIds.size > 0) {
+      setValidationErrors(nextValidationErrors);
       setEditState({ phase: 'idle' });
       setValidationFeedback(action);
       setValidationAttempt((attempt) => attempt + 1);
@@ -323,7 +351,7 @@ const AutomationEditorContent: React.FC<{
                   updated_at: savedDraft.updated_at,
                 },
           );
-          setActionErrors({});
+          setValidationErrors({});
           setEditState({ phase: 'idle' });
           if (isNew) {
             creation?.onCreated(savedDraft.id);
@@ -535,8 +563,8 @@ const AutomationEditorContent: React.FC<{
       />
 
       <AutomationCanvas
-        actionErrors={actionErrors}
         automation={draft}
+        canvasErrors={canvasErrors}
         initialSidebar={
           creation
             ? 'closed'
@@ -551,6 +579,7 @@ const AutomationEditorContent: React.FC<{
         isLoading={isEditorLoading}
         savedTriggerTierIds={savedTriggerTierIds}
         selectedRunId={selectedRunId}
+        selectedTriggerLabel={selectedTriggerLabel}
         triggerType={triggerType}
         validationAttempt={validationAttempt}
         onChange={onDraftChange}

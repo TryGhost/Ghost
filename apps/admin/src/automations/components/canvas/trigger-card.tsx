@@ -1,5 +1,6 @@
 import {
   buildTriggerRules,
+  getTriggerLabelId,
   getTriggerTierIds,
   subscriptionChangedSelectionFromRules,
 } from '@/automations/utils/trigger-rules';
@@ -22,12 +23,14 @@ import {
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { AutomationCard, AutomationCardHeader } from './automation-card';
+import { LabelTriggerPicker, type SelectedTriggerLabel } from './label-trigger-picker';
 import { TierScopePicker } from './tier-scope-picker';
 import { ChipPicker } from '@/shared/pickers/chip-picker';
 import type { TierSelection } from '@/automations/types';
 import { isTierSelectionEmpty, updateFromSelection } from '@/automations/utils/tier-selection';
 
 export type TriggerData = {
+  selectedTriggerLabel?: SelectedTriggerLabel;
   tierQuery: Pick<ReturnType<typeof useBrowseTiers>, 'data' | 'isLoading' | 'isError' | 'refetch'>;
   triggerType: AutomationTriggerRule['trigger_type'];
   rules: readonly AutomationTriggerRule[];
@@ -250,7 +253,18 @@ function getTriggerPresentation(trigger: TriggerData, errorMessage?: string) {
       return {
         title: 'Label added to a member',
         Icon: LucideIcon.Tag,
-        content: null,
+        content: (
+          <LabelTriggerPicker
+            errorMessage={errorMessage}
+            labelId={getTriggerLabelId(trigger.rules)}
+            selectedLabel={trigger.selectedTriggerLabel}
+            onChange={(labelId) =>
+              trigger.onUpdate({
+                trigger_rules: buildTriggerRules({ triggerType: 'label_added', labelId }),
+              })
+            }
+          />
+        ),
       };
     case 'paid_subscription_changed':
       return {
