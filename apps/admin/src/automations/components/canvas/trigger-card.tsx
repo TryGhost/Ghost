@@ -246,6 +246,12 @@ const SubscriptionChangedPicker: React.FC<{ trigger: TriggerData; errorMessage?:
 
 function getTriggerPresentation(trigger: TriggerData, errorMessage?: string) {
   switch (trigger.triggerType) {
+    case 'label_added':
+      return {
+        title: 'Label added to a member',
+        Icon: LucideIcon.Tag,
+        content: null,
+      };
     case 'paid_subscription_changed':
       return {
         title: 'Paid subscription changed',

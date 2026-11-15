@@ -71,6 +71,13 @@ export type AutomationEdge = {
 export type AutomationTriggerRule =
   | { trigger_type: 'free_signup'; scope: null; product_id: null; direction: null }
   | {
+      trigger_type: 'label_added';
+      label_id: string;
+      scope: null;
+      product_id: null;
+      direction: null;
+    }
+  | {
       trigger_type: 'paid_subscription_started';
       scope: 'any_paid_tier';
       product_id: null;

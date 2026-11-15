@@ -436,7 +436,7 @@ describe('New automation', () => {
       fakeAdminEndpoint('GET', /\/tiers\/\?/, { tiers: [] });
       const create = serveCreation();
       await renderAdminApp('/automations/new', {
-        labs,
+        labs: { ...labs, automationsLeadMagnets: false },
         boot: {
           browseSettings: {
             response: settingsResponse({
@@ -446,6 +446,9 @@ describe('New automation', () => {
         },
       });
       await expect.element(page.getByText('Select a trigger', { exact: true })).toBeVisible();
+      await expect
+        .element(page.getByRole('button', { name: /^Label added to a member/ }))
+        .not.toBeInTheDocument();
       await expect.element(button('Hide automation sidebar')).not.toBeInTheDocument();
       await page.getByRole('button', { name: new RegExp(`^${title}`) }).click();
       if (rule.trigger_type === 'paid_subscription_started') {
@@ -490,6 +493,9 @@ describe('New automation', () => {
     await expect.element(page.getByText('Select a trigger', { exact: true })).toBeVisible();
     await expect
       .element(page.getByRole('button', { name: /^Free member signed up/ }))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: /^Label added to a member/ }))
       .toBeVisible();
     await expect
       .element(page.getByRole('button', { name: /^Paid subscription started/ }))
