@@ -218,7 +218,7 @@ describe('Importer', function () {
       }
 
       afterEach(async function () {
-        await Promise.all(disposableDirectories.splice(0).map((directory) => fs.remove(directory)));
+        await Promise.all(disposableDirectories.splice(0).map((directory) => fs.rm(directory, { recursive: true, force: true })));
       });
 
       it('knows when to process a file', async function () {
