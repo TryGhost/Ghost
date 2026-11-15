@@ -1,0 +1,49 @@
+import { AutomationEditorPage, AutomationsPage } from '@/admin-pages';
+import { HomePage, PublicPage } from '@/public-pages';
+import { MailPit } from '@/helpers/services/email/mail-pit';
+import { expect, test, withIsolatedPage } from '@/helpers/playwright';
+import { extractMagicLink } from '@/helpers/services/email/utils';
+import { signupViaPortal } from '@/helpers/playwright/flows/signup';
+
+test.describe('Ghost Admin - Automations', () => {
+  test.use({ labs: { automations: true }, mailgunEnabled: true });
+
+  test('free member signup sends the published automation email', async ({
+    page,
+    browser,
+    baseURL,
+    emailClient,
+  }) => {
+    test.setTimeout(90000);
+    const subject = 'Your automation welcome';
+    const body = 'Thanks for joining. Your first automation email has arrived.';
+
+    const automations = new AutomationsPage(page);
+    await automations.goto();
+    await page.getByRole('button', { name: 'New automation', exact: true }).click();
+
+    // Without Stripe, the editor defaults to the free member signup trigger.
+    const editor = new AutomationEditorPage(page);
+    await editor.nameInput.fill('Free signup welcome');
+    await expect(page.getByText('Free member signed up', { exact: true })).toBeVisible();
+    await editor.addEmail(subject, body);
+    await editor.publish();
+    await expect(editor.publishedButton).toBeVisible();
+
+    await withIsolatedPage(browser, { baseURL }, async ({ page: memberPage }) => {
+      const { emailAddress } = await signupViaPortal(memberPage);
+      const signupMessages = await emailClient.searchByRecipient(emailAddress);
+      const signupEmail = await emailClient.getMessageDetailed(signupMessages[0]);
+      await new PublicPage(memberPage).goto(extractMagicLink(signupEmail.Text));
+      await expect(new HomePage(memberPage).accountButton).toBeVisible();
+
+      const inbox = new MailPit('http://localhost:8025');
+      const messages = await inbox.search({ to: emailAddress, subject }, { timeoutMs: 30000 });
+      expect(messages).toHaveLength(1);
+      const email = await inbox.getMessageDetailed(messages[0]);
+      expect(email.To.map((recipient) => recipient.Address)).toContain(emailAddress);
+      expect(email.Subject).toBe(subject);
+      expect(email.HTML).toContain(body);
+    });
+  });
+});
