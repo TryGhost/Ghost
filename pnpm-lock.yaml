@@ -2777,8 +2777,8 @@ importers:
         specifier: 17.14.0
         version: 17.14.0
       html-validate:
-        specifier: 11.21.0
-        version: 11.21.0(@vitest/expect@4.1.12)(jest-snapshot@30.4.1(supports-color@10.2.2))(vitest@4.1.12)
+        specifier: 11.21.1
+        version: 11.21.1(@vitest/expect@4.1.12)(jest-snapshot@30.4.1(supports-color@10.2.2))(vitest@4.1.12)
       lodash-es:
         specifier: 4.18.1
         version: 4.18.1
@@ -12113,8 +12113,8 @@ packages:
     resolution: {integrity: sha512-GiVhRI1BatGARSCmlXWNCjDT0cWrwBWoeduLoV0WSKAgaV/wa+hUWy5LiQLUs4UwiUrE52ZCMfBGiKD87TDPrg==}
     engines: {node: '>=20.19.0'}
 
-  html-validate@11.21.0:
-    resolution: {integrity: sha512-W7lepYb8uGwVqaFUuq/bV2Pu0nAeW2YBzDWi+hNJaZ0LSjHCfMTSuCRwtpYvs5o4h9/FGpTB6KpJacCekM8XCQ==}
+  html-validate@11.21.1:
+    resolution: {integrity: sha512-wop9wWStH8hgsDVv7zTZPF3i2qAVLe1eVGrSVE72A8QURM6En1JytTtSMTj7H0URi2aeSCuXdA/+p+0DbwMrMQ==}
     engines: {node: ^22.22.0 || >= 24.8.0}
     hasBin: true
     peerDependencies:
@@ -24596,7 +24596,7 @@ snapshots:
       htmlparser2: 10.1.0
       selderee: 0.12.0
 
-  html-validate@11.21.0(@vitest/expect@4.1.12)(jest-snapshot@30.4.1(supports-color@10.2.2))(vitest@4.1.12):
+  html-validate@11.21.1(@vitest/expect@4.1.12)(jest-snapshot@30.4.1(supports-color@10.2.2))(vitest@4.1.12):
     dependencies:
       '@html-validate/stylish': 6.0.0
       '@sidvind/better-ajv-errors': 7.0.0(ajv@8.20.0)
