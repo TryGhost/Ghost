@@ -38,14 +38,17 @@ describe('Checkout session outcomes', function () {
       .expectStatus(200);
   }
 
-  // The tax ID is the one thing a checkout can ask the buyer for without a custom field to save
-  // the answer in, because Stripe keeps the tax ID itself, so it's the simplest part to set up.
-  async function offerTaxId() {
+  // The phone number saves into one custom field, so it's the simplest part to set up.
+  async function askForPhone() {
     mockManager.mockLabsEnabled('stripeCheckoutCollection');
-    mockManager.mockLabsDisabled('stripeAutomaticTax');
+    mockManager.mockLabsEnabled('customFieldTypePhone');
+    await adminAgent
+      .post('/members/metafields/custom/')
+      .body({ members_metafields: [{ name: 'Contact phone', type: 'phone' }] })
+      .expectStatus(201);
     await adminAgent
       .put('/stripe/checkout/config/')
-      .body({ checkout_config: [{ tax_number: { collect: true } }] })
+      .body({ checkout_config: [{ phone: { collect: true, custom_field_key: 'contact_phone' } }] })
       .expectStatus(200);
   }
 
@@ -77,8 +80,11 @@ describe('Checkout session outcomes', function () {
 
   afterEach(async function () {
     mockManager.restore();
-    await models.Base.knex('stripe_checkout_config_tiers').del();
     await models.Base.knex('stripe_checkout_config').del();
+    await models.Base.knex('members_metafield_bindings').del();
+    await models.Base.knex('tier_requirement_tiers').del();
+    await models.Base.knex('tier_requirements').del();
+    await models.Base.knex('members_metafields').del();
   });
 
   it('records each checkout a buyer starts, beside its session', async function () {
@@ -108,6 +114,60 @@ describe('Checkout session outcomes', function () {
       { event: { outcome: 'success' }, labels: { type: 'donation' } },
       { event: { outcome: 'success' }, labels: { type: 'gift' } },
     ]);
+  });
+
+  it('records who the buyer of each checkout is to the site', async function () {
+    const membersService = require('../../../core/server/services/members');
+    const member = await models.Member.findOne({ email: 'member1@test.com' });
+    const identity = await membersService.api.getMemberIdentityToken(member.get('transient_id'));
+    for (const buyer of [{}, { identity }, { customerEmail: 'member1@test.com' }]) {
+      await membersAgent
+        .post('/api/create-stripe-checkout-session/')
+        .body({ tierId: paidTierId, cadence: 'month', ...buyer })
+        .expectStatus(200);
+    }
+
+    expect(checkouts()).toMatchObject([
+      { event: { outcome: 'success' }, labels: { member: 'new' } },
+      { event: { outcome: 'success' }, labels: { member: 'signed_in' } },
+      { event: { outcome: 'success' }, labels: { member: 'unverified' } },
+    ]);
+  });
+
+  it('records each checkout event by the kind of checkout it completes, and none when it completes nothing', async function () {
+    mockManager.mockMail();
+    const payment = (metadata: Record<string, unknown>, paymentStatus = 'paid') => ({
+      mode: 'payment',
+      payment_status: paymentStatus,
+      amount_total: 500,
+      currency: 'usd',
+      customer: null,
+      customer_details: { name: 'A reader', email: 'reader@example.com' },
+      metadata,
+    });
+
+    await stripeMocker.sendWebhook({
+      type: 'checkout.session.completed',
+      data: { object: payment({ ghost_donation: true }) },
+    });
+    // A gift paid with a method that settles later completes once Stripe says it has
+    await stripeMocker.sendWebhook({
+      type: 'checkout.session.completed',
+      data: { object: payment({ ghost_gift: true }, 'unpaid') },
+    });
+    await stripeMocker.sendWebhook({
+      type: 'checkout.session.async_payment_failed',
+      data: { object: payment({ ghost_gift: true }, 'unpaid') },
+    });
+
+    assert.deepEqual(
+      metrics.tracked('stripe_checkout.complete').map(({ labels }) => labels),
+      [
+        { type: 'donation', shipping: 'none', phone: 'none' },
+        { shipping: 'none', phone: 'none' },
+        { shipping: 'none', phone: 'none' },
+      ],
+    );
   });
 
   it('records a checkout Ghost refused under its refusal, with no session', async function () {
@@ -178,49 +238,49 @@ describe('Checkout session outcomes', function () {
   });
 
   it('records each part of the checkout a session was sent with', async function () {
-    await offerTaxId();
+    await askForPhone();
     await startCheckout();
 
     expect(sessions()).toMatchObject([
       {
         event: { outcome: 'success' },
-        labels: { design: 'none', shipping: 'none', phone: 'none', tax_number: 'applied' },
+        labels: { design: 'none', shipping: 'none', phone: 'applied' },
       },
     ]);
   });
 
   it('records a collected part Stripe refused by name, as the session went ahead without it', async function () {
-    await offerTaxId();
+    await askForPhone();
     stripeMocker.checkoutParamRefusal = {
-      param: 'tax_id_collection',
+      param: 'phone_number_collection',
       error: {
         type: 'invalid_request_error',
-        param: 'tax_id_collection[enabled]',
-        message: 'Tax ID collection is not available.',
+        param: 'phone_number_collection[enabled]',
+        message: 'Phone number collection is not available.',
       },
     };
     await startCheckout();
 
-    assert.equal(stripeMocker.checkoutSessions.at(-1).tax_id_collection, undefined);
+    assert.equal(stripeMocker.checkoutSessions.at(-1).phone_number_collection, undefined);
     expect(sessions()).toMatchObject([
-      { event: { outcome: 'success' }, labels: { tax_number: 'refused' } },
+      { event: { outcome: 'success' }, labels: { phone: 'refused' } },
     ]);
   });
 
   it('records every part as dropped when Stripe refused the session without naming why, and it went ahead without them', async function () {
     await setDesign();
-    await offerTaxId();
+    await askForPhone();
     stripeMocker.checkoutParamRefusal = {
-      param: 'tax_id_collection',
-      error: { type: 'invalid_request_error', message: 'Tax ID collection needs more.' },
+      param: 'phone_number_collection',
+      error: { type: 'invalid_request_error', message: 'Phone number collection needs more.' },
     };
     await startCheckout();
 
     const session = stripeMocker.checkoutSessions.at(-1);
-    assert.equal(session.tax_id_collection, undefined);
+    assert.equal(session.phone_number_collection, undefined);
     assert.equal(session.branding_settings, undefined);
     expect(sessions()).toMatchObject([
-      { event: { outcome: 'success' }, labels: { design: 'dropped', tax_number: 'dropped' } },
+      { event: { outcome: 'success' }, labels: { design: 'dropped', phone: 'dropped' } },
     ]);
   });
 

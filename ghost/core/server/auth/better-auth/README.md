@@ -8,19 +8,48 @@ for the design.
 ## Engine
 
 `auth:engine` is `legacy` (default) or `better-auth`. Under `legacy` boot never
-loads Better Auth or reads its tables, so Ghost runs without them. Under
-`better-auth` boot builds the instance after settings and refuses to start on
-SQLite or where in-development tables are off (`createInDevelopmentTables`
-outside development and testing). Boot creates those tables before it builds
-the instance, so the check reads config rather than the database; it becomes a
-real table check, or goes away, when the tables get a migration. Nothing
-mounts its handler yet.
+loads Better Auth, so Ghost runs without its tables. Under `better-auth` boot
+builds the instance after settings and refuses to start on SQLite or without
+`auth:betterAuthDev`.
+
+`auth:betterAuthDev` (default `false`) decides whether Ghost keeps Better
+Auth's data, under either engine: boot seeds credential rows and the legacy
+engine stores passwords in them (see [Passwords](#passwords)). It only applies
+where the in-development tables exist, and boot refuses it elsewhere. It's
+hidden from generated config docs, and it's an opt-in separate from
+`createInDevelopmentTables` because the published `config.development.json`
+turns that on, and an older Ghost-CLI local install runs as development; such
+an install gets the tables but keeps its passwords in `users.password`. The
+testing configs and the monorepo's `ghost/config.development.json` turn it on.
+Boot creates the tables before anything reads them, so these checks read config
+rather than the database; they and the flag go away when the tables get a
+migration.
+
+Under `better-auth` the Admin API serves the handler on `/auth/*`
+(`web/api/endpoints/admin/better-auth.ts`), after the private cache header and ahead of body parsing because
+Better Auth reads the request stream. Better Auth's limiter runs on Ghost's
+`spam` limiters through `customStorage`, in every environment: each native
+credential route counts against its compatibility route's limiters, sharing
+their counters, and a successful sign-in or password reset clears `userLogin`
+as the compatibility routes do. `/change-password` and `/verify-password`,
+which check the current password, count against `globalBlock` under their own
+paths. Other paths are not limited. An after-hook strips
+session tokens from native response bodies, by shape: a top-level `token`,
+`session.token`, and each list item's `token`. The token still travels in the
+`httpOnly` session cookie, and server-side `auth.api` calls keep it. Origin
+and CSRF checks are pinned on, since Better Auth turns them off when
+`NODE_ENV` is `test` or `TEST` is set. Admin config publishes `auth: {engine}`.
 
 - `create-auth.ts`: `createAuth()` builds the instance with Ghost's options
   (plan §3.1) from injected dependencies; `assertDatabaseSupported()` is the
   boot check above.
+- `rate-limit.ts`: the `customStorage` that maps native credential routes to
+  Ghost's limiters.
 - `index.ts`: the boot-owned service root, exposed as `auth.betterAuth`. Boot
-  calls `init()`; consumers read `.service`.
+  calls `init()`; consumers read `.service`. It is the one `defineService` root
+  outside `server/services`, so the
+  [service checks](../../services/README.md#roots-outside-this-directory) do
+  not apply to it.
 
 Ghost mounts at the subdirectory, so on a subdirectory install requests reach
 Better Auth as `/blog/ghost/api/admin/auth/...`. `basePath` therefore carries
@@ -38,6 +67,15 @@ send the admin session with every frontend request. Its `maxAge` is Better
 Auth's, in seconds, from `expiresIn`. The auth frame (`web/admin/app.js`)
 accepts either name.
 
+Better Auth reads the client IP, for session rows and its rate limiter, only
+from request headers. A client can set any header, so Ghost points
+`advanced.ipAddress.ipAddressHeaders` at its own `x-ghost-client-ip`, which
+`setClientIPHeader` (`client-ip.ts`) overwrites with Express's `req.ip` as
+`trust proxy` resolved it. Mount it before any route that hands request headers
+to Better Auth. `ipv6Subnet: 64` and `normalizeIP` in Ghost's `BackoffLimiter`
+format an address the same way, so both count a client against the same key.
+IPv6 counts per /64, the block a single subscriber usually holds.
+
 - `knex-adapter.ts`: a Better Auth database adapter over a Knex instance. It
   imports nothing from Ghost, so it can become a package later. Ghost
   migrations own the DDL, so there is no `createSchema`. It generates no ids:
@@ -48,8 +86,50 @@ accepts either name.
   `verifications`, plus the `users` gaps described below.
 - `seed-credential-accounts.ts`: gives each user a `credential` row in
   `user_accounts` with the hash from `users.password` (plan §4.4). Boot runs
-  it wherever the in-development tables are created (development and testing
-  with `createInDevelopmentTables`); it skips users that already have one.
+  it with `auth:betterAuthDev`; it skips users that already have one.
+- `enabled.ts`: `usesBetterAuth()`, which throws where `auth:betterAuthDev`
+  is on without the tables. Boot's seeder calls it, so that fails boot.
+- `credential-password.ts`: the legacy engine's password store. See
+  [Passwords](#passwords).
+
+## Passwords
+
+Both engines hash with bcrypt and read and write the same `credential` row in
+`user_accounts` with `auth:betterAuthDev` (plan §4.5), so a password changed
+through one engine works in the other. There is no dual write: `users.password`
+holds the `!` placeholder once the row has the hash, and only users the seeder
+copied still carry their old hash there, unread.
+
+- The `User` model hashes in `onSaving`, then `onSaved` writes the row with
+  the save's transaction, inserting it for a new user. `add`, `changePassword`
+  and `edit` with a password open a transaction when the caller has none.
+  Setup, invitations, imports, resets and `lock()` all save through the model.
+- Sign-in, `changePassword`'s current-password check and reset tokens
+  (`auth/passwordreset.ts`) read the hash from the row. A reset token is signed
+  with the hash, so a password change through either engine invalidates it.
+- A user without a credential row has no password.
+
+Without `auth:betterAuthDev` (the default, and always in production until the
+table graduates), all of this uses `users.password` as before.
+
+> [!WARNING]
+> With the flag on, the credential row is the only copy of a user's current
+> password. On a development database, anything that drops it or stops reading
+> it can lock users out or bring back an old password:
+>
+> - **Turning `auth:betterAuthDev` off** puts `users.password` back in use as
+>   it stands. A user whose password changed through legacy has the `!`
+>   placeholder there and can't sign in. A seeded user whose password changed
+>   only through Better Auth signs in with their old password.
+> - **Turning it back on** keeps any credential rows left from before, so a
+>   password changed while it was off is ignored for those users.
+> - **`pnpm gx db rebuild-development-tables`** drops `user_accounts`. The
+>   seeder then copies `users.password`, placeholders included, so anyone
+>   whose password changed is locked out.
+>
+> There's no migration path between these states. Reset the database instead
+> (`pnpm reset:db`, or `pnpm reset:data` for generated content), or reset the
+> affected users' passwords.
 
 ## Tables
 
@@ -197,7 +277,7 @@ Settled in Phase 0 (plan §10):
 - Sessions last 180 days, absolute (`disableSessionRefresh`). Rolling sessions
   come later.
 - Email codes are 6 random digits, hashed in `verifications`, expiring after
-  5 minutes. Five wrong attempts delete the code; `express-brute` stays on top.
+  5 minutes. Five wrong attempts delete the code; Ghost's rate limiters stay on top.
 - Magic link, passkey, TOTP and SSO sign-ins count as verified.
   `require_email_mfa` applies to password sign-in only.
 - Scopes use the `object_type:action` permission keys, with finer scopes where
@@ -209,7 +289,7 @@ Settled in Phase 0 (plan §10):
   without it: a top-level `token` from `/sign-in/email` and
   `/change-password`, `session.token` from `/get-session`, and a `token` on
   each session from `/list-sessions`. A global after-hook strips them from
-  every native response before the handler is mounted (Phase 2). Because
+  every native response, and landed with the mount. Because
   `revokeSession` takes a token, revoking one session (Phase 8) uses a Ghost
   endpoint that takes a session id and checks ownership.
 - OAuth clients for apps are Phase 4b, alongside Phase 5.

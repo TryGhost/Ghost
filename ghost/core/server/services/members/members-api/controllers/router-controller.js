@@ -827,6 +827,7 @@ module.exports = class RouterController {
             );
           }
         }
+        attempt.buying({ existing: Boolean(member), verified: isAuthenticated });
 
         await this._setAttributionMetadata(metadata);
 

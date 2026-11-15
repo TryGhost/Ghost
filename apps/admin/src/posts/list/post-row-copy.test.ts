@@ -247,6 +247,19 @@ describe('getPostStatusDetail', () => {
     ).toBe('to 1 member');
   });
 
+  it('names the newsletter an emailed post went out as', () => {
+    expect(
+      getPostStatusDetail(
+        post({
+          status: 'published',
+          newsletter: newsletter({ id: 'n1', name: 'Weekly Digest' }),
+          email: { status: 'submitted', email_count: 1200, opened_count: 0 },
+        }),
+        { timezone },
+      ),
+    ).toBe('to 1,200 members of Weekly Digest');
+  });
+
   it('has no detail for a published post that was never emailed', () => {
     expect(getPostStatusDetail(post({ status: 'published' }), { timezone })).toBeNull();
   });

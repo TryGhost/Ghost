@@ -3,8 +3,11 @@ import errors from '@tryghost/errors';
 import { assertExists } from '../../../../../utils/assertions';
 // @ts-expect-error This module lacks type definitions.
 import { hbs, templates } from '../../../../../../core/frontend/services/handlebars';
+import { restoreHandlebarsAfterSuite } from '../../../../../utils/handlebars-state';
 
 describe('Helpers Template', function () {
+  restoreHandlebarsAfterSuite();
+
   it('can execute a template', function () {
     hbs.registerPartial('test', '<h1>Hello {{name}}</h1>');
 

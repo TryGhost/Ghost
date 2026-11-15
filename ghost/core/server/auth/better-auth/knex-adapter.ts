@@ -32,7 +32,6 @@ export type KnexAdapterOptions = {
 };
 
 type Row = Record<string, unknown>;
-type Executor = Knex | Knex.Transaction;
 type QB = Knex.QueryBuilder;
 
 const PRIMARY = 'primary';
@@ -48,7 +47,7 @@ const toCount = (value: unknown) => {
 };
 
 function createCustomAdapter(
-  db: Executor,
+  db: Knex,
   { virtualColumns = {}, createDefaults = {} }: KnexAdapterOptions,
   inTransaction: boolean,
 ): AdapterFactoryCustomizeAdapterCreator {
@@ -72,7 +71,7 @@ function createCustomAdapter(
       return Object.fromEntries(Object.entries(virtuals).filter(([column]) => columns.has(column)));
     };
 
-    const withTransaction = <T>(fn: (trx: Executor) => Promise<T>): Promise<T> =>
+    const withTransaction = <T>(fn: (trx: Knex) => Promise<T>): Promise<T> =>
       inTransaction ? fn(db) : db.transaction((trx) => fn(trx));
 
     // A column of `table` (aliased as `alias`), or its SQL expression when virtual
@@ -174,7 +173,7 @@ function createCustomAdapter(
       return qb;
     };
 
-    const findById = (executor: Executor, model: string, modelKey: string, id: unknown) =>
+    const findById = (executor: Knex, model: string, modelKey: string, id: unknown) =>
       executor
         .from(model)
         .select(selectColumns(model, model))

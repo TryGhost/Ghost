@@ -28,6 +28,15 @@ const resolveSnapshotPath = (testPath: string, snapExtension: string) =>
     path.basename(testPath) + snapExtension,
   );
 
+// CI sets GHOST_UNIT_TEST_SEED to run the unit suite in a shuffled order, files
+// and the tests inside them, so a test that only passes after another one fails
+// in the PR that introduces it. One seed covers a whole CI run, retries
+// included, so a retry can't pass by drawing a luckier order. Vitest prints it
+// as `Running tests with seed "<seed>"`; docs/contributing/testing.md covers
+// rerunning that order locally.
+const shuffleSeed = Number(process.env.GHOST_UNIT_TEST_SEED) || undefined;
+const sequence = shuffleSeed ? { shuffle: true, seed: shuffleSeed } : {};
+
 const unitConfig = {
   globals: true,
   environment: 'node' as const,
@@ -52,6 +61,9 @@ const unitConfig = {
 export default defineConfig({
   test: {
     resolveSnapshotPath,
+    // Set here as well as on the project: the reporter that prints the seed
+    // reads the root config, and the project's own run order reads its own.
+    sequence,
     // Local runs use the compact `dot` reporter. CI uses `default`
     // (names each file) plus `github-actions` for inline annotations.
     reporters: process.env.GITHUB_ACTIONS ? ['default', 'github-actions'] : ['dot'],
@@ -78,6 +90,7 @@ export default defineConfig({
           ...unitConfig,
           name: 'unit',
           isolate: false,
+          sequence,
           include: ['test/unit/**/*.test.{js,ts}'],
           exclude: ['**/node_modules/**'],
         },

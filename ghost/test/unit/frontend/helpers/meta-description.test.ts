@@ -22,8 +22,15 @@ describe('{{meta_description}} helper', function () {
     sinon.restore();
   });
 
+  // Each test starts with no settings; nested blocks add theirs in beforeEach
+  beforeEach(function () {
+    for (const key of Object.keys(localSettingsCache)) {
+      delete localSettingsCache[key];
+    }
+  });
+
   describe('no meta_description', function () {
-    beforeAll(function () {
+    beforeEach(function () {
       localSettingsCache.description = 'The professional publishing platform';
     });
 
@@ -139,7 +146,7 @@ describe('{{meta_description}} helper', function () {
   });
 
   describe('with meta_description', function () {
-    beforeAll(function () {
+    beforeEach(function () {
       localSettingsCache.meta_description =
         'Meta description of the professional publishing platform';
     });

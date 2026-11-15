@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import sinon from 'sinon';
-import { agentProvider, fixtureManager } from '../../utils/e2e-framework';
+import { agentProvider, configUtils, fixtureManager } from '../../utils/e2e-framework';
 
 // Required, not imported, so these are the module instances Ghost uses at runtime.
 const { UpgradeAdapterError } = require('@tryghost/adapter-base-upgrade');
@@ -93,12 +93,14 @@ describe('Upgrades API', function () {
   });
 
   beforeEach(async function () {
-    await db.knex('brute').delete();
+    await db.knex('rate_limits').delete();
     await agent.loginAsOwner();
   });
 
-  afterEach(function () {
+  afterEach(async function () {
     sinon.restore();
+    await configUtils.restore();
+    spamPrevention.reset();
     adapterManager.clearCache();
   });
 
@@ -196,7 +198,7 @@ describe('Upgrades API', function () {
     ];
 
     for (const body of invalidBodies) {
-      await db.knex('brute').delete();
+      await db.knex('rate_limits').delete();
       await post(body).expectStatus(422);
     }
 
@@ -223,7 +225,7 @@ describe('Upgrades API', function () {
     assert.equal(rejection.body.errors[0].code, 'UPGRADE_TARGET_UNAPPROVED');
     assert.deepEqual(rejection.body.errors[0].details, { diagnostics });
 
-    await db.knex('brute').delete();
+    await db.knex('rate_limits').delete();
     createRequest.rejects(new UpgradeAdapterError({ code: 'busy' }));
     const busy = await post({ upgrades: [input] }).expectStatus(409);
     assert.equal(busy.body.errors[0].code, 'UPGRADE_BUSY');
@@ -255,10 +257,14 @@ describe('Upgrades API', function () {
   });
 
   it('shares an IP budget across all upgrade routes, enforced before authentication', async function () {
-    const limiter = spamPrevention.upgradeApiBlock();
-    sinon.stub(limiter, 'options').value({ ...limiter.options, freeRetries: 2 });
-    const startTime = Date.now();
-    const now = sinon.stub(limiter, 'now').returns(startTime);
+    configUtils.set('spam:upgrade_api_block', {
+      freeRetries: routes.length - 1,
+      minWait: 60000,
+      maxWait: 60000,
+      lifetime: 60,
+    });
+    spamPrevention.reset();
+    const clock = sinon.useFakeTimers({ now: Date.now(), toFake: ['Date'] });
     const anonymous = (method: Method, path: string, ip: string) =>
       agent[method](path)
         .header('Authorization', 'Ghost not-a-token')
@@ -278,7 +284,7 @@ describe('Upgrades API', function () {
     sinon.assert.calledOnce(decode);
 
     // Polling resumes in the next window rather than after a full idle minute.
-    now.returns(startTime + 60001);
+    clock.tick(60001);
     await anonymous('get', 'upgrades/', '203.0.113.1').expectStatus(400);
     sinon.assert.calledTwice(decode);
   });

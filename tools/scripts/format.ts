@@ -1,7 +1,8 @@
-// Oxfmt 0.63.0 is not always idempotent: a handful of files (deeply nested
-// generic and call shapes) only stabilise on a second pass, so a single format
-// could pass the pre-commit hook and still fail `format:check` in CI. Format,
-// then re-format once more if a check of the same paths reports drift.
+// Oxfmt is not always idempotent (seen on 0.63.0, still true on 0.77.0): a
+// handful of files (deeply nested generic and call shapes) only stabilise on a
+// second pass, so a single format could pass the pre-commit hook and still
+// fail `format:check` in CI. Format, then re-format once more if a check of
+// the same paths reports drift.
 import { spawnSync, type StdioOptions } from 'node:child_process';
 
 const args = process.argv.slice(2);

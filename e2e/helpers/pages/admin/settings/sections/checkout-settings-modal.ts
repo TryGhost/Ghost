@@ -46,7 +46,6 @@ export class CheckoutSettingsModal {
   readonly fieldsTab: Locator;
   readonly shippingSwitch: Locator;
   readonly shippingTiersPicker: Locator;
-  readonly shipsToSelect: Locator;
   readonly countriesPicker: Locator;
   readonly addressFieldPicker: Locator;
   readonly nameFieldPicker: Locator;
@@ -55,9 +54,6 @@ export class CheckoutSettingsModal {
   readonly phoneTiersPicker: Locator;
   readonly phoneFieldPicker: Locator;
   readonly previewPhone: Locator;
-  readonly taxIdSwitch: Locator;
-  readonly taxIdTiersPicker: Locator;
-  readonly previewTaxId: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -89,8 +85,7 @@ export class CheckoutSettingsModal {
     this.shippingTiersPicker = this.modal
       .getByRole('group', { name: 'Shipping address' })
       .getByRole('combobox', { name: 'Collect for' });
-    this.shipsToSelect = this.modal.getByRole('combobox', { name: 'Ships to' });
-    this.countriesPicker = this.modal.getByRole('combobox', { name: 'Countries' });
+    this.countriesPicker = this.modal.getByRole('combobox', { name: 'Allow purchases in' });
     this.addressFieldPicker = this.modal.getByRole('combobox', { name: 'Save address as' });
     this.nameFieldPicker = this.modal.getByRole('combobox', { name: 'Save name as' });
     this.previewShipping = this.preview.getByText('Shipping address', { exact: true });
@@ -100,11 +95,6 @@ export class CheckoutSettingsModal {
       .getByRole('combobox', { name: 'Collect for' });
     this.phoneFieldPicker = this.modal.getByRole('combobox', { name: 'Save phone as' });
     this.previewPhone = this.preview.getByText('Phone', { exact: true });
-    this.taxIdSwitch = this.modal.getByRole('switch', { name: 'Tax ID or VAT' });
-    this.taxIdTiersPicker = this.modal
-      .getByRole('group', { name: 'Tax ID or VAT' })
-      .getByRole('combobox', { name: 'Collect for' });
-    this.previewTaxId = this.preview.getByText("I'm purchasing as a business");
   }
 
   /** The tiers the sketch tags a collected part with, when it's limited to some. */
@@ -126,7 +116,7 @@ export class CheckoutSettingsModal {
       await this.limitTiers(this.shippingTiersPicker, choice.tiers);
     }
     if (choice.countries) {
-      await this.chooseOption(this.shipsToSelect, 'Specific countries');
+      // Picking a country clears "All countries".
       await this.pickMany(this.countriesPicker, choice.countries);
     }
     await this.setDestination(this.addressFieldPicker, choice.addressField);
@@ -141,14 +131,6 @@ export class CheckoutSettingsModal {
     await this.setDestination(this.phoneFieldPicker, choice.field);
   }
 
-  /** Lets business buyers give a tax ID on these tiers or, left out, on every paid tier. */
-  async collectTaxId(tiers?: string[]): Promise<void> {
-    await this.taxIdSwitch.setChecked(true);
-    if (tiers) {
-      await this.limitTiers(this.taxIdTiersPicker, tiers);
-    }
-  }
-
   /** Unticks every tier but these, from the default of every paid tier ticked. */
   private async limitTiers(picker: Locator, names: string[]): Promise<void> {
     await picker.click();
@@ -159,11 +141,6 @@ export class CheckoutSettingsModal {
       await this.page.getByRole('option', { name, exact: true }).click();
     }
     await this.page.keyboard.press('Escape');
-  }
-
-  private async chooseOption(select: Locator, name: string): Promise<void> {
-    await select.click();
-    await this.page.getByRole('option', { name, exact: true }).click();
   }
 
   private async pickMany(picker: Locator, names: string[]): Promise<void> {

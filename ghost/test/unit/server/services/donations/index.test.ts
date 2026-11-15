@@ -7,6 +7,9 @@ import type { DonationPaymentEvent } from '../../../../../core/server/services/d
 // Keep the real CommonJS identities used by the factory and Stripe's composition.
 const models = require('../../../../../core/server/models');
 const StripeService = require('../../../../../core/server/services/stripe/stripe-service');
+const { createTracer } = require('../../../../../core/server/lib/tracing/create-tracer');
+const { createMeter } = require('../../../../../core/server/lib/tracing/create-meter');
+const { stripeTracking } = require('../../../../../core/server/services/stripe/tracking');
 const labs = require('../../../../../core/shared/labs');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const ROOT_PATH = require.resolve('../../../../../core/server/services/donations');
@@ -48,8 +51,13 @@ describe('donations root with its Stripe consumer', function () {
 
     // Boot constructs Stripe before initializing donations. The consumer must
     // look up the repository later, when the checkout webhook arrives.
+    const shipNothing = { transport: { metric: async () => null }, logging: { error() {} } };
     stripe = new StripeService({
       labs,
+      tracking: stripeTracking({
+        tracer: createTracer(shipNothing),
+        meter: createMeter(shipNothing),
+      }),
       settingsCache,
       models,
       donationService: root,

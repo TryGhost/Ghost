@@ -125,7 +125,7 @@ describe('Site import execution', function () {
       }
       await assert.rejects(
         manager.processImport(() => ({ data: {} }), options),
-        error,
+        (thrown) => thrown === error,
       );
       sinon.assert.calledOnce(cleanup);
     });
@@ -216,7 +216,7 @@ describe('Site import execution', function () {
     const throws = subject();
     const error = new Error('email failed');
     sinon.stub(throws.manager, 'processImport').rejects(error);
-    await assert.rejects(throws.manager.executeImport(job), error);
+    await assert.rejects(throws.manager.executeImport(job), (thrown) => thrown === error);
     sinon.assert.calledWith(throws.deps.logging.error, error, sinon.match(failed));
   });
 
@@ -234,7 +234,10 @@ describe('Site import execution', function () {
     const { manager, deps } = subject();
     const error = new Error('invalid upload');
     sinon.stub(manager, 'loadFile').rejects(error);
-    await assert.rejects(manager.importFromFile({ name: 'bad.json' }, options), error);
+    await assert.rejects(
+      manager.importFromFile({ name: 'bad.json' }, options),
+      (thrown) => thrown === error,
+    );
     sinon.assert.notCalled(deps.jobsService.dispatch);
     sinon.assert.notCalled(deps.mailer.send);
   });

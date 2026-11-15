@@ -410,8 +410,8 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
           >
             {mode === 'preview' && (
               <EmailPreviewEmailHeader className="border-x-0 border-t-0 border-b">
-                <Stack gap="sm">
-                  <div className="flex items-center py-1">
+                <Stack gap="none">
+                  <div className="flex items-center">
                     <div className="w-20 shrink-0 text-sm font-semibold">From:</div>
                     <div className="min-w-0 grow pr-4 text-sm">
                       <span className="flex gap-1 truncate whitespace-nowrap">
@@ -437,14 +437,14 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                     </Popover>
                   </div>
                   {hasDistinctReplyTo && (
-                    <Inline gap="none">
+                    <Inline className="py-1.5" gap="none">
                       <div className="w-20 shrink-0 text-sm font-semibold">Reply-to:</div>
                       <div className="grow text-sm text-muted-foreground">
                         {resolvedReplyToEmail}
                       </div>
                     </Inline>
                   )}
-                  <Inline gap="none">
+                  <Inline align="start" className="py-1.5" gap="none">
                     <div className="w-20 shrink-0 text-sm font-semibold">Subject:</div>
                     <div className="grow">
                       <span

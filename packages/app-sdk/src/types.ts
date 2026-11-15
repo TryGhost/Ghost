@@ -29,11 +29,11 @@ export type JsonBody = Record<string, unknown> | readonly unknown[];
 
 /** Like `RequestInit`, for the requests Admin can make on the app's behalf. */
 export interface GhostFetchInit {
-  /** Any case; sent in uppercase. Defaults to `GET`. */
+  /** Any case, sent in uppercase. Defaults to `GET`. */
   method?: string;
   /**
-   * Anything `Headers` accepts, except the headers only Admin sets, such as `authorization`,
-   * `cookie` and `content-type`, which are refused.
+   * Anything `Headers` accepts, except the headers only Admin sets. The SDK refuses those,
+   * such as `authorization`, `cookie` and `content-type`.
    */
   headers?: HeadersInit;
   /** Always JSON: text is sent as it is, and an object or array is sent as JSON. */
@@ -48,7 +48,7 @@ export interface GhostFetchInit {
 export interface GhostPath {
   /**
    * The app's route: the path, query and fragment of the page's URL, such as `/episodes/12`, in
-   * the URL parser's normalised form, as Admin stores it (`/search?q=a%20b`, `..` resolved).
+   * the URL parser's normalized form, as Admin stores it (`/search?q=a%20b`, `..` resolved).
    */
   readonly current: string;
 }
@@ -67,21 +67,22 @@ export interface Ghost {
   readonly session: Session;
   /** The app's route, kept in step with Admin's URL. */
   readonly path: GhostPath;
-  /** False once the session has ended; every call then rejects with `session_ended`. */
+  /** False once the session has ended. Every call then rejects with `session_ended`. */
   readonly connected: boolean;
-  /** Called when the publisher switches Admin's theme. */
+  /** Registers a callback that runs when the person using the app switches Admin's theme. */
   onThemeChange(callback: (theme: Readonly<Theme>) => void): Unsubscribe;
   /**
-   * Called when Admin moves the app to another of its routes: back or forward in Admin's
-   * history, or one of Admin's own links. The SDK has already put the page's URL there and
-   * dispatched `popstate`, which a router follows. A multi-page app, with no router to render
-   * the new address, loads it: `location.replace(path)`. Not called for the app's own moves.
+   * Registers a callback that runs when Admin moves the app to another of its routes: Back or
+   * forward in Admin's history, or one of Admin's own links. The SDK has already put the
+   * page's URL there and dispatched `popstate`, which a router follows. A multi-page app, with
+   * no router to render the new address, loads it: `location.replace(path)`. It doesn't run for
+   * the app's own moves.
    */
   onPathChange(callback: (path: string) => void): Unsubscribe;
   /**
-   * Called once when this document leaves the app session, because the page reloads, posts a
-   * form or follows a link, or when the app session itself ends. Called straight away if that
-   * has already happened.
+   * Registers a callback that runs once when this document leaves the app session, because the
+   * page reloads, posts a form or follows a link, or when the app session itself ends. It runs
+   * straight away if that has already happened.
    */
   onSessionEnd(callback: (error: GhostAppError) => void): Unsubscribe;
   /**
@@ -90,6 +91,6 @@ export interface Ghost {
    * its status, and rejects only when Admin refuses to make the request.
    */
   fetch(path: string, init?: GhostFetchInit): Promise<Response>;
-  /** Sends the publisher to a place in Admin, such as `{ post: { id } }`. */
+  /** Sends the person using the app to a place in Admin, such as `{ post: { id } }`. */
   open(place: Place): Promise<void>;
 }

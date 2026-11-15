@@ -49,7 +49,7 @@ export function validateShipping(state: ShippingFormState): ShippingErrors {
   return {
     ...(asksNoTier(state) ? { shippingTiers: 'Choose at least one tier' } : {}),
     ...(state.countries === 'specific' && !state.allowedCountries.length
-      ? { shippingCountries: 'Choose at least one country to ship to' }
+      ? { shippingCountries: 'Choose at least one country' }
       : {}),
     ...(state.addressFieldKey ? {} : { shippingAddressField: 'Choose a field' }),
     ...(state.nameFieldKey ? {} : { shippingNameField: 'Choose a field' }),

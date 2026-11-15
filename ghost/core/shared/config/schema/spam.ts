@@ -2,8 +2,8 @@ import { z } from 'zod';
 import { knownKeys } from './primitives';
 
 /**
- * One express-brute limiter's settings. defaults.json sets every key on every
- * block, except `lifetime` on `user_login`, where express-brute fills in its own.
+ * One limiter's settings. defaults.json sets every key on every block, except
+ * `lifetime` on `user_login`, where the limiter fills in its own.
  *
  * Strips unknown keys, as express-brute was only ever handed these four.
  */
@@ -35,7 +35,8 @@ export const spamLimiter = z.object({
     .min(0)
     .optional()
     .meta({
-      description: 'Seconds before a key with no further attempts is forgotten.',
+      description:
+        "Seconds a key's count lasts from its first request. Defaults to the sum of every wait from minWait up to maxWait.",
       examples: [3600, 43200],
     }),
 });
@@ -59,7 +60,13 @@ export const spam = knownKeys('spam', {
     'Staff sign-in attempts per IP, and member sign-in requests per email and IP.',
   ),
   user_reset: limiter('Staff password reset requests per email and IP.'),
+  send_verification_code_user: limiter(
+    'Staff verification emails per user, across IPs and sessions.',
+  ),
   user_verification: limiter('Staff email verification code attempts per IP.'),
+  user_verification_challenge: limiter(
+    'Staff email verification code attempts per challenge, across IPs.',
+  ),
   send_verification_code: limiter('Staff email verification code resends per IP.'),
   global_reset: limiter('Staff password reset requests per IP, across all emails.'),
   global_block: limiter('Staff sign-in and session requests per IP, across all users.'),
@@ -74,6 +81,7 @@ export const spam = knownKeys('spam', {
   upgrade_api_block: limiter('Requests to the upgrade routes per IP.'),
   upgrade_block: limiter('Upgrade requests per staff user.'),
   staff_invite_block: limiter('Staff invitations sent, across the whole site.'),
+  member_email_update: limiter('Member email change requests per member, across IP addresses.'),
   email_preview_block: limiter('Test newsletter sends, across the whole site.'),
   otc_verification_enumeration: limiter('Member sign-in code attempts per IP, across all codes.'),
   otc_verification: limiter('Member sign-in code attempts per code.'),

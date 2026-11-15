@@ -21,8 +21,9 @@ describe('Admin App', function () {
       );
     });
 
-    afterEach(function () {
+    afterEach(async function () {
       sinon.restore();
+      await configUtils.restore();
     });
 
     it('adds x-frame-options header when adminFrameProtection is enabled (default)', function () {

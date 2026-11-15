@@ -52,8 +52,11 @@ Endpoint code delegates domain and integration logic to the services under
 `ghost/core/server/services/`. Models and data access remain under
 `ghost/core/server/`. The codebase is evolving incrementally, so existing
 services do not all use the same construction, dependency injection, or export
-pattern. Follow the nearby service when extending an established area. For a
-new standalone service, follow the [services guide](../../ghost/core/server/services/README.md).
+pattern. The [services guide](../../ghost/core/server/services/README.md)
+defines the standard and lists the legacy services that do not meet it yet.
+When extending an established area, follow its existing code without treating
+a legacy shape as the pattern to copy. Create a new service with
+`pnpm gx generate service <name>` and follow the guide.
 
 A service root represents an application-owned instance, not every class or
 helper involved in a feature. Supporting libraries can be constructed by their
@@ -62,9 +65,11 @@ support directories still live under `services/`; use the
 [service placement rules](../../ghost/core/server/services/README.md#what-belongs-here)
 rather than copying their location.
 
-Ghost's boot sequence owns service initialization. Services which listen for
-events, schedule work, or hold resources must be initialized during the
-appropriate boot phase rather than on their first request.
+Ghost's boot sequence owns service initialization. Boot initializes every
+standard service root in the appropriate phase and waits for it, whether or not
+it listens for events, schedules work, or holds resources. Lint and the boot
+tests check this. Do not leave a new service to be initialized on its first
+request.
 
 ## Public site and themes
 

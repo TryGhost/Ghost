@@ -158,6 +158,36 @@ describe('IndexNow service root', function () {
     await Promise.all(ping.returnValues);
   });
 
+  it('stops listening on stop and delivers to the same instance once after the next init', async function () {
+    const unrelated = () => {};
+    for (const name of EVENT_NAMES) {
+      events.on(name, unrelated);
+    }
+    const listenersBeforeInit = new Map(EVENT_NAMES.map((name) => [name, events.listeners(name)]));
+    root = require(ROOT_PATH).default as typeof indexNowRoot;
+    await root.init();
+    const service = root.service;
+    const ping = sandbox.stub(service, 'ping').resolves();
+
+    await root.stop();
+    for (const [name, listeners] of listenersBeforeInit) {
+      assert.deepEqual(events.listeners(name), listeners);
+    }
+    events.emit('post.published', postModel());
+    sinon.assert.notCalled(ping);
+    assert.equal(root.service, service);
+
+    await root.init();
+    assert.equal(root.service, service);
+    for (const [name, listeners] of listenersBeforeInit) {
+      assert.deepEqual(events.listeners(name), [...listeners, service.listener]);
+    }
+    events.emit('post.published', postModel());
+    events.emit('post.published.edited', postModel());
+    sinon.assert.calledTwice(ping);
+    await Promise.all(ping.returnValues);
+  });
+
   it('keeps the initialized listener while environment, privacy and site visibility change', async function () {
     privacyDisabled.returns(true);
     root = require(ROOT_PATH).default as typeof indexNowRoot;

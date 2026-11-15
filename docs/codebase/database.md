@@ -137,7 +137,7 @@ too. This includes writes to link tables like `posts_tags` or
   which locks them in id order so overlapping writers can't deadlock.
 - When the parents are found through the link table itself, such as the posts
   of a tag being deleted, use `lockLinkedForUpdate(linkTable, foreignKey,
-where, {transacting})` inside `Model.transactionLockingLinked(fn)`. It starts
+  where, {transacting})` inside `Model.transactionLockingLinked(fn)`. It starts
   the transaction again if a record is linked while it runs.
 - Once the locks are held, reads that decide what to write must be locking
   reads (`.forUpdate()`). Plain reads come from the transaction's snapshot,

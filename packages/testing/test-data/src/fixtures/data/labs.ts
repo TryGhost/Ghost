@@ -7,6 +7,7 @@
  */
 export const labsDefaults: Record<string, boolean> = {
   selfServeArchives: true,
+  membersCustomFields: true,
   superEditors: false,
   editorExcerpt: false,
   additionalPaymentMethods: false,

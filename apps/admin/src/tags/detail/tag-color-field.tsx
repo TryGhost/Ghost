@@ -80,7 +80,7 @@ const TagColorField: React.FC<TagColorFieldProps> = ({
       <Stack gap="sm">
         <Label htmlFor="tag-accent-color">Color</Label>
         <InputGroup
-          className="w-28 in-data-[admin7-design=true]:w-32"
+          className="w-28 in-data-[admin7-design=true]:w-30"
           data-disabled={disabled ? 'true' : undefined}
         >
           <InputGroupAddon align="inline-start">

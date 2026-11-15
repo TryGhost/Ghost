@@ -180,6 +180,25 @@ describe('areTriggerRulesValid', () => {
     });
   });
 
+  describe('label_added', () => {
+    const labelId = '64b6f7b7c8f1a2b3c4d5e6fa';
+    const rule: AutomationTriggerRuleDefinition = {
+      trigger_type: 'label_added',
+      label_id: labelId,
+      scope: null,
+      product_id: null,
+      direction: null,
+    };
+
+    it('accepts exactly one label rule', () => {
+      expect(areTriggerRulesValid([rule])).toBe(true);
+    });
+
+    it('rejects multiple label rules', () => {
+      expect(areTriggerRulesValid([rule, rule])).toBe(false);
+    });
+  });
+
   it.each(validCases)('does not mutate frozen inputs: $name', ({ rules }) => {
     const input = structuredClone(rules);
     const before = structuredClone(input);

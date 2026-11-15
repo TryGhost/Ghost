@@ -46,6 +46,7 @@ Ghost/
 │   └── test/           # Server tests
 ├── koenig/            # Editor and content-format packages
 ├── packages/          # Shared libraries and adapter contracts
+├── contracts/         # Data shapes shared across boundaries
 ├── tools/             # Repository tooling workspaces
 │   ├── configs/       # Shared build, lint, test, and TypeScript config
 │   ├── scripts/       # Repository automation
@@ -79,6 +80,8 @@ Codebase guides explain how the main systems fit together:
 
 - [Codebase direction](codebase/direction.md)
 - [Runtime architecture](codebase/runtime-architecture.md)
+- [Ghost Core services](../ghost/core/server/services/README.md)
+- [Kernel](../ghost/core/kernel/README.md)
 - [Authentication](codebase/authentication.md)
 - [Configuration](codebase/configuration.md)
 - [Database structure](codebase/database.md)
@@ -93,6 +96,7 @@ Practice and contributor guides explain how to make and verify changes:
 
 - [API design](practices/api-design.md)
 - [Database migrations](practices/database-migrations.md)
+- [Dependencies](practices/dependencies.md)
 - [Browser E2E testing](contributing/e2e-testing.md)
 - [Codebase documentation](contributing/documentation.md)
 - [Email testing](contributing/testing-email.md)

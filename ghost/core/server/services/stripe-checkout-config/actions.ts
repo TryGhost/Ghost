@@ -1,4 +1,5 @@
 import type { GhostLogger } from '@tryghost/logging';
+import type { Knex } from 'knex';
 import { z } from 'zod';
 
 export interface Actor {
@@ -30,27 +31,38 @@ export function actingContext(context: unknown): RequestContext {
 }
 
 export interface ActionRecorder {
-  add(data: Record<string, unknown>, options: { autoRefresh: boolean }): Promise<unknown>;
+  add(
+    data: Record<string, unknown>,
+    options: { transacting: Knex.Transaction; autoRefresh: boolean },
+  ): Promise<unknown>;
 }
 
 // `subject` is the config row's id.
-export type RecordCheckoutConfigAction = (input: {
-  context: RequestContext;
-  subject: string;
-}) => Promise<void>;
+export type RecordCheckoutConfigAction = (
+  transacting: Knex.Transaction,
+  input: {
+    context: RequestContext;
+    subject: string;
+  },
+) => Promise<void>;
 
 /**
- * Records a save of the config in the staff history. The write is best-effort: a failed
- * action must never fail the save that triggered it.
+ * Records a save of the config in the staff history, inside the save's transaction.
+ *
+ * The entry is part of the save: it is stored when the save is stored and never without it. A
+ * failure to write the entry is logged and then thrown, so it fails the save and the save is
+ * rolled back with it. Nothing is written for a request that has no actor.
  */
 export async function recordCheckoutConfigAction({
   Action,
   logging,
+  transacting,
   context,
   subject,
 }: {
   Action: ActionRecorder;
   logging: GhostLogger;
+  transacting: Knex.Transaction;
   context: RequestContext;
   subject: string;
 }): Promise<void> {
@@ -68,7 +80,7 @@ export async function recordCheckoutConfigAction({
         // The config has no name of its own, so the entry is named after what it configures.
         context: { primary_name: 'Stripe Checkout' },
       },
-      { autoRefresh: false },
+      { transacting, autoRefresh: false },
     );
   } catch (err) {
     logging.error(
@@ -80,5 +92,6 @@ export async function recordCheckoutConfigAction({
       },
       'Failed to record a Stripe Checkout config action',
     );
+    throw err;
   }
 }

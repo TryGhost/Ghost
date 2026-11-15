@@ -23,6 +23,7 @@ module.exports = {
       'signupForm',
       'stats',
       'security',
+      'auth',
       'exploreTestimonialsUrl',
       'featurebase',
     ];

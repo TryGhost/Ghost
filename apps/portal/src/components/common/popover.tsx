@@ -97,11 +97,20 @@ interface PopoverProps extends Pick<
   React.HTMLAttributes<HTMLDivElement>,
   'id' | 'role' | 'className' | 'aria-label' | 'aria-labelledby'
 > {
-  /** The element the panel hangs from. A press on it isn't one outside the panel. */
+  /**
+   * The element the panel belongs to, such as the field that opened it. A press on it isn't one
+   * outside the panel, and the panel hangs from it unless `alignTo` names another element.
+   */
   anchor: React.RefObject<HTMLElement>;
   /**
-   * How the panel lines up with the anchor: `end` hangs it from the anchor's right edge at its own
-   * width, and `stretch` gives it the anchor's width.
+   * The element the panel is placed against, when it isn't the anchor: a control the anchor is one
+   * part of, such as a phone number's input with its country, which the panel spans. A press on the
+   * rest of it is one outside the panel.
+   */
+  alignTo?: React.RefObject<HTMLElement> | undefined;
+  /**
+   * How the panel lines up with what it is placed against: `end` hangs it from that element's right
+   * edge at its own width, and `stretch` gives it that element's width.
    */
   align: 'end' | 'stretch';
   /**
@@ -114,15 +123,17 @@ interface PopoverProps extends Pick<
 }
 
 /**
- * A panel that hangs below its anchor, or above it when there isn't room for it below and there is
- * more above. It follows the anchor whenever it renders and as the page scrolls or resizes, and
- * asks to close on a press outside both itself and the anchor, or on Escape, which `useEscapeKey`
- * marks handled so that Portal's popup stays open. Which way it opens is decided from the height
- * it had when it opened, and decided again only when the page scrolls or resizes, so neither its
- * content nor its anchor changing size while it is open flips it.
+ * A panel that hangs below its anchor, or below the element `alignTo` names when there is one, or
+ * above it when there isn't room for it below and there is more above. It follows that element
+ * whenever it renders and as the page scrolls or resizes, and asks to close on a press outside both
+ * itself and the anchor, or on Escape, which `useEscapeKey` marks handled so that Portal's popup
+ * stays open. Which way it opens is decided from the height it had when it opened, and decided
+ * again only when the page scrolls or resizes, so neither its content nor what it hangs from
+ * changing size while it is open flips it.
  */
 export default function Popover({
   anchor,
+  alignTo,
   align,
   fit = false,
   onClose,
@@ -139,14 +150,16 @@ export default function Popover({
   // inside it in a layout effect of its own.
   const place = useCallback(
     (redecide: boolean) => {
-      const field = anchor.current;
+      const owner = anchor.current;
+      const field = (alignTo ?? anchor).current;
       const panel = panelRef.current;
-      if (!field || !panel) {
+      if (!owner || !field || !panel) {
         return;
       }
       const rect = field.getBoundingClientRect();
-      // The panel is positioned inside its host, so it is placed in the host's coordinates.
-      const host = getPopoverHost(field).getBoundingClientRect();
+      // The panel is positioned inside the host it is drawn into, the anchor's, so it is placed in
+      // that host's coordinates.
+      const host = getPopoverHost(owner).getBoundingClientRect();
       const { style } = panel;
       if (align === 'end') {
         style.right = px(host.right - rect.right);
@@ -171,7 +184,7 @@ export default function Popover({
         style.maxHeight = px(Math.max(0, room));
       }
     },
-    [anchor, align, fit],
+    [anchor, alignTo, align, fit],
   );
 
   // After every render and before the browser paints, so the panel never shows in the wrong place,

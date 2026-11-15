@@ -1,13 +1,16 @@
 {
   "name": "@tryghost/app-sdk",
   "version": "0.1.0-alpha.0",
-  "description": "The SDK apps use to talk to Ghost from inside Admin",
+  "description": "The SDK apps use to talk to Ghost: from their page inside Admin, from their backend, and from their tooling",
   "license": "MIT",
   "author": "Ghost Foundation",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/Ghost.git",
     "directory": "packages/app-sdk"
+  },
+  "bin": {
+    "ghost-app": "build/bin.js"
   },
   "files": [
     "build",
@@ -21,6 +24,21 @@
       "source": "./src/index.ts",
       "types": "./build/index.d.ts",
       "default": "./build/index.js"
+    },
+    "./backend": {
+      "source": "./src/backend/index.ts",
+      "types": "./build/backend.d.ts",
+      "default": "./build/backend.js"
+    },
+    "./tooling": {
+      "source": "./src/tooling/index.ts",
+      "types": "./build/tooling.d.ts",
+      "default": "./build/tooling.js"
+    },
+    "./vite": {
+      "source": "./src/vite/index.ts",
+      "types": "./build/vite.d.ts",
+      "default": "./build/vite.js"
     }
   },
   "scripts": {
@@ -33,7 +51,10 @@
     "lint": "pnpm run '/^lint:/'"
   },
   "dependencies": {
-    "@quilted/threads": "catalog:"
+    "@quilted/threads": "catalog:",
+    "commander": "catalog:",
+    "jose": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
@@ -49,6 +70,17 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "vite": ">=6"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=22.12"
   },
   "nx": {
     "targets": {

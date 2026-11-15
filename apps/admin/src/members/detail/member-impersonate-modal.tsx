@@ -9,7 +9,6 @@ import {
   DialogTitle,
   Input,
   Label,
-  LoadingIndicator,
 } from '@tryghost/shade/components';
 import { useMemberSigninUrl } from '@tryghost/admin-x-framework/api/members';
 import { toast } from 'sonner';
@@ -115,17 +114,12 @@ const MemberImpersonateModal: React.FC<MemberImpersonateModalProps> = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close
           </Button>
-          <Button disabled={isFetching || hasError || !signinUrl} onClick={() => void onCopy()}>
-            {isFetching ? (
-              <>
-                <LoadingIndicator size="sm" />
-                <span className="sr-only">Generating link</span>
-              </>
-            ) : justCopied ? (
-              'Copied'
-            ) : (
-              'Copy link'
-            )}
+          <Button
+            disabled={hasError || !signinUrl}
+            loading={isFetching}
+            onClick={() => void onCopy()}
+          >
+            {justCopied ? 'Copied' : 'Copy link'}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -3,6 +3,24 @@ const _ = require('lodash');
 const BaseImporter = require('./base');
 const models = require('../../../../models');
 const { limitService } = require('../../../../services/limits');
+const { ASSIGNABLE_ROLES } = require('../../../../models/role-utils');
+
+// User.add resolves a role by id when the value looks like an ObjectId, so a role from the
+// file must be an exact staff role name. The owner is never imported, so Owner becomes
+// Administrator; anything else, such as the Owner role's id or an integration role, gets
+// the default fallback role. Sites with a staff limit only import contributors; counting
+// staff users here would be too complex, and roles can be changed afterwards.
+function importableRoleName(roleName) {
+  if (limitService.isLimited('staff')) {
+    return 'Contributor';
+  }
+
+  if (roleName === 'Owner') {
+    return 'Administrator';
+  }
+
+  return ASSIGNABLE_ROLES.includes(roleName) ? roleName : 'Author';
+}
 
 class UsersImporter extends BaseImporter {
   constructor(allDataFromFile) {
@@ -35,6 +53,15 @@ class UsersImporter extends BaseImporter {
     let role;
     const lookup = {};
 
+    // Custom imports may set roles by name on the user record; they reach User.add as-is.
+    _.each(this.dataToImport, (obj) => {
+      if (Array.isArray(obj.roles)) {
+        obj.roles = obj.roles.map((userRole) => importableRoleName(userRole?.name ?? userRole));
+      } else {
+        delete obj.roles;
+      }
+    });
+
     // NOTE: sort out duplicated roles based on incremental id
     _.each(this.requiredFromFile.roles_users, (attachedRole) => {
       if (Object.hasOwn(lookup, attachedRole.user_id)) {
@@ -60,27 +87,13 @@ class UsersImporter extends BaseImporter {
         role = { name: 'Author' };
       }
 
-      // If this site has any sort of staff limit, set all imported users to contributors
-      // Any other sort of logic for counting staff users would be too complex in this scenario
-      // So we essentially don't allow importing staff users
-      // The roles can be changed afterwards if the limit permits
-      if (limitService.isLimited('staff')) {
-        role = { name: 'Contributor' };
-      }
-
       _.each(this.dataToImport, (obj) => {
         if (attachedRole.user_id === obj.id) {
           if (!Array.isArray(obj.roles)) {
             obj.roles = [];
           }
 
-          // CASE: we never import the owner, the owner is always present in the database
-          // That's why it is not allowed to import the owner role
-          if (role.name === 'Owner') {
-            role.name = 'Administrator';
-          }
-
-          obj.roles.push(role.name);
+          obj.roles.push(importableRoleName(role.name));
         }
       });
     });

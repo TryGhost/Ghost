@@ -19,17 +19,27 @@ describe('{{asset}} helper', function () {
   const localSettingsCache: Record<string, string> = {};
 
   beforeAll(function () {
-    configUtils.set({ useMinFiles: true });
-
     globalHash = String(asset('public/nonexistent.js')).split('?v=')[1] || '';
     sinon.stub(settingsCache, 'get').callsFake(function (key: string) {
       return localSettingsCache[key];
     });
   });
 
-  afterAll(async function () {
-    await configUtils.restore();
+  afterAll(function () {
     sinon.restore();
+  });
+
+  // Each test starts from the same config and settings, whichever ran before it.
+  // Nested blocks add their own config in beforeEach, after this one.
+  beforeEach(function () {
+    configUtils.set({ useMinFiles: true });
+    for (const key of Object.keys(localSettingsCache)) {
+      delete localSettingsCache[key];
+    }
+  });
+
+  afterEach(async function () {
+    await configUtils.restore();
   });
 
   describe('no subdirectory', function () {
@@ -93,13 +103,9 @@ describe('{{asset}} helper', function () {
   });
 
   describe('different admin and site urls', function () {
-    beforeAll(function () {
+    beforeEach(function () {
       configUtils.set({ url: 'http://127.0.0.1' });
       configUtils.set({ 'admin:url': 'http://localhost' });
-    });
-
-    afterAll(async function () {
-      await configUtils.restore();
     });
 
     it('handles favicon correctly', function () {
@@ -119,12 +125,8 @@ describe('{{asset}} helper', function () {
   });
 
   describe('with contentBasedHash enabled', function () {
-    beforeAll(function () {
+    beforeEach(function () {
       configUtils.set({ 'caching:assets:contentBasedHash:enabled': true });
-    });
-
-    afterAll(async function () {
-      await configUtils.restore();
     });
 
     it('uses file-based hash for ghost.css when it exists', function () {

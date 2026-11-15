@@ -366,23 +366,11 @@ describe('Editable email cards', () => {
     try {
       await renderAdminApp('/automations/first', flags);
       await page.getByRole('button', { name: 'Publish', exact: true }).click();
-      await emailCards()
-        .nth(1)
-        .getByRole('button', { name: 'Why this step needs attention' })
-        .click();
       await expect
-        .element(page.getByText('Add a subject line and a message before this email can be sent.'))
+        .element(emailCards().nth(1).getByText('Add a subject and message'))
         .toBeVisible();
-      await userEvent.keyboard('{Escape}');
       await editEmailSubject(emailCards().nth(1), 'A subject');
-      await emailCards()
-        .nth(1)
-        .getByRole('button', { name: 'Why this step needs attention' })
-        .click();
-      await expect
-        .element(page.getByText('Add a message before this email can be sent.'))
-        .toBeVisible();
-      await userEvent.keyboard('{Escape}');
+      await expect.element(emailCards().nth(1).getByText('Add a message')).toBeVisible();
       const wait = page.getByRole('article', { name: 'Wait: 1 day' });
       await expect
         .poll(
@@ -416,7 +404,7 @@ describe('Editable email cards', () => {
       };
       await addEmail();
       const newCard = emailCards().nth(1);
-      const warning = newCard.getByRole('button', { name: 'Why this step needs attention' });
+      const warning = newCard.getByRole('alert');
       await expect(warning).toHaveCount(0);
       await editEmailSubject(newCard, 'New subject');
       await expect(warning).toHaveCount(0);
@@ -424,9 +412,7 @@ describe('Editable email cards', () => {
       await expect.element(warning).toBeVisible();
 
       await addEmail();
-      const nextWarning = emailCards()
-        .nth(2)
-        .getByRole('button', { name: 'Why this step needs attention' });
+      const nextWarning = emailCards().nth(2).getByRole('alert');
       await expect(nextWarning).toHaveCount(0);
       await page.getByRole('button', { name: 'Publish', exact: true }).click();
       await expect.element(nextWarning).toBeVisible();

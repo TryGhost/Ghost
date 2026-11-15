@@ -4,10 +4,14 @@ import {
   STRIPE_ALLOWED_COUNTRIES,
   STRIPE_CHECKOUT_BORDER_STYLES,
   STRIPE_CHECKOUT_FONTS,
-  STRIPE_PORT,
-  STRIPE_PORTS,
+  CHECKOUT_PORT,
+  CHECKOUT_PORTS,
   isStripeAllowedCountry,
-  isStripePort,
+  isCheckoutPort,
+  isRequirementName,
+  matchRequirement,
+  type ListedRequirement,
+  type RequirementHandlers,
 } from '../src/index.ts';
 
 describe('allowed countries', function () {
@@ -34,20 +38,68 @@ describe('allowed countries', function () {
 });
 
 describe('ports', function () {
-  it('recognises the names Stripe returns values under', function () {
-    for (const port of STRIPE_PORTS) {
-      assert.ok(isStripePort(port));
+  it('recognises the names a checkout collects values under', function () {
+    for (const port of CHECKOUT_PORTS) {
+      assert.ok(isCheckoutPort(port));
     }
-    assert.equal(isStripePort('email'), false);
+    assert.equal(isCheckoutPort('email'), false);
+    // A requirement's name is never a port: only its answers are collected.
+    assert.equal(isCheckoutPort('shipping'), false);
   });
 
   it('names a field for every port, of a type that can hold what it returns', function () {
     // Stripe returns a structured address for the address, plain text for the rest, so a
-    // port left out here would be collected into whatever a request happened to name.
-    assert.deepEqual(Object.keys(PORT_FIELD).sort(), [...STRIPE_PORTS].sort());
-    assert.equal(PORT_FIELD[STRIPE_PORT.shippingAddress].type, 'address');
-    assert.equal(PORT_FIELD[STRIPE_PORT.shippingName].type, 'short_text');
-    assert.equal(PORT_FIELD[STRIPE_PORT.phone].type, 'short_text');
+    // port left out here would be collected into whatever a request happened to name. A phone
+    // number goes into a phone field, which keeps every number in one form.
+    assert.deepEqual(Object.keys(PORT_FIELD).sort(), [...CHECKOUT_PORTS].sort());
+    assert.equal(PORT_FIELD[CHECKOUT_PORT.shippingAddress].type, 'address');
+    assert.equal(PORT_FIELD[CHECKOUT_PORT.shippingName].type, 'short_text');
+    assert.equal(PORT_FIELD[CHECKOUT_PORT.phone].type, 'phone');
+  });
+
+  it('gives each port to one requirement', function () {
+    // A port under two requirements would be asked for twice, and land in one field for both.
+    assert.equal(new Set(CHECKOUT_PORTS).size, CHECKOUT_PORTS.length);
+  });
+
+  it('names no port as another port with a part after it', function () {
+    // A refused part of an answer is named `<port>.<part>`, which mustn't read as another port.
+    for (const port of CHECKOUT_PORTS) {
+      assert.equal(
+        CHECKOUT_PORTS.some((other) => other.startsWith(`${port}.`)),
+        false,
+        port,
+      );
+    }
+  });
+
+  it('recognises what a tier can require', function () {
+    assert.ok(isRequirementName('shipping'));
+    assert.ok(isRequirementName('phone'));
+    assert.equal(isRequirementName(CHECKOUT_PORT.phone), false);
+    assert.equal(isRequirementName('toString'), false);
+  });
+
+  it('hands each requirement to the handler for its name, in its own shape', function () {
+    const handlers: RequirementHandlers<string> = {
+      shipping: ({ ports, countries }) => `${ports.address.port} in ${countries?.join(', ')}`,
+      phone: ({ ports }) => ports.number.port,
+    };
+    const shipping: ListedRequirement<'shipping'> = {
+      name: 'shipping',
+      ports: {
+        recipient: { port: CHECKOUT_PORT.shippingName },
+        address: { port: CHECKOUT_PORT.shippingAddress },
+      },
+      countries: ['GB', 'US'],
+    };
+    const phone: ListedRequirement<'phone'> = {
+      name: 'phone',
+      ports: { number: { port: CHECKOUT_PORT.phone } },
+    };
+
+    assert.equal(matchRequirement(shipping, handlers), 'checkout.shipping.address in GB, US');
+    assert.equal(matchRequirement(phone, handlers), 'checkout.phone');
   });
 });
 

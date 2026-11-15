@@ -91,6 +91,21 @@ export class OutboxRelay {
       if (outcome.status === 'idle') {
         return;
       }
+      if (outcome.status === 'delivered') {
+        // created_at is stored floored to the second, so this reads up to 1s high
+        const lagMs = Date.now() - outcome.createdAt.getTime();
+        this.#logging.info(
+          {
+            system: {
+              event: 'jobs_outbox.handed_off',
+              dispatch_id: outcome.id,
+              job_type: outcome.type,
+              outbox_lag_ms: lagMs,
+            },
+          },
+          `[Jobs Outbox] Handed off ${outcome.type} (dispatch ${outcome.id}) after ${lagMs}ms`,
+        );
+      }
       if (outcome.status === 'failed') {
         this.#logging.error(
           `[Jobs Outbox] submission failed for dispatch ${outcome.id}; retrying later`,

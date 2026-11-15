@@ -5,6 +5,7 @@ const {
   agentProvider,
   fixtureManager,
   mockManager,
+  configUtils,
   hostLimits,
 } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
@@ -67,10 +68,6 @@ describe('List custom fields', function () {
     await agent.loginAsOwner();
   });
 
-  beforeEach(function () {
-    mockManager.mockLabsEnabled('membersCustomFields');
-  });
-
   afterEach(async function () {
     mockManager.restore();
     await models.Base.knex('members_metafield_values').del();
@@ -112,7 +109,16 @@ describe('List custom fields', function () {
         'Give the list at least 2 options.',
         'settings.options',
       ],
-      [{ options: ['Dog', 'Dog '], multiple: true }, 'Give each option once.', 'settings.options'],
+      [
+        { options: ['Dog', 'Dog '], multiple: true },
+        'This option already exists.',
+        'settings.options.1',
+      ],
+      [
+        { options: ['Dog', 'dog'], multiple: true },
+        'This option already exists.',
+        'settings.options.1',
+      ],
       [
         { options: ['Dog', ''], multiple: true },
         'Enter text for each option.',
@@ -163,6 +169,13 @@ describe('List custom fields', function () {
       });
 
       assert.deepEqual(edited.settings, { options: ['Cat', 'Dog', 'Fish'], multiple: false });
+
+      // Read back in the order the edit gave, not the order the options were first saved in.
+      const { body } = await agent.get(`members/metafields/custom/${field.key}/`).expectStatus(200);
+      assert.deepEqual(body.members_metafields[0].settings, {
+        options: ['Cat', 'Dog', 'Fish'],
+        multiple: false,
+      });
     });
 
     it('refuses an edit whose settings are wrong, changing nothing it asked for', async function () {
@@ -472,9 +485,13 @@ describe('List custom fields', function () {
     it('is read while the flag is off', async function () {
       const field = await createList(ANIMALS);
       await setValues(await createMember(), { [field.key]: ['Cat'] });
-      mockManager.mockLabsDisabled('membersCustomFields');
+      configUtils.set('labs', { membersCustomFields: false });
 
-      assert.deepEqual(await heldValues(field.key), ['Cat']);
+      try {
+        assert.deepEqual(await heldValues(field.key), ['Cat']);
+      } finally {
+        await configUtils.restore();
+      }
     });
 
     it('is not found for an archived field, or for any field while the host switches custom fields off', async function () {

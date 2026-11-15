@@ -207,9 +207,10 @@ module.exports = function apiRoutes() {
   metafieldsRouter.get('/:namespace/:key', http(api.membersMetafields.read));
   metafieldsRouter.get('/:namespace/:key/values', http(api.membersMetafields.browseValues));
 
-  // Changing one needs the feature to exist in this build, and a 404 says it doesn't. Who may
-  // change a namespace's fields, and whether its limits let them, is the namespace's own
-  // policy, which the endpoints and the service apply.
+  // Changing one needs custom fields to be switched on, and a 404 says they aren't. They are
+  // released, so only a flag switched off from outside the site says that. Who may change a
+  // namespace's fields, and whether its limits let them, is the namespace's own policy, which
+  // the endpoints and the service apply.
   metafieldsRouter.use(labs.enabledMiddleware('membersCustomFields'));
 
   metafieldsRouter.post('/:namespace', http(api.membersMetafields.add));
@@ -319,7 +320,7 @@ module.exports = function apiRoutes() {
   );
   router.post(
     '/automations/:id/email_test',
-    shared.middleware.brute.previewEmailLimiter,
+    shared.middleware.rateLimiting.previewEmailLimiter,
     mw.authAdminApi,
     http(api.automationEmailPreviews.sendTestEmail),
   );
@@ -343,7 +344,7 @@ module.exports = function apiRoutes() {
   router.post('/automated_emails/:id/preview', mw.authAdminApi, http(api.automatedEmails.preview));
   router.post(
     '/automated_emails/:id/test',
-    shared.middleware.brute.previewEmailLimiter,
+    shared.middleware.rateLimiting.previewEmailLimiter,
     mw.authAdminApi,
     http(api.automatedEmails.sendTestEmail),
   );
@@ -416,17 +417,21 @@ module.exports = function apiRoutes() {
   // We don't need auth when creating a new session (logging in)
   router.post(
     '/session',
-    shared.middleware.brute.globalBlock,
-    shared.middleware.brute.userLogin,
+    shared.middleware.rateLimiting.globalBlock,
+    shared.middleware.rateLimiting.userLogin,
     http(api.session.add),
   );
   router.delete('/session', mw.authAdminApi, http(api.session.delete));
   router.post(
     '/session/verify',
-    shared.middleware.brute.sendVerificationCode,
+    shared.middleware.rateLimiting.sendVerificationCode,
     http(api.session.sendVerification),
   );
-  router.put('/session/verify', shared.middleware.brute.userVerification, http(api.session.verify));
+  router.put(
+    '/session/verify',
+    shared.middleware.rateLimiting.userVerification,
+    http(api.session.verify),
+  );
 
   // ## Identity
   router.get('/identities', mw.authAdminApi, http(api.identities.read));
@@ -434,13 +439,13 @@ module.exports = function apiRoutes() {
   // ## Authentication
   router.post(
     '/authentication/password_reset',
-    shared.middleware.brute.globalReset,
-    shared.middleware.brute.userReset,
+    shared.middleware.rateLimiting.globalReset,
+    shared.middleware.rateLimiting.userReset,
     http(api.authentication.generateResetToken),
   );
   router.put(
     '/authentication/password_reset',
-    shared.middleware.brute.globalBlock,
+    shared.middleware.rateLimiting.globalBlock,
     auth.session.initSession,
     http(api.authentication.resetPassword),
   );
@@ -491,7 +496,7 @@ module.exports = function apiRoutes() {
   router.post(
     '/invites',
     mw.authAdminApi,
-    shared.middleware.brute.staffInviteLimiter,
+    shared.middleware.rateLimiting.staffInviteLimiter,
     http(api.invites.add),
   );
   router.delete('/invites/:id', mw.authAdminApi, http(api.invites.destroy));
@@ -509,20 +514,20 @@ module.exports = function apiRoutes() {
   // ## Host-managed upgrades
   router.get(
     '/upgrades/',
-    shared.middleware.brute.upgradeApiLimiter,
+    shared.middleware.rateLimiting.upgradeApiLimiter,
     mw.authAdminApi,
     http(api.upgrades.browse),
   );
   router.post(
     '/upgrades/',
-    shared.middleware.brute.upgradeApiLimiter,
+    shared.middleware.rateLimiting.upgradeApiLimiter,
     mw.authAdminApi,
-    shared.middleware.brute.upgradeLimiter,
+    shared.middleware.rateLimiting.upgradeLimiter,
     http(api.upgrades.add),
   );
   router.get(
     '/upgrades/:id/',
-    shared.middleware.brute.upgradeApiLimiter,
+    shared.middleware.rateLimiting.upgradeApiLimiter,
     mw.authAdminApi,
     http(api.upgrades.read),
   );
@@ -543,7 +548,7 @@ module.exports = function apiRoutes() {
   // preview sending have an additional rate limiter to prevent abuse
   router.post(
     '/email_previews/posts/:id',
-    shared.middleware.brute.previewEmailLimiter,
+    shared.middleware.rateLimiting.previewEmailLimiter,
     mw.authAdminApi,
     http(api.email_previews.sendTestEmail),
   );

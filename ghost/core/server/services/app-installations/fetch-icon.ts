@@ -1,3 +1,4 @@
+import type { AppFailureCode } from '@tryghost/app-contracts';
 import errors from '@tryghost/errors';
 import type { GhostLogger } from '@tryghost/logging';
 import type { AppIcon } from '@tryghost/app-contracts/manifest';
@@ -18,7 +19,7 @@ export type FetchIcon = (icon: AppIcon) => Promise<string | null>;
 function invalidIcon(message: string) {
   return new errors.ValidationError({
     message: 'The app manifest is not valid.',
-    code: 'APP_MANIFEST_INVALID',
+    code: 'APP_MANIFEST_INVALID' satisfies AppFailureCode,
     context: `icon.url: ${message}`,
     errorDetails: [{ path: 'icon.url', message }],
   });
