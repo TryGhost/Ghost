@@ -167,7 +167,7 @@ catalog:
   express: 4.22.3
   flexsearch: 0.7.43
   fs-extra: 11.4.1
-  glob: 14.0.4
+  glob: 14.0.6
   globals: 17.14.0
   got: 16.0.0
   html-minifier-next: 8.11.0
