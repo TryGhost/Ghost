@@ -1,12 +1,13 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+
 const models = require('../../../../core/server/models');
 const urlService = require('../../../../core/server/services/url');
 const { PostsService } = require('../../../../core/server/services/posts/posts-service-instance');
 const searchIndexController = require('../../../../core/server/api/endpoints/search-index');
 
 describe('Search index controller', function () {
-  let browsePostsStub;
+  let browsePostsStub: sinon.SinonStub;
 
   beforeEach(function () {
     // the controller constructs its own PostsService instance
