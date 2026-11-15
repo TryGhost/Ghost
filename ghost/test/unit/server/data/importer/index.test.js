@@ -202,15 +202,24 @@ describe('Importer', function () {
 
     // Step 1 of importing is loadFile
     describe('loadFile', function () {
-      // A failed processZip removes the directory it extracted, so the rejection
-      // cases below hand it a disposable directory instead of a fixture.
+      // A failed processZip removes the directory it extracted, so every case that
+      // runs it hands it a disposable copy rather than the checked-in fixture. That
+      // includes the cases expected to pass: one that fails, or times out and carries
+      // on after its stubs are restored, would otherwise delete the fixture.
+      const disposableDirectories = [];
+
       async function disposableDirectory(fixture) {
         const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'importer-fixture-'));
+        disposableDirectories.push(directory);
         if (fixture) {
           await fs.cp(fixture, directory, { recursive: true });
         }
         return directory;
       }
+
+      afterEach(async function () {
+        await Promise.all(disposableDirectories.splice(0).map((directory) => fs.remove(directory)));
+      });
 
       it('knows when to process a file', async function () {
         const testFile = { name: 'myFile.json', path: '/my/path/myFile.json' };
@@ -385,9 +394,8 @@ describe('Importer', function () {
         });
 
         it('accepts a zip with a base directory', async function () {
-          const testDir = path.resolve(
-            __dirname,
-            '../../../../utils/fixtures/import/zips/zip-with-base-dir',
+          const testDir = await disposableDirectory(
+            path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-with-base-dir'),
           );
           const extractSpy = sinon
             .stub(ImportManager, 'extractZip')
@@ -400,9 +408,8 @@ describe('Importer', function () {
         });
 
         it('accepts a zip without a base directory', async function () {
-          const testDir = path.resolve(
-            __dirname,
-            '../../../../utils/fixtures/import/zips/zip-without-base-dir',
+          const testDir = await disposableDirectory(
+            path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-without-base-dir'),
           );
           const extractSpy = sinon
             .stub(ImportManager, 'extractZip')
@@ -415,9 +422,8 @@ describe('Importer', function () {
         });
 
         it('accepts a zip with an image directory', async function () {
-          const testDir = path.resolve(
-            __dirname,
-            '../../../../utils/fixtures/import/zips/zip-image-dir',
+          const testDir = await disposableDirectory(
+            path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-image-dir'),
           );
           const extractSpy = sinon
             .stub(ImportManager, 'extractZip')
@@ -430,9 +436,11 @@ describe('Importer', function () {
         });
 
         it('accepts a zip with uppercase image extensions', async function () {
-          const testDir = path.resolve(
-            __dirname,
-            '../../../../utils/fixtures/import/zips/zip-uppercase-extensions',
+          const testDir = await disposableDirectory(
+            path.resolve(
+              __dirname,
+              '../../../../utils/fixtures/import/zips/zip-uppercase-extensions',
+            ),
           );
           const extractSpy = sinon
             .stub(ImportManager, 'extractZip')

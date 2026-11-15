@@ -15,19 +15,17 @@ import type { RequestedParts, StripeCheckoutConfigService } from './service';
 export const NOTHING_COLLECTED = Object.freeze({
   shipping: null,
   phone: null,
-  taxNumber: null,
 } satisfies Record<CollectedSection, null>);
 
 /** How a checkout asks for each collected part: as set, without the tiers it covers. */
 const ASKING: { [Section in CollectedSection]: (part: AskedParts[Section]) => Asking[Section] } = {
   shipping: ({ allowedCountries }) => ({ allowedCountries }),
   phone: () => ({}),
-  taxNumber: () => ({}),
 };
 
 /**
  * The checkout the config makes for a subscription to this paid tier: its design, asking for
- * each collected part that covers the tier and has somewhere to keep the answer.
+ * each collected part that covers the tier.
  */
 function checkoutForTier(config: CheckoutSessionConfig, tierId: string): CheckoutDefinition {
   const ask = <Section extends CollectedSection>(
@@ -40,14 +38,13 @@ function checkoutForTier(config: CheckoutSessionConfig, tierId: string): Checkou
     asks: {
       shipping: ask('shipping', config.shipping),
       phone: ask('phone', config.phone),
-      taxNumber: ask('taxNumber', config.taxNumber),
     },
   };
 }
 
 /** Whether a checkout for this paid tier asks for what a collected part collects. */
 function asksOn(part: AskedPart, tierId: string) {
-  return part.collectable && (part.tierIds === null || part.tierIds.includes(tierId));
+  return part.tierIds === null || part.tierIds.includes(tierId);
 }
 
 /** What deciding checkouts needs. */

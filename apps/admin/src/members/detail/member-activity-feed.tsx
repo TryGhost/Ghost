@@ -267,7 +267,10 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
   // link; only the empty-state copy via Shade's `EmptyIndicator`.
   if (!memberId) {
     return (
-      <section aria-labelledby="member-activity-heading" className="flex flex-col gap-3">
+      <section
+        aria-labelledby="member-activity-heading"
+        className="flex flex-col gap-3 in-data-[admin7-design=true]:gap-4"
+      >
         <h3 className="section-heading text-base font-semibold" id="member-activity-heading">
           Activity
         </h3>
@@ -290,7 +293,10 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
   const showViewAll = !isLoading && events.length > 0;
 
   return (
-    <section aria-labelledby="member-activity-heading" className="flex flex-col gap-3">
+    <section
+      aria-labelledby="member-activity-heading"
+      className="flex flex-col gap-3 in-data-[admin7-design=true]:gap-4"
+    >
       <div className="flex flex-wrap items-center justify-between gap-x-4">
         <h3 className="section-heading text-base font-semibold" id="member-activity-heading">
           Activity

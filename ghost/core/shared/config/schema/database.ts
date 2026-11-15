@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { tcpPort } from './primitives';
 
 /**
  * Shared by both clients. Loose, because configure-knex spreads it into knex,
@@ -29,15 +30,8 @@ const mysqlConnection = z
       .string()
       .optional()
       .meta({ examples: ['127.0.0.1'] }),
-    /**
-     * A quoted port is coerced. Safe to skip if the raw tree is used: mysql2
-     * accepts a string too. Digits only, as `z.coerce` would take `true` as 1.
-     */
-    port: z
-      .union([z.number(), z.string().regex(/^\d+$/).transform(Number)])
-      .pipe(z.number().int().min(1).max(65535))
-      .optional()
-      .meta({ examples: [3306] }),
+    /** Safe to skip if the raw tree is used: mysql2 accepts a string too. */
+    port: tcpPort.optional().meta({ examples: [3306] }),
     /**
      * Strings, or mysql2 throws. An all-digit value from a plain env var is
      * parsed as a number - use `database__connection__password_FILE`.

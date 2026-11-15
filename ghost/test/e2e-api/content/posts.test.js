@@ -556,6 +556,83 @@ describe('Posts Content API', function () {
     }
   });
 
+  describe('gated blocks in public posts', function () {
+    const secret = 'Paid-member gated block secret';
+    let post;
+
+    beforeAll(async function () {
+      post = await models.Post.add(
+        {
+          title: 'Public post with a paid gated block',
+          slug: 'content-api-public-gated-block',
+          status: 'published',
+          visibility: 'public',
+          custom_excerpt: null,
+          lexical: testUtils.DataGenerator.markdownToLexical(
+            'Public lead content\n\n' +
+              `<!--kg-gated-block:begin nonMember:false memberSegment:"status:-free" -->\n\n${secret}\n\n<!--kg-gated-block:end-->`,
+          ),
+        },
+        { context: { internal: true } },
+      );
+
+      assert.match(post.get('html'), /kg-gated-block:begin/);
+      assert.match(post.get('plaintext'), new RegExp(secret));
+    });
+
+    afterAll(async function () {
+      await models.Post.destroy({ id: post.id }, { context: { internal: true } });
+    });
+
+    const cases = [
+      ['formats=plaintext', ['plaintext', 'excerpt']],
+      ['formats=html,plaintext', ['html', 'plaintext', 'excerpt']],
+      ['fields=plaintext', ['plaintext']],
+      ['fields=excerpt', ['excerpt']],
+      ['fields=title,plaintext,excerpt', ['plaintext', 'excerpt']],
+    ];
+
+    for (const [query, expectedFields] of cases) {
+      it(`Strips paid gated block text from a read with ?${query}`, async function () {
+        const { body } = await agent
+          .get(`posts/slug/${post.get('slug')}/?${query}`)
+          .expectStatus(200);
+
+        const [result] = body.posts;
+        for (const field of expectedFields) {
+          assert.equal(typeof result[field], 'string', `${field} should be returned`);
+          assert.match(result[field], /Public lead content/, `${field} should keep public text`);
+          assert.doesNotMatch(result[field], new RegExp(secret), `${field} leaked gated text`);
+        }
+      });
+
+      it(`Strips paid gated block text from a browse with ?${query}`, async function () {
+        const { body } = await agent
+          .get(`posts/?filter=slug:${post.get('slug')}&${query}`)
+          .expectStatus(200);
+
+        const [result] = body.posts;
+        for (const field of expectedFields) {
+          assert.equal(typeof result[field], 'string', `${field} should be returned`);
+          assert.doesNotMatch(result[field], new RegExp(secret), `${field} leaked gated text`);
+        }
+      });
+    }
+
+    it('Does not return html that was only fetched for gating', async function () {
+      const { body: fieldsBody } = await agent
+        .get(`posts/slug/${post.get('slug')}/?fields=title,plaintext`)
+        .expectStatus(200);
+      assert.equal(Object.hasOwn(fieldsBody.posts[0], 'html'), false);
+      assert.equal(typeof fieldsBody.posts[0].plaintext, 'string');
+
+      const { body: formatsBody } = await agent
+        .get(`posts/slug/${post.get('slug')}/?formats=plaintext`)
+        .expectStatus(200);
+      assert.equal(formatsBody.posts[0].html, undefined);
+    });
+  });
+
   it('ignores Payment Authorization on gated Content API reads', async function () {
     const paidPost = testUtils.DataGenerator.forKnex.createPost({
       slug: 'mp-content-api-paid',

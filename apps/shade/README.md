@@ -19,7 +19,7 @@ integration. Shade does not ship a compiled stylesheet.
 For an existing React/Vite app:
 
 ```sh
-pnpm add @tryghost/shade@alpha react@18 react-dom@18
+pnpm add @tryghost/shade react@18 react-dom@18
 pnpm add -D tailwindcss@^4.1 @tailwindcss/vite@^4.1
 ```
 

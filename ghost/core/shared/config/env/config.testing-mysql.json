@@ -1,12 +1,18 @@
 {
   "url": "http://127.0.0.1:2369",
   "createInDevelopmentTables": true,
+  "auth": {
+    "betterAuthDev": true
+  },
   "services": {
     "jobs": {
       "outbox": {
         "enabled": true
       }
     }
+  },
+  "backgroundJobs": {
+    "emailAnalytics": false
   },
   "server": {
     "port": 2369

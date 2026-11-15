@@ -3,16 +3,11 @@ const path = require('path');
 const dbBackup = require('../../data/db/backup');
 const exporter = require('../../data/exporter');
 const importer = require('../../data/importer');
-const jobsService = require('../../services/jobs-service');
-const ExternalMediaInlinerJob =
-  require('../../services/media-inliner/external-media-inliner-job').default;
+const mediaInliner = require('../../services/media-inliner').default;
 const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
 const { promisePool } = require('../../lib/promise-pool');
 const models = require('../../models');
 const settingsCache = require('../../../shared/settings-cache');
-
-const DEFAULT_MEDIA_INLINER_DOMAINS = ['https://s3.amazonaws.com/revue', 'https://substackcdn.com'];
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -130,12 +125,7 @@ const controller = {
       },
     },
     async query(frame) {
-      const domains = frame.data.domains?.length
-        ? frame.data.domains
-        : DEFAULT_MEDIA_INLINER_DOMAINS;
-
-      logging.info('[Background Job] external-media-inliner queued');
-      await jobsService.getInstance().dispatch(new ExternalMediaInlinerJob({ domains }));
+      await mediaInliner.service.startInlining(frame.data.domains);
 
       return {
         status: 'success',

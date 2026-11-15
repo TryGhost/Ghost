@@ -136,6 +136,9 @@
   --font-mono: Consolas, Liberation Mono, Menlo, Courier, monospace;
   --font-inherit: inherit;
   --font-weight-title: 540;
+  --font-weight-settings-heading: 540;
+  --tracking-section-heading: -0.01em;
+  --tracking-settings-heading: -0.01em;
   --tracking-tightest: -0.05em;
   --tracking-tighter: -0.025em;
   --tracking-tight: -0.01em;
@@ -355,6 +358,8 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-tab-hover: var(--tab-hover);
+  --color-tab-inactive: var(--tab-inactive);
+  --color-tab-inactive-hover: var(--tab-inactive-hover);
   --color-tab-active: var(--tab-active);
   --color-button-hover: var(--button-hover);
   --color-button-ghost-hover: var(--button-ghost-hover);
@@ -395,6 +400,7 @@
   --color-field-readonly-surface: var(--field-readonly-surface);
   --color-field-disabled-surface: var(--field-disabled-surface);
   --color-field-border: var(--field-border);
+  --shadow-field: var(--field-shadow);
   --color-field-chip-surface: var(--field-chip-surface);
   --color-field-chip-internal-surface: var(--field-chip-internal-surface);
   --color-field-chip-internal-border: var(--field-chip-internal-border);

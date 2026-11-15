@@ -1,5 +1,4 @@
 import { fromDatabaseDate } from '../../core/server/lib/db-types/date';
-import { buildTriggerRuleRows } from '../../core/server/services/automations/trigger-rules';
 import ObjectId from 'bson-objectid';
 import moment from 'moment';
 import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../core/server/services/member-welcome-emails/constants';
@@ -78,18 +77,24 @@ export async function setupAutomationsFixture(): Promise<void> {
 
   await db.knex('automations').insert(automationRows);
   await db.knex('automation_trigger_rules').insert([
-    ...buildTriggerRuleRows({
-      automationId: freeAutomationId,
-      scope: 'free',
-      tierIds: [],
-      createdAt: fromDatabaseDate(timestamp(0)),
-    }),
-    ...buildTriggerRuleRows({
-      automationId: paidAutomationId,
-      scope: 'all_paid',
-      tierIds: [],
-      createdAt: fromDatabaseDate(timestamp(1)),
-    }),
+    {
+      id: ObjectId().toHexString(),
+      automation_id: freeAutomationId,
+      created_at: fromDatabaseDate(timestamp(0)),
+      trigger_type: 'free_signup',
+      scope: null,
+      product_id: null,
+      direction: null,
+    },
+    {
+      id: ObjectId().toHexString(),
+      automation_id: paidAutomationId,
+      created_at: fromDatabaseDate(timestamp(1)),
+      trigger_type: 'paid_subscription_started',
+      scope: 'any_paid_tier',
+      product_id: null,
+      direction: null,
+    },
   ]);
 
   await db.knex('automation_actions').insert(

@@ -390,7 +390,6 @@ export class GiftService {
 
     const plan = validateGiftCheckoutOffer({
       tier,
-      portalPlans: this.deps.settingsCache.get('portal_plans'),
       offer: resolvedDuration,
     });
     const cadence = plan.cadence;

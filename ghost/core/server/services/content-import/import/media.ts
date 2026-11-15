@@ -1,4 +1,5 @@
 import type { PostData } from './post-data';
+import { createOriginSchemes } from '../../media-inliner/origin-schemes';
 import type { ExternalMediaImporter, ExternalMediaImportResult } from '../../media-inliner/types';
 
 const cheerio = require('cheerio/slim');
@@ -118,6 +119,8 @@ export class PostMediaInliner implements PostMediaInlining {
   private _media: ExternalMediaImporter;
   private _isLocalMediaUrl: (sourceUrl: string) => boolean;
   private _cache = new Map<string, Promise<ExternalMediaImportResult>>();
+  // Which scheme each origin serves, shared by every URL this run imports
+  private _originSchemes = createOriginSchemes();
   private _failures = new Map<string, MediaFailure>();
 
   constructor({
@@ -163,7 +166,7 @@ export class PostMediaInliner implements PostMediaInlining {
 
     let resultPromise = this._cache.get(sourceUrl);
     if (!resultPromise) {
-      resultPromise = this._media.importUrl(sourceUrl);
+      resultPromise = this._media.importUrl(sourceUrl, { originSchemes: this._originSchemes });
       this._cache.set(sourceUrl, resultPromise);
     }
 

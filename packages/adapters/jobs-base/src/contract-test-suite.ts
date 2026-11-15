@@ -84,6 +84,47 @@ export function runJobsBackendContractTests(
       assert.deepEqual(settlements, [{ id: 'dispatch-1', status: 'completed' }]);
     });
 
+    it('reports a settled id again when it is enqueued again', async function () {
+      const settlements: string[] = [];
+      const firstSettled = deferred();
+      const secondSettled = deferred();
+      const reEnqueued = deferred();
+      const backend = makeBackend();
+      await backend.start({
+        processor: async () => {},
+        onSettled: async (id) => {
+          settlements.push(id);
+          if (settlements.length === 1) {
+            firstSettled.resolve();
+            return;
+          }
+          // The outbox re-enqueues while holding a lock that settling needs,
+          // so a backend that waits on onSettled inside enqueue deadlocks.
+          await reEnqueued.promise;
+          secondSettled.resolve();
+        },
+      });
+
+      await backend.enqueue('dispatch-1', envelope);
+      await firstSettled.promise;
+
+      const raced = await Promise.race([
+        Promise.resolve(backend.enqueue('dispatch-1', envelope)).then(() => 'enqueued'),
+        delay(1000).then(() => 'blocked'),
+      ]);
+      reEnqueued.resolve();
+      assert.equal(raced, 'enqueued', 'enqueue must not wait on onSettled');
+
+      const reported = await Promise.race([
+        secondSettled.promise.then(() => 'reported'),
+        delay(2000).then(() => 'swallowed'),
+      ]);
+      await backend.shutdown({ timeoutMs: 1000 });
+
+      assert.equal(reported, 'reported', 'a re-enqueued settled id must reach onSettled again');
+      assert.deepEqual(settlements, ['dispatch-1', 'dispatch-1']);
+    });
+
     it('resolves enqueue on acceptance, not on completion', async function () {
       let completed = false;
       const release = deferred();

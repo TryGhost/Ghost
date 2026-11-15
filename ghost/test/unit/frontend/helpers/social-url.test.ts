@@ -2,9 +2,11 @@ import assert from 'node:assert/strict';
 // @ts-expect-error This module lacks type definitions.
 import handlebarsService from '../../../../core/frontend/services/handlebars';
 // @ts-expect-error This module lacks type definitions.
-import helpers from '../../../../core/frontend/services/helpers';
-// @ts-expect-error This module lacks type definitions.
 import social_url from '../../../../core/frontend/helpers/social_url';
+import {
+  freshHelperServiceForSuite,
+  restoreHandlebarsAfterSuite,
+} from '../../../utils/handlebars-state';
 
 const { handlebars } = handlebarsService.hbs;
 
@@ -34,10 +36,13 @@ function compile(templateString: string) {
 }
 
 describe('{{social_url}} helper', function () {
+  restoreHandlebarsAfterSuite();
+  const helpers = freshHelperServiceForSuite();
+
   beforeAll(function () {
     // Register the helper using an object structure
-    helpers.registerHelper('social_url', social_url);
-    helpers.registerAlias('facebook_url', 'social_url');
+    helpers().registerHelper('social_url', social_url);
+    helpers().registerAlias('facebook_url', 'social_url');
 
     defaultGlobals = {
       data: {

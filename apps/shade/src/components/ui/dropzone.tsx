@@ -51,7 +51,7 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
     },
     ref,
   ) => {
-    const { controlShape } = useShade();
+    const { controlShape, admin7Design } = useShade();
     const {
       getRootProps,
       getInputProps,
@@ -101,7 +101,7 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
       'aria-disabled': disabled,
       'aria-invalid': isDragReject || undefined,
       className: cn(
-        dropzoneVariants({ variant }, controlShape),
+        dropzoneVariants({ variant }, controlShape, admin7Design),
         disabled && 'pointer-events-none cursor-not-allowed opacity-60',
         isDragReject && 'border-state-danger bg-state-danger/10',
         isDragActive && !isDragReject && !disabled && 'border-state-success bg-state-success/10',

@@ -9,6 +9,10 @@ import {
 import { createAuth } from '../../../../../core/server/auth/better-auth/create-auth';
 import { normalizeIP } from '../../../../../core/server/web/shared/middleware/api/backoff-limiter';
 
+// Never blocks; the rate limits have their own tests
+const allow = () => ({ consume: async () => ({ allowed: true as const }), reset: async () => {} });
+const limiters = { globalBlock: allow, globalReset: allow, userLogin: allow, userReset: allow };
+
 function withHeader(ip: string | undefined, headers: Record<string, string> = {}) {
   const req = { ip, headers: { ...headers } } as Request;
   let called = false;
@@ -42,13 +46,13 @@ describe('setClientIPHeader', function () {
       secret: 'a'.repeat(64),
       sessionMaxAgeMs: 1000,
       urlUtils: {
-        getAdminUrl: () => undefined,
-        getSiteUrl: () => 'https://example.com/',
+        getAdminOrigin: () => 'https://example.com',
         getSubdir: () => '',
         isSSL: () => true,
       },
       password: { hash: async () => '', compare: async () => false },
       logger: { debug() {}, info() {}, warn() {}, error() {} },
+      limiters,
     });
     const { options } = await auth.$context;
 

@@ -19,10 +19,13 @@ import is from '../../../../core/frontend/helpers/is';
 import t from '../../../../core/frontend/helpers/t';
 // @ts-expect-error This module lacks type definitions.
 import { setupI18nTest, initLocale } from '../../../utils/i18n-test-utils';
+import { restoreHandlebarsAfterSuite } from '../../../utils/handlebars-state';
 
 const { hbs } = handlebarsService;
 
 describe('{{content}} helper', function () {
+  restoreHandlebarsAfterSuite();
+
   beforeAll(async function () {
     hbs.express4({ partialsDir: [configUtils.config.get('paths').helperTemplates] });
 
@@ -75,6 +78,8 @@ describe('{{content}} helper', function () {
 });
 
 describe('{{content}} helper with no access', function () {
+  restoreHandlebarsAfterSuite();
+
   beforeAll(async function () {
     hbs.express4({ partialsDir: [configUtils.config.get('paths').helperTemplates] });
 
@@ -229,6 +234,8 @@ describe('{{content}} helper with no access', function () {
 });
 
 describe('{{content}} helper with custom template', function () {
+  restoreHandlebarsAfterSuite();
+
   let optionsData: undefined;
   beforeAll(async function () {
     hbs.express4({ partialsDir: [path.resolve(__dirname, './test_tpl')] });

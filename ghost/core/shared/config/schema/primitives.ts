@@ -41,3 +41,11 @@ export function knownKeys<S extends z.ZodRawShape>(name: string, shape: S) {
     >;
   });
 }
+
+/**
+ * A TCP port. A quoted port is coerced, as drivers accept one anyway. Digits
+ * only, as `z.coerce` would take `true` as 1.
+ */
+export const tcpPort = z
+  .union([z.number(), z.string().regex(/^\d+$/).transform(Number)])
+  .pipe(z.number().int().min(1).max(65535));

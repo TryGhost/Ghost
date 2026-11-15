@@ -476,12 +476,7 @@ describe('automations poll', function () {
 
       await poll(options);
 
-      sinon.assert.calledOnceWithExactly(
-        memberWelcomeEmailService.sendAutomationEmail,
-        sinon.match({
-          memberStatus: 'paid',
-        }),
-      );
+      sinon.assert.calledOnce(memberWelcomeEmailService.sendAutomationEmail);
       sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
     });
   });
@@ -551,10 +546,7 @@ describe('automations poll', function () {
 
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
         sinon.assert.notCalled(automationsApi.markStepTerminal);
-        sinon.assert.calledOnceWithExactly(
-          memberWelcomeEmailService.sendAutomationEmail,
-          sinon.match({ memberStatus: 'paid' }),
-        );
+        sinon.assert.calledOnce(memberWelcomeEmailService.sendAutomationEmail);
       });
 
       it('continues when a gift member still matches the To tier', async function () {
@@ -602,10 +594,7 @@ describe('automations poll', function () {
 
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
         sinon.assert.notCalled(automationsApi.markStepTerminal);
-        sinon.assert.calledOnceWithExactly(
-          memberWelcomeEmailService.sendAutomationEmail,
-          sinon.match({ memberStatus: 'free' }),
-        );
+        sinon.assert.calledOnce(memberWelcomeEmailService.sendAutomationEmail);
       });
 
       it.each(['paid', 'gift'])(
@@ -700,7 +689,6 @@ describe('automations poll', function () {
           lexical: step.email_lexical,
           subject: 'Welcome!',
         },
-        memberStatus: 'free',
       }),
     );
     sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextReadyAt);
@@ -962,9 +950,9 @@ describe('automations poll', function () {
     sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
   });
 
-  it('logs the original Mailgun error without the email payload', async function () {
+  it('logs Mailgun context without the email payload', async function () {
     const step = buildEmailStep();
-    const error = new Error('Mailgun request timed out');
+    const error = new Error('Forbidden');
     const logError = sinon.stub(logging, 'error');
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     memberWelcomeEmailService.sendAutomationEmail.rejects({
@@ -977,7 +965,7 @@ describe('automations poll', function () {
     sinon.assert.calledOnceWithExactly(
       logError,
       {
-        err: sinon.match.same(error),
+        err: sinon.match({ message: 'Mailgun error: Forbidden' }),
         system: {
           event: 'automations.poll.step_execution_failed',
           step_id: step.id,

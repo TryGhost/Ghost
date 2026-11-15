@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
-ARG NODE_VERSION=22.23.4
+ARG NODE_VERSION=22.23.5
 FROM node:$NODE_VERSION-bookworm-slim
 
 WORKDIR /home/ghost
@@ -8,7 +8,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.mjs ./
 COPY patches patches
 # Keep dependency installation cached when source files change. All workspace
 # manifests are needed to resolve E2E's workspace references from the lockfile.
-COPY --parents ghost/package.json apps/*/package.json koenig/*/package.json tools/configs/*/package.json packages/**/package.json e2e/package.json tools/scripts/package.json ./
+COPY --parents ghost/package.json apps/*/package.json koenig/*/package.json tools/configs/*/package.json packages/**/package.json contracts/*/package.json e2e/package.json tools/scripts/package.json ./
 COPY tools/scripts/enforce-package-manager.ts tools/scripts/
 COPY .github/hooks .github/hooks
 RUN corepack enable

@@ -49,8 +49,8 @@ current behaviour.
 
 - **Expand (Phase 1).** Better Auth is built and backed by its own tables
   behind the `auth:engine` config switch, with no user-visible change. Its
-  handler is mounted in Phase 2, with the hook that strips session tokens
-  from its responses (§10).
+  handler is mounted under `better-auth`, with the hook that strips session
+  tokens from its responses (§10).
 - **Migrate (Phases 2–8).** Under `auth:engine = better-auth`, Better Auth owns
   the staff session and email-code verification first; scoped Bearer tokens
   and new sign-in methods (magic link, then passkeys and authenticator apps)
@@ -164,12 +164,12 @@ screens use an `AuthClient` contract shaped like the Better Auth client
 `GET /users/me/`. `comments-ui` loads `/ghost/auth-frame`, which Core serves
 only when the cookie header contains `ghost-admin-api-session`.
 
-**Platform.** Node `^22.23.4 || ^24.22.1`; Core is TypeScript compiled to
+**Platform.** Node `^22.23.5 || ^24.22.3`; Core is TypeScript compiled to
 CommonJS; Better Auth 1.7 is ESM-only and loads with `require(esm)`, which
 Ghost already relies on. Express 4: Better Auth's `toNodeHandler` must mount before
 `body-parser`. MySQL 8 via Knex (Kysely would add a second pool outside Ghost's
-transactions). Rate limiting is `express-brute` on the `brute` table with
-success resets. Boot owns service initialisation (`kernel/define-service.ts`).
+transactions). Rate limiting is the `spam` limiters (rate-limiter-flexible on
+the `rate_limits` table, `shared.middleware.rateLimiting`) with success resets. Boot owns service initialisation (`kernel/define-service.ts`).
 
 ## 3. Target architecture
 
@@ -202,20 +202,20 @@ build or validate it. From Phase 2 the legacy engine keeps passwords in
 not, so legacy boot works without the tables until `user_accounts` graduates
 (§4.5).
 
-| Concern               | Setting                                                                                                                                                                                                                                                                                                                                        |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Base path             | `basePath` is the subdirectory plus `/ghost/api/admin/auth`, since Ghost mounts at the subdirectory and requests arrive with it; `baseURL` is the origin of `urlUtils.getAdminUrl()` only, since a path there would override `basePath` (tested on a subdirectory install)                                                                     |
-| Secret                | `admin_session_secret` setting                                                                                                                                                                                                                                                                                                                 |
-| IDs                   | `advanced.database.generateId` returns ObjectIds                                                                                                                                                                                                                                                                                               |
-| Cookie                | `advanced.cookies.session_token` named `ghost-admin-api-session` with today's path, `sameSite`, `httpOnly`; `useSecureCookies` on an HTTPS admin URL adds `Secure` and the `__Secure-` prefix (§5.2)                                                                                                                                           |
-| Session               | `modelName: 'user_sessions'`; `expiresIn` is `admin:sessionMaxAgeMs / 1000` (Better Auth takes seconds, and so does the cookie `maxAge` it derives), with an exact-expiry test; `disableSessionRefresh: true` (absolute expiry, as today); `additionalFields` `verified`, `origin` (`input: false`)                                            |
-| User                  | `modelName: 'users'`; `image` → `profile_image`, timestamps mapped; `emailVerified` virtual (§4.3); `additionalFields` `status`, `slug`, `last_seen` (`input: false`)                                                                                                                                                                          |
-| Account, verification | `user_accounts`, `verifications`                                                                                                                                                                                                                                                                                                               |
-| Email + password      | `disableSignUp: true`; bcrypt `hash`/`verify` via `@tryghost/security`; `sendResetPassword` with Ghost's template; 24-hour reset tokens; `revokeSessionsOnPasswordReset: true`; `onPasswordReset` re-activates locked users                                                                                                                    |
-| Origins               | `trustedOrigins` returns the admin origin only, matching today's login-CSRF check (`assertRequestFromAdminOrigin`)                                                                                                                                                                                                                             |
-| Rate limit            | Better Auth's limiter off until custom storage in Phase 9. Until then `express-brute` wraps the native credential routes too (`/sign-in/email`, `/sign-in/magic-link`, `/request-password-reset`, `/reset-password`, `/device-verification/*`) with the same rules as their compatibility routes, so calling the native route cannot bypass it |
-| Disabled paths        | `/sign-up/email`, `/update-user`, `/update-session`, `/change-email`, `/delete-user`, social sign-in                                                                                                                                                                                                                                           |
-| Other                 | `telemetry.enabled: false`; logger routed to `@tryghost/logging`; `ipAddressHeaders` aligned with `trust proxy`                                                                                                                                                                                                                                |
+| Concern               | Setting                                                                                                                                                                                                                                                                                                                                                                                                 |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Base path             | `basePath` is the subdirectory plus `/ghost/api/admin/auth`, since Ghost mounts at the subdirectory and requests arrive with it; `baseURL` is the origin of `urlUtils.getAdminUrl()` only, since a path there would override `basePath` (tested on a subdirectory install)                                                                                                                              |
+| Secret                | `admin_session_secret` setting                                                                                                                                                                                                                                                                                                                                                                          |
+| IDs                   | `advanced.database.generateId` returns ObjectIds                                                                                                                                                                                                                                                                                                                                                        |
+| Cookie                | `advanced.cookies.session_token` named `ghost-admin-api-session` with today's path, `sameSite`, `httpOnly`; `useSecureCookies` on an HTTPS admin URL adds `Secure` and the `__Secure-` prefix (§5.2)                                                                                                                                                                                                    |
+| Session               | `modelName: 'user_sessions'`; `expiresIn` is `admin:sessionMaxAgeMs / 1000` (Better Auth takes seconds, and so does the cookie `maxAge` it derives), with an exact-expiry test; `disableSessionRefresh: true` (absolute expiry, as today); `additionalFields` `verified`, `origin` (`input: false`)                                                                                                     |
+| User                  | `modelName: 'users'`; `image` → `profile_image`, timestamps mapped; `emailVerified` virtual (§4.3); `additionalFields` `status`, `slug`, `last_seen` (`input: false`)                                                                                                                                                                                                                                   |
+| Account, verification | `user_accounts`, `verifications`                                                                                                                                                                                                                                                                                                                                                                        |
+| Email + password      | `disableSignUp: true`; bcrypt `hash`/`verify` via `@tryghost/security`; `sendResetPassword` with Ghost's template; 24-hour reset tokens; `revokeSessionsOnPasswordReset: true`; `onPasswordReset` re-activates locked users                                                                                                                                                                             |
+| Origins               | `trustedOrigins` returns the admin origin only, matching today's login-CSRF check (`assertRequestFromAdminOrigin`)                                                                                                                                                                                                                                                                                      |
+| Rate limit            | Better Auth's limiter runs on the `spam` limiters through `customStorage`: each native credential route (`/sign-in/email`, `/sign-in/magic-link`, `/request-password-reset`, `/reset-password`, and `/device-verification/*` once added) counts against its compatibility route's limiters, with the same reset on success, so calling the native route cannot bypass them. Other paths are not limited |
+| Disabled paths        | `/sign-up/email`, `/update-user`, `/update-session`, `/change-email`, `/delete-user`, social sign-in                                                                                                                                                                                                                                                                                                    |
+| Other                 | `telemetry.enabled: false`; logger routed to `@tryghost/logging`; `ipAddressHeaders` aligned with `trust proxy`                                                                                                                                                                                                                                                                                         |
 
 Built-in plugins:
 
@@ -308,7 +308,7 @@ and hooks. It is replaced by `twoFactor` if Ghost moves to opt-in 2FA.
   expiry). Attempts are an `attempts` field on `verifications`, incremented
   with `incrementOne` guarded by `attempts < 5`, so concurrent wrong codes
   cannot pass the limit; an exhausted code is deleted and a new one must be
-  sent. `express-brute` still applies on top. Success sets `verified` and, unless
+  sent. The `spam` limiters still apply on top. Success sets `verified` and, unless
   `require_email_mfa` is on, a signed `ghost-admin-device` cookie bound to the
   user. Sign-out clears it when `require_email_mfa` is on.
 - Reuses `auth/session/emails/signin.js` and the device-details helper, with an
@@ -387,13 +387,17 @@ working unchanged.
 
 ### 3.5 Mounting
 
-In `web/api/endpoints/admin/app.js`, before `bodyParser.json`:
+In `web/api/endpoints/admin/app.js`, after the private cache header and
+before `bodyParser.json`. The router sets the client IP header from `req.ip`
+before Better Auth's limiter reads it:
 
 ```js
-apiApp.all('/auth/*', toNodeHandler(auth));
+if (config.get('auth:engine') === 'better-auth') {
+  apiApp.use(betterAuthRouter(auth.betterAuth.service));
+}
 ```
 
-Compatibility routes stay in `routes.js` with their `express-brute`
+Compatibility routes stay in `routes.js` with their rate-limiting
 middleware. `mw.authAdminApi` uses `resolvePrincipal` when `auth:engine` is
 `better-auth`.
 
@@ -430,8 +434,8 @@ migrations and legacy-row filters on live tables.
 | `sso_providers`    | `ssoProvider`     | 8     | Team SSO                                              |
 | `oauth_*` (four)   | `oauthProvider`   | 4b    | Consider Redis secondary storage for token tables     |
 
-Not added: a rate-limit table (Phase 9 uses `customStorage` over `brute` or
-Redis), and no reuse of the members `tokens` table for verifications (owned by
+Not added: a rate-limit table (`customStorage` runs on the `spam` limiters'
+`rate_limits` store), and no reuse of the members `tokens` table for verifications (owned by
 members, `varchar(32)` tokens, no expiry). Names use `user_*`, not `staff_*`,
 so members could later become Better Auth users without renames.
 
@@ -514,7 +518,7 @@ Auth does not purge them.
 
 - **Ghost 7.0:** drop `sessions` and `users.password`; drop `permissions`,
   `permissions_roles`, `permissions_users`; remove `express-session`,
-  `express-brute` on auth routes, `otplib`, and `jsonwebtoken` where `jose`
+  `otplib`, and `jsonwebtoken` where `jose`
   replaced it. Decide whether credential rows join content exports.
 - **Ghost 8.0:** remove `Authorization: Ghost`, Staff Access Tokens,
   `ghostApiKeys`, the Custom Integrations UI and the `api_keys` table.
@@ -619,7 +623,8 @@ Exit: README notes and a go/no-go.
 
 ### Phase 1: Foundations (M)
 
-Better Auth is built, but not mounted, with no user-visible change.
+Better Auth is built and, under `better-auth` only, mounted, with no
+user-visible change under `legacy`.
 
 1. Add `better-auth` to the catalog.
 2. `knex-adapter.ts` with its adapter-suite test.
@@ -629,15 +634,17 @@ Better Auth is built, but not mounted, with no user-visible change.
 4. `create-auth.ts` (§3.1), initialised by boot only when `auth:engine` is
    `better-auth`, refusing to start on SQLite or without its tables.
 5. Config `auth:engine` (`legacy` | `better-auth`, default `legacy`); publish
-   `auth: {engine, methods}` through `api/endpoints/utils/public-config/config.js`
-   (not under `security`). The handler is not mounted until Phase 2.
+   `auth: {engine}` through `api/endpoints/utils/public-config/config.js`
+   (not under `security`); `methods` joins it once it has a config key.
+6. Under `better-auth`, mount the handler (§3.5), with Better Auth's limiter
+   on the `spam` limiters through `customStorage`, and the after-hook that
+   strips session tokens from native responses (§10).
 
 Exit: merged to main; full e2e API suite green under `legacy`.
 
 ### Phase 2: Sessions on Better Auth (L)
 
-1. Mount the handler (§3.5) with the after-hook that strips session tokens
-   from native responses (§10).
+1. The handler is already mounted under `better-auth` (Phase 1, item 6).
 2. Better Auth issues `ghost-admin-api-session` from `user_sessions`; the
    legacy `sessions` table is left untouched for rollback. Legacy cookies are
    not recognised, so staff sign in again once.
@@ -646,9 +653,10 @@ Exit: merged to main; full e2e API suite green under `legacy`.
    `authAdminApiWithUrl` and the Content API (the `Ghost` branch still calls
    `api-key/admin.js`).
 5. Compatibility controllers for `POST`/`DELETE /session`, keeping
-   `express-brute` and its reset on success.
+   their rate limits and the reset on success.
 6. Legacy password reads and writes move to `user_accounts` wherever it
-   exists (§4.5).
+   exists (§4.5), and native `/change-password` is enabled. Until then it is
+   disabled, since legacy sign-in would not see its writes.
 7. Revocation seams: `changePassword`, user suspension and deletion,
    `reset-authentication.ts` call `revokeUserSessions`/`revokeAllSessions`.
    Until 7.0 drops `sessions`, both also delete the user's legacy `sessions`
@@ -772,9 +780,8 @@ integration API responses.
 
 1. Default `auth:engine` to `better-auth` in a minor; release notes say staff
    are signed out once.
-2. Better Auth rate limiting with `customStorage` over `brute` (or Redis) and
-   rules mirroring today's `spam` settings with reset on success; then remove
-   `express-brute` from the compatibility routes.
+2. Remove the rate-limiting middleware with the compatibility routes; Better
+   Auth's limiter already runs on the `spam` limiters (Phase 1, item 6).
 3. Count `Authorization: Ghost` usage per key and show it in the integrations
    UI.
 
@@ -860,10 +867,10 @@ integration API responses.
 | SQLite cannot run Better Auth                                  | Boot refuses the new engine on SQLite; legacy until 7.0                                             |
 | Unverified sessions accepted by Better Auth endpoints          | Global before-hook in `ghostDeviceVerification`; e2e test                                           |
 | Bearer tokens widen attack surface                             | Hashed, scoped, expiring, revocable, role-capped, rate-limited, shown once; reset revokes all       |
-| Better Auth's rate limiter lacks success reset                 | Keep `express-brute` until Phase 9                                                                  |
+| Better Auth's rate limiter lacks success reset                 | `customStorage` over the `spam` limiters; an after-hook clears `userLogin` on success               |
 | Plugin schema changes on upgrade                               | Tables in development until shipped; pinned catalog version; adapter and plugin suites in CI        |
 | Cookie name or `Authorization failed` drift breaks older Admin | Both in §5, asserted by snapshots                                                                   |
-| `config.security` is exposed to staff                          | New config under `auth:`; only `engine` and `methods` published                                     |
+| `config.security` is exposed to staff                          | New config under `auth:`; only allowlisted keys published                                           |
 | Removing the `Ghost` scheme breaks integrations                | Only in 8.0, after a full 7.x deprecation cycle with usage data and SDK updates                     |
 
 ## 10. Decisions

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from '@tryghost/shade/components';
 import { toast } from 'sonner';
+import { isOutdatedReviewCode } from '@tryghost/app-contracts';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import type { AppInstallationPreview } from '@tryghost/admin-x-framework/api/app-installations';
 import { AlreadyInstalled } from './already-installed';
@@ -81,20 +82,17 @@ export const InstallDialog: React.FC<InstallDialogProps> = ({ manifestUrl, onClo
     } catch (error) {
       const apiError = apiErrorOf(error);
       const code = apiError?.code;
-      if (code === 'APP_MANIFEST_CHANGED' || code === 'APP_INSTALLATION_CHANGED') {
-        // The app, or the site's installation of it, is no longer what was reviewed. Ghost
-        // answers with the review as it stands now when it has one; otherwise ask for it.
+      if (isOutdatedReviewCode(code)) {
+        // Only a changed manifest or installation can carry the current review; otherwise
+        // fetch it.
         setNotice(CHANGED);
         const details: unknown = apiError?.details;
-        if (isPreview(details)) {
+        const sendsReview = code === 'APP_MANIFEST_CHANGED' || code === 'APP_INSTALLATION_CHANGED';
+        if (sendsReview && isPreview(details)) {
           replace(details);
         } else {
           await reload();
         }
-      } else if (code === 'APP_ALREADY_INSTALLED' || code === 'APP_INSTALLATION_UNINSTALLED') {
-        // Installed, or uninstalled, under the publisher: a fresh review of where it stands.
-        setNotice(CHANGED);
-        await reload();
       } else {
         setConfirmFailure(installFailureOf(error));
       }

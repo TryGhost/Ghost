@@ -3,8 +3,6 @@ import type { Promisable, ReadonlyDeep } from 'type-fest';
 import type { z } from 'zod';
 import { addAutomationDataSchema } from './automations-schemas';
 
-export type AutomationTriggerTierScope = 'free' | 'all_paid' | 'selected_paid';
-
 export type AddAutomationData = z.infer<typeof addAutomationDataSchema>;
 
 export type ActionToInsert = {
@@ -36,6 +34,12 @@ export type RunToInsert = {
   automation_id: string;
   member_id: string;
   member_email: string;
+};
+
+export type AutomatedEmailRecipientTrackingData = {
+  deliveredAt?: Date;
+  openedAt?: Date;
+  automationActionRevisionId: string;
 };
 
 export type TrackEmailClickedOptions = ReadonlyDeep<{
@@ -89,6 +93,10 @@ export type AutomationsRepository2<Connection> = {
           memberTierIds: string[];
           previousMemberTierIds: string[];
         }
+      | {
+          eventName: 'label_added';
+          labelId: string;
+        }
     >,
   ) => Promisable<NextActionRevisionRow[]>;
 
@@ -104,6 +112,13 @@ export type AutomationsRepository2<Connection> = {
 
   /** Increment the number of recipients that clicked this revision. */
   incrementEmailClickedCount: (connection: Connection, revisionId: string) => Promisable<void>;
+
+  /** Increment the number of recipients that opened this revision. */
+  incrementEmailOpenedCount: (
+    connection: Connection,
+    actionRevisionId: string,
+    count: number,
+  ) => Promisable<void>;
 
   /** Insert automation actions. */
   insertActions: (
@@ -126,12 +141,6 @@ export type AutomationsRepository2<Connection> = {
     toInsert: ReadonlyArray<AutomationTriggerRule>,
   ) => Promisable<void>;
 
-  /** Is this run's automation active? */
-  isAutomationActiveForRun: (
-    connection: Connection,
-    automationRunId: string,
-  ) => Promisable<boolean>;
-
   /** Is this step's automation active? */
   isAutomationActiveForRunStep: (connection: Connection, runStepId: string) => Promisable<boolean>;
 
@@ -150,6 +159,12 @@ export type AutomationsRepository2<Connection> = {
    */
   lockMember: (connection: Connection, memberId: string) => Promisable<void>;
 
+  /** Lock recipients whose first open has not yet been recorded. */
+  lockNotYetOpenedEmailRecipients: (
+    connection: Connection,
+    automatedEmailRecipientIds: readonly string[],
+  ) => Promisable<Set<string>>;
+
   /**
    * Set the email's "clicked" timestamp. Returns whether a recipient was
    * updated.
@@ -159,6 +174,13 @@ export type AutomationsRepository2<Connection> = {
     recipientId: string,
     clickedAt: Readonly<Date>,
   ) => Promisable<boolean>;
+
+  /** Preserve the earliest delivery and open timestamps for a recipient. */
+  setEmailRecipientDeliveredAndOpenedAt: (
+    connection: Connection,
+    automatedEmailRecipientId: string,
+    events: ReadonlyDeep<Pick<AutomatedEmailRecipientTrackingData, 'deliveredAt' | 'openedAt'>>,
+  ) => Promisable<void>;
 
   /** Run a function within a repository connection. */
   withConnection: <ReturnT>(fn: (connection: Connection) => ReturnT) => ReturnT;

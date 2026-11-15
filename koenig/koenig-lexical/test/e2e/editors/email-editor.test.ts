@@ -1,5 +1,5 @@
 import path from 'path';
-import {assertHTML, focusEditor, html, initialize, insertCard, pasteText, selectBackwards} from '../../utils/e2e';
+import {assertHTML, focusEditor, getEditorState, html, initialize, insertCard, pasteText, selectBackwards} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 
@@ -8,6 +8,7 @@ const __dirname = path.dirname(__filename);
 
 const visibleEmailMenuItems = [
     'Image',
+    'File',
     'Unsplash',
     'GIF',
     'Bookmark',
@@ -25,7 +26,6 @@ const unavailableEmailMenuItems = [
     'Audio',
     'Gallery',
     'Video',
-    'File',
     'Markdown',
     'Header',
     'Public preview',
@@ -218,6 +218,58 @@ test.describe('Koenig Editor with email template nodes', async function () {
             await expect(page.locator('[data-kg-card-toolbar="image"] button[aria-label="Regular width"]')).toHaveCount(0);
             await expect(page.locator('[data-kg-card-toolbar="image"] button[aria-label="Wide width"]')).toHaveCount(0);
             await expect(page.locator('[data-kg-card-toolbar="image"] button[aria-label="Full width"]')).toHaveCount(0);
+        });
+    });
+
+    test.describe('Serialization and deserialization', function () {
+        test('restores mixed rich text and cards in a fresh email editor', async function () {
+            const text = (value, format = 0) => ({
+                type: 'extended-text', version: 1, text: value, format, detail: 0, mode: 'normal', style: ''
+            });
+            const element = (type, children, properties = {}) => ({
+                type, version: 1, children, direction: 'ltr', format: '', indent: 0, ...properties
+            });
+            const children = [
+                element('extended-heading', [text('Welcome guide')], {tag: 'h2'}),
+                element('paragraph', [
+                    text('Bold welcome', 1),
+                    text(' and '),
+                    element('link', [text('our archive')], {url: 'https://example.com/archive', rel: 'noreferrer', target: null, title: null})
+                ]),
+                element('extended-quote', [text('A helpful quotation')]),
+                element('list', [element('listitem', [text('First step')], {value: 1})], {listType: 'bullet', start: 1, tag: 'ul'}),
+                {type: 'callout', version: 1, calloutText: '<p>Remember this</p>', calloutEmoji: '💡', backgroundColor: 'blue'},
+                {type: 'button', version: 1, buttonText: 'Read more', buttonUrl: 'https://example.com/read', alignment: 'center'},
+                {type: 'html', version: 1, html: '<p>Custom email content</p>'},
+                {type: 'file', version: 1, src: 'https://example.com/guide.pdf', fileName: 'guide.pdf', fileSize: 123456, fileTitle: 'Download guide', fileCaption: 'Your welcome gift'},
+                {type: 'horizontalrule', version: 1}
+            ];
+            const initialState = {root: element('root', children)};
+
+            await page.evaluate((serializedState) => {
+                const editor = window.lexicalEditor;
+                editor.setEditorState(editor.parseEditorState(serializedState));
+            }, JSON.stringify(initialState));
+            await expect(page.locator('[data-kg-card="file"]')).toBeVisible();
+
+            // Capture the editor's canonical output, including defaults added on import.
+            const savedState = await getEditorState(page);
+            expect(savedState.root.children).toHaveLength(children.length);
+            expect(savedState.root.children.map(node => node.type)).toEqual(children.map(node => node.type));
+
+            await initialize({page, uri: '/#/email?content=false'});
+            await expect(page.locator('[data-kg-card="file"]')).toHaveCount(0);
+            await page.evaluate((serializedState) => {
+                const editor = window.lexicalEditor;
+                editor.setEditorState(editor.parseEditorState(serializedState));
+            }, JSON.stringify(savedState));
+
+            await expect(page.locator('[data-kg-card="file"]')).toBeVisible();
+            expect(await getEditorState(page)).toEqual(savedState);
+            await expect(page.locator('[data-lexical-editor] h2')).toHaveText('Welcome guide');
+            await expect(page.locator('[data-lexical-editor] a[href="https://example.com/archive"]')).toHaveText('our archive');
+            await expect(page.locator('[data-kg-file-card="fileTitle"]')).toHaveValue('Download guide');
+            await expect(page.locator('[data-kg-file-card="fileDescription"]')).toHaveValue('Your welcome gift');
         });
     });
 

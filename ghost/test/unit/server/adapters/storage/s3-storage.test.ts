@@ -84,7 +84,7 @@ describe('S3Storage', function () {
             },
           }),
         ),
-        failure,
+        (thrown) => thrown === failure,
       );
       assert.equal(body.destroyed, true);
     });
@@ -92,7 +92,7 @@ describe('S3Storage', function () {
       const { storage, sendStub } = createStorage();
       const failure = new Error('access denied');
       sendStub.rejects(failure);
-      await assert.rejects(storage.readStream({ path: 'opaque' }), failure);
+      await assert.rejects(storage.readStream({ path: 'opaque' }), (thrown) => thrown === failure);
     });
   });
 

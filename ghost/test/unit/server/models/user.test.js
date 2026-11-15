@@ -9,10 +9,17 @@ const permissions = require('../../../../core/server/services/permissions');
 const schema = require('../../../../core/server/data/schema');
 const security = require('@tryghost/security');
 const testUtils = require('../../../utils');
+const configUtils = require('../../../utils/config-utils');
 
 describe('Unit: models/user', function () {
-  afterEach(function () {
+  // Passwords in users.password; the credential row path has integration tests
+  beforeEach(function () {
+    configUtils.set('auth:betterAuthDev', false);
+  });
+
+  afterEach(async function () {
     sinon.restore();
+    await configUtils.restore();
   });
 
   it('loads before the models index', function () {
@@ -1235,6 +1242,15 @@ describe('Unit: models/user', function () {
   });
 
   describe('ownerIdCache', function () {
+    // The cache lives on the shared User model, so start and end each test empty
+    beforeEach(function () {
+      models.User.ownerIdCache.clear();
+    });
+
+    afterEach(function () {
+      models.User.ownerIdCache.clear();
+    });
+
     it('should return null initially', function () {
       assert.equal(models.User.ownerIdCache.get(), null);
     });

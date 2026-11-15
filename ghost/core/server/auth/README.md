@@ -17,7 +17,7 @@ subsystem's existing tests. Booted API tests remain under `test/e2e-api/`.
 
 ## Lifecycle follow-up
 
-The [previous inventory audit](https://github.com/TryGhost/Ghost/blob/1b10a390b8a23a60509e1a118da6186c3d584846/ghost/core/server/services/service-inventory.yaml#L847)
+The [previous inventory audit](https://github.com/TryGhost/Ghost/tree/1b10a390b8a23a60509e1a118da6186c3d584846/ghost/core/server/services/service-inventory.yaml#L847)
 records the existing contracts, evidence and gaps. Its contract audit was checked
 at `bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e`; its migration assessment was checked
 at `f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e`. Relocation does not refresh those audits.

@@ -12,6 +12,7 @@
     "**/*.html",
     "**/test/**/fixtures/**",
     "**/__snapshots__/**",
+    "**/eslint-suppressions.json",
     "koenig/kg-default-nodes/**",
     "koenig/kg-lexical-html-renderer/**",
     "koenig/kg-simplemde/debug/**",

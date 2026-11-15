@@ -8,7 +8,6 @@ const {
 describe('gift checkout offer', function () {
   const tier = {
     status: 'active',
-    visibility: 'public',
     type: 'paid',
     currency: 'USD',
     monthlyPrice: 500,
@@ -20,45 +19,36 @@ describe('gift checkout offer', function () {
       assert.deepEqual(resolveGiftDuration({ duration: 1 }), {
         cadence: 'month',
         billingDuration: 1,
-        portalPlan: 'monthly',
         priceProperty: 'monthlyPrice',
         multiplier: 1,
         totalMonths: 1,
-        isCadenceOnly: false,
       });
       assert.deepEqual(resolveGiftDuration({ duration: 3 }), {
         cadence: 'month',
         billingDuration: 3,
-        portalPlan: 'monthly',
         priceProperty: 'monthlyPrice',
         multiplier: 3,
         totalMonths: 3,
-        isCadenceOnly: false,
       });
       assert.deepEqual(resolveGiftDuration({ duration: 6 }), {
         cadence: 'month',
         billingDuration: 6,
-        portalPlan: 'monthly',
         priceProperty: 'monthlyPrice',
         multiplier: 6,
         totalMonths: 6,
-        isCadenceOnly: false,
       });
       assert.deepEqual(resolveGiftDuration({ duration: 12 }), {
         cadence: 'year',
         billingDuration: 1,
-        portalPlan: 'yearly',
         priceProperty: 'yearlyPrice',
         multiplier: 1,
         totalMonths: 12,
-        isCadenceOnly: false,
       });
     });
 
     it('maps legacy cadence-only requests', function () {
       assert.equal(resolveGiftDuration({ cadence: 'month' }).totalMonths, 1);
       assert.equal(resolveGiftDuration({ cadence: 'year' }).totalMonths, 12);
-      assert.equal(resolveGiftDuration({ cadence: 'year' }).isCadenceOnly, true);
     });
 
     it('accepts matching cadence and duration', function () {
@@ -86,7 +76,6 @@ describe('gift checkout offer', function () {
       assert.deepEqual(
         validateGiftCheckoutOffer({
           tier,
-          portalPlans: ['monthly', 'yearly'],
           offer: resolveGiftDuration({ duration: 3 }),
         }),
         {
@@ -100,7 +89,6 @@ describe('gift checkout offer', function () {
       assert.deepEqual(
         validateGiftCheckoutOffer({
           tier,
-          portalPlans: ['monthly', 'yearly'],
           offer: resolveGiftDuration({ duration: 12 }),
         }),
         {
@@ -115,56 +103,17 @@ describe('gift checkout offer', function () {
     it('rejects unavailable tiers', function () {
       for (const unavailableTier of [
         { ...tier, status: 'archived' },
-        { ...tier, visibility: 'none' },
         { ...tier, type: 'free' },
       ]) {
         assert.throws(
           () =>
             validateGiftCheckoutOffer({
               tier: unavailableTier,
-              portalPlans: ['monthly', 'yearly'],
               offer: resolveGiftDuration({ duration: 3 }),
             }),
           BadRequestError,
         );
       }
-    });
-
-    it('rejects durations disabled in Portal', function () {
-      assert.throws(
-        () =>
-          validateGiftCheckoutOffer({
-            tier,
-            portalPlans: ['yearly'],
-            offer: resolveGiftDuration({ duration: 3 }),
-          }),
-        BadRequestError,
-      );
-      assert.throws(
-        () =>
-          validateGiftCheckoutOffer({
-            tier,
-            portalPlans: ['monthly'],
-            offer: resolveGiftDuration({ duration: 12 }),
-          }),
-        BadRequestError,
-      );
-    });
-
-    it('exempts legacy cadence-only requests from the Portal plan gate', function () {
-      assert.deepEqual(
-        validateGiftCheckoutOffer({
-          tier,
-          portalPlans: ['monthly'],
-          offer: resolveGiftDuration({ cadence: 'year' }),
-        }),
-        {
-          cadence: 'year',
-          duration: 1,
-          totalMonths: 12,
-          amount: 5000,
-        },
-      );
     });
 
     it('rejects missing or invalid prices and currency', function () {
@@ -178,7 +127,6 @@ describe('gift checkout offer', function () {
           () =>
             validateGiftCheckoutOffer({
               tier: invalidTier,
-              portalPlans: ['monthly'],
               offer: resolveGiftDuration({ duration: 3 }),
             }),
           BadRequestError,

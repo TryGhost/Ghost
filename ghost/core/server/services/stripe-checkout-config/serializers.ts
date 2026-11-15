@@ -13,7 +13,6 @@ import {
   type PhoneSettings,
   type ShippingSettings,
   type StripeCheckoutDesign,
-  type TaxNumberSettings,
 } from './models';
 
 /**
@@ -77,11 +76,6 @@ const CollectedInputs = {
         : null,
     )
     .optional(),
-  tax_number: CHECKOUT_PART_SETTINGS.tax_number
-    .transform((input): TaxNumberSettings | null =>
-      input.collect ? { tierIds: input.tier_ids ?? null } : null,
-    )
-    .optional(),
 } satisfies Record<CollectedPart, z.ZodType>;
 
 /** An edit request, keyed by each part's name in the model. Parts it leaves out are not changed. */
@@ -117,7 +111,6 @@ export type CheckoutPreviewInput = z.output<typeof CheckoutPreviewInput>;
 const CollectedResources = {
   shipping: CHECKOUT_PART_SETTINGS.shipping.optional(),
   phone: CHECKOUT_PART_SETTINGS.phone.optional(),
-  tax_number: CHECKOUT_PART_SETTINGS.tax_number.optional(),
 } satisfies Record<CollectedPart, z.ZodType>;
 
 const CheckoutConfigResource = z.object({
@@ -154,17 +147,6 @@ function phoneResource(phone: PhoneSettings | null) {
   };
 }
 
-/** The tax ID as the Admin API returns it, in the same shape a request gives it. */
-function taxNumberResource(taxNumber: TaxNumberSettings | null) {
-  if (!taxNumber) {
-    return { collect: false as const };
-  }
-  return {
-    collect: true as const,
-    ...(taxNumber.tierIds ? { tier_ids: taxNumber.tierIds } : {}),
-  };
-}
-
 /** The collected parts a response carries: the ones the config it is given includes. */
 function collectedResources(settings: Partial<Pick<StripeCheckoutConfig, CollectedSection>>): {
   [Part in CollectedPart]: z.input<(typeof CollectedResources)[Part]>;
@@ -172,8 +154,6 @@ function collectedResources(settings: Partial<Pick<StripeCheckoutConfig, Collect
   return {
     shipping: settings.shipping === undefined ? undefined : shippingResource(settings.shipping),
     phone: settings.phone === undefined ? undefined : phoneResource(settings.phone),
-    tax_number:
-      settings.taxNumber === undefined ? undefined : taxNumberResource(settings.taxNumber),
   };
 }
 
@@ -181,7 +161,6 @@ function collectedResources(settings: Partial<Pick<StripeCheckoutConfig, Collect
 const COLLECTED_OPTIONAL: Record<CollectedSection, true> = {
   shipping: true,
   phone: true,
-  taxNumber: true,
 };
 
 const CheckoutConfigResponse = z.object({

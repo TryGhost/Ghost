@@ -1,6 +1,7 @@
 import { afterAll, afterEach, beforeAll, describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import type { Knex } from 'knex';
 import logging from '@tryghost/logging';
 import { GiftLinksService } from '../../../core/server/services/gift-links/service';
 import {
@@ -36,8 +37,8 @@ describe('GiftLinksService (integration)', function () {
     postId = testUtils.DataGenerator.Content.posts[0].id;
     otherPostId = testUtils.DataGenerator.Content.posts[1].id;
     // Mirror init()'s wiring: recordGiftLinkAction partially applied to models.Action.
-    const recordAction: RecordGiftLinkAction = ({ context, verb, subject }) =>
-      recordGiftLinkAction({ Action: models.Action, logging, context, verb, subject });
+    const recordAction: RecordGiftLinkAction = (transacting, { context, verb, subject }) =>
+      recordGiftLinkAction({ Action: models.Action, logging, transacting, context, verb, subject });
     service = new GiftLinksService({ knex: models.Base.knex, recordAction });
   });
 
@@ -135,12 +136,25 @@ describe('GiftLinksService (integration)', function () {
     });
   }
 
-  it('does not fail the command when recording the action throws', async function () {
-    // Compose the port exactly as init() does, over a recorder that always fails:
-    // the best-effort contract must hold through the wiring, not just in isolation.
+  it('ensure returns a link minted after the transaction it joined first read', async function () {
+    await models.Base.knex.transaction(async (trx: Knex.Transaction) => {
+      // On MySQL a transaction's plain reads all see the database as it was at its first one.
+      await trx('posts').where('id', postId).first('id');
+      const minted = await service.ensure(CTX, postId);
+
+      const joined = await service.ensure(CTX, postId, trx);
+
+      assert.equal(joined.giftLinks[0]?.token, minted.giftLinks[0]?.token);
+    });
+    assert.equal((await liveLinks(postId)).length, 1);
+  });
+
+  it('saves nothing when the staff history entry cannot be written', async function () {
+    // Compose the port exactly as init() does, over a recorder that always fails: the entry is
+    // part of the change, which must hold through the wiring, not just in isolation.
     const failing = new GiftLinksService({
       knex: models.Base.knex,
-      recordAction: ({ context, verb, subject }) =>
+      recordAction: (transacting, { context, verb, subject }) =>
         recordGiftLinkAction({
           logging,
           Action: {
@@ -148,19 +162,28 @@ describe('GiftLinksService (integration)', function () {
               throw new Error('action write failed');
             },
           },
+          transacting,
           context,
           verb,
           subject,
         }),
     });
 
-    // recordGiftLinkAction swallows the failure and logs it. Stub the logger
-    // so we can assert that path fired instead of spamming stdout.
+    // recordGiftLinkAction logs the failure before throwing it. Stub the logger so we can assert
+    // that path fired instead of spamming stdout.
     const errorLog = sinon.stub(logging, 'error');
 
-    await assert.doesNotReject(() => failing.create(CTX, postId));
+    await assert.rejects(() => failing.create(CTX, postId), /action write failed/);
 
     sinon.assert.calledOnce(errorLog);
-    assert.equal((await liveLinks(postId)).length, 1, 'the gift link is still created');
+    assert.deepEqual(await liveLinks(postId), [], 'the gift link is rolled back');
+    assert.deepEqual(await models.Base.knex('gift_links').where('post_id', postId), []);
+  });
+
+  it('writes no staff history entry for a command with no actor', async function () {
+    await service.create({ actor: null }, postId);
+
+    assert.equal((await liveLinks(postId)).length, 1);
+    assert.deepEqual(await models.Base.knex('actions').where('resource_type', 'gift_link'), []);
   });
 });

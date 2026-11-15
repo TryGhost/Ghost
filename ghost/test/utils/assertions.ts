@@ -37,9 +37,12 @@ export function assertArrayContainsDeep<T>(
 function objectMatches<T>(obj: T, properties: Partial<T>): boolean {
   for (const [key, value] of Object.entries(properties)) {
     const objValue = (obj as Record<string, unknown>)[key];
-    const matches = isPlainObject(objValue)
-      ? objectMatches(objValue as object, value as object)
-      : isDeepStrictEqual(objValue, value);
+    // Only match partially when both sides are plain objects. Recursing on the
+    // actual value alone would accept any object where a primitive is expected.
+    const matches =
+      isPlainObject(objValue) && isPlainObject(value)
+        ? objectMatches(objValue as object, value as object)
+        : isDeepStrictEqual(objValue, value);
     if (!matches) {
       return false;
     }
@@ -74,7 +77,8 @@ export function assertObjectMatches<T extends object>(
 ): void {
   for (const [key, value] of Object.entries(properties)) {
     const objValue = (obj as Record<string, unknown>)[key];
-    if (isPlainObject(objValue)) {
+    // See objectMatches: partial matching needs a plain object on both sides.
+    if (isPlainObject(objValue) && isPlainObject(value)) {
       assertObjectMatches(objValue as object, value as DeepPartial<object>, message);
     } else {
       assert.deepEqual(objValue, value, message || `Property mismatch for key "${key}"`);

@@ -58,20 +58,20 @@ describe('Explore ping during boot', function () {
     const ready = sandbox.spy(notify, 'notifyServerReady');
     const serverStart = sandbox.spy(GhostServerClass.prototype, 'start');
     const originalPing = ExplorePingService.prototype.ping;
-    const ping = sandbox
-      .stub(ExplorePingService.prototype, 'ping')
-      .callsFake(function (this: ExploreService) {
-        const sharedSettings = this.settingsCache;
-        this.settingsCache = {
-          get(key: string) {
-            if (['explore_ping', 'explore_ping_growth', 'stripe_connect_livemode'].includes(key)) {
-              return true;
-            }
-            return sharedSettings.get(key);
-          },
-        };
-        return originalPing.call(this);
-      });
+    const ping = sandbox.stub(ExplorePingService.prototype, 'ping').callsFake(function (
+      this: ExploreService,
+    ) {
+      const sharedSettings = this.settingsCache;
+      this.settingsCache = {
+        get(key: string) {
+          if (['explore_ping', 'explore_ping_growth', 'stripe_connect_livemode'].includes(key)) {
+            return true;
+          }
+          return sharedSettings.get(key);
+        },
+      };
+      return originalPing.call(this);
+    });
     const originalInit = explore.init;
     const originalPolicy = config.isProductionOrDevelopment;
     sandbox.stub(config, 'isProductionOrDevelopment').callsFake(() => {

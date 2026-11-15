@@ -1,4 +1,3 @@
-import { buildTriggerRuleRows } from '../../../../core/server/services/automations/trigger-rules';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import ObjectId from 'bson-objectid';
@@ -9,7 +8,6 @@ import { fromDatabaseDate, toDatabaseDate } from '../../../../core/server/lib/db
 import { createDatabaseAutomationsRepository } from '../../../../core/server/services/automations/database-automations-repository';
 import { createDatabaseAutomationsRepository2 } from '../../../../core/server/services/automations/database-automations-repository-2';
 import { createAutomationsApi2 } from '../../../../core/server/services/automations/automations-api-2';
-import type { AutomationTriggerTierScope } from '../../../../core/server/services/automations/automations-repository-2';
 import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../../../core/server/services/member-welcome-emails/constants';
 const dbUtils = require('../../../utils/db-utils');
 
@@ -35,7 +33,7 @@ describe('database automations repository', function () {
   }: {
     id?: string;
     slug?: string | null;
-    triggerTierScope?: AutomationTriggerTierScope;
+    triggerTierScope?: 'free' | 'all_paid' | 'selected_paid';
     triggerTierIds?: string[];
   } = {}): Promise<string> {
     const actionId = ObjectId().toHexString();
@@ -48,12 +46,33 @@ describe('database automations repository', function () {
       created_at: now,
       updated_at: now,
     });
-    const rules = buildTriggerRuleRows({
-      automationId: id,
-      scope: triggerTierScope,
-      tierIds: triggerTierIds,
-      createdAt: fromDatabaseDate(now),
-    });
+    let definitions: { trigger_type: string; scope: string | null; product_id: string | null }[];
+    switch (triggerTierScope) {
+      case 'free':
+        definitions = [{ trigger_type: 'free_signup', scope: null, product_id: null }];
+        break;
+      case 'all_paid':
+        definitions = [
+          { trigger_type: 'paid_subscription_started', scope: 'any_paid_tier', product_id: null },
+        ];
+        break;
+      case 'selected_paid':
+        definitions = [...new Set(triggerTierIds)].map((product_id) => ({
+          trigger_type: 'paid_subscription_started',
+          scope: 'specific_paid_tier',
+          product_id,
+        }));
+        break;
+      default:
+        throw new Error(`Unexpected trigger tier scope: ${triggerTierScope satisfies never}`);
+    }
+    const rules = definitions.map((definition) => ({
+      ...definition,
+      id: ObjectId().toHexString(),
+      automation_id: id,
+      created_at: fromDatabaseDate(now),
+      direction: null,
+    }));
     if (rules.length > 0) {
       await knex('automation_trigger_rules').insert(rules);
     }

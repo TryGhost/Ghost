@@ -10,7 +10,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Versatile tabs primitive supporting segmented, button, underline, and other variants. KPI-flavoured tabs live under `Features / KPI / Tabs`.',
+          'Tabs default to underline with admin7Design on and segmented with it off. Explicit variants keep their own appearance. Button tabs, including Settings previews, share PageMenu’s muted active fill, outlined inactive items, stable active hover, and ghost-button pressed background. KPI tabs retain their chart-card layout.',
       },
     },
   },
@@ -29,9 +29,8 @@ type Story = StoryObj<typeof Tabs>;
 export const Default: Story = {
   args: {
     defaultValue: 'account',
-    variant: 'button',
     children: [
-      <TabsList key="list" className="grid w-full grid-cols-2">
+      <TabsList key="list">
         <TabsTrigger value="account">Account</TabsTrigger>
         <TabsTrigger value="password">Password</TabsTrigger>
       </TabsList>,
@@ -49,7 +48,7 @@ export const Default: Story = {
     docs: {
       description: {
         story:
-          'Button tabs follow the shared control shape: pill with Admin 7 enabled, rounded otherwise.',
+          'Default tabs use underline styling in Admin 7. Turn the design flag off to compare the previous segmented default.',
       },
     },
   },
@@ -82,7 +81,8 @@ export const StableSelectionWidth: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Button tabs keep the same font weight and width when the active tab changes.',
+        story:
+          'Use button tabs for preview navigation, as in Theme, Design, and Portal settings. Selection uses a muted fill and inactive tabs have outlines in Admin 7; widths stay stable when switching.',
       },
     },
   },
@@ -107,7 +107,7 @@ export const AppLevelPillButtonSmall: Story = {
     docs: {
       description: {
         story:
-          'Button-small tabs inherit the app-level pill shape while keeping their existing interaction states.',
+          'Button-small tabs share the Admin 7 selected and inactive colors, including hover, focus and disabled states.',
       },
     },
   },
@@ -140,7 +140,8 @@ export const Segmented: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Segmented control style tabs with rounded background for clear selection.',
+        story:
+          'Use segmented tabs for a control with a shared background and a distinct selected segment.',
       },
     },
   },
@@ -186,7 +187,49 @@ export const Underline: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Underline style tabs commonly used for website navigation sections.',
+        story:
+          'Use underline tabs to switch sections within a page or panel. In Admin 7, 14px labels have 10px vertical padding, regular inactive text and semibold selected text. Hidden semibold label copies reserve width without duplicating count badges. The 1px indicator overlaps the divider with no vertical scrolling. Flag-off styling is preserved.',
+      },
+    },
+  },
+};
+
+export const UnderlineStableSelectionWidth: Story = {
+  args: {
+    ...StableSelectionWidth.args,
+    variant: 'underline',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Switch between long underline labels: the selected text becomes semibold while all tab widths and positions remain fixed in Admin 7.',
+      },
+    },
+  },
+};
+
+export const UnderlineRichLabels: Story = {
+  render: () => (
+    <Tabs defaultValue="order" variant="underline">
+      <TabsList>
+        <TabsTrigger value="order">
+          <span data-testid="rich-tab-label">
+            Order <strong>details</strong>
+          </span>
+        </TabsTrigger>
+        <TabsTrigger data-testid="direct-rich-tab-label" value="direct">
+          Order <strong>details</strong>
+        </TabsTrigger>
+        <TabsTrigger value="shipping">Shipping details</TabsTrigger>
+      </TabsList>
+    </Tabs>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Inline formatting keeps the space between words when underline labels reserve their selected width.',
       },
     },
   },

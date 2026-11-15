@@ -148,6 +148,34 @@ Compiling Core with `build:tsc` is unnecessary for source tests and leaves
 adjacent JavaScript files that can shadow later TypeScript edits in CommonJS
 imports.
 
+### Unit test order
+
+Ghost Core's unit files share one module registry per worker, so state a file
+leaves behind, such as a stub, a config override, a registered Handlebars helper
+or an initialized service root, is still there for whichever file runs next. A
+test must also not rely on another test in its file having run first. CI runs
+the unit suite in a shuffled order, files and the tests inside them, to catch
+both.
+
+The shuffle uses one seed per CI run, which Vitest prints near the top of the
+unit test output:
+
+```text
+Running tests with seed "19283746501"
+```
+
+To rerun that order locally, pass the same seed. The seed isn't part of Nx's
+cache key, so skip the cache or Nx replays an earlier result:
+
+```bash
+GHOST_UNIT_TEST_SEED=19283746501 pnpm nx run ghost:test:unit --skip-nx-cache
+```
+
+Re-running the CI job keeps the seed, so it fails the same way until the order
+dependency is fixed. Fix it in the test that leaks or relies on state: restore
+what it changes in `afterEach` or `afterAll`, and set up what it needs in its
+own `beforeEach`.
+
 From `ghost/`, `pnpm test:all` runs Ghost Core's unit, integration, server E2E,
 type and lint commands after its prerequisites have been prepared.
 

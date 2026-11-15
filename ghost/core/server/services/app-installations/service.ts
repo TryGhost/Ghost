@@ -1,3 +1,4 @@
+import type { AppFailureCode } from '@tryghost/app-contracts';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
@@ -76,7 +77,7 @@ function notFound() {
 function notInstalled() {
   return new errors.NotFoundError({
     message: 'This app is not installed.',
-    code: 'APP_NOT_INSTALLED',
+    code: 'APP_NOT_INSTALLED' satisfies AppFailureCode,
   });
 }
 
@@ -84,7 +85,7 @@ function notInstalled() {
 function uninstalled() {
   return new errors.ConflictError({
     message: 'This app has been uninstalled.',
-    code: 'APP_INSTALLATION_UNINSTALLED',
+    code: 'APP_INSTALLATION_UNINSTALLED' satisfies AppFailureCode,
   });
 }
 
@@ -114,7 +115,7 @@ interface CheckedManifest {
 function forAnotherApp(appId: string) {
   return new errors.ValidationError({
     message: `The reviewed manifest is for ${appId}, not the app that is installed.`,
-    code: 'APP_MANIFEST_OTHER_APP',
+    code: 'APP_MANIFEST_OTHER_APP' satisfies AppFailureCode,
   });
 }
 
@@ -252,18 +253,7 @@ export class AppInstallationsService {
 
     const write = await this.withIconCopy(
       approvalWrite({ current, pending: await this.pendingManifestOf(current), loaded }),
-    ).catch(async (error: unknown) => {
-      // If the installation was uninstalled or changed during the icon fetch, report that,
-      // whatever went wrong with its icon, as `store` would have.
-      const latest = await this.currentInstallation(id);
-      if (!latest) {
-        throw uninstalled();
-      }
-      if (latest.revision !== current.revision) {
-        throw await this.changedSinceReview(checked, id);
-      }
-      throw error;
-    });
+    ).catch((iconError: unknown) => ({ iconError }));
     const stored = await this.store(current, write);
     if (stored.status === 'uninstalled') {
       throw uninstalled();
@@ -459,7 +449,7 @@ export class AppInstallationsService {
     if (loaded.digest !== digest) {
       throw new errors.ConflictError({
         message: 'The app changed while it was being reviewed.',
-        code: 'APP_MANIFEST_CHANGED',
+        code: 'APP_MANIFEST_CHANGED' satisfies AppFailureCode,
         errorDetails: await this.previewOf(checked),
       });
     }
@@ -477,7 +467,7 @@ export class AppInstallationsService {
     }
     return new errors.ConflictError({
       message: 'The installation changed while the app was being reviewed.',
-      code: 'APP_INSTALLATION_CHANGED',
+      code: 'APP_INSTALLATION_CHANGED' satisfies AppFailureCode,
       errorDetails: await this.previewOf({ ...checked, installation }),
     });
   }
@@ -494,13 +484,18 @@ export class AppInstallationsService {
 
   /**
    * Applies a write planned from `current`, unless the installation changed since. Returns
-   * the newly approved or pending manifest's ID, or null for `nothing`.
+   * the newly approved or pending manifest's ID, or null for `nothing`. Throws the error of an
+   * icon fetch that failed, but only once the installation is known to be unchanged.
    */
   private store(
     current: Installation,
-    write: ManifestWrite<AddedRow>,
+    write: ManifestWrite<AddedRow> | { iconError: unknown },
   ): Promise<WriteOutcome<string | null>> {
     return this.repository.whileUnchanged(current, async (locked) => {
+      // Thrown under the lock, so an uninstall or change during the icon fetch wins.
+      if ('iconError' in write) {
+        throw write.iconError;
+      }
       switch (write.kind) {
         case 'nothing':
           return null;
@@ -572,7 +567,7 @@ export class AppInstallationsService {
       if (loaded.manifest.id !== before.app_id) {
         throw new errors.ValidationError({
           message: `${before.manifest_url} now serves ${loaded.manifest.id}.`,
-          code: 'APP_MANIFEST_OTHER_APP',
+          code: 'APP_MANIFEST_OTHER_APP' satisfies AppFailureCode,
         });
       }
       await this.identity.check(loaded, pinned, fetched.started);

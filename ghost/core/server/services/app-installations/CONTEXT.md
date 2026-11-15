@@ -2,7 +2,7 @@
 
 App Installations covers a site's record of the apps it has approved: what each
 one runs, what is waiting for approval, and who did what. Apps, manifests and
-changes are defined in [App Contracts](../../../../../packages/app-contracts/CONTEXT.md).
+changes are defined in [App Contracts](../../../../../contracts/app-contracts/CONTEXT.md).
 
 ## Lifecycle
 
@@ -20,6 +20,10 @@ changes are defined in [App Contracts](../../../../../packages/app-contracts/CON
    suspended installation is active again.
 4. **Uninstall.** The installation ends and is kept as a record. Installing the
    app again starts a new installation.
+
+Admin can only explain a failure code that App Contracts' `APP_FAILURE_CODES`
+lists, so each code thrown here `satisfies AppFailureCode`. A unit test catches
+one thrown without it, and one the list keeps after nothing here throws it.
 
 ## Language
 

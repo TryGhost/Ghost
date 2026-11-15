@@ -162,7 +162,7 @@ async function initCore({ ghostServer, config }) {
   debug('End: i18n');
 
   // Reads admin_session_secret, so it follows settings. Under legacy nothing loads
-  // Better Auth or reads its tables.
+  // Better Auth itself.
   if (config.get('auth:engine') === 'better-auth') {
     debug('Begin: Better Auth');
     await require('./server/auth').betterAuth.init();
@@ -495,6 +495,11 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     users.init(),
     machinePaymentsService.init(),
   ]);
+  if (ghostServer) {
+    // Each releases what its start acquired; the next boot in this process starts it again.
+    ghostServer.registerCleanupTask(() => indexnow.stop(), 'IndexNow');
+    ghostServer.registerCleanupTask(() => slack.stop(), 'Slack ping');
+  }
   // Member welcome emails captures the ready Email address and Link tracking instances during
   // initialization, and automation polling sends through it once jobs start.
   await memberWelcomeEmails.init();
@@ -505,6 +510,8 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const memberJobs = require('./server/services/members/jobs');
   const membersService = require('./server/services/members');
   const tinybirdSync = require('./server/services/tinybird-sync');
+  const updateCheck = require('./server/services/update-check');
+  const signingKeys = require('./server/services/signing-keys').default;
   memberJobs.init();
   const siteImporter = require('./server/data/importer').init({ jobsService });
   assert(giftService.service, 'Gift service should be initialized');
@@ -526,6 +533,9 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     emailService: emailService.service,
     siteImporter,
     tinybirdSync,
+    contentImport,
+    updateCheck,
+    signingKeys: signingKeys.service,
   });
   await jobsService.start();
   debug('End: Register job handlers');

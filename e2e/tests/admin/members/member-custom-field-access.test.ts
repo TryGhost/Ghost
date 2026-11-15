@@ -59,8 +59,6 @@ async function memberWrites(page: Page, key: string, value: string) {
 }
 
 test.describe('Ghost Admin - Member custom field access', () => {
-  test.use({ labs: { membersCustomFields: true } });
-
   test('a field kept to staff is invisible until the publisher opens it', async ({
     page,
     browser,
