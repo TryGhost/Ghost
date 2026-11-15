@@ -12,7 +12,18 @@ import {
 import { extractMagicLink } from '@/helpers/services/email/utils';
 import { signupViaPortal } from '@/helpers/playwright/flows/signup';
 
+async function expectAutomationEmail(emailAddress: string, subject: string, body: string) {
+  const inbox = new MailPit('http://localhost:8025');
+  const messages = await inbox.search({ to: emailAddress, subject }, { timeoutMs: 30000 });
+  expect(messages).toHaveLength(1);
+  const email = await inbox.getMessageDetailed(messages[0]);
+  expect(email.To.map((recipient) => recipient.Address)).toContain(emailAddress);
+  expect(email.Subject).toBe(subject);
+  expect(email.HTML).toContain(body);
+}
+
 test.describe('Ghost Admin - Automations', () => {
+  test.describe.configure({ timeout: 90000 });
   test.use({ labs: { automations: true }, mailgunEnabled: true });
 
   test('free member signup sends the published automation email', async ({
@@ -21,7 +32,6 @@ test.describe('Ghost Admin - Automations', () => {
     baseURL,
     emailClient,
   }) => {
-    test.setTimeout(90000);
     const subject = 'Your automation welcome';
     const body = 'Thanks for joining. Your first automation email has arrived.';
 
@@ -44,13 +54,7 @@ test.describe('Ghost Admin - Automations', () => {
       await new PublicPage(memberPage).goto(extractMagicLink(signupEmail.Text));
       await expect(new HomePage(memberPage).accountButton).toBeVisible();
 
-      const inbox = new MailPit('http://localhost:8025');
-      const messages = await inbox.search({ to: emailAddress, subject }, { timeoutMs: 30000 });
-      expect(messages).toHaveLength(1);
-      const email = await inbox.getMessageDetailed(messages[0]);
-      expect(email.To.map((recipient) => recipient.Address)).toContain(emailAddress);
-      expect(email.Subject).toBe(subject);
-      expect(email.HTML).toContain(body);
+      await expectAutomationEmail(emailAddress, subject, body);
     });
   });
 
@@ -63,7 +67,6 @@ test.describe('Ghost Admin - Automations', () => {
       baseURL,
       stripe,
     }) => {
-      test.setTimeout(90000);
       const subject = 'Your paid subscription welcome';
       const body = 'Thanks for supporting us. Your paid subscription has started.';
       const tier = await createPaidPortalTier(
@@ -90,13 +93,7 @@ test.describe('Ghost Admin - Automations', () => {
         });
         await expect(new HomePage(memberPage).accountButton).toBeVisible();
 
-        const inbox = new MailPit('http://localhost:8025');
-        const messages = await inbox.search({ to: emailAddress, subject }, { timeoutMs: 30000 });
-        expect(messages).toHaveLength(1);
-        const email = await inbox.getMessageDetailed(messages[0]);
-        expect(email.To.map((recipient) => recipient.Address)).toContain(emailAddress);
-        expect(email.Subject).toBe(subject);
-        expect(email.HTML).toContain(body);
+        await expectAutomationEmail(emailAddress, subject, body);
       });
     });
 
@@ -109,7 +106,6 @@ test.describe('Ghost Admin - Automations', () => {
         baseURL,
         stripe,
       }) => {
-        test.setTimeout(90000);
         const subject = 'Welcome to Gold';
         const body = 'Your subscription has changed from Bronze to Gold.';
         const bronze = await createPaidPortalTier(
@@ -147,13 +143,7 @@ test.describe('Ghost Admin - Automations', () => {
           await expect(new HomePage(memberPage).accountButton).toBeVisible();
           await switchPlanViaPortal(memberPage, { cadence: 'monthly', tierName: gold.name });
 
-          const inbox = new MailPit('http://localhost:8025');
-          const messages = await inbox.search({ to: emailAddress, subject }, { timeoutMs: 30000 });
-          expect(messages).toHaveLength(1);
-          const email = await inbox.getMessageDetailed(messages[0]);
-          expect(email.To.map((recipient) => recipient.Address)).toContain(emailAddress);
-          expect(email.Subject).toBe(subject);
-          expect(email.HTML).toContain(body);
+          await expectAutomationEmail(emailAddress, subject, body);
         });
       });
     });
