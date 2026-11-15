@@ -66,6 +66,12 @@ const getTriggerErrors = (
   automation: AutomationDetail,
   triggerType: AutomationTriggerRule['trigger_type'] | undefined,
 ): Record<string, string> => {
+  if (triggerType === 'label_added') {
+    return getTriggerLabelId(automation.trigger_rules)
+      ? {}
+      : { [TRIGGER_CANVAS_ID]: 'Select a label' };
+  }
+
   if (triggerType === 'paid_subscription_changed') {
     return hasMissingTierSelection(subscriptionChangedSelectionFromRules(automation.trigger_rules))
       ? { [TRIGGER_CANVAS_ID]: 'Select one or more tiers' }
@@ -250,7 +256,7 @@ const AutomationEditorContent: React.FC<{
       ...(action === 'publish' ? getActionErrors(automationToValidate) : {}),
       ...getTriggerErrors(automationToValidate, triggerType),
     };
-    if (Object.keys(nextValidationErrors).length > 0 || invalidWaitIds.size > 0) {
+    if (labelDeleted || Object.keys(nextValidationErrors).length > 0 || invalidWaitIds.size > 0) {
       setValidationErrors(nextValidationErrors);
       setEditState({ phase: 'idle' });
       setValidationFeedback(action);
@@ -301,6 +307,18 @@ const AutomationEditorContent: React.FC<{
     }
 
     if (!validateForAction(draft, validationAction)) {
+      return;
+    }
+
+    // NY-1796 lets publishers configure this trigger while Core support is in development.
+    // Stop before either automation mutation, even if the server accepts the rule.
+    if (triggerType === 'label_added') {
+      setEditState(errorState);
+      toast.error(
+        newStatus === 'active'
+          ? 'Label-triggered automations can’t be published yet.'
+          : 'Label-triggered automations can’t be saved yet.',
+      );
       return;
     }
 
