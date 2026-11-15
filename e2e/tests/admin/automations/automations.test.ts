@@ -1,7 +1,13 @@
 import { AutomationEditorPage, AutomationsPage } from '@/admin-pages';
 import { HomePage, PublicPage } from '@/public-pages';
 import { MailPit } from '@/helpers/services/email/mail-pit';
-import { expect, test, withIsolatedPage } from '@/helpers/playwright';
+import {
+  completePaidSignupViaPortal,
+  createPaidPortalTier,
+  expect,
+  test,
+  withIsolatedPage,
+} from '@/helpers/playwright';
 import { extractMagicLink } from '@/helpers/services/email/utils';
 import { signupViaPortal } from '@/helpers/playwright/flows/signup';
 
@@ -44,6 +50,53 @@ test.describe('Ghost Admin - Automations', () => {
       expect(email.To.map((recipient) => recipient.Address)).toContain(emailAddress);
       expect(email.Subject).toBe(subject);
       expect(email.HTML).toContain(body);
+    });
+  });
+
+  test.describe('paid subscriptions', () => {
+    test.use({ stripeEnabled: true });
+
+    test('paid subscription started sends the published automation email', async ({
+      page,
+      browser,
+      baseURL,
+      stripe,
+    }) => {
+      test.setTimeout(90000);
+      const subject = 'Your paid subscription welcome';
+      const body = 'Thanks for supporting us. Your paid subscription has started.';
+      const tier = await createPaidPortalTier(
+        page.request,
+        { name: 'Supporter', currency: 'usd', monthly_price: 500, yearly_price: 5000 },
+        { stripe },
+      );
+
+      const automations = new AutomationsPage(page);
+      await automations.goto();
+      await page.getByRole('button', { name: 'New automation', exact: true }).click();
+      await page.getByRole('button', { name: /^Paid subscription started/ }).click();
+
+      const editor = new AutomationEditorPage(page);
+      await editor.nameInput.fill('Paid subscription welcome');
+      await expect(page.getByText('Paid subscription started', { exact: true })).toBeVisible();
+      await editor.addEmail(subject, body);
+      await editor.publish();
+      await expect(editor.publishedButton).toBeVisible();
+
+      await withIsolatedPage(browser, { baseURL }, async ({ page: memberPage }) => {
+        const { emailAddress } = await completePaidSignupViaPortal(memberPage, stripe!, {
+          tierName: tier.name,
+        });
+        await expect(new HomePage(memberPage).accountButton).toBeVisible();
+
+        const inbox = new MailPit('http://localhost:8025');
+        const messages = await inbox.search({ to: emailAddress, subject }, { timeoutMs: 30000 });
+        expect(messages).toHaveLength(1);
+        const email = await inbox.getMessageDetailed(messages[0]);
+        expect(email.To.map((recipient) => recipient.Address)).toContain(emailAddress);
+        expect(email.Subject).toBe(subject);
+        expect(email.HTML).toContain(body);
+      });
     });
   });
 });
