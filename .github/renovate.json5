@@ -492,9 +492,11 @@
     // change runtime behavior. Frequently-rotating upstream tags
     // (notably `tinybird-local:latest`) were opening ~5 individual PRs
     // per week, each running the full E2E lane (~70-150 job-min) for a
-    // tweak with no runtime impact. Saturday-only `schedule` batches the
+    // tweak with no runtime impact. A weekend-only `schedule` batches the
     // week's churn into one PR + one CI run; the global automergeSchedule
-    // (all weekend, weekday evenings) lands it without human review.
+    // (all weekend, weekday evenings) lands it without human review. Sunday
+    // stays in the window because updateNotScheduled: false skips
+    // off-schedule branches before the automerge check.
     // Digests for images not in this list (e.g. the pinned `redis` in
     // ci.yml services) still open individually — they're rare and
     // intentionally human-reviewed.
@@ -512,9 +514,20 @@
       ],
       matchUpdateTypes: ['digest'],
       groupName: 'Docker image digests',
-      schedule: ['* * * * 6'],
+      schedule: ['* * * * 0,6'],
       automerge: true,
       automergeType: 'pr',
+    },
+
+    // better-auth publishes several releases a week, so every soak-cleared
+    // version was opening its own PR + full CI run. Weekend-only takes the
+    // newest soaked release once a week. Sunday stays in the window because
+    // updateNotScheduled: false skips off-schedule branches before the
+    // automerge check, so a PR going green late Saturday would wait a week.
+    {
+      description: 'Weekly schedule for better-auth monorepo updates',
+      matchPackageNames: ['better-auth', '@better-auth/**'],
+      schedule: ['* * * * 0,6'],
     },
 
     // Digest and pin updates (Docker image digests, action SHAs) usually
