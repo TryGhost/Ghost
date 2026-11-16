@@ -516,6 +516,12 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       onPinnedMorphEndRef.current = onPinnedMorphEnd;
     });
     const pendingMorph = React.useRef<{ pinned: boolean; timer: number } | null>(null);
+    // Pinning can mark the body unfurled before the capsule reaches its full
+    // width. Release paint clipping on this same morph-completion signal.
+    const [pinTransition, setPinTransition] = React.useState({ pinned, active: false });
+    if (pinTransition.pinned !== pinned || (!morph && pinTransition.active)) {
+      setPinTransition({ pinned, active: morph });
+    }
     const finishMorph = React.useCallback(() => {
       const pending = pendingMorph.current;
       if (!pending) {
@@ -523,6 +529,7 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       }
       window.clearTimeout(pending.timer);
       pendingMorph.current = null;
+      setPinTransition({ pinned: pending.pinned, active: false });
       onPinnedMorphEndRef.current?.(pending.pinned);
     }, []);
     const previousPinned = React.useRef(pinned);
@@ -553,7 +560,8 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
     // The open sidebar is a paint surface, not a scrollport: banners can glow
     // beyond it. Keep clipping for the closed/unfurling animation, and let the
     // navigation and Banner's own content own their separate scroll boundaries.
-    const paintOutside = admin7Design && overflow === 'visible' && expanded && unfurled;
+    const paintOutside =
+      admin7Design && overflow === 'visible' && expanded && unfurled && !pinTransition.active;
 
     // The floating open capsule's height (`auto`) on screen before the pin change
     const heightBefore = React.useRef<number | null>(null);

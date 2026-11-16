@@ -185,7 +185,7 @@ export const VisibleOverflow: Story = {
     docs: {
       description: {
         story:
-          'Opt in to visible paint overflow for a glowing banner; bound navigation and card content with their own scroll areas. The closed panel still clips its animation.',
+          'Opt in to visible paint overflow for a glowing banner; bound navigation and card content with their own scroll areas. Opening and pinning keep content clipped until the capsule finishes growing.',
       },
     },
   },

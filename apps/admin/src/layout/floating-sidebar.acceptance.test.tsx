@@ -244,6 +244,46 @@ describe('Floating sidebar (admin7Design)', () => {
     await expect.poll(preferences.savedMode, SAVE_TIMEOUT).toBe('full');
   });
 
+  it('clips the keyboard opening from the compact circle until the panel finishes growing', async () => {
+    fakeTags([]);
+    fakePreferencesApi();
+    await renderAdminApp('/tags', floatingSidebar({ mode: 'compact' }));
+    await userEvent.hover(sidebarScreen.shellMain());
+    await expect.poll(sidebarScreen.floatingState).toBe('closed');
+    const capsule = sidebarScreen
+      .shellNav()
+      .element()
+      .querySelector('[data-slot=floating-sidebar]');
+    if (!(capsule instanceof HTMLElement)) {
+      throw new Error('Expected the floating sidebar capsule');
+    }
+    await expect.poll(() => getComputedStyle(capsule).transitionProperty).not.toBe('none');
+    const frames: Array<{ width: number; overflow: string }> = [];
+    let animationFrame = 0;
+    const sample = () => {
+      if (capsule.dataset.state === 'pinned') {
+        frames.push({
+          width: capsule.getBoundingClientRect().width,
+          overflow: getComputedStyle(capsule).overflow,
+        });
+      }
+      animationFrame = requestAnimationFrame(sample);
+    };
+    animationFrame = requestAnimationFrame(sample);
+    try {
+      await userEvent.keyboard('{Control>}b{/Control}');
+      await expect.poll(sidebarScreen.floatingState).toBe('pinned');
+      await Promise.all(capsule.getAnimations().map((animation) => animation.finished));
+      await expect.poll(() => getComputedStyle(capsule).overflow).toBe('visible');
+      const finalWidth = capsule.getBoundingClientRect().width;
+      const growingFrames = frames.filter((frame) => frame.width < finalWidth - 1);
+      expect(growingFrames.length).toBeGreaterThan(0);
+      expect(growingFrames.every((frame) => frame.overflow === 'hidden')).toBe(true);
+    } finally {
+      cancelAnimationFrame(animationFrame);
+    }
+  });
+
   it('opens the closed circle on focus or click and closes it with Escape', async () => {
     fakeTags([]);
     await renderAdminApp('/tags', floatingSidebar({ mode: 'compact' }));
