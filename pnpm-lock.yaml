@@ -642,8 +642,8 @@ catalogs:
       specifier: 6.44.2
       version: 6.44.2
     libphonenumber-js:
-      specifier: 1.13.15
-      version: 1.13.15
+      specifier: 1.13.16
+      version: 1.13.16
     lint-staged:
       specifier: 17.6.0
       version: 17.6.0
@@ -2074,7 +2074,7 @@ importers:
     dependencies:
       libphonenumber-js:
         specifier: 'catalog:'
-        version: 1.13.15
+        version: 1.13.16
       zod:
         specifier: 'catalog:'
         version: 4.6.7(patch_hash=011cbd2c390354e6d9b4a7c1d83ee357aec0ab419beb9a74d91587ce9b33c6a6)
@@ -12859,8 +12859,8 @@ packages:
     resolution: {integrity: sha512-vQJWusIxO7wavpON1dusciL8Go9jsIQ+EUrckauFYAiSTjcmLAsuJh3SszLpvkwPci3JcL41ek2n+LUZGFpPIQ==}
     engines: {node: '>=8.0.0'}
 
-  libphonenumber-js@1.13.15:
-    resolution: {integrity: sha512-AHdhEQeDFEJ4GKDAQ9AwxChy+v2kUILUB3TGQRpkXMkWePjXTU/WQEzWVQoIx/Gz8fE73Wr5SEuZCy2vk8jrMQ==}
+  libphonenumber-js@1.13.16:
+    resolution: {integrity: sha512-tIOCM9yx2Go6d5/ZANe0K+G4AZek1Ymx81HxQpf19Sri4zMP95eQbKdnUGHAvFQ4nx0PeLhFqvAfisTADXj3tQ==}
 
   lie@3.1.1:
     resolution: {integrity: sha512-RiNhHysUjhrDQntfYSfY4MU24coXXdEOgw9WGcKHNeEwffDYbF//u87M1EWaMGzuFoSbqW0C9C6lEEhDOAswfw==}
@@ -25435,7 +25435,7 @@ snapshots:
 
   libheif-js@1.19.8: {}
 
-  libphonenumber-js@1.13.15: {}
+  libphonenumber-js@1.13.16: {}
 
   lie@3.1.1:
     dependencies:
