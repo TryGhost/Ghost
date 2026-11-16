@@ -43,7 +43,7 @@ export function SidebarSiteIdentity({ variant }: SidebarSiteIdentityProps) {
   const privateBadge = isPrivate && (
     <Link
       aria-label="Open access settings"
-      className="shrink-0"
+      className={cn('shrink-0', variant === 'capsule' && 'absolute top-full left-0 mt-1')}
       state={settingsReturnToState}
       to="/settings/members"
     >
@@ -63,13 +63,8 @@ export function SidebarSiteIdentity({ variant }: SidebarSiteIdentityProps) {
 
   if (variant === 'capsule') {
     return (
-      <Stack align="start" className="min-w-0 flex-1" gap={isPrivate ? 'none' : 'xs'}>
-        <span
-          className={cn(
-            'heading-font-features w-full min-w-0 truncate text-[18px] leading-[1.15] font-medium tracking-[-0.01em] whitespace-nowrap text-foreground',
-            isPrivate && 'text-[14px] leading-4',
-          )}
-        >
+      <Stack align="start" className="relative min-w-0 flex-1" gap="xs">
+        <span className="heading-font-features w-full min-w-0 truncate text-[18px] leading-[1.15] font-medium tracking-[-0.01em] whitespace-nowrap text-foreground">
           {title}
         </span>
         {privateBadge}
