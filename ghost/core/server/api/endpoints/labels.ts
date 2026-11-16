@@ -1,17 +1,16 @@
-import type { Controller, Frame } from '@tryghost/api-framework';
+import { defineController, defineMethod } from '@tryghost/api-framework';
+import { labels } from '@tryghost/api-contracts/admin';
+import errors from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
+import { restrictAdminApiQueryOptions } from './utils/api-filter-utils';
+import { assertBodyIdMatches } from './utils/assert-body-id';
 
-type BodyFrame = Frame<{ data: { labels: Record<string, unknown>[] } }>;
-const tpl = require('@tryghost/tpl');
-const errors = require('@tryghost/errors');
 const models = require('../../models');
-const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 
 const messages = {
   labelNotFound: 'Label not found.',
   labelAlreadyExists: 'Label already exists',
 };
-
-const ALLOWED_INCLUDES = ['count.members'];
 
 // SQLITE_CONSTRAINT covers more than unique violations, but schema validation
 // rejects null/oversize names before the database, so only the unique
@@ -28,131 +27,117 @@ const handleDuplicateNameError = (error: { code?: string }) => {
   throw error;
 };
 
-const controller: Controller = {
-  docName: 'labels',
-
-  browse: {
-    headers: {
-      cacheInvalidate: false,
-    },
-    options: ['include', 'filter', 'fields', 'limit', 'order', 'page'],
-    validation: {
-      options: {
-        include: {
-          values: ALLOWED_INCLUDES,
-        },
-      },
-    },
-    permissions: true,
-    query(frame) {
-      return models.Label.findPage(restrictAdminApiQueryOptions(frame.options));
-    },
-  },
-
-  read: {
-    headers: {
-      cacheInvalidate: false,
-    },
-    options: ['include', 'filter', 'fields'],
-    data: ['id', 'slug'],
-    validation: {
-      options: {
-        include: {
-          values: ALLOWED_INCLUDES,
-        },
-      },
-    },
-    permissions: true,
-    async query(frame) {
-      const model = await models.Label.findOne(
-        frame.data,
-        restrictAdminApiQueryOptions(frame.options),
-      );
-      if (!model) {
-        throw new errors.NotFoundError({
-          message: tpl(messages.labelNotFound),
-        });
-      }
-
-      return model;
-    },
-  },
-
-  add: {
-    statusCode: 201,
-    headers: {
-      cacheInvalidate: false,
-    },
-    options: ['include'],
-    validation: {
-      options: {
-        include: {
-          values: ALLOWED_INCLUDES,
-        },
-      },
-    },
-    permissions: true,
-    query(frame: BodyFrame) {
-      return models.Label.add(frame.data.labels[0], frame.options).catch(handleDuplicateNameError);
-    },
-  },
-
-  edit: {
-    headers: {
-      cacheInvalidate: false,
-    },
-    options: ['id', 'include'],
-    validation: {
-      options: {
-        include: {
-          values: ALLOWED_INCLUDES,
-        },
-        id: {
-          required: true,
-        },
-      },
-    },
-    permissions: true,
-    async query(frame: BodyFrame) {
-      const model = await models.Label.edit(frame.data.labels[0], frame.options).catch(
-        handleDuplicateNameError,
-      );
-
-      if (!model) {
-        throw new errors.NotFoundError({
-          message: tpl(messages.labelNotFound),
-        });
-      }
-
-      if (model.wasChanged()) {
-        frame.setHeader('X-Cache-Invalidate', '/*');
-      }
-
-      return model;
-    },
-  },
-
-  destroy: {
-    statusCode: 204,
-    headers: {
-      cacheInvalidate: true,
-    },
-    options: ['id'],
-    validation: {
-      options: {
-        include: {
-          values: ALLOWED_INCLUDES,
-        },
-        id: {
-          required: true,
-        },
-      },
-    },
-    permissions: true,
-    query(frame) {
-      return models.Label.destroy({ ...frame.options, require: true });
-    },
-  },
+// The serializer turns `include` into `withRelated`; give it the filtered list.
+const useParsedInclude = (frame: {
+  options: Record<string, unknown>;
+  validated: { readonly options: { include?: string[] } };
+}) => {
+  if (frame.validated.options.include) {
+    frame.options.include = frame.validated.options.include;
+  }
 };
 
-module.exports = controller;
+const browse = defineMethod({
+  schema: labels.browse,
+  headers: {
+    cacheInvalidate: false,
+  },
+  options: ['include', 'filter', 'fields', 'limit', 'order', 'page'],
+  validation: useParsedInclude,
+  permissions: true,
+  query(frame) {
+    return models.Label.findPage(restrictAdminApiQueryOptions(frame.options));
+  },
+});
+
+const read = defineMethod({
+  schema: labels.read,
+  headers: {
+    cacheInvalidate: false,
+  },
+  options: ['include', 'filter', 'fields'],
+  validation: useParsedInclude,
+  permissions: true,
+  async query(frame) {
+    const { id, slug } = frame.validated.options;
+    const model = await models.Label.findOne(
+      id ? { id } : { slug },
+      restrictAdminApiQueryOptions(frame.options),
+    );
+    if (!model) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.labelNotFound),
+      });
+    }
+
+    return model;
+  },
+});
+
+const add = defineMethod({
+  schema: labels.add,
+  statusCode: 201,
+  headers: {
+    cacheInvalidate: false,
+  },
+  options: ['include'],
+  validation: useParsedInclude,
+  permissions: true,
+  query(frame) {
+    return models.Label.add(frame.validated.body, frame.options).catch(handleDuplicateNameError);
+  },
+});
+
+const edit = defineMethod({
+  schema: labels.edit,
+  headers: {
+    cacheInvalidate: false,
+  },
+  options: ['id', 'include'],
+  validation(frame) {
+    assertBodyIdMatches(frame.original.body, 'labels', frame.validated.options.id);
+    useParsedInclude(frame);
+  },
+  permissions: true,
+  async query(frame) {
+    const model = await models.Label.edit(frame.validated.body, frame.options).catch(
+      handleDuplicateNameError,
+    );
+
+    if (!model) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.labelNotFound),
+      });
+    }
+
+    if (model.wasChanged()) {
+      frame.setHeader('X-Cache-Invalidate', '/*');
+    }
+
+    return model;
+  },
+});
+
+const destroy = defineMethod({
+  schema: labels.destroy,
+  statusCode: 204,
+  headers: {
+    cacheInvalidate: true,
+  },
+  options: ['id'],
+  permissions: true,
+  query(frame) {
+    return models.Label.destroy({ ...frame.options, require: true });
+  },
+});
+
+const controller = defineController({
+  docName: 'labels',
+  browse,
+  read,
+  add,
+  edit,
+  destroy,
+});
+
+export default controller;

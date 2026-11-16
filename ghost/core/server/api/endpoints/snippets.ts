@@ -1,119 +1,111 @@
-import type { Controller, Frame } from '@tryghost/api-framework';
+import { defineController, defineMethod } from '@tryghost/api-framework';
+import { snippets } from '@tryghost/api-contracts/admin';
+import errors from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
+import { restrictAdminApiQueryOptions } from './utils/api-filter-utils';
+import { assertBodyIdMatches } from './utils/assert-body-id';
 
-type BodyFrame = Frame<{ data: { snippets: Record<string, unknown>[] } }>;
-const errors = require('@tryghost/errors');
-const tpl = require('@tryghost/tpl');
 const models = require('../../models');
-const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 
 const messages = {
   snippetNotFound: 'Snippet not found.',
   snippetAlreadyExists: 'Snippet already exists.',
 };
 
-const controller: Controller = {
+const browse = defineMethod({
+  schema: snippets.browse,
+  headers: {
+    cacheInvalidate: false,
+  },
+  options: ['limit', 'order', 'page', 'formats', 'filter'],
+  permissions: true,
+  query(frame) {
+    return models.Snippet.findPage(restrictAdminApiQueryOptions(frame.options));
+  },
+});
+
+const read = defineMethod({
+  schema: snippets.read,
+  headers: {
+    cacheInvalidate: false,
+  },
+  options: ['formats'],
+  permissions: true,
+  async query(frame) {
+    const model = await models.Snippet.findOne({ id: frame.validated.options.id }, frame.options);
+    if (!model) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.snippetNotFound),
+      });
+    }
+
+    return model;
+  },
+});
+
+const add = defineMethod({
+  schema: snippets.add,
+  statusCode: 201,
+  headers: {
+    cacheInvalidate: false,
+  },
+  options: ['formats'],
+  permissions: true,
+  query(frame) {
+    return models.Snippet.add(frame.validated.body, frame.options).catch(
+      (error: { code?: string; message: string }) => {
+        if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
+          throw new errors.ValidationError({ message: tpl(messages.snippetAlreadyExists) });
+        }
+
+        throw error;
+      },
+    );
+  },
+});
+
+const edit = defineMethod({
+  schema: snippets.edit,
+  headers: {
+    cacheInvalidate: false,
+  },
+  options: ['id', 'formats'],
+  validation(frame) {
+    assertBodyIdMatches(frame.original.body, 'snippets', frame.validated.options.id);
+  },
+  permissions: true,
+  async query(frame) {
+    const model = await models.Snippet.edit(frame.validated.body, frame.options);
+    if (!model) {
+      throw new errors.NotFoundError({
+        message: tpl(messages.snippetNotFound),
+      });
+    }
+
+    return model;
+  },
+});
+
+const destroy = defineMethod({
+  schema: snippets.destroy,
+  statusCode: 204,
+  headers: {
+    cacheInvalidate: false,
+  },
+  options: ['id'],
+  permissions: true,
+  query(frame) {
+    return models.Snippet.destroy({ ...frame.options, require: true });
+  },
+});
+
+const controller = defineController({
   docName: 'snippets',
+  browse,
+  read,
+  add,
+  edit,
+  destroy,
+});
 
-  browse: {
-    headers: {
-      cacheInvalidate: false,
-    },
-    options: ['limit', 'order', 'page', 'formats', 'filter'],
-    permissions: true,
-    validation: {
-      options: {
-        formats: {
-          values: models.Snippet.allowedFormats,
-        },
-      },
-    },
-    query(frame) {
-      return models.Snippet.findPage(restrictAdminApiQueryOptions(frame.options));
-    },
-  },
-
-  read: {
-    headers: {
-      cacheInvalidate: false,
-    },
-    options: ['formats'],
-    data: ['id'],
-    permissions: true,
-    async query(frame) {
-      const model = await models.Snippet.findOne(frame.data, frame.options);
-      if (!model) {
-        throw new errors.NotFoundError({
-          message: tpl(messages.snippetNotFound),
-        });
-      }
-
-      return model;
-    },
-  },
-
-  add: {
-    statusCode: 201,
-    headers: {
-      cacheInvalidate: false,
-    },
-    options: ['formats'],
-    permissions: true,
-    query(frame: BodyFrame) {
-      return models.Snippet.add(frame.data.snippets[0], frame.options).catch(
-        (error: { code?: string; message: string }) => {
-          if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
-            throw new errors.ValidationError({ message: tpl(messages.snippetAlreadyExists) });
-          }
-
-          throw error;
-        },
-      );
-    },
-  },
-
-  edit: {
-    headers: {
-      cacheInvalidate: false,
-    },
-    options: ['id', 'formats'],
-    validation: {
-      options: {
-        id: {
-          required: true,
-        },
-      },
-    },
-    permissions: true,
-    async query(frame: BodyFrame) {
-      const model = await models.Snippet.edit(frame.data.snippets[0], frame.options);
-      if (!model) {
-        throw new errors.NotFoundError({
-          message: tpl(messages.snippetNotFound),
-        });
-      }
-
-      return model;
-    },
-  },
-
-  destroy: {
-    statusCode: 204,
-    headers: {
-      cacheInvalidate: false,
-    },
-    options: ['id'],
-    validation: {
-      options: {
-        id: {
-          required: true,
-        },
-      },
-    },
-    permissions: true,
-    query(frame) {
-      return models.Snippet.destroy({ ...frame.options, require: true });
-    },
-  },
-};
-
-module.exports = controller;
+export default controller;

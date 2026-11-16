@@ -228,10 +228,24 @@ export function invalidDefinitions() {
     permissions: false,
     query() {},
   });
+  defineMethod({
+    // @ts-expect-error The async flag is a boolean.
+    schema: { body: z.object({}), async: 'yes' },
+    permissions: false,
+    query() {},
+  });
   // @ts-expect-error Permissions must be an explicit decision.
   defineMethod({ schema: { body: z.object({}) }, query() {} });
   // @ts-expect-error A method must have a query callback.
   defineMethod({ schema: { body: z.object({}) }, permissions: false });
+
+  defineMethod({
+    schema: { body: z.object({ title: z.string() }), async: true },
+    permissions: false,
+    query(frame) {
+      expectTypeOf(frame.validated).toEqualTypeOf<{ readonly body: { title: string } }>();
+    },
+  });
 
   const method: SchemaControllerMethod<{ options: z.ZodString }> = defineMethod({
     schema: { options: z.string() },

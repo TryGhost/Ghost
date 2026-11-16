@@ -257,23 +257,27 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "Validation failed for name.",
+      "context": "Validation failed for body.",
       "details": Array [
         Object {
-          "instancePath": "/labels/0/name",
-          "keyword": "maxLength",
-          "message": "must NOT have more than 191 characters",
-          "params": Object {
-            "limit": 191,
-          },
-          "schemaPath": "labels#/definitions/label/properties/name/maxLength",
+          "code": "too_big",
+          "inclusive": true,
+          "maximum": 191,
+          "message": "Too big: expected string to have <=191 characters",
+          "origin": "string",
+          "path": Array [
+            "body",
+            "labels",
+            0,
+            "name",
+          ],
         },
       ],
       "ghostErrorCode": null,
       "help": null,
       "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       "message": "Validation error, cannot save label.",
-      "property": "name",
+      "property": "body.labels.0.name",
       "type": "ValidationError",
     },
   ],
@@ -284,7 +288,7 @@ exports[`Labels API Errors when adding label with a name over the schema limit 2
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "445",
+  "content-length": "426",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

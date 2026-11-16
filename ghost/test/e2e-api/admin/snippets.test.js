@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const logging = require('@tryghost/logging');
 const sinon = require('sinon');
 const { agentProvider, fixtureManager, matchers } = require('../../utils/e2e-framework');
 const { anyContentVersion, anyEtag, anyLocationFor, anyObjectId, anyISODateTime, anyErrorId } =
@@ -180,6 +181,17 @@ describe('Snippets API', function () {
         'content-version': anyContentVersion,
         etag: anyEtag,
       });
+  });
+
+  it('Rejects unknown formats and invalid content', async function () {
+    sinon.stub(logging, 'warn');
+    await agent.get('snippets?formats=html').expectStatus(422);
+
+    const { body } = await agent
+      .post('snippets')
+      .body({ snippets: [{ name: 'Bad JSON', mobiledoc: '{' }] })
+      .expectStatus(422);
+    assert.equal(body.errors[0].property, 'body.snippets.0.mobiledoc');
   });
 
   it('Can add lexical', async function () {

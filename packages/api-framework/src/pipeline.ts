@@ -2,6 +2,7 @@ import createDebug from '@tryghost/debug';
 import errors from '@tryghost/errors';
 import promiseUtils from '@tryghost/promise';
 import _ from 'lodash';
+import { z } from 'zod';
 import Frame, { withoutPrincipal } from './frame.ts';
 import type { Dictionary, FrameConfiguration } from './frame.ts';
 import type { MethodSchemas, SchemaControllerMethod } from './define-method.ts';
@@ -10,6 +11,19 @@ import serializers from './serializers/index.ts';
 import validators from './validators/index.ts';
 
 const debug = createDebug('pipeline');
+
+// Sync parsing takes the generated fast path. Async parsing never does, so
+// async schemas are left as they are.
+function compileSchemas(schemas: MethodSchemas): MethodSchemas {
+  const compiled = { ...schemas };
+  if (compiled.options) {
+    compiled.options = z.compile(compiled.options);
+  }
+  if (compiled.body) {
+    compiled.body = z.compile(compiled.body);
+  }
+  return compiled;
+}
 const { IncorrectUsageError } = errors;
 type AsyncResult = unknown | Promise<unknown>;
 export interface ApiConfiguration extends FrameConfiguration, Dictionary {
@@ -280,7 +294,8 @@ type PipelineResult<T> = {
   [K in Exclude<keyof T, 'docName'>]: T[K] & ControllerCall;
 };
 
-type PipelineController<T> = {
+/** Checks each method: schema methods against their schemas, others as legacy methods. */
+export type PipelineController<T> = {
   [K in keyof T]: K extends 'docName'
     ? string | undefined
     : T[K] extends { schema: infer Schemas }
@@ -349,6 +364,10 @@ function pipeline(
     const apiImpl = _.cloneDeepWith(apiController, (value, key) =>
       key === 'cache' || key === 'schema' ? value : undefined,
     )[method] as ControllerMethod;
+
+    if (apiImpl.schema && !apiImpl.schema.async) {
+      apiImpl.schema = compileSchemas(apiImpl.schema);
+    }
 
     Object.freeze(apiImpl.headers);
 

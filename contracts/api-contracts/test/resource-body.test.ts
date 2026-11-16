@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { describe, it } from 'vitest';
 import { z } from 'zod';
 import { resourceBody } from '../src/index.ts';
 

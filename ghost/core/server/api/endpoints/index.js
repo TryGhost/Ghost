@@ -157,7 +157,7 @@ module.exports = {
   },
 
   get labels() {
-    return apiFramework.pipeline(require('./labels'), localUtils);
+    return apiFramework.pipeline(require('./labels').default, localUtils);
   },
 
   get images() {
@@ -229,7 +229,7 @@ module.exports = {
   },
 
   get snippets() {
-    return apiFramework.pipeline(require('./snippets'), localUtils);
+    return apiFramework.pipeline(require('./snippets').default, localUtils);
   },
 
   get stats() {
