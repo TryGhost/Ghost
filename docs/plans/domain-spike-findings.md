@@ -52,7 +52,7 @@ MySQL 8.4 from a mirror, not the pinned `mysql:8.4.11` digest in
 
 ## Step 2: `ghost/domains/` as a first-class location
 
-Cost: 30 files changed, about 330 lines added and 60 removed. No runtime code
+Cost: 30 files changed, 333 lines added and 90 removed. No runtime code
 changed. Nothing lives in `ghost/domains/` yet except a README.
 
 ### What had to change
@@ -131,3 +131,90 @@ changed. Nothing lives in `ghost/domains/` yet except a README.
 - Service names stay unique across all homes (the tooling throws on a
   duplicate). The inventory, the known-violations file and the boot rule are all
   keyed by bare service name.
+
+## Step 3: kernel utilities and discovery
+
+Cost: 18 files, about 1,500 lines added (about 620 of code, 800 of tests, the
+rest documentation). Three production lines changed outside new files: two
+blocks in `boot.js`.
+
+### What was built
+
+| Piece                                 | File                                                                      | What it does                                                                                                                                     |
+| ------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Definitions                           | `core/kernel/domains/definitions.ts`                                      | `defineEvent`, `defineListener`, `defineJob`, `defineRoutes`, `defineSettings`, `definePermissions`, `defineSchema`, `defineDomain`              |
+| Discovery                             | `core/kernel/domains/discover.ts`                                         | Reads the fixed folders; returns entries with a `load()` that requires on first call; `describeManifest` for the listing                         |
+| Runner                                | `core/kernel/domains/domain-layer.ts`                                     | `start()`, `ready()`, `stop()`, `routes(surface)`, `fragments(kind)`, given an event bus, a scheduler and a logger                               |
+| `defineService` extension             | `core/kernel/define-service.ts`                                           | `startAfter`, `blocking: false`, and `create(dependencies)`                                                                                      |
+| Foundation instance                   | `core/foundation/domains/{manifest,index}.ts`                             | The manifest of `ghost/domains`, read once per process; the runner given `@tryghost/domain-events`, the logger and the jobs service              |
+| Boot                                  | `core/boot.js`                                                            | `await domains.start()` after `memberWelcomeEmails.init()` and before job handlers are registered; `domains.ready()` after `notifyServerReady()` |
+| Listing command                       | `ghost/bin/list-domains.ts`, `pnpm --filter ghost domains:list [--write]` | Prints everything found                                                                                                                          |
+| Test that fails when the list changes | `test/unit/foundation/domains/manifest.test.ts`, `domains/manifest.txt`   | Compares what is found with the committed list; checks every describing file exports the right definition                                        |
+
+Every utility only tags and returns its argument. None has an effect when the
+file is imported. The effect is the runner's.
+
+### Verified
+
+- 37 new unit tests pass (definitions, discovery, runner, manifest); the three
+  new boot tests pass (domain layer starts after boot's own services and before
+  the job runner; its failure fails boot; it is stopped on shutdown).
+- The step 1 set: oxlint, boundaries (5900 modules, 294 known, 189 deferred),
+  typecheck, ESLint, DB-backed 7 files / 75 tests all pass. Full unit suite: the
+  same 34 baseline failures and no others (11,602 passed).
+- Real boot from source with the layer wired in and no domains: 3.24s and 3.55s
+  warm (4.90s on the first run, which compiled the new files), against a
+  baseline of 3.40s to 3.47s. No measurable cost with nothing to find.
+
+### What the code showed
+
+- **`defineService` did need extending for the domain layer, but not for
+  recommendations.** `startAfter` and `blocking` exist so a root can declare the
+  two things the rules allow. Recommendations has one root and its slow work
+  became jobs, so it uses neither. They are exercised by tests and fixtures
+  only. They are non-enumerable on the root: an existing test pins a root's
+  visible members to `init`, `stop`, `service`, `extras`.
+- **Listeners cannot be loaded on first use.** To subscribe a listener the
+  runner must know its event, and the event is declared in the file. So
+  listener files are loaded when their domain starts. Service roots are loaded
+  at start by definition. Routes files and fragments are loaded when the web
+  layer or a registry asks. Job files are loaded in `ready()`, after Ghost is
+  serving. Only route handlers, actions, events and everything they import are
+  truly loaded on first use.
+- **The event bus cannot unsubscribe.** `@tryghost/domain-events` has
+  `subscribe` and no way back, and tests boot Ghost repeatedly in one process.
+  The runner subscribes each listener once per process and ignores events while
+  stopped.
+- **The event bus keys events by class name.** `subscribe(Event, …)` uses
+  `Event.name` and `dispatch` uses `event.constructor.name`. So event names must
+  be unique across Ghost (the manifest test checks this), and a listener can
+  subscribe to an event by name without importing its class. `defineListener`
+  accepts a name for exactly that case: an event still published by code a
+  reshaped listener may not import.
+- **Cron jobs fit the jobs service only in its shared lane.** The jobs service
+  takes queue declarations at `start()`, and domain job files load after that. A
+  domain job with its own queue would have to be loaded during boot. Cron
+  scheduling through the foundation is written but was **not run**; only
+  "once at boot" is exercised (step 7).
+- **Jobs are not scheduled under test**, matching the jobs guide ("Boot starts
+  no schedules under test"). Non-blocking roots are still started.
+- **A build leaves `x.js` beside `x.ts`.** Discovery names each module once,
+  without an extension, and lets the running loader choose. That matches what
+  `require('./x')` already does everywhere else in Ghost.
+- **`ghost/bin` is a pinned downstream contract.** Adding the listing command
+  there failed `test/unit/bin/entrypoints.test.ts`, which says to add new
+  entry points to its list. Done, since the command is useful against an
+  installed tree.
+- **The boot test for `initServices` stubs every `require`.** Any new line in
+  boot needs a stub there, which is the intended tripwire.
+
+### Deviations and unsettled points
+
+- `defineDomain({ dependencies })` in `boot.ts` is this spike's answer to "what
+  is boot.ts for": it is the one place that may build what a domain's roots need
+  from outside the domain, and the runner passes the result to each root's
+  `create`. `boot.ts` is optional; a domain without one supplies nothing. See
+  steps 4 and 7 for whether real code needed it.
+- Foundation lives in a new `ghost/core/foundation/` folder that holds only
+  what the spike added. Config, logging, the database, the event bus and the
+  job runner were used from where they are.

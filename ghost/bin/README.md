@@ -11,6 +11,7 @@ an executable here.
 | [lib/duplicate-deps.ts](lib/duplicate-deps.ts) | TypeScript, compiled to CommonJS `.js` | Private installed-tree dependency inspection used by adapter validation                                         |
 | [warm-compile-cache.sh](warm-compile-cache.sh) | Bash                                   | Boot Ghost once to populate Node's on-disk compile cache during an image build                                  |
 | [generate-data.ts](generate-data.ts)           | TypeScript, compiled to CommonJS `.js` | Populate the configured database with generated data                                                            |
+| [list-domains.ts](list-domains.ts)             | TypeScript, compiled to CommonJS `.js` | Print every file the domain layer finds in `domains/`, to check discovery against an installed tree             |
 
 The [Ghost manifest](../package.json) ships `bin/`; [Core's compiler configuration](../tsconfig.json)
 includes its TypeScript sources. Invoke compiled files in the installed tree,

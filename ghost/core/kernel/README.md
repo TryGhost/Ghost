@@ -156,3 +156,30 @@ resource ownership; each caller must respect the extra's documented timing.
 
 This is a temporary migration interface. The [services guide](../server/services/README.md)
 describes how to catalogue extras while their eventual ownership is established.
+
+## Domains
+
+Spike: see [the findings log](../../../docs/plans/domain-spike-findings.md).
+
+[`domains/`](domains/) makes each kind of file in a domain folder work. It has
+three parts, none of which knows anything about Ghost:
+
+- [`definitions.ts`](domains/definitions.ts) holds `defineEvent`,
+  `defineListener`, `defineJob`, `defineRoutes`, `defineSettings`,
+  `definePermissions`, `defineSchema` and `defineDomain`. Each only describes:
+  it tags and returns what it is given, so importing a file has no effect.
+- [`discover.ts`](domains/discover.ts) reads the fixed folders of every domain
+  and returns what it found. It loads nothing; each entry loads its file on
+  first use. `transition/` and `test/` are never read.
+- [`domain-layer.ts`](domains/domain-layer.ts) starts what was found, given an
+  event bus, a job scheduler and a logger: service roots in the order they
+  declare within their domain, then listeners; after Ghost is ready, roots that
+  do not block boot and jobs. It also hands a web layer the routes of a surface
+  and a registry the fragments of a kind.
+
+`defineService` takes two optional declarations that only the domain layer
+reads: `startAfter`, naming other roots in the same domain, and
+`blocking: false`. A root started by the domain layer receives what its
+domain's `boot.ts` supplies as the argument to `create`.
+
+The [foundation](../foundation/README.md) holds the instance boot starts.

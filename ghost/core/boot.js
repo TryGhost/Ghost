@@ -504,6 +504,14 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   // initialization, and automation polling sends through it once jobs start.
   await memberWelcomeEmails.init();
 
+  // The domain layer starts after everything boot initializes above, so code in a
+  // domain can rely on it, and before the job runner starts.
+  const domains = require('./foundation/domains').default;
+  await domains.start();
+  if (ghostServer) {
+    ghostServer.registerCleanupTask(() => domains.stop(), 'Domains');
+  }
+
   debug('Begin: Register job handlers');
   const registerJobHandlers =
     require('./server/services/jobs-service/register-job-handlers').default;
@@ -837,6 +845,12 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     }
     bootLogger.metric('boot-time');
     notifyServerReady();
+
+    // Domain services that do not block boot start now, and domain jobs are
+    // scheduled. Boot does not wait, and schedules nothing under test.
+    require('./foundation/domains')
+      .default.ready({ jobs: !process.env.NODE_ENV.startsWith('test') })
+      .catch((error) => logging.error(error));
 
     // Step 7 - Init our background services, we don't wait for this to finish
     initBackgroundServices({ config });
