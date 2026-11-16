@@ -33,7 +33,9 @@ describe('Label-added automation enrollment', function () {
 
   beforeEach(function () {
     automations = [];
-    sinon.stub(labs, 'isSet').callThrough().withArgs('automations').returns(true);
+    const isSet = sinon.stub(labs, 'isSet').callThrough();
+    isSet.withArgs('automations').returns(true);
+    isSet.withArgs('automationsLeadMagnets').returns(true);
   });
 
   afterEach(async function () {

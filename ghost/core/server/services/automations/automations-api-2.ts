@@ -14,7 +14,7 @@ import type {
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 import { getReadyAtForAction } from './util/get-ready-at-for-action';
 
-type Labs = { isSet(key: 'automations'): boolean };
+type Labs = { isSet(key: 'automations' | 'automationsLeadMagnets'): boolean };
 
 type MemberStatus = 'free' | 'paid' | 'gift' | 'comped';
 
@@ -142,6 +142,9 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
           break;
         }
         case 'label_added':
+          if (!labs.isSet('automationsLeadMagnets')) {
+            return;
+          }
           ({ memberIds } = event);
           if (memberIds.length === 0) {
             return;

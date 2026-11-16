@@ -23,11 +23,9 @@ describe('automations API', function () {
       throw new Error('domainEvents.dispatch should not be called');
     },
   });
-  const createFakeLabs = (isAutomationsEnabled: boolean) => ({
-    isSet: (flag: string) => {
-      expect(flag).toBe('automations');
-      return isAutomationsEnabled;
-    },
+  const createFakeLabs = (isAutomationsEnabled: boolean, isLeadMagnetsEnabled = true) => ({
+    isSet: (flag: 'automations' | 'automationsLeadMagnets') =>
+      flag === 'automations' ? isAutomationsEnabled : isLeadMagnetsEnabled,
   });
   const createApi = (
     overrides: Partial<
@@ -170,6 +168,38 @@ describe('automations API', function () {
 
       expect(withTransaction).not.toHaveBeenCalled();
       expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('ignores label additions before opening a transaction when lead magnets are disabled', async function () {
+      const withTransaction = vi.fn();
+      const api = createApi({
+        labs: createFakeLabs(true, false),
+        repository: { ...repository, withTransaction },
+        domainEvents,
+      });
+
+      await api.notify({ eventName: 'label_added', labelId: 'label', memberIds: ['member'] });
+
+      expect(withTransaction).not.toHaveBeenCalled();
+      expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('still processes membership events when only lead magnets are disabled', async function () {
+      const withTransaction = vi.fn().mockResolvedValue(false);
+      const api = createApi({
+        labs: createFakeLabs(true, false),
+        repository: { ...repository, withTransaction },
+      });
+
+      await api.notify(event);
+      await api.notify({
+        ...event,
+        eventName: 'paid_subscription_changed',
+        previousMemberStatus: 'paid',
+        previousMemberTierIds: ['basic'],
+      });
+
+      expect(withTransaction).toHaveBeenCalledTimes(2);
     });
 
     it.each(['admin', 'api', 'import', 'system'] as const)(
