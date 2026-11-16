@@ -77,6 +77,7 @@ module.exports = function MembersAPI({
   tierRequirements,
   checkouts,
   tracking,
+  membersTracking,
 }) {
   const tokenService = new TokenService({
     signingKeys,
@@ -209,6 +210,7 @@ module.exports = function MembersAPI({
     sendEmailWithMagicLink,
     settingsCache,
     account,
+    tracking: membersTracking,
   });
 
   const routerController = new RouterController({
@@ -508,10 +510,6 @@ module.exports = function MembersAPI({
     });
   };
 
-  const bus = new (require('events').EventEmitter)();
-
-  bus.emit('ready');
-
   DomainEvents.subscribe(EmailSuppressedEvent, async function (event) {
     const member = await memberRepository.get({ email: event.data.emailAddress });
     if (!member) {
@@ -531,7 +529,6 @@ module.exports = function MembersAPI({
     cycleTransientId,
     setMemberGeolocationFromIp,
     getPublicConfig,
-    bus,
     sendEmailWithMagicLink,
     getMagicLink,
     members: users,

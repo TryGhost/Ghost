@@ -43,6 +43,13 @@ export const automationTriggerRuleDefinitionSchema = z.discriminatedUnion('trigg
       direction: z.enum(['from', 'to']),
     }),
   ]),
+  z.object({
+    trigger_type: z.literal('label_added'),
+    label_id: ObjectIdSchema,
+    scope: z.null(),
+    product_id: z.null(),
+    direction: z.null(),
+  }),
 ]);
 
 export type AutomationTriggerRuleDefinition = z.infer<typeof automationTriggerRuleDefinitionSchema>;

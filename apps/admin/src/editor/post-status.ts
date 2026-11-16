@@ -31,7 +31,7 @@ export interface EditorStatusRecord {
   publishedAt?: string | null;
   url?: string;
   emailOnly?: boolean;
-  newsletter?: Pick<PostNewsletter, 'slug' | 'visibility'> | null;
+  newsletter?: Pick<PostNewsletter, 'slug' | 'visibility' | 'name'> | null;
   emailSegment?: string | null;
   /** An email record exists, so the send has already been handed over. */
   hasEmail?: boolean;
@@ -66,8 +66,10 @@ export type EditorStatusView =
       url?: string;
       email: 'none' | 'sending' | 'sent' | 'failed';
       count: number;
+      /** The newsletter the post went out as, named on hover. */
+      newsletterName: string | null;
     }
-  | { kind: 'sent'; failed: boolean; count: number };
+  | { kind: 'sent'; failed: boolean; count: number; newsletterName: string | null };
 
 export interface DeriveEditorStatusInput {
   state: SaveEngineState;
@@ -186,10 +188,11 @@ export function deriveEditorStatus({
   }
 
   const count = record.emailCount ?? 0;
+  const newsletterName = record.newsletter?.name ?? null;
   const recipientAudience = status === 'scheduled' ? scheduledRecipientAudience(record) : null;
 
   if (status === 'sent') {
-    return { kind: 'sent', failed: record.emailStatus === 'failed', count };
+    return { kind: 'sent', failed: record.emailStatus === 'failed', count, newsletterName };
   }
 
   if (record.emailOnly && status === 'scheduled') {
@@ -208,6 +211,7 @@ export function deriveEditorStatus({
       url: record.url,
       email: publishedEmailState(record.emailStatus),
       count,
+      newsletterName,
     };
   }
 

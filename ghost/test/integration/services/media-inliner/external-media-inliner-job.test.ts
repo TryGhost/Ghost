@@ -6,9 +6,7 @@ import nock from 'nock';
 const logging = require('@tryghost/logging');
 const { agentProvider, fixtureManager } = require('../../../utils/e2e-framework');
 const models = require('../../../../core/server/models');
-const { getInstance: getJobsService } = require('../../../../core/server/services/jobs-service');
-const ExternalMediaInlinerJob =
-  require('../../../../core/server/services/media-inliner/external-media-inliner-job').default;
+const mediaInliner = require('../../../../core/server/services/media-inliner').default;
 
 async function waitFor(
   check: () => boolean | Promise<boolean>,
@@ -53,9 +51,7 @@ describe('Job: External media inliner', function () {
 
     const loggingInfoSpy = sinon.spy(logging, 'info');
 
-    await getJobsService().dispatch(
-      new ExternalMediaInlinerJob({ domains: ['https://external-media.example.com'] }),
-    );
+    await mediaInliner.service.startInlining(['https://external-media.example.com']);
 
     const completed = await waitFor(() => {
       return loggingInfoSpy.getCalls().some((call) => {

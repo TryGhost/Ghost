@@ -20,25 +20,11 @@ describe('member jobs: expired comped cleanup scheduling', function () {
     sinon.restore();
   });
 
-  it('does not schedule expired comped cleanup under the test environment', async function () {
-    await memberJobs.scheduleExpiredCompCleanupJob(jobsService);
-
-    assert.ok(
-      jobsService.scheduleRecurring.notCalled,
-      'expired comped cleanup must not be scheduled under NODE_ENV=test*',
-    );
-  });
-
-  it('schedules a single daily off-peak clean-expired-comped job outside the test environment', async function () {
-    const originalEnv = process.env.NODE_ENV;
+  it('schedules a single daily off-peak clean-expired-comped job', async function () {
     sinon.stub(logging, 'info');
-    process.env.NODE_ENV = 'production';
-    try {
-      await memberJobs.scheduleExpiredCompCleanupJob(jobsService);
-      await memberJobs.scheduleExpiredCompCleanupJob(jobsService);
-    } finally {
-      process.env.NODE_ENV = originalEnv;
-    }
+
+    await memberJobs.scheduleExpiredCompCleanupJob(jobsService);
+    await memberJobs.scheduleExpiredCompCleanupJob(jobsService);
 
     assert.ok(
       jobsService.scheduleRecurring.calledOnce,

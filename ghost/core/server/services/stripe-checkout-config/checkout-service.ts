@@ -15,14 +15,12 @@ import type { RequestedParts, StripeCheckoutConfigService } from './service';
 export const NOTHING_COLLECTED = Object.freeze({
   shipping: null,
   phone: null,
-  taxNumber: null,
 } satisfies Record<CollectedSection, null>);
 
 /** How a checkout asks for each collected part: as set, without the tiers it covers. */
 const ASKING: { [Section in CollectedSection]: (part: AskedParts[Section]) => Asking[Section] } = {
   shipping: ({ allowedCountries }) => ({ allowedCountries }),
   phone: () => ({}),
-  taxNumber: () => ({}),
 };
 
 /**
@@ -40,7 +38,6 @@ function checkoutForTier(config: CheckoutSessionConfig, tierId: string): Checkou
     asks: {
       shipping: ask('shipping', config.shipping),
       phone: ask('phone', config.phone),
-      taxNumber: ask('taxNumber', config.taxNumber),
     },
   };
 }

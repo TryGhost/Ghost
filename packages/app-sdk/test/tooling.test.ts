@@ -467,7 +467,9 @@ describe('signing', () => {
       { manifestUrl: MANIFEST_URL, ...keys },
     );
     expect(result).toMatchObject({ success: false, code: 'APP_MANIFEST_TOO_LARGE' });
-    expect(!result.success && result.errors[0]?.message).toContain('as Ghost fetches it');
+    expect(!result.success && result.errors[0]?.message).toContain(
+      'Expected a signed manifest of at most',
+    );
   });
 
   it('reads a ghost-app.json that starts with a byte order mark, as Ghost reads JSON', async () => {

@@ -7,6 +7,11 @@ import {
 } from '../../../../../core/server/services/explore-ping/explore-ping-service';
 import { createLoggingFake } from '../../../../utils/logging-utils';
 
+// The Ghost version the payload must report: package.json's version without any
+// build suffix, read independently of the @tryghost/version module the service uses.
+const { version: packageVersion }: { version: string } = require('../../../../../package.json');
+const expectedVersion = packageVersion.split('+')[0];
+
 type RequestFn = ExplorePingServiceDeps['request'];
 type StatsApi = NonNullable<NonNullable<ExplorePingServiceDeps['statsService']>['api']>;
 
@@ -26,7 +31,6 @@ describe('ExplorePingService', function () {
   let settingsCacheStub: { get: GetStub };
   let configStub: { get: GetStub };
   let loggingStub: ReturnType<typeof createLoggingFake>;
-  let ghostVersionStub: ExplorePingServiceDeps['ghostVersion'];
   let requestStub: RequestStub;
   let postsStub: PostsStub;
   let membersStub: MembersStub;
@@ -54,10 +58,6 @@ describe('ExplorePingService', function () {
     configStub.get.withArgs('explore:update_url').returns('https://explore.testing.com');
 
     loggingStub = createLoggingFake();
-
-    ghostVersionStub = {
-      full: '4.0.0',
-    };
 
     requestStub = sinon.stub();
 
@@ -98,7 +98,6 @@ describe('ExplorePingService', function () {
       settingsCache: settingsCacheStub,
       config: configStub,
       logging: loggingStub,
-      ghostVersion: ghostVersionStub,
       request: requestStub,
       posts: postsStub,
       members: membersStub,
@@ -115,7 +114,7 @@ describe('ExplorePingService', function () {
       const payload = await explorePingService.constructPayload();
 
       assert.deepEqual(payload, {
-        ghost: '4.0.0',
+        ghost: expectedVersion,
         site_uuid: '123e4567-e89b-12d3-a456-426614174000',
         url: 'https://example.com',
         theme: 'alto',
@@ -156,7 +155,7 @@ describe('ExplorePingService', function () {
       const payload = await explorePingService.constructPayload();
 
       assert.deepEqual(payload, {
-        ghost: '4.0.0',
+        ghost: expectedVersion,
         site_uuid: '123e4567-e89b-12d3-a456-426614174000',
         url: 'https://example.com',
         theme: 'alto',
@@ -183,7 +182,7 @@ describe('ExplorePingService', function () {
       const payload = await explorePingService.constructPayload();
 
       assert.deepEqual(payload, {
-        ghost: '4.0.0',
+        ghost: expectedVersion,
         site_uuid: '123e4567-e89b-12d3-a456-426614174000',
         url: 'https://example.com',
         theme: 'alto',
@@ -236,7 +235,6 @@ describe('ExplorePingService', function () {
         settingsCache: settingsCacheStub,
         config: configStub,
         logging: loggingStub,
-        ghostVersion: ghostVersionStub,
         request: requestStub,
         posts: postsStub,
         members: membersStub,

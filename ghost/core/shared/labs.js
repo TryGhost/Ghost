@@ -63,6 +63,7 @@ const PRIVATE_FEATURES = [
   'machinePayments',
   'apps',
   'inAppSupport',
+  'customFieldTypePhone',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

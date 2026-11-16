@@ -11,7 +11,7 @@ const spamPrevention: SpamPrevention = require('../../../../../../core/server/we
 const attempt = (middleware: (req: Request, res: Response, next: NextFunction) => void) =>
   new Promise<boolean>((resolve, reject) => {
     middleware(
-      { ip: '127.0.0.1' } as Request,
+      { ip: '127.0.0.1', path: '/session' } as Request,
       { set() {} } as unknown as Response,
       ((err?: { errorType?: string }) => {
         if (!err) {
@@ -58,7 +58,7 @@ describe('rate_limits store', function () {
       ['globalBlock', 'wait'],
     ]);
 
-    await limiter.reset({ ip: '127.0.0.1' });
+    await limiter.reset({ ip: '127.0.0.1', key: '/session/' });
 
     assert.deepEqual(await db.knex('rate_limits').select(), []);
     assert.equal(await attempt(limiter.middleware), true);

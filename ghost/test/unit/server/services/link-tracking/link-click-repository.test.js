@@ -209,7 +209,7 @@ describe('LinkClickRepository class', function () {
 
       await linkClickRepository.save(linkClicks[0], { transacting });
       execution.reject(error);
-      await assert.rejects(execution.promise, error);
+      await assert.rejects(execution.promise, (thrown) => thrown === error);
 
       sinon.assert.notCalled(domainEventsStub.dispatch);
     });
@@ -218,7 +218,7 @@ describe('LinkClickRepository class', function () {
       const error = new Error('dispatch failed');
       domainEventsStub.dispatch.throws(error);
 
-      await assert.rejects(linkClickRepository.save(linkClicks[0]), error);
+      await assert.rejects(linkClickRepository.save(linkClicks[0]), (thrown) => thrown === error);
     });
 
     it('should not dispatch when saving the click fails', async function () {
@@ -226,7 +226,7 @@ describe('LinkClickRepository class', function () {
 
       memberLinkClickEventModelStub.add.rejects(error);
 
-      await assert.rejects(linkClickRepository.save(linkClicks[0]), error);
+      await assert.rejects(linkClickRepository.save(linkClicks[0]), (thrown) => thrown === error);
       sinon.assert.notCalled(memberLinkClickEventStub.create);
       sinon.assert.notCalled(domainEventsStub.dispatch);
     });
@@ -260,7 +260,7 @@ describe('LinkClickRepository class', function () {
       const error = new Error('member lookup failed');
       memberStub.findOne.onFirstCall().rejects(error);
 
-      await assert.rejects(linkClickRepository.save(linkClicks[0]), error);
+      await assert.rejects(linkClickRepository.save(linkClicks[0]), (thrown) => thrown === error);
       await linkClickRepository.save(linkClicks[1]);
 
       sinon.assert.calledTwice(memberStub.findOne);

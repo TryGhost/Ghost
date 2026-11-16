@@ -17,15 +17,12 @@ const PhoneSettings: React.FC<{
   /** The fields chosen for every collected value, which no other value is offered. */
   chosenFields: Array<string | null>;
   errors: PhoneErrors;
-  /** Whether every checkout asks for it, whatever this says. */
-  alwaysAsked: boolean;
   onChange: (next: PhoneFormState) => void;
-}> = ({ state, tiers, fields, chosenFields, errors, alwaysAsked, onChange }) => {
+}> = ({ state, tiers, fields, chosenFields, errors, onChange }) => {
   const set = (next: Partial<PhoneFormState>) => onChange({ ...state, ...next });
 
   return (
     <CollectRow
-      alwaysAsked={alwaysAsked}
       id="checkout-collect-phone"
       label="Phone"
       state={state}
@@ -38,6 +35,7 @@ const PhoneSettings: React.FC<{
         error={errors.phoneField}
         fields={fields}
         label="Save phone as"
+        suggestedName="Phone"
         type={PORT_FIELD[CHECKOUT_PORT.phone].type}
         value={state.fieldKey}
         onChange={(fieldKey) => set({ fieldKey })}

@@ -67,7 +67,7 @@ const LAYOUTS: {
     address: { label: t('Shipping address'), type: 'address', countries },
   }),
   phone: () => ({
-    number: { label: t('Phone number'), type: 'short_text' },
+    number: { label: t('Phone number'), type: 'phone' },
   }),
 };
 

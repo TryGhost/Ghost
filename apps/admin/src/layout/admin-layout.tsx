@@ -422,12 +422,29 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     </SidebarProvider>
   );
 
-  // The side panel shows only where the navigation does. In the Admin 7 frame
-  // it sits beside the card, below the top bar, and otherwise runs the full
-  // height on the right. It stays in one place across the mobile breakpoint, so
-  // its content isn't reloaded.
+  // The side panel shows only where the main navigation does, as that's where
+  // it's opened from: not on full-screen screens, nor in Settings, which swaps
+  // the navigation for its own. In the Admin 7 frame it sits beside the card,
+  // below the top bar, and otherwise runs the full height on the right. It
+  // stays in one place across the mobile breakpoint, so its content isn't
+  // reloaded.
   const sidePanel = (
-    <SidePanel framed={adminFrame} locked={dunningLocked} visible={sidebarVisible && !isMobile} />
+    <SidePanel
+      framed={adminFrame}
+      locked={dunningLocked}
+      visible={sidebarVisible && !isSettingsRoute && !isMobile}
+    />
+  );
+
+  // The page never gets narrower than it is beside the panel at its default
+  // size. As the panel expands over it, what holds the page clips it instead,
+  // so the page keeps its layout under the panel, where it would otherwise be
+  // squashed and laid out again on every frame. The width is worked out from
+  // the viewport: the panel's, and in the frame its bezels and the panel's.
+  const page = (
+    <div className="h-full w-[max(100%,calc(100vw_-_var(--side-panel-navigation-width)_-_3_*_var(--admin-frame-side)))]">
+      {sidebarLayout}
+    </div>
   );
 
   return (
@@ -437,7 +454,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         className="flex size-full"
         style={{ '--side-panel-navigation-width': SIDEBAR_WIDTH } as React.CSSProperties}
       >
-        <div className="h-full min-w-0 flex-1">
+        <div className="h-full min-w-0 flex-1 overflow-hidden">
           {adminFrame ? (
             <AdminFrame
               aside={sidePanel}
@@ -445,10 +462,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               mode={frameMode}
               topBar={<AdminFrameTopBar hidden={frameMode === 'hidden'} />}
             >
-              {sidebarLayout}
+              {page}
             </AdminFrame>
           ) : (
-            sidebarLayout
+            page
           )}
         </div>
         {!adminFrame && sidePanel}

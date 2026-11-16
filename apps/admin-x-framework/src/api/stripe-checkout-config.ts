@@ -27,7 +27,6 @@ export type StripeCheckoutDesignSetting =
 export type StripeCheckoutPartSetting<Part extends CollectedPart> = CheckoutPartSetting<Part>;
 export type StripeCheckoutShippingSetting = StripeCheckoutPartSetting<'shipping'>;
 export type StripeCheckoutPhoneSetting = StripeCheckoutPartSetting<'phone'>;
-export type StripeCheckoutTaxNumberSetting = StripeCheckoutPartSetting<'tax_number'>;
 
 /**
  * The checkout config. A collected part is missing while it can't be collected: its private flag

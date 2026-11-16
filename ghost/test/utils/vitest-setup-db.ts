@@ -168,24 +168,26 @@ beforeAll(async () => {
 // testPath/testTitle from the vitest task. testTitle must exactly match mocha's
 // `fullTitle()` (describe names + test name joined by spaces) or committed .snap
 // keys won't resolve. Mirrors ./vitest-setup.ts.
-beforeEach((context: { task: { name: string; suite?: unknown; file?: { filepath?: string } } }) => {
-  if (!snapshotManager) {
-    return;
-  }
-  const titleParts: string[] = [];
-  let node: { name?: string; suite?: unknown; filepath?: string } | undefined = context.task;
-  // Walk task -> describe(s); stop at the file node (it has `filepath`).
-  while (node && !node.filepath) {
-    if (node.name) {
-      titleParts.unshift(node.name);
+beforeEach(
+  async (context: { task: { name: string; suite?: unknown; file?: { filepath?: string } } }) => {
+    if (!snapshotManager) {
+      return;
     }
-    node = node.suite as typeof node;
-  }
-  snapshotManager.setCurrentTest({
-    testPath: context.task.file?.filepath,
-    testTitle: titleParts.join(' '),
-  });
-});
+    const titleParts: string[] = [];
+    let node: { name?: string; suite?: unknown; filepath?: string } | undefined = context.task;
+    // Walk task -> describe(s); stop at the file node (it has `filepath`).
+    while (node && !node.filepath) {
+      if (node.name) {
+        titleParts.unshift(node.name);
+      }
+      node = node.suite as typeof node;
+    }
+    await snapshotManager.setCurrentTest({
+      testPath: context.task.file?.filepath,
+      testTitle: titleParts.join(' '),
+    });
+  },
+);
 
 afterEach(async () => {
   const domainEvents = require('@tryghost/domain-events');

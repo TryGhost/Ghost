@@ -528,7 +528,10 @@ describe('Users service', function () {
       fakes.Post.reassignByAuthor.rejects(failure);
       const service = createService(fakes);
 
-      await assert.rejects(service.destroyUser({ id: 'user-id', context }), failure);
+      await assert.rejects(
+        service.destroyUser({ id: 'user-id', context }),
+        (thrown) => thrown === failure,
+      );
 
       sinon.assert.calledOnce(dispatch);
       sinon.assert.notCalled(fakes.ApiKey.destroy);
@@ -551,7 +554,10 @@ describe('Users service', function () {
       fakes.ApiKey.destroy.rejects(failure);
       const service = createService(fakes);
 
-      await assert.rejects(service.destroyUser({ id: 'user-id', context }), failure);
+      await assert.rejects(
+        service.destroyUser({ id: 'user-id', context }),
+        (thrown) => thrown === failure,
+      );
 
       sinon.assert.notCalled(fakes.User.destroy);
     });

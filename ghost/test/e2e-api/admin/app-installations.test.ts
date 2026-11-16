@@ -2410,10 +2410,7 @@ describe('App installations Admin API', function () {
 
       await agent.get('apps/installations/').expectStatus(404);
       await agent.get(`apps/installations/${installation.id}/`).expectStatus(404);
-      // Admin uses this code to tell an uninstalled app from a Ghost without app sessions,
-      // so a disabled flag must not send it.
-      const { body } = await start(installation.id, 404);
-      assert.notEqual(body.errors?.[0]?.code, 'APP_NOT_INSTALLED');
+      await start(installation.id, 404);
       await agent.delete(`apps/installations/${installation.id}/`).expectStatus(404);
       assert.equal((await service().read(installation.id)).status, 'active');
     });

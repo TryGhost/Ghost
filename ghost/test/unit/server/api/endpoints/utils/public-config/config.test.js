@@ -25,6 +25,7 @@ const allowedKeys = [
   'pintura',
   'signupForm',
   'security',
+  'auth',
 ];
 
 describe('Public-config response builders', function () {
@@ -44,6 +45,13 @@ describe('Public-config response builders', function () {
       const configProperties = getConfigProperties();
 
       assert.deepEqual(Object.keys(configProperties), allowedKeys);
+    });
+
+    it('should return the auth engine outside security', function () {
+      assert.deepEqual(getConfigProperties().auth, { engine: 'legacy' });
+
+      configUtils.set('auth:engine', 'better-auth');
+      assert.deepEqual(getConfigProperties().auth, { engine: 'better-auth' });
     });
 
     it('should return GHOST_BUILD_VERSION as version when set', function () {

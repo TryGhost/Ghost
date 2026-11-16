@@ -1,6 +1,7 @@
-import type { SignedManifest } from '../shared/manifest.ts';
+import type { SignedManifest } from '@tryghost/app-contracts/identity';
 
-export { MANIFEST_PATH, type SignedManifest } from '../shared/manifest.ts';
+export { MANIFEST_PATH } from '../shared/manifest.ts';
+export type { SignedManifest };
 
 /**
  * A response that serves the signed manifest, for a backend that doesn't serve it as a static

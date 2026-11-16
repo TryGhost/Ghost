@@ -13,17 +13,21 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  Flag,
   Input,
   Label,
   MultiSelectCombobox,
+  PopoverAnchor,
   Textarea,
   tokenFieldClasses,
 } from '@tryghost/shade/components';
+import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import {
   buildCustomFieldSavePayload,
   customFieldSave,
   editorFor,
+  getCustomFieldTypingErrors,
   getCustomFieldValidationErrors,
   isEdited,
   parseCustomFieldServerErrors,
@@ -34,13 +38,25 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { IdentityTextSchema } from '@tryghost/metafield-types/identity';
 import {
+  CALLING_CODES,
+  holdNumber,
+  isPhoneCountry,
+  phoneCountryOptions,
+  pickCountry,
+  shownCountry,
+  startPhoneEntry,
+  typeNumber,
+  type PhoneEntry,
+} from '@tryghost/metafield-types/phone';
+import { countryOptions } from '@tryghost/admin-x-framework/utils/countries';
+import {
   FIELD_STRUCTURES,
   inOptionOrder,
   matchLeaf,
   matchShape,
   type Leaf,
   type SetSettings,
-  type TextSize,
+  type TextFormat,
 } from '@tryghost/metafield-types/structure';
 import { partOf } from '@/members/custom-fields/addressing';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
@@ -186,10 +202,111 @@ const ListInput: React.FC<{
   );
 };
 
-const TEXT_CONTROL: { [S in TextSize]: 'input' | 'textarea' } = {
-  line: 'input',
-  code: 'input',
+/**
+ * What each text format is typed into: an input, a textarea for text with line breaks, or for a
+ * phone number a phone input beside the country it is from.
+ */
+const TEXT_CONTROL: { [F in TextFormat]: 'text' | 'textarea' | 'phone' } = {
+  line: 'text',
+  code: 'text',
   long: 'textarea',
+  phone: 'phone',
+};
+
+/**
+ * A phone number, written beside the country it is from, as Portal and Stripe Checkout ask for one.
+ * Staff write it as it is dialled at home and the country's code goes in front, or write it with a
+ * +, and the country shown follows the code they wrote. The site keeps it in one international form.
+ */
+const PhoneInput: React.FC<{
+  id: string;
+  label: string;
+  value: string;
+  invalid?: boolean;
+  disabled?: boolean;
+  onChange: (value: string) => void;
+}> = ({ id, label, value, invalid, disabled, onChange }) => {
+  const [open, setOpen] = React.useState(false);
+  // Each with its flag, drawn as Admin draws a country's flag elsewhere, the same in every browser.
+  const options = React.useMemo(
+    () =>
+      phoneCountryOptions(countryOptions()).map((option) => ({
+        ...option,
+        icon: <Flag className="shrink-0" countryCode={option.value} />,
+      })),
+    [],
+  );
+  const [entry, setEntry] = React.useState(() => startPhoneEntry(value, navigator.languages));
+  // What this input last sent. A value that differs came from elsewhere, such as the number the
+  // site kept, and replaces what was typed.
+  const sent = React.useRef(value);
+  React.useEffect(() => {
+    if (value !== sent.current) {
+      sent.current = value;
+      setEntry((current) => holdNumber(current, value));
+    }
+  }, [value]);
+
+  const country = shownCountry(entry.typed, entry.picked);
+  const send = (next: { entry: PhoneEntry; number: string }) => {
+    setEntry(next.entry);
+    sent.current = next.number;
+    onChange(next.number);
+  };
+
+  return (
+    <Combobox open={open} modal onOpenChange={setOpen}>
+      {/* The list opens under the whole input, from the flag, as wide as the country and the
+          number together, so a country's name fits, as a phone input's list of countries does. */}
+      <PopoverAnchor asChild>
+        <Inline align="stretch" gap="none">
+          <ComboboxTrigger
+            aria-label="Country code"
+            className="w-auto shrink-0 rounded-r-none"
+            disabled={disabled}
+          >
+            <ComboboxValue placeholder={!country}>
+              {country ? (
+                <Inline as="span" gap="sm">
+                  <Flag countryCode={country} />+{CALLING_CODES[country]}
+                </Inline>
+              ) : (
+                '+'
+              )}
+            </ComboboxValue>
+          </ComboboxTrigger>
+          <Input
+            aria-invalid={invalid || undefined}
+            aria-label={label}
+            // Off: staff type a member's details, and a browser offering their own, such as their
+            // phone number, would save the wrong person's.
+            autoComplete="off"
+            className="-ml-px rounded-l-none"
+            disabled={disabled}
+            id={id}
+            type="tel"
+            value={entry.typed}
+            onChange={(e) => send(typeNumber(entry, e.target.value))}
+          />
+        </Inline>
+      </PopoverAnchor>
+      <ComboboxContent>
+        <MultiSelectCombobox
+          i18n={{ searchPlaceholder: 'Search countries...' }}
+          isMultiSelect={false}
+          options={options}
+          values={country ? [country] : []}
+          autoCloseOnSelect
+          onChange={([to]) => {
+            if (to && isPhoneCountry(to)) {
+              send(pickCountry(entry, to));
+            }
+          }}
+          onClose={() => setOpen(false)}
+        />
+      </ComboboxContent>
+    </Combobox>
+  );
 };
 
 const LeafInput: React.FC<{
@@ -202,8 +319,21 @@ const LeafInput: React.FC<{
   onChange: (value: string) => void;
 }> = ({ leaf, id, label, value, invalid, disabled, onChange }) =>
   matchLeaf(leaf, {
-    text: ({ size }) =>
-      TEXT_CONTROL[size] === 'textarea' ? (
+    text: ({ format }) => {
+      const control = TEXT_CONTROL[format];
+      if (control === 'phone') {
+        return (
+          <PhoneInput
+            disabled={disabled}
+            id={id}
+            invalid={invalid}
+            label={label}
+            value={value}
+            onChange={onChange}
+          />
+        );
+      }
+      return control === 'textarea' ? (
         // max-w-full: Admin's element styles cap textareas at 500px.
         <Textarea
           aria-invalid={invalid || undefined}
@@ -216,12 +346,17 @@ const LeafInput: React.FC<{
       ) : (
         <Input
           aria-invalid={invalid || undefined}
+          // Off for every input: staff type a member's details, and a browser offering their own,
+          // such as their phone number, would save the wrong person's.
+          autoComplete="off"
           disabled={disabled}
           id={id}
+          type={control}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
-      ),
+      );
+    },
     choice: ({ from }) => (
       <ChoiceInput
         disabled={disabled}
@@ -334,7 +469,8 @@ const CustomFieldInput: React.FC<{
  * one clear outcome — deliberately outside the page's draft/Save flow so
  * "which Save saves what" never needs answering. Validation mirrors the
  * page's email field: computed live, rendered on save-attempt; a server 422
- * naming this field pins its message to the input as a backstop.
+ * naming this field pins its message to the input as a backstop. The exception is an invalid
+ * character in a phone number, which shows an error while typing.
  */
 const MemberCustomFieldEditModal: React.FC<{
   memberId: string;
@@ -357,7 +493,13 @@ const MemberCustomFieldEditModal: React.FC<{
 
   const save = customFieldSave(editor, opened);
   const validationErrors = getCustomFieldValidationErrors(save);
-  const errors = { ...(saveAttempted ? validationErrors : {}), ...serverErrors };
+  // A typing error is about the current input, so it takes precedence over errors from an
+  // earlier save attempt.
+  const errors = {
+    ...(saveAttempted ? validationErrors : {}),
+    ...serverErrors,
+    ...getCustomFieldTypingErrors(editor),
+  };
   // Keyed by the part each names, which is how the input places them. The dialog saves this one
   // field, so an error naming anything but one of its parts is about the field itself.
   const inputErrors = Object.fromEntries(
@@ -484,7 +626,7 @@ const PREVIEW_COUNT = 5;
 /** Whether a leaf's text is written in a textarea, so it can hold line breaks. */
 const isMultiline = (leaf: Leaf) =>
   matchLeaf(leaf, {
-    text: ({ size }) => TEXT_CONTROL[size] === 'textarea',
+    text: ({ format }) => TEXT_CONTROL[format] === 'textarea',
     choice: () => false,
   });
 
@@ -592,7 +734,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
   return (
     <section
       aria-labelledby="member-custom-fields-heading"
-      className="flex flex-col gap-3"
+      className="flex flex-col gap-3 in-data-[admin7-design=true]:gap-4"
       data-testid="member-custom-fields-field"
     >
       <h3 className="section-heading text-base font-semibold" id="member-custom-fields-heading">

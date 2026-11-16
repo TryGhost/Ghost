@@ -15,8 +15,11 @@ const runOptions = sinon.match({
 });
 
 const ExternalMediaInliner = require('../../../../../core/server/services/media-inliner/external-media-inliner');
+const ExternalMediaInlinerJob =
+  require('../../../../../core/server/services/media-inliner/external-media-inliner-job').default;
 
 type Inliner = {
+  startInlining(domains?: string[]): Promise<void>;
   importUrl(
     sourceUrl: string,
     options?: { originSchemes?: OriginSchemes },
@@ -106,6 +109,39 @@ describe('ExternalMediaInliner seams', function () {
 
   afterEach(function () {
     sinon.restore();
+  });
+
+  describe('startInlining', function () {
+    it('dispatches a job for the requested domains', async function () {
+      const dispatchJob = sinon.stub().resolves();
+
+      await create({ dispatchJob }).startInlining(['https://example.com']);
+
+      sinon.assert.calledOnceWithExactly(
+        logging.info,
+        '[Background Job] external-media-inliner queued',
+      );
+      sinon.assert.calledOnce(dispatchJob);
+      const job = dispatchJob.firstCall.firstArg;
+      assert.ok(job instanceof ExternalMediaInlinerJob);
+      assert.deepEqual(job.domains, ['https://example.com']);
+    });
+
+    it('dispatches the default domains when domains are missing or empty', async function () {
+      const dispatchJob = sinon.stub().resolves();
+      const inliner = create({ dispatchJob });
+
+      await inliner.startInlining(undefined);
+      await inliner.startInlining([]);
+
+      assert.deepEqual(
+        dispatchJob.args.map(([job]) => job.domains),
+        [
+          ['https://s3.amazonaws.com/revue', 'https://substackcdn.com'],
+          ['https://s3.amazonaws.com/revue', 'https://substackcdn.com'],
+        ],
+      );
+    });
   });
 
   describe('matching', function () {

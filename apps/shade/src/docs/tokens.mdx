@@ -129,6 +129,8 @@ Hover, active, and selected states are their own tokens — don't reach for raw 
 
 In dark mode `--interactive-hover`, `--button-hover`, and `--tab-hover` are translucent (`gray-900/30`) so they composite over whatever surface sits behind them. `--table-row-hover` is opaque (it matches `--surface-elevated`) — use it where you need an opaque fill, like sticky table cells where content scrolls underneath.
 
+With `admin7Design` on, `Tabs` defaults to underline and explicit variants keep their own shape. Underline tabs use `--text-control-lg` (14px) with 10px vertical padding, regular inactive labels and semibold selected labels. Hidden semibold text reserves each label's width so selection does not shift the tabs; count badges and icons are not duplicated. Button tabs, including Settings preview controls, and `PageMenu` share `--tab-inactive` for selection, with transparent inactive items outlined in `--border`, matching the page-header divider. The active fill stays unchanged on hover; pressed and expanded items use `--button-ghost-hover`. The muted fill uses gray-200 in light mode and gray-900 in dark mode. Compact button tabs retain their smaller size; KPI tabs retain their chart-card layout. With the flag off, the segmented tab default and existing tab and page-menu styles remain.
+
 ## Card corners
 
 `Card` and `SettingGroup` round their corners with `--radius-card`. Anything clipped to those corners, like a section footer, should use `rounded-t-card` or `rounded-b-card` so it follows the same value. With `admin7Design` on, it's 8px.
@@ -137,15 +139,17 @@ In dark mode `--interactive-hover`, `--button-hover`, and `--tab-hover` are tran
 
 Outline `Button`s use `--control-border`, not `--border-default`. In dark mode it lifts a step above the page border so form controls keep enough contrast against the page surface. Borders inside cards or popovers can keep using `--border-default`.
 
-Text-entry fields, including inputs, textareas and select triggers, take their chrome from the `inputSurface` recipe: `--field-surface`, `--field-border` and `--radius-field`. Their surfaces follow `--control-surface`. Their outline follows `--control-border`, except with `admin7Design` on in light mode, where it's a slightly darker `--color-gray-300`. With `admin7Design` on, they also have 4px corners and 14px text (`--text-field`). With it off, they use `--radius-control`. Checkboxes and radios use the recipe but keep a visible edge with `--control-surface` and `--border-strong`.
+Text-entry fields, including inputs, textareas and select triggers, take their chrome from the `inputSurface` recipe: `--field-surface`, `--field-border`, `--field-shadow` and `--radius-field`. Their surfaces follow `--control-surface` and have no resting shadow; `--field-shadow` retains its neutral value for compatibility. With `admin7Design` on, their outline uses `--color-gray-400` in light mode and `--color-gray-900` in dark mode. They also have 4px corners and 14px text (`--text-field`). With it off, they use `--control-border` and `--radius-control`. Checkboxes and radios use the recipe but keep a visible edge with `--control-surface` and `--border-strong`.
 
 ## Section headings and stats
 
-With `admin7Design` on, the `section-heading` class sets a heading for a section inside a page or card, one step below the page title, at `--text-section-heading`. A page whose headings sit outside cards, like member details, sets it to `--text-section-heading-lg`. `stat-label` sets the small label above a stat or a value, and `stat-value` sets a stat's large, light number.
+With `admin7Design` on, the `section-heading` class sets a heading for a section inside a page or card, one step below the page title, at `--text-section-heading`. A page whose headings sit outside cards, like member and tag details, sets it to `--text-section-heading-lg` (21px) on the common parent of both columns so main and sidebar headings match. Section headings use Inter at medium weight, `--tracking-section-heading` (-0.01em) letter spacing, a 1.35 line height, and optical size 28. `stat-label` sets the small label above a stat or a value, and `stat-value` sets a stat's large, light number.
+
+Settings sidebar group labels, large content section titles and `SettingGroupTitle` also use `settings-heading`. With `admin7Design` on, `--font-weight-settings-heading` sets their weight to 540 and `--tracking-settings-heading` sets their letter spacing to -0.01em. These dedicated tokens keep Settings typography consistent and independently tunable. Section-sized headings retain optical size 28. Both tokens have the same values in light and dark mode, and flag-off typography is unchanged.
 
 ## Title weight
 
-With `admin7Design` on, large titles, section headings, modal titles and tier names share one weight, `--font-weight-title`. Use the `font-title` class for it, so they can be tuned together.
+With `admin7Design` on, large page titles, modal titles and tier names share one weight, `--font-weight-title`. Use the `font-title` class for it, so they can be tuned together. Settings headings use `--font-weight-settings-heading`; other section headings use `--font-weight-medium` independently.
 
 ## Column headers
 

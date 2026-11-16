@@ -46,7 +46,7 @@ The [API validation tests](../../../../test/e2e-api/admin/exports.test.js) and
 [export request tests](../../../../test/e2e-api/admin/exports-request.test.ts)
 cover selection, permissions and the asynchronous request consumer.
 
-The [service audit before relocation](https://github.com/TryGhost/Ghost/blob/c186e127ffe3c6d93a1226a586685709b3214025/ghost/core/server/services/service-inventory.yaml#L3476)
+The [service audit before relocation](https://github.com/TryGhost/Ghost/tree/c186e127ffe3c6d93a1226a586685709b3214025/ghost/core/server/services/service-inventory.yaml#L3476)
 preserves all eight contract facets and their source/test evidence. Its recorded
 audit revision is `bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e`; relocating these
 files does not constitute a new full contract audit. Still-open obligations are:

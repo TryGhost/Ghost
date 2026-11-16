@@ -1,8 +1,9 @@
-import { createPrivateKey, createPublicKey, generateKeyPairSync, randomUUID } from 'node:crypto';
+import { generateKeyPairSync, randomUUID } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { chmod, link, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
 
+import { publicHalfOf } from '../shared/keys.ts';
 import { isGitIgnored } from './git.ts';
 
 /**
@@ -73,8 +74,8 @@ export function publicKeyOf(key: PrivateKeyJwk | PublicKeyJwk): PublicKeyJwk {
  * Reads a private key from JSON. `source` names where it came from, for the error: the key
  * itself is never in one.
  */
-export function readKey(text: string, source: string): PrivateKeyJwk {
-  const key = readAnyKey(text, source);
+export async function readKey(text: string, source: string): Promise<PrivateKeyJwk> {
+  const key = await readAnyKey(text, source);
   if (!('d' in key)) {
     throw new Error(`${source} is a public key; expected the private key, with d`);
   }
@@ -82,7 +83,7 @@ export function readKey(text: string, source: string): PrivateKeyJwk {
 }
 
 /** Reads a key from JSON, private or public. */
-function readAnyKey(text: string, source: string): PrivateKeyJwk | PublicKeyJwk {
+async function readAnyKey(text: string, source: string): Promise<PrivateKeyJwk | PublicKeyJwk> {
   let value: unknown;
   try {
     value = JSON.parse(text);
@@ -102,7 +103,11 @@ function readAnyKey(text: string, source: string): PrivateKeyJwk | PublicKeyJwk 
   }
   // A JWK carries both halves, so a hand-edited or pasted one could pair a private half with
   // someone else's public half, and sign for a key the manifest doesn't name.
-  if (publicHalfOf(d, source) !== value.x) {
+  const bytes = Buffer.from(d, 'base64url');
+  if (bytes.length !== 32) {
+    throw new Error(`${source} isn't a usable Ed25519 key`);
+  }
+  if ((await publicHalfOf(bytes)) !== value.x) {
     throw new Error(`${source} isn't a usable Ed25519 key: its x doesn't match its d`);
   }
   return { kty: 'OKP', crv: 'Ed25519', x: value.x, d } satisfies PrivateKeyJwk;
@@ -114,27 +119,6 @@ function isEd25519(value: unknown): value is { kty: 'OKP'; crv: 'Ed25519'; x: st
     unknown
   >;
   return kty === 'OKP' && crv === 'Ed25519' && typeof x === 'string';
-}
-
-// What PKCS#8 puts before an Ed25519 private key's 32 bytes.
-const ED25519_PKCS8_PREFIX = Buffer.from('302e020100300506032b657004220420', 'hex');
-
-/**
- * The public half of a private half, as `x`. Derived from `d` alone, as Node 24.22 and later
- * refuse a JWK whose halves don't match while earlier versions take its `x` as given, so a
- * mismatch is reported the same way on any version.
- */
-function publicHalfOf(d: string, source: string): string | undefined {
-  const bytes = Buffer.from(d, 'base64url');
-  if (bytes.length !== 32) {
-    throw new Error(`${source} isn't a usable Ed25519 key`);
-  }
-  const key = createPrivateKey({
-    key: Buffer.concat([ED25519_PKCS8_PREFIX, bytes]),
-    format: 'der',
-    type: 'pkcs8',
-  });
-  return createPublicKey(key).export({ format: 'jwk' }).x;
 }
 
 async function readKeyFile(root: string, mode: Mode, name: KeyName): Promise<PrivateKeyJwk> {
@@ -274,14 +258,14 @@ export async function readSigningKeys({
 
   const identityText = fromVariable('identity');
   const identityKey = identityText
-    ? await sameAsFile(root, mode, 'identity', readKey(identityText, IDENTITY_KEY_VARIABLE))
+    ? await sameAsFile(root, mode, 'identity', await readKey(identityText, IDENTITY_KEY_VARIABLE))
     : await readKeyFile(root, mode, 'identity');
 
   // CI may provide only the backend key's public half, as signing needs nothing more.
   const backendText = fromVariable('backend');
   const backendKey = publicKeyOf(
     backendText
-      ? await sameAsFile(root, mode, 'backend', readAnyKey(backendText, BACKEND_KEY_VARIABLE))
+      ? await sameAsFile(root, mode, 'backend', await readAnyKey(backendText, BACKEND_KEY_VARIABLE))
       : await readKeyFile(root, mode, 'backend'),
   );
 

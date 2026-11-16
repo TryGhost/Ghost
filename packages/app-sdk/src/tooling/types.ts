@@ -1,9 +1,10 @@
 import type { PublicKeyJwk } from './keys.ts';
 
-// Written out rather than taken from the contracts, whose manifest types are inferred from
-// zod, so the declarations an app installs need nothing but these.
+export type { SignedManifest } from '@tryghost/app-contracts/identity';
+export type { ManifestError } from '@tryghost/app-contracts/manifest';
 
-export type { ManifestError, SignedManifest } from '../shared/manifest.ts';
+// ManifestSource and AppManifest are written out, as the contracts infer theirs from zod, so
+// the declarations an app installs need nothing but these.
 
 /**
  * What `ghost-app.json` holds: the manifest, without the fields the tooling adds when it

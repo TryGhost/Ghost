@@ -23,7 +23,7 @@ export const CHECKOUT_PORT = {
 export const REQUIREMENTS = {
   shipping: { recipient: CHECKOUT_PORT.shippingName, address: CHECKOUT_PORT.shippingAddress },
   phone: { number: CHECKOUT_PORT.phone },
-} as const satisfies { [Part in CollectedPart]?: Readonly<Record<string, string>> };
+} as const satisfies { [Part in CollectedPart]: Readonly<Record<string, string>> };
 export type RequirementName = keyof typeof REQUIREMENTS;
 
 /** The ports a binding can point at a custom field: the ports of the requirements. */

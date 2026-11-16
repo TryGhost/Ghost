@@ -106,6 +106,15 @@ registerCommand({
         },
       });
     }
+    group.command({
+      flags: 'verify',
+      desc: 'Check a committed service change before reporting or pushing it.',
+      async run() {
+        commandRun = true;
+        const { runServicesVerify } = await import('./services-verify.ts');
+        runServicesVerify(args.slice(2));
+      },
+    });
   },
 });
 

@@ -9,8 +9,11 @@
  */
 export function setupShadeMocks() {
   // Mock window.matchMedia - required for shade components that use responsive behavior
+  // Configurable so tests can vi.stubGlobal over it; under a VM pool the jsdom
+  // window is the global itself
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
+    configurable: true,
     value: (query: string) => ({
       matches: false,
       media: query,
@@ -32,6 +35,7 @@ export function setupShadeMocks() {
 
   Object.defineProperty(window, 'ResizeObserver', {
     writable: true,
+    configurable: true,
     value: ResizeObserverMock,
   });
 
