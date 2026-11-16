@@ -163,8 +163,8 @@ preserves the docked sidebar and the separate Settings sidebar.
 With `admin7Design` on, spacing separates the sidebar's navigation groups;
 Content, Audience and Apps keep their headings when apps are enabled.
 Ghost(Pro) and Settings follow the last group in the scrolling navigation.
-The active banner stays above the bottom account avatar, with flat upgrade and
-What's New banners. The account trigger shows only the avatar. Private sites
+The active banner stays above the bottom account avatar, with a gradient upgrade
+banner and a flat What's New banner. The account trigger shows only the avatar. Private sites
 show a 14px title at the shared title weight above a compact purple badge,
 linking to Access settings, with 1px vertical and 5px horizontal padding and a
 2px gap below the title. Site icons are 32px for private and public sites. Settings'

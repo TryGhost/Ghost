@@ -57,13 +57,9 @@ function UpgradeBanner({ trialDaysRemaining }: { trialDaysRemaining: number }) {
 
   return (
     <Banner
-      className={
-        admin7Design
-          ? 'mx-2 border-0 shadow-none hover:shadow-none'
-          : 'mx-2 flex flex-col items-stretch'
-      }
+      className={admin7Design ? 'mx-2 border-0' : 'mx-2 flex flex-col items-stretch'}
       size="lg"
-      variant={admin7Design ? 'default' : 'gradient'}
+      variant="gradient"
     >
       {/* Separate the card's pointer target from the sticky action's containing block. */}
       {admin7Design && (
@@ -81,7 +77,7 @@ function UpgradeBanner({ trialDaysRemaining }: { trialDaysRemaining: number }) {
             </Text>
           </Stack>
           {/* Keep the action above scrolling copy when the footer has little height. */}
-          <Box className="relative z-10 bg-surface-panel [@media(max-height:600px)]:sticky [@media(max-height:600px)]:bottom-0">
+          <Box className="relative z-10 bg-surface-elevated [@media(max-height:600px)]:sticky [@media(max-height:600px)]:bottom-0">
             {upgradeLink}
           </Box>
         </Stack>

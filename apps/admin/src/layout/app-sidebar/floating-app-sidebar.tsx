@@ -65,7 +65,8 @@ const FloatingAppSidebar = React.forwardRef<HTMLDivElement, FloatingAppSidebarPr
             data-sidebar="footer-region"
             gap="none"
           >
-            <AppSidebarBanner className="pointer-events-auto min-h-0 shrink overflow-y-auto" />
+            {/* Room for the glow inside the scrollport, without moving the card or avatar. */}
+            <AppSidebarBanner className="pointer-events-auto -mx-5 -my-6 min-h-0 shrink overflow-y-auto px-5 py-6" />
             <AppSidebarFooter className="pointer-events-auto shrink-0 gap-0 p-0 [&_[data-sidebar=group]]:px-0 [&_[data-sidebar=group]]:pb-0" />
           </Stack>
         </SidebarBodySwap>
