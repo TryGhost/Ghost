@@ -7,7 +7,7 @@ import { t } from '../../../../utils/i18n';
 const SubscribeButton = () => {
   const { site, action, brandColor, doAction } = useContext(AppContext);
 
-  // upgrading isn't signing up, so members of invite-only and paid-only sites can upgrade too
+  // upgrading isn't signing up, so free members of invite-only sites can upgrade too
   if (getAvailablePrices({ site }).length === 0) {
     return null;
   }
