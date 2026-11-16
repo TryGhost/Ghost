@@ -1,7 +1,10 @@
-const config = require('../../../../../../shared/config');
-const urlUtils = require('../../../../../../shared/url-utils').default;
+import type { Frame } from '@tryghost/api-framework';
+import config from '../../../../../../shared/config';
+import urlUtils from '../../../../../../shared/url-utils';
 
-function getURL(urlPath) {
+type FilesFrame = Frame<{ data: { ref?: string | null } }>;
+
+function getURL(urlPath: string) {
   const media = new RegExp('^' + config.getSubdir() + '/' + urlUtils.STATIC_FILES_URL_PREFIX);
   const absolute = media.test(urlPath) ? true : false;
 
@@ -16,7 +19,7 @@ function getURL(urlPath) {
 }
 
 module.exports = {
-  upload({ filePath }, apiConfig, frame) {
+  upload({ filePath }: { filePath: string }, apiConfig: unknown, frame: FilesFrame) {
     return (frame.response = {
       files: [
         {

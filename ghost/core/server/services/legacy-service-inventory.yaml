@@ -5079,7 +5079,7 @@ services:
         sources:
           - core/server/api/endpoints/notifications.js
           - core/server/web/api/endpoints/admin/routes.js
-          - core/server/api/endpoints/utils/serializers/output/notifications.js
+          - core/server/api/endpoints/utils/serializers/output/notifications.ts
           - core/server/api/endpoints/mail.js
           - core/server/services/update-check/index.js
           - core/server/services/update-check/update-check-service.js
@@ -8261,7 +8261,7 @@ services:
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/services/tinybird/tinybird-service.js
           - core/server/api/endpoints/tinybird.js
-          - core/server/api/endpoints/utils/serializers/output/tinybird.js
+          - core/server/api/endpoints/utils/serializers/output/tinybird.ts
         tests:
           - test/unit/server/services/tinybird/tinybird-service.test.js
           - test/e2e-api/admin/tinybird.test.js
@@ -8300,7 +8300,7 @@ services:
         sources:
           - core/server/api/endpoints/tinybird.js
           - core/server/web/api/endpoints/admin/routes.js
-          - core/server/api/endpoints/utils/serializers/output/tinybird.js
+          - core/server/api/endpoints/utils/serializers/output/tinybird.ts
           - core/server/services/stats/index.ts
           - core/server/services/stats/utils/tinybird.ts
           - core/server/services/stats/posts-stats-service.js
