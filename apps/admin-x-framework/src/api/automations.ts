@@ -68,53 +68,40 @@ export type AutomationEdge = {
   target_action_id: string;
 };
 
-export const AutomationTriggerRuleSchema = z.union([
-  z.object({
-    trigger_type: z.literal('free_signup'),
-    scope: z.null(),
-    product_id: z.null(),
-    direction: z.null(),
-  }),
-  z.object({
-    trigger_type: z.literal('paid_subscription_started'),
-    scope: z.literal('any_paid_tier'),
-    product_id: z.null(),
-    direction: z.null(),
-  }),
-  z.object({
-    trigger_type: z.literal('paid_subscription_started'),
-    scope: z.literal('specific_paid_tier'),
-    product_id: z.string(),
-    direction: z.null(),
-  }),
-  z.object({
-    trigger_type: z.literal('paid_subscription_changed'),
-    scope: z.literal('any_paid_tier'),
-    product_id: z.null(),
-    direction: z.literal('from'),
-  }),
-  z.object({
-    trigger_type: z.literal('paid_subscription_changed'),
-    scope: z.literal('free'),
-    product_id: z.null(),
-    direction: z.literal('to'),
-  }),
-  z.object({
-    trigger_type: z.literal('paid_subscription_changed'),
-    scope: z.literal('specific_paid_tier'),
-    product_id: z.string(),
-    direction: z.enum(['from', 'to']),
-  }),
-  z.object({
-    trigger_type: z.literal('label_added'),
-    label_id: z.string().min(1),
-    scope: z.null(),
-    product_id: z.null(),
-    direction: z.null(),
-  }),
-]);
-
-export type AutomationTriggerRule = z.infer<typeof AutomationTriggerRuleSchema>;
+export type AutomationTriggerRule =
+  | { trigger_type: 'free_signup'; scope: null; product_id: null; direction: null }
+  | {
+      trigger_type: 'label_added';
+      label_id: string;
+      scope: null;
+      product_id: null;
+      direction: null;
+    }
+  | {
+      trigger_type: 'paid_subscription_started';
+      scope: 'any_paid_tier';
+      product_id: null;
+      direction: null;
+    }
+  | {
+      trigger_type: 'paid_subscription_started';
+      scope: 'specific_paid_tier';
+      product_id: string;
+      direction: null;
+    }
+  | {
+      trigger_type: 'paid_subscription_changed';
+      scope: 'any_paid_tier';
+      product_id: null;
+      direction: 'from';
+    }
+  | { trigger_type: 'paid_subscription_changed'; scope: 'free'; product_id: null; direction: 'to' }
+  | {
+      trigger_type: 'paid_subscription_changed';
+      scope: 'specific_paid_tier';
+      product_id: string;
+      direction: 'from' | 'to';
+    };
 
 export type AutomationTrigger = { trigger_rules: readonly AutomationTriggerRule[] };
 

@@ -5,7 +5,6 @@ import { createTestQueryClient, renderHookWithProviders } from '../../../src/tes
 import { withMockFetch } from '../../utils/mock-fetch';
 import {
   AutomationAction,
-  AutomationTriggerRuleSchema,
   AutomationRunsResponseSchema,
   type AutomationRun,
   type AutomationRunStatusFilter,
@@ -795,28 +794,4 @@ describe('automation mutation contracts', () => {
       );
     },
   );
-});
-
-describe('label trigger rule schema', () => {
-  const rule = {
-    trigger_type: 'label_added',
-    label_id: 'label-1',
-    scope: null,
-    product_id: null,
-    direction: null,
-  };
-
-  it('accepts a label rule', () => {
-    expect(AutomationTriggerRuleSchema.parse(rule)).toEqual(rule);
-  });
-
-  it.each([
-    { label_id: '' },
-    { label_id: undefined },
-    { scope: 'any_paid_tier' },
-    { product_id: 'product-1' },
-    { direction: 'from' },
-  ])('rejects malformed label rules: %j', (override) => {
-    expect(AutomationTriggerRuleSchema.safeParse({ ...rule, ...override }).success).toBe(false);
-  });
 });
