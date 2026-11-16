@@ -309,5 +309,37 @@ test.describe('Portal - member custom fields', () => {
         await context.close();
       }
     });
+
+    // The flags are files published beside Portal's script, and the phone input loads the one
+    // it shows.
+    test("shows the flag of a number's country", async ({ page, browser, baseURL }) => {
+      const fieldName = `Mobile ${Date.now()}`;
+      const member = await createMemberFactory(page.request).create({
+        name: 'Ada Lovelace',
+        email: `ada-flag-${Date.now()}@ghost.org`,
+      });
+      await aPhoneFieldMembersMayEdit(page, fieldName);
+
+      const { context, profile, key } = await accountSettingsAs(
+        browser,
+        baseURL!,
+        member,
+        fieldName,
+      );
+      try {
+        await profile.phoneCountry(key).click();
+        await profile.listSearch('Country code').fill('+44');
+        await profile.listOption('United Kingdom (+44)').click();
+
+        const flag = profile.phoneFlag(key, 'United Kingdom');
+        await expect(flag).toBeVisible();
+        // Loaded and drawn, as a file that is missing or isn't served as an image wouldn't be.
+        await expect
+          .poll(() => flag.evaluate((image: HTMLImageElement) => image.naturalWidth))
+          .toBeGreaterThan(0);
+      } finally {
+        await context.close();
+      }
+    });
   });
 });

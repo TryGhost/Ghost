@@ -385,7 +385,7 @@ function startingWith(labels: readonly string[], typed: string, from: number): n
  * answer as text, so only such a field says whether to offer the row and what text to show.
  */
 type AnswerCount<V extends string> =
-  | { multiple: true; clearable?: never; answerText?: never }
+  | { multiple: true; clearable?: never; renderAnswer?: never }
   | {
       multiple: false;
       /**
@@ -394,11 +394,11 @@ type AnswerCount<V extends string> =
        */
       clearable?: boolean;
       /**
-       * The text the field shows for the answer it holds, where that isn't the option's label,
+       * What the field shows for the answer it holds, where that isn't the option's label,
        * whether the member may change it or only read it: a phone number's country shows as its
-       * calling code, and the list names it in full.
+       * flag and calling code, and the list names it in full.
        */
-      answerText?: ((answer: V) => string) | undefined;
+      renderAnswer?: ((answer: V) => React.ReactNode) | undefined;
     };
 
 type ListPickerProps<V extends string> = AnswerCount<V> & {
@@ -421,12 +421,12 @@ type ListPickerProps<V extends string> = AnswerCount<V> & {
    * part of, such as a phone number's input with its country.
    */
   alignTo?: React.RefObject<HTMLElement> | undefined;
-  placeholder: string;
+  placeholder: React.ReactNode;
   invalid?: boolean;
   disabled?: boolean;
   /**
    * Shows what the field holds with nothing to pick from, for a field a member may only read: its
-   * one answer as `answerText` gives it, where there is one, and otherwise every answer as a chip.
+   * one answer as `renderAnswer` gives it, where there is one, and otherwise every answer as a chip.
    */
   readOnly?: boolean;
   /** The id of the element that says why the field was refused, when it was. */
@@ -453,7 +453,7 @@ export default function ListPicker<V extends string>({
   value,
   multiple,
   clearable = true,
-  answerText,
+  renderAnswer,
   alignTo,
   placeholder,
   invalid,
@@ -742,18 +742,18 @@ export default function ListPicker<V extends string>({
     <div className="gh-portal-listpicker-empty">{t('No options found')}</div>
   );
 
-  let fieldText = placeholder;
+  let fieldText: React.ReactNode = placeholder;
   if (multiple && value.length > 0) {
     fieldText = '';
   } else if (value[0] !== undefined) {
-    fieldText = (answerText ?? labelOf)(value[0]);
+    fieldText = (renderAnswer ?? labelOf)(value[0]);
   }
-  // A field that takes one answer and says how to show it shows that text, as it does when the
-  // answer can be changed, such as a phone number's country as its calling code, or the
+  // A field that takes one answer and says how to show it shows it that way, as it does when the
+  // answer can be changed, such as a phone number's country as its flag and calling code, or the
   // placeholder while it holds none. Otherwise every answer is a chip, one or several, since an
   // option's text can hold a comma.
   if (readOnly) {
-    const shownAs = !multiple && answerText ? fieldText : undefined;
+    const shownAs = !multiple && renderAnswer ? fieldText : undefined;
     return (
       <div className="gh-portal-listpicker">
         <div
