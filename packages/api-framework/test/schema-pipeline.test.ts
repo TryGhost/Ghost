@@ -222,12 +222,25 @@ describe('schema-aware pipeline', function () {
             calls.push('key');
             return frame.validated.options;
           },
-          permissions: false,
+          permissions(frame) {
+            calls.push('permissions');
+            assert.equal(frame.validated.options.id, 'ID');
+          },
           query,
           cache,
         }),
       },
-      apiUtils,
+      {
+        ...apiUtils,
+        serializers: {
+          ...apiUtils.serializers,
+          input: {
+            all() {
+              calls.push('serialize');
+            },
+          },
+        },
+      },
     );
     assert.equal(await controller.read({ id: 'id' }), 'cached');
     assert.equal(await controller.read({ id: 'id' }), 'cached');
@@ -235,13 +248,80 @@ describe('schema-aware pipeline', function () {
       'parse',
       'validation',
       'key',
+      'serialize',
+      'permissions',
       'cache',
       'parse',
       'validation',
       'key',
+      'serialize',
+      'permissions',
       'cache',
     ]);
     assert.equal(query.called, false);
+  });
+
+  it('waits for schema-method authorization before returning a shared cached response', async function () {
+    const store = new Map<string, unknown>();
+    const cache = {
+      get: sinon.spy((key: string) => store.get(key)),
+      set: sinon.spy((key: string, value: unknown) => store.set(key, value)),
+    };
+    let startAuthorization!: () => void;
+    const authorizing = new Promise<void>((resolve) => {
+      startAuthorization = resolve;
+    });
+    let finishAuthorization!: (allowed: boolean) => void;
+    const authorized = new Promise<boolean>((resolve) => {
+      finishAuthorization = resolve;
+    });
+    const query = sinon.stub().returns('private response');
+    const controller = pipeline(
+      {
+        read: defineMethod({
+          schema: { options: z.object({ id: z.string() }) },
+          generateCacheKeyData(frame) {
+            return frame.validated.options;
+          },
+          async permissions(frame) {
+            assert.equal(frame.validated.options.id, 'id');
+            if (frame.options.context?.role === 'Owner') {
+              return;
+            }
+            startAuthorization();
+            if (!(await authorized)) {
+              throw new errors.NoPermissionError();
+            }
+          },
+          query,
+          cache,
+        }),
+      },
+      apiUtils,
+    );
+
+    assert.equal(
+      await controller.read({ id: 'id', context: { role: 'Owner' } }),
+      'private response',
+    );
+    const request = controller.read({ id: 'id', context: { role: 'Contributor' } });
+    const rejected = assert.rejects(request, errors.NoPermissionError);
+    await authorizing;
+    try {
+      await new Promise<void>((resolve) => {
+        setImmediate(resolve);
+      });
+      assert.equal(cache.get.callCount, 1, 'authorization must finish before consulting the cache');
+    } finally {
+      finishAuthorization(false);
+    }
+    await rejected;
+    assert.equal(cache.get.callCount, 1, 'denied requests must not consult the cache');
+    assert.equal(
+      await controller.read({ id: 'id', context: { role: 'Owner' } }),
+      'private response',
+    );
+    assert.equal(query.callCount, 1, 'authorized cache hits must reuse the response');
   });
 
   it('does not consult the cache when custom validation rejects parsed input', async function () {
