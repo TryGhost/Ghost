@@ -139,7 +139,7 @@ catalog:
   ajv: 8.20.0
   ajv-formats: 3.0.1
   better-auth: 1.7.22
-  better-sqlite3: 13.0.3
+  better-sqlite3: 13.1.1
   body-parser: 1.20.9
   bson-objectid: 2.0.4
   chalk: 4.1.2
@@ -183,7 +183,7 @@ catalog:
   jsonwebtoken: 9.0.3
   juice: 11.1.1
   knex: 3.3.0
-  knex-migrator: 6.2.1
+  knex-migrator: 6.4.2
   libphonenumber-js: 1.13.15
   lodash: 4.18.1
   lru-cache: 11.5.3
@@ -298,9 +298,6 @@ overrides:
   moment-timezone: 'catalog:'
   # @types/bookshelf asks for knex 0.21, which only its types read
   '@types/bookshelf>knex': 'catalog:'
-  # knex-migrator's optional driver is unused here: it runs Ghost's knex, which
-  # loads Ghost's copy. Drop once knex-migrator depends on better-sqlite3 13.
-  'knex-migrator>better-sqlite3': 'catalog:'
   # juice 11 pins cheerio 1.0.0 exactly. Point it at the catalog's 1.2.0 so juice
   # and ghost share one copy instead of keeping two parsers resident - both
   # only ever call `load`. See patchedDependencies for the matching slim import.
