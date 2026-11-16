@@ -4,25 +4,34 @@ import { apiUrl, useFetchApi } from '../utils/api/fetch-api';
 import { escapeNqlString } from '@tryghost/nql-string';
 import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { z } from 'zod';
 
-export type Label = {
-  id: string;
-  name: string;
-  slug: string;
-  created_at: string;
-  updated_at: string;
-};
+const LabelSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  slug: z.string(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
 
-export interface LabelsResponseType {
-  meta?: Meta;
-  labels: Label[];
-}
+const LabelsResponseSchema = z.object({
+  labels: z.array(LabelSchema),
+});
+
+export type Label = z.infer<typeof LabelSchema>;
+export type LabelsResponseType = z.infer<typeof LabelsResponseSchema> & { meta?: Meta };
+
+const ReadLabelResponseSchema = LabelsResponseSchema.refine(
+  ({ labels }) => labels.length === 1,
+  'Expected exactly one label',
+);
 
 const dataType = 'LabelsResponseType';
 
 export const useReadLabel = createQueryWithId<LabelsResponseType>({
   dataType,
   path: (id) => `/labels/${id}/`,
+  parseResponse: (data) => ReadLabelResponseSchema.parse(data),
 });
 
 export const useBrowseLabelsInfinite = createInfiniteQuery<LabelsResponseType & { isEnd: boolean }>(
