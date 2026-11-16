@@ -16,8 +16,8 @@ export type RecommendationsService = {
 };
 
 // The domain layer starts this root after everything boot.js initializes, so
-// Mentions, Staff and the oEmbed service are ready whenever they are used. They
-// are still legacy code, so they are wired here and nowhere else in the domain.
+// Mentions and Staff are ready whenever they are used. They are still legacy
+// code, so they are wired here and nowhere else in the domain.
 //
 // Mentions is read when it is used, with one exception: the URL mapper below is
 // registered on it while this root is built. Every construction failure happens
@@ -53,6 +53,10 @@ export default defineService('Recommendations', (): RecommendationsService => {
   const {
     RecommendationEnablerService,
   }: typeof import('./recommendation-enabler.service') = require('./recommendation-enabler.service');
+  // Another domain, through its public surface.
+  const {
+    describeExternalPage,
+  }: typeof import('../../../publishing/actions/describe-external-page.action') = require('../../../publishing/actions/describe-external-page.action');
   // Foundation and shared.
   const config = require('../../../../core/shared/config');
   const logging = require('@tryghost/logging');
@@ -64,7 +68,6 @@ export default defineService('Recommendations', (): RecommendationsService => {
   // Legacy code, counted by the domain-legacy-imports rule.
   const models = require('../../../../core/server/models');
   const mentions = require('../../../../core/server/services/mentions').default;
-  const oembed = require('../../../publishing/transition/services/oembed').default;
   const staff = require('../../../../core/server/services/staff').default;
 
   // The renderer reads the ready Staff service for each email.
@@ -104,11 +107,10 @@ export default defineService('Recommendations', (): RecommendationsService => {
     clickEventRepository,
     subscribeEventRepository,
     recommendationMetadataService: new RecommendationMetadataService({
-      // Another root: asked when a page is fetched, not now.
+      // Describing a page on another site is publishing's work. Its action finds
+      // its own service when a page is fetched, not now.
       oembedService: {
-        // Forwards exactly the arguments it is given.
-        fetchOembedDataFromUrl: (...args: unknown[]) =>
-          oembed.service.fetchOembedDataFromUrl(...args),
+        fetchOembedDataFromUrl: (url, type) => describeExternalPage(url, { type }),
       },
       externalRequest,
     }),

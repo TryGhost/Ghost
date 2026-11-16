@@ -1,25 +1,11 @@
-type OembedMetadata<Type extends string> = {
-  version: '1.0';
-  type: Type;
-  url: string;
-  metadata: {
-    title: string | null;
-    description: string | null;
-    publisher: string | null;
-    author: string | null;
-    thumbnail: string | null;
-    icon: string | null;
-  };
-  body?: Type extends 'mention' ? string : unknown;
-  contentType?: Type extends 'mention' ? string : unknown;
-};
-
+import type { ExternalPageDescription } from '../../../publishing/data/external-page.data';
+// Describing a page on another site is publishing's work. This is the part of
+// that capability the service is given.
 type OEmbedService = {
-  fetchOembedDataFromUrl<Type extends string>(
+  fetchOembedDataFromUrl(
     url: string,
-    type: Type,
-    options?: { timeout?: number | { request: number } },
-  ): Promise<OembedMetadata<Type>>;
+    type: 'mention',
+  ): Promise<ExternalPageDescription | undefined>;
 };
 
 type ExternalRequest = {

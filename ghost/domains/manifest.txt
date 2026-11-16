@@ -7,3 +7,5 @@ permissions network/permissions
 schema      network/schema
 service     network/services/recommendations/index
 settings    network/settings
+action      publishing/actions/describe-external-page.action
+action      publishing/actions/fetch-external-page-html.action
