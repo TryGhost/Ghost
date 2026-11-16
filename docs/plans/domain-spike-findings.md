@@ -739,3 +739,219 @@ and `*.md`.
   and the e2e-api snapshots pass, but no browser test was run.
 - Behaviour of the two jobs in production: they run on timers of 15 seconds to
   7 minutes after boot and were exercised only through unit tests.
+
+## Step 8: oembed
+
+Four commits.
+
+| Commit                                                                      | Files | Added | Removed |
+| --------------------------------------------------------------------------- | ----- | ----- | ------- |
+| `b4a6ee8` Migrated oEmbed to `defineService`, in place                      | 19    | 253   | 419     |
+| `0490ddc` Fixed fragments being changed by the registries (a step 7 defect) | 4     | 107   | 6       |
+| `75a0eda` Moved oEmbed into `ghost/domains/publishing/transition/`          | 24    | 72    | 43      |
+| `a5c7786` Added publishing's public actions; network uses them              | 8     | 189   | 27      |
+
+273 of the 419 lines removed by the migration are oEmbed's legacy inventory
+entry. The move is 14 renames and 10 edited files.
+
+### Migrating to `defineService`
+
+- oEmbed was a legacy root that built its instance **while it was imported**
+  (`index.js` forwarding `service.js`). It is now `index.ts` with a
+  `defineService` root. Boot binds it and awaits `init()` after the adapter
+  manager and before Mentions. NFT is still registered before Twitter, and the
+  images adapter and provider credentials are still read once.
+- A service that is not legacy may have no known violations, and oEmbed had
+  eight. Three were in `service.js` and went away with it. The other five had to
+  be fixed first: the logger and the image transform are now passed in to the
+  service and the Twitter provider, lodash is imported per function, and the
+  provider lookup goes through `extract-oembed.ts`, the one file allowed to
+  import the extractor.
+- Consumers now read `.service` when they use it: the Admin API endpoint, the
+  Mentions root and the network root.
+- Its inventory entry and all eight known violations are deleted. Known
+  violations went from 294 to 286.
+
+Deviation from the migrate-service guidance: it asks for dependency preparation
+and the initializer change as separate commits, with characterization tests
+merged first. They are one commit here. The intermediate state does not lint:
+the new injected dependencies have to be required somewhere, and until the root
+exists the only place is `service.js`, which is not a root and so may not
+import them. The existing tests (the root test's 24 cases, the service's 150,
+Mentions' tests and the e2e-api oembed test) were run green before the change
+and adapted mechanically: constructors gained two arguments, and import-time
+composition became `init()`.
+
+`gx services verify oembed` was **not run to completion**: it stops at
+`base-current` because `origin/main` has moved on since the spike's base
+commit, and the spike was told not to rebase.
+
+### Moving it
+
+Done with the relocate tool. One string-built path needed a hand edit and the
+tool reported it. Three inventory evidence paths were edited by hand.
+
+### Publishing's public surface
+
+- `data/external-page.data.ts`: `ExternalPageDescription`,
+  `DescribeExternalPageOptions`, `ExternalPageHtml`,
+  `FetchExternalPageHtmlOptions`.
+- `actions/describe-external-page.action.ts` and
+  `actions/fetch-external-page-html.action.ts`. Each is a plain function that
+  reads the oEmbed root's `.service` in its body and returns plain data.
+- Network's root now passes `describeExternalPage` to its metadata service and
+  no longer imports oEmbed. Mentions, still legacy, imports
+  `domains/publishing/transition/services/oembed` directly, as allowed.
+
+`fetchExternalPageHtml` has no caller in a domain yet. Its only user is
+Mentions, which is legacy.
+
+### The boundary check rejects direct imports (verified)
+
+Each import was added, the check was run, and the file was restored.
+
+| Import added to network                                                                                    | Result                                                                      |
+| ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| An implementation file requires `publishing/transition/services/oembed/oembed-service` and the oEmbed root | `lint:boundaries` fails: `domain-transition-private`, once for each         |
+| The **service root** requires the same service class                                                       | passes, and the report counts it under "Imports of a transition/ folder": 1 |
+| The root requires a publishing file outside `actions/`, `data/`, `events/` and `transition/`               | `lint:boundaries` fails: `domain-public-surface`                            |
+
+The second row is the rule as written ("a service's index.ts may import another
+domain's transition/; these are counted, not blocked"). It means that once a
+public action exists, nothing stops a root from going round it. The count is
+the only signal.
+
+### Verified at the end of step 8
+
+- oxlint, boundaries (5914 modules, 286 known, 189 deferred), typecheck, ESLint,
+  `lint:domain-rules`, `lint:legacy-services`, `lint:dependencies` (knip),
+  `format:check`, docs lint: pass.
+- Unit suite: 11,642 passed; the same 34 baseline failures and no others.
+- DB-backed: 8 files, 76 tests pass (the step 1 set plus Mentions).
+- `tools/scripts` tests: 416 pass, the same 20 baseline failures. `tools/gx`
+  tests: 155 pass.
+- Real boot from source: 3.18s, 3.01s, 2.94s.
+- Report: `transition/` holds 11 files (network 3 models, publishing 8). The
+  network root has 3 legacy imports (models, mentions, staff) and none of a
+  `transition/` folder.
+
+### What step 8 showed
+
+- **An action needs no kernel utility.** Both actions are plain functions. What
+  made them work was a typed service root to import and a `data/` type to
+  return.
+- **Typing the action exposed a contract mismatch.** While network required
+  oEmbed with `require()`, everything was `any`. Once it called a typed action,
+  its own metadata service turned out to declare a stricter return type than
+  oEmbed gives (it can return `undefined`). Network's service now uses
+  publishing's `ExternalPageDescription`. A reshaped file importing another
+  domain's `data/` type is exactly the allowed case.
+- **A defect from step 7 surfaced only here.** `Settings.parseDefaultSettings`
+  adds `group`, `key` and a function to every default setting it reads. The
+  merge had handed it the objects the domain declared, so a fragment was
+  different after first use and the settings hash in the integrity test
+  depended on test order. It passed in three full runs and failed in the
+  fourth. Fragments are now deep-frozen where declared and copied where merged,
+  with tests for both.
+- **A test in one domain reaches into another.** oEmbed's root test builds
+  network's `RecommendationMetadataService` and Mentions' `WebmentionMetadata`
+  to check they call the shared instance. Tests are outside the boundary scan,
+  so nothing objects. It is a multi-domain test that moved with oEmbed because
+  its subject is oEmbed.
+- **Which of oEmbed's "events" were commands?** oEmbed publishes and listens
+  to no events.
+
+## Final summary
+
+Eleven commits on `claude/ghost-modular-architecture-bqbbrw` from base `3dca1a3`, plus the commit that adds this summary. Before that last commit: 215 files changed, 6,989 lines added, 1,204 removed.
+
+### What each step cost
+
+Whole-commit figures. Each commit also adds its section of this log, so the
+last column gives the change without it.
+
+| Step                                 | Commit    | Files | Added | Removed | Without this log (added / removed) | Notes                                              |
+| ------------------------------------ | --------- | ----- | ----- | ------- | ---------------------------------- | -------------------------------------------------- |
+| 1 Baseline                           | `11208df` | 1     | 55    | 0       | 0 / 0                              | this log only                                      |
+| 2 `ghost/domains` first-class        | `8b43ad4` | 31    | 431   | 91      | 333 / 90                           | one-off                                            |
+| 3 Kernel utilities and discovery     | `2e1060e` | 21    | 1,690 | 21      | 1,603 / 21                         | one-off; about half is tests                       |
+| 4 Fixture domains                    | `5368290` | 38    | 853   | 2       | 764 / 0                            | one-off                                            |
+| 5 Enforcement                        | `ecdbfee` | 12    | 1,569 | 7       | 1,483 / 6                          | one-off; about half is tests                       |
+| 6 Move recommendations whole         | `c906358` | 64    | 245   | 97      | 156 / 97                           | 49 renames; 32 of the added lines are `CONTEXT.md` |
+| 7 Reshape recommendations            | `e219dd7` | 96    | 1,725 | 691     | 1,464 / 690                        | 37 renames, 21 new files; about 150 lines one-off  |
+| 8a Migrate oembed to `defineService` | `b4a6ee8` | 19    | 253   | 419     | 253 / 419                          | 273 removed lines are its inventory entry          |
+| 8 Fix: fragments frozen and copied   | `0490ddc` | 4     | 107   | 6       | 107 / 6                            | a defect from step 7                               |
+| 8b Move oembed whole                 | `75a0eda` | 24    | 72    | 43      | 72 / 43                            | 14 renames; 28 added lines are `CONTEXT.md`        |
+| 8c Publishing's public surface       | `a5c7786` | 8     | 189   | 27      | 189 / 27                           |                                                    |
+
+**Estimating other roots, from two data points each, so treat as a range:**
+
+- _Moving a standard root whole_: leaving out each new `CONTEXT.md`,
+  recommendations (49 files moved: 22 source, 3 models, 20 tests, 4 snapshots)
+  added 124 lines and removed 97; oembed (14 files moved) added 44 and removed 43. In both, almost every changed line is a relative import rewritten by the
+  tool. Hand edits were 4 and 2 files. Expect two to three rewritten lines per
+  moved file and under an hour of hand work per root, **provided the root is
+  already standard**.
+- _Migrating a legacy root first_: oembed, rated "straightforward" overall and
+  "complex" for dependencies, took 19 files and about 250 added lines, most of
+  it test adaptation for two injected dependencies. This is the step whose cost
+  varies most by root.
+- _Reshaping_: recommendations took about 670 lines added and 275 removed in
+  domain code and about 500 added in tests, for 22 source files. Roughly a
+  third of the test change was rewriting the root's test, because the root's
+  behaviour (subscribing, scheduling) moved to a listener and jobs. A root with
+  routes, settings, permissions, tables, a listener and start-up work is close
+  to the worst case; a root with none of those is mostly renames.
+
+### Answers to the open questions
+
+| Question                                                                                  | Answer                                                                                                                                                                                                                                                                                                                                                              | Evidence         |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| Does finding files at start work under the unit test runner and in the tsc-built package? | Yes to both. One scenario passes under vitest, under plain `node` on tsc-built JavaScript beside its source, and on JavaScript alone. No generated index was needed.                                                                                                                                                                                                | step 4           |
+| What does it cost at boot?                                                                | Not measurable here. Baseline 3.40s to 3.47s; final state with two domains 2.94s to 3.18s. Three runs each on one machine, so this shows "no visible cost", not a saving.                                                                                                                                                                                           | steps 1, 3, 7, 8 |
+| Does `boot.ts` need to exist before it supplies dependencies? What ended up in it?        | No. Neither real domain has one. The only `boot.ts` is in the `library` fixture, where `defineDomain({ dependencies })` supplies three things to three roots.                                                                                                                                                                                                       | steps 4, 7       |
+| How far is the code from "the domain file hands each root its dependencies"?              | For recommendations: 10 `require` lines in the root would move to `boot.ts` (7 foundation or shared, 3 legacy). The mechanism exists and is tested on the fixture. It was not applied to real code.                                                                                                                                                                 | step 7           |
+| What is the full list of roles?                                                           | `action`, `data`, `event`, `endpoint`, `controller`, `validator`, `serializer`, `service`, `repository`, `entity`, `value`, `listener`, `job`, `renderer`, `template`. `endpoint`, `value`, `data`, `renderer` and `template` are not in the rules as given.                                                                                                        | steps 5, 7       |
+| Does an action need a kernel utility?                                                     | No. A plain function that imports its own service root and reads `.service` in its body. Three real actions and three fixture actions are written that way.                                                                                                                                                                                                         | steps 4, 7, 8    |
+| How should `test/e2e` be organised, where do snapshots go, what about multi-domain tests? | Keep the old suite as the first folder (`test/e2e/api`, `server`, `frontend`), so each existing runner project gains one glob and CI is unchanged. Snapshots stay beside the test. Multi-domain tests stay in `ghost/test`.                                                                                                                                         | step 7           |
+| Where should foundation's code live, and what had to be treated as foundation?            | The spike put only its own additions in `ghost/core/foundation/`. Treated as foundation or shared, by a list in the boundary config: config, Sentry, URL utils, settings cache, labs, the database, the jobs service, the settings service, permissions, limits, mail, outbound HTTP. Logging and the event bus are npm packages and are not restricted for a root. | steps 3, 5       |
+| Which "events" turned out to be commands?                                                 | Neither root publishes any event. Recommendations had two commands disguised as `init()` timers, now jobs. oEmbed has none.                                                                                                                                                                                                                                         | steps 7, 8       |
+| Did "no say over start order" hold for recommendations? Was a slot needed?                | Two of three uses of Mentions became calls at the moment of use. Registering a URL mapper on Mentions cannot. No slot was needed, because the domain layer as a whole starts after everything in `boot.js`.                                                                                                                                                         | step 7           |
+| How were the staff alert, cross-domain model reads and relations handled?                 | Alert: the domain owns the content, not the template (it needs Staff's layout). Recipients from `models.User` in the root, counted as legacy. No Bookshelf relations; two foreign keys to `members.id`, listed by the report.                                                                                                                                       | step 7           |
+| Which rules were ambiguous, wrong or missing?                                             | See the table in step 7 (10 rows) and the list in step 5 (5 decisions).                                                                                                                                                                                                                                                                                             | steps 5, 7       |
+
+### The findings that matter most
+
+1. **Discovery works everywhere and costs nothing visible.** This was the
+   biggest risk and it did not materialise.
+2. **Moving is cheap and mechanical once a root is standard; migrating a legacy
+   root is where the cost is.** A legacy root also cannot move at all as the
+   tooling stands.
+3. **"Creating a file has its effect" holds for new things. Moving an existing
+   thing out of an ordered central list leaves a one-line placeholder**, because
+   table creation, the settings hash and the public settings output all depend
+   on order.
+4. **Fragments must be frozen.** The first registry that read one changed it.
+5. **Type-only imports are invisible to the boundary scan**, so the public
+   surface is enforced for values and not for types.
+6. **Listeners cannot be lazy and must import (or name) another domain's
+   event.** The implementation import rule needs a carve-out for `events/` and
+   `data/`.
+7. **The staff alert rule cannot be met until a shared mail module exists.**
+8. **Every place that names `ghost/core/server/services` or `ghost/test` is a
+   place a moved root silently drops out of.** The spike found them in lint
+   config, two oxlint rules, the boundary scanner, three tests, the legacy
+   inventory, the CI filters, the build and the package manifest. `gx` is still
+   unconverted.
+
+### Not verified, in one place
+
+- The full DB-backed suites. 25 files were run, chosen for relevance.
+- The full unit suite has 34 failures in 3 Mailgun and mailer files on
+  untouched main in this container; their cause is only partly established.
+- `pnpm archive`, the production Docker image and a browser run of Admin.
+- `gx services verify`, which needs the branch rebased onto current main.
+- Cron scheduling of a domain job through the jobs service: written, not run.
+- The two recommendation jobs on their real timers.
+- MySQL was 8.4 from a registry mirror, not the pinned `8.4.11` image.
+- Timing figures are three runs each on one shared machine.
