@@ -9,8 +9,14 @@ let adapterManager;
 let previousModule;
 
 const stubKnex = { client: { config: { client: 'sqlite3' } } };
-const stubConfig = { get: () => undefined };
-const initArgs = { knex: stubKnex, config: stubConfig };
+const { outbox: outboxDefaults } = require('../../../../../core/shared/config/defaults.json')
+  .services.jobs;
+
+function stubConfig(outbox = outboxDefaults) {
+  return { get: (key) => (key === 'services:jobs:outbox' ? outbox : undefined) };
+}
+
+const initArgs = { knex: stubKnex, config: stubConfig() };
 
 describe('jobs-service wrapper', function () {
   // The wrapper holds its instance in module state, and the unit project shares
@@ -112,7 +118,7 @@ describe('jobs-service wrapper', function () {
 
     const service = jobsService.init({
       knex: { client: { config: { client: 'better-sqlite3' } } },
-      config: { get: (key) => (key === 'services:jobs:outbox' ? { enabled: true } : undefined) },
+      config: stubConfig({ ...outboxDefaults, enabled: true }),
     });
     await service.start();
 

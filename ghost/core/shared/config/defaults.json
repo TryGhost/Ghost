@@ -361,6 +361,18 @@
     "emailAnalytics": true,
     "clickTrackingLastSeenAtUpdater": true
   },
+  "services": {
+    "jobs": {
+      "outbox": {
+        "enabled": false,
+        "keepUntilSettled": false,
+        "pollIntervalMs": 30000,
+        "submissionTimeoutMs": 10000,
+        "retryDelayMs": 30000,
+        "leaseMs": 120000
+      }
+    }
+  },
   "portal": {
     "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
     "version": "2.72"

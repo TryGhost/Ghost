@@ -9,6 +9,7 @@ import { JobsService } from '../../../../../core/server/services/jobs-service/jo
 import InMemoryJobsBackend from '../../../../../core/server/adapters/jobs/InMemoryJobsBackend';
 import { createLoggingFake } from '../../../../utils/logging-utils';
 import configUtils from '../../../../utils/config-utils';
+import defaults from '../../../../../core/shared/config/defaults.json';
 
 const registerJobHandlers =
   require('../../../../../core/server/services/jobs-service/register-job-handlers').default;
@@ -169,7 +170,10 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
   it('schedules from the jobs entry only after config enables email analytics', async function () {
     const jobsService = jobsServiceRoot.init({
       knex: { client: { config: { client: 'sqlite3' } } },
-      config: { get: () => undefined },
+      config: {
+        get: (key: string) =>
+          key === 'services:jobs:outbox' ? defaults.services.jobs.outbox : undefined,
+      },
     });
     const scheduleRecurring = sinon.stub(jobsService, 'scheduleRecurring').resolves();
 

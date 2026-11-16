@@ -133,6 +133,11 @@ a number, or assumed a key is always present, stops compiling.
   developing Ghost rather than running it, such as a switch for in-development
   work. A generated reference for self-hosters must leave hidden keys out; the
   key is still validated like any other.
+- **Some keys are internal.** Mark a key `.meta({internal: true})` when the
+  hosting platform sets it rather than a self-hoster, as Ghost(Pro) does for
+  `hostSettings` through environment variables. A generated reference for
+  self-hosters must leave internal keys out, along with everything under them.
+  Their schema must be no stricter than what the platform sets.
 - **Nothing may be stricter than the loader already was.** Tightening beyond
   that is its own change, with its own release note.
 - **Adding a key reorders its parent's keys.** `z.looseObject` emits the keys the

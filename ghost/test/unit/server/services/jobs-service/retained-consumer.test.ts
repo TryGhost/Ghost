@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import createKnex from 'knex';
 import InMemoryJobsBackend from '../../../../../core/server/adapters/jobs/InMemoryJobsBackend';
+import defaults from '../../../../../core/shared/config/defaults.json';
 import type ProcessWebmentionJob from '../../../../../core/server/services/mentions/process-webmention-job';
 
 const JOBS_SERVICE_PATH = '../../../../../core/server/services/jobs-service';
@@ -18,6 +19,9 @@ describe('jobs-service retained consumers', function () {
   let backend: InMemoryJobsBackend;
   let previousModule: NodeModule | undefined;
 
+  const getConfig = sinon.stub();
+  getConfig.withArgs('services:jobs:outbox').returns(defaults.services.jobs.outbox);
+
   const initArgs = {
     knex: createKnex({
       client: 'better-sqlite3',
@@ -25,7 +29,7 @@ describe('jobs-service retained consumers', function () {
       pool: { min: 1, max: 1 },
       useNullAsDefault: true,
     }),
-    config: { get: () => undefined },
+    config: { get: getConfig },
   };
 
   afterAll(async function () {
