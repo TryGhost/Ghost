@@ -209,10 +209,12 @@ in `frame.validated`. Callbacks for `validation`, `permissions`,
 frame. `permissions` and `query` are required in schema-aware definitions.
 
 The validated channels use `z.output`, including defaults and transforms, rather
-than the schema's input type. Their frame uses the shared `Frame` generic with
-dictionary-shaped working `options` and `data`, including an untrusted `id`;
-it does not apply the default frame's `string | undefined` convenience type to
-schema-method input. Input serializers can still change these working values.
+than the schema's input type. Schema-method callbacks expose `frame.data` as
+`never`; use `frame.validated.body` for request data. This applies to validation,
+permission hooks, permissions, cache-key callbacks, queries, and extracted
+helpers. Serializers retain the normal `Frame` type and its mutable working
+`data`. Working `frame.options` remains dictionary-shaped, including an untrusted
+`id`, rather than the default frame's `string | undefined` convenience type.
 `frame.validated` and its channel properties are readonly references;
 the schemas determine whether their nested output values are readonly. The
 pipeline passes input directly to Zod without an additional deep clone. Zod
@@ -223,7 +225,7 @@ describe nested structures explicitly when parsed values must be isolated from
 working-frame mutations.
 
 For schema methods, the body copy used by `frame.data` is deferred until a
-callback or serializer first reads it. Methods that use only `frame.validated`
+serializer or legacy helper first reads it. Methods that use only `frame.validated`
 avoid that copy entirely. Reading `frame.data` creates one mutable copy and
 reuses it; assigning a replacement skips the copy. Legacy methods retain eager
 body copying. A caller-supplied Frame that was already configured retains its

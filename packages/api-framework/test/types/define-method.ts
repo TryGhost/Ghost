@@ -29,22 +29,34 @@ export function optionsAndBody() {
     headers: { cacheInvalidate: true },
     statusCode: 200,
     validation(frame) {
+      expectTypeOf(frame.data).toEqualTypeOf<never>();
+      // @ts-expect-error Schema validation callbacks use parsed request channels.
+      void frame.data.widgets;
       expectTypeOf(frame.validated.options).toEqualTypeOf<z.output<typeof options>>();
       expectTypeOf(frame.validated.body).toEqualTypeOf<z.output<typeof body>>();
     },
     permissions(frame) {
+      expectTypeOf(frame.data).toEqualTypeOf<never>();
+      // @ts-expect-error Schema permission callbacks cannot inspect working data.
+      void frame.data.widgets;
       expectTypeOf(frame.validated.options.id).toEqualTypeOf<string>();
       expectTypeOf(frame.validated.options.filter).toEqualTypeOf<string | undefined>();
       expectTypeOf(frame.options.context).toEqualTypeOf<Record<string, unknown> | undefined>();
     },
     generateCacheKeyData(frame) {
+      expectTypeOf(frame.data).toEqualTypeOf<never>();
+      // @ts-expect-error Schema cache keys use parsed request channels.
+      void frame.data.widgets;
       expectTypeOf(frame.validated.options.page).toEqualTypeOf<number>();
       return frame.validated.options.id;
     },
     async query(frame) {
       expectTypeOf(frame).toExtend<Frame>();
-      expectTypeOf(frame.data).toEqualTypeOf<Record<string, unknown>>();
-      expectTypeOf(frame.data.id).toEqualTypeOf<unknown>();
+      expectTypeOf(frame.data).toEqualTypeOf<never>();
+      // @ts-expect-error Schema queries cannot inspect working data.
+      void frame.data.id;
+      // @ts-expect-error Schema queries cannot replace working data.
+      frame.data = {};
       expectTypeOf(frame.options.id).toEqualTypeOf<unknown>();
       expectTypeOf(frame.validated.body.widgets).toEqualTypeOf<
         Array<{ title: string; enabled: boolean }>
@@ -71,6 +83,7 @@ export function optionsAndBody() {
   expectTypeOf<z.input<typeof method.schema.options>['page']>().toEqualTypeOf<string | undefined>();
 
   function helper(frame: InferMethodFrame<typeof method>) {
+    expectTypeOf(frame.data).toEqualTypeOf<never>();
     return frame.validated.options.id;
   }
   expectTypeOf(helper).returns.toEqualTypeOf<string>();
@@ -96,6 +109,9 @@ export function optionsOnly() {
     permissions: {
       docName: 'widgets',
       before(frame) {
+        expectTypeOf(frame.data).toEqualTypeOf<never>();
+        // @ts-expect-error Schema permission hooks cannot inspect working data.
+        void frame.data.id;
         expectTypeOf(frame.validated.options.id).toEqualTypeOf<string>();
       },
     },
@@ -112,6 +128,7 @@ export function bodyOnly() {
     schema: { body: z.object({ title: z.string() }) },
     permissions: false,
     query(frame) {
+      expectTypeOf(frame.data).toEqualTypeOf<never>();
       expectTypeOf(frame.validated.body.title).toEqualTypeOf<string>();
       // @ts-expect-error Undeclared channels are not claimed to be validated.
       void frame.validated.options;
@@ -295,4 +312,10 @@ export function legacyControllers() {
   expectTypeOf(typedController.read.query).parameter(0).toEqualTypeOf<ReadFrame>();
   expectTypeOf<Frame['data']['id']>().toEqualTypeOf<string | undefined>();
   expectTypeOf<Frame['options']['id']>().toEqualTypeOf<string | undefined>();
+}
+
+export function serializerWorkingData(frame: Frame) {
+  expectTypeOf(frame.data.payload).toEqualTypeOf<unknown>();
+  frame.data.payload = { title: 'serialized' };
+  frame.data = { payload: { title: 'replacement' } };
 }

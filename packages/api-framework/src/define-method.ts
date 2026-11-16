@@ -18,7 +18,7 @@ export type ValidatedRequest<Schemas extends MethodSchemas> = {
 
 /** The callback frame once the declared request schemas have been parsed. */
 export type ValidatedFrame<Schemas extends MethodSchemas> = Frame<{
-  data: Dictionary;
+  data: never;
   options: Dictionary;
 }> & {
   readonly validated: ValidatedRequest<Schemas>;

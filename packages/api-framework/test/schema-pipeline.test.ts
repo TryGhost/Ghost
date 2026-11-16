@@ -322,11 +322,23 @@ describe('schema-aware pipeline', function () {
       schema: { body: z.object({ title: z.string() }).default({ title: 'default' }) },
       permissions: false,
       query(frame) {
-        assert.deepEqual(frame.data, { id: 'id' });
         return frame.validated.body;
       },
     });
-    const controller = pipeline({ read }, apiUtils);
+    const controller = pipeline(
+      { read },
+      {
+        ...apiUtils,
+        serializers: {
+          ...apiUtils.serializers,
+          input: {
+            all(_config: unknown, frame: Frame) {
+              assert.deepEqual(frame.data, { id: 'id' });
+            },
+          },
+        },
+      },
+    );
     assert.deepEqual(await controller.read({ id: 'id' }), { title: 'default' });
     await assert.rejects(controller.read({}, { id: 'id' }), errors.ValidationError);
   });
@@ -594,7 +606,6 @@ describe('schema-aware pipeline', function () {
             assert.equal(frame.options.include, undefined);
             assert.equal(frame.validated.options.include, 'tags');
             assert.deepEqual(frame.options.nested, { value: 'mutated' });
-            assert.deepEqual(frame.data.payload, { value: 'mutated body' });
             assert.throws(() => {
               Object.assign(frame, { validated: {} });
             }, TypeError);
@@ -611,6 +622,7 @@ describe('schema-aware pipeline', function () {
               edit(_config: unknown, frame: Frame) {
                 Object.assign(frame.options.nested as object, { value: 'mutated' });
                 Object.assign(frame.data.payload as object, { value: 'mutated body' });
+                assert.deepEqual(frame.data.payload, { value: 'mutated body' });
               },
             },
           },
@@ -642,7 +654,6 @@ describe('schema-aware pipeline', function () {
             assert.equal(frame.validated.options.any, any);
             assert.equal(frame.validated.options.extra, extra);
             assert.equal(frame.validated.body.payload, body.payload);
-            assert.notEqual(frame.data.payload, body.payload);
             return frame.validated.body;
           },
         }),
