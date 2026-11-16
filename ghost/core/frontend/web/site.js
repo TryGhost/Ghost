@@ -15,7 +15,8 @@ const themeEngine = require('../services/theme-engine');
 const themeMiddleware = themeEngine.middleware;
 const membersService = require('../../server/services/members');
 const offersService = require('../../server/services/offers');
-const recommendationsService = require('../../server/services/recommendations').default;
+const recommendationsService =
+  require('../../../domains/network/transition/services/recommendations').default;
 const customRedirects = require('../../server/services/custom-redirects');
 const linkRedirectsHandler = require('./routers/link-redirects');
 const siteRoutes = require('./routes');

@@ -58,9 +58,13 @@ const { PostRevision } = require('./post-revision');
 const { Post, Posts } = require('./post');
 const { PostsMeta } = require('./posts-meta');
 const { Product, Products } = require('./product');
-const { RecommendationClickEvent } = require('./recommendation-click-event');
-const { RecommendationSubscribeEvent } = require('./recommendation-subscribe-event');
-const { Recommendation } = require('./recommendation');
+const {
+  RecommendationClickEvent,
+} = require('../../../domains/network/transition/models/recommendation-click-event');
+const {
+  RecommendationSubscribeEvent,
+} = require('../../../domains/network/transition/models/recommendation-subscribe-event');
+const { Recommendation } = require('../../../domains/network/transition/models/recommendation');
 const { Redirect } = require('./redirect');
 const { setIsRoles, checkUserPermissionsForRole } = require('./role-utils');
 const { Role, Roles } = require('./role');

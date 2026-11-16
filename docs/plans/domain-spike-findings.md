@@ -390,3 +390,92 @@ every relative specifier the move changes: in the moved files and in everything
 that points at them (`require`, `import`, `export from`, `import()`,
 `typeof import()`, `require.resolve`, `mock()`-style calls). It reports paths
 built from strings (`path.join(__dirname, …)`) for a hand edit. Step 6 uses it.
+
+## Step 6: recommendations moved whole
+
+Cost: 63 files changed, of which 49 are renames; 156 lines added and 97
+removed. 32 of the added lines are the new `CONTEXT.md`. Leaving that aside,
+the move changed about 124 lines in 37 files.
+
+| What changed                                                               | Files | How                                                                     |
+| -------------------------------------------------------------------------- | ----- | ----------------------------------------------------------------------- |
+| Service root and its 21 files, three models, 20 test files, four snapshots | 49    | `git mv` by `tools/scripts/relocate.ts`                                 |
+| Relative specifiers in moved files and in files pointing at them           | 33    | rewritten by the same tool                                              |
+| `boot.js`, `site.js`, three API endpoint files, `models/index.js`          | 6     | by the tool: these are the only untouched-location files it had to edit |
+| Boot test stub keyed by the old `require` string                           | 1     | by hand                                                                 |
+| Legacy inventory: evidence paths cited by the oembed entry                 | 1     | by hand (9 lines)                                                       |
+| Inventory test: a cited test may live in a domain                          | 1     | by hand                                                                 |
+| Standard-services boot test: tolerate a wrapped binding                    | 1     | by hand                                                                 |
+| ESLint config: domain tests get test rules only                            | 1     | by hand (a step 2 mistake, found here)                                  |
+| `ghost/domains/network/CONTEXT.md`                                         | 1     | written                                                                 |
+
+The relocate tool reported no string-built paths needing a hand edit. The three
+hand edits it could not have found are a `require` string used as an object key
+in a test, YAML and a regular expression.
+
+Where things went:
+
+- `ghost/domains/network/transition/services/recommendations/` (root unchanged,
+  still initialized by its line in `boot.js`)
+- `ghost/domains/network/transition/models/` (three models; `models/index.js`
+  requires them from there)
+- `ghost/domains/network/test/unit/transition/services/recommendations/`
+- `ghost/domains/network/test/e2e/api/{admin,content,members}/`,
+  `test/e2e/server/services/`, `test/e2e/frontend/`, each with its
+  `__snapshots__/` beside it
+
+### Verified
+
+Everything from step 1, at the new paths:
+
+- Unit suite: 11,606 passed; the same 34 baseline failures and no others. The
+  moved unit tests (21 files) run from `domains/network/test/unit/`.
+- DB-backed: 7 files, 75 tests pass against MySQL, five of them from
+  `domains/network/test/e2e/`. **The four snapshot files moved as pure renames
+  and matched without being rewritten**, so snapshots do follow the test file.
+- oxlint, boundaries (5900 modules, 294 known, 189 deferred), typecheck, ESLint,
+  `lint:domain-rules`, doc links: pass.
+- Real boot from source: 3.62s, 3.62s, 3.55s.
+- `lint:domain-rules --report`: network has 24 files under `transition/`
+  (21 in services, 3 models).
+
+### The service checks still apply to the moved root (verified)
+
+Each violation was introduced, the check was run, and the file was restored.
+
+| Violation introduced in the moved service                | Check that failed                                                                                                                         |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| An implementation file requires `core/shared/config`     | `lint:boundaries`: `error service-dependencies: …/recommendations/service/well-known-service.ts → ghost/core/shared/config/index.ts`      |
+| An implementation file requires its own root             | `lint:boundaries`: `error service-own-root: … → …/recommendations/index.ts`                                                               |
+| The root gains a named runtime export                    | `lint:oxlint`: `ghost(service-root-shape): Named runtime exports belong in extras`                                                        |
+| A service file exports a type containing `any`           | `lint:oxlint`: `ghost(no-any-in-exported-types)`                                                                                          |
+| `boot.js` stops awaiting `recommendationsService.init()` | `lint:oxlint`: `ghost(boot-awaits-service-init): Boot never initializes recommendations`; and 2 tests in `standard-services.test.ts` fail |
+
+### What the move showed
+
+- **"Moved unchanged" is not literally unchanged.** Every relative import that
+  leaves the moved folder changes (24 lines in the root alone), because the
+  folder is five levels from `ghost/core` instead of three. The service-root
+  lint also pins the exact relative path to the kernel helper, so each home
+  needs its own lint override.
+- **The formatter can break a check.** The longer `require` path made the
+  formatter wrap the binding in `boot.js` after its `=`. The oxlint rule reads
+  the syntax tree and did not care; the `standard-services` test and
+  `gx services verify` match source text with a regular expression and did.
+  The test is fixed; `gx` is not.
+- **Evidence paths in the legacy inventory are another place that names
+  folders.** The oembed entry cites recommendations source and test files, and
+  the inventory test required every cited test to be under `ghost/test`.
+- **The `boot-awaits-service-init` message still suggests
+  `require('./server/services/<name>')`** for a root that lives in a domain.
+  The rule is right; its hint is not.
+- **Three test files could not move with the code** because they test code that
+  has not moved: `test/unit/api/endpoints/recommendations.test.ts` (the endpoint
+  files in `core/server/api`), `test/unit/frontend/helpers/recommendations.test.ts`
+  (the theme helper) and `test/e2e-server/well-known.test.ts` (unrelated
+  well-known routes). The first follows in step 7.
+- **Mirroring holds for unit tests and has no meaning for e2e tests.** A unit
+  test at `test/unit/transition/services/recommendations/service/x.test.ts`
+  mirrors `transition/services/recommendations/service/x.ts`. An e2e test
+  exercises a route, not a file, so the e2e tree is organised by suite and API
+  surface instead.

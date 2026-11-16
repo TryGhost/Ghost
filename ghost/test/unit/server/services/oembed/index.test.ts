@@ -10,7 +10,7 @@ const TwitterOEmbedProvider = require('../../../../../core/server/services/oembe
 const WebmentionMetadata = require('../../../../../core/server/services/mentions/webmention-metadata');
 const {
   RecommendationMetadataService,
-}: typeof import('../../../../../core/server/services/recommendations/service/recommendation-metadata-service') = require('../../../../../core/server/services/recommendations/service/recommendation-metadata-service');
+}: typeof import('../../../../../domains/network/transition/services/recommendations/service/recommendation-metadata-service') = require('../../../../../domains/network/transition/services/recommendations/service/recommendation-metadata-service');
 const oembedEndpoint = require('../../../../../core/server/api/endpoints/oembed');
 const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
 const config = require('../../../../../core/shared/config');

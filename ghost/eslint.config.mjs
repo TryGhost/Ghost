@@ -97,6 +97,8 @@ export default tseslint.config(
       'scripts/**/*.js',
       '*.js',
     ],
+    // A domain's tests follow the test rules below, as ghost/test does.
+    ignores: ['domains/*/test/**'],
     ...js.configs.recommended,
     languageOptions: {
       ecmaVersion: 2022,
@@ -116,6 +118,7 @@ export default tseslint.config(
   // ============================================================
   {
     files: ['core/**/*.ts', 'domains/**/*.ts', '*.{ts,mts}'],
+    ignores: ['domains/*/test/**'],
     extends: [...tseslint.configs.recommended],
     languageOptions: {
       ecmaVersion: 2022,
@@ -156,6 +159,7 @@ export default tseslint.config(
   // ============================================================
   {
     files: ['core/**/*.ts', 'domains/**/*.ts', '*.{ts,mts}'],
+    ignores: ['domains/*/test/**'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       ...tsLegacyRelaxations,

@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { IncorrectUsageError } from '@tryghost/errors';
 import sinon from 'sinon';
 
-const recommendations = require('../../../../core/server/services/recommendations').default;
+const recommendations =
+  require('../../../../domains/network/transition/services/recommendations').default;
 const adminEndpoint = require('../../../../core/server/api/endpoints/recommendations');
 const contentEndpoint = require('../../../../core/server/api/endpoints/recommendations-public');
 const incomingEndpoint = require('../../../../core/server/api/endpoints/incoming-recommendations');

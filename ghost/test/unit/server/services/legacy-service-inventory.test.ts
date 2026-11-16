@@ -335,8 +335,10 @@ describe('legacy service inventory', function () {
           assertFileWithin(coreRoot, source);
         }
         for (const test of contract.tests) {
-          assert.ok(test.startsWith('test/'), `Expected a test path: ${test}`);
-          assertFileWithin(path.join(coreRoot, 'test'), test.slice('test/'.length));
+          // A test lives in ghost/test or, once its code has moved, in its domain's test folder.
+          const [folder] = /^(?:test|domains\/[^/]+\/test)\//.exec(test) ?? [];
+          assert.ok(folder, `Expected a test path: ${test}`);
+          assertFileWithin(path.join(coreRoot, folder), test.slice(folder.length));
         }
       }
 

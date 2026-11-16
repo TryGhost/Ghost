@@ -51,7 +51,8 @@ const phases = [...boot.matchAll(/^(?:async )?function (\w+)\(/gm)];
 // The phase that binds a root and calls init() on the binding. Lint requires this form.
 function phaseOf(service: string) {
   const bound = new RegExp(
-    `const (\\w+) = require\\('${escape(requiredAs.get(service)!)}(?:/index)?'\\)\\.default;`,
+    // The formatter breaks a long binding after its `=`.
+    `const (\\w+) =\\s+require\\('${escape(requiredAs.get(service)!)}(?:/index)?'\\)\\.default;`,
     'g',
   );
   for (const binding of boot.matchAll(bound)) {
