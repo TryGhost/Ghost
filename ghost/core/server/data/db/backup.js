@@ -3,10 +3,12 @@
 const fs = require('fs-extra');
 
 const path = require('path');
+const { pipeline } = require('stream/promises');
 const config = require('../../../shared/config');
 const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils').default;
 const exporter = require('../exporter');
+const { createJsonStream } = require('../exporter/json-stream');
 
 /**
  * @param {object} exportResult
@@ -18,14 +20,26 @@ const writeExportFile = async (exportResult) => {
     urlUtils.urlJoin(config.get('paths').contentPath, 'data', exportResult.filename),
   );
 
-  await fs.writeFile(filename, JSON.stringify(exportResult.data));
+  // Streamed because a large site's export can exceed V8's maximum string length
+  try {
+    await pipeline(createJsonStream(exportResult.data), fs.createWriteStream(filename));
+  } catch (err) {
+    // A partial file would be served later as a corrupt backup
+    await fs.remove(filename).catch(() => {});
+    throw err;
+  }
+
   return filename;
 };
 
 /**
+ * Opens a backup written by `backup()` as a stream, so a large backup is never
+ * read into memory as one string.
+ *
  * @param {string} filename
+ * @returns {Promise<import('stream').Readable | null>} null when no such backup exists
  */
-const readBackup = async (filename) => {
+const readBackupStream = async (filename) => {
   const parsedFileName = path.parse(filename);
   const sanitized = `${parsedFileName.name}${parsedFileName.ext}`;
   const backupPath = path.resolve(
@@ -34,12 +48,11 @@ const readBackup = async (filename) => {
 
   const exists = await fs.pathExists(backupPath);
 
-  if (exists) {
-    const backupFile = await fs.readFile(backupPath, 'utf8');
-    return JSON.parse(backupFile);
-  } else {
+  if (!exists) {
     return null;
   }
+
+  return fs.createReadStream(backupPath);
 };
 
 /**
@@ -71,5 +84,5 @@ const backup = async function backup(options = {}) {
 
 module.exports = {
   backup,
-  readBackup,
+  readBackupStream,
 };

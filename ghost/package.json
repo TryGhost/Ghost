@@ -240,7 +240,7 @@
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-test-workers": "workspace:*",
     "@tryghost/email-mock-receiver": "2.3.21",
-    "@tryghost/express-test": "2.3.22",
+    "@tryghost/express-test": "2.3.23",
     "@tryghost/webhook-mock-receiver": "2.3.21",
     "@types/bookshelf": "1.2.9",
     "@types/common-tags": "1.8.4",
