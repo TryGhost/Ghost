@@ -215,8 +215,12 @@ it does not apply the default frame's `string | undefined` convenience type to
 schema-method input. Input serializers can still change these working values.
 `frame.validated` and its channel properties are readonly references;
 the schemas determine whether their nested output values are readonly. The
-pipeline clones each channel's input before parsing so these values remain
-independent of serializer mutations, including unknown and passthrough values.
+pipeline passes input directly to Zod without an additional deep clone. Zod
+constructs new objects and arrays for explicitly described structures, but
+`z.unknown()`, `z.any()`, passthrough values, and custom transforms can retain
+input references. Treat input as read-only in refinements and transforms, and
+describe nested structures explicitly when parsed values must be isolated from
+working-frame mutations.
 
 `schema.options` parses the original request's query, route params, and internal
 options merged in that order, so route params override query values and internal

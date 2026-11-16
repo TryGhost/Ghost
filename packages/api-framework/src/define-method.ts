@@ -9,7 +9,7 @@ export type MethodSchemas =
 
 type ParsedChannel<Schema> = Schema extends z.ZodType ? z.output<Schema> : undefined;
 
-/** Parsed request channels, independent of the mutable serialization frame. */
+/** Parsed request channels, exposed separately from the mutable working frame. */
 export type ValidatedRequest<Schemas extends MethodSchemas> = {
   readonly [
     Channel in keyof Schemas as Channel extends 'options' | 'body' ? Channel : never

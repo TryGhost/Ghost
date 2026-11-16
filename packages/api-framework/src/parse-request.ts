@@ -1,5 +1,4 @@
 import errors from '@tryghost/errors';
-import _ from 'lodash';
 import type { MethodSchemas } from './define-method.ts';
 import type Frame from './frame.ts';
 
@@ -15,21 +14,17 @@ export default async function parseRequest(schemas: MethodSchemas, frame: Frame)
       continue;
     }
 
-    const input =
-      channel === 'body'
-        ? frame.original.body
-        : _.omit(
-            {
-              ...frame.original.query,
-              ...frame.original.params,
-              ...frame.original.options,
-            },
-            'context',
-          );
+    let input = frame.original.body;
+    if (channel === 'options') {
+      input = {
+        ...frame.original.query,
+        ...frame.original.params,
+        ...frame.original.options,
+      };
+      delete input.context;
+    }
 
-    // Unknown/passthrough values and transforms can retain input references.
-    // Isolate the parser from the original request and mutable working frame.
-    const result = await schema.safeParseAsync(_.cloneDeep(input));
+    const result = await schema.safeParseAsync(input);
     if (!result.success) {
       throw new errors.ValidationError({
         message: `Validation failed for ${channel}.`,

@@ -371,7 +371,7 @@ describe('schema-aware pipeline', function () {
     assert.notEqual(keys[0], keys[3]);
   });
 
-  it('keeps parsed unknown values independent of serializer mutations', async function () {
+  it('keeps explicitly described parsed objects independent of serializer mutations', async function () {
     const nested = { value: 'original' };
     const body = { payload: { value: 'body' } };
     const controller = pipeline(
@@ -380,8 +380,8 @@ describe('schema-aware pipeline', function () {
         edit: defineMethod({
           options: ['nested', 'include'],
           schema: {
-            options: z.object({ nested: z.unknown(), include: z.string() }),
-            body: z.object({ payload: z.unknown() }),
+            options: z.object({ nested: z.object({ value: z.string() }), include: z.string() }),
+            body: z.object({ payload: z.object({ value: z.string() }) }),
           },
           permissions(frame) {
             assert.deepEqual(frame.validated.options.nested, { value: 'original' });
@@ -420,6 +420,35 @@ describe('schema-aware pipeline', function () {
       body: { payload: { value: 'body' } },
     });
     assert.deepEqual(body, { payload: { value: 'body' } });
+  });
+
+  it('retains Zod reference semantics for unknown, any and passthrough values', async function () {
+    const unknown = { value: 'unknown' };
+    const any = { value: 'any' };
+    const extra = { value: 'passthrough' };
+    const body = { payload: { value: 'body' } };
+    const controller = pipeline(
+      {
+        read: defineMethod({
+          schema: {
+            options: z.looseObject({ unknown: z.unknown(), any: z.any() }),
+            body: z.object({ payload: z.unknown() }),
+          },
+          permissions: false,
+          query(frame) {
+            assert.equal(frame.validated.options.unknown, unknown);
+            assert.equal(frame.validated.options.any, any);
+            assert.equal(frame.validated.options.extra, extra);
+            assert.equal(frame.validated.body.payload, body.payload);
+            assert.notEqual(frame.data.payload, body.payload);
+            return frame.validated.body;
+          },
+        }),
+      },
+      apiUtils,
+    );
+
+    assert.deepEqual(await controller.read(body, { unknown, any, extra }), body);
   });
 
   it('retains configured working options in cache keys for body-only schemas', async function () {
