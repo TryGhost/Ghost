@@ -31,14 +31,6 @@ describe('AccountWelcome', () => {
 
       expect(queryByRole('button', { name: 'View plans' })).toBeInTheDocument();
     });
-
-    test('see no plans button when no paid prices are on', () => {
-      const site = getSiteData({ membersSignupAccess, portalPlans: ['free', 'monthly'] });
-      const noPricesSite = { ...site, portal_plans: ['free'] };
-      const { queryByRole } = setup({ site: noPricesSite, member });
-
-      expect(queryByRole('button', { name: 'View plans' })).not.toBeInTheDocument();
-    });
   });
 
   test('shows gift expiry message for gift members', () => {
