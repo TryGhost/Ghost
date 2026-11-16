@@ -3,7 +3,6 @@
 // eslint-disable-next-line no-restricted-imports -- see comment above
 import {
   type TextSearch,
-  type TextSearchOptions,
   createSubstringSearch,
   createWordSearch,
   isWordSearchLocale,
@@ -35,20 +34,27 @@ function groupResults(
 function createProvider(
   sources: readonly SearchSource[],
   createSearch: (items: readonly SearchItem[]) => TextSearch<SearchItem>,
-  searchOptions: TextSearchOptions = {},
 ): SearchProvider {
   const searches = sources.map((source) => createSearch(source.items));
 
   return {
     search(term) {
-      return groupResults(sources, (_source, index) => searches[index].search(term, searchOptions));
+      return groupResults(sources, (_source, index) => searches[index].search(term));
     },
   };
 }
 
 /** Groups each source's word-prefix matches. */
 export function createFlexSearchProvider(sources: readonly SearchSource[]): SearchProvider {
-  return createProvider(sources, createWordSearch, { limitPerField: RESULT_LIMIT });
+  // Candidate limit before status sort: FlexSearch ranks, then groupResults caps.
+  return createProvider(sources, (items) => {
+    const wordSearch = createWordSearch(items);
+    return {
+      search(term) {
+        return wordSearch.search(term, { limitPerField: RESULT_LIMIT });
+      },
+    };
+  });
 }
 
 /** Groups each source's substring matches. */

@@ -11,38 +11,34 @@ export interface Searchable {
   keywords?: string;
 }
 
-export interface TextSearchOptions {
+export interface WordSearchOptions {
   /**
-   * How many matches to keep from each searchable field (`title`, then
-   * `keywords`). Results are merged in that order and deduped by id, so the
-   * total can be up to twice this number when items have keywords. Omit it to
-   * keep every match: substring search stays in source order, and word search
-   * stays in FlexSearch's ranked order.
+   * How many matches FlexSearch keeps from each searchable field (`title`,
+   * then `keywords`) before they are merged. The total can be up to twice this
+   * number when items have keywords. This is a candidate limit — discard
+   * before the caller ranks — not a final result cap. Omit it to keep every
+   * match in FlexSearch's ranked order.
    */
   limitPerField?: number;
 }
 
 /** Finds the items a term matches. Results are the items themselves. */
 export interface TextSearch<T extends Searchable> {
-  search(term: string, options?: TextSearchOptions): T[];
+  search(term: string): T[];
+}
+
+/** Word search can limit candidates per query while reusing the same index. */
+export interface WordSearch<T extends Searchable> extends TextSearch<T> {
+  search(term: string, options?: WordSearchOptions): T[];
 }
 
 const SEARCH_FIELDS = ['title', 'keywords'] as const;
-
-function mergeFieldMatches<T extends Searchable>(
-  items: readonly T[],
-  fieldMatches: ReadonlyArray<readonly T[]>,
-): T[] {
-  const itemsById = new Map(items.map((item) => [item.id, item]));
-  const ids = new Set(fieldMatches.flatMap((matches) => matches.map((item) => item.id)));
-  return [...ids].flatMap((id) => itemsById.get(id) ?? []);
-}
 
 /**
  * Matches word prefixes in any order, ranked by FlexSearch. Indexes titles and
  * keywords at creation; rebuild when the list changes — in-place edits are not seen.
  */
-export function createWordSearch<T extends Searchable>(items: readonly T[]): TextSearch<T> {
+export function createWordSearch<T extends Searchable>(items: readonly T[]): WordSearch<T> {
   const index = new FlexSearch.Document<T>({
     tokenize: 'forward',
     document: { id: 'id', index: [...SEARCH_FIELDS] },
@@ -62,43 +58,23 @@ export function createWordSearch<T extends Searchable>(items: readonly T[]): Tex
 }
 
 /**
- * Matches the term as a case-insensitive substring. Reads the items array on
- * each search, so in-place edits are visible without rebuilding.
+ * Matches the term as a case-insensitive substring, in source order. Reads the
+ * items array on each search, so in-place edits are visible without rebuilding.
+ * Returns every match; the caller sorts and caps.
  */
 export function createSubstringSearch<T extends Searchable>(items: readonly T[]): TextSearch<T> {
   return {
-    search(term, { limitPerField } = {}) {
+    search(term) {
       if (!term.trim()) {
         return [];
       }
 
       const needle = term.toLowerCase();
-      const matchesField = (item: T, field: (typeof SEARCH_FIELDS)[number]) => {
-        const value = item[field];
-        return typeof value === 'string' && value.toLowerCase().includes(needle);
-      };
-
-      // No early cut: keep source order, whether the hit was on title or keywords.
-      if (limitPerField === undefined) {
-        return items.filter((item) => SEARCH_FIELDS.some((field) => matchesField(item, field)));
-      }
-
-      // Per-field caps merge title matches first, then keyword matches. A hit on
-      // both fields takes a slot in each before dedupe.
-      const fieldMatches = SEARCH_FIELDS.map((field) => {
-        const matches: T[] = [];
-        for (const item of items) {
-          if (matches.length >= limitPerField) {
-            break;
-          }
-          if (matchesField(item, field)) {
-            matches.push(item);
-          }
-        }
-        return matches;
-      });
-
-      return mergeFieldMatches(items, fieldMatches);
+      return items.filter(
+        (item) =>
+          item.title.toLowerCase().includes(needle) ||
+          Boolean(item.keywords?.toLowerCase().includes(needle)),
+      );
     },
   };
 }
