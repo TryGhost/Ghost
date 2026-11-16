@@ -64,7 +64,7 @@ export default defineService('Recommendations', (): RecommendationsService => {
   // Legacy code, counted by the domain-legacy-imports rule.
   const models = require('../../../../core/server/models');
   const mentions = require('../../../../core/server/services/mentions').default;
-  const oembedService = require('../../../../core/server/services/oembed');
+  const oembed = require('../../../../core/server/services/oembed').default;
   const staff = require('../../../../core/server/services/staff').default;
 
   // The renderer reads the ready Staff service for each email.
@@ -104,7 +104,12 @@ export default defineService('Recommendations', (): RecommendationsService => {
     clickEventRepository,
     subscribeEventRepository,
     recommendationMetadataService: new RecommendationMetadataService({
-      oembedService,
+      // Another root: asked when a page is fetched, not now.
+      oembedService: {
+        // Forwards exactly the arguments it is given.
+        fetchOembedDataFromUrl: (...args: unknown[]) =>
+          oembed.service.fetchOembedDataFromUrl(...args),
+      },
       externalRequest,
     }),
     logging,

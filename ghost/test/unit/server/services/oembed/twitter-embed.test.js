@@ -1,5 +1,12 @@
 const assert = require('node:assert/strict');
-const logging = require('@tryghost/logging');
+const { createLoggingFake } = require('../../../../utils/logging-utils');
+
+// The provider logs through the logger it is given. sinon.restore() undoes the
+// fake's stubs, so each test gets a new one.
+let logging;
+beforeEach(function () {
+  logging = createLoggingFake();
+});
 const sinon = require('sinon');
 const TwitterOEmbedProvider = require('../../../../../core/server/services/oembed/twitter-oembed-provider');
 const externalRequest = require('../../../../../core/server/lib/request-external');
@@ -143,6 +150,7 @@ describe('TwitterOEmbedProvider', function () {
 
   it('adds tweet data from the Twitter API with the bearer token to the base embed', async function () {
     const provider = new TwitterOEmbedProvider({
+      logging,
       config: {
         bearerToken: 'test',
       },
@@ -186,11 +194,14 @@ describe('TwitterOEmbedProvider', function () {
   });
 
   it('returns the base embed without an API request when no bearer token is configured', async function () {
-    const provider = new TwitterOEmbedProvider({ config: {} });
+    const provider = new TwitterOEmbedProvider({
+      logging,
+      config: {},
+    });
     const tweetURL = new URL('https://twitter.com/Ghost/status/1630581157568839683');
     nock('https://publish.twitter.com').get('/oembed').query(true).reply(200, baseEmbed);
     const request = trackedRequest();
-    const loggingStub = sinon.stub(logging, 'error');
+    const loggingStub = logging.error;
 
     const oembedData = await provider.getOEmbedData(tweetURL, request);
 
@@ -201,7 +212,10 @@ describe('TwitterOEmbedProvider', function () {
   });
 
   it('requests x.com posts from the twitter.com endpoints', async function () {
-    const provider = new TwitterOEmbedProvider({ config: { bearerToken: 'test' } });
+    const provider = new TwitterOEmbedProvider({
+      logging,
+      config: { bearerToken: 'test' },
+    });
     nock('https://publish.twitter.com')
       .get('/oembed')
       .query((query) => query.url === 'https://twitter.com/Ghost/status/1630581157568839683')
@@ -223,6 +237,7 @@ describe('TwitterOEmbedProvider', function () {
 
   it('logs error with context when external request fails', async function () {
     const provider = new TwitterOEmbedProvider({
+      logging,
       config: {
         bearerToken: 'test',
       },
@@ -237,7 +252,7 @@ describe('TwitterOEmbedProvider', function () {
       reason: 'thou-shalt-not-pass',
     });
 
-    const loggingStub = sinon.stub(logging, 'error');
+    const loggingStub = logging.error;
 
     await provider.getOEmbedData(tweetURL, externalRequest);
 

@@ -7,7 +7,7 @@ const testUtils = require('../../utils/index');
 const config = require('../../../core/shared/config/index');
 const localUtils = require('./utils');
 const { mockManager } = require('../../utils/e2e-framework');
-const oembed = require('../../../core/server/services/oembed');
+const oembedRoot = require('../../../core/server/services/oembed').default;
 const urlUtils = require('../../../core/shared/url-utils').default;
 
 // for sinon stubs
@@ -27,7 +27,7 @@ describe('Oembed API', function () {
   beforeEach(function () {
     // ensure sure we're not network dependent
     mockManager.disableNetwork();
-    processImageFromUrlStub = sinon.stub(oembed, 'processImageFromUrl');
+    processImageFromUrlStub = sinon.stub(oembedRoot.service, 'processImageFromUrl');
     processImageFromUrlStub.callsFake(async function (imageUrl, imageType) {
       if (imageUrl === 'http://example.com/bad-image') {
         throw new Error('Failed to process image');

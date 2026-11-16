@@ -12,7 +12,14 @@ const models = require('../../../../../core/server/models');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const urlService = require('../../../../../core/server/services/url');
-const oembedService = require('../../../../../core/server/services/oembed');
+const oembedRoot = require('../../../../../core/server/services/oembed').default;
+
+// Boot initializes the oEmbed root before Mentions; these tests use its ready instance.
+let oembedService: { fetchOembedDataFromUrl: unknown; fetchPageHtml: unknown };
+beforeAll(async function () {
+  await oembedRoot.init();
+  oembedService = oembedRoot.service;
+});
 const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
 const InMemoryJobsBackend =
   require('../../../../../core/server/adapters/jobs/InMemoryJobsBackend').default;

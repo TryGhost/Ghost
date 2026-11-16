@@ -1,4 +1,4 @@
-import { extract } from '@extractus/oembed-extractor';
+import { extract, hasProvider } from '@extractus/oembed-extractor';
 import errors from '@tryghost/errors';
 import { OembedData } from './oembed-schema';
 import { USER_AGENT } from './user-agent';
@@ -31,3 +31,6 @@ export async function extractOembed(
 
   return result.data;
 }
+
+// The provider lookup comes from the same library, which only this file imports.
+export { hasProvider };

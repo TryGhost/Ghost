@@ -1,7 +1,14 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
-const oembedService = require('../../../../../core/server/services/oembed');
+const oembedRoot = require('../../../../../core/server/services/oembed').default;
+
+// Boot initializes the oEmbed root; these tests use its ready instance.
+let oembedService;
+beforeAll(async function () {
+  await oembedRoot.init();
+  oembedService = oembedRoot.service;
+});
 const WebmentionMetadata = require('../../../../../core/server/services/mentions/webmention-metadata');
 
 describe('WebmentionMetadata', function () {

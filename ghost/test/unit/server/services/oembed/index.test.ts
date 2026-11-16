@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
+import { IncorrectUsageError } from '@tryghost/errors';
 import path from 'node:path';
 import nock from 'nock';
 import sinon from 'sinon';
 
-// Use the same classes and dependency objects as the CommonJS root.
+// Use the same classes and dependency objects as the root.
 const OEmbedService = require('../../../../../core/server/services/oembed/oembed-service');
 const NFTOEmbedProvider = require('../../../../../core/server/services/oembed/nft-oembed-provider');
 const TwitterOEmbedProvider = require('../../../../../core/server/services/oembed/twitter-oembed-provider');
@@ -19,8 +20,7 @@ const logging = require('@tryghost/logging');
 const { mockManager } = require('../../../../utils/e2e-framework');
 
 const rootDirectory = path.resolve(__dirname, '../../../../../core/server/services/oembed');
-// index.js forwards service.js, so both entries reload together.
-const rootModules = [require.resolve(rootDirectory), path.join(rootDirectory, 'service.js')];
+const rootModules = [require.resolve(rootDirectory)];
 
 const OPENSEA_URL =
   'https://opensea.io/assets/ethereum/0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb/9998';
@@ -40,8 +40,11 @@ describe('oEmbed service root', function () {
     let getConfig: sinon.SinonStub;
     let imageStore: { getSanitizedFileName: sinon.SinonStub; saveRaw: sinon.SinonStub };
 
-    function loadRoot() {
-      return require(rootDirectory);
+    // Composes a fresh root, as boot does, and returns its ready instance.
+    async function loadRoot() {
+      const root = require(rootDirectory).default;
+      await root.init();
+      return root.service;
     }
 
     beforeEach(function () {
@@ -71,10 +74,10 @@ describe('oEmbed service root', function () {
       });
     });
 
-    it('composes one OEmbedService during import from the shared config, request client and images adapter', function () {
-      const root = loadRoot();
+    it('composes one OEmbedService during init from the shared config, request client and images adapter', async function () {
+      const root = await loadRoot();
 
-      // Composition happens while the module is required, before any operation runs.
+      // Composition happens while boot initializes the root, before any operation runs.
       sinon.assert.calledOnceWithExactly(getAdapter, 'storage:images');
       assert.ok(root instanceof OEmbedService);
       assert.equal(root.config, config);
@@ -82,25 +85,24 @@ describe('oEmbed service root', function () {
       assert.equal(root.imageStore, imageStore);
     });
 
-    it('registers exactly the NFT provider and then the Twitter provider', function () {
-      const root = loadRoot();
+    it('registers exactly the NFT provider and then the Twitter provider', async function () {
+      const root = await loadRoot();
 
       assert.equal(root.customProviders.length, 2);
       assert.ok(root.customProviders[0] instanceof NFTOEmbedProvider);
       assert.ok(root.customProviders[1] instanceof TwitterOEmbedProvider);
     });
 
-    it('returns the same instance from repeated imports without composing again', function () {
-      const root = loadRoot();
+    it('returns the same instance from repeated init without composing again', async function () {
+      const root = await loadRoot();
 
-      assert.equal(loadRoot(), root);
-      assert.equal(require(rootModules[1]), root);
+      assert.equal(await loadRoot(), root);
       sinon.assert.calledOnce(getAdapter);
       assert.equal(root.customProviders.length, 2);
     });
 
-    it('copies provider credentials at import rather than reading config per request', async function () {
-      const root = loadRoot();
+    it('copies provider credentials at init rather than reading config per request', async function () {
+      const root = await loadRoot();
       getConfig.withArgs('opensea').returns({ privateReadOnlyApiKey: 'rotated-opensea-key' });
       getConfig.withArgs('twitter').returns({ privateReadOnlyToken: 'rotated-twitter-token' });
       mockManager.disableNetwork();
@@ -123,8 +125,8 @@ describe('oEmbed service root', function () {
       assert.deepEqual(root.customProviders[0].dependencies.config, { apiKey: 'opensea-key' });
     });
 
-    it('stores bookmark images through the images adapter captured at import', async function () {
-      const root = loadRoot();
+    it('stores bookmark images through the images adapter captured at init', async function () {
+      const root = await loadRoot();
       const laterStore = { saveRaw: sandbox.stub() };
       getAdapter.withArgs('storage:images').returns(laterStore);
       // 1x1 PNG
@@ -142,40 +144,37 @@ describe('oEmbed service root', function () {
       sinon.assert.notCalled(laterStore.saveRaw);
     });
 
-    it('rejects the import when a provider config subtree is missing, and a later import composes afresh', function () {
+    it('rejects init when a provider config subtree is missing, and a later init composes afresh', async function () {
       getConfig.withArgs('opensea').returns(undefined);
 
-      assert.throws(() => loadRoot(), TypeError);
-      for (const modulePath of rootModules) {
-        assert.equal(require.cache[modulePath], undefined, modulePath);
-      }
+      await assert.rejects(loadRoot(), TypeError);
 
       getConfig.withArgs('opensea').returns({ privateReadOnlyApiKey: 'opensea-key' });
-      const root = loadRoot();
+      const root = await loadRoot();
 
       sinon.assert.calledTwice(getAdapter);
       assert.ok(root instanceof OEmbedService);
       assert.equal(root.customProviders.length, 2);
     });
 
-    it('rejects the import with the adapter error and leaves nothing cached', function () {
+    it('rejects init with the adapter error and publishes nothing', async function () {
       const failure = new Error('Storage adapter unavailable');
       getAdapter.withArgs('storage:images').throws(failure);
 
-      assert.throws(
-        () => loadRoot(),
-        (error: unknown) => error === failure,
-      );
-      for (const modulePath of rootModules) {
-        assert.equal(require.cache[modulePath], undefined, modulePath);
-      }
+      await assert.rejects(loadRoot(), (error: unknown) => error === failure);
+      assert.throws(() => require(rootDirectory).default.service, IncorrectUsageError);
     });
   });
 
   describe('receivers and consumers', function () {
-    // Consumers captured the shared root when they were imported, so these
-    // tests use that instance rather than a fresh one.
-    const root = require(rootDirectory);
+    // Consumers read the shared root when they are called, so these tests
+    // initialize that root rather than a fresh one.
+    let root: ReturnType<typeof require>;
+    beforeAll(async function () {
+      const shared = require(rootDirectory).default;
+      await shared.init();
+      root = shared.service;
+    });
 
     it('needs its instance as the receiver for operations', async function () {
       const { fetchPageHtml, fetchOembedDataFromUrl } = root;

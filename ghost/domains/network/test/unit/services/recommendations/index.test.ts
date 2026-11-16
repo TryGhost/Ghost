@@ -28,7 +28,7 @@ const urlUtils = require('../../../../../../core/shared/url-utils').default;
 const models = require('../../../../../../core/server/models');
 const mail = require('../../../../../../core/server/lib/mail');
 const externalRequest = require('../../../../../../core/server/lib/request-external');
-const oembedService = require('../../../../../../core/server/services/oembed');
+const oembedRoot = require('../../../../../../core/server/services/oembed').default;
 const mentionsRoot = require('../../../../../../core/server/services/mentions').default;
 const staff = require('../../../../../../core/server/services/staff').default;
 const ROOT_PATH = require.resolve('../../../../services/recommendations');
@@ -489,7 +489,10 @@ describe('Recommendations service root', function () {
   it('fetches recommendation metadata through the shared external request client and falls back to oEmbed', async function () {
     await root.init();
     const get = sandbox.stub(externalRequest, 'get').resolves({ statusCode: 404, body: '' });
-    const fetchOembed = sandbox.stub(oembedService, 'fetchOembedDataFromUrl').resolves({
+    // The oEmbed root is read when a page is fetched, so it only has to be ready by then.
+    const oembedService = { fetchOembedDataFromUrl: sandbox.stub() };
+    sandbox.stub(oembedRoot, 'service').get(() => oembedService);
+    const fetchOembed = oembedService.fetchOembedDataFromUrl.resolves({
       version: '1.0',
       type: 'mention',
       url: 'https://other.example/',

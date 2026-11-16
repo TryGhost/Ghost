@@ -3,12 +3,11 @@
 
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
-const logging = require('@tryghost/logging');
-const _ = require('lodash');
+const pick = require('lodash/pick');
+const pickBy = require('lodash/pickBy');
 const iconv = require('iconv-lite');
 const path = require('path');
 const crypto = require('crypto');
-const imageTransform = require('@tryghost/image-transform');
 const {
   detectFileExtension,
   isAllowedImageExtension,
@@ -171,7 +170,7 @@ const withYouTubeThumbnail = (youtubeUrl, oembed) => {
  * @returns {{url: string, provider: boolean}}
  */
 const findUrlWithProvider = (url) => {
-  const { hasProvider } = require('@extractus/oembed-extractor');
+  const { hasProvider } = require('./extract-oembed');
 
   let provider;
 
@@ -230,10 +229,14 @@ class OEmbedService {
    * @param {IConfig} dependencies.config
    * @param {IImageStore} dependencies.imageStore
    * @param {IExternalRequest} dependencies.externalRequest
+   * @param {Pick<import('@tryghost/logging').GhostLogger, 'error'>} dependencies.logging
+   * @param {Pick<typeof import('@tryghost/image-transform'), 'resizeFromBuffer'>} dependencies.imageTransform
    */
-  constructor({ config, externalRequest, imageStore }) {
+  constructor({ config, externalRequest, imageStore, logging, imageTransform }) {
     this.config = config;
     this.imageStore = imageStore;
+    this.logging = logging;
+    this.imageTransform = imageTransform;
 
     /** @type {IExternalRequest} */
     this.externalRequest = externalRequest;
@@ -338,7 +341,7 @@ class OEmbedService {
         });
       }
 
-      imageBuffer = await imageTransform.resizeFromBuffer(imageBuffer, {
+      imageBuffer = await this.imageTransform.resizeFromBuffer(imageBuffer, {
         // without `format` this returns the original bytes whenever they
         // are smaller, storing the SVG under a .png name
         format: 'png',
@@ -398,7 +401,7 @@ class OEmbedService {
         url: await this.processImageFromUrl(thumbnail.url, 'thumbnail'),
       };
     } catch (err) {
-      logging.error(err);
+      this.logging.error(err);
       return thumbnail;
     }
   }
@@ -433,7 +436,7 @@ class OEmbedService {
       return;
     }
 
-    return _.pickBy(
+    return pickBy(
       {
         title: oembed.title,
         author: oembed.author_name,
@@ -505,7 +508,7 @@ class OEmbedService {
         contentType: headers['content-type'],
       };
     } catch (err) {
-      logging.error(err);
+      this.logging.error(err);
       //return non decoded body anyway
       return {
         body: body.toString(),
@@ -651,7 +654,7 @@ class OEmbedService {
       page = extractMetadata(html, url);
     } catch (err) {
       // Log to avoid being blind to errors happening in extraction
-      logging.error(err);
+      this.logging.error(err);
       return this.unknownProvider(url);
     }
 
@@ -694,7 +697,7 @@ class OEmbedService {
           await this.externalRequest.head(metadata.icon);
         } catch (err) {
           metadata.icon = DEFAULT_BOOKMARK_ICON;
-          logging.error(err);
+          this.logging.error(err);
         }
       }
     } else {
@@ -705,7 +708,7 @@ class OEmbedService {
           })
           .catch((err) => {
             metadata.icon = DEFAULT_BOOKMARK_ICON;
-            logging.error(err);
+            this.logging.error(err);
           });
       } else {
         metadata.icon = DEFAULT_BOOKMARK_ICON;
@@ -717,7 +720,7 @@ class OEmbedService {
             metadata.thumbnail = processedImageUrl;
           })
           .catch((err) => {
-            logging.error(err);
+            this.logging.error(err);
           });
       }
     }
@@ -782,7 +785,7 @@ class OEmbedService {
           'thumbnail_width',
           'thumbnail_height',
         ];
-        const oembed = _.pick(body, knownFields);
+        const oembed = pick(body, knownFields);
 
         // Fallback to bookmark if it's a link type
         if (oembed.type === 'link') {
@@ -997,7 +1000,7 @@ class OEmbedService {
       }
 
       // log the real error because we're going to throw a generic "Unknown provider" error
-      logging.error(
+      this.logging.error(
         new errors.InternalServerError({
           message: 'Encountered error when fetching oembed',
           err,

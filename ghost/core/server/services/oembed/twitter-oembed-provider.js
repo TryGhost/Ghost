@@ -1,5 +1,3 @@
-const logging = require('@tryghost/logging');
-
 /**
  * @typedef {import('./oembed-service').ICustomProvider} ICustomProvider
  * @typedef {import('./oembed-service').IExternalRequest} IExternalRequest
@@ -148,7 +146,7 @@ class TwitterOEmbedProvider {
             err.context = err.response.body;
           }
         }
-        logging.error(err);
+        this.dependencies.logging.error(err);
       }
     }
 

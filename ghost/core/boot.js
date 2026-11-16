@@ -398,6 +398,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const emailService = require('./server/services/email-service');
   const emailAnalytics = require('./server/services/email-analytics');
   const mentionsService = require('./server/services/mentions').default;
+  const oembed = require('./server/services/oembed').default;
   const tagsPublic = require('./server/services/tags-public').default;
   const postsPublic = require('./server/services/posts-public').default;
   const mediaInliner = require('./server/services/media-inliner').default;
@@ -451,6 +452,8 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   await audienceFeedback.init();
   // Members captures the ready Newsletters instance during initialization.
   await newsletters.init();
+  // Mentions hands the ready oEmbed instance to its metadata service.
+  await oembed.init();
   // The network domain's recommendations root registers on the ready Mentions
   // instance when the domain layer starts it, below.
   await mentionsService.init();

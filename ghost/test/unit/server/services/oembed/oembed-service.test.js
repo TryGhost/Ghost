@@ -2,7 +2,12 @@ const assert = require('node:assert/strict');
 const http = require('http');
 const nock = require('nock');
 const got = require('got').default;
-const logging = require('@tryghost/logging');
+const imageTransform = require('@tryghost/image-transform');
+const { createLoggingFake } = require('../../../../utils/logging-utils');
+
+// The service logs through the logger it is given. One service is built for the
+// whole file, so a test that counts errors puts its own stub on this logger.
+const logging = createLoggingFake();
 const sinon = require('sinon');
 const sharp = require('sharp');
 const zlib = require('zlib');
@@ -17,6 +22,8 @@ describe('oembed-service', function () {
 
   beforeAll(function () {
     oembedService = new OembedService({
+      logging,
+      imageTransform,
       config: {
         get() {
           return true;
@@ -115,6 +122,8 @@ describe('oembed-service', function () {
       const externalRequest = sinon.stub().resolves({});
 
       const service = new OembedService({
+        logging,
+        imageTransform,
         config: {
           get() {
             return true;
@@ -140,6 +149,8 @@ describe('oembed-service', function () {
         url: 'https://www.example.com/',
       });
       const service = new OembedService({
+        logging,
+        imageTransform,
         config: {
           get() {
             return true;
@@ -656,7 +667,8 @@ describe('oembed-service', function () {
 
       it('keeps the provider thumbnail when it cannot be stored', async function () {
         sinon.stub(oembedService, 'processImageFromUrl').rejects(new Error('fetch failed'));
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub();
+        logging.error = loggingStub;
         mockVimeoOembed();
 
         const response = await oembedService.fetchOembedDataFromUrl('https://vimeo.com/123');
@@ -687,6 +699,8 @@ describe('oembed-service', function () {
             return `/content/images/${targetPath}`;
           });
           service = new OembedService({
+            logging,
+            imageTransform,
             config: ghostConfig,
             externalRequest: requestExternal,
             imageStore: { getSanitizedFileName: (name) => name, saveRaw },
@@ -722,7 +736,8 @@ describe('oembed-service', function () {
         });
 
         it('falls back to the provider thumbnail when there is no max resolution thumbnail', async function () {
-          const loggingStub = sinon.stub(logging, 'error');
+          const loggingStub = sinon.stub();
+          logging.error = loggingStub;
           nock('https://i.ytimg.com')
             .get('/vi/1234/maxresdefault.jpg')
             .reply(404, jpegBytes)
@@ -764,6 +779,8 @@ describe('oembed-service', function () {
 
       it('does not store thumbnails for mentions', async function () {
         const service = new OembedService({
+          logging,
+          imageTransform,
           config: {
             get() {
               return true;
@@ -799,6 +816,8 @@ describe('oembed-service', function () {
       };
 
       const service = new OembedService({
+        logging,
+        imageTransform,
         config: {
           get() {
             return true;
@@ -820,6 +839,8 @@ describe('oembed-service', function () {
 
     it('does not pass the rethrow callback to the external request', async function () {
       const service = new OembedService({
+        logging,
+        imageTransform,
         config: {
           get() {
             return true;
@@ -855,6 +876,8 @@ describe('oembed-service', function () {
       };
 
       const service = new OembedService({
+        logging,
+        imageTransform,
         config: {
           get() {
             return true;
@@ -899,6 +922,8 @@ describe('oembed-service', function () {
 
     const buildService = (saveRaw, bytes) =>
       new OembedService({
+        logging,
+        imageTransform,
         config: ghostConfig,
         imageStore: {
           getSanitizedFileName: sinon.stub().returns('favicon'),
@@ -914,6 +939,8 @@ describe('oembed-service', function () {
     it('normalizes Uint8Array image responses from Got 15 to Buffer', async function () {
       const bytes = new Uint8Array(Buffer.from('img-bytes'));
       const service = new OembedService({
+        logging,
+        imageTransform,
         externalRequest() {
           return {
             buffer: async () => bytes,
@@ -930,6 +957,8 @@ describe('oembed-service', function () {
     it('returns null without fetching when the image URL is missing', async function () {
       const externalRequest = sinon.stub();
       const service = new OembedService({
+        logging,
+        imageTransform,
         config: ghostConfig,
         imageStore: {
           getSanitizedFileName: sinon
@@ -954,6 +983,8 @@ describe('oembed-service', function () {
       const getSanitizedFileName = sinon.stub().returns('sample');
 
       const service = new OembedService({
+        logging,
+        imageTransform,
         config: ghostConfig,
         imageStore: {
           getSanitizedFileName,
@@ -992,6 +1023,8 @@ describe('oembed-service', function () {
       const getSanitizedFileName = sinon.stub().returns('favicon');
 
       const service = new OembedService({
+        logging,
+        imageTransform,
         config: ghostConfig,
         imageStore: {
           getSanitizedFileName,
@@ -1023,6 +1056,8 @@ describe('oembed-service', function () {
       const getSanitizedFileName = sinon.stub().returns('favicon');
 
       const service = new OembedService({
+        logging,
+        imageTransform,
         config: ghostConfig,
         imageStore: {
           getSanitizedFileName,
@@ -1048,6 +1083,8 @@ describe('oembed-service', function () {
       const getSanitizedFileName = sinon.stub().returns('favicon');
 
       const service = new OembedService({
+        logging,
+        imageTransform,
         config: ghostConfig,
         imageStore: {
           getSanitizedFileName,
@@ -1068,6 +1105,8 @@ describe('oembed-service', function () {
 
     it('throws when storage lacks saveRaw', async function () {
       const service = new OembedService({
+        logging,
+        imageTransform,
         config: ghostConfig,
         imageStore: {
           getSanitizedFileName: sinon.stub().returns('sample'),
@@ -1087,6 +1126,8 @@ describe('oembed-service', function () {
 
     it('throws when external request fails', async function () {
       const service = new OembedService({
+        logging,
+        imageTransform,
         config: ghostConfig,
         imageStore: {
           getSanitizedFileName: sinon.stub().returns('sample'),
@@ -1176,6 +1217,8 @@ describe('oembed-service', function () {
           .toBuffer();
 
         const service = new OembedService({
+          logging,
+          imageTransform,
           config: {
             get: () => ({ images: { extensions: ['.avif'] } }),
           },
@@ -1404,6 +1447,8 @@ describe('oembed-service', function () {
       externalRequest.head = sinon.stub().rejects(new Error('blocked'));
 
       const service = new OembedService({
+        logging,
+        imageTransform,
         config: {
           get: sinon.stub().returns('testing'),
           getContentPath: sinon.stub().returns('/tmp/content/images'),
@@ -1476,6 +1521,8 @@ describe('oembed-service', function () {
       });
 
       const service = new OembedService({
+        logging,
+        imageTransform,
         config: {
           get: sinon.stub().returns('testing'),
           getContentPath: sinon.stub().returns('/tmp/content/images'),
@@ -1496,7 +1543,12 @@ describe('oembed-service', function () {
     });
 
     it('resolves a reachable favicon without downloading the full body', async function () {
-      const service = new OembedService({ config: { get: () => 'testing' }, externalRequest: got });
+      const service = new OembedService({
+        logging,
+        imageTransform,
+        config: { get: () => 'testing' },
+        externalRequest: got,
+      });
 
       const result = await service.resolveFaviconUrl(`http://127.0.0.1:${port}/favicon.png`, [
         'image/png',
@@ -1511,7 +1563,12 @@ describe('oembed-service', function () {
     let service;
 
     beforeEach(function () {
-      service = new OembedService({ config: { get: () => 'testing' }, externalRequest: got });
+      service = new OembedService({
+        logging,
+        imageTransform,
+        config: { get: () => 'testing' },
+        externalRequest: got,
+      });
     });
 
     it('returns the final url for a valid icon', async function () {
@@ -1609,7 +1666,12 @@ describe('oembed-service', function () {
 
   describe('findFallbackFavicon', function () {
     it('returns the first match in priority order without waiting on later probes', async function () {
-      const service = new OembedService({ config: { get: () => 'testing' }, externalRequest: got });
+      const service = new OembedService({
+        logging,
+        imageTransform,
+        config: { get: () => 'testing' },
+        externalRequest: got,
+      });
       const resolveFaviconUrl = sinon.stub(service, 'resolveFaviconUrl');
       resolveFaviconUrl.callsFake(() => new Promise(() => {}));
       resolveFaviconUrl.withArgs('https://blog.example.com/favicon.ico').resolves(undefined);
@@ -1625,7 +1687,12 @@ describe('oembed-service', function () {
     });
 
     it('returns undefined when no probe finds a favicon', async function () {
-      const service = new OembedService({ config: { get: () => 'testing' }, externalRequest: got });
+      const service = new OembedService({
+        logging,
+        imageTransform,
+        config: { get: () => 'testing' },
+        externalRequest: got,
+      });
       sinon.stub(service, 'resolveFaviconUrl').resolves(undefined);
 
       assert.equal(await service.findFallbackFavicon('https://example.com/post'), undefined);
@@ -1650,6 +1717,8 @@ describe('oembed-service', function () {
       externalRequest.defaults = { options: {} };
 
       service = new OembedService({
+        logging,
+        imageTransform,
         config: {
           get() {
             return true;
