@@ -63,7 +63,7 @@ export class Frame<TShape extends FrameShape = FrameShape> {
     this.original = obj;
   }
 
-  configure(apiConfig: FrameConfiguration) {
+  configure(apiConfig: FrameConfiguration, { deferBodyClone = false } = {}) {
     debug('configure');
     let optionNames = apiConfig.options;
     if (typeof optionNames === 'function') {
@@ -76,8 +76,33 @@ export class Frame<TShape extends FrameShape = FrameShape> {
     }
     this.options.context = this.original.context;
 
-    if (this.original.body && Object.keys(this.original.body).length) {
-      this.data = _.cloneDeep(this.original.body) as FrameData<TShape>;
+    const body = this.original.body;
+    const hasBody = body && Object.keys(body).length > 0;
+    if (hasBody) {
+      if (deferBodyClone) {
+        // Schema callbacks can use validated input without ever needing a
+        // mutable working body. Materialize that copy only on first access.
+        const setData = (value: FrameData<TShape>) => {
+          Object.defineProperty(this, 'data', {
+            value,
+            writable: true,
+            enumerable: true,
+            configurable: true,
+          });
+        };
+        Object.defineProperty(this, 'data', {
+          get: () => {
+            const data = _.cloneDeep(body) as FrameData<TShape>;
+            setData(data);
+            return data;
+          },
+          set: setData,
+          enumerable: true,
+          configurable: true,
+        });
+      } else {
+        this.data = _.cloneDeep(body) as FrameData<TShape>;
+      }
     } else {
       let dataNames = apiConfig.data;
       if (typeof dataNames === 'function') {
@@ -95,7 +120,7 @@ export class Frame<TShape extends FrameShape = FrameShape> {
     this.files = this.original.files ?? [];
     debug('original', this.original);
     debug('options', this.options);
-    debug('data', this.data);
+    debug('data', hasBody ? body : this.data);
   }
 
   setHeader(header: string, value: string) {
