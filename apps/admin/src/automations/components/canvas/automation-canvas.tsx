@@ -249,6 +249,7 @@ const buildGraph = ({
           onUpdate: (trigger) => onChange({ ...automation, ...trigger }),
         },
         errorMessage: actionErrors[TRIGGER_CANVAS_ID],
+        startExpanded: connectIn,
         onInteract: () => onInteract(TRIGGER_CANVAS_ID),
       },
       ...nodeProps(TRIGGER_CANVAS_ID),
