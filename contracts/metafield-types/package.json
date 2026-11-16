@@ -15,6 +15,18 @@
   "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
+  "imports": {
+    "#phone-lib": {
+      "source": {
+        "browser": "./src/phone-lib.ts",
+        "node": "./src/phone-lib.node.ts",
+        "default": "./src/phone-lib.ts"
+      },
+      "browser": "./build/phone-lib.js",
+      "node": "./build/phone-lib.node.js",
+      "default": "./build/phone-lib.js"
+    }
+  },
   "exports": {
     ".": {
       "source": "./src/index.ts",
