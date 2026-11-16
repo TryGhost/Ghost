@@ -85,7 +85,10 @@ export const comparableTriggerRules = (rules: readonly AutomationTriggerRule[]) 
     );
 
 export const getTriggerLabelId = (rules: readonly AutomationTriggerRule[]): string | undefined =>
-  rules.find((rule) => rule.trigger_type === 'label_added')?.label_id;
+  rules.find(
+    (rule): rule is Extract<AutomationTriggerRule, { trigger_type: 'label_added' }> =>
+      rule.trigger_type === 'label_added',
+  )?.label_id;
 
 function subscriptionChangedRulesFromSelection(selection: TierSelection): AutomationTriggerRule[] {
   const from: AutomationTriggerRule[] =

@@ -5,6 +5,7 @@ import {
   type Label as MemberLabel,
   useBrowseLabelsInfinite,
   useCreateLabel,
+  useCacheLabel,
 } from '@tryghost/admin-x-framework/api/labels';
 import {
   Combobox,
@@ -45,7 +46,7 @@ export function LabelTriggerPicker({
   const id = useId();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [recentSelection, setRecentSelection] = useState<MemberLabel>();
+  const cacheLabel = useCacheLabel();
   const name = search.trim();
   const [query] = useDebounce(name, 250);
   const labels = useBrowseLabelsInfinite({
@@ -68,8 +69,7 @@ export function LabelTriggerPicker({
     labels.isSuccess &&
     !choices.some((choice) => choice.name.toLowerCase() === name.toLowerCase());
 
-  const selectedName =
-    selectedLabel?.name ?? (recentSelection?.id === labelId ? recentSelection?.name : undefined);
+  const selectedName = selectedLabel?.name;
   let displayName = 'Search or create a label...';
   if (selectedLabel?.deleted) {
     displayName = selectedName ? `${selectedName} (deleted)` : 'Label deleted';
@@ -89,7 +89,7 @@ export function LabelTriggerPicker({
   };
 
   const choose = (choice: MemberLabel) => {
-    setRecentSelection(choice);
+    cacheLabel(choice);
     onChange(choice.id);
     changeOpen(false);
   };
