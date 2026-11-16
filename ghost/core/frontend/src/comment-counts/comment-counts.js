@@ -46,7 +46,7 @@
           if (e.dataset.ghostCommentCountAutowrap !== 'false') {
             const el = document.createElement(e.dataset.ghostCommentCountTag);
             if (e.dataset.ghostCommentCountClassName) {
-              el.classList.add(e.dataset.ghostCommentCountClassName);
+              el.className = e.dataset.ghostCommentCountClassName;
             }
             el.textContent = text;
             e.insertAdjacentElement('afterend', el);
