@@ -10,10 +10,11 @@
   },
   "files": [
     "index.js",
+    "index.d.ts",
     "lib"
   ],
   "main": "index.js",
-  "types": "types",
+  "types": "index.d.ts",
   "publishConfig": {
     "access": "public"
   },
