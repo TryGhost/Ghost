@@ -1,10 +1,14 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 
-const models = require('../../../../core/server/models');
-const urlService = require('../../../../core/server/services/url');
-const { PostsService } = require('../../../../core/server/services/posts/posts-service-instance');
-const searchIndexController = require('../../../../core/server/api/endpoints/search-index');
+// @ts-expect-error This module lacks type definitions.
+import models from '../../../../core/server/models';
+// @ts-expect-error This module lacks type definitions.
+import urlService from '../../../../core/server/services/url';
+// @ts-expect-error This module lacks type definitions.
+import { PostsService } from '../../../../core/server/services/posts/posts-service-instance';
+// @ts-expect-error This module lacks type definitions.
+import searchIndexController from '../../../../core/server/api/endpoints/search-index';
 
 describe('Search index controller', function () {
   let browsePostsStub: sinon.SinonStub;
@@ -21,8 +25,11 @@ describe('Search index controller', function () {
   });
 
   it('forces the URL service required columns into the tags fetch', async function () {
-    sinon.stub(urlService, 'getRequiredFields').withArgs('tags').returns(['visibility', 'slug']);
-    sinon.stub(urlService, 'getRequiredRelations').returns([]);
+    sinon
+      .stub(Object.getPrototypeOf(urlService), 'getRequiredFields')
+      .withArgs('tags')
+      .returns(['visibility', 'slug']);
+    sinon.stub(Object.getPrototypeOf(urlService), 'getRequiredRelations').returns([]);
 
     await searchIndexController.fetchTags.query();
 
@@ -31,9 +38,9 @@ describe('Search index controller', function () {
   });
 
   it('forces router-filter columns into the posts fetch', async function () {
-    const getRequiredFields = sinon.stub(urlService, 'getRequiredFields');
+    const getRequiredFields = sinon.stub(Object.getPrototypeOf(urlService), 'getRequiredFields');
     getRequiredFields.withArgs('posts').returns(['status', 'type', 'slug', 'featured']);
-    sinon.stub(urlService, 'getRequiredRelations').returns([]);
+    sinon.stub(Object.getPrototypeOf(urlService), 'getRequiredRelations').returns([]);
 
     await searchIndexController.fetchPosts.query();
 
@@ -43,8 +50,8 @@ describe('Search index controller', function () {
   });
 
   it('leaves columns untouched when the routing config needs none', async function () {
-    sinon.stub(urlService, 'getRequiredFields').returns([]);
-    sinon.stub(urlService, 'getRequiredRelations').returns([]);
+    sinon.stub(Object.getPrototypeOf(urlService), 'getRequiredFields').returns([]);
+    sinon.stub(Object.getPrototypeOf(urlService), 'getRequiredRelations').returns([]);
 
     await searchIndexController.fetchTags.query();
 
