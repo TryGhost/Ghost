@@ -13,12 +13,13 @@ import { AutomationsService } from '../../../../../core/server/services/automati
 
 type InitOptions = Parameters<AutomationsService['init']>[0];
 type DomainEvents = InitOptions['domainEvents'];
+type DomainEventsStub = sinon.SinonStubbedInstance<DomainEvents>;
 type SchedulerAdapter = InitOptions['schedulerAdapter'];
 type SchedulerAdapterStub = sinon.SinonStubbedInstance<SchedulerAdapter>;
 
 describe('automations service', function () {
   let automations: AutomationsService;
-  let domainEvents: DomainEvents;
+  let domainEvents: DomainEventsStub;
   let schedulerAdapter: SchedulerAdapterStub;
   let initOptions: InitOptions;
 

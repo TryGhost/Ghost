@@ -10,7 +10,6 @@ import nock from 'nock';
 import TinybirdServiceWrapper from '../../../core/server/services/tinybird';
 import settingsCache from '../../../core/shared/settings-cache';
 import configUtils from '../../utils/config-utils';
-// @ts-expect-error Module has no type declarations.
 import domainEvents from '@tryghost/domain-events';
 import ObjectId from 'bson-objectid';
 // @ts-expect-error Module has no type declarations.

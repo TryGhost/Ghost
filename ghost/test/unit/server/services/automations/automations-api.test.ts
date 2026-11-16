@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import ObjectId from 'bson-objectid';
 import sinon from 'sinon';
 import { vi } from 'vitest';
-// @ts-expect-error @tryghost/domain-events currently lacks type declarations.
 import domainEvents from '@tryghost/domain-events';
 
 import {

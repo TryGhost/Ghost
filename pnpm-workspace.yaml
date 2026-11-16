@@ -96,19 +96,19 @@ catalog:
   '@testing-library/react': 16.3.3
   '@tryghost/color-utils': 0.2.24
   '@tryghost/custom-fonts': 1.0.15
-  '@tryghost/debug': 2.3.21
-  '@tryghost/domain-events': 3.3.23
+  '@tryghost/debug': 2.3.23
+  '@tryghost/domain-events': 3.4.0
   '@tryghost/errors': 3.4.7
   '@tryghost/helpers': 1.1.110
-  '@tryghost/logging': 6.0.4
+  '@tryghost/logging': 6.0.6
   '@tryghost/mg-clean-html': 0.12.7
-  '@tryghost/metrics': 3.7.4
+  '@tryghost/metrics': 3.7.6
   '@tryghost/mongo-knex': 0.11.2
   '@tryghost/nql': 0.13.5
   '@tryghost/nql-lang': 0.7.1
   '@tryghost/pretty-cli': 3.4.3
-  '@tryghost/promise': 2.3.22
-  '@tryghost/request': 4.0.15
+  '@tryghost/promise': 2.4.0
+  '@tryghost/request': 4.0.17
   '@tryghost/security': 4.0.3
   '@tryghost/string': 0.3.9
   '@tryghost/timezone-data': 1.0.4
