@@ -11,6 +11,7 @@ import {
   post,
   renderAdminApp,
   settingsResponse,
+  settleRequests,
   staffRole,
   tag,
 } from '@test-utils/acceptance';
@@ -255,6 +256,9 @@ describe('Posts list email sending status', () => {
     await expect.element(row).toHaveTextContent('Sending emails');
     await expect.element(row).not.toHaveTextContent('Published and sent');
     await expect.poll(() => failedStatusApi.requests.length).toBe(1);
+    // The fake has the request before the app has its error, and a focus while
+    // the query is still fetching doesn't refetch it
+    await settleRequests();
 
     const recoveredStatusApi = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
       email_statuses: [
