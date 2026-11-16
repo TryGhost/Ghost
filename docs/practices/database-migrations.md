@@ -47,9 +47,11 @@ these version and placement checks with
 
 ### Writing the migration
 
-1. Open the generated migration file in
+1. Open the generated TypeScript migration file in
    `core/server/data/migrations/versions/`.
 2. Add the database changes, using similar existing migrations as examples.
+   Older migrations are JavaScript; leave them unchanged and write new ones in
+   TypeScript so the migration helpers' types check them.
 3. Run the migration with `pnpm knex-migrator migrate` from the repository
    root while following the iteration guidance below.
 4. For schema changes, update `core/server/data/schema/schema.js` to match.
