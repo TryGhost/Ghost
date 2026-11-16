@@ -5,18 +5,19 @@ import type {
   AppInstallationHistoryEntry,
 } from '@tryghost/admin-x-framework/api/app-installations';
 import {
-  type AppFrameResult,
   allowUnhandledRequests,
+  type AppFrameResult,
   callAppFrame,
   callHostRaw,
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeAdminStats,
   fakeEditorChrome,
   fakeFrameOrigin,
   fakeTags,
-  post,
   holdModuleLoads,
+  post,
   postFrameForm,
   reloadFrame,
   renderAdminApp,
@@ -1338,6 +1339,9 @@ describe('Managing apps', () => {
   });
 
   it('shows the app’s name large under the breadcrumb, with its badges and description, in Admin 7', async () => {
+    // Admin 7's sidebar shows the site's member count and revenue.
+    fakeAdminStats.memberCount();
+    fakeAdminStats.mrr();
     fakeDetails(
       installation({
         manifest: manifest({ development: true }),

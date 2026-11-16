@@ -199,7 +199,8 @@ describe('Apps in the sidebar', () => {
     await appsScreen.detailsActions().click();
     await appsScreen.menuItem('Unpin from sidebar').click();
 
-    await expect.poll(listedApps).toEqual(['App 2']);
+    // The sidebar keeps listing the app whose details are open, now after the pinned ones.
+    await expect.poll(listedApps).toEqual(['App 2', 'App 1']);
     await expect
       .poll(preferences.savedPins)
       .toEqual({ pinned: ['installation-2'], unpinned: ['installation-1'] });
