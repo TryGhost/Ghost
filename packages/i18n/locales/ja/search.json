@@ -1,10 +1,10 @@
 {
-    "Authors": "",
-    "Cancel": "",
-    "Clear search": "",
-    "No matches found": "",
-    "Posts": "",
-    "Search posts, tags and authors": "",
-    "Show more results": "",
-    "Tags": ""
+    "Authors": "著者",
+    "Cancel": "キャンセル",
+    "Clear search": "検索をクリア",
+    "No matches found": "一致する結果はありません",
+    "Posts": "投稿",
+    "Search posts, tags and authors": "投稿・タグ・著者を検索",
+    "Show more results": "さらに結果を表示",
+    "Tags": "タグ"
 }
