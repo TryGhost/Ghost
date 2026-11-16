@@ -5,7 +5,6 @@ const {
   agentProvider,
   fixtureManager,
   mockManager,
-  configUtils,
   hostLimits,
 } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
@@ -478,19 +477,6 @@ describe('List custom fields', function () {
         await agent.get(`members/metafields/custom/${field.key}/values/`).expectStatus(403);
       } finally {
         await agent.loginAsOwner();
-      }
-    });
-
-    // A site that defined fields with the flag on can still filter by them with it off.
-    it('is read while the flag is off', async function () {
-      const field = await createList(ANIMALS);
-      await setValues(await createMember(), { [field.key]: ['Cat'] });
-      configUtils.set('labs', { membersCustomFields: false });
-
-      try {
-        assert.deepEqual(await heldValues(field.key), ['Cat']);
-      } finally {
-        await configUtils.restore();
       }
     });
 

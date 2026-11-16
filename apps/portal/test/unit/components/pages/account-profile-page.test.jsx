@@ -64,7 +64,7 @@ describe('Account Profile Page', () => {
   });
 
   describe('Custom fields', () => {
-    const site = getSiteData({ labs: { membersCustomFields: true } });
+    const site = getSiteData();
 
     // jsdom has neither, and a list picker asks both: whether the screen is a touch screen, and
     // to bring the highlighted option into view.

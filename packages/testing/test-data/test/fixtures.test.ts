@@ -13,7 +13,6 @@ describe('boot fixtures', () => {
   it('defaults labs flags to off, and GA flags to on, in settings and config', () => {
     const expected = {
       selfServeArchives: true,
-      membersCustomFields: true,
       superEditors: false,
       editorExcerpt: false,
       additionalPaymentMethods: false,

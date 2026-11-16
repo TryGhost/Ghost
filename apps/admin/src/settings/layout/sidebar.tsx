@@ -122,7 +122,7 @@ function useSearchResults() {
         ...(visibility.giftSubscriptions ? [membershipSearchKeywords.giftSubscriptions] : []),
         ...(visibility.welcomeEmails ? [membershipSearchKeywords.memberEmails] : []),
         ...(visibility.tipsAndDonations ? [membershipSearchKeywords.tips] : []),
-        ...(visibility.customFields ? [membershipSearchKeywords.customFields] : []),
+        membershipSearchKeywords.customFields,
       ].flat(),
     [visibility],
   );
@@ -552,15 +552,13 @@ const Sidebar: React.FC = () => {
               onClick={handleSectionClick}
             />
           )}
-          {visibility.customFields && (
-            <NavItem
-              icon={<LucideIcon.TextCursorInput />}
-              keywords={membershipSearchKeywords.customFields}
-              navid="custom-fields"
-              title="Custom fields"
-              onClick={handleSectionClick}
-            />
-          )}
+          <NavItem
+            icon={<LucideIcon.TextCursorInput />}
+            keywords={membershipSearchKeywords.customFields}
+            navid="custom-fields"
+            title="Custom fields"
+            onClick={handleSectionClick}
+          />
           {visibility.hasAutomations ? (
             <NavItem
               icon={<LucideIcon.Mail />}

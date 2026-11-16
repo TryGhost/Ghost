@@ -8,7 +8,6 @@ import {
   type ShapeText,
 } from '@tryghost/metafield-types/shapes';
 import { isPreviewMode } from './check-mode';
-import { hasCustomFieldsEnabled } from './helpers';
 
 /**
  * A field the publisher has opened to members, as the members API lists it: Ghost's definition
@@ -50,7 +49,6 @@ function isMemberCustomField(field: ListedCustomField): field is MemberCustomFie
 
 interface AskFor {
   api: { member: { customFields: () => Promise<ListedCustomField[]> } };
-  site: { labs?: { membersCustomFields?: boolean } } | null;
   member: unknown;
 }
 
@@ -58,7 +56,7 @@ interface AskFor {
  * The custom fields the publisher has opened to members, asked for once, beside the
  * member they belong to.
  *
- * Always a list. Nothing to ask for — the feature off, nobody signed in, a preview — and
+ * Always a list. Nothing to ask for — nobody signed in, a preview — and
  * a site that cannot answer come to the same thing here: no fields to draw. Every way in
  * is a page load, so there is no later moment at which the answer would differ.
  *
@@ -67,10 +65,9 @@ interface AskFor {
  */
 export async function fetchMemberCustomFields({
   api,
-  site,
   member,
 }: AskFor): Promise<MemberCustomField[]> {
-  if (!hasCustomFieldsEnabled({ site }) || !member || isPreviewMode()) {
+  if (!member || isPreviewMode()) {
     return [];
   }
 

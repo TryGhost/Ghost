@@ -73,7 +73,7 @@ export function getSettingsSections(visibility: SettingsSectionVisibility): Sett
       title: 'Tips & donations',
       keywords: membershipSearchKeywords.tips,
     },
-    visibility.customFields && {
+    {
       navid: 'custom-fields',
       title: 'Custom fields',
       keywords: membershipSearchKeywords.customFields,

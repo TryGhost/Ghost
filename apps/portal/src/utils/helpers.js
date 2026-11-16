@@ -308,16 +308,6 @@ export function getRefDomain() {
   return referrerSource;
 }
 
-/**
- * Whether the site's Ghost has custom fields switched on, so Portal may ask it for them. They
- * are released, but Portal is served to older Ghost versions too, which report the flag off.
- * This goes in the same change that deletes the flag from Ghost: with the flag gone, it would
- * read off everywhere and hide every member's fields.
- */
-export function hasCustomFieldsEnabled({ site }) {
-  return !!site?.labs?.membersCustomFields;
-}
-
 export function hasCommentsEnabled({ site }) {
   return site?.comments_enabled && site?.comments_enabled !== 'off';
 }

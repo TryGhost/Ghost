@@ -225,11 +225,11 @@ export const Destination: React.FC<{
   return (
     <SubRow error={error} label={label}>
       <CustomFieldPicker
-        // Offered without asking about the custom fields flag or host limit. Checkout collection
-        // is released with custom fields, and it needs Stripe, which a host only lets a site
-        // connect where it lets it have custom fields. A site that loses them keeps its
-        // connection, and the server refuses a new field there with the host's message, which
-        // the picker shows. A type still in development is offered where its own flag is on.
+        // Offered without asking about the custom fields host limit. Checkout collection needs
+        // Stripe, which a host only lets a site connect where it lets it have custom fields. A
+        // site that loses them keeps its connection, and the server refuses a new field there
+        // with the host's message, which the picker shows. A type still in development is
+        // offered where its own flag is on.
         createTypes={creatableTypesAmong(creatableTypes, [type])}
         // A field archived after it was chosen stays chosen, so the setting can be saved back.
         fields={fields.filter(

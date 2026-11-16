@@ -182,48 +182,45 @@ module.exports = function apiRoutes() {
 
   router.get('/members/stripe_connect', mw.authAdminApi, http(api.membersStripeConnect.auth));
 
-  // Custom field definitions. Mounted rather than listed so every route under it is
-  // reached the same way, and so the guard is stated once instead of on every route that
-  // needs it.
-  //
-  // Order carries the rule here, the way Express reads it: a request walks this stack
-  // from the top, so the reads below are answered before the guard is reached, and
-  // everything registered after it passes through it. A route added at the end is
-  // guarded by being there, which is the safer way round to forget.
-  //
-  // Mounted before /members/:id so the literal path is not captured as an id.
-  //
-  // Authenticated as a route here rather than inside the mount: mounting strips the path
-  // from req.url, and the check on integration keys names the resource from its first
-  // segment, so inside it would see "custom" instead of "members" and refuse them.
-  const metafieldsRouter = express.Router('admin api members metafields');
-  router.all(['/members/metafields', '/members/metafields/*'], mw.authAdminApi);
-  router.use('/members/metafields', metafieldsRouter);
-
-  // Reading is deliberately open: Admin asks every site for its definitions, and for the values
-  // members hold of a list field it filters by, to draw screens it renders either way, and a site
-  // that has none simply answers with an empty list rather than a 404.
-  metafieldsRouter.get('/:namespace', http(api.membersMetafields.browse));
-  metafieldsRouter.get('/:namespace/:key', http(api.membersMetafields.read));
-  metafieldsRouter.get('/:namespace/:key/values', http(api.membersMetafields.browseValues));
-
-  // Changing one needs custom fields to be switched on, and a 404 says they aren't. They are
-  // released, so only a flag switched off from outside the site says that. Who may change a
+  // Custom field definitions, listed before /members/:id so the literal path is not captured
+  // as an id. A site with no fields answers a read with an empty list. Who may change a
   // namespace's fields, and whether its limits let them, is the namespace's own policy, which
   // the endpoints and the service apply.
-  metafieldsRouter.use(labs.enabledMiddleware('membersCustomFields'));
-
-  metafieldsRouter.post('/:namespace', http(api.membersMetafields.add));
-  metafieldsRouter.put('/:namespace', http(api.membersMetafields.reorder));
-  metafieldsRouter.put('/:namespace/:key', http(api.membersMetafields.edit));
-  metafieldsRouter.delete('/:namespace/:key', http(api.membersMetafields.destroy));
+  router.get('/members/metafields/:namespace', mw.authAdminApi, http(api.membersMetafields.browse));
+  router.get(
+    '/members/metafields/:namespace/:key',
+    mw.authAdminApi,
+    http(api.membersMetafields.read),
+  );
+  router.get(
+    '/members/metafields/:namespace/:key/values',
+    mw.authAdminApi,
+    http(api.membersMetafields.browseValues),
+  );
+  router.post('/members/metafields/:namespace', mw.authAdminApi, http(api.membersMetafields.add));
+  router.put(
+    '/members/metafields/:namespace',
+    mw.authAdminApi,
+    http(api.membersMetafields.reorder),
+  );
+  router.put(
+    '/members/metafields/:namespace/:key',
+    mw.authAdminApi,
+    http(api.membersMetafields.edit),
+  );
+  router.delete(
+    '/members/metafields/:namespace/:key',
+    mw.authAdminApi,
+    http(api.membersMetafields.destroy),
+  );
 
   // ## Apps
   // Everything about apps sits behind the private `apps` flag, asked once here so a route
   // added below is guarded by being there.
   //
-  // Authenticated as a route here rather than inside the mount, for the same reason as
-  // the members metafields router above.
+  // Authenticated as a route here rather than inside the mount: mounting strips the path
+  // from req.url, and the check on integration keys names the resource from its first
+  // segment, so inside it would see "installations" instead of "apps" and refuse them.
   const appsRouter = express.Router('admin api apps');
   router.all(['/apps', '/apps/*'], mw.authAdminApi);
   router.use('/apps', appsRouter);
