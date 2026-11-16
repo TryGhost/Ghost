@@ -1,6 +1,6 @@
-import { Badge, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade/components';
-import { Inline } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { Badge } from '@tryghost/shade/components';
+import { Stack } from '@tryghost/shade/primitives';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { Link } from '@tryghost/admin-x-framework';
@@ -26,7 +26,7 @@ export function SidebarSiteIcon() {
 interface SidebarSiteIdentityProps {
   /**
    * `capsule`: beside the icon in the floating sidebar's header row: the
-   * title and a private-site lock, the title truncating to fit.
+   * title above the private-site status, truncating to fit.
    * `header`: the docked sidebar's (or mobile sheet's) header row, icon included.
    */
   variant: 'capsule' | 'header';
@@ -58,26 +58,27 @@ export function SidebarSiteIdentity({ variant }: SidebarSiteIdentityProps) {
 
   if (variant === 'capsule') {
     return (
-      <Inline align="center" className="min-w-0 flex-1" gap="sm">
-        <span className="heading-font-features min-w-0 truncate text-[18px] leading-[1.15] font-medium tracking-[-0.01em] whitespace-nowrap text-foreground">
+      <Stack align="start" className="min-w-0 flex-1" gap="none">
+        <span
+          className={cn(
+            'heading-font-features w-full min-w-0 truncate text-[18px] leading-[1.15] font-medium tracking-[-0.01em] whitespace-nowrap text-foreground',
+            isPrivate && 'text-[16px] leading-[18px]',
+          )}
+        >
           {title}
         </span>
         {isPrivate && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                aria-label="Private site: open access settings"
-                className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-state-warning-fill text-state-warning-foreground outline-hidden focus-visible:ring-2 focus-visible:ring-focus-ring"
-                state={settingsReturnToState}
-                to="/settings/members"
-              >
-                <LucideIcon.Lock aria-hidden="true" className="size-3" strokeWidth={2} />
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent>Private site</TooltipContent>
-          </Tooltip>
+          <Link
+            aria-label="Private site: open access settings"
+            className="inline-flex shrink-0 items-center gap-1 rounded-xs text-[10px] leading-3 font-medium text-state-warning outline-hidden focus-visible:ring-2 focus-visible:ring-focus-ring"
+            state={settingsReturnToState}
+            to="/settings/members"
+          >
+            <LucideIcon.Lock aria-hidden="true" className="size-2.5" strokeWidth={2} />
+            Private
+          </Link>
         )}
-      </Inline>
+      </Stack>
     );
   }
 
