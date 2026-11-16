@@ -134,8 +134,8 @@ changed. Nothing lives in `ghost/domains/` yet except a README.
 
 ## Step 3: kernel utilities and discovery
 
-Cost: 18 files, about 1,500 lines added (about 620 of code, 800 of tests, the
-rest documentation). Three production lines changed outside new files: two
+Cost: 21 files, 1,603 lines added and 21 removed (about 620 of code, 800 of
+tests, the rest documentation). Three production lines changed outside new files: two
 blocks in `boot.js`.
 
 ### What was built
@@ -218,3 +218,90 @@ file is imported. The effect is the runner's.
 - Foundation lives in a new `ghost/core/foundation/` folder that holds only
   what the spike added. Config, logging, the database, the event bus and the
   job runner were used from where they are.
+
+## Step 4: fixture domains
+
+Cost: 38 files, about 1,050 lines added, all under `ghost/test`. Nothing shipped
+and nothing booted in production: `files` in `ghost/package.json` does not list
+`test/`, and the foundation's manifest reads `ghost/domains` only.
+
+Two fixture domains live in `ghost/test/utils/fixtures/domains/`:
+
+- **library** has every kind of file: `CONTEXT.md`, `boot.ts`, `actions/`,
+  `data/`, `events/`, `http/` (routes, controller, validator, serializer),
+  three service roots (one declares `startAfter`, one `blocking: false`),
+  `repositories/`, `entities/`, `jobs/`, the three fragments (settings has a
+  calculated setting), `transition/` (a service root, a model, a command-style
+  event) and `test/`.
+- **notices** has no `boot.ts`. Its listener subscribes to library's `BookLent`
+  event, its service calls library's `describeBook` action at the moment of use,
+  and it has `emails/` and its own event and action.
+
+`test/utils/fixtures/domain-foundation/` stands in for the foundation (an event
+bus keyed by class name, like the real one) and holds one scenario that starts
+both domains and reports what happened as plain data.
+
+### Does finding files at start work? Yes, in every way tried
+
+`test/unit/kernel/domains/fixture-domains.test.ts` holds the scenario to one set
+of expectations three ways, all **verified by running**:
+
+| How the files were loaded                                                                  | Result |
+| ------------------------------------------------------------------------------------------ | ------ |
+| Under the unit test runner (vitest, with its `tsx/cjs` require hook)                       | passes |
+| Plain `node`, tsc-built JavaScript beside its TypeScript (built checkout, release archive) | passes |
+| Plain `node`, JavaScript alone with every `.ts` removed (what the image prune leaves)      | passes |
+
+It was also run from source with `node --conditions=source --import=tsx`, the
+development loader. The built cases compile the kernel and fixtures in place in
+a temporary copy with the compiler `pnpm build:tsc` uses, then run with no
+TypeScript loader and no `source` condition.
+
+**The generated-index fallback was not needed.** Discovery uses `readdirSync`
+and `require` of an extensionless path, which every loader Ghost runs under
+already supports.
+
+### What each kind of file costs at start, measured on the fixtures
+
+| When              | Files loaded                                                                                                                       |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Discovery         | none                                                                                                                               |
+| `start()`         | `boot.ts`, every service root, every listener, and whatever those import (entities, repositories, events, another domain's action) |
+| Mounting routes   | `http/routes.ts` only                                                                                                              |
+| First request     | the handler's controller and what it imports (validator, serializer)                                                               |
+| `ready()`         | job files; the root that does not block boot starts                                                                                |
+| A registry asking | `settings.ts`, `permissions.ts`, `schema.ts`                                                                                       |
+| Never             | anything in `transition/` or `test/`                                                                                               |
+
+### What the fixtures showed
+
+- **`boot.ts` does not need to exist.** Notices has none and works: its root
+  imports the foundation stand-in and library's action itself. Library has one
+  that supplies `publish`, `now` and `record` to all three roots, and with it
+  **no library root imports anything outside the domain except the kernel**.
+  Both shapes run side by side. The cost of the second shape is one type import
+  per root (`LibraryDependencies` from `../../boot`).
+- **An action is a plain function.** `describeBook(id)` and `lendBook(input)`
+  import their own service root and read `.service` inside the function body.
+  That satisfies "finds its service when called, not when imported" with no
+  utility. Importing the action does load the service root module, but loading
+  a root has no effect by the `defineService` contract.
+- **A listener in one domain importing another domain's event class works**,
+  and is the only way to get a typed payload. The event file is in the public
+  `events/` folder, so this is within the rules.
+- **Cross-domain start order cannot be relied on, by construction.** Domains
+  start together; in the scenario notices finished starting between library's
+  two blocking roots.
+- **Data needs a role name.** The rules give no role for files in `data/`. The
+  fixtures use `book.data.ts`. The email renderer needed one too
+  (`loan-notice.renderer.ts`).
+- **The compiler is not `typescript/bin/tsc`.** `ghost` resolves `typescript`
+  to an aliased package and `tsc` to a shim, so the test runs
+  `node_modules/.bin/tsc`, the same thing `pnpm build:tsc` runs.
+
+### Not verified
+
+- The fixtures prove discovery and the runner. They do not go through
+  `boot.js`, Express or the real event bus; step 7 does that with real code.
+- `pnpm archive` and the production Docker image were not built. The two built
+  cases reproduce their file layouts, not the artefacts themselves.
