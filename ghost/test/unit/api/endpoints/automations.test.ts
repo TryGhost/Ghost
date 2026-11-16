@@ -7,7 +7,6 @@ import sinon from 'sinon';
 import { vi } from 'vitest';
 import { Frame } from '@tryghost/api-framework';
 
-// @ts-expect-error @tryghost/domain-events currently lacks type declarations.
 import domainEvents from '@tryghost/domain-events';
 
 type AutomationsApi = typeof import('../../../../core/server/services/automations/automations-api');

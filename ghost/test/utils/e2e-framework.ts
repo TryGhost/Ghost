@@ -45,7 +45,6 @@ import supertest from 'supertest';
 // @ts-expect-error This module lacks type definitions.
 import { stopGhost } from './e2e-utils';
 import adapterManager from '../../core/server/services/adapter-manager';
-// @ts-expect-error This module lacks type definitions.
 import DomainEvents from '@tryghost/domain-events';
 import * as hostLimits from './host-limits-utils';
 // @ts-expect-error This module lacks type definitions.
