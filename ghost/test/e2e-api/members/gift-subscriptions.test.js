@@ -6,6 +6,8 @@ const {
   fixtureManager,
   configUtils,
   matchers,
+  dbUtils,
+  resetRateLimits,
 } = require('../../utils/e2e-framework');
 const { stripeMocker } = require('../../utils/e2e-framework-mock-manager');
 const models = require('../../../core/server/models');
@@ -1555,6 +1557,12 @@ describe('Gift Subscriptions', function () {
       });
 
       describe('Restricted signup sites', function () {
+        // Every test here sends a magic link from the same IP, which would otherwise exceed the sign-in enumeration limit
+        beforeEach(async function () {
+          await dbUtils.truncate('brute');
+          resetRateLimits();
+        });
+
         async function sendGiftMagicLink({ email, giftToken }, expectedStatus) {
           const { text: integrityToken } = await membersAgent
             .get('/api/integrity-token/')
@@ -1693,6 +1701,43 @@ describe('Gift Subscriptions', function () {
           const res = await sendGiftMagicLink({ email, giftToken: gift.get('token') }, 400);
 
           assert.equal(res.body.errors[0].message, errorMessages.alreadyRedeemed);
+
+          mockManager.assert.sentEmailCount(0);
+          assert.equal(await models.Member.findOne({ email }, { require: false }), null);
+        });
+
+        it('rejects an expired gift on a paid-members-only site', async function () {
+          mockManager.mockSetting('members_signup_access', 'paid');
+
+          const email = 'gift-paid-only-expired@test.com';
+          const gift = await createGift({
+            status: 'expired',
+            expired_at: new Date('2026-04-08T10:00:00.000Z'),
+            expires_at: new Date('2026-04-08T10:00:00.000Z'),
+          });
+
+          const res = await sendGiftMagicLink({ email, giftToken: gift.get('token') }, 400);
+
+          assert.equal(res.body.errors[0].message, errorMessages.expired);
+          assert.equal(res.body.errors[0].code, 'GIFT_EXPIRED');
+
+          mockManager.assert.sentEmailCount(0);
+          assert.equal(await models.Member.findOne({ email }, { require: false }), null);
+        });
+
+        it('rejects a refunded gift on a paid-members-only site', async function () {
+          mockManager.mockSetting('members_signup_access', 'paid');
+
+          const email = 'gift-paid-only-refunded@test.com';
+          const gift = await createGift({
+            status: 'refunded',
+            refunded_at: new Date('2026-04-08T10:00:00.000Z'),
+          });
+
+          const res = await sendGiftMagicLink({ email, giftToken: gift.get('token') }, 400);
+
+          assert.equal(res.body.errors[0].message, errorMessages.refunded);
+          assert.equal(res.body.errors[0].code, 'GIFT_REFUNDED');
 
           mockManager.assert.sentEmailCount(0);
           assert.equal(await models.Member.findOne({ email }, { require: false }), null);
