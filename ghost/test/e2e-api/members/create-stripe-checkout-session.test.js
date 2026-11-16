@@ -10,6 +10,7 @@ const nock = require('nock');
 const { stripeMocker } = require('../../utils/e2e-framework-mock-manager');
 const models = require('../../../core/server/models');
 const membersService = require('../../../core/server/services/members');
+const settingsCache = require('../../../core/shared/settings-cache');
 const urlServiceUtils = require('../../utils/url-service-utils');
 
 let membersAgent, adminAgent;
@@ -1121,6 +1122,29 @@ describe('Create Stripe Checkout Session', function () {
       const error = await failedCheckout();
       assert.equal(error.message, 'Unable to initiate checkout session');
       assert.equal(error.code, 'email_invalid');
+    });
+  });
+
+  describe('Site stamp', function () {
+    beforeEach(function () {
+      mockManager.mockStripe();
+    });
+
+    it('stamps the session with the site uuid, so other sites on the same Stripe account skip the checkout', async function () {
+      const {
+        body: { tiers },
+      } = await adminAgent.get('/tiers/');
+      const paidTier = tiers.find((tier) => tier.type === 'paid');
+
+      await membersAgent
+        .post('/api/create-stripe-checkout-session/')
+        .body({ tierId: paidTier.id, cadence: 'month' })
+        .expectStatus(200);
+
+      const session = stripeMocker.checkoutSessions.at(-1);
+      const siteUuid = settingsCache.get('site_uuid');
+      assert.ok(siteUuid, 'The site should have a uuid');
+      assert.equal(session.metadata.ghost_site_uuid, siteUuid);
     });
   });
 });

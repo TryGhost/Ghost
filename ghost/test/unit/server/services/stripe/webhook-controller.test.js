@@ -20,6 +20,7 @@ describe('WebhookController', function () {
 
   beforeEach(function () {
     deps = {
+      getSiteUuid: () => 'this-site',
       subscriptionEventService: { handleSubscriptionEvent: sinon.stub() },
       invoiceEventService: { handleInvoiceEvent: sinon.stub() },
       checkoutSessionEventService: { handleEvent: sinon.stub(), handleDonationEvent: sinon.stub() },

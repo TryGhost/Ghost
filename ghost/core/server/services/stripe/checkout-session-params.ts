@@ -1,6 +1,7 @@
 import { STRIPE_ALLOWED_COUNTRIES } from '@tryghost/checkout';
 import { z } from 'zod';
 import { snakeKeys, type SnakeKeys } from '../../lib/case-keys';
+import { stamp } from './site-stamp';
 import type {
   CheckoutAsks,
   CheckoutDefinition,
@@ -209,19 +210,23 @@ export interface CustomerUpdate {
 }
 
 /**
- * The parameters of the Checkout session to create: the session's own parameters, the parameters
- * each remaining part of the checkout adds, and the `customer_update` those parameters need when
- * the session is for an existing Stripe customer.
+ * Builds the parameters for creating a Checkout session: the caller's parameters, the parameters
+ * added by each part of the checkout that is still included, the `customer_update` those
+ * parameters need when the session is for an existing Stripe customer, and the stamp with the
+ * site's uuid (see `stamp`).
  */
-export function sessionCreateParams<Params extends CustomerSessionParams>(
+export function sessionCreateParams<
+  Params extends CustomerSessionParams & { metadata?: Record<string, unknown> },
+>(
   params: Params,
   parts: CheckoutSessionParts,
+  siteUuid: string,
 ): CheckoutSessionParams & Params & { customer_update?: CustomerUpdate } {
   const asked = Object.values(parts).reduce<CheckoutSessionParams>(
     (all, part) => ({ ...all, ...part }),
     {},
   );
-  const session = { ...asked, ...params };
+  const session = stamp({ ...asked, ...params }, siteUuid);
   const update = customerUpdateOf(session);
   return update ? { ...session, customer_update: update } : session;
 }

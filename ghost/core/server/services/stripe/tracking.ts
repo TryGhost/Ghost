@@ -133,12 +133,19 @@ export interface CheckoutCompletionAttempt {
   failing(): void;
 }
 
+/**
+ * Why the webhook ignored an event: `listed_customer` when the event's customer is in the
+ * `stripeWebhookCustomerIgnoreList` config, or `another_site` when the checkout is stamped with the
+ * uuid of another site connected to the same Stripe account.
+ */
+type IgnoredBecause = 'listed_customer' | 'another_site';
+
 /** What the webhook controller reports to a `stripe.webhook` span while it handles an event. */
 interface WebhookAttempt {
   /** Called once Ghost has checked the event came from Stripe, with its type, such as `invoice.payment_succeeded`. */
   receiving(type: string): void;
-  /** Called when Ghost ignores the event, as it's for a customer whose events Ghost is set to ignore. */
-  ignoring(): void;
+  /** Called when the webhook ignores the event, with the reason. */
+  ignoring(because: IgnoredBecause): void;
 }
 
 /** A collected part's name on a span, the same name the `stripe_checkout.session` span gives it. */
@@ -272,13 +279,13 @@ export function stripeTracking({ tracer, meter }: { tracer: Tracer; meter: Meter
      * body or no signature at all isn't from Stripe, so it records no span.
      *
      * The `type` attribute holds the event's type, such as `checkout.session.completed`, and
-     * `ignored` is true for an event Ghost is set to ignore.
+     * `ignored` holds the reason when the webhook ignored the event (see `IgnoredBecause`).
      */
     webhook<Result>(handle: (attempt: WebhookAttempt) => Promise<Result>): Promise<Result> {
       return tracer.track('stripe.webhook', (span) =>
         handle({
           receiving: (type) => span.setAttribute('type', type),
-          ignoring: () => span.setAttribute('ignored', true),
+          ignoring: (because) => span.setAttribute('ignored', because),
         }),
       );
     },

@@ -163,6 +163,8 @@ module.exports = class StripeAPI {
    * @param {object} deps.labs
    * @param {(key: string) => boolean} deps.labs.isSet
    * @param {StripeTracking} deps.tracking
+   * @param {() => string} deps.getSiteUuid Returns the site's uuid, the value of the stamp on each
+   *   Checkout session (see `stamp`).
    */
   constructor(deps) {
     /** @type {Stripe} */
@@ -170,6 +172,7 @@ module.exports = class StripeAPI {
     this._configured = false;
     this.labs = deps.labs;
     this.tracking = deps.tracking;
+    this.getSiteUuid = deps.getSiteUuid;
   }
 
   /**
@@ -218,7 +221,7 @@ module.exports = class StripeAPI {
   async _createWithFallback(params, requestOptions, parts, onRefused) {
     try {
       return await this._stripe.checkout.sessions.create(
-        sessionCreateParams(params, parts),
+        sessionCreateParams(params, parts, this.getSiteUuid()),
         requestOptions,
       );
     } catch (err) {

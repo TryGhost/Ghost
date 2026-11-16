@@ -1,6 +1,7 @@
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const StripeAPI = require('./stripe-api');
+const { stampedSiteUuid } = require('./site-stamp');
 
 /**
  * The classes of Stripe's errors for a key that no longer works on the publisher's Stripe
@@ -27,10 +28,13 @@ module.exports = class WebhookController {
    * @param {import('./services/webhook/subscription-event-service')} deps.subscriptionEventService
    * @param {import('./services/webhook/invoice-event-service')} deps.invoiceEventService
    * @param {import('./services/webhook/charge-refunded-event-service')} deps.chargeRefundedEventService
+   * @param {() => string} deps.getSiteUuid Returns this site's uuid, the value of the stamp on
+   *   each Checkout session Ghost creates (see `stamp`).
    * @param {Pick<import('./tracking').StripeTracking, 'webhook'>} deps.tracking
    * @param {{captureException(err: unknown): unknown}} deps.sentry
    */
   constructor(deps) {
+    this.getSiteUuid = deps.getSiteUuid;
     this.tracking = deps.tracking;
     this.sentry = deps.sentry;
     this.checkoutSessionEventService = deps.checkoutSessionEventService;
@@ -73,6 +77,29 @@ module.exports = class WebhookController {
     }
 
     return null;
+  }
+
+  /**
+   * Whether the event is for a Checkout session that another site connected to the same Stripe
+   * account created. Stripe sends every event on an account to every site connected to it, and
+   * Ghost stamps each Checkout session it creates with the site's uuid. If this site handled
+   * another site's completed checkout, it would create a member for someone who never signed up
+   * here, or fail validation on every retry, while the other site handles the event correctly. An
+   * unstamped session, such as one created through a Stripe Payment Link, is treated as this
+   * site's.
+   *
+   * Subscription and invoice events aren't checked: they're for Stripe customers that no member
+   * of this site has, so handling them doesn't change anything here.
+   *
+   * @param {import('stripe').Stripe.Event} event
+   * @returns {boolean}
+   */
+  createdByAnotherSite(event) {
+    if (!event.type.startsWith('checkout.session.')) {
+      return false;
+    }
+    const siteUuid = stampedSiteUuid(event.data.object);
+    return siteUuid !== undefined && siteUuid !== this.getSiteUuid();
   }
 
   /**
@@ -131,9 +158,22 @@ module.exports = class WebhookController {
           );
         }
 
+        if (this.createdByAnotherSite(event)) {
+          attempt.ignoring('another_site');
+          logging.info(
+            {
+              event: { name: 'stripe.webhook.another_site' },
+              stripe_event_type: event.type,
+              stripe_event_id: event.id,
+            },
+            'Ignored a Stripe webhook for a checkout created by another site',
+          );
+          return;
+        }
+
         const customerId = this.getEventCustomerId(event);
         if (this.shouldIgnoreEvent(event, customerId)) {
-          attempt.ignoring();
+          attempt.ignoring('listed_customer');
           logging.info(
             {
               event: { name: 'stripe.webhook.ignored' },

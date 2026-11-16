@@ -25,6 +25,7 @@ describe('StripeAPI', function () {
   };
   const api = new StripeAPI({
     labs: mockLabs,
+    getSiteUuid: () => 'this-site',
     tracking: stripeTracking({
       tracer: createTracer({ transport: { metric: () => Promise.resolve(null) }, logging }),
       meter: createMeter({ transport: { metric: () => Promise.resolve(null) }, logging }),
@@ -920,7 +921,10 @@ describe('StripeAPI', function () {
       });
 
       assertExists(mockStripe.checkout.sessions.create.firstCall.firstArg.metadata);
-      assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.metadata, metadata);
+      assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.metadata, {
+        ...metadata,
+        ghost_site_uuid: 'this-site',
+      });
     });
 
     it('passes custom fields correctly', async function () {
@@ -1107,7 +1111,7 @@ describe('StripeAPI', function () {
         args.line_items[0].price_data.product_data.name,
         'Gift subscription — Pro (1 year)',
       );
-      assert.deepEqual(args.metadata, { ghost_gift_id: 'gift_123' });
+      assert.deepEqual(args.metadata, { ghost_gift_id: 'gift_123', ghost_site_uuid: 'this-site' });
       assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.args[1], {
         idempotencyKey: 'gift_123',
       });
@@ -1223,7 +1227,7 @@ describe('StripeAPI', function () {
 
       const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
 
-      assert.deepEqual(args.metadata, metadata);
+      assert.deepEqual(args.metadata, { ...metadata, ghost_site_uuid: 'this-site' });
     });
 
     it('passes customer ID when customer is provided', async function () {

@@ -65,7 +65,8 @@ module.exports = class StripeService {
     settingsCache,
     models,
   }) {
-    const api = new StripeAPI({ labs, tracking });
+    const getSiteUuid = () => settingsCache.get('site_uuid');
+    const api = new StripeAPI({ labs, tracking, getSiteUuid });
 
     const webhookManager = new WebhookManager({
       StripeWebhook,
@@ -151,6 +152,7 @@ module.exports = class StripeService {
     });
 
     const webhookController = new WebhookController({
+      getSiteUuid,
       webhookManager,
       subscriptionEventService,
       invoiceEventService,
