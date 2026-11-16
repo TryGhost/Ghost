@@ -13,7 +13,6 @@
 //
 // The output state checker is responsible for checking the response from the app after performing a request.
 import debugFactory from '@tryghost/debug';
-// @ts-expect-error This module lacks type definitions.
 import * as expressTest from '@tryghost/express-test';
 import * as fs from 'fs-extra';
 import * as path from 'node:path';

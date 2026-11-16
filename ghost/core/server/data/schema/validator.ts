@@ -2,7 +2,6 @@ import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import _ from 'lodash';
 import type { ReadonlyDeep } from 'type-fest';
-// @ts-expect-error This module lacks type definitions.
 import validator from '@tryghost/validator';
 // @ts-expect-error This module lacks type definitions.
 import schema from './schema';
