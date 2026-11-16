@@ -37,7 +37,11 @@ function WhatsNewBanner() {
     <Banner
       aria-label="What’s new notification"
       aria-live="polite"
-      className="mx-2"
+      className={
+        admin7Design
+          ? 'sidebar-whats-new-banner mx-2 motion-safe:focus-within:-translate-y-0.5 motion-safe:focus-within:scale-[1.01] motion-safe:hover:-translate-y-0.5 motion-safe:hover:scale-[1.01] motion-reduce:transition-none'
+          : 'mx-2'
+      }
       data-testid="whats-new-banner"
       role="status"
       scroll={admin7Design}

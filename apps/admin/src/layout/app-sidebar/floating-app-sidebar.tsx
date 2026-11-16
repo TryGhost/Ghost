@@ -67,7 +67,7 @@ const FloatingAppSidebar = React.forwardRef<HTMLDivElement, FloatingAppSidebarPr
           >
             {/* Only the card's content scrolls. Its shadow stays outside the
                 navigation/animation clips; padding a scrollport still cuts the glow. */}
-            <AppSidebarBanner className="pointer-events-auto flex min-h-0 shrink flex-col" />
+            <AppSidebarBanner className="pointer-events-auto -mx-2 flex min-h-0 shrink flex-col" />
             <AppSidebarFooter className="pointer-events-auto shrink-0 gap-0 p-0 [&_[data-sidebar=group]]:px-0 [&_[data-sidebar=group]]:pb-0" />
           </Stack>
         </SidebarBodySwap>

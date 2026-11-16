@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { userEvent } from 'vitest/browser';
 
 import {
   changelogEntry,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeAdminStats,
   fakeEndpoint,
   fakeTags,
   renderAdminApp,
@@ -23,6 +25,46 @@ function userWhoLastSawChangelogAt(lastSeenDate: string): CurrentUserResponse {
 }
 
 describe("What's new banner", () => {
+  it.each([true, false])(
+    'keeps its hover action dismissible with Admin 7 = %s',
+    async (admin7Design) => {
+      fakeTags([]);
+      fakeAdminStats.memberCount();
+      fakeAdminStats.mrr();
+      fakeEndpoint('GET', 'https://ghost.org/changelog.json', {
+        posts: [changelogEntry({ published_at: NEWER_THAN_LAST_SEEN })],
+      });
+      fakeAdminEndpoint('PUT', /^\/users\/\w+\//, ({ body }) => body);
+      await renderAdminApp('/tags', {
+        labs: { admin7Design },
+        boot: { browseMe: { response: userWhoLastSawChangelogAt(LAST_SEEN) } },
+      });
+      if (admin7Design) {
+        await expect.poll(sidebarScreen.floatingState).toBe('pinned');
+      }
+      const banner = whatsNewScreen.banner();
+      await expect.element(banner).toBeVisible();
+      const initialWidth = banner.element().getBoundingClientRect().width;
+      if (admin7Design) {
+        const menuRect = sidebarScreen.navLink('Tags').element().getBoundingClientRect();
+        const bannerRect = banner.element().getBoundingClientRect();
+        expect(Math.abs(bannerRect.left - menuRect.left)).toBeLessThan(1);
+        expect(Math.abs(bannerRect.width - menuRect.width)).toBeLessThan(1);
+      }
+      await userEvent.hover(banner);
+      await expect
+        .poll(() => getComputedStyle(banner.element(), '::after').animationName)
+        .toBe(admin7Design ? 'sidebar-banner-shine' : 'none');
+      if (admin7Design) {
+        await expect
+          .poll(() => banner.element().getBoundingClientRect().width)
+          .toBeGreaterThan(initialWidth);
+      }
+      await whatsNewScreen.dismissButton().click();
+      await expect(banner).toHaveCount(0);
+    },
+  );
+
   it('shows no banner when the changelog feed is empty', async () => {
     // The default boot serves an empty changelog feed.
     fakeTags([]);
