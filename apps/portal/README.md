@@ -73,6 +73,17 @@ From this directory, create a production minified bundle in
 pnpm build
 ```
 
+The build also copies every country's flag from `country-flag-icons` into
+`umd/flags/`. Portal loads the one flag it shows from beside its own script,
+wherever a site loads that script from, so the flags add nothing to
+`portal.min.js`.
+
+A copy of Portal hosted somewhere else needs the whole `umd/` folder, not
+`portal.min.js` alone, served so that an `.svg` file loads as an image. Where
+a flag can't be loaded, a phone input shows the calling code without one. That
+includes a copy kept in Ghost's own file storage, which serves `.svg` files as
+downloads.
+
 ## Test
 
 From this directory, run unit tests once or in watch mode with:

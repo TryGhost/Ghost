@@ -155,10 +155,10 @@ describe('Account Profile Page', () => {
     });
 
     describe("a phone number's country", () => {
-      const holdingMobile = (access = 'write') =>
+      const holdingMobile = (access = 'write', mobile = '+442079460000') =>
         setup({
           site,
-          member: { ...member, metafields: { custom: { mobile: '+442079460000' } } },
+          member: { ...member, metafields: { custom: { mobile } } },
           customFields: [
             { key: 'mobile', name: 'Mobile', type: 'phone', access: { member: access } },
           ],
@@ -210,6 +210,122 @@ describe('Account Profile Page', () => {
         expect(utils.getByRole('group', { name: 'Country code' })).toHaveTextContent(/^\+44$/);
         expect(utils.queryByRole('combobox', { name: 'Country code' })).not.toBeInTheDocument();
         expect(utils.getByLabelText('Mobile')).toHaveAttribute('readonly');
+      });
+
+      // The flags are files published beside Portal's script, so a reader downloads only the flag
+      // they are shown, from wherever the site loads Portal.
+      describe('flag', () => {
+        let script;
+
+        beforeEach(() => {
+          script = document.createElement('script');
+          script.dataset.ghost = 'https://portal.localhost';
+          script.src = 'https://cdn.example.com/portal@~2.72/umd/portal.min.js?v=1';
+          document.head.appendChild(script);
+        });
+
+        afterEach(() => {
+          script.remove();
+        });
+
+        const flags = 'https://cdn.example.com/portal@~2.72/umd/flags';
+
+        test("is its country's, named for a screen reader, loaded from beside Portal's script", () => {
+          const utils = holdingMobile();
+
+          const country = picker(utils, 'Country code');
+          expect(country).toHaveTextContent(/^\+44$/);
+          expect(within(country).getByRole('img', { name: 'United Kingdom' })).toHaveAttribute(
+            'src',
+            `${flags}/GB.svg`,
+          );
+        });
+
+        test('is shown where the member may only read the number', () => {
+          const utils = holdingMobile('read');
+
+          expect(
+            within(utils.getByRole('group', { name: 'Country code' })).getByRole('img', {
+              name: 'United Kingdom',
+            }),
+          ).toHaveAttribute('src', `${flags}/GB.svg`);
+        });
+
+        // Canada shares +1 with the United States, and an Ottawa number is Canadian whoever
+        // reads it.
+        test("is the country a number's digits place it in, where countries share its code", () => {
+          const utils = holdingMobile('write', '+16135550123');
+
+          const country = picker(utils, 'Country code');
+          expect(country).toHaveTextContent(/^\+1$/);
+          expect(within(country).getByRole('img', { name: 'Canada' })).toHaveAttribute(
+            'src',
+            `${flags}/CA.svg`,
+          );
+        });
+
+        // The Isle of Man shares +44 with the United Kingdom. A number written as it is dialled
+        // at home keeps the country the member picked, as it does in Stripe Checkout.
+        test('is the country a member picks, where countries share its code', () => {
+          const utils = holdingMobile();
+
+          fireEvent.click(picker(utils, 'Country code'));
+          fireEvent.change(searchBox(utils, 'Country code'), { target: { value: 'isle of man' } });
+          fireEvent.keyDown(searchBox(utils, 'Country code'), { key: 'Enter' });
+
+          const country = picker(utils, 'Country code');
+          expect(country).toHaveTextContent(/^\+44$/);
+          expect(within(country).getByRole('img', { name: 'Isle of Man' })).toHaveAttribute(
+            'src',
+            `${flags}/IM.svg`,
+          );
+        });
+
+        // A number started with + has no country yet, so no flag is loaded until there is one
+        // to show.
+        test('is not loaded while a number has no country yet', () => {
+          const utils = holdingMobile();
+
+          fireEvent.change(utils.getByLabelText('Mobile'), { target: { value: '+' } });
+
+          const country = picker(utils, 'Country code');
+          expect(country).toHaveTextContent(/^\+$/);
+          expect(within(country).queryByRole('img')).not.toBeInTheDocument();
+        });
+
+        // A copy of Portal's script hosted without its flags, or a site that doesn't allow
+        // images from where the script is hosted. The code is shown as it is without a flag,
+        // for this country and any picked after it.
+        test("gives way to the code alone once a flag can't be loaded", () => {
+          const utils = holdingMobile();
+
+          fireEvent.error(within(picker(utils, 'Country code')).getByRole('img'));
+          expect(picker(utils, 'Country code')).toHaveTextContent(/^\+44$/);
+          expect(within(picker(utils, 'Country code')).queryByRole('img')).not.toBeInTheDocument();
+
+          fireEvent.click(picker(utils, 'Country code'));
+          fireEvent.change(searchBox(utils, 'Country code'), { target: { value: 'france' } });
+          fireEvent.keyDown(searchBox(utils, 'Country code'), { key: 'Enter' });
+          expect(picker(utils, 'Country code')).toHaveTextContent(/^\+33$/);
+          expect(within(picker(utils, 'Country code')).queryByRole('img')).not.toBeInTheDocument();
+        });
+
+        // With no script, or one loaded from a URL with no folder beside it, there is nowhere
+        // to load a flag from.
+        test.each([
+          ['has no Portal script', () => script.remove()],
+          [
+            "loads Portal's script from a URL with no folder beside it",
+            () => (script.src = 'data:text/javascript,'),
+          ],
+        ])('is left out where the page %s', (_page, arrange) => {
+          arrange();
+          const utils = holdingMobile();
+
+          const country = picker(utils, 'Country code');
+          expect(country).toHaveTextContent(/^\+44$/);
+          expect(within(country).queryByRole('img')).not.toBeInTheDocument();
+        });
       });
     });
 

@@ -31,6 +31,7 @@ import { useScrollSectionContext, useScrollSectionNav } from '@/settings/hooks/u
 import { useSearch } from '@/settings/providers/settings-app-context';
 import ExitSettingsButton from '@/settings/components/exit-settings-button';
 import { ADMIN7_NAV_ICON_CLASS_NAME } from '@/layout/app-sidebar/nav-icon-class';
+import { PrivateSiteBadge } from '@/shared/private-site-badge';
 
 interface NavItemProps {
   icon?: React.ReactNode;
@@ -387,7 +388,10 @@ const Sidebar: React.FC = () => {
   return (
     <Stack className="min-h-0 flex-1" data-testid="sidebar" gap="none">
       {/* data-nav-row marks the rows that cascade in when the shell swaps to this nav. */}
-      <Box className={cn('shrink-0 px-5 pb-2', !floatingSidebar && 'bg-sidebar')} data-nav-row>
+      <Box
+        className={cn('shrink-0 pb-2', floatingSidebar ? 'px-3' : 'bg-sidebar px-5')}
+        data-nav-row
+      >
         <SettingsHeader inputRef={searchInputRef} />
       </Box>
       <nav
@@ -395,7 +399,8 @@ const Sidebar: React.FC = () => {
         // pb-5 matches the sidebar's pt-5, so the last item rests as far from the
         // bottom edge as the search row sits from the top.
         className={cn(
-          'min-h-0 flex-1 overflow-y-auto px-5 pt-4 pb-5 [&>:last-child]:mb-0',
+          'min-h-0 flex-1 overflow-y-auto pt-4 pb-5 [&>:last-child]:mb-0',
+          floatingSidebar ? 'px-3' : 'px-5',
           floatingSidebar && ADMIN7_NAV_ICON_CLASS_NAME,
         )}
         id="settings-sidebar-scroller"
@@ -506,7 +511,7 @@ const Sidebar: React.FC = () => {
             title={
               <span className="flex min-w-0 flex-1 items-center justify-between gap-2">
                 <span className="min-w-0 truncate">Access</span>
-                {isPrivate && <PrivateBadge />}
+                {isPrivate && (floatingSidebar ? <PrivateSiteBadge /> : <PrivateBadge />)}
               </span>
             }
             onClick={handleSectionClick}
@@ -683,6 +688,7 @@ const Sidebar: React.FC = () => {
                 <span
                   aria-hidden="true"
                   className="size-4 shrink-0 bg-current"
+                  data-slot="nav-icon"
                   style={{
                     maskImage: `url(${GhostLogo})`,
                     maskPosition: 'center',

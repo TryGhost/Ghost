@@ -23,7 +23,7 @@ const TILE_SIZES = { md: 'size-10', lg: 'size-12', xl: 'size-16 rounded-xl' };
 const GLYPH_SIZES = { md: 'size-[18px]', lg: 'size-6', xl: 'size-7' };
 
 /** An installation or a preview. */
-type AppIconSource = Pick<AppInstallation, 'manifest' | 'icon_data_url'>;
+export type AppIconSource = Pick<AppInstallation, 'manifest' | 'icon_data_url'>;
 
 interface AppIconProps {
   app: AppIconSource;

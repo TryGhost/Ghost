@@ -1,5 +1,4 @@
 import type * as express from 'express';
-// @ts-expect-error This module lacks type definitions.
 import ghostVersion from '@tryghost/version';
 
 /**

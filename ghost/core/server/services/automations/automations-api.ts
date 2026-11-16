@@ -1,4 +1,3 @@
-// @ts-expect-error This module lacks type definitions.
 import domainEvents from '@tryghost/domain-events';
 import type { Knex } from 'knex';
 import errors from '@tryghost/errors';

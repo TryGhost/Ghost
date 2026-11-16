@@ -164,7 +164,7 @@ export const InstallDialog: React.FC<InstallDialogProps> = ({ manifestUrl, onClo
     >
       {/* The review can be taller than a short screen; the backdrop then scrolls the whole dialog. */}
       <DialogContent
-        className="max-w-md overflow-x-hidden"
+        className="max-w-lg overflow-x-hidden"
         data-testid="app-install-dialog"
         scroll="overlay"
       >

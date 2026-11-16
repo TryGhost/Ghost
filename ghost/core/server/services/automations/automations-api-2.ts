@@ -1,3 +1,4 @@
+import type DomainEvents from '@tryghost/domain-events';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import ObjectId from 'bson-objectid';
@@ -12,8 +13,6 @@ import type {
 } from './automations-repository-2';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 import { getReadyAtForAction } from './util/get-ready-at-for-action';
-
-type DomainEvents = { dispatch: (event: unknown) => unknown };
 
 type Labs = { isSet(key: 'automations'): boolean };
 
@@ -32,7 +31,7 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
   labs,
   repository,
 }: Readonly<{
-  domainEvents: DomainEvents;
+  domainEvents: Pick<DomainEvents, 'dispatch'>;
   fakeWaitHoursMultiplier: null | number;
   labs: Labs;
   repository: AutomationsRepository2<RepositoryTransaction>;

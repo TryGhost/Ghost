@@ -159,9 +159,7 @@ export default function registerJobHandlers({
 
   jobsService.handle(
     SendEmailJob,
-    async (job) => {
-      await emailService.handleSendEmailJob(job);
-    },
+    async (job) => emailService.handleSendEmailJob(job),
     EMAIL_QUEUE,
   );
 

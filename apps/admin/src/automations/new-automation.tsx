@@ -47,7 +47,6 @@ const TRIGGER_OPTIONS = [
   ],
 ] as const;
 
-// Remains behind Labs while lifecycle enrollment and execution are being completed.
 const SUBSCRIPTION_CHANGED_OPTION = [
   'paid_subscription_changed',
   LucideIcon.ArrowRightLeft,
@@ -70,7 +69,6 @@ const TriggerPicker: React.FC<{
   onPick: (trigger: PickedTrigger, cardTop: number) => void;
 }> = ({ automation, labelTriggerEnabled, stripeEnabled, onPick }) => {
   const { dialogProps } = useUnsavedChangesGuard({ when: true });
-  const lifecycleTriggers = useFeatureFlag('automationsLifecycleTriggers');
   const options: Array<
     | (typeof TRIGGER_OPTIONS)[number]
     | typeof SUBSCRIPTION_CHANGED_OPTION
@@ -78,9 +76,7 @@ const TriggerPicker: React.FC<{
   > = [TRIGGER_OPTIONS[0]];
   if (stripeEnabled) {
     options.push(TRIGGER_OPTIONS[1]);
-    if (lifecycleTriggers) {
-      options.push(SUBSCRIPTION_CHANGED_OPTION);
-    }
+    options.push(SUBSCRIPTION_CHANGED_OPTION);
   }
   if (labelTriggerEnabled) {
     options.push(LABEL_ADDED_OPTION);

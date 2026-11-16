@@ -29,7 +29,7 @@ const goldTo = { ...bronzeFrom, product_id: 'gold', direction: 'to' } as const;
 const anyPaidFrom = { ...bronzeFrom, scope: 'any_paid_tier', product_id: null } as const;
 const freeTo = { ...goldTo, scope: 'free', product_id: null } as const;
 
-const lifecycleFlags = { labs: { automations: true, automationsLifecycleTriggers: true } };
+const automationFlags = { labs: { automations: true } };
 const automationFromRequest = (body: unknown) =>
   (body as { automations: AutomationDetail[] }).automations[0];
 const createdAutomation = (body: unknown): AutomationDetail => ({
@@ -50,14 +50,14 @@ const serveTiers = () => {
   });
 };
 
-const start = async (labs: Record<string, boolean> = lifecycleFlags.labs) => {
+const start = async () => {
   fakeAutomations([]);
   serveTiers();
   const create = fakeAdminEndpoint('POST', '/automations/', ({ body }) => ({
     automations: [createdAutomation(body)],
   }));
   await renderAdminApp('/automations/new', {
-    labs,
+    ...automationFlags,
     boot: {
       browseSettings: {
         response: settingsResponse({
@@ -79,15 +79,15 @@ const choose = async (field: 'From' | 'To', name: string) => {
 };
 
 describe('Paid subscription changed trigger', () => {
-  it('is offered only with the lifecycle triggers flag', async () => {
-    await start({ automations: true });
+  it('offers paid subscription triggers when Stripe is connected', async () => {
+    await start();
 
     await expect
       .element(page.getByRole('button', { name: /^Paid subscription started/ }))
       .toBeVisible();
     await expect
       .element(page.getByRole('button', { name: /^Paid subscription changed/ }))
-      .not.toBeInTheDocument();
+      .toBeVisible();
   });
 
   it('asks where a member moves from and to', async () => {
@@ -142,7 +142,7 @@ describe('Paid subscription changed trigger', () => {
   });
 
   it('focuses each field from its label without opening its list', async () => {
-    await start({ automations: true, automationsLifecycleTriggers: true });
+    await start();
     await pickTrigger();
     await from().click();
     await expect.element(page.getByRole('listbox')).toBeVisible();
@@ -260,7 +260,7 @@ describe('Paid subscription changed trigger', () => {
       trigger_rules: [goldTo, { ...bronzeFrom, product_id: 'silver' }, bronzeFrom],
     };
     fakeAdminEndpoint('GET', '/automations/existing/', { automations: [saved] });
-    await renderAdminApp('/automations/existing', lifecycleFlags);
+    await renderAdminApp('/automations/existing', automationFlags);
     await expect.element(button('Save')).toBeDisabled();
 
     await button('Remove Bronze').click();
@@ -281,7 +281,7 @@ describe('Paid subscription changed trigger', () => {
     const edit = fakeAdminEndpoint('PUT', '/automations/existing/', ({ body }) => ({
       automations: [{ ...saved, ...automationFromRequest(body) }],
     }));
-    await renderAdminApp('/automations/existing', lifecycleFlags);
+    await renderAdminApp('/automations/existing', automationFlags);
     await button('Remove Bronze').click();
     await button('Remove Gold').click();
     await expect.element(triggerCard()).toBeVisible();
@@ -316,7 +316,7 @@ describe('Paid subscription changed trigger', () => {
     const edit = fakeAdminEndpoint('PUT', '/automations/existing/', ({ body }) => ({
       automations: [{ ...saved, ...automationFromRequest(body) }],
     }));
-    await renderAdminApp('/automations/existing', lifecycleFlags);
+    await renderAdminApp('/automations/existing', automationFlags);
     await expect.element(button('Published')).toBeDisabled();
     await choose('To', 'Free');
     await button('Publish changes').click();
@@ -383,7 +383,7 @@ describe('Paid subscription changed trigger', () => {
     const edit = fakeAdminEndpoint('PUT', '/automations/existing/', ({ body }) => ({
       automations: [{ ...saved, ...automationFromRequest(body) }],
     }));
-    await renderAdminApp('/automations/existing', lifecycleFlags);
+    await renderAdminApp('/automations/existing', automationFlags);
     await expect.element(button('Remove Legacy (archived)')).toBeVisible();
     await expect.element(button('Remove Unavailable tier')).toBeVisible();
     await from().click();
@@ -418,7 +418,7 @@ describe('Paid subscription changed trigger', () => {
       );
     });
     try {
-      await renderAdminApp('/automations/existing', lifecycleFlags);
+      await renderAdminApp('/automations/existing', automationFlags);
       await expect(button('Remove Loading tier...')).toHaveCount(2);
       await from().click();
       await expect.element(page.getByText('Loading tiers...', { exact: true })).toBeVisible();

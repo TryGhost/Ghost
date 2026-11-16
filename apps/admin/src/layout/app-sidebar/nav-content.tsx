@@ -6,7 +6,7 @@ import {
   SidebarMenu,
   SidebarMenuBadge,
 } from '@tryghost/shade/components';
-import { formatNumber, LucideIcon } from '@tryghost/shade/utils';
+import { cn, formatNumber, LucideIcon } from '@tryghost/shade/utils';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useMemberCount } from '@tryghost/admin-x-framework/api/members';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
@@ -27,15 +27,27 @@ import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { AdminLink } from '@/shared/admin-link';
 
 function PostsNavItemContent({ isActive, to }: { isActive: boolean; to: string }) {
+  const admin7Design = useFeatureFlag('admin7Design');
+
   return (
     <>
       <NavMenuItem.Link isActive={isActive} to={to}>
-        <LucideIcon.PenLine className="pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0" />
+        <LucideIcon.PenLine
+          className={cn(
+            !admin7Design &&
+              'pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0',
+          )}
+        />
         <NavMenuItem.Label>Posts</NavMenuItem.Label>
       </NavMenuItem.Link>
       <AdminLink
         aria-label="Create new post"
-        className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full p-0 text-gray-700 ring-sidebar-ring outline-hidden transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 dark:text-gray-800 dark:hover:text-white"
+        className={cn(
+          'absolute top-0 right-0 flex size-8 items-center justify-center rounded-full p-0 ring-sidebar-ring outline-hidden transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2',
+          admin7Design
+            ? 'text-muted-foreground transition-[opacity,color,background-color] duration-200 focus-visible:pointer-events-auto focus-visible:opacity-100 sidebar:[@media(hover:hover)_and_(pointer:fine)]:pointer-events-none sidebar:[@media(hover:hover)_and_(pointer:fine)]:opacity-0 [[data-controls-visible=true]_&]:pointer-events-auto [[data-controls-visible=true]_&]:opacity-100 [[data-controls-visible=true]_&]:delay-75'
+            : 'text-gray-700 dark:text-gray-800 dark:hover:text-white',
+        )}
         to="/editor/post"
       >
         <LucideIcon.Plus className="mt-px stroke-[1.5px]!" size={20} />
@@ -44,15 +56,24 @@ function PostsNavItemContent({ isActive, to }: { isActive: boolean; to: string }
   );
 }
 
+/** Only mounted in the legacy sidebar, which still shows its member count. */
+function MemberCountBadge() {
+  const count = useMemberCount();
+
+  return count !== null && count !== undefined ? (
+    <SidebarMenuBadge>{formatNumber(count)}</SidebarMenuBadge>
+  ) : null;
+}
+
 function MembersNavItemContent({
   collapsible,
-  count,
   isActive,
+  showCount,
   to,
 }: {
   collapsible: boolean;
-  count: number | null | undefined;
   isActive: boolean;
+  showCount: boolean;
   to: string;
 }) {
   return (
@@ -67,9 +88,7 @@ function MembersNavItemContent({
         />
         <NavMenuItem.Label>Members</NavMenuItem.Label>
       </NavMenuItem.Link>
-      {count !== null && count !== undefined && (
-        <SidebarMenuBadge>{formatNumber(count)}</SidebarMenuBadge>
-      )}
+      {showCount && <MemberCountBadge />}
     </>
   );
 }
@@ -83,9 +102,9 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const pageNavigation = usePostNavigation('pages');
   const memberViews = useMemberSidebarViews();
   const hasMemberViews = memberViews.length > 0;
-  const memberCount = useMemberCount();
   const automationsEnabled = useFeatureFlag('automations');
   const appsEnabled = useFeatureFlag('apps');
+  const admin7Design = useFeatureFlag('admin7Design');
   const isMembersRouteActive = useIsActiveLink({ path: 'members', activeOnSubpath: true });
   const isMemberActivityActive = useIsActiveLink({ path: 'members-activity' });
 
@@ -96,9 +115,13 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const showComments = !!showMembers && commentsEnabled !== 'off';
   const postViews = [...postNavigation.defaultViews, ...postNavigation.customViews];
   const hasActivePostChild = postViews.some((view) => view.isActive);
-  const postsExpanded = savedPostsExpanded;
+  const postsExpanded = admin7Design
+    ? postNavigation.isMainActive || hasActivePostChild
+    : savedPostsExpanded;
   const hasActiveMemberView = hasMemberViews && memberViews.some((view) => view.isActive);
-  const membersExpanded = savedMembersExpanded;
+  const membersExpanded = admin7Design
+    ? isMembersRouteActive || isMemberActivityActive
+    : savedMembersExpanded;
   const membersNavActive = isMembersRouteActive
     ? !hasActiveMemberView || !membersExpanded
     : isMemberActivityActive;
@@ -152,9 +175,9 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
             >
               <NavMenuItem.CollapsibleItem ariaLabel="Toggle member views">
                 <MembersNavItemContent
-                  collapsible={true}
-                  count={memberCount}
+                  collapsible={!admin7Design}
                   isActive={membersNavActive}
+                  showCount={!admin7Design}
                   to="members"
                 />
               </NavMenuItem.CollapsibleItem>
@@ -167,8 +190,8 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
             <NavMenuItem>
               <MembersNavItemContent
                 collapsible={false}
-                count={memberCount}
                 isActive={membersNavActive}
+                showCount={!admin7Design}
                 to="members"
               />
             </NavMenuItem>
@@ -196,17 +219,17 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     </>
   );
 
-  // With Apps on, eyebrows group the nav: Content and Audience here, Apps below.
-  if (appsEnabled) {
+  // Admin 7 keeps Content and Audience separate even without the Apps eyebrows.
+  if (appsEnabled || admin7Design) {
     return (
       <>
         <NavGroup {...props}>
-          <NavGroup.Label>Content</NavGroup.Label>
+          {appsEnabled && <NavGroup.Label>Content</NavGroup.Label>}
           <NavGroup.Menu>{contentItems}</NavGroup.Menu>
         </NavGroup>
         {hasAudienceItems && (
           <NavGroup {...props}>
-            <NavGroup.Label>Audience</NavGroup.Label>
+            {appsEnabled && <NavGroup.Label>Audience</NavGroup.Label>}
             <NavGroup.Menu>{audienceItems}</NavGroup.Menu>
           </NavGroup>
         )}
