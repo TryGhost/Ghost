@@ -7,6 +7,8 @@ import { AutoFillingMap } from '../../lib/auto-filling-map';
 import type {
   AutomationsRepository2,
   AutomatedEmailRecipientTrackingData,
+  EmailRecipientToInsert,
+  RecordEmailSentOptions,
   RunStepToInsert,
   RunToInsert,
   TrackEmailClickedOptions,
@@ -224,6 +226,41 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
       if (didEnroll) {
         requestPoll();
       }
+    },
+
+    recordEmailSent: async ({
+      automationActionRevisionId,
+      automationRunStepId,
+      mailgunMessageId,
+      memberEmail,
+      memberId,
+      memberName,
+      memberUuid,
+      trackClicks,
+      trackOpens,
+    }: RecordEmailSentOptions): Promise<void> => {
+      const now = new Date();
+      const recipient: EmailRecipientToInsert = {
+        id: ObjectId().toHexString(),
+        created_at: now,
+        updated_at: now,
+        member_id: memberId,
+        member_uuid: memberUuid,
+        member_email: memberEmail,
+        member_name: memberName,
+        automation_action_revision_id: automationActionRevisionId,
+        automation_run_step_id: automationRunStepId,
+        ...(mailgunMessageId ? { mailgun_message_id: mailgunMessageId } : {}),
+        track_clicks: trackClicks,
+        track_opens: trackOpens,
+      };
+
+      await repository.withTransaction(async (trx) => {
+        // Update the revision before inserting a recipient that references
+        // it, matching the lock order used by email tracking.
+        await repository.incrementEmailSentCount(trx, automationActionRevisionId);
+        await repository.insertEmailRecipient(trx, recipient);
+      });
     },
 
     requestPoll,

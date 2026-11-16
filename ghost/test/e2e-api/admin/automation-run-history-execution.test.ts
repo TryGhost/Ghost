@@ -39,7 +39,7 @@ describe('Automation run history from the execution', function () {
   };
   let run: { id: string; automation_id: string };
   let pollOptions: {
-    automationsApi: typeof repository;
+    automationsApi: Parameters<typeof poll>[0]['automationsApi'];
     enqueueAnotherPollAt: sinon.SinonStub;
     scheduleAutomationEmailAnalyticsJob: sinon.SinonStub;
     memberWelcomeEmailService: { sendAutomationEmail: sinon.SinonStub };
@@ -74,7 +74,7 @@ describe('Automation run history from the execution', function () {
       domainEvents: { dispatch: () => {} },
     });
     pollOptions = {
-      automationsApi: repository,
+      automationsApi: { ...repository, recordEmailSent: automationsApi2.recordEmailSent },
       enqueueAnotherPollAt: sinon.stub(),
       scheduleAutomationEmailAnalyticsJob: sinon.stub().resolves(),
       memberWelcomeEmailService: {
@@ -185,7 +185,7 @@ describe('Automation run history from the execution', function () {
     await db('automation_run_steps')
       .where('id', pendingEmail.id)
       .update({ step_attempts: MAX_ATTEMPTS - 1 });
-    sinon.stub(repository, 'finishStepAndEnqueueNext').callsFake(async () => {
+    sinon.stub(pollOptions.automationsApi, 'finishStepAndEnqueueNext').callsFake(async () => {
       clock.setSystemTime(new Date('2026-09-16T12:00:06Z'));
       throw new Error('Could not enqueue the next action');
     });
