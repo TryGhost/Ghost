@@ -579,6 +579,30 @@ describe('JobsService', function () {
         assert.equal(outbox.renewals.length, 1);
       });
 
+      it('keeps renewing while the backend drains at shutdown, and stops after', async function () {
+        class DrainingBackend extends HoldingBackend {
+          drained = Promise.withResolvers<void>();
+          override async shutdown(options?: JobsShutdownOptions): Promise<void> {
+            super.shutdown(options);
+            await this.drained.promise;
+          }
+        }
+        const outbox = makeOutbox();
+        const draining = new DrainingBackend();
+        draining.held = ['a'];
+        const service = makeService({ outbox, backend: draining, leaseMs: LEASE_MS });
+
+        await service.start();
+        const stopping = service.shutdown();
+        await vi.advanceTimersByTimeAsync(QUARTER);
+        assert.deepEqual(outbox.renewals, [['a']], 'a draining job keeps its row');
+
+        draining.drained.resolve();
+        await stopping;
+        await vi.advanceTimersByTimeAsync(QUARTER * 2);
+        assert.equal(outbox.renewals.length, 1, 'nothing renews once the backend has drained');
+      });
+
       it('logs a failed lease tick and keeps ticking', async function () {
         const outbox = makeOutbox();
         let calls = 0;

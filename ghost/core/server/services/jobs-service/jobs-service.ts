@@ -319,13 +319,18 @@ export class JobsService {
   }
 
   async shutdown(options?: JobsShutdownOptions): Promise<void> {
-    clearTimeout(this.#leaseTimer);
-    this.#leaseTimer = undefined;
-    await this.#leaseTick;
-    if (this.#outbox) {
-      await this.#outbox.relay.stop();
+    try {
+      if (this.#outbox) {
+        await this.#outbox.relay.stop();
+      }
+      await this.#backend.shutdown(options);
+    } finally {
+      // Renewal runs until the backend has drained, so a job still finishing
+      // keeps its row
+      clearTimeout(this.#leaseTimer);
+      this.#leaseTimer = undefined;
+      await this.#leaseTick;
     }
-    await this.#backend.shutdown(options);
   }
 
   // An in-process restart (test harness) re-runs handler registration on the
