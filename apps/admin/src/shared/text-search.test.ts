@@ -106,6 +106,19 @@ describe('word search', () => {
     expect(index.search('post', { limitPerField: 10 })).toEqual(searched.slice(0, 10));
   });
 
+  it('keeps the uncapped limit from create time when the array shrinks', () => {
+    const searched = itemsTitled(Array.from({ length: 150 }, (_, index) => `Post ${index}`));
+    const index = createWordSearch(searched);
+
+    searched.length = 2;
+
+    expect(index.search('post')).toHaveLength(150);
+  });
+
+  it.each([0, -1, Number.NaN])('returns nothing for limitPerField %j', (limitPerField) => {
+    expect(createWordSearch(items).search('post', { limitPerField })).toEqual([]);
+  });
+
   it('can return more than limitPerField when title and keywords both match', () => {
     const searched = [
       ...Array.from({ length: 20 }, (_, index) => ({

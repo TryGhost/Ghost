@@ -17,7 +17,9 @@ export interface WordSearchOptions {
    * then `keywords`) before they are merged. The total can be up to twice this
    * number when items have keywords. This is a candidate limit — discard
    * before the caller ranks — not a final result cap. Omit it to keep every
-   * match in FlexSearch's ranked order.
+   * match in FlexSearch's ranked order (using the indexed count from create
+   * time). Values below 1 return nothing; FlexSearch would otherwise treat
+   * `0` / falsy as 100, and negatives drop matches from the end.
    */
   limitPerField?: number;
 }
@@ -45,9 +47,16 @@ export function createWordSearch<T extends Searchable>(items: readonly T[]): Wor
   });
   items.forEach((item) => index.add(item));
   const itemsById = new Map(items.map((item) => [item.id, item]));
+  // Snapshotted with the index: a later shrink of `items` must not tighten
+  // uncapped queries. (Empty creates default to 0 and hit the < 1 guard.)
+  const uncappedLimitPerField = items.length;
 
   return {
-    search(term, { limitPerField = items.length } = {}) {
+    search(term, { limitPerField = uncappedLimitPerField } = {}) {
+      if (!(limitPerField > 0)) {
+        return [];
+      }
+
       const ids = new Set(
         index.search(term, limitPerField).flatMap((field) => field.result.map(String)),
       );
