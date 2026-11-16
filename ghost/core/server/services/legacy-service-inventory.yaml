@@ -6382,7 +6382,7 @@ services:
           - core/server/lib/lexical.js
           - core/server/api/endpoints/schedules.js
         tests:
-          - test/unit/api/endpoints/search-index.test.js
+          - test/unit/api/endpoints/search-index.test.ts
           - test/unit/api/endpoints/search-index-public.test.js
           - test/e2e-api/admin/search-index.test.js
           - test/e2e-api/content/search-index.test.js
