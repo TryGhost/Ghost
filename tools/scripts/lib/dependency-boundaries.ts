@@ -87,11 +87,14 @@ export function compareKnownViolations(
   known: KnownViolation[],
   legacy: LegacyServices,
 ) {
-  const current = new Set(graph.summary.violations.map((item) => key(dependencyIdentity(item))));
+  // Rules below error severity only count; they never fail lint.
+  const violations = graph.summary.violations.filter((item) => item.rule.severity === 'error');
+  const current = new Set(violations.map((item) => key(dependencyIdentity(item))));
   const accepted = new Set(known.map(key));
-  const deferred = graph.summary.violations.filter((item) => isDeferred(item.from, legacy));
+  const deferred = violations.filter((item) => isDeferred(item.from, legacy));
   return {
-    newViolations: graph.summary.violations.filter(
+    counted: graph.summary.violations.filter((item) => item.rule.severity !== 'error'),
+    newViolations: violations.filter(
       (item) => !isDeferred(item.from, legacy) && !accepted.has(key(dependencyIdentity(item))),
     ),
     stale: known.filter((item) => !current.has(key(item))),

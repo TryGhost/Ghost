@@ -10,7 +10,7 @@ import {
 const files = process.argv.slice(2).filter((argument) => argument !== '--');
 
 try {
-  const { graph, newViolations, stale, deferred, buildOutput } = readDependencyBoundaries(
+  const { graph, newViolations, stale, deferred, counted, buildOutput } = readDependencyBoundaries(
     path.resolve(import.meta.dirname, '../../..'),
     files,
   );
@@ -32,7 +32,7 @@ try {
     process.exitCode = 1;
   } else {
     console.log(
-      `No new dependency violations (${graph.modules.length} modules, ${graph.summary.violations.length - deferred.length} known violations, ${deferred.length} in services with deferred enforcement).`,
+      `No new dependency violations (${graph.modules.length} modules, ${graph.summary.violations.length - counted.length - deferred.length} known violations, ${deferred.length} in services with deferred enforcement).`,
     );
   }
 } catch (error) {

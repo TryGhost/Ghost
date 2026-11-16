@@ -221,7 +221,7 @@ file is imported. The effect is the runner's.
 
 ## Step 4: fixture domains
 
-Cost: 38 files, about 1,050 lines added, all under `ghost/test`. Nothing shipped
+Cost: 37 files, 764 lines added, all under `ghost/test`. Nothing shipped
 and nothing booted in production: `files` in `ghost/package.json` does not list
 `test/`, and the foundation's manifest reads `ghost/domains` only.
 
@@ -305,3 +305,88 @@ already supports.
   `boot.js`, Express or the real event bus; step 7 does that with real code.
 - `pnpm archive` and the production Docker image were not built. The two built
   cases reproduce their file layouts, not the artefacts themselves.
+
+## Step 5: enforcement
+
+Cost: 10 files, about 1,500 lines added (about 620 of checks, 760 of tests, 110
+of rules in `.dependency-cruiser.cjs`).
+
+### The checks
+
+| Check                                                                                                                                                              | Where                                                         | Fails lint? | Tests |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- | ----------- | ----- |
+| Domain root shape: `CONTEXT.md` required, nothing unnamed at the root, `services/` is one folder per root, `transition/` and `test/` hold only their named folders | `tools/scripts/lib/domain-shape.ts`, `pnpm lint:domain-rules` | yes         | 6     |
+| Dotted-role names outside `transition/` and `test/`: lower case, a role, the role belongs to the folder, TypeScript, fixed names only in their place               | same                                                          | yes         | 6     |
+| Cross-domain imports only through `actions/`, `data/`, `events/` (`domain-public-surface`, `domain-transition-private`)                                            | `.dependency-cruiser.cjs`, `pnpm lint:boundaries`             | yes         | 6     |
+| Implementation import rule (`domain-implementation-imports`, `domain-own-root`)                                                                                    | same                                                          | yes         | 2     |
+| Fragment import rule (`domain-fragment-imports`)                                                                                                                   | same                                                          | yes         | 4     |
+| No Express, auth middleware, endpoint registry or frontend in a domain (`domain-no-web-layer`)                                                                     | same                                                          | yes         | 2     |
+| Nothing applies to `transition/`                                                                                                                                   | same                                                          | n/a         | 1     |
+| Count of files in each `transition/`                                                                                                                               | `pnpm lint:domain-rules --report`                             | no          | 1     |
+| Count of legacy and transition imports from service roots and domain files (`domain-legacy-imports`, `domain-transition-imports`, severity `info`)                 | `.dependency-cruiser.cjs`, printed by the report              | no          | 1     |
+| Bookshelf relations, foreign keys and `withRelated` that cross a domain                                                                                            | `crossDomainRelations`, printed by the report                 | no          | 1     |
+
+The import-rule tests copy the fixture domains into a temporary repository at
+`ghost/domains/` (rewriting their relative imports), run the real config, then
+add one violating file at a time. The fixtures pass every check unchanged.
+
+Verified: `tools/scripts` tests 414 pass with the same 20 baseline failures;
+`tools/scripts` typecheck and ESLint pass; `lint:oxlint`, `lint:boundaries` and
+`lint:domain-rules` pass on the real tree.
+
+### What had to be decided to write the rules
+
+- **Listeners must import another domain's event class.** The rule says
+  implementation files import only their own domain, kernel, types and
+  allowlisted libraries. A listener that reacts to another domain's event needs
+  that event's class as a value, to subscribe. The check therefore lets any
+  reshaped file import other domains' `data/` and `events/`, and keeps other
+  domains' `actions/` for the service root and `boot.ts` to import and inject.
+- **Files across a domain read its service roots.** Controllers, listeners,
+  actions and jobs reach the ready service through `services/<name>/index.ts`.
+  Only a service's own implementation files are barred from their own root.
+- **"Foundation and shared" is a list in the config**
+  (`domainFoundationAndShared`), because neither layer has a folder. A service
+  root or `boot.ts` importing anything else in `ghost/core` is counted as a
+  legacy import. The list is the spike's working answer to "what had to be
+  treated as foundation"; step 7 tests it on recommendations.
+- **Code outside the domains is held to the same surface.** `ghost/core` may
+  import a domain's `actions/`, `data/`, `events/` and `transition/` and nothing
+  else. The rules do not say this in so many words.
+- **The role list had to be invented for some folders.** See the open question
+  on roles, updated after step 7.
+- **Reshaped code must be TypeScript.** The naming check accepts `.ts` only
+  (and `.hbs`, `.html`, `.txt` under `emails/`).
+
+### Limits found
+
+- **Type-only imports are invisible to the boundary scan.** The scan compiles
+  TypeScript first and no edge remains for `import type`. So "never imports
+  Express" and "only the public folders" are enforced for value imports only. A
+  type taken from another domain's internals, or `import type { Request } from
+  'express'`, passes. A test records this. Seeing them needs dependency-cruiser's
+  `tsPreCompilationDeps`, which changes what every existing rule sees and was
+  not turned on here.
+- **The scan gives different answers under different Node versions in this
+  container.** Under the shell's Node 22.23.4 type-only imports stay in the
+  graph and the real tree shows 677 violations; under the Node pnpm runs
+  scripts with (22.23.5) it shows the expected 483. Every result in this log
+  was produced through `pnpm`. Running a check with bare `node` here misleads.
+- **"Only the owning domain publishes an event" is not enforced.** A listener
+  must import the event class, and anything holding the class can construct and
+  dispatch it. Nothing in an import graph tells subscribing from publishing.
+- **Past-tense event names are not checked.**
+- **The relations report is text matching.** It finds `this.hasMany('Model')`
+  style relations and `references: 'table.column'` in a schema fragment and
+  attributes each side to a domain by where its model file lives. `withRelated`
+  names relations, not models, so its target is reported as unknown. It is a
+  list to review, as asked, and no more.
+- **The test tree is not checked to mirror the code tree.**
+
+### Tooling added along the way
+
+`tools/scripts/relocate.ts` moves files or folders with `git mv` and rewrites
+every relative specifier the move changes: in the moved files and in everything
+that points at them (`require`, `import`, `export from`, `import()`,
+`typeof import()`, `require.resolve`, `mock()`-style calls). It reports paths
+built from strings (`path.join(__dirname, …)`) for a hand edit. Step 6 uses it.
