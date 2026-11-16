@@ -28,6 +28,18 @@ function tag<Kind extends DefinitionKind, Value extends object>(
   return value as Tagged<Kind, Value>;
 }
 
+// A fragment only describes, so nothing may change it after it is declared. A
+// registry that needs to add to what it reads must take a copy.
+function deepFreeze<Value>(value: Value): Value {
+  if (typeof value === 'object' && value !== null && !Object.isFrozen(value)) {
+    Object.freeze(value);
+    for (const member of Object.values(value)) {
+      deepFreeze(member);
+    }
+  }
+  return value;
+}
+
 /** The kind of definition a value is, or undefined when it is not one. */
 export function definitionKind(value: unknown): DefinitionKind | undefined {
   return (typeof value === 'object' || typeof value === 'function') && value !== null
@@ -129,7 +141,7 @@ export interface RouteDefinition {
 export function defineRoutes(
   routes: readonly RouteDefinition[],
 ): Tagged<'routes', { readonly routes: readonly RouteDefinition[] }> {
-  return tag('routes', { routes: [...routes] });
+  return deepFreeze(tag('routes', { routes: routes.map((route) => ({ ...route })) }));
 }
 
 // --- fragments --------------------------------------------------------------
@@ -166,7 +178,7 @@ export interface SettingsDefinition {
 export function defineSettings<Settings extends SettingsDefinition>(
   definition: Settings,
 ): Tagged<'settings', Settings> {
-  return tag('settings', definition);
+  return deepFreeze(tag('settings', definition));
 }
 
 export interface PermissionsDefinition {
@@ -179,7 +191,7 @@ export interface PermissionsDefinition {
 export function definePermissions<Permissions extends PermissionsDefinition>(
   definition: Permissions,
 ): Tagged<'permissions', Permissions> {
-  return tag('permissions', definition);
+  return deepFreeze(tag('permissions', definition));
 }
 
 export interface SchemaDefinition {
@@ -190,7 +202,7 @@ export interface SchemaDefinition {
 export function defineSchema<Schema extends SchemaDefinition>(
   definition: Schema,
 ): Tagged<'schema', Schema> {
-  return tag('schema', definition);
+  return deepFreeze(tag('schema', definition));
 }
 
 // --- the domain file --------------------------------------------------------

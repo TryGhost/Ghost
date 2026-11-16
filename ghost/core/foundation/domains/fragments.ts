@@ -43,7 +43,8 @@ export function domainSettingGroups(): Record<string, Record<string, unknown>> {
   const groups: Record<string, Record<string, unknown>> = {};
   for (const { value } of domainFragments('settings')) {
     for (const [group, settings] of Object.entries(value.groups)) {
-      groups[group] = { ...groups[group], ...settings };
+      // A copy: the settings model adds to each setting it reads.
+      groups[group] = { ...groups[group], ...structuredClone(settings) };
     }
   }
   return groups;
@@ -51,7 +52,10 @@ export function domainSettingGroups(): Record<string, Record<string, unknown>> {
 
 /** The tables each domain declares, by table name. */
 export function domainTables(): Record<string, Readonly<Record<string, unknown>>> {
-  return Object.assign({}, ...domainFragments('schema').map(({ value }) => value.tables));
+  // A copy, so nothing that reads the schema can change what a domain declared.
+  return structuredClone(
+    Object.assign({}, ...domainFragments('schema').map(({ value }) => value.tables)),
+  );
 }
 
 /** The public settings each domain declares: setting key to published name. */

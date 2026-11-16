@@ -40,6 +40,27 @@ describe('domain definitions', function () {
     assert.equal(JSON.stringify(defineSchema({ tables })), JSON.stringify({ tables }));
   });
 
+  it('freezes fragments, so a registry that reads one cannot change it', function () {
+    const settings = defineSettings({
+      groups: { things: { thing_enabled: { defaultValue: 'true', type: 'boolean' } } },
+      editable: ['thing_enabled'],
+    });
+    const setting = settings.groups.things.thing_enabled as { group?: string };
+    assert.throws(() => {
+      setting.group = 'things';
+    }, TypeError);
+    assert.throws(() => {
+      (settings.editable as string[]).push('other');
+    }, TypeError);
+    assert.ok(Object.isFrozen(defineSchema({ tables: { things: { id: {} } } }).tables.things));
+    assert.ok(Object.isFrozen(definePermissions({ objects: { thing: ['browse'] } }).objects.thing));
+    assert.ok(
+      Object.isFrozen(
+        defineRoutes([{ surface: 'admin', method: 'get', path: '/', handler: 'a#b' }]).routes[0],
+      ),
+    );
+  });
+
   it('declares an event the bus can key by name', function () {
     const ThingHappened = defineEvent<{ id: string }>('ThingHappened');
     assert.equal(definitionKind(ThingHappened), 'event');
