@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, it, beforeEach, afterEach } from 'vitest';
+import { describe, it, beforeEach, afterEach, vi } from 'vitest';
 import createKnex, { type Knex } from 'knex';
 import type {
   JobsBackendBase,
@@ -42,10 +42,10 @@ class FakeBackend implements JobsBackendBase {
     this.shutdownCalls.push(options);
   }
 
-  async deliver(index = 0): Promise<void> {
+  async deliver(index = 0) {
     const { processor } = this;
     assert.ok(processor, 'processor must be wired via start()');
-    await processor(this.enqueued[index].envelope.payload.job);
+    return processor(this.enqueued[index].envelope.payload.job);
   }
 }
 
@@ -69,17 +69,25 @@ type Row = { id: string; type: string | null };
 
 function makeOutbox({ released = [] as Row[], dropped = [] as Row[], tracked = true } = {}) {
   const replayChecks: ((type: string) => boolean)[] = [];
+  const staleAfter: number[] = [];
+  const renewals: string[][] = [];
   const inserts: { id: string; envelope: DispatchEnvelope; transacting?: unknown }[] = [];
   const relayCalls: string[] = [];
   const store = {
     async releaseSubmitted({
       replays,
+      staleAfterMs,
     }: {
       replays: (type: string) => boolean;
+      staleAfterMs: number;
     }): Promise<{ released: Row[]; dropped: Row[] }> {
       relayCalls.push('release');
       replayChecks.push(replays);
+      staleAfter.push(staleAfterMs);
       return { released, dropped };
+    },
+    async renew(ids: string[]): Promise<void> {
+      renewals.push(ids);
     },
     async insert(
       entry: { id: string; envelope: DispatchEnvelope },
@@ -95,9 +103,12 @@ function makeOutbox({ released = [] as Row[], dropped = [] as Row[], tracked = t
     async stop(): Promise<void> {
       relayCalls.push('stop');
     },
+    wake(): void {
+      relayCalls.push('wake');
+    },
   };
   const tracker = tracked ? { onSettled: async (): Promise<void> => {} } : undefined;
-  return { inserts, relayCalls, replayChecks, store, relay, tracker };
+  return { inserts, relayCalls, replayChecks, staleAfter, renewals, store, relay, tracker };
 }
 
 // Lets an after-commit hand-off registered on the transaction run.
@@ -138,10 +149,12 @@ describe('JobsService', function () {
       sentry?: JobsErrorReporter;
       outbox?: ReturnType<typeof makeOutbox>;
       logOutboxUnavailable?: boolean;
+      backend?: JobsBackendBase;
+      leaseMs?: number;
     } = {},
   ) {
     return new JobsService({
-      backend,
+      backend: overrides.backend ?? backend,
       logging: logger.logging,
       sentry: overrides.sentry,
       outbox: overrides.outbox
@@ -149,6 +162,7 @@ describe('JobsService', function () {
             store: overrides.outbox.store,
             relay: overrides.outbox.relay,
             tracker: overrides.outbox.tracker,
+            leaseMs: overrides.leaseMs ?? 120_000,
           }
         : undefined,
       logOutboxUnavailable: overrides.logOutboxUnavailable,
@@ -345,6 +359,43 @@ describe('JobsService', function () {
       });
     });
 
+    it('active: wakes the relay once the row is written', async function () {
+      const outbox = makeOutbox();
+      const service = makeService({ outbox });
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+
+      assert.deepEqual(outbox.relayCalls, ['wake']);
+    });
+
+    it('active: wakes the relay only once the caller transaction commits', async function () {
+      const outbox = makeOutbox();
+      const service = makeService({ outbox });
+
+      await db.transaction(async (trx) => {
+        await service.dispatch(new GreetJob({ name: 'Ada' }), { transacting: trx });
+        assert.deepEqual(outbox.relayCalls, [], 'not before the row is visible');
+      });
+      await settle();
+
+      assert.deepEqual(outbox.relayCalls, ['wake']);
+    });
+
+    it('active: leaves the relay asleep when the caller transaction rolls back', async function () {
+      const outbox = makeOutbox();
+      const service = makeService({ outbox });
+
+      await assert.rejects(
+        db.transaction(async (trx) => {
+          await service.dispatch(new GreetJob({ name: 'Ada' }), { transacting: trx });
+          throw new Error('roll back');
+        }),
+      );
+      await settle();
+
+      assert.deepEqual(outbox.relayCalls, []);
+    });
+
     it('inactive: dispatches directly to the backend', async function () {
       const service = makeService();
 
@@ -449,6 +500,131 @@ describe('JobsService', function () {
       await service.shutdown();
       assert.deepEqual(outbox.relayCalls, ['release', 'start', 'stop']);
       assert.equal(backend.shutdownCalls.length, 1);
+    });
+
+    describe('leases', function () {
+      class HoldingBackend extends FakeBackend {
+        held: string[] = [];
+        heldIds(): string[] {
+          return this.held;
+        }
+      }
+      const LEASE_MS = 40_000;
+      const QUARTER = LEASE_MS / 4;
+
+      beforeEach(function () {
+        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      });
+
+      afterEach(function () {
+        vi.useRealTimers();
+      });
+
+      it('releases at start only the rows nobody renewed within the lease', async function () {
+        const outbox = makeOutbox();
+        const service = makeService({ outbox, leaseMs: LEASE_MS });
+        try {
+          await service.start();
+          assert.deepEqual(outbox.staleAfter, [LEASE_MS]);
+        } finally {
+          await service.shutdown();
+        }
+      });
+
+      it('renews the rows its backend holds and releases stale rows every quarter of the lease', async function () {
+        const outbox = makeOutbox();
+        const holding = new HoldingBackend();
+        holding.held = ['a', 'b'];
+        const service = makeService({ outbox, backend: holding, leaseMs: LEASE_MS });
+        try {
+          await service.start();
+          assert.deepEqual(outbox.renewals, []);
+
+          await vi.advanceTimersByTimeAsync(QUARTER);
+          assert.deepEqual(outbox.renewals, [['a', 'b']]);
+          assert.equal(outbox.staleAfter.length, 2, 'released at start and on the tick');
+
+          await vi.advanceTimersByTimeAsync(QUARTER);
+          assert.equal(outbox.renewals.length, 2);
+        } finally {
+          await service.shutdown();
+        }
+      });
+
+      it('renews nothing for a backend that does not report what it holds', async function () {
+        const outbox = makeOutbox();
+        const service = makeService({ outbox, leaseMs: LEASE_MS });
+        try {
+          await service.start();
+          await vi.advanceTimersByTimeAsync(QUARTER);
+
+          assert.deepEqual(outbox.renewals, []);
+          assert.equal(outbox.staleAfter.length, 2, 'still releases stale rows');
+        } finally {
+          await service.shutdown();
+        }
+      });
+
+      it('stops renewing once shut down', async function () {
+        const outbox = makeOutbox();
+        const holding = new HoldingBackend();
+        holding.held = ['a'];
+        const service = makeService({ outbox, backend: holding, leaseMs: LEASE_MS });
+
+        await service.start();
+        await vi.advanceTimersByTimeAsync(QUARTER);
+        await service.shutdown();
+        await vi.advanceTimersByTimeAsync(QUARTER * 2);
+
+        assert.equal(outbox.renewals.length, 1);
+      });
+
+      it('keeps renewing while the backend drains at shutdown, and stops after', async function () {
+        class DrainingBackend extends HoldingBackend {
+          drained = Promise.withResolvers<void>();
+          override async shutdown(options?: JobsShutdownOptions): Promise<void> {
+            super.shutdown(options);
+            await this.drained.promise;
+          }
+        }
+        const outbox = makeOutbox();
+        const draining = new DrainingBackend();
+        draining.held = ['a'];
+        const service = makeService({ outbox, backend: draining, leaseMs: LEASE_MS });
+
+        await service.start();
+        const stopping = service.shutdown();
+        await vi.advanceTimersByTimeAsync(QUARTER);
+        assert.deepEqual(outbox.renewals, [['a']], 'a draining job keeps its row');
+
+        draining.drained.resolve();
+        await stopping;
+        await vi.advanceTimersByTimeAsync(QUARTER * 2);
+        assert.equal(outbox.renewals.length, 1, 'nothing renews once the backend has drained');
+      });
+
+      it('logs a failed lease tick and keeps ticking', async function () {
+        const outbox = makeOutbox();
+        let calls = 0;
+        outbox.store.renew = async () => {
+          calls += 1;
+          throw new Error('db gone');
+        };
+        const holding = new HoldingBackend();
+        holding.held = ['a'];
+        const service = makeService({ outbox, backend: holding, leaseMs: LEASE_MS });
+        try {
+          await service.start();
+          await vi.advanceTimersByTimeAsync(QUARTER);
+          assert.equal(calls, 1);
+          assert.equal(logger.calls.error.length, 1, 'the failure is logged');
+
+          await vi.advanceTimersByTimeAsync(QUARTER);
+          assert.equal(calls, 2, 'the next tick still runs');
+        } finally {
+          await service.shutdown();
+        }
+      });
     });
 
     it('logs at start which submitted rows it released to hand over again', async function () {
@@ -689,6 +865,25 @@ describe('JobsService', function () {
       assert.equal(event.system.job_type, 'greet');
       assert.equal(typeof event.system.duration_ms, 'number');
       assert.match(String(message), /^\[Background Job\] greet completed in \d+ms$/);
+    });
+
+    it('passes an interrupted delivery back to the backend, logged as interrupted, not failed', async function () {
+      const captured: unknown[] = [];
+      const sentry = { captureException: (err: unknown) => captured.push(err) };
+      const service = makeService({ sentry });
+      service.handle(GreetJob, async () => 'interrupted' as const);
+      await service.start();
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+      const result = await backend.deliver();
+
+      assert.equal(result, 'interrupted');
+      assert.equal(logger.calls.error.length, 0);
+      assert.deepEqual(captured, []);
+      assert.match(
+        String(logger.calls.info.at(-1)![0]),
+        /^\[Background Job\] greet interrupted after \d+ms$/,
+      );
     });
 
     it('does not log a completed event for a failed delivery', async function () {

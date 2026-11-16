@@ -41,6 +41,10 @@ export const appsScreen = {
   detailsTitle: () => page.getByTestId('app-details-title'),
   appPage: () => page.getByTestId(sel.appPage),
   frame: () => page.getByTestId(sel.appFrame),
+  footer: () => page.getByTestId(sel.appFooter),
+  content: () => page.getByTestId(sel.appContent),
+  footerDevelopmentBadge: () =>
+    page.getByTestId(sel.appFooter).getByTestId(sel.appDevelopmentBadge),
   notResponding: () => page.getByTestId(sel.appNotResponding),
   unavailable: () => page.getByTestId(sel.appUnavailable),
   notInstalled: () => page.getByTestId(sel.appNotInstalled),

@@ -70,10 +70,12 @@ const pageChromeClassName = [
  * footprint, whichever is further right, so centred content with room to
  * spare is unaffected and narrower viewports get symmetric padding that keeps
  * it centred. Below the desktop breakpoint the mobile layout takes over.
+ * An app page's footer drops the margin that evens it up beside a pinned nav.
  */
 const compactPageChromeClassName = [
   '[--compact-page-padding:max(0px,calc(var(--floating-sidebar-footprint)_-_var(--page-gutter)))]',
   'px-(--compact-page-padding)',
+  '[&_[data-app-footer]]:mr-0',
   '[--page-bleed-start:var(--compact-page-padding)]',
   '[--page-bleed-end:var(--compact-page-padding)]',
 ].join(' ');
@@ -114,6 +116,7 @@ const backdropInsetClassName = [
 ].join(' ');
 
 const SIDEBAR_WIDTH = '316px';
+const ADMIN7_SIDEBAR_WIDTH = 269;
 
 const SIDEBAR_PANEL_CLASS_NAME = '[&>[data-sidebar=sidebar]]:relative';
 // Lands on the desktop panel only; the mobile sidebar is a sheet that ignores it.
@@ -339,6 +342,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           className={floatingSidebarClassName}
           disabled={dunningLocked}
           morphStyle={settingsPinMorph.morphStyle}
+          openWidth={ADMIN7_SIDEBAR_WIDTH}
           settingsNavigation={settingsNavigation}
           settingsNavigationRef={setSettingsNavigationSlot}
           onPinnedMorphEnd={settingsPinMorph.onPinnedMorphEnd}
@@ -415,6 +419,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           animate={sidebarModeLoaded}
           contentRef={insetRef}
           morphStyle={settingsPinMorph.morphStyle}
+          openWidth={ADMIN7_SIDEBAR_WIDTH}
           pinned={sidebarOpen}
           slideRef={mainRef}
         />
