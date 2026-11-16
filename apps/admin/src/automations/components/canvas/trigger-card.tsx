@@ -30,11 +30,11 @@ import type { TierSelection } from '@/automations/types';
 import { isTierSelectionEmpty, updateFromSelection } from '@/automations/utils/tier-selection';
 
 export type TriggerData = {
-  selectedTriggerLabel?: SelectedTriggerLabel;
   tierQuery: Pick<ReturnType<typeof useBrowseTiers>, 'data' | 'isLoading' | 'isError' | 'refetch'>;
   triggerType: AutomationTriggerRule['trigger_type'];
   rules: readonly AutomationTriggerRule[];
   savedTierIds: readonly string[];
+  selectedTriggerLabel?: SelectedTriggerLabel;
   onUpdate: (trigger: AutomationTrigger) => void;
 };
 
@@ -249,23 +249,6 @@ const SubscriptionChangedPicker: React.FC<{ trigger: TriggerData; errorMessage?:
 
 function getTriggerPresentation(trigger: TriggerData, errorMessage?: string) {
   switch (trigger.triggerType) {
-    case 'label_added':
-      return {
-        title: 'Label added to a member',
-        Icon: LucideIcon.Tag,
-        content: (
-          <LabelTriggerPicker
-            errorMessage={errorMessage}
-            labelId={getTriggerLabelId(trigger.rules)}
-            selectedLabel={trigger.selectedTriggerLabel}
-            onChange={(labelId) =>
-              trigger.onUpdate({
-                trigger_rules: buildTriggerRules({ triggerType: 'label_added', labelId }),
-              })
-            }
-          />
-        ),
-      };
     case 'paid_subscription_changed':
       return {
         title: 'Paid subscription changed',
@@ -286,6 +269,23 @@ function getTriggerPresentation(trigger: TriggerData, errorMessage?: string) {
           <Text as="p" size="md" tone="secondary">
             Triggered when someone signs up as a free member
           </Text>
+        ),
+      };
+    case 'label_added':
+      return {
+        title: 'Label added to a member',
+        Icon: LucideIcon.Tag,
+        content: (
+          <LabelTriggerPicker
+            errorMessage={errorMessage}
+            labelId={getTriggerLabelId(trigger.rules)}
+            selectedLabel={trigger.selectedTriggerLabel}
+            onChange={(labelId) =>
+              trigger.onUpdate({
+                trigger_rules: buildTriggerRules({ triggerType: 'label_added', labelId }),
+              })
+            }
+          />
         ),
       };
     default: {

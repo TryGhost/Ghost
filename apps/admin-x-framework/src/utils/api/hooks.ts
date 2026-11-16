@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import {
   InfiniteData,
   InvalidateOptions,
@@ -18,19 +17,19 @@ import { usePermission } from '../../hooks/use-permissions';
 import { UserRoleType } from '../../api/roles';
 import { apiUrl, useFetchApi, type RequestOptions } from './fetch-api';
 
-export const MetaSchema = z.object({
-  capabilities: z.object({ dislikes: z.boolean().optional() }).optional(),
-  pagination: z.object({
-    page: z.number(),
-    limit: z.union([z.number(), z.literal('all')]),
-    pages: z.number(),
-    total: z.number(),
-    next: z.number().nullable(),
-    prev: z.number().nullable(),
-  }),
-});
-
-export type Meta = z.infer<typeof MetaSchema>;
+export interface Meta {
+  capabilities?: {
+    dislikes?: boolean;
+  };
+  pagination: {
+    page: number;
+    limit: number | 'all';
+    pages: number;
+    total: number;
+    next: number | null;
+    prev: number | null;
+  };
+}
 
 interface QueryOptions<ResponseData> {
   dataType: string;

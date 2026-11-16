@@ -33,16 +33,6 @@ export function buildTriggerRules(options: TriggerRuleOptions): AutomationTrigge
   switch (triggerType) {
     case 'free_signup':
       return [{ trigger_type: triggerType, scope: null, product_id: null, direction: null }];
-    case 'label_added':
-      return [
-        {
-          trigger_type: triggerType,
-          label_id: options.labelId,
-          scope: null,
-          product_id: null,
-          direction: null,
-        },
-      ];
     case 'paid_subscription_started':
       if (options.scope === 'specific_paid_tier') {
         return options.tierIds.map((productId) => ({
@@ -57,6 +47,16 @@ export function buildTriggerRules(options: TriggerRuleOptions): AutomationTrigge
       ];
     case 'paid_subscription_changed':
       return subscriptionChangedRulesFromSelection(options.selection);
+    case 'label_added':
+      return [
+        {
+          trigger_type: triggerType,
+          label_id: options.labelId,
+          scope: null,
+          product_id: null,
+          direction: null,
+        },
+      ];
     default: {
       const _exhaustive: never = triggerType;
       throw new Error(`Unknown automation trigger type: ${String(_exhaustive)}`);

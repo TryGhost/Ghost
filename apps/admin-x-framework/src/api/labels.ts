@@ -1,10 +1,5 @@
 import { InfiniteData } from '@tanstack/react-query';
-import {
-  MetaSchema,
-  createInfiniteQuery,
-  createMutation,
-  createQueryWithId,
-} from '../utils/api/hooks';
+import { createInfiniteQuery, createMutation, createQueryWithId } from '../utils/api/hooks';
 import { apiUrl, useFetchApi } from '../utils/api/fetch-api';
 import { escapeNqlString } from '@tryghost/nql-string';
 import { useCallback } from 'react';
@@ -21,7 +16,19 @@ const LabelSchema = z.object({
 
 const LabelsResponseSchema = z.object({
   labels: z.array(LabelSchema),
-  meta: MetaSchema.optional(),
+  meta: z
+    .object({
+      capabilities: z.object({ dislikes: z.boolean().optional() }).optional(),
+      pagination: z.object({
+        page: z.number(),
+        limit: z.union([z.number(), z.literal('all')]),
+        pages: z.number(),
+        total: z.number(),
+        next: z.number().nullable(),
+        prev: z.number().nullable(),
+      }),
+    })
+    .optional(),
 });
 
 export type Label = z.infer<typeof LabelSchema>;

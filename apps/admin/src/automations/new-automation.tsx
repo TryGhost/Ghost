@@ -23,10 +23,10 @@ type PickedTrigger = AutomationTriggerRule['trigger_type'];
 
 function getInitialTriggerRules(triggerType: PickedTrigger): AutomationTriggerRule[] {
   switch (triggerType) {
-    case 'label_added':
-      return [];
     case 'paid_subscription_changed':
       return buildTriggerRules({ triggerType, selection: { from: [], to: [] } });
+    case 'label_added':
+      return [];
     default:
       return buildTriggerRules({ triggerType });
   }
