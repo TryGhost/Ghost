@@ -5,6 +5,7 @@ import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { Link } from '@tryghost/admin-x-framework';
 import { useSettingsReturnToState } from '@/layout/settings-navigation';
+import { PrivateSiteBadge } from '@/shared/private-site-badge';
 
 const DEFAULT_SITE_ICON = 'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png';
 
@@ -46,24 +47,29 @@ export function SidebarSiteIdentity({ variant }: SidebarSiteIdentityProps) {
       state={settingsReturnToState}
       to="/settings/members"
     >
-      <Badge
-        className={cn(
-          'gap-1 border-transparent px-1.5 py-0 text-[11px] leading-5 font-semibold',
-          variant === 'header' &&
-            'bg-orange-100 text-orange-700 transition-colors hover:bg-orange-200 dark:bg-orange-500/20 dark:text-orange-300 dark:hover:bg-orange-500/30',
-        )}
-        variant={variant === 'capsule' ? 'warning' : 'secondary'}
-      >
-        <LucideIcon.Lock className="size-3" strokeWidth={2.25} />
-        Private
-      </Badge>
+      {variant === 'capsule' ? (
+        <PrivateSiteBadge />
+      ) : (
+        <Badge
+          className="gap-1 border-transparent bg-orange-100 px-1.5 py-0 text-[11px] leading-5 font-semibold text-orange-700 transition-colors hover:bg-orange-200 dark:bg-orange-500/20 dark:text-orange-300 dark:hover:bg-orange-500/30"
+          variant="secondary"
+        >
+          <LucideIcon.Lock className="size-3" strokeWidth={2.25} />
+          Private
+        </Badge>
+      )}
     </Link>
   );
 
   if (variant === 'capsule') {
     return (
-      <Stack align="start" className="min-w-0 flex-1" gap="xs">
-        <span className="heading-font-features w-full min-w-0 truncate text-[18px] leading-[1.15] font-medium tracking-[-0.01em] whitespace-nowrap text-foreground">
+      <Stack align="start" className="min-w-0 flex-1" gap={isPrivate ? 'none' : 'xs'}>
+        <span
+          className={cn(
+            'heading-font-features w-full min-w-0 truncate text-[18px] leading-[1.15] font-medium tracking-[-0.01em] whitespace-nowrap text-foreground',
+            isPrivate && 'text-[14px] leading-4',
+          )}
+        >
           {title}
         </span>
         {privateBadge}

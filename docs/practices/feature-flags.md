@@ -165,7 +165,8 @@ Content, Audience and Apps keep their headings when apps are enabled.
 Ghost(Pro) and Settings follow the last group in the scrolling navigation.
 The active banner stays above the bottom account avatar, with flat upgrade and
 What's New banners. The account trigger shows only the avatar, private-site
-status sits below the publication name, and the sidebar omits the member count
+status sits below a compact publication name and shares a high-contrast warning lock badge
+with Settings' Access navigation. The sidebar omits the member count
 already shown in the top bar. The Posts create action appears on sidebar hover
 or keyboard focus and stays visible on touch devices.
 

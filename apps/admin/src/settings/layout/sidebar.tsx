@@ -31,6 +31,7 @@ import { useScrollSectionContext, useScrollSectionNav } from '@/settings/hooks/u
 import { useSearch } from '@/settings/providers/settings-app-context';
 import ExitSettingsButton from '@/settings/components/exit-settings-button';
 import { ADMIN7_NAV_ICON_CLASS_NAME } from '@/layout/app-sidebar/nav-icon-class';
+import { PrivateSiteBadge } from '@/shared/private-site-badge';
 
 interface NavItemProps {
   icon?: React.ReactNode;
@@ -506,7 +507,7 @@ const Sidebar: React.FC = () => {
             title={
               <span className="flex min-w-0 flex-1 items-center justify-between gap-2">
                 <span className="min-w-0 truncate">Access</span>
-                {isPrivate && <PrivateBadge />}
+                {isPrivate && (floatingSidebar ? <PrivateSiteBadge /> : <PrivateBadge />)}
               </span>
             }
             onClick={handleSectionClick}
