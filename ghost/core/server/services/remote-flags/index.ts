@@ -1,9 +1,8 @@
 import logging from '@tryghost/logging';
+import request from '@tryghost/request';
 import { RemoteFlagsService } from './remote-flags-service';
 import * as flagOverrides from '../../../shared/labs-flag-overrides';
 
-// @tryghost/request ships no types; require() avoids an implicit-any under the strict tsconfig.
-const request = require('@tryghost/request');
 // Every site seeds a site_uuid setting, so it's a universal ramp key.
 const settingsCache = require('../../../shared/settings-cache');
 
