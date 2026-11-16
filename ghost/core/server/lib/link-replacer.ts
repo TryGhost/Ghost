@@ -1,16 +1,12 @@
 import { tokenize } from 'html5parser';
 import * as entities from 'entities';
 
-/**
- * Replaces the links in the provided HTML
- */
-export const replace = async (
+/** Replace decoded hrefs before URL parsing, for templates whose values are not resolved yet. */
+export const replaceRaw = async (
   html: string,
   replaceLink: (
-    url: URL,
-    originalPath: string,
-  ) => URL | string | false | Promise<URL | string | false>,
-  options: { base?: string } = {},
+    path: string,
+  ) => URL | string | false | undefined | Promise<URL | string | false | undefined>,
 ): Promise<string> => {
   try {
     const tokens = tokenize(html); // IToken[]
@@ -55,14 +51,8 @@ export const replace = async (
 
         if (inHref && token.type === 8) {
           const path = entities.decode(token.value.substring(1, token.value.length - 1));
-          let url;
-          try {
-            url = new URL(path, options.base);
-          } catch (e) {
-            // Ignore invalid URLs
-          }
-          if (url) {
-            const replacement = await replaceLink(url, path);
+          const replacement = await replaceLink(path);
+          if (replacement !== undefined) {
             const str = replacement.toString();
             replacements.push({ url: str, start: token.start + 1, end: token.end - 1 });
           }
@@ -90,3 +80,23 @@ export const replace = async (
     return html;
   }
 };
+
+/** Replaces valid URLs in the provided HTML, resolving relative paths against the base. */
+export const replace = async (
+  html: string,
+  replaceLink: (
+    url: URL,
+    originalPath: string,
+  ) => URL | string | false | Promise<URL | string | false>,
+  options: { base?: string } = {},
+): Promise<string> =>
+  replaceRaw(html, async (path) => {
+    let url;
+    try {
+      url = new URL(path, options.base);
+    } catch {
+      // Ignore invalid URLs, preserving their original attribute text.
+      return undefined;
+    }
+    return replaceLink(url, path);
+  });
