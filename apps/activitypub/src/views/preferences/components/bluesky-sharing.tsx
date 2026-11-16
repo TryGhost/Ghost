@@ -26,6 +26,7 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
 import {
   useAccountForUser,
+  useBlueskyDomainHandleCheckForUser,
   useClaimBlueskyDomainHandleMutationForUser,
   useConfirmBlueskyHandleMutationForUser,
   useDisableBlueskyMutationForUser,
@@ -47,8 +48,8 @@ type DomainHandleBannerState = 'offer' | 'switching' | 'switched' | 'taken' | 'f
  *
  * The outcome of a switch is only shown when the publisher asked for it:
  * during this visit, or earlier if it is still in progress. Otherwise a domain
- * that isn't the handle yet is offered, whatever happened before, unless the
- * publisher can't do anything about it (eg a proxy that doesn't route
+ * that isn't the handle yet is offered, whatever happened before, as long as
+ * it can work right now (eg not when the proxy doesn't route
  * /.well-known/atproto-did)
  */
 function getDomainHandleBannerState({
@@ -57,12 +58,14 @@ function getDomainHandleBannerState({
   requesting,
   requestFailed,
   showsDomain,
+  reachable,
 }: {
   domainHandle: BlueskyDomainHandle | null;
   requested: boolean;
   requesting: boolean;
   requestFailed: boolean;
   showsDomain: boolean;
+  reachable: boolean;
 }): DomainHandleBannerState | null {
   if (requesting) {
     return 'switching';
@@ -91,11 +94,7 @@ function getDomainHandleBannerState({
     return null;
   }
 
-  if (domainHandle?.status === 'unavailable' && domainHandle.reason === 'not_reachable') {
-    return null;
-  }
-
-  return 'offer';
+  return reachable ? 'offer' : null;
 }
 
 const DomainHandleBanner: React.FC<{
@@ -374,6 +373,22 @@ const BlueskySharing: React.FC = () => {
     return () => clearTimeout(nextCheck);
   }, [shouldCheckDomainHandle, confirmHandle]);
 
+  const showAsEnabled = account?.blueskyEnabled && account?.blueskyHandleConfirmed && !isSettingUp;
+  const showsDomain = blueskyHandle === `@${siteDomain}`;
+
+  // Only offer the domain when it can work right now, whatever an earlier
+  // attempt found: a missing route can be added, and a failed request can
+  // work the next time
+  const { data: domainHandleCheck } = useBlueskyDomainHandleCheckForUser('index', {
+    enabled:
+      domainHandlesSupported &&
+      !!showAsEnabled &&
+      !showsDomain &&
+      !domainHandleRequested &&
+      domainHandleStatus !== 'claiming' &&
+      domainHandleStatus !== 'active',
+  });
+
   if (isLoadingAccount) {
     return (
       <Layout>
@@ -389,8 +404,6 @@ const BlueskySharing: React.FC = () => {
     );
   }
 
-  const showAsEnabled = account?.blueskyEnabled && account?.blueskyHandleConfirmed && !isSettingUp;
-  const showsDomain = blueskyHandle === `@${siteDomain}`;
   const domainHandleBannerState = domainHandlesSupported
     ? getDomainHandleBannerState({
         domainHandle,
@@ -398,8 +411,15 @@ const BlueskySharing: React.FC = () => {
         requesting: claimBlueskyDomainHandleMutation.isPending,
         requestFailed: domainHandleRequestFailed,
         showsDomain,
+        reachable: domainHandleCheck?.reachable === true,
       })
     : null;
+  // The offer names the domain that works, the rest the domain that was tried
+  const domainHandleBannerDomain =
+    (domainHandleBannerState === 'offer' ? undefined : domainHandle?.domain) ??
+    domainHandleCheck?.domain ??
+    domainHandle?.domain ??
+    siteDomain;
 
   return (
     <Layout>
@@ -523,7 +543,7 @@ const BlueskySharing: React.FC = () => {
               <Stack className="mt-6" gap="xl">
                 {domainHandleBannerState && (
                   <DomainHandleBanner
-                    handle={`@${domainHandle?.domain ?? siteDomain}`}
+                    handle={`@${domainHandleBannerDomain}`}
                     state={domainHandleBannerState}
                     onUseDomain={handleClaimDomainHandle}
                   />

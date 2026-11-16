@@ -59,6 +59,17 @@ function parseBlueskyDomainHandle(value: unknown): BlueskyDomainHandle | null {
   return result.success ? result.data : null;
 }
 
+/**
+ * Whether the site's domain reaches the ActivityPub service, so it's worth
+ * offering as the Bluesky handle. It doesn't say the domain is free
+ */
+const blueskyDomainHandleCheckSchema = z.object({
+  domain: z.string(),
+  reachable: z.boolean(),
+});
+
+export type BlueskyDomainHandleCheck = z.infer<typeof blueskyDomainHandleCheckSchema>;
+
 export interface BlueskyHandleDetails {
   /**
    * The confirmed Bluesky handle, or an empty string if it isn't confirmed yet
@@ -1024,6 +1035,12 @@ export class ActivityPubAPI {
     const url = new URL('.ghost/activitypub/v2/actions/bluesky/domain-handle', this.apiUrl);
 
     return this.parseBlueskyHandleDetails(await this.fetchJSON(url, 'POST'));
+  }
+
+  async checkBlueskyDomainHandle(): Promise<BlueskyDomainHandleCheck> {
+    const url = new URL('.ghost/activitypub/v2/actions/bluesky/domain-handle/check', this.apiUrl);
+
+    return blueskyDomainHandleCheckSchema.parse(await this.fetchJSON(url, 'POST'));
   }
 
   private parseBlueskyHandleDetails(json: object | null): BlueskyHandleDetails {

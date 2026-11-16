@@ -2810,6 +2810,50 @@ describe('ActivityPubAPI', function () {
       });
     });
   });
+
+  describe('checkBlueskyDomainHandle', function () {
+    function apiAnswering(response: Response) {
+      const fakeFetch = Fetch({
+        'https://auth.api/': {
+          response: JSONResponse({
+            identities: [
+              {
+                token: 'fake-token',
+              },
+            ],
+          }),
+        },
+        [`https://activitypub.api/.ghost/activitypub/v2/actions/bluesky/domain-handle/check`]: {
+          async assert(_resource, init) {
+            expect(init?.method).toEqual('POST');
+          },
+          response,
+        },
+      });
+
+      return new ActivityPubAPI(
+        new URL('https://activitypub.api'),
+        new URL('https://auth.api'),
+        'index',
+        fakeFetch,
+      );
+    }
+
+    test('It returns whether the domain reaches the service', async function () {
+      const api = apiAnswering(JSONResponse({ domain: 'example.com', reachable: false }));
+
+      expect(await api.checkBlueskyDomainHandle()).toEqual({
+        domain: 'example.com',
+        reachable: false,
+      });
+    });
+
+    test('It rejects an answer it does not understand', async function () {
+      const api = apiAnswering(JSONResponse({ domain: 'example.com' }));
+
+      await expect(api.checkBlueskyDomainHandle()).rejects.toThrow();
+    });
+  });
 });
 
 describe('supportsBlueskyDomainHandles', function () {

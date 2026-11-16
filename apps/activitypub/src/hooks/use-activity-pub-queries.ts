@@ -88,6 +88,7 @@ const QUERY_KEYS = {
   account: (handle: string) => ['account', handle],
   accountAliases: (handle: string) => ['account_aliases', handle],
   accountMigration: (handle: string) => ['account_migration', handle],
+  blueskyDomainHandleCheck: (handle: string) => ['bluesky_domain_handle_check', handle],
   accountDomain: (handle: string) => ['account_domain', handle],
   accountFollows: (handle: string, type: AccountFollowsType) => ['account_follows', handle, type],
   searchResults: (query: string) => ['search_results', query],
@@ -3041,6 +3042,27 @@ function updateConfirmedBlueskyCache(queryClient: QueryClient, details: BlueskyH
     // Left out for ActivityPub services that predate domain handles, which
     // the screen tells apart by the field being absent
     ...(details.domainHandle !== undefined ? { blueskyDomainHandle: details.domainHandle } : {}),
+  });
+}
+
+/**
+ * Whether the site's domain can be offered as the Bluesky handle. Checked on
+ * every visit rather than cached, as it changes outside of Admin (eg a proxy
+ * that starts routing /.well-known/atproto-did)
+ */
+export function useBlueskyDomainHandleCheckForUser(handle: string, options: { enabled: boolean }) {
+  return useQuery({
+    queryKey: QUERY_KEYS.blueskyDomainHandleCheck(handle),
+    enabled: options.enabled,
+    retry: false,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: false,
+    async queryFn() {
+      const siteUrl = await getSiteUrl();
+
+      return createActivityPubAPI(handle, siteUrl).checkBlueskyDomainHandle();
+    },
   });
 }
 
