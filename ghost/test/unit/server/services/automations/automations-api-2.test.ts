@@ -417,7 +417,9 @@ describe('automations API', function () {
     );
 
     it('does nothing for an empty label event', async function () {
-      const withTransaction = vi.fn(repository.withTransaction);
+      const withTransaction = vi.fn(() => {
+        throw new Error('withTransaction should not be called');
+      });
       const api = createApi({
         repository: { ...repository, withTransaction },
         domainEvents,
