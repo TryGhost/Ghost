@@ -1,3 +1,6 @@
+import type { Controller, Frame } from '@tryghost/api-framework';
+
+type BodyFrame = Frame<{ data: { snippets: Record<string, unknown>[] } }>;
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const models = require('../../models');
@@ -8,8 +11,7 @@ const messages = {
   snippetAlreadyExists: 'Snippet already exists.',
 };
 
-/** @type {import('@tryghost/api-framework').Controller} */
-const controller = {
+const controller: Controller = {
   docName: 'snippets',
 
   browse: {
@@ -56,14 +58,16 @@ const controller = {
     },
     options: ['formats'],
     permissions: true,
-    query(frame) {
-      return models.Snippet.add(frame.data.snippets[0], frame.options).catch((error) => {
-        if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
-          throw new errors.ValidationError({ message: tpl(messages.snippetAlreadyExists) });
-        }
+    query(frame: BodyFrame) {
+      return models.Snippet.add(frame.data.snippets[0], frame.options).catch(
+        (error: { code?: string; message: string }) => {
+          if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
+            throw new errors.ValidationError({ message: tpl(messages.snippetAlreadyExists) });
+          }
 
-        throw error;
-      });
+          throw error;
+        },
+      );
     },
   },
 
@@ -80,7 +84,7 @@ const controller = {
       },
     },
     permissions: true,
-    async query(frame) {
+    async query(frame: BodyFrame) {
       const model = await models.Snippet.edit(frame.data.snippets[0], frame.options);
       if (!model) {
         throw new errors.NotFoundError({

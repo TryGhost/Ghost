@@ -1,3 +1,6 @@
+import type { Controller, Frame } from '@tryghost/api-framework';
+
+type BodyFrame = Frame<{ data: { labels: Record<string, unknown>[] } }>;
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
@@ -13,11 +16,11 @@ const ALLOWED_INCLUDES = ['count.members'];
 // SQLITE_CONSTRAINT covers more than unique violations, but schema validation
 // rejects null/oversize names before the database, so only the unique
 // constraint on name/slug can reach this catch
-const isUniqueConstraintViolation = (error) => {
+const isUniqueConstraintViolation = (error: { code?: string }) => {
   return error.code === 'ER_DUP_ENTRY' || error.code === 'SQLITE_CONSTRAINT';
 };
 
-const handleDuplicateNameError = (error) => {
+const handleDuplicateNameError = (error: { code?: string }) => {
   if (isUniqueConstraintViolation(error)) {
     throw new errors.ValidationError({ message: tpl(messages.labelAlreadyExists) });
   }
@@ -25,8 +28,7 @@ const handleDuplicateNameError = (error) => {
   throw error;
 };
 
-/** @type {import('@tryghost/api-framework').Controller} */
-const controller = {
+const controller: Controller = {
   docName: 'labels',
 
   browse: {
@@ -90,7 +92,7 @@ const controller = {
       },
     },
     permissions: true,
-    query(frame) {
+    query(frame: BodyFrame) {
       return models.Label.add(frame.data.labels[0], frame.options).catch(handleDuplicateNameError);
     },
   },
@@ -111,7 +113,7 @@ const controller = {
       },
     },
     permissions: true,
-    async query(frame) {
+    async query(frame: BodyFrame) {
       const model = await models.Label.edit(frame.data.labels[0], frame.options).catch(
         handleDuplicateNameError,
       );
