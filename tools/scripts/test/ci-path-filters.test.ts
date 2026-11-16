@@ -191,6 +191,7 @@ describe('CI path filters', () => {
       'ghost/core/server/services/legacy-service-inventory.yaml',
       'tools/scripts/ci/check-legacy-services.ts',
       'tools/configs/oxlint/legacy-services.ts',
+      'tools/configs/oxlint/service-locations.cjs',
       'tools/scripts/ci/legacy-services-base.ts',
     ]) {
       assert.ok(

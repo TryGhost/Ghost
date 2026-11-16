@@ -281,6 +281,7 @@ async function fixture(t: TestContext) {
     'tools/scripts/ci/service-dependency-resolver.mjs',
     'tools/scripts/lib/dependency-boundaries.ts',
     'tools/configs/oxlint/legacy-services.ts',
+    'tools/configs/oxlint/service-locations.cjs',
     'tools/scripts/ci/check-boundaries.ts',
   ]) {
     await mkdir(dirname(join(root, file)), { recursive: true });

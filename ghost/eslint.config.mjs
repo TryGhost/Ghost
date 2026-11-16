@@ -92,6 +92,7 @@ export default tseslint.config(
       'core/shared/**/*.js',
       'core/frontend/**/*.js',
       'core/*.js',
+      'domains/**/*.js',
       'bin/**/*.js',
       'scripts/**/*.js',
       '*.js',
@@ -114,7 +115,7 @@ export default tseslint.config(
   // TypeScript files
   // ============================================================
   {
-    files: ['core/**/*.ts', '*.{ts,mts}'],
+    files: ['core/**/*.ts', 'domains/**/*.ts', '*.{ts,mts}'],
     extends: [...tseslint.configs.recommended],
     languageOptions: {
       ecmaVersion: 2022,
@@ -154,7 +155,7 @@ export default tseslint.config(
   // TypeScript override block: must come AFTER tseslint extends to win.
   // ============================================================
   {
-    files: ['core/**/*.ts', '*.{ts,mts}'],
+    files: ['core/**/*.ts', 'domains/**/*.ts', '*.{ts,mts}'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       ...tsLegacyRelaxations,
@@ -227,7 +228,7 @@ export default tseslint.config(
   // Test files
   // ============================================================
   {
-    files: ['test/**/*.{js,ts}'],
+    files: ['test/**/*.{js,ts}', 'domains/*/test/**/*.{js,ts}'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'commonjs',
@@ -267,7 +268,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['test/**/*.ts'],
+    files: ['test/**/*.ts', 'domains/*/test/**/*.ts'],
     extends: [...tseslint.configs.recommended],
     rules: {
       'no-undef': 'off',
@@ -290,7 +291,7 @@ export default tseslint.config(
   // tseslint recommended defaults that extends pulls in don't re-enable
   // no-unused-vars (test files have intentional unused imports for types).
   {
-    files: ['test/**/*.ts'],
+    files: ['test/**/*.ts', 'domains/*/test/**/*.ts'],
     extends: [...tseslint.configs.recommended],
     rules: {
       '@typescript-eslint/no-unused-vars': 'off',

@@ -75,10 +75,12 @@
         "ghost/core/shared/**/*.js",
         "ghost/core/frontend/**/*.js",
         "ghost/core/*.js",
+        "ghost/domains/**/*.js",
         "ghost/bin/**/*.js",
         "ghost/scripts/**/*.js",
         "ghost/*.js",
         "ghost/core/**/*.ts",
+        "ghost/domains/**/*.ts",
         "ghost/*.ts",
         "packages/adapters/cache-base/src/**/*.ts",
         "packages/adapters/cache-base/test/**/*.ts",
@@ -144,7 +146,7 @@
       ]
     },
     {
-      "files": ["ghost/core/**/*.{js,ts}"],
+      "files": ["ghost/core/**/*.{js,ts}", "ghost/domains/**/*.{js,ts}"],
       "rules": {
         "local-filenames/match-regex": ["error", "^[a-z0-9.-]+$", false]
       },
@@ -163,7 +165,7 @@
       }
     },
     {
-      "files": ["ghost/test/**/*.{js,ts}"],
+      "files": ["ghost/test/**/*.{js,ts}", "ghost/domains/*/test/**/*.{js,ts}"],
       "rules": {
         "local-filenames/match-regex": ["error", "^[a-z0-9-.]+$", false]
       }
@@ -241,36 +243,75 @@
       }
     },
     {
+      "files": ["ghost/domains/*/transition/services/*/index.ts"],
+      "rules": {
+        "ghost/service-root-shape": [
+          "error",
+          {
+            "helperImport": "../../../../../core/kernel/define-service"
+          }
+        ],
+        "ghost/no-injected-service-libraries": "error"
+      }
+    },
+    {
+      "files": ["ghost/domains/*/services/*/index.ts"],
+      "rules": {
+        "ghost/service-root-shape": [
+          "error",
+          {
+            "helperImport": "../../../../core/kernel/define-service"
+          }
+        ]
+      }
+    },
+    {
       "files": ["ghost/core/boot.js"],
       "rules": {
         "ghost/boot-awaits-service-init": "error"
       }
     },
     {
-      "files": ["ghost/core/server/services/**/*.{js,ts}"],
+      "files": [
+        "ghost/core/server/services/**/*.{js,ts}",
+        "ghost/domains/*/transition/services/**/*.{js,ts}",
+        "ghost/domains/*/services/**/*.{js,ts}"
+      ],
       "plugins": ["import"],
       "rules": {
         "import/no-dynamic-require": ["error", { "esmodule": true }]
       }
     },
     {
-      "files": ["ghost/core/**/*.{js,ts}", "ghost/test/**/*.{js,ts}"],
+      "files": ["ghost/core/**/*.{js,ts}", "ghost/domains/**/*.{js,ts}", "ghost/test/**/*.{js,ts}"],
       "rules": {
         "ghost/prefer-canonical-types": "error"
       }
     },
     {
-      "files": ["ghost/core/server/services/**/*.ts"],
+      "files": [
+        "ghost/core/server/services/**/*.ts",
+        "ghost/domains/*/transition/services/**/*.ts",
+        "ghost/domains/*/services/**/*.ts"
+      ],
       "rules": {
         "ghost/no-any-in-exported-types": "error"
       }
     },
     {
-      "files": ["ghost/test/**/*.{js,ts}"],
+      "files": ["ghost/test/**/*.{js,ts}", "ghost/domains/*/test/**/*.{js,ts}"],
       "rules": {
         "ghost/no-assert-error-instance": "error",
         "ghost/no-real-logger-injection": "error",
         "ghost/stop-frontend-agents": "error"
+      }
+    },
+    {
+      "files": ["ghost/domains/*/test/**/*.{js,ts}"],
+      "rules": {
+        "ghost/ghost-custom/no-native-error": "off",
+        "ghost/ghost-custom/ghost-error-usage": "off",
+        "ghost/ghost-custom/ghost-tpl-usage": "off"
       }
     }
   ],

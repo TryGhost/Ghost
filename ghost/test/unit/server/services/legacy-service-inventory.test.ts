@@ -185,7 +185,7 @@ describe('legacy service inventory', function () {
   );
   const isFile = (file: string) => statSync(file, { throwIfNoEntry: false })?.isFile() === true;
   // A service that is not listed as legacy must meet the standard.
-  const standard = onDisk
+  const standardInCore = onDisk
     .filter(
       (item) =>
         !legacy[item.name] &&
@@ -193,6 +193,25 @@ describe('legacy service inventory', function () {
         isFile(path.join(servicesRoot, item.name, 'index.ts')),
     )
     .map((item) => item.name);
+  // A root moved, unchanged, into a domain's transition/ folder keeps the same
+  // contract, so its extras stay catalogued.
+  const domainsRoot = path.join(coreRoot, 'domains');
+  const subdirectories = (directory: string) =>
+    statSync(directory, { throwIfNoEntry: false })?.isDirectory()
+      ? readdirSync(directory, { withFileTypes: true }).filter((item) => item.isDirectory())
+      : [];
+  const rootOf = new Map(
+    standardInCore.map((name) => [name, path.join(servicesRoot, name, 'index.ts')]),
+  );
+  for (const domain of subdirectories(domainsRoot)) {
+    const home = path.join(domainsRoot, domain.name, 'transition/services');
+    for (const item of subdirectories(home)) {
+      if (!legacy[item.name] && isFile(path.join(home, item.name, 'index.ts'))) {
+        rootOf.set(item.name, path.join(home, item.name, 'index.ts'));
+      }
+    }
+  }
+  const standard = [...rootOf.keys()];
 
   it('requires everything that is not a legacy entry to be a directory with an index.ts root', function () {
     for (const name of metadata) {
@@ -243,7 +262,7 @@ describe('legacy service inventory', function () {
     it(`${name} has exactly the catalogued extras`, function () {
       const extras = open[name]?.extras ?? {};
       assert.deepEqual(
-        declaredExtras(path.join(servicesRoot, name, 'index.ts')),
+        declaredExtras(rootOf.get(name)!),
         Object.keys(extras).sort(),
         'Catalogue every extra and remove stale catalogue entries',
       );

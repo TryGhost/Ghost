@@ -381,18 +381,26 @@ test('configures the rule for every service root with the kernel helper', () => 
   const overrides = config.overrides.filter(
     (override: { rules: Record<string, unknown> }) => override.rules[ruleName],
   );
+  // One override per home of a root: the path to the kernel differs in each.
+  const homes = [
+    'ghost/core/server/services',
+    'ghost/domains/example/transition/services',
+    'ghost/domains/example/services',
+  ];
   assert.deepEqual(
     overrides.map((override: { files: string[] }) => override.files),
-    [['ghost/core/server/services/*/index.ts']],
+    homes.map((home) => [`${home.replace('/example/', '/*/')}/*/index.ts`]),
     'The legacy service inventory decides which roots are exempt, not a list of paths',
   );
-  const settings = overrides[0].rules[ruleName];
-  assert.equal(settings[0], 'error');
-  assert.equal(
-    settings[1].helperImport,
-    path
-      .relative('ghost/core/server/services/example', 'ghost/core/kernel/define-service')
-      .split(path.sep)
-      .join('/'),
-  );
+  for (const [index, home] of homes.entries()) {
+    const settings = overrides[index].rules[ruleName];
+    assert.equal(settings[0], 'error');
+    assert.equal(
+      settings[1].helperImport,
+      path
+        .relative(`${home}/example`, 'ghost/core/kernel/define-service')
+        .split(path.sep)
+        .join('/'),
+    );
+  }
 });

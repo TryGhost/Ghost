@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { findPackageJSON } from 'node:module';
 import path from 'node:path';
 import type { ICruiseResult, IViolation } from 'dependency-cruiser';
@@ -7,11 +7,10 @@ import { z } from 'zod';
 import {
   type LegacyService,
   readLegacyServices,
-  servicesRoot,
+  serviceOfFile,
 } from '../../configs/oxlint/legacy-services.ts';
 
 export const knownViolationsFile = '.dependency-cruiser-known-violations.json';
-const servicePrefix = `${servicesRoot}/`;
 const knownViolationSchema = z.strictObject({
   rule: z.enum([
     'service-dependencies',
@@ -19,19 +18,21 @@ const knownViolationSchema = z.strictObject({
     'service-unresolved',
     'specialist-dependencies',
   ]),
-  from: z.string().startsWith(servicePrefix),
+  from: z.string().refine((file) => serviceOfFile(file) !== undefined, {
+    message: 'must be a file in a service',
+  }),
   to: z.string().min(1),
 });
 type KnownViolation = z.infer<typeof knownViolationSchema>;
 type LegacyServices = Map<string, LegacyService>;
 
-const serviceName = (file: string) => file.slice(servicePrefix.length).split('/')[0]!;
+const serviceName = (file: string) => serviceOfFile(file)?.name ?? '';
 // Some legacy services change too often for a file-level list to hold: it would
 // go stale between a pull request opening and merging. Their inventory entry
 // says `dependencyChecks: deferred`. Their findings stay in reports but neither
 // fail lint nor appear in the known-violations file.
 const isDeferred = (file: string, legacy: LegacyServices) =>
-  file.startsWith(servicePrefix) && legacy.get(serviceName(file))?.deferred === true;
+  legacy.get(serviceName(file))?.deferred === true;
 
 // External package locations vary between pnpm stores and CI. Keep their exact
 // import specifier (including subpaths); local and workspace targets stay resolved
@@ -105,7 +106,7 @@ export function compareKnownViolations(
 // repository nothing is committed and there is nothing to report. Any other
 // Git failure stops the check, so it cannot pass without having looked.
 export function committedBuildOutput(repository: string) {
-  const result = spawnSync('git', ['ls-files', '-z', '--', 'ghost/core'], {
+  const result = spawnSync('git', ['ls-files', '-z', '--', 'ghost/core', 'ghost/domains'], {
     cwd: repository,
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024,
@@ -137,6 +138,11 @@ export function committedBuildOutput(repository: string) {
   });
 }
 
+// The full scan covers Core, the domains beside it and the apps. A checkout
+// with no domains yet has nothing there to scan.
+const scanRoots = (repository: string) =>
+  ['ghost/core', 'ghost/domains', 'apps'].filter((root) => existsSync(path.join(repository, root)));
+
 // Lint and contributor reports use this single scan and known-violations file.
 // Reports retain all findings; only lint uses the comparison to decide success.
 // Given files, only they and what they import are scanned, as the commit hook
@@ -157,7 +163,7 @@ export function readDependencyBoundaries(repository: string, files: string[] = [
     process.execPath,
     [
       cli,
-      ...(files.length ? files : ['ghost/core', 'apps']),
+      ...(files.length ? files : scanRoots(repository)),
       '--config',
       '.dependency-cruiser.cjs',
       '--output-type',

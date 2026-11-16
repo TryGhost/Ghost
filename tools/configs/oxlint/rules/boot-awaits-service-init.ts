@@ -1,14 +1,17 @@
 import type { CreateRule, ESTree } from '@oxlint/plugins';
 
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readLegacyServices, servicesRoot } from '../legacy-services.ts';
+import { listServiceLocations, readLegacyServices } from '../legacy-services.ts';
 
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
 const bootFile = 'ghost/core/boot.js';
 const entry = 'bootGhost';
-const servicePath = /^\.\/server\/services\/([^/]+?)(?:\/index)?$/;
+// A root in its original home, or moved into a domain's transition/ folder.
+// Boot still owns both; a reshaped root is started by the domain layer instead.
+const servicePath =
+  /^(?:\.\/server\/services|\.\.\/domains\/[^/]+\/transition\/services)\/([^/]+?)(?:\/index)?$/;
 
 // A service directory that the legacy service inventory does not list is standard.
 // A directory with no root is not a service: switching branches can leave one
@@ -16,18 +19,14 @@ const servicePath = /^\.\/server\/services\/([^/]+?)(?:\/index)?$/;
 // so an editor's long-lived lint process sees a new service or an inventory edit.
 function readStandardServices() {
   const legacy = readLegacyServices(root);
-  const directory = path.join(root, servicesRoot);
   return new Set(
-    readdirSync(directory, { withFileTypes: true })
+    listServiceLocations(root)
       .filter(
-        (item) =>
-          item.isDirectory() &&
-          !legacy.has(item.name) &&
-          ['index.ts', 'index.js'].some((file) =>
-            existsSync(path.join(directory, item.name, file)),
-          ),
+        ({ name, directory }) =>
+          !legacy.has(name) &&
+          ['index.ts', 'index.js'].some((file) => existsSync(path.join(root, directory, file))),
       )
-      .map((item) => item.name),
+      .map(({ name }) => name),
   );
 }
 

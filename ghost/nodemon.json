@@ -34,6 +34,7 @@
     "content/**",
     "core/built/**",
     "test/**",
+    "domains/*/test/**",
     "core/frontend/public/**/*.min.*",
     "core/frontend/public/cards.manifest.json"
   ],

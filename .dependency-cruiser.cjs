@@ -2,13 +2,21 @@
 
 const { sourceExclusions } = require('./tools/scripts/ci/service-dependency-resolver.mjs');
 
-// Service policy applies independently of inventory and migration status.
-const servicesRoot = 'ghost/core/server/services';
+const {
+  bootOwnedServiceHomes,
+  allServiceHomes,
+} = require('./tools/configs/oxlint/service-locations.cjs');
+
+// Service policy applies independently of inventory and migration status. It
+// follows a root into a domain's transition/ folder: bootOwnedServiceHomes
+// matches both homes, and $1 is the service name in either.
 const serviceImplementations = {
-  path: `^${servicesRoot}/([^/]+)(?:/|$)`,
+  path: `^${bootOwnedServiceHomes}/([^/]+)(?:/|$)`,
   // Legacy JS roots remain wiring candidates; nested indexes are implementations.
-  pathNot: `^${servicesRoot}/[^/]+/index\\.(?:js|ts)$`,
+  pathNot: `^${bootOwnedServiceHomes}/[^/]+/index\\.(?:js|ts)$`,
 };
+// Ghost's own server code: Core and the domains beside it.
+const ghostServer = '^ghost/(core|domains)/';
 
 // The service checks apply to the services directory only, so a defineService
 // root anywhere else gets none of them. Each root listed here is a reviewed
@@ -102,7 +110,12 @@ const core = (file) =>
   file.endsWith('/')
     ? `^ghost/core/${escape(file)}`
     : `^ghost/core/${escape(file.replace(/\.(js|ts)$/, ''))}\\.(js|ts)$`;
-const service = (file) => core(`server/services/${file}`);
+// A file or folder in a service, wherever that service lives.
+const service = (file) =>
+  core(`server/services/${file}`).replace(
+    '^ghost/core/server/services',
+    `^${bootOwnedServiceHomes}`,
+  );
 
 const specialistDependencies = [
   // Provider clients.
@@ -315,7 +328,7 @@ const serviceDependencyDecisions = {
     '^ghost/core/server/models/index\\.js$', // Models.
     '^ghost/core/server/data/db/', // The database connection.
     '^@tryghost/domain-events$|^ghost/core/server/lib/common/events\\.js$|^ghost/core/shared/events(-ts)?/index\\.(js|ts)$', // Event buses.
-    `^${servicesRoot}/`, // Other services, including the events and helpers they own.
+    `^${allServiceHomes}/`, // Other services, including the events and helpers they own.
     '^ghost/core/shared/url-utils\\.ts$', // URL utils, built from config.
     '^ghost/core/shared/labs\\.js$', // Labs flags, read from settings and config.
     '^ghost/core/shared/sentry\\.js$', // Sentry client, set up from config.
@@ -407,7 +420,7 @@ module.exports = {
         pathNot: [
           ...serviceDependencyAllowlist,
           ...specialistDependencies.map(({ dependency }) => dependency),
-          `^${servicesRoot}/$1/`,
+          `^${bootOwnedServiceHomes}/$1/`,
         ],
         dependencyTypesNot: ['type-only', 'type-import'],
       },
@@ -417,7 +430,7 @@ module.exports = {
       comment:
         'Only the owners listed in specialistDependencies may import this. Use the owning code, or add the consumer to the list for review.',
       severity: 'error',
-      from: { path: '^ghost/core/', pathNot: owners },
+      from: { path: ghostServer, pathNot: owners },
       to: { path: dependency, dependencyTypesNot: ['type-only', 'type-import'] },
     })),
     {
@@ -426,7 +439,7 @@ module.exports = {
       severity: 'error',
       from: serviceImplementations,
       to: {
-        path: `^${servicesRoot}/$1/index\\.(js|ts)$`,
+        path: `^${bootOwnedServiceHomes}/$1/index\\.(js|ts)$`,
         dependencyTypesNot: ['type-only', 'type-import'],
       },
     },
@@ -443,9 +456,9 @@ module.exports = {
         'A defineService root belongs in server/services/<name>/index.ts, where the service checks apply. A root elsewhere needs a reviewed entry in serviceRootsElsewhere.',
       severity: 'error',
       from: {
-        path: '^ghost/core/',
+        path: ghostServer,
         pathNot: [
-          `^${servicesRoot}/[^/]+/index\\.ts$`,
+          `^${allServiceHomes}/[^/]+/index\\.ts$`,
           '^ghost/core/kernel/',
           ...serviceRootsElsewhere,
         ],
@@ -471,7 +484,7 @@ module.exports = {
       comment: 'Invalid require of core/server or core/frontend from core/shared.',
       severity: 'error',
       from: { path: '^ghost/core/shared/' },
-      to: { path: '^ghost/core/(server|frontend)/' },
+      to: { path: '^ghost/(core/(server|frontend)|domains)/' },
     },
     // ============================================================
     // Frontend must not require server/models directly
@@ -482,7 +495,7 @@ module.exports = {
         'Invalid require of core/server/models from core/frontend. Fetch content through the public Content API (api.postsPublic / api.pagesPublic), injected via core/frontend/services/proxy — not the model layer directly. See #28420.',
       severity: 'error',
       from: { path: '^ghost/core/frontend/' },
-      to: { path: '^ghost/core/server/models/' },
+      to: { path: '^ghost/(core/server/models|domains/[^/]+/transition/models)/' },
     },
     // ============================================================
     // Frontend must cross to server only via proxy (with allowlist)
@@ -508,7 +521,7 @@ module.exports = {
           '^ghost/core/frontend/apps/private-blogging/lib/router\\.js$',
         ],
       },
-      to: { path: '^ghost/core/server/' },
+      to: { path: '^ghost/(core/server|domains)/' },
     },
     // ============================================================
     // Server must not require frontend (with allowlist)
@@ -519,7 +532,7 @@ module.exports = {
         'Invalid require of core/frontend from core/server. The server must not depend on the frontend rendering layer.',
       severity: 'error',
       from: {
-        path: '^ghost/core/server/',
+        path: '^ghost/(core/server|domains)/',
         // Adding files to this list is an anti-pattern
         // Goal: Work down until the list is empty
         pathNot: [
@@ -542,7 +555,7 @@ module.exports = {
       comment:
         'Invalid import of sharp from ghost. Use getSharp() from @tryghost/image-transform, which restricts the image decoders before anything is decoded.',
       severity: 'error',
-      from: { path: '^ghost/core/' },
+      from: { path: ghostServer },
       to: { path: '(^|/)node_modules/sharp/', dependencyTypesNot: ['type-only'] },
     },
 
@@ -706,14 +719,14 @@ module.exports = {
     doNotFollow: {
       path: [
         'node_modules',
-        '^(?!ghost/core/server/services/)(apps|ghost|packages|contracts|koenig)/.*/(build|built|dist)/',
+        `^(?!${bootOwnedServiceHomes}/)(apps|ghost|packages|contracts|koenig)/.*/(build|built|dist)/`,
       ],
     },
     // Skip our own tests and emitted companions. All source inside services stays visible:
     // a nested directory name must not hide a production dependency.
     exclude: {
       path: [
-        '^(?!ghost/core/server/services/)(apps|ghost|packages|contracts)/.*/(coverage|coverage-next|test)/',
+        `^(?!${bootOwnedServiceHomes}/)(apps|ghost|packages|contracts)/.*/(coverage|coverage-next|test)/`,
         ...sourceExclusions(__dirname),
       ],
     },

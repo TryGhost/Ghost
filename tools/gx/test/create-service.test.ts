@@ -220,6 +220,7 @@ test('gx routes service generation to its checkout and prints boot instructions'
     copy(root, `tools/gx/${file}`);
   }
   copy(root, legacyReader);
+  copy(root, 'tools/configs/oxlint/service-locations.cjs');
   copy(root, 'tools/configs/oxlint/package.json');
   for (const modules of ['tools/gx/node_modules', 'tools/configs/oxlint/node_modules']) {
     symlinkSync(path.join(repo, modules), path.join(root, modules));

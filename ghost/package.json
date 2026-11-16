@@ -21,6 +21,8 @@
   },
   "files": [
     "core/",
+    "domains/",
+    "!domains/*/test/",
     "!core/built/**/*.map",
     "content/*/README.md",
     "content/themes/casper/",
@@ -52,7 +54,7 @@
     "pretest": "pnpm build:assets",
     "test": "pnpm test:unit",
     "test:watch": "vitest --reporter=default",
-    "test:single": "f() { case \"$1\" in test/unit/*) vitest run \"$1\" ;; test/*) vitest run -c vitest.config.db.ts \"$1\" ;; *) vitest run \"$1\" || vitest run -c vitest.config.db.ts \"$1\" ;; esac; }; f",
+    "test:single": "f() { case \"$1\" in test/unit/*|domains/*/test/unit/*) vitest run \"$1\" ;; test/*|domains/*) vitest run -c vitest.config.db.ts \"$1\" ;; *) vitest run \"$1\" || vitest run -c vitest.config.db.ts \"$1\" ;; esac; }; f",
     "test:all": "pnpm test:unit && pnpm test:integration && pnpm test:e2e && pnpm test:types && pnpm lint",
     "test:debug": "DEBUG=ghost:test* pnpm test",
     "test:unit": "vitest run",
@@ -70,9 +72,10 @@
     "lint:kernel": "eslint 'core/kernel/**/*.{js,ts}' --cache",
     "lint:shared": "eslint 'core/shared/**/*.{js,ts}' --cache",
     "lint:frontend": "eslint 'core/frontend/**/*.{js,ts}' --cache",
+    "lint:domains": "eslint 'domains/**/*.{js,ts}' --cache --no-error-on-unmatched-pattern",
     "lint:test": "eslint 'test/**/*.{js,ts}' --cache",
-    "lint:code": "pnpm run '/^lint:(server|kernel|shared|frontend)$/'",
-    "lint": "pnpm run '/^lint:(server|kernel|shared|frontend|test)$/'"
+    "lint:code": "pnpm run '/^lint:(server|kernel|shared|frontend|domains)$/'",
+    "lint": "pnpm run '/^lint:(server|kernel|shared|frontend|domains|test)$/'"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1161.0",

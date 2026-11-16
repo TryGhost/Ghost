@@ -1,5 +1,11 @@
 {
-  "include": ["core/**/*.js", "test/**/*.js", "test/**/*.ts"],
+  "include": [
+    "core/**/*.js",
+    "domains/**/*.js",
+    "domains/*/test/**/*.ts",
+    "test/**/*.js",
+    "test/**/*.ts"
+  ],
   "compilerOptions": {
     "checkJs": true,
     "module": "commonjs",

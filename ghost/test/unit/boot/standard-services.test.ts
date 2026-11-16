@@ -14,23 +14,44 @@ const legacy = Object.keys(
     }
   ).services,
 );
+// Boot owns a root in its original home and one moved, unchanged, into a domain's
+// transition/ folder. Each is keyed by the path boot.js requires it with.
+const domainsRoot = path.resolve(core, '../domains');
+const directories = (directory: string) =>
+  existsSync(directory)
+    ? readdirSync(directory, { withFileTypes: true }).filter((item) => item.isDirectory())
+    : [];
+const homes = [
+  { directory: servicesRoot, required: './server/services' },
+  ...directories(domainsRoot).map((domain) => ({
+    directory: path.join(domainsRoot, domain.name, 'transition/services'),
+    required: `../domains/${domain.name}/transition/services`,
+  })),
+];
 // A service directory that the legacy service inventory does not list is standard.
 // A directory with no root is not a service: switching branches can leave one behind.
-const standard = readdirSync(servicesRoot, { withFileTypes: true })
-  .filter(
-    (item) =>
-      item.isDirectory() &&
-      !legacy.includes(item.name) &&
-      ['index.ts', 'index.js'].some((file) => existsSync(path.join(servicesRoot, item.name, file))),
-  )
-  .map((item) => item.name);
+const requiredAs = new Map(
+  homes.flatMap(({ directory, required }) =>
+    directories(directory)
+      .filter(
+        (item) =>
+          !legacy.includes(item.name) &&
+          ['index.ts', 'index.js'].some((file) =>
+            existsSync(path.join(directory, item.name, file)),
+          ),
+      )
+      .map((item) => [item.name, `${required}/${item.name}`] as const),
+  ),
+);
+const standard = [...requiredAs.keys()];
+const escape = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const boot = readFileSync(path.join(core, 'boot.js'), 'utf8');
 const phases = [...boot.matchAll(/^(?:async )?function (\w+)\(/gm)];
 
 // The phase that binds a root and calls init() on the binding. Lint requires this form.
 function phaseOf(service: string) {
   const bound = new RegExp(
-    `const (\\w+) = require\\('\\./server/services/${service}(?:/index)?'\\)\\.default;`,
+    `const (\\w+) = require\\('${escape(requiredAs.get(service)!)}(?:/index)?'\\)\\.default;`,
     'g',
   );
   for (const binding of boot.matchAll(bound)) {
@@ -69,7 +90,7 @@ function start(service: string, init: () => Promise<void>) {
   assert.ok(phase, `No boot phase binds ${service} and calls init() on the binding`);
   const run = loadBootFunction(
     phase,
-    { [`./server/services/${service}`]: anything({ default: anything({ init }) }) },
+    { [requiredAs.get(service)!]: anything({ default: anything({ init }) }) },
     { fallback: () => anything() },
   );
   return run({ config: anything(), bootLogger: anything(), jobsService: anything() });

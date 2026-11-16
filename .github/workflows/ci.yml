@@ -175,6 +175,7 @@ jobs:
               - 'tools/scripts/ci/check-legacy-services.ts'
               - 'tools/scripts/ci/legacy-services-base.ts'
               - 'tools/configs/oxlint/legacy-services.ts'
+              - 'tools/configs/oxlint/service-locations.cjs'
               - '.github/workflows/ci.yml'
             package-standards:
               - 'packages/**'
@@ -194,6 +195,7 @@ jobs:
               # Unit tests + vitest config are exercised only by job_unit-tests;
               # they never affect the acceptance / legacy / ghost-cli jobs.
               - '!ghost/test/unit/**'
+              - '!ghost/domains/*/test/unit/**'
               - '!ghost/vitest.config.ts'
               - '!ghost/test/utils/vitest-setup.ts'
               # Koenig packages that are runtime deps of ghost — changes
@@ -239,6 +241,7 @@ jobs:
               - '!.devcontainer/**'
               - '!.vscode/**'
               - '!ghost/test/**'
+              - '!ghost/domains/*/test/**'
               - '!ghost/vitest.config.ts'
               - '!ghost/vitest.config.inventory.ts'
               - '!koenig/*/test/**'

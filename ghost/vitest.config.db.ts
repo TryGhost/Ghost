@@ -142,8 +142,13 @@ export default defineConfig({
     // is what reports never-loaded files under vitest 4 (there is no `all`).
     coverage: {
       provider: 'v8',
-      include: ['core/*.js', 'core/{frontend,server,shared}/**/*.{js,cjs,mjs,ts}'],
+      include: [
+        'core/*.js',
+        'core/{frontend,server,shared}/**/*.{js,cjs,mjs,ts}',
+        'domains/**/*.{js,cjs,mjs,ts}',
+      ],
       exclude: [
+        'domains/*/test/**',
         'core/frontend/src/**',
         'core/frontend/public/**',
         'core/frontend/helpers/**',
@@ -168,11 +173,15 @@ export default defineConfig({
             'test/e2e-webhooks/**/*.test.{js,ts}',
             'test/e2e-server/**/*.test.{js,ts}',
             'test/e2e-frontend/**/*.test.{js,ts}',
+            // A domain's e2e tests keep the suite they came from as a folder:
+            // test/e2e/{server,frontend,webhooks}/ run here, test/e2e/api/ in e2e-api.
+            'domains/*/test/e2e/{server,frontend,webhooks}/**/*.test.{js,ts}',
           ],
           exclude: [
             '**/node_modules/**',
             // ignore isolated e2e server tests
             'test/e2e-server/**/*.isolated.test.{js,ts}',
+            'domains/*/test/e2e/**/*.isolated.test.{js,ts}',
           ],
           // Matches the mocha `--timeout=15000` for the e2e suites.
           testTimeout: 15000,
@@ -186,7 +195,10 @@ export default defineConfig({
           // Shares the default isolate:false (one shared boot per fork). The
           // migration tests roll the schema back and forward, so they run in
           // `integration-migrations` with per-file isolation instead.
-          include: ['test/integration/**/*.test.{js,ts}'],
+          include: [
+            'test/integration/**/*.test.{js,ts}',
+            'domains/*/test/integration/**/*.test.{js,ts}',
+          ],
           exclude: ['**/node_modules/**', 'test/integration/migrations/**'],
           // Probes the optional Docker services (Redis, VersityGW) once in
           // the main process and exports GHOST_TEST_{REDIS,S3}_AVAILABLE
@@ -248,8 +260,8 @@ export default defineConfig({
           // Shares the default isolate:false (one shared boot per fork):
           // the cross-file leakers that forced per-file isolation here are
           // fixed at the source, dropping the dominant boot cost.
-          include: ['test/e2e-api/**/*.test.{js,ts}'],
-          exclude: ['**/node_modules/**'],
+          include: ['test/e2e-api/**/*.test.{js,ts}', 'domains/*/test/e2e/api/**/*.test.{js,ts}'],
+          exclude: ['**/node_modules/**', 'domains/*/test/e2e/**/*.isolated.test.{js,ts}'],
           // Matches the mocha `--timeout=15000` for the e2e suites.
           testTimeout: 15000,
         },
@@ -260,7 +272,10 @@ export default defineConfig({
           ...sharedDbConfig,
           name: 'e2e-isolated',
           isolate: true,
-          include: ['test/e2e-server/**/*.isolated.test.{js,ts}'],
+          include: [
+            'test/e2e-server/**/*.isolated.test.{js,ts}',
+            'domains/*/test/e2e/**/*.isolated.test.{js,ts}',
+          ],
           exclude: ['**/node_modules/**'],
           // Matches the mocha `--timeout=15000` for the e2e suites.
           testTimeout: 15000,

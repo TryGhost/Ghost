@@ -2,10 +2,11 @@ import type { CreateRule, ESTree, Scope, Variable } from '@oxlint/plugins';
 
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readLegacyServices, servicesRoot } from '../legacy-services.ts';
+import { allServiceHomes, readLegacyServices } from '../legacy-services.ts';
 
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
-const serviceRoot = new RegExp(`^${servicesRoot}/([^/]+)/index\\.ts$`);
+// A root keeps this rule when it moves into a domain, reshaped or not.
+const serviceRoot = new RegExp(`^${allServiceHomes}/([^/]+)/index\\.ts$`);
 // Read once per process, so every root in a run is checked against one list.
 let legacyServices: ReturnType<typeof readLegacyServices> | undefined;
 

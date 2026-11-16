@@ -173,6 +173,7 @@ it('reports each addition through the command and exits non-zero', (t) => {
     'tools/scripts/ci/check-legacy-services.ts',
     'tools/scripts/ci/legacy-services-base.ts',
     'tools/configs/oxlint/legacy-services.ts',
+    'tools/configs/oxlint/service-locations.cjs',
   ]) {
     mkdirSync(path.dirname(path.join(f.root, file)), { recursive: true });
     cpSync(path.join(repository, file), path.join(f.root, file));

@@ -65,6 +65,7 @@ function fixture(t: TestContext, files: Record<string, string>) {
   for (const file of [
     'tools/scripts/lib/dependency-boundaries.ts',
     'tools/configs/oxlint/legacy-services.ts',
+    'tools/configs/oxlint/service-locations.cjs',
     'tools/scripts/ci/check-boundaries.ts',
   ]) {
     mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
@@ -1568,6 +1569,7 @@ it('invalidates cached boundary checks and fixture tests when their configuratio
     '.dependency-cruiser-known-violations.json',
     'tools/scripts/lib/dependency-boundaries.ts',
     'tools/configs/oxlint/legacy-services.ts',
+    'tools/configs/oxlint/service-locations.cjs',
     'tools/scripts/ci/check-boundaries.ts',
   ]) {
     assert.ok(root.nx.targets['lint:boundaries'].inputs.includes(`{workspaceRoot}/${input}`));
