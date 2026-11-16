@@ -2285,9 +2285,9 @@ describe('RouterController', function () {
       });
 
       describe('on restricted signup sites', function () {
-        const createRestrictedController = (signupAccess) => {
+        const createRestrictedController = (signupAccess, blockedEmailDomains = []) => {
           const get = sinon.stub();
-          get.withArgs('all_blocked_email_domains').returns([]);
+          get.withArgs('all_blocked_email_domains').returns(blockedEmailDomains);
           get.withArgs('members_signup_access').returns(signupAccess);
           giftService.service.getRedeemable = sinon.stub().resolves({});
 
@@ -2323,6 +2323,19 @@ describe('RouterController', function () {
           await assert.rejects(controller.sendMagicLink(req, res), {
             message: 'This gift has already been redeemed.',
           });
+          sinon.assert.notCalled(sendEmailWithMagicLinkStub);
+        });
+
+        it('rejects a blocked email domain before looking up the gift on a paid-members-only site', async function () {
+          const controller = createRestrictedController('paid', ['example.com']);
+          giftService.service.getRedeemable.rejects(
+            new errors.NotFoundError({ message: 'Gift not found.' }),
+          );
+
+          await assert.rejects(controller.sendMagicLink(req, res), {
+            message: 'Signups from this email domain are currently restricted.',
+          });
+          sinon.assert.notCalled(giftService.service.getRedeemable);
           sinon.assert.notCalled(sendEmailWithMagicLinkStub);
         });
 
