@@ -28,7 +28,6 @@ type StoppableHttpServer = http.Server & stoppable.WithStop;
 const debug = createDebug('server');
 
 const messages = {
-  cantTouchThis: "Can't touch this",
   ghostIsRunning: 'Ghost is running...',
   yourBlogIsAvailableOn: 'Your site is now available on {url}',
   ctrlCToShutDown: 'Ctrl+C to shut down',
@@ -206,14 +205,6 @@ export class GhostServer {
       this.httpServer = null;
       this._logStopMessages();
     }
-  }
-
-  /**
-   * ### Hammertime
-   * To be called after `stop`
-   */
-  async hammertime() {
-    logging.info(tpl(messages.cantTouchThis));
   }
 
   /**
