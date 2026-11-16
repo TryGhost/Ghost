@@ -55,6 +55,7 @@ type MemberFixture = {
   enable_updates_and_announcements: boolean | null;
   newsletters: unknown[];
   products: { id: string }[];
+  labels: { id: string }[];
 };
 
 const fake = <TFunction extends (..._args: never[]) => unknown>(): StubbedFunction<TFunction> =>
@@ -69,6 +70,7 @@ function buildMember(attrs: Partial<MemberFixture> = {}) {
     enable_updates_and_announcements: true,
     newsletters: [{}],
     products: [],
+    labels: [],
     ...attrs,
   };
 
@@ -76,7 +78,7 @@ function buildMember(attrs: Partial<MemberFixture> = {}) {
     get(key: keyof MemberFixture): string | boolean | null | unknown[] {
       return values[key];
     },
-    related(key: 'newsletters' | 'products') {
+    related(key: 'newsletters' | 'products' | 'labels') {
       return {
         models: values[key],
       };
@@ -614,6 +616,44 @@ describe('automations poll', function () {
         },
       );
     });
+  });
+
+  describe('label added trigger', function () {
+    const labelStep = () =>
+      buildEmailStep({
+        automation_trigger_rules: [
+          {
+            id: 'label-rule',
+            automation_id: 'automation-id',
+            created_at: new Date(),
+            trigger_type: 'label_added',
+            label_id: '64b6f7b7c8f1a2b3c4d5e6f8',
+            scope: null,
+            product_id: null,
+            direction: null,
+          },
+        ],
+      });
+
+    it('executes for a member with a label', async function () {
+      const step = labelStep();
+      Member.findOne.resolves(
+        buildMember({
+          status: 'free',
+          products: [],
+          labels: [{ id: '64b6f7b7c8f1a2b3c4d5e6f8' }],
+        }),
+      );
+      automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+
+      await poll(options);
+
+      sinon.assert.notCalled(automationsApi.markStepTerminal);
+      sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+      sinon.assert.calledOnce(memberWelcomeEmailService.sendAutomationEmail);
+    });
+
+    // TODO(NY-1795) Test that the step is marked terminal when the member no longer has the label.
   });
 
   it('ends the automation run if the member unsubscribed from updates & announcements', async function () {
