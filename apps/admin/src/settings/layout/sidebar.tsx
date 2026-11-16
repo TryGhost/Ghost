@@ -388,7 +388,10 @@ const Sidebar: React.FC = () => {
   return (
     <Stack className="min-h-0 flex-1" data-testid="sidebar" gap="none">
       {/* data-nav-row marks the rows that cascade in when the shell swaps to this nav. */}
-      <Box className={cn('shrink-0 px-5 pb-2', !floatingSidebar && 'bg-sidebar')} data-nav-row>
+      <Box
+        className={cn('shrink-0 pb-2', floatingSidebar ? 'px-3' : 'bg-sidebar px-5')}
+        data-nav-row
+      >
         <SettingsHeader inputRef={searchInputRef} />
       </Box>
       <nav
@@ -396,7 +399,8 @@ const Sidebar: React.FC = () => {
         // pb-5 matches the sidebar's pt-5, so the last item rests as far from the
         // bottom edge as the search row sits from the top.
         className={cn(
-          'min-h-0 flex-1 overflow-y-auto px-5 pt-4 pb-5 [&>:last-child]:mb-0',
+          'min-h-0 flex-1 overflow-y-auto pt-4 pb-5 [&>:last-child]:mb-0',
+          floatingSidebar ? 'px-3' : 'px-5',
           floatingSidebar && ADMIN7_NAV_ICON_CLASS_NAME,
         )}
         id="settings-sidebar-scroller"

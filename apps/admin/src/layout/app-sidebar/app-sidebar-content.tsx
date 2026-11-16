@@ -28,7 +28,7 @@ function AppSidebarContent({ floating = false }: AppSidebarContentProps) {
         admin7Design ? 'min-h-16' : 'justify-between',
         // The capsule body has 20px padding; the navigation reaches its edges
         // and adds the vision's narrower 12px inset around the menu rows.
-        floating ? '-mx-5 px-3 pt-0 pb-6' : 'px-3 pt-4 pb-1',
+        floating ? '-mx-5 px-3 pt-2 pb-6' : 'px-3 pt-4 pb-1',
         admin7Design && '[&_[data-sidebar=group]]:p-0 [&_[data-sidebar=menu-button]]:rounded-sm',
         admin7Design && ADMIN7_NAV_ICON_CLASS_NAME,
       )}

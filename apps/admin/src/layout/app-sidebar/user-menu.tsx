@@ -188,7 +188,8 @@ function UserMenu(props: UserMenuProps) {
           aria-label="User menu"
           className={cn(
             'data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground',
-            admin7Design && 'size-11 justify-center overflow-visible rounded-full p-1.5',
+            admin7Design &&
+              'size-11 justify-center overflow-visible rounded-full p-1.5 hover:bg-sidebar-accent!',
           )}
           size="lg"
         >
