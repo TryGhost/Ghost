@@ -150,7 +150,11 @@ describe('Admin 7 sidebar submenu navigation and motion', () => {
     navigateTo('Posts');
     await expect.poll(() => menu.inert).toBe(false);
     await expect
-      .poll(() => Array.from(menu.querySelectorAll('a')).every((link) => link.checkVisibility()))
+      .poll(() =>
+        Array.from(menu.querySelectorAll('a')).every((link) =>
+          link.checkVisibility({ opacityProperty: true, visibilityProperty: true }),
+        ),
+      )
       .toBe(true);
   });
 });
