@@ -19,7 +19,7 @@ export const rolesByFolder: Readonly<Record<string, readonly string[]>> = {
   data: ['data'],
   events: ['event'],
   http: ['controller', 'endpoint', 'serializer', 'validator'],
-  services: ['service', 'policy'],
+  services: ['service'],
   repositories: ['repository'],
   entities: ['entity', 'value'],
   listeners: ['listener'],
@@ -134,7 +134,8 @@ export function checkDomainShape(domainsRoot: string): ShapeProblem[] {
           if (fixedHere && fixed.includes(item.name)) {
             continue;
           }
-          if (/\.md$/.test(item.name)) {
+          // Notes and type declarations for untyped libraries describe; they are not code with a role.
+          if (/\.md$|\.d\.ts$/.test(item.name)) {
             continue;
           }
           const pattern = new RegExp(

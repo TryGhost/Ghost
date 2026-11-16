@@ -1,6 +1,6 @@
 const config = require('../../../../shared/config');
+const withDomainSettings = require('./with-domain-settings');
 
 const defaultSettingsPath = config.get('paths').defaultSettings;
-const defaultSettings = require(defaultSettingsPath);
 
-module.exports = defaultSettings;
+module.exports = withDomainSettings(require(defaultSettingsPath));

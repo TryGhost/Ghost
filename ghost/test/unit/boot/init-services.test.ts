@@ -11,8 +11,6 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const analytics = sinon.stub();
   const emailSuppressionList = { init: sinon.stub().resolves() };
   const mentions = sinon.stub().resolves();
-  // Recommendations initializes synchronously and reads the mentions fields during its call.
-  const recommendations = sinon.stub();
   // The domain layer starts every domain's services and listeners.
   const domains = sinon.stub().resolves();
   const domainsStop = sinon.stub().resolves();
@@ -67,9 +65,6 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './server/services/mentions': {
         default: { init: mentions, service: { controller: {}, sendingService: {} } },
       },
-      '../domains/network/transition/services/recommendations': {
-        default: { init: recommendations },
-      },
       './server/services/email-analytics': {
         getGifts: () => ({}),
         getAutomations: () => ({}),
@@ -103,7 +98,6 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     emailAddress,
     gifts,
     mentions,
-    recommendations,
     domains,
     domainsStop,
     analytics,
@@ -234,19 +228,6 @@ it('waits for member attribution initialization before initializing staff', asyn
   sinon.assert.callOrder(boot.memberAttribution, boot.staff, boot.register);
 });
 
-it('propagates a synchronous recommendations initialization error without starting dependent work', async function () {
-  const boot = createServicesHarness();
-  const failure = new Error('recommendations initialization failed');
-  boot.recommendations.throws(failure);
-
-  await assert.rejects(boot.initServices(), (error) => error === failure);
-
-  sinon.assert.notCalled(boot.register);
-  sinon.assert.notCalled(boot.start);
-  sinon.assert.notCalled(boot.automations);
-  sinon.assert.notCalled(boot.reschedule);
-});
-
 it('registers the webhook listeners once, after mentions initialization', async function () {
   const boot = createServicesHarness();
 
@@ -370,25 +351,6 @@ for (const dependency of [
   });
 }
 
-it('waits for mentions initialization to finish before initializing recommendations', async function () {
-  // Recommendations reads the ready Mentions instance while it initializes.
-  const boot = createServicesHarness();
-  const ready = Promise.withResolvers<void>();
-  boot.mentions.returns(ready.promise);
-  const startup = boot.initServices();
-
-  try {
-    await setImmediate();
-    sinon.assert.calledOnce(boot.mentions);
-    sinon.assert.notCalled(boot.recommendations);
-  } finally {
-    ready.resolve();
-    await startup;
-  }
-
-  sinon.assert.calledOnce(boot.recommendations);
-});
-
 it('starts the domain layer after the services boot initializes, and before the job runner', async function () {
   // Code in a domain may rely on everything boot.js initializes, and jobs may rely on domains.
   const boot = createServicesHarness();
@@ -400,7 +362,8 @@ it('starts the domain layer after the services boot initializes, and before the 
 
   try {
     await setImmediate();
-    sinon.assert.calledOnce(boot.recommendations);
+    // Mentions is one of the roots a domain relies on: recommendations registers on it.
+    sinon.assert.calledOnce(boot.mentions);
     sinon.assert.notCalled(boot.domains);
     welcome.resolve();
     await setImmediate();

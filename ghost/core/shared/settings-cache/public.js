@@ -2,6 +2,13 @@
  * This file acts as an allowlist for "public" settings
  */
 
+const { domainPublicSettings, placeFromDomains } = require('../../foundation/domains/fragments');
+
+// A domain declares which of its settings are public in its settings.ts. A
+// setting that used to be listed here keeps its place by being named where it
+// was, because the public settings are returned in this order.
+const fromDomains = placeFromDomains('public setting', domainPublicSettings());
+
 module.exports = {
   title: 'title',
   description: 'description',
@@ -53,7 +60,7 @@ module.exports = {
   portal_name: 'portal_name',
   portal_button: 'portal_button',
   comments_enabled: 'comments_enabled',
-  recommendations_enabled: 'recommendations_enabled',
+  ...fromDomains.place('recommendations_enabled'),
   outbound_link_tagging: 'outbound_link_tagging',
   default_email_address: 'default_email_address',
   support_email_address: 'support_email_address',
@@ -65,4 +72,5 @@ module.exports = {
   transistor_portal_button_text: 'transistor_portal_button_text',
   transistor_portal_url_template: 'transistor_portal_url_template',
   site_uuid: 'site_uuid',
+  ...fromDomains.rest(),
 };

@@ -193,8 +193,8 @@ describe('legacy service inventory', function () {
         isFile(path.join(servicesRoot, item.name, 'index.ts')),
     )
     .map((item) => item.name);
-  // A root moved, unchanged, into a domain's transition/ folder keeps the same
-  // contract, so its extras stay catalogued.
+  // A root that has moved into a domain keeps the same contract, so its extras
+  // stay catalogued.
   const domainsRoot = path.join(coreRoot, 'domains');
   const subdirectories = (directory: string) =>
     statSync(directory, { throwIfNoEntry: false })?.isDirectory()
@@ -204,10 +204,13 @@ describe('legacy service inventory', function () {
     standardInCore.map((name) => [name, path.join(servicesRoot, name, 'index.ts')]),
   );
   for (const domain of subdirectories(domainsRoot)) {
-    const home = path.join(domainsRoot, domain.name, 'transition/services');
-    for (const item of subdirectories(home)) {
-      if (!legacy[item.name] && isFile(path.join(home, item.name, 'index.ts'))) {
-        rootOf.set(item.name, path.join(home, item.name, 'index.ts'));
+    // Moved unchanged (transition/services) or reshaped (services): the root's contract is the same.
+    for (const folder of ['transition/services', 'services']) {
+      const home = path.join(domainsRoot, domain.name, folder);
+      for (const item of subdirectories(home)) {
+        if (!legacy[item.name] && isFile(path.join(home, item.name, 'index.ts'))) {
+          rootOf.set(item.name, path.join(home, item.name, 'index.ts'));
+        }
       }
     }
   }

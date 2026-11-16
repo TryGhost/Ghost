@@ -1,0 +1,9 @@
+action      network/actions/list-well-known-recommendations.action
+routes      network/http/routes
+job         network/jobs/refresh-incoming-recommendations.job
+job         network/jobs/refresh-recommendation-metadata.job
+listener    network/listeners/send-recommendation-received-alert.listener
+permissions network/permissions
+schema      network/schema
+service     network/services/recommendations/index
+settings    network/settings

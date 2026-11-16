@@ -4,6 +4,7 @@ const api = require('../../../../api').endpoints;
 const { http } = require('@tryghost/api-framework');
 const mw = require('./middleware');
 const config = require('../../../../../shared/config');
+const { mountDomainRoutes } = require('../../mount-domain-routes');
 
 /**
  * @returns {import('express').Router}
@@ -41,8 +42,8 @@ module.exports = function apiRoutes() {
   router.get('/tiers', mw.authenticatePublic, http(api.tiersPublic.browse));
   router.get('/offers/:id', mw.authenticatePublic, http(api.offersPublic.read));
 
-  // ## Recommendations
-  router.get('/recommendations', mw.authenticatePublic, http(api.recommendationsPublic.browse));
+  // ## Routes that domains declare in their http/routes.ts
+  mountDomainRoutes(router, { surface: 'content', middleware: mw, apiType: 'content' });
 
   // ## Search index
   router.get('/search-index/posts', mw.authenticatePublic, http(api.searchIndexPublic.fetchPosts));

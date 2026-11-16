@@ -2,8 +2,8 @@ const assert = require('node:assert/strict');
 const supertest = require('supertest');
 const testUtils = require('../../../../../test/utils');
 const configUtils = require('../../../../../test/utils/config-utils');
-const recommendationsService = require('../../../transition/services/recommendations').default;
-const { Recommendation } = require('../../../transition/services/recommendations/service');
+const recommendationsService = require('../../../services/recommendations').default;
+const { Recommendation } = require('../../../entities/recommendation.entity');
 
 describe('Recommendations well-known file', function () {
   let request;

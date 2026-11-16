@@ -204,7 +204,10 @@ describe('Exporter', function () {
       const {
         SETTING_KEYS_BLOCKLIST,
       } = require('../../../../../core/server/data/exporter/table-lists.js');
-      const defaultSettings = require('../../../../../core/server/data/schema/default-settings/default-settings.json');
+      const withDomainSettings = require('../../../../../core/server/data/schema/default-settings/with-domain-settings');
+      const defaultSettings = withDomainSettings(
+        require('../../../../../core/server/data/schema/default-settings/default-settings.json'),
+      );
 
       // core settings are always excluded from exports
       const nonCoreKeysLength = Object.keys(defaultSettings)

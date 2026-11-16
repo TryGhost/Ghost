@@ -405,8 +405,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const donationService = require('./server/services/donations').default;
   const giftService = require('./server/services/gifts');
   const machinePaymentsService = require('./server/services/machine-payments');
-  const recommendationsService =
-    require('../domains/network/transition/services/recommendations').default;
   const emailAddressService = require('./server/services/email-address');
   const newsletters = require('./server/services/newsletters').default;
   const statsService = require('./server/services/stats').default;
@@ -453,7 +451,8 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   await audienceFeedback.init();
   // Members captures the ready Newsletters instance during initialization.
   await newsletters.init();
-  // Recommendations reads the ready Mentions instance during initialization.
+  // The network domain's recommendations root registers on the ready Mentions
+  // instance when the domain layer starts it, below.
   await mentionsService.init();
   // Explore captures the ready Stats aggregate during initialization.
   await statsService.init();
@@ -491,7 +490,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     mediaInliner.init(),
     contentImport.init(),
     donationService.init(),
-    recommendationsService.init(),
     explorePingService.init(),
     users.init(),
     machinePaymentsService.init(),
@@ -580,6 +578,14 @@ async function initBackgroundServices({ config }) {
   // Load all inactive themes
   const themeService = require('./server/services/themes');
   themeService.loadInactiveThemes();
+
+  // Domain services that do not block boot start now, and domain jobs are
+  // scheduled. Nothing waits for it, and no job is scheduled under test.
+  const domains = require('./foundation/domains').default;
+  domains.ready({ jobs: !process.env.NODE_ENV.startsWith('test') }).catch((err) => {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
+  });
 
   // we don't want to kick off background services that will interfere with tests
   if (process.env.NODE_ENV.startsWith('test')) {
@@ -846,12 +852,6 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     }
     bootLogger.metric('boot-time');
     notifyServerReady();
-
-    // Domain services that do not block boot start now, and domain jobs are
-    // scheduled. Boot does not wait, and schedules nothing under test.
-    require('./foundation/domains')
-      .default.ready({ jobs: !process.env.NODE_ENV.startsWith('test') })
-      .catch((error) => logging.error(error));
 
     // Step 7 - Init our background services, we don't wait for this to finish
     initBackgroundServices({ config });

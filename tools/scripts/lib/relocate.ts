@@ -43,6 +43,11 @@ export function relocated(file: string, moves: readonly Move[]): string {
     if (stem !== from && file === stem) {
       return to.replace(sourceFile, '');
     }
+    // Moving a folder's index file moves what a specifier naming the folder means.
+    if (stem !== from && stem.endsWith('/index') && file === stem.slice(0, -'/index'.length)) {
+      const moved = to.replace(sourceFile, '');
+      return moved.endsWith('/index') ? moved.slice(0, -'/index'.length) : moved;
+    }
   }
   return file;
 }

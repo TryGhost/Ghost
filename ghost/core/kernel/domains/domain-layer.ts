@@ -52,6 +52,10 @@ export interface ScheduledJob extends JobDefinition {
 
 export interface DomainRoute extends RouteDefinition {
   readonly domain: string;
+  /** Absolute path of the handler's file, without an extension. */
+  readonly handlerModule: string;
+  /** The member of that file the route names. */
+  readonly handlerMember: string;
   /** Loads the handler's file on first call and returns the named member. */
   loadHandler(): unknown;
 }
@@ -110,6 +114,57 @@ function inStartOrder(domain: string, roots: Map<string, StartableRoot>) {
     visit(name);
   }
   return ordered;
+}
+
+export type FragmentKind = 'settings' | 'permissions' | 'schema';
+
+/**
+ * Every domain's fragment of one kind, in domain order, for a central registry
+ * to merge. It needs only the manifest, so a registry that loads before
+ * anything has started can call it.
+ */
+export function collectFragments<Value>(
+  manifest: DomainManifest,
+  fragment: FragmentKind,
+): DomainFragment<Value>[] {
+  return manifest.files
+    .filter((file) => file.kind === fragment)
+    .map((file) => ({ domain: file.domain, value: definition<Value>(file, fragment) }));
+}
+
+/** Every domain's routes for one surface. The routes files are loaded; handlers are not. */
+export function collectRoutes(manifest: DomainManifest, surface: string): DomainRoute[] {
+  return manifest.files
+    .filter((file) => file.kind === 'routes')
+    .flatMap((file) => {
+      const { routes } = definition<{ routes: RouteDefinition[] }>(file, 'routes');
+      return routes
+        .filter((route) => route.surface === surface)
+        .map((route) => {
+          const [handlerFile, handlerMember] = route.handler.split('#') as [string, string];
+          const handlerModule = `${file.module.slice(0, -'routes'.length)}${handlerFile}`;
+          let loaded: { readonly value: unknown } | undefined;
+          return {
+            ...route,
+            domain: file.domain,
+            handlerModule,
+            handlerMember,
+            loadHandler() {
+              if (!loaded) {
+                const exports = manifest.load(handlerModule) as Record<string, unknown> & {
+                  default?: Record<string, unknown>;
+                };
+                const value = exports[handlerMember] ?? exports.default?.[handlerMember];
+                if (value === undefined) {
+                  fail(`${file.id}: ${route.handler} does not exist.`);
+                }
+                loaded = { value };
+              }
+              return loaded.value;
+            },
+          };
+        });
+    });
 }
 
 export function createDomainLayer({
@@ -224,43 +279,10 @@ export function createDomainLayer({
     },
 
     /** Every domain's routes for one surface. The routes file is loaded; handlers are not. */
-    routes(surface: string): DomainRoute[] {
-      return filesOf('routes').flatMap((file) => {
-        const { routes } = definition<{ routes: RouteDefinition[] }>(file, 'routes');
-        return routes
-          .filter((route) => route.surface === surface)
-          .map((route) => {
-            const [handlerFile, member] = route.handler.split('#') as [string, string];
-            const module = `${file.module.slice(0, -'routes'.length)}${handlerFile}`;
-            let loaded: { readonly value: unknown } | undefined;
-            return {
-              ...route,
-              domain: file.domain,
-              loadHandler() {
-                if (!loaded) {
-                  const exports = manifest.load(module) as Record<string, unknown> & {
-                    default?: Record<string, unknown>;
-                  };
-                  const value = exports[member] ?? exports.default?.[member];
-                  if (value === undefined) {
-                    fail(`${file.id}: ${route.handler} does not exist.`);
-                  }
-                  loaded = { value };
-                }
-                return loaded.value;
-              },
-            };
-          });
-      });
-    },
+    routes: (surface: string) => collectRoutes(manifest, surface),
 
     /** Every domain's fragment of one kind, in domain order, for a central registry to merge. */
-    fragments<Value>(kind: 'settings' | 'permissions' | 'schema'): DomainFragment<Value>[] {
-      return filesOf(kind).map((file) => ({
-        domain: file.domain,
-        value: definition<Value>(file, kind),
-      }));
-    },
+    fragments: <Value>(fragment: FragmentKind) => collectFragments<Value>(manifest, fragment),
   };
 }
 

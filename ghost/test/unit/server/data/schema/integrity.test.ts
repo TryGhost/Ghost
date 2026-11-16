@@ -5,7 +5,16 @@ import fs from 'fs-extra';
 import path from 'path';
 import { config } from '../../../../utils/config-utils';
 import fixtures from '../../../../../core/server/data/schema/fixtures/fixtures.json';
-import defaultSettings from '../../../../../core/server/data/schema/default-settings/default-settings.json';
+import storedDefaultSettings from '../../../../../core/server/data/schema/default-settings/default-settings.json';
+
+// The settings Ghost installs: those in the JSON file and those each domain declares.
+const withDomainSettings: (
+  stored: Record<string, Record<string, unknown>>,
+) => Record<
+  string,
+  Record<string, unknown>
+> = require('../../../../../core/server/data/schema/default-settings/with-domain-settings');
+const defaultSettings = withDomainSettings(storedDefaultSettings);
 
 // Routes are yaml so we can require the file directly
 // @ts-expect-error This module lacks type definitions.

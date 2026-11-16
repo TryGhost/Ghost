@@ -5250,7 +5250,7 @@ services:
         - core/server/services/oembed/service.js
         - core/server/services/oembed/oembed-service.js
         - core/server/services/mentions/webmention-metadata.js
-        - domains/network/transition/services/recommendations/index.ts
+        - domains/network/services/recommendations/index.ts
         - core/boot.js
       dependencies:
         complexity: complex
@@ -5353,12 +5353,12 @@ services:
           - core/server/api/endpoints/utils/serializers/output/mappers/oembed.js
           - core/server/web/api/endpoints/admin/routes.js
           - core/server/services/mentions/webmention-metadata.js
-          - domains/network/transition/services/recommendations/index.ts
-          - domains/network/transition/services/recommendations/service/recommendation-metadata-service.ts
+          - domains/network/services/recommendations/index.ts
+          - domains/network/services/recommendations/recommendation-metadata.service.ts
         tests:
           - test/e2e-api/admin/oembed.test.js
           - test/unit/server/services/mentions/webmention-metadata.test.js
-          - domains/network/test/unit/transition/services/recommendations/service/recommendation-metadata-service.test.ts
+          - domains/network/test/unit/services/recommendations/recommendation-metadata.service.test.ts
           - test/unit/server/services/oembed/index.test.ts
       startup:
         summary: >-
@@ -5375,7 +5375,7 @@ services:
           - core/server/services/oembed/service.js
           - core/server/services/mentions/index.ts
           - core/server/services/mentions/webmention-metadata.js
-          - domains/network/transition/services/recommendations/index.ts
+          - domains/network/services/recommendations/index.ts
         tests:
           - test/unit/server/services/oembed/index.test.ts
           - test/e2e-api/admin/oembed.test.js
@@ -5396,7 +5396,7 @@ services:
           - core/server/services/oembed/service.js
           - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/services/mentions/webmention-metadata.js
-          - domains/network/transition/services/recommendations/service/recommendation-metadata-service.ts
+          - domains/network/services/recommendations/recommendation-metadata.service.ts
         tests:
           - test/unit/server/services/oembed/oembed-service.test.js
           - test/unit/server/services/oembed/index.test.ts
@@ -5421,7 +5421,7 @@ services:
           - core/server/services/oembed/extract-oembed.ts
           - core/server/services/oembed/twitter-oembed-provider.js
           - core/server/services/oembed/nft-oembed-provider.js
-          - domains/network/transition/services/recommendations/service/recommendation-metadata-service.ts
+          - domains/network/services/recommendations/recommendation-metadata.service.ts
           - core/server/lib/request-external.js
           - core/shared/config/validated.ts
           - package.json
@@ -7145,7 +7145,7 @@ services:
           - core/server/api/endpoints/settings.js
           - core/server/api/endpoints/notifications.js
           - core/server/api/endpoints/index.js
-          - domains/network/transition/services/recommendations/index.ts
+          - domains/network/services/recommendations/index.ts
           - core/server/models/settings.js
           - core/server/data/migrations/versions/5.124/2025-06-06-23-12-11-create-site-uuid-setting.js
         tests:
@@ -7166,7 +7166,7 @@ services:
           - core/server/api/endpoints/settings.js
           - core/server/api/endpoints/notifications.js
           - core/server/api/endpoints/settings-public.js
-          - domains/network/transition/services/recommendations/recommendation-enabler-service.js
+          - domains/network/services/recommendations/recommendation-enabler.service.ts
           - core/shared/settings-cache/index.js
           - core/server/services/settings-helpers/settings-helpers.js
         tests:
@@ -10036,14 +10036,11 @@ followUps:
   recommendations:
     lifecycle:
       - >-
-        Boot still does not await the initial metadata and revalidation refreshes, which the
-        root starts as detached work; existing HTTP success does not establish their
-        completion.
-      - >-
-        Timers, the mentions mapper, the event subscription and both mail transports have no
-        teardown, cancellation or production event drain; defineService has no stop hook, so
-        the retained graph keeps them for the process lifetime. A shutdown owner must release
-        the subscription and refreshes before the root can support stop or restart.
+        The root now lives in domains/network and is started by the domain layer. Its two
+        refreshes are jobs the layer schedules and cancels, and its event subscription is a
+        listener the layer silences on stop. The mentions URL mapper is still registered while
+        the root is built and is never removed, and the mail transport has no teardown, so the
+        root still has no stop hook of its own.
   signing-keys:
     futureHome: core/server/auth/signing-keys
     extras:

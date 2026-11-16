@@ -708,16 +708,7 @@
       "type": "number"
     }
   },
-  "recommendations": {
-    "recommendations_enabled": {
-      "defaultValue": "false",
-      "validations": {
-        "isEmpty": false,
-        "isIn": [["true", "false"]]
-      },
-      "type": "boolean"
-    }
-  },
+  "recommendations": {},
   "security": {
     "require_email_mfa": {
       "defaultValue": false,

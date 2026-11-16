@@ -7,12 +7,10 @@ const {
 const { anyObjectId, anyErrorId, anyISODateTime, anyContentVersion, anyLocationFor, anyEtag } =
   matchers;
 const assert = require('node:assert/strict');
-const recommendationsService = require('../../../../transition/services/recommendations').default;
-const {
-  Recommendation,
-  ClickEvent,
-  SubscribeEvent,
-} = require('../../../../transition/services/recommendations/service');
+const recommendationsService = require('../../../../services/recommendations').default;
+const { Recommendation } = require('../../../../entities/recommendation.entity');
+const { ClickEvent } = require('../../../../entities/click-event.entity');
+const { SubscribeEvent } = require('../../../../entities/subscribe-event.entity');
 const nock = require('nock');
 
 async function addDummyRecommendation(i = 0) {

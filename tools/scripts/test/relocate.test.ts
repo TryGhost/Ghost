@@ -37,6 +37,28 @@ describe('relocate', () => {
     );
   });
 
+  it("maps a specifier that names a folder when the folder's index file moves", () => {
+    const index: Move[] = [
+      {
+        from: 'ghost/domains/shop/transition/services/gifts/index.ts',
+        to: 'ghost/domains/shop/services/gifts/index.ts',
+      },
+    ];
+    assert.equal(
+      rewriteSpecifiers(
+        "const gifts = require('../domains/shop/transition/services/gifts').default;",
+        'ghost/core/boot.js',
+        index,
+      ),
+      "const gifts = require('../domains/shop/services/gifts').default;",
+    );
+    // Another file in the folder is not the folder.
+    assert.equal(
+      relocated('ghost/domains/shop/transition/services/gifts/api', index),
+      'ghost/domains/shop/transition/services/gifts/api',
+    );
+  });
+
   it('rewrites specifiers in a moved file that point outside the move', () => {
     const source = [
       "import { defineService } from '../../../kernel/define-service';",

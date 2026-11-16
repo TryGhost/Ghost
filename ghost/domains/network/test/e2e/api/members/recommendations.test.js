@@ -7,8 +7,8 @@ const {
   configUtils,
 } = require('../../../../../../test/utils/e2e-framework');
 const { anyEtag } = matchers;
-const recommendationsService = require('../../../../transition/services/recommendations').default;
-const { Recommendation } = require('../../../../transition/services/recommendations/service');
+const recommendationsService = require('../../../../services/recommendations').default;
+const { Recommendation } = require('../../../../entities/recommendation.entity');
 
 async function testClicked({ recommendationId, memberId }, test) {
   const before =

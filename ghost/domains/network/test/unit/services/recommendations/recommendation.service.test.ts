@@ -1,0 +1,829 @@
+import assert from 'assert/strict';
+import { ClickEvent } from '../../../../entities/click-event.entity';
+import { Recommendation } from '../../../../entities/recommendation.entity';
+import { RecommendationService } from '../../../../services/recommendations/recommendation.service';
+import { SubscribeEvent } from '../../../../entities/subscribe-event.entity';
+import { WellknownService } from '../../../../services/recommendations/well-known.service';
+import {
+  RecommendationMetadata,
+  RecommendationMetadataService,
+} from '../../../../services/recommendations/recommendation-metadata.service';
+import { InMemoryRepository } from '../../../../../../core/server/lib/in-memory-repository';
+import { InMemoryRecommendationRepository } from '../../repositories/in-memory-recommendation.repository';
+import sinon from 'sinon';
+import { createLoggingFake } from '../../../../../../test/utils/logging-utils';
+
+class InMemoryClickEventRepository<
+  T extends ClickEvent | SubscribeEvent,
+> extends InMemoryRepository<string, T> {
+  toPrimitive(entity: T): object {
+    return entity;
+  }
+}
+
+describe('RecommendationService', function () {
+  let service: RecommendationService;
+  let clickEventRepository: InMemoryClickEventRepository<ClickEvent>;
+  let subscribeEventRepository: InMemoryClickEventRepository<SubscribeEvent>;
+  let enabled = 'false';
+  let clock: sinon.SinonFakeTimers;
+  let fetchMetadataStub: sinon.SinonStub<any[], Promise<RecommendationMetadata>>;
+  let logging: ReturnType<typeof createLoggingFake>;
+
+  beforeEach(function () {
+    logging = createLoggingFake();
+    enabled = 'false';
+    fetchMetadataStub = sinon.stub().resolves({
+      title: 'Test',
+      excerpt: null,
+      featuredImage: null,
+      favicon: null,
+      oneClickSubscribe: false,
+    });
+    clickEventRepository = new InMemoryClickEventRepository<ClickEvent>();
+    subscribeEventRepository = new InMemoryClickEventRepository<SubscribeEvent>();
+    service = new RecommendationService({
+      repository: new InMemoryRecommendationRepository(),
+      clickEventRepository,
+      subscribeEventRepository,
+      wellknownService: {
+        getURL() {
+          return new URL('http://localhost/.well-known/recommendations.json');
+        },
+      } as unknown as WellknownService,
+      mentionSendingService: {
+        sendAll() {
+          return Promise.resolve();
+        },
+      },
+      recommendationEnablerService: {
+        getSetting() {
+          return enabled;
+        },
+        setSetting(e) {
+          enabled = e;
+          return Promise.resolve();
+        },
+      },
+      recommendationMetadataService: {
+        fetch: fetchMetadataStub,
+      } as unknown as RecommendationMetadataService,
+      logging,
+    });
+    clock = sinon.useFakeTimers();
+  });
+
+  afterEach(function () {
+    sinon.restore();
+    clock.restore();
+  });
+
+  describe('refreshOnBoot', function () {
+    it('should update recommendations on boot', async function () {
+      enabled = 'true';
+      const recommendation = Recommendation.create({
+        id: '2',
+        url: 'http://localhost/1',
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      await service.repository.save(recommendation);
+
+      // Sandbox time
+      const saved = process.env.NODE_ENV;
+      try {
+        process.env.NODE_ENV = 'production';
+        const spy = sinon.spy(service, 'updateAllRecommendationsMetadata');
+        await service.refreshOnBoot();
+        await clock.tick(1000 * 60 * 60 * 24);
+        sinon.assert.calledOnce(spy);
+      } finally {
+        process.env.NODE_ENV = saved;
+      }
+    });
+
+    it('ignores errors when update recommendations on boot', async function () {
+      enabled = 'true';
+      // Sandbox time
+      const saved = process.env.NODE_ENV;
+      try {
+        process.env.NODE_ENV = 'production';
+        const spy = sinon.stub(service, 'updateAllRecommendationsMetadata');
+        const error = new Error('test');
+        spy.rejects(error);
+        await service.refreshOnBoot();
+        await clock.tickAsync(1000 * 60 * 60 * 24);
+        sinon.assert.calledOnce(spy);
+        sinon.assert.calledOnceWithExactly(
+          logging.error,
+          '[Recommendations] Failed to update all recommendations metadata on boot',
+          error,
+        );
+      } finally {
+        process.env.NODE_ENV = saved;
+      }
+    });
+
+    it('should errors when update recommendations on boot (invidiual)', async function () {
+      enabled = 'true';
+      const recommendation = Recommendation.create({
+        id: '2',
+        url: 'http://localhost/1',
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      await service.repository.save(recommendation);
+
+      // Sandbox time
+      const saved = process.env.NODE_ENV;
+      try {
+        process.env.NODE_ENV = 'production';
+        const spy = sinon.stub(service, '_updateRecommendationMetadata');
+        const error = new Error('This is a test');
+        spy.rejects(error);
+        await service.refreshOnBoot();
+        clock.tick(1000 * 60 * 60 * 24);
+        clock.restore();
+        // This assert doesn't work without a timeout because the timeout in boot is async
+        await new Promise((resolve) => {
+          setTimeout(() => resolve(true), 50);
+        });
+        sinon.assert.calledOnce(spy);
+        sinon.assert.calledOnceWithExactly(
+          logging.error,
+          '[Recommendations] Failed to save updated metadata for recommendation http://localhost/1',
+          error,
+        );
+      } finally {
+        process.env.NODE_ENV = saved;
+      }
+    });
+
+    it('schedules metadata refresh in development when recommendations are enabled', async function () {
+      enabled = 'true';
+      const saved = process.env.NODE_ENV;
+      try {
+        process.env.NODE_ENV = 'development';
+        const spy = sinon.spy(service, 'updateAllRecommendationsMetadata');
+        await service.refreshOnBoot();
+        await clock.tick(1000 * 60 * 60 * 24);
+        sinon.assert.calledOnce(spy);
+      } finally {
+        process.env.NODE_ENV = saved;
+      }
+    });
+
+    it('does not schedule metadata refresh when recommendations are disabled', async function () {
+      const saved = process.env.NODE_ENV;
+      try {
+        process.env.NODE_ENV = 'production';
+        const spy = sinon.spy(service, 'updateAllRecommendationsMetadata');
+        await service.refreshOnBoot();
+        await clock.tick(1000 * 60 * 60 * 24);
+        sinon.assert.notCalled(spy);
+      } finally {
+        process.env.NODE_ENV = saved;
+      }
+    });
+
+    // Whether a refresh runs under test is no longer decided here: the job that
+    // calls refreshOnBoot is not scheduled under test. See the boot tests.
+    it('does not refresh metadata while recommendations are disabled', async function () {
+      enabled = 'false';
+      const spy = sinon.spy(service, 'updateAllRecommendationsMetadata');
+      await service.refreshOnBoot();
+      sinon.assert.notCalled(spy);
+    });
+  });
+
+  describe('checkRecommendation', function () {
+    it('Returns existing recommendation if found', async function () {
+      const recommendation = Recommendation.create({
+        id: '2',
+        url: 'http://localhost/existing',
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      await service.repository.save(recommendation);
+
+      const response = await service.checkRecommendation(new URL('http://localhost/existing'));
+      assert.deepEqual(response, recommendation.plain);
+    });
+
+    it('Returns updated recommendation if found', async function () {
+      const recommendation = Recommendation.create({
+        id: '2',
+        url: 'http://localhost/existing',
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      // Force an empty title (shouldn't be possible)
+      recommendation.title = '';
+      await service.repository.save(recommendation);
+
+      fetchMetadataStub.resolves({
+        title: 'Test 2',
+        excerpt: 'Test excerpt',
+        featuredImage: new URL('https://example.com/image.png'),
+        favicon: new URL('https://example.com/favicon.ico'),
+        oneClickSubscribe: true,
+      });
+
+      const response = await service.checkRecommendation(new URL('http://localhost/existing'));
+      assert.deepEqual(response, {
+        ...recommendation.plain,
+        // Note: Title only changes if it was empty
+        title: 'Test 2',
+        description: null,
+        excerpt: 'Test excerpt',
+        featuredImage: new URL('https://example.com/image.png'),
+        favicon: new URL('https://example.com/favicon.ico'),
+        oneClickSubscribe: true,
+      });
+    });
+
+    it('Returns updated recommendation if found but keeps empty title if no title found', async function () {
+      const recommendation = Recommendation.create({
+        id: '2',
+        url: 'http://localhost/existing',
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      // Force an empty title (shouldn't be possible)
+      recommendation.title = '';
+      await service.repository.save(recommendation);
+
+      fetchMetadataStub.resolves({
+        title: null,
+        excerpt: 'Test excerpt',
+        featuredImage: new URL('https://example.com/image.png'),
+        favicon: new URL('https://example.com/favicon.ico'),
+        oneClickSubscribe: true,
+      });
+
+      const response = await service.checkRecommendation(new URL('http://localhost/existing'));
+
+      // No changes here, because validation failed with an empty title
+      assert.deepEqual(response, {
+        ...recommendation.plain,
+      });
+    });
+
+    it('saves and returns an existing recommendation before its metadata refresh settles', async function () {
+      const recommendation = Recommendation.create({
+        id: '2',
+        url: 'http://localhost/existing',
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      await service.repository.save(recommendation);
+      const metadata = Promise.withResolvers<RecommendationMetadata>();
+      fetchMetadataStub.returns(metadata.promise);
+      const save = sinon.spy(service.repository, 'save');
+
+      try {
+        const response = await service.checkRecommendation(new URL('http://localhost/existing'));
+
+        // The refresh is not awaited, so the response and the save carry the stored values.
+        sinon.assert.calledOnce(fetchMetadataStub);
+        sinon.assert.calledOnceWithExactly(save, recommendation);
+        assert.equal(response.excerpt, null);
+      } finally {
+        metadata.resolve({
+          title: 'Test',
+          excerpt: 'Fetched later',
+          featuredImage: null,
+          favicon: null,
+          oneClickSubscribe: false,
+        });
+      }
+
+      await metadata.promise;
+      assert.equal(recommendation.excerpt, 'Fetched later');
+      sinon.assert.calledOnce(save);
+    });
+
+    it('Returns existing recommendation if found and fetch failes', async function () {
+      const recommendation = Recommendation.create({
+        id: '2',
+        url: 'http://localhost/existing',
+        title: 'Outdated title',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      await service.repository.save(recommendation);
+
+      fetchMetadataStub.rejects(new Error('Test'));
+      const response = await service.checkRecommendation(new URL('http://localhost/existing'));
+      assert.deepEqual(response, recommendation.plain);
+    });
+
+    it('Returns recommendation metadata if not found', async function () {
+      const response = await service.checkRecommendation(new URL('http://localhost/newone'));
+      assert.deepEqual(response, {
+        title: 'Test',
+        excerpt: undefined,
+        featuredImage: undefined,
+        favicon: undefined,
+        oneClickSubscribe: false,
+        url: new URL('http://localhost/newone'),
+      });
+    });
+
+    it('Returns recommendation metadata if not found with all data except title', async function () {
+      fetchMetadataStub.resolves({
+        title: null,
+        excerpt: 'Test excerpt',
+        featuredImage: new URL('https://example.com/image.png'),
+        favicon: new URL('https://example.com/favicon.ico'),
+        oneClickSubscribe: true,
+      });
+      const response = await service.checkRecommendation(new URL('http://localhost/newone'));
+      assert.deepEqual(response, {
+        title: undefined,
+        excerpt: 'Test excerpt',
+        featuredImage: new URL('https://example.com/image.png'),
+        favicon: new URL('https://example.com/favicon.ico'),
+        oneClickSubscribe: true,
+        url: new URL('http://localhost/newone'),
+      });
+    });
+
+    it('Returns undefined recommendation metadata if metadata fails to fetch', async function () {
+      const error = new Error('Metadata failed to fetch');
+      fetchMetadataStub.rejects(error);
+
+      const response = await service.checkRecommendation(new URL('http://localhost/newone'));
+      assert.deepEqual(response, {
+        title: undefined,
+        excerpt: undefined,
+        featuredImage: undefined,
+        favicon: undefined,
+        oneClickSubscribe: false,
+        url: new URL('http://localhost/newone'),
+      });
+      sinon.assert.calledOnceWithExactly(
+        logging.error,
+        '[Recommendations] Failed to fetch metadata for url http://localhost/newone',
+        error,
+      );
+    });
+  });
+
+  describe('updateRecommendationsEnabledSetting', function () {
+    it('should set to true if more than one', async function () {
+      enabled = 'false';
+      await service.updateRecommendationsEnabledSetting([
+        Recommendation.create({
+          url: 'http://localhost/1',
+          title: 'Test',
+          description: null,
+          excerpt: null,
+          featuredImage: null,
+          favicon: null,
+          oneClickSubscribe: false,
+        }),
+      ]);
+      assert.equal(enabled, 'true');
+    });
+
+    it('should keep enabled true if already enabled', async function () {
+      enabled = 'true';
+      await service.updateRecommendationsEnabledSetting([
+        Recommendation.create({
+          url: 'http://localhost/1',
+          title: 'Test',
+          description: null,
+          excerpt: null,
+          featuredImage: null,
+          favicon: null,
+          oneClickSubscribe: false,
+        }),
+      ]);
+      assert.equal(enabled, 'true');
+    });
+
+    it('should set to false if none', async function () {
+      enabled = 'false';
+      await service.updateRecommendationsEnabledSetting([]);
+      assert.equal(enabled, 'false');
+    });
+
+    it('should set to false if none if currently enabled', async function () {
+      enabled = 'true';
+      await service.updateRecommendationsEnabledSetting([]);
+      assert.equal(enabled, 'false');
+    });
+  });
+
+  describe('readRecommendation', function () {
+    it('throws if not found', async function () {
+      await assert.rejects(() => service.readRecommendation('1'), {
+        name: 'NotFoundError',
+        message: 'Recommendation with id 1 not found',
+      });
+    });
+
+    it('returns plain if found', async function () {
+      const recommendation = Recommendation.create({
+        id: '2',
+        url: 'http://localhost/1',
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      await service.repository.save(recommendation);
+
+      const response = await service.readRecommendation('2');
+      assert.deepEqual(response, recommendation.plain);
+
+      // Check not instance of Recommendation
+      assert.equal(response instanceof Recommendation, false);
+    });
+  });
+
+  describe('addRecommendation', function () {
+    it('throws if already exists', async function () {
+      const recommendation = Recommendation.create({
+        id: '2',
+        url: 'http://localhost/1',
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      await service.repository.save(recommendation);
+
+      await assert.rejects(
+        () =>
+          service.addRecommendation({
+            url: 'http://localhost/1',
+            title: 'Test 2',
+            description: null,
+            excerpt: null,
+            featuredImage: null,
+            favicon: null,
+            oneClickSubscribe: false,
+          }),
+        {
+          name: 'ValidationError',
+          message: 'A recommendation with this URL already exists.',
+        },
+      );
+    });
+
+    it('returns plain if sucessful', async function () {
+      const response = await service.addRecommendation({
+        url: 'http://localhost/1',
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      assert.deepEqual(response, {
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+        clickCount: undefined,
+        subscriberCount: undefined,
+        updatedAt: null,
+
+        // Ignored
+        url: response.url,
+        id: response.id,
+        createdAt: response.createdAt,
+      });
+
+      assert(response.id);
+      assert(response.url);
+      assert(response.createdAt);
+
+      assert(response.url instanceof URL);
+      assert(response.createdAt instanceof Date);
+    });
+
+    it('does not throw if sendMentionToRecommendation throws', async function () {
+      const recommendation = Recommendation.create({
+        id: '2',
+        url: 'http://localhost/1',
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+
+      const updateRecommendationsEnabledSetting = sinon
+        .stub(service.mentionSendingService, 'sendAll')
+        .rejects(new Error('Test'));
+      await service.repository.save(recommendation);
+
+      await assert.doesNotReject(() =>
+        service.addRecommendation({
+          url: 'http://localhost/2',
+          title: 'Test 2',
+          description: null,
+          excerpt: null,
+          featuredImage: null,
+          favicon: null,
+          oneClickSubscribe: false,
+        }),
+      );
+
+      sinon.assert.calledOnce(updateRecommendationsEnabledSetting);
+    });
+  });
+
+  describe('editRecommendation', function () {
+    it('throws if not found', async function () {
+      await assert.rejects(
+        () =>
+          service.editRecommendation('1', {
+            title: 'Test 2',
+          }),
+        {
+          name: 'NotFoundError',
+          message: 'Recommendation with id 1 not found',
+        },
+      );
+    });
+
+    it('returns plain if sucessful', async function () {
+      const recommendation = Recommendation.create({
+        id: '2',
+        url: 'http://localhost/1',
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      await service.repository.save(recommendation);
+
+      const response = await service.editRecommendation('2', {
+        title: 'Test 2',
+      });
+      assert.deepEqual(response, {
+        title: 'Test 2',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+        clickCount: undefined,
+        subscriberCount: undefined,
+
+        // Ignored
+        url: response.url,
+        id: response.id,
+        createdAt: response.createdAt,
+        updatedAt: response.updatedAt,
+      });
+
+      assert(response.id);
+      assert(response.url);
+      assert(response.createdAt);
+      assert(response.updatedAt);
+
+      assert(response.url instanceof URL);
+      assert(response.createdAt instanceof Date);
+      assert(response.updatedAt instanceof Date);
+    });
+  });
+
+  describe('deleteRecommendation', function () {
+    it('throws if not found', async function () {
+      await assert.rejects(() => service.deleteRecommendation('1'), {
+        name: 'NotFoundError',
+        message: 'Recommendation with id 1 not found',
+      });
+    });
+
+    it('deletes if found', async function () {
+      const recommendation = Recommendation.create({
+        id: '2',
+        url: 'http://localhost/1',
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      await service.repository.save(recommendation);
+
+      assert.equal(await service.repository.getCount({}), 1);
+      await service.deleteRecommendation('2');
+      assert.equal(await service.repository.getCount({}), 0);
+    });
+  });
+
+  describe('listRecommendations', function () {
+    it('returns plain if sucessful', async function () {
+      const recommendation = Recommendation.create({
+        id: '2',
+        url: 'http://localhost/1',
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      await service.repository.save(recommendation);
+
+      const response = await service.listRecommendations();
+      assert.equal(response.length, 1);
+      assert.equal(response[0] instanceof Recommendation, false);
+    });
+
+    it('returns pages', async function () {
+      const recommendation = Recommendation.create({
+        id: '2',
+        url: 'http://localhost/1',
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      await service.repository.save(recommendation);
+
+      const recommendation2 = Recommendation.create({
+        id: '3',
+        url: 'http://localhost/2',
+        title: 'Test 2',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      await service.repository.save(recommendation2);
+
+      const response = await service.listRecommendations({
+        limit: 1,
+        order: [
+          {
+            field: 'id',
+            direction: 'desc',
+          },
+        ],
+      });
+      assert.equal(response.length, 1);
+      assert.equal(response[0].id, '3');
+      assert.equal(response[0] instanceof Recommendation, false);
+    });
+
+    it('uses a default limit and page', async function () {
+      const recommendation = Recommendation.create({
+        id: '2',
+        url: 'http://localhost/1',
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      await service.repository.save(recommendation);
+
+      const recommendation2 = Recommendation.create({
+        id: '3',
+        url: 'http://localhost/2',
+        title: 'Test 2',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      await service.repository.save(recommendation2);
+
+      const response = await service.listRecommendations({});
+      assert.equal(response.length, 2);
+      assert.equal(response[0] instanceof Recommendation, false);
+      assert.equal(response[1] instanceof Recommendation, false);
+    });
+  });
+
+  describe('countRecommendations', function () {
+    it('returns count', async function () {
+      const recommendation = Recommendation.create({
+        id: '2',
+        url: 'http://localhost/1',
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      await service.repository.save(recommendation);
+
+      assert.equal(await service.countRecommendations({}), 1);
+    });
+  });
+
+  describe('trackClicked', function () {
+    it('adds click event', async function () {
+      const recommendation = Recommendation.create({
+        id: '1',
+        url: 'http://localhost/1',
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      await service.repository.save(recommendation);
+
+      await service.trackClicked({ id: '1' });
+      assert.equal(await clickEventRepository.getCount({}), 1);
+    });
+
+    it('throws NotFoundError for an unknown recommendation id (no raw DB error leaks)', async function () {
+      const save = sinon.spy(clickEventRepository, 'save');
+      await assert.rejects(() => service.trackClicked({ id: 'does-not-exist' }), {
+        name: 'NotFoundError',
+      });
+      assert.equal(
+        save.called,
+        false,
+        'should not attempt to save a click for a missing recommendation',
+      );
+    });
+  });
+
+  describe('trackSubscribed', function () {
+    it('adds subscribe event', async function () {
+      await service.trackSubscribed({ id: '1', memberId: '1' });
+      assert.equal(await subscribeEventRepository.getCount({}), 1);
+    });
+  });
+
+  describe('readRecommendationByUrl', function () {
+    it('returns if found', async function () {
+      const recommendation = Recommendation.create({
+        id: '2',
+        url: 'http://localhost/1',
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      await service.repository.save(recommendation);
+
+      const response = await service.readRecommendationByUrl(new URL('http://localhost/1'));
+      assert.deepEqual(response, recommendation.plain);
+    });
+
+    it('returns null if not found', async function () {
+      const response = await service.readRecommendationByUrl(new URL('http://localhost/1'));
+      assert.equal(response, null);
+    });
+  });
+});

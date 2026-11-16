@@ -5,12 +5,14 @@
 // Owner is not listed: it has no permissions of its own and is handled as a
 // bypass in canThis.
 
+import { domainFragments } from '../../../foundation/domains/fragments';
+
 export type RolePermissionValue = 'all' | readonly string[];
 
 /**
  * Every action that exists for each object type.
  */
-export const permissions = {
+const corePermissions = {
   db: ['exportContent', 'importContent', 'deleteAllContent', 'backupContent'],
   content_import: ['importContent'],
   mail: ['send'],
@@ -48,7 +50,6 @@ export const permissions = {
   link: ['browse', 'edit'],
   mention: ['browse'],
   collection: ['browse', 'read', 'edit', 'add', 'destroy'],
-  recommendation: ['browse', 'read', 'edit', 'add', 'destroy'],
   automation: ['browse', 'read', 'add', 'edit', 'poll'],
   gift: ['flushReminders', 'flushDeliveries'],
   gift_link: ['manage', 'removeAll'],
@@ -56,13 +57,21 @@ export const permissions = {
   upgrade: ['browse', 'read', 'add'],
 } as const satisfies Record<string, readonly string[]>;
 
-export type ObjectType = keyof typeof permissions;
+// A domain declares the permissions for what it owns in its permissions.ts.
+// Those are merged in here, so every permission is still found in one place at
+// run time. Their object types are not known to the compiler.
+const domainPermissions = domainFragments('permissions').map(({ value }) => value);
+
+export const permissions: typeof corePermissions & Record<string, readonly string[]> =
+  Object.assign({}, corePermissions, ...domainPermissions.map(({ objects }) => objects));
+
+export type ObjectType = keyof typeof corePermissions;
 
 /**
  * The permissions each role holds, by object type: 'all' grants every action
  * for that object type, otherwise only the listed actions.
  */
-export const rolePermissions = {
+const coreRolePermissions = {
   Administrator: {
     db: 'all',
     content_import: 'all',
@@ -100,7 +109,6 @@ export const rolePermissions = {
     link: 'all',
     mention: ['browse'],
     collection: 'all',
-    recommendation: 'all',
     gift_link: 'all',
     app_installation: 'all',
     automation: ['browse', 'read', 'edit', 'add'],
@@ -152,7 +160,6 @@ export const rolePermissions = {
     link: 'all',
     mention: ['browse'],
     collection: 'all',
-    recommendation: 'all',
     automation: ['browse', 'read', 'edit', 'add'],
     member_signin_url: ['read'],
     gift_link: ['manage'],
@@ -174,7 +181,6 @@ export const rolePermissions = {
     product: ['browse', 'read'],
     newsletter: ['browse', 'read'],
     collection: 'all',
-    recommendation: ['browse', 'read'],
     member: ['browse', 'read', 'add', 'edit', 'destroy'],
     member_signin_url: ['read'],
     offer: ['browse', 'read'],
@@ -198,7 +204,6 @@ export const rolePermissions = {
     product: ['browse', 'read'],
     newsletter: ['browse', 'read'],
     collection: 'all',
-    recommendation: ['browse', 'read'],
     gift_link: ['manage'],
   },
   Author: {
@@ -216,7 +221,6 @@ export const rolePermissions = {
     product: ['browse', 'read'],
     newsletter: ['browse', 'read'],
     collection: ['browse', 'read', 'add'],
-    recommendation: ['browse', 'read'],
   },
   Contributor: {
     post: ['browse', 'read', 'edit', 'add', 'destroy'],
@@ -230,6 +234,16 @@ export const rolePermissions = {
     email: ['read'],
     snippet: ['browse', 'read'],
     collection: ['browse', 'read'],
-    recommendation: ['browse', 'read'],
   },
 } satisfies Record<string, Partial<Record<ObjectType, RolePermissionValue>>>;
+
+export const rolePermissions: typeof coreRolePermissions &
+  Record<string, Record<string, RolePermissionValue>> = { ...coreRolePermissions };
+for (const { roles = {} } of domainPermissions) {
+  for (const [role, grants] of Object.entries(roles)) {
+    (rolePermissions as Record<string, Record<string, RolePermissionValue>>)[role] = {
+      ...rolePermissions[role],
+      ...grants,
+    };
+  }
+}

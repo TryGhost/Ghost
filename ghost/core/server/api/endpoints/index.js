@@ -276,14 +276,6 @@ module.exports = {
     return apiFramework.pipeline(require('./links'), localUtils);
   },
 
-  get recommendations() {
-    return apiFramework.pipeline(require('./recommendations'), localUtils);
-  },
-
-  get incomingRecommendations() {
-    return apiFramework.pipeline(require('./incoming-recommendations'), localUtils);
-  },
-
   get searchIndex() {
     return apiFramework.pipeline(require('./search-index'), localUtils);
   },
@@ -368,8 +360,14 @@ module.exports = {
     return apiFramework.pipeline(require('./gifts'), localUtils);
   },
 
+  // The network domain declares its own routes. This entry remains for the
+  // {{recommendations}} theme helper, which reads the Content API in process.
   get recommendationsPublic() {
-    return apiFramework.pipeline(require('./recommendations-public'), localUtils, 'content');
+    return require('../domain-endpoints').domainEndpoint(
+      'network',
+      'recommendations-public.endpoint',
+      'content',
+    );
   },
 
   get searchIndexPublic() {

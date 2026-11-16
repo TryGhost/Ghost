@@ -102,6 +102,7 @@ const serviceDependencyAllowlist = [
   '^(node:)?vm$', // Bounded script execution for caller-owned regex matching with a timeout.
   '^(node:)?(assert/strict|stream|stream/promises|buffer|timers/promises)$', // Node's in-memory primitives: assertions, streams, buffers and timers; no I/O of their own.
   '^ghost/core/kernel/clock\\.ts$', // Shared clock helpers and legacy date compatibility.
+  '^ghost/core/foundation/domains/fragments\\.ts$', // What the domains describe about themselves (settings, permissions, schema, routes); reads describing files once, no application instances.
   '^ghost/core/server/lib/db-types/date\\.ts$', // Database date codec.
   '^ghost/core/server/lib/db-types/boolean\\.ts$', // Database boolean codec.
   '^ghost/core/server/lib/db-types/json\\.ts$', // Database JSON codec.

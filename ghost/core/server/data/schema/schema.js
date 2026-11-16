@@ -8,6 +8,17 @@
  * Text = length 65535 (64 KiB)
  * Long text = length 1,000,000,000
  */
+const { domainTables, placeFromDomains } = require('../../../foundation/domains/fragments');
+
+// A domain declares the tables it owns in its schema.ts. They are merged in
+// here, so this file still exports every table.
+//
+// Tables are created in the order they appear, and a table must come after the
+// tables its foreign keys point at. A table that used to be written out here
+// keeps its place by being named where it was; a table no line names is added
+// at the end.
+const fromDomains = placeFromDomains('table', domainTables());
+
 module.exports = {
   newsletters: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -2106,58 +2117,11 @@ module.exports = {
     },
     sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
   },
-  recommendations: {
-    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    url: { type: 'string', maxlength: 2000, nullable: false },
-    title: { type: 'string', maxlength: 2000, nullable: false },
-    excerpt: { type: 'string', maxlength: 2000, nullable: true },
-    featured_image: { type: 'string', maxlength: 2000, nullable: true },
-    favicon: { type: 'string', maxlength: 2000, nullable: true },
-    description: { type: 'string', maxlength: 2000, nullable: true },
-    one_click_subscribe: { type: 'boolean', nullable: false, defaultTo: false },
-    created_at: { type: 'dateTime', nullable: false },
-    updated_at: { type: 'dateTime', nullable: true },
-  },
-  recommendation_click_events: {
-    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    recommendation_id: {
-      type: 'string',
-      maxlength: 24,
-      nullable: false,
-      references: 'recommendations.id',
-      unique: false,
-      cascadeDelete: true,
-    },
-    member_id: {
-      type: 'string',
-      maxlength: 24,
-      nullable: true,
-      references: 'members.id',
-      unique: false,
-      setNullDelete: true,
-    },
-    created_at: { type: 'dateTime', nullable: false },
-  },
-  recommendation_subscribe_events: {
-    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
-    recommendation_id: {
-      type: 'string',
-      maxlength: 24,
-      nullable: false,
-      references: 'recommendations.id',
-      unique: false,
-      cascadeDelete: true,
-    },
-    member_id: {
-      type: 'string',
-      maxlength: 24,
-      nullable: true,
-      references: 'members.id',
-      unique: false,
-      setNullDelete: true,
-    },
-    created_at: { type: 'dateTime', nullable: false },
-  },
+  ...fromDomains.place(
+    'recommendations',
+    'recommendation_click_events',
+    'recommendation_subscribe_events',
+  ),
   outbox: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     event_type: { type: 'string', maxlength: 50, nullable: false },
@@ -2851,4 +2815,5 @@ module.exports = {
     submitted_at: { type: 'dateTime', nullable: true },
     '@@INDEXES@@': [['submitted_at', 'available_at']],
   },
+  ...fromDomains.rest(),
 };

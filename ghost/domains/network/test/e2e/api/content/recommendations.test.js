@@ -3,8 +3,8 @@ const {
   fixtureManager,
   matchers,
 } = require('../../../../../../test/utils/e2e-framework');
-const recommendationsService = require('../../../../transition/services/recommendations').default;
-const { Recommendation } = require('../../../../transition/services/recommendations/service');
+const recommendationsService = require('../../../../services/recommendations').default;
+const { Recommendation } = require('../../../../entities/recommendation.entity');
 const { anyObjectId, anyISODateTime } = matchers;
 const assert = require('node:assert/strict');
 

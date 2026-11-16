@@ -19,6 +19,7 @@ function createBackgroundHarness(environment = 'production') {
   const milestones = { initAndRun: sinon.stub() };
   const signingKeys = { extras: { scheduleCheckJob: sinon.stub().resolves() } };
   const jobsInstance = {};
+  const domains = { ready: sinon.stub().resolves() };
   const initBackgroundServices = loadBootFunction(
     'initBackgroundServices',
     {
@@ -42,6 +43,7 @@ function createBackgroundHarness(environment = 'production') {
       './server/services/update-check': updateCheck,
       './server/services/remote-flags': { init() {} },
       './server/services/milestones': milestones,
+      './foundation/domains': { default: domains },
     },
     { globals: { process: { env: { NODE_ENV: environment } } } },
   );
@@ -58,8 +60,42 @@ function createBackgroundHarness(environment = 'production') {
     milestones,
     signingKeys,
     jobsInstance,
+    domains,
   };
 }
+
+for (const environment of ['test', 'testing', 'testing-mysql']) {
+  it(`starts non-blocking domain services but schedules no domain job in ${environment}`, async function () {
+    const boot = createBackgroundHarness(environment);
+    await boot.init();
+
+    sinon.assert.calledOnceWithExactly(boot.domains.ready, { jobs: false });
+  });
+}
+
+it('schedules domain jobs outside tests, without waiting for them', async function () {
+  const boot = createBackgroundHarness('production');
+  const ready = Promise.withResolvers<void>();
+  boot.domains.ready.returns(ready.promise);
+
+  try {
+    await boot.init();
+    sinon.assert.calledOnceWithExactly(boot.domains.ready, { jobs: true });
+  } finally {
+    ready.resolve();
+  }
+});
+
+it('logs a failure to make the domains ready instead of failing', async function () {
+  const boot = createBackgroundHarness('production');
+  const failure = new Error('domains could not be made ready');
+  boot.domains.ready.rejects(failure);
+
+  await boot.init();
+  await setImmediate();
+
+  sinon.assert.calledWithExactly(boot.logging.error, failure);
+});
 
 for (const environment of ['test', 'testing', 'testing-mysql']) {
   it(`loads inactive themes but skips interrupted-send recovery in ${environment}`, async function () {

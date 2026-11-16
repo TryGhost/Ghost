@@ -3,6 +3,7 @@ const url = require('./utils/url');
 const localUtils = require('../../index');
 const settingsCache = require('../../../../../../shared/settings-cache');
 const { WRITABLE_KEYS_ALLOWLIST } = require('../../../../../../shared/labs');
+const { domainEditableSettings } = require('../../../../../../foundation/domains/fragments');
 
 const EDITABLE_SETTINGS = [
   'title',
@@ -85,7 +86,6 @@ const EDITABLE_SETTINGS = [
   'pintura_css_url',
   'donations_currency',
   'donations_suggested_amount',
-  'recommendations_enabled',
   'body_font',
   'heading_font',
   'blocked_email_domains',
@@ -100,6 +100,8 @@ const EDITABLE_SETTINGS = [
   'transistor_portal_description',
   'transistor_portal_button_text',
   'transistor_portal_url_template',
+  // Settings a domain declares editable in its settings.ts.
+  ...domainEditableSettings(),
 ];
 
 module.exports = {

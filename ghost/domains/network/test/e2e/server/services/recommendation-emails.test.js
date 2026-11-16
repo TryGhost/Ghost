@@ -5,11 +5,11 @@ const {
 } = require('../../../../../../test/utils/e2e-framework');
 const assert = require('node:assert/strict');
 const mentionsService = require('../../../../../../core/server/services/mentions').default;
-const recommendationsService = require('../../../../transition/services/recommendations').default;
+const recommendationsService = require('../../../../services/recommendations').default;
 
 let agent;
 const DomainEvents = require('@tryghost/domain-events');
-const { Recommendation } = require('../../../../transition/services/recommendations/service');
+const { Recommendation } = require('../../../../entities/recommendation.entity');
 const Mention = require('../../../../../../core/server/services/mentions/mention');
 
 describe('Incoming Recommendation Emails', function () {

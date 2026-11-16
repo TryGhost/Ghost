@@ -148,6 +148,12 @@ describe('domain shape and names', () => {
       assert.deepEqual(problems(), []);
     });
 
+    it('allows notes and type declarations for untyped libraries', () => {
+      write('library/repositories/README.md');
+      write('library/repositories/libraries.d.ts');
+      assert.deepEqual(problems(), []);
+    });
+
     it('leaves the names of files in transition/ and test/ alone', () => {
       write('library/transition/services/old-catalogue/OldThing.js');
       write('library/transition/models/Old_Book.js');

@@ -7,6 +7,7 @@ const mw = require('./middleware');
 const labs = require('../../../../../shared/labs');
 
 const shared = require('../../../shared');
+const { mountDomainRoutes } = require('../../mount-domain-routes');
 
 /**
  * @returns {import('express').Router}
@@ -15,6 +16,9 @@ module.exports = function apiRoutes() {
   const router = express.Router('admin api');
 
   router.use(apiMw.cors);
+
+  // ## Routes that domains declare in their http/routes.ts
+  mountDomainRoutes(router, { surface: 'admin', middleware: mw });
 
   // ## Public
   router.get('/site', mw.publicAdminApi, http(api.site.read));
@@ -587,21 +591,6 @@ module.exports = function apiRoutes() {
 
   router.get('/links', mw.authAdminApi, http(api.links.browse));
   router.put('/links/bulk', mw.authAdminApi, http(api.links.bulkEdit));
-
-  // Recommendations
-  router.get('/recommendations', mw.authAdminApi, http(api.recommendations.browse));
-  router.get('/recommendations/:id', mw.authAdminApi, http(api.recommendations.read));
-  router.post('/recommendations', mw.authAdminApi, http(api.recommendations.add));
-  router.post('/recommendations/check', mw.authAdminApi, http(api.recommendations.check));
-  router.put('/recommendations/:id', mw.authAdminApi, http(api.recommendations.edit));
-  router.delete('/recommendations/:id', mw.authAdminApi, http(api.recommendations.destroy));
-
-  // Incoming recommendations
-  router.get(
-    '/incoming_recommendations',
-    mw.authAdminApi,
-    http(api.incomingRecommendations.browse),
-  );
 
   // Feedback
   router.get('/feedback/:id', mw.authAdminApi, http(api.feedbackMembers.browse));

@@ -10,6 +10,7 @@ const shared = require('../shared');
 const errorHandler = require('@tryghost/mw-error-handler');
 const { http } = require('@tryghost/api-framework');
 const api = require('../../api').endpoints;
+const { mountDomainRoutes } = require('../api/mount-domain-routes');
 
 const accountRoutes = require('./account');
 const commentRouter = require('../comments');
@@ -171,19 +172,8 @@ module.exports = function setupMembersApp() {
   // Announcement
   membersApp.use('/api/announcement', middleware.loadMemberSession, announcementRouter());
 
-  // Recommendations
-  membersApp.post(
-    '/api/recommendations/:id/clicked',
-    middleware.loadMemberSession,
-    http(api.recommendationsPublic.trackClicked),
-  );
-
-  // Recommendations
-  membersApp.post(
-    '/api/recommendations/:id/subscribed',
-    middleware.loadMemberSession,
-    http(api.recommendationsPublic.trackSubscribed),
-  );
+  // Routes that domains declare in their http/routes.ts
+  mountDomainRoutes(membersApp, { surface: 'members', middleware, apiType: 'content' });
 
   // Allow external systems to read public settings via the members api
   // Without CORS issues and without a required integration token

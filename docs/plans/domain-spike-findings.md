@@ -479,3 +479,263 @@ Each violation was introduced, the check was run, and the file was restored.
   mirrors `transition/services/recommendations/service/x.ts`. An e2e test
   exercises a route, not a file, so the e2e tree is organised by suite and API
   surface instead.
+
+## Step 7: recommendations reshaped
+
+Cost: 95 files changed; 1,464 lines added and 690 removed. 37 renames, 21 new
+files, 4 deletions, 33 other edits.
+
+| Part                                                                   | Files | Added     | Removed  |
+| ---------------------------------------------------------------------- | ----- | --------- | -------- |
+| Domain code (`ghost/domains/network` outside `test/`)                  | 36    | 669       | 275      |
+| Tests (the domain's and `ghost/test`)                                  | 34    | 504       | 218      |
+| `ghost/core` (central registries, web layer, boot, kernel, foundation) | 21    | 392       | 362      |
+| Tooling, inventory, docs                                               | 4     | about 100 | about 35 |
+
+About 150 of the lines added to `ghost/core` are one-off machinery that the
+next domain reuses: `foundation/domains/fragments.ts`, `api/domain-endpoints.ts`,
+`web/api/mount-domain-routes.ts` and `default-settings/with-domain-settings.js`.
+
+### Where everything went
+
+```text
+ghost/domains/network/
+  CONTEXT.md
+  settings.ts  permissions.ts  schema.ts
+  actions/   list-well-known-recommendations.action.ts
+  data/      well-known-recommendation.data.ts
+  http/      routes.ts
+             recommendations.endpoint.ts  recommendations-public.endpoint.ts
+             incoming-recommendations.endpoint.ts
+             recommendation.controller.ts  incoming-recommendation.controller.ts
+  services/recommendations/
+             index.ts
+             recommendation.service.ts  incoming-recommendation.service.ts
+             recommendation-metadata.service.ts  well-known.service.ts
+             recommendation-enabler.service.ts
+  repositories/  bookshelf.repository.ts  bookshelf-recommendation.repository.ts
+             bookshelf-click-event.repository.ts  bookshelf-subscribe-event.repository.ts
+             recommendation.repository.ts  libraries.d.ts
+  entities/  recommendation.entity.ts  click-event.entity.ts  subscribe-event.entity.ts
+             recommendation-url.value.ts  unsafe-data.value.ts
+  listeners/ send-recommendation-received-alert.listener.ts
+  jobs/      refresh-recommendation-metadata.job.ts  refresh-incoming-recommendations.job.ts
+  emails/    incoming-recommendation-email.renderer.ts
+  transition/models/   the three Bookshelf models
+  test/unit/…          mirrors the tree above
+  test/e2e/{api/{admin,content,members},server/services,frontend}/
+```
+
+Removed from central files in favour of what the domain declares:
+
+| Central file                                                           | What left it                                                                    | What replaced it                                     |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `boot.js`                                                              | the root's binding and its `init()` in `initServices`                           | the domain layer starts it                           |
+| `web/api/endpoints/admin/routes.js`                                    | 7 routes                                                                        | `mountDomainRoutes(router, { surface: 'admin', … })` |
+| `web/api/endpoints/content/routes.js`                                  | 1 route                                                                         | same, `surface: 'content'`                           |
+| `web/members/app.js`                                                   | 2 routes                                                                        | same, `surface: 'members'`                           |
+| `api/endpoints/index.js`                                               | `recommendations`, `incomingRecommendations`                                    | endpoint files in the domain's `http/`               |
+| `api/endpoints/*.js`                                                   | 3 endpoint files                                                                | moved to the domain's `http/` as TypeScript          |
+| `data/schema/schema.js`                                                | 3 table definitions (52 lines)                                                  | `schema.ts`, placed by name                          |
+| `data/schema/default-settings/default-settings.json` and the test copy | the `recommendations_enabled` setting                                           | `settings.ts`                                        |
+| `shared/settings-cache/public.js`                                      | `recommendations_enabled`                                                       | `settings.ts`, placed by name                        |
+| `api/…/serializers/input/settings.js`                                  | `recommendations_enabled` in the editable list                                  | `settings.ts`                                        |
+| `services/permissions/permissions-data.ts`                             | the `recommendation` object and 6 role grants                                   | `permissions.ts`                                     |
+| `frontend/web/site.js`                                                 | the import of the root and its Express controller                               | the `listWellKnownRecommendations` action            |
+| `models/index.js`                                                      | nothing: still hand-edited to require the three models from `transition/models` | —                                                    |
+
+### Verified
+
+- oxlint, boundaries (5911 modules, 294 known, 189 deferred), typecheck, ESLint,
+  `lint:domain-rules`, `lint:legacy-services`, docs lint: pass.
+- Unit suite: 11,630 passed; the same 34 baseline failures and no others. The
+  domain's own unit tests: 26 files.
+- DB-backed, the step 1 set: 7 files, 75 tests pass. Recommendations is now
+  reached through `mountDomainRoutes`, started by the domain layer, and its
+  staff alert is sent by the listener. **The four snapshot files are unchanged.**
+- DB-backed, a wider set chosen because the reshape touched their registries
+  (admin and content settings, roles, mentions, site, users, exporter, settings
+  and migrations integration, frontend middleware): 17 files, 127 tests pass.
+  The full DB-backed suites were **not** run.
+- **Hashes unchanged.** The default-settings hash in the integrity test is still
+  `793d09161208cf11d087fd0b145127bc`. `JSON.stringify` of the schema tables has
+  the same md5 before and after (`5649fbd3…`, 106 tables). The public settings
+  map serializes identically.
+- Real boot from source: 3.30s, 3.31s, 3.21s (baseline 3.40s to 3.47s).
+- Report: `transition/` went from 24 files to 3 (the models). The root has 4
+  counted legacy imports: `models/index.js`, `services/mentions`,
+  `services/oembed`, `services/staff`. Two foreign keys cross the domain:
+  both event tables reference `members.id`.
+
+### Answers this step gives
+
+**What does discovery cost at boot?** Nothing measurable. With one domain of 9
+found files, three boots took 3.21s to 3.31s against a baseline of 3.40s to
+3.47s and an empty-layer figure of 3.24s to 3.55s. The differences are inside
+run-to-run noise on this machine, and three runs is a small sample.
+
+**Which "events" turned out to be commands?** Recommendations publishes no
+events at all. It had two commands disguised as initialization:
+`RecommendationService.init()` and `IncomingRecommendationService.init()` each
+set a timer to do slow work some minutes after boot. Both are now jobs with a
+"once at boot" schedule and a delay. `MentionCreatedEvent`, which it listens
+to, is a real past-tense event.
+
+**Did "no say over start order" hold?** Mostly. Two of its three uses of
+Mentions became calls at the moment of use (sending mentions, listing and
+refreshing mentions). The third cannot: the root registers a URL mapper on the
+Mentions metadata service, and registering is something done at start. It
+works because the whole domain layer starts after every line in `boot.js`, so
+"everything legacy is up before any domain" is the one ordering a domain gets.
+No before or after slot was needed. Once Mentions is in the same domain this is
+exactly the declared case: `startAfter: ['mentions']`.
+
+**How were the staff alert, cross-domain model reads and relations handled?**
+
+- _Staff alert._ The content is the domain's: the subject line and the
+  renderer are in `emails/`. The template is **not**: it stays in
+  `core/server/services/staff/email-templates/`, because Staff's renderer reads
+  only its own fixed set of files and owns the shared layout, partials, helpers
+  and the per-recipient data every staff email uses. Moving the template needs a
+  shared mail module that can render a caller's template inside that layout,
+  which does not exist. Recipients come from `models.User.getEmailAlertUsers`,
+  wired in the root with a comment that it belongs to identity. Sending goes
+  through `GhostMailer`, treated as shared mail. Deviation from "the raising
+  domain owns content and template": the domain owns the content only.
+- _`models.User`._ Read in the service root only, through the models registry,
+  and counted as a legacy import.
+- _Bookshelf relations._ The three models define none. The cross-domain link is
+  in the schema: two foreign keys to `members.id`, which the report lists.
+
+**Does `boot.ts` need to exist?** No. Network has none. Its one root does its
+own wiring, as roots do today.
+
+**How far is the code from "the domain file hands each root its dependencies"?**
+The root's `create` makes 11 `require` calls for things outside the domain: 7
+that count as foundation or shared (config, logging, Sentry, URL utils, mail,
+outbound HTTP, settings) and 4 legacy. Moving those 11 lines into a
+`boot.ts` `dependencies()` function and typing the argument to `create` would
+leave the root importing only its own domain and the kernel. The fixture
+`library` domain is built that way and passes. It was not done for network:
+the root's test loads the root and stubs each of those modules, so it would
+need rewriting a second time for no new evidence.
+
+### How `test/e2e` is organised
+
+Today there are three e2e suites with their own runner projects:
+
+| Suite                                        | Project        | What differs                                             |
+| -------------------------------------------- | -------------- | -------------------------------------------------------- |
+| `e2e-api`                                    | `e2e-api`      | nothing in settings: same pool, isolation, timeout (15s) |
+| `e2e-server`, `e2e-frontend`, `e2e-webhooks` | `e2e`          | the same                                                 |
+| `*.isolated.test` under `e2e-server`         | `e2e-isolated` | `isolate: true`                                          |
+
+The first two projects have identical settings. They are separate only so CI
+can run and shard them separately. So the split is about **scheduling**, not
+about how a test must be run.
+
+What the spike did: a domain's `test/e2e/` keeps the old suite as its first
+folder, and each existing project gained one include glob:
+
+```text
+test/e2e/api/{admin,content,members}/…   → project e2e-api
+test/e2e/server/…  test/e2e/frontend/…   → project e2e
+test/e2e/**/*.isolated.test.*            → project e2e-isolated
+```
+
+That keeps every runner setting and every CI lane as it is. A domain's e2e tree
+is organised by **how the test reaches Ghost** (an API surface, the server, the
+theme front end), not by mirroring code, because an e2e test exercises a route
+or a flow and not a file.
+
+**Snapshots** stay beside the test file in `__snapshots__/`. Nothing names that
+folder in configuration; `@tryghost/jest-snapshot` derives it from the path of
+the running test. Moving a test and its snapshot file together needs no other
+change, as the unchanged snapshot files show.
+
+**Multi-domain test files** stay in `ghost/test`. Three cases came up:
+
+- `test/unit/frontend/helpers/recommendations.test.ts` tests a theme helper in
+  the front end that renders recommendations. It belongs to whoever owns the
+  helper.
+- `test/e2e-frontend/middleware.test.js` and the exporter and seeder tests
+  mention recommendations among many domains.
+- `test/integration/exporter` lists every table.
+
+Suggested rule: a test moves into a domain when everything it exercises is in
+that domain. A test that boots Ghost and checks several domains, or checks a
+central list, stays in `ghost/test` until there is a home for cross-domain
+tests.
+
+### Deviations in this step
+
+1. **`recommendationsPublic` is still in the endpoint registry**, as a one-line
+   delegate to the domain's endpoint file. The `{{recommendations}}` theme
+   helper reads the Content API in process through
+   `frontend/services/proxy`, which is the front end's sanctioned way to get
+   content. An action returning plain data could not replace it without
+   reproducing the API pipeline's validation, permissions and serialization
+   inside the domain. The two admin entries are gone.
+2. **Order had to be pinned.** Tables are created in the order `schema.js`
+   lists them, and the settings hash and the public settings output depend on
+   order. A table, a settings group and a public setting that used to be
+   written out centrally keep their place by being **named** where they were
+   (`...fromDomains.place('recommendations', …)`, an empty
+   `"recommendations": {}` group in the JSON). Anything new that a domain
+   declares is appended with no central edit. So "creating a file has its
+   effect" holds for new things, and moving an existing thing leaves a one-line
+   placeholder behind.
+3. **Central lists that were not aggregated:** `models/index.js` (by rule),
+   `data/exporter/table-lists.js` and the data seeders still name the three
+   tables.
+4. **`permissions-data.ts` lost static typing for domain permissions.**
+   `ObjectType` is derived from a `const` object. Merged fragments are not
+   known to the compiler, so `recommendation` is no longer in that union.
+   Nothing in the codebase used it as a literal type, so nothing broke.
+5. **The central registries import a foundation file.** `permissions-data.ts`
+   is a service implementation file, which may only import allowlisted code, so
+   `foundation/domains/fragments.ts` was added to the service allowlist.
+6. **`.d.ts` files are exempt from the naming rule** (`repositories/libraries.d.ts`
+   declares two untyped libraries).
+7. **Three behaviours moved to a different owner and their tests moved with
+   them.** "Nothing is scheduled under test" was a `NODE_ENV` check inside each
+   service and is now the foundation's (`ready({ jobs: false })`), tested in
+   the boot tests. "Boot waits for Mentions before Recommendations" and "a
+   Recommendations init failure fails boot" are now "boot starts the domain
+   layer after its own services" and "a domain layer failure fails boot".
+
+### Rules that were ambiguous, wrong or missing on real code
+
+| Rule as written                                                              | What exposed it                                                         | Problem                                                                                                                                                       | Suggested wording                                                                                                                                  |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `http/` holds "routes.ts, controllers, validators, serializers"              | `http/recommendations.endpoint.ts`                                      | Ghost's API has two things called a controller: the API framework's endpoint definition and the class that turns a frame into service calls. Both are needed. | Add the role `endpoint`: "an API framework controller definition that a route names as its handler".                                               |
+| "A route names its handler without loading it"                               | `http/routes.ts`, `web/api/mount-domain-routes.ts`                      | The handler cannot be a function: the web layer must wrap the whole endpoint definition in the API pipeline. The route names a file and a member as a string. | "A route names its handler as `<file>#<member>`. The web layer loads the file on the first request."                                               |
+| A listener imports only its own domain, kernel, types, allowlisted libraries | `listeners/send-recommendation-received-alert.listener.ts`              | The event is published by legacy code the listener may not import.                                                                                            | "A listener names an event that legacy code still publishes by its class name, as a string, until that code is in a domain."                       |
+| "Fragments are aggregated"                                                   | `schema.js`, `default-settings.json`, `settings-cache/public.js`        | Order matters in all three and a moved entry must keep its place.                                                                                             | "An entry that moves out of a central list keeps its position by being named there. Entries a domain adds are appended."                           |
+| "A domain never imports … the API registry"                                  | `frontend/helpers/recommendations.js`                                   | The front end reads domain data through the registry.                                                                                                         | Say what the front end uses instead, or allow a registry entry that delegates to a domain's endpoint file.                                         |
+| "The raising domain owns content and template"                               | `emails/incoming-recommendation-email.renderer.ts`                      | The template depends on Staff's layout, partials and per-recipient data.                                                                                      | "Until shared mail exists, the raising domain owns the content and the data it passes; the template stays with the renderer that owns the layout." |
+| Entities folder holds "core objects and value objects"                       | `entities/recommendation-url.value.ts`, `entities/unsafe-data.value.ts` | No role name for a value object or a pure helper.                                                                                                             | Add the role `value`.                                                                                                                              |
+| `data/` holds plain types                                                    | `data/well-known-recommendation.data.ts`                                | No role name.                                                                                                                                                 | Add the role `data`.                                                                                                                               |
+| `emails/` holds "templates and renderers"                                    | `emails/incoming-recommendation-email.renderer.ts`                      | No role names.                                                                                                                                                | Add the roles `renderer` and `template`.                                                                                                           |
+| Nothing about tests of a file that changed owner                             | the removed `NODE_ENV` test, two boot tests                             | A reshape moves behaviour, and the test must follow it to the new owner rather than be kept or deleted.                                                       | "When reshaping moves a behaviour to the framework, the test moves to the framework's tests in the same change."                                   |
+
+### The full list of roles
+
+Used by real code in this step: `action`, `data`, `endpoint`, `controller`,
+`service`, `repository`, `entity`, `value`, `listener`, `job`, `renderer`.
+
+Used by the fixtures only: `event`, `validator`, `serializer`.
+
+Allowed by the check but not yet used by anything: `template`.
+
+Fixed names: `index.ts` in a service folder, `routes.ts` in `http/`, `boot.ts`,
+`settings.ts`, `permissions.ts`, `schema.ts`, `CONTEXT.md`. Exempt: `*.d.ts`
+and `*.md`.
+
+### Not verified
+
+- The full DB-backed suites (only the 24 files named above were run).
+- Admin against this backend. Routes, paths and response shapes are unchanged
+  and the e2e-api snapshots pass, but no browser test was run.
+- Behaviour of the two jobs in production: they run on timers of 15 seconds to
+  7 minutes after boot and were exercised only through unit tests.
