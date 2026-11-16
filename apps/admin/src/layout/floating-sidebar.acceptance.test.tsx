@@ -79,7 +79,7 @@ describe('Floating sidebar (admin7Design)', () => {
       const banner = whatsNewScreen.banner();
       await expect.element(banner).toBeVisible();
       await expect.element(sidebarScreen.userMenuTrigger()).toBeVisible();
-      const bannerRegion = banner.element().parentElement;
+      const bannerRegion = banner.element().querySelector('[data-slot=banner-content]');
       if (!(bannerRegion instanceof HTMLElement)) {
         throw new Error('Expected the banner scroll region');
       }

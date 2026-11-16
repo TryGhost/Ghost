@@ -203,6 +203,8 @@ interface FloatingSidebarProps extends Omit<React.ComponentProps<'div'>, 'childr
   /** Unfurls beneath the header when open or pinned. */
   children: React.ReactNode;
   bodyClassName?: string;
+  /** With Admin 7, let descendant effects paint outside the open panel. The caller must own content scrolling. */
+  overflow?: 'clip' | 'visible';
   /** The open and pinned panel's width. */
   openWidth?: number;
   /** Stops the panel opening (and closes it), e.g. while the page is locked. */
@@ -250,6 +252,7 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       headerHidden = false,
       children,
       bodyClassName,
+      overflow = 'clip',
       openWidth = FLOATING_SIDEBAR_OPEN_WIDTH,
       disabled = false,
       animate = true,
@@ -547,6 +550,10 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
         setUnfurled(expanded);
       }
     }, [expanded, morph, pinned]);
+    // The open sidebar is a paint surface, not a scrollport: banners can glow
+    // beyond it. Keep clipping for the closed/unfurling animation, and let the
+    // navigation and Banner's own content own their separate scroll boundaries.
+    const paintOutside = admin7Design && overflow === 'visible' && expanded && unfurled;
 
     // The floating open capsule's height (`auto`) on screen before the pin change
     const heightBefore = React.useRef<number | null>(null);
@@ -648,7 +655,8 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
           <div
             ref={capsuleRef}
             className={cn(
-              'relative flex shrink-0 flex-col overflow-hidden [interpolate-size:allow-keywords]',
+              'relative flex shrink-0 flex-col [interpolate-size:allow-keywords]',
+              paintOutside ? 'overflow-visible' : 'overflow-hidden',
               GLASS,
             )}
             data-controls-visible={controlsVisible}
@@ -796,7 +804,7 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
                 animate it rather than swap its layout. */}
             <div
               ref={bodyRef}
-              className={cn('grid min-h-0', filled && 'flex-1')}
+              className={cn('grid min-h-0', (filled || paintOutside) && 'flex-1')}
               data-slot="floating-sidebar-body"
               style={{
                 gridTemplateRows: expanded ? '1fr' : '0fr',
@@ -818,18 +826,20 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
               <div
                 className={cn(
                   'min-h-0',
-                  filled
-                    ? 'flex flex-col overflow-hidden'
-                    : unfurled
-                      ? 'overflow-y-auto overscroll-contain'
-                      : 'overflow-hidden',
+                  paintOutside
+                    ? 'flex min-h-0 flex-1 flex-col overflow-visible'
+                    : filled
+                      ? 'flex flex-col overflow-hidden'
+                      : unfurled
+                        ? 'overflow-y-auto overscroll-contain'
+                        : 'overflow-hidden',
                 )}
               >
                 {/* The open width, so the content doesn't reflow as the capsule grows */}
                 <div
                   className={cn(
                     'flex flex-col pt-2 pb-4 transition-opacity duration-200',
-                    filled && 'min-h-0 flex-1',
+                    (filled || paintOutside) && 'min-h-0 flex-1',
                     expanded ? 'opacity-100 delay-75' : 'opacity-0',
                     bodyClassName,
                   )}

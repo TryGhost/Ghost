@@ -21,7 +21,7 @@ const AppSidebar = React.forwardRef<HTMLDivElement, React.ComponentProps<typeof 
         <AppSidebarContent />
         {/* Equal gaps between the banner and the Help and account rows' hover states */}
         <AppSidebarBanner
-          className={cn('px-3 pt-2', admin7Design && 'min-h-0 shrink overflow-y-auto')}
+          className={cn('px-3 pt-2', admin7Design && 'flex min-h-0 shrink flex-col')}
         />
         <AppSidebarFooter
           className={cn('gap-0 p-3', hasBanner && 'pt-0', admin7Design && 'shrink-0')}

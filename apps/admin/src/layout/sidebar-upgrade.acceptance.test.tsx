@@ -62,6 +62,7 @@ it.each([
       },
     });
     const upgrade = sidebarScreen.upgradeNowLink();
+    await expect.poll(sidebarScreen.floatingState).toBe('pinned');
     await expect.element(upgrade).toBeVisible();
     if (customMessage) {
       await expect.element(page.getByText(customMessage, { exact: true })).toBeVisible();
@@ -75,7 +76,7 @@ it.each([
       .poll(() => {
         const actionRect = upgrade.element().getBoundingClientRect();
         const banner = upgrade.element().closest('[data-slot=banner]');
-        const container = banner?.parentElement;
+        const container = banner?.querySelector('[data-slot=banner-content]');
         if (!container) {
           return false;
         }
@@ -84,7 +85,10 @@ it.each([
       })
       .toBe(true);
 
-    const scroller = upgrade.element().closest('[data-slot=banner]')?.parentElement;
+    const scroller = upgrade
+      .element()
+      .closest('[data-slot=banner]')
+      ?.querySelector('[data-slot=banner-content]');
     if (!(scroller instanceof HTMLElement)) {
       throw new Error('Expected scrollable sidebar banner');
     }

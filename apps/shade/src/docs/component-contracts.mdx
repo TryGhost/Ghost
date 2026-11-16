@@ -18,6 +18,12 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 If a component starts collecting workflow-specific props, **stop and extract a Pattern** — don't grow the API.
 
+### Banner paint and scrolling
+
+Gradient banners paint their glow outside the card. Keep their surrounding containers free of local paint clipping; padding a scrollport around the card still cuts that glow. When space is limited, constrain the card and pass `scroll` to scroll its content internally. The dismiss control remains outside that scroll area.
+
+With Admin 7 enabled, `FloatingSidebar overflow="visible"` leaves its open paint boundary available for banners. Its caller must bound and scroll navigation and banner content separately; the closed and unfurling sidebar still clips its animation. The default `overflow="clip"` retains the sidebar's own scrolling fallback for ordinary children. Existing outer page-frame and viewport boundaries remain in effect.
+
 ## Use a component when
 
 - The control is generic enough to live on any page (Members, Settings, Stats, the post editor).

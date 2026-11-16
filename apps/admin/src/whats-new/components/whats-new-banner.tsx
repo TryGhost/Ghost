@@ -40,6 +40,7 @@ function WhatsNewBanner() {
       className="mx-2"
       data-testid="whats-new-banner"
       role="status"
+      scroll={admin7Design}
       variant={admin7Design ? 'info' : 'gradient'}
       dismissible
       onDismiss={handleDismiss}

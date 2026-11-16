@@ -58,6 +58,7 @@ function UpgradeBanner({ trialDaysRemaining }: { trialDaysRemaining: number }) {
   return (
     <Banner
       className={admin7Design ? 'mx-2 border-0' : 'mx-2 flex flex-col items-stretch'}
+      scroll={admin7Design}
       size="lg"
       variant="gradient"
     >

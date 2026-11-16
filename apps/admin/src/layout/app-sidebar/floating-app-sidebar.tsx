@@ -65,8 +65,9 @@ const FloatingAppSidebar = React.forwardRef<HTMLDivElement, FloatingAppSidebarPr
             data-sidebar="footer-region"
             gap="none"
           >
-            {/* Room for the glow inside the scrollport, without moving the card or avatar. */}
-            <AppSidebarBanner className="pointer-events-auto -mx-5 -my-6 min-h-0 shrink overflow-y-auto px-5 py-6" />
+            {/* Only the card's content scrolls. Its shadow stays outside the
+                navigation/animation clips; padding a scrollport still cuts the glow. */}
+            <AppSidebarBanner className="pointer-events-auto flex min-h-0 shrink flex-col" />
             <AppSidebarFooter className="pointer-events-auto shrink-0 gap-0 p-0 [&_[data-sidebar=group]]:px-0 [&_[data-sidebar=group]]:pb-0" />
           </Stack>
         </SidebarBodySwap>
@@ -82,6 +83,7 @@ const FloatingAppSidebar = React.forwardRef<HTMLDivElement, FloatingAppSidebarPr
         headerHidden={settingsNavigation}
         icon={icon}
         label={title || 'Site navigation'}
+        overflow="visible"
         pinLocked={settingsNavigation}
         pinned={open}
         resetKey={pathname}
