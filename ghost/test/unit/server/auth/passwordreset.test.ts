@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import * as security from '@tryghost/security';
-// @ts-expect-error This module lacks type definitions.
 import passwordreset from '../../../../core/server/auth/passwordreset';
 // @ts-expect-error This module lacks type definitions.
 import models from '../../../../core/server/models';
 // @ts-expect-error This module lacks type definitions.
 import ghostBookshelf from '../../../../core/server/models/base';
+import configUtils from '../../../utils/config-utils';
 
 type TestUser = {
   get(key: 'password'): string;
@@ -29,6 +29,8 @@ describe('Password reset token compatibility', function () {
   let changePassword: sinon.SinonStub;
 
   beforeEach(async function () {
+    // Passwords in users.password; the credential row path has e2e tests
+    configUtils.set('auth:betterAuthDev', false);
     replacementHash = await security.password.hash('replacement-test-only');
     user = new models.User({
       id: '000000000000000000000001',
@@ -53,8 +55,9 @@ describe('Password reset token compatibility', function () {
     sinon.stub(user, 'save').resolves(user);
   });
 
-  afterEach(function () {
+  afterEach(async function () {
     sinon.restore();
+    await configUtils.restore();
   });
 
   it('generates a reset token with the published security API', async function () {
@@ -79,6 +82,7 @@ describe('Password reset token compatibility', function () {
       },
     };
     const parts = security.tokens.resetToken.extract({ token: legacyToken });
+    assert.ok(parts);
     const result = await passwordreset.doReset(options, parts, settingsAPI);
     assert.equal(result.user, user);
     sinon.assert.calledOnce(changePassword);
@@ -97,12 +101,10 @@ describe('Password reset token compatibility', function () {
     const options = {
       data: { password_reset: [{ token: legacyToken, newPassword: 'replacement-test-only' }] },
     };
+    const parts = security.tokens.resetToken.extract({ token: legacyToken });
+    assert.ok(parts);
     await assert.rejects(
-      passwordreset.doReset(
-        options,
-        security.tokens.resetToken.extract({ token: legacyToken }),
-        settingsAPI,
-      ),
+      passwordreset.doReset(options, parts, settingsAPI),
       /Cannot reset password/,
     );
     sinon.assert.notCalled(changePassword);

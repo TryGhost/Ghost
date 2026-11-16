@@ -75,9 +75,7 @@ describe('Automation trigger tiers', () => {
       )
       .toBeVisible();
     await page.getByRole('button', { name: 'Save', exact: true }).click();
-    await expect
-      .element(page.getByText('Select at least one paid tier.', { exact: true }))
-      .toBeVisible();
+    await expect.element(page.getByText('Select one or more tiers', { exact: true })).toBeVisible();
     expect(save.requests).toHaveLength(0);
   });
 
@@ -228,7 +226,7 @@ describe('Automation trigger tiers', () => {
       await userEvent.keyboard('{Escape}');
       await page.getByRole('button', { name: action, exact: true }).click();
       await expect
-        .element(page.getByText('Select at least one paid tier.', { exact: true }))
+        .element(page.getByText('Select one or more tiers', { exact: true }))
         .toBeVisible();
       expect(save.requests).toHaveLength(0);
       await expect.element(page.getByRole('alertdialog')).not.toBeInTheDocument();
@@ -237,7 +235,7 @@ describe('Automation trigger tiers', () => {
       await page.getByRole('option', { name: 'Gold', exact: true }).click();
       await userEvent.keyboard('{Escape}');
       await expect
-        .element(page.getByText('Select at least one paid tier.', { exact: true }))
+        .element(page.getByText('Select one or more tiers', { exact: true }))
         .not.toBeInTheDocument();
     },
   );

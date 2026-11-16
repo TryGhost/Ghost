@@ -468,31 +468,37 @@ describe('JobsService', function () {
       assert.equal(message, '[Jobs Outbox] Released 2 submitted rows to hand over again');
     });
 
-    it('asks the store to drop rows of job types that are not replayed after a restart', async function () {
+    it('asks the store to drop rows of job types that have not opted in to replay after a restart', async function () {
+      class ReplayedJob extends Job {
+        static type = 'replayed';
+        static replayAfterRestart = true;
+      }
       class OwnRecoveryJob extends Job {
         static type = 'own-recovery';
         static replayAfterRestart = false;
       }
       const outbox = makeOutbox();
       const service = makeService({ outbox });
+      service.handle(ReplayedJob, async () => {});
       service.handle(OwnRecoveryJob, async () => {});
       service.handle(GreetJob, async () => {});
 
       await service.start();
 
       const [replays] = outbox.replayChecks;
+      assert.equal(replays('replayed'), true);
       assert.equal(replays('own-recovery'), false);
-      assert.equal(replays(GreetJob.type), true);
+      assert.equal(replays(GreetJob.type), false);
       assert.equal(replays('unregistered'), true);
     });
 
     it('forgets which job types are not replayed when handlers are cleared', async function () {
       class OwnRecoveryJob extends Job {
         static type = 'own-recovery';
-        static replayAfterRestart = false;
       }
       class ReplayedJob extends Job {
         static type = 'own-recovery';
+        static replayAfterRestart = true;
       }
       const outbox = makeOutbox();
       const service = makeService({ outbox });
@@ -532,24 +538,29 @@ describe('JobsService', function () {
       );
     });
 
-    it('logs at start which backend runs jobs and whether the outbox is on', async function () {
+    it('logs at start which backend runs jobs and which outbox mode it is in', async function () {
       await makeService({ outbox: makeOutbox() }).start();
+      await makeService({ outbox: makeOutbox({ tracked: false }) }).start();
       await makeService().start();
 
       const started = logger.calls.info.map(
         ([event, message]) =>
           [event, message] as [
-            { system: { event: string; backend: string; outbox_enabled: boolean } },
+            { system: { event: string; backend: string; outbox_mode: string } },
             string,
           ],
       );
       assert.deepEqual(started, [
         [
-          { system: { event: 'jobs.started', backend: 'FakeBackend', outbox_enabled: true } },
+          { system: { event: 'jobs.started', backend: 'FakeBackend', outbox_mode: 'retain' } },
+          '[Jobs] Started on FakeBackend with the outbox on, keeping rows until their job settles',
+        ],
+        [
+          { system: { event: 'jobs.started', backend: 'FakeBackend', outbox_mode: 'on' } },
           '[Jobs] Started on FakeBackend with the outbox on',
         ],
         [
-          { system: { event: 'jobs.started', backend: 'FakeBackend', outbox_enabled: false } },
+          { system: { event: 'jobs.started', backend: 'FakeBackend', outbox_mode: 'off' } },
           '[Jobs] Started on FakeBackend with the outbox off',
         ],
       ]);

@@ -15,17 +15,17 @@
     "@octokit/core": "catalog:",
     "@octokit/plugin-retry": "catalog:",
     "@octokit/plugin-throttling": "catalog:",
-    "@pnpm/releasing.versioning": "catalog:",
-    "@pnpm/workspace.workspace-manifest-reader": "catalog:",
     "@sentry/bundler-plugin-core": "catalog:",
     "camelcase-keys": "10.0.3",
     "execa": "catalog:",
+    "js-yaml": "catalog:",
     "semver": "catalog:",
     "typescript": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-oxlint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
     "@playwright/test": "catalog:",
     "@types/js-yaml": "catalog:",
@@ -34,7 +34,6 @@
     "@types/semver": "catalog:",
     "dependency-cruiser": "catalog:",
     "eslint": "catalog:",
-    "js-yaml": "catalog:",
     "picomatch": "4.0.7"
   },
   "nx": {
@@ -42,7 +41,7 @@
       "serviceDependencyContracts": [
         "{workspaceRoot}/.dependency-cruiser.cjs",
         "{workspaceRoot}/.dependency-cruiser-known-violations.json",
-        "{workspaceRoot}/ghost/core/server/services/service-inventory.yaml"
+        "{workspaceRoot}/ghost/core/server/services/legacy-service-inventory.yaml"
       ],
       "adminTestContracts": [
         "{workspaceRoot}/apps/admin/package.json",
@@ -61,7 +60,7 @@
         "{workspaceRoot}/tools/configs/oxlint/**/*",
         "{workspaceRoot}/**/eslint.config.*",
         "{workspaceRoot}/tools/configs/eslint*/**/*.mjs",
-        "{workspaceRoot}/ghost/core/server/services/service-inventory.yaml"
+        "{workspaceRoot}/ghost/core/server/services/legacy-service-inventory.yaml"
       ]
     },
     "targets": {

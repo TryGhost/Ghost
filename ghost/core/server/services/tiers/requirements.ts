@@ -14,6 +14,7 @@ import {
 } from '@tryghost/checkout';
 import { toDatabaseDate, type DatabaseDate } from '../../lib/db-types/date';
 import { DbJson } from '../../lib/db-types/json';
+import { ensureTransaction } from '../../lib/ensure-transaction';
 
 const REQUIREMENTS_TABLE = 'tier_requirements';
 const REQUIREMENT_TIERS_TABLE = 'tier_requirement_tiers';
@@ -82,8 +83,8 @@ type ReadRow = z.infer<typeof ReadRow>;
  * field it names, or null when it names none.
  */
 type BoundPorts = (
-  db: Knex,
   ports: readonly string[],
+  executor: Knex,
 ) => Promise<ReadonlyMap<string, string | null>>;
 
 /**
@@ -112,17 +113,15 @@ export class TierRequirements {
 
   /**
    * What each of these tiers' members must give, by tier, as checkouts would ask for it: a
-   * requirement is left out while one of its ports is bound to no custom field.
+   * requirement is left out while one of its ports is bound to no custom field. Given a
+   * transaction as `executor` it reads inside that transaction.
    */
   async forTiers(
     tiers: ReadonlyArray<{ id: string; type: string }>,
+    executor: Knex = this.knex,
   ): Promise<Map<string, TierRequirement[]>> {
-    // Only paid tiers have requirements, so nothing is read for the others. Read in one
-    // transaction, as the bindings are a second query, so a save committing in between can't
-    // pair one save's requirements with another's bindings.
-    const listed = tiers.some(({ type }) => type === 'paid')
-      ? await this.knex.transaction((trx) => this.browse({ transacting: trx }))
-      : [];
+    // Only paid tiers have requirements, so nothing is read for the others.
+    const listed = tiers.some(({ type }) => type === 'paid') ? await this.browse(executor) : [];
 
     return new Map(
       tiers.map((tier): [string, TierRequirement[]] => [
@@ -140,63 +139,68 @@ export class TierRequirements {
    * Every requirement as tiers list it, with the paid tiers it covers: one is left out while one
    * of its ports is bound to no custom field. A port whose field is archived still counts, as
    * checkouts still ask for it and drop the answer.
+   *
+   * Read in one transaction, as the bindings are a second query, so a save committing in between
+   * can't pair one save's requirements with another's bindings. Given a transaction as `executor`
+   * it reads inside that transaction; given a plain connection it opens its own.
    */
-  async browse({
-    transacting,
-  }: {
-    transacting: Knex.Transaction;
-  }): Promise<Array<TierRequirement & { tierIds: RequiredTiers }>> {
-    const required = await this.readRequired(transacting);
-    const bound = await this.boundPorts(
-      transacting,
-      required.flatMap(({ name }) => portsOf(name)),
-    );
-    return required.flatMap((requirement) =>
-      portsOf(requirement.name).every((port) => bound.has(port))
-        ? [listedAs(requirement, bound)]
-        : [],
-    );
+  async browse(
+    executor: Knex = this.knex,
+  ): Promise<Array<TierRequirement & { tierIds: RequiredTiers }>> {
+    return ensureTransaction(executor, async (trx) => {
+      const required = await this.readRequired(trx);
+      const bound = await this.boundPorts(
+        required.flatMap(({ name }) => portsOf(name)),
+        trx,
+      );
+      return required.flatMap((requirement) =>
+        portsOf(requirement.name).every((port) => bound.has(port))
+          ? [listedAs(requirement, bound)]
+          : [],
+      );
+    });
   }
 
   /**
    * Sets a requirement to cover these paid tiers, or every paid tier for null, with its own
-   * settings, in place of whatever it was set to before.
+   * settings, in place of whatever it was set to before. Given a transaction as `executor` it
+   * joins that transaction; given a plain connection it opens its own.
    */
-  async require(
-    requirement: SetRequirement,
-    now: Date,
-    { transacting }: { transacting: Knex.Transaction },
-  ): Promise<void> {
+  async require(requirement: SetRequirement, now: Date, executor: Knex = this.knex): Promise<void> {
     const { name, tierIds } = requirement;
     const tierScope = tierScopeOf(tierIds);
     const countries = storedCountries(requirement);
     const at = toDatabaseDate(now);
-    await transacting(REQUIREMENTS_TABLE)
-      .insert({
-        requirement: name,
-        tier_scope: tierScope,
-        countries,
-        created_at: at,
-        updated_at: at,
-      })
-      .onConflict('requirement')
-      .merge({ tier_scope: tierScope, countries, updated_at: at });
+    await ensureTransaction(executor, async (trx) => {
+      await trx(REQUIREMENTS_TABLE)
+        .insert({
+          requirement: name,
+          tier_scope: tierScope,
+          countries,
+          created_at: at,
+          updated_at: at,
+        })
+        .onConflict('requirement')
+        .merge({ tier_scope: tierScope, countries, updated_at: at });
 
-    await transacting(REQUIREMENT_TIERS_TABLE).where('requirement', name).del();
-    if (tierIds?.length) {
-      await transacting(REQUIREMENT_TIERS_TABLE).insert(
-        tierIds.map((productId) => ({ requirement: name, product_id: productId })),
-      );
-    }
+      await trx(REQUIREMENT_TIERS_TABLE).where('requirement', name).del();
+      if (tierIds?.length) {
+        await trx(REQUIREMENT_TIERS_TABLE).insert(
+          tierIds.map((productId) => ({ requirement: name, product_id: productId })),
+        );
+      }
+    });
   }
 
-  /** Stops requiring this on any tier. */
-  async release(
-    requirement: RequirementName,
-    { transacting }: { transacting: Knex.Transaction },
-  ): Promise<void> {
-    await transacting(REQUIREMENT_TIERS_TABLE).where('requirement', requirement).del();
-    await transacting(REQUIREMENTS_TABLE).where('requirement', requirement).del();
+  /**
+   * Stops requiring this on any tier. Given a transaction as `executor` it joins that
+   * transaction; given a plain connection it opens its own.
+   */
+  async release(requirement: RequirementName, executor: Knex = this.knex): Promise<void> {
+    await ensureTransaction(executor, async (trx) => {
+      await trx(REQUIREMENT_TIERS_TABLE).where('requirement', requirement).del();
+      await trx(REQUIREMENTS_TABLE).where('requirement', requirement).del();
+    });
   }
 
   /**

@@ -39,6 +39,13 @@ Run `pnpm gx generate package <name>` to scaffold a private TypeScript package
 from the repository template. `pnpm gx --help` lists developer commands; the
 [Ghost Dev Tools README](../../tools/gx/README.md) explains options and verification.
 
+## Generate a Ghost Core service
+
+Run `pnpm gx generate service <name>` to scaffold a boot-owned TypeScript
+service and its starter test. The command prints the remaining steps; the
+[services guide](../../ghost/core/server/services/README.md#creating-a-service)
+explains them.
+
 ## Make and validate the change
 
 Add or update automated tests when behavior changes. Run the most focused checks
@@ -82,8 +89,8 @@ git config --local blame.ignoreRevsFile .git-blame-ignore-revs
 
 ## Record package release intent
 
-Changes that affect a publishable `@tryghost/*` package under `koenig/` or
-`packages/`, including changes to catalog entries consumed by that package, need
+Changes that affect a publishable `@tryghost/*` package under `koenig/`,
+`packages/` or `contracts/`, including changes to catalog entries consumed by that package, need
 a changeset so the package receives an appropriate version and changelog entry:
 
 ```bash

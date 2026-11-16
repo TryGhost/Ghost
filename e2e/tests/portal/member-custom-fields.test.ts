@@ -289,7 +289,7 @@ test.describe('Portal - member custom fields', () => {
         await profile.fieldInput(key).fill('020 7946 000');
         await profile.save();
         await expect(
-          profile.portalFrame.getByText('Enter a valid phone number, like +44 20 7946 0000.'),
+          profile.portalFrame.getByText('Enter a valid phone number, like +44 7400 123456.'),
         ).toBeVisible();
 
         // Portal names the button Retry once a save has been refused.

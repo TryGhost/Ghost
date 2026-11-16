@@ -8,7 +8,7 @@ module.exports = {
   },
 
   get session() {
-    return require('./session');
+    return require('./session').default;
   },
 
   get setup() {
@@ -16,7 +16,7 @@ module.exports = {
   },
 
   get passwordreset() {
-    return require('./passwordreset');
+    return require('./passwordreset').default;
   },
 
   get resetAuthentication() {

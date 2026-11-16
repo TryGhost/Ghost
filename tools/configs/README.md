@@ -20,6 +20,11 @@ private workspace type-checks its own source without adding a build. Use the
 [ESLint guide](eslint/README.md) for factory composition, plugin dependency
 ownership and Oxlint scope changes.
 
+`oxlint/legacy-services.ts` decides which services are legacy, and so which
+roots the `ghost/service-root-shape` rule skips and which services
+`ghost/boot-awaits-service-init` requires boot to await. Boundary lint and the gx
+service commands import the same reader, so the rules do not depend on automation.
+
 Use `workspace:` dependencies for shared config packages. Changes to a shared
 preset need validation in representative consumers, not just a check of the
 configuration itself. Add execution, publishing and reporting scripts to

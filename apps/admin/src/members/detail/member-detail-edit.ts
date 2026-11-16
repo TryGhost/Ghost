@@ -3,10 +3,13 @@ import validator from 'validator';
 import { z } from 'zod';
 import { PartSchema, QUALIFIER, SEPARATOR } from '@tryghost/metafield-types/identity';
 import {
+  FIELD_STRUCTURES,
   matchField,
+  matchLeaf,
   type FieldOfShape,
   type FieldShape,
 } from '@tryghost/metafield-types/structure';
+import { hasOnlyPhoneCharacters } from '@tryghost/metafield-types/phone';
 import {
   formShows,
   formTextOf,
@@ -363,6 +366,28 @@ export function getCustomFieldValidationErrors(
     }
   }
   return errors;
+}
+
+/**
+ * Errors shown while typing, without waiting for a save attempt: currently only an invalid
+ * character in a phone number, such as a letter. Portal shows members the same error, as its only
+ * validation before the server's. Keyed the same way as `getCustomFieldValidationErrors`, so both
+ * render through one map.
+ */
+export function getCustomFieldTypingErrors(editor: CustomFieldEditor): Record<string, string> {
+  if (editor.shape !== 'scalar') {
+    return {};
+  }
+  const mistyped = matchLeaf(FIELD_STRUCTURES[editor.field.type].leaf, {
+    text: ({ format }) => format === 'phone' && !hasOnlyPhoneCharacters(editor.text),
+    choice: () => false,
+  });
+  return mistyped
+    ? {
+        [memberCustomFieldIdentity(editor.field, [])]:
+          'Enter the phone number using only digits, spaces and symbols like + - ( ).',
+      }
+    : {};
 }
 
 const ServerErrors = z.object({ data: z.object({ errors: z.array(z.unknown()) }) });

@@ -3,10 +3,13 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
-import yaml from 'js-yaml';
+import { compileFunction } from 'node:vm';
+import {
+  legacyInventoryFile as inventoryPath,
+  parseLegacyServices,
+  servicesRoot,
+} from '../configs/oxlint/legacy-services.ts';
 
-const servicesRoot = 'ghost/core/server/services';
-const inventoryPath = `${servicesRoot}/service-inventory.yaml`;
 const bootPath = 'ghost/core/boot.js';
 const allowlistPath = '.dependency-cruiser.cjs';
 const allowanceTestPath = 'tools/scripts/test/service-dependencies.test.ts';
@@ -22,6 +25,7 @@ export type Cruise = {
   summary: { violations: Array<{ from: string; to: string; rule: { name: string } }> };
 };
 export type ServiceRule = { from: { path: string; pathNot: string }; to: { pathNot: string[] } };
+export type SpecialistEntry = { dependency: string; owners: string[] };
 export type RunCommand = (
   command: string,
   args: string[],
@@ -97,8 +101,8 @@ function serviceViolations(cruise: Cruise) {
     ),
   );
   return cruise.summary.violations
-    .filter(
-      ({ rule }) => rule.name === 'service-dependencies' || rule.name === 'service-unresolved',
+    .filter(({ rule }) =>
+      ['service-dependencies', 'service-unresolved', 'specialist-dependencies'].includes(rule.name),
     )
     .map((violation) => ({
       ...violation,
@@ -115,7 +119,7 @@ export function builtOnlyViolations(source: Cruise, built: Cruise) {
     .map(({ from, to, rule }) => `${from} → ${to} breaks ${rule.name}.`);
 }
 
-// Checks added allowances against the imports dependency-cruiser resolved from migrated
+// Checks added allowances against the imports dependency-cruiser resolved from
 // services, in both the authored-source and built-output runs.
 export function allowanceProblems({
   allowances,
@@ -162,28 +166,140 @@ export function allowanceProblems({
   });
 }
 
+// Evaluates a version of the boundary config, such as the one at the base commit,
+// resolving its requires from the repository as the real file would.
+export function evaluateConfig(source: string, repository: string): unknown {
+  const filename = path.join(repository, allowlistPath);
+  const module = { exports: {} as unknown };
+  compileFunction(source, ['module', 'exports', 'require', '__filename', '__dirname'], {
+    filename,
+  })(module, module.exports, createRequire(filename), filename, repository);
+  return module.exports;
+}
+
+function readSpecialists(config: unknown): SpecialistEntry[] {
+  const entries = (config as { specialistDependencies?: unknown } | undefined)
+    ?.specialistDependencies;
+  return Array.isArray(entries)
+    ? entries.filter(
+        (entry): entry is SpecialistEntry =>
+          typeof entry?.dependency === 'string' &&
+          Array.isArray(entry.owners) &&
+          entry.owners.every((owner: unknown) => typeof owner === 'string'),
+      )
+    : [];
+}
+
+// Specialist entries that are new, or whose owners changed, since the base.
+// Only the owners added to an existing entry need checking.
+export function changedSpecialists(base: SpecialistEntry[], head: SpecialistEntry[]) {
+  return head.flatMap(({ dependency, owners }) => {
+    const before = base.find((entry) => entry.dependency === dependency);
+    const added = owners.filter((owner) => !before?.owners.includes(owner));
+    return added.length ? [{ dependency, owners: added }] : [];
+  });
+}
+
+// Checks changed specialist entries against the imports dependency-cruiser resolved:
+// each new owner must import the dependency, every alternative of a new dependency
+// pattern must match an import from its owners, and each resolved target needs a
+// regression case. The verify scan covers services only, so owners outside them
+// are not checked.
+export function specialistProblems({
+  entries,
+  isNew,
+  cruises,
+  regressionCases,
+}: {
+  entries: SpecialistEntry[];
+  isNew: (dependency: string) => boolean;
+  cruises: Cruise[];
+  regressionCases: string;
+}) {
+  const scanned = new RegExp(`^${servicesRoot}/`);
+  return entries.flatMap(({ dependency, owners }) => {
+    const ownerPatterns = owners
+      .filter((owner) => scanned.test(owner.replace(/^\^/, '')))
+      .map((owner) => ({ owner, pattern: new RegExp(owner) }));
+    const pattern = new RegExp(dependency);
+    const importsBy = (matcher: RegExp) =>
+      cruises.flatMap(({ modules }) =>
+        modules
+          .filter(({ source }) => matcher.test(source))
+          .flatMap(({ dependencies }) =>
+            dependencies.filter(
+              ({ dependencyTypes }) =>
+                !dependencyTypes.some((type) => type === 'type-only' || type === 'type-import'),
+            ),
+          ),
+      );
+    const problems: string[] = [];
+    const imports = ownerPatterns.flatMap(({ owner, pattern: ownerPattern }) => {
+      const found = importsBy(ownerPattern).filter(
+        ({ module, resolved }) => pattern.test(module) || pattern.test(resolved),
+      );
+      if (!found.length) {
+        problems.push(`${owner} does not import ${dependency}.`);
+      }
+      return found;
+    });
+    if (ownerPatterns.length && isNew(dependency)) {
+      for (const alternative of splitAlternatives(dependency)) {
+        const matcher = new RegExp(alternative);
+        if (
+          !imports.some(({ module, resolved }) => matcher.test(module) || matcher.test(resolved))
+        ) {
+          problems.push(`${alternative} matches no import from its owners in services.`);
+        }
+      }
+    }
+    for (const target of new Set(imports.map(({ resolved }) => fixturePath(resolved)))) {
+      if (!regressionCases.includes(target)) {
+        problems.push(`${target} has no regression case naming it in full.`);
+      }
+    }
+    return problems;
+  });
+}
+
+// Finds a root's init() through its binding in boot.js, the one form the generator
+// and the guides give: `const x = require('./server/services/<name>').default;`
+// followed by `x.init()`. An inline `require(...).default.init()` is not found.
 export function mutateBootInit(boot: string, service: string) {
   const folder = service.replace(/\.[a-z]+$/, '');
-  const required = new RegExp(
-    `const (\\w+) = require\\('\\./server/services/${folder}(?:/index)?'\\)(?:\\.default)?;`,
-  ).exec(boot);
-  if (!required) {
-    return undefined;
+  const bindings = boot.matchAll(
+    new RegExp(
+      `const (\\w+) = require\\('\\./server/services/${folder}(?:/index)?'\\)(?:\\.default)?;`,
+      'g',
+    ),
+  );
+  // A binding is local to its boot phase and other phases reuse names, such as
+  // themeService. Look for its init() only from the binding to the end of that phase.
+  let found: { variable: string; index: number; length: number } | undefined;
+  for (const required of bindings) {
+    const from = required.index + required[0].length;
+    const next = /^(?:async )?function /m.exec(boot.slice(from));
+    const call = new RegExp(`\\b${required[1]}\\.init\\(`).exec(
+      boot.slice(from, next ? from + next.index : undefined),
+    );
+    if (call) {
+      found = { variable: required[1] as string, index: from + call.index, length: call[0].length };
+      break;
+    }
   }
-  const start = new RegExp(`\\b${required[1]}\\.init\\(`).exec(boot);
-  if (!start) {
+  if (!found) {
     return undefined;
   }
   // Find the end of the call, including its arguments.
   let depth = 0;
-  let end = start.index + start[0].length - 1;
+  let end = found.index + found.length - 1;
   for (; end < boot.length; end++) {
     depth += boot[end] === '(' ? 1 : boot[end] === ')' ? -1 : 0;
     if (depth === 0) {
       break;
     }
   }
-  const call = boot.slice(start.index, end + 1);
+  const call = boot.slice(found.index, end + 1);
   // Boot moves on after a chain of promise steps. An init that rejects within them,
   // like a stub behind an async wrapper, still fails boot; one a test holds pending
   // until a timer or setImmediate does not stop it. Only a test that holds init
@@ -191,8 +307,8 @@ export function mutateBootInit(boot: string, service: string) {
   // Node globals, so this uses Promise alone.
   const movedOn = 'Array.from({ length: 50 }).reduce((step) => step.then(), Promise.resolve())';
   return {
-    variable: required[1] as string,
-    source: `${boot.slice(0, start.index)}Promise.race([${call}, ${movedOn}])${boot.slice(end + 1)}`,
+    variable: found.variable,
+    source: `${boot.slice(0, found.index)}Promise.race([${call}, ${movedOn}])${boot.slice(end + 1)}`,
   };
 }
 
@@ -221,11 +337,9 @@ export function verifyService({
   const lines = (output: string) => output.split('\n').filter(Boolean);
   const read = (file: string) => readFileSync(path.join(repository, file), 'utf8');
   const inventory = read(inventoryPath);
-  const { services } = yaml.load(inventory) as {
-    services: Record<string, { migrated?: boolean }>;
-  };
-  const entry = services[service];
-  if (!entry) {
+  // A service that the legacy service inventory does not list is standard.
+  const standard = !parseLegacyServices(inventory).has(service);
+  if (standard && !existsSync(path.join(repository, servicesRoot, service))) {
     throw new Error(`Unknown service: ${service}`);
   }
 
@@ -281,28 +395,42 @@ export function verifyService({
   }
 
   const written = addedAllowances(diff(allowlistPath));
-  if (written.length && cruises.length === 2) {
-    const config = createRequire(import.meta.url)(path.join(repository, allowlistPath)) as {
-      forbidden: Array<ServiceRule & { name: string }>;
-    };
-    const rule = config.forbidden.find(({ name }) => name === 'service-dependencies');
-    // The diff shows each entry as written, with its backslashes escaped.
+  const configPath = path.join(repository, allowlistPath);
+  const config = existsSync(configPath)
+    ? (createRequire(import.meta.url)(configPath) as {
+        forbidden: Array<ServiceRule & { name: string }>;
+      })
+    : undefined;
+  const baseSource = git('show', `${base}:${allowlistPath}`);
+  const baseSpecialists =
+    baseSource.status === 0
+      ? readSpecialists(evaluateConfig(baseSource.stdout ?? baseSource.output, repository))
+      : [];
+  const specialists = changedSpecialists(baseSpecialists, readSpecialists(config));
+  if ((written.length || specialists.length) && cruises.length === 2) {
+    const rule = config?.forbidden.find(({ name }) => name === 'service-dependencies');
+    // The diff shows each entry as written, with its backslashes escaped. Specialist
+    // patterns are exempt from the service rule too, but are checked below.
     const allowances = (rule?.to.pathNot ?? []).filter(
       (pattern) => !pattern.includes('$1') && written.includes(pattern.replaceAll('\\', '\\\\')),
     );
-    const problems = rule
-      ? allowanceProblems({
-          allowances,
-          rule,
-          cruises,
-          regressionCases: existsSync(path.join(repository, allowanceTestPath))
-            ? read(allowanceTestPath)
-            : '',
-        })
-      : ['No service-dependencies rule in the dependency-cruiser config.'];
+    const regressionCases = existsSync(path.join(repository, allowanceTestPath))
+      ? read(allowanceTestPath)
+      : '';
+    const problems = [
+      ...(rule
+        ? allowanceProblems({ allowances, rule, cruises, regressionCases })
+        : ['No service-dependencies rule in the dependency-cruiser config.']),
+      ...specialistProblems({
+        entries: specialists,
+        isNew: (dependency) => !baseSpecialists.some((entry) => entry.dependency === dependency),
+        cruises,
+        regressionCases,
+      }),
+    ];
     record('allowances-accurate', problems.length ? 'fail' : 'pass', problems);
   } else {
-    record('allowances-accurate', written.length ? 'skip' : 'pass');
+    record('allowances-accurate', written.length || specialists.length ? 'skip' : 'pass');
   }
 
   const references = findInventoryReferences(inventory, service).map(
@@ -379,12 +507,17 @@ export function verifyService({
     record(name, result.status === 0 ? 'pass' : 'fail', failureOutput(result));
   }
 
-  if (entry.migrated) {
+  if (standard) {
     const absolute = path.join(repository, bootPath);
     const original = readFileSync(absolute, 'utf8');
     const mutated = mutateBootInit(original, service);
     if (!mutated) {
-      record('boot-waits-for-init', 'fail', [`No init call for ${service} found in boot.js.`]);
+      record('boot-waits-for-init', 'fail', [
+        `No init call for ${service} found in boot.js.`,
+        `Bind the root, then await init() on the binding:`,
+        `  const example = require('./server/services/${service}').default;`,
+        `  await example.init();`,
+      ]);
     } else {
       try {
         writeFileSync(absolute, mutated.source);

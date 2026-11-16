@@ -6,7 +6,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     pool: 'threads',
-    include: ['test/unit/server/services/service-inventory.test.ts'],
+    include: ['test/unit/server/services/legacy-service-inventory.test.ts'],
     reporters: process.env.GITHUB_ACTIONS ? ['default', 'github-actions'] : ['dot'],
   },
 });

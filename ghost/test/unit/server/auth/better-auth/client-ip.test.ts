@@ -46,8 +46,7 @@ describe('setClientIPHeader', function () {
       secret: 'a'.repeat(64),
       sessionMaxAgeMs: 1000,
       urlUtils: {
-        getAdminUrl: () => undefined,
-        getSiteUrl: () => 'https://example.com/',
+        getAdminOrigin: () => 'https://example.com',
         getSubdir: () => '',
         isSSL: () => true,
       },

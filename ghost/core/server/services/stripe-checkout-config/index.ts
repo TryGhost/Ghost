@@ -56,8 +56,8 @@ export default defineService(
       });
     }
     const tiersRoot: typeof import('../tiers') = require('../tiers');
-    const recordAction: RecordCheckoutConfigAction = (input) =>
-      recordCheckoutConfigAction({ Action: models.Action, logging, ...input });
+    const recordAction: RecordCheckoutConfigAction = (transacting, input) =>
+      recordCheckoutConfigAction({ Action: models.Action, logging, transacting, ...input });
 
     const config = new StripeCheckoutConfigService({
       knex,

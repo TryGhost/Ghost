@@ -48,7 +48,11 @@ Organise it by area:
   `AuthEngine`, so code that passes a value around imports it rather than
   restating it.
 - **Field types more than one area uses**, such as `httpUrl()`, are in
-  [`schema/primitives.ts`](schema/primitives.ts).
+  [`schema/primitives.ts`](schema/primitives.ts). A shape several areas embed
+  gets its own file instead: [`schema/redis.ts`](schema/redis.ts) is the one
+  Redis connection block. Its keys are ioredis option names, so the parsed value
+  is the client's options, and it is loose, like `database:connection` for
+  mysql2, so any other ioredis option passes through.
 
 An area file is reviewed by the people who own the code that reads it, in the
 same change as that code.
@@ -125,6 +129,10 @@ a number, or assumed a key is always present, stops compiling.
   `GHOST_CONFIG_SCHEMA_STRICT` says. `url` is the only one today; it replaced a
   loader check that had always thrown.
 
+- **Some keys are hidden.** Mark a key `.meta({hidden: true})` when it is for
+  developing Ghost rather than running it, such as a switch for in-development
+  work. A generated reference for self-hosters must leave hidden keys out; the
+  key is still validated like any other.
 - **Nothing may be stricter than the loader already was.** Tightening beyond
   that is its own change, with its own release note.
 - **Adding a key reorders its parent's keys.** `z.looseObject` emits the keys the

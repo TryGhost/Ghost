@@ -10,7 +10,8 @@
     "sessionMaxAgeMs": 15552000000
   },
   "auth": {
-    "engine": "legacy"
+    "engine": "legacy",
+    "betterAuthDev": false
   },
   "externalRequest": {
     "keepAlive": true,

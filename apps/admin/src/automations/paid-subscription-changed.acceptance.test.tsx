@@ -172,7 +172,7 @@ describe('Paid subscription changed trigger', () => {
     await button('Save').click();
     await expect
       .element(triggerCard().getByRole('alert'))
-      .toHaveTextContent('Select at least one tier.');
+      .toHaveTextContent('Select one or more tiers');
     await expect.element(from()).toHaveAttribute('aria-invalid', String(!fromName));
     await expect.element(to()).toHaveAttribute('aria-invalid', String(!toName));
     expect(create.requests).toHaveLength(0);
@@ -288,7 +288,7 @@ describe('Paid subscription changed trigger', () => {
     await expect.element(from()).toHaveAttribute('placeholder', 'Select tiers...');
     await expect.element(to()).toHaveAttribute('placeholder', 'Select tiers...');
     await button('Save').click();
-    await expect.element(triggerCard()).toHaveTextContent('Select at least one tier.');
+    await expect.element(triggerCard()).toHaveTextContent('Select one or more tiers');
     expect(edit.requests).toHaveLength(0);
     await choose('From', 'Any paid tier');
     await choose('To', 'Free');

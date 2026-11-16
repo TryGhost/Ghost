@@ -12,6 +12,7 @@
     "test:types": "tsc6 --noEmit"
   },
   "dependencies": {
+    "@internal/cfg-oxlint": "workspace:*",
     "@internal/scripts": "workspace:*",
     "@tryghost/errors": "catalog:",
     "@tryghost/logging": "catalog:",
@@ -70,7 +71,7 @@
         "{workspaceRoot}/.dependency-cruiser.cjs",
         "{workspaceRoot}/tools/scripts/ci/service-dependency-resolver.mjs",
         "{workspaceRoot}/.dependency-cruiser-known-violations.json",
-        "{workspaceRoot}/ghost/core/server/services/service-inventory.yaml"
+        "{workspaceRoot}/ghost/core/server/services/legacy-service-inventory.yaml"
       ],
       "serviceGenerator": [
         "{workspaceRoot}/.editorconfig",
@@ -83,7 +84,7 @@
         "{workspaceRoot}/ghost/test/tsconfig.json",
         "{workspaceRoot}/ghost/core/kernel/define-service.ts",
         "{workspaceRoot}/ghost/core/server/services/README.md",
-        "{workspaceRoot}/ghost/test/unit/server/services/service-inventory.test.ts"
+        "{workspaceRoot}/ghost/test/unit/server/services/legacy-service-inventory.test.ts"
       ]
     },
     "targets": {

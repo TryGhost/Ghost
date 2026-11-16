@@ -238,6 +238,33 @@ describe('Account Profile Page', () => {
       expect(country).toHaveAttribute('aria-describedby', reason.id);
     });
 
+    // A letter is never valid in a phone number, so the member sees the error while typing, in
+    // place of the server's error about the last number sent.
+    test('shows an error while typing an invalid character in a phone number', () => {
+      const mistyped = 'Enter the phone number using only digits, spaces and symbols like + - ( ).';
+      const refused = 'Enter a valid phone number, like +44 20 7946 0000.';
+      const mobile = { key: 'mobile', name: 'Mobile', type: 'phone', access: { member: 'write' } };
+      const { getByLabelText, getByText, queryByText } = setup({
+        site,
+        member,
+        customFields: [mobile],
+        fieldErrors: { 'custom:mobile': refused },
+      });
+      const input = getByLabelText('Mobile');
+
+      fireEvent.change(input, { target: { value: '+44 20 7946 000o' } });
+      expect(input).toHaveValue('+44 20 7946 000o');
+      expect(input).toHaveAttribute('aria-invalid', 'true');
+      expect(input).toHaveAttribute('aria-describedby', getByText(mistyped).closest('ul').id);
+      // Focus is in the input, so only a live region gets the error announced.
+      expect(getByText(mistyped).closest('[aria-live]')).toHaveAttribute('aria-live', 'polite');
+      expect(queryByText(refused)).not.toBeInTheDocument();
+
+      fireEvent.change(input, { target: { value: '+44 (20) 7946-0000' } });
+      expect(queryByText(mistyped)).not.toBeInTheDocument();
+      expect(getByText(refused)).toBeInTheDocument();
+    });
+
     test('saves only the writable fields the member changed', () => {
       const customFields = [nickname, address];
       const { getByLabelText, saveBtn, mockDoActionFn } = setup({ site, member, customFields });

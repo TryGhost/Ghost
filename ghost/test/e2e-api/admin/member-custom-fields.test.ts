@@ -1581,9 +1581,28 @@ describe('Member Custom Fields Admin API', function () {
           await reasonFor({ [field.key]: '020 7946 0000' }, memberId),
           'Enter the phone number with its country code, starting with +, like +44 20 7946 0000.',
         );
+      });
+
+      it('rejects an invalid phone number with an example from its own country', async function () {
+        // A British example is no help to someone writing a Brazilian number.
+        const field = await createField({ name: 'Mobile', type: 'phone' });
+        const memberId = await createMember();
+
         assert.equal(
           await reasonFor({ [field.key]: '+44 20 7946 000' }, memberId),
-          'Enter a valid phone number, like +44 20 7946 0000.',
+          'Enter a valid phone number, like +44 7400 123456.',
+        );
+        assert.equal(
+          await reasonFor({ [field.key]: '+55 11 9612' }, memberId),
+          'This phone number is too short. Enter one like +55 11 96123 4567.',
+        );
+        assert.equal(
+          await reasonFor({ [field.key]: '+55 11 96123 45678 99' }, memberId),
+          'This phone number is too long. Enter one like +55 11 96123 4567.',
+        );
+        assert.equal(
+          await reasonFor({ [field.key]: '+999 1234567' }, memberId),
+          'Enter a phone number with a valid country code, like +44 20 7946 0000.',
         );
       });
 

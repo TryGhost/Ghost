@@ -63,7 +63,7 @@ describe.skipIf(isSQLite)('Better Auth instance', function () {
   });
 
   describe('native responses', function () {
-    const origin = new URL(urlUtils.getAdminUrl() || urlUtils.getSiteUrl()).origin;
+    const origin = urlUtils.getAdminOrigin();
     const url = (path: string) => `${origin}${urlUtils.getSubdir()}/ghost/api/admin/auth${path}`;
 
     async function signIn(auth: ReturnType<typeof build>) {

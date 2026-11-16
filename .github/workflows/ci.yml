@@ -168,25 +168,17 @@ jobs:
               - '.github/actions/**'
               - '.github/scripts/**'
               - 'tools/scripts/**'
-            docs:
-              - 'ghost/core/server/services/service-inventory.yaml'
-              - '**/*.md'
-              - '**/*.mdx'
-              - '.agents/**'
-              - '.claude/**'
-              - '.github/workflows/ci.yml'
-              - 'package.json'
-              - 'tools/scripts/ci/check-agent-skill-links.ts'
-              - 'tools/scripts/test/check-agent-skill-links.test.ts'
-              - 'tools/scripts/ci/check-agent-guidance.ts'
-              - 'tools/scripts/test/check-agent-guidance.test.ts'
             service-inventory:
-              - 'ghost/core/server/services/service-inventory.yaml'
-              - 'ghost/test/unit/server/services/service-inventory.test.ts'
+              - 'ghost/core/server/services/legacy-service-inventory.yaml'
+              - 'ghost/test/unit/server/services/legacy-service-inventory.test.ts'
               - 'ghost/vitest.config.inventory.ts'
+              - 'tools/scripts/ci/check-legacy-services.ts'
+              - 'tools/scripts/ci/legacy-services-base.ts'
+              - 'tools/configs/oxlint/legacy-services.ts'
               - '.github/workflows/ci.yml'
             package-standards:
               - 'packages/**'
+              - 'contracts/**'
               - 'package.json'
               - 'pnpm-workspace.yaml'
               - 'tools/scripts/ci/check-internal-packages.ts'
@@ -217,8 +209,9 @@ jobs:
               # positive pattern so micromatch cannot add docs files back.
               - '!**/*.md'
               - '!**/*.mdx'
-              # Migration metadata is documentation; boot never reads it.
-              - '!ghost/core/server/services/service-inventory.yaml'
+              # Boot never reads the legacy service inventory. Lint does, so it
+              # still counts as code in any-code below.
+              - '!ghost/core/server/services/legacy-service-inventory.yaml'
               - '!ghost/vitest.config.inventory.ts'
             unit-test-globals:
               - 'vitest.config.mjs'
@@ -226,7 +219,6 @@ jobs:
               - 'ghost/vitest.config.ts'
               - 'ghost/test/utils/vitest-*.ts'
             any-code:
-              - '!ghost/core/server/services/service-inventory.yaml'
               - '!**/*.md'
               - '!**/*.mdx'
               - '!.github/CODEOWNERS'
@@ -240,7 +232,7 @@ jobs:
             # React Admin tests still run through the affected unit, acceptance,
             # lint and typecheck targets; only the build + E2E lane is skipped.
             e2e:
-              - '!ghost/core/server/services/service-inventory.yaml'
+              - '!ghost/core/server/services/legacy-service-inventory.yaml'
               - '!**/*.md'
               - '!**/*.mdx'
               - '!.github/CODEOWNERS'
@@ -383,7 +375,6 @@ jobs:
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
-      changed_docs: ${{ steps.changed.outputs.docs }}
       changed_service_inventory: ${{ steps.changed.outputs.service-inventory }}
       changed_package_standards: ${{ steps.changed.outputs.package-standards }}
       changed_tb_cli: ${{ steps.changed.outputs.tb-cli }}
@@ -444,14 +435,18 @@ jobs:
         run: node tools/scripts/ci/check-app-version-bump.ts
 
       # Fail the PR if a publishable package changed (source or a catalog entry
-      # it consumes) but the branch adds no changeset covering it. Prototype of
-      # pnpm's forthcoming `pnpm change check`.
+      # it consumes) but the branch adds no changeset covering it.
       - name: Check for missing changesets
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           PR_COMPARE_SHA: ${{ github.event.pull_request.head.sha }}
         run: node tools/scripts/ci/change-check.ts
+
+      # Validate every pending changeset with pnpm's own parser: known
+      # packages, valid bump types, and versions within the versioning config.
+      - name: Check changesets are valid
+        run: pnpm change check
 
       - name: Check private packages are excluded from versioning
         run: node tools/scripts/ci/check-versioning-ignore.ts
@@ -516,6 +511,9 @@ jobs:
       - name: Lint boundaries
         run: pnpm nx run ghost-monorepo:lint:boundaries
 
+      - name: Lint dependencies
+        run: pnpm lint:dependencies
+
       - name: Check formatting
         run: pnpm format:check
 
@@ -530,19 +528,24 @@ jobs:
     name: Lint docs
     runs-on: ubuntu-slim
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_docs == 'true'
+    # No path filter: a link breaks when its target is removed or renamed, and
+    # the target can be any file in the repository.
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
+          trust-lockfile: 'true'
+          # The Markdown and link checkers are dependencies of the root package.
+          install-args: --filter ghost-monorepo --ignore-scripts
+          store-cache: 'false'
 
-      - name: Lint documentation guidance
-        run: |
-          node --test tools/scripts/test/check-agent-guidance.test.ts
-          node tools/scripts/ci/check-agent-skill-links.ts
-          node tools/scripts/ci/check-agent-guidance.ts
+      - name: Test documentation guidance checker
+        run: node --test tools/scripts/test/check-agent-guidance.test.ts
+
+      - name: Lint documentation
+        run: pnpm lint:docs
 
   job_service_inventory:
     name: Validate service inventory
@@ -562,6 +565,44 @@ jobs:
 
       - name: Validate service inventory
         run: pnpm --filter ghost exec vitest run --config vitest.config.inventory.ts
+
+  # The legacy services only shrink. A pull request is the only place a name can
+  # be added, so this compares the branch with the commit it forked from.
+  job_legacy_services:
+    name: Check legacy services
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [job_setup]
+    if: github.event_name == 'pull_request' && needs.job_setup.outputs.changed_service_inventory == 'true'
+    steps:
+      - name: Checkout PR head commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Fetch PR base branch
+        # Through env, never interpolated into the script: a branch name can
+        # carry shell metacharacters, and template expansion happens before the
+        # shell parses the command.
+        env:
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: git fetch --no-tags origin "+refs/heads/${PR_BASE_REF}:refs/remotes/origin/${PR_BASE_REF}"
+
+      - uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          trust-lockfile: 'true'
+          # The check and the inventory reader each read YAML with their own
+          # workspace's parser.
+          install-args: --filter @internal/scripts --filter @internal/cfg-oxlint --ignore-scripts
+          store-cache: 'false'
+
+      - name: Check legacy services only shrink
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: node tools/scripts/ci/check-legacy-services.ts
 
   job_lint_packages:
     name: Lint packages
@@ -2608,6 +2649,7 @@ jobs:
         job_lint,
         job_lint_docs,
         job_service_inventory,
+        job_legacy_services,
         job_lint_packages,
         job_stripe_fixtures,
         job_i18n,
@@ -2641,7 +2683,7 @@ jobs:
   # (public apps, and anything else that ships on every change) to npm via OIDC
   # trusted publishing. Runs only on push-to-main — never on pull_request — so
   # the `id-token: write` permission is never exposed to PR-controlled code
-  # (ref: ONC-1677). The changeset lane (koenig/*, packages/*) is the separate
+  # (ref: ONC-1677). The changeset lane (koenig/*, packages/*, contracts/*) is the separate
   # publish-packages.yml, which runs off release tags.
   publish_continuous:
     needs: [job_setup, job_lint, job_typecheck, job_unit-tests, job_build_e2e_public_apps]
@@ -2871,7 +2913,7 @@ jobs:
       - name: Publish to npm
         run: npm publish ghost-*-npm.tgz --access public --provenance
 
-  # NOTE: Publishing the other workspace packages (koenig/*, packages/*, ...) is
+  # NOTE: Publishing the other workspace packages (koenig/*, packages/*, contracts/*, ...) is
   # NOT a job here. The release tag triggers publish-packages.yml directly, in
   # parallel with this workflow — npm trusted publishing validates the
   # entry-point workflow, so that publish must be its own entry point rather than

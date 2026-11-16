@@ -9,18 +9,18 @@ import {
   symlinkSync,
   writeFileSync,
 } from 'node:fs';
-import { findPackageJSON } from 'node:module';
+import { createRequire, findPackageJSON } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { it, type TestContext } from 'node:test';
 import type { ICruiseResult } from 'dependency-cruiser';
-import yaml from 'js-yaml';
 import ts from 'typescript';
 import {
-  deferredServices,
+  committedBuildOutput,
   dependencyIdentity,
   readKnownViolations,
 } from '../lib/dependency-boundaries.ts';
+import { legacyInventoryFile, readLegacyServices } from '../../configs/oxlint/legacy-services.ts';
 
 const repository = path.resolve(import.meta.dirname, '../../..');
 const services = 'ghost/core/server/services';
@@ -49,13 +49,12 @@ function fixture(t: TestContext, files: Record<string, string>) {
       path.join(repository, '.dependency-cruiser.cjs'),
       'utf8',
     ),
-    [`${services}/service-inventory.yaml`]: JSON.stringify({
-      services: {
-        alpha: { kind: 'directory', disposition: 'migrate', migrated: true },
-        legacy: { kind: 'directory', disposition: 'migrate' },
-      },
+    // alpha is not listed, so it is a standard service.
+    [legacyInventoryFile]: JSON.stringify({
+      services: { legacy: { kind: 'directory', disposition: 'migrate' } },
     }),
     'tools/scripts/package.json': '{"type":"module"}',
+    'tools/configs/oxlint/package.json': '{"type":"module"}',
     '.dependency-cruiser-known-violations.json': '[]',
     'apps/empty.ts': 'export {};',
     [config]: 'export const enabled = true; export interface Config {}',
@@ -65,12 +64,19 @@ function fixture(t: TestContext, files: Record<string, string>) {
   }
   for (const file of [
     'tools/scripts/lib/dependency-boundaries.ts',
+    'tools/configs/oxlint/legacy-services.ts',
     'tools/scripts/ci/check-boundaries.ts',
   ]) {
     mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
     cpSync(path.join(repository, file), path.join(root, file));
   }
-  for (const file of [resolver, 'node_modules/js-yaml', 'tools/scripts/node_modules']) {
+  // Each workspace resolves its own dependencies, so the copied inventory reader
+  // finds the YAML parser that @internal/cfg-oxlint declares.
+  for (const file of [
+    resolver,
+    'tools/scripts/node_modules',
+    'tools/configs/oxlint/node_modules',
+  ]) {
     mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
     symlinkSync(path.join(repository, file), path.join(root, file));
   }
@@ -124,7 +130,7 @@ const edges = (graph: ICruiseResult) =>
     )
     .sort();
 
-it('enforces every implementation independently of inventory and migration markers', (t) => {
+it('enforces every implementation whether or not its service is a legacy entry', (t) => {
   const f = fixture(t, {
     [`${alpha}/implementation.ts`]: "import '../../../shared/config';",
     [`${alpha}/index.js`]: "require('../../../shared/config');",
@@ -148,7 +154,7 @@ it('enforces every implementation independently of inventory and migration marke
   assert.equal(markdown.status, 0);
   assert.ok(markdown.stdout.includes(`${services}/unlisted/helper.ts`));
   for (const entries of [{ alpha: {} }, {}]) {
-    f.write(`${services}/service-inventory.yaml`, JSON.stringify({ services: entries }));
+    f.write(legacyInventoryFile, JSON.stringify({ services: entries }));
     assert.deepEqual(
       violations(f.graph()).map(([, from]) => from),
       expected,
@@ -211,11 +217,11 @@ it('applies the known violations when the commit hook checks only the staged fil
   assert.equal(skipped.status, 0, skipped.stderr);
 });
 
-it('rejects known violations for migrated services, duplicates and non-service rules', (t) => {
+it('rejects known violations for standard services, duplicates and non-service rules', (t) => {
   const known = { rule: 'service-dependencies', from: `${alpha}/implementation.ts`, to: config };
   const f = fixture(t, { '.dependency-cruiser-known-violations.json': JSON.stringify([known]) });
-  assert.throws(() => readKnownViolations(f.root), /unmigrated inventory entry/);
-  f.write(`${services}/service-inventory.yaml`, JSON.stringify({ services: { alpha: {} } }));
+  assert.throws(() => readKnownViolations(f.root), /does not belong to a legacy service/);
+  f.write(legacyInventoryFile, JSON.stringify({ services: { alpha: {} } }));
   f.write('.dependency-cruiser-known-violations.json', JSON.stringify([known, known]));
   assert.throws(() => readKnownViolations(f.root), /duplicate entry/);
   f.write(
@@ -225,26 +231,29 @@ it('rejects known violations for migrated services, duplicates and non-service r
   assert.throws(() => readKnownViolations(f.root));
 });
 
-it('keeps the checked-in known violations limited to unmigrated services', () => {
+it('keeps the checked-in known violations limited to legacy services', () => {
   assert.doesNotThrow(() => readKnownViolations(repository));
 });
 
-it('reports but does not gate services with deferred enforcement', (t) => {
-  const [deferred] = deferredServices;
-  assert.ok(deferred);
-  const from = `${services}/${deferred}/implementation.js`;
-  const f = fixture(t, { [from]: "require('../../../shared/config');" });
+it('reports but does not gate legacy services that defer dependency checks', (t) => {
+  const from = `${services}/busy/implementation.js`;
+  const f = fixture(t, {
+    [from]: "require('../../../shared/config');",
+    [legacyInventoryFile]: JSON.stringify({
+      services: { busy: { dependencyChecks: 'deferred' } },
+    }),
+  });
   const added = f.lint();
   assert.equal(added.status, 0, added.stderr);
   assert.match(added.stdout, /0 known violations, 1 in services with deferred enforcement/);
   assert.deepEqual(violations(f.graph()), [['service-dependencies', from, config]]);
 
-  // A sibling that is not named is still gated from its first file.
-  f.write(`${services}/${deferred}-extra/implementation.js`, "require('../../../shared/config');");
+  // A sibling that is not listed is still gated from its first file.
+  f.write(`${services}/busy-extra/implementation.js`, "require('../../../shared/config');");
   const sibling = f.lint();
   assert.equal(sibling.status, 1, sibling.stderr);
-  assert.match(sibling.stderr, new RegExp(`${deferred}-extra/implementation.js`));
-  f.write(`${services}/${deferred}-extra/implementation.js`, '');
+  assert.match(sibling.stderr, /busy-extra\/implementation.js/);
+  f.write(`${services}/busy-extra/implementation.js`, '');
 
   // Deferred services keep no entries, so the file cannot hide what they add.
   f.write(
@@ -254,25 +263,30 @@ it('reports but does not gate services with deferred enforcement', (t) => {
   assert.throws(() => readKnownViolations(f.root), /deferred enforcement/);
   const listed = f.lint();
   assert.equal(listed.status, 1, listed.stderr);
-
-  // Migrating a deferred service ends its deferral.
   f.write('.dependency-cruiser-known-violations.json', '[]');
-  f.write(
-    `${services}/service-inventory.yaml`,
-    JSON.stringify({ services: { [deferred]: { migrated: true } } }),
-  );
-  assert.throws(() => readKnownViolations(f.root), /Remove it from deferredServices/);
+
+  // Only the exact value defers checks.
+  f.write(legacyInventoryFile, JSON.stringify({ services: { busy: { dependencyChecks: 'off' } } }));
+  assert.throws(() => readKnownViolations(f.root), /can only be "deferred"/);
+
+  // Deleting the legacy entry ends the deferral: the service must be standard.
+  f.write(legacyInventoryFile, JSON.stringify({ services: {} }));
+  const removed = f.lint();
+  assert.equal(removed.status, 1, removed.stderr);
+  assert.match(removed.stderr, /error service-dependencies:.*busy\/implementation.js/);
 });
 
-it('defers enforcement only for unmigrated services in the inventory', () => {
-  const inventory = yaml.load(
-    readFileSync(path.join(repository, services, 'service-inventory.yaml'), 'utf8'),
-  ) as { services: Record<string, { migrated?: boolean }> };
-  assert.deepEqual([...deferredServices], [...deferredServices].sort());
-  for (const name of deferredServices) {
-    assert.ok(inventory.services[name], `${name} is not in the service inventory`);
-    assert.notEqual(inventory.services[name].migrated, true, `${name} is migrated`);
-  }
+it('defers dependency checks only for the services that already had them deferred', () => {
+  // Deferral may only shrink. Remove a name here when its entry is deleted.
+  const allowed = ['automations', 'members', 'members-metafields', 'stripe'];
+  const deferred = [...readLegacyServices(repository)]
+    .filter(([, service]) => service.deferred)
+    .map(([name]) => name);
+  assert.deepEqual(
+    deferred.filter((name) => !allowed.includes(name)),
+    [],
+    'Do not defer dependency checks for more services',
+  );
 });
 
 it('matches external packages across stores without merging subpaths or workspace targets', () => {
@@ -309,6 +323,56 @@ it('continues enforcing non-service boundaries in the same scan', (t) => {
   const result = f.lint();
   assert.equal(result.status, 1, result.stderr);
   assert.match(result.stderr, /kernel-not-application/);
+});
+
+it('rejects a defineService root outside the services directory unless it is a listed exception', (t) => {
+  const helper = 'ghost/core/kernel/define-service.ts';
+  const use = (depth: number) =>
+    `import { defineService } from '${'../'.repeat(depth)}kernel/define-service'; export default defineService;`;
+  const outside = 'ghost/core/server/lib/capability/index.ts';
+  const nested = `${alpha}/nested/index.ts`;
+  const f = fixture(t, {
+    [helper]: 'export const defineService = () => ({});',
+    [`${alpha}/index.ts`]: use(3),
+    'ghost/core/server/auth/better-auth/index.ts': use(3),
+    // Types say nothing about where an instance is built.
+    'ghost/core/server/web/consumer.ts':
+      "import type { defineService } from '../../kernel/define-service'; export type Root = typeof defineService;",
+  });
+  const allowed = f.lint();
+  assert.equal(allowed.status, 0, allowed.stderr);
+  f.write(outside, use(3));
+  f.write(nested, use(4));
+  const rejected = f.lint();
+  assert.equal(rejected.status, 1, rejected.stderr);
+  for (const file of [outside, nested]) {
+    assert.ok(
+      rejected.stderr.includes(`error service-roots-in-services: ${file} → ${helper}`),
+      rejected.stderr,
+    );
+  }
+  assert.equal(rejected.stderr.match(/service-roots-in-services/g)?.length, 2, rejected.stderr);
+  // Known violations are for legacy service dependencies, so this cannot be recorded as one.
+  f.write(
+    '.dependency-cruiser-known-violations.json',
+    JSON.stringify([{ rule: 'service-roots-in-services', from: outside, to: helper }]),
+  );
+  assert.throws(() => readKnownViolations(f.root));
+});
+
+it('lists only roots outside the services directory that exist and use defineService', () => {
+  const { forbidden } = createRequire(import.meta.url)(
+    path.join(repository, '.dependency-cruiser.cjs'),
+  ) as { forbidden: { name: string; from: { pathNot?: string[] } }[] };
+  const rule = forbidden.find(({ name }) => name === 'service-roots-in-services');
+  const listed = (rule?.from.pathNot ?? []).slice(2).map((pattern) => {
+    assert.match(pattern, /^\^[\w./\\-]+\$$/, 'List each root as one exact path');
+    return pattern.slice(1, -1).replaceAll('\\', '');
+  });
+  assert.deepEqual(listed, ['ghost/core/server/auth/better-auth/index.ts']);
+  for (const file of listed) {
+    assert.match(readFileSync(path.join(repository, file), 'utf8'), /kernel\/define-service'/);
+  }
 });
 
 it('keeps native ignore-known behavior documented: moves fail but stale entries are accepted', (t) => {
@@ -365,24 +429,17 @@ it('allows same-service code, explicit types, approved libraries and root wiring
 });
 
 it('allows the exact libraries required by Custom Theme Settings without allowing siblings', (t) => {
-  const approved = [
-    'lodash/isEmpty',
-    'lodash/isEmpty.js',
-    '@tryghost/nql',
-    '@tryghost/nql/index.js',
-  ];
-  const rejected = ['lodash', 'lodash/isEqual', '@tryghost/nql/other', '@tryghost/nql-extra'];
+  const approved = ['@tryghost/nql', '@tryghost/nql/index.js'];
+  const rejected = ['@tryghost/nql/other', '@tryghost/nql-extra'];
   const f = fixture(t, {
     [`${alpha}/approved.js`]: approved.map((name) => `require('${name}');`).join('\n'),
     [`${alpha}/rejected.ts`]: rejected.map((name) => `import '${name}';`).join('\n'),
   });
-  for (const name of ['lodash', '@tryghost/nql', '@tryghost/nql-extra']) {
+  for (const name of ['@tryghost/nql', '@tryghost/nql-extra']) {
     f.write(`node_modules/${name}/package.json`, JSON.stringify({ name, main: 'index.js' }));
     f.write(`node_modules/${name}/index.js`, 'module.exports = {};');
     f.write(`node_modules/${name}/other.js`, 'module.exports = {};');
   }
-  f.write('node_modules/lodash/isEmpty.js', 'module.exports = () => false;');
-  f.write('node_modules/lodash/isEqual.js', 'module.exports = () => false;');
   const graph = f.graph();
   assert.equal(
     edges(graph).filter(([from]) => from === `${alpha}/approved.js`).length,
@@ -390,13 +447,52 @@ it('allows the exact libraries required by Custom Theme Settings without allowin
   );
   assert.deepEqual(
     violations(graph),
-    [
-      'node_modules/lodash/index.js',
-      'node_modules/lodash/isEqual.js',
-      'node_modules/@tryghost/nql/other.js',
-      'node_modules/@tryghost/nql-extra/index.js',
-    ]
+    ['node_modules/@tryghost/nql/other.js', 'node_modules/@tryghost/nql-extra/index.js']
       .map((to) => ['service-dependencies', `${alpha}/rejected.ts`, to])
+      .sort(),
+  );
+});
+
+it('allows individual Lodash functions without allowing the whole library, its builds or lodash/fp', (t) => {
+  const approved = ['lodash/isEmpty', 'lodash/isEmpty.js', 'lodash/pick', 'lodash/indexOf'];
+  const rejected = {
+    lodash: 'index.js',
+    'lodash/index': 'index.js',
+    'lodash/lodash': 'lodash.js',
+    'lodash/core': 'core.js',
+    'lodash/core.min': 'core.min.js',
+    'lodash/fp': 'fp.js',
+    'lodash/fp/map': 'fp/map.js',
+    'lodash/_baseGet': '_baseGet.js',
+    'lodash-es/pick': '../lodash-es/pick.js',
+  };
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]: approved.map((name) => `require('${name}');`).join('\n'),
+    [`${alpha}/rejected.js`]: Object.keys(rejected)
+      .map((name) => `require('${name}');`)
+      .join('\n'),
+  });
+  f.write('node_modules/lodash/package.json', JSON.stringify({ name: 'lodash', main: 'index.js' }));
+  f.write('node_modules/lodash-es/package.json', JSON.stringify({ name: 'lodash-es' }));
+  for (const file of [
+    'isEmpty.js',
+    'pick.js',
+    'indexOf.js',
+    ...Object.values(rejected).filter((target) => !target.startsWith('..')),
+  ]) {
+    f.write(`node_modules/lodash/${file}`, 'module.exports = {};');
+  }
+  f.write('node_modules/lodash-es/pick.js', 'module.exports = {};');
+  const graph = f.graph();
+  assert.equal(edges(graph).filter(([from]) => from === `${alpha}/approved.js`).length, 4);
+  assert.deepEqual(
+    violations(graph),
+    [...new Set(Object.values(rejected))]
+      .map((file) => [
+        'service-dependencies',
+        `${alpha}/rejected.js`,
+        `node_modules/${file.startsWith('..') ? file.slice(3) : `lodash/${file}`}`,
+      ])
       .sort(),
   );
 });
@@ -423,7 +519,7 @@ it('allows the exact libraries required by Member Attribution without allowing s
     [`${alpha}/approved.js`]: approved.map((name) => `require('${name}');`).join('\n'),
     [`${alpha}/rejected.ts`]: rejected.map((name) => `import '${name}';`).join('\n'),
     'ghost/core/server/lib/common/to-plain.ts': 'export const toPlain = (value) => value;',
-    'ghost/core/server/lib/link-replacer.js': 'module.exports = {};',
+    'ghost/core/server/lib/link-replacer.ts': 'export {};',
     'ghost/core/server/lib/common/to-plain-extra.ts': 'export {};',
     'ghost/core/server/lib/link-replacer-extra.js': 'module.exports = {};',
   });
@@ -535,6 +631,153 @@ it('allows the debug tracing library without allowing sibling packages', (t) => 
     ['node_modules/@tryghost/debug-extra/index.js', 'node_modules/debug/index.js']
       .map((to) => ['service-dependencies', `${alpha}/rejected.ts`, to])
       .sort(),
+  );
+});
+
+it('allows the Ghost version as a process fact without allowing sibling packages or internals', (t) => {
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]: "require('@tryghost/version');",
+    [`${alpha}/rejected.ts`]:
+      "import '@tryghost/version/lib/version'; import '@tryghost/version-extra';",
+  });
+  for (const name of ['@tryghost/version', '@tryghost/version-extra']) {
+    f.write(`node_modules/${name}/package.json`, JSON.stringify({ name, main: 'index.js' }));
+    f.write(`node_modules/${name}/index.js`, 'module.exports = {};');
+  }
+  f.write('node_modules/@tryghost/version/lib/version.js', 'module.exports = {};');
+  const graph = f.graph();
+  assert.equal(edges(graph).filter(([from]) => from === `${alpha}/approved.js`).length, 1);
+  assert.deepEqual(
+    violations(graph),
+    [
+      'node_modules/@tryghost/version/lib/version.js',
+      'node_modules/@tryghost/version-extra/index.js',
+    ]
+      .map((to) => ['service-dependencies', `${alpha}/rejected.ts`, to])
+      .sort(),
+  );
+});
+
+it('allows the validator and NQL strings without their siblings or internals', (t) => {
+  const nqlString = 'packages/nql-string/src/index.ts';
+  const nqlInternal = 'packages/nql-string/src/other.ts';
+  const f = fixture(t, {
+    [nqlString]: 'export {};',
+    [nqlInternal]: 'export {};',
+    [`${alpha}/approved.js`]:
+      "require('@tryghost/validator'); require('../../../../../packages/nql-string/src/index');",
+    [`${alpha}/rejected.js`]: `
+      require('@tryghost/validator/lib/is-email');
+      require('@tryghost/validator-extra');
+      require('../../../../../packages/nql-string/src/other');
+    `,
+  });
+  for (const name of ['@tryghost/validator', '@tryghost/validator-extra']) {
+    f.write(`node_modules/${name}/package.json`, JSON.stringify({ name, main: 'index.js' }));
+    f.write(`node_modules/${name}/index.js`, 'module.exports = {};');
+  }
+  f.write('node_modules/@tryghost/validator/lib/is-email.js', 'module.exports = {};');
+  const graph = f.graph();
+  assert.equal(edges(graph).filter(([from]) => from === `${alpha}/approved.js`).length, 2);
+  assert.deepEqual(
+    violations(graph),
+    [
+      'node_modules/@tryghost/validator/lib/is-email.js',
+      'node_modules/@tryghost/validator-extra/index.js',
+      nqlInternal,
+    ]
+      .map((to) => ['service-dependencies', `${alpha}/rejected.js`, to])
+      .sort(),
+  );
+});
+
+it('allows anything in the contracts folder, like types', (t) => {
+  const contract = 'contracts/example/src/index.ts';
+  const nested = 'contracts/example/src/fields/phone.ts';
+  const lookalike = 'contracts-extra/example/src/index.ts';
+  const f = fixture(t, {
+    [contract]: 'export {};',
+    [nested]: 'export {};',
+    [lookalike]: 'export {};',
+    [`${alpha}/approved.js`]:
+      "require('../../../../../contracts/example/src/index'); require('../../../../../contracts/example/src/fields/phone');",
+    [`${alpha}/rejected.js`]: "require('../../../../../contracts-extra/example/src/index');",
+  });
+  const graph = f.graph();
+  assert.equal(edges(graph).filter(([from]) => from === `${alpha}/approved.js`).length, 2);
+  assert.deepEqual(violations(graph), [
+    ['service-dependencies', `${alpha}/rejected.js`, lookalike],
+  ]);
+});
+
+it('allows the shared stateless helpers without allowing their siblings', (t) => {
+  const approved = [
+    'ghost/core/server/lib/after-commit.ts',
+    'ghost/core/server/lib/db-types/count.ts',
+    'ghost/core/server/lib/db-types/affected-rows.ts',
+    'ghost/core/server/lib/db-types/object-id.ts',
+    'ghost/core/server/lib/mailgun/mailgun-message-id.ts',
+    'ghost/core/server/lib/mailgun/mailgun-error.ts',
+    'ghost/core/server/lib/promise-pool.ts',
+    'ghost/core/server/lib/soonest-timer.ts',
+    'ghost/core/server/lib/auto-filling-map.ts',
+    'ghost/core/server/lib/member-signup-contexts.ts',
+    'ghost/core/shared/errify.ts',
+    'ghost/core/shared/timing-safe-string-equal.ts',
+    'ghost/core/shared/one-at-a-time.ts',
+    'ghost/core/shared/machine-payments.ts',
+    'packages/parse-email-address/src/index.ts',
+    'packages/parse-email-address/src/mailbox.ts',
+    'ghost/core/server/adapters/scheduling/get-scheduler-idempotency-key.ts',
+  ];
+  const rejected = [
+    'ghost/core/server/adapters/scheduling/build-signed-job.ts',
+    'ghost/core/server/lib/mailgun/mailgun-client.ts',
+    'ghost/core/server/lib/after-commit-extra.ts',
+    'ghost/core/shared/errify-extra.ts',
+    'packages/parse-email-address/src/internal.ts',
+  ];
+  const requireAll = (files: string[]) =>
+    files.map((file) => `require('../../../../../${file.replace(/\.ts$/, '')}');`).join('\n');
+  const f = fixture(t, {
+    ...Object.fromEntries([...approved, ...rejected].map((file) => [file, 'export {};'])),
+    [`${alpha}/approved.js`]: requireAll(approved),
+    [`${alpha}/rejected.js`]: requireAll(rejected),
+  });
+  const graph = f.graph();
+  assert.equal(
+    edges(graph).filter(([from]) => from === `${alpha}/approved.js`).length,
+    approved.length,
+  );
+  assert.deepEqual(
+    violations(graph),
+    rejected.map((to) => ['service-dependencies', `${alpha}/rejected.js`, to]).sort(),
+  );
+});
+
+it('allows Node in-memory primitives without allowing modules that reach the machine', (t) => {
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]: `
+      require('node:assert/strict'); require('stream'); require('node:stream/promises');
+      require('buffer'); require('node:timers/promises');
+    `,
+    [`${alpha}/rejected.js`]: `
+      require('assert'); require('events'); require('url'); require('timers');
+      require('node:fs'); require('os'); require('net'); require('child_process');
+    `,
+  });
+  const graph = f.graph();
+  assert.equal(edges(graph).filter(([from]) => from === `${alpha}/approved.js`).length, 5);
+  assert.deepEqual(
+    violations(graph).filter(([, from]) => from === `${alpha}/approved.js`),
+    [],
+  );
+  assert.deepEqual(
+    violations(graph)
+      .filter(([, from]) => from === `${alpha}/rejected.js`)
+      .map(([, , to]) => (to ?? '').replace(/^node:/, ''))
+      .sort(),
+    ['assert', 'child_process', 'events', 'fs', 'net', 'os', 'timers', 'url'],
   );
 });
 
@@ -797,6 +1040,212 @@ it('allows the delivery address formatter required by Member welcome emails with
   assert.deepEqual(violations(graph), [['service-dependencies', `${alpha}/rejected.ts`, rejected]]);
 });
 
+it('allows each provider SDK only from its provider client, across Core and service roots', (t) => {
+  const mpp = `${services}/machine-payments/adapters/mpp-adapter.ts`;
+  const x402 = `${services}/machine-payments/adapters/x402-adapter.ts`;
+  const stripeApi = `${services}/stripe/stripe-api.js`;
+  const machineStripe = `${services}/machine-payments/stripe/payment-recorder.ts`;
+  const oembed = `${services}/oembed/extract-oembed.ts`;
+  const f = fixture(t, {
+    [mpp]: "require('mppx/server');",
+    [x402]:
+      "require('@x402/core/server'); require('@x402/evm/exact/server'); require('@x402/hono'); require('hono');",
+    [stripeApi]: "require('stripe');",
+    [machineStripe]: "import 'stripe';",
+    [oembed]: "import '@extractus/oembed-extractor';",
+    // A type-only import of a provider SDK is not a dependency on it.
+    [`${services}/members/types.ts`]: "import type Stripe from 'stripe';",
+    // The same imports anywhere else fail, including in another file of the same
+    // service, a service root and Core code outside services.
+    [`${services}/machine-payments/service.ts`]: "import 'mppx/server'; import 'hono';",
+    [`${services}/machine-payments/adapters/other.ts`]: "import '@x402/hono';",
+    [`${services}/members/router.js`]: "require('stripe');",
+    [`${services}/stripe/index.js`]: "require('stripe');",
+    [`${services}/oembed/oembed-service.js`]: "require('@extractus/oembed-extractor');",
+    'ghost/core/server/lib/payments.js': "require('stripe'); require('mppx/server');",
+    // A package that only shares a name prefix is not a provider SDK.
+    [`${services}/machine-payments/adapters/prefix.ts`]:
+      "import 'stripe-extra'; import 'mppx-extra';",
+  });
+  for (const name of [
+    'mppx',
+    '@x402/core',
+    '@x402/evm',
+    '@x402/hono',
+    'hono',
+    'stripe',
+    '@extractus/oembed-extractor',
+    'stripe-extra',
+    'mppx-extra',
+  ]) {
+    f.write(
+      `node_modules/${name}/package.json`,
+      JSON.stringify({
+        name,
+        main: 'index.js',
+        exports: { '.': './index.js', './server': './server.js', './exact/server': './server.js' },
+      }),
+    );
+    f.write(`node_modules/${name}/index.js`, 'module.exports = {};');
+    f.write(`node_modules/${name}/server.js`, 'module.exports = {};');
+  }
+  const graph = f.graph('ghost/core');
+  const provider = (from: string, to: string) => ['specialist-dependencies', from, to];
+  assert.deepEqual(
+    violations(graph),
+    [
+      provider(`${services}/machine-payments/service.ts`, 'node_modules/mppx/server.js'),
+      provider(`${services}/machine-payments/service.ts`, 'node_modules/hono/index.js'),
+      provider(
+        `${services}/machine-payments/adapters/other.ts`,
+        'node_modules/@x402/hono/index.js',
+      ),
+      provider(`${services}/members/router.js`, 'node_modules/stripe/index.js'),
+      provider(`${services}/stripe/index.js`, 'node_modules/stripe/index.js'),
+      provider(
+        `${services}/oembed/oembed-service.js`,
+        'node_modules/@extractus/oembed-extractor/index.js',
+      ),
+      provider('ghost/core/server/lib/payments.js', 'node_modules/stripe/index.js'),
+      provider('ghost/core/server/lib/payments.js', 'node_modules/mppx/server.js'),
+      [
+        'service-dependencies',
+        `${services}/machine-payments/adapters/prefix.ts`,
+        'node_modules/stripe-extra/index.js',
+      ],
+      [
+        'service-dependencies',
+        `${services}/machine-payments/adapters/prefix.ts`,
+        'node_modules/mppx-extra/index.js',
+      ],
+    ].sort(),
+  );
+  assert.equal(
+    edges(graph).filter(
+      ([from]) =>
+        from !== undefined && [mpp, x402, stripeApi, machineStripe, oembed].includes(from),
+    ).length,
+    8,
+  );
+});
+
+it('allows specialist dependencies only from their owning files and folders', (t) => {
+  const csv = `${services}/content-import/csv/parse.ts`;
+  const importer = 'ghost/core/server/data/importer/importers/importer-revue.js';
+  const oembed = `${services}/oembed/nested/extract.ts`;
+  const limits = `${services}/limits.ts`;
+  const workspaceEntry = 'packages/limit-service/src/index.ts';
+  const f = fixture(t, {
+    [csv]: "import 'papaparse';",
+    [importer]: "require('papaparse');",
+    [oembed]: "import 'jsonrepair'; import 'chrono-node';",
+    [limits]: "import '../../../../packages/limit-service/src/index';",
+    [workspaceEntry]: 'export {};',
+    // Owned elsewhere: another file in the same service, another service, Core
+    // code outside services and a service root.
+    [`${services}/content-import/import/rows.ts`]: "import 'papaparse';",
+    [`${services}/members/parse.js`]: "require('jsonrepair');",
+    'ghost/core/server/lib/dates.js': "require('chrono-node');",
+    [`${services}/members/index.js`]: "require('../../../../../packages/limit-service/src/index');",
+    // A type-only import is not a dependency.
+    [`${services}/members/types.ts`]: "import type Papa from 'papaparse';",
+  });
+  for (const name of ['papaparse', 'jsonrepair', 'chrono-node']) {
+    f.write(`node_modules/${name}/package.json`, JSON.stringify({ name, main: 'index.js' }));
+    f.write(`node_modules/${name}/index.js`, 'module.exports = {};');
+  }
+  const graph = f.graph('ghost/core');
+  assert.deepEqual(
+    violations(graph),
+    [
+      [`${services}/content-import/import/rows.ts`, 'node_modules/papaparse/index.js'],
+      [`${services}/members/parse.js`, 'node_modules/jsonrepair/index.js'],
+      ['ghost/core/server/lib/dates.js', 'node_modules/chrono-node/index.js'],
+      [`${services}/members/index.js`, workspaceEntry],
+    ]
+      .map(([from, to]) => ['specialist-dependencies', from, to])
+      .sort(),
+  );
+  assert.equal(
+    edges(graph).filter(
+      ([from]) => from !== undefined && [csv, importer, oembed, limits].includes(from),
+    ).length,
+    5,
+  );
+});
+
+it('allows the API framework only from the API and web layers', (t) => {
+  const entry = 'packages/api-framework/src/index.ts';
+  const endpoint = 'ghost/core/server/api/endpoints/posts.js';
+  const routes = 'ghost/core/server/web/api/endpoints/admin/routes.js';
+  const f = fixture(t, {
+    [entry]: 'export {};',
+    [endpoint]: "require('../../../../../packages/api-framework/src/index');",
+    [routes]: "require('../../../../../../../packages/api-framework/src/index');",
+    [`${services}/webhooks/serialize.js`]:
+      "require('../../../../../packages/api-framework/src/index');",
+    'ghost/core/server/lib/frames.js': "require('../../../../packages/api-framework/src/index');",
+  });
+  const graph = f.graph('ghost/core');
+  assert.deepEqual(
+    violations(graph),
+    [`${services}/webhooks/serialize.js`, 'ghost/core/server/lib/frames.js']
+      .map((from) => ['specialist-dependencies', from, entry])
+      .sort(),
+  );
+  assert.equal(
+    edges(graph).filter(([from, , to]) => [endpoint, routes].includes(from ?? '') && to === entry)
+      .length,
+    2,
+  );
+});
+
+it('keeps a file owner when it is converted between JavaScript and TypeScript', (t) => {
+  // The specialist list names the comment model as comment.js.
+  const converted = 'ghost/core/server/models/comment.ts';
+  const sibling = 'ghost/core/server/models/comment-extra.ts';
+  const f = fixture(t, {
+    [converted]: "import 'sanitize-html';",
+    [sibling]: "import 'sanitize-html';",
+  });
+  f.write('node_modules/sanitize-html/package.json', '{"name":"sanitize-html","main":"index.js"}');
+  f.write('node_modules/sanitize-html/index.js', 'module.exports = {};');
+  const graph = f.graph('ghost/core');
+  assert.equal(edges(graph).filter(([from]) => from === converted).length, 1);
+  assert.deepEqual(violations(graph), [
+    ['specialist-dependencies', sibling, 'node_modules/sanitize-html/index.js'],
+  ]);
+});
+
+it('allows HTTP framework packages only in the web layer', (t) => {
+  const owners = [
+    'ghost/core/server/web/members/app.js',
+    'ghost/core/frontend/web/site.js',
+    'ghost/core/shared/express.js',
+  ];
+  const others = [`${services}/members/members-api.js`, 'ghost/core/server/lib/router.js'];
+  const packages = ['express', 'body-parser', 'cookies', 'on-headers', 'cors', 'multer'];
+  const source = packages.map((name) => `require('${name}');`).join('\n');
+  const f = fixture(t, Object.fromEntries([...owners, ...others].map((file) => [file, source])));
+  for (const name of packages) {
+    f.write(`node_modules/${name}/package.json`, JSON.stringify({ name, main: 'index.js' }));
+    f.write(`node_modules/${name}/index.js`, 'module.exports = {};');
+  }
+  const graph = f.graph('ghost/core');
+  assert.equal(
+    edges(graph).filter(([from]) => owners.includes(from ?? '')).length,
+    owners.length * packages.length,
+  );
+  assert.deepEqual(
+    violations(graph),
+    others
+      .flatMap((from) =>
+        packages.map((name) => ['specialist-dependencies', from, `node_modules/${name}/index.js`]),
+      )
+      .sort(),
+  );
+});
+
 it('rejects outside dependencies, own roots and unresolved imports without folder or package-prefix escapes', (t) => {
   const imports = {
     'require.ts': "require('../../../shared/config');",
@@ -898,35 +1347,95 @@ it('preserves source edges and violations after adjacent TypeScript emission', (
   assert.deepEqual(violations(after), violations(before));
 });
 
+it('rejects committed JavaScript beside TypeScript of the same name, which the scan skips as build output', (t) => {
+  const f = fixture(t, {
+    [`${alpha}/index.ts`]: 'export {};',
+    [`${alpha}/implementation.ts`]: 'export {};',
+    // Node loads these instead of the TypeScript beside them.
+    [`${alpha}/index.js`]: "require('../../../shared/config');",
+    [`${alpha}/implementation.js`]: "require('../../../shared/config');",
+  });
+  const git = (...args: string[]) => {
+    const result = spawnSync('git', args, { cwd: f.root, encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+  };
+  // The scan skips both files, so it reports no violation.
+  assert.deepEqual(violations(f.graph()), []);
+  // Uncommitted build output is expected and passes.
+  const built = f.lint();
+  assert.equal(built.status, 0, built.stderr);
+  git('init', '-q');
+  git('add', 'ghost');
+  const committed = f.lint();
+  assert.equal(committed.status, 1, committed.stderr);
+  for (const file of ['index', 'implementation']) {
+    assert.match(
+      committed.stderr,
+      new RegExp(`committed build output: ${alpha}/${file}\\.js sits beside ${alpha}/${file}\\.ts`),
+    );
+  }
+  // The commit hook passes only the staged files and still reports it.
+  const staged = f.lint([`${alpha}/implementation.js`]);
+  assert.equal(staged.status, 1, staged.stderr);
+  git('rm', '-q', '--cached', `${alpha}/index.js`, `${alpha}/implementation.js`);
+  assert.equal(f.lint().status, 0);
+  for (const file of ['index', 'implementation']) {
+    rmSync(path.join(f.root, `${alpha}/${file}.js`));
+  }
+  // Only the pairs the scan skips count: a .tsx file emits .js, never .mjs or .cjs.
+  f.write(`${alpha}/view.tsx`, 'export {};');
+  f.write(`${alpha}/view.mjs`, 'export {};');
+  f.write(`${alpha}/view.cjs`, '');
+  f.write(`${alpha}/module.mts`, 'export {};');
+  f.write(`${alpha}/module.mjs`, 'export {};');
+  git('add', 'ghost');
+  assert.deepEqual(committedBuildOutput(f.root), [
+    { file: `${alpha}/module.mjs`, source: `${alpha}/module.mts` },
+  ]);
+});
+
+it('fails instead of passing when Git cannot list the tracked files', (t) => {
+  const f = fixture(t, { [`${alpha}/index.ts`]: 'export {};' });
+  // Not a repository: nothing is committed, so there is nothing to check.
+  assert.deepEqual(committedBuildOutput(f.root), []);
+  assert.equal(f.lint().status, 0);
+  // A repository Git refuses to read must not look the same as a clean one.
+  f.write('.git', 'not a gitfile');
+  assert.throws(
+    () => committedBuildOutput(f.root),
+    /Could not list tracked files \(git exit \d+\)/,
+  );
+  const refused = f.lint();
+  assert.equal(refused.status, 1, refused.stderr);
+  assert.match(refused.stderr, /Could not list tracked files/);
+});
+
 it('resolves the approved workspace export to source without a build and keeps other exports restricted', (t) => {
-  const contract = 'packages/app-contracts';
-  const manifest = `${contract}/src/manifest/index.ts`;
+  const workspace = 'packages/parse-email-address';
+  const mailbox = `${workspace}/src/mailbox.ts`;
   const f = fixture(t, {
     [`${alpha}/implementation.ts`]: `
-      import '@tryghost/app-contracts/manifest';
+      import '@tryghost/parse-email-address/mailbox';
       import '@tryghost/errors';
     `,
-    [`${alpha}/other.ts`]: "import '@tryghost/app-contracts/other';",
-    [`${alpha}/root.ts`]: "import '@tryghost/app-contracts';",
-    [`${alpha}/private.ts`]: "import '@tryghost/app-contracts/private';",
-    [`${contract}/package.json`]: JSON.stringify({
-      name: '@tryghost/app-contracts',
+    [`${alpha}/other.ts`]: "import '@tryghost/parse-email-address/other';",
+    [`${alpha}/private.ts`]: "import '@tryghost/parse-email-address/private';",
+    [`${workspace}/package.json`]: JSON.stringify({
+      name: '@tryghost/parse-email-address',
       type: 'module',
       exports: {
-        '.': { source: './src/index.ts', default: './build/index.js' },
-        './manifest': {
-          types: './build/manifest/index.d.ts',
-          source: './src/manifest/index.ts',
-          default: './build/manifest/index.js',
+        './mailbox': {
+          types: './build/mailbox.d.ts',
+          source: './src/mailbox.ts',
+          default: './build/mailbox.js',
         },
         './other': { source: './src/other.ts', default: './build/other.js' },
       },
     }),
-    [manifest]: 'export const schema = {};',
-    [`${contract}/build/manifest/index.d.ts`]: 'export declare const schema: object;',
-    [`${contract}/src/index.ts`]: 'export const other = true;',
-    [`${contract}/src/other.ts`]: 'export const other = true;',
-    [`${contract}/private.js`]: 'module.exports = {};',
+    [mailbox]: 'export const parseMailbox = () => null;',
+    [`${workspace}/build/mailbox.d.ts`]: 'export declare const parseMailbox: () => null;',
+    [`${workspace}/src/other.ts`]: 'export const other = true;',
+    [`${workspace}/private.js`]: 'module.exports = {};',
     'node_modules/@tryghost/errors/package.json': JSON.stringify({
       name: '@tryghost/errors',
       exports: { '.': { types: './index.d.ts', default: './index.js' } },
@@ -934,14 +1443,14 @@ it('resolves the approved workspace export to source without a build and keeps o
     'node_modules/@tryghost/errors/index.d.ts': 'export declare class GhostError {}',
     'node_modules/@tryghost/errors/index.js': 'module.exports = {};',
   });
-  f.link(contract, 'node_modules/@tryghost/app-contracts');
+  f.link(workspace, 'node_modules/@tryghost/parse-email-address');
   const before = f.graph();
   assert.ok(
     edges(before).some(
       ([from, specifier, to]) =>
         from === `${alpha}/implementation.ts` &&
-        specifier === '@tryghost/app-contracts/manifest' &&
-        to === manifest,
+        specifier === '@tryghost/parse-email-address/mailbox' &&
+        to === mailbox,
     ),
   );
   assert.ok(
@@ -951,14 +1460,12 @@ it('resolves the approved workspace export to source without a build and keeps o
     ),
   );
   assert.deepEqual(violations(before), [
-    ['service-dependencies', `${alpha}/other.ts`, `${contract}/src/other.ts`],
-    ['service-dependencies', `${alpha}/private.ts`, '@tryghost/app-contracts/private'],
-    ['service-dependencies', `${alpha}/root.ts`, `${contract}/src/index.ts`],
-    ['service-unresolved', `${alpha}/private.ts`, '@tryghost/app-contracts/private'],
+    ['service-dependencies', `${alpha}/other.ts`, `${workspace}/src/other.ts`],
+    ['service-dependencies', `${alpha}/private.ts`, '@tryghost/parse-email-address/private'],
+    ['service-unresolved', `${alpha}/private.ts`, '@tryghost/parse-email-address/private'],
   ]);
-  f.write(`${contract}/build/manifest/index.js`, 'export const schema = {};');
-  f.write(`${contract}/build/index.js`, 'export const other = true;');
-  f.write(`${contract}/build/other.js`, 'export const other = true;');
+  f.write(`${workspace}/build/mailbox.js`, 'export const parseMailbox = () => null;');
+  f.write(`${workspace}/build/other.js`, 'export const other = true;');
   const after = f.graph();
   assert.deepEqual(edges(after), edges(before));
   assert.deepEqual(violations(after), violations(before));
@@ -1056,9 +1563,11 @@ it('invalidates cached boundary checks and fixture tests when their configuratio
     'ghost/core/**/*',
     'ghost/package.json',
     'packages/**/*',
+    'contracts/**/*',
     'koenig/**/*',
     '.dependency-cruiser-known-violations.json',
     'tools/scripts/lib/dependency-boundaries.ts',
+    'tools/configs/oxlint/legacy-services.ts',
     'tools/scripts/ci/check-boundaries.ts',
   ]) {
     assert.ok(root.nx.targets['lint:boundaries'].inputs.includes(`{workspaceRoot}/${input}`));
