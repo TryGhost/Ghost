@@ -1571,6 +1571,12 @@ describe('Gift Subscriptions', function () {
             .expectStatus(expectedStatus);
         }
 
+        function getMagicLinkToken(email) {
+          const mail = mockManager.assert.sentEmail({ to: email });
+          const [url] = mail.text.match(/https?:\/\/[^\s]+\/members\/\?token=[^\s]+/);
+          return new URL(url).searchParams.get('token');
+        }
+
         it('lets a new member redeem a gift on a paid-members-only site', async function () {
           mockManager.mockSetting('members_signup_access', 'paid');
 
@@ -1579,9 +1585,7 @@ describe('Gift Subscriptions', function () {
 
           await sendGiftMagicLink({ email, giftToken: gift.get('token') }, 201);
 
-          const mail = mockManager.assert.sentEmail({ to: email });
-          const [url] = mail.text.match(/https?:\/\/[^\s]+\/members\/\?token=[^\s]+/);
-          const token = new URL(url).searchParams.get('token');
+          const token = getMagicLinkToken(email);
 
           await membersAgent
             .get(`/?token=${token}&action=subscribe`)
@@ -1596,6 +1600,69 @@ describe('Gift Subscriptions', function () {
           await gift.refresh();
           assert.equal(gift.get('status'), 'redeemed');
           assert.equal(gift.get('redeemer_member_id'), member.id);
+        });
+
+        it('lets an existing free member redeem a gift while signed out on a paid-members-only site', async function () {
+          mockManager.mockSetting('members_signup_access', 'paid');
+
+          const email = 'gift-paid-only-existing-free@test.com';
+          const existingMember = await models.Member.add({
+            email,
+            name: 'Existing Free Member',
+            email_disabled: false,
+          });
+          await DomainEvents.allSettled();
+          assert.equal(existingMember.get('status'), 'free');
+
+          const gift = await createGift();
+
+          await sendGiftMagicLink({ email, giftToken: gift.get('token') }, 201);
+
+          const token = getMagicLinkToken(email);
+
+          await membersAgent
+            .get(`/?token=${token}&action=subscribe`)
+            .expectStatus(302)
+            .expectHeader('Set-Cookie', /members-ssr.*/);
+
+          await DomainEvents.allSettled();
+
+          const member = await models.Member.findOne({ email }, { require: true });
+          assert.equal(member.id, existingMember.id);
+          assert.equal(member.get('status'), 'gift');
+
+          await gift.refresh();
+          assert.equal(gift.get('status'), 'redeemed');
+          assert.equal(gift.get('redeemer_member_id'), member.id);
+        });
+
+        it('does not redeem a gift for an existing paid member signed out on a paid-members-only site', async function () {
+          mockManager.mockSetting('members_signup_access', 'paid');
+
+          const email = 'paid@test.com';
+          const gift = await createGift();
+
+          // The link is sent because the gift is checked without knowing who is signing up
+          await sendGiftMagicLink({ email, giftToken: gift.get('token') }, 201);
+
+          const token = getMagicLinkToken(email);
+
+          const res = await membersAgent.get(`/?token=${token}&action=subscribe`).expectStatus(302);
+
+          const location = new URL(res.headers.location, urlUtils.getSiteUrl());
+          assert.equal(location.searchParams.get('success'), 'false');
+          assert.equal(location.searchParams.get('errorCode'), 'GIFT_PAID_MEMBER');
+
+          // Current behaviour: the failed redemption also stops the paid member signing in
+          const setCookie = res.headers['set-cookie'] ?? [];
+          assert.ok(!setCookie.some((cookie) => /^ghost-members-ssr=[^;]/.test(cookie)));
+
+          const member = await models.Member.findOne({ email }, { require: true });
+          assert.equal(member.get('status'), 'paid');
+
+          await gift.refresh();
+          assert.equal(gift.get('status'), 'purchased');
+          assert.equal(gift.get('redeemer_member_id'), null);
         });
 
         it('rejects a gift that does not exist on a paid-members-only site', async function () {
@@ -1647,13 +1714,8 @@ describe('Gift Subscriptions', function () {
             201,
           );
 
-          const tokenFor = (email) => {
-            const mail = mockManager.assert.sentEmail({ to: email });
-            const [url] = mail.text.match(/https?:\/\/[^\s]+\/members\/\?token=[^\s]+/);
-            return new URL(url).searchParams.get('token');
-          };
-          const firstToken = tokenFor(firstEmail);
-          const secondToken = tokenFor(secondEmail);
+          const firstToken = getMagicLinkToken(firstEmail);
+          const secondToken = getMagicLinkToken(secondEmail);
 
           await membersAgent.get(`/?token=${firstToken}&action=subscribe`).expectStatus(302);
           const secondRes = await membersAgent
