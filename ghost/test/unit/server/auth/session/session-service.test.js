@@ -3,7 +3,8 @@ const { assertExists } = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const express = require('express');
 const errors = require('@tryghost/errors');
-const createSessionService = require('../../../../../core/server/auth/session/session-service');
+const createSessionService =
+  require('../../../../../core/server/auth/session/session-service').default;
 const { RateLimiterMemory } = require('rate-limiter-flexible');
 const {
   BackoffLimiter,

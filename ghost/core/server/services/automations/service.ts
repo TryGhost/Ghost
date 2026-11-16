@@ -1,7 +1,6 @@
 import type { SchedulerAdapter } from '@tryghost/adapter-base-scheduling';
 import assert from 'node:assert/strict';
 import type { InternalKeys } from '../internal-keys';
-// @ts-expect-error @tryghost/domain-events currently lacks type declarations.
 import type DomainEvents from '@tryghost/domain-events';
 import { setImmediate as flushEventLoop } from 'node:timers/promises';
 import { oneAtATime } from '../../../shared/one-at-a-time';

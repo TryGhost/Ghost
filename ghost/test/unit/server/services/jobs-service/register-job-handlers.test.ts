@@ -313,6 +313,14 @@ describe('register-job-handlers', function () {
     assert.ok(emailService.handleSendEmailJob.calledOnceWithExactly(job));
   });
 
+  it('passes an interrupted send back to the jobs service', async function () {
+    emailService.handleSendEmailJob.resolves('interrupted');
+
+    const result = await handlerFor('send-email')(new SendEmailJob({ emailId: 'email-id' }));
+
+    assert.equal(result, 'interrupted');
+  });
+
   it('registers send-email on a dedicated queue with room for two sends', function () {
     const registration = registrationFor('send-email');
 

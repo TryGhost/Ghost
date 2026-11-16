@@ -137,6 +137,7 @@
           "{workspaceRoot}/ghost/core/**/*",
           "{workspaceRoot}/ghost/package.json",
           "{workspaceRoot}/packages/**/*",
+          "{workspaceRoot}/contracts/**/*",
           "{workspaceRoot}/koenig/**/*",
           "{workspaceRoot}/apps/**/*",
           "sharedGlobals"

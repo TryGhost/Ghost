@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const sessionMiddleware = require('../../../../../core/server/auth').session;
-const SessionMiddlware = require('../../../../../core/server/auth/session/middleware');
+const SessionMiddlware = require('../../../../../core/server/auth/session/middleware').default;
 const models = require('../../../../../core/server/models');
 const sinon = require('sinon');
 const labs = require('../../../../../core/shared/labs');

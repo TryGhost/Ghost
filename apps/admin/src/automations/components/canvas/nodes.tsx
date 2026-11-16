@@ -46,6 +46,8 @@ type StepNodeData = {
 type TriggerNodeData = {
   trigger: TriggerData;
   errorMessage?: string;
+  // Read on mount: a trigger just picked for a new automation opens with its fields out.
+  startExpanded: boolean;
   onInteract: () => void;
 };
 
@@ -71,7 +73,12 @@ const HiddenHandle: React.FC<{ type: 'source' | 'target'; position: Position }> 
 }) => <Handle isConnectable={false} position={position} style={HIDDEN_HANDLE_STYLE} type={type} />;
 
 const TriggerNode = React.memo<NodeProps<TriggerFlowNode>>(({ data }) => (
-  <TriggerCard errorMessage={data.errorMessage} trigger={data.trigger} onInteract={data.onInteract}>
+  <TriggerCard
+    errorMessage={data.errorMessage}
+    startExpanded={data.startExpanded}
+    trigger={data.trigger}
+    onInteract={data.onInteract}
+  >
     <HiddenHandle position={Position.Bottom} type="source" />
   </TriggerCard>
 ));
@@ -94,12 +101,7 @@ const StepNode = React.memo<NodeProps<StepFlowNode>>(({ data }) => {
   }
   if (data.wait) {
     return (
-      <EditableWaitCard
-        errorMessage={data.errorMessage}
-        isNew={data.isNew}
-        menuItems={data.contextMenuItems}
-        wait={data.wait}
-      >
+      <EditableWaitCard isNew={data.isNew} menuItems={data.contextMenuItems} wait={data.wait}>
         <HiddenHandle position={Position.Top} type="target" />
         <HiddenHandle position={Position.Bottom} type="source" />
       </EditableWaitCard>

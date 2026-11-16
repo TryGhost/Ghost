@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
-import { Inline } from '@tryghost/shade/primitives';
-import { AutomationCard, AutomationCardHeader } from './automation-card';
-import { AutomationCardWarning } from './automation-card-warning';
+import { AutomationCard, AutomationCardHeader, CollapsibleCardBody } from './automation-card';
+import { useCollapsibleCard } from './use-collapsible-card';
 import { AutomationCardMenu } from './automation-card-menu';
-import { WaitDurationField, WAIT_VALIDATION_MESSAGE } from './wait-duration-field';
+import { WaitDurationField } from './wait-duration-field';
 import { formatWait } from './format-wait';
 import type { NodeContextMenuEntry } from './nodes';
 
@@ -19,45 +18,51 @@ export const EditableWaitCard: React.FC<
   React.PropsWithChildren<{
     wait: EditableWaitData;
     isNew: boolean;
-    errorMessage?: string;
     menuItems: NodeContextMenuEntry[];
   }>
-> = ({ wait, isNew, errorMessage, menuItems, children }) => {
-  const [isInvalidShown, setIsInvalidShown] = useState(false);
-  const warning = isInvalidShown ? WAIT_VALIDATION_MESSAGE : errorMessage;
+> = ({ wait, isNew, menuItems, children }) => {
+  const [valid, setValid] = useState(true);
+  const card = useCollapsibleCard({
+    held: !valid,
+    startExpanded: isNew,
+    onInteract: wait.onInteract,
+  });
   return (
     <AutomationCard
       aria-label={`Wait: ${formatWait(wait.hours)}`}
+      {...card.cardProps}
       className={cn(
         'nodrag nopan w-[400px] text-left',
-        warning && 'border-state-warning-fill',
+        card.cardProps.className,
+        // The field reserves a line for its error, so an open card needs less padding below.
+        !card.collapsed && 'pb-3',
         isNew && 'animate-in duration-250 ease-out fade-in-0 zoom-in-90 motion-reduce:animate-none',
       )}
-      gap="xl"
+      gap="none"
       onClick={(event) => event.stopPropagation()}
       onDoubleClick={(event) => event.stopPropagation()}
-      onFocusCapture={wait.onInteract}
-      onPointerDownCapture={wait.onInteract}
     >
       {children}
       <AutomationCardHeader
+        // Hidden while collapsed, to see how the plain rows feel.
         actions={
-          <Inline gap="xs">
-            <AutomationCardWarning message={warning} />
-            <AutomationCardMenu label="Wait actions" menuItems={menuItems} />
-          </Inline>
+          !card.collapsed && <AutomationCardMenu label="Wait actions" menuItems={menuItems} />
         }
         icon={<LucideIcon.Clock className="size-4" />}
         iconClassName="p-2.5 text-foreground"
-        title="Wait"
+        title={card.title('Wait', `Wait ${formatWait(wait.hours)}`)}
       />
-      <WaitDurationField
-        waitHours={wait.hours}
-        inline
-        onErrorVisibilityChange={setIsInvalidShown}
-        onUpdate={wait.onUpdate}
-        onValidityChange={wait.onValidityChange}
-      />
+      <CollapsibleCardBody collapsed={card.collapsed}>
+        <WaitDurationField
+          waitHours={wait.hours}
+          inline
+          onUpdate={wait.onUpdate}
+          onValidityChange={(nextValid) => {
+            setValid(nextValid);
+            wait.onValidityChange(nextValid);
+          }}
+        />
+      </CollapsibleCardBody>
     </AutomationCard>
   );
 };

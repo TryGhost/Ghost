@@ -484,7 +484,7 @@ describe('New automation', () => {
   it('shows trigger chooser when lead magnets is enabled, even if Stripe is not', async () => {
     fakeAutomations([]);
     await renderAdminApp('/automations/new', {
-      labs: { ...labs, automationsLeadMagnets: true, automationsLifecycleTriggers: true },
+      labs: { ...labs, automationsLeadMagnets: true },
     });
 
     await expect.element(page.getByText('Select a trigger', { exact: true })).toBeVisible();

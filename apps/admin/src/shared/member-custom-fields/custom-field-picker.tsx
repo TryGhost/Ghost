@@ -189,7 +189,9 @@ export function CustomFieldPicker({
                         }}
                       >
                         <CustomFieldIcon className="size-4" type={field.type} />
-                        <span className="truncate">{field.name}</span>
+                        <span className="truncate" title={field.name}>
+                          {field.name}
+                        </span>
                         {field.status === 'archived' && <ArchivedBadge />}
                         {value === field.key && <CommandCheck />}
                       </CommandItem>

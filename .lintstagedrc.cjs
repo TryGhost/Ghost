@@ -146,6 +146,6 @@ module.exports = {
   '{**/AGENTS.md,tools/scripts/ci/check-agent-guidance.ts}': () => 'pnpm lint:agent-guidance',
   '{.agents/skills/**,.claude/skills/**,tools/scripts/ci/check-agent-skill-links.ts}': () =>
     'pnpm lint:agent-skills',
-  '{package.json,pnpm-workspace.yaml,packages/**/package.json,packages/_template/**,tools/scripts/ci/check-internal-packages.ts,tools/gx/**,tools/scripts/lib/constants.ts}':
+  '{package.json,pnpm-workspace.yaml,packages/**/package.json,contracts/*/package.json,packages/_template/**,tools/scripts/ci/check-internal-packages.ts,tools/gx/**,tools/scripts/lib/constants.ts}':
     () => 'pnpm lint:packages',
 };

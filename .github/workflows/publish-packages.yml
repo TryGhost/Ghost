@@ -1,7 +1,7 @@
 name: Publish Packages
 
 # Single trusted publisher for the workspace's public packages (koenig/*,
-# packages/*, ...). npm trusted publishing (OIDC) validates the ENTRY-POINT
+# packages/*, contracts/*, ...). npm trusted publishing (OIDC) validates the ENTRY-POINT
 # workflow — the one the run was triggered from, not any reusable workflow it
 # calls — so this workflow must be triggered directly on both paths and is the
 # only workflow npm needs to trust for these packages:

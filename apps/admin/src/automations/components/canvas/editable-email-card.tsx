@@ -1,12 +1,12 @@
 import React, { useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Button, buttonVariants, inputSurface } from '@tryghost/shade/components';
+import { Button, buttonVariants, FieldError, inputSurface } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { isEmptyEmailLexical } from '@/automations/utils';
-import { AutomationCardWarning } from './automation-card-warning';
 import { emailTextExcerpt } from '@/automations/utils/history-email-preview';
 import { AutomationCardMenu } from './automation-card-menu';
 import { AutomationCard, AutomationCardHeader } from './automation-card';
+import { useCollapsibleCard } from './use-collapsible-card';
 import { EmailCardExcerpt, EmailCardMessage } from './email-card-content';
 import {
   EMAIL_CARD_EASE,
@@ -22,6 +22,7 @@ export type EditableEmailData = {
   subject: string;
   lexical: string;
   suppressWarning: boolean;
+  validationAttempt: number;
   onInteract: () => void;
   onEditContent: () => void;
 };
@@ -33,13 +34,13 @@ function getEmailWarning(email: EditableEmailData, errorMessage?: string) {
   const missingSubject = !email.subject.trim();
   const missingBody = isEmptyEmailLexical(email.lexical);
   if (missingSubject && missingBody) {
-    return 'Add a subject line and a message before this email can be sent.';
+    return 'Add a subject and message';
   }
   if (missingSubject) {
-    return 'Add a subject line before this email can be sent.';
+    return 'Add a subject';
   }
   if (missingBody) {
-    return 'Add a message before this email can be sent.';
+    return 'Add a message';
   }
   return errorMessage;
 }
@@ -106,58 +107,80 @@ export const EditableEmailCard: React.FC<
     analytics?: EmailCardAnalyticsData;
   }>
 > = ({ email, isNew, errorMessage, menuItems, analytics, children }) => {
-  const warning =
-    email.suppressWarning && !errorMessage ? undefined : getEmailWarning(email, errorMessage);
+  const unmetRequirement = getEmailWarning(email, errorMessage);
+  const warning = email.suppressWarning && !errorMessage ? undefined : unmetRequirement;
   const text = useMemo(() => emailTextExcerpt(email.lexical), [email.lexical]);
+  // The preview stays when collapsed; only the header shrinks to "Send <subject>".
+  const card = useCollapsibleCard({
+    held: Boolean(unmetRequirement),
+    startExpanded: isNew,
+    onInteract: email.onInteract,
+  });
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
-  const showAnalytics = analyticsOpen && Boolean(analytics);
+  // Reveal a new field error and return to it on every blocked Publish.
+  const [seenValidation, setSeenValidation] = useState({
+    attempt: email.validationAttempt,
+    warning,
+  });
+  if (email.validationAttempt !== seenValidation.attempt || warning !== seenValidation.warning) {
+    const hasNewWarning = warning && warning !== seenValidation.warning;
+    const hasBlockedValidation = errorMessage && email.validationAttempt !== seenValidation.attempt;
+    setSeenValidation({ attempt: email.validationAttempt, warning });
+    if (hasNewWarning || hasBlockedValidation) {
+      setAnalyticsOpen(false);
+    }
+  }
+  const showAnalytics = analyticsOpen && Boolean(analytics) && !card.collapsed;
   const emailView = useEmailViewHeight(showAnalytics);
   const previewTextId = useId();
+  const errorId = useId();
   return (
     <AutomationCard
       aria-label={email.subject ? `Send email: ${email.subject}` : 'Send email'}
+      {...card.cardProps}
       className={cn(
         'nodrag nopan w-[400px] text-left',
-        warning && 'border-state-warning-fill',
+        card.cardProps.className,
         isNew && 'animate-in duration-250 ease-out fade-in-0 zoom-in-90 motion-reduce:animate-none',
       )}
       onClick={(event) => event.stopPropagation()}
       onDoubleClick={(event) => event.stopPropagation()}
-      onFocusCapture={email.onInteract}
-      onPointerDownCapture={email.onInteract}
     >
       {children}
       <AutomationCardHeader
         actions={
-          <Inline gap="xs">
-            <AutomationCardWarning message={warning} />
-            {analytics && (
-              // Pressed matches a ghost button with its menu open, like the ⋯ beside it.
-              <Button
-                aria-label="Email analytics"
-                aria-pressed={showAnalytics}
-                className="aria-pressed:bg-button-ghost-hover aria-pressed:shadow-control-pressed"
-                size="icon"
-                type="button"
-                variant="ghost"
-                onClick={() => setAnalyticsOpen((open) => !open)}
-              >
-                <LucideIcon.ChartNoAxesColumn />
-              </Button>
-            )}
-            <AutomationCardMenu label="Email actions" menuItems={menuItems} />
-          </Inline>
+          // Hidden while collapsed, to see how the plain rows feel.
+          !card.collapsed && (
+            <Inline gap="xs">
+              {analytics && (
+                // Pressed matches a ghost button with its menu open, like the ⋯ beside it.
+                <Button
+                  aria-label="Email analytics"
+                  aria-pressed={showAnalytics}
+                  className="aria-pressed:bg-button-ghost-hover aria-pressed:shadow-control-pressed"
+                  size="icon"
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setAnalyticsOpen((open) => !open)}
+                >
+                  <LucideIcon.ChartNoAxesColumn />
+                </Button>
+              )}
+              <AutomationCardMenu label="Email actions" menuItems={menuItems} />
+            </Inline>
+          )
         }
         icon={<LucideIcon.Mail className="size-4" />}
         iconClassName="p-2.5 text-foreground"
-        title="Send email"
+        title={card.title('Send email', `Send ${email.subject.trim()}`)}
       />
       <div className="mt-3" style={{ minHeight: emailView.height }}>
         <div ref={emailView.ref}>
           <EmailCardCollapse open={!showAnalytics}>
             <EmailCardMessage aria-label="Email message preview" className="border-0 p-0">
               <button
-                aria-describedby={previewTextId}
+                aria-describedby={warning ? `${previewTextId} ${errorId}` : previewTextId}
+                aria-invalid={Boolean(warning)}
                 aria-label="Edit email content"
                 className={cn(
                   inputSurface('self'),
@@ -189,6 +212,11 @@ export const EditableEmailCard: React.FC<
                   <LucideIcon.Maximize2 strokeWidth={2} />
                 </span>
               </button>
+              {warning && (
+                <FieldError className="mt-2" id={errorId}>
+                  {warning}
+                </FieldError>
+              )}
             </EmailCardMessage>
           </EmailCardCollapse>
           {analytics && <EmailCardAnalytics analytics={analytics} open={showAnalytics} />}

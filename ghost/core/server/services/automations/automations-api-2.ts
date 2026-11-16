@@ -1,17 +1,18 @@
+import type DomainEvents from '@tryghost/domain-events';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import ObjectId from 'bson-objectid';
 import type { ReadonlyDeep } from 'type-fest';
+import { AutoFillingMap } from '../../lib/auto-filling-map';
 import type {
   AutomationsRepository2,
+  AutomatedEmailRecipientTrackingData,
   RunStepToInsert,
   RunToInsert,
   TrackEmailClickedOptions,
 } from './automations-repository-2';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 import { getReadyAtForAction } from './util/get-ready-at-for-action';
-
-type DomainEvents = { dispatch: (event: unknown) => unknown };
 
 type Labs = { isSet(key: 'automations'): boolean };
 
@@ -30,7 +31,7 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
   labs,
   repository,
 }: Readonly<{
-  domainEvents: DomainEvents;
+  domainEvents: Pick<DomainEvents, 'dispatch'>;
   fakeWaitHoursMultiplier: null | number;
   labs: Labs;
   repository: AutomationsRepository2<RepositoryTransaction>;
@@ -219,6 +220,60 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
       }
 
       await repository.incrementEmailClickedCount(connection, automationActionRevisionId);
+    },
+
+    trackEmailDeliveredAndOpened: async (
+      eventsByAutomatedEmailRecipientId: ReadonlyDeep<
+        Map<string, AutomatedEmailRecipientTrackingData>
+      >,
+    ): Promise<void> => {
+      if (eventsByAutomatedEmailRecipientId.size === 0) {
+        return;
+      }
+
+      const revisionIds = new Set<string>();
+      const recipientIds: string[] = [];
+      for (const [
+        id,
+        { openedAt, automationActionRevisionId },
+      ] of eventsByAutomatedEmailRecipientId) {
+        if (openedAt) {
+          revisionIds.add(automationActionRevisionId);
+          recipientIds.push(id);
+        }
+      }
+
+      await repository.withTransaction(async (trx) => {
+        await repository.lockActionRevisions(trx, revisionIds);
+
+        const notYetOpened = await repository.lockNotYetOpenedEmailRecipients(trx, recipientIds);
+        const newOpensPerRevision = new AutoFillingMap<string, number>(() => 0);
+
+        for (const [
+          id,
+          { deliveredAt, openedAt, automationActionRevisionId },
+        ] of eventsByAutomatedEmailRecipientId) {
+          await repository.setEmailRecipientDeliveredAndOpenedAt(trx, id, {
+            deliveredAt,
+            openedAt,
+          });
+
+          if (openedAt && notYetOpened.has(id)) {
+            newOpensPerRevision.set(
+              automationActionRevisionId,
+              newOpensPerRevision.get(automationActionRevisionId) + 1,
+            );
+          }
+        }
+
+        for (const id of revisionIds) {
+          const opens = newOpensPerRevision.get(id);
+          if (!opens) {
+            continue;
+          }
+          await repository.incrementEmailOpenedCount(trx, id, opens);
+        }
+      });
     },
   };
 };

@@ -11,6 +11,7 @@ import type {
 import type { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import {
   Button,
+  FieldError,
   Label,
   Select,
   SelectContent,
@@ -19,12 +20,17 @@ import {
   SelectValue,
 } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
-import { AutomationCard, AutomationCardHeader } from './automation-card';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
+import { AutomationCard, AutomationCardHeader, CollapsibleCardBody } from './automation-card';
+import { useCollapsibleCard } from './use-collapsible-card';
 import { TierScopePicker } from './tier-scope-picker';
 import { ChipPicker } from '@/shared/pickers/chip-picker';
 import type { TierSelection } from '@/automations/types';
-import { isTierSelectionEmpty, updateFromSelection } from '@/automations/utils/tier-selection';
+import {
+  hasMissingTierSelection,
+  isTierSelectionEmpty,
+  updateFromSelection,
+} from '@/automations/utils/tier-selection';
 
 export type TriggerData = {
   tierQuery: Pick<ReturnType<typeof useBrowseTiers>, 'data' | 'isLoading' | 'isError' | 'refetch'>;
@@ -146,11 +152,7 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
           onRemove={(removedId) => updateTiers(tierIds.filter((tierId) => tierId !== removedId))}
         />
       )}
-      {errorMessage && (
-        <Text as="p" className="text-destructive" id={`${id}-error`} role="alert" size="sm">
-          {errorMessage}
-        </Text>
-      )}
+      {errorMessage && <FieldError id={`${id}-error`}>{errorMessage}</FieldError>}
     </Stack>
   );
 };
@@ -242,14 +244,51 @@ const SubscriptionChangedPicker: React.FC<{ trigger: TriggerData; errorMessage?:
           </Text>
         )}
       </Stack>
-      {errorMessage && (
-        <Text as="p" className="text-destructive" id={`${id}-error`} role="alert" size="sm">
-          {errorMessage}
-        </Text>
-      )}
+      {errorMessage && <FieldError id={`${id}-error`}>{errorMessage}</FieldError>}
     </Stack>
   );
 };
+
+const choiceList = new Intl.ListFormat('en', { type: 'disjunction' });
+
+// The collapsed card's one statement, e.g. "Member changes from any paid tier to Gold".
+// Undefined while a choice is still missing, so a half-finished statement never shows.
+function getTriggerStatement({ triggerType, rules, tierQuery }: TriggerData): string | undefined {
+  const tierNames = (tierIds: readonly string[]) =>
+    choiceList.format(
+      tierIds.map((tierId) => {
+        const tier = tierQuery.data?.tiers.find((item) => item.id === tierId);
+        if (!tier) {
+          return tierQuery.isLoading ? 'Loading tier...' : 'Unavailable tier';
+        }
+        return tier.active ? tier.name : `${tier.name} (archived)`;
+      }),
+    );
+  switch (triggerType) {
+    case 'free_signup':
+      return 'Member signs up to free';
+    case 'paid_subscription_started': {
+      if ((rules[0]?.scope ?? 'specific_paid_tier') === 'any_paid_tier') {
+        return 'Member signs up to any paid tier';
+      }
+      const tierIds = getTriggerTierIds(rules);
+      return tierIds.length ? `Member signs up to ${tierNames(tierIds)}` : undefined;
+    }
+    case 'paid_subscription_changed': {
+      const { from, to } = subscriptionChangedSelectionFromRules(rules);
+      if (hasMissingTierSelection({ from, to })) {
+        return undefined;
+      }
+      const fromText = from === 'any_paid' ? 'any paid tier' : tierNames(from);
+      const toText = to === 'downgraded_to_free' ? 'free' : tierNames(to);
+      return `Member changes from ${fromText} to ${toText}`;
+    }
+    default: {
+      const _exhaustive: never = triggerType;
+      throw new Error(`Unknown automation trigger type: ${String(_exhaustive)}`);
+    }
+  }
+}
 
 function getTriggerPresentation(trigger: TriggerData, errorMessage?: string) {
   switch (trigger.triggerType) {
@@ -286,26 +325,32 @@ export const TriggerCard: React.FC<
   React.PropsWithChildren<{
     trigger: TriggerData;
     errorMessage?: string;
+    startExpanded?: boolean;
     onInteract?: () => void;
   }>
-> = ({ trigger, errorMessage, onInteract, children }) => {
+> = ({ trigger, errorMessage, startExpanded, onInteract, children }) => {
   const { title, Icon, content } = getTriggerPresentation(trigger, errorMessage);
+  const statement = getTriggerStatement(trigger);
+  const card = useCollapsibleCard({
+    held: statement === undefined || Boolean(errorMessage),
+    startExpanded,
+    onInteract,
+  });
   return (
     <AutomationCard
       aria-label={title}
-      className="nodrag nopan w-[400px]"
-      gap="xl"
+      {...card.cardProps}
+      className={cn('nodrag nopan w-[400px]', card.cardProps.className)}
+      gap="none"
       onClick={(event) => event.stopPropagation()}
       onDoubleClick={(event) => event.stopPropagation()}
-      onFocusCapture={onInteract}
-      onPointerDownCapture={onInteract}
     >
       <AutomationCardHeader
         icon={<Icon className="size-4" />}
         iconClassName="p-2.5 text-foreground"
-        title={title}
+        title={card.title(title, statement ?? title)}
       />
-      {content}
+      <CollapsibleCardBody collapsed={card.collapsed}>{content}</CollapsibleCardBody>
       {children}
     </AutomationCard>
   );

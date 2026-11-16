@@ -39,8 +39,13 @@ describe('seedCredentialAccounts', function () {
     await db.knex('user_accounts').del();
   });
 
-  it('runs at boot', function () {
-    assertOneCredentialPerUser(bootRows);
+  // Fixtures save users through the model, which writes the rows itself
+  it('leaves every user with a credential row after boot', function () {
+    assert.equal(bootRows.length, users.length);
+    for (const user of users) {
+      const row = bootRows.find((r) => r.user_id === user.id);
+      assert.match(row?.password ?? '', /^\$2[ayb]\$/);
+    }
   });
 
   it('creates one credential row per user from users.password', async function () {

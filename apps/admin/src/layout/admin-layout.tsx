@@ -70,10 +70,12 @@ const pageChromeClassName = [
  * footprint, whichever is further right, so centred content with room to
  * spare is unaffected and narrower viewports get symmetric padding that keeps
  * it centred. Below the desktop breakpoint the mobile layout takes over.
+ * An app page's footer drops the margin that evens it up beside a pinned nav.
  */
 const compactPageChromeClassName = [
   '[--compact-page-padding:max(0px,calc(var(--floating-sidebar-footprint)_-_var(--page-gutter)))]',
   'px-(--compact-page-padding)',
+  '[&_[data-app-footer]]:mr-0',
   '[--page-bleed-start:var(--compact-page-padding)]',
   '[--page-bleed-end:var(--compact-page-padding)]',
 ].join(' ');
@@ -114,6 +116,7 @@ const backdropInsetClassName = [
 ].join(' ');
 
 const SIDEBAR_WIDTH = '316px';
+const ADMIN7_SIDEBAR_WIDTH = 269;
 
 const SIDEBAR_PANEL_CLASS_NAME = '[&>[data-sidebar=sidebar]]:relative';
 // Lands on the desktop panel only; the mobile sidebar is a sheet that ignores it.
@@ -339,6 +342,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           className={floatingSidebarClassName}
           disabled={dunningLocked}
           morphStyle={settingsPinMorph.morphStyle}
+          openWidth={ADMIN7_SIDEBAR_WIDTH}
           settingsNavigation={settingsNavigation}
           settingsNavigationRef={setSettingsNavigationSlot}
           onPinnedMorphEnd={settingsPinMorph.onPinnedMorphEnd}
@@ -415,6 +419,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           animate={sidebarModeLoaded}
           contentRef={insetRef}
           morphStyle={settingsPinMorph.morphStyle}
+          openWidth={ADMIN7_SIDEBAR_WIDTH}
           pinned={sidebarOpen}
           slideRef={mainRef}
         />
@@ -436,6 +441,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     />
   );
 
+  // The page never gets narrower than it is beside the panel at its default
+  // size. As the panel expands over it, what holds the page clips it instead,
+  // so the page keeps its layout under the panel, where it would otherwise be
+  // squashed and laid out again on every frame. The width is worked out from
+  // the viewport: the panel's, and in the frame its bezels and the panel's.
+  const page = (
+    <div className="h-full w-[max(100%,calc(100vw_-_var(--side-panel-navigation-width)_-_3_*_var(--admin-frame-side)))]">
+      {sidebarLayout}
+    </div>
+  );
+
   return (
     <GlobalSearchProvider>
       {!dunningLocked && <SkipLink target={mainRef} />}
@@ -443,7 +459,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         className="flex size-full"
         style={{ '--side-panel-navigation-width': SIDEBAR_WIDTH } as React.CSSProperties}
       >
-        <div className="h-full min-w-0 flex-1">
+        <div className="h-full min-w-0 flex-1 overflow-hidden">
           {adminFrame ? (
             <AdminFrame
               aside={sidePanel}
@@ -451,10 +467,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               mode={frameMode}
               topBar={<AdminFrameTopBar hidden={frameMode === 'hidden'} />}
             >
-              {sidebarLayout}
+              {page}
             </AdminFrame>
           ) : (
-            sidebarLayout
+            page
           )}
         </div>
         {!adminFrame && sidePanel}

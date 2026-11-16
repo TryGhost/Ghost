@@ -68,7 +68,7 @@ app's README for that release process.
 
 ### Changeset lane
 
-Everything else publishable (`koenig/*`, `packages/*`) is versioned in the repo
+Everything else publishable (`koenig/*`, `packages/*`, `contracts/*`) is versioned in the repo
 by `pnpm version -r` from the release intents in `.changeset/`, as part of the
 weekly Ghost release, and published from the release tag by
 `publish-packages.yml`. A pull request that changes one of these packages must

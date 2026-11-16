@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import configUtils from '../../utils/config-utils';
-// @ts-expect-error This module lacks type definitions.
-import maxLimitCap from '../../../core/shared/max-limit-cap';
+
+// Use the CommonJS graph so configUtils mutates the same config instance.
+const maxLimitCap: typeof import('../../../core/shared/max-limit-cap') = require('../../../core/shared/max-limit-cap');
 
 describe('Shared Max Limit Cap', function () {
   afterEach(function () {

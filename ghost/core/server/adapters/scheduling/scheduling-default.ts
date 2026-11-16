@@ -42,7 +42,7 @@ export default class SchedulingDefault extends SchedulingBase {
   // under nock + shared workers — into the unit-test path.
   request = request;
 
-  _addJob(job: SchedulerJob) {
+  schedule(job: SchedulerJob) {
     const timestamp = moment(job.time).valueOf();
     let keys: string[] = [];
     const sortedJobs: Record<string, SchedulerJob[]> = {};
@@ -76,7 +76,11 @@ export default class SchedulingDefault extends SchedulingBase {
     this.allJobs = sortedJobs;
   }
 
-  _deleteJob(job: SchedulerJob) {
+  unschedule(job: SchedulerJob, opts?: { bootstrap?: boolean }) {
+    if (opts?.bootstrap) {
+      return;
+    }
+
     const { url, time } = job;
 
     if (!time) {
@@ -245,15 +249,5 @@ export default class SchedulingDefault extends SchedulingBase {
     };
 
     recursiveRun();
-  }
-
-  schedule(job: SchedulerJob) {
-    this._addJob(job);
-  }
-
-  unschedule(job: SchedulerJob, opts?: { bootstrap?: boolean }) {
-    if (!opts?.bootstrap) {
-      this._deleteJob(job);
-    }
   }
 }

@@ -423,13 +423,16 @@ const withEmptyEmailBodies = (fixture: AutomationDetail): AutomationDetail => ({
   ),
 });
 
-const mockAutomationWithEmailStats = (statsOverrides: Partial<AutomationEmailStats> = {}) => {
+const mockAutomationWithEmailStats = (
+  statsOverrides: Partial<AutomationEmailStats> = {},
+  fixture: AutomationDetail = automationDetail,
+) => {
   mockUseReadAutomation.mockReturnValue({
     data: {
       automations: [
         {
-          ...automationDetail,
-          actions: automationDetail.actions.map((action) =>
+          ...fixture,
+          actions: fixture.actions.map((action) =>
             action.type === 'send_email'
               ? {
                   ...action,
@@ -1837,9 +1840,7 @@ describe('AutomationEditor', () => {
       fireEvent.blur(waitInput);
 
       expect(waitInput).toHaveAttribute('aria-invalid', 'true');
-      expect(
-        within(card).getByRole('button', { name: 'Why this step needs attention' }),
-      ).toBeInTheDocument();
+      expect(within(card).getByRole('alert')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Publish changes' })).toBeEnabled();
     }
   });
@@ -1973,9 +1974,29 @@ describe('AutomationEditor', () => {
     expect(screen.getByText('Fix all issues to publish this automation.')).toBeVisible();
 
     const emailStep = screen.getByRole('article', { name: 'Send email: Welcome to The Blueprint' });
-    expect(
-      within(emailStep).getByRole('button', { name: 'Why this step needs attention' }),
-    ).toBeInTheDocument();
+    expect(within(emailStep).getByRole('alert')).toBeInTheDocument();
+  });
+
+  it('brings an email card back from analytics when publishing is blocked', () => {
+    mockAutomationWithEmailStats(
+      {},
+      withEmptyEmailBodies({ ...automationDetail, status: 'inactive' }),
+    );
+
+    renderEditor();
+
+    fireEvent.click(analyticsToggle());
+    expect(analyticsToggle()).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+
+    expect(analyticsToggle()).toHaveAttribute('aria-pressed', 'false');
+    expect(within(welcomeEmailCard()).getByText('Add a message')).toBeInTheDocument();
+
+    fireEvent.click(analyticsToggle());
+    expect(analyticsToggle()).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+    expect(analyticsToggle()).toHaveAttribute('aria-pressed', 'false');
   });
 
   it.each([
@@ -2422,9 +2443,7 @@ describe('AutomationEditor', () => {
     const insertedNode = screen.getByRole('article', { name: 'Send email' });
     expect(insertedNode).toHaveClass('animate-in');
     expect(within(insertedNode).getByText('Subject')).toBeInTheDocument();
-    expect(
-      within(insertedNode).queryByRole('button', { name: 'Why this step needs attention' }),
-    ).not.toBeInTheDocument();
+    expect(within(insertedNode).queryByRole('alert')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Publish changes' })).toBeEnabled();
   });
 
@@ -2447,9 +2466,7 @@ describe('AutomationEditor', () => {
     expect(screen.getByText('Fix all issues to publish this automation.')).toBeVisible();
 
     let emailStep = screen.getByRole('article', { name: 'Send email' });
-    expect(
-      within(emailStep).getByRole('button', { name: 'Why this step needs attention' }),
-    ).toBeInTheDocument();
+    expect(within(emailStep).getByRole('alert')).toBeInTheDocument();
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
 
     // Adding a subject and body via the modal clears the error and lets the publish through.
@@ -2457,9 +2474,7 @@ describe('AutomationEditor', () => {
     fireEvent.click(await screen.findByTestId('modal-edit'));
 
     emailStep = screen.getByRole('article', { name: 'Send email: Edited via modal' });
-    expect(
-      within(emailStep).queryByRole('button', { name: 'Why this step needs attention' }),
-    ).not.toBeInTheDocument();
+    expect(within(emailStep).queryByRole('alert')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
     const publishDialog = await screen.findByRole('alertdialog', {
@@ -2953,9 +2968,7 @@ describe('AutomationEditor', () => {
     expect(screen.getByRole('button', { name: 'Publish changes' })).toBeEnabled();
 
     const emailStep = screen.getByRole('article', { name: 'Send email: Welcome to The Blueprint' });
-    expect(
-      within(emailStep).getByRole('button', { name: 'Why this step needs attention' }),
-    ).toBeInTheDocument();
+    expect(within(emailStep).getByRole('alert')).toBeInTheDocument();
   });
 
   it('spins the modal button while publishing changes to an active automation', async () => {
