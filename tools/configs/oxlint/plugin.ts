@@ -1,5 +1,6 @@
 import type { Plugin } from '@oxlint/plugins';
 
+import { bootAwaitsServiceInit } from './rules/boot-awaits-service-init.ts';
 import { noAnyInExportedTypes } from './rules/no-any-in-exported-types.ts';
 import { noAssertErrorInstance } from './rules/no-assert-error-instance.ts';
 import { noInjectedServiceLibraries } from './rules/no-injected-service-libraries.ts';
@@ -18,6 +19,7 @@ import { nodeAssertStrict } from './rules/node-assert-strict.ts';
 
 const plugin: Plugin = {
   rules: {
+    'boot-awaits-service-init': bootAwaitsServiceInit,
     'no-any-in-exported-types': noAnyInExportedTypes,
     'no-assert-error-instance': noAssertErrorInstance,
     'no-injected-service-libraries': noInjectedServiceLibraries,

@@ -13,18 +13,11 @@ export const replace = async (
   options: { base?: string } = {},
 ): Promise<string> => {
   try {
-    const tokens = tokenize(html); // IToken[]
+    const tokens = tokenize(html);
     const replacements = [];
 
     let inAnchor = false;
     let inHref = false;
-
-    // interface IToken {
-    //   start: number;
-    //   end: number;
-    //   value: string;
-    //   type: TokenKind;
-    // }
 
     // const enum TokenKind {
     // 0  Literal,

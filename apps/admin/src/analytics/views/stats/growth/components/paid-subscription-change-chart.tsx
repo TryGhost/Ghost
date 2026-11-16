@@ -159,7 +159,7 @@ const getAvailableResolutions = (range: number): ResolutionOption[] => {
 
   if (actualSpan < 30) {
     return ['daily']; // No dropdown for < 30 days
-  } else if (actualSpan >= 91) {
+  } else if (actualSpan >= 90) {
     return ['weekly', 'monthly'];
   } else {
     return ['daily', 'weekly'];
@@ -172,7 +172,7 @@ const getDefaultResolution = (range: number): ResolutionOption => {
 
   if (actualSpan < 30) {
     return 'daily';
-  } else if (actualSpan >= 91) {
+  } else if (actualSpan >= 90) {
     return 'monthly';
   } else {
     return 'weekly';

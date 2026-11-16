@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import request from 'supertest';
-import { seedCredentialAccounts } from '../../core/server/auth/better-auth/seed-credential-accounts';
 
 const {
   startGhost,
@@ -44,9 +43,6 @@ describe.skipIf(isSQLite)('Better Auth native routes', function () {
 
     app = await startGhost({ backend: true, frontend: false, server: false });
     await fixtureManager.init('users');
-    // Boot seeded credentials before the fixtures replaced the owner's password
-    await db.knex('user_accounts').del();
-    await seedCredentialAccounts(db.knex);
   });
 
   beforeEach(async function () {

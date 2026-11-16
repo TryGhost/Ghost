@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import yaml from 'js-yaml';
@@ -56,6 +57,24 @@ const auditSchema = z.object({
   summary: z.object({ violations: z.array(violation) }),
 });
 
+// The boundary config records what each rejected dependency needs. One that
+// matches nothing there has no decision yet. A deferral names the importing file
+// as well, because it waits for a planned refactor of that file.
+const decisionsSchema = z.object({
+  inject: z.array(z.string()),
+  importForm: z.array(z.string()),
+  deferred: z
+    .array(z.object({ from: z.string(), to: z.string(), until: z.string().min(1) }))
+    .default([]),
+});
+const kinds = [
+  { name: 'inject', label: 'Instances to inject' },
+  { name: 'import-form', label: 'Wrong import form' },
+  { name: 'deferred', label: 'Deferred to a planned refactor' },
+  { name: 'no-decision', label: 'No decision yet' },
+] as const;
+type Kind = (typeof kinds)[number]['name'];
+
 type Entry = z.infer<typeof inventorySchema>['services'][string];
 type MigrationStatus = 'Standard' | 'Needs preparation' | 'Straightforward' | 'Not applicable';
 
@@ -88,16 +107,45 @@ function entryName(source: string) {
 
 // The inventory supplies legacy assessments; the existing audit supplies the
 // services found on disk and their current findings.
-export function buildServiceReport(inventory: unknown, audit: unknown) {
+export function buildServiceReport(
+  inventory: unknown,
+  audit: unknown,
+  decisions: unknown = { inject: [], importForm: [] },
+) {
   const { services } = inventorySchema.parse(inventory);
   const graph = auditSchema.parse(audit);
+  const { inject, importForm, deferred } = decisionsSchema.parse(decisions);
+  const patterns: [Kind, RegExp[]][] = [
+    ['inject', inject.map((pattern) => new RegExp(pattern))],
+    ['import-form', importForm.map((pattern) => new RegExp(pattern))],
+  ];
+  const deferrals = deferred.map(({ from, to, until }) => ({
+    from: new RegExp(from),
+    to: new RegExp(to),
+    until,
+  }));
+  // A deferral comes first: it records a decision about that file's imports.
+  const decide = (from: string, dependency: string): { kind: Kind; until?: string } => {
+    const deferral = deferrals.find((item) => item.from.test(from) && item.to.test(dependency));
+    if (deferral) {
+      return { kind: 'deferred', until: deferral.until };
+    }
+    return {
+      kind:
+        patterns.find(([, matchers]) =>
+          matchers.some((matcher) => matcher.test(dependency)),
+        )?.[0] ?? 'no-decision',
+    };
+  };
   const analyzed = new Set(
     graph.modules
       .filter((module) => !module.couldNotResolve)
       .map((module) => entryName(module.source))
       .filter((name) => name !== undefined),
   );
-  const findings = graph.summary.violations.filter((item) => item.rule.name.startsWith('service-'));
+  const findings = graph.summary.violations.filter(
+    (item) => item.rule.name.startsWith('service-') || item.rule.name === 'specialist-dependencies',
+  );
   const names = new Set([
     ...Object.keys(services),
     ...analyzed,
@@ -107,13 +155,24 @@ export function buildServiceReport(inventory: unknown, audit: unknown) {
     const entry = services[name];
     const matches = findings
       .filter((item) => entryName(item.from) === name)
-      .map((item) => ({
-        from: item.from,
-        to: item.dependencyTypes?.some((type) => type.startsWith('npm'))
+      .map((item) => {
+        const to = item.dependencyTypes?.some((type) => type.startsWith('npm'))
           ? (item.unresolvedTo ?? item.to)
-          : item.to,
-        rule: item.rule.name,
-      }));
+          : item.to;
+        return {
+          from: item.from,
+          to,
+          rule: item.rule.name,
+          // Only a rejected dependency has a kind; unresolved and own-root imports do not.
+          // A specialist dependency imported outside its owners is in the wrong form:
+          // the fix is to use the owning code.
+          ...(item.rule.name === 'service-dependencies'
+            ? decide(item.from, to)
+            : item.rule.name === 'specialist-dependencies'
+              ? { kind: 'import-form' as const }
+              : {}),
+        };
+      });
     const wasAnalyzed = analyzed.has(name);
     return {
       name,
@@ -123,7 +182,8 @@ export function buildServiceReport(inventory: unknown, audit: unknown) {
       dependencies: wasAnalyzed
         ? [
             ...new Set(
-              matches.filter((item) => item.rule === 'service-dependencies').map((item) => item.to),
+              // Every rejected dependency has a kind; unresolved and own-root imports do not.
+              matches.filter((item) => item.kind).map((item) => item.to),
             ),
           ].sort()
         : null,
@@ -245,6 +305,17 @@ function summary(rows: Service[]) {
   );
 }
 
+// Every rejected dependency is counted once, so the kinds add up to the total.
+function violationSummary(rows: Service[]): Record<string, number> {
+  const findings = rows.flatMap((row) => row.findings).filter((item) => item.kind);
+  return {
+    ...Object.fromEntries(
+      kinds.map((kind) => [kind.label, findings.filter((item) => item.kind === kind.name).length]),
+    ),
+    Total: findings.length,
+  };
+}
+
 function details(row: Service) {
   const lines = [list([row])];
   if (row.entry) {
@@ -275,7 +346,9 @@ function details(row: Service) {
   lines.push('\nCurrent dependency findings:');
   if (row.findings.length) {
     for (const finding of row.findings) {
-      lines.push(`- ${finding.from}\n  → ${finding.to} [${finding.rule}]`);
+      lines.push(
+        `- ${finding.from}\n  → ${finding.to} [${finding.rule}${finding.kind ? `, ${finding.kind}` : ''}]${finding.until ? `\n  Until: ${finding.until}` : ''}`,
+      );
     }
   } else {
     lines.push(row.analyzed ? 'None found.' : 'Not analyzed; dependency counts are unknown.');
@@ -283,17 +356,27 @@ function details(row: Service) {
   return lines.join('\n');
 }
 
-function frequencies(rows: Service[]) {
-  const targets = new Map<string, Set<string>>();
+export function frequencies(rows: Service[]) {
+  // One target can have different kinds in different files, such as a deferral
+  // for one importer, so count each target and kind separately.
+  const targets = new Map<string, { dependency: string; kind: Kind; files: Set<string> }>();
   for (const row of rows) {
-    for (const finding of row.findings.filter((item) => item.rule === 'service-dependencies')) {
-      const files = targets.get(finding.to) ?? new Set<string>();
-      files.add(finding.from);
-      targets.set(finding.to, files);
+    for (const finding of row.findings) {
+      if (!finding.kind) {
+        continue;
+      }
+      const id = JSON.stringify([finding.to, finding.kind]);
+      const target = targets.get(id) ?? {
+        dependency: finding.to,
+        kind: finding.kind,
+        files: new Set<string>(),
+      };
+      target.files.add(finding.from);
+      targets.set(id, target);
     }
   }
-  return [...targets]
-    .map(([dependency, files]) => ({ dependency, files: files.size }))
+  return [...targets.values()]
+    .map(({ dependency, kind, files }) => ({ dependency, files: files.size, kind }))
     .sort((a, b) => b.files - a.files || a.dependency.localeCompare(b.dependency));
 }
 
@@ -301,6 +384,19 @@ function readAudit() {
   const { graph: data } = readDependencyBoundaries(repository);
   auditSchema.parse(data);
   return { data, json: JSON.stringify(data) };
+}
+
+function readDecisions() {
+  const config: unknown = createRequire(import.meta.url)(
+    path.join(repository, '.dependency-cruiser.cjs'),
+  );
+  const decisions = z.object({ serviceDependencyDecisions: decisionsSchema }).safeParse(config);
+  if (!decisions.success) {
+    throw new Error(
+      '.dependency-cruiser.cjs must define serviceDependencyDecisions with inject and importForm pattern lists and deferred entries that name a refactor.',
+    );
+  }
+  return decisions.data.serviceDependencyDecisions;
 }
 
 export function runServices(command: string, args: string[]) {
@@ -324,13 +420,22 @@ export function runServices(command: string, args: string[]) {
         json: { type: 'boolean' },
         help: { type: 'boolean', short: 'h' },
         ...(command === 'list' ? { group: { type: 'string' as const } } : {}),
+        ...(command === 'dependencies' ? { kind: { type: 'string' as const } } : {}),
       },
       allowPositionals: command === 'report',
     });
     if (values.help) {
       process.stdout.write(
-        `Usage: pnpm gx services ${command}${command === 'report' ? ' [service]' : ''}${command === 'list' ? ' [--group <group>]' : ''} [--json]\n`,
+        `Usage: pnpm gx services ${command}${command === 'report' ? ' [service]' : ''}${command === 'list' ? ' [--group <group>]' : ''}${command === 'dependencies' ? ' [--kind <kind>]' : ''} [--json]\n`,
       );
+      if (command === 'dependencies') {
+        process.stdout.write(
+          `\n${table(
+            ['KIND', 'DESCRIPTION'],
+            kinds.map((kind) => [kind.name, kind.label]),
+          )}\n`,
+        );
+      }
       if (command === 'list') {
         process.stdout.write(
           `\n${table(
@@ -347,13 +452,19 @@ export function runServices(command: string, args: string[]) {
         `Unknown group: ${values.group}. Use "pnpm gx services list --help" to see groups.`,
       );
     }
+    const kind = kinds.find((item) => item.name === values.kind);
+    if (values.kind !== undefined && !kind) {
+      throw new Error(
+        `Unknown kind: ${values.kind}. Use "pnpm gx services dependencies --help" to see kinds.`,
+      );
+    }
     if (positionals.length > 1) {
       throw new Error('Supply at most one service name.');
     }
     const inventory = inventorySchema.parse(
       yaml.load(readFileSync(path.join(repository, legacyInventoryFile), 'utf8')),
     );
-    const rows = buildServiceReport(inventory, readAudit().data);
+    const rows = buildServiceReport(inventory, readAudit().data, readDecisions());
     const selected = positionals[0] ? rows.find((row) => row.name === positionals[0]) : undefined;
     if (positionals[0] && !selected) {
       throw new Error(`Unknown service: ${positionals[0]}`);
@@ -365,25 +476,34 @@ export function runServices(command: string, args: string[]) {
       output = filtered;
       text = list(filtered);
     } else if (command === 'dependencies') {
-      const counts = frequencies(rows);
+      const counts = frequencies(rows).filter((item) => !kind || item.kind === kind.name);
       output = counts;
       text = table(
-        ['FILES', 'DEPENDENCY'],
-        counts.map((item) => [String(item.files), item.dependency]),
+        ['FILES', 'KIND', 'DEPENDENCY'],
+        counts.map((item) => [String(item.files), item.kind, item.dependency]),
       );
     } else if (selected) {
       output = selected;
       text = details(selected);
     } else {
       const counts = summary(rows);
-      output = counts;
+      const violations = violationSummary(rows);
+      output = { ...counts, 'Dependency violations': violations };
       text = table(
         ['MIGRATION', 'COUNT', 'GROUP'],
         groups
           .filter((item) => item.name !== 'not-analyzed')
           .map((item) => [item.label, String(counts[item.label]), item.name]),
       );
-      text += '\n\nList a group: pnpm gx services list --group <group>';
+      text += '\n\nList a group: pnpm gx services list --group <group>\n\n';
+      text += table(
+        ['DEPENDENCY VIOLATIONS', 'COUNT', 'KIND'],
+        [
+          ...kinds.map((item) => [item.label, String(violations[item.label]), item.name]),
+          ['Total', String(violations.Total), ''],
+        ],
+      );
+      text += '\n\nList a kind: pnpm gx services dependencies --kind <kind>';
     }
     process.stdout.write(`${values.json ? JSON.stringify(output, null, 2) : text}\n`);
     if (!values.json && (command === 'list' || selected)) {

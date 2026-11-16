@@ -82,21 +82,46 @@ Complete the steps printed by the command:
 
 1. Implement the capability and wire only its required dependencies in the root.
    Preserve live settings reads and explain any deferred dependency lookups.
-2. Add and await `require('./server/services/delivery-receipts').default.init()`
-   in `ghost/core/boot.js`, after its dependencies are ready and before its
-   consumers run. Document those requirements above `defineService`. Consumers
-   read `.service` after initialization.
-3. Await required startup work before returning the instance. If startup can
-   fail after acquiring resources, clean them up before rethrowing. Arrange
-   normal shutdown separately when needed.
-4. Extend the starter test with behavior, dependency timing, and failure/retry
+2. In `ghost/core/boot.js`, bind the root and await its `init()`, as the roots
+   around it do:
+
+   ```js
+   const deliveryReceipts = require('./server/services/delivery-receipts').default;
+   await deliveryReceipts.init();
+   ```
+
+   Most roots belong in `initServices`. `initCore` and `initServicesForFrontend`
+   run earlier, for roots that later phases or the frontend read. Place the call
+   after its dependencies are ready and before its consumers run, on its own or
+   inside the phase's awaited `Promise.all`. Document those requirements above
+   `defineService`. Consumers read `.service` after initialization. Keep this
+   form: `pnpm lint:oxlint` and `gx services verify` find the call through the
+   binding, not through an inline `require(...).default.init()`.
+
+3. The [standard services boot test](../../../test/unit/boot/standard-services.test.ts)
+   already checks that boot waits for the root's `init()` and that its failure
+   fails boot. Add a test in `ghost/test/unit/boot/` only where order matters,
+   as for Mentions before Recommendations. The `initCore` and
+   `initServicesForFrontend` tests reject a root they do not list, so a root in
+   those phases needs a stub there.
+4. Await required startup work before returning the instance. If the service
+   owns listeners, timers or work to drain, acquire and release them in
+   [`start` and `stop` hooks](#starting-and-stopping).
+5. Extend the starter test with behavior, dependency timing, and failure/retry
    coverage. If the root declares extras, [catalogue them](#standard-root-contract).
-5. Run the generated root test and the repository checks:
+6. Run the generated root test, the boot tests and the repository checks:
 
    ```sh
    pnpm nx run ghost:test:unit test/unit/server/services/delivery-receipts/index.test.ts
+   pnpm nx run ghost:test:unit test/unit/boot/
    pnpm check
    ```
+
+7. Commit, then run `pnpm gx services verify delivery-receipts`. It needs a
+   clean tree on a branch that contains the fetched `origin/main`. It repeats
+   the checks and confirms a boot test fails when boot stops waiting for the
+   root's `init()`. See the
+   [gx guide](../../../../tools/gx/README.md#service-migration-reports).
 
 The generator rejects invalid names and existing service or test paths. See the
 [gx guide](../../../../tools/gx/README.md#service-generator) for command details and
@@ -140,20 +165,38 @@ Migrating a service means deleting its `services` entry and its known
 violations. Git history keeps the audit record. Move any extra it declares into
 the second section.
 
+### Roots outside this directory
+
+The service checks apply to this directory only. A `defineService` root
+anywhere else gets none of them: no root-shape rule, no dependency rules and no
+boot checks. [Better Auth](../auth/better-auth/index.ts) is the one such root.
+It follows the [kernel contract](../../kernel/README.md#service-initialization)
+by review.
+
+Extending the checks to roots elsewhere is out of scope for this migration. It
+belongs with the later work on where capabilities live. Until then, boundary
+lint (`service-roots-in-services`) rejects a runtime import of `defineService`
+from anywhere but a service root. Adding a root to the rule's list in the
+[dependency-cruiser config](../../../../.dependency-cruiser.cjs) needs review;
+CODEOWNERS covers that file.
+
 ### Dependency boundaries
 
 The root `index.ts` wires runtime dependencies and passes them to the
-implementation. Dependency rules apply to every service, legacy or standard.
+implementation. The [dependency rules](../../../../docs/practices/dependencies.md)
+decide what an implementation may import directly; this section covers how
+services apply them. They apply to every service, legacy or standard.
 Implementation files may import:
 
 - Files within the same service, except its root `index.ts` or `index.js`.
 - Types, using explicit type-only imports.
+- [Contracts](../../../../docs/practices/dependencies.md#contracts) in the
+  top-level `contracts/` folder.
 - The libraries and individual shared files in the
   [dependency-cruiser config](../../../../.dependency-cruiser.cjs).
 
-The shared [clock](../../kernel/clock.ts) is allowed directly, including its
-deprecated `moment` export for existing date logic. Service migration does not
-require rewriting those date operations.
+Migrating a service does not require rewriting date logic that uses the
+[clock's](../../kernel/clock.ts) deprecated `moment` export.
 
 Import allowlisted libraries directly where they are used; do not pass the
 library or its exports through the service's dependencies. Local use in the
@@ -168,23 +211,29 @@ and arrays. It reads the same allowlist and service scope as the boundary rule.
 Factories, forwarding callbacks, indirect aliases and separately assembled
 options objects still need review; this is not general data-flow analysis.
 
-Logging, config, settings, models, event buses and other service instances
-belong in the root wiring. Nested `index.ts` files are implementation files, not
+Instances belong in the root wiring. Nested `index.ts` files are implementation files, not
 extra wiring roots. The rule covers static imports, `require()`, literal dynamic
 imports and re-exports. All implementation source inside a service is checked, including
 nested folders named `test` or `fixtures`. The scan cannot follow a computed
 `require()` or `import()` argument, so `import/no-dynamic-require` rejects those
 in every service file.
 
-Some dependencies look like libraries but are treated as instances:
+`@tryghost/domain-events` is a process-wide event bus. Roots inject it, and the
+event classes they publish, as [comments](comments/index.ts) and
+[users](users/index.ts) do.
 
-- `@tryghost/domain-events` is a process-wide event bus. Roots inject it, and
-  the event classes they publish, as [comments](comments/index.ts) and
-  [users](users/index.ts) do.
-- Implementations don't import `fs`. A root that needs files passes a loader
-  limited to those files, like `readTemplate` in the comments root.
-- Lodash is allowed only as individual functions, such as `lodash/isEmpty`.
-  Plain JavaScript is often simpler.
+A [provider client](../../../../docs/practices/dependencies.md#specialist-dependencies)
+used by one service lives in that service, like the Machine Payments adapters,
+and the root passes it in. `specialistDependencies` in the dependency-cruiser
+config names each specialist dependency and its owners, and
+`specialist-dependencies` rejects an import from anywhere else in Ghost Core.
+Violations of that rule in legacy services are recorded in the known-violations
+file like any other.
+
+The config's `serviceDependencyDecisions` records these for
+[`gx services report`](../../../../tools/gx/README.md#interpreting-the-reports),
+which groups every rejected dependency as an instance to inject, a wrong
+import form, one deferred to a named refactor or one with no decision yet.
 
 Require models, the database and other services inside the `create` callback
 rather than at module scope, so importing a root doesn't depend on how far boot
@@ -194,10 +243,11 @@ has got. Keep each dependency's existing timing:
   on use and say why in a comment.
   [Stripe Checkout config](stripe-checkout-config/index.ts) reaches Stripe,
   tiers and members this way.
-- When a setting or config value is read on each use today, pass a function
-  rather than the value, as [member attribution](member-attribution/index.ts)
-  does for `outbound_link_tagging`. Capturing it in `create` changes when edits
-  take effect.
+- Pass a [site fact](../../../../docs/practices/dependencies.md#site-facts-and-process-facts),
+  such as a setting or the site URL, as a function rather than the value, as
+  [member attribution](member-attribution/index.ts) does for
+  `outbound_link_tagging`. Capturing it in `create` changes when edits take
+  effect and ties the instance to one site.
 - A dependency loaded with `require()` in a TypeScript root has no type. Keep
   its type with `typeof import()`, as the users root does for post revisions.
 
@@ -214,7 +264,8 @@ types may not contain `any`.
 Where JavaScript has a matching TypeScript sibling, the audit and boundary
 checks inspect the TypeScript source and resolve imports back to it. This keeps
 adjacent `build:tsc` output out of the report; ordinary JavaScript implementations
-remain checked. Package exports resolve through their `source` condition when
+remain checked. Node loads the JavaScript file of such a pair, so boundary lint
+rejects one that is committed. Package exports resolve through their `source` condition when
 available, so workspace contracts are checked without relying on build output.
 
 `pnpm lint:boundaries`, also run by `pnpm check` and CI, checks all service
@@ -253,7 +304,7 @@ show the remaining work.
 
 The allowlist names individual packages or files, with a reason for each.
 Review additions individually; do not allow whole shared directories or all
-`@tryghost/*` packages.
+`@tryghost/*` packages. The `contracts/` folder is the one exception.
 
 When several services make the same call to a library, move that call into one
 shared file and allow the file rather than the library.
@@ -425,7 +476,7 @@ because boot still uses `require()`.
 ## Standard root contract
 
 Every root that is not a legacy service default-exports a `defineService`
-initializer with `init`, a guarded `service` getter, and optional typed `extras`. Type-only named
+initializer with `init`, `stop`, a guarded `service` getter, and optional typed `extras`. Type-only named
 exports are allowed; other runtime exports belong in `extras` during migration.
 Implementation files may still export their classes and supporting contracts.
 
@@ -464,6 +515,12 @@ entry applies the rule to that root. The separate inventory test requires
 declared extras names to match the catalogue exactly. Behavioural tests still establish readiness,
 boot ordering, resource cleanup and each extra's semantics.
 
+An inline `oxlint-disable` or `eslint-disable` comment switches these rules off
+for a line, as it does any rule. Nothing disables `ghost/service-root-shape`,
+`ghost/no-injected-service-libraries` or `ghost/boot-awaits-service-init` today.
+Nothing but review stops one, so treat it as an exception: give the reason in
+the comment and expect it to be questioned.
+
 ## Initialization
 
 Ghost's boot sequence owns service construction. A new service root must
@@ -472,6 +529,16 @@ default-export the
 and have its `init()` awaited from `ghost/core/boot.js` in the appropriate boot
 phase. Existing legacy roots keep their shape until migrated. Do not make the
 first request responsible for constructing the service.
+
+The Oxlint rule `ghost/boot-awaits-service-init` checks this in `boot.js`. Every
+service that is not legacy must be bound there and have its `init()` awaited as
+a statement of a boot phase that `bootGhost` awaits, on its own or inside an
+awaited `Promise.all`. A new service directory fails lint until boot awaits it.
+The rule reads source only. The
+[standard services boot test](../../../test/unit/boot/standard-services.test.ts)
+runs each phase: for every standard service it holds `init()` pending and checks
+the phase waits, then checks a failed `init()` fails the phase. Neither can tell
+whether the order between services is right; that needs its own boot test.
 
 With `defineService`, the service author supplies a `create` callback that constructs and returns a
 ready instance. Boot awaits the root's `init()`; consumers then read `.service`.
@@ -505,38 +572,51 @@ example, recommendations reads the Mentions root during `create`, so boot
 initializes Mentions first. Roots that don't depend on each other can start
 together.
 
-### Failed startup
+### Starting and stopping
 
-If startup fails partway through, the `create` callback must release resources
-it already acquired before passing the error back. The helper cannot remove the
-callback's listeners or close its connections. A retry runs the callback again,
-so resources left by the failed attempt could remain active alongside any new
-instance.
-
-The simplest approach is to acquire resources last, so nothing after them can
-fail. [Mentions](mentions/index.ts) starts listening for events as its final
-step. When that isn't possible, undo the partial work before rethrowing. The
-[IndexNow callback](indexnow-ping/index.ts) removes any partially registered
-listeners before rethrowing a subscription error:
+A service that owns listeners, timers or work to drain passes
+[lifecycle hooks](../../kernel/README.md#starting-and-stopping) instead of a
+callback. `create` builds the instance once per process; `start` and `stop`
+acquire and release what it needs on each boot. [IndexNow](indexnow-ping/index.ts)
+subscribes in `start` and unsubscribes in `stop`:
 
 ```ts
-try {
-  service.subscribeEvents();
-} catch (error) {
-  service.unsubscribeEvents();
-  throw error;
-}
-return service;
+export default defineService('IndexNow', {
+  create: () => new IndexNowPingService(dependencies),
+  start: (service) => service.subscribeEvents(),
+  stop: (service) => service.unsubscribeEvents(),
+});
 ```
 
-Its [startup test](../../../test/unit/server/services/indexnow-ping/index.test.ts)
-checks that failure removes only that attempt's listeners and that a later
-`init()` succeeds without duplicate subscriptions. Cover the equivalent failure
-and retry behavior when a callback acquires resources.
+Boot registers `stop()` with the server beside the root's `init()`:
+
+```js
+ghostServer.registerCleanupTask(() => indexnow.stop(), 'IndexNow');
+```
+
+Cleanup tasks run together after the HTTP server has drained. Tests stop and boot
+Ghost again in one process, so the next `init()` runs `start` on the same
+instance. Anything `stop` releases must therefore be acquired in `start`, not in
+`create`.
+
+### Failed startup
+
+If `start` fails, `defineService` calls `stop` before rejecting, so `stop` must
+be safe after a partial `start`. IndexNow's
+[root test](../../../test/unit/server/services/indexnow-ping/index.test.ts)
+checks that a failed subscription removes only that attempt's listeners, that a
+later `init()` succeeds without duplicates, and that `stop()` followed by
+`init()` delivers each event once. Cover the equivalent behavior when a root
+has hooks.
+
+The helper cannot clean up after `create`. If `create` acquires resources and
+then fails, it must release them before passing the error back, because a retry
+runs it again. Prefer acquiring them in `start`. Otherwise acquire them last, so
+nothing after them can fail, as [Mentions](mentions/index.ts) does when it
+starts listening for events as its final step.
 
 Keep wrapper initialization idempotent when callers may safely reach it more
-than once. Arrange normal shutdown separately through the boot lifecycle when
-the service owns resources that must be released.
+than once.
 
 ## Related guidance
 

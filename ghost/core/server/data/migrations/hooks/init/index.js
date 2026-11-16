@@ -1,1 +1,0 @@
-exports.shutdown = require('./shutdown');

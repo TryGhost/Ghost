@@ -4,7 +4,7 @@
     "ghost/test/utils/fixtures/themes/**/assets/built/**",
     ".github/scripts/i18n-review/**"
   ],
-  "ignoreBinaries": ["less"],
+  "ignoreBinaries": ["less", "change"],
   "workspaces": {
     ".": {
       "vitest": {
