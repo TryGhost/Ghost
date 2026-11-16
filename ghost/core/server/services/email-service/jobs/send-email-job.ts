@@ -7,9 +7,14 @@ export default class SendEmailJob extends Job {
   static replayAfterRestart = false;
 
   readonly emailId: string;
+  // Set when an admin retried a failed send, which ignores the resume age limit
+  declare readonly retry?: true;
 
-  constructor({ emailId }: { emailId: string }) {
+  constructor({ emailId, retry }: { emailId: string; retry?: boolean }) {
     super();
     this.emailId = emailId;
+    if (retry) {
+      this.retry = true;
+    }
   }
 }

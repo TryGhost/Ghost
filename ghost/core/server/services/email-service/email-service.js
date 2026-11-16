@@ -32,14 +32,7 @@ const messages = {
   postChangedWhilePublishing: 'The post was changed while it was being published, please try again',
 };
 
-// Resume scanner won't pick up `pending` or `submitting` rows older than this. Rows beyond
-// the cutoff are flipped to `failed` on first boot so they surface in admin UI for operator
-// review rather than being silently resumed (and sending stale newsletters to current members).
-// Override via `bulkEmail:resumeMaxAgeMs` in config.
-const DEFAULT_RESUME_MAX_AGE_MS = 24 * 60 * 60 * 1000;
-
-// Non-terminal email statuses, both of which the boot scanner recovers.
-const RESUMABLE_EMAIL_STATUSES = ['pending', 'submitting'];
+const { DEFAULT_RESUME_MAX_AGE_MS, RESUMABLE_EMAIL_STATUSES } = BatchSendingService;
 
 const RETRY_UNKNOWN_OUTCOME_CODE = 'EMAIL_RETRY_UNKNOWN_OUTCOME';
 const RETRY_NOT_FAILED_CODE = 'BULK_EMAIL_RETRY_NOT_FAILED';
@@ -426,7 +419,7 @@ class EmailService {
     }
 
     try {
-      await this.#batchSendingService.scheduleEmail(pendingEmail);
+      await this.#batchSendingService.scheduleEmail(pendingEmail, { retry: true });
     } catch (e) {
       await pendingEmail.save({ status: 'failed' }, { patch: true });
       throw e;
@@ -463,7 +456,7 @@ class EmailService {
    * @returns {Promise<void | 'interrupted'>} 'interrupted' when shutdown stopped the send
    */
   async handleSendEmailJob(job) {
-    return this.#batchSendingService.emailJob({ emailId: job.emailId });
+    return this.#batchSendingService.emailJob({ emailId: job.emailId, retry: job.retry });
   }
 
   /**

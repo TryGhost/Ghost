@@ -1,4 +1,6 @@
 const EmailService = require('../../../../../core/server/services/email-service/email-service');
+const SendEmailJob =
+  require('../../../../../core/server/services/email-service/jobs/send-email-job').default;
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
@@ -401,6 +403,17 @@ describe('Email Service', function () {
     });
   });
 
+  describe('handleSendEmailJob', function () {
+    it('passes a retry through to the send', async function () {
+      const emailJob = sinon.stub().resolves();
+      const localService = new EmailService({ batchSendingService: { emailJob } });
+
+      await localService.handleSendEmailJob(new SendEmailJob({ emailId: 'e1', retry: true }));
+
+      sinon.assert.calledOnceWithExactly(emailJob, { emailId: 'e1', retry: true });
+    });
+  });
+
   describe('Retry email', function () {
     it('rejects an unknown delivery outcome without changing the email or scheduling', async function () {
       const email = createModel({
@@ -449,7 +462,7 @@ describe('Email Service', function () {
         ['failed'],
         { autoRefresh: true },
       );
-      sinon.assert.calledOnceWithExactly(scheduleEmail, lockedEmail);
+      sinon.assert.calledOnceWithExactly(scheduleEmail, lockedEmail, { retry: true });
     });
 
     it('Rejects a stale failed model once another retry has claimed the email', async function () {

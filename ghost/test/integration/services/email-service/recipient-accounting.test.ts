@@ -98,7 +98,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     sinon.stub(logging, 'error');
     sinon.stub(logging, 'warn');
     email = await models.Email.add({
-      post_id: ObjectID().toHexString(),
+      post_id: await createPublishedPostId(),
       submitted_at: new Date(),
       email_count: 10,
       preflight_email_count: 10,
@@ -138,6 +138,15 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await db.knex('emails').whereIn('id', emailIds).del();
     await db.knex('members').whereIn('id', addedMemberIds).del();
   });
+
+  // emailJob fails an email whose post is not published
+  async function createPublishedPostId(): Promise<string> {
+    const post = await models.Post.add(
+      { title: 'Recipient accounting', status: 'published' },
+      { context: { internal: true } },
+    );
+    return post.id;
+  }
 
   function createService(): typeof service {
     return new BatchSendingService({
@@ -218,7 +227,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
 
   async function createOtherEmail() {
     const otherEmail = await models.Email.add({
-      post_id: ObjectID().toHexString(),
+      post_id: await createPublishedPostId(),
       submitted_at: new Date(),
       email_count: 1,
     });
@@ -238,7 +247,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       sinon.stub(models.Email, 'findOne').callsFake(async (...args) => {
         const found = await findOne(...args);
         if (found) {
-          sinon.stub(found, 'getLazyRelation').resolves({});
+          sinon.stub(found, 'getLazyRelation').resolves({ get: () => 'published' });
         }
         return found;
       });

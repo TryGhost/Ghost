@@ -43,6 +43,29 @@ const RECIPIENT_READ_MISMATCH = 'BULK_EMAIL_RECIPIENT_READ_MISMATCH';
  * @typedef {object} EmailBatch
  */
 
+// Pending or submitting emails older than this are not resumed: a restart that
+// left one unsent should not send stale content to current members.
+// Override via `bulkEmail:resumeMaxAgeMs` in config.
+const DEFAULT_RESUME_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+
+// An email in one of these statuses has a send that never finished
+const RESUMABLE_EMAIL_STATUSES = ['pending', 'submitting'];
+
+/**
+ * Why an unfinished send must not resume, or null when it can.
+ * @param {{createdAt: Date|undefined, postStatus: string|null, maxAgeMs: number, now: number}} send
+ * @returns {string|null}
+ */
+function unresumableReason({ createdAt, postStatus, maxAgeMs, now }) {
+  if (createdAt && now - new Date(createdAt).getTime() > maxAgeMs) {
+    return `it is older than ${maxAgeMs}ms`;
+  }
+  if (postStatus !== 'published' && postStatus !== 'sent') {
+    return `its post status=${postStatus} is not sendable`;
+  }
+  return null;
+}
+
 class BatchSendingService {
   #emailRenderer;
   #sendingService;
@@ -54,8 +77,12 @@ class BatchSendingService {
   #sentry;
   #getRequiredUrlRelations;
   #batchCreationConcurrency;
+  #resumeMaxAgeMs;
   #shuttingDown = false;
   #inFlight = new Set();
+  // Jobs in this process per email id, so a job only resumes a submitting
+  // email that no other job here is sending
+  #jobsByEmailId = new Map();
 
   // Retry database queries happening before sending the email
   #BEFORE_RETRY_CONFIG = { maxRetries: 10, maxTime: 10 * 60 * 1000, sleep: 2000 };
@@ -85,6 +112,7 @@ class BatchSendingService {
    * @param {() => string[]} [dependencies.getRequiredUrlRelations] Post relations the live routes need loaded to generate URLs (lazy routing); defaults to none
    * @param {object} [dependencies.sentry]
    * @param {number} [dependencies.batchCreationConcurrency] Maximum active preparation pages
+   * @param {number} [dependencies.resumeMaxAgeMs] How old an unfinished send can be and still resume
    * @param {object} [dependencies.BEFORE_RETRY_CONFIG]
    * @param {object} [dependencies.AFTER_RETRY_CONFIG]
    * @param {object} [dependencies.MAILGUN_API_RETRY_CONFIG]
@@ -100,6 +128,7 @@ class BatchSendingService {
     sentry,
     getRequiredUrlRelations = () => [],
     batchCreationConcurrency = 2,
+    resumeMaxAgeMs = DEFAULT_RESUME_MAX_AGE_MS,
     BEFORE_RETRY_CONFIG,
     AFTER_RETRY_CONFIG,
     MAILGUN_API_RETRY_CONFIG,
@@ -113,6 +142,7 @@ class BatchSendingService {
     this.#db = db;
     this.#sentry = sentry;
     this.#getRequiredUrlRelations = getRequiredUrlRelations;
+    this.#resumeMaxAgeMs = resumeMaxAgeMs;
     this.#batchCreationConcurrency = validateMaxConcurrency(
       batchCreationConcurrency,
       'bulkEmail:batchCreationConcurrency',
@@ -223,37 +253,85 @@ class BatchSendingService {
 
   /**
    * Dispatches the job that sends the email; the job itself only proceeds if the email
-   * is pending or failed.
+   * is pending, submitting or failed.
    * Resolves when dispatch completes, not when the email is sent.
    * @param {Email} email
+   * @param {{retry?: boolean}} [options] retry: an admin retried a failed send
    * @returns {Promise<void>}
    */
-  async scheduleEmail(email) {
-    await this.#jobsService.dispatch(new SendEmailJob({ emailId: email.id }));
+  async scheduleEmail(email, { retry } = {}) {
+    await this.#jobsService.dispatch(new SendEmailJob({ emailId: email.id, retry }));
     logging.info(`[Background Job] batch-sending-service-job queued for email ${email.id}`);
   }
 
   /**
    * Sends an email after refetching it and acquiring its status lock.
-   * @param {{emailId: string}} data Identifier of the email to refetch and lock.
+   * @param {{emailId: string, retry?: boolean}} data Identifier of the email to refetch and lock,
+   *   and whether an admin retried it.
    * @returns {Promise<void | 'interrupted'>} 'interrupted' when shutdown stopped the send
    */
   async emailJob(data) {
+    const { emailId, retry = false } = data;
+    const others = this.#jobsByEmailId.get(emailId) ?? 0;
+    this.#jobsByEmailId.set(emailId, others + 1);
     // Tracked at the job boundary so onShutdown waits for the terminal status write,
     // not just the send.
-    const work = this.#emailJobInner(data);
+    const work = this.#emailJobInner({ emailId, retry, canResume: others === 0 });
     this.#inFlight.add(work);
     try {
       return await work;
     } finally {
       this.#inFlight.delete(work);
+      if (this.#jobsByEmailId.get(emailId) === 1) {
+        this.#jobsByEmailId.delete(emailId);
+      } else {
+        this.#jobsByEmailId.set(emailId, this.#jobsByEmailId.get(emailId) - 1);
+      }
     }
   }
 
-  async #emailJobInner({ emailId }) {
+  // A pending or submitting email may be a send resumed after a restart, so it
+  // gets the rules the newsletter boot scan applies: too old, or its post no
+  // longer sendable, and it is marked failed instead of sent. An admin retry
+  // is a deliberate send of an old email, so it skips the age rule. Returns
+  // the status the email had, unless it was marked failed.
+  async #checkResumable(emailId, retry) {
+    const email = await this.#models.Email.findOne({ id: emailId });
+    const status = email?.get('status');
+    if (!RESUMABLE_EMAIL_STATUSES.includes(status)) {
+      return { status };
+    }
+    const post = await email.getLazyRelation('post');
+    const reason = unresumableReason({
+      createdAt: email.get('created_at'),
+      postStatus: post ? post.get('status') : null,
+      maxAgeMs: retry ? Infinity : this.#resumeMaxAgeMs,
+      now: Date.now(),
+    });
+    if (!reason) {
+      return { status };
+    }
+    if (await this.updateStatusLock(this.#models.Email, emailId, 'failed', [status])) {
+      logging.warn(
+        `[Background Job] batch-sending-service-job marked email ${emailId} as failed instead of resuming it: ${reason}`,
+      );
+    }
+    return { failed: true };
+  }
+
+  async #emailJobInner({ emailId, retry, canResume }) {
     logging.info(`[Background Job] batch-sending-service-job started for email ${emailId}`);
 
     const startTime = Date.now();
+
+    const { status, failed } = await this.#checkResumable(emailId, retry);
+    if (failed) {
+      return;
+    }
+    // A job resumes a submitting email only when the email was submitting
+    // before the job started and no other job here has it. Another process
+    // only takes the job once its lease has run out.
+    const resuming = status === 'submitting' && canResume;
 
     // Check if email is 'pending' only + change status to submitting in one transaction.
     // This allows us to have a lock around the email job that makes sure an email can only have one active job.
@@ -262,10 +340,12 @@ class BatchSendingService {
     try {
       email = await this.retryDb(
         async () => {
-          return await this.updateStatusLock(this.#models.Email, emailId, 'submitting', [
-            'pending',
-            'failed',
-          ]);
+          return await this.updateStatusLock(
+            this.#models.Email,
+            emailId,
+            'submitting',
+            resuming ? ['submitting'] : ['pending', 'failed'],
+          );
         },
         {
           ...this.#getBeforeRetryConfig(),
@@ -281,7 +361,7 @@ class BatchSendingService {
     }
     if (!email) {
       logging.error(
-        `[Background Job] batch-sending-service-job skipped because email ${emailId} is not pending or failed`,
+        `[Background Job] batch-sending-service-job skipped because email ${emailId} is not pending or failed, or another job is sending it`,
       );
       return;
     }
@@ -1873,4 +1953,6 @@ class BatchSendingService {
 }
 
 module.exports = BatchSendingService;
+module.exports.DEFAULT_RESUME_MAX_AGE_MS = DEFAULT_RESUME_MAX_AGE_MS;
+module.exports.RESUMABLE_EMAIL_STATUSES = RESUMABLE_EMAIL_STATUSES;
 module.exports.SHUTDOWN_CODE = SHUTDOWN_CODE;
