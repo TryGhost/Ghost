@@ -18,6 +18,7 @@ describe('getOutboxConfig', function () {
       pollIntervalMs: 30000,
       submissionTimeoutMs: 10000,
       retryDelayMs: 30000,
+      leaseMs: 120000,
     });
   });
 
@@ -41,6 +42,7 @@ describe('getOutboxConfig', function () {
         pollIntervalMs: 250,
         submissionTimeoutMs: 5000,
         retryDelayMs: 15000,
+        leaseMs: 120000,
       },
     );
   });
@@ -52,7 +54,17 @@ describe('getOutboxConfig', function () {
       pollIntervalMs: 30000,
       submissionTimeoutMs: 10000,
       retryDelayMs: 30000,
+      leaseMs: 120000,
     });
+  });
+
+  it('reads an overridden lease length', function () {
+    assert.equal(getOutboxConfig(configWith({ leaseMs: 30000 })).leaseMs, 30000);
+  });
+
+  it('rejects a lease too short for the one-second precision of submitted_at', function () {
+    assert.throws(() => getOutboxConfig(configWith({ leaseMs: 1999 })));
+    assert.equal(getOutboxConfig(configWith({ leaseMs: 2000 })).leaseMs, 2000);
   });
 
   it('rejects a non-positive or non-integer timing', function () {
