@@ -757,7 +757,7 @@ module.exports = class RouterController {
     }
 
     // invite-only sites block new members, so a recipient who isn't already a member couldn't redeem
-    if (this._settingsCache.get('members_signup_access') === 'invite') {
+    if (this._settingsHelpers.isMembersInviteOnly()) {
       throw new DisabledFeatureError({
         message: tpl(messages.inviteOnly),
       });

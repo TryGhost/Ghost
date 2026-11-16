@@ -102,6 +102,7 @@ describe('RouterController', function () {
       getMembersSupportAddress: sinon.stub().returns('noreply@example.com'),
       arePaidMembersEnabled: sinon.stub().returns(true),
       areDonationsEnabled: sinon.stub().returns(true),
+      isMembersInviteOnly: sinon.stub().returns(false),
     };
   });
 
@@ -1372,11 +1373,12 @@ describe('RouterController', function () {
       });
 
       it('throws DisabledFeatureError on invite-only sites', async function () {
-        const get = sinon.stub();
-        get.withArgs('members_signup_access').returns('invite');
         const controller = createGiftController({
           tiersService: paidTierService(),
-          settingsCache: { get },
+          settingsHelpers: {
+            ...settingsHelpers,
+            isMembersInviteOnly: sinon.stub().returns(true),
+          },
         });
 
         await assert.rejects(
