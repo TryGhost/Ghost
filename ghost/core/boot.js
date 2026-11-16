@@ -521,7 +521,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   assert(emailService.service, 'Email service should be initialized');
   registerJobHandlers({
     gifts: emailAnalytics.getGifts(),
-    automations: emailAnalytics.getAutomations(),
+    automationAnalytics: emailAnalytics.getAutomations(),
     newsletters: emailAnalytics.getNewsletters(),
     jobsService,
     memberJobs,

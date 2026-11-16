@@ -67,7 +67,7 @@ describe('register-job-handlers', function () {
 
     registerJobHandlers({
       gifts: { startFetch: sinon.stub().resolves() },
-      automations: { startFetch: sinon.stub().resolves() },
+      automationAnalytics: { startFetch: sinon.stub().resolves() },
       newsletters: { startFetch: sinon.stub().resolves() },
       jobsService,
       memberJobs,
