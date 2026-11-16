@@ -506,41 +506,63 @@ describe('New automation', () => {
       .not.toBeInTheDocument();
   });
 
-  it('validates label selection and keeps Save and Publish local even with a valid rule', async () => {
-    fakeAutomations([]);
-    const createAutomation = serveCreation();
-    const spring = buildLabel({ name: 'Spring ebook' });
-    fakeAdminEndpoint('GET', /^\/labels\/\?/, { labels: [spring] });
-    fakeAdminEndpoint('GET', `/labels/${spring.id}/`, { labels: [spring] });
+  for (const action of ['Save', 'Publish'] as const) {
+    it(`validates label selection before ${action.toLowerCase()} and sends the selected label`, async () => {
+      fakeAutomations([]);
+      const createAutomation = serveCreation();
+      const spring = buildLabel({ name: 'Spring ebook' });
+      fakeAdminEndpoint('GET', /^\/labels\/\?/, { labels: [spring] });
+      fakeAdminEndpoint('GET', `/labels/${spring.id}/`, { labels: [spring] });
 
-    await renderAdminApp('/automations/new', { labs: { ...labs, automationsLeadMagnets: true } });
-    await page.getByRole('button', { name: /^Label added to a member/ }).click();
-    const picker = page.getByRole('combobox', {
-      name: 'Triggered when this label is added to a member:',
+      await renderAdminApp('/automations/new', { labs: { ...labs, automationsLeadMagnets: true } });
+      await page.getByRole('button', { name: /^Label added to a member/ }).click();
+      const picker = page.getByRole('combobox', {
+        name: 'Triggered when this label is added to a member:',
+      });
+      await expect.element(picker).toHaveTextContent('Search or create a label...');
+      await button('Save').click();
+      await expect.element(picker).toHaveAttribute('aria-invalid', 'true');
+      await expect.element(page.getByText('Select a label', { exact: true })).toBeVisible();
+      await settleTransitions();
+      await addWait();
+      await button('Publish').click();
+      await expect.element(page.getByText('Select a label', { exact: true })).toBeVisible();
+      await expect.element(page.getByRole('alertdialog')).not.toBeInTheDocument();
+      expect(createAutomation.requests).toHaveLength(0);
+
+      await picker.click();
+      await page.getByRole('option', { name: spring.name, exact: true }).click();
+      await expect.element(picker).toHaveTextContent(spring.name);
+      await expect.element(picker).not.toHaveAttribute('aria-invalid');
+      await button(action).click();
+      if (action === 'Publish') {
+        await page
+          .getByRole('alertdialog')
+          .getByRole('button', { name: 'Publish', exact: true })
+          .click();
+      }
+      await expect.poll(currentRoute).toBe('/automations/created');
+      await expect.element(button(action === 'Publish' ? 'Published' : 'Save')).toBeDisabled();
+      expect(createAutomation.requests).toHaveLength(1);
+      expect(createAutomation.requests[0].body).toMatchObject({
+        automations: [
+          {
+            status: action === 'Publish' ? 'active' : 'inactive',
+            trigger_rules: [
+              {
+                trigger_type: 'label_added',
+                label_id: spring.id,
+                scope: null,
+                product_id: null,
+                direction: null,
+              },
+            ],
+            actions: [{ type: 'wait' }],
+          },
+        ],
+      });
     });
-    await expect.element(picker).toHaveTextContent('Search or create a label...');
-    await button('Save').click();
-    await expect.element(picker).toHaveAttribute('aria-invalid', 'true');
-    await expect.element(page.getByText('Select a label', { exact: true })).toBeVisible();
-    await settleTransitions();
-    await addWait();
-    await button('Publish').click();
-    await expect.element(page.getByText('Select a label', { exact: true })).toBeVisible();
-    await expect.element(page.getByRole('alertdialog')).not.toBeInTheDocument();
-
-    await picker.click();
-    await page.getByRole('option', { name: spring.name, exact: true }).click();
-    await expect.element(picker).toHaveTextContent(spring.name);
-    await expect.element(picker).not.toHaveAttribute('aria-invalid');
-    await button('Save').click();
-    await expect.element(button('Retry')).toBeVisible();
-    await button('Publish').click();
-    const confirmation = page.getByRole('alertdialog');
-    await confirmation.getByRole('button', { name: 'Publish', exact: true }).click();
-    await expect.element(confirmation.getByRole('button', { name: 'Retry' })).toBeVisible();
-    expect(createAutomation.requests).toHaveLength(0);
-    expect(currentRoute()).toBe('/automations/new');
-  });
+  }
 
   it('searches for and creates a label in the trigger picker', async () => {
     fakeAutomations([]);
