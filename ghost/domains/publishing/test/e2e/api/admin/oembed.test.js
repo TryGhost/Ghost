@@ -1,14 +1,14 @@
 const assert = require('node:assert/strict');
-const { assertExists } = require('../../utils/assertions');
+const { assertExists } = require('../../../../../../test/utils/assertions');
 const nock = require('nock');
 const sinon = require('sinon');
 const supertest = require('supertest');
-const testUtils = require('../../utils/index');
-const config = require('../../../core/shared/config/index');
-const localUtils = require('./utils');
-const { mockManager } = require('../../utils/e2e-framework');
-const oembedRoot = require('../../../core/server/services/oembed').default;
-const urlUtils = require('../../../core/shared/url-utils').default;
+const testUtils = require('../../../../../../test/utils/index');
+const config = require('../../../../../../core/shared/config/index');
+const localUtils = require('../../../../../../test/e2e-api/admin/utils');
+const { mockManager } = require('../../../../../../test/utils/e2e-framework');
+const oembedRoot = require('../../../../transition/services/oembed').default;
+const urlUtils = require('../../../../../../core/shared/url-utils').default;
 
 // for sinon stubs
 const dnsPromises = require('dns').promises;

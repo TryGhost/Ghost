@@ -14,7 +14,7 @@ function tagFetchError(err) {
 }
 
 module.exports = class WebmentionMetadata {
-  /** @type {import('../oembed/oembed-service')} */
+  /** @type {import('../../../../domains/publishing/transition/services/oembed/oembed-service')} */
   #oembedService;
 
   /**
@@ -25,7 +25,7 @@ module.exports = class WebmentionMetadata {
 
   /**
    * @param {object} deps
-   * @param {import('../oembed/oembed-service')} deps.oembedService
+   * @param {import('../../../../domains/publishing/transition/services/oembed/oembed-service')} deps.oembedService
    */
   constructor({ oembedService }) {
     this.#oembedService = oembedService;

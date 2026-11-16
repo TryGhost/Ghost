@@ -20,7 +20,8 @@ export default defineService('Mentions', () => {
   const settingsCache = require('../../../shared/settings-cache');
   const urlService = require('../url');
   // Boot initializes the oEmbed root before this one.
-  const oembedService = require('../oembed').default.service;
+  const oembedService = require('../../../../domains/publishing/transition/services/oembed').default
+    .service;
   const jobsService = require('../jobs-service').getInstance();
 
   const repository = new BookshelfMentionRepository({

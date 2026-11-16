@@ -4,7 +4,7 @@ import {
   getFaviconProbeUrls,
   isAmazonUrl,
   pickIcon,
-} from '../../../../../core/server/services/oembed/extract-metadata';
+} from '../../../../../transition/services/oembed/extract-metadata';
 
 const page = (head: string, body = '') => `<html><head>${head}</head><body>${body}</body></html>`;
 

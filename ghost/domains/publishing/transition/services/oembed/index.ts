@@ -1,4 +1,4 @@
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '../../../../../core/kernel/define-service';
 
 /**
  * What callers use of the oEmbed service. The implementation is JavaScript, so
@@ -24,9 +24,9 @@ export interface OEmbedService {
 // which hands the ready instance to its metadata service. The images adapter
 // and the provider credentials are read once, here, as they always have been.
 export default defineService('OEmbed', (): OEmbedService => {
-  const config = require('../../../shared/config');
-  const adapterManager = require('../adapter-manager').default;
-  const externalRequest = require('../../lib/request-external');
+  const config = require('../../../../../core/shared/config');
+  const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
+  const externalRequest = require('../../../../../core/server/lib/request-external');
   const logging = require('@tryghost/logging');
   const imageTransform = require('@tryghost/image-transform');
   const OEmbedServiceClass = require('./oembed-service');

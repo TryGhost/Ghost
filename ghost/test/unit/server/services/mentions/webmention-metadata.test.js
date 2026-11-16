@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
-const oembedRoot = require('../../../../../core/server/services/oembed').default;
+const oembedRoot = require('../../../../../domains/publishing/transition/services/oembed').default;
 
 // Boot initializes the oEmbed root; these tests use its ready instance.
 let oembedService;

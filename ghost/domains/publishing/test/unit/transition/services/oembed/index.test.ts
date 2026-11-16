@@ -5,21 +5,21 @@ import nock from 'nock';
 import sinon from 'sinon';
 
 // Use the same classes and dependency objects as the root.
-const OEmbedService = require('../../../../../core/server/services/oembed/oembed-service');
-const NFTOEmbedProvider = require('../../../../../core/server/services/oembed/nft-oembed-provider');
-const TwitterOEmbedProvider = require('../../../../../core/server/services/oembed/twitter-oembed-provider');
-const WebmentionMetadata = require('../../../../../core/server/services/mentions/webmention-metadata');
+const OEmbedService = require('../../../../../transition/services/oembed/oembed-service');
+const NFTOEmbedProvider = require('../../../../../transition/services/oembed/nft-oembed-provider');
+const TwitterOEmbedProvider = require('../../../../../transition/services/oembed/twitter-oembed-provider');
+const WebmentionMetadata = require('../../../../../../../core/server/services/mentions/webmention-metadata');
 const {
   RecommendationMetadataService,
-}: typeof import('../../../../../domains/network/services/recommendations/recommendation-metadata.service') = require('../../../../../domains/network/services/recommendations/recommendation-metadata.service');
-const oembedEndpoint = require('../../../../../core/server/api/endpoints/oembed');
-const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
-const config = require('../../../../../core/shared/config');
-const externalRequest = require('../../../../../core/server/lib/request-external');
+}: typeof import('../../../../../../network/services/recommendations/recommendation-metadata.service') = require('../../../../../../network/services/recommendations/recommendation-metadata.service');
+const oembedEndpoint = require('../../../../../../../core/server/api/endpoints/oembed');
+const adapterManager = require('../../../../../../../core/server/services/adapter-manager').default;
+const config = require('../../../../../../../core/shared/config');
+const externalRequest = require('../../../../../../../core/server/lib/request-external');
 const logging = require('@tryghost/logging');
-const { mockManager } = require('../../../../utils/e2e-framework');
+const { mockManager } = require('../../../../../../../test/utils/e2e-framework');
 
-const rootDirectory = path.resolve(__dirname, '../../../../../core/server/services/oembed');
+const rootDirectory = path.resolve(__dirname, '../../../../../transition/services/oembed');
 const rootModules = [require.resolve(rootDirectory)];
 
 const OPENSEA_URL =

@@ -64,7 +64,7 @@ export default defineService('Recommendations', (): RecommendationsService => {
   // Legacy code, counted by the domain-legacy-imports rule.
   const models = require('../../../../core/server/models');
   const mentions = require('../../../../core/server/services/mentions').default;
-  const oembed = require('../../../../core/server/services/oembed').default;
+  const oembed = require('../../../publishing/transition/services/oembed').default;
   const staff = require('../../../../core/server/services/staff').default;
 
   // The renderer reads the ready Staff service for each email.

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 // @ts-expect-error This module lacks type definitions.
-import NFTOEmbedProvider from '../../../../../core/server/services/oembed/nft-oembed-provider';
+import NFTOEmbedProvider from '../../../../../transition/services/oembed/nft-oembed-provider';
 
 const ASSET_URL = new URL(
   'https://opensea.io/assets/ethereum/0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb/9998',

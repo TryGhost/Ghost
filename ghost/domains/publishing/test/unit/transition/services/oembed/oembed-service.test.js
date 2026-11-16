@@ -3,7 +3,7 @@ const http = require('http');
 const nock = require('nock');
 const got = require('got').default;
 const imageTransform = require('@tryghost/image-transform');
-const { createLoggingFake } = require('../../../../utils/logging-utils');
+const { createLoggingFake } = require('../../../../../../../test/utils/logging-utils');
 
 // The service logs through the logger it is given. One service is built for the
 // whole file, so a test that counts errors puts its own stub on this logger.
@@ -12,9 +12,9 @@ const sinon = require('sinon');
 const sharp = require('sharp');
 const zlib = require('zlib');
 
-const OembedService = require('../../../../../core/server/services/oembed/oembed-service');
-const ghostConfig = require('../../../../../core/shared/config');
-const requestExternal = require('../../../../../core/server/lib/request-external');
+const OembedService = require('../../../../../transition/services/oembed/oembed-service');
+const ghostConfig = require('../../../../../../../core/shared/config');
+const requestExternal = require('../../../../../../../core/server/lib/request-external');
 
 describe('oembed-service', function () {
   /** @type {OembedService} */

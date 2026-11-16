@@ -1,4 +1,4 @@
-const oembed = require('../../services/oembed').default;
+const oembed = require('../../../../domains/publishing/transition/services/oembed').default;
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {

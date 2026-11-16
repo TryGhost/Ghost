@@ -325,7 +325,7 @@ services:
           - core/server/services/route-settings/index.js
           - core/server/services/custom-redirects/index.js
           - core/server/services/media-inliner/index.ts
-          - core/server/services/oembed/index.ts
+          - domains/publishing/transition/services/oembed/index.ts
           - core/server/services/jobs-service/index.ts
           - core/server/services/members/import-export/index.ts
           - core/server/services/content-import/index.ts

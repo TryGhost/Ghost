@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const { createLoggingFake } = require('../../../../utils/logging-utils');
+const { createLoggingFake } = require('../../../../../../../test/utils/logging-utils');
 
 // The provider logs through the logger it is given. sinon.restore() undoes the
 // fake's stubs, so each test gets a new one.
@@ -8,10 +8,10 @@ beforeEach(function () {
   logging = createLoggingFake();
 });
 const sinon = require('sinon');
-const TwitterOEmbedProvider = require('../../../../../core/server/services/oembed/twitter-oembed-provider');
-const externalRequest = require('../../../../../core/server/lib/request-external');
+const TwitterOEmbedProvider = require('../../../../../transition/services/oembed/twitter-oembed-provider');
+const externalRequest = require('../../../../../../../core/server/lib/request-external');
 const nock = require('nock');
-const { mockManager } = require('../../../../utils/e2e-framework');
+const { mockManager } = require('../../../../../../../test/utils/e2e-framework');
 const { HTTPError } = require('got');
 
 describe('TwitterOEmbedProvider', function () {

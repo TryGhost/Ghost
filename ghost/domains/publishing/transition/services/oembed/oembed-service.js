@@ -12,7 +12,7 @@ const {
   detectFileExtension,
   isAllowedImageExtension,
   isSvgExtension,
-} = require('../../lib/image/image-content');
+} = require('../../../../../core/server/lib/image/image-content');
 
 // Some sites block non-standard user agents so we need to mimic a typical browser
 // Note: the Ghost/5.0 string _may_ be in use by 3rd parties so use caution when updating across majors
