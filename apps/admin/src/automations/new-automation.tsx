@@ -13,7 +13,7 @@ import { Background, ReactFlow } from '@xyflow/react';
 import AutomationHeader from './components/automation-header';
 import { AutomationCanvasControls } from './components/canvas/controls';
 import { CANVAS_ZOOM_CONFIG } from './components/canvas/use-canvas-viewport';
-import { canvasBackground } from './components/canvas/canvas-background';
+import { canvasBackground, canvasColorClass } from './components/canvas/canvas-background';
 import { useVisibleAutomations } from './hooks/use-visible-automations';
 import { getNewAutomationName } from './utils/get-new-automation-name';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
@@ -88,7 +88,8 @@ const TriggerPicker: React.FC<{
       />
       <Box className="relative min-h-0 flex-1">
         <ReactFlow
-          className="[--xy-background-color:var(--preview-canvas)]"
+          // SHAPING PROTOTYPE ONLY: the canvas colour for the picked concept.
+          className={canvasColorClass(chrome)}
           edges={[]}
           maxZoom={CANVAS_ZOOM_CONFIG.maxZoom}
           minZoom={CANVAS_ZOOM_CONFIG.minZoom}

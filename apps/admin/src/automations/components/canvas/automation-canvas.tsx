@@ -36,7 +36,7 @@ import type { Edge, NodeChange } from '@xyflow/react';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { Box, Inline, Stack } from '@tryghost/shade/primitives';
 import { RunHistory } from './run-history';
-import { canvasBackground } from './canvas-background';
+import { canvasBackground, canvasColorClass } from './canvas-background';
 import { AutomationSidebar } from './automation-sidebar';
 import type { TriggerData } from './trigger-card';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
@@ -392,7 +392,14 @@ const getInitialViewport = (
 export type AutomationEditorChrome = {
   chrome: EditorChrome;
   sidebar: { available: boolean; open: boolean; animated: boolean };
+  run?: { id: string; memberName: string; onClose: () => void };
 };
+
+// Renders the header as an element, so its layout, callbacks included, passes as props.
+const EditorHeader: React.FC<{
+  layout: AutomationEditorChrome;
+  render: (layout: AutomationEditorChrome) => React.ReactNode;
+}> = ({ layout, render }) => render(layout);
 
 type AutomationCanvasProps = {
   // The editor's header, laid out in the canvas's column so the sidebar can run
@@ -666,14 +673,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     const frame = requestAnimationFrame(() => setSidebarAnimated(true));
     return () => cancelAnimationFrame(frame);
   }, [sidebarResolved]);
-  const header = renderHeader({
-    chrome,
-    sidebar: {
-      available: true,
-      open: isAutomationSidebarOpen,
-      animated: sidebarAnimated,
-    },
-  });
   const initialViewport = getInitialViewport(
     window.innerWidth - (isAutomationSidebarOpen && window.innerWidth >= 960 ? 480 : 0),
     // The picker measures from its canvas, which a floating header doesn't push down.
@@ -703,6 +702,30 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     onSelectRun(null);
     requestAnimationFrame(() => editingCanvasRef.current?.focus());
   };
+
+  const header = (
+    <EditorHeader
+      layout={{
+        chrome,
+        sidebar: {
+          available: true,
+          open: isAutomationSidebarOpen,
+          animated: sidebarAnimated,
+        },
+        // SHAPING PROTOTYPE ONLY: Docked and Floating put the run's member in the header.
+        run:
+          selectedRunId !== null && chrome !== 'current'
+            ? {
+                id: selectedRunId,
+                memberName:
+                  selectedMember?.runId === selectedRunId ? selectedMember.name : 'Member',
+                onClose: handleCloseHistory,
+              }
+            : undefined,
+      }}
+      render={renderHeader}
+    />
+  );
 
   // Only for the edges and card that first appear; later ones arrive as usual.
   const [connecting, setConnecting] = useState(initialTriggerTop !== undefined);
@@ -926,7 +949,11 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           data-cleared={isCanvasCleared || undefined}
         >
           <ReactFlow
-            className="[--xy-background-color:var(--preview-canvas)] [--xy-edge-stroke:var(--border-default)]"
+            className={cn(
+              '[--xy-edge-stroke:var(--border-default)]',
+              // SHAPING PROTOTYPE ONLY: the canvas colour for the picked concept.
+              canvasColorClass(chrome),
+            )}
             defaultViewport={initialViewport}
             edges={graph.edges}
             edgesFocusable={false}
@@ -958,12 +985,19 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           key={selectedRunId}
           automationId={automation.id}
           automationSlug={automation.slug}
-          clearsLeftToggle={chrome === 'current'}
+          chrome={chrome}
           isAutomationSidebarOpen={isAutomationSidebarOpen}
-          isUnderFloatingHeader={floating}
           memberName={selectedMember?.runId === selectedRunId ? selectedMember.name : undefined}
+          rightInset={floating && isAutomationSidebarOpen ? FLOATING_SIDEBAR_WIDTH : 0}
           runId={selectedRunId}
           onClose={handleCloseHistory}
+          onMemberNameChange={(name) =>
+            setSelectedMember((current) =>
+              current?.runId === selectedRunId && current.name === name
+                ? current
+                : { runId: selectedRunId, name },
+            )
+          }
         />
       )}
     </Box>

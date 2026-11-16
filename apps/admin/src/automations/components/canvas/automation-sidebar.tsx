@@ -334,14 +334,14 @@ export const AutomationSidebar: React.FC<{
 
   const panel = (
     <Stack
-      // The tab row's text centres on the header buttons' line: 28px down when docked,
-      // 36px when floating (inside the card's 8px inset and border).
+      // Docked, the tab row's text centres on the header buttons' line, 28px down.
+      // Floating, the card pads 24px on every side.
       className={cn(
         current
           ? 'h-full w-[480px] overflow-y-auto border-r border-border-default px-6 py-4 @max-[960px]/automation:w-[100cqw]'
-          : 'h-full overflow-y-auto px-6 pb-4',
-        chrome === 'floating' && 'pt-[9px]',
-        chrome === 'docked' && 'pt-2.5',
+          : 'h-full overflow-y-auto px-6',
+        chrome === 'floating' && 'py-6',
+        chrome === 'docked' && 'pt-2.5 pb-4',
       )}
       gap="none"
       style={{ overflowAnchor: 'none' }}
@@ -352,7 +352,7 @@ export const AutomationSidebar: React.FC<{
       <Tabs
         className="flex min-h-0 flex-1 flex-col"
         value={activeTab}
-        variant={current ? 'button' : 'underline'}
+        variant={chrome === 'docked' ? 'underline' : 'button'}
         onValueChange={(value) => {
           if (value === 'performance' || value === 'settings') {
             onTabChange(value);
@@ -361,14 +361,15 @@ export const AutomationSidebar: React.FC<{
       >
         <Inline
           className={cn(
-            current
-              ? 'h-(--control-height) shrink-0 pl-10'
-              : 'h-9 shrink-0 border-b border-border-default',
-            // Room for the toggle, which sits one gap past the last button: its
-            // offset from the edge plus the gap equals the panel's padding, less
-            // the card's 1px border when floating.
+            chrome === 'docked'
+              ? 'h-9 shrink-0 border-b border-border-default'
+              : 'h-(--control-height) shrink-0',
+            current && 'pl-10',
+            // Room for the toggle, one gap past the last button. Docked, its offset
+            // from the edge plus the gap equals the panel's padding; floating, it
+            // sits inside the padding.
             chrome === 'docked' && 'pr-(--control-height)',
-            chrome === 'floating' && 'pr-[calc(var(--control-height)-1px)]',
+            chrome === 'floating' && 'pr-[calc(var(--control-height)+--spacing(2))]',
           )}
           gap="sm"
         >
@@ -377,9 +378,9 @@ export const AutomationSidebar: React.FC<{
             className={
               searchOpen && activeTab === 'performance'
                 ? 'sr-only'
-                : current
-                  ? 'min-w-0 flex-1'
-                  : 'w-auto min-w-0 flex-1 border-b-0'
+                : chrome === 'docked'
+                  ? 'w-auto min-w-0 flex-1 border-b-0'
+                  : 'min-w-0 flex-1'
             }
           >
             {performanceEnabled && <TabsTrigger value="performance">Performance</TabsTrigger>}
@@ -537,7 +538,9 @@ export const AutomationSidebar: React.FC<{
           )}
         >
           <div className="flex min-h-0 flex-1 flex-col p-2">
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border-default bg-background shadow-sm">
+            {/* The border is drawn over the card's edge, so it takes no space and stays
+                above anything scrolling inside. */}
+            <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl bg-background shadow-sm after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:border after:border-border-default">
               <div className={cn('flex min-h-0 flex-1 flex-col', contentFade)}>{panel}</div>
             </div>
           </div>
@@ -576,8 +579,10 @@ export const AutomationSidebar: React.FC<{
         className={cn(
           'absolute z-40 transition-transform duration-200 ease-in-out motion-reduce:transition-none',
           'enabled:aria-expanded:shadow-none enabled:aria-expanded:hover:bg-button-ghost-hover',
+          // Floating, 32px in lines it up with the header buttons and with the card's
+          // padded corner (8px inset, 24px padding), so it stays put open or closed.
           chrome === 'floating'
-            ? 'top-5 right-6 bg-surface-elevated enabled:aria-expanded:bg-surface-elevated'
+            ? 'top-8 right-8 bg-surface-elevated enabled:aria-expanded:bg-surface-elevated'
             : 'top-3 right-4 enabled:aria-expanded:bg-transparent',
           // Slides off its edge while the email editor clears the canvas.
           isToggleHidden && 'translate-x-[calc(100%+2rem)]',

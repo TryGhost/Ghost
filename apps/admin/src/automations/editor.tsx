@@ -521,7 +521,7 @@ const AutomationEditorContent: React.FC<{
         initialTriggerTop={creation?.triggerTop}
         isError={isEditorError}
         isLoading={isEditorLoading}
-        renderHeader={({ chrome, sidebar }) => (
+        renderHeader={({ chrome, sidebar, run }) => (
           <AutomationHeader
             automation={draft}
             chrome={chrome}
@@ -531,6 +531,7 @@ const AutomationEditorContent: React.FC<{
             isTurnOffButtonEnabled={isTurnOffButtonEnabled && !selectedRunId}
             publishButtonChildren={publishButtonChildren}
             publishButtonVariant={publishButtonVariant}
+            run={run}
             saveButtonChildren={saveButtonChildren}
             saveButtonVariant={saveButtonVariant}
             sidebar={sidebar}

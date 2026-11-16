@@ -1,6 +1,6 @@
 import React from 'react';
 import { Stack, Text } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import type {
   HistoryCardData,
   HistoryCardState,
@@ -13,29 +13,37 @@ const states = {
   occurred: {
     Icon: CompletedGlyph,
     border: 'border-state-success',
-    icon: 'bg-state-success/15 text-state-success',
+    iconBg: 'bg-state-success/15',
+    iconFg: 'text-state-success',
   },
   pending: {
     Icon: InProgressGlyph,
     border: 'border-state-info border-dashed',
-    icon: 'bg-state-info/15 text-state-info',
+    iconBg: 'bg-state-info/15',
+    iconFg: 'text-state-info',
   },
   planned: {
     Icon: LucideIcon.Circle,
     border: 'border-border-default',
-    icon: 'bg-muted text-muted-foreground',
+    iconBg: 'bg-muted',
+    iconFg: 'text-muted-foreground',
   },
   exited: {
     Icon: ExitedGlyph,
     border: 'border-border-strong',
-    icon: 'bg-muted text-muted-foreground',
+    iconBg: 'bg-muted',
+    iconFg: 'text-muted-foreground',
   },
   failed: {
     Icon: LucideIcon.CircleAlert,
     border: 'border-state-danger',
-    icon: 'bg-state-danger/15 text-state-danger',
+    iconBg: 'bg-state-danger/15',
+    iconFg: 'text-state-danger',
   },
-} satisfies Record<HistoryCardState, { Icon: React.ElementType; border: string; icon: string }>;
+} satisfies Record<
+  HistoryCardState,
+  { Icon: React.ElementType; border: string; iconBg: string; iconFg: string }
+>;
 
 const kindIcons = {
   trigger: LucideIcon.Zap,
@@ -87,11 +95,15 @@ const HistoryTime: React.FC<{ timestamp: HistoryTimestamp }> = ({ timestamp }) =
 
 // Content and state are composed separately so future email content and editing
 // controls can use the same card surface without bringing editor state into it.
-export const HistoryCard: React.FC<React.PropsWithChildren<{ card: HistoryCardData }>> = ({
-  card,
-  children,
-}) => {
-  const { Icon: StateIcon, border, icon } = states[card.state];
+export const HistoryCard: React.FC<
+  React.PropsWithChildren<{
+    card: HistoryCardData;
+    // SHAPING PROTOTYPE ONLY: styled like the editor's cards, with the state in the icon
+    // rather than a coloured border.
+    editorStyle?: boolean;
+  }>
+> = ({ card, children, editorStyle = false }) => {
+  const { Icon: StateIcon, border, iconBg, iconFg } = states[card.state];
   let Icon = StateIcon;
   if (
     card.state === 'planned' ||
@@ -100,7 +112,7 @@ export const HistoryCard: React.FC<React.PropsWithChildren<{ card: HistoryCardDa
     Icon = kindIcons[card.kind];
   }
   return (
-    <AutomationCard aria-label={card.title} className={border}>
+    <AutomationCard aria-label={card.title} className={editorStyle ? undefined : border}>
       <AutomationCardHeader
         description={
           <Text className="sr-only" size="sm" tone="secondary">
@@ -108,7 +120,7 @@ export const HistoryCard: React.FC<React.PropsWithChildren<{ card: HistoryCardDa
           </Text>
         }
         icon={<Icon aria-hidden="true" className="size-4" />}
-        iconClassName={icon}
+        iconClassName={cn(editorStyle && 'p-2.5', iconBg, iconFg)}
         metadata={
           card.timestamp && (
             <Stack className="ml-auto max-w-full text-right" gap="xs">
@@ -131,7 +143,7 @@ export const HistoryCard: React.FC<React.PropsWithChildren<{ card: HistoryCardDa
           <HistoryTime timestamp={card.executionTimestamp} />
         </Text>
       )}
-      {children}
+      {editorStyle && children ? <div className="mt-3">{children}</div> : children}
     </AutomationCard>
   );
 };

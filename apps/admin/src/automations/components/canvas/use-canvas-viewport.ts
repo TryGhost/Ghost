@@ -38,6 +38,15 @@ const getPanTranslateExtent = (
   ];
 };
 
+// React Flow checks the extent against the whole canvas, including the part a floating panel
+// covers. Extending the right edge by the panel's width keeps the limits measured against the
+// visible area while leaving the extent at least as wide as the canvas, which d3 needs to pan.
+const withRightInset = (
+  extent: CoordinateExtent,
+  rightInset: number,
+  zoom: number,
+): CoordinateExtent => [extent[0], [extent[1][0] + rightInset / zoom, extent[1][1]]];
+
 const constrainViewport = (
   viewport: Viewport,
   size: { width: number; height: number },
@@ -105,9 +114,13 @@ export const useCanvasViewport = <NodeType extends Node = Node, EdgeType extends
   const translateExtent = useMemo(
     () =>
       contentBounds && visibleSize.width && visibleSize.height
-        ? getPanTranslateExtent(contentBounds, visibleSize, { y: initialViewport.y, zoom })
+        ? withRightInset(
+            getPanTranslateExtent(contentBounds, visibleSize, { y: initialViewport.y, zoom }),
+            rightInset,
+            zoom,
+          )
         : undefined,
-    [visibleSize, contentBounds, initialViewport.y, zoom],
+    [visibleSize, contentBounds, initialViewport.y, rightInset, zoom],
   );
 
   const onInit = useCallback<OnInit<NodeType, EdgeType>>((instance) => {
@@ -140,14 +153,18 @@ export const useCanvasViewport = <NodeType extends Node = Node, EdgeType extends
     // React Flow applies a new translateExtent to future interactions but does not constrain
     // the current transform. Clamp it explicitly after the canvas, graph, or zoom changes.
     const currentViewport = reactFlowInstance.getViewport();
-    const nextExtent = getPanTranslateExtent(
-      {
-        bottom: contentBottom,
-        left: contentLeft,
-        right: contentRight,
-      },
-      visibleSize,
-      { y: initialViewport.y, zoom },
+    const nextExtent = withRightInset(
+      getPanTranslateExtent(
+        {
+          bottom: contentBottom,
+          left: contentLeft,
+          right: contentRight,
+        },
+        visibleSize,
+        { y: initialViewport.y, zoom },
+      ),
+      rightInset,
+      zoom,
     );
     // Preserve the visible center when a sidebar changes the visible width.
     const widthChange = visibleSize.width - (previousCanvasWidth.current ?? visibleSize.width);
@@ -156,7 +173,7 @@ export const useCanvasViewport = <NodeType extends Node = Node, EdgeType extends
     previousRightInset.current = rightInset;
     const nextViewport = constrainViewport(
       { ...currentViewport, x: currentViewport.x + widthChange / 2 },
-      visibleSize,
+      canvasSize,
       nextExtent,
     );
 
@@ -169,6 +186,7 @@ export const useCanvasViewport = <NodeType extends Node = Node, EdgeType extends
       });
     }
   }, [
+    canvasSize,
     visibleSize.height,
     visibleSize.width,
     rightInset,
