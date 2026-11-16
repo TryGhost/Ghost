@@ -72,16 +72,16 @@ for Nx caches.
 Publishing policy, version selection and release preparation. The publishing
 manifest is release-owned data, shared with validation through `lib/publish-manifest.ts`.
 
-| Current file                                                 | Purpose                                                                | Caller                                                                         |
-| ------------------------------------------------------------ | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| [build-publish-matrix.ts](./release/build-publish-matrix.ts) | Select affected continuous-publishing packages and CDN purge paths     | CI setup: `node tools/scripts/release/build-publish-matrix.ts <affected-json>` |
-| [compare-published.ts](./release/compare-published.ts)       | Compare locally packed output with the live registry version           | Continuous-publishing CI gate                                                  |
-| [generate-changeset.ts](./release/generate-changeset.ts)     | Create changesets for automated dependency updates                     | Renovate post-upgrade task                                                     |
-| [next-version.ts](./release/next-version.ts)                 | Compute the next continuous-publishing version from registry state     | Publishing CI; --latest prints the comparison version                          |
-| [publish-packages.ts](./release/publish-packages.ts)         | Publish eligible workspace packages in dependency order                | Tagged-release / manual publishing workflow                                    |
-| [release-apps.ts](./release/release-apps.ts)                 | Prepare intentional CDN-app minor/major releases and matching defaults | App-local pnpm ship                                                            |
-| [release-notes.ts](./release/release-notes.ts)               | Generate release notes from tagged commit ranges                       | Release CI                                                                     |
-| [release.ts](./release/release.ts)                           | Prepare Ghost and package release versions, commits and tags           | pnpm release; release workflow                                                 |
+| Current file                                                 | Purpose                                                                       | Caller                                                                                             |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| [build-publish-matrix.ts](./release/build-publish-matrix.ts) | Select affected continuous-publishing packages; list the CDN aliases to purge | CI setup: `node tools/scripts/release/build-publish-matrix.ts <affected-json>`, or `--cdn-aliases` |
+| [compare-published.ts](./release/compare-published.ts)       | Compare locally packed output with the live registry version                  | Continuous-publishing CI gate                                                                      |
+| [generate-changeset.ts](./release/generate-changeset.ts)     | Create changesets for automated dependency updates                            | Renovate post-upgrade task                                                                         |
+| [next-version.ts](./release/next-version.ts)                 | Compute the next continuous-publishing version from registry state            | Publishing CI; --latest prints the comparison version                                              |
+| [publish-packages.ts](./release/publish-packages.ts)         | Publish eligible workspace packages in dependency order                       | Tagged-release / manual publishing workflow                                                        |
+| [release-apps.ts](./release/release-apps.ts)                 | Prepare intentional CDN-app minor/major releases and matching defaults        | App-local pnpm ship                                                                                |
+| [release-notes.ts](./release/release-notes.ts)               | Generate release notes from tagged commit ranges                              | Release CI                                                                                         |
+| [release.ts](./release/release.ts)                           | Prepare Ghost and package release versions, commits and tags                  | pnpm release; release workflow                                                                     |
 
 ### Root setup and maintenance
 
