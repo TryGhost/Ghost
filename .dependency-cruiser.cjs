@@ -473,6 +473,17 @@ module.exports = {
       from: { path: '^ghost/core/shared/' },
       to: { path: '^ghost/core/(server|frontend)/' },
     },
+    // Config schema files describe shapes: they know feature names, not feature code.
+    {
+      name: 'config-schema-zod-only',
+      comment:
+        'Files in core/shared/config/schema/ may import only zod and each other. See core/shared/config/SCHEMA.md.',
+      severity: 'error',
+      from: { path: '^ghost/core/shared/config/schema/' },
+      to: {
+        pathNot: ['^ghost/core/shared/config/schema/', '(^|/)node_modules/zod/|^zod$'],
+      },
+    },
     // ============================================================
     // Frontend must not require server/models directly
     // ============================================================

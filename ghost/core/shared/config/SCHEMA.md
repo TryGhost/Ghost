@@ -32,7 +32,9 @@ reference for self-hosters generated from `configSchema` alone.
 
 The schema knows feature names, but not feature code: the files hold shapes,
 import `zod` and pure helpers from this directory such as `makePathsAbsolute`, and
-never a feature module. That is the same trade `schema.js` makes.
+never a feature module. That is the same trade `schema.js` makes. Files in
+[`schema/`](schema/) go further and import only `zod` and each other; the
+`config-schema-zod-only` boundary rule enforces it.
 
 Organise it by area:
 
