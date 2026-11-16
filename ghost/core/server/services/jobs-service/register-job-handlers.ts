@@ -41,7 +41,7 @@ const EMAIL_QUEUE: JobHandlingOptions = { queue: 'email', concurrency: 2 };
 interface RegisterJobHandlersDependencies {
   jobsService: JobsService;
   gifts: Pick<EmailAnalyticsServiceWrapper, 'startFetch'>;
-  automations: Pick<EmailAnalyticsServiceWrapper, 'startFetch'>;
+  automationAnalytics: Pick<EmailAnalyticsServiceWrapper, 'startFetch'>;
   newsletters: Pick<EmailAnalyticsServiceWrapper, 'startFetch'>;
   memberJobs: {
     cleanTokens(): Promise<number>;
@@ -71,7 +71,7 @@ interface RegisterJobHandlersDependencies {
 export default function registerJobHandlers({
   jobsService,
   gifts,
-  automations,
+  automationAnalytics,
   newsletters,
   memberJobs,
   giftService,
@@ -92,7 +92,7 @@ export default function registerJobHandlers({
   // instead of queueing behind the running fetch and firing late.
   for (const [JobClass, pipeline] of [
     [EmailAnalyticsFetchLatestJob, newsletters],
-    [EmailAnalyticsAutomationFetchLatestJob, automations],
+    [EmailAnalyticsAutomationFetchLatestJob, automationAnalytics],
     [EmailAnalyticsGiftFetchLatestJob, gifts],
   ] as const) {
     jobsService.handle(JobClass, () => pipeline.startFetch(), {
