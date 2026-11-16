@@ -1,4 +1,4 @@
-// Shapes of the column and table definitions in schema.js, as migration helpers accept them.
+// Shapes of the column and table definitions in schema.ts, as migration helpers accept them.
 
 import type { PatternColumn } from './lib/column-patterns';
 import type { ForeignKeyColumn, ForeignKeySpec } from './lib/foreign-keys';

@@ -2324,7 +2324,7 @@ services:
           - core/server/services/email-suppression-list/service.js
           - core/server/services/email-suppression-list/mailgun-email-suppression-list.js
           - core/server/models/suppression.js
-          - core/server/data/schema/schema.js
+          - core/server/data/schema/schema.ts
         tests:
           - test/integration/services/mailgun-email-suppression-list.test.js
           - test/unit/server/services/email-suppression-list/mailgun-email-suppression-list.test.ts
@@ -2661,7 +2661,7 @@ services:
           - core/server/services/gifts/gift-bookshelf-repository.ts
           - core/server/services/gifts/gift-email-service.ts
           - core/server/services/gifts/index.ts
-          - core/server/data/schema/schema.js
+          - core/server/data/schema/schema.ts
         tests:
           - test/unit/server/services/gifts/gift-service-interface.test.ts
           - test/unit/server/services/gifts/gift-service.test.ts
@@ -3827,7 +3827,7 @@ services:
           - core/server/services/machine-payments/stripe/payment-recorder.ts
           - core/server/services/machine-payments/events/machine-payment-event-repository.ts
           - core/server/models/machine-payment-event.js
-          - core/server/data/schema/schema.js
+          - core/server/data/schema/schema.ts
           - core/server/data/exporter/table-lists.js
           - core/boot.js
         tests:
@@ -4654,7 +4654,7 @@ services:
           - core/server/services/members-metafields/values-service.ts
           - core/server/services/members-metafields/bindings-service.ts
           - core/server/services/members/service.js
-          - core/server/data/schema/schema.js
+          - core/server/data/schema/schema.ts
         tests:
           - test/e2e-api/admin/member-custom-fields.test.ts
           - test/e2e-api/members/custom-fields.test.ts
@@ -4696,7 +4696,7 @@ services:
           - core/server/services/members/members-api/services/member-bread-service.js
           - core/server/services/members/import-export/import/importer.ts
           - core/server/data/db/connection.ts
-          - core/server/data/schema/schema.js
+          - core/server/data/schema/schema.ts
         tests:
           - test/e2e-api/admin/member-custom-fields.test.ts
           - test/e2e-api/members/custom-fields.test.ts
@@ -5668,7 +5668,7 @@ services:
           - core/server/services/offers/application/offers-api.js
           - core/server/services/offers/offer-bookshelf-repository.js
           - core/server/services/offers/domain/models/offer.js
-          - core/server/data/schema/schema.js
+          - core/server/data/schema/schema.ts
           - core/frontend/web/site.js
           - core/server/services/members/api.js
         tests:
@@ -8595,7 +8595,7 @@ services:
           - core/server/services/jobs-service/index.ts
           - core/server/services/jobs-service/jobs-service.ts
           - core/server/adapters/jobs/InMemoryJobsBackend.ts
-          - core/server/data/schema/schema.js
+          - core/server/data/schema/schema.ts
         tests:
           - test/unit/server/services/tinybird-sync/index.test.ts
           - test/unit/server/services/tinybird-sync/sync-table-to-tinybird.test.ts
@@ -9844,7 +9844,7 @@ services:
           - core/server/lib/common/events.js
           - core/server/lib/request-external.js
           - core/server/models/base/plugins/events.js
-          - core/server/data/schema/schema.js
+          - core/server/data/schema/schema.ts
         tests:
           - test/integration/services/webhook-request.test.ts
       failures:
@@ -9870,7 +9870,7 @@ services:
           - core/server/services/webhooks/webhooks-service.js
           - core/server/models/webhook.js
           - core/server/lib/request-external.js
-          - core/server/data/schema/schema.js
+          - core/server/data/schema/schema.ts
           - core/server/api/endpoints/webhooks.js
         tests:
           - test/unit/server/services/webhooks/trigger.test.js

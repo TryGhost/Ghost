@@ -134,7 +134,7 @@ table graduates), all of this uses `users.password` as before.
 ## Tables
 
 `user_accounts`, `user_sessions` and `verifications` are defined in
-`schema.js` and listed in `IN_DEVELOPMENT_TABLES`, so they exist only in
+`schema.ts` and listed in `IN_DEVELOPMENT_TABLES`, so they exist only in
 development and testing databases and have no migration yet. Their dates are
 `DATETIME(3)` (the `precision` column option), because Better Auth expects
 dates to round-trip with their milliseconds.
@@ -171,9 +171,9 @@ in two lanes, each in its own database:
 - **better-auth tables**: every model in Better Auth's shape under Ghost's
   table and column names. Tests the adapter itself.
 - **ghost users**: `users`, `user_accounts`, `user_sessions` and
-  `verifications` built from `schema.js` with `commands.createTable`, so their
+  `verifications` built from `schema.ts` with `commands.createTable`, so their
   real types, lengths, indexes and foreign keys are tested, with the virtual
-  columns and create defaults. Models the suite renames or tables `schema.js`
+  columns and create defaults. Models the suite renames or tables `schema.ts`
   does not define fall back to Better Auth's shape, and `users.id` foreign
   keys follow a renamed user table.
 

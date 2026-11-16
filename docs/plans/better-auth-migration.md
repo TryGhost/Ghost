@@ -410,7 +410,7 @@ Ghost's tables to fit it. This keeps the adapter mapping thin, keeps Better
 Auth upgrades (which change plugin schemas) cheap, and avoids nullable-column
 migrations and legacy-row filters on live tables.
 
-- Each table is defined in `schema.js` and listed in `IN_DEVELOPMENT_TABLES`
+- Each table is defined in `schema.ts` and listed in `IN_DEVELOPMENT_TABLES`
   (`data/schema/in-development.ts`): created only in development and testing,
   outside the integrity hash, free to change.
 - A table graduates (removed from the list, versioned migration added) when
@@ -967,7 +967,7 @@ Changed:
 - `services/invites/accept.ts`, `services/integrations/integrations-service.js`,
   `services/internal-keys/index.ts`, `services/users`
 - `models/user.js`, `models/api-key.js`
-- `data/schema/schema.js`, `data/schema/in-development.ts`,
+- `data/schema/schema.ts`, `data/schema/in-development.ts`,
   `data/exporter/table-lists.js`, `ghost/test/unit/server/data/schema/integrity.test.ts`
 - `ghost/core/shared/config/defaults.json`, `ghost/core/shared/labs.js`
 - `apps/admin/src/auth/`, `apps/admin-x-framework/src/api/session.ts`

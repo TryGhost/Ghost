@@ -148,7 +148,7 @@ export default defineConfig({
         'core/frontend/public/**',
         'core/frontend/helpers/**',
         'core/server/data/migrations/**',
-        'core/server/data/schema/schema.js',
+        'core/server/data/schema/schema.ts',
         'core/server/services/koenig/**',
         // Type-only declarations: no runtime code, and the remapper's parser
         // rejects them ('Expected `from` but found `{`' on `import type`).

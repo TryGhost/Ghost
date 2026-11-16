@@ -9,7 +9,6 @@ import path from 'node:path';
 import semver from 'semver';
 import { knex as dbKnex } from '../../../core/server/data/db';
 import { v4Schema } from '../../utils/fixtures/schema/v4';
-// @ts-expect-error This module lacks type definitions.
 import rawSchema from '../../../core/server/data/schema/schema';
 // @ts-expect-error This module lacks type definitions.
 import * as commands from '../../../core/server/data/schema/commands';
@@ -139,7 +138,7 @@ const V4_FIXTURE_TABLES: Record<string, keyof typeof v4Schema> = {
   Integration: 'integrations',
 };
 
-// Tables knex-migrator uses to track its own state; they are not in schema.js
+// Tables knex-migrator uses to track its own state; they are not in schema.ts
 const KNEX_MIGRATOR_TABLES = ['migrations', 'migrations_lock'];
 
 const knexMigrator = new KnexMigrator({
@@ -147,7 +146,7 @@ const knexMigrator = new KnexMigrator({
 });
 
 /**
- * Reduces schema.js-style table definitions to what can be read back out of
+ * Reduces schema.ts-style table definitions to what can be read back out of
  * the database, so that they can be compared with `readSchemaFromDatabase()`.
  */
 function normalizeSchema(tables: SchemaTables): NormalizedSchema {
@@ -328,7 +327,7 @@ async function readSchemaFromDatabase(knex: Knex): Promise<NormalizedSchema> {
   }
 
   // MySQL implicitly creates an index for a foreign key that no other index
-  // covers, and names it after the constraint. schema.js doesn't list those.
+  // covers, and names it after the constraint. schema.ts doesn't list those.
   const foreignKeyNames = new Set(foreignKeyRows.map((row) => row.CONSTRAINT_NAME));
 
   const indexesByTable = groupBy(indexRows, 'TABLE_NAME');
@@ -469,7 +468,7 @@ describe('migrations', function () {
     await knexMigrator.init();
   }, 120_000);
 
-  it('builds the schema in schema.js when every migration runs', async function () {
+  it('builds the schema in schema.ts when every migration runs', async function () {
     await createMigratedDatabase(dbKnex);
 
     const actualSchema = await readSchemaFromDatabase(dbKnex);
@@ -477,8 +476,8 @@ describe('migrations', function () {
       omitBy(schema, (_tableSpec, tableName) => isInDevelopmentTable(tableName)),
     );
 
-    // Known drift between migrations and schema.js. Sites that were created
-    // with `knex-migrator init` have what's in schema.js; sites that ran these
+    // Known drift between migrations and schema.ts. Sites that were created
+    // with `knex-migrator init` have what's in schema.ts; sites that ran these
     // migrations have what's below.
     //
     // TODO: Fix this drift. See NY-1482 and NY-1483.

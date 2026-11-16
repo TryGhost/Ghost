@@ -54,7 +54,7 @@ these version and placement checks with
    TypeScript so the migration helpers' types check them.
 3. Run the migration with `pnpm knex-migrator migrate` from the repository
    root while following the iteration guidance below.
-4. For schema changes, update `core/server/data/schema/schema.js` to match.
+4. For schema changes, update `core/server/data/schema/schema.ts` to match.
 
 #### Types of migration
 
@@ -62,7 +62,7 @@ Migration pull requests generally contain one of two types of change:
 
 - **DDL (data definition language)** migrations change the database schema.
   They require a migration for existing databases and a matching update to
-  `schema.js`. New tables must also be added to the export list.
+  `schema.ts`. New tables must also be added to the export list.
 - **DML (data manipulation language)** migrations change data already stored in
   the tables. They generally require only the migration itself and focused
   tests.
@@ -91,7 +91,7 @@ A new table's shape often changes several times before its feature is ready.
 Rather than writing a migration for each change, list the table in
 `IN_DEVELOPMENT_TABLES` in
 [`core/server/data/schema/in-development.ts`](../../ghost/core/server/data/schema/in-development.ts)
-and define its schema in `schema.js` without adding a versioned migration. It
+and define its schema in `schema.ts` without adding a versioned migration. It
 is only created in development and testing databases.
 
 To apply a changed definition to your local database, rebuild the listed
@@ -120,8 +120,8 @@ The database-backed migration suites run against MySQL, Ghost's supported
 production database. Changes to retained SQLite compatibility paths should add
 focused unit coverage for that dialect.
 
-Run the schema-sync test after changing `schema.js` or schema migrations. It
-compares the migrated MySQL database structure with `schema.js`:
+Run the schema-sync test after changing `schema.ts` or schema migrations. It
+compares the migrated MySQL database structure with `schema.ts`:
 
 ```bash
 cd ghost
