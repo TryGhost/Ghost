@@ -10,14 +10,14 @@ export interface OutboxRelayTimings {
 }
 
 export interface OutboxRelayOptions extends OutboxRelayTimings {
-  outbox: JobsOutbox;
+  outbox: Pick<JobsOutbox, 'processNext'>;
   backend: Pick<JobsBackendBase, 'enqueue'>;
   logging: JobsLogger;
   sentry?: JobsErrorReporter;
 }
 
 export class OutboxRelay {
-  readonly #outbox: JobsOutbox;
+  readonly #outbox: Pick<JobsOutbox, 'processNext'>;
   readonly #backend: Pick<JobsBackendBase, 'enqueue'>;
   readonly #logging: JobsLogger;
   readonly #sentry?: JobsErrorReporter;
@@ -28,6 +28,7 @@ export class OutboxRelay {
   #running = false;
   #loop?: Promise<void>;
   #wake?: () => void;
+  #woken = false;
 
   constructor({
     outbox,
@@ -55,6 +56,14 @@ export class OutboxRelay {
     this.#loop = this.#run();
   }
 
+  // Drains now instead of at the next poll. A wake-up during a drain makes
+  // the relay drain again, since the drain may have looked before the row
+  // committed.
+  wake(): void {
+    this.#woken = true;
+    this.#wake?.();
+  }
+
   async stop(): Promise<void> {
     this.#running = false;
     this.#wake?.();
@@ -64,6 +73,7 @@ export class OutboxRelay {
 
   async #run(): Promise<void> {
     while (this.#running) {
+      this.#woken = false;
       await this.#drain();
       if (!this.#running) {
         break;
@@ -134,6 +144,9 @@ export class OutboxRelay {
   }
 
   #sleep(ms: number): Promise<void> {
+    if (this.#woken) {
+      return Promise.resolve();
+    }
     return new Promise<void>((resolve) => {
       const timer = setTimeout(() => {
         this.#wake = undefined;

@@ -70,6 +70,7 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
   private _defaultConcurrency: number;
   private _queues: Map<string, queueAsPromised<QueuedJob>>;
   private _recurring: Map<string, RecurringTimer>;
+  private _held: Set<string>;
 
   constructor(config: { concurrency?: unknown } = {}) {
     super();
@@ -78,6 +79,7 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
     this._defaultConcurrency = resolveConcurrency(config.concurrency);
     this._queues = new Map();
     this._recurring = new Map();
+    this._held = new Set();
   }
 
   private _makeQueue(concurrency: number): queueAsPromised<QueuedJob> {
@@ -129,20 +131,34 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
       queue = this._makeQueue(this._defaultConcurrency);
       this._queues.set(name, queue);
     }
+    if (settleAs !== undefined) {
+      this._held.add(settleAs);
+    }
     queue.push({ job, settleAs });
   }
 
   private async _deliver({ job, settleAs }: QueuedJob): Promise<void> {
-    let settlement: JobSettlement;
+    // A shutdown that times out replaces _held while this run is still going,
+    // and a restart may hold the same id again for a new delivery
+    const held = this._held;
+    // An interrupted job has not settled, so it is left unreported
+    let settlement: JobSettlement | undefined;
     try {
-      await this._processor!(job);
-      settlement = { status: 'completed' };
+      if ((await this._processor!(job)) !== 'interrupted') {
+        settlement = { status: 'completed' };
+      }
     } catch (err) {
       logging.error(`Job "${job.type}" delivery failed`, err);
       // Nothing is retried, so a failure is final
       settlement = { status: 'dead', error: err };
     }
-    if (settleAs !== undefined) {
+    if (settleAs === undefined) {
+      return;
+    }
+    // An interrupted job stops being held too, so its row goes stale and is
+    // handed over again once the lease runs out
+    held.delete(settleAs);
+    if (settlement) {
       await this._settle(settleAs, job.type, settlement);
     }
   }
@@ -153,6 +169,10 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
     } catch (err) {
       logging.error(`Job "${type}" settled, but reporting it failed`, err);
     }
+  }
+
+  heldIds(): string[] {
+    return [...this._held];
   }
 
   scheduleRecurring(envelope: DispatchEnvelope, { cron }: RecurringSchedule): void {
@@ -212,6 +232,7 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
     // Discard the queues so a re-boot never inherits this lifecycle's
     // abandoned in-flight deliveries against its concurrency limits.
     this._queues = new Map();
+    this._held = new Set();
     this._processor = null;
     this._onSettled = undefined;
   }

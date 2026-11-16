@@ -117,6 +117,55 @@ export function urlField({ allowLocalhost, base }: UrlRules, linkOnly = false) {
   });
 }
 
+const MAILTO_PROBLEM = 'Expected a mailto: link to one email address';
+// No separators, and no control, format or invisible characters, which could hide or reorder what
+// the mail client shows in its To field.
+const EMAIL_PART = String.raw`[^\s\p{Cc}\p{Cf}\p{Default_Ignorable_Code_Point}\u2800@,;:<>()[\]\\"?#%/]+`;
+const EMAIL_ADDRESS = new RegExp(String.raw`^${EMAIL_PART}@${EMAIL_PART}\.${EMAIL_PART}$`, 'u');
+
+/**
+ * Everything after a `mailto:` link's scheme, decoded as a mail client decodes it. That's the
+ * whole recipient list, query and fragment included: a mail client doesn't read `//` as an
+ * authority, so the URL's `pathname` alone can miss a recipient.
+ */
+function mailtoRecipients(link: URL): string | null {
+  try {
+    return decodeURIComponent(link.href.slice('mailto:'.length));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * A link to an app's developer: a URL as `url(true)` holds it, or a `mailto:` link to one email
+ * address. Ghost only ever links to it. A `mailto:` link takes no query or fragment, not even an
+ * empty one, so it can't prefill a message or add recipients. The address is checked as a mail
+ * client decodes it, so an escaped `,` can't add a second one.
+ */
+export function contactField(url: UrlField) {
+  const web = url(true);
+  return z.string('Expected an absolute URL').transform((value, ctx) => {
+    // Branches on the scheme as the URL parser reads it, which skips leading spaces.
+    const link = URL.parse(value);
+    if (link?.protocol !== 'mailto:') {
+      const result = web.safeParse(value);
+      if (!result.success) {
+        for (const issue of result.error.issues) {
+          ctx.addIssue({ code: 'custom', message: issue.message });
+        }
+        return z.NEVER;
+      }
+      return result.data;
+    }
+    const recipients = mailtoRecipients(link);
+    if (!recipients || link.href.length > URL_MAX_LENGTH || !EMAIL_ADDRESS.test(recipients)) {
+      ctx.addIssue({ code: 'custom', message: MAILTO_PROBLEM });
+      return z.NEVER;
+    }
+    return link.href;
+  });
+}
+
 /**
  * A URL as a manifest holds it once `parseManifest` has accepted it: absolute, and
  * already checked. Nothing is resolved or checked again, so a manifest accepted before the

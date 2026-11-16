@@ -44,7 +44,8 @@ files up into this folder and remove the subfolder.
    ```
 
    Every field is required, `author.url` too, and Admin rejects fields it
-   doesn't know. `icon.name` is any Lucide icon name in kebab case, such as
+   doesn't know. `author.url` is where publishers get support: a web page, or
+   a `mailto:` link to one address. `icon.name` is any Lucide icon name in kebab case, such as
    `megaphone` or `layout-list`; Admin draws it on `accent_color`.
 
 4. **Connect before rendering.** Admin keeps the frame hidden until the app
