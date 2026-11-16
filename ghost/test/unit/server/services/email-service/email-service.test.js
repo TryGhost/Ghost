@@ -586,6 +586,7 @@ describe('Email Service', function () {
         batchSendingService: {
           scheduleEmail,
           updateStatusLock,
+          outstandingEmailIds: async () => [],
         },
         settingsCache,
         emailRenderer,
@@ -627,7 +628,11 @@ describe('Email Service', function () {
         },
         verificationTrigger: { checkVerificationRequired: () => Promise.resolve(false) },
         models: { Email: { findAll: filterAwareFindAll(emails) } },
-        batchSendingService: { scheduleEmail, updateStatusLock },
+        batchSendingService: {
+          scheduleEmail,
+          updateStatusLock,
+          outstandingEmailIds: async () => [],
+        },
         settingsCache,
         emailRenderer,
         membersRepository,
@@ -642,6 +647,53 @@ describe('Email Service', function () {
       assert.equal(scheduleEmail.firstCall.args[0], emails[0]);
       assert.equal(scheduleEmail.secondCall.args[0], emails[1]);
       sinon.assert.calledOnce(errorLog);
+    });
+
+    it('Leaves an email whose send is still in the jobs outbox to that send', async function () {
+      const updateStatusLock = sinon.stub().resolves(createModel({}));
+      const old = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const queuedStale = createModel({
+        id: 'queued-stale',
+        status: 'submitting',
+        created_at: old,
+      });
+      const queued = createModel({
+        id: 'queued',
+        status: 'submitting',
+        post: createModel({ status: 'published' }),
+      });
+      const lost = createModel({
+        id: 'lost',
+        status: 'submitting',
+        post: createModel({ status: 'published' }),
+      });
+      const localService = new EmailService({
+        models: {
+          Email: {
+            findAll: async ({ filter }) => ({
+              models: filter.includes('created_at:<') ? [queuedStale] : [queued, lost],
+            }),
+          },
+        },
+        batchSendingService: {
+          scheduleEmail,
+          updateStatusLock,
+          outstandingEmailIds: async () => ['queued-stale', 'queued'],
+        },
+        settingsCache,
+        emailRenderer,
+        membersRepository,
+        sendingService,
+        emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
+        domainWarmingService,
+      });
+
+      await localService.resumeInterruptedSends();
+
+      sinon.assert.calledOnceWithExactly(scheduleEmail, lost);
+      sinon.assert.calledOnceWithExactly(updateStatusLock, sinon.match.any, 'lost', 'pending', [
+        'submitting',
+      ]);
     });
 
     it('Marks email as failed if the parent post is no longer published or sent', async function () {
@@ -668,6 +720,7 @@ describe('Email Service', function () {
         batchSendingService: {
           scheduleEmail,
           updateStatusLock,
+          outstandingEmailIds: async () => [],
         },
         settingsCache,
         emailRenderer,
@@ -727,6 +780,7 @@ describe('Email Service', function () {
         batchSendingService: {
           scheduleEmail,
           updateStatusLock,
+          outstandingEmailIds: async () => [],
         },
         settingsCache,
         emailRenderer,
@@ -767,7 +821,11 @@ describe('Email Service', function () {
         },
         verificationTrigger: { checkVerificationRequired: () => Promise.resolve(false) },
         models: { Email: { findAll: filterAwareFindAll([email]) } },
-        batchSendingService: { scheduleEmail, updateStatusLock },
+        batchSendingService: {
+          scheduleEmail,
+          updateStatusLock,
+          outstandingEmailIds: async () => [],
+        },
         settingsCache,
         emailRenderer,
         membersRepository,
@@ -798,7 +856,11 @@ describe('Email Service', function () {
         },
         verificationTrigger: { checkVerificationRequired: () => Promise.resolve(false) },
         models: { Email: { findAll: filterAwareFindAll([email]) } },
-        batchSendingService: { scheduleEmail, updateStatusLock },
+        batchSendingService: {
+          scheduleEmail,
+          updateStatusLock,
+          outstandingEmailIds: async () => [],
+        },
         settingsCache,
         emailRenderer,
         membersRepository,
@@ -835,7 +897,11 @@ describe('Email Service', function () {
             },
           },
         },
-        batchSendingService: { scheduleEmail, updateStatusLock },
+        batchSendingService: {
+          scheduleEmail,
+          updateStatusLock,
+          outstandingEmailIds: async () => [],
+        },
         settingsCache,
         emailRenderer,
         membersRepository,

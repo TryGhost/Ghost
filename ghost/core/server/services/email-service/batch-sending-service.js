@@ -265,6 +265,17 @@ class BatchSendingService {
   }
 
   /**
+   * Ids of the emails whose send jobs are still in the jobs outbox, so a
+   * restart hands them over again. The outbox keeps a row after hand-off only
+   * with keepUntilSettled on.
+   * @returns {Promise<string[]>}
+   */
+  async outstandingEmailIds() {
+    const jobs = await this.#jobsService.outstanding(SendEmailJob);
+    return jobs.map((job) => job.emailId);
+  }
+
+  /**
    * Sends an email after refetching it and acquiring its status lock.
    * @param {{emailId: string, retry?: boolean}} data Identifier of the email to refetch and lock,
    *   and whether an admin retried it.

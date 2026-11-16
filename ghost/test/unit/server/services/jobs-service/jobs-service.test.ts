@@ -89,6 +89,9 @@ function makeOutbox({ released = [] as Row[], dropped = [] as Row[], tracked = t
     async renew(ids: string[]): Promise<void> {
       renewals.push(ids);
     },
+    async payloadsOf(): Promise<string[]> {
+      return [];
+    },
     async insert(
       entry: { id: string; envelope: DispatchEnvelope },
       options?: { transacting?: unknown },
@@ -248,6 +251,15 @@ describe('JobsService', function () {
       assert.doesNotThrow(() =>
         service.handle(OtherJob, async () => {}, { queue: 'slow', concurrency: 1 }),
       );
+    });
+  });
+
+  describe('outstanding', function () {
+    it('lists nothing without an outbox', async function () {
+      const service = makeService();
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+
+      assert.deepEqual(await service.outstanding(GreetJob), []);
     });
   });
 

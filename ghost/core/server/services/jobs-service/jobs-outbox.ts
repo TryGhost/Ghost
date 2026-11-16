@@ -50,6 +50,8 @@ const ClaimedRow = z.object({ id: z.string(), envelope: z.string(), created_at: 
 
 const SubmittedRow = z.object({ id: z.string(), envelope: z.string() });
 
+const StoredEnvelope = z.object({ envelope: z.string() });
+
 // The job type of a submitted row, or null when its envelope cannot be read.
 function typeOf(stored: string): string | null {
   const result = z.safeDecode(OutboxEnvelope, stored);
@@ -152,6 +154,17 @@ export class JobsOutbox {
         ? handedOff.update({ submitted_at: trx.raw('UTC_TIMESTAMP()') })
         : handedOff.delete());
       return { status: 'delivered', id, type, createdAt };
+    });
+  }
+
+  // The payloads of every row of a job type, whether handed over yet or not
+  async payloadsOf(type: string): Promise<string[]> {
+    const rows = z.array(StoredEnvelope).parse(await this.#knex(TABLE).select('envelope'));
+    return rows.flatMap(({ envelope }) => {
+      const result = z.safeDecode(OutboxEnvelope, envelope);
+      return result.success && result.data.payload.job.type === type
+        ? [result.data.payload.job.payload]
+        : [];
     });
   }
 

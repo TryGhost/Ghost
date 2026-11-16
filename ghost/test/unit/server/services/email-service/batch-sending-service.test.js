@@ -1,6 +1,8 @@
 const { createModel, createModelClass, createDb, sleep } = require('./utils');
 const BatchSendingService = require('../../../../../core/server/services/email-service/batch-sending-service');
 const SendingService = require('../../../../../core/server/services/email-service/sending-service');
+const SendEmailJob =
+  require('../../../../../core/server/services/email-service/jobs/send-email-job').default;
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
@@ -68,6 +70,18 @@ describe('Batch Sending Service', function () {
         () => service.scheduleEmail(createModel({ id: 'email-id' })),
         (thrown) => thrown === error,
       );
+    });
+  });
+
+  describe('outstandingEmailIds', function () {
+    it('lists the emails whose send jobs are still outstanding', async function () {
+      const jobsService = {
+        outstanding: sinon.stub().resolves([new SendEmailJob({ emailId: 'email-id' })]),
+      };
+      const service = new BatchSendingService({ jobsService });
+
+      assert.deepEqual(await service.outstandingEmailIds(), ['email-id']);
+      sinon.assert.calledOnceWithExactly(jobsService.outstanding, SendEmailJob);
     });
   });
 

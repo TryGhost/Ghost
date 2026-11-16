@@ -34,6 +34,7 @@ export interface OutboxStore {
     staleAfterMs: number;
   }): Promise<{ released: OutboxRow[]; dropped: OutboxRow[] }>;
   renew(ids: string[]): Promise<void>;
+  payloadsOf(type: string): Promise<string[]>;
 }
 
 export interface OutboxRelayLike {
@@ -212,6 +213,16 @@ export class JobsService {
       this.#logging.error(`[Background Job] ${type} failed to enqueue after commit`, err);
       this.#sentry?.captureException(err, { tags: { job_type: type } });
     }
+  }
+
+  // Jobs of this type still in the outbox: waiting to be handed over, or, with
+  // keepUntilSettled on, handed over and not yet settled
+  async outstanding<T extends Job, D>(JobClass: JobConstructor<T, D>): Promise<T[]> {
+    if (!this.#outbox) {
+      return [];
+    }
+    const payloads = await this.#outbox.store.payloadsOf(JobClass.type);
+    return payloads.map((payload) => new JobClass(JSON.parse(payload)));
   }
 
   async scheduleRecurring(job: Job, schedule: RecurringSchedule): Promise<void> {

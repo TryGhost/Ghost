@@ -281,6 +281,28 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
     });
   });
 
+  describe('JobsOutbox.payloadsOf', function () {
+    it('returns the payloads of every row of the type, submitted or not', async function () {
+      const row = (envelope: string, submittedAt: Date | null) => ({
+        id: newId(),
+        envelope,
+        created_at: new Date(),
+        available_at: new Date(),
+        submitted_at: submittedAt,
+      });
+      await knex(TABLE).insert([
+        row(JSON.stringify(envelopeFor('greet', { name: 'Ada' })), null),
+        row(JSON.stringify(envelopeFor('greet', { name: 'Bob' })), new Date()),
+        row(JSON.stringify(envelopeFor('other', { name: 'Cy' })), null),
+        row('{not json', null),
+      ]);
+
+      const payloads = await outbox.payloadsOf('greet');
+
+      assert.deepEqual(payloads.toSorted(), ['{"name":"Ada"}', '{"name":"Bob"}']);
+    });
+  });
+
   describe('JobsOutbox.remove', function () {
     it('deletes only the given row', async function () {
       const keep = newId();
@@ -879,6 +901,22 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       );
     });
 
+    it('lists a dispatched job as outstanding until it settles', async function () {
+      const release = Promise.withResolvers<void>();
+      const { service, delivered } = buildActiveService({ run: () => release.promise });
+      await service.start();
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+      assert.ok(await waitFor(() => delivered.length === 1), 'the job started');
+
+      assert.deepEqual(await service.outstanding(GreetJob), [new GreetJob({ name: 'Ada' })]);
+      release.resolve();
+      assert.ok(
+        await waitFor(async () => (await service.outstanding(GreetJob)).length === 0),
+        'and is no longer outstanding once it completes',
+      );
+    });
+
     it('removes the row when its job dies', async function () {
       const { service, delivered } = buildActiveService({
         run: async () => {
@@ -1093,7 +1131,7 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       assert.equal(deletes.length, 1);
     });
 
-    it('leaves a retained newsletter send to the newsletter boot scan', async function () {
+    it('hands over again a newsletter send a stopped process left', async function () {
       await knex(TABLE).insert({
         id: newId(),
         envelope: JSON.stringify(envelopeFor(SendEmailJob.type, { emailId: 'e1' })),
@@ -1108,10 +1146,9 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       });
 
       await service.start();
-      await delay(TIMINGS.pollIntervalMs * 5);
 
-      assert.equal(await countRows(), 0, 'the row is dropped at boot');
-      assert.equal(sent.length, 0, 'and the send is not handed over again');
+      assert.ok(await waitFor(() => sent.length === 1), 'the send runs again');
+      assert.equal(sent[0].emailId, 'e1');
     });
 
     it('with the flag turned off, still hands over rows submitted while it was on', async function () {

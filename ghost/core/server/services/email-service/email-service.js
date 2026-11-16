@@ -257,10 +257,16 @@ class EmailService {
 
     // Stale rows: too old to safely resume. Flip to `failed` so they surface in admin UI
     // for operator review instead of being silently stuck in their current status forever.
-    const stale = await this.#models.Email.findAll({
-      filter: `status:[${RESUMABLE_EMAIL_STATUSES.join(',')}]+created_at:<'${cutoffIso}'`,
-    });
-    for (const email of stale.models) {
+    // The outbox hands these over again, and the send job applies the same rules
+    const outstanding = new Set(await this.#batchSendingService.outstandingEmailIds());
+    const notOutstanding = ({ models }) => models.filter((email) => !outstanding.has(email.id));
+
+    const stale = notOutstanding(
+      await this.#models.Email.findAll({
+        filter: `status:[${RESUMABLE_EMAIL_STATUSES.join(',')}]+created_at:<'${cutoffIso}'`,
+      }),
+    );
+    for (const email of stale) {
       try {
         const locked = await this.#batchSendingService.updateStatusLock(
           this.#models.Email,
@@ -279,19 +285,21 @@ class EmailService {
     }
 
     // Fresh rows: within the cutoff. Resume through the normal emailJob path.
-    const fresh = await this.#models.Email.findAll({
-      filter: `status:[${RESUMABLE_EMAIL_STATUSES.join(',')}]+created_at:>'${cutoffIso}'`,
-    });
-    if (stale.models.length === 0 && fresh.models.length === 0) {
+    const fresh = notOutstanding(
+      await this.#models.Email.findAll({
+        filter: `status:[${RESUMABLE_EMAIL_STATUSES.join(',')}]+created_at:>'${cutoffIso}'`,
+      }),
+    );
+    if (stale.length === 0 && fresh.length === 0) {
       return;
     }
-    if (fresh.models.length > 0) {
+    if (fresh.length > 0) {
       logging.info(
-        `Email resume: found ${fresh.models.length} pending or submitting email(s) within max age (${maxAgeMs}ms)`,
+        `Email resume: found ${fresh.length} pending or submitting email(s) within max age (${maxAgeMs}ms)`,
       );
     }
 
-    for (const email of fresh.models) {
+    for (const email of fresh) {
       try {
         await this.#resumeOneEmail(email);
       } catch (e) {
@@ -300,7 +308,7 @@ class EmailService {
     }
 
     logging.info(
-      `Email resume scan complete: ${stale.models.length} stale email(s) flipped to failed, ${fresh.models.length} fresh email(s) rescheduled`,
+      `Email resume scan complete: ${stale.length} stale email(s) flipped to failed, ${fresh.length} fresh email(s) rescheduled`,
     );
   }
 

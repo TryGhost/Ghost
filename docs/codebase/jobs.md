@@ -115,8 +115,8 @@ so while those renewals keep succeeding, no other process takes them. A backend
 that doesn't report what it holds has to ignore an id it already has instead.
 Only a job type that sets
 `static replayAfterRestart = true` runs again; the rows of every other type are
-dropped instead. Newsletter sends don't set it, because the newsletter boot scan
-recovers them.
+dropped instead. The newsletter boot scan leaves an email alone while its send
+job is still in the outbox, so the two don't resume the same send.
 
 ## Scheduling
 
