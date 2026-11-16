@@ -93,7 +93,7 @@ export const Pinned: Story = {
     docs: {
       description: {
         story:
-          'Docked beside the content, which it offsets. Hover it for the button that unpins it.',
+          'Docked beside the content, which it offsets. Hover it for the button that unpins it. With admin7Design on, the header icon stays 32px across desktop widths; with it off, the existing responsive sizing is preserved.',
       },
     },
   },

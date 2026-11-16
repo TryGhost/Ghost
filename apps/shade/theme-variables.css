@@ -114,6 +114,8 @@
   --badge-warning: var(--color-yellow-200);
   --badge-warning-hover: var(--color-yellow-300);
   --badge-warning-foreground: var(--color-yellow-700);
+  --badge-purple: var(--color-purple-200);
+  --badge-purple-foreground: var(--color-purple-800);
   --state-danger: var(--color-red-600);
   --state-danger-foreground: var(--color-black);
   --control-height: 32px;
@@ -471,6 +473,8 @@
   --badge-warning-hover: color-mix(in oklab, var(--state-warning) 30%, transparent);
   /* yellow-600 text falls below AA on the dark surfaces */
   --badge-warning-foreground: var(--color-yellow-400);
+  --badge-purple: var(--color-purple-900);
+  --badge-purple-foreground: var(--color-purple-300);
   --state-danger: var(--color-red-500);
   --state-danger-foreground: var(--color-black);
   --chart-gray: var(--color-gray-700);

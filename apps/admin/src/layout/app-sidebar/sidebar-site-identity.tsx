@@ -1,10 +1,11 @@
 import { Badge } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
-import { cn, LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { Link } from '@tryghost/admin-x-framework';
 import { useSettingsReturnToState } from '@/layout/settings-navigation';
+import { PrivateSiteBadge } from '@/shared/private-site-badge';
 
 const DEFAULT_SITE_ICON = 'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png';
 
@@ -59,23 +60,17 @@ export function SidebarSiteIdentity({ variant }: SidebarSiteIdentityProps) {
   if (variant === 'capsule') {
     return (
       <Stack align="start" className="min-w-0 flex-1" gap="none">
-        <span
-          className={cn(
-            'heading-font-features w-full min-w-0 truncate text-[18px] leading-[1.15] font-medium tracking-[-0.01em] whitespace-nowrap text-foreground',
-            isPrivate && 'text-[16px] leading-[18px]',
-          )}
-        >
+        <span className="heading-font-features w-full min-w-0 truncate text-md leading-4.5 font-title tracking-tight whitespace-nowrap text-foreground">
           {title}
         </span>
         {isPrivate && (
           <Link
             aria-label="Private site: open access settings"
-            className="inline-flex shrink-0 items-center gap-1 rounded-xs text-[10px] leading-3 font-medium text-state-warning outline-hidden focus-visible:ring-2 focus-visible:ring-focus-ring"
+            className="mt-0.5 inline-flex shrink-0 rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-focus-ring"
             state={settingsReturnToState}
             to="/settings/members"
           >
-            <LucideIcon.Lock aria-hidden="true" className="size-2.5" strokeWidth={2} />
-            Private
+            <PrivateSiteBadge />
           </Link>
         )}
       </Stack>

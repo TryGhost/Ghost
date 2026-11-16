@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Pin } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+import { useShade } from '@/providers/shade-context';
 import {
   FLOATING_SIDEBAR_CLOSED_SIZE,
   FLOATING_SIDEBAR_INSET,
@@ -269,7 +270,11 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
   ) => {
     const narrow = useMediaQuery(NARROW_QUERY);
     const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
-    const sizes = narrow ? SIZES.narrow : SIZES.regular;
+    const { admin7Design } = useShade();
+    const responsiveSizes = narrow ? SIZES.narrow : SIZES.regular;
+    const sizes = admin7Design
+      ? { ...responsiveSizes, icon: responsiveSizes.circleIcon }
+      : responsiveSizes;
     const headerHeight = PADDING + sizes.icon + PADDING;
     // Moves the icon from its place in the header row to the circle's centre
     const closedIconOffset = (CLOSED_SIZE - 2 - sizes.circleIcon) / 2 - PADDING;
@@ -704,10 +709,11 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
                 aria-label={label}
                 className={cn(
                   'group relative shrink-0 outline-none',
+                  admin7Design && 'size-8',
                   pinned ? 'cursor-default' : 'cursor-pointer',
                 )}
                 data-slot="floating-sidebar-trigger"
-                style={{ width: sizes.icon, height: sizes.icon }}
+                style={admin7Design ? undefined : { width: sizes.icon, height: sizes.icon }}
                 tabIndex={pinned ? -1 : 0}
                 type="button"
                 onClick={show}

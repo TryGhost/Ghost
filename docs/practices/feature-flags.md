@@ -165,9 +165,10 @@ Content, Audience and Apps keep their headings when apps are enabled.
 Ghost(Pro) and Settings follow the last group in the scrolling navigation.
 The active banner stays above the bottom account avatar, with flat upgrade and
 What's New banners. The account trigger shows only the avatar. Private sites
-show a compact two-line title and warning lock label beside the site icon,
-linking to Access settings. Settings'
-Access navigation retains the high-contrast warning badge. The sidebar omits the member count
+show a 14px title at the shared title weight above a compact purple badge,
+linking to Access settings, with 1px vertical and 5px horizontal padding and a
+2px gap below the title. Site icons are 32px for private and public sites. Settings'
+Access navigation uses the same borderless purple badge. The sidebar omits the member count
 already shown in the top bar. The Posts create action appears on sidebar hover
 or keyboard focus and stays visible on touch devices.
 
