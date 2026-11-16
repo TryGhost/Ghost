@@ -47,6 +47,9 @@ export const uninstallButton = 'Uninstall';
 export const reviewChangesLink = 'Review changes';
 export const openLink = 'Open';
 export const detailsMenuItem = 'Details';
+// The menu on an app's details, which holds pinning and Uninstall.
+export const detailsActionsButton = 'App actions';
+export const appDataAccessedBy = 'app-data-accessed-by';
 // Admin's shared not-found page, which Apps routes show while the Labs flag is off.
 export const notFoundHeading = 'Page not found';
 

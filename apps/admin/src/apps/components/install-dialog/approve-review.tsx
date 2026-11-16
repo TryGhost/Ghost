@@ -4,7 +4,11 @@ import { Stack } from '@tryghost/shade/primitives';
 import type { AppInstallationPreview } from '@tryghost/admin-x-framework/api/app-installations';
 import type { ReviewProps } from './install-review';
 import { NoticeBanner, ReviewHeader, ReviewSeparator } from './review-header';
-import { ACCOUNT_ACCESS_INTRO, AccessIndicator } from '@/apps/components/access-indicator';
+import {
+  ACCOUNT_ACCESS_INTRO,
+  AccessIndicator,
+  DataAccessedBy,
+} from '@/apps/components/access-indicator';
 import { ManifestChanges } from '@/apps/components/manifest-changes';
 import { SectionEyebrow } from '@/apps/components/section-eyebrow';
 import { CapabilitySummary } from '@/apps/components/surface-icon';
@@ -43,7 +47,11 @@ export const ApproveReview: React.FC<ApproveReviewProps> = ({
           <ManifestChanges rows={rows} />
         </Stack>
       )}
-      <AccessIndicator intro={ACCOUNT_ACCESS_INTRO} items={ACCOUNT_ACCESS} />
+      <AccessIndicator
+        footer={<DataAccessedBy manifest={manifest} />}
+        intro={ACCOUNT_ACCESS_INTRO}
+        items={ACCOUNT_ACCESS}
+      />
       <DialogFooter>
         <Button variant="outline" onClick={onClose}>
           Cancel
