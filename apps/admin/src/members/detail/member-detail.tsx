@@ -60,6 +60,7 @@ import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { MemberEditableFields } from './member-detail-edit';
 // PROTOTYPE ONLY (NY-1750): label automations from the prototype's fake backend. Don't merge.
 import {
+  LeadMagnetLabelsBanner,
   LeadMagnetLabelsHint,
   LeadMagnetSaveDialog,
   hasLeadMagnetChanges,
@@ -548,6 +549,8 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                 )}
               </PageHeader>
             </MemberMapHeader>
+            {/* PROTOTYPE ONLY (NY-1750) */}
+            {showEditor && draft && <LeadMagnetLabelsBanner changes={leadMagnetChanges} />}
           </DetailPage.Header>
 
           {/* The body scrolls, so it clips anything past its edges. Fields now run flush
@@ -686,7 +689,6 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
           <LeadMagnetSaveDialog
             changes={leadMagnetChanges}
             labelNames={leadMagnetLabelNames}
-            memberName={draft?.name}
             open={isLeadMagnetConfirmOpen}
             onConfirm={() => {
               setLeadMagnetConfirmOpen(false);

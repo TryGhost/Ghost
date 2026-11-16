@@ -24,5 +24,6 @@ export {
 export { LeadMagnetDeleteBlockedDialog } from './prototype/lead-magnets-delete-dialog';
 export { LeadMagnetBulkNote } from './prototype/lead-magnets-bulk-note';
 export { LeadMagnetLabelsHint } from './prototype/lead-magnets-hint';
+export { LeadMagnetLabelsBanner } from './prototype/lead-magnets-banner';
 export { LeadMagnetSaveDialog } from './prototype/lead-magnets-dialog';
 export { useConfirmLabelChangesOnSave } from './prototype/settings';

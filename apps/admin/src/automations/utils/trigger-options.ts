@@ -38,6 +38,6 @@ export const SUBSCRIPTION_CHANGED_OPTION = [
 export const LABEL_ADDED_OPTION = [
   'member_label_added',
   LucideIcon.Tag,
-  'Label added to a member',
+  'Label added',
   'When a label is added to a member',
 ] as const satisfies TriggerOption;

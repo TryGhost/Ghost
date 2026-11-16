@@ -4,33 +4,21 @@
 import { Stack, Text } from '@tryghost/shade/primitives';
 import type { LeadMagnetLabelChanges } from './lead-magnets';
 import { useHintStyle } from './settings';
-
-type Automation = { id: string; name: string };
-
-// "A", "A and B", "A, B and C".
-const nameList = (automations: Automation[]) => {
-  const names = automations.map(({ name }) => name);
-  return names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names[0];
-};
+import { LeadMagnetSaveSummary } from './lead-magnets-summary';
 
 export const LeadMagnetLabelsHint: React.FC<{ changes: LeadMagnetLabelChanges }> = ({
   changes,
 }) => {
   const style = useHintStyle();
   const { starts, ends } = changes;
-  if (style === 'dialog' || (starts.length === 0 && ends.length === 0)) {
+  if ((style !== 'lines' && style !== 'sentence') || (starts.length === 0 && ends.length === 0)) {
     return null;
   }
   if (style === 'sentence') {
-    const parts = [
-      starts.length > 0 && `start ${nameList(starts)}`,
-      ends.length > 0 && `stop ${nameList(ends)}`,
-    ].filter(Boolean);
-    // Names the kind of thing, in case the hint is read out of context.
-    const noun = starts.length + ends.length === 1 ? 'automation' : 'automations';
+    // The banner's sentence, as a plain hint.
     return (
       <Text as="p" size="sm" tone="secondary">
-        Member will {parts.join(' and ')} {noun}
+        <LeadMagnetSaveSummary ends={ends} starts={starts} />
       </Text>
     );
   }

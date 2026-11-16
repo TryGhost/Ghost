@@ -21,8 +21,10 @@ interface MemberDetailFormProps {
   // "committed identity" display state (e.g. the sidebar avatar) so it
   // doesn't churn on every keystroke.
   onNameBlur?: () => void;
-  // PROTOTYPE ONLY (NY-1750): a hint under Labels. Don't merge.
+  // PROTOTYPE ONLY (NY-1750): a hint under Labels, and a stand-in labels field for the
+  // prototype's patterns page. Don't merge.
   labelsHint?: React.ReactNode;
+  labelsField?: React.ReactNode;
 }
 
 const MemberDetailForm: React.FC<MemberDetailFormProps> = ({
@@ -33,6 +35,7 @@ const MemberDetailForm: React.FC<MemberDetailFormProps> = ({
   onEmailBlur,
   onNameBlur,
   labelsHint,
+  labelsField,
 }) => {
   // Soft limit: the note can be typed past 500; the counter just turns negative
   // and red.
@@ -85,11 +88,13 @@ const MemberDetailForm: React.FC<MemberDetailFormProps> = ({
 
         <div className="flex flex-col gap-1.5 in-data-[admin7-design=true]:gap-2">
           <Label>Labels</Label>
-          <MemberLabelsField
-            disabled={disabled}
-            labels={draft.labels}
-            onChange={(nextLabels) => onChange({ labels: nextLabels })}
-          />
+          {labelsField ?? (
+            <MemberLabelsField
+              disabled={disabled}
+              labels={draft.labels}
+              onChange={(nextLabels) => onChange({ labels: nextLabels })}
+            />
+          )}
           {labelsHint}
         </div>
       </div>

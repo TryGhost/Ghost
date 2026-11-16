@@ -14,7 +14,7 @@ import {
   Button,
 } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import type { LeadMagnetLabelChanges } from './lead-magnets';
 
 type SaveChanges = Pick<LeadMagnetLabelChanges, 'starts' | 'ends'>;
@@ -22,8 +22,6 @@ type Outcome = SaveChanges['starts'][number];
 
 type DescriptionProps = {
   changes: SaveChanges;
-  // The member's name as typed; the first word is used, or "this member" without one.
-  memberName?: string;
   // Label slug → name, for the labels added and removed.
   labelNames: Record<string, string>;
 };
@@ -37,26 +35,30 @@ const groupByLabel = (outcomes: Outcome[], verb: 'Add' | 'Remove') => {
   return [...groups].map(([labelSlug, items]) => ({ verb, labelSlug, items }));
 };
 
+// "starts an automation", "starts 2 automations", "stops an automation", or "starts and stops
+// automations", matching the Starts and Stops in the rows below.
+const summary = ({ starts, ends }: SaveChanges) => {
+  if (starts.length > 0 && ends.length > 0) {
+    return 'starts and stops automations';
+  }
+  const count = starts.length || ends.length;
+  const verb = starts.length > 0 ? 'starts' : 'stops';
+  return count === 1 ? `${verb} an automation` : `${verb} ${formatNumber(count)} automations`;
+};
+
 // The dialog's body, also shown on the states page: "Add Lead magnet → Starts Free guide
 // delivery", one row per automation, grouped by label. Labels line up in one column so the
 // arrows do too.
-export const LeadMagnetSaveDescription: React.FC<DescriptionProps> = ({
-  changes,
-  memberName,
-  labelNames,
-}) => {
-  const firstName = memberName?.trim().split(/\s+/)[0];
-  const possessive = firstName ? `${firstName}'s` : "this member's";
+export const LeadMagnetSaveDescription: React.FC<DescriptionProps> = ({ changes, labelNames }) => {
   const groups = [...groupByLabel(changes.starts, 'Add'), ...groupByLabel(changes.ends, 'Remove')];
   return (
     <Stack gap="lg">
-      <p>Saving also updates {possessive} automations.</p>
-      <div className="grid grid-cols-[auto_auto_1fr] items-start gap-x-4 gap-y-2 text-foreground">
-        {groups.map(({ verb, labelSlug, items }, index) => {
+      <p>Saving also {summary(changes)} for this member.</p>
+      <div className="grid grid-cols-[auto_auto_1fr] items-start gap-x-4 gap-y-3 text-foreground">
+        {groups.map(({ verb, labelSlug, items }) => {
           const span = { gridRow: `span ${items.length}` };
           return (
             <React.Fragment key={`${verb}-${labelSlug}`}>
-              {index > 0 && <div className="col-span-3 my-2 border-t border-border-default" />}
               <span style={span}>
                 {verb} <strong>{labelNames[labelSlug] ?? labelSlug}</strong>
               </span>
@@ -64,13 +66,9 @@ export const LeadMagnetSaveDescription: React.FC<DescriptionProps> = ({
               <span className="flex h-[1lh] items-center" style={span} aria-hidden>
                 <LucideIcon.ArrowRight className="size-4 text-muted-foreground" />
               </span>
-              {items.map(({ id, name, allowsReentry }) => (
+              {items.map(({ id, name }) => (
                 <span key={id} className="col-start-3">
                   {verb === 'Add' ? 'Starts' : 'Stops'} <strong>{name}</strong>
-                  {/* Follows the automation's re-entry setting, once it has one. */}
-                  {verb === 'Remove' && !allowsReentry && (
-                    <span className="ms-2">(no re-entry)</span>
-                  )}
                 </span>
               ))}
             </React.Fragment>

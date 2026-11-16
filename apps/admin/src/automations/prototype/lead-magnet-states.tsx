@@ -12,7 +12,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
   Button,
+  Card,
+  CardContent,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -24,10 +32,14 @@ import {
   InputGroupInput,
   Label,
   Separator,
+  Tabs,
+  TabsList,
+  TabsTrigger,
 } from '@tryghost/shade/components';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { useParams } from '@tryghost/admin-x-framework';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import {
   AutomationCard,
@@ -37,7 +49,7 @@ import { TierScopePicker } from '@/automations/components/canvas/tier-scope-pick
 import { TriggerCard, type TriggerData } from '@/automations/components/canvas/trigger-card';
 import { buildTriggerRules } from '@/automations/utils/trigger-rules';
 import type { LabelSelection } from '@/automations/types';
-import { LabelPicker, canCreateLabel, useLabelPicker } from '@/members/api';
+import { LabelPicker, MemberDetailForm, canCreateLabel, useLabelPicker } from '@/members/api';
 import { TriggerPickerCard } from '@/automations/components/trigger-picker-card';
 import {
   FREE_SIGNUP_OPTION,
@@ -47,18 +59,36 @@ import {
 } from '@/automations/utils/trigger-options';
 import { LeadMagnetSaveDescription } from './lead-magnets-dialog';
 import { LeadMagnetDeleteBlockedDescription } from './lead-magnets-delete-dialog';
-import { LeadMagnetBulkNoteText } from './lead-magnets-bulk-note';
+import { LeadMagnetBulkNoteText, LeadMagnetMemberNoteText } from './lead-magnets-bulk-note';
+import { LeadMagnetAnimatedBanner } from './lead-magnets-banner';
+import { PageHeader } from '@tryghost/shade/patterns';
 
 // --- Page structure ---
 
 // An example: its name above the UI, or, with a `description`, the name and scenario on the left
 // and the UI on the right (trying this on Trigger states first): 240px, a 64px gap, then the UI.
-const Column: React.FC<React.PropsWithChildren<{ name: string; description?: string }>> = ({
-  name,
-  description,
-  children,
-}) =>
-  description ? (
+const Column: React.FC<
+  React.PropsWithChildren<{ name: string; description?: string; stacked?: boolean }>
+> = ({ name, description, stacked, children }) => {
+  if (stacked) {
+    // Title (and description) above, so a wide example gets the full width.
+    return (
+      <Stack gap="lg">
+        <Stack className="max-w-2xl" gap="xs">
+          <Text size="md" weight="medium">
+            {name}
+          </Text>
+          {description && (
+            <Text size="sm" tone="secondary">
+              {description}
+            </Text>
+          )}
+        </Stack>
+        {children}
+      </Stack>
+    );
+  }
+  return description ? (
     <Box className="grid grid-cols-[240px_minmax(0,1fr)] items-start gap-16">
       <Stack gap="xs">
         <Text size="md" weight="medium">
@@ -78,6 +108,7 @@ const Column: React.FC<React.PropsWithChildren<{ name: string; description?: str
       {children}
     </Stack>
   );
+};
 
 const State: React.FC<
   React.PropsWithChildren<{
@@ -207,26 +238,18 @@ const DialogCard: React.FC<
   </Box>
 );
 
-// "Turn off automation?" with the number of members it removes, and that nobody can come back.
+// "Turn off automation?" with the number of members it removes, and that nobody starts while it's off.
 const ProposedTurnOffCard: React.FC<{ inProgressCount: number }> = ({ inProgressCount }) => (
   <DialogCard actionLabel="Turn off" title="Turn off automation?">
-    <Stack gap="lg">
-      <p>
-        {inProgressCount > 0 ? (
-          <>
-            The <strong>{formatNumber(inProgressCount)}</strong>{' '}
-            {inProgressCount === 1 ? 'member' : 'members'} in progress will be removed, and their
-            remaining emails won&apos;t be sent.
-          </>
-        ) : (
-          'Your automation will no longer run.'
-        )}
-      </p>
-      <p>
-        Members who have already entered this automation can&apos;t enter it again, even if you turn
-        it back on.
-      </p>
-    </Stack>
+    <p>
+      {inProgressCount > 0 && (
+        <>
+          <strong>{formatNumber(inProgressCount)}</strong>{' '}
+          {inProgressCount === 1 ? 'member' : 'members'} in progress will be removed.{' '}
+        </>
+      )}
+      No members will start the automation while it&apos;s off.
+    </p>
   </DialogCard>
 );
 
@@ -270,7 +293,7 @@ const TriggerStatesState: React.FC = () => {
   return (
     <State location="Automation editor" title="Trigger">
       <Column
-        description="Picking a trigger for a new automation. Label added to a member sits with the others, behind the lead magnets flag."
+        description="Picking a trigger for a new automation. Label added sits with the others, behind the lead magnets flag."
         name="Picker"
       >
         <TriggerPickerCard
@@ -293,7 +316,7 @@ const TriggerStatesState: React.FC = () => {
         description="While the automation is on, its trigger can't change. Turning it off unlocks it."
         name="Locked while live"
       >
-        <TriggerShell Icon={LucideIcon.Tag} title="Label added to a member">
+        <TriggerShell Icon={LucideIcon.Tag} title="Label added">
           <LockedTriggerField
             fieldLabel="Triggered when this label is added to a member:"
             value="Lead magnet"
@@ -338,13 +361,13 @@ const TurnOffState: React.FC = () => (
       </DialogCard>
     </Column>
     <Column
-      description="Says how many members are removed, and that members who've already entered can't enter again."
+      description="Says how many members are removed, and that nobody starts while it's off."
       name="Proposed: Active members"
     >
       <ProposedTurnOffCard inProgressCount={12} />
     </Column>
     <Column
-      description="With nobody in progress, it only says the automation stops, and that nobody can re-enter."
+      description="With nobody in progress, it only says that nobody starts while it's off."
       name="Proposed: None in progress"
     >
       <ProposedTurnOffCard inProgressCount={0} />
@@ -599,47 +622,222 @@ const MemberPageState: React.FC = () => (
   </State>
 );
 
-// --- Member page save dialog ---
+// --- Member page: save dialog or note ---
 
-// The member page's "Dialog on Save" (lead-magnets-dialog.tsx), with its real title and copy.
-const SAVE_LABEL_NAMES = { 'lead-magnet': 'Lead magnet', webinar: 'Webinar' };
-const SAVE_SINGLE = {
-  starts: [{ id: 'free-guide', name: ACTIVE_AUTOMATION, labelSlug: ACTIVE_LABEL }],
-  ends: [],
+// Emily already has VIP and is partway through VIP onboarding. Each case changes her labels.
+// Made-up labels and automations, so nothing on this site changes.
+const MEMBER_NAME = 'Emily Chen';
+const MEMBER_SAVED_SLUGS = ['vip'];
+const MEMBER_LABEL_AUTOMATIONS: Record<string, string[]> = {
+  'lead-magnet': [LABEL_AUTOMATIONS['lead-magnet'].name],
+  'free-trial': ['Trial nurture'],
+  'spring-ebook': ['Spring ebook series', 'Spring sale reminders'],
+  vip: ['VIP onboarding'],
 };
-const SAVE_MULTIPLE = {
-  starts: [
-    ...SAVE_SINGLE.starts,
-    { id: 'ebook', name: 'E-book giveaway', labelSlug: ACTIVE_LABEL },
-  ],
-  ends: [{ id: 'webinar', name: 'Webinar follow-up', labelSlug: 'webinar' }],
+// Emily's labels as she's saved, in each case.
+const MEMBER_CASES = [
+  { name: 'No change', labels: [...MEMBER_SAVED_SLUGS] },
+  { name: '1 label added', labels: ['lead-magnet', 'vip'] },
+  { name: '2 labels added', labels: ['lead-magnet', 'free-trial', 'vip'] },
+  { name: '1 label, 2 automations', labels: ['spring-ebook', 'vip'] },
+  { name: '1 label removed', labels: [] },
+  { name: '1 added, 1 removed', labels: ['lead-magnet'] },
+];
+
+// What saving starts and stops for Emily with these labels.
+const memberChanges = (selectedSlugs: string[]) => {
+  const toAutomations = (slugs: string[]) =>
+    slugs.flatMap((slug) =>
+      (MEMBER_LABEL_AUTOMATIONS[slug] ?? []).map((name) => ({ id: name, name, labelSlug: slug })),
+    );
+  return {
+    starts: toAutomations(selectedSlugs.filter((slug) => !MEMBER_SAVED_SLUGS.includes(slug))),
+    ends: toAutomations(MEMBER_SAVED_SLUGS.filter((slug) => !selectedSlugs.includes(slug))),
+  };
+};
+
+const labelName = (slug: string) => FAKE_LABELS.find((label) => label.slug === slug)?.name ?? slug;
+const toMemberLabels = (slugs: string[]) => slugs.map((slug) => ({ slug, name: labelName(slug) }));
+
+type MemberDraft = React.ComponentProps<typeof MemberDetailForm>['draft'];
+
+// The member page's Details card: the real form, in the page's card, with made-up labels.
+const MemberDetailsCard: React.FC<{
+  draft: MemberDraft;
+  onChange: (draft: MemberDraft) => void;
+  labelsHint?: React.ReactNode;
+}> = ({ draft, onChange, labelsHint }) => {
+  const admin7Design = useFeatureFlag('admin7Design');
+  const optionSource = React.useMemo(() => staticOptionSource(FAKE_LABELS), []);
+  const selectedSlugs = draft.labels.map((label) => label.slug);
+  return (
+    <Stack gap="sm">
+      {admin7Design && (
+        <Text as="h3" className="section-heading" size="md" weight="semibold">
+          Details
+        </Text>
+      )}
+      <Card variant={admin7Design ? 'ruled' : 'outline'}>
+        <CardContent className={admin7Design ? undefined : 'p-6'}>
+          <MemberDetailForm
+            draft={draft}
+            labelsField={
+              <LabelPicker
+                labels={FAKE_LABELS}
+                optionSource={optionSource}
+                placeholder=""
+                selectedSlugs={selectedSlugs}
+                onToggle={(slug) =>
+                  onChange({ ...draft, labels: toMemberLabels(toggleSlug(selectedSlugs, slug)) })
+                }
+              />
+            }
+            labelsHint={labelsHint}
+            onChange={(patch) => onChange({ ...draft, ...patch })}
+          />
+        </CardContent>
+      </Card>
+    </Stack>
+  );
+};
+
+// Option B: the Details card with the note under Labels, framed like the dialogs so it reads as
+// one pattern. Change Emily's labels and the note follows.
+const MemberNoteDemo: React.FC<{ labels: string[] }> = ({ labels }) => {
+  const [draft, setDraft] = useState<MemberDraft>({
+    name: MEMBER_NAME,
+    email: 'emily@example.com',
+    note: '',
+    labels: toMemberLabels(labels),
+    newsletters: [],
+  });
+  const { starts, ends } = memberChanges(draft.labels.map((label) => label.slug));
+  return (
+    <Box className="rounded-lg bg-surface-elevated-2 p-8 shadow-lg">
+      <MemberDetailsCard
+        draft={draft}
+        labelsHint={
+          <LeadMagnetMemberNoteText
+            memberName={draft.name}
+            removals={ends.map(({ name }) => name)}
+            starts={starts.map(({ name, labelSlug }) => ({
+              labelName: labelName(labelSlug),
+              automationName: name,
+            }))}
+          />
+        }
+        onChange={setDraft}
+      />
+    </Box>
+  );
+};
+
+// The top of the member page: its header with Save, the banner, and the Details card, built from
+// the real components on made-up data. Change Emily's labels and the banner opens and closes.
+const MemberPageExcerpt: React.FC<{ labels: string[] }> = ({ labels }) => {
+  const [draft, setDraft] = useState<MemberDraft>({
+    name: MEMBER_NAME,
+    email: 'emily@example.com',
+    note: '',
+    labels: toMemberLabels(labels),
+    newsletters: [],
+  });
+  // Picking another state swaps in its labels without remounting, so the banner animates.
+  const [shownLabels, setShownLabels] = useState(labels);
+  if (labels !== shownLabels) {
+    setShownLabels(labels);
+    setDraft({ ...draft, labels: toMemberLabels(labels) });
+  }
+  const changes = memberChanges(draft.labels.map((label) => label.slug));
+  return (
+    <Box className="rounded-lg bg-surface-elevated-2 p-8 shadow-lg">
+      {/* gap-5, as in the member page's header, which the banner's animation expects. */}
+      <Stack gap="lg">
+        <PageHeader blurredBackground={false} sticky={false}>
+          <PageHeader.Left>
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink>Members</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{draft.name}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </PageHeader.Left>
+          <PageHeader.Actions>
+            <PageHeader.ActionGroup>
+              <PageHeader.ActionGroup.Primary>
+                <Button className="min-w-16">Save</Button>
+              </PageHeader.ActionGroup.Primary>
+            </PageHeader.ActionGroup>
+          </PageHeader.Actions>
+        </PageHeader>
+        <LeadMagnetAnimatedBanner changes={changes} />
+        <MemberDetailsCard draft={draft} onChange={setDraft} />
+      </Stack>
+    </Box>
+  );
+};
+
+// One example, with tabs that switch it between the cases. Remounts the example on each switch,
+// so its labels start from that case, unless keepMounted.
+const MemberCaseSwitcher: React.FC<{
+  children: (labels: string[]) => React.ReactNode;
+  // Keeps the example mounted and passes it the new labels, so it can animate the change.
+  keepMounted?: boolean;
+  cases?: typeof MEMBER_CASES;
+}> = ({ children, keepMounted = false, cases = MEMBER_CASES }) => {
+  const [current, setCurrent] = useState(cases[0].name);
+  const { labels } = cases.find(({ name }) => name === current) ?? cases[0];
+  return (
+    <Stack gap="lg">
+      <Tabs value={current} variant="button-sm" onValueChange={setCurrent}>
+        <TabsList className="flex-wrap">
+          {cases.map(({ name }) => (
+            <TabsTrigger
+              key={name}
+              // Selected in the primary button's colours, so the current state stands out.
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:hover:bg-primary/90"
+              value={name}
+            >
+              {name}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+      <React.Fragment key={keepMounted ? undefined : current}>{children(labels)}</React.Fragment>
+    </Stack>
+  );
 };
 
 const MemberSaveDialogState: React.FC = () => (
   <State location="Member profile" title="Member update">
-    {[
-      {
-        name: 'Single label changed',
-        description: 'Saving a member whose label change starts one automation.',
-        changes: SAVE_SINGLE,
-      },
-      {
-        name: 'Multiple labels changed',
-        description:
-          'Several outcomes, grouped by label: one label starting two automations, and one removal. "(no re-entry)" follows each automation\'s setting.',
-        changes: SAVE_MULTIPLE,
-      },
-    ].map(({ name, description, changes }) => (
-      <Column key={name} description={description} name={name}>
-        <DialogCard actionLabel="Save" title="Save changes?">
-          <LeadMagnetSaveDescription
-            changes={changes}
-            labelNames={SAVE_LABEL_NAMES}
-            memberName="Emily Chen"
-          />
-        </DialogCard>
-      </Column>
-    ))}
+    <Column name="A. Banner (Recommended)" stacked>
+      <MemberCaseSwitcher keepMounted>
+        {(labels) => <MemberPageExcerpt labels={labels} />}
+      </MemberCaseSwitcher>
+    </Column>
+    <Separator />
+    <Column name="B. Hint" stacked>
+      <MemberCaseSwitcher>{(labels) => <MemberNoteDemo labels={labels} />}</MemberCaseSwitcher>
+    </Column>
+    <Separator />
+    <Column name="C. Dialog" stacked>
+      {/* A dialog only opens when something starts or stops, so there's no "No change". */}
+      <MemberCaseSwitcher cases={MEMBER_CASES.filter(({ name }) => name !== 'No change')}>
+        {(labels) => (
+          <DialogCard actionLabel="Save" title="Save changes?">
+            <LeadMagnetSaveDescription
+              changes={memberChanges(labels)}
+              labelNames={Object.fromEntries(FAKE_LABELS.map(({ slug, name }) => [slug, name]))}
+            />
+          </DialogCard>
+        )}
+      </MemberCaseSwitcher>
+    </Column>
   </State>
 );
 
@@ -779,7 +977,7 @@ const LabelAddedBetaCard: React.FC<{ hint?: React.ReactNode; separateHint?: bool
 }) => {
   const id = useId();
   return (
-    <TriggerShell Icon={LucideIcon.Tag} title="Label added to a member">
+    <TriggerShell Icon={LucideIcon.Tag} title="Label added">
       <Stack gap="sm">
         <Label className="leading-normal font-normal" htmlFor={`${id}-label`}>
           Triggered when this label is added to a member:
@@ -894,7 +1092,7 @@ const LabelAddedWithHintCard: React.FC<{ fieldLabel?: string; hint?: string }> =
 }) => {
   const id = useId();
   return (
-    <TriggerShell Icon={LucideIcon.Tag} title="Label added to a member">
+    <TriggerShell Icon={LucideIcon.Tag} title="Label added">
       <Stack gap="sm">
         <Label className="leading-normal font-normal" htmlFor={`${id}-label`}>
           {fieldLabel}
@@ -1149,11 +1347,11 @@ const ArchivedStates: React.FC = () => (
 // #/automations/lead-magnet-states/<slug>.
 const PATTERNS: { slug: string; name: string; Pattern: React.FC }[] = [
   { slug: 'trigger-states', name: 'Trigger', Pattern: TriggerStatesState },
-  { slug: 'turn-off', name: 'Turn off', Pattern: TurnOffState },
   { slug: 'member-save-dialog', name: 'Member update', Pattern: MemberSaveDialogState },
   { slug: 'delete-label', name: 'Delete label', Pattern: DeleteLabelState },
   { slug: 'bulk-add', name: 'Bulk add label', Pattern: BulkAddState },
   { slug: 'bulk-remove', name: 'Bulk remove label', Pattern: BulkRemoveState },
+  { slug: 'turn-off', name: 'Turn off', Pattern: TurnOffState },
 ];
 const ARCHIVED = { slug: 'archived', name: 'Archived', Pattern: ArchivedStates };
 
@@ -1222,7 +1420,7 @@ const LeadMagnetStates: React.FC = () => {
       {/* Keyed by pattern, so switching starts the new one at the top. */}
       <Box key={current.slug} className="min-w-0 flex-1 overflow-y-auto p-10">
         {/* Centred, up to 896px. */}
-        <Box className="mx-auto w-full max-w-4xl">
+        <Box className="mx-auto w-full max-w-4xl pb-15">
           <Pattern />
         </Box>
       </Box>

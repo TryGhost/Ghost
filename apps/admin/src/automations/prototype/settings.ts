@@ -65,9 +65,10 @@ export const useStripeConnectedWithPrototype = (siteStripeEnabled: boolean): boo
 // - lines: a hint under Labels, one line per automation
 // - sentence: a hint under Labels, one sentence for all of them
 // - dialog (default, chosen in design review): no hint; Save asks first
-export type HintStyle = 'lines' | 'sentence' | 'dialog';
+export type HintStyle = 'lines' | 'sentence' | 'dialog' | 'banner';
 export const HINT_STYLES: { value: HintStyle; label: string }[] = [
   { value: 'dialog', label: 'Dialog on Save' },
+  { value: 'banner', label: 'Banner under the header' },
   { value: 'lines', label: 'Hint, one line per automation' },
   { value: 'sentence', label: 'Hint, one sentence' },
 ];

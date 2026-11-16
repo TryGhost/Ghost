@@ -374,7 +374,7 @@ const LabelAddedPicker: React.FC<{
 function getTriggerPresentation(trigger: TriggerData, errorMessage?: string) {
   if (trigger.labelSelection) {
     return {
-      title: 'Label added to a member',
+      title: 'Label added',
       Icon: LucideIcon.Tag,
       content: (
         <LabelAddedPicker errorMessage={errorMessage} labelSelection={trigger.labelSelection} />
