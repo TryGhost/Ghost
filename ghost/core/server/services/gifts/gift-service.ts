@@ -13,6 +13,9 @@ import type {
 } from './gift-bookshelf-repository';
 import type { GiftDeliveryDispatchResult, GiftDeliveryService } from './gift-delivery-service';
 import type { SignedFlushScheduler } from '../../adapters/scheduling/signed-flush-scheduler';
+import type { MetafieldPlan } from '../members-metafields/values-service';
+import type { TierRequirement } from '../tiers/requirements';
+import type { GiftRedemptionAttempt, GiftsTracking } from './tracking';
 import { GiftCadenceSchema, type GiftCadence } from './gift-schema';
 import tpl from '@tryghost/tpl';
 import {
@@ -80,6 +83,7 @@ type Tier = Omit<GiftCheckoutTier, 'currency'> & {
         toHexString(): string;
       };
   name: string;
+  type: string;
   currency: string;
   getPrice(cadence: GiftCadence): number;
   toJSON(): {
@@ -94,6 +98,43 @@ interface TiersService {
   api: {
     read(idString: string): Promise<Tier | null>;
   };
+}
+
+/** The members service method that updates a member and writes custom field values together. */
+interface MemberWrites {
+  /**
+   * Updates the member and applies the metafield plans inside `options.transacting`. When the
+   * plans have no writes, it only updates the member.
+   */
+  updateWithMetafields(
+    data: Record<string, unknown>,
+    options: { id: string; transacting: Knex.Transaction },
+    plans: MetafieldPlan[],
+  ): Promise<unknown>;
+}
+
+/**
+ * The tier requirements a gift redemption collects, such as a shipping address or phone number.
+ * A subscription normally collects them in Stripe Checkout. Redeeming a gift doesn't go through
+ * Checkout, so the redemption collects them instead.
+ */
+export interface GiftRequirements {
+  /**
+   * Returns the tier's requirements in the shape the tiers API returns them, or null when the
+   * checkout collection feature flag is off.
+   */
+  forTier(tier: { id: string; type: string }): Promise<TierRequirement[] | null>;
+  /**
+   * Validates `given`, the redeemer's values keyed by checkout port, against the tier's
+   * requirements, and returns the metafield writes without saving them. Throws a ValidationError
+   * for invalid values, the same way a tier change does.
+   */
+  planAnswers(
+    given: unknown,
+    memberId: string,
+    tier: { id: string; type: string },
+    attempt: Pick<GiftRedemptionAttempt, 'answering'>,
+  ): Promise<MetafieldPlan[]>;
 }
 
 interface GiftEmailService {
@@ -182,6 +223,9 @@ interface GiftServiceDeps {
     | 'recoverPending'
   >;
   memberRepository: MemberRepository;
+  memberWrites: MemberWrites;
+  requirements: GiftRequirements;
+  tracking: GiftsTracking;
   tiersService: TiersService;
   giftEmailService: GiftEmailService;
   staffServiceEmails: StaffServiceEmails;
@@ -296,6 +340,11 @@ export interface GiftRedemption {
     name: string;
     description: string | null;
     benefits: string[];
+    /**
+     * The tier's requirements, such as a shipping address, which Portal shows as inputs on the
+     * redemption page. Omitted when the checkout collection feature flag is off.
+     */
+    requirements?: TierRequirement[];
   };
 }
 
@@ -831,16 +880,46 @@ export class GiftService {
     return this.serializeRedemption(gift);
   }
 
+  /**
+   * Redeems a gift for a member and saves `answers`, the member's values for the gift tier's
+   * requirements, such as a shipping address.
+   *
+   * `answers` is validated before the gift is redeemed, so a validation error leaves the gift
+   * unredeemed and the member can correct the values and try again. The values are saved in the
+   * same transaction as the redemption, so the gift is never redeemed without them.
+   *
+   * `answers` is optional. An older Portal doesn't send it, and the gift is redeemed without
+   * saving any values.
+   */
   async redeem(input: {
     token: string;
     memberId: string;
+    /** The redeemer's values for the tier's requirements, keyed by checkout port. */
+    answers?: unknown;
     transacting?: Knex.Transaction;
     newMember?: boolean;
   }): Promise<GiftRedemption> {
+    return this.deps.tracking.redemption({ answered: input.answers !== undefined }, (attempt) =>
+      this.redeemWithAnswers(input, attempt),
+    );
+  }
+
+  private async redeemWithAnswers(
+    input: {
+      token: string;
+      memberId: string;
+      answers?: unknown;
+      transacting?: Knex.Transaction;
+      newMember?: boolean;
+    },
+    attempt: GiftRedemptionAttempt,
+  ): Promise<GiftRedemption> {
+    const answers = await this.planAnswers(input, attempt);
     const run = async (transacting: Knex.Transaction) => {
       const { redeemed, member } = await this.redeemGift(input.token, input.memberId, {
         transacting,
         newMember: input.newMember,
+        answers,
       });
       const redemption = await this.serializeRedemption(redeemed, { transacting });
 
@@ -890,10 +969,40 @@ export class GiftService {
     return redemption;
   }
 
+  /**
+   * Validates `answers` and returns the metafield writes for them, without saving anything. This
+   * runs before the redemption's transaction opens. It only reads the tier's requirements and the
+   * custom fields they are bound to, which the redemption doesn't change.
+   */
+  private async planAnswers(
+    input: { token: string; memberId: string; answers?: unknown; transacting?: Knex.Transaction },
+    attempt: GiftRedemptionAttempt,
+  ): Promise<MetafieldPlan[]> {
+    if (input.answers === undefined) {
+      return [];
+    }
+    const gift = await this.deps.giftRepository.getByToken(input.token, {
+      transacting: input.transacting,
+    });
+    if (!gift) {
+      throw new errors.NotFoundError({
+        message: tpl(errorMessages.giftNotFound),
+        code: 'GIFT_NOT_FOUND',
+      });
+    }
+    const tier = await this.readTier(gift);
+    return this.deps.requirements.planAnswers(
+      input.answers,
+      input.memberId,
+      { id: gift.tierId, type: tier.type },
+      attempt,
+    );
+  }
+
   private async redeemGift(
     token: string,
     memberId: string,
-    options: { transacting: Knex.Transaction; newMember?: boolean },
+    options: { transacting: Knex.Transaction; newMember?: boolean; answers: MetafieldPlan[] },
   ): Promise<{ redeemed: Gift; member: MemberModel }> {
     const { transacting } = options;
     // Gift before member, the lock order every gift flow uses
@@ -921,7 +1030,9 @@ export class GiftService {
 
     const redeemed = gift.redeem({ memberId });
 
-    await this.deps.memberRepository.update(
+    // Update the member once, with the tier and the custom field values together, so the
+    // `member.edited` webhook includes both.
+    await this.deps.memberWrites.updateWithMetafields(
       {
         products: [
           {
@@ -932,6 +1043,7 @@ export class GiftService {
         status: 'gift',
       },
       { id: memberId, transacting },
+      options.answers,
     );
 
     await this.deps.giftRepository.update(redeemed, { transacting });
@@ -1541,15 +1653,12 @@ export class GiftService {
       gift.token,
       options,
     );
-    const tier = await this.deps.tiersService.api.read(gift.tierId);
-
-    if (!tier) {
-      throw new errors.InternalServerError({
-        message: `Tier ${gift.tierId} not found for gift: ${gift.token}`,
-      });
-    }
-
+    const tier = await this.readTier(gift);
     const tierJSON = tier.toJSON();
+    const requirements = await this.deps.requirements.forTier({
+      id: tierJSON.id,
+      type: tier.type,
+    });
 
     return {
       token: gift.token,
@@ -1568,7 +1677,20 @@ export class GiftService {
         name: tierJSON.name,
         description: tierJSON.description,
         benefits: tierJSON.benefits,
+        ...(requirements ? { requirements } : {}),
       },
     };
+  }
+
+  /** Reads the gift's tier, and throws if the tier no longer exists. */
+  private async readTier(gift: Gift): Promise<Tier> {
+    const tier = await this.deps.tiersService.api.read(gift.tierId);
+
+    if (!tier) {
+      throw new errors.InternalServerError({
+        message: `Tier ${gift.tierId} not found for gift: ${gift.token}`,
+      });
+    }
+    return tier;
   }
 }

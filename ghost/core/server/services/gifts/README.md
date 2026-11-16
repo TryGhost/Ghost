@@ -13,6 +13,10 @@ transactions, or Stripe objects.
   stable tier/cadence/trial decision consumed by the normal subscription
   checkout path.
 - `getRedeemable(input)` and `redeem(input)` return the public redemption DTO.
+  When the checkout collection flag is on, the DTO lists the gift tier's
+  requirements, such as a shipping address. `redeem` accepts `answers`, the
+  redeemer's values for those requirements. It validates them before redeeming
+  the gift, and saves them in the redemption's transaction.
 - `completePurchase(input)` and `handlePaymentRefund(input)` accept normalized
   payment outcomes.
 - `handlePaidSubscriptionActivation(memberId)` consumes gift time when a paid

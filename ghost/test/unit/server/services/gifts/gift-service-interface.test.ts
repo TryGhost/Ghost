@@ -71,6 +71,9 @@ describe('GiftService interface', function () {
       giftRepository,
       giftDeliveryService,
       memberRepository: {},
+      requirements: {
+        forTier: async () => null,
+      },
       tiersService: {
         api: {
           read: sinon.stub().resolves(tier),
