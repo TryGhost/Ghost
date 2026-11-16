@@ -75,6 +75,12 @@ export abstract class JobsBackendBase {
   // row that settling removes.
   abstract enqueue(id: string, envelope: DispatchEnvelope): void | Promise<void>;
 
+  // The ids this backend has accepted and not yet settled, queued or running.
+  // The outbox renews these rows so another process does not hand them over
+  // again. A backend that leaves this out must dedupe enqueues by id, because
+  // its rows go stale and are re-enqueued while the job may still be running.
+  heldIds?(): string[];
+
   abstract scheduleRecurring(
     envelope: DispatchEnvelope,
     schedule: RecurringSchedule,
