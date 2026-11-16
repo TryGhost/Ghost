@@ -186,6 +186,29 @@ unknown key drops that section back to raw and logs it, the rest of the tree
 stays validated, and strict environments still throw. See
 [One bad key costs only that key](#rules).
 
+### Choosing how a closed section treats unknown keys
+
+Ghost never reads a key the schema doesn't name, so an unknown key changes
+nothing at runtime. The risk is that whoever wrote it thinks a setting applies
+when it doesn't. A closed section has three options:
+
+- **`z.object()` strips unknown keys without saying anything.** Use it where every
+  reader is in this repo and a stray key is unlikely, as in `paths`.
+- **`knownKeys(name, shape)`, from [`schema/primitives.ts`](schema/primitives.ts),
+  reports each unknown key, then strips it.** The warning names the key path,
+  such as `spam:user_logn`, and goes through `reportUnknownKeys` in
+  [`report.ts`](report.ts). Under `test*` an unknown key fails the parse, because
+  there it's a mistake in this repo's own config. Everywhere else it only warns,
+  even with `GHOST_CONFIG_SCHEMA_STRICT` set. Use it for sections that self-hosters
+  write by hand, where a typo or a key from another Ghost version is likely. A
+  failed boot over a key Ghost ignores would make every key removal or rename a
+  breaking change. `spam` is the example. Only the section's top-level keys are
+  checked: a nested `z.object()` inside it, such as one limiter block, still
+  strips without a warning.
+- **`z.strictObject()` rejects an unknown key.** Strict environments throw, and
+  everywhere else the section falls back to raw. Use it only where an unknown key
+  must be an error.
+
 ## Don't mutate what `get()` returns
 
 In `development` and under test a write throws, naming the key path:
