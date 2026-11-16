@@ -1372,11 +1372,11 @@ describe('RouterController', function () {
       });
 
       it('throws DisabledFeatureError on invite-only sites', async function () {
+        const get = sinon.stub();
+        get.withArgs('members_signup_access').returns('invite');
         const controller = createGiftController({
           tiersService: paidTierService(),
-          settingsCache: {
-            get: sinon.stub().withArgs('members_signup_access').returns('invite'),
-          },
+          settingsCache: { get },
         });
 
         await assert.rejects(
@@ -1386,7 +1386,11 @@ describe('RouterController', function () {
             },
             mockRes,
           ),
-          errors.DisabledFeatureError,
+          (error) => {
+            assert(error instanceof errors.DisabledFeatureError);
+            assert.equal(error.message, 'This site is invite-only, contact the owner for access.');
+            return true;
+          },
         );
         sinon.assert.notCalled(giftService.service.startCheckout);
       });
