@@ -510,10 +510,6 @@ module.exports = function MembersAPI({
     });
   };
 
-  const bus = new (require('events').EventEmitter)();
-
-  bus.emit('ready');
-
   DomainEvents.subscribe(EmailSuppressedEvent, async function (event) {
     const member = await memberRepository.get({ email: event.data.emailAddress });
     if (!member) {
@@ -533,7 +529,6 @@ module.exports = function MembersAPI({
     cycleTransientId,
     setMemberGeolocationFromIp,
     getPublicConfig,
-    bus,
     sendEmailWithMagicLink,
     getMagicLink,
     members: users,

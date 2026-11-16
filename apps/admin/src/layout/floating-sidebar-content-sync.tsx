@@ -67,6 +67,8 @@ class BeforePinCommit extends React.Component<{ pinned: boolean; onBeforeCommit:
 }
 
 interface FloatingSidebarContentSyncProps {
+  /** The same open panel width passed to the sidebar. */
+  openWidth?: number;
   /** The `pinned` the sidebar is given. */
   pinned: boolean;
   /** The sidebar's `animate`: no slide until it's set, and for a frame after. */
@@ -92,13 +94,14 @@ interface FloatingSidebarContentSyncProps {
  * nothing.
  */
 export function FloatingSidebarContentSync({
+  openWidth,
   pinned,
   animate,
   morphStyle,
   contentRef,
   slideRef,
 }: FloatingSidebarContentSyncProps) {
-  const gapWidth = getFloatingSidebarGapWidth(pinned);
+  const gapWidth = getFloatingSidebarGapWidth(pinned, openWidth);
   const { duration, easing } = getFloatingSidebarTiming(morphStyle);
 
   // Like the capsule's transitions: a frame after mounting (and after

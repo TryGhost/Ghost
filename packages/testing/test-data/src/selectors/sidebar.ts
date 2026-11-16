@@ -9,6 +9,7 @@ export const networkNotificationBadge = 'network-notification-badge';
 
 // accessible names
 export const postsToggle = 'Toggle post views';
+export const createPostLink = 'Create new post';
 export const userMenuTrigger = 'User menu';
 /** Contributors get a floating avatar menu instead of the sidebar. */
 export const contributorMenuTrigger = 'Open user menu';

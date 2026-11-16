@@ -1,8 +1,8 @@
 import logging from '@tryghost/logging';
 import * as security from '@tryghost/security';
 import { defineService } from '../../../kernel/define-service';
-import { shouldCreateInDevelopmentTables } from '../../data/schema/in-development';
 import { assertDatabaseSupported, createAuth, type GhostAuth } from './create-auth';
+import { usesBetterAuth } from './enabled';
 
 export type { GhostAuth } from './create-auth';
 
@@ -17,7 +17,7 @@ export default defineService('Better Auth', async (): Promise<GhostAuth> => {
 
   assertDatabaseSupported({
     client: config.get('database:client'),
-    inDevelopmentTables: shouldCreateInDevelopmentTables(),
+    usesBetterAuth: usesBetterAuth(),
   });
 
   const auth = createAuth({

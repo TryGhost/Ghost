@@ -167,6 +167,7 @@ const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[]
 
 type BuildGraphParams = {
   actionErrors: Record<string, string>;
+  validationAttempt: number;
   // Draw the line to the exit card and bring the card in, for a flow just created.
   connectIn: boolean;
   automation: AutomationDetail;
@@ -189,6 +190,7 @@ type BuildGraphParams = {
 
 const buildGraph = ({
   actionErrors,
+  validationAttempt,
   connectIn,
   automation,
   savedTriggerTierIds,
@@ -275,6 +277,7 @@ const buildGraph = ({
                 subject: action.data.email_subject,
                 lexical: action.data.email_lexical,
                 suppressWarning: newEmailWithoutWarningsId === action.id,
+                validationAttempt,
                 onInteract: () => onInteract(action.id),
                 onEditContent: () => onEditEmailBody(action.id),
               },
@@ -392,6 +395,7 @@ type AutomationCanvasProps = {
   // picker's card was, and the flow below it plays in.
   initialTriggerTop?: number;
   actionErrors?: Record<string, string>;
+  validationAttempt?: number;
   onWaitValidityChange: (stepId: string, valid: boolean) => void;
   automation?: AutomationDetail;
   savedTriggerTierIds?: readonly string[];
@@ -418,6 +422,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   initialSidebar,
   initialTriggerTop,
   actionErrors = {},
+  validationAttempt = 0,
   savedTriggerTierIds = [],
   triggerType,
   onWaitValidityChange,
@@ -682,6 +687,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     }
     return buildGraph({
       actionErrors,
+      validationAttempt,
       connectIn: connecting,
       automation,
       savedTriggerTierIds,
@@ -702,6 +708,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     });
   }, [
     actionErrors,
+    validationAttempt,
     connecting,
     savedTriggerTierIds,
     triggerType,

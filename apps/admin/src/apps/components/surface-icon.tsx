@@ -1,8 +1,7 @@
 import React, { useId } from 'react';
 import { Inline, Text } from '@tryghost/shade/primitives';
-import { LucideIcon, cn } from '@tryghost/shade/utils';
+import { cn } from '@tryghost/shade/utils';
 import type { AppManifest } from '@tryghost/admin-x-framework/api/app-installations';
-import { servedFrom } from '@/apps/lib/served-from';
 
 type SurfaceType = AppManifest['surfaces'][number]['type'];
 
@@ -66,6 +65,14 @@ export const SurfaceIcon: React.FC<{ type: SurfaceType; color: string; className
   );
 };
 
+/** One surface as a line of the app's details: its drawing, then what it is. */
+export const SurfaceLine: React.FC<{ type: SurfaceType; color: string }> = ({ type, color }) => (
+  <Inline data-testid="app-capability" gap="sm">
+    <SurfaceIcon color={color} type={type} />
+    {SURFACE_COPY[type]}
+  </Inline>
+);
+
 const Capability: React.FC<{ icon: React.ReactNode; children: React.ReactNode }> = ({
   icon,
   children,
@@ -81,34 +88,19 @@ const Capability: React.FC<{ icon: React.ReactNode; children: React.ReactNode }>
 );
 
 /**
- * What an app does, one line each, for the app review: where it appears in Ghost, and the
- * service it sends what it reads to, which is where its page runs.
+ * Where an app appears in Ghost, one line each, for the app review. Where it sends what it
+ * reads is shown with its permissions (`DataAccessedBy`).
  */
 export const CapabilitySummary: React.FC<{ manifest: AppManifest }> = ({ manifest }) => {
   // Several surfaces of one kind read as one line.
   const types = [...new Set(manifest.surfaces.map((surface) => surface.type))];
-  const color = manifest.accent_color;
   return (
     <ul className="m-0 flex list-none flex-col gap-3 p-0" data-testid="app-capabilities">
       {types.map((type) => (
-        <Capability key={type} icon={<SurfaceIcon color={color} type={type} />}>
+        <Capability key={type} icon={<SurfaceIcon color={manifest.accent_color} type={type} />}>
           {SURFACE_COPY[type]}
         </Capability>
       ))}
-      <Capability
-        icon={
-          // Centred in the same slot as a surface drawing, so the icons read as one column.
-          <span
-            aria-hidden="true"
-            className="flex h-6 w-8 shrink-0 items-center justify-center"
-            style={{ color }}
-          >
-            <LucideIcon.Globe className="size-5" strokeWidth={1.5} />
-          </span>
-        }
-      >
-        Read and write data to {servedFrom(manifest)}
-      </Capability>
     </ul>
   );
 };

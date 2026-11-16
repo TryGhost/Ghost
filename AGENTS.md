@@ -73,6 +73,8 @@ service.
   do not initialize on the first request.
   Before writing a record's relations or link tables outside `Model.edit`,
   read [row locking](docs/codebase/database.md#row-locking).
+  Before adding an import, check the
+  [dependency rules](docs/practices/dependencies.md).
 - **Background jobs:** read the [jobs guide](docs/codebase/jobs.md) before
   adding a job.
 - **Repository tooling:** read the [tooling ownership guide](tools/README.md)

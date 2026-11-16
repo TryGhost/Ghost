@@ -21,6 +21,12 @@ interface MemberBREADService {
 }
 
 interface MembersApi {
+  getMagicLink(
+    email: string,
+    type: 'signin' | 'signup',
+    tokenData?: Record<string, unknown>,
+  ): Promise<string>;
+  getMemberDataFromMagicLinkToken(token: string, otcVerification?: unknown): Promise<unknown>;
   memberBREADService: MemberBREADService;
   members: MemberRepository;
 }
