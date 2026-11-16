@@ -6,6 +6,11 @@ import CloseButton from '../common/close-button';
 import GiftCard from '../common/gift-card';
 import GiftDetailsToggle from '../common/gift-details-toggle';
 import InputForm from '../common/input-form';
+import TierRequirements, {
+  answeredAll,
+  answersOf,
+  useAskedRequirements,
+} from '../common/tier-requirements';
 import { ValidateInputForm } from '../../utils/form';
 import { getSiteDateString } from '../../utils/date-time';
 import {
@@ -55,10 +60,21 @@ export const GiftRedemptionStyles = `
 }
 `;
 
+/** A stable empty list, so the requirements hook doesn't get a new array on every render. */
+const NO_REQUIREMENTS = [];
+
 const GiftRedemptionPage = () => {
-  const { action, brandColor, doAction, member, pageData, site } = useContext(AppContext);
+  const { action, brandColor, doAction, fieldErrors, member, pageData, site } =
+    useContext(AppContext);
   const gift = pageData?.gift;
   const isLoggedIn = !!member;
+  // The tier's requirements, such as a shipping address. They are normally collected in Stripe
+  // Checkout, which redeeming a gift doesn't go through, so this page collects them. The inputs
+  // are only shown to a signed-in member, because the values are saved to the member's record.
+  // `requirements` is empty or missing when the tier has none, the feature flag is off, or the
+  // server is an older version.
+  const requirements = (isLoggedIn && gift?.tier?.requirements) || NO_REQUIREMENTS;
+  const asked = useAskedRequirements(requirements, member?.metafields);
   const [name, setName] = useState(gift?.recipient_name || member?.name || '');
   const [email, setEmail] = useState(member?.email || gift?.recipient_email || '');
   const [errors, setErrors] = useState({});
@@ -152,8 +168,13 @@ const GiftRedemptionPage = () => {
     }
 
     if (isLoggedIn) {
+      if (!answeredAll(asked)) {
+        return;
+      }
       doAction('redeemGift', {
         giftToken: pageData?.token,
+        answers: answersOf(asked),
+        asked: asked.inputs,
       });
       return;
     }
@@ -235,13 +256,19 @@ const GiftRedemptionPage = () => {
                 </div>
               )}
 
+              {asked.inputs.length > 0 && (
+                <div className="gh-portal-gift-redemption-form" data-testid="gift-requirements">
+                  <TierRequirements asked={asked} errors={fieldErrors || {}} />
+                </div>
+              )}
+
               <ActionButton
                 brandColor={brandColor}
                 classes="gh-portal-gift-checkout-cta"
                 label={buttonLabel}
                 onClick={handleRedeemClick}
                 style={{ width: '100%' }}
-                disabled={isRedeeming}
+                disabled={isRedeeming || !answeredAll(asked)}
                 isRunning={isRedeeming}
               />
 

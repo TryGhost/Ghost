@@ -311,13 +311,23 @@ async function signup({ data, state, api }) {
   }
 }
 
+/**
+ * Redeems a gift. A signed-in member redeems it directly, sending the values they entered for the
+ * tier's requirements as `answers`. A visitor who isn't signed in is emailed a magic link, which
+ * redeems the gift when it signs them in.
+ */
 async function redeemGift({ data, state, api }) {
+  // `asked` is the list of requirement inputs shown on the page. It's used to show a validation
+  // error next to the input it belongs to.
+  const { answers, asked = [] } = data;
   try {
     let { email, name, giftToken } = data;
     name = name?.trim();
 
     if (state.member) {
-      await api.gift.redeem({ token: giftToken });
+      // The server validates `answers` before it redeems the gift, so a validation error leaves
+      // the gift unredeemed.
+      await api.gift.redeem({ token: giftToken, answers });
       const member = await api.member.sessionData();
       const notification = createNotification({
         type: 'giftRedeem',
@@ -331,6 +341,7 @@ async function redeemGift({ data, state, api }) {
 
       return {
         action: 'redeemGift:success',
+        fieldErrors: {},
         member,
         showPopup: false,
         lastPage: null,
@@ -371,6 +382,23 @@ async function redeemGift({ data, state, api }) {
       },
     };
   } catch (e) {
+    // A validation error on `answers` keeps the gift page open and shows the error next to its
+    // input. Any other error, such as the gift already being redeemed, closes the popup and shows
+    // the error in a notification.
+    const refusal = refusalOf(e, (refused) => placeAnswerRefusal(refused, asked), null);
+    if (Object.keys(refusal.fieldErrors).length > 0 || refusal.sentence) {
+      return {
+        action: 'redeemGift:failed',
+        fieldErrors: refusal.fieldErrors,
+        popupNotification: failureNotification({
+          ...refusal,
+          state,
+          type: 'redeemGift:failed',
+          autoHide: false,
+        }),
+      };
+    }
+
     const notification = createNotification({
       type: 'giftRedeem',
       status: 'error',
@@ -383,6 +411,7 @@ async function redeemGift({ data, state, api }) {
 
     return {
       action: 'redeemGift:failed',
+      fieldErrors: {},
       showPopup: false,
       lastPage: null,
       pageQuery: '',

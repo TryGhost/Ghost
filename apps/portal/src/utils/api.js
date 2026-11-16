@@ -212,7 +212,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       return handleGiftResponse(res, 'Failed to load gift data');
     },
 
-    async redeem({ token }) {
+    async redeem({ token, answers }) {
       const url = endpointFor({
         type: 'members',
         resource: `gifts/${encodeURIComponent(token)}/redeem`,
@@ -224,7 +224,10 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
           'Content-Type': 'application/json',
         },
         credentials: 'same-origin',
-        body: JSON.stringify({}),
+        // `answers` holds the member's values for the tier's requirements, keyed by checkout port,
+        // such as `checkout.shipping.address`. The server saves them when it redeems the gift. A
+        // validation error names the port, which the page uses to find the input.
+        body: JSON.stringify(answers && Object.keys(answers).length > 0 ? { answers } : {}),
       });
 
       return handleGiftResponse(res, 'Failed to redeem gift');

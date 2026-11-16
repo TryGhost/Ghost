@@ -177,6 +177,19 @@ html[dir="rtl"] .gh-portal-content.gift .gh-portal-btn-site-title-back {
     margin-bottom: 8px;
 }
 
+/* The parts of a grouped input, such as an address or a phone number, have hidden labels, because
+   the group has one label above it. Their empty label containers take no room, so the parts stay
+   joined and a phone number lines up with its country code. */
+.gh-portal-gift-checkout .gh-portal-input-group .gh-portal-input-labelcontainer {
+    margin-bottom: 0;
+}
+
+/* An address group's label sits directly above the group, without a label container, so the group
+   keeps the same gap below its label as a single input does. */
+.gh-portal-gift-checkout .gh-portal-input-label + .gh-portal-input-group {
+    margin-top: 8px;
+}
+
 .gh-portal-gift-checkout .gh-portal-input-label {
     font-size: 1.4rem;
     font-weight: 600;

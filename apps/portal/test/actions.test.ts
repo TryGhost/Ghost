@@ -611,7 +611,10 @@ describe('redeemGift action', () => {
       api: mockApi,
     });
 
-    expect(mockApi.gift.redeem).toHaveBeenCalledWith({ token: 'gift-token-123' });
+    expect(mockApi.gift.redeem).toHaveBeenCalledWith({
+      token: 'gift-token-123',
+      answers: undefined,
+    });
     expect(mockApi.member.sessionData).toHaveBeenCalled();
     expect(mockApi.member.getIntegrityToken).not.toHaveBeenCalled();
     expect(mockApi.member.sendMagicLink).not.toHaveBeenCalled();
@@ -633,6 +636,83 @@ describe('redeemGift action', () => {
     // Ensure the account page is no longer rendered after redemption.
     expect(result).not.toHaveProperty('page');
     // Redemption hash is cleared so a refresh doesn't re-trigger the redeemed-token flow.
+    expect(window.location.hash).toBe('');
+  });
+
+  test('sends the requirement values as `answers` when a signed-in member redeems', async () => {
+    const mockApi = {
+      gift: { redeem: vi.fn(() => Promise.resolve({ gifts: [{ token: 'gift-token-123' }] })) },
+      member: { sessionData: vi.fn(() => Promise.resolve({ status: 'gift' })) },
+    };
+    const answers = { 'checkout.phone': '+44 7400 123456' };
+
+    const result = await ActionHandler({
+      action: 'redeemGift',
+      data: { giftToken: 'gift-token-123', answers, asked: [] },
+      state: { member: { email: 'jamie@example.com', status: 'free' } },
+      api: mockApi,
+    });
+
+    expect(mockApi.gift.redeem).toHaveBeenCalledWith({ token: 'gift-token-123', answers });
+    expect(result).toMatchObject({ action: 'redeemGift:success', fieldErrors: {} });
+  });
+
+  test('keeps the gift page open and shows the error on its input when an answer fails validation', async () => {
+    window.history.replaceState({}, '', '/#/portal/gift/redeem/gift-token-123');
+    const validationError = Object.assign(new Error('Choose a country we ship to.'), {
+      property: 'answers.checkout.shipping.address.country',
+    });
+    const mockApi = {
+      gift: { redeem: vi.fn(() => Promise.reject(validationError)) },
+      member: { sessionData: vi.fn() },
+    };
+    const address = {
+      key: 'checkout.shipping.address',
+      name: 'Shipping address',
+      type: 'address',
+      readOnly: false,
+    };
+
+    const result = await ActionHandler({
+      action: 'redeemGift',
+      data: {
+        giftToken: 'gift-token-123',
+        answers: { 'checkout.shipping.address': { line1: '1 High Street', country: 'GB' } },
+        asked: [address],
+      },
+      state: { member: { email: 'jamie@example.com', status: 'free' } },
+      api: mockApi,
+    });
+
+    expect(result.action).toBe('redeemGift:failed');
+    expect(Object.values(result.fieldErrors)).toEqual(['Choose a country we ship to.']);
+    // The popup stays open on the gift page, so the member can fix the value and redeem.
+    expect(result).not.toHaveProperty('showPopup');
+    expect(window.location.hash).toBe('#/portal/gift/redeem/gift-token-123');
+  });
+
+  test('closes the popup and shows an error notification when the gift cannot be redeemed', async () => {
+    window.history.replaceState({}, '', '/#/portal/gift/redeem/gift-token-123');
+    const alreadyRedeemed = Object.assign(new Error('This gift has already been redeemed.'), {
+      code: 'GIFT_REDEEMED',
+    });
+    const mockApi = {
+      gift: { redeem: vi.fn(() => Promise.reject(alreadyRedeemed)) },
+      member: { sessionData: vi.fn() },
+    };
+
+    const result = await ActionHandler({
+      action: 'redeemGift',
+      data: { giftToken: 'gift-token-123', answers: {}, asked: [] },
+      state: { member: { email: 'jamie@example.com', status: 'free' } },
+      api: mockApi,
+    });
+
+    expect(result).toMatchObject({
+      action: 'redeemGift:failed',
+      showPopup: false,
+      notification: { type: 'giftRedeem', status: 'error' },
+    });
     expect(window.location.hash).toBe('');
   });
 
