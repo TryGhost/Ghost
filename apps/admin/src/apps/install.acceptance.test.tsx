@@ -124,14 +124,14 @@ describe('Installing an app', () => {
     await expect
       .element(appsScreen.accessItems().first())
       .toHaveTextContent('View, create, edit, publish and delete posts and pages');
-    // What the app does: where it appears, and where what it reads can go.
-    await expect(appsScreen.capabilities()).toHaveCount(2);
+    // What the app does: where it appears, and, with its permissions, where what it reads goes.
+    await expect(appsScreen.capabilities()).toHaveCount(1);
     await expect
       .element(appsScreen.capabilities().first())
       .toHaveTextContent('A dedicated page in Admin');
     await expect
-      .element(appsScreen.capabilities().last())
-      .toHaveTextContent('Read and write data to podcast.example.com');
+      .element(appsScreen.accessIndicator().getByTestId('app-data-accessed-by'))
+      .toHaveTextContent(/Data accessed by\s*podcast\.example\.com/);
     expect(previewApi.requests.map(({ body }) => body)).toEqual([
       { app_installation_previews: [{ manifest_url: MANIFEST_URL }] },
     ]);
@@ -196,8 +196,8 @@ describe('Installing an app', () => {
     });
 
     await expect
-      .element(appsScreen.capabilities().last())
-      .toHaveTextContent('Read and write data to my-app.localhost:5173');
+      .element(appsScreen.dataAccessedBy())
+      .toHaveTextContent(/Data accessed by\s*my-app\.localhost:5173/);
     await expect.element(appsScreen.developmentBadge()).not.toBeInTheDocument();
   });
 

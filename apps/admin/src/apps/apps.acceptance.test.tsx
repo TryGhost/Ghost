@@ -1321,8 +1321,10 @@ describe('Managing apps', () => {
       .toHaveTextContent(/Made by\s*Example Audio\s*Unverified developer/);
     await expect.element(appsScreen.unverifiedDeveloperBadge()).toBeVisible();
     await expect
-      .element(appsScreen.capabilities().last())
-      .toHaveTextContent('Read and write data to podcast.example.net');
+      .element(details)
+      .toHaveTextContent(
+        /Surface\s*A dedicated page in Admin\s*Data accessed by\s*podcast\.example\.net/,
+      );
     await expect.element(details).toHaveTextContent('by Jamie Larson');
     await expect(appsScreen.historyEntries()).toHaveCount(3);
     await expect
@@ -1333,6 +1335,26 @@ describe('Managing apps', () => {
       .element(appsScreen.historyEntries().nth(2))
       .toHaveTextContent('Installed by Jamie Larson');
     expect(new URL(readApi.requests[0].url).searchParams.get('include')).toBe('history');
+  });
+
+  it('shows the app’s name large under the breadcrumb, with its badges and description, in Admin 7', async () => {
+    fakeDetails(
+      installation({
+        manifest: manifest({ development: true }),
+        history: [installedOn('2026-10-01T10:00:00.000Z')],
+      }),
+    );
+
+    await renderAdminApp(DETAILS_ROUTE, { labs: { ...labs, admin7Design: true } });
+
+    await expect.element(appsScreen.detailsTitle()).toHaveTextContent('Podcast');
+    await expect.element(appsScreen.details()).toHaveTextContent('Development');
+    await expect
+      .element(appsScreen.details())
+      .toHaveTextContent('Publish episodes and embed players.');
+    await expect.element(appsScreen.details()).toHaveTextContent(/Made by\s*Example Audio/);
+    await expect.element(page.getByRole('heading', { name: 'Permissions' })).toBeVisible();
+    await expect.element(appsScreen.openLink()).toBeVisible();
   });
 
   // The icon URL isn't faked, so a request to it would fail the test.
@@ -1482,7 +1504,8 @@ describe('Managing apps', () => {
     });
 
     await renderAdminApp(DETAILS_ROUTE, { labs });
-    await appsScreen.uninstallButton().click();
+    await appsScreen.detailsActions().click();
+    await appsScreen.menuItem('Uninstall').click();
     await appsScreen.uninstallDialog().getByRole('button', { name: 'Uninstall' }).click();
 
     await expect.poll(currentRoute).toBe('/apps');
@@ -1558,6 +1581,7 @@ describe('Managing apps', () => {
     await expect
       .element(appsScreen.historyEntries().first())
       .toHaveTextContent('Updated, needs approval');
+    await expect.element(appsScreen.openLink()).not.toBeInTheDocument();
     await appsScreen.reviewChangesLink().click();
 
     await expect
@@ -1599,7 +1623,11 @@ describe('Managing apps', () => {
     await expect
       .element(appsScreen.historyEntries().first())
       .toHaveTextContent('Uninstalled by Jamie Larson');
-    await expect.element(appsScreen.uninstallButton()).not.toBeInTheDocument();
+    await expect
+      .element(page.getByTestId('app-fact').filter({ hasText: 'Uninstalled' }))
+      .toHaveTextContent('by Jamie Larson');
+    await expect.element(appsScreen.detailsActions()).not.toBeInTheDocument();
+    await expect.element(appsScreen.openLink()).not.toBeInTheDocument();
   });
 
   it('says when an app doesn’t exist', async () => {

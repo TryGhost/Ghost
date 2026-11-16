@@ -17,6 +17,7 @@ import {
   installation,
   labs,
   manifest,
+  readPath,
 } from './apps.test-utils';
 
 const app = (n: number, overrides: Partial<AppInstallation> = {}): AppInstallation =>
@@ -186,6 +187,29 @@ describe('Apps in the sidebar', () => {
       .toEqual({ pinned: ['installation-2', 'installation-1'], unpinned: [] });
     await page.getByTestId('admin-sidebar').getByRole('link', { name: 'Tags' }).click();
     await expect.poll(listedApps).toEqual(['App 2', 'App 1']);
+  });
+
+  it('unpins an app from its details, and pins it again', async () => {
+    fakeInstallations([app(1), app(2)]);
+    fakeAdminEndpoint('GET', readPath('installation-1'), () => ({ app_installations: [app(1)] }));
+    const preferences = fakePreferencesApi();
+    await renderAdminApp('/apps/details/installation-1', withPins());
+    await expect.poll(listedApps).toEqual(['App 1', 'App 2']);
+
+    await appsScreen.detailsActions().click();
+    await appsScreen.menuItem('Unpin from sidebar').click();
+
+    await expect.poll(listedApps).toEqual(['App 2']);
+    await expect
+      .poll(preferences.savedPins)
+      .toEqual({ pinned: ['installation-2'], unpinned: ['installation-1'] });
+
+    await appsScreen.detailsActions().click();
+    await appsScreen.menuItem('Pin to sidebar').click();
+
+    await expect
+      .poll(preferences.savedPins)
+      .toEqual({ pinned: ['installation-2', 'installation-1'], unpinned: [] });
   });
 
   it('keeps changes made in quick succession, however their saves land', async () => {
