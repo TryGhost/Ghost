@@ -2,6 +2,9 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const DomainEvents = require('@tryghost/domain-events');
+const {
+  LabelAddedToMembersEvent,
+} = require('../../../../../../../core/shared/events/label-added-to-members-event');
 const logging = require('@tryghost/logging');
 const labs = require('../../../../../../../core/shared/labs');
 const MemberRepository = require('../../../../../../../core/server/services/members/members-api/repositories/member-repository');
@@ -445,6 +448,39 @@ describe('MemberRepository', function () {
   });
 
   describe('bulkEdit', function () {
+    beforeEach(function () {
+      Member.getLabelRelations = sinon.stub().resolves([]);
+    });
+
+    it('dispatches label additions successful inserts', async function () {
+      const dispatch = sinon.spy(DomainEvents, 'dispatch');
+      Member.getFilteredCollectionQuery = sinon.stub().returns({
+        select: () => ({ distinct: async () => ['added', 'failed'].map((id) => ({ id })) }),
+      });
+      Member.lockForUpdate = sinon.stub().resolves();
+      Member.bulkAdd = sinon.stub().callsFake(async (relations) => ({
+        successful: 1,
+        unsuccessful: 1,
+        errors: [],
+        unsuccessfulData: relations.filter((row) => row.member_id === 'failed'),
+      }));
+
+      const result = await buildRepo().bulkEdit(
+        { action: 'addLabel', meta: { label: { id: 'label' } } },
+        { all: true, context: { user: 'admin' } },
+      );
+
+      assert.equal(result.successful, 1);
+      assert.equal(result.unsuccessful, 1);
+      const events = dispatch.args
+        .map(([event]) => event)
+        .filter((event) => event instanceof LabelAddedToMembersEvent);
+      assert.deepEqual(
+        events.map((event) => event.data),
+        [{ labelId: 'label', memberIds: ['added'] }],
+      );
+    });
+
     it('reports the members of a failed chunk as unsuccessful and keeps the committed chunks', async function () {
       const memberIds = Array.from(
         { length: 1001 },
@@ -463,12 +499,10 @@ describe('MemberRepository', function () {
         unsuccessfulData: [],
         errors: [],
       }));
-
       const result = await buildRepo().bulkEdit(
         { action: 'addLabel', meta: { label: { id: 'label-id' } } },
         { filter: 'status:free' },
       );
-
       assert.equal(result.successful, 1000);
       assert.equal(result.unsuccessful, 1);
       assert.deepEqual(result.unsuccessfulData, ['member-1000']);
