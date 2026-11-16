@@ -222,6 +222,13 @@ input references. Treat input as read-only in refinements and transforms, and
 describe nested structures explicitly when parsed values must be isolated from
 working-frame mutations.
 
+For schema methods, the body copy used by `frame.data` is deferred until a
+callback or serializer first reads it. Methods that use only `frame.validated`
+avoid that copy entirely. Reading `frame.data` creates one mutable copy and
+reuses it; assigning a replacement skips the copy. Legacy methods retain eager
+body copying. A caller-supplied Frame that was already configured retains its
+existing working data.
+
 `schema.options` parses the original request's query, route params, and internal
 options merged in that order, so route params override query values and internal
 options override both. The `context` key is excluded; trusted context remains
@@ -245,6 +252,13 @@ The default cache key includes the working options (including trusted context)
 and all parsed channels. `generateCacheKeyData` can use `frame.validated` to
 provide a custom key. Input serializers and permissions run before cache lookup
 on every request. Queries and output serializers run on cache misses.
+
+Schema cache keys are generated only when `cache` is configured. The default
+key keeps working options and validated channels in separate fields. Keys must
+be JSON-compatible; for non-JSON schema outputs such as `Map`, `Set`, or
+`bigint`, provide `generateCacheKeyData` that converts them to a suitable key.
+Legacy key callbacks still run without a cache because some also prepare access
+context, but their unused results are not serialized.
 
 `defineMethod()` preserves the supplied configuration, schemas, and callbacks by
 reference. It does not parse requests or invoke callbacks itself; the pipeline

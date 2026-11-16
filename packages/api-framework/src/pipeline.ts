@@ -75,6 +75,21 @@ function sortKeysReplacer(_key: string, value: unknown) {
   return value;
 }
 
+function schemaCacheKeyReplacer(key: string, value: unknown) {
+  if (
+    typeof value === 'bigint' ||
+    typeof value === 'function' ||
+    typeof value === 'symbol' ||
+    (value && typeof value === 'object' && !Array.isArray(value) && !_.isPlainObject(value))
+  ) {
+    throw new IncorrectUsageError({
+      message:
+        'Schema cache keys must be JSON-compatible. Use generateCacheKeyData to serialize non-JSON values.',
+    });
+  }
+  return sortKeysReplacer(key, value);
+}
+
 const STAGES = {
   validation: {
     /**
@@ -361,10 +376,13 @@ function pipeline(
           context: (options.context as Dictionary | undefined) || {},
         });
 
-        frame.configure({
-          options: apiImpl.options,
-          data: apiImpl.data,
-        });
+        frame.configure(
+          {
+            options: apiImpl.options,
+            data: apiImpl.data,
+          },
+          { deferBodyClone: Boolean(apiImpl.schema) },
+        );
       } else {
         frame = options;
       }
@@ -389,14 +407,22 @@ function pipeline(
         }
       }
 
-      let cacheKeyData: unknown = validatedRequest
-        ? { ...frame.options, validated: validatedRequest }
-        : frame.options;
-      if (apiImpl.generateCacheKeyData) {
-        cacheKeyData = await apiImpl.generateCacheKeyData(frame);
+      let cacheKey = '';
+      // Legacy hooks also resolve gift access when response caching is disabled.
+      if (apiImpl.cache || (!apiImpl.schema && apiImpl.generateCacheKeyData)) {
+        let cacheKeyData: unknown = validatedRequest
+          ? { options: frame.options, validated: validatedRequest }
+          : frame.options;
+        if (apiImpl.generateCacheKeyData) {
+          cacheKeyData = await apiImpl.generateCacheKeyData(frame);
+        }
+        if (apiImpl.cache) {
+          cacheKey = JSON.stringify(
+            cacheKeyData,
+            apiImpl.schema ? schemaCacheKeyReplacer : sortKeysReplacer,
+          );
+        }
       }
-
-      const cacheKey = JSON.stringify(cacheKeyData, sortKeysReplacer);
 
       // A shared response cache must never bypass request authorization. Keep
       // input preparation before permissions, but outside the cache loader so

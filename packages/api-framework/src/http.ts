@@ -49,7 +49,10 @@ export type HttpHandler = (
  * @return {HttpHandler}
  */
 const http = (
-  apiImpl: Pick<ControllerMethod, 'options' | 'data' | 'headers' | 'statusCode' | 'response'> &
+  apiImpl: Pick<
+    ControllerMethod,
+    'schema' | 'options' | 'data' | 'headers' | 'statusCode' | 'response'
+  > &
     ((frame: Frame) => unknown),
 ): HttpHandler => {
   /**
@@ -101,10 +104,13 @@ const http = (
       },
     });
 
-    frame.configure({
-      options: apiImpl.options,
-      data: apiImpl.data,
-    });
+    frame.configure(
+      {
+        options: apiImpl.options,
+        data: apiImpl.data,
+      },
+      { deferBodyClone: Boolean(apiImpl.schema) },
+    );
 
     try {
       const result = await apiImpl(frame);

@@ -18,6 +18,208 @@ const apiUtils = {
 };
 
 describe('schema-aware pipeline', function () {
+  it.each(['internal', 'http'])(
+    'does not copy an unused working body for %s requests',
+    async function (transport) {
+      let reads = 0;
+      const body = {
+        get payload() {
+          reads += 1;
+          return { large: 'opaque payload' };
+        },
+      };
+      const controller = pipeline(
+        {
+          add: defineMethod({
+            schema: { body: z.unknown() },
+            permissions: false,
+            query(frame) {
+              assert.equal(reads, 0);
+              return frame.validated.body;
+            },
+          }),
+        },
+        apiUtils,
+      );
+
+      if (transport === 'internal') {
+        assert.equal(await controller.add(body, {}), body);
+      } else {
+        const req = { get: () => 'example.com', url: '/widgets/', body };
+        const res = { json: sinon.spy(), send: sinon.spy(), status: sinon.spy(), set: sinon.spy() };
+        const next = sinon.spy();
+        await http(controller.add)(req, res, next);
+        assert.equal(next.called, false);
+        assert.equal(res.json.firstCall.firstArg, body);
+      }
+      assert.equal(reads, 0);
+    },
+  );
+
+  it('does not copy an invalid body before rejecting the request', async function () {
+    let reads = 0;
+    const body = {
+      value: 123,
+      get payload() {
+        reads += 1;
+        return 'unneeded';
+      },
+    };
+    const controller = pipeline(
+      {
+        add: defineMethod({
+          schema: { body: z.object({ value: z.string() }) },
+          permissions: false,
+          query() {},
+        }),
+      },
+      apiUtils,
+    );
+    await assert.rejects(controller.add(body, {}), errors.ValidationError);
+    assert.equal(reads, 0);
+  });
+
+  it('does not generate or serialize unused schema cache keys', async function () {
+    const generateCacheKeyData = sinon.spy();
+    const controller = pipeline(
+      {
+        add: defineMethod({
+          schema: { body: z.object({ value: z.string().transform(BigInt) }) },
+          generateCacheKeyData,
+          permissions: false,
+          query(frame) {
+            return frame.validated.body.value;
+          },
+        }),
+      },
+      apiUtils,
+    );
+    assert.equal(await controller.add({ value: '123' }, {}), 123n);
+    assert.equal(generateCacheKeyData.called, false);
+  });
+
+  it('preserves legacy uncached hooks without serializing their unused result', async function () {
+    const generateCacheKeyData = sinon.stub().resolves(123n);
+    const controller = pipeline(
+      {
+        read: {
+          validation() {},
+          permissions: false,
+          generateCacheKeyData,
+          query() {
+            return 'response';
+          },
+        },
+      },
+      apiUtils,
+    );
+    assert.equal(await controller.read(), 'response');
+    assert.equal(generateCacheKeyData.calledOnce, true);
+  });
+
+  it('keeps an option named validated separate from parsed channels in cache keys', async function () {
+    const store = new Map<string, unknown>();
+    const cache = {
+      get: (key: string) => store.get(key),
+      set: (key: string, value: unknown) => store.set(key, value),
+    };
+    const query = sinon.spy((frame: Frame) => frame.options.validated);
+    const controller = pipeline(
+      {
+        add: defineMethod({
+          options: ['validated'],
+          schema: { body: z.object({ value: z.string() }) },
+          permissions: false,
+          query,
+          cache,
+        }),
+      },
+      apiUtils,
+    );
+    assert.equal(await controller.add({ value: 'same' }, { validated: 'one' }), 'one');
+    assert.equal(await controller.add({ value: 'same' }, { validated: 'two' }), 'two');
+    assert.equal(await controller.add({ value: 'same' }, { validated: 'one' }), 'one');
+    assert.equal(query.callCount, 2);
+  });
+
+  it.each(['set', 'map', 'bigint'])(
+    'requires a JSON-compatible custom key for parsed %s values',
+    async function (kind) {
+      const cache = { get: sinon.spy(), set: sinon.spy() };
+      const controller = pipeline(
+        {
+          add: defineMethod({
+            schema: {
+              body: z.object({
+                value: z.string().transform((value) => {
+                  if (kind === 'set') {
+                    return new Set([value]);
+                  }
+                  if (kind === 'map') {
+                    return new Map([['key', value]]);
+                  }
+                  return BigInt(value);
+                }),
+              }),
+            },
+            permissions: false,
+            query() {},
+            cache,
+          }),
+        },
+        apiUtils,
+      );
+      await assert.rejects(controller.add({ value: '123' }, {}), (error: unknown) => {
+        assert.ok(error instanceof errors.IncorrectUsageError);
+        assert.match(error.message, /generateCacheKeyData/);
+        return true;
+      });
+      assert.equal(cache.get.called, false);
+    },
+  );
+
+  it.each(['set', 'map'])(
+    'distinguishes parsed %s contents using an explicit key',
+    async function (kind) {
+      const store = new Map<string, unknown>();
+      const cache = {
+        get: (key: string) => store.get(key),
+        set: (key: string, value: unknown) => store.set(key, value),
+      };
+      let queries = 0;
+      const controller = pipeline(
+        {
+          add: defineMethod({
+            schema: {
+              body: z.object({
+                value: z
+                  .string()
+                  .transform((value) =>
+                    kind === 'set' ? new Set([value]) : new Map([['key', value]]),
+                  ),
+              }),
+            },
+            generateCacheKeyData(frame) {
+              return [...frame.validated.body.value];
+            },
+            permissions: false,
+            query(frame) {
+              queries += 1;
+              return [...frame.validated.body.value];
+            },
+            cache,
+          }),
+        },
+        apiUtils,
+      );
+      const first = await controller.add({ value: 'one' }, {});
+      const second = await controller.add({ value: 'two' }, {});
+      assert.notDeepEqual(first, second);
+      assert.deepEqual(await controller.add({ value: 'one' }, {}), first);
+      assert.equal(queries, 2);
+    },
+  );
+
   it('parses internal options and body with defaults and transforms without legacy validators', async function () {
     const schema = {
       options: z.object({ id: z.string(), page: z.string().transform(Number).default(1) }),
