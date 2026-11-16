@@ -55,6 +55,239 @@ describe('MemberWelcomeEmailRenderer', function () {
     });
   }
 
+  describe('renderBatch', function () {
+    it('rejects rather than returning incomplete recipient data when tracking fails', async function () {
+      lexicalRenderStub.resolves('<p><a href="/archive/">Archive</a></p>');
+      const renderer = createRenderer();
+      await assert.rejects(
+        renderer.renderBatch({
+          lexical: '{}',
+          subject: 'Welcome',
+          siteSettings: defaultSiteSettings,
+          trackClicks: true,
+          automationActionRevisionId: 'revision-1',
+          recipients: [
+            {
+              member: { email: 'alice@example.com', uuid: 'alice-uuid' },
+              automationRunStepId: 'alice-step',
+            },
+          ],
+        }),
+        /Link tracking not expected/,
+      );
+    });
+
+    it('resolves member values and fallbacks before validating and tracking URLs', async function () {
+      lexicalRenderStub.resolves(
+        '<p><a href="https://example.com:{first_name, "8080"}/">Port</a></p>',
+      );
+      const renderer = createRenderer({
+        linkTracking: {
+          addAutomationTrackingToUrl: async (url, revision, step, uuid) => {
+            const tracked = new URL(`https://track.example/${revision}/${step}/${uuid}`);
+            tracked.searchParams.set('url', url.href);
+            return tracked;
+          },
+        },
+      });
+      const result = await renderer.renderBatch({
+        lexical: '{}',
+        subject: 'Welcome',
+        siteSettings: defaultSiteSettings,
+        trackClicks: true,
+        automationActionRevisionId: 'revision-1',
+        recipients: [
+          {
+            member: { name: '8081', email: 'alice@example.com', uuid: 'alice' },
+            automationRunStepId: 'alice-step',
+          },
+          {
+            member: { name: null, email: 'bob@example.com', uuid: 'bob' },
+            automationRunStepId: 'bob-step',
+          },
+        ],
+      });
+      for (const [email, port, member, step] of [
+        ['alice@example.com', '8081', 'alice', 'alice-step'],
+        ['bob@example.com', '8080', 'bob', 'bob-step'],
+      ]) {
+        const html = result.html.replace(
+          /%recipient\.([^%]+)%/g,
+          (_, key) => result.recipientData[email][key],
+        );
+        const href = cheerio.load(html)('.post-content-row a').attr('href');
+        const url = new URL(href);
+        assert.equal(url.origin, 'https://track.example');
+        assert.equal(url.pathname, `/revision-1/${step}/${member}`);
+        assert.equal(url.searchParams.get('url'), `https://example.com:${port}/`);
+      }
+    });
+
+    it.each([false, true])(
+      'preserves untracked links with tracking enabled: %s and no attribution IDs',
+      async function (trackClicks) {
+        lexicalRenderStub.resolves(
+          '<h1>Welcome {first_name}</h1>' +
+            '<p><a href="https://example.com/archive/">https://example.com/archive/</a></p>' +
+            '<p><a href="/listen/{uuid}?source=email&amp;type=welcome">Listen</a> ' +
+            '<a href="#/portal/signup">Sign up</a> <a href="#section">Section</a> ' +
+            '<a href="mailto:{email}">Contact</a></p>',
+        );
+        const renderer = createRenderer();
+        const recipients = ['Alice', 'Bob'].map((name) => ({
+          member: { name, email: `${name.toLowerCase()}@example.com`, uuid: `${name}-uuid` },
+          automationRunStepId: `${name}-step`,
+        }));
+        const result = await renderer.renderBatch({
+          lexical: '{}',
+          subject: 'Welcome',
+          siteSettings: defaultSiteSettings,
+          trackClicks,
+          recipients,
+        });
+        for (const recipient of recipients) {
+          const individual = await renderer.render({
+            lexical: '{}',
+            subject: 'Welcome',
+            siteSettings: defaultSiteSettings,
+            member: recipient.member,
+          });
+          const substitute = (template) =>
+            template.replace(/%recipient\.([\w]+)%/g, (_, key) => {
+              assert.ok(Object.hasOwn(result.recipientData[recipient.member.email], key));
+              return result.recipientData[recipient.member.email][key];
+            });
+          assert.equal(substitute(result.text), individual.text);
+          assert.deepEqual(
+            cheerio
+              .load(substitute(result.html))('.post-content-row a')
+              .map((_, a) => a.attribs.href)
+              .get(),
+            [
+              'https://example.com/archive/',
+              `https://example.com/listen/${recipient.member.uuid}?source=email&type=welcome`,
+              'https://example.com/#/portal/signup',
+              '#section',
+              `mailto:${recipient.member.email}`,
+            ],
+          );
+        }
+      },
+    );
+
+    it('renders real Lexical content with independent subject, HTML, text, unsubscribe and tracking values', async function () {
+      lexicalRenderStub.restore();
+      const renderLexical = sinon.spy(lexicalLib, 'render');
+      const lexical = JSON.stringify({
+        root: {
+          ...lexicalLib.blankDocument.root,
+          children: [
+            {
+              type: 'html',
+              version: 1,
+              html:
+                '<p>Hello {name, "reader"}! <code>{first_name, "friend"}</code></p>' +
+                '<p><a href="/listen/{uuid}">Listen</a> <a href="#section">Section</a></p>',
+            },
+          ],
+        },
+      });
+      const renderer = createRenderer({
+        linkTracking: {
+          addAutomationTrackingToUrl: async (url, revision, step, uuid) =>
+            new URL(
+              `https://track.example/${revision}/${step}/${uuid}?url=${encodeURIComponent(url.href)}`,
+            ),
+        },
+      });
+      const recipients = [
+        {
+          member: { name: '<Alice & Co> Smith', email: 'alice@example.com', uuid: 'alice-uuid' },
+          automationRunStepId: 'alice-step',
+          unsubscribeUrl: 'https://example.com/unsubscribe?uuid=alice-uuid&updates=1',
+        },
+        {
+          member: { name: null, email: 'bob@example.com', uuid: 'bob-uuid' },
+          automationRunStepId: 'bob-step',
+          unsubscribeUrl: 'https://example.com/unsubscribe?uuid=bob-uuid&updates=1',
+        },
+      ];
+
+      const result = await renderer.renderBatch({
+        lexical,
+        subject: 'Welcome {first_name, "newcomer"}',
+        siteSettings: defaultSiteSettings,
+        trackClicks: true,
+        automationActionRevisionId: 'revision-1',
+        recipients,
+      });
+
+      sinon.assert.calledOnce(renderLexical);
+      assert.deepEqual(Object.keys(result.recipientData), ['alice@example.com', 'bob@example.com']);
+      const substitute = (template, address) =>
+        template.replace(/%recipient\.([\w]+)%/g, (_, key) => {
+          assert.ok(Object.hasOwn(result.recipientData[address], key), `missing variable ${key}`);
+          return result.recipientData[address][key];
+        });
+      for (const [index, recipient] of recipients.entries()) {
+        const address = recipient.member.email;
+        const html = substitute(result.html, address);
+        const $ = cheerio.load(html);
+        assert.ok(
+          $.text().includes(
+            index === 0 ? 'Hello <Alice & Co> Smith! <Alice' : 'Hello reader! friend',
+          ),
+        );
+        assert.equal($('alice').length, 0, 'member values must not become HTML');
+        assert.ok(
+          substitute(result.text, address).includes(
+            index === 0 ? 'Hello <Alice & Co> Smith! <Alice' : 'Hello reader! friend',
+          ),
+        );
+        assert.equal(
+          substitute(result.subject, address),
+          index === 0 ? 'Welcome <Alice' : 'Welcome newcomer',
+        );
+        const tracked = new URL(
+          $('a')
+            .filter((_, element) => $(element).text() === 'Listen')
+            .attr('href'),
+        );
+        assert.equal(
+          tracked.pathname,
+          `/revision-1/${recipient.automationRunStepId}/${recipient.member.uuid}`,
+        );
+        assert.equal(
+          tracked.searchParams.get('url'),
+          `https://example.com/listen/${recipient.member.uuid}`,
+        );
+        assert.equal(
+          $('a')
+            .filter((_, element) => $(element).text() === 'Section')
+            .attr('href'),
+          '#section',
+        );
+        assert.ok(
+          $('a')
+            .toArray()
+            .some((element) => $(element).attr('href') === recipient.unsubscribeUrl),
+        );
+        const individual = await renderer.render({
+          lexical,
+          subject: 'Welcome {first_name, "newcomer"}',
+          siteSettings: defaultSiteSettings,
+          trackClicks: true,
+          automationActionRevisionId: 'revision-1',
+          member: recipient.member,
+          automationRunStepId: recipient.automationRunStepId,
+          unsubscribeUrl: recipient.unsubscribeUrl,
+        });
+        assert.equal($.text(), cheerio.load(individual.html).text());
+        assert.equal(substitute(result.text, address), individual.text);
+      }
+    });
+  });
+
   describe('render', function () {
     it('renders Lexical content to HTML via lexicalLib.render', async function () {
       const renderer = createRenderer();

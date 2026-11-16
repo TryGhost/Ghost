@@ -1,4 +1,6 @@
+const { randomBytes } = require('node:crypto');
 const { finalize } = require('../../lib/email-rendering/finalize');
+const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const errors = require('@tryghost/errors');
 const { MESSAGES } = require('./constants');
 const { wrapReplacementStrings } = require('@tryghost/kg-default-nodes').utils.replacementStrings;
@@ -86,16 +88,21 @@ class MemberWelcomeEmailRenderer {
    * @param {{id: string, getValue: () => string|undefined}[]} options.definitions - Replacement token definitions
    * @param {string} options.text - The text to process (content body or subject line)
    * @param {boolean} [options.escapeHtml=false] - Whether to HTML-escape replaced values
+   * @param {Function} [options.getValue] - Resolve a token and its fallback, or emit a deferred token
    * @returns {string}
    */
-  #applyReplacements({ definitions, text, escapeHtml = false }) {
+  #applyReplacements({
+    definitions,
+    text,
+    escapeHtml = false,
+    getValue = (definition, fallback) => definition.getValue() || fallback || '',
+  }) {
     let processed = wrapReplacementStrings(text);
 
     processed = processed.replace(REPLACEMENT_REGEX, (match, property, fallback) => {
       const def = definitions.find((d) => d.id === property);
       if (def) {
-        const raw = def.getValue();
-        const resolved = raw || fallback || '';
+        const resolved = getValue(def, fallback);
         return escapeHtml ? this.Handlebars.Utils.escapeExpression(resolved) : resolved;
       }
       return match;
@@ -138,14 +145,154 @@ class MemberWelcomeEmailRenderer {
       unsubscribeUrl,
       tokenIds: definitions.map((definition) => definition.id),
       replaceText: (text, escapeHtml) => this.#applyReplacements({ definitions, text, escapeHtml }),
-      replaceLink: (url, originalPath) =>
-        this.#getMemberLink(url, originalPath, {
-          member,
-          trackClicks,
-          automationActionRevisionId,
-          automationRunStepId,
+      replaceLinks: (content) =>
+        linkReplacer.replace(
+          content,
+          (url, originalPath) =>
+            this.#getMemberLink(url, originalPath, {
+              member,
+              trackClicks,
+              automationActionRevisionId,
+              automationRunStepId,
+            }),
+          { base: siteSettings.url },
+        ),
+    });
+  }
+
+  /**
+   * Render one shared layout with Mailgun recipient variables, without sending it.
+   * Callers must supply a non-empty group with unique email addresses and the same
+   * email, site/design settings and footer mode (all have an unsubscribe URL, or none do).
+   * Fallbacks and tracked links are resolved here for each member/step, not by Mailgun.
+   * HTML variables are escaped separately from raw subject/plaintext variables.
+   * Rejects if per-recipient link generation fails; no partial template is returned.
+   *
+   * @param {object} options
+   * @param {{member: {name?: string | null, email: string, uuid?: string}, automationRunStepId?: string, unsubscribeUrl?: string}[]} options.recipients
+   * @param {string} options.lexical
+   * @param {string} options.subject
+   * @param {object} options.siteSettings
+   * @param {object | null} [options.designSettings]
+   * @param {boolean} [options.trackClicks]
+   * @param {string} [options.automationActionRevisionId]
+   * @returns {Promise<{html: string, text: string, subject: string, recipientData: Object<string, Object<string, string>>}>}
+   */
+  async renderBatch({
+    recipients,
+    siteSettings,
+    trackClicks,
+    automationActionRevisionId,
+    ...email
+  }) {
+    // Opaque tokens survive HTML finalization without confusing content with Mailgun syntax.
+    const prefix = `gh${randomBytes(6).toString('hex')}`;
+    const tokenPattern = new RegExp(`${prefix}(\\d+)token`, 'gi');
+    const replacements = [];
+    const addReplacement = (getValue) => {
+      const token = `${prefix}${replacements.length}token`;
+      replacements.push(getValue);
+      return token;
+    };
+    const resolveTokens = (text, values) =>
+      text.replace(tokenPattern, (_, index) => values[Number(index)]);
+    const definitions = this.#buildReplacementDefinitions({
+      member: recipients[0].member,
+      siteSettings,
+    });
+    const memberDefinitions = new Map(
+      recipients.map((recipient) => [
+        recipient,
+        new Map(
+          this.#buildReplacementDefinitions({ member: recipient.member, siteSettings }).map(
+            (definition) => [definition.id, definition],
+          ),
+        ),
+      ]),
+    );
+    const unsubscribeUrl = recipients.some((recipient) => recipient.unsubscribeUrl)
+      ? addReplacement((recipient) => recipient.unsubscribeUrl || '')
+      : null;
+    const template = await this.#render({
+      ...email,
+      siteSettings,
+      unsubscribeUrl,
+      tokenIds: definitions.map((definition) => definition.id),
+      replaceText: (text) =>
+        this.#applyReplacements({
+          definitions,
+          text,
+          getValue: (definition, fallback) =>
+            addReplacement(
+              (recipient) =>
+                memberDefinitions.get(recipient).get(definition.id).getValue() || fallback || '',
+            ),
+        }),
+      replaceLinks: (content) =>
+        linkReplacer.replaceRaw(content, (originalPath) => {
+          if (originalPath.startsWith('#') && !originalPath.startsWith('#/')) {
+            return originalPath;
+          }
+          // A token in a numeric port, for example, is not a valid URL until resolved.
+          if (!originalPath.match(tokenPattern)) {
+            let url;
+            try {
+              url = new URL(originalPath, siteSettings.url);
+            } catch {
+              return undefined;
+            }
+            if (!trackClicks) {
+              return url;
+            }
+          }
+          return addReplacement(async (recipient, values) => {
+            const path = resolveTokens(originalPath, values);
+            return String(
+              await this.#getMemberLink(new URL(path, siteSettings.url), path, {
+                member: recipient.member,
+                trackClicks,
+                automationActionRevisionId,
+                automationRunStepId: recipient.automationRunStepId,
+              }),
+            );
+          });
         }),
     });
+    const recipientData = Object.fromEntries(
+      await Promise.all(
+        recipients.map(async (recipient) => {
+          const values = [];
+          for (const getValue of replacements) {
+            values.push(await getValue(recipient, values));
+          }
+          const escapedValues = values.map((value) =>
+            this.Handlebars.Utils.escapeExpression(value),
+          );
+          return [
+            recipient.member.email,
+            {
+              ...Object.fromEntries(
+                values.flatMap((value, index) => [
+                  [`value_${index}`, value],
+                  [`value_${index}_html`, escapedValues[index]],
+                ]),
+              ),
+              // Link-label equality, mailto: handling and whitespace depend on resolved values.
+              // Convert per recipient, but reuse the shared Lexical render, wrapper and inlined CSS.
+              plaintext: htmlToPlaintext.email(resolveTokens(template.html, escapedValues)),
+            },
+          ];
+        }),
+      ),
+    );
+    const withVariables = (text, html = false) =>
+      text.replace(tokenPattern, (_, index) => `%recipient.value_${index}${html ? '_html' : ''}%`);
+    return {
+      html: withVariables(template.html, true),
+      text: '%recipient.plaintext%',
+      subject: withVariables(template.subject),
+      recipientData,
+    };
   }
 
   async #getMemberLink(
@@ -183,7 +330,7 @@ class MemberWelcomeEmailRenderer {
     unsubscribeUrl,
     tokenIds,
     replaceText,
-    replaceLink,
+    replaceLinks,
   }) {
     designSettings = designSettings || {};
 
@@ -225,11 +372,7 @@ class MemberWelcomeEmailRenderer {
 
     // Resolve relative links, including Ghost Portal routes such as #/portal/signup,
     // while preserving document-local anchors such as #section.
-    const contentWithAbsoluteLinks = await linkReplacer.replace(
-      contentWithReplacements,
-      replaceLink,
-      { base: siteSettings.url },
-    );
+    const contentWithAbsoluteLinks = await replaceLinks(contentWithReplacements);
 
     const managePreferencesUrl = new URL('#/portal/account/newsletters', siteSettings.url).href;
     const year = new Date().getFullYear();
