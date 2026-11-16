@@ -417,12 +417,19 @@ describe('automations API', function () {
     );
 
     it('does nothing for an empty label event', async function () {
-      const api = createApi();
+      const withTransaction = vi.fn(repository.withTransaction);
+      const api = createApi({
+        repository: { ...repository, withTransaction },
+        domainEvents,
+      });
       await api.notify({
         eventName: 'label_added',
         labelId: 'label',
         memberIds: [],
       });
+
+      expect(withTransaction).not.toHaveBeenCalled();
+      expect(domainEvents.dispatch).not.toHaveBeenCalled();
     });
 
     it('does not trigger when label has no matching automations', async function () {

@@ -278,7 +278,7 @@ module.exports = class MemberRepository {
       options.transacting.executionPromise.then(notify).catch((err) => {
         logging.error({
           err,
-          message: `Error notifying automations for member ${payload.memberId}`,
+          message: `Error notifying automations for ${payload.eventName} event`,
         });
       });
     } else {
