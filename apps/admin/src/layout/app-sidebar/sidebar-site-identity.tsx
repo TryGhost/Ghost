@@ -1,11 +1,10 @@
-import { Badge } from '@tryghost/shade/components';
-import { Stack } from '@tryghost/shade/primitives';
-import { cn, LucideIcon } from '@tryghost/shade/utils';
+import { Badge, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade/components';
+import { Inline } from '@tryghost/shade/primitives';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { Link } from '@tryghost/admin-x-framework';
 import { useSettingsReturnToState } from '@/layout/settings-navigation';
-import { PrivateSiteBadge } from '@/shared/private-site-badge';
 
 const DEFAULT_SITE_ICON = 'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png';
 
@@ -27,13 +26,13 @@ export function SidebarSiteIcon() {
 interface SidebarSiteIdentityProps {
   /**
    * `capsule`: beside the icon in the floating sidebar's header row: the
-   * title above the private badge, the title truncating to fit.
+   * title and a private-site lock, the title truncating to fit.
    * `header`: the docked sidebar's (or mobile sheet's) header row, icon included.
    */
   variant: 'capsule' | 'header';
 }
 
-/** The site title and, for a private site, a Private badge linking to its access settings. */
+/** The site title and private-site status linking to its access settings. */
 export function SidebarSiteIdentity({ variant }: SidebarSiteIdentityProps) {
   const settings = useBrowseSettings();
   const { title, icon: siteIcon } = useSiteIdentity();
@@ -43,32 +42,42 @@ export function SidebarSiteIdentity({ variant }: SidebarSiteIdentityProps) {
   const privateBadge = isPrivate && (
     <Link
       aria-label="Open access settings"
-      className={cn('shrink-0', variant === 'capsule' && 'absolute top-full left-0 mt-1')}
+      className="shrink-0"
       state={settingsReturnToState}
       to="/settings/members"
     >
-      {variant === 'capsule' ? (
-        <PrivateSiteBadge />
-      ) : (
-        <Badge
-          className="gap-1 border-transparent bg-orange-100 px-1.5 py-0 text-[11px] leading-5 font-semibold text-orange-700 transition-colors hover:bg-orange-200 dark:bg-orange-500/20 dark:text-orange-300 dark:hover:bg-orange-500/30"
-          variant="secondary"
-        >
-          <LucideIcon.Lock className="size-3" strokeWidth={2.25} />
-          Private
-        </Badge>
-      )}
+      <Badge
+        className="gap-1 border-transparent bg-orange-100 px-1.5 py-0 text-[11px] leading-5 font-semibold text-orange-700 transition-colors hover:bg-orange-200 dark:bg-orange-500/20 dark:text-orange-300 dark:hover:bg-orange-500/30"
+        variant="secondary"
+      >
+        <LucideIcon.Lock className="size-3" strokeWidth={2.25} />
+        Private
+      </Badge>
     </Link>
   );
 
   if (variant === 'capsule') {
     return (
-      <Stack align="start" className="relative min-w-0 flex-1" gap="xs">
-        <span className="heading-font-features w-full min-w-0 truncate text-[18px] leading-[1.15] font-medium tracking-[-0.01em] whitespace-nowrap text-foreground">
+      <Inline align="center" className="min-w-0 flex-1" gap="sm">
+        <span className="heading-font-features min-w-0 truncate text-[18px] leading-[1.15] font-medium tracking-[-0.01em] whitespace-nowrap text-foreground">
           {title}
         </span>
-        {privateBadge}
-      </Stack>
+        {isPrivate && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link
+                aria-label="Private site: open access settings"
+                className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-state-warning-fill text-state-warning-foreground outline-hidden focus-visible:ring-2 focus-visible:ring-focus-ring"
+                state={settingsReturnToState}
+                to="/settings/members"
+              >
+                <LucideIcon.Lock aria-hidden="true" className="size-3" strokeWidth={2} />
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>Private site</TooltipContent>
+          </Tooltip>
+        )}
+      </Inline>
     );
   }
 

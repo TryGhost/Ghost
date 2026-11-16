@@ -5,7 +5,7 @@ import { LucideIcon } from '@tryghost/shade/utils';
 export function PrivateSiteBadge() {
   return (
     <Badge
-      className="h-4 shrink-0 gap-0.5 bg-state-warning-fill px-1.5 text-xs leading-none font-medium text-state-warning-foreground shadow-none"
+      className="h-4 shrink-0 gap-0.5 border-0 bg-state-warning-fill px-1.5 text-xs leading-none font-medium text-state-warning-foreground shadow-none"
       shape="pill"
       variant="secondary"
       asChild

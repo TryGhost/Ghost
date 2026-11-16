@@ -164,10 +164,10 @@ With `admin7Design` on, spacing separates the sidebar's navigation groups;
 Content, Audience and Apps keep their headings when apps are enabled.
 Ghost(Pro) and Settings follow the last group in the scrolling navigation.
 The active banner stays above the bottom account avatar, with flat upgrade and
-What's New banners. The account trigger shows only the avatar, private-site
-status sits below the publication name, which stays centered beside its icon,
-and shares a high-contrast warning lock badge
-with Settings' Access navigation. The sidebar omits the member count
+What's New banners. The account trigger shows only the avatar. Private sites
+show a lock in a yellow circle beside the publication name, with a Private site tooltip and
+a link to Access settings; the title stays centered beside its icon. Settings'
+Access navigation retains the high-contrast warning badge. The sidebar omits the member count
 already shown in the top bar. The Posts create action appears on sidebar hover
 or keyboard focus and stays visible on touch devices.
 
