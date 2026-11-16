@@ -6,8 +6,6 @@ import {
   createWordSearch,
 } from './text-search';
 
-const LIMIT = { limitPerField: 100 };
-
 const itemsTitled = (titles: string[]): Searchable[] =>
   titles.map((title, index) => ({ id: `i${index}`, title }));
 
@@ -19,7 +17,7 @@ describe.each([
   ['word', createWordSearch],
   ['substring', createSubstringSearch],
 ])('%s search', (_name, create) => {
-  const search = (term: string) => titles(create(items).search(term, LIMIT));
+  const search = (term: string) => titles(create(items).search(term));
 
   it('ignores case', () => {
     expect(search('SECOND')).toEqual(['Second post']);
@@ -34,7 +32,7 @@ describe.each([
   });
 
   it('returns the items themselves', () => {
-    const [result] = create(items).search('second', LIMIT);
+    const [result] = create(items).search('second');
 
     expect(result).toBe(items[1]);
   });
@@ -42,35 +40,19 @@ describe.each([
   it('keeps extra item fields', () => {
     const item = { id: 'a', title: 'Alpha', url: '/alpha/' };
 
-    expect(create([item]).search('alpha', LIMIT)).toEqual([item]);
+    expect(create([item]).search('alpha')).toEqual([item]);
   });
 
-  it('keeps at most limitPerField matches from each field', () => {
+  it('returns every match', () => {
     const searched = itemsTitled(Array.from({ length: 150 }, (_, index) => `Post ${index}`));
 
-    expect(create(searched).search('post', { limitPerField: 20 })).toHaveLength(20);
-  });
-
-  it('can return more than limitPerField when title and keywords both match', () => {
-    const searched = [
-      ...Array.from({ length: 20 }, (_, index) => ({
-        id: `t${index}`,
-        title: `shared title ${index}`,
-      })),
-      ...Array.from({ length: 20 }, (_, index) => ({
-        id: `k${index}`,
-        title: `Other ${index}`,
-        keywords: 'shared',
-      })),
-    ];
-
-    expect(create(searched).search('shared', { limitPerField: 10 })).toHaveLength(20);
+    expect(create(searched).search('post')).toHaveLength(150);
   });
 });
 
 describe('word search', () => {
   const search = (term: string, searched: Searchable[] = items) =>
-    titles(createWordSearch(searched).search(term, LIMIT));
+    titles(createWordSearch(searched).search(term));
 
   it('matches the start of any word', () => {
     expect(search('sec')).toEqual(['Second post']);
@@ -109,16 +91,41 @@ describe('word search', () => {
     expect(search('aa', searched)).toEqual([]);
   });
 
-  it('returns every match when limitPerField is omitted', () => {
+  it('keeps at most limitPerField matches from each field', () => {
     const searched = itemsTitled(Array.from({ length: 150 }, (_, index) => `Post ${index}`));
 
-    expect(createWordSearch(searched).search('post')).toHaveLength(150);
+    expect(createWordSearch(searched).search('post', { limitPerField: 20 })).toHaveLength(20);
+  });
+
+  it('supports capped and uncapped queries on the same index', () => {
+    const searched = itemsTitled(Array.from({ length: 150 }, (_, index) => `Post ${index}`));
+    const index = createWordSearch(searched);
+
+    expect(index.search('post', { limitPerField: 20 })).toEqual(searched.slice(0, 20));
+    expect(index.search('post')).toEqual(searched);
+    expect(index.search('post', { limitPerField: 10 })).toEqual(searched.slice(0, 10));
+  });
+
+  it('can return more than limitPerField when title and keywords both match', () => {
+    const searched = [
+      ...Array.from({ length: 20 }, (_, index) => ({
+        id: `t${index}`,
+        title: `shared title ${index}`,
+      })),
+      ...Array.from({ length: 20 }, (_, index) => ({
+        id: `k${index}`,
+        title: `Other ${index}`,
+        keywords: 'shared',
+      })),
+    ];
+
+    expect(createWordSearch(searched).search('shared', { limitPerField: 10 })).toHaveLength(20);
   });
 });
 
 describe('substring search', () => {
   const search = (term: string, searched: Searchable[] = items) =>
-    titles(createSubstringSearch(searched).search(term, LIMIT));
+    titles(createSubstringSearch(searched).search(term));
 
   it('matches anywhere inside the title', () => {
     expect(search('econd')).toEqual(['Second post']);
@@ -135,45 +142,21 @@ describe('substring search', () => {
     ]);
   });
 
-  it('merges title and keyword field caps, title first', () => {
-    const searched = [
-      { id: 't1', title: 'shared one' },
-      { id: 't2', title: 'shared two' },
-      { id: 'k1', title: 'Other', keywords: 'shared' },
-      { id: 'k2', title: 'Else', keywords: 'shared' },
-    ];
-
-    expect(titles(createSubstringSearch(searched).search('shared', { limitPerField: 1 }))).toEqual([
-      'shared one',
-      'Other',
-    ]);
-  });
-
-  it('returns every match when limitPerField is omitted', () => {
-    const searched = itemsTitled(Array.from({ length: 150 }, (_, index) => `Post ${index}`));
-
-    expect(createSubstringSearch(searched).search('post')).toHaveLength(150);
-  });
-
-  it('keeps item order when limitPerField is omitted', () => {
+  it('keeps item order', () => {
     const searched = [
       { id: 'k1', title: 'Other', keywords: 'shared' },
       { id: 't1', title: 'shared one' },
       { id: 'k2', title: 'Else', keywords: 'shared' },
     ];
 
-    expect(titles(createSubstringSearch(searched).search('shared'))).toEqual([
-      'Other',
-      'shared one',
-      'Else',
-    ]);
+    expect(search('shared', searched)).toEqual(['Other', 'shared one', 'Else']);
   });
 });
 
 describe('createTextSearch', () => {
   // only substring search matches inside a word
   const matchesInsideWords = (locale: string | null | undefined) =>
-    createTextSearch(itemsTitled(['Second post']), locale).search('econd', LIMIT).length > 0;
+    createTextSearch(itemsTitled(['Second post']), locale).search('econd').length > 0;
 
   it.each(['en', 'en-GB', 'EN', null, undefined])(
     'uses word search for the %s locale',
