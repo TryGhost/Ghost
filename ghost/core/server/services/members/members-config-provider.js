@@ -2,7 +2,13 @@ class MembersConfigProvider {
   /**
    * @param {object} options
    * @param {{get: (key: string) => any}} options.settingsCache
-   * @param {{getDefaultEmailDomain(): string, getMembersSupportAddress(): string, getNoReplyAddress(): string, isStripeConnected(): boolean}} options.settingsHelpers
+   * @param {{
+   *   getDefaultEmailDomain(): string,
+   *   getMembersSupportAddress(): string,
+   *   getNoReplyAddress(): string,
+   *   getTransactionalEmailAddress(): string,
+   *   isStripeConnected(): boolean
+   * }} options.settingsHelpers
    * @param {any} options.urlUtils
    */
   constructor({ settingsCache, settingsHelpers, urlUtils }) {
@@ -28,6 +34,10 @@ class MembersConfigProvider {
    */
   getEmailSupportAddress() {
     return this._settingsHelpers.getMembersSupportAddress();
+  }
+
+  getEmailTransactionalAddress() {
+    return this._settingsHelpers.getTransactionalEmailAddress();
   }
 
   /**

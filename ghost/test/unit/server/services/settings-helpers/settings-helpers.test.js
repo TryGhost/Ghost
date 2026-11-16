@@ -77,6 +77,42 @@ describe('Settings Helpers', function () {
     });
   });
 
+  describe('getTransactionalEmailAddress', function () {
+    it('uses the configured transactional address when present', function () {
+      const getConfig = sinon.stub();
+      getConfig.withArgs('mail:transactional_from').returns('"Transactions" <tx@example.com>');
+      const settingsHelpers = new SettingsHelpers({
+        settingsCache: { get: sinon.stub() },
+        config: { get: getConfig },
+        urlUtils: {},
+        labs: {},
+        limitService,
+      });
+
+      assert.equal(
+        settingsHelpers.getTransactionalEmailAddress(),
+        '"Transactions" <tx@example.com>',
+      );
+    });
+
+    it('falls back to the configured default email when no transactional address is set', function () {
+      const getConfig = sinon.stub();
+      getConfig.withArgs('mail:from').returns('"Default" <noreply@example.com>');
+      const settingsHelpers = new SettingsHelpers({
+        settingsCache: { get: sinon.stub() },
+        config: { get: getConfig },
+        urlUtils: {},
+        labs: {},
+        limitService,
+      });
+
+      assert.equal(
+        settingsHelpers.getTransactionalEmailAddress(),
+        '"Default" <noreply@example.com>',
+      );
+    });
+  });
+
   describe('getActiveStripeKeys', function () {
     beforeEach(function () {
       configUtils.set({
