@@ -30,7 +30,9 @@ export interface OutboxStore {
   ): Promise<void>;
   releaseSubmitted(options: {
     replays: (type: string) => boolean;
+    staleAfterMs: number;
   }): Promise<{ released: OutboxRow[]; dropped: OutboxRow[] }>;
+  renew(ids: string[]): Promise<void>;
 }
 
 export interface OutboxRelayLike {
@@ -48,6 +50,8 @@ export interface JobsOutboxWiring {
   relay: OutboxRelayLike;
   // Only when the store keeps rows until their job settles
   tracker?: OutboxTrackerLike;
+  // How long a submitted row can go without renewal before it is handed over again
+  leaseMs: number;
 }
 
 export interface DispatchOptions {
@@ -89,6 +93,8 @@ export class JobsService {
   readonly #queueByType = new Map<string, string>();
   readonly #queues = new Map<string, QueueDeclaration>();
   readonly #notReplayed = new Set<string>();
+  #leaseTimer?: ReturnType<typeof setTimeout>;
+  #leaseTick?: Promise<void>;
 
   constructor({ backend, logging, sentry, outbox, logOutboxUnavailable }: JobsServiceOptions) {
     this.#backend = backend;
@@ -236,8 +242,9 @@ export class JobsService {
       onSettled: this.#outbox?.tracker?.onSettled,
     });
     if (this.#outbox) {
-      await this.#releaseSubmitted(this.#outbox.store);
+      await this.#releaseSubmitted(this.#outbox);
       this.#outbox.relay.start();
+      this.#scheduleLease(this.#outbox);
     } else if (this.#logOutboxUnavailable) {
       this.#logging.warn(
         '[Jobs] services:jobs:outbox is enabled but the outbox is unavailable here (it needs MySQL); using the legacy direct-dispatch path.',
@@ -262,12 +269,13 @@ export class JobsService {
     return this.#outbox.tracker ? 'retain' : 'on';
   }
 
-  // Rows submitted before this start belong to a process that has gone, so
-  // their jobs may be lost. That holds while a site never runs two processes
-  // at once; more than one would need to know who owns a row.
-  async #releaseSubmitted(store: OutboxStore): Promise<void> {
+  // A row nobody has renewed within the lease belongs to a process that has
+  // stopped, so its job may be lost. Live processes keep renewing their rows,
+  // so this is safe with several processes per site.
+  async #releaseSubmitted({ store, leaseMs }: JobsOutboxWiring): Promise<void> {
     const { released, dropped } = await store.releaseSubmitted({
       replays: (type) => !this.#notReplayed.has(type),
+      staleAfterMs: leaseMs,
     });
     if (dropped.length > 0) {
       this.#logging.info(
@@ -283,7 +291,37 @@ export class JobsService {
     }
   }
 
+  // Every quarter of the lease, renews the rows of jobs the backend still
+  // holds and hands over rows no process has renewed, such as those of a
+  // process that stopped. A backend without heldIds dedupes by id, so its
+  // stale rows are re-enqueued harmlessly.
+  #scheduleLease(outbox: JobsOutboxWiring): void {
+    this.#leaseTimer = setTimeout(() => {
+      this.#leaseTick = this.#renewLease(outbox).then(() => {
+        if (this.#leaseTimer) {
+          this.#scheduleLease(outbox);
+        }
+      });
+    }, outbox.leaseMs / 4);
+  }
+
+  async #renewLease(outbox: JobsOutboxWiring): Promise<void> {
+    try {
+      const held = this.#backend.heldIds?.() ?? [];
+      if (held.length > 0) {
+        await outbox.store.renew(held);
+      }
+      await this.#releaseSubmitted(outbox);
+    } catch (error) {
+      this.#logging.error('[Jobs Outbox] renewing or releasing submitted rows failed', error);
+      this.#sentry?.captureException(error);
+    }
+  }
+
   async shutdown(options?: JobsShutdownOptions): Promise<void> {
+    clearTimeout(this.#leaseTimer);
+    this.#leaseTimer = undefined;
+    await this.#leaseTick;
     if (this.#outbox) {
       await this.#outbox.relay.stop();
     }
