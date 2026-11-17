@@ -8,7 +8,9 @@
  * Text = length 65535 (64 KiB)
  * Long text = length 1,000,000,000
  */
-module.exports = {
+import type { TableDefinition } from './types';
+
+const schema = {
   newsletters: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     uuid: {
@@ -2851,4 +2853,6 @@ module.exports = {
     submitted_at: { type: 'dateTime', nullable: true },
     '@@INDEXES@@': [['submitted_at', 'available_at']],
   },
-};
+} satisfies Record<string, TableDefinition>;
+
+export default schema;

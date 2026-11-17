@@ -69,9 +69,9 @@ async function dropDevelopmentCopy(
 }
 
 /**
- * Creates a migrations which will add a new table from schema.js to the database
+ * Creates a migrations which will add a new table from schema.ts to the database
  * @param name - table name
- * @param tableSpec - copy of table schema definition as defined in schema.js at the moment of writing the migration, this parameter MUST be present
+ * @param tableSpec - copy of table schema definition as defined in schema.ts at the moment of writing the migration, this parameter MUST be present
  * @param options.replaceDevelopmentCopy - set when finalising a table that was in development (see
  *   schema/in-development.ts). Development and testing databases already have a copy built from an earlier
  *   definition, so there an existing table is replaced, discarding its data and dropping the tables that reference
@@ -122,7 +122,7 @@ export function addTable(
  * feature flag.
  *
  * @param names - names of the tables to drop, each before any table it references
- * @param tableSpecs - copy of each table's schema definition as defined in schema.js at the moment of writing the migration, keyed by table name
+ * @param tableSpecs - copy of each table's schema definition as defined in schema.ts at the moment of writing the migration, keyed by table name
  */
 export function dropTables(
   names: string[],
@@ -169,7 +169,7 @@ export function dropTables(
 /**
  * Creates a migration which will drop an existing table and then re-add a new table based on provided spec
  * @param name - table name
- * @param tableSpec - copy of table schema definition as defined in schema.js at the moment of writing the migration, this parameter MUST be present
+ * @param tableSpec - copy of table schema definition as defined in schema.ts at the moment of writing the migration, this parameter MUST be present
  */
 export function recreateTable(name: string, tableSpec: TableDefinition): Migration {
   return createNonTransactionalMigration(
