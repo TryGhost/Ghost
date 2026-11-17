@@ -15,7 +15,6 @@ module.exports = {
       'clientExtensions',
       'enableDeveloperExperiments',
       'stripeDirect',
-      'stripeConnectBridge',
       'mailgunIsConfigured',
       'emailAnalytics',
       'hostSettings',

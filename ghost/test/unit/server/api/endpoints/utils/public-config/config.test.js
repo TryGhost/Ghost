@@ -18,7 +18,6 @@ const allowedKeys = [
   'clientExtensions',
   'enableDeveloperExperiments',
   'stripeDirect',
-  'stripeConnectBridge',
   'mailgunIsConfigured',
   'emailAnalytics',
   'hostSettings',
