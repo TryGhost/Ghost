@@ -17,6 +17,8 @@ const PAGE_C = 'c'.repeat(24);
 const USER_1 = '1'.repeat(24);
 const USER_2 = '2'.repeat(24);
 const USER_3 = '3'.repeat(24);
+const TAB_1 = 'tab-one-0001';
+const TAB_2 = 'tab-two-0002';
 
 function build(overrides: { store?: PresenceStore } = {}) {
   let now = 1_000_000;
@@ -102,14 +104,32 @@ describe('EditorPresenceService', function () {
     assert.equal(result.active.length, 0);
   });
 
-  it('collapses several tabs of one user to one entry with the latest heartbeat', async function () {
+  it('reports a user once across their tabs, with the latest heartbeat', async function () {
     const { service, advance, now: first } = build();
-    await service.poll(USER_2, { editing: { id: POST_A, type: 'post' } });
+    await service.poll(USER_2, { editing: { id: POST_A, type: 'post' }, tab: TAB_1 });
     advance(5_000);
-    await service.poll(USER_2, { editing: { id: POST_A, type: 'post' } });
+    await service.poll(USER_2, { editing: { id: POST_A, type: 'post' }, tab: TAB_2 });
     const result = await service.poll(USER_1, { resources: [{ id: POST_A, type: 'post' }] });
     assert.equal(result.active.length, 1);
     assert.equal(result.active[0].ts, first + 5_000);
+  });
+
+  it('keeps a user present while another of their tabs is still open', async function () {
+    const { service } = build();
+    const editing = { id: POST_A, type: 'post' };
+    await service.poll(USER_2, { editing, tab: TAB_1 });
+    await service.poll(USER_2, { editing, tab: TAB_2 });
+
+    await service.leave(USER_2, { resource: editing, tab: TAB_1 });
+    const oneLeft = await service.poll(USER_1, { resources: [editing] });
+    assert.deepEqual(
+      oneLeft.active.map((entry) => entry.userId),
+      [USER_2],
+    );
+
+    await service.leave(USER_2, { resource: editing, tab: TAB_2 });
+    const noneLeft = await service.poll(USER_1, { resources: [editing] });
+    assert.deepEqual(noneLeft.active, []);
   });
 
   it('removes the caller on leave', async function () {
@@ -128,12 +148,18 @@ describe('EditorPresenceService', function () {
       { resources: Array.from({ length: 51 }, () => ({ id: POST_A, type: 'post' })) },
       { resources: [{ id: POST_A, type: 'post', extra: true }] },
       { unexpected: true },
+      { editing: { id: POST_A, type: 'post' }, tab: 'short' },
+      { editing: { id: POST_A, type: 'post' }, tab: 'has:a-colon' },
       'string',
     ];
     for (const input of cases) {
       await assert.rejects(service.poll(USER_1, input), { errorType: 'ValidationError' });
     }
     await assert.rejects(service.leave(USER_1, {}), { errorType: 'ValidationError' });
+    await assert.rejects(
+      service.leave(USER_1, { resource: { id: POST_A, type: 'post' }, tab: 'has:a-colon' }),
+      { errorType: 'ValidationError' },
+    );
   });
 
   it('records duration, store kind and outcome', async function () {

@@ -89,6 +89,33 @@ describe('Presence API', function () {
     assert.deepEqual(body.presence[0].active, []);
   });
 
+  it('keeps a user present while another of their tabs is still open', async function () {
+    const editing = { id: post.id, type: 'post' };
+    const poll = (tab) =>
+      editorAgent
+        .post('presence/')
+        .body({ presence: [{ editing, tab }] })
+        .expectStatus(200);
+    await poll('tab-one-0001');
+    await poll('tab-two-0002');
+
+    await editorAgent
+      .post('presence/leave/')
+      .body({ presence: [{ resource: editing, tab: 'tab-one-0001' }] })
+      .expectStatus(204);
+
+    const { body } = await ownerAgent
+      .post('presence/')
+      .body({ presence: [{ resources: [editing] }] })
+      .expectStatus(200);
+    assert.equal(body.presence[0].active.length, 1);
+
+    await editorAgent
+      .post('presence/leave/')
+      .body({ presence: [{ resource: editing, tab: 'tab-two-0002' }] })
+      .expectStatus(204);
+  });
+
   it('accepts a contributor', async function () {
     await contributorAgent
       .post('presence/')
