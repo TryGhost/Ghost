@@ -2620,5 +2620,10 @@ Static checks (format, oxlint, ESLint, boundaries, domain rules, legacy
 services, `lint:dependencies`, docs lint, typecheck): pass (verified). Unit
 suite: 11,696 passed, the same 34 baseline failures in 3 Mailgun and mailer
 files (verified). Integration suite: 79 files passed, 5 skipped; 1,288 tests
-passed, 104 skipped (verified). The e2e and legacy suites were still running
-when this was written; their results follow in the next commit.
+passed, 104 skipped (verified). e2e suite, which includes the new isolated test: 210 files and
+3,333 tests passed, 6 expected failures (verified). Legacy suite: 35 files and
+464 tests passed (verified). No file needed a rerun.
+
+The flag combinations, the three database states and both production-mode
+boots (from source, and from tsc-built JavaScript) were run again on the final
+tree, after the email address policy moved, with the same results (verified).
