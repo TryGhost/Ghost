@@ -244,6 +244,7 @@ const buildGraph = ({
       },
       data: {
         trigger: {
+          isActive: automation.status === 'active',
           selectedTriggerLabel,
           tierQuery,
           triggerType,

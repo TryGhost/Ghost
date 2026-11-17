@@ -31,6 +31,7 @@ export type SelectedTriggerLabel = {
 };
 
 type LabelTriggerPickerProps = {
+  disabled: boolean;
   errorMessage?: string;
   labelId?: string;
   selectedLabel?: SelectedTriggerLabel;
@@ -38,6 +39,7 @@ type LabelTriggerPickerProps = {
 };
 
 export function LabelTriggerPicker({
+  disabled,
   errorMessage,
   labelId,
   selectedLabel,
@@ -99,14 +101,24 @@ export function LabelTriggerPicker({
       <Label className="leading-normal font-normal" htmlFor={id} id={`${id}-label`}>
         Triggered when this label is added to a member:
       </Label>
-      <Combobox open={open} modal onOpenChange={(next) => !create.isPending && changeOpen(next)}>
+      <Combobox
+        open={!disabled && open}
+        modal
+        onOpenChange={(next) => !disabled && !create.isPending && changeOpen(next)}
+      >
         <ComboboxTrigger
-          aria-describedby={errorMessage ? `${id}-error` : undefined}
+          aria-describedby={
+            [disabled && `${id}-locked`, errorMessage && `${id}-error`].filter(Boolean).join(' ') ||
+            undefined
+          }
           aria-invalid={Boolean(errorMessage) || undefined}
           aria-labelledby={`${id}-label`}
+          className={disabled ? '[&>svg:last-child]:hidden' : undefined}
+          disabled={disabled}
           id={id}
         >
           <ComboboxValue placeholder={!labelId}>{displayName}</ComboboxValue>
+          {disabled && <LucideIcon.Lock aria-hidden="true" className="ml-2 size-4 shrink-0" />}
         </ComboboxTrigger>
         <ComboboxContent className="nodrag nopan nowheel">
           <Command shouldFilter={false}>
@@ -183,6 +195,11 @@ export function LabelTriggerPicker({
           </Command>
         </ComboboxContent>
       </Combobox>
+      {disabled && (
+        <Text as="p" id={`${id}-locked`} size="sm" tone="secondary">
+          Turn off automation to edit trigger
+        </Text>
+      )}
       {errorMessage && <FieldError id={`${id}-error`}>{errorMessage}</FieldError>}
     </Stack>
   );
