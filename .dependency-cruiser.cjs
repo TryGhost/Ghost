@@ -32,31 +32,40 @@ const domain = '^ghost/domains/([^/]+)/';
 const reshaped = '^ghost/domains/([^/]+)/(?!transition/|test/)';
 // The folders other code may import from a domain.
 const publicFolders = '(?:actions|data|events)';
-// A reshaped service root, and the domain file. These do the wiring.
-const domainWiring = [
-  '^ghost/domains/[^/]+/services/[^/]+/index\\.ts$',
-  '^ghost/domains/[^/]+/boot\\.ts$',
-];
+// The domain file. It is the one reshaped file that imports from outside the
+// domain; service roots are held to the same imports as any other reshaped file.
+const domainWiring = ['^ghost/domains/[^/]+/boot\\.ts$'];
 // Files that only describe. They are loaded by registries, sometimes very early.
 const domainFragments = '^ghost/domains/[^/]+/(?:settings|permissions|schema|http/routes)\\.ts$';
-// The stateful framework and the Ghost-wide services a root may be wired to.
-// Neither layer has a folder of its own yet, so this list is where the spike
-// records what had to be treated as foundation or shared. Anything else a root
-// imports from ghost/core is legacy and is counted by domain-legacy-imports.
-const domainFoundationAndShared = [
-  '^ghost/core/foundation/', // The domain layer itself.
-  '^ghost/core/shared/config/', // Config.
+// The Ghost-wide services a domain file (boot.ts) may import: what Ghost shares
+// across domains that is not foundation. The layer has no folder of its own
+// yet, so this list is where the spike records what had to be treated as
+// shared. Anything else boot.ts imports from ghost/core is legacy and is
+// counted by domain-legacy-imports.
+const domainShared = [
   '^ghost/core/shared/sentry\\.js$', // Error reporting.
   '^ghost/core/shared/url-utils\\.ts$', // The site URL, from config.
   '^ghost/core/shared/settings-cache/', // Settings, read.
   '^ghost/core/shared/labs\\.js$', // Feature flags.
-  '^ghost/core/server/data/db/', // The database connection.
   '^ghost/core/server/services/jobs-service/', // The job runner.
   '^ghost/core/server/services/settings/', // Settings, written.
   '^ghost/core/server/services/permissions/', // Authorization.
   '^ghost/core/server/services/limits\\.js$', // Limits.
   '^ghost/core/server/lib/mail/', // Mail.
   '^ghost/core/server/lib/request-external\\.js$', // Outbound HTTP, limited by config.
+];
+// The foundation's instances, the modules that hold them and the code that
+// builds them. Reshaped code is handed these; it imports none of them.
+const foundationInstances = [
+  // An installed package is matched by its resolved path; the bare name is what
+  // an unresolved import looks like.
+  '^@tryghost/logging$|(^|/)node_modules/@tryghost/logging/', // The logger. Import the Logger type from the kernel.
+  '^@tryghost/domain-events$|(^|/)node_modules/@tryghost/domain-events/', // The event bus.
+  '^@tryghost/metrics$|(^|/)node_modules/@tryghost/metrics/', // Metrics, built the way the logger was.
+  '^ghost/core/shared/config/', // Config: Ghost's values and the module that returns the instance.
+  '^ghost/core/server/data/db/', // The database handle.
+  '^ghost/core/bootstrap/', // Where the instances live.
+  '^ghost/core/foundation/', // What builds them.
 ];
 // What no reshaped file may import: routes are data and the web layer owns the
 // framework, the auth middleware and the endpoint registry. The scan does not
@@ -101,7 +110,7 @@ const serviceDependencyAllowlist = [
   '^(node:)?path$', // Path string parsing and joining.
   '^(node:)?vm$', // Bounded script execution for caller-owned regex matching with a timeout.
   '^(node:)?(assert/strict|stream|stream/promises|buffer|timers/promises)$', // Node's in-memory primitives: assertions, streams, buffers and timers; no I/O of their own.
-  '^ghost/core/kernel/clock\\.ts$', // Shared clock helpers and legacy date compatibility.
+  '^ghost/core/kernel/', // The kernel: stateless by rule (ghost/kernel-purity), so any code may import any of it.
   '^ghost/core/bootstrap/domains/fragments\\.ts$', // What the domains describe about themselves (settings, permissions, schema, routes); reads describing files once, no application instances.
   '^ghost/core/server/lib/db-types/date\\.ts$', // Database date codec.
   '^ghost/core/server/lib/db-types/boolean\\.ts$', // Database boolean codec.
@@ -541,7 +550,7 @@ module.exports = {
       comment:
         'Code outside the domains reaches a domain through its actions/, data/ and events/ folders, or through transition/ for code that has moved but not been reshaped.',
       severity: 'error',
-      from: { path: '^ghost/core/', pathNot: '^ghost/core/foundation/' },
+      from: { path: '^ghost/core/' },
       to: {
         path: domain,
         pathNot: `^ghost/domains/[^/]+/(?:${publicFolders}|transition)/`,
@@ -550,7 +559,7 @@ module.exports = {
     {
       name: 'domain-transition-private',
       comment:
-        "Only a service root or the domain file may import another domain's transition/ folder, and each such import is counted.",
+        "Only the domain file (boot.ts) may import another domain's transition/ folder, and each such import is counted.",
       severity: 'error',
       from: { path: reshaped, pathNot: domainWiring },
       to: { path: '^ghost/domains/[^/]+/transition/', pathNot: '^ghost/domains/$1/' },
@@ -558,7 +567,7 @@ module.exports = {
     {
       name: 'domain-implementation-imports',
       comment:
-        "A reshaped file imports its own domain, the kernel, types, allowlisted libraries, and other domains' data/ and events/. Everything else is wired in the service root (services/<name>/index.ts) or the domain file (boot.ts) and injected.",
+        "A reshaped file, a service root included, imports its own domain, the kernel, types, allowlisted libraries, and other domains' data/ and events/. Everything else is imported by the domain file (boot.ts) and handed to the service roots.",
       severity: 'error',
       from: { path: reshaped, pathNot: [...domainWiring, domainFragments] },
       to: {
@@ -568,7 +577,7 @@ module.exports = {
           '^ghost/domains/$1/',
           '^ghost/domains/[^/]+/(?:data|events)/',
           // Everything else in another domain except its actions is reported by
-          // the rules above. Its actions are for a service root to import.
+          // the rules above. Its actions are for the domain file to import.
           '^ghost/domains/[^/]+/(?!actions/)',
           '^ghost/core/kernel/',
         ],
@@ -592,11 +601,11 @@ module.exports = {
     {
       name: 'domain-fragment-imports',
       comment:
-        "A fragment (settings.ts, permissions.ts, schema.ts, http/routes.ts) only describes. It imports its kernel utility, types and its own domain's data/.",
+        "A fragment (settings.ts, permissions.ts, schema.ts, http/routes.ts) only describes. It imports the kernel, types and its own domain's data/.",
       severity: 'error',
       from: { path: `^ghost/domains/([^/]+)/(?:settings|permissions|schema|http/routes)\\.ts$` },
       to: {
-        pathNot: ['^ghost/core/kernel/domains/definitions\\.ts$', '^ghost/domains/$1/data/'],
+        pathNot: ['^ghost/core/kernel/', '^ghost/domains/$1/data/'],
         dependencyTypesNot: ['type-only', 'type-import'],
       },
     },
@@ -613,25 +622,61 @@ module.exports = {
     {
       name: 'domain-legacy-imports',
       comment:
-        'A service root or domain file imports legacy code in ghost/core. Allowed during the transition and counted.',
+        'A domain file (boot.ts) imports legacy code in ghost/core. Allowed during the transition and counted.',
       severity: 'info',
       from: { path: domainWiring },
       to: {
         path: '^ghost/core/',
-        pathNot: ['^ghost/core/kernel/', ...domainFoundationAndShared],
+        pathNot: ['^ghost/core/kernel/', ...domainShared, ...foundationInstances],
         dependencyTypesNot: ['type-only', 'type-import'],
       },
     },
     {
       name: 'domain-transition-imports',
       comment:
-        'A service root or domain file imports a transition/ folder. Allowed during the transition and counted.',
+        'A domain file (boot.ts) imports a transition/ folder. Allowed during the transition and counted.',
       severity: 'info',
       from: { path: domainWiring },
       to: {
         path: '^ghost/domains/[^/]+/transition/',
         dependencyTypesNot: ['type-only', 'type-import'],
       },
+    },
+    {
+      name: 'domain-foundation-injected',
+      comment:
+        'Reshaped code is handed the foundation (config, logging, the database, the event bus) by the domain layer. It never imports an instance, the module that holds one, or the code that builds one. Take the type from the kernel and the instance from boot.ts.',
+      severity: 'error',
+      from: { path: reshaped },
+      to: { path: foundationInstances, dependencyTypesNot: ['type-only', 'type-import'] },
+    },
+    // ============================================================
+    // Kernel and foundation
+    // ============================================================
+    {
+      name: 'foundation-only-from-bootstrap',
+      comment:
+        "The foundation builds what exists once per process: a second logger or database handle is a defect. Only an application's bootstrap imports it (ghost/core/bootstrap, and shared/config, which is Ghost's config composition). Everything else is handed the instance and imports the kernel's type.",
+      severity: 'error',
+      from: {
+        path: '^ghost/',
+        pathNot: [
+          '^ghost/core/foundation/',
+          '^ghost/core/bootstrap/',
+          '^ghost/core/shared/config/',
+          '^ghost/test/',
+          '^ghost/domains/[^/]+/test/',
+        ],
+      },
+      to: { path: '^ghost/core/foundation/', dependencyTypesNot: ['type-only', 'type-import'] },
+    },
+    {
+      name: 'foundation-not-application',
+      comment:
+        'Foundation is framework code: it imports the kernel and general-purpose packages, never the application it assembles.',
+      severity: 'error',
+      from: { path: '^ghost/core/foundation/' },
+      to: { path: '^ghost/', pathNot: '^ghost/core/(?:foundation|kernel)/' },
     },
     // Kernel primitives must be independent of the application they support.
     {
@@ -904,5 +949,6 @@ Object.defineProperties(module.exports, {
   serviceDependencyAllowlist: { value: serviceDependencyAllowlist },
   specialistDependencies: { value: specialistDependencies },
   serviceDependencyDecisions: { value: serviceDependencyDecisions },
-  domainFoundationAndShared: { value: domainFoundationAndShared },
+  domainShared: { value: domainShared },
+  foundationInstances: { value: foundationInstances },
 });

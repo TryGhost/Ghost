@@ -5,8 +5,8 @@ import { NoticeService } from './notice.service';
 // The event bus and the other domain's action arrive from boot.ts.
 export default defineService(
   'Notices',
-  ({ publish, record, describeBook }: NoticesDependencies) => {
+  ({ publish, record, describeBook, now }: NoticesDependencies) => {
     record('start notices');
-    return new NoticeService({ publish, describeBook });
+    return new NoticeService({ publish, describeBook, now });
   },
 );

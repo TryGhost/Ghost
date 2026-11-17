@@ -1582,7 +1582,7 @@ Three levels, each shown on network:
 | The root and `boot.ts` together | Ghost's real application foundation, with the test's existing stubs on legacy modules                                                                                                                         | `domains/network/test/unit/services/recommendations/index.test.ts` (existing)          |
 
 The first needs no stub of any module and loads nothing of Ghost outside the
-domain. That is the test the rule was meant to make possible, and it is 105
+domain. That is the test the rule was meant to make possible, and it is 101
 lines including a complete fake of the outside world.
 
 **Do the fakes belong in a `testing` subpath of the framework? Yes**, on this
@@ -1607,3 +1607,398 @@ Three things to settle before it is more than a spike:
   supplies. For a Knex-backed repository the honest options are an in-memory
   SQLite handle (going away with SQLite in 7.0) or a DB-backed test; a fake
   query builder would test nothing.
+
+## Part 2, step 7: enforcement
+
+### The checks added
+
+| Check                                                                                                                     | Where                                                                                 | Fails lint? | Tests |
+| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ----------- | ----- |
+| **Kernel purity**: no module-level state, no ambient reads, no exported instances, nothing done on import                 | `ghost/kernel-purity`, an oxlint rule on `ghost/core/kernel/**/*.ts` (255 lines)      | yes         | 5     |
+| **Anything in kernel is importable from anywhere**                                                                        | `serviceDependencyAllowlist` and `domain-fragment-imports` now allow all of `kernel/` | n/a         | 13    |
+| **Foundation is imported only by an application's bootstrap** (`foundation-only-from-bootstrap`)                          | `.dependency-cruiser.cjs`                                                             | yes         | 1     |
+| **Foundation never imports the application** (`foundation-not-application`)                                               | same                                                                                  | yes         | 1     |
+| **Foundation instances are injected, not imported, by reshaped code** (`domain-foundation-injected`)                      | same                                                                                  | yes         | 2     |
+| **A service root imports its own domain and the kernel**: roots are no longer exempt from `domain-implementation-imports` | same                                                                                  | yes         | 2     |
+| **Capability subfolders one level deep and no deeper** (two levels inside a service folder)                               | `tools/scripts/lib/domain-shape.ts`                                                   | yes         | 3     |
+
+What `ghost/kernel-purity` reports:
+
+- **State**: `let` or `var` at module scope; a module-scope `const` whose value
+  is `new X()`, an array or object without `as const` or `Object.freeze`, a
+  regular expression with the `g` or `y` flag, or the result of a call; a
+  `static` class field holding any of those.
+- **Instances**: `export default new X()`, `export const x = new X()` or a
+  call, and `export const x = imported` (re-exporting a value lint cannot see
+  into).
+- **Effects**: any statement at module scope that is only an expression.
+- **Ambient reads, anywhere in the file**: a value import or `require` of
+  `fs`, `fs/promises`, `child_process`, `os`, `module`, `worker_threads`,
+  `cluster`, `net`, `http`, `https`, `dns`, `nconf`, `moment`, `moment-timezone`, `@tryghost/logging`,
+  `@tryghost/metrics`, `@tryghost/domain-events`, `@tryghost/debug`,
+  `@tryghost/root-utils` or `@tryghost/version`; a computed `require()`;
+  `process.env`, `.argv`, `.cwd`, `.platform`, `.pid`, `.execPath`;
+  `Date.now()`, `new Date()` with no argument, `Math.random()`,
+  `performance.now()`. Type-only imports are allowed.
+- Allowed at module scope: functions, classes, literals, `as const`,
+  `Object.freeze(...)`, `Symbol(...)`, and anything built from `z` (a Zod
+  schema describes and is immutable).
+
+### What fails on the real tree today (verified by running the rule before any suppression)
+
+| File                               | Line | Finding                                                                         | What was done                                                                                                                         |
+| ---------------------------------- | ---- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `kernel/clock.ts`                  | 1    | imports `moment-timezone`: a library object with process-wide state             | Suppressed inline with the reason. Not fixed: 10 service files import it and the Service Standard says they may                       |
+| `kernel/clock.ts`                  | 4    | `export const moment = momentTimezone`: exports a value, not a mechanism        | Suppressed inline. `getUnixTime()` itself reads the clock; the rule sees that only through the import                                 |
+| `kernel/adapter-manager/loader.ts` | 1    | imports `node:fs`                                                               | Suppressed inline. Not fixed: see below                                                                                               |
+| `kernel/adapter-manager/loader.ts` | 3    | imports `node:module` (`createRequire`)                                         | Suppressed inline                                                                                                                     |
+| `kernel/domains/definitions.ts`    | 75   | `new Date()` as the default timestamp of an event                               | **Fixed**: a timestamp is now required. Three fixture call sites and one test changed. Publishing an event means being handed a clock |
+| `kernel/domains/discover.ts`       | n/a  | read the filesystem and used the ambient `require` (found by reading in step 1) | **Fixed in step 3**: the reader and loader are arguments. It passes the rule                                                          |
+
+Passing without change: `define-service.ts`, `domains/domain-layer.ts`,
+`adapter-manager/adapter-manager.ts`, `options.ts`, `types.ts`, and the new
+`config.ts`, `logging.ts`, `database.ts`, `events.ts`, `foundation.ts` and
+`testing/index.ts`.
+
+The four suppressions are `oxlint-disable-next-line` comments naming the
+reason, so lint stays green and a fifth break is caught. They are deviations
+from the rule and are listed in the final report.
+
+**The adapter manager belongs in foundation**, on the same reasoning as the
+logger: it is a class instantiated once per process, and it reads the disk.
+It was not moved because its one instance is built in
+`server/services/adapter-manager/index.ts`, which is not bootstrap, and
+`foundation-only-from-bootstrap` would then need that file to move too.
+
+**The clock** needs the treatment config got: a `Clock` type in kernel, a
+system clock built by the foundation and handed over, and the `moment`
+re-export moved out of kernel to wherever the remaining Moment code lives.
+
+### Each check fails when it should (verified on the real tree)
+
+Each violation was introduced, the check was run, and the file was restored.
+
+| Violation introduced                                                                                                                          | Check that failed                                                                                                           |
+| --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Network's `boot.ts` requires `@tryghost/logging`, `@tryghost/domain-events`, `@tryghost/metrics`, `shared/config`, `data/db`, `bootstrap/app` | `lint:boundaries`: `domain-foundation-injected`, once for each of the six                                                   |
+| Network's service root requires `@tryghost/logging`, `shared/sentry` and publishing's action                                                  | `lint:boundaries`: `domain-implementation-imports`, once for each; `lint:oxlint`: `service-root-shape` for the extra export |
+| A file in `core/server/lib` imports `foundation/logging`                                                                                      | `lint:boundaries`: `foundation-only-from-bootstrap`                                                                         |
+| A kernel file with `let cached` and `process.env.NODE_ENV`                                                                                    | `lint:oxlint`: `ghost(kernel-purity)`, twice                                                                                |
+| `domains/network/jobs/a/b/x.job.ts`                                                                                                           | `lint:domain-rules`: `domain-root-shape`, "one level deep and no deeper"                                                    |
+
+**The first run of the first row caught only two of six.** The rule matched
+`shared/config` and `data/db` and missed all three packages. A package that is
+installed resolves to a path under `node_modules`, and the pattern
+`^@tryghost/logging$` matches only an import that could **not** be resolved,
+which is what the rule's test, in a temporary repository with no
+`node_modules`, had been checking. The patterns now match both forms, as the
+older rules in the same file already did. A boundary rule about a package is
+not tested until it has been run against the real tree.
+
+### What had to be decided to write the rules
+
+- **The kernel is on the service allowlist as a whole.** It was one file
+  (`clock.ts`). Two existing tests pinned "a kernel file other than the clock
+  is not allowed" and were changed to pin the new rule.
+- **Service roots lose their exemption.** In part 1 a root and `boot.ts` were
+  both "wiring" and could import anything, counted. Now only `boot.ts` is.
+  Network's root and the fixture roots pass.
+- **`shared/config/` may import the foundation.** It is Ghost's config
+  composition (the schema, the policy, the loader call). It is bootstrap code
+  that lives beside the values, as Laravel's `config/` sits beside
+  `bootstrap/`.
+- **Tests may import the foundation.** Tests are outside the scan anyway.
+- **What counts as "shared"** is still a list in the boundary config
+  (`domainShared`, ten entries), now without config, the database and the
+  domain layer, which are foundation.
+
+### Limits
+
+- **One rule still restricts importing a kernel file.**
+  `service-roots-in-services` forbids importing `kernel/define-service` outside
+  a service root, because that is how "a root lives in `services/`" was
+  written. It is about calling `defineService`, not importing it. A test
+  records it as the one exception. To make the kernel rule hold without
+  exception, replace it with a lint on the call.
+- **Purity is checked per file, from syntax.** The rule cannot see state
+  reached through a function in another file, a getter, or a closure created
+  by an allowed call (`z.lazy(() => ...)` capturing a `let` elsewhere). It
+  cannot tell that `momentTimezone()` reads the clock, only that the file
+  imports Moment.
+- **The ambient-module list is a list.** A new package that holds a singleton
+  passes until it is added. The list is 20 names.
+- **Type-only imports are still invisible to the boundary scan** (part 1), so
+  `import type` from the foundation or from bootstrap passes. For these rules
+  that is the intended behaviour: types are what reshaped code should import.
+- **`kernel/testing/` is held to kernel purity** and passes, which is why its
+  fakes use no test library.
+
+### Verified at the end of step 7
+
+- Typecheck, oxlint, ESLint, boundaries (5940 modules, 286 known, 189
+  deferred), domain rules, knip, format, docs lint: pass.
+- Unit suite: 11,678 passed; the same 34 baseline failures and no others.
+- DB-backed set: 8 files, 76 tests pass.
+- `tools/scripts` tests: 463 tests, the same 20 baseline failures and no
+  others (441 pass), run through `pnpm`. `tools/gx` tests: 155 pass.
+
+## Part 2, step 9: naming
+
+Two words were given: kernel and foundation. The code ended with three
+things, and the evidence is about which word fits which.
+
+| What the code has                                                   | Its rule                                             | Word used      | Does it fit?                                                                                                |
+| ------------------------------------------------------------------- | ---------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------- |
+| Types, `define*` helpers, pure functions, the domain runner         | Import and use anywhere. Stateless. Enforced by lint | **kernel**     | Yes. It is the part everything else rests on and nothing in it needs anything. No evidence for a change     |
+| Factories for what exists once per process, and `createApplication` | Stateless as modules; only bootstrap imports them    | **foundation** | **Partly.** See below                                                                                       |
+| The instances: config, logger, database handle, event bus           | Built first, injected, never imported                | **foundation** | Yes, and this is the meaning the brief started with ("framework instances any application needs")           |
+| Ghost's values and the module that holds the application            | Imported by `boot.js` and by legacy aliases only     | **bootstrap**  | Yes: it is Laravel's `bootstrap/`, and the word was not in the brief because the thing was not yet separate |
+
+**"Foundation" is doing two jobs.** In this code it names both the folder of
+factories (`ghost/core/foundation/`) and the set of instances
+(`application.foundation`, the `Foundation` type, "the foundation is handed to
+`boot.ts`"). They are different things with different rules: the folder may be
+imported only by bootstrap; the instances may be imported by no one. Sentences
+in this log needed care to say which was meant, which is the evidence that
+one of them wants another word.
+
+The instances have the stronger claim. "Foundation, shared, domains" as three
+layers of **running things** started in order is how the brief uses the word,
+how `boot.js` now reads, and what a domain author sees. So if one of the two
+is renamed, it is the folder.
+
+What the folder holds is the framework's code for assembling an application:
+`createApplication`, `createLogger`, `createConfig`, `createDatabase`,
+`readDomains`. In Laravel this is `Illuminate\Foundation` (the `Application`
+class and its bootstrappers), which is where the word came from, so the name
+is defensible. But Laravel has the same double meaning and resolves it by
+never calling the instances "foundation". Ghost wants to call the instances
+that.
+
+**Suggested, on this evidence, and no stronger than that:**
+
+- Keep **kernel**.
+- Keep **foundation** for the layer of instances and the `Foundation` type.
+- Rename the folder `ghost/core/foundation/` to something that says "builds
+  the application". `ghost/core/application/` fits what is in it
+  (`createApplication` and the factories it orders) and reads correctly in the
+  rule: "only bootstrap imports application code". Not done in the spike: it
+  is a rename of 13 files and two boundary rules, and it should be the
+  owner's decision.
+- Rename `boot.ts` in a domain to `dependencies.ts` (step 4).
+
+The alternative that the evidence does **not** support: merging the folder
+into kernel so that there are only two words. That is shape (a), and it puts
+factories that are harmful to call twice behind the rule "import from kernel
+without thinking".
+
+## Part 2: final report
+
+Five commits on `claude/ghost-modular-architecture-bqbbrw` after `e8f4258`.
+
+### The answer
+
+**The rule is achievable, with one exception still in the lint config and
+two known breaks in existing kernel files.**
+
+> Anything in kernel can be imported directly, by any code, without thinking
+> about whether the import is allowed. Things that are importable hold no
+> state.
+
+- A lint rule now holds kernel to "no state, no ambient reads, no instances,
+  nothing on import", and the boundary rules let every kind of file import
+  any kernel file. Thirteen locations are tested.
+- **Foundation is two things**: framework code that builds what exists once
+  per process (a folder only bootstrap imports), and the instances it builds
+  (injected, never imported). Ghost supplies values and a bootstrap.
+- For config, logging and the database, **the kernel half is types** and one
+  pure function. The factories are stateless as modules but must be called
+  once, so they are not in kernel.
+- Old and new share **one** config, logger, database handle and event bus,
+  verified by identity in a real process.
+- A second application runs on the framework alone, with no Ghost code.
+
+### Inventory
+
+The full table is in [step 1](#part-2-step-1-inventory). In short:
+
+| Thing                         | Importers (roots) | Stateless part split from the instance?                            |
+| ----------------------------- | ----------------- | ------------------------------------------------------------------ |
+| Logging                       | 352 (27)          | **Done here**, on Ghost's side; the package needs two exports      |
+| Config                        | 149 (24)          | **Done here**                                                      |
+| Database (Knex)               | 32 (9)            | **Done here**                                                      |
+| Event bus                     | 29 (10)           | Adapter here; the package needs an instance export                 |
+| Adapter manager               | 31 (12)           | Was already split; its class should move from kernel to foundation |
+| Clock and `moment`            | 10, plus 43 raw   | No. Known kernel break                                             |
+| URL utils                     | 131 (23)          | Possible (the package exports the class). Shared, not foundation   |
+| Models registry and Bookshelf | 117 (29)          | **No**: about 100 model files close over one instance at import    |
+| Settings cache                | 87 (22)           | Possible; it is state by definition. Shared                        |
+| Labs, i18n, limits, mail      | 40, 15, 8, 19     | Possible. Shared                                                   |
+| Jobs service                  | 34 (5)            | Possible; kept as one instance on purpose                          |
+| Sentry                        | 27 (5)            | Partly; the SDK is process-global                                  |
+| Outbound HTTP                 | 12 (7)            | Possible: a factory taking four config values                      |
+| Metrics, tracing              | 13; few           | Metrics needs the package change; tracing is already factories     |
+
+### The design and why the others lost
+
+Chosen: **(b)**, foundation is framework code beside kernel that assembles
+the instances from an application's values, with the sharpening that the
+factories are a separate folder from kernel because they are safe to import
+and unsafe to call twice.
+
+- **(a) lost** because it puts those factories in kernel, and because a
+  second application would have copied 171 lines of assembly (`application.ts`
+  and `domains.ts`).
+- **(c) lost** because a folder of Ghost-specific wiring cannot be used by
+  another application. That wiring is real; it is `bootstrap/`.
+
+### What each step cost
+
+| Step                                                                                      | Commit    | Files | Added                    | Removed | Of which this log | Notes                                                                                          |
+| ----------------------------------------------------------------------------------------- | --------- | ----- | ------------------------ | ------- | ----------------- | ---------------------------------------------------------------------------------------------- |
+| 1 and 2: inventory and design                                                             | `0fd1161` | 1     | 201                      | 0       | 201               | this log only                                                                                  |
+| 3, 5 and the first half of 6: the split, the second application, foundation first in boot | `4592269` | 82    | 2,635                    | 1,012   | 176               | about 620 lines are tests; 849 lines of config machinery moved rather than written; 11 renames |
+| 4, the rest of 6, and 8: network's `boot.ts`, fakes                                       | `bbcf477` | 9     | 840                      | 182     | 275               | `boot.ts` 143, kernel fakes 111, two new tests about 150                                       |
+| 7 and 9: enforcement, naming, this report                                                 | this one  | 19    | about 740, plus this log | 58      | the rest          | the lint rule 255; about 370 lines of tests                                                    |
+
+Before this last commit: 89 files changed, 3,676 lines added and 1,194
+removed since `e8f4258`, of which 652 added lines are this log.
+
+**What the next domain pays**, from one real domain: a `boot.ts` of about 140
+lines for a root with eleven outside dependencies, about 60 lines out of the
+root, and a mechanical change to the root's test of under 30 lines. Nothing in
+`ghost/core` changes for it.
+
+### Test and check results at the end (all verified by running)
+
+| Check                                        | Result                                                                                               |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Typecheck (`nx run ghost:test:types`)        | pass                                                                                                 |
+| oxlint, ESLint, knip, format, docs lint      | pass                                                                                                 |
+| Boundaries                                   | pass: 5940 modules, 286 known violations, 189 deferred (both unchanged)                              |
+| Domain rules                                 | pass                                                                                                 |
+| Unit suite                                   | 11,678 passed; 34 failed, the same 34 in the same 3 files as baseline                                |
+| DB-backed, the part 1 set, against MySQL 8.4 | 8 files, 76 tests pass                                                                               |
+| `tools/scripts` tests                        | 463 tests; 441 pass, 20 fail, the same 20 as baseline; 2 cancelled by a failed parent among those 20 |
+| `tools/gx` tests                             | 155 pass                                                                                             |
+| Existing config tests, unchanged             | 9 files, 173 tests pass                                                                              |
+
+### Boot time
+
+| State                             | Runs | "Ghost booted in" |
+| --------------------------------- | ---- | ----------------- |
+| Before (`e8f4258`)                | 6    | 3.290s to 3.532s  |
+| Foundation built first            | 6    | 3.260s to 3.660s  |
+| Network started through `boot.ts` | 8    | 3.320s to 3.729s  |
+
+No change these runs can resolve. One machine, warm, from source. A
+difference under about 0.2s would not be seen. Boot time after step 7 was not
+re-measured: step 7 changed lint rules, three fixture files and one default
+argument.
+
+### What cannot be made importable and stateless
+
+| Thing                                                  | Why                                                                                                                  | What it is instead                                                             |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| The models registry and Bookshelf                      | About 100 model files are defined against one Bookshelf instance while they are imported                             | Legacy, imported by `boot.ts` and handed over, until Bookshelf is gone         |
+| The logger, the database handle, config, the event bus | They are state. That is the point                                                                                    | Foundation instances: built once, injected                                     |
+| Their factories                                        | Stateless and importable, but a second call is a defect (two writers on one rotating log file; two connection pools) | Foundation code: only bootstrap imports it                                     |
+| The config loader                                      | It reads argv, the environment and files                                                                             | Foundation code. The kernel plan's "one named exception" is not needed         |
+| Reading the domains folder                             | It reads the disk and calls `require`                                                                                | Foundation code; the kernel has the pure half                                  |
+| The event bus as published                             | A static emitter in a package                                                                                        | Adapted by bootstrap until the package exports an instance                     |
+| Sentry                                                 | The SDK initializes one process-wide client                                                                          | Shared; imported by `boot.ts`                                                  |
+| `@tryghost/debug`                                      | Reads `DEBUG` when a namespace is created at module scope. 128 files                                                 | Left ambient on purpose; forbidden in kernel by the lint                       |
+| `moment`                                               | A library object with a process-wide default timezone, set by `server/overrides.js`                                  | A known break in `kernel/clock.ts` until the clock is injected                 |
+| Reading the clock                                      | It is an ambient read by definition                                                                                  | Should be a foundation instance. Today `getUnixTime()` is a known kernel break |
+| The adapter manager's loader                           | Reads `package.json` files and resolves modules from disk                                                            | A known break in kernel; belongs in foundation                                 |
+| Settings cache, labs, i18n, limits, mail, URL utils    | Each could be split, but each is Ghost's: another application has no settings table or site URL shape                | Shared, imported by `boot.ts`. Not foundation                                  |
+
+### Rules that were ambiguous, wrong or missing
+
+| Rule as given                                                                                  | What exposed it                                                     | Problem                                                                                                                        | Suggested wording                                                                                                                                                                                          |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "Exports are mechanisms (classes, factories, pure functions, types, schemas), never instances" | `createLogger`, `createDatabase`                                    | A factory for something that must exist once is a mechanism, and is still unsafe for any code to call                          | "Kernel holds what any code may import **and call**. A factory for something that exists once per process is not kernel: it lives in the foundation, which only an application's bootstrap imports."       |
+| "No ambient reads … with a config loader the one named exception"                              | `foundation/config/sources.ts`                                      | With a foundation folder the exception is unnecessary, and without one there are more than one (discovery, the adapter loader) | Drop the exception. "Code that reads the process, the disk or the clock is foundation, not kernel."                                                                                                        |
+| "Foundation" (a layer in boot order, and the home of the stateful framework)                   | Every sentence in this log about it                                 | One word for the instances and for the code that builds them                                                                   | "The **foundation** is the instances every application has: config, logging, the database, the event bus. The framework code that builds them is the **application** folder (or another name)."            |
+| "A `boot.ts` in the domain declares what the roots need from outside"                          | `domains/network/boot.ts`                                           | Does not say which of those are handed to `boot.ts` and which it imports                                                       | "The domain layer hands `boot.ts` the foundation. `boot.ts` imports everything else the domain needs, inside `dependencies()`, and returns what the roots receive. Nothing else in the domain imports it." |
+| "Service roots import nothing but their own domain and kernel"                                 | `notices`, which had no `boot.ts`                                   | Silent on a domain with no `boot.ts`, and it makes `boot.ts` required for almost every domain, where part 1 found it optional  | "A domain without `boot.ts` hands its roots the foundation unchanged. A domain that needs anything else has one."                                                                                          |
+| "The domain gets config" (whole instance or a slice: left open)                                | `services:recommendations:enabled`                                  | A slice is read once; the code it replaces treated any value but `false` as on                                                 | "A domain declares the config section it reads and its schema in `boot.ts`. It is parsed when the domain starts. Its schema accepts what the code it replaces accepted; tightening is a separate change."  |
+| "No facades, global helpers or service locators"                                               | Whether to hand domains a bag of shared services                    | Does not say whether an injected bag counts                                                                                    | "Only the foundation is injected by the framework. A bag of application services handed to every domain is a service locator: `boot.ts` imports each one it uses."                                         |
+| Boot starts foundation, then shared, then domains                                              | The two experiments in step 6                                       | Silent on a domain that registers itself on another service at start, which is start order by another name                     | "A domain does not register itself on another service while it starts. The owner of the registry imports what it needs from the domain's public surface."                                                  |
+| Capability subfolders "ONE level deep inside a layer folder"                                   | `services/`                                                         | `services/<name>/` is already a folder per root                                                                                | "A layer folder holds capability subfolders one level deep. In `services/` the service's own folder is that level's parent: `services/<name>/<capability>/`. Roots stay at `services/<name>/index.ts`."    |
+| A found file's name is its file name without the role                                          | `jobs/gifts/send.job.ts` and `jobs/offers/send.job.ts`              | Two capabilities may each have a `send`                                                                                        | "A file in a capability subfolder is named `<capability>/<name>`."                                                                                                                                         |
+| "A root may be imported so it can be passed on" (the Service Standard's "inject")              | 325 of 352 logging importers are not roots                          | The rule is met by new code only, and nothing counts the rest                                                                  | Add a count to the report: files outside `bootstrap/` and service roots that import a foundation instance, so the number is seen to fall.                                                                  |
+| Services "may import [the clock] directly" (kernel README)                                     | `ghost/kernel-purity` on `clock.ts`                                 | Contradicts "no clock in exported functions"                                                                                   | Decide: either the clock is the named exception, or it is injected. The lint treats it as a break.                                                                                                         |
+| `service-roots-in-services` (existing boundary rule)                                           | The "kernel is importable from anywhere" test                       | An import rule doing the job of a "where may this be called" rule                                                              | Replace with a lint on calls to `defineService` outside a root file.                                                                                                                                       |
+| `defineEvent` gives an event the time it was made                                              | `ghost/kernel-purity`                                               | A default of `new Date()` is a clock read in kernel                                                                            | "An event is given the time it happened by whoever publishes it."                                                                                                                                          |
+| Nothing about testing a rule on packages                                                       | `domain-foundation-injected` missed three packages on the real tree | A temporary repository has no `node_modules`, so a package pattern is tested only in its unresolved form                       | "A boundary rule that names a package is proven by introducing the import in the real tree."                                                                                                               |
+
+### Changes needed outside this repository
+
+None were made: TryGhost/framework is not attached to this session. Ghost's
+side is proven against the published packages through two seams in
+`ghost/core/bootstrap/`.
+
+| Package                                | Change                                                                                                                                                                                                                                                                                                                   | What it replaces here                                                                                                                                                                                 |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@tryghost/logging`                    | 1. A subpath that builds nothing on import: `@tryghost/logging/logger` exporting `GhostLogger` and `createLogger(options)`. 2. `setInstance(logger)`, documented as "call before anything requires the package", throwing if a different instance already exists. 3. Later: the entry point resolves its instance lazily | 1. `require('@tryghost/logging/lib/GhostLogger')`, a path inside the package. 2. Writing to `globalThis[Symbol.for('@tryghost/logging@6')]`. 3. The "adopt the logger legacy code already built" path |
+| `@tryghost/metrics`                    | The same two exports. It builds `new GhostMetrics(require('loggingrc'))` on import                                                                                                                                                                                                                                       | Nothing: it was left reading `loggingrc.js`, which now returns `loggingOptions(config)`                                                                                                               |
+| `@tryghost/domain-events`              | `createEventBus({ logging })` returning an instance with `subscribe`, `dispatch` and `unsubscribe`; stop importing the logging singleton                                                                                                                                                                                 | `bootstrap/legacy-events.ts`, an adapter over the static emitter. `foundation/events.ts` is the shape, in 32 lines                                                                                    |
+| `@tryghost/debug`, `@tryghost/version` | Nothing proposed. Both read the environment or disk at import; neither is in kernel                                                                                                                                                                                                                                      |                                                                                                                                                                                                       |
+
+`loggingrc.js` has to stay for as long as any package reads it.
+
+### Deviations from the rules given, in one place
+
+1. **Four inline lint suppressions in kernel** (`clock.ts` twice,
+   `adapter-manager/loader.ts` twice): known breaks, not fixed.
+2. **`service-roots-in-services` still restricts one kernel import.**
+3. **The logger seam uses two things the package does not promise** (a file
+   path inside it and the name of its cache key).
+4. **`shared/config/` imports the foundation**, though it is not under
+   `bootstrap/`.
+5. **Foundation was moved to the start of boot; shared and domains were
+   not.** What blocks each is in step 6.
+6. **`boot.ts` and `ghost/core/foundation/` were not renamed**, though the
+   evidence suggests both.
+7. **The `@kernel/x` import spelling does not exist.** Kernel is imported by
+   relative path, as in part 1, and each home of a service root still pins its
+   own relative path in the lint config. An alias needs to work under tsx,
+   vitest and the tsc build, which emits paths as written; Node's `imports`
+   field in `package.json` is the candidate. Not attempted.
+8. **Three existing tests were changed because the rule they pinned
+   changed**: two that held "only the clock may be imported from kernel", and
+   part 1's test of an event's default timestamp.
+9. **Steps were committed together** where the code would not separate: 3
+   with 5 and half of 6; 4 with the rest of 6 and 8; 7 with 9.
+
+### Not verified, in one place
+
+- **The full DB-backed suites.** Eight files were run, chosen in part 1 for
+  relevance. Any e2e test that calls `config.set` after boot and expects a
+  reshaped domain to see it would now fail; none of the eight does, and the
+  others were not searched.
+- **The 34 unit failures** in 3 Mailgun and mailer files are present on the
+  untouched base in this container; their cause is still only partly known.
+- **A production build.** `pnpm archive`, the Docker image and a boot from
+  built JavaScript of Ghost itself were not run. The second application was
+  run from built JavaScript; Ghost was run from source only. In particular
+  `loggingrc.js` now requires `core/bootstrap/logging-options`, which exists
+  as JavaScript only after `build:tsc`.
+- **Worker threads.** A job in a worker thread still gets the package's own
+  logger with the `parent` transport, by reading the code. Not run.
+- **`@tryghost/metrics`** still builds itself from `loggingrc.js`; that it
+  receives the same options as before was checked by reading, not by a test.
+- **Log output.** That the logger the application builds writes the same
+  lines to the same transports as the one the package built was checked for
+  class, level and transports in one process, not by comparing files.
+- **Boot time after step 7**, and timing in general: six to eight runs each on
+  one shared machine.
+- **Admin against this backend**, and the two recommendation jobs on their
+  real timers, as in part 1.
+- **The inventory counts** are from `grep` on import specifiers and are
+  approximate. Tracing and Prometheus importers were not counted.
+- **Whether anything in `initCore` depends on the seven feature services in
+  it**, which decides how hard "shared strictly second" is.
+- **`gx services verify`**, which still needs the branch rebased.
+- MySQL was 8.4 from a registry mirror, not the pinned image.

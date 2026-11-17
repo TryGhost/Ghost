@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describeManifest } from '../../../../core/kernel/domains/discover';
 import { createLendingDesk, scheduled } from './bootstrap/app';
-import { journal, reset } from './shared';
+import { clock, journal, reset } from './shared';
 
 // Starts the second application and its domains and reports what happened as
 // plain data. The same file runs under the unit test runner and, compiled by
@@ -94,11 +94,11 @@ export async function runScenario() {
   // Stopping and starting again, as tests that boot Ghost repeatedly do.
   const BookLent = require(path.join(root, 'library/events/book-lent.event')).default;
   await layer.stop();
-  foundation.events.dispatch(new BookLent({ bookId: 'emma', borrower: 'Ignored', lentAt: '' }));
+  foundation.events.dispatch(new BookLent({ bookId: 'emma', borrower: 'Ignored', lentAt: '' }, clock.now()));
   const noticesWhileStopped = listNotices().length;
   await layer.start();
   // One more notice for one more event: the listener is subscribed once, not twice.
-  foundation.events.dispatch(new BookLent({ bookId: 'emma', borrower: 'Grace', lentAt: '' }));
+  foundation.events.dispatch(new BookLent({ bookId: 'emma', borrower: 'Grace', lentAt: '' }, clock.now()));
   const noticesAfterRestart = listNotices().length;
 
   // What the logger wrote, read back from the file the application's config sent it to.

@@ -266,6 +266,12 @@
       }
     },
     {
+      "files": ["ghost/core/kernel/**/*.ts"],
+      "rules": {
+        "ghost/kernel-purity": "error"
+      }
+    },
+    {
       "files": ["ghost/core/boot.js"],
       "rules": {
         "ghost/boot-awaits-service-init": "error"

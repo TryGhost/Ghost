@@ -1,5 +1,10 @@
+// Known break of the kernel rules: loading an adapter reads package.json files
+// and resolves modules from disk. The adapter manager exists once per process,
+// so by the same reasoning as the logger it belongs in the foundation.
+// oxlint-disable-next-line ghost/kernel-purity -- see docs/plans/domain-spike-findings.md
 import fs from 'node:fs';
 import path from 'node:path';
+// oxlint-disable-next-line ghost/kernel-purity -- see above
 import { createRequire } from 'node:module';
 import errors from '@tryghost/errors';
 import type { AdapterConstructor } from './types';

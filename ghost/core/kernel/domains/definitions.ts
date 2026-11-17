@@ -60,8 +60,8 @@ export interface DomainEvent<Data> {
 export interface EventDefinition<Data> {
   /** The name the event bus knows the event by. Unique across Ghost. */
   readonly name: string;
-  new (data: Data, timestamp?: Date): DomainEvent<Data>;
-  create(data: Data, timestamp?: Date): DomainEvent<Data>;
+  new (data: Data, timestamp: Date): DomainEvent<Data>;
+  create(data: Data, timestamp: Date): DomainEvent<Data>;
 }
 
 /**
@@ -72,11 +72,12 @@ export function defineEvent<Data>(name: string): Tagged<'event', EventDefinition
   const Event = class implements DomainEvent<Data> {
     readonly data: Data;
     readonly timestamp: Date;
-    constructor(data: Data, timestamp: Date = new Date()) {
+    // When it happened is given by whoever publishes: the kernel reads no clock.
+    constructor(data: Data, timestamp: Date) {
       this.data = data;
       this.timestamp = timestamp;
     }
-    static create(data: Data, timestamp?: Date) {
+    static create(data: Data, timestamp: Date) {
       return new Event(data, timestamp);
     }
   };

@@ -6,11 +6,14 @@ export class NoticeService {
   readonly #notices: Notice[] = [];
   readonly #publish: (event: object) => Promise<void>;
   readonly #describeBook: (id: string) => { title: string };
+  readonly #now: () => Date;
 
   constructor(deps: {
     publish: (event: object) => Promise<void>;
     describeBook: (id: string) => { title: string };
+    now: () => Date;
   }) {
+    this.#now = deps.now;
     this.#publish = deps.publish;
     this.#describeBook = deps.describeBook;
   }
@@ -20,7 +23,7 @@ export class NoticeService {
     const { title } = this.#describeBook(loan.bookId);
     const notice = renderLoanNotice({ title, borrower: loan.borrower });
     this.#notices.push(notice);
-    await this.#publish(NoticeRecorded.create(notice));
+    await this.#publish(NoticeRecorded.create(notice, this.#now()));
   }
 
   list(): Notice[] {

@@ -1262,7 +1262,6 @@ it('rejects outside dependencies, own roots and unresolved imports without folde
     'package.ts': "import '@tryghost/errors-extra';",
     'security-package.ts': "import '@tryghost/security-extra';",
     'shared.ts': "import '../../lib/db-types/other';",
-    'kernel.ts': "import '../../../kernel/clock-extra';",
   };
   const f = fixture(t, {
     ...Object.fromEntries(
@@ -1272,6 +1271,8 @@ it('rejects outside dependencies, own roots and unresolved imports without folde
     [`${alpha}/own.ts`]: "import './index';",
     [`${alpha}/missing.ts`]: "import '@tryghost/tpl';",
     [`${alpha}/implementation.ts`]: "import './test/helper';",
+    // Any file in the kernel may be imported: it is stateless by rule.
+    [`${alpha}/kernel.ts`]: "import '../../../kernel/clock-extra';",
     [`${services}/alpha-extra/helper.ts`]: 'export {};',
     'ghost/core/server/lib/db-types/other.ts': 'export {};',
     'ghost/core/kernel/clock-extra.ts': 'export {};',

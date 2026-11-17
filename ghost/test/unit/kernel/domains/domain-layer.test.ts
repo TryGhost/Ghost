@@ -311,7 +311,7 @@ describe('domain layer', function () {
       );
       assert.equal(handlers.size, 0);
       await layer.start();
-      const event = OrderPlaced.create({ id: '1' });
+      const event = OrderPlaced.create({ id: '1' }, new Date(0));
       await dispatch('OrderPlaced', event);
       await dispatch('LegacyThingHappened', 'by name');
       assert.deepEqual(seen, [[true, event], 'by name']);

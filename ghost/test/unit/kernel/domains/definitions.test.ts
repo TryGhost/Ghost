@@ -73,7 +73,8 @@ describe('domain definitions', function () {
     assert.equal(event.constructor.name, 'ThingHappened');
     assert.deepEqual(event.data, { id: 'a' });
     assert.equal(event.timestamp, at);
-    assert.ok(new ThingHappened({ id: 'b' }).timestamp instanceof Date);
+    // When it happened is always given: the kernel reads no clock to fill it in.
+    assert.equal(new ThingHappened({ id: 'b' }, at).timestamp, at);
   });
 
   it('passes a calculated setting its inputs as arguments', function () {

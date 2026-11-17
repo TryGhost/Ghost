@@ -126,6 +126,16 @@ export function checkDomainShape(domainsRoot: string): ShapeProblem[] {
                 'Folder names are lower-case words joined by hyphens.',
               );
             }
+            // One level of capability subfolder, and no deeper. A service
+            // folder is already one level down, so it gets one more.
+            if (depth + 1 > (folder === 'services' ? 2 : 1)) {
+              report(
+                'domain-root-shape',
+                file,
+                `${folder}/ holds capability subfolders one level deep and no deeper. Discovery does not look further.`,
+              );
+              continue;
+            }
             walk(`${relative}/${item.name}`, depth + 1);
             continue;
           }

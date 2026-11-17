@@ -41,8 +41,10 @@ describe('domain import rules', () => {
     copyRelocated(repository, root, [
       { from: 'ghost/test/utils/fixtures/domains', to: 'ghost/domains' },
       {
-        from: 'ghost/test/utils/fixtures/second-application',
-        to: 'ghost/core/bootstrap/second-application',
+        // What the fixtures' application shares beyond the foundation: its
+        // domain files import it, as Ghost's import settings or mail.
+        from: 'ghost/test/utils/fixtures/second-application/shared.ts',
+        to: 'ghost/core/shared/second-application/shared.ts',
       },
     ]);
     cpSync(path.join(repository, 'ghost/core/kernel'), path.join(root, 'ghost/core/kernel'), {
@@ -59,6 +61,10 @@ describe('domain import rules', () => {
       'ghost/core/server/services/staff/index.ts': 'export default {};',
       'ghost/core/server/models/index.js': 'module.exports = {};',
       'ghost/core/shared/config/index.js': 'module.exports = {};',
+      'ghost/core/shared/sentry.js': 'module.exports = {};',
+      'ghost/core/server/data/db/index.js': 'module.exports = {};',
+      'ghost/core/foundation/logging.ts': 'export const createLogger = () => ({});',
+      'ghost/core/bootstrap/app.ts': 'export default {};',
       'ghost/core/server/web/api/middleware.js': 'module.exports = {};',
       'ghost/core/server/api/endpoints/index.js': 'module.exports = {};',
       'ghost/domains/library/transition/services/old-catalogue/legacy.js': 'module.exports = {};',
@@ -104,7 +110,7 @@ describe('domain import rules', () => {
     assert.ifError(result.error);
     const graph = JSON.parse(result.stdout) as ICruiseResult;
     return graph.summary.violations
-      .filter(({ rule }) => rule.name.startsWith('domain-'))
+      .filter(({ rule }) => /^(?:domain|foundation|kernel)-/.test(rule.name))
       .map(({ rule, from, to }) => ({
         rule: rule.name,
         severity: rule.severity,
@@ -170,7 +176,7 @@ describe('domain import rules', () => {
       );
     });
 
-    it("accepts another domain's data and events anywhere, and its actions in a service root", () => {
+    it("accepts another domain's data and events anywhere, and its actions in the domain file", () => {
       assert.deepEqual(
         violationsOf(
           'ghost/domains/notices/listeners/second.listener.ts',
@@ -184,7 +190,7 @@ describe('domain import rules', () => {
       );
     });
 
-    it("rejects another domain's action in an implementation file: the root injects it", () => {
+    it("rejects another domain's action in an implementation file: the domain file hands it over", () => {
       assert.deepEqual(
         violationsOf(
           'ghost/domains/notices/services/notices/reach.service.ts',
@@ -196,7 +202,7 @@ describe('domain import rules', () => {
       );
     });
 
-    it("rejects another domain's transition folder outside a service root", () => {
+    it("rejects another domain's transition folder outside the domain file", () => {
       assert.deepEqual(
         violationsOf(
           'ghost/domains/notices/services/notices/reach.service.ts',
@@ -243,6 +249,10 @@ describe('domain import rules', () => {
           ].join('\n'),
         ),
         [
+          // A foundation instance is reported twice: it is not on the list of
+          // libraries, and it is something reshaped code is handed.
+          'domain-foundation-injected: domains/library/repositories/reach.repository.ts → @tryghost/logging',
+          'domain-foundation-injected: domains/library/repositories/reach.repository.ts → core/shared/config/index.js',
           'domain-implementation-imports: domains/library/repositories/reach.repository.ts → @tryghost/logging',
           'domain-implementation-imports: domains/library/repositories/reach.repository.ts → core/server/models/index.js',
           'domain-implementation-imports: domains/library/repositories/reach.repository.ts → core/shared/config/index.js',
@@ -264,15 +274,15 @@ describe('domain import rules', () => {
     });
   });
 
-  describe('service roots and the domain file', () => {
+  describe('the domain file', () => {
     it('counts legacy and transition imports without failing', () => {
       write(
         'ghost/domains/alerts/boot.ts',
         [
           "const staff = require('../../core/server/services/staff');",
-          "const config = require('../../core/shared/config');",
+          "const sentry = require('../../core/shared/sentry');",
           "const legacy = require('../library/transition/services/old-catalogue/legacy');",
-          'export default { staff, config, legacy };',
+          'export default { staff, sentry, legacy };',
         ].join('\n'),
       );
       try {
@@ -285,7 +295,7 @@ describe('domain import rules', () => {
             .map(({ rule, edge }) => `${rule}: ${edge}`)
             .sort(),
           [
-            // Config is foundation, so it is not counted.
+            // Sentry is shared, so it is not counted.
             'domain-legacy-imports: domains/alerts/boot.ts → core/server/services/staff/index.ts',
             'domain-transition-imports: domains/alerts/boot.ts → domains/library/transition/services/old-catalogue/legacy.js',
           ],
@@ -294,11 +304,198 @@ describe('domain import rules', () => {
         rmSync(path.join(root, 'ghost/domains/alerts'), { recursive: true });
       }
     });
+
+    it('is handed the foundation and may not import it', () => {
+      assert.deepEqual(
+        violationsOf(
+          'ghost/domains/alerts/boot.ts',
+          [
+            "import type { GhostLogger } from '@tryghost/logging';",
+            "import type { Foundation } from '../../core/kernel/foundation';",
+            "const logging = require('@tryghost/logging');",
+            "const events = require('@tryghost/domain-events');",
+            "const config = require('../../core/shared/config');",
+            "const db = require('../../core/server/data/db');",
+            "const application = require('../../core/bootstrap/app');",
+            "const { createLogger } = require('../../core/foundation/logging');",
+            'export default [logging, events, config, db, application, createLogger] as unknown as (GhostLogger | Foundation)[];',
+          ].join('\n'),
+        ),
+        [
+          'domain-foundation-injected: domains/alerts/boot.ts → @tryghost/domain-events',
+          'domain-foundation-injected: domains/alerts/boot.ts → @tryghost/logging',
+          'domain-foundation-injected: domains/alerts/boot.ts → core/bootstrap/app.ts',
+          'domain-foundation-injected: domains/alerts/boot.ts → core/foundation/logging.ts',
+          'domain-foundation-injected: domains/alerts/boot.ts → core/server/data/db/index.js',
+          'domain-foundation-injected: domains/alerts/boot.ts → core/shared/config/index.js',
+          'foundation-only-from-bootstrap: domains/alerts/boot.ts → core/foundation/logging.ts',
+        ],
+      );
+    });
+  });
+
+  describe('service roots', () => {
+    it('import their own domain and the kernel, and nothing from outside', () => {
+      assert.deepEqual(
+        violationsOf(
+          'ghost/domains/library/services/overdue/index.ts',
+          [
+            "import { defineService } from '../../../../core/kernel/define-service';",
+            "import { parseConfigSlice } from '../../../../core/kernel/config';",
+            "import type { LibraryDependencies } from '../../boot';",
+            "import BookLent from '../../events/book-lent.event';",
+            "import { listNotices } from '../../../notices/actions/list-notices.action';",
+            "const sentry = require('../../../../core/shared/sentry');",
+            "const staff = require('../../../../core/server/services/staff');",
+            "const logging = require('@tryghost/logging');",
+            "const legacy = require('../../transition/services/old-catalogue/legacy');",
+            'export default defineService("Overdue", (given: LibraryDependencies) => [given, parseConfigSlice, BookLent, listNotices, sentry, staff, logging, legacy]);',
+          ].join('\n'),
+        ),
+        [
+          // The foundation is injected; shared, legacy and another domain's
+          // actions belong in boot.ts. Its own transition/ folder is its own domain.
+          'domain-foundation-injected: domains/library/services/overdue/index.ts → @tryghost/logging',
+          'domain-implementation-imports: domains/library/services/overdue/index.ts → @tryghost/logging',
+          'domain-implementation-imports: domains/library/services/overdue/index.ts → core/server/services/staff/index.ts',
+          'domain-implementation-imports: domains/library/services/overdue/index.ts → core/shared/sentry.js',
+          'domain-implementation-imports: domains/library/services/overdue/index.ts → domains/notices/actions/list-notices.action.ts',
+        ],
+      );
+    });
+  });
+
+  describe('kernel and foundation', () => {
+    const kernel = [
+      "import { parseConfigSlice } from 'KERNEL/config';",
+      "import { defineJob } from 'KERNEL/domains/definitions';",
+      "import { discoverDomains } from 'KERNEL/domains/discover';",
+      "import { createDomainLayer } from 'KERNEL/domains/domain-layer';",
+      "import { getUnixTime } from 'KERNEL/clock';",
+      "import { createLoggerFake } from 'KERNEL/testing';",
+      'export const used = [parseConfigSlice, defineJob, discoverDomains, createDomainLayer, getUnixTime, createLoggerFake];',
+    ].join('\n');
+    const everyRule = () => {
+      const result = spawnSync(
+        process.execPath,
+        [
+          cli,
+          'ghost/core',
+          'ghost/domains',
+          '--config',
+          '.dependency-cruiser.cjs',
+          '--output-type',
+          'json',
+        ],
+        { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
+      );
+      return (JSON.parse(result.stdout) as ICruiseResult).summary.violations
+        .filter(({ rule }) => rule.severity === 'error')
+        .map(({ rule, from, to }) => `${rule.name}: ${from} → ${to}`);
+    };
+
+    // Anything in the kernel can be imported by any code, whatever else that code may import.
+    for (const [where, file, up] of [
+      ['a service implementation file', 'ghost/core/server/services/staff/reach.ts', '../../..'],
+      ['a service root', 'ghost/core/server/services/staff/index.ts', '../../..'],
+      ['the front end', 'ghost/core/frontend/helpers/reach.ts', '../..'],
+      ['shared code', 'ghost/core/shared/reach.ts', '..'],
+      ['the web layer', 'ghost/core/server/web/api/reach.ts', '../../..'],
+      ['a model', 'ghost/core/server/models/reach.ts', '../..'],
+      [
+        'an implementation file in a domain',
+        'ghost/domains/library/repositories/reach.repository.ts',
+        '../../../core',
+      ],
+      ['a fragment', 'ghost/domains/notices/settings.ts', '../../core'],
+      ['a listener', 'ghost/domains/notices/listeners/reach.listener.ts', '../../../core'],
+      ['a domain file', 'ghost/domains/alerts/boot.ts', '../../core'],
+      [
+        'code moved in but not reshaped',
+        'ghost/domains/library/transition/services/old-catalogue/reach.ts',
+        '../../../../../core',
+      ],
+      ['the foundation', 'ghost/core/foundation/reach.ts', '..'],
+      ['the bootstrap', 'ghost/core/bootstrap/reach.ts', '..'],
+    ] as const) {
+      it(`lets ${where} import anything in the kernel`, () => {
+        const existing = file.endsWith('staff/index.ts');
+        write(file, kernel.replaceAll('KERNEL', `${up}/kernel`));
+        try {
+          assert.deepEqual(everyRule(), []);
+        } finally {
+          if (existing) {
+            write(file, 'export default {};');
+          } else {
+            rmSync(path.join(root, file));
+            if (file.includes('/alerts/')) {
+              rmSync(path.join(root, 'ghost/domains/alerts'), { recursive: true });
+            }
+          }
+        }
+      });
+    }
+
+    it('keeps one exception: only a service root imports defineService', () => {
+      write(
+        'ghost/core/server/web/api/reach.ts',
+        "import { defineService } from '../../../kernel/define-service';\nexport const used = defineService;",
+      );
+      try {
+        // An older rule, about where service roots live. It is written as an
+        // import rule, so it is the one place the kernel is not freely importable.
+        assert.deepEqual(everyRule(), [
+          'service-roots-in-services: ghost/core/server/web/api/reach.ts → ghost/core/kernel/define-service.ts',
+        ]);
+      } finally {
+        rmSync(path.join(root, 'ghost/core/server/web/api/reach.ts'));
+      }
+    });
+
+    it("lets only the bootstrap and Ghost's config import the foundation", () => {
+      const source =
+        "import { createLogger } from 'UP/foundation/logging';\nimport type { Logger } from 'UP/kernel/logging';\nexport const used = createLogger as unknown as Logger;";
+      const tried = (file: string, up: string) => {
+        write(file, source.replaceAll('UP', up));
+        try {
+          return everyRule();
+        } finally {
+          rmSync(path.join(root, file));
+        }
+      };
+      assert.deepEqual(tried('ghost/core/bootstrap/reach.ts', '..'), []);
+      assert.deepEqual(tried('ghost/core/shared/config/reach.ts', '../..'), []);
+      assert.deepEqual(tried('ghost/core/server/web/api/reach.ts', '../../..'), [
+        'foundation-only-from-bootstrap: ghost/core/server/web/api/reach.ts → ghost/core/foundation/logging.ts',
+      ]);
+      assert.deepEqual(tried('ghost/core/frontend/helpers/reach.ts', '../..'), [
+        'foundation-only-from-bootstrap: ghost/core/frontend/helpers/reach.ts → ghost/core/foundation/logging.ts',
+      ]);
+      assert.deepEqual(tried('ghost/core/kernel/reach.ts', '..'), [
+        'foundation-only-from-bootstrap: ghost/core/kernel/reach.ts → ghost/core/foundation/logging.ts',
+        'kernel-not-application: ghost/core/kernel/reach.ts → ghost/core/foundation/logging.ts',
+      ]);
+    });
+
+    it('keeps the foundation free of the application it assembles', () => {
+      write(
+        'ghost/core/foundation/reach.ts',
+        "const config = require('../shared/config');\nconst application = require('../bootstrap/app');\nexport const used = [config, application];",
+      );
+      try {
+        assert.deepEqual(everyRule(), [
+          'foundation-not-application: ghost/core/foundation/reach.ts → ghost/core/bootstrap/app.ts',
+          'foundation-not-application: ghost/core/foundation/reach.ts → ghost/core/shared/config/index.js',
+        ]);
+      } finally {
+        rmSync(path.join(root, 'ghost/core/foundation/reach.ts'));
+      }
+    });
   });
 
   describe('fragments', () => {
     for (const fragment of ['settings', 'permissions', 'schema', 'http/routes']) {
-      it(`${fragment}.ts imports only its kernel utility, types and its own data`, () => {
+      it(`${fragment}.ts imports only the kernel, types and its own data`, () => {
         const up = fragment.includes('/') ? '../' : './';
         const core = fragment.includes('/') ? '../../../core' : '../../core';
         assert.deepEqual(
@@ -316,8 +513,8 @@ describe('domain import rules', () => {
             ].join('\n'),
           ),
           [
+            // Any kernel file is fine: the clock import is not reported.
             `domain-fragment-imports: domains/notices/${fragment}.ts → @tryghost/errors`,
-            `domain-fragment-imports: domains/notices/${fragment}.ts → core/kernel/clock.ts`,
             `domain-fragment-imports: domains/notices/${fragment}.ts → domains/notices/services/notices/index.ts`,
           ],
         );
@@ -356,6 +553,8 @@ describe('domain import rules', () => {
           "const mw = require('../../../../core/server/web/api/middleware');\nexport default mw;",
         ),
         [
+          // A root is held to the same imports as any other reshaped file now.
+          'domain-implementation-imports: domains/notices/services/web/index.ts → core/server/web/api/middleware.js',
           'domain-no-web-layer: domains/notices/services/web/index.ts → core/server/web/api/middleware.js',
         ],
       );

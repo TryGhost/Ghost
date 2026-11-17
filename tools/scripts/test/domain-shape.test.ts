@@ -141,11 +141,41 @@ describe('domain shape and names', () => {
       ]);
     });
 
-    it('allows capability subfolders inside a layer', () => {
+    it('allows capability subfolders inside a layer, one level deep', () => {
+      write('library/jobs/overdue/send-reminders.job.ts');
+      write('library/listeners/overdue/note-reminder.listener.ts');
+      write('library/actions/overdue/list-overdue.action.ts');
+      write('library/events/overdue/reminder-sent.event.ts');
       write('library/repositories/loans/loan.repository.ts');
-      write('library/services/catalogue/search/search.service.ts');
-      write('library/emails/loans/overdue.template.hbs');
+      write('library/http/loans/loan.controller.ts');
+      // A service folder is one level down already, so it has one more.
+      write('library/services/lending/policies/late-fee.service.ts');
       assert.deepEqual(problems(), []);
+    });
+
+    it('rejects a second level of subfolder, which discovery would not read', () => {
+      write('library/jobs/overdue/weekly/send-digest.job.ts');
+      write('library/repositories/loans/archive/old-loan.repository.ts');
+      write('library/services/lending/policies/fees/late-fee.service.ts');
+      assert.deepEqual(problems(), [
+        'domain-root-shape: library/services/lending/policies/fees',
+        'domain-root-shape: library/repositories/loans/archive',
+        'domain-root-shape: library/jobs/overdue/weekly',
+      ]);
+    });
+
+    it('holds a file in a capability subfolder to the role of its layer', () => {
+      write('library/jobs/overdue/helper.ts');
+      write('library/jobs/overdue/send.listener.ts');
+      write('library/jobs/Overdue/send.job.ts');
+      // routes.ts and index.ts are fixed names only in their own place.
+      write('library/http/loans/routes.ts');
+      assert.deepEqual(problems(), [
+        'domain-file-naming: library/http/loans/routes.ts',
+        'domain-file-naming: library/jobs/Overdue',
+        'domain-file-naming: library/jobs/overdue/helper.ts',
+        'domain-file-naming: library/jobs/overdue/send.listener.ts',
+      ]);
     });
 
     it('allows notes and type declarations for untyped libraries', () => {

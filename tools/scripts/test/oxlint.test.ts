@@ -590,14 +590,16 @@ test('shares the dependency-cruiser allowlist, including exact local files and p
     import boolean from '../../lib/db-types/boolean';
     import json from '../../lib/db-types/json';
     import lookalike from '@tryghost/errors-extra';
-    import clock from '../../../kernel/clock-extra';
+    import lookalikeFile from '../../lib/db-types/boolean-extra';
+    import kernel from '../../../kernel/anything-at-all';
     import os from 'node:os';
-    new Service({errors, manifest, contracts, otherContract, objectId, boolean, json, lookalike, clock, os});
+    new Service({errors, manifest, contracts, otherContract, objectId, boolean, json, lookalike, lookalikeFile, kernel, os});
   `;
   const original = lint(source, serviceRoot);
-  assert.equal(original.diagnostics.length, 7);
-  // Contracts are allowed whole, so every entry of one is reported.
+  assert.equal(original.diagnostics.length, 8);
+  // Contracts and the kernel are allowed whole, so every file of either is reported.
   for (const library of [
+    '../../../kernel/anything-at-all',
     '@tryghost/errors/subpath',
     '@tryghost/app-contracts/manifest',
     '@tryghost/app-contracts',
@@ -616,7 +618,7 @@ test('shares the dependency-cruiser allowlist, including exact local files and p
     () => "const serviceDependencyAllowlist = ['^node:os$',",
   );
   const result = lint(source, serviceRoot, false, undefined, changed);
-  assert.equal(result.diagnostics.length, 8);
+  assert.equal(result.diagnostics.length, 9);
   assert.ok(result.diagnostics.some((d) => d.message.includes('node:os')));
 });
 
@@ -1028,4 +1030,103 @@ test('rejects computed require and import in service files, which the boundary s
   );
   const elsewhere = lint(source, 'ghost/core/server/lib/implementation.js');
   assert.ok(!elsewhere.diagnostics.some(({ code }) => code === 'import(no-dynamic-require)'));
+});
+
+const kernelFile = 'ghost/core/kernel/example.ts';
+const purity = 'ghost(kernel-purity)';
+const purityFindings = (source: string, file = kernelFile) =>
+  lint(source, file)
+    .diagnostics.filter((d) => d.code === purity)
+    .map((d) => [d.labels[0]?.span.line, d.message.replace(/^.*?: /, '').slice(0, 60)]);
+
+test('lets a kernel file hold mechanisms: functions, classes, types, constants and schemas', () => {
+  const source = [
+    "import path from 'node:path';",
+    "import { z } from 'zod';",
+    "import type { GhostLogger } from '@tryghost/logging';",
+    "import { type Knex } from 'knex';",
+    "const kind = Symbol.for('example');",
+    'const pattern = /^(.+)\\.job$/;',
+    "const folders = ['actions', 'jobs'] as const;",
+    'const limits = Object.freeze({ depth: 1 });',
+    'const label = `kernel`;',
+    'export const Shape = z.object({ on: z.boolean().default(true) }).strict();',
+    'export type Logger = Pick<GhostLogger, "info">;',
+    'export interface Database { readonly knex: Knex }',
+    'export class Runner { #started = new Set<string>(); static readonly role = "runner"; }',
+    'export const describe = (name: string) => path.join(label, name, String(kind), pattern.source, folders[0], String(limits.depth));',
+    'export function createRunner(now: () => Date) { const seen = new Map<string, Date>(); return { mark: (name: string) => seen.set(name, now()) }; }',
+    'export default createRunner;',
+  ].join('\n');
+  assert.deepEqual(purityFindings(source), []);
+});
+
+test('rejects module-level state in a kernel file', () => {
+  const source = [
+    'let instance;',
+    'var count = 0;',
+    'const cache = new Map();',
+    'const names = [];',
+    'const options = {};',
+    'const sticky = /x/g;',
+    'const built = build();',
+    'export class Bus { static emitter = new EventEmitter(); }',
+    'export function get() { return [instance, count, cache, names, options, sticky, built]; }',
+  ].join('\n');
+  assert.deepEqual(
+    purityFindings(source).map(([line]) => line),
+    [1, 2, 3, 4, 5, 6, 7, 8],
+  );
+});
+
+test('rejects exported instances and effects on import in a kernel file', () => {
+  const source = [
+    "import library from 'some-library';",
+    'export const client = new Client();',
+    'export const shared = library;',
+    'export const config = load();',
+    'export default new Service();',
+  ].join('\n');
+  assert.deepEqual(
+    purityFindings(source).map(([line]) => line),
+    [2, 3, 4, 5],
+  );
+  assert.deepEqual(
+    purityFindings('register();\nexport const ready = true;').map(([line]) => line),
+    [1],
+  );
+});
+
+test('rejects ambient reads in a kernel file, at module scope and inside functions', () => {
+  const source = [
+    "import fs from 'node:fs';",
+    "import logging from '@tryghost/logging';",
+    "import moment from 'moment-timezone';",
+    "const events = require('@tryghost/domain-events');",
+    'export function read(file: string, load: string) {',
+    '  const env = process.env.NODE_ENV;',
+    '  const started = Date.now();',
+    '  const at = new Date();',
+    '  const loaded = require(load);',
+    '  const cwd = process.cwd();',
+    '  return [fs, logging, moment, events, env, started, at, loaded, cwd, file, Math.random()];',
+    '}',
+    // Given a value, a date is a calculation, not a read.
+    'export const parse = (value: string) => new Date(value);',
+  ].join('\n');
+  assert.deepEqual(
+    purityFindings(source)
+      .map(([line]) => Number(line))
+      .sort((a, b) => a - b),
+    // Line 4 is reported twice: for what it requires, and for calling it on import.
+    [1, 2, 3, 4, 4, 6, 7, 8, 9, 10, 11],
+  );
+});
+
+test('applies kernel purity to the kernel only', () => {
+  const source = "import fs from 'node:fs';\nlet state = fs;\nexport const get = () => state;";
+  assert.deepEqual(purityFindings(source, 'ghost/core/foundation/example.ts'), []);
+  assert.deepEqual(purityFindings(source, 'ghost/core/bootstrap/example.ts'), []);
+  assert.deepEqual(purityFindings(source, 'ghost/core/server/lib/example.ts'), []);
+  assert.equal(purityFindings(source).length, 2);
 });
