@@ -397,6 +397,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       customUrlHistory,
       token,
       giftToken,
+      answers,
       autoRedirect = true,
       includeOTC,
     }) {
@@ -418,6 +419,12 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         autoRedirect,
         includeOTC,
       };
+      // With `giftToken`, `answers` holds the visitor's values for the requirements of the gift's
+      // tier, keyed by checkout port. The server validates them before it sends the email and
+      // saves them when the magic link redeems the gift.
+      if (answers && Object.keys(answers).length > 0) {
+        body.answers = answers;
+      }
       const urlHistory = customUrlHistory ?? getUrlHistory();
       if (urlHistory) {
         body.urlHistory = urlHistory;

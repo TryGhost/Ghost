@@ -3,6 +3,7 @@ export * from './account-page';
 export * from './account-profile-page';
 export * from './account-plan-page';
 export * from './gift-page';
+export * from './gift-redemption-page';
 export * from './newsletter-management-page';
 export * from './offer-page';
 export * from './portal-page';

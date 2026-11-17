@@ -69,11 +69,11 @@ const GiftRedemptionPage = () => {
   const gift = pageData?.gift;
   const isLoggedIn = !!member;
   // The tier's requirements, such as a shipping address. They are normally collected in Stripe
-  // Checkout, which redeeming a gift doesn't go through, so this page collects them. The inputs
-  // are only shown to a signed-in member, because the values are saved to the member's record.
-  // `requirements` is empty or missing when the tier has none, the feature flag is off, or the
-  // server is an older version.
-  const requirements = (isLoggedIn && gift?.tier?.requirements) || NO_REQUIREMENTS;
+  // Checkout, which redeeming a gift doesn't go through, so this page collects them. A visitor who
+  // isn't signed in enters them here too, and they are sent with the magic link request and saved
+  // when the link redeems the gift. `requirements` is empty or missing when the tier has none, the
+  // feature flag is off, or the server is an older version.
+  const requirements = gift?.tier?.requirements || NO_REQUIREMENTS;
   const asked = useAskedRequirements(requirements, member?.metafields);
   const [name, setName] = useState(gift?.recipient_name || member?.name || '');
   const [email, setEmail] = useState(member?.email || gift?.recipient_email || '');
@@ -179,6 +179,10 @@ const GiftRedemptionPage = () => {
       return;
     }
 
+    if (!answeredAll(asked)) {
+      return;
+    }
+
     const formErrors = ValidateInputForm({ fields: formFields });
     const hasErrors = Object.values(formErrors).some((errorMessage) => !!errorMessage);
 
@@ -192,6 +196,7 @@ const GiftRedemptionPage = () => {
       email,
       name,
       giftToken: pageData?.token,
+      ...(asked.inputs.length > 0 ? { answers: answersOf(asked), asked: asked.inputs } : {}),
     });
   };
 

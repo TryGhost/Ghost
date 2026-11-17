@@ -312,9 +312,9 @@ async function signup({ data, state, api }) {
 }
 
 /**
- * Redeems a gift. A signed-in member redeems it directly, sending the values they entered for the
- * tier's requirements as `answers`. A visitor who isn't signed in is emailed a magic link, which
- * redeems the gift when it signs them in.
+ * Redeems a gift, sending the values entered for the tier's requirements as `answers`. A signed-in
+ * member redeems it directly. A visitor who isn't signed in is emailed a magic link, which redeems
+ * the gift and saves the values when it signs them in.
  */
 async function redeemGift({ data, state, api }) {
   // `asked` is the list of requirement inputs shown on the page. It's used to show a validation
@@ -366,6 +366,9 @@ async function redeemGift({ data, state, api }) {
       includeOTC: true,
       redirect: redirectUrl.href,
       giftToken,
+      // The server validates `answers` before it sends the email, so a validation error keeps the
+      // visitor on the gift page. The magic link saves them when it redeems the gift.
+      answers,
       ...(name ? { name } : {}),
     });
 

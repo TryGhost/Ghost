@@ -4,7 +4,13 @@ import {
   MembersListPage,
   SettingsPage,
 } from '@/admin-pages';
-import { HomePage, PortalAccountPage, PortalAccountPlanPage } from '@/helpers/pages';
+import {
+  HomePage,
+  PortalAccountPage,
+  PortalAccountPlanPage,
+  PortalGiftRedemptionPage,
+} from '@/helpers/pages';
+import { MailPit } from '@/helpers/services/email/mail-pit';
 import {
   completePaidSignupViaPortal,
   completePaidUpgradeViaPortal,
@@ -14,6 +20,7 @@ import {
   test,
 } from '@/helpers/playwright';
 import { createMemberFactory } from '@/data-factory';
+import { extractMagicLink } from '@/helpers/services/email/utils';
 import type { Page } from '@playwright/test';
 import type { StripeTestService } from '@/helpers/services/stripe';
 
@@ -270,6 +277,81 @@ test.describe('Ghost Admin - Checkout fields', () => {
     const memberPage = new MemberDetailsPage(page);
     await expect(memberPage.customFieldRow('Courier phone')).toHaveAccessibleName(
       'Edit Courier phone: +442079460000',
+    );
+  });
+
+  test('specific tiers - a visitor redeeming a gift enters a shipping address in Portal, and the emailed link saves it to their member record', async ({
+    page,
+    stripe,
+  }) => {
+    const shipped = await createPaidPortalTier(
+      page.request,
+      {
+        name: `Print Edition ${Date.now()}`,
+        currency: 'usd',
+        monthly_price: 500,
+        yearly_price: 5000,
+      },
+      { stripe: stripe! },
+    );
+
+    const checkout = await openCheckoutFields(page);
+    await checkout.collectShipping({
+      tiers: [shipped.name],
+      addressField: { create: 'Delivery address' },
+      nameField: { create: 'Recipient' },
+    });
+    await checkout.save();
+    await checkout.close();
+
+    // Buy a gift of the tier and complete the payment.
+    const bought = await page.request.post('/members/api/create-stripe-checkout-session/', {
+      data: {
+        type: 'gift',
+        tierId: shipped.id,
+        cadence: 'year',
+        customerEmail: `gift-buyer-${Date.now()}@example.com`,
+        metadata: {},
+      },
+    });
+    expect(bought.ok()).toBe(true);
+    await stripe!.completeLatestGiftCheckout({ name: 'Gift Buyer' });
+    const giftToken = new URL(
+      stripe!.getCheckoutSessions().at(-1)!.response.success_url,
+    ).searchParams.get('gift_token')!;
+
+    // A visitor who isn't signed in enters the address with their email on the gift page.
+    const giftPage = new PortalGiftRedemptionPage(page);
+    await giftPage.gotoGift(giftToken);
+    const portal = giftPage.portalFrame;
+    const email = `gift-redeemer-${Date.now()}@example.com`;
+    await giftPage.nameInput.fill('Grace Hopper');
+    await giftPage.emailInput.fill(email);
+    await portal.getByLabel('Recipient name').fill('Grace Hopper');
+    await expect(giftPage.redeemButton).toBeDisabled();
+    const address = portal.getByRole('group', { name: 'Shipping address' });
+    await address.getByLabel('Address line 1').fill('12 Ada Street');
+    await address.getByLabel('City').fill('London');
+    await address.getByLabel('Postal code').fill('N1 9GU');
+    await address.getByLabel('Country').selectOption('GB');
+    await giftPage.redeemButton.click();
+
+    // The emailed link creates the member, redeems the gift and saves the address.
+    const mail = new MailPit();
+    const [message] = await mail.searchByRecipient(email, { timeoutMs: 10000 });
+    const { Text: text } = await mail.getMessageDetailed(message);
+    await page.goto(extractMagicLink(text, 'subscribe'));
+    await expect(giftPage.notification).toContainText(`You now have access to ${shipped.name}`);
+
+    const membersPage = new MembersListPage(page);
+    await membersPage.goto();
+    await membersPage.getMemberLinkByName('Grace Hopper').click();
+    const memberPage = new MemberDetailsPage(page);
+    await expect(memberPage.customFieldRow('Delivery address')).toHaveAccessibleName(
+      /12 Ada Street, London, N1 9GU/,
+    );
+    await expect(memberPage.customFieldRow('Recipient')).toHaveAccessibleName(
+      'Edit Recipient: Grace Hopper',
     );
   });
 

@@ -121,6 +121,41 @@ describe.each([
     expect(getByText('Enter the phone number with its country code.')).toBeInTheDocument();
   });
 
+  test("shows the tier's requirement inputs to a visitor who isn't signed in and sends the values with their email", async () => {
+    const { getByRole, findByLabelText, getByLabelText, mockDoActionFn } = renderGiftRedemptionPage(
+      Page,
+      { pageData: requiring(SHIPPING_AND_PHONE) },
+    );
+
+    fireEvent.change(await findByLabelText('Recipient name'), {
+      target: { value: 'Ada Lovelace' },
+    });
+    fireEvent.change(getByLabelText('Address line 1'), { target: { value: '1 High Street' } });
+    fireEvent.change(getByLabelText('Country'), { target: { value: 'GB' } });
+    // The redeem button stays disabled until every input has a value.
+    const redeem = getByRole('button', { name: buttonLabel });
+    expect(redeem).toBeDisabled();
+    fireEvent.change(getByLabelText('Phone number'), { target: { value: '+44 7400 123456' } });
+    expect(redeem).toBeEnabled();
+
+    fireEvent.change(getByLabelText(/your email/i), { target: { value: 'jamie@example.com' } });
+    fireEvent.click(redeem);
+
+    await waitFor(() => {
+      expect(mockDoActionFn).toHaveBeenCalledWith('redeemGift', {
+        email: 'jamie@example.com',
+        name: '',
+        giftToken: 'gift-token-123',
+        answers: {
+          'checkout.shipping.name': 'Ada Lovelace',
+          'checkout.shipping.address': { line1: '1 High Street', country: 'GB' },
+          'checkout.phone': '+44 7400 123456',
+        },
+        asked: expect.arrayContaining([expect.objectContaining({ key: 'checkout.phone' })]),
+      });
+    });
+  });
+
   test('shows validation errors for anonymous visitors and only submits once valid', async () => {
     const { getByLabelText, getByRole, mockDoActionFn, getByText } = renderGiftRedemptionPage(Page);
     const emailInput = getByLabelText(/your email/i);

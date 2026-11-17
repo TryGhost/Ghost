@@ -691,6 +691,65 @@ describe('redeemGift action', () => {
     expect(window.location.hash).toBe('#/portal/gift/redeem/gift-token-123');
   });
 
+  test("sends the requirement values as `answers` with the magic link request for a visitor who isn't signed in", async () => {
+    const mockApi = {
+      member: {
+        getIntegrityToken: vi.fn(() => Promise.resolve('token-123')),
+        sendMagicLink: vi.fn(() => Promise.resolve({})),
+      },
+    };
+    const answers = { 'checkout.phone': '+44 7400 123456' };
+
+    const result = await ActionHandler({
+      action: 'redeemGift',
+      data: { email: 'jamie@example.com', giftToken: 'gift-token-123', answers, asked: [] },
+      state: { site: { url: 'https://example.com/' } },
+      api: mockApi,
+    });
+
+    expect(mockApi.member.sendMagicLink).toHaveBeenCalledWith(
+      expect.objectContaining({ giftToken: 'gift-token-123', answers }),
+    );
+    expect(result).toMatchObject({ page: 'magiclink', lastPage: 'gift' });
+  });
+
+  test('keeps the gift page open and shows the error on its input when an answer fails validation before the magic link is sent', async () => {
+    window.history.replaceState({}, '', '/#/portal/gift/redeem/gift-token-123');
+    const validationError = Object.assign(new Error('Choose a country we ship to.'), {
+      property: 'answers.checkout.shipping.address.country',
+    });
+    const mockApi = {
+      member: {
+        getIntegrityToken: vi.fn(() => Promise.resolve('token-123')),
+        sendMagicLink: vi.fn(() => Promise.reject(validationError)),
+      },
+    };
+    const address = {
+      key: 'checkout.shipping.address',
+      name: 'Shipping address',
+      type: 'address',
+      readOnly: false,
+    };
+
+    const result = await ActionHandler({
+      action: 'redeemGift',
+      data: {
+        email: 'jamie@example.com',
+        giftToken: 'gift-token-123',
+        answers: { 'checkout.shipping.address': { line1: '1 High Street', country: 'GB' } },
+        asked: [address],
+      },
+      state: { site: { url: 'https://example.com/' } },
+      api: mockApi,
+    });
+
+    expect(result.action).toBe('redeemGift:failed');
+    expect(Object.values(result.fieldErrors)).toEqual(['Choose a country we ship to.']);
+    // The popup stays open on the gift page, so the visitor can fix the value and try again.
+    expect(result).not.toHaveProperty('page');
+    expect(window.location.hash).toBe('#/portal/gift/redeem/gift-token-123');
+  });
+
   test('closes the popup and shows an error notification when the gift cannot be redeemed', async () => {
     window.history.replaceState({}, '', '/#/portal/gift/redeem/gift-token-123');
     const alreadyRedeemed = Object.assign(new Error('This gift has already been redeemed.'), {
