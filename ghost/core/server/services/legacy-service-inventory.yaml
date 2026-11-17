@@ -339,7 +339,7 @@ services:
           - test/integration/adapters/route-settings/adapter-manager-wiring.test.ts
       startup:
         summary: >-
-          initCore calls synchronous init before subsequent core/service setup. Every init
+          initFoundationChecks calls synchronous init before the shared layer starts. Every init
           enumerates configured types/features, deduplicates type/class/serialized-options
           combinations and loads classes to call optional synchronous static validate. It
           neither constructs instances nor checks required instance methods; module loading
@@ -2806,7 +2806,7 @@ services:
           - test/unit/server/services/identity-tokens/index.test.ts
       startup:
         summary: >-
-          initCore awaits signing-key initialization before initServices awaits identity init
+          initShared awaits signing-key initialization before initServices awaits identity init
           with other prerequisites. ActivityPub background init checks instance and logs then
           returns if it is absent; the identities endpoint dereferences it without that guard.
           Importing this root alone does not initialize signing keys or issue a token.
@@ -3225,7 +3225,7 @@ services:
           - test/e2e-api/admin/posts-legacy.test.js
       startup:
         summary: >-
-          initCore awaits init before settings initialization: settings enforce public-site
+          initShared awaits init before settings initialization: settings enforce public-site
           privacy and derive social/analytics availability using loaded limits. The eager
           instance is callable before init and has no limits then. The root does not await a
           loadLimits return value; the current package method is synchronous. Boot-based
@@ -4623,7 +4623,7 @@ services:
           - test/e2e-api/members/webhooks.test.js
       startup:
         summary: >-
-          Boot calls init during initCore after database/settings/signing-key/i18n setup and
+          Boot calls init during initLegacyCore after database/settings/signing-key/i18n setup and
           before members/tiers composition. Initialization has no feature gate, database-ready
           validation or rollback. API callers assume exported instances exist. Definition reads
           remain available when direct definition writes are blocked by Labs or a namespace's
@@ -6607,7 +6607,7 @@ services:
           - test/unit/frontend/services/routing/router-manager.test.js
       startup:
         summary: >-
-          Boot validates adapters in initCore, configures route settings before Express apps,
+          Boot validates adapters in initFoundationChecks, configures route settings before Express apps,
           then always awaits start after apps are constructed and before disabling maintenance.
           Backend-only boot initializes RouterManager with URL service explicitly; frontend
           setup already did so. Start assigns routerManager/urlService before awaiting the

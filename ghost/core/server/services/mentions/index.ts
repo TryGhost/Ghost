@@ -23,6 +23,9 @@ export default defineService('Mentions', () => {
   const oembedService = require('../../../../domains/publishing/transition/services/oembed').default
     .service;
   const jobsService = require('../jobs-service').getInstance();
+  const {
+    resolveRecommendationUrl,
+  }: typeof import('../../../../domains/network/actions/resolve-recommendation-url.action') = require('../../../../domains/network/actions/resolve-recommendation-url.action');
 
   const repository = new BookshelfMentionRepository({
     MentionModel: models.Mention,
@@ -30,6 +33,9 @@ export default defineService('Mentions', () => {
     logging,
   });
   const metadata = new WebmentionMetadata({ oembedService });
+  // A mention of a site's recommendations file is a mention of that site. The
+  // network domain says which URLs those are; this root owns the list of mappers.
+  metadata.addMapper(resolveRecommendationUrl);
   const discoveryService = new MentionDiscoveryService({ externalRequest, logging });
   const resourceService = new ResourceService({ urlUtils, urlService });
   const routingService = new RoutingService({

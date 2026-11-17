@@ -11,9 +11,9 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const analytics = sinon.stub();
   const emailSuppressionList = { init: sinon.stub().resolves() };
   const mentions = sinon.stub().resolves();
-  // The domain layer starts every domain's services and listeners.
+  // Neither is started here: initShared and initDomains own them.
   const domains = sinon.stub().resolves();
-  const domainsStop = sinon.stub().resolves();
+  const permissions = sinon.stub().resolves();
   const media = sinon.stub().resolves();
   const email = sinon.stub().resolves();
   const donations = sinon.stub().resolves();
@@ -87,7 +87,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './server/services/jobs-service/register-job-handlers': { default: register },
       './server/services/signing-keys': { default: { service: signingKeys } },
       './server/services/automations': { automationsService: { init: automations } },
-      '../bootstrap/domains': { default: { start: domains, stop: domainsStop } },
+      '../bootstrap/domains': { default: { start: domains } },
+      './server/services/permissions': { init: permissions },
     },
     { fallback: () => ({ ...genericService, default: genericService }) },
   );
@@ -99,7 +100,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     gifts,
     mentions,
     domains,
-    domainsStop,
+    permissions,
     analytics,
     emailSuppressionList,
     media,
@@ -351,52 +352,13 @@ for (const dependency of [
   });
 }
 
-it('starts the domain layer after the services boot initializes, and before the job runner', async function () {
-  // Code in a domain may rely on everything boot.js initializes, and jobs may rely on domains.
+it('starts no shared module and no domain: both layers are ready before this step', async function () {
   const boot = createServicesHarness();
-  const welcome = Promise.withResolvers<void>();
-  boot.memberWelcomeEmails.returns(welcome.promise);
-  const ready = Promise.withResolvers<void>();
-  boot.domains.returns(ready.promise);
-  const startup = boot.initServices();
+  await boot.initServices();
 
-  try {
-    await setImmediate();
-    // Mentions is one of the roots a domain relies on: recommendations registers on it.
-    sinon.assert.calledOnce(boot.mentions);
-    sinon.assert.notCalled(boot.domains);
-    welcome.resolve();
-    await setImmediate();
-    sinon.assert.calledOnce(boot.domains);
-    sinon.assert.notCalled(boot.register);
-    sinon.assert.notCalled(boot.start);
-  } finally {
-    welcome.resolve();
-    ready.resolve();
-    await startup;
-  }
-
-  sinon.assert.calledOnce(boot.start);
-});
-
-it('fails boot when the domain layer fails to start', async function () {
-  const boot = createServicesHarness();
-  const failure = new Error('a domain failed to start');
-  boot.domains.rejects(failure);
-
-  await assert.rejects(boot.initServices(), (error) => error === failure);
-  sinon.assert.notCalled(boot.start);
-});
-
-it('stops the domain layer when the server shuts down', async function () {
-  const boot = createServicesHarness();
-  const registerCleanupTask = sinon.stub();
-  await boot.initServices({ registerCleanupTask });
-
-  const task = registerCleanupTask.getCalls().find((call) => call.args[1] === 'Domains');
-  assert.ok(task, 'Boot registers a cleanup task named Domains');
-  await task.args[0]();
-  sinon.assert.calledOnce(boot.domainsStop);
+  // The fallback answers any dependency, so these two are checked by name.
+  sinon.assert.notCalled(boot.permissions);
+  sinon.assert.notCalled(boot.domains);
 });
 
 it('waits for jobs startup to finish before automations init and post rescheduling', async function () {

@@ -1,4 +1,5 @@
 action      network/actions/list-well-known-recommendations.action
+action      network/actions/resolve-recommendation-url.action
 domain      network/boot
 routes      network/http/routes
 job         network/jobs/refresh-incoming-recommendations.job

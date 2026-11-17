@@ -90,8 +90,10 @@ Complete the steps printed by the command:
    await deliveryReceipts.init();
    ```
 
-   Most roots belong in `initServices`. `initCore` and `initServicesForFrontend`
-   run earlier, for roots that later phases or the frontend read. Place the call
+   Most roots belong in `initServices`. `initLegacyCore` and
+   `initServicesForFrontend` run earlier, for roots that later phases or the
+   frontend read. `initShared` is not for a new service: it starts only the
+   modules every domain relies on, and a test pins the list. Place the call
    after its dependencies are ready and before its consumers run, on its own or
    inside the phase's awaited `Promise.all`. Document those requirements above
    `defineService`. Consumers read `.service` after initialization. Keep this
@@ -101,7 +103,7 @@ Complete the steps printed by the command:
 3. The [standard services boot test](../../../test/unit/boot/standard-services.test.ts)
    already checks that boot waits for the root's `init()` and that its failure
    fails boot. Add a test in `ghost/test/unit/boot/` only where order matters,
-   as for Mentions before Recommendations. The `initCore` and
+   as for Member attribution before Staff. The `initLegacyCore` and
    `initServicesForFrontend` tests reject a root they do not list, so a root in
    those phases needs a stub there.
 4. Await required startup work before returning the instance. If the service

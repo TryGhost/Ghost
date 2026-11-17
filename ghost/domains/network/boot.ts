@@ -63,10 +63,7 @@ export interface NetworkDependencies {
 
   // Code that is not in a domain yet.
   readonly mentions: Incoming['mentionsApi'] &
-    Needs<typeof RecommendationService>['mentionSendingService'] & {
-      /** Lets Mentions resolve a recommendation URL to the site it points at. */
-      addUrlMapper(mapper: (url: URL) => URL | undefined): void;
-    };
+    Needs<typeof RecommendationService>['mentionSendingService'];
   readonly getStaffAlertRecipients: Incoming['getEmailRecipients'];
   readonly staffService: Needs<typeof IncomingRecommendationEmailRenderer>['staffService'];
 }
@@ -113,13 +110,12 @@ export default defineDomain<NetworkDependencies>({
         RecommendationSubscribeEvent: models.RecommendationSubscribeEvent,
       },
 
-      // Mentions and Staff are other roots, started by boot.js before any
-      // domain. Each is asked when it is used, not now.
+      // Mentions and Staff are other roots, which boot.js starts after the
+      // domains. Each is asked when it is used, never while the domain starts.
       mentions: {
         sendAll: (options) => mentions.service.sendingService.sendAll(options),
         refreshMentions: (options) => mentions.service.api.refreshMentions(options),
         listMentions: (options) => mentions.service.api.listMentions(options),
-        addUrlMapper: (mapper) => mentions.service.metadata.addMapper(mapper),
       },
       // Who receives staff alerts is a staff user's own preference. That belongs
       // to identity, which does not exist yet, so the user model is asked.

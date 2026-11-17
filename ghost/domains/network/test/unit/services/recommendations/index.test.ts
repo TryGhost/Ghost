@@ -43,7 +43,6 @@ const ROOT_PATH = require.resolve('../../../../services/recommendations');
 type Root = (typeof import('../../../../services/recommendations'))['default'];
 type Mention = Parameters<IncomingService['sendRecommendationEmail']>[0];
 type MentionEventHandler = (event: { data: { mention: Mention } }) => Promise<void>;
-type UrlMapper = (url: URL) => URL | undefined;
 
 const DISABLED_MESSAGE = '[Recommendations] Background refreshes are disabled via config';
 const RECOMMENDATION_SOURCE = 'https://other.example/.well-known/recommendations.json';
@@ -93,8 +92,8 @@ describe('Recommendations service root', function () {
       refreshMentions: sandbox.stub().resolves(),
     };
     sendingService = { sendAll: sandbox.stub().resolves() };
-    // Capture the mapper and subscriber instead of installing them into the shared
-    // mentions metadata and event bus, which other files in this worker also use.
+    // The root registers nothing on Mentions. This stub proves it: Mentions adds
+    // the network domain's URL mapper itself, from the domain's public action.
     addMapper = sandbox.stub();
     mentionsReady = true;
     // Boot awaits the Mentions root before this root runs; reading it earlier throws.
@@ -136,11 +135,6 @@ describe('Recommendations service root', function () {
   // config is read as boot would read it.
   async function start() {
     return root.init(await boot.dependencies!(application.foundation));
-  }
-
-  function installedMapper(): UrlMapper {
-    sinon.assert.calledOnce(addMapper);
-    return addMapper.firstCall.args[0];
   }
 
   // The root no longer subscribes to anything. The listener in ../../listeners
@@ -203,20 +197,21 @@ describe('Recommendations service root', function () {
     assert.equal(service.wellknownService.urlUtils, urlUtils);
   });
 
-  it('rejects init without publishing anything while Mentions is not ready, and initializes once it is', async function () {
+  it('starts while Mentions is not ready, and asks Mentions only when a mention is sent', async function () {
     mentionsReady = false;
 
-    await assert.rejects(start(), IncorrectUsageError);
+    // The domain layer starts before Mentions does, so the root may not read it now.
+    assert.equal(await start(), undefined);
 
-    assert.throws(() => root.service, IncorrectUsageError);
+    const service = root.service.controller.service;
+    const sent = { url: new URL('https://example.com/'), links: [] };
+    assert.throws(() => service.mentionSendingService.sendAll(sent), IncorrectUsageError);
     sinon.assert.notCalled(addMapper);
-    sinon.assert.notCalled(subscribe);
-    sinon.assert.notCalled(outgoingInit);
-    sinon.assert.notCalled(incomingInit);
 
     mentionsReady = true;
-    assert.equal(await start(), undefined);
-    sinon.assert.calledOnce(addMapper);
+    await service.mentionSendingService.sendAll(sent);
+    sinon.assert.calledOnceWithExactly(sendingService.sendAll, sent);
+    sinon.assert.notCalled(addMapper);
   });
 
   for (const enabled of [undefined, true] as const) {
@@ -251,7 +246,7 @@ describe('Recommendations service root', function () {
     sinon.assert.notCalled(incomingInit);
     sinon.assert.calledOnceWithExactly(info, DISABLED_MESSAGE);
     assert.ok(root.service.controller.service instanceof RecommendationService);
-    installedMapper();
+    sinon.assert.notCalled(addMapper);
   });
 
   it('skips the incoming refresh in development, where it would fetch other sites', async function () {
@@ -265,14 +260,14 @@ describe('Recommendations service root', function () {
     sinon.assert.notCalled(incomingInit);
   });
 
-  it('retains the first graph and installs the mapper once across repeated init', async function () {
+  it('retains the first graph and registers nothing on Mentions across repeated init', async function () {
     await start();
     const published = root.service;
 
     assert.equal(await start(), undefined);
 
     assert.equal(root.service, published);
-    sinon.assert.calledOnce(addMapper);
+    sinon.assert.notCalled(addMapper);
     sinon.assert.notCalled(subscribe);
     sinon.assert.notCalled(outgoingInit);
     sinon.assert.notCalled(incomingInit);
@@ -303,7 +298,7 @@ describe('Recommendations service root', function () {
       },
     ],
   ] as const) {
-    it(`rejects init when ${step} throws, without installing the mapper, and builds a fresh graph on retry`, async function () {
+    it(`rejects init when ${step} throws, without touching Mentions, and builds a fresh graph on retry`, async function () {
       const failure = new Error('Construction failed');
       const restore = breakConstruction(failure);
 
@@ -329,27 +324,12 @@ describe('Recommendations service root', function () {
         root.service.incomingRecommendationController.service instanceof
           IncomingRecommendationService,
       );
-      sinon.assert.calledOnce(addMapper);
+      sinon.assert.notCalled(addMapper);
       sinon.assert.notCalled(subscribe);
       sinon.assert.notCalled(outgoingInit);
       sinon.assert.notCalled(incomingInit);
     });
   }
-
-  it('maps recommendation well-known URLs to their site for mentions metadata', async function () {
-    await start();
-    const mapper = installedMapper();
-    const source = new URL('https://other.example/blog/.well-known/recommendations.json?ref=a');
-
-    assert.equal(mapper(source)?.href, 'https://other.example/blog?ref=a');
-    assert.equal(mapper(new URL(RECOMMENDATION_SOURCE))?.href, 'https://other.example/');
-    assert.equal(mapper(new URL('https://other.example/recommendations.json')), undefined);
-    assert.equal(
-      mapper(new URL('https://other.example/.well-known/recommendations.json/x')),
-      undefined,
-    );
-    assert.equal(source.href, 'https://other.example/blog/.well-known/recommendations.json?ref=a');
-  });
 
   it('emails a verified recommendation mention through the published incoming service', async function () {
     await start();
