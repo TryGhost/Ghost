@@ -199,7 +199,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const floatingSidebar = admin7Design && !isContributor && sidebarVisible && !isMobile;
   const settingsNavigation = floatingSidebar && isSettingsRoute;
   const [sidebarMode, setSidebarMode] = useSidebarMode();
-  const { isFetched: sidebarModeLoaded } = useNavigationPreferences();
+  // Not `isFetched`: every preferences save starts a new query, and a false
+  // here cuts off a morph in flight. Placeholder data keeps `isSuccess` true.
+  const { isSuccess: sidebarModeLoaded } = useNavigationPreferences();
   const settingsPinMorph = useSettingsPinMorph(
     settingsNavigation,
     floatingSidebar && sidebarMode !== 'full',
