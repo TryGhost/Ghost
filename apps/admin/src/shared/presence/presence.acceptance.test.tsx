@@ -121,6 +121,8 @@ describe('presence polling', () => {
     const presence = fakePresence();
     await renderAdminApp(`/editor/post/${POST_ID}`, POLLING_ON);
     await expect.poll(() => presence.requests.length).toBeGreaterThan(0);
+    // The request is captured before its response renders.
+    await settle();
     await expect.element(page.getByTestId('presence-avatars')).not.toBeInTheDocument();
   });
 
