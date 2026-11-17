@@ -65,11 +65,11 @@ const Recommendations: React.FC = () => {
                 >
                   <div>
                     <ActivityItem
-                      onClick={() => {
-                        if (!isLoadingSuggested && profile) {
-                          handleProfileClick(profile, navigate);
-                        }
-                      }}
+                      onClick={
+                        !isLoadingSuggested && profile
+                          ? () => handleProfileClick(profile, navigate)
+                          : undefined
+                      }
                     >
                       {!isLoadingSuggested ? (
                         <APAvatar
