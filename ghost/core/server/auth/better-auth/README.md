@@ -87,6 +87,11 @@ until Phase 4.
 - `session-controller.ts`: `POST` and `DELETE /session` under `better-auth`,
   described below.
 - `staff-sessions.ts`: the security events' session changes, described below.
+- `stripe-connect-state.ts`: Stripe Connect's OAuth `state`, which legacy
+  keeps on `req.session`. Under `better-auth` it is a `verifications` row with
+  the identifier `stripe-connect:<userId>`, expiring after an hour. Starting
+  a connection replaces it, a mismatch or a failed save keeps it as legacy
+  does, and a successful save deletes it, so a token saves once.
 - `routes.ts`: the Better Auth paths that matchers, limiters and
   `disabledPaths` refer to. A mistyped path matches nothing, silently.
 

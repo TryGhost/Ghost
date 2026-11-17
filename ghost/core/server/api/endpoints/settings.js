@@ -7,14 +7,29 @@ const settingsService = require('../../services/settings/settings-service');
 const membersService = require('../../services/members');
 const stripeService = require('../../services/stripe');
 const settingsBREADService = settingsService.getSettingsBREADServiceInstance();
+const config = require('../../../shared/config');
+const auth = require('../../auth');
 
-async function getStripeConnectData(frame) {
+// Chosen once at load, as in auth/authenticate.ts
+const isBetterAuth = config.get('auth:engine') === 'better-auth';
+
+/**
+ * @param {Object} frame
+ * @param {{state?: string}} checked - Gets the Better Auth state the token was checked against
+ */
+async function getStripeConnectData(frame, checked) {
   const stripeConnectIntegrationToken = frame.data.settings.find(
     (setting) => setting.key === 'stripe_connect_integration_token',
   );
 
   if (stripeConnectIntegrationToken && stripeConnectIntegrationToken.value) {
-    const getSessionProp = (prop) => frame.original.session[prop];
+    // Better Auth has no session object
+    const getSessionProp = isBetterAuth
+      ? async () => {
+          checked.state = await auth.stripeConnectState.get(frame.options.context.user);
+          return checked.state;
+        }
+      : (prop) => frame.original.session[prop];
 
     return await settingsBREADService.getStripeConnectData(
       stripeConnectIntegrationToken,
@@ -22,6 +37,22 @@ async function getStripeConnectData(frame) {
       membersService.stripeConnect.getStripeConnectTokenData,
     );
   }
+}
+
+// Only a saved token uses up its Better Auth state, so a failed save can be retried
+async function editSettings(frame) {
+  const checked = {};
+  const stripeConnectData = await getStripeConnectData(frame, checked);
+  const result = await settingsBREADService.edit(
+    frame.data.settings,
+    frame.options,
+    stripeConnectData,
+  );
+
+  if (stripeConnectData && checked.state) {
+    await auth.stripeConnectState.clear(frame.options.context.user, checked.state);
+  }
+  return result;
 }
 
 /** @type {import('@tryghost/api-framework').Controller} */
@@ -146,13 +177,7 @@ const controller = {
       },
     },
     async query(frame) {
-      const stripeConnectData = await getStripeConnectData(frame);
-
-      const result = await settingsBREADService.edit(
-        frame.data.settings,
-        frame.options,
-        stripeConnectData,
-      );
+      const result = await editSettings(frame);
 
       if (!_.isEmpty(result)) {
         frame.setHeader('X-Cache-Invalidate', '/*');

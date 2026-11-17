@@ -37,4 +37,11 @@ export = {
   get staffSessions(): ReturnType<typeof import('./better-auth/staff-sessions').default> {
     return require('./better-auth/staff-sessions').default();
   },
+
+  // Stripe Connect's OAuth state; only under auth:engine better-auth
+  get stripeConnectState(): ReturnType<
+    typeof import('./better-auth/stripe-connect-state').default
+  > {
+    return require('./better-auth/stripe-connect-state').default();
+  },
 };

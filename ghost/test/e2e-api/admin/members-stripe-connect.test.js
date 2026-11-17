@@ -1,5 +1,12 @@
-const { agentProvider, fixtureManager, matchers } = require('../../utils/e2e-framework');
-const { anyContentVersion, stringMatching } = matchers;
+const assert = require('node:assert/strict');
+const {
+  agentProvider,
+  fixtureManager,
+  configUtils,
+  mockManager,
+} = require('../../utils/e2e-framework');
+
+const isBetterAuth = configUtils.config.get('auth:engine') === 'better-auth';
 
 describe('Members Stripe Connect API', function () {
   let agent;
@@ -10,17 +17,81 @@ describe('Members Stripe Connect API', function () {
     await agent.loginAsOwner();
   });
 
-  it('can do auth', async function () {
+  async function startConnect() {
+    let state;
     await agent
-      .get(`members/stripe_connect`)
+      .get('members/stripe_connect?mode=test')
       .expectStatus(302)
       .expectEmptyBody()
-      .matchHeaderSnapshot({
-        'content-version': anyContentVersion,
-        location: stringMatching(
-          /^https:\/\/connect\.stripe\.com\/oauth\/authorize\?response_type=code&scope=read_write&client_id=/,
-        ),
-        'set-cookie': [stringMatching(/^ghost-admin-api-session=/)],
+      .expect(({ headers }) => {
+        const location = new URL(headers.location);
+        assert.equal(
+          `${location.origin}${location.pathname}`,
+          'https://connect.stripe.com/oauth/authorize',
+        );
+        assert.equal(location.searchParams.get('response_type'), 'code');
+        assert.equal(location.searchParams.get('scope'), 'read_write');
+        state = location.searchParams.get('state');
+        assert.ok(state);
+
+        // Legacy keeps the state on the session; Better Auth in verifications
+        const cookies = [headers['set-cookie'] ?? []].flat();
+        assert.equal(
+          cookies.some((cookie) => cookie.startsWith('ghost-admin-api-session=')),
+          !isBetterAuth,
+        );
       });
+    return state;
+  }
+
+  const token = (s) =>
+    Buffer.from(
+      JSON.stringify({
+        s,
+        p: 'pk_test_stripeConnect',
+        a: 'sk_test_stripeConnect',
+        l: false,
+        n: 'Test Account',
+        i: 'acct_stripeConnect',
+      }),
+    ).toString('base64');
+
+  const save = (s) =>
+    agent.put('settings/').body({
+      settings: [{ key: 'stripe_connect_integration_token', value: token(s) }],
+    });
+
+  const expectConnected = (request) =>
+    request.expectStatus(200).expect(({ body }) => {
+      const key = body.settings.find((s) => s.key === 'stripe_connect_publishable_key');
+      assert.equal(key.value, 'pk_test_stripeConnect');
+    });
+
+  it('can do auth', async function () {
+    await startConnect();
+  });
+
+  afterEach(function () {
+    mockManager.restore();
+  });
+
+  it('keeps the state after a mismatch', async function () {
+    const state = await startConnect();
+
+    await save('not-the-state').expectStatus(400);
+    await expectConnected(save(state));
+  });
+
+  it('keeps the state when saving fails, so the same token can be retried', async function () {
+    const state = await startConnect();
+
+    mockManager.mockLimitService('limitStripeConnect', {
+      isLimited: true,
+      errorIfWouldGoOverLimit: true,
+    });
+    await save(state).expectStatus(403);
+
+    mockManager.restore();
+    await expectConnected(save(state));
   });
 });
