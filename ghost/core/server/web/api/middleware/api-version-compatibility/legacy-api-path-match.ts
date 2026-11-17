@@ -1,8 +1,13 @@
-const pathMatch = require('path-match')();
+// Case-insensitive, so values keep the URL's casing (e.g. 'V4').
+export interface LegacyApiPathMatch {
+  version: string | null;
+  api: string | undefined;
+}
 
-module.exports = (url) => {
-  const basePath = 'ghost/api';
-  const apiRouteMatcher = '/:version(v2|v3|v4|canary)?/:api(admin|content)/*';
+const basePath = 'ghost/api';
+const API_ROUTE = /^\/(?:(v2|v3|v4|canary)\/)?(admin|content)\//i;
+
+export function legacyApiPathMatch(url: string): LegacyApiPathMatch {
   let urlToMatch = url;
 
   if (url.includes(basePath)) {
@@ -13,7 +18,7 @@ module.exports = (url) => {
     urlToMatch += '/';
   }
 
-  const { version, api } = pathMatch(apiRouteMatcher)(urlToMatch);
+  const match = API_ROUTE.exec(urlToMatch);
 
-  return { version: version === undefined ? null : version, api };
-};
+  return { version: match?.[1] ?? null, api: match?.[2] };
+}
