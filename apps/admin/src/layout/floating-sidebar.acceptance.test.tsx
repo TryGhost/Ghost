@@ -284,6 +284,45 @@ describe('Floating sidebar (admin7Design)', () => {
     }
   });
 
+  it('keeps growing when a preferences save lands while the panel pins', async () => {
+    fakeTags([]);
+    // A first visit saves that What's New was seen; held, it lands mid-morph.
+    let landSave = () => {};
+    const saveHeld = new Promise<void>((resolve) => {
+      landSave = resolve;
+    });
+    const saves = fakeAdminEndpoint('PUT', /^\/users\/\w+\//, async ({ body }) => {
+      await saveHeld;
+      return body;
+    });
+    await renderAdminApp('/tags', floatingSidebar({ mode: 'compact' }));
+    await expect.poll(sidebarScreen.floatingState).toBe('closed');
+    const capsule = sidebarScreen
+      .shellNav()
+      .element()
+      .querySelector('[data-slot=floating-sidebar]');
+    if (!(capsule instanceof HTMLElement)) {
+      throw new Error('Expected the floating sidebar capsule');
+    }
+    await expect.poll(() => getComputedStyle(capsule).transitionProperty).not.toBe('none');
+    await expect.poll(() => saves.requests.length).toBe(1);
+    // From the capsule's own event: the key press can return after the morph has ended.
+    let growing: Animation[] = [];
+    capsule.addEventListener('transitionrun', (event) => {
+      if (event.target === capsule && !growing.length) {
+        growing = capsule.getAnimations();
+        landSave();
+      }
+    });
+
+    await userEvent.keyboard('{Control>}b{/Control}');
+    await expect.poll(sidebarScreen.floatingState).toBe('pinned');
+    // A transition cut short ends up idle; one that runs to its end, finished.
+    await expect
+      .poll(() => [...new Set(growing.map((animation) => animation.playState))])
+      .toEqual(['finished']);
+  });
+
   it('opens the closed circle on focus or click and closes it with Escape', async () => {
     fakeTags([]);
     await renderAdminApp('/tags', floatingSidebar({ mode: 'compact' }));
