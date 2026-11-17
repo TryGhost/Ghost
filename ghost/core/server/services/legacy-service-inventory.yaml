@@ -368,7 +368,7 @@ services:
           - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/lib/image/index.js
           - core/server/services/jobs-service/index.ts
-          - core/server/adapters/lib/redis/redis-store-factory.js
+          - core/server/adapters/lib/redis/redis-store-factory.ts
           - core/server/ghost-server.ts
         tests:
           - test/unit/kernel/adapter-manager/adapter-manager.test.ts
@@ -410,8 +410,8 @@ services:
           - core/kernel/adapter-manager/types.ts
           - core/server/adapters/cache/MemoryCache.js
           - core/server/adapters/cache/AdapterCacheMemoryTTL.js
-          - core/server/adapters/lib/redis/AdapterCacheRedis.js
-          - core/server/adapters/lib/redis/redis-store-factory.js
+          - core/server/adapters/lib/redis/AdapterCacheRedis.ts
+          - core/server/adapters/lib/redis/redis-store-factory.ts
           - core/server/adapters/storage/LocalStorageBase.ts
           - core/server/adapters/storage/S3Storage.ts
           - core/server/adapters/route-settings/S3RouteSettingsStore.ts
