@@ -105,7 +105,7 @@ const features: Feature[] = [
   {
     title: 'Editor presence indicators',
     description:
-      'Show who else has a post open in the editor header. Needs editor presence polling.',
+      'Show who else has a post or page open, in the editor header and on list rows. Needs editor presence polling.',
     flag: 'editorPresence',
   },
 ];
