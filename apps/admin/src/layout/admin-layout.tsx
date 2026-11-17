@@ -484,10 +484,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         'h-full w-[max(100%,calc(100vw_-_var(--side-panel-width)_-_3_*_var(--admin-frame-side)))]',
         // Keeps the page's own stacking (sticky headers are z-50) under the
         // panel while it floats over it, as a window or the minimized bar
-        sidePanelVisible &&
-          sidePanelOpen &&
-          (!sidePanelDocked || sidePanelMinimized) &&
-          'isolate',
+        sidePanelVisible && sidePanelOpen && (!sidePanelDocked || sidePanelMinimized) && 'isolate',
       )}
     >
       {sidebarLayout}
