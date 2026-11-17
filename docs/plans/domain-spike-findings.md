@@ -2294,3 +2294,331 @@ says 20). Five of the 29 are in `domain-boundaries.test.ts`.
   commit before was not timed in this container, and part 2's figures are
   from another one, so no comparison is claimed.
 - MySQL was `mysql:8.4` (8.4.13) from Docker Hub, not a pinned digest.
+
+## Part 4: the shared phase
+
+The rule is three boot layers: foundation, shared, domains. Part 2 found that
+shared was not a phase. This part makes it one, starts the domain layer
+directly after it, and records what still sits in the wrong place and why.
+
+Every claim is marked **verified** (run here) or **inferred** (read only).
+Container: Node v22.23.4, MySQL 8.4.13 from `mirror.gcr.io/library/mysql:8.4`,
+`NODE_ENV=testing-mysql` unless stated.
+
+### The answer
+
+- Shared is now one step, `initShared`, and starts only shared modules
+  (verified, and pinned by a test).
+- The domain layer starts directly after it, in `initDomains` (verified).
+- Two things had to change to get there: Mentions adds the network domain's
+  URL mapper itself, and the email address policy moved into the shared step
+  because mail cannot send without it.
+- Eight things are still not where the rule puts them. None blocks the order
+  above. They are listed under "What cannot move yet".
+
+### Boot order, before and after
+
+Read from `boot.js` at `b4464b4` (before) and from `DEBUG=ghost:boot` output
+of a real boot (after, verified).
+
+| #   | Before                                                                                                                                                                                                       | After                                                                                                           | Layer                                  |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| 0   | `startFoundation()`: config, logging, database handle, event bus                                                                                                                                             | same                                                                                                            | foundation                             |
+| 1   | Sentry, Prometheus client                                                                                                                                                                                    | same                                                                                                            | foundation, not owned by the framework |
+| 2   | HTTP server in maintenance mode                                                                                                                                                                              | same                                                                                                            | —                                      |
+| 3   | `initDatabase`: initialise or migrate                                                                                                                                                                        | same                                                                                                            | —                                      |
+| 4   | `initCore`: adapters check, image upload check, url-utils, limits, settings, signing keys, internal keys, i18n, Better Auth, seven feature services, jobs cleanup task                                       | `initFoundationChecks`: adapters check, image upload check                                                      | foundation (config only)               |
+| 5   |                                                                                                                                                                                                              | `initShared`: url-utils, limits, settings, signing keys, internal keys, i18n, email address policy, permissions | shared                                 |
+| 6   |                                                                                                                                                                                                              | `initDomains`: `domains.start()`                                                                                | domains                                |
+| 7   |                                                                                                                                                                                                              | `initLegacyCore`: Better Auth, the seven feature services, jobs cleanup task                                    | legacy                                 |
+| 8   | `initServicesForFrontend`, `initFrontend`, `initExpressApps`, `initDynamicRouting`, `initAppService`, `jobsService.init`                                                                                     | same                                                                                                            | legacy                                 |
+| 9   | `initServices`: email address policy, scheduler, Stripe, gifts, about 35 services including **permissions**; then **`domains.start()`**; job handlers; `jobsService.start()`; automations; post rescheduling | same without the email address policy, permissions and `domains.start()`                                        | legacy, then the job runner            |
+| 10  | Maintenance off, app mounted, "booted"                                                                                                                                                                       | same                                                                                                            | —                                      |
+| 11  | `initBackgroundServices`, not awaited: `domains.ready()`, recurring jobs, ActivityPub, remote flags, milestones                                                                                              | same                                                                                                            | non-blocking                           |
+
+The seven feature services are gift links, member metafields, app
+installations, export requests, invites, integrations and Stripe checkout
+config. None is in a domain, so none moved into the domain layer.
+
+### How dependencies were proven
+
+A script built the foundation, made the database ready, then ran a named list
+of initializers in a fresh process and reported the first error. It was run:
+
+1. for each of 64 initializers alone;
+2. for each non-shared initializer after the shared layer only;
+3. repeatedly for each one that failed, adding the initializer its error
+   named, until it started.
+
+This proves a dependency that **throws at start**. It does not find one that
+is silent: a module that starts but reads a value that is not there yet. For
+the shared modules those were checked one by one, below. For the feature
+services they were not checked (see "Not verified").
+
+### Shared modules: layer and dependencies
+
+| Module               | Has a start      | Needs before it                                | Evidence                                                                                                                                                                                                                |
+| -------------------- | ---------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| limits               | yes              | foundation only (config, database handle)      | verified: starts alone                                                                                                                                                                                                  |
+| settings             | yes              | **limits**, silently                           | verified: starts alone without error, but `limitService.isDisabled('publicSiteAccess')` is `undefined` before `limits.init()` and `true` after, with that limit configured. Settings would skip making the site private |
+| signing keys         | yes              | **settings**, silently                         | verified: starts alone; `settingsCache.get()` returns `undefined` before settings start                                                                                                                                 |
+| internal keys        | yes              | nothing                                        | verified: starts alone. It builds an empty map and queries nothing (inferred)                                                                                                                                           |
+| i18n                 | yes              | **settings**, silently                         | verified: starts alone; inferred from `settingsCache.get('locale') \|\| 'en'` that it would use English whatever the site's locale                                                                                      |
+| permissions          | yes              | nothing                                        | verified: starts alone; `canThis` with an internal context works after shared only                                                                                                                                      |
+| email address policy | yes              | nothing at start                               | verified: starts alone, before or after settings, and mail sends either way                                                                                                                                             |
+| mail                 | no               | **email address policy** before the first send | verified: after the shared layer as first written, `GhostMailer.send` threw `Cannot read properties of undefined (reading 'getAddressFromString')`; with the policy built it sent                                       |
+| labs                 | no               | settings                                       | verified: flag values after shared only equal those after a full boot                                                                                                                                                   |
+| url-utils            | no (a `require`) | config                                         | verified: loads alone                                                                                                                                                                                                   |
+
+After the shared layer only, all 136 settings (calculated ones included), the
+62 public settings and every labs flag had the values they have after a full
+boot (verified, on the default test configuration).
+
+Two candidates, judged:
+
+- **url-utils** is not a shared module with a start. It is a helper built from
+  config and nothing else. It sits in `initShared` only so its load time is
+  visible. It could be foundation.
+- **i18n** is shared: it needs the `locale` setting, and email and the
+  front end both use it.
+
+### Every other initializer: what it needs beyond the shared layer
+
+All verified by the script, as "does not throw at start".
+
+Need nothing beyond the shared layer (40): gift links, metafields, app
+installations, export requests, invites, integrations, Better Auth (needs
+settings: alone it fails with `Empty secret value`), route settings, custom
+redirects, link redirects, custom theme settings, themes, offers, front-end
+helpers, the backend Express app, the app service, `jobsService.init`,
+scheduler, Stripe, member attribution, audience feedback, newsletters, oEmbed,
+stats, identity tokens, tags public, posts public, members events, IndexNow,
+upgrades, Slack, webhooks, comments, email suppression list, media inliner,
+content import, donations, users, machine payments, and the domain layer.
+
+Need something else:
+
+| Initializer                   | Needs, beyond shared                                                                         |
+| ----------------------------- | -------------------------------------------------------------------------------------------- |
+| Stripe checkout config, tiers | metafields                                                                                   |
+| gifts                         | scheduler, metafields, Stripe checkout config                                                |
+| staff                         | member attribution                                                                           |
+| members                       | metafields, Stripe checkout config, member attribution, newsletters                          |
+| email analytics               | everything members needs, and members                                                        |
+| email service                 | everything members needs, members, audience feedback, `jobsService.init`                     |
+| Mentions                      | oEmbed, `jobsService.init`                                                                   |
+| explore ping                  | stats                                                                                        |
+| link tracking                 | link redirects                                                                               |
+| member welcome emails         | link redirects, link tracking                                                                |
+| front-end Express app         | custom redirects, link redirects, offers (it reads each one's `middleware` when it is built) |
+| dynamic routing               | route settings and the front-end Express app                                                 |
+
+No shared module needs a feature service, and no feature service needs
+another layer's start except through the shared modules.
+
+### What changed
+
+**Mentions and the network domain.** The decided rule is that a domain may
+not register itself on another service while it starts. Network now exposes
+`resolveRecommendationUrl` as a public action, a pure function of a URL, and
+the Mentions root adds it to its own metadata service. The domain's
+`mentions` dependency lost `addUrlMapper`. With that, the domain layer starts
+with nothing but models loaded (verified: it starts alone).
+
+**The email address policy.** Found by trying to send mail after the shared
+layer only. `ghost-mailer.js` asks `emailAddress.service` for the sender, and
+that service was built in `initServices`, after the domain layer's new place.
+It reads settings only when asked, so it moved into `initShared`.
+
+**Permissions** came out of the `Promise.all` in `initServices`.
+
+**Shutdown.** The Domains cleanup task is now registered earlier. Cleanup
+tasks run together (`Promise.all` in `ghost-server.ts`, inferred; all ran and
+Ghost exited 0, verified), so registration order gives no order at shutdown,
+before or after this change.
+
+### What cannot move yet
+
+In order of how much each matters to the rule.
+
+1. **The publishing domain is not started by the domain layer.** Its only
+   service, oEmbed, is a `transition/` root, and boot owns those: it starts in
+   `initServices`, well after `initDomains`. Until then
+   publishing's public action `describeExternalPage` throws `OEmbed used
+   before init()` (inferred from the action's code). Nothing calls it that
+   early today. oEmbed starts on the shared layer alone (verified), so the
+   reason is ownership, not a dependency. Unblock: reshape oEmbed into
+   `services/` (it takes nothing from outside), or let the layer start
+   transition roots. Small.
+2. **Mail's start is hidden.** "Mail" on the shared list has no start, and
+   its one requirement was a feature-named service. Fixed here by moving the
+   policy, but it is still a separate root that every mailer finds through a
+   module-level import. Unblock: build the policy inside mail. Small.
+3. **The job runner is not started "after domains" by the framework.**
+   Between `initDomains` and `jobsService.start()` sit all of legacy boot,
+   and `registerJobHandlers` hands the runner a central list of feature
+   services' handlers before it starts (inferred). Domain jobs register after it has
+   started, through `ready()`. Unblock: each feature registers its own
+   handlers, which needs the features in domains. Large.
+4. **Two things start after the job runner and block boot:** automations
+   `init` and `postScheduling.rescheduleAll()` (inferred; an existing test
+   pins the order). The rule has no place for "after the job runner,
+   blocking". Whether either could be a non-blocking start was not tried.
+5. **Remote feature flags start last, without waiting, and not under test.**
+   `remoteFlags.init` is in `initBackgroundServices`, after an unguarded
+   `await activitypub.init()`. If that rejects, remote flags, the Tinybird
+   sync, the update check and milestones never start (inferred). So the
+   remote half of feature flags is not in the shared phase. It is opt-in by
+   config. Unblock: give the shared layer a non-blocking start of its own.
+   Small.
+6. **The config checks are not in the framework's foundation step.**
+   Adapter validation and the image decoder limit need config only
+   (verified: each runs alone) but are Ghost's, so they sit in
+   `initFoundationChecks` between the database and the shared layer. Unblock:
+   a hook on the application for checks that run with the foundation; this is
+   the same move as the adapter manager branch. Small.
+7. **The front-end step exists because of three getters.** The site app
+   reads `offers.middleware`, `customRedirects.middleware` and the link
+   redirect middleware while it is built
+   (`offers/service.js:32`, `custom-redirects/index.js:39`, verified by the
+   errors). That is the only reason `initServicesForFrontend` must come
+   before the Express apps. Unblock: read each when a request arrives. Small
+   each.
+8. **Better Auth and the seven feature services** have no domain to start
+   in. They are in a step named for that. Each moves when its domain exists.
+
+Nothing on this list was papered over with a reorder: 1 to 8 are left where
+they were, and the two things that did move were moved because a run failed
+without them.
+
+### Production paths
+
+| Path                                                                                                  | Result                                                                                                                                                                                                                                                                                                       | Status                           |
+| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
+| Fresh install, empty database                                                                         | "requires initialisation", booted in 7.4s; Admin API, front end, members, sitemap and well-known all answered                                                                                                                                                                                                | verified                         |
+| Existing database, no migration                                                                       | booted in 2.4s, same answers                                                                                                                                                                                                                                                                                 | verified                         |
+| Database needing migration                                                                            | one row removed from `migrations`; "requires migration", backup written, migration ran, booted in 2.9s, same answers                                                                                                                                                                                         | verified                         |
+| Maintenance mode while the database is prepared                                                       | `/` answered 503, then 200 once booted                                                                                                                                                                                                                                                                       | verified                         |
+| `backend`/`frontend`/`server` flags: all on, backend only, frontend only, none, both without a server | every combination booted; seven URLs gave byte-for-byte the same status and size as before this part's commits                                                                                                                                                                                               | verified                         |
+| `gx` boot (`backend`, `frontend`, `server` all false)                                                 | the flags were run; `gx benchmark automations-drain` itself was not                                                                                                                                                                                                                                          | flags verified, command inferred |
+| `knex-migrator` through `MigratorConfig.mts`                                                          | `health` and `migrate` exit 0. It loads config and the knex options and never calls `boot.js`                                                                                                                                                                                                                | verified, inferred               |
+| `NODE_ENV=production`, from source                                                                    | fresh install, booted, 14 URLs answered, five recurring jobs scheduled, SIGTERM exits 0                                                                                                                                                                                                                      | verified                         |
+| `NODE_ENV=production`, tsc-built JavaScript, plain `node`, no loader                                  | the same, and `/ghost/` served the built Admin                                                                                                                                                                                                                                                               | verified                         |
+| Release archive                                                                                       | `nx run ghost:archive` built Admin and ran tsc, then failed generating the lockfile: `@internal/cfg-eslint@private` is not in the registry. The packed manifest still had `devDependencies`, so the packing hook did not apply in this container. Cause not established. Not caused by boot order (inferred) | not verified                     |
+| Job runner start                                                                                      | "[Jobs] Started on InMemoryJobsBackend" after the handlers were registered; five recurring jobs scheduled after ready                                                                                                                                                                                        | verified                         |
+| Worker threads                                                                                        | not exercised: no job ran in the 12 seconds Ghost was up                                                                                                                                                                                                                                                     | not verified                     |
+| Scheduled posts, email analytics jobs                                                                 | covered only by the DB-backed suites. The three email analytics schedules log nothing, so the production run does not show them                                                                                                                                                                              | suites only                      |
+| URL service ready                                                                                     | `hasFinished()` true after every boot, including backend only and no apps                                                                                                                                                                                                                                    | verified                         |
+| Theme activation                                                                                      | `source` active after every boot; `/` rendered                                                                                                                                                                                                                                                               | verified                         |
+| First request: Admin API, Content API, members, front end                                             | `/ghost/api/admin/site/` 200; Content API posts and recommendations 200 with a key; `/members/api/site/` 200, `/members/api/member/` 204; `/` 200; `/members/.well-known/jwks.json` 200                                                                                                                      | verified                         |
+| Graceful shutdown                                                                                     | HTTP server stopped, then Prometheus, Stripe, email batches, IndexNow, Slack, Domains and Jobs together; "Ghost has shut down"; exit 0                                                                                                                                                                       | verified                         |
+
+### Tests added
+
+- `test/unit/boot/boot-layers.test.ts`: pins, from the source of `boot.js`,
+  the order of the first five steps, exactly what `initShared` requires, that
+  no shared start appears anywhere else, and that `initDomains` requires only
+  the domain layer.
+- `test/unit/boot/init-shared.test.ts`: each shared start waits for the one
+  before it, and a failure stops the layer. Its harness rejects any module it
+  was not given.
+- `test/unit/boot/init-domains.test.ts`, `init-legacy-core.test.ts` (was
+  `init-core.test.ts`), and one test in `init-services.test.ts` that the
+  step starts no shared module and no domain.
+- `test/e2e-server/boot-layers.isolated.test.ts`: runs the first three steps
+  with the real modules against the database and nothing else, and checks
+  that the network domain is up, that Mentions and Staff are not, that mail
+  sends, and that calculated settings have values.
+- `domains/network/test/unit/actions/resolve-recommendation-url.action.test.ts`,
+  and one test in the Mentions root's test that a recommendations file is
+  described as its site.
+
+Each fails when it should (verified): starting domains after the legacy step,
+starting a feature service in `initShared`, starting permissions again in
+`initServices`, and making the network domain read Mentions while it starts
+each failed the test written for it.
+
+The existing lint rule `boot-awaits-service-init` was not extended. It checks
+that a standard service's `init()` is awaited in some step. Which step is a
+fact about `boot.js` alone, and a test that reads `boot.js` states it in
+fewer lines than a rule would.
+
+### Boot time (verified)
+
+From source, ten boots each, interleaved one for one, on one machine. "Before"
+is the other session's tip without this part's commits (`3a0db6e`).
+
+| Line                      | Before           | After            |
+| ------------------------- | ---------------- | ---------------- |
+| "Ghost server started in" | 0.712s to 0.913s | 0.679s to 0.978s |
+| "Ghost database ready in" | 0.784s to 0.995s | 0.761s to 1.064s |
+| "Ghost booted in"         | 2.076s to 2.662s | 2.020s to 2.600s |
+
+The ranges overlap and the medians of "booted" are 2.262s and 2.260s. This
+shows no cost that ten runs can resolve. A difference under about 0.3s would
+not be seen. Against `b4464b4`, eight runs each: 2.036s to 2.592s before,
+2.171s to 2.644s after; that pair also contains the framework moves of
+part 3, so it does not isolate this change.
+
+### Cost
+
+| Commit    | What                                                               | Files | Lines     |
+| --------- | ------------------------------------------------------------------ | ----- | --------- |
+| `c56c76c` | Mentions adds the network domain's URL mapper itself               | 10    | +99 −67   |
+| `b9b8ca5` | Shared as its own step, domains directly after, legacy step, tests | 11    | +385 −202 |
+| `64b87db` | Email address policy into the shared step                          | 5     | +40 −28   |
+| `326ad1e` | The real-module test of the first three steps                      | 1     | +86       |
+
+`c56c76c` also carries the rename of `init-core.test.ts`, staged by mistake;
+its content changed in `b9b8ca5`. Both commits pass on their own (inferred
+for `c56c76c`: the checks were run on the tree after `b9b8ca5`).
+
+### Rules that were ambiguous or wrong
+
+1. **The shared list names capabilities, not starts.** "Mail" and "feature
+   flags" have no initializer; "credentials" has two. Mail's real start was
+   under another name. The list should name each module and whether it has a
+   start.
+2. **"After foundation and before anything else" is not literally possible.**
+   The maintenance server and the database migration come between, and must:
+   settings reads the database. The rule should say foundation, then the
+   database made ready, then shared.
+3. **"Domains are started after shared" does not mean every domain is
+   usable.** A domain whose services are transition roots is started by
+   `boot.js`, later. The rule needs to say which.
+4. **"A domain may not register itself on another service while it starts"**
+   held and was enough. Its other half is unstated: a service outside the
+   domains may import a domain's action at its own start. That is safe only
+   while the action needs nothing started, as this one does.
+5. **"Then the framework starts the job runner"** has no room for work that
+   must follow the runner and still block boot. Two things do today.
+6. **Before and after slots were not needed** for anything that moved.
+
+### Not verified
+
+- **Silent dependencies of feature services.** Checked for shared modules
+  only. A feature service that starts without error on a missing value would
+  not have been found by the script; the DB-backed suites are the only cover.
+- **The release archive and the production Docker image.**
+- **Worker threads**, and any job actually running.
+- **Non-default configuration**: managed email, host limits other than
+  `publicSiteAccess`, `auth:engine` set to `better-auth` in a full boot
+  (its `init` was run after settings by the script), Redis cache adapter,
+  remote flags enabled, SQLite.
+- **`c56c76c` alone** against the DB-backed suites.
+- **Plain `pnpm knip`** reports 498 unused files in this container. None is a
+  file this part added, and `lint:dependencies` (knip's dependency check, the
+  one in `pnpm lint`) passes. It was not compared with the base.
+- **The comment about the knex pool** in `boot.js` ("destroyed and recreated
+  before this point") was kept and reworded; what recreates the pool was not
+  found.
+- **Admin in a browser**, and **`gx services verify`**.
+
+### Checks at the end of part 4
+
+Static checks (format, oxlint, ESLint, boundaries, domain rules, legacy
+services, `lint:dependencies`, docs lint, typecheck): pass (verified). Unit
+suite: 11,696 passed, the same 34 baseline failures in 3 Mailgun and mailer
+files (verified). Integration suite: 79 files passed, 5 skipped; 1,288 tests
+passed, 104 skipped (verified). The e2e and legacy suites were still running
+when this was written; their results follow in the next commit.
