@@ -53,6 +53,8 @@ export interface JobsOutboxWiring {
   tracker?: OutboxTrackerLike;
   // How long a submitted row can go without renewal before it is handed over again
   leaseMs: number;
+  // Only logged here; the relay does the polling
+  pollIntervalMs: number;
 }
 
 export interface DispatchOptions {
@@ -256,8 +258,11 @@ export class JobsService {
     const outboxMode = this.#outboxMode();
     const described =
       outboxMode === 'retain' ? 'on, keeping rows until their job settles' : outboxMode;
+    const timings = this.#outbox
+      ? { poll_interval_ms: this.#outbox.pollIntervalMs, lease_ms: this.#outbox.leaseMs }
+      : {};
     this.#logging.info(
-      { system: { event: 'jobs.started', backend, outbox_mode: outboxMode } },
+      { system: { event: 'jobs.started', backend, outbox_mode: outboxMode, ...timings } },
       `[Jobs] Started on ${backend} with the outbox ${described}`,
     );
   }

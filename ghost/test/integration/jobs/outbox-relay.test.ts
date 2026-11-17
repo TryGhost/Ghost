@@ -772,7 +772,7 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
         backend,
         logging: silentLogger,
         sentry: noopSentry,
-        outbox: { store, relay, tracker, leaseMs },
+        outbox: { store, relay, tracker, leaseMs, pollIntervalMs },
       });
       const delivered: GreetJob[] = [];
       const handler = async (job: GreetJob) => {

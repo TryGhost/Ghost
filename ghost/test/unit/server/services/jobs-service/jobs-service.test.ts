@@ -163,6 +163,7 @@ describe('JobsService', function () {
             relay: overrides.outbox.relay,
             tracker: overrides.outbox.tracker,
             leaseMs: overrides.leaseMs ?? 120_000,
+            pollIntervalMs: 30_000,
           }
         : undefined,
       logOutboxUnavailable: overrides.logOutboxUnavailable,
@@ -714,7 +715,7 @@ describe('JobsService', function () {
       );
     });
 
-    it('logs at start which backend runs jobs and which outbox mode it is in', async function () {
+    it('logs at start which backend runs jobs, its outbox mode and the outbox timings', async function () {
       await makeService({ outbox: makeOutbox() }).start();
       await makeService({ outbox: makeOutbox({ tracked: false }) }).start();
       await makeService().start();
@@ -728,11 +729,27 @@ describe('JobsService', function () {
       );
       assert.deepEqual(started, [
         [
-          { system: { event: 'jobs.started', backend: 'FakeBackend', outbox_mode: 'retain' } },
+          {
+            system: {
+              event: 'jobs.started',
+              backend: 'FakeBackend',
+              outbox_mode: 'retain',
+              poll_interval_ms: 30_000,
+              lease_ms: 120_000,
+            },
+          },
           '[Jobs] Started on FakeBackend with the outbox on, keeping rows until their job settles',
         ],
         [
-          { system: { event: 'jobs.started', backend: 'FakeBackend', outbox_mode: 'on' } },
+          {
+            system: {
+              event: 'jobs.started',
+              backend: 'FakeBackend',
+              outbox_mode: 'on',
+              poll_interval_ms: 30_000,
+              lease_ms: 120_000,
+            },
+          },
           '[Jobs] Started on FakeBackend with the outbox on',
         ],
         [
