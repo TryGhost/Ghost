@@ -1,10 +1,4 @@
-import {
-  Avatar,
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@tryghost/shade/components';
+import { Avatar, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade/components';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
 import { useBrowseUsers } from '@tryghost/admin-x-framework/api/users';
@@ -78,40 +72,33 @@ export function PresenceAvatars({
   const shown = users.slice(0, limit);
   const rest = users.length - shown.length;
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Inline
-            className={cn('pointer-events-auto shrink-0', className)}
-            data-testid="presence-avatars"
-            gap="none"
-            tabIndex={0}
-          >
-            {users.length > 1 ? (
-              <UserAvatar
-                className="sm:hidden"
-                count={users.length}
-                label={everyone}
-                user={first}
-              />
-            ) : null}
-            {shown.map((user, index) => (
-              <UserAvatar
-                key={user.id}
-                className={cn(users.length > 1 && 'max-sm:hidden', index > 0 && '-ml-2')}
-                label={describePresence([user.name], resourceType)}
-                user={user}
-              />
-            ))}
-            {rest > 0 ? (
-              <Text aria-hidden="true" className="ml-1.5 max-sm:hidden" size="sm">
-                +{rest}
-              </Text>
-            ) : null}
-          </Inline>
-        </TooltipTrigger>
-        <TooltipContent>{everyone}</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Inline
+          className={cn('pointer-events-auto shrink-0', className)}
+          data-testid="presence-avatars"
+          gap="none"
+          tabIndex={0}
+        >
+          {users.length > 1 ? (
+            <UserAvatar className="sm:hidden" count={users.length} label={everyone} user={first} />
+          ) : null}
+          {shown.map((user, index) => (
+            <UserAvatar
+              key={user.id}
+              className={cn(users.length > 1 && 'max-sm:hidden', index > 0 && '-ml-2')}
+              label={describePresence([user.name], resourceType)}
+              user={user}
+            />
+          ))}
+          {rest > 0 ? (
+            <Text aria-hidden="true" className="ml-1.5 max-sm:hidden" size="sm">
+              +{rest}
+            </Text>
+          ) : null}
+        </Inline>
+      </TooltipTrigger>
+      <TooltipContent>{everyone}</TooltipContent>
+    </Tooltip>
   );
 }
