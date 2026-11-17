@@ -161,6 +161,8 @@ interface OverviewKPIsProps {
   growthChartRange: number;
   currencySymbol: string;
   isLoading: boolean;
+  /** The MRR request failed, so there's no figure to show: not the same as $0. */
+  isMrrError?: boolean;
   /** Set only when the site has no revenue and sends a single newsletter; replaces MRR. */
   subscribers?: SoleNewsletterSubscribers | null;
 }
@@ -176,6 +178,7 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
   growthChartRange,
   currencySymbol,
   isLoading,
+  isMrrError = false,
   subscribers,
 }) => {
   const navigate = useNavigate();
@@ -329,9 +332,11 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
       {showMRR && (
         <OverviewKPICard
           description="Monthly recurring revenue changes over time"
-          diffDirection={growthTotals.directions.mrr}
-          diffValue={growthTotals.percentChanges.mrr}
-          formattedValue={`${currencySymbol}${formatNumber(centsToDollars(growthTotals.mrr))}`}
+          diffDirection={isMrrError ? 'empty' : growthTotals.directions.mrr}
+          diffValue={isMrrError ? '' : growthTotals.percentChanges.mrr}
+          formattedValue={
+            isMrrError ? '—' : `${currencySymbol}${formatNumber(centsToDollars(growthTotals.mrr))}`
+          }
           iconName="Coins"
           linkto="/analytics/growth/"
           title="MRR"

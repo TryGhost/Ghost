@@ -271,6 +271,7 @@ const Overview: React.FC = () => {
           growthChartRange={growthChartRange}
           growthTotals={growthTotals}
           isLoading={isVisitorsLoading || isGrowthStatsLoading || isSubscribersLoading}
+          isMrrError={isMrrError}
           kpiValues={kpiValues}
           membersChartData={membersChartData}
           mrrChartData={mrrChartData}

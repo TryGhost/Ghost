@@ -342,7 +342,8 @@ describe('Analytics overview', () => {
     fakeAdminEndpoint('GET', /^\/stats\/mrr\//, { errors: [] }, { status: 500 });
     await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
 
-    await expect.element(analyticsScreen.mrrCard()).toBeVisible();
+    // No figure rather than a $0 the request never returned
+    await expect.element(analyticsScreen.mrrValue()).toHaveTextContent(/^—$/);
     await expect.element(analyticsScreen.newsletterSubscribersCard()).not.toBeInTheDocument();
   });
 
