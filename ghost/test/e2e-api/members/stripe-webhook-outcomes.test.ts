@@ -130,6 +130,11 @@ function checkoutSpan(labels: Span, error?: string): Span {
   return span({ ...labels, shipping: 'none', phone: 'none' }, error);
 }
 
+/** What a failed span records about its failure: why it failed, and who can fix it. */
+function failedBecause(reason: string, owner: 'ghost' | 'dependency' | 'site'): Span {
+  return { result: 'failed', reason, owner };
+}
+
 function spansOf(metrics: MockedMetrics, name: string): Span[] {
   return metrics.tracked(name).map(({ event, error, labels }) => ({
     outcome: event.outcome,
@@ -629,11 +634,20 @@ describe('Stripe webhook outcomes', function () {
   });
 
   describe('Requests Ghost can’t verify', function () {
-    it('responds with 400 to a request without a signature, and records nothing', async function () {
-      await membersAgent.post('/webhooks/stripe/').body({ fake: 'data' }).expectStatus(400);
+    it.each([
+      ['without a signature', undefined],
+      ['with an empty signature', ''],
+    ])(
+      'responds with 400 to a request %s, and records nothing',
+      async function (_request, signature) {
+        const request = membersAgent.post('/webhooks/stripe/').body({ fake: 'data' });
+        await (
+          signature === undefined ? request : request.header('stripe-signature', signature)
+        ).expectStatus(400);
 
-      assert.deepEqual(spansOf(metrics, 'stripe.webhook'), []);
-    });
+        assert.deepEqual(spansOf(metrics, 'stripe.webhook'), []);
+      },
+    );
 
     it('responds with 401 when the signature header is malformed', async function () {
       await membersAgent
@@ -642,7 +656,9 @@ describe('Stripe webhook outcomes', function () {
         .header('stripe-signature', 'dodgy')
         .expectStatus(401);
 
-      assert.deepEqual(spansOf(metrics, 'stripe.webhook'), [span({}, 'UnauthorizedError')]);
+      assert.deepEqual(spansOf(metrics, 'stripe.webhook'), [
+        span(failedBecause('signature_mismatch', 'site'), 'STRIPE_WEBHOOK_SIGNATURE_MISMATCH'),
+      ]);
     });
 
     itWritesNothing([
@@ -654,12 +670,15 @@ describe('Stripe webhook outcomes', function () {
           secret: 'whsec_of_another_endpoint',
         }),
         status: 401,
-        webhook: span({}, 'UnauthorizedError'),
+        webhook: span(
+          failedBecause('signature_mismatch', 'site'),
+          'STRIPE_WEBHOOK_SIGNATURE_MISMATCH',
+        ),
         checkout: null,
       },
     ]);
 
-    it('responds with 401 and writes nothing when the site has no webhook secret, and records the error as ERR_INVALID_ARG_TYPE', async function () {
+    it('responds with 401 and writes nothing when the site has no webhook secret', async function () {
       // There's no way to remove the secret from a running site but to clear it on the service.
       const stripeService = require('../../../core/server/services/stripe');
       const secret = stripeService.webhookManager.webhookSecret;
@@ -670,7 +689,10 @@ describe('Stripe webhook outcomes', function () {
           {
             status: 401,
             writes: 'nothing',
-            webhook: span({}, 'ERR_INVALID_ARG_TYPE'),
+            webhook: span(
+              failedBecause('webhook_secret_missing', 'site'),
+              'STRIPE_WEBHOOK_SECRET_MISSING',
+            ),
             checkout: null,
           },
         );
@@ -686,7 +708,12 @@ describe('Stripe webhook outcomes', function () {
         name: 'responds with 200 to an event type it has no handler for',
         event: () => ({ type: 'product.created', object: { id: stripeId('prod') } }),
         status: 200,
-        webhook: span({ type: 'product.created' }),
+        webhook: span({
+          type: 'product.created',
+          kind: 'unhandled',
+          result: 'ignored',
+          reason: 'unhandled_type',
+        }),
         checkout: null,
       },
     ]);
@@ -700,7 +727,12 @@ describe('Stripe webhook outcomes', function () {
           {
             status: 200,
             writes: 'nothing',
-            webhook: span({ type: 'customer.subscription.updated', ignored: true }),
+            webhook: span({
+              type: 'customer.subscription.updated',
+              kind: 'subscription',
+              result: 'ignored',
+              reason: 'listed_customer',
+            }),
             checkout: null,
           },
         );
@@ -722,7 +754,11 @@ describe('Stripe webhook outcomes', function () {
             writes: async () => {
               assert.equal((await memberByEmail(bought.customer.email)).get('status'), 'free');
             },
-            webhook: span({ type: 'customer.subscription.deleted' }),
+            webhook: span({
+              type: 'customer.subscription.deleted',
+              kind: 'subscription',
+              result: 'handled',
+            }),
             checkout: null,
           },
         );
@@ -753,7 +789,7 @@ describe('Stripe webhook outcomes', function () {
             assert.equal((await memberByEmail(bought.customer.email)).get('status'), 'paid');
             assert.equal((await linkedSubscription(bought.subscription.id)).status, 'active');
           },
-          webhook: span({ type: completed }),
+          webhook: span({ type: completed, kind: 'checkout_session', result: 'handled' }),
           checkout: checkoutSpan({ type: 'subscription', member: 'new' }),
         },
       );
@@ -770,8 +806,14 @@ describe('Stripe webhook outcomes', function () {
         }),
         attempts: 2,
         status: 500,
-        webhook: span({ type: completed }, '_OTHER'),
-        checkout: checkoutSpan({ type: 'subscription', member: 'new' }, '_OTHER'),
+        webhook: span(
+          { type: completed, kind: 'checkout_session', ...failedBecause('unclassified', 'ghost') },
+          '_OTHER',
+        ),
+        checkout: checkoutSpan(
+          { type: 'subscription', member: 'new', ...failedBecause('unclassified', 'ghost') },
+          '_OTHER',
+        ),
       },
       {
         name: 'responds with 422 when the buyer’s email is invalid',
@@ -780,8 +822,14 @@ describe('Stripe webhook outcomes', function () {
           object: subscriptionCheckout(stripeCustomer({ email: 'not an email@example' })),
         }),
         status: 422,
-        webhook: span({ type: completed }, 'ValidationError'),
-        checkout: checkoutSpan({ type: 'subscription', member: 'new' }, 'ValidationError'),
+        webhook: span(
+          { type: completed, kind: 'checkout_session', ...failedBecause('unclassified', 'ghost') },
+          'ValidationError',
+        ),
+        checkout: checkoutSpan(
+          { type: 'subscription', member: 'new', ...failedBecause('unclassified', 'ghost') },
+          'ValidationError',
+        ),
       },
       {
         name: 'responds with 429 when Stripe returns a lock timeout for the customer',
@@ -791,8 +839,18 @@ describe('Stripe webhook outcomes', function () {
           return { type: completed, object: subscriptionCheckout(bought) };
         },
         status: 429,
-        webhook: span({ type: completed }, 'lock_timeout'),
-        checkout: checkoutSpan({ type: 'subscription' }, 'lock_timeout'),
+        webhook: span(
+          {
+            type: completed,
+            kind: 'checkout_session',
+            ...failedBecause('stripe_unavailable', 'dependency'),
+          },
+          'lock_timeout',
+        ),
+        checkout: checkoutSpan(
+          { type: 'subscription', ...failedBecause('stripe_unavailable', 'dependency') },
+          'lock_timeout',
+        ),
       },
       {
         name: 'responds with 401 when the publisher has revoked Ghost’s access to their Stripe account',
@@ -802,8 +860,18 @@ describe('Stripe webhook outcomes', function () {
           return { type: completed, object };
         },
         status: 401,
-        webhook: span({ type: completed }, 'platform_api_key_expired'),
-        checkout: checkoutSpan({ type: 'subscription' }, 'platform_api_key_expired'),
+        webhook: span(
+          {
+            type: completed,
+            kind: 'checkout_session',
+            ...failedBecause('stripe_access_revoked', 'site'),
+          },
+          'platform_api_key_expired',
+        ),
+        checkout: checkoutSpan(
+          { type: 'subscription', ...failedBecause('stripe_access_revoked', 'site') },
+          'platform_api_key_expired',
+        ),
       },
       {
         name: 'responds with 500 when Ghost cannot reach Stripe',
@@ -813,14 +881,24 @@ describe('Stripe webhook outcomes', function () {
           return { type: completed, object };
         },
         status: 500,
-        webhook: span({ type: completed }, 'StripeConnectionError'),
-        checkout: checkoutSpan({ type: 'subscription' }, 'StripeConnectionError'),
+        webhook: span(
+          {
+            type: completed,
+            kind: 'checkout_session',
+            ...failedBecause('stripe_unavailable', 'dependency'),
+          },
+          'StripeConnectionError',
+        ),
+        checkout: checkoutSpan(
+          { type: 'subscription', ...failedBecause('stripe_unavailable', 'dependency') },
+          'StripeConnectionError',
+        ),
       },
       {
         name: 'responds with 200 to a payment checkout that is neither a gift nor a donation, such as a Payment Link sale',
         event: () => ({ type: completed, object: paymentCheckout() }),
         status: 200,
-        webhook: span({ type: completed }),
+        webhook: span({ type: completed, kind: 'checkout_session', result: 'handled' }),
         checkout: checkoutSpan({}),
       },
       {
@@ -830,14 +908,14 @@ describe('Stripe webhook outcomes', function () {
           object: paymentCheckout({ metadata: { ghost_donation: 'true', ghost_gift: 'true' } }),
         }),
         status: 200,
-        webhook: span({ type: completed }),
+        webhook: span({ type: completed, kind: 'checkout_session', result: 'handled' }),
         checkout: checkoutSpan({}),
       },
       {
         name: 'responds with 200 to a card update when no member has the Stripe customer',
         event: () => ({ type: completed, object: cardUpdateCheckout(stripeId('cus')).session }),
         status: 200,
-        webhook: span({ type: completed }),
+        webhook: span({ type: completed, kind: 'checkout_session', result: 'handled' }),
         checkout: checkoutSpan({ type: 'setup' }),
       },
       {
@@ -855,7 +933,7 @@ describe('Stripe webhook outcomes', function () {
           };
         },
         status: 200,
-        webhook: span({ type: completed }),
+        webhook: span({ type: completed, kind: 'checkout_session', result: 'handled' }),
         checkout: checkoutSpan({}),
       },
     ]);
@@ -886,8 +964,18 @@ describe('Stripe webhook outcomes', function () {
             memberId ??= member.id;
             assert.equal(member.id, memberId);
           },
-          webhook: span({ type: completed }, 'ER_NO_REFERENCED_ROW_2'),
-          checkout: checkoutSpan({ type: 'subscription', member: 'new' }, 'ER_NO_REFERENCED_ROW_2'),
+          webhook: span(
+            {
+              type: completed,
+              kind: 'checkout_session',
+              ...failedBecause('unclassified', 'ghost'),
+            },
+            'ER_NO_REFERENCED_ROW_2',
+          ),
+          checkout: checkoutSpan(
+            { type: 'subscription', member: 'new', ...failedBecause('unclassified', 'ghost') },
+            'ER_NO_REFERENCED_ROW_2',
+          ),
         },
       );
     });
@@ -908,8 +996,18 @@ describe('Stripe webhook outcomes', function () {
             memberId ??= member.id;
             assert.equal(member.id, memberId);
           },
-          webhook: span({ type: completed }, '_OTHER'),
-          checkout: checkoutSpan({ type: 'subscription', member: 'new' }, '_OTHER'),
+          webhook: span(
+            {
+              type: completed,
+              kind: 'checkout_session',
+              ...failedBecause('unclassified', 'ghost'),
+            },
+            '_OTHER',
+          ),
+          checkout: checkoutSpan(
+            { type: 'subscription', member: 'new', ...failedBecause('unclassified', 'ghost') },
+            '_OTHER',
+          ),
         },
       );
     });
@@ -934,7 +1032,7 @@ describe('Stripe webhook outcomes', function () {
               assert.equal((await linkedSubscription(id)).default_payment_card_last4, '1881');
             }
           },
-          webhook: span({ type: completed }),
+          webhook: span({ type: completed, kind: 'checkout_session', result: 'handled' }),
           checkout: checkoutSpan({ type: 'setup' }),
         },
       );
@@ -957,7 +1055,7 @@ describe('Stripe webhook outcomes', function () {
                 { amount: 1200, currency: 'usd' },
               ]);
             },
-            webhook: span({ type: completed }),
+            webhook: span({ type: completed, kind: 'checkout_session', result: 'handled' }),
             checkout: checkoutSpan({ type: 'donation' }),
           },
         );
@@ -985,7 +1083,7 @@ describe('Stripe webhook outcomes', function () {
             writes: async () => {
               assert.equal(await giftStatus(giftId), 'purchased');
             },
-            webhook: span({ type }),
+            webhook: span({ type, kind: 'checkout_session', result: 'handled' }),
             checkout: checkoutSpan({ type: 'gift' }),
           },
         );
@@ -1002,7 +1100,11 @@ describe('Stripe webhook outcomes', function () {
           object: paymentCheckout({ metadata: { ghost_donation: 'true' } }),
         }),
         status: 200,
-        webhook: span({ type: 'checkout.session.async_payment_succeeded' }),
+        webhook: span({
+          type: 'checkout.session.async_payment_succeeded',
+          kind: 'checkout_session',
+          result: 'handled',
+        }),
         checkout: checkoutSpan({}),
       },
       {
@@ -1019,7 +1121,11 @@ describe('Stripe webhook outcomes', function () {
           };
         },
         status: 200,
-        webhook: span({ type: 'checkout.session.async_payment_failed' }),
+        webhook: span({
+          type: 'checkout.session.async_payment_failed',
+          kind: 'checkout_session',
+          result: 'handled',
+        }),
         checkout: checkoutSpan({}),
       },
     ]);
@@ -1033,7 +1139,7 @@ describe('Stripe webhook outcomes', function () {
         name: 'responds with 200 when no member has the subscription’s Stripe customer',
         event: () => ({ type: updated, object: subscriptionFor(stripeId('cus')) }),
         status: 200,
-        webhook: span({ type: updated }),
+        webhook: span({ type: updated, kind: 'subscription', result: 'handled' }),
         checkout: null,
       },
       {
@@ -1063,7 +1169,10 @@ describe('Stripe webhook outcomes', function () {
         },
         attempts: 2,
         status: 400,
-        webhook: span({ type: updated }, 'ValidationError'),
+        webhook: span(
+          { type: updated, kind: 'subscription', ...failedBecause('unclassified', 'ghost') },
+          'ValidationError',
+        ),
         checkout: null,
       },
       {
@@ -1078,7 +1187,14 @@ describe('Stripe webhook outcomes', function () {
         },
         attempts: 2,
         status: 400,
-        webhook: span({ type: updated }, 'BadRequestError'),
+        webhook: span(
+          {
+            type: updated,
+            kind: 'subscription',
+            ...failedBecause('unsupported_subscription', 'site'),
+          },
+          'STRIPE_WEBHOOK_UNSUPPORTED_SUBSCRIPTION',
+        ),
         checkout: null,
       },
     ]);
@@ -1105,7 +1221,7 @@ describe('Stripe webhook outcomes', function () {
                 { amount: 375, currency: 'usd' },
               ]);
             },
-            webhook: span({ type: paid }),
+            webhook: span({ type: paid, kind: 'invoice', result: 'handled' }),
             checkout: null,
           },
         );
@@ -1123,7 +1239,7 @@ describe('Stripe webhook outcomes', function () {
           writes: async () => {
             assert.deepEqual(await paymentsAddedSince(customer.id, before), []);
           },
-          webhook: span({ type: paid }),
+          webhook: span({ type: paid, kind: 'invoice', result: 'handled' }),
           checkout: null,
         },
       );
@@ -1137,7 +1253,7 @@ describe('Stripe webhook outcomes', function () {
           object: { ...invoiceFor({ id: '', customer: stripeId('cus') }), subscription: null },
         }),
         status: 200,
-        webhook: span({ type: paid }),
+        webhook: span({ type: paid, kind: 'invoice', result: 'handled' }),
         checkout: null,
       },
       {
@@ -1149,7 +1265,7 @@ describe('Stripe webhook outcomes', function () {
           ),
         }),
         status: 200,
-        webhook: span({ type: paid }),
+        webhook: span({ type: paid, kind: 'invoice', result: 'handled' }),
         checkout: null,
       },
       {
@@ -1163,7 +1279,7 @@ describe('Stripe webhook outcomes', function () {
           ),
         }),
         status: 200,
-        webhook: span({ type: paid }),
+        webhook: span({ type: paid, kind: 'invoice', result: 'handled' }),
         checkout: null,
       },
       {
@@ -1171,7 +1287,10 @@ describe('Stripe webhook outcomes', function () {
         event: () => ({ type: paid, object: invoiceFor(subscriptionFor(stripeId('cus'))) }),
         attempts: 2,
         status: 404,
-        webhook: span({ type: paid }, 'NotFoundError'),
+        webhook: span(
+          { type: paid, kind: 'invoice', ...failedBecause('no_member_for_customer', 'site') },
+          'STRIPE_WEBHOOK_NO_MEMBER_FOR_CUSTOMER',
+        ),
         checkout: null,
       },
       {
@@ -1182,7 +1301,10 @@ describe('Stripe webhook outcomes', function () {
           return { type: paid, object: invoiceFor(subscription) };
         },
         status: 401,
-        webhook: span({ type: paid }, 'platform_api_key_expired'),
+        webhook: span(
+          { type: paid, kind: 'invoice', ...failedBecause('stripe_access_revoked', 'site') },
+          'platform_api_key_expired',
+        ),
         checkout: null,
       },
     ]);
@@ -1214,7 +1336,7 @@ describe('Stripe webhook outcomes', function () {
           writes: async () => {
             assert.equal(await giftStatus(giftId), 'refunded');
           },
-          webhook: span({ type: 'charge.refunded' }),
+          webhook: span({ type: 'charge.refunded', kind: 'refund', result: 'handled' }),
           checkout: null,
         },
       );
@@ -1234,7 +1356,7 @@ describe('Stripe webhook outcomes', function () {
           },
         }),
         status: 200,
-        webhook: span({ type: 'charge.refunded' }),
+        webhook: span({ type: 'charge.refunded', kind: 'refund', result: 'handled' }),
         checkout: null,
       },
     ]);
