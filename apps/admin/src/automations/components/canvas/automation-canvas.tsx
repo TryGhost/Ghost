@@ -870,6 +870,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         selectedRunId={selectedRunId}
         selectedTab={sidebar.tab === 'unknown' ? 'settings' : sidebar.tab}
         tiers={tierData?.tiers ?? []}
+        triggerLabelName={selectedTriggerLabel?.name}
         triggerRules={automation.trigger_rules}
         onDescriptionChange={(description) => onChange({ ...automation, description })}
         onOpenChange={setAutomationSidebarOpen}
