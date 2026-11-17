@@ -685,25 +685,22 @@ describe('automations API', function () {
     });
 
     it('waits for the sent count update before inserting the recipient', async function () {
-      let releaseCount!: () => void;
-      vi.mocked(repository.incrementEmailSentCount).mockImplementation(
-        () =>
-          new Promise<void>((resolve) => {
-            releaseCount = resolve;
-          }),
-      );
+      const count = Promise.withResolvers<void>();
+      const countStarted = Promise.withResolvers<void>();
+      vi.mocked(repository.incrementEmailSentCount).mockImplementation(() => {
+        countStarted.resolve();
+        return count.promise;
+      });
 
       const pending = createApi({ repository }).recordEmailSent(options);
       try {
-        for (let i = 0; i < 10; i += 1) {
-          await Promise.resolve();
-        }
-        expect(repository.incrementEmailSentCount).toHaveBeenCalledOnce();
+        await countStarted.promise;
+        await vi.advanceTimersByTimeAsync(0);
         expect(repository.insertEmailRecipient).not.toHaveBeenCalled();
       } finally {
-        releaseCount();
-        await pending;
+        count.resolve();
       }
+      await pending;
       expect(repository.insertEmailRecipient).toHaveBeenCalledOnce();
     });
 
