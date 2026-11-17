@@ -155,6 +155,80 @@ const controller = {
       return await statsService.service.api.getTopContent(frame.options);
     },
   },
+  commentsOverview: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['date_from', 'date_to', 'timezone'],
+    permissions: {
+      docName: 'comments',
+      method: 'browse',
+    },
+    cache: statsCache,
+    generateCacheKeyData(frame) {
+      return {
+        method: 'commentsOverview',
+        options: {
+          date_from: frame.options.date_from,
+          date_to: frame.options.date_to,
+          timezone: frame.options.timezone,
+        },
+      };
+    },
+    async query(frame) {
+      return await statsService.service.api.getCommentsOverview(frame.options);
+    },
+  },
+  commentsTopPosts: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['date_from', 'date_to', 'timezone', 'limit'],
+    permissions: {
+      docName: 'comments',
+      method: 'browse',
+    },
+    cache: statsCache,
+    generateCacheKeyData(frame) {
+      return {
+        method: 'commentsTopPosts',
+        options: {
+          date_from: frame.options.date_from,
+          date_to: frame.options.date_to,
+          timezone: frame.options.timezone,
+          limit: frame.options.limit,
+        },
+      };
+    },
+    async query(frame) {
+      return await statsService.service.api.getCommentsTopPosts(frame.options);
+    },
+  },
+  commentsTopCommenters: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['date_from', 'date_to', 'timezone', 'limit'],
+    permissions: {
+      docName: 'comments',
+      method: 'browse',
+    },
+    cache: statsCache,
+    generateCacheKeyData(frame) {
+      return {
+        method: 'commentsTopCommenters',
+        options: {
+          date_from: frame.options.date_from,
+          date_to: frame.options.date_to,
+          timezone: frame.options.timezone,
+          limit: frame.options.limit,
+        },
+      };
+    },
+    async query(frame) {
+      return await statsService.service.api.getCommentsTopCommenters(frame.options);
+    },
+  },
   topPosts: {
     headers: {
       cacheInvalidate: false,
