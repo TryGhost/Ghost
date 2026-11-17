@@ -25,6 +25,9 @@ const ApprovalContext = z.object({
   to_manifest_id: z.string(),
 });
 
+/** What an approval's action is stored with, which this history reads back. */
+export type ApprovalContext = z.infer<typeof ApprovalContext>;
+
 interface Approval {
   action: HistoryAction;
   from: string;

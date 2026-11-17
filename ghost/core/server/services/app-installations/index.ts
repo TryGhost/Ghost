@@ -5,6 +5,7 @@ import { defineService } from '../../../kernel/define-service';
 import config from '../../../shared/config';
 import urlUtils from '../../../shared/url-utils';
 import { ActionLog } from '../../lib/action-log/action-log';
+import { recordAppInstallationChanges } from '../../lib/action-log/app-installations';
 import { createAppFetcher } from './fetch-from-app';
 import { createIconFetcher } from './fetch-icon';
 import { createIdentityChecker, readTrustedOrigins } from './identity-check';
@@ -103,7 +104,8 @@ export default defineService('App Installations', () => {
 
   return new AppInstallationsService({
     knex,
-    actionLog: new ActionLog(),
+    // Each change is logged as a staff action, inside the command that made it.
+    onAppInstallationUpdated: recordAppInstallationChanges(new ActionLog()),
     loadManifest: createManifestLoader({ fetchFromApp, logging, getManifestRules }),
     identity: createIdentityChecker({
       fetchFromApp,
