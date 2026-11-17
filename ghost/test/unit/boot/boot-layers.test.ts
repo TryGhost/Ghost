@@ -28,6 +28,8 @@ const SHARED = [
   './shared/i18n',
   // Handed to i18n, not started.
   './server/lib/common/events',
+  // Mail has no start; this is the one thing a mailer needs built first.
+  './server/services/email-address',
   './server/services/permissions',
 ];
 
@@ -55,7 +57,7 @@ describe('Boot layers', function () {
       required(step('initShared')).sort(),
       [...SHARED].sort(),
       'initShared starts the modules every domain may rely on: url-utils, limits, settings, ' +
-        'signing keys, internal keys, i18n and permissions. A service that belongs to one ' +
+        'signing keys, internal keys, i18n, the email address policy and permissions. A service that belongs to one ' +
         'feature starts in its domain, or in initLegacyCore or initServices until it has one.',
     );
   });
@@ -68,6 +70,7 @@ describe('Boot layers', function () {
       'signingKeys.init(',
       'internalKeys.init(',
       'i18n.init(',
+      'emailAddressService.init(',
       'permissions.init(',
     ];
     const shared = step('initShared');

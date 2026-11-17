@@ -1410,8 +1410,8 @@ services:
           - test/unit/server/services/email-service/sending-service.test.js
       startup:
         summary: >-
-          Foreground boot initializes email-address after core settings and before Stripe,
-          members and email-service construction. Automated-email request handlers also call init
+          Foreground boot initializes email-address in initShared, after settings and before the
+          domain layer, Stripe, members and email-service construction. Automated-email request handlers also call init
           defensively; Member welcome emails asserts the policy is ready instead. Most consumers have no use-before-init
           guard; captured undefined dependencies would remain undefined. Initialization is
           synchronous composition without asynchronous readiness or validation of configuration.

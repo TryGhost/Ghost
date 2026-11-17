@@ -5,6 +5,7 @@ import { loadBootFunction } from './harness';
 
 function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const stripe = sinon.stub().resolves();
+  // Started in initShared, with the rest of the shared layer.
   const emailAddress = sinon.stub();
   // These initializers are synchronous in production.
   const gifts = sinon.stub();
@@ -123,26 +124,6 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     reschedule,
   };
 }
-
-it('initializes email address policy before constructing its dependent services', async function () {
-  const boot = createServicesHarness();
-  await boot.initServices();
-
-  sinon.assert.calledOnce(boot.emailAddress);
-  sinon.assert.callOrder(boot.emailAddress, boot.stripe, boot.gifts, boot.email);
-});
-
-it('propagates email address construction failure before initializing dependent services', async function () {
-  const boot = createServicesHarness();
-  const failure = new Error('email address construction failed');
-  boot.emailAddress.throws(failure);
-
-  await assert.rejects(boot.initServices(), (error) => error === failure);
-
-  for (const dependency of [boot.stripe, boot.gifts, boot.email, boot.register, boot.start]) {
-    sinon.assert.notCalled(dependency);
-  }
-});
 
 it('initializes dependencies and starts jobs before calling automations init', async function () {
   const boot = createServicesHarness();
@@ -294,7 +275,6 @@ it('waits for link tracking before initializing member welcome emails, then init
 
   sinon.assert.calledOnce(boot.memberWelcomeEmails);
   sinon.assert.callOrder(
-    boot.emailAddress,
     boot.linkTracking,
     boot.memberWelcomeEmails,
     boot.register,
@@ -358,6 +338,7 @@ it('starts no shared module and no domain: both layers are ready before this ste
 
   // The fallback answers any dependency, so these two are checked by name.
   sinon.assert.notCalled(boot.permissions);
+  sinon.assert.notCalled(boot.emailAddress);
   sinon.assert.notCalled(boot.domains);
 });
 

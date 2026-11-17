@@ -14,6 +14,8 @@ function createSharedHarness() {
   const signingKeys = { init: sinon.stub().resolves() };
   const internalKeys = { init: sinon.stub().resolves() };
   const i18n = { init: sinon.stub().resolves() };
+  // Synchronous in production: it builds the policy and reads nothing.
+  const emailAddress = { init: sinon.stub() };
   const permissions = { init: sinon.stub().resolves() };
   const initShared = loadBootFunction('initShared', {
     './shared/url-utils': {},
@@ -23,6 +25,7 @@ function createSharedHarness() {
     './server/services/internal-keys': { default: internalKeys },
     './server/lib/common/events': {},
     './shared/i18n': i18n,
+    './server/services/email-address': emailAddress,
     './server/services/permissions': permissions,
   });
   return {
@@ -32,6 +35,7 @@ function createSharedHarness() {
     signingKeys,
     internalKeys,
     i18n,
+    emailAddress,
     permissions,
   };
 }
@@ -51,7 +55,7 @@ const order: [string, (boot: Harness) => sinon.SinonStub, (boot: Harness) => sin
   ],
   ['signing keys', (boot) => boot.signingKeys.init, (boot) => boot.internalKeys.init],
   ['internal keys', (boot) => boot.internalKeys.init, (boot) => boot.i18n.init],
-  ['i18n', (boot) => boot.i18n.init, (boot) => boot.permissions.init],
+  ['i18n', (boot) => boot.i18n.init, (boot) => boot.emailAddress.init],
 ];
 
 for (const [name, current, next] of order) {
@@ -109,4 +113,23 @@ it('waits for permissions, the last shared module, before the layer is ready', a
   }
 
   assert.equal(completed, true);
+});
+
+it('builds the email address policy, which every mailer needs, before permissions', async function () {
+  const boot = createSharedHarness();
+
+  await boot.init();
+
+  sinon.assert.calledOnce(boot.emailAddress.init);
+  sinon.assert.callOrder(boot.i18n.init, boot.emailAddress.init, boot.permissions.init);
+});
+
+it('fails with the same error when the email address policy cannot be built', async function () {
+  const boot = createSharedHarness();
+  const failure = new Error('email address construction failed');
+  boot.emailAddress.init.throws(failure);
+
+  await assert.rejects(boot.init(), (error) => error === failure);
+
+  sinon.assert.notCalled(boot.permissions.init);
 });

@@ -134,7 +134,7 @@ async function initFoundationChecks({ config }) {
  * It starts after the foundation and before anything else, and starts nothing
  * that belongs to one feature. Labs and mail are shared too and have no start:
  * labs reads the settings cache when it is asked, and a mailer is built by
- * whoever sends.
+ * whoever sends. Mail needs the email address policy, so that starts here.
  *
  * The order inside is real: settings reads limits, and signing keys and i18n
  * read settings.
@@ -177,6 +177,13 @@ async function initShared({ config }) {
   const i18n = require('./shared/i18n');
   await i18n.init({ events: require('./server/lib/common/events') });
   debug('End: i18n');
+
+  // Mail has no start of its own, but no mailer can send until the address
+  // policy it asks for the sender exists. It reads settings when it is asked.
+  debug('Begin: email address policy');
+  const emailAddressService = require('./server/services/email-address');
+  emailAddressService.init();
+  debug('End: email address policy');
 
   // Builds the actions map from the permissions defined in code. It reads nothing.
   debug('Begin: permissions');
@@ -459,7 +466,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const donationService = require('./server/services/donations').default;
   const giftService = require('./server/services/gifts');
   const machinePaymentsService = require('./server/services/machine-payments');
-  const emailAddressService = require('./server/services/email-address');
   const newsletters = require('./server/services/newsletters').default;
   const statsService = require('./server/services/stats').default;
   const explorePingService = require('./server/services/explore-ping').default;
@@ -481,7 +487,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const { checkouts } = require('./server/services/stripe-checkout-config').default.service;
 
   // Initialize things that other services depend on first.
-  emailAddressService.init();
   const apiUrl = urlUtils.urlFor('api', { type: 'admin' }, true);
   const schedulerAdapter = withErrorCapture(adapterManager.getAdapter('scheduling'));
   schedulerAdapter.run();
