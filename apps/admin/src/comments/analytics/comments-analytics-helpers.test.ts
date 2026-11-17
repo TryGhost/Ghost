@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   getCommentsStatsSearchParams,
+  getComparisonText,
   getTrend,
   parseRangeParam,
   parseTabParam,
@@ -51,5 +52,10 @@ describe('comments analytics helpers', () => {
     expect(getTrend(10, 10, 30).direction).toBe('hidden');
     expect(getTrend(10, 0, 30).direction).toBe('hidden');
     expect(getTrend(10, 5, 1000).direction).toBe('hidden');
+  });
+
+  it('describes the comparison period', () => {
+    expect(getComparisonText('+50%', 1)).toBe('+50% compared to the previous day');
+    expect(getComparisonText('+50%', 7)).toBe('+50% compared to the previous 7 days');
   });
 });

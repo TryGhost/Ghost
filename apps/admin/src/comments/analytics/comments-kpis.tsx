@@ -14,6 +14,7 @@ import {
   getComparisonText,
   getTrend,
 } from './comments-analytics-helpers';
+import { Inline } from '@tryghost/shade/primitives';
 import { KpiTabTrigger, KpiTabValue } from '@tryghost/shade/patterns';
 import {
   Recharts,
@@ -59,10 +60,10 @@ const ChartTooltipContent: React.FC<{
       <div className="mb-1 text-sm text-foreground">
         {formatDisplayDateWithRange(date, displayRange)}
       </div>
-      <div className="flex items-center justify-between gap-5">
+      <Inline gap="lg" justify="between">
         <span className="text-sm text-muted-foreground">{label}</span>
         <span className="font-mono font-medium">{formatNumber(value)}</span>
-      </div>
+      </Inline>
     </div>
   );
 };
@@ -124,9 +125,9 @@ const CommentsKpis: React.FC<{
       </TabsList>
       <div className="mt-4 h-[200px] px-4">
         {isLoading ? (
-          <div className="flex size-full items-center justify-center">
+          <Inline className="size-full" justify="center">
             <BarChartLoadingIndicator />
-          </div>
+          </Inline>
         ) : (
           <ChartContainer className="aspect-auto size-full" config={chartConfig}>
             <Recharts.BarChart data={chartData} margin={{ top: 8, left: 0, right: 24 }}>

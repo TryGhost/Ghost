@@ -1,7 +1,7 @@
 import CommentsAnalyticsPanel from './analytics/comments-analytics-panel';
 import CommentsFilters from './components/comments-filters';
 import CommentsList from './components/comments-list';
-import { Box, Container } from '@tryghost/shade/primitives';
+import { Box, Container, Inline } from '@tryghost/shade/primitives';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   Button,
@@ -117,7 +117,7 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
   const hasFilters = filters.length > 0;
 
   return (
-    <div className="flex size-full">
+    <Inline align="stretch" className="size-full" gap="none">
       <Box className="min-w-0 flex-1">
         <Container className="relative flex h-full flex-col" size="page">
           <ListPage data-testid="comments-page">
@@ -222,7 +222,7 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
           </aside>
         ) : (
           <Sheet open={analyticsSheetOpen} onOpenChange={setAnalyticsSheetOpen}>
-            <SheetContent className="overflow-y-auto sm:max-w-[440px]">
+            <SheetContent aria-describedby={undefined} className="overflow-y-auto sm:max-w-[440px]">
               <SheetTitle className="sr-only">Comment analytics</SheetTitle>
               <CommentsAnalyticsPanel
                 analytics={analytics}
@@ -234,7 +234,7 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
             </SheetContent>
           </Sheet>
         ))}
-    </div>
+    </Inline>
   );
 };
 

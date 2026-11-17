@@ -22,6 +22,7 @@ import {
   SkeletonTable,
 } from '@tryghost/shade/components';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
+import { Text } from '@tryghost/shade/primitives';
 
 const PREVIEW_ROWS = 5;
 
@@ -34,11 +35,14 @@ const Rows: React.FC<{ rows: TopListRow[]; onSelect: (row: TopListRow) => void }
   <DataList>
     <DataListBody>
       {rows.map((row) => (
-        <DataListRow key={row.id} className="group/row relative hover:cursor-pointer">
+        <DataListRow
+          key={row.id}
+          className="group/row relative hover:cursor-pointer has-[:focus-visible]:before:opacity-100"
+        >
           <DataListItemContent>
             {/* The button's overlay makes the whole row the click target */}
             <button
-              className="truncate text-left font-medium group-hover/row:underline after:absolute after:inset-0 focus-visible:outline-none"
+              className="truncate text-left font-medium group-hover/row:underline after:absolute after:inset-0 focus-visible:underline focus-visible:outline-none"
               type="button"
               onClick={() => onSelect(row)}
             >
@@ -80,9 +84,9 @@ const CommentsTopList: React.FC<{
         ) : rows.length ? (
           <Rows rows={rows.slice(0, PREVIEW_ROWS)} onSelect={onSelect} />
         ) : (
-          <p className="py-6 text-center text-sm text-muted-foreground">
+          <Text className="py-6 text-center" size="sm" tone="secondary">
             No comments in this period
-          </p>
+          </Text>
         )}
       </CardContent>
       {rows && rows.length > PREVIEW_ROWS && (

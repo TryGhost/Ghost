@@ -57,6 +57,9 @@ export function getComparisonText(value: string, range: number): string {
   if (range === STATS_RANGES.yearToDate.value) {
     return `${value} compared to the same number of days before January 1`;
   }
+  if (range === STATS_RANGES.today.value) {
+    return `${value} compared to the previous day`;
+  }
   return `${value} compared to the previous ${range} days`;
 }
 

@@ -79,6 +79,10 @@ describe('Comments analytics', () => {
     await expect.element(commentsScreen.analyticsKpiValue('comments')).toHaveTextContent('12');
     await expect.element(commentsScreen.analyticsKpiValue('commenters')).toHaveTextContent('7');
     await expect.element(commentsScreen.analyticsKpiValue('reported')).toHaveTextContent('2');
+    await expect.element(commentsScreen.analyticsKpiTrend('comments')).toBeVisible();
+    await expect.element(commentsScreen.analyticsKpiTrend('reported')).toBeVisible();
+    // Unchanged from the previous period
+    await expect.element(commentsScreen.analyticsKpiTrend('commenters')).not.toBeInTheDocument();
     await expect.element(commentsScreen.analyticsTopPosts()).toHaveTextContent('Popular post 1');
     await expect
       .element(commentsScreen.analyticsTopCommenters())
@@ -132,7 +136,7 @@ describe('Comments analytics', () => {
   });
 
   it('lists the top 25 in a sheet from View all', async () => {
-    fakeComments([comment()]);
+    const commentsApi = fakeComments([comment()]);
     fakeCommentsStats();
     fakeFilterLookups();
     await renderAdminApp('/comments', { labs });
@@ -149,12 +153,12 @@ describe('Comments analytics', () => {
     await viewAll.getByRole('button', { name: 'Popular post 7' }).click();
 
     await expect.element(viewAll).not.toBeInTheDocument();
-    await expect.poll(currentRoute).toContain('post_id');
+    await expect(commentsApi).toHaveSentFilter(/^post_id:'?post6'?$/);
   });
 
   it('opens the panel from the header on narrower screens', async () => {
     await page.viewport(1000, 800);
-    fakeComments([comment()]);
+    const commentsApi = fakeComments([comment()]);
     fakeCommentsStats();
     fakeFilterLookups();
     await renderAdminApp('/comments', { labs });
@@ -172,7 +176,7 @@ describe('Comments analytics', () => {
       .click();
 
     await expect.element(commentsScreen.analyticsPanel()).not.toBeInTheDocument();
-    await expect.poll(currentRoute).toContain('member_id');
+    await expect(commentsApi).toHaveSentFilter(/^member_id:'?member1'?$/);
   });
 
   it('hides itself when Core has no comments stats endpoint', async () => {
@@ -185,6 +189,25 @@ describe('Comments analytics', () => {
     await expect.element(commentsScreen.analyticsPanel()).not.toBeInTheDocument();
     await expect.element(commentsScreen.analyticsButton()).not.toBeInTheDocument();
     await expect.element(page.getByText(/went wrong/i)).not.toBeInTheDocument();
+  });
+
+  it('shows a retry for other errors', async () => {
+    fakeComments([comment()]);
+    const stats = {
+      totals: totals(0, 0, 0),
+      previous_totals: totals(0, 0, 0),
+      interval: 'day',
+      series: [],
+    };
+    fakeAdminEndpoint('GET', /^\/stats\/comments\/\?/, { stats: [stats] });
+    fakeAdminEndpoint('GET', /^\/stats\/comments\/top-commenters\/\?/, { stats: [] });
+    const invalid = { errors: [{ message: 'Validation error', type: 'ValidationError' }] };
+    fakeAdminEndpoint('GET', /^\/stats\/comments\/top-posts\/\?/, invalid, { status: 422 });
+    await renderAdminApp('/comments', { labs });
+
+    await expect.element(commentsScreen.analyticsPanel()).toBeVisible();
+    await expect.element(page.getByText(/couldn.t be loaded/)).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Retry' })).toBeVisible();
   });
 
   it('stays off without the labs flag', async () => {

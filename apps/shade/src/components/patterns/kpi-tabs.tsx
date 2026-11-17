@@ -71,6 +71,8 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
         data-testid={testId ? `${testId}-diff` : undefined}
         direction={diffDirection}
         inverted={diffInverted}
+        // Rendered inside the tab button, so it must not be a tab stop of its own
+        tabIndex={diffTooltip ? -1 : undefined}
         tooltip={diffTooltip}
         value={diffValue ?? ''}
       />

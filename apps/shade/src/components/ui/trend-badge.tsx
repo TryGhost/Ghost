@@ -74,7 +74,11 @@ const TrendBadge = React.forwardRef<HTMLDivElement, TrendBadgeProps>(
         tabIndex={interactive ? 0 : undefined}
         {...props}
       >
-        {value !== '' && <span className="leading-none font-medium">{value}</span>}
+        {value !== '' ? (
+          <span className="leading-none font-medium">{value}</span>
+        ) : (
+          tooltip && <span className="sr-only">{tooltip}</span>
+        )}
         {direction === 'up' && <TrendingUp className="size-3!" strokeWidth={2} />}
         {direction === 'down' && <TrendingDown className="size-3!" strokeWidth={2} />}
       </div>

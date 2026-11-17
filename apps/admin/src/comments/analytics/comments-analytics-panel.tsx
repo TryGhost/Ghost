@@ -3,7 +3,7 @@ import CommentsTopList from './comments-top-list';
 import DateRangeSelect from '@/shared/analytics/date-range-select';
 import React, { useMemo } from 'react';
 import { Button, Card } from '@tryghost/shade/components';
-import { Inline, Stack } from '@tryghost/shade/primitives';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { getPeriodText } from '@/shared/analytics/chart-helpers';
 import type { CommentsAnalytics } from './use-comments-analytics';
 
@@ -38,14 +38,16 @@ const CommentsAnalyticsPanel: React.FC<{
   return (
     <Stack data-testid="comments-analytics" gap="lg">
       <Inline justify="between">
-        <h2 className="text-lg font-semibold">Analytics</h2>
+        <Text as="h2" size="lg" weight="semibold">
+          Analytics
+        </Text>
         <DateRangeSelect range={range} onRangeChange={setRange} />
       </Inline>
       {failed ? (
         <Stack align="center" className="py-10 text-center" gap="md">
-          <p className="text-sm text-muted-foreground">
+          <Text size="sm" tone="secondary">
             Comment analytics couldn&apos;t be loaded.
-          </p>
+          </Text>
           <Button
             variant="outline"
             onClick={() => queries.forEach(({ isError, refetch }) => isError && void refetch())}

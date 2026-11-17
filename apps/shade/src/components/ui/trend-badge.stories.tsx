@@ -74,12 +74,30 @@ export const Inverted: Story = {
   },
 };
 
+export const ArrowOnly: Story = {
+  args: {
+    direction: 'up',
+    value: '',
+    tooltip: '+12% compared to the previous 30 days',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'An empty value shows only the arrow; the tooltip carries the change and is read out to screen readers.',
+      },
+    },
+  },
+};
+
 export const AllDirections: Story = {
   render: () => (
     <div className="flex items-center gap-2">
       <TrendBadge direction="up" value="+5.2%" />
       <TrendBadge direction="down" value="-2.4%" />
       <TrendBadge direction="same" value="0%" />
+      <TrendBadge direction="up" value="+40%" inverted />
+      <TrendBadge direction="down" value="-25%" inverted />
     </div>
   ),
 };

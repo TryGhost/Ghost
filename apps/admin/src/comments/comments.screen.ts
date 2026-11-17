@@ -64,6 +64,8 @@ export const commentsScreen = {
   analyticsDateRange: () => page.getByRole('combobox', { name: dateRangeSelect }),
   analyticsKpiValue: (metric: 'comments' | 'commenters' | 'reported') =>
     page.getByTestId(`${commentsAnalyticsKpiPrefix}${metric}`),
+  analyticsKpiTrend: (metric: 'comments' | 'commenters' | 'reported') =>
+    page.getByTestId(`${commentsAnalyticsKpiPrefix}${metric}-diff`),
   analyticsKpiTab: (label: string) => page.getByRole('tab', { name: label }),
   analyticsTopPosts: () => page.getByTestId(commentsAnalyticsTopPosts),
   analyticsTopCommenters: () => page.getByTestId(commentsAnalyticsTopCommenters),

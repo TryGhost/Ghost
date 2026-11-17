@@ -11,7 +11,7 @@ import {
   useCommentsTopCommenters,
   useCommentsTopPosts,
 } from '@tryghost/admin-x-framework/api/stats';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { useSearchParams } from '@tryghost/admin-x-framework';
 
 const isNotFound = (error: unknown) => error instanceof APIError && error.response?.status === 404;
@@ -22,7 +22,8 @@ export function useCommentsAnalytics(timezone: string, enabled: boolean) {
   const tab = parseTabParam(searchParams.get('tab'));
 
   const query = {
-    searchParams: useMemo(() => getCommentsStatsSearchParams(range, timezone), [range, timezone]),
+    // Not memoised: date_to must move on when the site's day changes
+    searchParams: getCommentsStatsSearchParams(range, timezone),
     enabled,
     // Older Core has no endpoint: hide the panel instead of toasting the 404
     defaultErrorHandler: false,

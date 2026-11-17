@@ -241,7 +241,7 @@ export const InvertedTrend: Story = {
     docs: {
       description: {
         story:
-          'Set `diffInverted` where a rise is bad, such as reported comments, and `diffTooltip` to name the comparison period.',
+          'Set `diffInverted` where a rise is bad, such as reported comments. With an empty `diffValue` only the arrow shows, and `diffTooltip` carries the change.',
       },
     },
   },
@@ -251,8 +251,8 @@ export const InvertedTrend: Story = {
         <KpiTabTrigger value="comments">
           <KpiTabValue
             diffDirection="down"
-            diffTooltip="Compared to the previous 30 days"
-            diffValue="-12%"
+            diffTooltip="-12% compared to the previous 30 days"
+            diffValue=""
             label="Comments"
             value="79"
           />
@@ -260,8 +260,8 @@ export const InvertedTrend: Story = {
         <KpiTabTrigger value="reported">
           <KpiTabValue
             diffDirection="up"
-            diffTooltip="Compared to the previous 30 days"
-            diffValue="+100%"
+            diffTooltip="+100% compared to the previous 30 days"
+            diffValue=""
             label="Reported"
             value="2"
             diffInverted
