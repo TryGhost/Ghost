@@ -27,10 +27,12 @@ export const useWhatsNew = (): WhatsNewData => {
   const hasWhatsNewPreferences = !!lastSeenDate;
 
   // Entries published before a user's first visit shouldn't count as new, so
-  // the first visit stores now as the last seen date. The sidebar asks for
-  // What's New from a few components on the same screen, and each runs this
-  // effect, so their saves queue up. Each save checks the stored value when its
-  // turn comes, so only the first one has anything to save.
+  // the first visit stores now as the last seen date. The sidebar calls this
+  // hook from a few components on the same screen, and their saves queue up
+  // behind each other. Passing a function makes each one decide what to save
+  // when its turn comes, from the preferences the save before it stored: once
+  // the first has stored a date, the rest return no changes, and
+  // useEditUserPreferences skips a save that changes nothing.
   useEffect(() => {
     if (!hasWhatsNewPreferences && isPreferencesLoaded) {
       void updatePreferences((current) =>
