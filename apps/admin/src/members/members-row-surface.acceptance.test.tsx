@@ -1,10 +1,11 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { beforeEach, afterEach, describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import {
   currentRoute,
   fakeAdminEndpoint,
   fakeMembers,
   member,
+  fakeAdminStats,
   renderAdminApp,
 } from '@test-utils/acceptance';
 import { sidebarScreen } from '@/layout/sidebar.screen';
@@ -15,7 +16,28 @@ afterEach(async () => {
   await page.viewport(1280, 800);
 });
 
+beforeEach(() => {
+  fakeAdminStats.memberCount();
+  fakeAdminStats.mrr();
+});
+
 describe('Members row surfaces', () => {
+  it.each([false, true])(
+    'preserves legacy member insets with admin7Design %s',
+    async (admin7Design) => {
+      fakeMembers([member({ name: 'Ada Lovelace' })]);
+      await renderAdminApp('/members', { labs: { admin7Design } });
+      const row = membersScreen.memberRow('Ada Lovelace');
+      await expect.element(row).toBeVisible();
+      expect(getComputedStyle(row.getByRole('cell').elements()[0]).paddingLeft).toBe(
+        admin7Design ? '0px' : '16px',
+      );
+      expect(getComputedStyle(membersScreen.horizontalScrollElement()!).paddingLeft).toBe(
+        admin7Design ? '16px' : '0px',
+      );
+    },
+  );
+
   it.each([390, 768])('extends and rounds the last visible cell at %spx', async (width) => {
     await page.viewport(width, 800);
     const ada = member({ name: 'Ada Lovelace' });
@@ -25,7 +47,7 @@ describe('Members row surfaces', () => {
       events: [],
       meta: { pagination: { page: 1, limit: 5, pages: 1, total: 0, next: null, prev: null } },
     });
-    await renderAdminApp('/members');
+    await renderAdminApp('/members', { labs: { admin7Design: true } });
 
     const row = membersScreen.memberRow('Ada Lovelace');
     await expect.element(row).toBeVisible();
@@ -57,7 +79,7 @@ describe('Members row surfaces', () => {
       events: [],
       meta: { pagination: { page: 1, limit: 5, pages: 1, total: 0, next: null, prev: null } },
     });
-    await renderAdminApp('/members');
+    await renderAdminApp('/members', { labs: { admin7Design: true } });
 
     const row = membersScreen.memberRow('Ada Lovelace');
     await expect.element(row).toBeVisible();
@@ -71,7 +93,7 @@ describe('Members row surfaces', () => {
     async (theme) => {
       await page.viewport(1100, 800);
       fakeMembers([member({ name: 'Ada Lovelace' }), member({ name: 'Grace Hopper' })]);
-      await renderAdminApp('/members');
+      await renderAdminApp('/members', { labs: { admin7Design: true } });
       await sidebarScreen.selectAppearance(theme);
       const ada = membersScreen.memberRow('Ada Lovelace');
       const grace = membersScreen.memberRow('Grace Hopper');

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
@@ -6,6 +6,7 @@ import {
   fakeMemberCustomFields,
   fakeMembers,
   member,
+  fakeAdminStats,
   renderAdminApp,
   type Member,
 } from '@test-utils/acceptance';
@@ -133,6 +134,11 @@ function fakeMemberDetailWorld(
 
 const modal = () => memberDetailScreen.fieldEditModal();
 
+beforeEach(() => {
+  fakeAdminStats.memberCount();
+  fakeAdminStats.mrr();
+});
+
 describe('Member detail custom fields', () => {
   it('renders the member’s values as a read-only record, addresses as one line', async () => {
     const m = member({ name: 'Ada Lovelace' });
@@ -168,56 +174,68 @@ describe('Member detail custom fields', () => {
     expect(saved.name).toBeUndefined();
   });
 
-  it('uses the shared expanded row target and separators for custom fields', async () => {
-    const m = member({ name: 'Ada Lovelace' });
-    fakeMemberDetailWorld(m, { job_title: 'Editor', company: 'Ghost', home_address: ADDRESS });
-    await renderAdminApp(`/members/${m.id}`);
+  it.each([false, true])(
+    'preserves custom field editing with admin7Design %s',
+    async (admin7Design) => {
+      const m = member({ name: 'Ada Lovelace' });
+      fakeMemberDetailWorld(m, { job_title: 'Editor', company: 'Ghost', home_address: ADDRESS });
+      await renderAdminApp(`/members/${m.id}`, { labs: { admin7Design } });
 
-    const action = memberDetailScreen.editFieldButton('Company');
-    await expect.element(action).toBeVisible();
-    const row = action.element().parentElement!;
-    const value = memberDetailScreen.fieldValue('Ghost');
-    const contentX = value.element().getBoundingClientRect().x;
-    await action.hover();
+      const action = memberDetailScreen.editFieldButton('Company');
+      await expect.element(action).toBeVisible();
+      const row = action.element().parentElement!;
+      const value = memberDetailScreen.customFieldsSection().getByText('Ghost', { exact: true });
+      const contentX = value.element().getBoundingClientRect().x;
+      await action.hover();
 
-    expect(getComputedStyle(row, '::before').left).toBe('-16px');
-    expect(getComputedStyle(row, '::before').opacity).toBe('1');
-    expect(getComputedStyle(row).borderBottomColor).toBe('rgba(0, 0, 0, 0)');
-    expect(getComputedStyle(row.previousElementSibling!).borderBottomColor).toBe(
-      'rgba(0, 0, 0, 0)',
-    );
-    expect(value.element().getBoundingClientRect().x).toBe(contentX);
+      if (admin7Design) {
+        expect(getComputedStyle(row, '::before').left).toBe('-16px');
+        expect(getComputedStyle(row, '::before').opacity).toBe('1');
+        expect(getComputedStyle(row).borderBottomColor).toBe('rgba(0, 0, 0, 0)');
+        expect(getComputedStyle(row.previousElementSibling!).borderBottomColor).toBe(
+          'rgba(0, 0, 0, 0)',
+        );
+        expect(value.element().getBoundingClientRect().x).toBe(contentX);
 
-    await action.click({
-      position: { x: -8, y: action.element().getBoundingClientRect().height / 2 },
-    });
-    await expect.element(modal().getByLabelText('Company')).toBeVisible();
-  });
-
-  it('retains selected field text instead of opening its editor', async () => {
-    const m = member({ name: 'Ada Lovelace' });
-    fakeMemberDetailWorld(m, { job_title: 'Editor' });
-    await renderAdminApp(`/members/${m.id}`);
-
-    const value = memberDetailScreen.fieldValue('Editor');
-    await expect.element(value).toBeVisible();
-    const selection = window.getSelection()!;
-    const range = document.createRange();
-    range.selectNodeContents(value.element());
-    selection.removeAllRanges();
-    selection.addRange(range);
-    try {
-      const action = memberDetailScreen.editFieldButton('Job title').element();
-      if (!(action instanceof HTMLButtonElement)) {
-        throw new Error('The field editor must be a button');
+        await action.click({
+          position: { x: -8, y: action.element().getBoundingClientRect().height / 2 },
+        });
+      } else {
+        expect(getComputedStyle(row, '::before').content).toBe('none');
+        expect(getComputedStyle(action.element()).marginLeft).toBe('-12px');
+        await action.click();
       }
-      action.click();
-      await expect.element(modal()).not.toBeInTheDocument();
-      expect(selection.toString()).toBe('Editor');
-    } finally {
+      await expect.element(modal().getByLabelText('Company')).toBeVisible();
+    },
+  );
+
+  it.each([false, true])(
+    'retains selected field text with admin7Design %s',
+    async (admin7Design) => {
+      const m = member({ name: 'Ada Lovelace' });
+      fakeMemberDetailWorld(m, { job_title: 'Editor' });
+      await renderAdminApp(`/members/${m.id}`, { labs: { admin7Design } });
+
+      const value = memberDetailScreen.fieldValue('Editor');
+      await expect.element(value).toBeVisible();
+      const selection = window.getSelection()!;
+      const range = document.createRange();
+      range.selectNodeContents(value.element());
       selection.removeAllRanges();
-    }
-  });
+      selection.addRange(range);
+      try {
+        const action = memberDetailScreen.editFieldButton('Job title').element();
+        if (!(action instanceof HTMLButtonElement)) {
+          throw new Error('The field editor must be a button');
+        }
+        action.click();
+        await expect.element(modal()).not.toBeInTheDocument();
+        expect(selection.toString()).toBe('Editor');
+      } finally {
+        selection.removeAllRanges();
+      }
+    },
+  );
 
   it('leaves an unsaved page edit intact when a custom field is saved', async () => {
     const m = member({ name: 'Ada Lovelace' });

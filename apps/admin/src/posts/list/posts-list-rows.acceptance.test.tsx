@@ -9,6 +9,7 @@ import {
   fakePosts,
   fakePostsListScreen,
   post,
+  fakeAdminStats,
   renderAdminApp,
   settingsResponse,
   staffRole,
@@ -32,6 +33,11 @@ const emailMetricsSettings = settingsResponse({
  * unit-tested in post-row-copy.test.ts; these check they reach the screen and
  * that the states switch correctly.
  */
+beforeEach(() => {
+  fakeAdminStats.memberCount();
+  fakeAdminStats.mrr();
+});
+
 describe('Posts list rows', () => {
   // The filter bar mounts with the screen and probes these to resolve any
   // author/tag slug in the URL into a name.
@@ -113,25 +119,28 @@ describe('Posts list rows', () => {
       .toHaveAttribute('href', `#/editor/post/${target.id}`);
   });
 
-  it('makes both expanded row edges part of the primary link', async () => {
-    const target = post({ title: 'Expanded target', status: 'draft' });
-    fakePosts([target]);
-    await renderAdminApp('/posts');
+  it.each([false, true])(
+    'gates expanded post hit areas with admin7Design %s',
+    async (admin7Design) => {
+      const target = post({ title: 'Expanded target', status: 'draft' });
+      fakePosts([target]);
+      await renderAdminApp('/posts', { labs: { admin7Design } });
 
-    const row = postsListScreen.listItems().first();
-    const link = postsListScreen.rowLink().first();
-    await expect.element(link).toBeVisible();
+      const row = postsListScreen.listItems().first();
+      const link = postsListScreen.rowLink().first();
+      await expect.element(link).toBeVisible();
 
-    await expect
-      .poll(() => {
-        const bounds = row.element().getBoundingClientRect();
-        const y = bounds.top + bounds.height / 2;
-        return [bounds.left - 8, bounds.right + 8].every(
-          (x) => document.elementFromPoint(x, y)?.closest('a') === link.element(),
-        );
-      })
-      .toBe(true);
-  });
+      await expect
+        .poll(() => {
+          const bounds = row.element().getBoundingClientRect();
+          const y = bounds.top + bounds.height / 2;
+          return [bounds.left - 8, bounds.right + 8].every(
+            (x) => document.elementFromPoint(x, y)?.closest('a') === link.element(),
+          );
+        })
+        .toBe(admin7Design);
+    },
+  );
 
   describe('as a Contributor', () => {
     const asContributor = () => {

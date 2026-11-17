@@ -9,11 +9,19 @@ import { ThemeProvider } from '@/providers/theme-provider';
 
 import { createFrameworkProps } from './framework-props';
 
-function ThemedShade({ children }: { children: ReactNode }) {
+interface ShadePresentation {
+  admin7Design?: boolean;
+}
+
+function ThemedShade({ children, admin7Design }: { children: ReactNode } & ShadePresentation) {
   const { resolvedTheme } = useThemeContext();
 
   return (
-    <ShadeApp className="shade-admin" darkMode={resolvedTheme === 'dark'}>
+    <ShadeApp
+      admin7Design={admin7Design}
+      className="shade-admin"
+      darkMode={resolvedTheme === 'dark'}
+    >
       {children}
     </ShadeApp>
   );
@@ -24,7 +32,10 @@ function ThemedShade({ children }: { children: ReactNode }) {
  * app itself — component-tier specs mount a component here rather than
  * booting a route. Use it as `renderHook`'s wrapper; `renderInApp` renders it.
  */
-export function InAppProviders({ children }: { children: ReactNode }) {
+export function InAppProviders({
+  children,
+  admin7Design,
+}: { children: ReactNode } & ShadePresentation) {
   // One QueryClient per mount: created here, above StrictMode, so a re-render
   // never swaps the client out from under the subject.
   const [framework] = useState(createFrameworkProps);
@@ -33,7 +44,7 @@ export function InAppProviders({ children }: { children: ReactNode }) {
     <StrictMode>
       <FrameworkProvider {...framework}>
         <ThemeProvider>
-          <ThemedShade>{children}</ThemedShade>
+          <ThemedShade admin7Design={admin7Design}>{children}</ThemedShade>
         </ThemeProvider>
       </FrameworkProvider>
     </StrictMode>
@@ -42,6 +53,6 @@ export function InAppProviders({ children }: { children: ReactNode }) {
 
 /** Mounts a subject in the app's provider stack, against the fake Ghost API. */
 // eslint-disable-next-line react-refresh/only-export-components -- test harness module, never a fast-refresh target
-export async function renderInApp(children: ReactNode) {
-  return await render(<InAppProviders>{children}</InAppProviders>);
+export async function renderInApp(children: ReactNode, presentation: ShadePresentation = {}) {
+  return await render(<InAppProviders {...presentation}>{children}</InAppProviders>);
 }

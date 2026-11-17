@@ -6,6 +6,7 @@ import {
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeAdminStats,
   renderAdminApp,
   staffRole,
   type CapturedEndpointRequest,
@@ -60,6 +61,11 @@ function created(request: CapturedEndpointRequest | undefined, resource: 'posts'
  * The restore screen lists the copies the editor keeps in this browser and turns
  * any of them back into a draft.
  */
+beforeEach(() => {
+  fakeAdminStats.memberCount();
+  fakeAdminStats.mrr();
+});
+
 describe('Restore posts', () => {
   beforeEach(() => {
     clearLocalRevisions();
@@ -108,14 +114,19 @@ describe('Restore posts', () => {
     await expect.element(restoreScreen.emptyState()).toBeVisible();
   });
 
-  it.each(['light', 'dark'] as const)(
-    'keeps revision rows static and their contents readable in %s mode',
-    async (theme) => {
+  it.each([
+    { theme: 'light', admin7Design: false },
+    { theme: 'dark', admin7Design: false },
+    { theme: 'light', admin7Design: true },
+    { theme: 'dark', admin7Design: true },
+  ] as const)(
+    'preserves revision hover in $theme mode with admin7Design $admin7Design',
+    async ({ theme, admin7Design }) => {
       storeCopy('post-1', OLDER, { title: 'An older draft', custom_excerpt: 'Earlier words' });
       storeCopy('post-2', NEWER, { title: 'A newer draft', custom_excerpt: 'Recent words' });
-      await renderAdminApp('/restore');
+      await renderAdminApp('/restore', { labs: { admin7Design } });
       await sidebarScreen.selectAppearance(theme);
-      await restoreScreen.heading().hover();
+      await page.getByText('Posts are regularly saved locally', { exact: false }).hover();
       const row = restoreScreen.revisionRow('A newer draft');
       await expect.element(row).toBeVisible();
       const introduction = page.getByText('Posts are regularly saved locally', { exact: false });
@@ -129,7 +140,11 @@ describe('Restore posts', () => {
 
       await row.hover();
 
-      await expect.poll(() => background(cells[0])).toBe(originalBackground);
+      if (admin7Design) {
+        await expect.poll(() => background(cells[0])).toBe(originalBackground);
+      } else {
+        await expect.poll(() => background(cells[0])).not.toBe(originalBackground);
+      }
       expect(cells.map(background)).toEqual(cells.map(() => background(cells[0])));
       expect(headers.map(background)).toEqual(headerBackgrounds);
       expect(otherCells.map(background)).toEqual(otherBackgrounds);

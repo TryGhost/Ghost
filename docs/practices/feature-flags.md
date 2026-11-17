@@ -115,6 +115,12 @@ the enabled design as the intended default so retiring a flag means removing
 compatibility branches, without changing ordinary component calls. Document
 milestone-specific scope and exclusions alongside the affected design.
 
+Content-list and table row behavior follows Shade's
+[Lists and tables contract](../../apps/shade/src/docs/list-rows.mdx#compatibility-and-rollout).
+Its shared row components own the milestone boundary, including primary action
+and press behavior; page-specific adapters preserve their previous structure
+with the flag off.
+
 Test the flag boundary and preserve existing behavioral coverage. Styling-only
 changes need visual review, not tests that assert appearance. Keep permanent
 permission and backend capability checks independent of the temporary flag.

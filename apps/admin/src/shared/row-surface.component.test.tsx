@@ -7,12 +7,14 @@ import {
   ActionListItemActions,
   ActionListItemContent,
   Button,
+  RowPrimaryAction,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
+  TableRowAction,
 } from '@tryghost/shade/components';
 import { Box } from '@tryghost/shade/primitives';
 
@@ -27,7 +29,7 @@ const geometry = (element: Element) => {
   return { x, y, width, height };
 };
 
-async function renderRows() {
+async function renderRows(admin7Design = true) {
   primaryAction.mockClear();
   secondaryAction.mockClear();
   await renderInApp(
@@ -56,10 +58,65 @@ async function renderRows() {
         </ActionListItem>
       </ActionList>
     </Box>,
+    { admin7Design },
   );
 }
 
 describe('shared content row surfaces in the browser', () => {
+  it.each([false, true])(
+    'keeps custom row markup and gates its expanded action: admin7Design %s',
+    async (admin7Design) => {
+      const open = vi.fn<() => void>();
+      const edit = vi.fn<() => void>();
+      await renderInApp(
+        <Box className="w-[480px]" padding="lg">
+          <ul>
+            <ActionListItem asChild>
+              <li className="relative border-b py-4">
+                <RowPrimaryAction asChild>
+                  <button type="button" onClick={open}>
+                    Open custom row
+                  </button>
+                </RowPrimaryAction>
+                <button className="relative z-10" type="button" onClick={edit}>
+                  Edit custom row
+                </button>
+              </li>
+            </ActionListItem>
+          </ul>
+        </Box>,
+        { admin7Design },
+      );
+      const custom = page.getByRole('listitem');
+      expect(custom.element().parentElement?.tagName).toBe('UL');
+      expect(getComputedStyle(custom.element()).display).toBe('list-item');
+      await page.getByRole('button', { name: 'Edit custom row' }).click();
+      expect(edit).toHaveBeenCalledTimes(1);
+      expect(open).not.toHaveBeenCalled();
+      if (admin7Design) {
+        await custom.click({ position: { x: -8, y: 12 } });
+      } else {
+        await page.getByRole('button', { name: 'Open custom row' }).click();
+      }
+      expect(open).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it('preserves the previous action-list focus and click area with the flag off', async () => {
+    await renderRows(false);
+    await page.getByText('Static information').hover();
+    await userEvent.tab();
+    const primary = page.getByRole('button', { name: 'Open First' });
+    await expect.element(primary).toHaveFocus();
+    expect(fill(row(0)).opacity).toBe('0');
+    const bounds = row(0).getBoundingClientRect();
+    expect(
+      document.elementFromPoint(bounds.left - 8, bounds.top + bounds.height / 2)?.closest('button'),
+    ).not.toBe(primary.element());
+    await primary.click();
+    expect(primaryAction).toHaveBeenCalledExactlyOnceWith('First');
+  });
+
   it('extends the fill without moving content and hides both body separators', async () => {
     await renderRows();
     const content = page.getByRole('button', { name: 'Open Second' });
@@ -130,7 +187,7 @@ describe('shared content row surfaces in the browser', () => {
     expect(fill(row(1)).opacity).toBe('1');
   });
 
-  it('aligns table headers and cells and keeps data-only rows static', async () => {
+  it.each([false, true])('preserves table defaults with admin7Design %s', async (admin7Design) => {
     await renderInApp(
       <Box className="w-[480px]" padding="lg">
         <Table className="table-fixed">
@@ -152,18 +209,58 @@ describe('shared content row surfaces in the browser', () => {
           </TableBody>
         </Table>
       </Box>,
+      { admin7Design },
     );
     const header = page.getByRole('columnheader', { name: /name/i }).element();
     const cell = page.getByRole('cell', { name: 'Static entry' });
     const table = page.getByRole('table').element();
     expect(header.getBoundingClientRect().left).toBe(table.getBoundingClientRect().left);
     expect(cell.element().getBoundingClientRect().left).toBe(table.getBoundingClientRect().left);
-    expect(getComputedStyle(header).paddingLeft).toBe('0px');
-    expect(getComputedStyle(cell.element()).paddingLeft).toBe('0px');
+    expect(getComputedStyle(header).paddingLeft).toBe(admin7Design ? '0px' : '8px');
+    expect(getComputedStyle(cell.element()).paddingLeft).toBe(admin7Design ? '0px' : '10px');
+    const background = getComputedStyle(cell.element()).backgroundColor;
     await cell.hover();
-    expect(fill(page.getByRole('row').nth(1).element()).opacity).toBe('0');
+    if (admin7Design) {
+      expect(fill(page.getByRole('row').nth(1).element()).opacity).toBe('0');
+      expect(getComputedStyle(cell.element()).backgroundColor).toBe(background);
+    } else {
+      expect(getComputedStyle(cell.element()).backgroundColor).not.toBe(background);
+    }
     expect(getComputedStyle(page.getByRole('row').nth(0).element()).borderBottomColor).not.toBe(
       transparent,
     );
+  });
+
+  it('gets primary and secondary table actions from Shade without row click plumbing', async () => {
+    const open = vi.fn<() => void>();
+    const edit = vi.fn<() => void>();
+    await renderInApp(
+      <Box className="w-[480px]" padding="lg">
+        <Table>
+          <TableBody>
+            <TableRow>
+              <TableCell className="static">
+                <TableRowAction asChild>
+                  <button type="button" onClick={open}>
+                    Open entry
+                  </button>
+                </TableRowAction>
+              </TableCell>
+              <TableCell>
+                <button className="relative z-10" type="button" onClick={edit}>
+                  Edit entry
+                </button>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </Box>,
+      { admin7Design: true },
+    );
+    await page.getByRole('row').click({ position: { x: -8, y: 12 } });
+    expect(open).toHaveBeenCalledTimes(1);
+    await page.getByRole('button', { name: 'Edit entry' }).click();
+    expect(edit).toHaveBeenCalledTimes(1);
+    expect(open).toHaveBeenCalledTimes(1);
   });
 });

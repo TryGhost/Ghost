@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   currentRoute,
@@ -6,10 +6,16 @@ import {
   fakePosts,
   fakePostsListScreen,
   fakeTags,
+  fakeAdminStats,
   renderAdminApp,
   tag,
 } from '@test-utils/acceptance';
 import { tagsScreen } from './tags.screen';
+
+beforeEach(() => {
+  fakeAdminStats.memberCount();
+  fakeAdminStats.mrr();
+});
 
 describe('Tags list', () => {
   it('lists public tags with description and posts count', async () => {
@@ -50,24 +56,33 @@ describe('Tags list', () => {
     await expect(tagsScreen.tagRows()).toHaveCount(2);
   });
 
-  it('opens the tag from the expanded row gutter', async () => {
-    const news = tag({ name: 'News', slug: 'news', count: { posts: 1 } });
-    fakeTags([news]);
-    fakeAdminEndpoint('GET', /^\/tags\/slug\/news\//, { tags: [news] });
-    await renderAdminApp('/tags');
+  it.each([false, true])(
+    'preserves tag navigation and gates its outer inset with admin7Design %s',
+    async (admin7Design) => {
+      const news = tag({ name: 'News', slug: 'news', count: { posts: 1 } });
+      fakeTags([news]);
+      fakeAdminEndpoint('GET', /^\/tags\/slug\/news\//, { tags: [news] });
+      await renderAdminApp('/tags', { labs: { admin7Design } });
 
-    const row = tagsScreen.tagRows();
-    await expect.element(row).toBeVisible();
-    await row.click({ position: { x: -8, y: 12 } });
+      const row = tagsScreen.tagRows();
+      await expect.element(row).toBeVisible();
+      const firstCell = row.getByRole('cell').elements()[0];
+      expect(getComputedStyle(firstCell).paddingLeft).toBe(admin7Design ? '0px' : '16px');
+      if (admin7Design) {
+        await row.click({ position: { x: -8, y: 12 } });
+      } else {
+        await tagsScreen.link('News').click();
+      }
 
-    await expect.poll(currentRoute).toBe('/tags/news');
-  });
+      await expect.poll(currentRoute).toBe('/tags/news');
+    },
+  );
 
   it('keeps the posts count link independent from the tag action', async () => {
     fakePostsListScreen();
     fakePosts([]);
     fakeTags([tag({ name: 'News', slug: 'news', count: { posts: 1 } })]);
-    await renderAdminApp('/tags');
+    await renderAdminApp('/tags', { labs: { admin7Design: true } });
 
     await tagsScreen.link('1 post').click();
 

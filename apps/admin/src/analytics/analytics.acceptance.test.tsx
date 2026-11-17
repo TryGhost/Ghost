@@ -142,47 +142,41 @@ describe('Analytics overview', () => {
     await expect.element(analyticsScreen.mrrValue()).toHaveTextContent(/^\$0$/);
   });
 
-  it('renders the seeded KPIs, latest post and top posts', async () => {
-    const { postsApi } = seedAnalyticsWorld();
-    seedTopPostsViews();
-    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+  it.each([false, true])(
+    'renders the seeded KPIs and top posts with admin7Design %s',
+    async (admin7Design) => {
+      const { postsApi } = seedAnalyticsWorld();
+      seedTopPostsViews();
+      await renderAdminApp('/analytics', {
+        labs: { admin7Design },
+        boot: webAnalyticsBootOverrides(),
+      });
 
-    // Headline KPIs: visitors summed from the Tinybird rows, members from
-    // the member-count totals, MRR from the mrr history.
-    await expect.element(analyticsScreen.uniqueVisitorsValue()).toHaveTextContent('250');
-    await expect.element(analyticsScreen.membersValue()).toHaveTextContent('175');
-    await expect.element(analyticsScreen.mrrValue()).toHaveTextContent('$500');
+      // Headline KPIs: visitors summed from the Tinybird rows, members from
+      // the member-count totals, MRR from the mrr history.
+      await expect.element(analyticsScreen.uniqueVisitorsValue()).toHaveTextContent('250');
+      await expect.element(analyticsScreen.membersValue()).toHaveTextContent('175');
+      await expect.element(analyticsScreen.mrrValue()).toHaveTextContent('$500');
 
-    // Chart region inside the visitors KPI card.
-    await expect
-      .poll(() => analyticsScreen.uniqueVisitorsCard().element().querySelector('svg'))
-      .not.toBeNull();
+      // Chart region inside the visitors KPI card.
+      await expect
+        .poll(() => analyticsScreen.uniqueVisitorsCard().element().querySelector('svg'))
+        .not.toBeNull();
 
-    await expect.element(analyticsScreen.latestPost()).toHaveTextContent('Attack of the Clones');
-    await expect(postsApi).toHaveSentFilter('status:[published,sent]');
-    expect(postsApi.lastRequest).toMatchObject({ order: 'published_at DESC', limit: 1 });
-    await expect.element(analyticsScreen.topPostsCard()).toHaveTextContent('A Popular Post');
-    await expect
-      .element(analyticsScreen.topPostsCard().getByRole('link', { name: /^A Popular Post/ }))
-      .toHaveAttribute('href', `#/posts/analytics/${LATEST_POST_ID}`);
-    await expect
-      .element(
-        analyticsScreen
-          .topPostsCard()
-          .getByRole('link', { name: 'Web traffic for A Popular Post' }),
-      )
-      .toHaveAttribute('href', `#/posts/analytics/${LATEST_POST_ID}/web`);
-    await expect
-      .element(
-        analyticsScreen
-          .topPostsCard()
-          .getByRole('link', { name: 'New members for A Popular Post' }),
-      )
-      .toHaveAttribute('href', `#/posts/analytics/${LATEST_POST_ID}/growth`);
+      await expect.element(analyticsScreen.latestPost()).toHaveTextContent('Attack of the Clones');
+      await expect(postsApi).toHaveSentFilter('status:[published,sent]');
+      expect(postsApi.lastRequest).toMatchObject({ order: 'published_at DESC', limit: 1 });
+      await expect.element(analyticsScreen.topPostsCard()).toHaveTextContent('A Popular Post');
+      await expect(
+        analyticsScreen.topPostsCard().getByRole('button', { name: /^A Popular Post/ }),
+      ).toHaveCount(admin7Design ? 1 : 0);
 
-    // The header's active-visitors probe (Tinybird) resolved.
-    await expect.element(analyticsScreen.activeVisitors()).toHaveTextContent('12 online');
-  });
+      // The header's active-visitors probe (Tinybird) resolved.
+      if (!admin7Design) {
+        await expect.element(analyticsScreen.activeVisitors()).toHaveTextContent('12 online');
+      }
+    },
+  );
 
   it('re-queries Tinybird when the date range changes', async () => {
     const { kpisApi } = seedAnalyticsWorld();

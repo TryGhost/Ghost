@@ -13,11 +13,23 @@ import { Meta } from '@storybook/addon-docs/blocks';
 Use this contract for content lists and data tables in pages, cards, dialogs,
 and settings, including notification rows. Prefer `Table` for tabular data and
 `ActionList` for rows with a primary action and optional secondary controls.
-Use the shared row recipe when a custom row must keep different markup.
+Use `ActionListItem asChild` when a custom row must keep different markup.
 
 **DataList is an explicit exception.** Keep its layout, data bars, hover effects,
 and sliding values unchanged. Navigation, dropdown options, command menus, and
 full feed/article cards follow their own components' treatments.
+
+## Compatibility and rollout
+
+This contract applies with `admin7Design` enabled. Shade owns the shared flag
+boundary: components read `useShade().admin7Design`, and appearance is scoped
+by `data-admin7-design`. Standalone Shade and Ghost apps retain the provider's
+default enabled design; embedded Admin surfaces inherit Admin's Labs value.
+
+With the flag disabled, retain the previous row padding, hover, selection,
+separators, hit areas, and interactions. A consumer should not need a flag hook
+for shared row behavior. Keep a local branch only for page-specific structure
+such as virtualized tables' scroll gutters and pinned columns.
 
 Static rows align with their headers but have no row hover treatment. Controls
 inside a static row retain their own interactions. A sortable settings form is
@@ -69,28 +81,32 @@ make the row background into another control.
 
 ## Using the shared behavior
 
-`TableRow` and `ActionListItem` use the shared recipe. Opt a table body row into
-interaction with `interactive` when it has a primary action; `onClick` also
-opts it in by default. Header, footer, spacer, and
-data-only rows remain static. `ActionListItem` supports its existing `hover`
-opt-out for intentionally static or unavailable actions. Mark its primary
-link or button with `ActionListItemContent asChild` and keep secondary controls
-in `ActionListItemActions`.
+`TableRow` and `ActionListItem` own the surface, touch press handling, primary
+action delegation, and flag boundary. Consumers declare their existing primary
+control once; routing, selection, and permissions remain with the
+feature. Header, footer, spacer, and data-only rows remain static in the enabled
+design. `ActionListItem` retains its `hover` opt-out for intentionally static or
+unavailable actions.
 
-For custom markup, import `rowSurface` and `rowSurfaceClasses` from
-`@tryghost/shade/components`. Use `rowSurface('interactive')` for an interactive
-row or `rowSurface('static')` for a static one. These provide shared styling;
-the consumer still owns its links, events, selection, and permissions.
+For a standard action list, put its primary link or button in
+`ActionListItemContent asChild` and secondary controls in `ActionListItemActions`.
+For custom `li` or `div` markup, use `ActionListItem asChild` and mark the
+existing primary control with `RowPrimaryAction asChild`. In tables, use
+`TableRowAction asChild` inside `TableRow`. These slots are transparent with
+the flag off and supply the shared behavior with it on. Existing row-level
+`onClick` remains supported; avoid duplicating filtering or gesture forwarding
+in individual screens.
 
-Custom interactive rows also use `useRowPress` from `@tryghost/shade/utils`
-and spread its returned props on the row. It supplies touch press feedback and
-clears it on release, cancellation, or movement without blocking scrolling.
-Pass existing pointer handlers as its first argument to preserve them, and
-pass `false` as its second argument when the row is static. `TableRow` and
-`ActionListItem` compose this behavior automatically.
+Prefer native links and buttons for new rows. A primary slot around an existing
+clickable `div` or `span` adds button semantics and Enter/Space activation only
+in the enabled design, so migration does not change legacy interactions.
+
+The `rowSurface` recipe and `rowSurfaceClasses` atoms remain available for
+unusual styling integrations. Prefer the row components so new screens inherit
+behavior automatically instead of assembling a recipe and press hook locally.
 
 - Use `data-state="selected"` for selected rows.
-- Mark an actual primary link or button with `rowSurfaceClasses.primaryAction`
+- Mark an actual primary link or button with the shared primary-action slot
   so the clickable extension follows the shared geometry. Keep ancestors
   between that control and the row unpositioned, and place secondary controls
   above the stretched target with relative positioning and `z-10`.
