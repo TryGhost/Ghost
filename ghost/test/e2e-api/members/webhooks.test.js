@@ -4645,6 +4645,8 @@ describe('Members API', function () {
         billingCountry = 'GB',
         // The wallet the buyer paid with, as Stripe names it, if they paid with one.
         wallet = undefined,
+        // The name on the buyer's card, which Ghost gives a member who has no name.
+        payerName = undefined,
         // What Ghost answers Stripe with. Nothing is read back from a failed checkout.
         status = 200,
       } = {},
@@ -4665,7 +4667,14 @@ describe('Members API', function () {
         email,
         subscriptions: {
           type: 'list',
-          data: [{ ...subscription, default_payment_method: walletMethod ?? null }],
+          data: [
+            {
+              ...subscription,
+              default_payment_method:
+                walletMethod ??
+                (payerName ? { id: 'pm_card', billing_details: { name: payerName } } : null),
+            },
+          ],
         },
       });
       const payload = JSON.stringify({
@@ -4779,7 +4788,7 @@ describe('Members API', function () {
       ]);
     });
 
-    it('records what it skipped for a member who checked out without signing in', async function () {
+    it('records what it saved for an existing member, whether or not they signed in before checking out', async function () {
       await adminAgent
         .post('/members/')
         .body({ members: [{ email: 'complete-unverified@example.com' }] })
@@ -4803,7 +4812,7 @@ describe('Members API', function () {
           outcome: 'success',
           type: 'subscription',
           member: 'unverified',
-          shipping: 'skipped',
+          shipping: 'saved',
           phone: 'none',
         },
         {
@@ -5084,7 +5093,7 @@ describe('Members API', function () {
       assert.equal(saved.recipient_name, 'Jamie Doe');
     });
 
-    it('leaves an existing member alone when the checkout was not started signed in', async function () {
+    it('saves the address but not the name for an existing member who checked out without signing in', async function () {
       await adminAgent
         .post('/members/')
         .body({ members: [{ email: 'shipping-existing@example.com' }] })
@@ -5093,50 +5102,72 @@ describe('Members API', function () {
       // The checkout started after the member already existed.
       const startedAt = Math.floor(Date.now() / 1000) + 1;
       assert.deepEqual(
-        await completeCheckout('shipping-existing@example.com', { created: startedAt }),
-        {},
+        await completeCheckout('shipping-existing@example.com', {
+          created: startedAt,
+          payerName: 'Someone Else',
+        }),
+        {
+          delivery_address: {
+            line1: '1 High Street',
+            city: 'London',
+            postal_code: 'N1 1AA',
+            country: 'GB',
+          },
+          recipient_name: 'Jamie Doe',
+        },
       );
-    });
-
-    it('replaces every part of an earlier address for a member who checked out signed in', async function () {
       const {
         body: { members },
-      } = await adminAgent
-        .post('/members/')
-        .body({ members: [{ email: 'shipping-signed-in@example.com' }] })
-        .expectStatus(201);
-      await adminAgent
-        .put(`/members/${members[0].id}/`)
-        .body({
-          members: [
-            {
-              metafields: {
-                custom: {
-                  delivery_address: {
-                    line1: '2 Old Road',
-                    line2: 'Flat 5',
-                    city: 'Austin',
-                    state: 'TX',
-                    postal_code: '78701',
-                    country: 'US',
+      } = await adminAgent.get('/members/?search=shipping-existing@example.com');
+      assert.equal(members[0].name, null);
+    });
+
+    for (const [signedIn, email] of [
+      [true, 'shipping-signed-in@example.com'],
+      [false, 'shipping-signed-out@example.com'],
+    ]) {
+      it(`replaces every part of an earlier address for a member who checked out ${signedIn ? 'signed in' : 'without signing in'}`, async function () {
+        const {
+          body: { members },
+        } = await adminAgent
+          .post('/members/')
+          .body({ members: [{ email }] })
+          .expectStatus(201);
+        await adminAgent
+          .put(`/members/${members[0].id}/`)
+          .body({
+            members: [
+              {
+                metafields: {
+                  custom: {
+                    delivery_address: {
+                      line1: '2 Old Road',
+                      line2: 'Flat 5',
+                      city: 'Austin',
+                      state: 'TX',
+                      postal_code: '78701',
+                      country: 'US',
+                    },
                   },
                 },
               },
-            },
-          ],
-        })
-        .expectStatus(200);
+            ],
+          })
+          .expectStatus(200);
 
-      const saved = await completeCheckout('shipping-signed-in@example.com', {
-        metadata: { ghostSignupContext: 'already_authenticated' },
-      });
+        // The checkout started after the member already existed.
+        const saved = await completeCheckout(email, {
+          created: Math.floor(Date.now() / 1000) + 1,
+          metadata: signedIn ? { ghostSignupContext: 'already_authenticated' } : {},
+        });
 
-      assert.deepEqual(saved.delivery_address, {
-        line1: '1 High Street',
-        city: 'London',
-        postal_code: 'N1 1AA',
-        country: 'GB',
+        assert.deepEqual(saved.delivery_address, {
+          line1: '1 High Street',
+          city: 'London',
+          postal_code: 'N1 1AA',
+          country: 'GB',
+        });
       });
-    });
+    }
   });
 });
