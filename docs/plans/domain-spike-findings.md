@@ -1332,3 +1332,278 @@ plus about 1,570 lines in new files, of which about 620 are tests and 250 are
 - **The formatter reflows files it has not seen**, so new files need
   `pnpm exec oxfmt` before `format:check` passes; `npx oxfmt` fails on the
   engine check.
+
+## Part 2, step 4: the domain end
+
+### Network
+
+`ghost/domains/network/boot.ts` now exists, and
+`services/recommendations/index.ts` imports its own domain and
+`core/kernel/define-service`, and nothing else. It makes no `require` of
+config, logging, Sentry, url-utils, mail, outbound HTTP, settings, models,
+Mentions or Staff, and no longer reads `process.env`.
+
+What `boot.ts` holds (143 lines):
+
+| Part                                | What                                                                                                                                                                                                          |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `RecommendationsConfig`             | The Zod schema of the one config section the domain reads                                                                                                                                                     |
+| `NetworkDependencies`               | An interface of 13 members: everything the domain takes from outside itself, each typed from the constructor of the class that uses it                                                                        |
+| `dependencies({ config, logging })` | Receives the foundation. Requires 5 shared modules (Sentry, url-utils, mail, outbound HTTP, settings), 1 action of another domain, and 3 legacy modules (models, Mentions, Staff), and returns the 13 members |
+
+How each thing the root used to `require` is supplied now:
+
+| Was required in the root                    | Now                                                                                                                                    |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `@tryghost/logging`                         | **Injected**: `foundation.logging`, passed through                                                                                     |
+| `shared/config`                             | **Injected**: `config.slice('services:recommendations', schema)` becomes `refreshesEnabled`; `config.get('env')` becomes `environment` |
+| `process.env.NODE_ENV` (an ambient read)    | **Injected**: `environment`                                                                                                            |
+| Sentry, url-utils, outbound HTTP, settings  | Imported in `boot.ts`, passed through as they are                                                                                      |
+| `lib/mail` (`new GhostMailer()`)            | Imported in `boot.ts`; the root is handed `sendEmail(to, subject, html, text)`                                                         |
+| `publishing/actions/describe-external-page` | Imported in `boot.ts`, passed through                                                                                                  |
+| `models`                                    | Imported in `boot.ts`; the root is handed the three models and `getStaffAlertRecipients()`                                             |
+| Mentions root                               | Imported in `boot.ts`; the root is handed four functions that each ask Mentions when called                                            |
+| Staff root                                  | Imported in `boot.ts`; the root is handed an object that reads the ready Staff service per email                                       |
+
+**Whatever cannot be supplied by injection, and why.** Only two of the eleven
+are foundation (config, logging), so only those two are injected. The other
+nine are imported by `boot.ts`. They cannot be injected by the framework
+because the framework does not know they exist: they are Ghost's, and a
+"shared" bag handed to every domain would hide which domain uses mail and
+which uses settings from the import graph. So they stay as imports, in one
+file per domain. The report still counts the three legacy ones.
+
+**The database did not reach the domain as `foundation.database`.** The
+domain's repositories are written against Bookshelf models, so what it is
+handed is three models. The database handle is there for a repository written
+against Knex; network has none.
+
+### Publishing
+
+Both of publishing's actions already meet the rule (verified by reading and by
+the boundary scan): each imports its own domain's `data/` types and its own
+domain's `transition/services/oembed` root, and nothing outside the domain.
+Publishing has no reshaped service root, so it needs no `boot.ts`. The oEmbed
+root under `transition/` still requires config, logging and four other
+modules; `transition/` is exempt by rule.
+
+### What `boot.ts` ends up holding, and whether the name fits
+
+In both real code and the fixtures it holds the same three things: a config
+slice schema, an interface listing what the domain needs from outside, and
+one function that builds it from the foundation. **It boots nothing.** It
+starts no service, registers no listener and runs at no particular moment
+that a reader could call "boot": the domain layer calls it once, before the
+first root.
+
+The name does not fit. What the file is, on the evidence of two fixture
+domains and one real one, is the domain's list of dependencies on the outside
+world. `dependencies.ts` says that, and matches the key it exports
+(`defineDomain({ dependencies })`). The spike kept `boot.ts` so that part 1's
+tooling and manifest did not have to change twice.
+
+**It is now needed by any domain whose roots use something outside the
+domain.** Part 1 found `boot.ts` optional because a root could import what it
+needed. With the rule that a root imports only its domain and the kernel, a
+domain without `boot.ts` gets the foundation and nothing else. That is enough
+for a domain that only logs, reads config and publishes events. Both fixture
+domains and network need more.
+
+### Verified
+
+- Network unit tests: 22 files pass. The root's existing 568-line test passes
+  with three kinds of edit: it starts the root with what `boot.ts` builds from
+  the application's foundation; two config stubs name the section instead of
+  the leaf; and the development case sets `env` in config instead of
+  `process.env.NODE_ENV`. Every other assertion is untouched, and its stubs on
+  the legacy logger still work because that logger **is** the foundation's.
+- DB-backed, the part 1 set (network and publishing e2e, well-known, Mentions):
+  8 files, 76 tests pass, with network started through `boot.ts`.
+- Typecheck, oxlint, ESLint, boundaries (5940 modules, 286 known, 189
+  deferred), domain rules, knip, format: pass. Full unit suite: 11,678 passed;
+  the same 34 baseline failures and no others.
+- Report: network's legacy imports are the same three as at the end of part 1
+  (models, Mentions, Staff), now from `boot.ts` instead of the root.
+
+### What this step showed
+
+- **Typing `boot.ts` from the constructors found a habit worth keeping.**
+  `Needs<typeof WellknownService>['urlUtils']` asks for exactly what the class
+  uses (`relativeToAbsolute`), not for Ghost's `UrlUtils`. The interface is a
+  list of ports in the domain's own terms, and a fake of it is 30 lines.
+- **Ambient reads surface when the root can import nothing.** The root read
+  `process.env.NODE_ENV` directly. Nothing flagged it until the root's only
+  way to learn the environment was to be told.
+- **A config slice cannot be stricter than the code it replaces.** The root
+  treated anything but `false` as enabled, so the slice's schema is
+  `enabled: z.unknown().optional()`. A stricter schema would turn a mistyped
+  value from "ignored" into "Ghost does not start". Tightening is a separate,
+  announced change, as `shared/config/SCHEMA.md` already says for the central
+  schema.
+
+## Part 2, step 5: the "another application" test
+
+`ghost/test/utils/fixtures/second-application/` is a lending desk. It is not
+Ghost and shares no values with it.
+
+| It supplies                                                                                                 | Lines |
+| ----------------------------------------------------------------------------------------------------------- | ----- |
+| `config/defaults.json`, `config/env/config.testing.json`, `config/overrides.json`                           | 21    |
+| `config/schema.ts`: its own Zod schema                                                                      | 15    |
+| `bootstrap/app.ts`: `createApplication` with where its config is, its logger options and its domains folder | 57    |
+| `shared.ts`: what its domains share that is not foundation (a journal and a clock)                          | 13    |
+
+It gets its config and logger **through the same calls Ghost makes**:
+`loadConfigSources` and `createConfig` with its schema, `createLogger` with
+options read from its config, `createApplication` to order and hold them. Its
+two domains (the fixture `library` and `notices`) each have a `boot.ts` that
+is handed the foundation.
+
+Verified, by `test/unit/kernel/domains/fixture-domains.test.ts`, three ways
+(under vitest; plain `node` on tsc-built JavaScript beside its source; plain
+`node` on JavaScript alone):
+
+- Importing and discovering builds nothing; `startFoundation()` builds
+  config, logging, database, events in that order.
+- `desk:name` is "Test desk": `env/config.testing.json` over `defaults.json`.
+- The logger is a `GhostLogger` named `lending-desk`, level `info`, transport
+  `file`, and the line a service root logged through it is read back from the
+  log file.
+- It has no database and nothing fails for want of one.
+- Events dispatched on the framework's own bus reach the other domain's
+  listener; listeners are subscribed once across a stop and start.
+
+**Did it need Ghost-specific code? No.** For the two built runs the test
+copies `core/kernel`, `core/foundation` and the fixtures into an empty folder
+and compiles only those. Nothing under `core/shared`, `core/server` or
+`core/bootstrap` is present, and it runs.
+
+Where the split is still not clean, found by doing this:
+
+- **The framework depends on five npm packages an application gets whether it
+  wants them or not**: `nconf`, `jsonc-parser`, `zod`, `lodash`,
+  `@tryghost/logging` (for the class), and `knex` if it configures a database.
+  All are Ghost's dependencies today.
+- **`@tryghost/errors` is in the kernel** (`defineService`, the domain layer,
+  `parseConfigSlice`). It is stateless, so it meets the rule.
+- **The config loader's file names are Ghost's conventions**
+  (`defaults.json`, `overrides.json`, `env/config.<env>.json`,
+  `config.local.json`). They are parameters only as far as two folders. A
+  second application has to like the layout.
+- Under shape (a) the second application would have had to copy
+  `application.ts` (141 lines: the order, build-once, what a domain is handed,
+  wiring the domain layer to the bus and the scheduler) and `domains.ts` (30
+  lines). That is the framework code shape (b) exists to hold.
+
+## Part 2, step 6: boot order
+
+### What moved
+
+`boot.js` step 0 is now `application.startFoundation()`: config, logging, the
+database handle and the event bus are built, in that order, before the
+maintenance server, before the database is migrated and before any service.
+Before, the database handle was built when `DatabaseStateManager` first
+required the connection (step 3 of boot), and the event bus when a service
+first required the package.
+
+Building the handle opens no connection, so nothing that needs the database
+to be reachable moved.
+
+### Boot time (verified)
+
+`NODE_ENV=testing-mysql`, from source, MySQL 8.4, one machine.
+
+| State                                      | Runs | "Ghost booted in" | "Ghost server started in" |
+| ------------------------------------------ | ---- | ----------------- | ------------------------- |
+| Before part 2 (`e8f4258`)                  | 6    | 3.290s to 3.532s  | 1.095s to 1.290s          |
+| Foundation built first (step 3)            | 6    | 3.260s to 3.660s  | 1.070s to 1.468s          |
+| Network started through `boot.ts` (step 4) | 8    | 3.320s to 3.729s  | 1.158s to 1.356s          |
+
+Three runs taken straight after the DB-backed suite read 3.556s to 4.094s and
+are left out as a busy machine; they are recorded here so the choice is
+visible. The ranges overlap. This shows no cost that this many runs can
+resolve; it does not show there is none. A difference under about 0.2s would
+not be seen.
+
+### What stops shared and domains being strictly second and third
+
+Today's order, read from `boot.js`:
+
+1. **Foundation** (step 0). Strictly first now.
+2. The maintenance HTTP server starts; the database is migrated.
+3. `initCore`: adapters, **limits, settings**, signing keys, internal keys,
+   **i18n**, Better Auth, then seven feature services (gift links, member
+   metafields, app installations, export requests, invites, integrations,
+   Stripe checkout config).
+4. Front-end services, Express apps, routing, the jobs service.
+5. `initServices`: about 35 services, including **permissions**, Mentions and
+   Staff. The **domain layer starts last**.
+
+**Shared is not a phase.** The shared services (settings, limits, i18n,
+permissions; labs and mail have no start) are spread over steps 3 and 5 and
+interleaved with feature services. Making shared strictly second means
+hoisting `permissions.init()` out of the `Promise.all` in `initServices` and
+moving the seven feature services out of `initCore`. Neither was attempted.
+Whether anything in `initCore` depends on its feature services was not
+checked.
+
+**For domains, exactly one thing was found, by experiment (verified):**
+
+| Experiment                                           | Result                                                                                                        |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `domains.start()` moved to straight after `initCore` | Boot fails: `Mentions used before init()`, from `addUrlMapper` in network's root                              |
+| The same, with that one registration removed         | **Ghost boots** (3.642s). Settings, models, mail, Sentry, url-utils and outbound HTTP were all usable by then |
+
+So network needs nothing from step 5 except to register a URL mapper on
+Mentions while it starts. Every other use of Mentions and Staff is already a
+call at the moment of use. Both edits were reverted; the domain layer still
+starts where part 1 put it.
+
+The fix is to turn the registration round: network exposes the mapping as a
+public action (it is a pure function of a URL), and the Mentions root adds it
+to its own metadata service. Code outside the domains may import a domain's
+`actions/`. Then no domain needs anything from `initServices` to start, and
+`domains.start()` can follow the shared services. Not done: it moves about a
+dozen assertions in network's root test to an action test and changes the
+Mentions root, and the experiment already answers the question.
+
+The general rule this suggests: **a domain may not register itself on another
+service while it starts.** Registration is start order by another name. The
+owner of the registry imports what it needs from the domain's public surface.
+
+## Part 2, step 8: testing
+
+Three levels, each shown on network:
+
+| What is under test              | How it gets a logger, config and the database                                                                                                                                                                 | File                                                                                   |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| A reshaped service root, alone  | It is handed a `NetworkDependencies` literal. Logger: `createLoggerFake()`. Config: **nothing to fake**, the root receives `refreshesEnabled: true`. Database: three stand-in model classes; nothing connects | `domains/network/test/unit/services/recommendations/root-with-fakes.test.ts` (3 tests) |
+| The domain's `boot.ts`          | `createFoundationFake({ config: { ... } })`: a fake config holding the tree given, whose `slice` parses as the real one does                                                                                  | `domains/network/test/unit/boot.test.ts` (3 tests)                                     |
+| The root and `boot.ts` together | Ghost's real application foundation, with the test's existing stubs on legacy modules                                                                                                                         | `domains/network/test/unit/services/recommendations/index.test.ts` (existing)          |
+
+The first needs no stub of any module and loads nothing of Ghost outside the
+domain. That is the test the rule was meant to make possible, and it is 105
+lines including a complete fake of the outside world.
+
+**Do the fakes belong in a `testing` subpath of the framework? Yes**, on this
+evidence: they are written against kernel types only, they are the same for
+any application, and three test files in two places already want them.
+`ghost/core/kernel/testing/index.ts` (111 lines) has `createLoggerFake`,
+`createConfigFake`, `createEventBusFake` and `createFoundationFake`.
+
+Three things to settle before it is more than a spike:
+
+- **It ships.** `core/` is in the package's `files`, so `kernel/testing/` is
+  in the production tarball. It imports no test library, so it costs 111
+  lines, but a real `testing` export should be excluded from the build or
+  live in a package.
+- **There are now two logger fakes.** `test/utils/logging-utils`'
+  `createLoggingFake()` is a sinon stub of the `GhostLogger` class and is what
+  the Service Standard tells class tests to use. The kernel one has no sinon,
+  because kernel code cannot import a test library. Pick one. The sinon one
+  cannot live in the framework.
+- **No database fake was written**, because nothing reshaped takes a Knex
+  handle yet. `createFoundationFake({ database })` takes whatever the test
+  supplies. For a Knex-backed repository the honest options are an in-memory
+  SQLite handle (going away with SQLite in 7.0) or a DB-backed test; a fake
+  query builder would test nothing.

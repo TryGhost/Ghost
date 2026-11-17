@@ -177,6 +177,14 @@ builds nothing and reads nothing:
 The [foundation](../foundation/README.md) builds the instances. Nothing in the
 kernel can.
 
+## Testing
+
+[`testing/`](testing/index.ts) holds fakes of what the foundation hands out,
+for unit tests of code that is handed it: `createLoggerFake`,
+`createConfigFake`, `createEventBusFake` and `createFoundationFake`. They are
+written against the types above, use no test library and share nothing between
+calls.
+
 ## Domains
 
 Spike: see [the findings log](../../../docs/plans/domain-spike-findings.md).

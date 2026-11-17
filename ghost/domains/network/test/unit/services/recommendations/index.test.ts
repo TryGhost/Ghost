@@ -4,6 +4,10 @@ import { IncorrectUsageError } from '@tryghost/errors';
 import sinon from 'sinon';
 import type { IncomingRecommendationService as IncomingService } from '../../../../services/recommendations/incoming-recommendation.service';
 
+// The root and the domain's boot.ts together, against Ghost's real modules: what
+// the domain layer does when it starts the domain. The root on its own, given
+// fakes, is in ./root-with-fakes.test.ts.
+//
 // Use the same classes and dependency objects as the root.
 const {
   BookshelfRecommendationRepository,
@@ -31,6 +35,9 @@ const externalRequest = require('../../../../../../core/server/lib/request-exter
 const oembedRoot = require('../../../../../publishing/transition/services/oembed').default;
 const mentionsRoot = require('../../../../../../core/server/services/mentions').default;
 const staff = require('../../../../../../core/server/services/staff').default;
+const application: typeof import('../../../../../../core/bootstrap/app').default =
+  require('../../../../../../core/bootstrap/app').default;
+const boot: typeof import('../../../../boot').default = require('../../../../boot').default;
 const ROOT_PATH = require.resolve('../../../../services/recommendations');
 
 type Root = (typeof import('../../../../services/recommendations'))['default'];
@@ -101,7 +108,7 @@ describe('Recommendations service root', function () {
     });
     subscribe = sandbox.stub(DomainEvents, 'subscribe');
     getConfig = sandbox.stub(config, 'get').callThrough();
-    getConfig.withArgs('services:recommendations:enabled').returns(undefined);
+    getConfig.withArgs('services:recommendations').returns(undefined);
     getSetting = sandbox.stub(settingsCache, 'get').callThrough();
     getSetting
       .withArgs('recommendations_enabled', { resolve: false })
@@ -123,6 +130,13 @@ describe('Recommendations service root', function () {
       delete require.cache[ROOT_PATH];
     }
   });
+
+  // What the domain layer does for each root: build what boot.ts supplies from
+  // the foundation, and hand it to the root. Built per call, so each test's
+  // config is read as boot would read it.
+  async function start() {
+    return root.init(await boot.dependencies!(application.foundation));
+  }
 
   function installedMapper(): UrlMapper {
     sinon.assert.calledOnce(addMapper);
@@ -148,7 +162,7 @@ describe('Recommendations service root', function () {
   });
 
   it('publishes repositories, services and controllers wired to the shared models and helpers', async function () {
-    assert.equal(await root.init(), undefined);
+    assert.equal(await start(), undefined);
 
     // The endpoints read the two controllers; the action, the listener and the
     // jobs read the services and the two refreshes.
@@ -192,7 +206,7 @@ describe('Recommendations service root', function () {
   it('rejects init without publishing anything while Mentions is not ready, and initializes once it is', async function () {
     mentionsReady = false;
 
-    await assert.rejects(root.init(), IncorrectUsageError);
+    await assert.rejects(start(), IncorrectUsageError);
 
     assert.throws(() => root.service, IncorrectUsageError);
     sinon.assert.notCalled(addMapper);
@@ -201,15 +215,15 @@ describe('Recommendations service root', function () {
     sinon.assert.notCalled(incomingInit);
 
     mentionsReady = true;
-    assert.equal(await root.init(), undefined);
+    assert.equal(await start(), undefined);
     sinon.assert.calledOnce(addMapper);
   });
 
   for (const enabled of [undefined, true] as const) {
     it(`starts no refresh itself and runs both when their jobs ask, when the config value is ${enabled}`, async function () {
-      getConfig.withArgs('services:recommendations:enabled').returns(enabled);
+      getConfig.withArgs('services:recommendations').returns({ enabled });
 
-      assert.equal(await root.init(), undefined);
+      assert.equal(await start(), undefined);
 
       // Starting the root fetches nothing. The jobs in ../../jobs ask later.
       sinon.assert.notCalled(outgoingInit);
@@ -227,9 +241,9 @@ describe('Recommendations service root', function () {
   }
 
   it('skips both refreshes and logs when the config disables them', async function () {
-    getConfig.withArgs('services:recommendations:enabled').returns(false);
+    getConfig.withArgs('services:recommendations').returns({ enabled: false });
 
-    assert.equal(await root.init(), undefined);
+    assert.equal(await start(), undefined);
     await root.service.refreshRecommendationMetadata();
     await root.service.refreshIncomingRecommendations();
 
@@ -241,25 +255,21 @@ describe('Recommendations service root', function () {
   });
 
   it('skips the incoming refresh in development, where it would fetch other sites', async function () {
-    const saved = process.env.NODE_ENV;
-    await root.init();
-    try {
-      process.env.NODE_ENV = 'development';
-      await root.service.refreshRecommendationMetadata();
-      await root.service.refreshIncomingRecommendations();
-    } finally {
-      process.env.NODE_ENV = saved;
-    }
+    // The environment comes from config, read when the domain starts.
+    getConfig.withArgs('env').returns('development');
+    await start();
+    await root.service.refreshRecommendationMetadata();
+    await root.service.refreshIncomingRecommendations();
 
     sinon.assert.calledOnce(outgoingInit);
     sinon.assert.notCalled(incomingInit);
   });
 
   it('retains the first graph and installs the mapper once across repeated init', async function () {
-    await root.init();
+    await start();
     const published = root.service;
 
-    assert.equal(await root.init(), undefined);
+    assert.equal(await start(), undefined);
 
     assert.equal(root.service, published);
     sinon.assert.calledOnce(addMapper);
@@ -298,7 +308,7 @@ describe('Recommendations service root', function () {
       const restore = breakConstruction(failure);
 
       try {
-        await assert.rejects(root.init(), (err: unknown) => err === failure);
+        await assert.rejects(start(), (err: unknown) => err === failure);
       } finally {
         restore();
       }
@@ -311,7 +321,7 @@ describe('Recommendations service root', function () {
       sinon.assert.notCalled(info);
 
       // The failed attempt is discarded, so a retry composes a complete graph once.
-      assert.equal(await root.init(), undefined);
+      assert.equal(await start(), undefined);
       const service = root.service.controller.service;
       assert.ok(service.repository instanceof BookshelfRecommendationRepository);
       assert.equal(bound(service.clickEventRepository).Model, models.RecommendationClickEvent);
@@ -327,7 +337,7 @@ describe('Recommendations service root', function () {
   }
 
   it('maps recommendation well-known URLs to their site for mentions metadata', async function () {
-    await root.init();
+    await start();
     const mapper = installedMapper();
     const source = new URL('https://other.example/blog/.well-known/recommendations.json?ref=a');
 
@@ -342,7 +352,7 @@ describe('Recommendations service root', function () {
   });
 
   it('emails a verified recommendation mention through the published incoming service', async function () {
-    await root.init();
+    await start();
     const handler = installedHandler();
     const sendRecommendationEmail = sandbox
       .stub(root.service.incomingRecommendationController.service, 'sendRecommendationEmail')
@@ -363,7 +373,7 @@ describe('Recommendations service root', function () {
     ['a verified mention of another page', mention('https://other.example/recommendations.json')],
   ] as const) {
     it(`does not email ${description}`, async function () {
-      await root.init();
+      await start();
       const handler = installedHandler();
       const sendRecommendationEmail = sandbox
         .stub(root.service.incomingRecommendationController.service, 'sendRecommendationEmail')
@@ -377,7 +387,7 @@ describe('Recommendations service root', function () {
   }
 
   it('sends incoming recommendation emails to alert users through GhostMailer and the staff renderer read at send time', async function () {
-    await root.init();
+    await start();
     const getEmailAlertUsers = sandbox.stub(models.User, 'getEmailAlertUsers').resolves([
       { email: 'owner@site.example', slug: 'owner', name: 'Owner' },
       { email: 'admin@site.example', slug: 'admin', name: 'Admin' },
@@ -433,7 +443,7 @@ describe('Recommendations service root', function () {
   });
 
   it('browses incoming recommendations through the shared mentions API and the published repository', async function () {
-    await root.init();
+    await start();
     mentionsApi.listMentions.resolves({
       data: [
         mention(RECOMMENDATION_SOURCE),
@@ -487,7 +497,7 @@ describe('Recommendations service root', function () {
   });
 
   it('fetches recommendation metadata through the shared external request client and falls back to oEmbed', async function () {
-    await root.init();
+    await start();
     const get = sandbox.stub(externalRequest, 'get').resolves({ statusCode: 404, body: '' });
     // The oEmbed root is read when a page is fetched, so it only has to be ready by then.
     const oembedService = { fetchOembedDataFromUrl: sandbox.stub() };
@@ -526,7 +536,7 @@ describe('Recommendations service root', function () {
 
   describe('recommendations_enabled setting', function () {
     it('reads the current setting synchronously on every call as a string', async function () {
-      await root.init();
+      await start();
       const enabler = root.service.controller.service.recommendationEnablerService;
 
       assert.equal(enabler.getSetting(), 'false');
@@ -539,7 +549,7 @@ describe('Recommendations service root', function () {
     });
 
     it('resolves setSetting before the internal settings edit settles', async function () {
-      await root.init();
+      await start();
       const pending = Promise.withResolvers<unknown[]>();
       const edit = sandbox.stub(SettingsBREADService.prototype, 'edit').returns(pending.promise);
       let settled = false;
