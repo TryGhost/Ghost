@@ -39,7 +39,7 @@ import { AppsGate } from './components/apps-gate';
 import { SurfaceLine } from './components/surface-icon';
 import { servedFrom } from './lib/served-from';
 import { UninstallDialog } from './components/uninstall-dialog';
-import { historyTitle, installedBy } from './lib/history';
+import { historyTitle } from './lib/history';
 import { isInstallationNotFound } from './lib/not-found';
 import { appReviewRoute, appRoute } from './lib/routes';
 import { useInstalledApps } from './lib/use-app-pins';
@@ -91,7 +91,7 @@ const History: React.FC<{ entries: AppInstallationHistoryEntry[]; timezone: stri
   entries,
   timezone,
 }) => (
-  <ol className="m-0 list-none divide-y divide-border p-0" data-testid="app-history">
+  <ol className="m-0 list-none divide-y divide-border p-0">
     {entries.map((entry) => (
       <li
         key={entry.id}
@@ -129,7 +129,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   admin7Design,
 }) => {
   const { manifest, history = [] } = installation;
-  const installer = installedBy(history);
+  const installer = history.find((entry) => entry.event === 'installed')?.actor?.name;
   // Several surfaces of one kind read as one line.
   const surfaceTypes = [...new Set(manifest.surfaces.map((surface) => surface.type))];
   const uninstalled =
@@ -144,7 +144,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         admin7Design &&
           "relative lg:self-stretch lg:before:pointer-events-none lg:before:absolute lg:before:inset-y-0 lg:before:-left-10 lg:before:border-l lg:before:border-border lg:before:content-['']",
       )}
-      data-testid="app-details-sidebar"
     >
       {showIdentity && (
         <Stack gap="md">
@@ -420,13 +419,7 @@ export const AppDetails: React.FC = () => {
               />
             )}
             {!installation && error && (
-              <Stack
-                align="center"
-                className="flex-1"
-                data-testid="app-details-load-error"
-                gap="md"
-                justify="center"
-              >
+              <Stack align="center" className="flex-1" gap="md" justify="center">
                 <p className="text-muted-foreground">
                   {getErrorMessage(error, 'Couldn’t load this app. Please try again.')}
                 </p>

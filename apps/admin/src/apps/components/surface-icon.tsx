@@ -1,6 +1,5 @@
 import React, { useId } from 'react';
 import { Inline, Text } from '@tryghost/shade/primitives';
-import { cn } from '@tryghost/shade/utils';
 import type { AppManifest } from '@tryghost/admin-x-framework/api/app-installations';
 
 type SurfaceType = AppManifest['surfaces'][number]['type'];
@@ -33,17 +32,12 @@ const FRAMED: Record<SurfaceType, React.ReactNode> = {
  * A small drawing of where an app appears: a window with Ghost's parts in grey and the
  * app's part solid in its colour.
  */
-export const SurfaceIcon: React.FC<{ type: SurfaceType; color: string; className?: string }> = ({
-  type,
-  color,
-  className,
-}) => {
+const SurfaceIcon: React.FC<{ type: SurfaceType; color: string }> = ({ type, color }) => {
   const clipId = useId();
   return (
     <svg
       aria-hidden="true"
-      className={cn('h-6 w-8 shrink-0', className)}
-      data-surface={type}
+      className="h-6 w-8 shrink-0"
       fill="none"
       style={{ color }}
       viewBox="0 0 40 30"
@@ -73,20 +67,6 @@ export const SurfaceLine: React.FC<{ type: SurfaceType; color: string }> = ({ ty
   </Inline>
 );
 
-const Capability: React.FC<{ icon: React.ReactNode; children: React.ReactNode }> = ({
-  icon,
-  children,
-}) => (
-  <li data-testid="app-capability">
-    <Inline gap="md">
-      {icon}
-      <Text size="sm" weight="semibold">
-        {children}
-      </Text>
-    </Inline>
-  </li>
-);
-
 /**
  * Where an app appears in Ghost, one line each, for the app review. Where it sends what it
  * reads is shown with its permissions (`DataAccessedBy`).
@@ -95,11 +75,16 @@ export const CapabilitySummary: React.FC<{ manifest: AppManifest }> = ({ manifes
   // Several surfaces of one kind read as one line.
   const types = [...new Set(manifest.surfaces.map((surface) => surface.type))];
   return (
-    <ul className="m-0 flex list-none flex-col gap-3 p-0" data-testid="app-capabilities">
+    <ul className="m-0 flex list-none flex-col gap-3 p-0">
       {types.map((type) => (
-        <Capability key={type} icon={<SurfaceIcon color={manifest.accent_color} type={type} />}>
-          {SURFACE_COPY[type]}
-        </Capability>
+        <li key={type} data-testid="app-capability">
+          <Inline gap="md">
+            <SurfaceIcon color={manifest.accent_color} type={type} />
+            <Text size="sm" weight="semibold">
+              {SURFACE_COPY[type]}
+            </Text>
+          </Inline>
+        </li>
       ))}
     </ul>
   );
