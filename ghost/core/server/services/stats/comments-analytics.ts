@@ -114,18 +114,29 @@ function nextBucketDate(date: string, interval: CommentsInterval) {
   return toDate(Date.UTC(year, month, 1));
 }
 
+const formatters = new Map<string, Intl.DateTimeFormat>();
+
+function getFormatter(timezone: string) {
+  let formatter = formatters.get(timezone);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      hourCycle: 'h23',
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+    });
+    formatters.set(timezone, formatter);
+  }
+  return formatter;
+}
+
 // Milliseconds the zone's wall clock is ahead of UTC at the given instant
 function zoneOffset(instant: number, timezone: string) {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: timezone,
-    hourCycle: 'h23',
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-    second: 'numeric',
-  }).formatToParts(instant);
+  const parts = getFormatter(timezone).formatToParts(instant);
   const part = (type: string) => Number(parts.find((p) => p.type === type)!.value);
   const wall = Date.UTC(
     part('year'),
@@ -139,14 +150,14 @@ function zoneOffset(instant: number, timezone: string) {
 }
 
 // UTC datetime, as stored in the database, of the date's first local instant.
-// Where DST skips midnight (e.g. America/Santiago) that is the transition itself.
+// Where DST skips midnight that is the transition; where it repeats, the first.
 function startOfDay(date: string, timezone: string) {
   const midnight = dateMs(date);
-  const guess = midnight - zoneOffset(midnight, timezone);
-  let instant = midnight - zoneOffset(guess, timezone);
-  if (instant + zoneOffset(instant, timezone) < midnight) {
-    instant = guess;
-  }
+  const instant = Math.min(
+    ...[midnight - DAY_MS, midnight + DAY_MS]
+      .map((probe) => midnight - zoneOffset(probe, timezone))
+      .filter((candidate) => candidate + zoneOffset(candidate, timezone) >= midnight),
+  );
   return new Date(instant).toISOString().slice(0, 19).replace('T', ' ');
 }
 

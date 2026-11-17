@@ -48,6 +48,12 @@ describe('getCommentsStatsWindow', function () {
     );
   });
 
+  it('starts a day at the first midnight when DST repeats midnight', function () {
+    const window = getCommentsStatsWindow(range('2021-10-29', '2021-10-29', 'Asia/Amman'));
+
+    assert.equal(window.from, '2021-10-28 21:00:00');
+  });
+
   it('defaults to UTC', function () {
     const window = getCommentsStatsWindow(range('2026-11-01', '2026-11-03'));
 
@@ -204,7 +210,13 @@ describe('CommentsAnalyticsService', function () {
     const overview = await service.getOverview(range('2026-08-01', '2026-11-03'));
 
     assert.equal(overview.interval, 'week');
-    assert.equal(overview.totals.commenters, 3);
+    assert.deepEqual(overview.totals, { comments: 6, commenters: 3, reported: 2 });
+    assert.deepEqual(overview.series.at(-1), {
+      date: '2026-11-01',
+      comments: 4,
+      commenters: 2,
+      reported: 1,
+    });
     assert.equal(
       overview.series.reduce((sum, { comments }) => sum + comments, 0),
       overview.totals.comments,
