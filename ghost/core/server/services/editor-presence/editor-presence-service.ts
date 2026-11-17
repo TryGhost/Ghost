@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import { InternalServerError, TooManyRequestsError, ValidationError } from '@tryghost/errors';
-import { FixedWindowLimiter } from './rate-limiter';
+import { InternalServerError, ValidationError } from '@tryghost/errors';
 import {
   RESOURCE_TYPES,
   decodeMember,
@@ -37,7 +36,6 @@ export interface PresenceMetrics {
 
 export interface EditorPresenceServiceOptions {
   store: PresenceStore;
-  rateLimit: { limit: number; windowMs: number };
   metrics?: PresenceMetrics;
   now?: () => number;
   /** Heartbeats newer than this are reported as active. */
@@ -118,7 +116,6 @@ function parse<T>(schema: z.ZodType<T>, input: unknown): T {
 
 export class EditorPresenceService {
   private readonly store: PresenceStore;
-  private readonly limiter: FixedWindowLimiter;
   private readonly metrics?: PresenceMetrics;
   private readonly now: () => number;
   private readonly activeWindowMs: number;
@@ -128,7 +125,6 @@ export class EditorPresenceService {
   constructor(options: EditorPresenceServiceOptions) {
     this.store = options.store;
     this.now = options.now ?? Date.now;
-    this.limiter = new FixedWindowLimiter({ ...options.rateLimit, now: this.now });
     this.metrics = options.metrics;
     this.activeWindowMs = options.activeWindowMs ?? DEFAULT_ACTIVE_WINDOW_MS;
     this.retentionMs = options.retentionMs ?? DEFAULT_RETENTION_MS;
@@ -144,7 +140,6 @@ export class EditorPresenceService {
    * the requested resources. Callers see only the ids they asked about.
    */
   async poll(userId: string, input: unknown): Promise<PollResult> {
-    this.enforceLimit(userId);
     const { resources, editing } = parse(pollSchema, input);
     const now = this.now();
 
@@ -191,7 +186,6 @@ export class EditorPresenceService {
   }
 
   async leave(userId: string, input: unknown): Promise<void> {
-    this.enforceLimit(userId);
     const { resource } = parse(leaveSchema, input);
     const started = performance.now();
     try {
@@ -202,17 +196,6 @@ export class EditorPresenceService {
     } catch (error) {
       this.record('presence-leave', started, { outcome: 'error' });
       throw error;
-    }
-  }
-
-  private enforceLimit(userId: string): void {
-    const decision = this.limiter.take(userId);
-    if (!decision.allowed) {
-      this.metrics?.metric('presence-rate-limited', { feature: 'presence' });
-      throw new TooManyRequestsError({
-        message: 'Too many presence requests',
-        context: `Retry after ${Math.ceil(decision.retryAfterMs / 1000)}s`,
-      });
     }
   }
 

@@ -41,6 +41,5 @@ export default defineService('Editor Presence', () => {
     store,
     metrics,
     retentionMs,
-    rateLimit: { limit: 12, windowMs: 10_000 },
   });
 });

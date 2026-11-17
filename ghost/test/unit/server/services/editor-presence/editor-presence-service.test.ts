@@ -18,7 +18,7 @@ const USER_1 = '1'.repeat(24);
 const USER_2 = '2'.repeat(24);
 const USER_3 = '3'.repeat(24);
 
-function build(overrides: { store?: PresenceStore; limit?: number } = {}) {
+function build(overrides: { store?: PresenceStore } = {}) {
   let now = 1_000_000;
   const recorded: Array<{ name: string; value: Record<string, unknown> }> = [];
   const metrics: PresenceMetrics = {
@@ -28,7 +28,6 @@ function build(overrides: { store?: PresenceStore; limit?: number } = {}) {
   const service = new EditorPresenceService({
     store,
     metrics,
-    rateLimit: { limit: overrides.limit ?? 100, windowMs: 10_000 },
     now: () => now,
     activeWindowMs: 60_000,
     retentionMs: 60_000,
@@ -135,15 +134,6 @@ describe('EditorPresenceService', function () {
       await assert.rejects(service.poll(USER_1, input), { errorType: 'ValidationError' });
     }
     await assert.rejects(service.leave(USER_1, {}), { errorType: 'ValidationError' });
-  });
-
-  it('refuses requests beyond the per-user limit', async function () {
-    const { service, recorded } = build({ limit: 2 });
-    await service.poll(USER_1, {});
-    await service.poll(USER_1, {});
-    await assert.rejects(service.poll(USER_1, {}), { errorType: 'TooManyRequestsError' });
-    await service.poll(USER_2, {});
-    assert.deepEqual(recorded.filter((entry) => entry.name === 'presence-rate-limited').length, 1);
   });
 
   it('records duration, store kind and outcome', async function () {

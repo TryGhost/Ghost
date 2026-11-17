@@ -1,9 +1,11 @@
 const assert = require('node:assert/strict');
 const {
   agentProvider,
+  configUtils,
   fixtureManager,
   matchers,
   mockManager,
+  resetRateLimits,
 } = require('../../utils/e2e-framework');
 const { anyContentLength, anyContentVersion, anyEtag, anyErrorId, anyNumber } = matchers;
 
@@ -122,6 +124,24 @@ describe('Presence API', function () {
       .matchBodySnapshot({
         errors: [{ id: anyErrorId }],
       });
+  });
+
+  it('limits each staff user through the shared rate limiter', async function () {
+    await resetRateLimits();
+    // One more than the retry count is allowed, then the user is blocked.
+    const allowed = configUtils.config.get('spam').presence_block.freeRetries + 1;
+    const body = { presence: [{ resources: [{ id: post.id, type: 'post' }] }] };
+    for (let i = 0; i < allowed; i++) {
+      await contributorAgent.post('presence/').body(body).expectStatus(200);
+    }
+
+    const rejected = await contributorAgent.post('presence/').body(body).expectStatus(429);
+    assert.ok(Number(rejected.headers['retry-after']) >= 1);
+    assert.equal(rejected.body.errors[0].type, 'TooManyRequestsError');
+
+    // Another user has their own budget.
+    await editorAgent.post('presence/').body(body).expectStatus(200);
+    await resetRateLimits();
   });
 
   it('is not found while polling is disabled', async function () {

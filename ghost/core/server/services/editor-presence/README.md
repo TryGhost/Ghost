@@ -74,9 +74,10 @@ the server time:
 removes the caller's member immediately; closing a tab without it is covered by
 the active window.
 
-A per-process limiter allows 12 requests per user per 10 seconds and answers 429
-beyond that; on a site served by several processes the effective limit is that
-many times 12. Ids must be 24-character hex and `type` must be `post` or `page`,
+Both routes carry Ghost's shared rate limiter under `spam.presence_block`: 12
+requests per staff user per 10 seconds, counted in process memory, then a 429
+with `Retry-After`. On a site served by several processes the effective limit
+is that many times 12. Ids must be 24-character hex and `type` must be `post` or `page`,
 and a body without the `presence` envelope is a 422 rather than a silent no-op.
 
 Presence is advisory and visible site-wide: any staff user, Contributors
@@ -110,7 +111,7 @@ saving never depend on presence, and clients treat 503 as a signal to back off.
 ## Metrics
 
 `presence-poll` and `presence-leave` carry `feature: presence`, the store kind,
-duration and outcome; `presence-rate-limited` counts refusals;
+duration and outcome;
 `presence-degraded` records each store failure with the operation (`touch`,
 `read`, `remove`) and a reason: `noperm`, `offline` (disconnected with the
 offline queue off), `timeout`, a socket error code, the first word of a Redis
