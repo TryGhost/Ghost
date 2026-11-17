@@ -18,14 +18,8 @@ const freeTier = tier({ id: '645453f4d254799990dd0e21', name: 'Free', slug: 'fre
 // What clicking Connect with Stripe in this tab leaves behind.
 const startConnectionInThisTab = () =>
   sessionStorage.setItem('ghost-stripe-connect-started', String(Date.now()));
-// The account.ghost.org flow is behind this alpha lab, and Ghost Core says
-// it's in use with stripeConnectBridge.
+// The account.ghost.org flow is behind this alpha lab.
 const labs = { oauthBridge: true };
-const bridgeConfig = () => {
-  const response = configResponse();
-  response.config.stripeConnectBridge = true;
-  return { browseConfig: { response } };
-};
 const accountKey = btoa(JSON.stringify({ n: 'Dummy Co', i: 'acct_123', l: false, s: 'state' }));
 
 describe('Stripe settings', () => {
@@ -56,7 +50,6 @@ describe('Stripe settings', () => {
     startConnectionInThisTab();
     await renderAdminApp(`/settings/stripe-connect?${new URLSearchParams({ secure_key: key })}`, {
       labs,
-      boot: bridgeConfig(),
     });
 
     expect(window.location.hash).toBe('#/settings/stripe-connect');
@@ -96,7 +89,7 @@ describe('Stripe settings', () => {
     startConnectionInThisTab();
     await renderAdminApp(
       `/settings/stripe-connect?${new URLSearchParams({ secure_key: accountKey })}`,
-      { labs, boot: bridgeConfig() },
+      { labs },
     );
 
     // The toast comes first: the prices fail before Portal's plans are saved.
@@ -124,7 +117,6 @@ describe('Stripe settings', () => {
     startConnectionInThisTab();
     await renderAdminApp('/settings/stripe-connect?secure_key=stale', {
       labs,
-      boot: bridgeConfig(),
     });
 
     const modal = settingsScreen.stripeModal();
@@ -151,7 +143,7 @@ describe('Stripe settings', () => {
     const settingsApi = fakeEditSettings();
     await renderAdminApp(
       `/settings/stripe-connect?${new URLSearchParams({ secure_key: accountKey })}`,
-      { labs, boot: bridgeConfig() },
+      { labs },
     );
 
     const modal = settingsScreen.stripeModal();
@@ -175,7 +167,7 @@ describe('Stripe settings', () => {
     const settingsApi = fakeEditSettings();
     await renderAdminApp(
       `/settings/stripe-connect?${new URLSearchParams({ secure_key: accountKey })}`,
-      { labs, boot: bridgeConfig() },
+      { labs },
     );
 
     const modal = settingsScreen.stripeModal();
@@ -190,7 +182,6 @@ describe('Stripe settings', () => {
     const settingsApi = fakeEditSettings();
     await renderAdminApp('/settings/stripe-connect?secure_key=stale', {
       labs,
-      boot: bridgeConfig(),
     });
     await expect
       .element(settingsScreen.stripeModal().getByText(/This link isn’t a Stripe connection/))
@@ -227,7 +218,6 @@ describe('Stripe settings', () => {
       {
         labs,
         boot: {
-          ...bridgeConfig(),
           browseSettings: {
             response: () => Promise.resolve(settingsResponse({ settings: stripeSettings() })),
           },
@@ -246,10 +236,7 @@ describe('Stripe settings', () => {
     expect(settingsApi.requests).toHaveLength(0);
   });
 
-  it.each([
-    ['an older Ghost Core, even with the lab on', undefined],
-    ['a Ghost Core with the lab off', false],
-  ])('with %s, connects Stripe with a pasted secure key', async (_core, stripeConnectBridge) => {
+  it('with the lab off, connects Stripe with a pasted secure key', async () => {
     fakeSettingsScreens();
     fakeTiers([freeTier]);
     const settingsApi = fakeAdminEndpoint('PUT', '/settings/', ({ body }) => {
@@ -271,17 +258,11 @@ describe('Stripe settings', () => {
       });
     });
     fakeAdminEndpoint('PUT', /^\/tiers\/[^/]+\/$/, ({ body }) => body);
-    // An older Core leaves stripeConnectBridge out, and a newer one with the
-    // lab off says false. Either way connections go to stripe.ghost.org's
-    // paste page, so a key in the address is ignored.
-    const response = configResponse();
-    response.config.stripeConnectBridge = stripeConnectBridge;
+    // With the lab off, connections go to stripe.ghost.org's paste page, so
+    // a key in the address is ignored.
     await renderAdminApp(
       `/settings/stripe-connect?${new URLSearchParams({ secure_key: accountKey })}`,
-      {
-        labs: { oauthBridge: stripeConnectBridge === undefined },
-        boot: { browseConfig: { response } },
-      },
+      { labs: { oauthBridge: false } },
     );
 
     const modal = settingsScreen.stripeModal();

@@ -34,7 +34,7 @@ import { useBrowseMembers } from '@tryghost/admin-x-framework/api/members';
 import { useBrowseTiers, useEditTier } from '@tryghost/admin-x-framework/api/tiers';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useGlobalData } from '@/settings/providers/global-data-context';
-import { useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
+import { useFeatureFlag, useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 import { navigateTo } from '@/utils/navigation';
@@ -198,11 +198,10 @@ const PasteSecureKey: React.FC<{ stripeConnectUrl: string }> = ({ stripeConnectU
 
 const Connect: React.FC<{ error?: string }> = ({ error }) => {
   const [testMode, setTestMode] = useState(false);
-  const { config } = useGlobalData();
-  // Ghost Core says whether its connections come back through account.ghost.org
-  // (the oauthBridge lab). An older Core sends them to stripe.ghost.org's
-  // paste page even with the lab on, so the lab alone isn't enough.
-  const oauthBridge = config?.stripeConnectBridge === true;
+  // With the oauthBridge lab, Ghost Core sends Stripe back through
+  // account.ghost.org, which delivers the key here; without it, to
+  // stripe.ghost.org's paste page.
+  const oauthBridge = useFeatureFlag('oauthBridge');
 
   const { apiRoot } = getGhostPaths();
   const stripeConnectUrl = `${apiRoot}/members/stripe_connect?mode=${testMode ? 'test' : 'live'}`;
@@ -487,8 +486,8 @@ const StripeConnectModal: React.FC = () => {
   const stripeConnectAccountId = getSettingValue(settings, 'stripe_connect_account_id');
   const { updateRoute } = useSettingsNavigation();
   const upgradeRoute = useUpgradeRoute();
-  const oauthBridge = config?.stripeConnectBridge === true;
-  // When Ghost Core uses account.ghost.org (see Connect), a key account.ghost.org delivered (see delivered-secure-key.ts) counts
+  const oauthBridge = useFeatureFlag('oauthBridge');
+  // With the oauthBridge lab (see Connect), a key account.ghost.org delivered (see delivered-secure-key.ts) counts
   // only if this modal can connect it now, and only for this modal: it's
   // forgotten as the modal opens, whichever screen it shows. It's saved
   // straight away when this tab started the connection, and confirmed first
