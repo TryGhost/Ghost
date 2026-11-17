@@ -1,4 +1,9 @@
+const config = require('../../../shared/config');
+const auth = require('../../auth');
 const membersService = require('../../services/members');
+
+// Chosen once at load, as in auth/authenticate.ts
+const isBetterAuth = config.get('auth:engine') === 'better-auth';
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -20,6 +25,10 @@ const controller = {
       // This is something you have to do if you want to use the "framework" with access to the raw req/res
       frame.response = async function (req, res) {
         function setSessionProp(prop, val) {
+          // Better Auth has no req.session
+          if (isBetterAuth) {
+            return auth.stripeConnectState.set(frame.options.context.user, val);
+          }
           req.session[prop] = val;
         }
         const mode = frame.options.mode || 'live';
