@@ -1,9 +1,8 @@
 import React, { useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Button, buttonVariants, inputSurface } from '@tryghost/shade/components';
+import { Button, buttonVariants, FieldError, inputSurface } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { isEmptyEmailLexical } from '@/automations/utils';
-import { AutomationCardWarning } from './automation-card-warning';
 import { emailTextExcerpt } from '@/automations/utils/history-email-preview';
 import { AutomationCardMenu } from './automation-card-menu';
 import { AutomationCard, AutomationCardHeader } from './automation-card';
@@ -22,6 +21,7 @@ export type EditableEmailData = {
   subject: string;
   lexical: string;
   suppressWarning: boolean;
+  validationAttempt: number;
   onInteract: () => void;
   onEditContent: () => void;
 };
@@ -33,13 +33,13 @@ function getEmailWarning(email: EditableEmailData, errorMessage?: string) {
   const missingSubject = !email.subject.trim();
   const missingBody = isEmptyEmailLexical(email.lexical);
   if (missingSubject && missingBody) {
-    return 'Add a subject line and a message before this email can be sent.';
+    return 'Add a subject and message';
   }
   if (missingSubject) {
-    return 'Add a subject line before this email can be sent.';
+    return 'Add a subject';
   }
   if (missingBody) {
-    return 'Add a message before this email can be sent.';
+    return 'Add a message';
   }
   return errorMessage;
 }
@@ -110,15 +110,28 @@ export const EditableEmailCard: React.FC<
     email.suppressWarning && !errorMessage ? undefined : getEmailWarning(email, errorMessage);
   const text = useMemo(() => emailTextExcerpt(email.lexical), [email.lexical]);
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  // Reveal a new field error and return to it on every blocked Publish.
+  const [seenValidation, setSeenValidation] = useState({
+    attempt: email.validationAttempt,
+    warning,
+  });
+  if (email.validationAttempt !== seenValidation.attempt || warning !== seenValidation.warning) {
+    const hasNewWarning = warning && warning !== seenValidation.warning;
+    const hasBlockedValidation = errorMessage && email.validationAttempt !== seenValidation.attempt;
+    setSeenValidation({ attempt: email.validationAttempt, warning });
+    if (hasNewWarning || hasBlockedValidation) {
+      setAnalyticsOpen(false);
+    }
+  }
   const showAnalytics = analyticsOpen && Boolean(analytics);
   const emailView = useEmailViewHeight(showAnalytics);
   const previewTextId = useId();
+  const errorId = useId();
   return (
     <AutomationCard
       aria-label={email.subject ? `Send email: ${email.subject}` : 'Send email'}
       className={cn(
         'nodrag nopan w-[400px] text-left',
-        warning && 'border-state-warning-fill',
         isNew && 'animate-in duration-250 ease-out fade-in-0 zoom-in-90 motion-reduce:animate-none',
       )}
       onClick={(event) => event.stopPropagation()}
@@ -130,7 +143,6 @@ export const EditableEmailCard: React.FC<
       <AutomationCardHeader
         actions={
           <Inline gap="xs">
-            <AutomationCardWarning message={warning} />
             {analytics && (
               // Pressed matches a ghost button with its menu open, like the ⋯ beside it.
               <Button
@@ -157,7 +169,8 @@ export const EditableEmailCard: React.FC<
           <EmailCardCollapse open={!showAnalytics}>
             <EmailCardMessage aria-label="Email message preview" className="border-0 p-0">
               <button
-                aria-describedby={previewTextId}
+                aria-describedby={warning ? `${previewTextId} ${errorId}` : previewTextId}
+                aria-invalid={Boolean(warning)}
                 aria-label="Edit email content"
                 className={cn(
                   inputSurface('self'),
@@ -189,6 +202,11 @@ export const EditableEmailCard: React.FC<
                   <LucideIcon.Maximize2 strokeWidth={2} />
                 </span>
               </button>
+              {warning && (
+                <FieldError className="mt-2" id={errorId}>
+                  {warning}
+                </FieldError>
+              )}
             </EmailCardMessage>
           </EmailCardCollapse>
           {analytics && <EmailCardAnalytics analytics={analytics} open={showAnalytics} />}

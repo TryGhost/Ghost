@@ -166,11 +166,13 @@ const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[]
 };
 
 type BuildGraphParams = {
-  actionErrors: Record<string, string>;
+  canvasErrors: Record<string, string>;
+  validationAttempt: number;
   // Draw the line to the exit card and bring the card in, for a flow just created.
   connectIn: boolean;
   automation: AutomationDetail;
   savedTriggerTierIds: readonly string[];
+  selectedTriggerLabel: TriggerData['selectedTriggerLabel'];
   triggerType: TriggerData['triggerType'];
   tierQuery: TriggerData['tierQuery'];
   onChange: (next: AutomationDetail) => void;
@@ -188,10 +190,12 @@ type BuildGraphParams = {
 };
 
 const buildGraph = ({
-  actionErrors,
+  canvasErrors,
+  validationAttempt,
   connectIn,
   automation,
   savedTriggerTierIds,
+  selectedTriggerLabel,
   triggerType,
   tierQuery,
   onChange,
@@ -240,13 +244,14 @@ const buildGraph = ({
       },
       data: {
         trigger: {
+          selectedTriggerLabel,
           tierQuery,
           triggerType,
           rules: automation.trigger_rules,
           savedTierIds: savedTriggerTierIds,
           onUpdate: (trigger) => onChange({ ...automation, ...trigger }),
         },
-        errorMessage: actionErrors[TRIGGER_CANVAS_ID],
+        errorMessage: canvasErrors[TRIGGER_CANVAS_ID],
         onInteract: () => onInteract(TRIGGER_CANVAS_ID),
       },
       ...nodeProps(TRIGGER_CANVAS_ID),
@@ -258,7 +263,7 @@ const buildGraph = ({
   ordered.forEach((action) => {
     const editableEmail = action.type === 'send_email';
     const editableWait = action.type === 'wait';
-    const errorMessage = actionErrors[action.id];
+    const errorMessage = canvasErrors[action.id];
 
     nodes.push({
       id: action.id,
@@ -275,6 +280,7 @@ const buildGraph = ({
                 subject: action.data.email_subject,
                 lexical: action.data.email_lexical,
                 suppressWarning: newEmailWithoutWarningsId === action.id,
+                validationAttempt,
                 onInteract: () => onInteract(action.id),
                 onEditContent: () => onEditEmailBody(action.id),
               },
@@ -391,10 +397,12 @@ type AutomationCanvasProps = {
   // Set when a trigger was just picked: the canvas opens with the trigger where the
   // picker's card was, and the flow below it plays in.
   initialTriggerTop?: number;
-  actionErrors?: Record<string, string>;
+  canvasErrors?: Record<string, string>;
+  validationAttempt?: number;
   onWaitValidityChange: (stepId: string, valid: boolean) => void;
   automation?: AutomationDetail;
   savedTriggerTierIds?: readonly string[];
+  selectedTriggerLabel?: TriggerData['selectedTriggerLabel'];
   triggerType?: TriggerData['triggerType'];
   isLoading: boolean;
   isError: boolean;
@@ -417,8 +425,10 @@ const hasAutomationEmailModalState = (state: unknown): state is { automationEmai
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   initialSidebar,
   initialTriggerTop,
-  actionErrors = {},
+  canvasErrors = {},
+  validationAttempt = 0,
   savedTriggerTierIds = [],
+  selectedTriggerLabel,
   triggerType,
   onWaitValidityChange,
   automation,
@@ -681,10 +691,12 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       return null;
     }
     return buildGraph({
-      actionErrors,
+      canvasErrors,
+      validationAttempt,
       connectIn: connecting,
       automation,
       savedTriggerTierIds,
+      selectedTriggerLabel,
       triggerType,
       tierQuery,
       onChange,
@@ -701,9 +713,11 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       newStepId,
     });
   }, [
-    actionErrors,
+    canvasErrors,
+    validationAttempt,
     connecting,
     savedTriggerTierIds,
+    selectedTriggerLabel,
     triggerType,
     tierQuery,
     onChange,

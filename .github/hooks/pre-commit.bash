@@ -21,7 +21,9 @@ fi
 if [ -n "$(git diff --cached --name-only --no-renames --diff-filter=D)" ]; then
     echo -e "Checking documentation links ${grey}(pre-commit hook)${no_color} "
 
-    if ! pnpm --silent lint:doc-links; then
+    # git sets GIT_DIR for hooks in a worktree, which stops remark-validate-links
+    # from finding the repository root to resolve its own GitHub URLs
+    if ! (unset GIT_DIR && pnpm --silent lint:doc-links); then
         echo -e "${red}❌ Documentation link check failed${no_color}"
         exit 1
     fi

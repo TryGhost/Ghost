@@ -177,7 +177,7 @@ describe('Media inliner service root', function () {
     registerJobHandlers({
       jobsService,
       gifts: { startFetch: sinon.stub().resolves() },
-      automations: { startFetch: sinon.stub().resolves() },
+      automationAnalytics: { startFetch: sinon.stub().resolves() },
       newsletters: { startFetch: sinon.stub().resolves() },
       memberJobs: { cleanTokens: sinon.stub().resolves(0), cleanExpiredComped: sinon.stub() },
       giftService: {} as never,

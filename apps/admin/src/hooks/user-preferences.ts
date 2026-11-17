@@ -199,11 +199,20 @@ export const useEditUserPreferences = ({
         typeof update === 'function' ? update(current) : update,
       );
 
-      const encodedForStorage = PreferencesSchema.encode(newPreferences);
+      const accessibility = JSON.stringify(PreferencesSchema.encode(newPreferences));
+
+      // Each save re-renders everything that reads the current user, so skip
+      // one that changes nothing. Edits run one at a time (see `scope` above),
+      // and one queued behind another can find its change already made. This
+      // compares encoded strings, so a stored value encoded differently doesn't
+      // match and is saved as before: it never drops a change.
+      if (accessibility === latestUser.accessibility) {
+        return;
+      }
 
       await editUser({
         ...latestUser,
-        accessibility: JSON.stringify(encodedForStorage),
+        accessibility,
         ...requestOptions,
       });
     },

@@ -11,6 +11,7 @@ across the workspace dependency graph.
 | `ghost/`         | The Ghost server, frontend rendering, migrations, and server tests            |
 | `koenig/`        | The Koenig editor and packages for storing, converting, and rendering content |
 | `packages/`      | Shared libraries, schemas, translations, test data, and adapter contracts     |
+| `contracts/`     | Packages that define the shape of data crossing a boundary                    |
 | `tools/configs/` | Shared ESLint, TypeScript, Vite, and Vitest configuration                     |
 | `e2e/`           | Playwright tests for complete Admin and public-site journeys                  |
 | `docker/`        | Containers and supporting services for local development and CI               |
@@ -80,6 +81,11 @@ commands.
 `packages/` contains shared libraries used by Ghost Core and the apps. Adapter
 base packages define contracts for storage, scheduling, redirects, caching, and
 other replaceable services.
+
+`contracts/` contains packages that define the shape of data crossing a
+boundary, such as member custom field types or the formats Ghost and installed
+apps exchange. Ghost Core may import them anywhere through their public entry
+points. See [`contracts/README.md`](../../contracts/README.md).
 
 Read [`packages/README.md`](../../packages/README.md) before adding or
 modernizing an internal package. New internal packages start from

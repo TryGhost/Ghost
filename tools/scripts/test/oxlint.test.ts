@@ -1,6 +1,15 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  cpSync,
+  existsSync,
+  mkdtempSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -46,6 +55,14 @@ function runLint(
       path.join(cwd, '.dependency-cruiser.cjs'),
       boundarySource ?? readFileSync(path.join(root, '.dependency-cruiser.cjs')),
     );
+    // The injection rule reads contract package names from their manifests.
+    for (const contract of readdirSync(path.join(root, 'contracts'))) {
+      const manifest = path.join('contracts', contract, 'package.json');
+      if (existsSync(path.join(root, manifest))) {
+        mkdirSync(path.join(cwd, 'contracts', contract), { recursive: true });
+        cpSync(path.join(root, manifest), path.join(cwd, manifest));
+      }
+    }
     const resolver = 'tools/scripts/ci/service-dependency-resolver.mjs';
     mkdirSync(path.dirname(path.join(cwd, resolver)), { recursive: true });
     cpSync(path.join(root, resolver), path.join(cwd, resolver));
@@ -97,21 +114,22 @@ function lint(...args: Parameters<typeof runLint>) {
 test('explains missing or malformed service dependency policy', () => {
   for (const policy of [
     {},
-    { forbidden: {} },
-    { forbidden: [] },
-    { forbidden: [{ name: 'renamed-service-dependencies' }] },
-    { forbidden: [{ name: 'service-dependencies', to: { pathNot: [] } }] },
-    { forbidden: [{ name: 'service-dependencies', from: { path: 42 }, to: { pathNot: [] } }] },
+    { forbidden: {}, serviceDependencyAllowlist: [] },
+    { forbidden: [], serviceDependencyAllowlist: [] },
+    { forbidden: [{ name: 'renamed-service-dependencies' }], serviceDependencyAllowlist: [] },
+    { forbidden: [{ name: 'service-dependencies' }], serviceDependencyAllowlist: [] },
+    {
+      forbidden: [{ name: 'service-dependencies', from: { path: 42 } }],
+      serviceDependencyAllowlist: [],
+    },
     { forbidden: [{ name: 'service-dependencies', from: { path: '^services/' } }] },
     {
-      forbidden: [
-        { name: 'service-dependencies', from: { path: '^services/' }, to: { pathNot: '' } },
-      ],
+      forbidden: [{ name: 'service-dependencies', from: { path: '^services/' } }],
+      serviceDependencyAllowlist: '',
     },
     {
-      forbidden: [
-        { name: 'service-dependencies', from: { path: '^services/' }, to: { pathNot: [42] } },
-      ],
+      forbidden: [{ name: 'service-dependencies', from: { path: '^services/' } }],
+      serviceDependencyAllowlist: [42],
     },
   ]) {
     const result = runLint(
@@ -124,7 +142,7 @@ test('explains missing or malformed service dependency policy', () => {
     assert.equal(result.status, 1);
     assert.match(
       result.stdout + result.stderr,
-      /ghost\/no-injected-service-libraries: \.dependency-cruiser\.cjs must define service-dependencies with a string from\.path and a string array to\.pathNot/,
+      /ghost\/no-injected-service-libraries: \.dependency-cruiser\.cjs must define service-dependencies with a string from\.path and expose serviceDependencyAllowlist/,
     );
   }
 });
@@ -577,10 +595,13 @@ test('shares the dependency-cruiser allowlist, including exact local files and p
     new Service({errors, manifest, contracts, otherContract, objectId, boolean, json, lookalike, clock, os});
   `;
   const original = lint(source, serviceRoot);
-  assert.equal(original.diagnostics.length, 5);
+  assert.equal(original.diagnostics.length, 7);
+  // Contracts are allowed whole, so every entry of one is reported.
   for (const library of [
     '@tryghost/errors/subpath',
     '@tryghost/app-contracts/manifest',
+    '@tryghost/app-contracts',
+    '@tryghost/app-contracts/other',
     'bson-objectid',
     '../../lib/db-types/boolean',
     '../../lib/db-types/json',
@@ -595,8 +616,28 @@ test('shares the dependency-cruiser allowlist, including exact local files and p
     () => "const serviceDependencyAllowlist = ['^node:os$',",
   );
   const result = lint(source, serviceRoot, false, undefined, changed);
-  assert.equal(result.diagnostics.length, 6);
+  assert.equal(result.diagnostics.length, 8);
   assert.ok(result.diagnostics.some((d) => d.message.includes('node:os')));
+});
+
+test('lets a root pass in a specialist dependency it owns', () => {
+  // Specialist dependencies are exempt from the service rule, but only their
+  // owners may import them, so the implementation could not import one directly.
+  // An allowlisted library passed the same way is still reported.
+  const source = `
+    import Service from './service';
+    import { z } from 'zod';
+    const stripe = require('stripe');
+    import { extract } from '@extractus/oembed-extractor';
+    new Service({ z, stripe, extract });
+  `;
+  const messages = lint(source, serviceRoot).diagnostics.map((d) => d.message);
+  assert.deepEqual(
+    messages.filter((message) => message.includes('directly')),
+    [
+      'Import zod directly in the implementation instead of passing it into this service constructor.',
+    ],
+  );
 });
 
 test('recognizes exact JavaScript library paths without approving siblings', () => {

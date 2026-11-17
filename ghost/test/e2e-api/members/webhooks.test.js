@@ -4595,8 +4595,6 @@ describe('Members API', function () {
 
     beforeEach(async function () {
       mockManager.mockMail();
-      mockManager.mockLabsEnabled('stripeCheckoutCollection');
-      mockManager.mockLabsEnabled('customFieldTypePhone');
       for (const field of [
         { name: 'Delivery address', type: 'address' },
         { name: 'Recipient name', type: 'short_text' },

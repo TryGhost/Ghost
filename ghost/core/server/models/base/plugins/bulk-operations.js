@@ -5,58 +5,47 @@ const { byColumnValues, CHUNK_SIZE } = require('./bulk-filters');
 const LINKED_RECORDS_CHANGED = 'LINKED_RECORDS_CHANGED';
 const LINKED_TRANSACTION_ATTEMPTS = 3;
 
-function createBulkOperation(singular, multiple) {
-  return async function (knex, table, data, options) {
-    const result = {
-      successful: 0,
-      unsuccessful: 0,
-      unsuccessfulData: [],
-      errors: [],
-    };
+async function insert(knex, table, data, options) {
+  const result = {
+    successful: 0,
+    unsuccessful: 0,
+    unsuccessfulData: [],
+    errors: [],
+  };
 
-    for (const chunkedData of _.chunk(data, CHUNK_SIZE)) {
-      try {
-        await multiple(knex, table, chunkedData, options);
-        result.successful += chunkedData.length;
-      } catch (errToIgnore) {
-        if (options.throwErrors) {
-          throw errToIgnore;
-        }
-        for (const singularData of chunkedData) {
-          try {
-            await singular(knex, table, singularData, options);
-            result.successful += 1;
-          } catch (err) {
-            err.errorDetails = singularData;
-            result.errors.push(err);
-            result.unsuccessfulData.push(singularData);
-            result.unsuccessful += 1;
-          }
+  for (let offset = 0; offset < data.length; offset += CHUNK_SIZE) {
+    const chunkedData = data.slice(offset, offset + CHUNK_SIZE);
+    try {
+      await insertRecords(knex, table, chunkedData, options);
+      result.successful += chunkedData.length;
+    } catch (errToIgnore) {
+      if (options.throwErrors) {
+        throw errToIgnore;
+      }
+      for (const singularData of chunkedData) {
+        try {
+          await insertRecords(knex, table, singularData, options);
+          result.successful += 1;
+        } catch (err) {
+          err.errorDetails = singularData;
+          result.errors.push(err);
+          result.unsuccessfulData.push(singularData);
+          result.unsuccessful += 1;
         }
       }
     }
+  }
 
-    return result;
-  };
+  return result;
 }
 
-async function insertSingle(knex, table, record, options) {
+async function insertRecords(knex, table, records, options) {
   let k = knex(table);
   if (options.transacting) {
     k = k.transacting(options.transacting);
   }
-  await k.insert(record);
+  await k.insert(records);
 }
-
-async function insertMultiple(knex, table, chunk, options) {
-  let k = knex(table);
-  if (options.transacting) {
-    k = k.transacting(options.transacting);
-  }
-  await k.insert(chunk);
-}
-
-const insert = createBulkOperation(insertSingle, insertMultiple);
 
 /**
  * Execute a bulk operation (update or delete) with a where strategy.
@@ -112,7 +101,8 @@ module.exports = function (Bookshelf) {
         const sortedIds = _.uniq(ids).sort();
         const rows = [];
 
-        for (const chunk of _.chunk(sortedIds, CHUNK_SIZE)) {
+        for (let offset = 0; offset < sortedIds.length; offset += CHUNK_SIZE) {
+          const chunk = sortedIds.slice(offset, offset + CHUNK_SIZE);
           rows.push(
             ...(await Bookshelf.knex(this.prototype.tableName)
               .transacting(transacting)

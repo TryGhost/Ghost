@@ -45,7 +45,7 @@ The command lives in `tools/gx`; its golden-post fixture remains under Ghost tes
 ## Database migration generator
 
 Run `pnpm gx generate migration <slug>` from the repository root. The slug must
-be kebab-case. The existing generator creates a timestamped migration in the
+be kebab-case. The generator creates a timestamped TypeScript migration in the
 next minor-version folder and promotes package versions to RC when needed.
 See [database migrations](../../docs/practices/database-migrations.md) for the
 workflow.
@@ -65,14 +65,20 @@ lint, boundary lint and the inventory test apply to every service that is not
 listed in the legacy service inventory. Existing service files, directories and
 tests are never overwritten, and a name that is still listed as legacy is refused.
 
-The command prints the remaining steps, including choosing the right place for
-`init()` in boot. See [creating a service](../../ghost/core/server/services/README.md#creating-a-service)
+The command prints the remaining steps: the lines that bind the root and await
+its `init()` in boot, when a boot test is needed, and
+`pnpm gx services verify <name>` on the committed result. `services verify` finds the `init()` call through that binding,
+so keep the printed form. See [creating a service](../../ghost/core/server/services/README.md#creating-a-service)
 for the ownership, implementation and testing requirements.
 
 ## Rebuild development tables
 
 Run `pnpm gx db rebuild-development-tables` after editing development-only table
 schemas. This drops and recreates the listed tables, discarding their data.
+With `auth:betterAuthDev` on, that includes passwords: `user_accounts` holds
+the only copy, so users whose passwords changed are locked out afterwards. Reset
+the database (`pnpm reset:db`) or their passwords. See the
+[Better Auth README](../../ghost/core/server/auth/better-auth/README.md#passwords).
 Start the development database first. gx uses the existing development-environment
 runner and the checkout's Ghost working directory; it does not start services.
 
@@ -156,7 +162,7 @@ Dependency Cruiser audit. Run them from the repository root:
 | `pnpm gx services report`               | Legacy and standard totals, ownership and remaining work              |
 | `pnpm gx services list`                 | Services, ownership, migration status and dependency counts           |
 | `pnpm gx services report email-address` | One legacy entry's notes, assessments, blockers and offending imports |
-| `pnpm gx services dependencies`         | Disallowed dependencies ranked by distinct importing files            |
+| `pnpm gx services dependencies`         | Disallowed dependencies and their kind, ranked by importing files     |
 | `pnpm gx services audit`                | Dependency Cruiser's full native report                               |
 | `pnpm gx services verify email-address` | Pass or fail checks on a committed service change                     |
 
@@ -180,7 +186,8 @@ It replaces `pnpm audit:services`; `services dependencies` replaces
 `services verify` needs a clean tree on a branch that contains the fetched base.
 It checks new files, audit SHAs, formatting, lint, types and boundaries. It runs
 dependency-cruiser twice, resolving workspace packages to authored source and then
-to the built output Ghost loads. Built output must add no service rule violation,
+to the built output Ghost loads, and fails a run in which dependency-cruiser could
+not load TypeScript. Built output must add no service rule violation,
 every part of an added allowance must match an import from a service, and each file
 an added allowance admits must be named in a boundary regression. It then runs the
 full unit suite, runs the changed unit tests shuffled and each one alone and, for a
@@ -237,6 +244,27 @@ and own-root imports in separate columns. `dependencies` counts distinct
 importing implementation files per target, largest first; it excludes unresolved
 and own-root findings. The native `audit` counts rule violations, so one import
 can appear under more than one rule.
+
+The report's second table groups every rejected dependency into one of four
+kinds, which add up to its total:
+
+- **Instances to inject** (`inject`): the dependency holds application state or
+  does its own I/O, so the root wires it.
+- **Wrong import form** (`import-form`): the library is allowed only in another
+  form, such as individual Lodash functions, or a specialist dependency is
+  imported outside its owners.
+- **Deferred to a planned refactor** (`deferred`): the import stays a known
+  violation until a named refactor moves the importing file, such as job
+  handler registration moving into boot. Per-service reports show the refactor.
+- **No decision yet** (`no-decision`): nothing has been decided.
+
+The kinds come from `serviceDependencyDecisions` in
+[`.dependency-cruiser.cjs`](../../.dependency-cruiser.cjs), next to the allowlist;
+a dependency that matches no pattern there has no decision. Record a decision by
+adding a pattern with its reason. A deferral names the importing file, the
+dependencies and the refactor, and takes precedence over the other kinds for
+that file. `dependencies --kind no-decision` lists what is
+left to decide, and per-service reports show each finding's kind.
 
 All service commands use the same full dependency-cruiser scan and
 known-violations file as `pnpm lint:boundaries`. Reports retain known and new

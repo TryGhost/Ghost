@@ -48,7 +48,13 @@ export type HttpHandler = (
  * @param {import('@tryghost/api-framework').Controller} apiImpl - Pipeline wrapper, which executes the target ctrl function.
  * @return {HttpHandler}
  */
-const http = (apiImpl: ControllerMethod & ((frame: Frame) => unknown)): HttpHandler => {
+const http = (
+  apiImpl: Pick<
+    ControllerMethod,
+    'schema' | 'options' | 'data' | 'headers' | 'statusCode' | 'response'
+  > &
+    ((frame: Frame) => unknown),
+): HttpHandler => {
   /**
    * @param req - Express request object.
    * @param res - Express response object.
@@ -98,10 +104,13 @@ const http = (apiImpl: ControllerMethod & ((frame: Frame) => unknown)): HttpHand
       },
     });
 
-    frame.configure({
-      options: apiImpl.options,
-      data: apiImpl.data,
-    });
+    frame.configure(
+      {
+        options: apiImpl.options,
+        data: apiImpl.data,
+      },
+      { deferBodyClone: Boolean(apiImpl.schema) },
+    );
 
     try {
       const result = await apiImpl(frame);

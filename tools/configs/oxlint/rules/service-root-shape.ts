@@ -17,7 +17,7 @@ export const serviceRootShape: CreateRule = {
   meta: {
     type: 'problem',
     docs: {
-      description: 'Keep service roots limited to init, service and declared extras',
+      description: 'Keep service roots limited to init, stop, service and declared extras',
     },
     schema: [
       {
@@ -31,7 +31,7 @@ export const serviceRootShape: CreateRule = {
       runtimeExport: 'Named runtime exports belong in extras; type-only exports are allowed.',
       defaultExport: 'Export a default initializer created by the kernel defineService helper.',
       alias: 'Initializer and extras aliases must resolve to local const declarations.',
-      arguments: 'Use defineService(name, create, extras?).',
+      arguments: 'Use defineService(name, create or { create, start?, stop? }, extras?).',
       explicitExtras: 'Extras must be an explicit object so every member can be catalogued.',
       property: 'List extras explicitly with static names; no spreads or accessors.',
       duplicate: 'List each extra once.',

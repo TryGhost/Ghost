@@ -13,7 +13,6 @@
 //
 // The output state checker is responsible for checking the response from the app after performing a request.
 import debugFactory from '@tryghost/debug';
-// @ts-expect-error This module lacks type definitions.
 import * as expressTest from '@tryghost/express-test';
 import * as fs from 'fs-extra';
 import * as path from 'node:path';
@@ -45,7 +44,6 @@ import supertest from 'supertest';
 // @ts-expect-error This module lacks type definitions.
 import { stopGhost } from './e2e-utils';
 import adapterManager from '../../core/server/services/adapter-manager';
-// @ts-expect-error This module lacks type definitions.
 import DomainEvents from '@tryghost/domain-events';
 import * as hostLimits from './host-limits-utils';
 // @ts-expect-error This module lacks type definitions.

@@ -10,12 +10,15 @@ import {
   allowanceProblems,
   builtOnlyViolations,
   changedAuditShas,
+  changedSpecialists,
+  evaluateConfig,
   findInventoryReferences,
   fetchMain,
   findNewJavaScript,
   fixturePath,
   mutateBootInit,
   serviceTerms,
+  specialistProblems,
   verifyService,
   type Cruise,
   type RunCommand,
@@ -28,8 +31,9 @@ const inventory = `services:
   other:
     disposition: migrate
 `;
-const boot = `const staffService = require('./server/services/staff').default;
-async function initServices() {
+// The root is bound inside its phase, as lint requires of boot.js.
+const boot = `async function initServices() {
+  const staffService = require('./server/services/staff').default;
   await Promise.all([staffService.init()]);
 }
 `;
@@ -51,7 +55,14 @@ function cruise(
       source,
       dependencies: [{ module, resolved, dependencyTypes: [type] }],
     })),
-    summary: { violations },
+    summary: {
+      violations,
+      environment: {
+        transpilersFound: [
+          { name: 'typescript', available: true, currentVersion: 'typescript@6.0.3' },
+        ],
+      },
+    },
   };
 }
 
@@ -198,6 +209,7 @@ test('only service rule violations new to built output are reported', () => {
     [
       [service, 'pkg', 'packages/pkg/build/index.js'],
       [service, 'known', 'lib/known.js'],
+      [service, 'special', 'lib/special.js'],
       ['b.ts', 'missing', 'missing'],
       ['c.ts', 'd', 'd.ts'],
     ],
@@ -206,12 +218,86 @@ test('only service rule violations new to built output are reported', () => {
       { from: service, to: 'packages/pkg/build/index.js', rule: { name: 'service-dependencies' } },
       { from: 'b.ts', to: 'missing', rule: { name: 'service-unresolved' } },
       { from: 'c.ts', to: 'd.ts', rule: { name: 'shared-not-server-or-frontend' } },
+      { from: service, to: 'lib/special.js', rule: { name: 'specialist-dependencies' } },
     ],
   );
   assert.deepEqual(builtOnlyViolations(source, built), [
     `${service} → packages/pkg/build/index.js breaks service-dependencies.`,
     'b.ts → missing breaks service-unresolved.',
+    `${service} → lib/special.js breaks specialist-dependencies.`,
   ]);
+});
+
+test('changed specialist entries are new entries or the owners added to existing ones', () => {
+  const base = [
+    { dependency: '^kept$', owners: ['^a$'] },
+    { dependency: '^widened$', owners: ['^a$'] },
+  ];
+  const head = [
+    { dependency: '^kept$', owners: ['^a$'] },
+    { dependency: '^widened$', owners: ['^a$', '^b$'] },
+    { dependency: '^new$', owners: ['^c$'] },
+  ];
+  assert.deepEqual(changedSpecialists(base, head), [
+    { dependency: '^widened$', owners: ['^b$'] },
+    { dependency: '^new$', owners: ['^c$'] },
+  ]);
+});
+
+test('changed specialist entries need imports from their owners and regression cases', () => {
+  const services = 'ghost/core/server/services';
+  const source = cruise([
+    [`${services}/alpha/client.ts`, 'sdk', 'node_modules/.pnpm/sdk@1/node_modules/sdk/index.js'],
+    [`${services}/beta/other.ts`, 'unused-owner', 'lib/unrelated.js'],
+    [`${services}/alpha/types.ts`, 'typed', 'node_modules/typed/index.js', 'type-only'],
+  ]);
+  const problems = specialistProblems({
+    entries: [
+      // A new entry with a second alternative nothing imports.
+      { dependency: '^sdk$|^sdk-extra$', owners: [`^${services}/alpha/client\\.ts$`] },
+      // A new owner that does not import the dependency.
+      { dependency: '^lib/thing\\.js$', owners: [`^${services}/beta/`] },
+      // A type-only import does not count.
+      { dependency: '^typed$', owners: [`^${services}/alpha/types\\.ts$`] },
+      // Owners outside services are not in the verify scan.
+      { dependency: '^web-only$', owners: ['^ghost/core/server/web/'] },
+    ],
+    isNew: (dependency) => dependency !== '^lib/thing\\.js$',
+    cruises: [source],
+    regressionCases: '',
+  });
+  assert.deepEqual(problems, [
+    '^sdk-extra$ matches no import from its owners in services.',
+    'node_modules/sdk/index.js has no regression case naming it in full.',
+    `^${services}/beta/ does not import ^lib/thing\\.js$.`,
+    `^${services}/alpha/types\\.ts$ does not import ^typed$.`,
+    '^typed$ matches no import from its owners in services.',
+  ]);
+  assert.deepEqual(
+    specialistProblems({
+      entries: [{ dependency: '^sdk$', owners: [`^${services}/alpha/`] }],
+      isNew: () => true,
+      cruises: [source],
+      regressionCases: "'node_modules/sdk/index.js'",
+    }),
+    [],
+  );
+});
+
+test('the base config is evaluated with requires resolved from the repository', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'gx-verify-config-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(join(root, 'lib'), { recursive: true });
+  await writeFile(join(root, 'lib/owners.cjs'), "module.exports = ['^owner$'];");
+  const config = evaluateConfig(
+    "const owners = require('./lib/owners.cjs');\n" +
+      "module.exports = { specialistDependencies: [{ dependency: '^sdk$', owners }], dir: __dirname };",
+    root,
+  );
+  assert.deepEqual(config, {
+    specialistDependencies: [{ dependency: '^sdk$', owners: ['^owner$'] }],
+    dir: root,
+  });
 });
 
 test('the boot mutation stops boot waiting but keeps rejections', async () => {
@@ -253,6 +339,56 @@ test('the boot mutation stops boot waiting but keeps rejections', async () => {
       throw failure;
     }),
     (error) => error === failure,
+  );
+});
+
+test('the boot mutation follows a binding only within its own phase', () => {
+  // The generator names a one-word service <name>Service, which earlier phases
+  // already use for other roots.
+  const earlier = `async function initServicesForFrontend() {
+  const themeService = require('./server/services/themes');
+  await themeService.init();
+}
+`;
+  const later = (body: string) => `async function initServices() {
+  const themeService = require('./server/services/theme').default;
+${body}
+}
+`;
+  const mutated = mutateBootInit(earlier + later('  await themeService.init();'), 'theme');
+  assert.ok(mutated, 'The binding in the later phase must be found');
+  assert.ok(mutated.source.startsWith(earlier), 'The earlier phase must be left alone');
+  assert.match(
+    mutated.source.slice(earlier.length),
+    /await Promise\.race\(\[themeService\.init\(\)/,
+  );
+  // A binding with no init() in its own phase is not found through another phase's call.
+  assert.equal(mutateBootInit(earlier + later('  use(themeService.service);'), 'theme'), undefined);
+  assert.equal(
+    mutateBootInit(later('  use(themeService.service);') + earlier, 'theme'),
+    undefined,
+    'A later phase with the same binding name must not be mutated either',
+  );
+  // A root bound again, only to read the ready instance, does not hide its init().
+  const twice = `async function initCore() {
+  const keys = require('./server/services/keys').default;
+  await keys.init();
+}
+async function initServices() {
+  const keys = require('./server/services/keys').default;
+  use(keys.service);
+}
+`;
+  assert.match(
+    mutateBootInit(twice, 'keys')?.source ?? '',
+    /await Promise\.race\(\[keys\.init\(\)/,
+  );
+  const reversed = twice
+    .replace('await keys.init();', 'use(keys.service);')
+    .replace(/use\(keys\.service\);\n\}\n$/, 'await keys.init();\n}\n');
+  assert.match(
+    mutateBootInit(reversed, 'keys')?.source.split('async function initServices')[1] ?? '',
+    /await Promise\.race\(\[keys\.init\(\)/,
   );
 });
 
@@ -364,6 +500,69 @@ test('an added allowance that only holds for authored source fails on built outp
   assert.equal(f.status()['allowances-accurate'], 'fail');
 });
 
+test('a specialist owner added since the base is checked against the scan', async (t) => {
+  const f = await fixture(t);
+  const config = (owners: string[]) =>
+    [
+      `const from = ${JSON.stringify(rule.from)};`,
+      "module.exports = { forbidden: [{ name: 'service-dependencies', from, to: { pathNot: [] } }] };",
+      'Object.defineProperty(module.exports, "specialistDependencies", {',
+      `  value: [{ dependency: '^sdk$|(^|/)node_modules/sdk/', owners: ${JSON.stringify(owners)} }],`,
+      '});',
+      '',
+    ].join('\n');
+  await f.write('.dependency-cruiser.cjs', config(['^ghost/core/server/services/other/']));
+  const base = f.commit('base config');
+  await f.write(
+    '.dependency-cruiser.cjs',
+    config(['^ghost/core/server/services/other/', '^ghost/core/server/services/staff/']),
+  );
+  await f.write('tools/scripts/test/service-dependencies.test.ts', 'node_modules/sdk/index.js');
+  f.commit('new owner');
+  const status = () =>
+    Object.fromEntries(
+      verifyService({
+        repository: f.root,
+        service: 'staff',
+        base,
+        staticOnly: true,
+        run: f.run,
+      }).map((check) => [check.name, check.status]),
+    );
+  // The new owner imports nothing from the package yet.
+  assert.equal(status()['allowances-accurate'], 'fail');
+  const service = 'ghost/core/server/services/staff/a.ts';
+  f.cruises.source = cruise([[service, 'sdk', 'node_modules/sdk/index.js']]);
+  f.cruises.built = f.cruises.source;
+  assert.equal(status()['allowances-accurate'], 'pass');
+});
+
+test('a dependency run that could not load TypeScript fails and is not compared', async (t) => {
+  const f = await fixture(t);
+  // What dependency-cruiser reports for a compiler it can find but not load.
+  const withoutTypeScript: Cruise = {
+    ...cruise([]),
+    summary: {
+      violations: [],
+      environment: {
+        transpilersFound: [{ name: 'typescript', available: true, currentVersion: '-' }],
+      },
+    },
+  };
+  f.cruises.source = withoutTypeScript;
+  f.cruises.built = withoutTypeScript;
+  const checks = f.verify();
+  for (const name of ['dependencies-source', 'dependencies-built']) {
+    const check = checks.find((item) => item.name === name);
+    assert.equal(check?.status, 'fail');
+    assert.match(check?.details[0] ?? '', /could not load the `typescript` package/);
+  }
+  assert.equal(
+    checks.find((item) => item.name === 'built-boundaries'),
+    undefined,
+  );
+});
+
 test('unreadable dependency-cruiser output fails the run that produced it', async (t) => {
   const f = await fixture(t);
   const runner: RunCommand = (command, args, options) =>
@@ -439,6 +638,27 @@ test('the boot check fails when tests survive the mutation and restores boot.js'
   assert.equal(check?.status, 'fail');
   assert.match(during, /Promise\.race\(\[staffService\.init\(\)/);
   assert.equal(await readFile(join(f.root, 'ghost/core/boot.js'), 'utf8'), boot);
+});
+
+test('the boot check says how to write the call when it cannot find one', async (t) => {
+  const f = await fixture(t);
+  // The inline form runs, but the check cannot follow it to mutate it.
+  await f.write(
+    'ghost/core/boot.js',
+    `async function initServices() {
+  await require('./server/services/staff').default.init();
+}
+`,
+  );
+  f.commit('inline');
+  const check = f.verify('staff', false).at(-1);
+  assert.equal(check?.name, 'boot-waits-for-init');
+  assert.equal(check?.status, 'fail');
+  assert.match(check?.details.join('\n') ?? '', /No init call for staff found in boot\.js/);
+  assert.match(
+    check?.details.join('\n') ?? '',
+    /const example = require\('\.\/server\/services\/staff'\)\.default;\n\s+await example\.init\(\);/,
+  );
 });
 
 test('a failing tool reports its failure and the end of its output', async (t) => {

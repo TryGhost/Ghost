@@ -5,6 +5,7 @@ packages:
   - 'koenig/*'
   - 'packages/**'
   - '!packages/_template'
+  - 'contracts/*'
   - 'tools/*'
   - 'tools/configs/*'
 
@@ -34,7 +35,6 @@ allowBuilds:
   # upload (tools/scripts/build/upload-sentry-sourcemaps.ts) uses the one from its platform
   # optionalDependency.
   '@sentry/cli': false
-  'better-sqlite3@12.11.1': true
   'esbuild@0.25.12 || 0.28.2': true
   'fsevents@2.3.3': true
   'nx@24.0.5': true
@@ -47,7 +47,7 @@ allowBuilds:
   protobufjs: false
 
 catalog:
-  '@better-auth/test-utils': 1.7.18
+  '@better-auth/test-utils': 1.7.22
   '@codemirror/autocomplete': 6.20.4
   '@codemirror/commands': 6.11.1
   '@codemirror/lang-css': 6.3.1
@@ -94,26 +94,26 @@ catalog:
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/preact': 3.2.6
   '@testing-library/react': 16.3.3
-  '@tryghost/color-utils': 0.2.23
-  '@tryghost/custom-fonts': 1.0.14
-  '@tryghost/debug': 2.3.21
-  '@tryghost/domain-events': 3.3.23
-  '@tryghost/errors': 3.4.7
-  '@tryghost/helpers': 1.1.109
-  '@tryghost/logging': 6.0.4
+  '@tryghost/color-utils': 0.2.24
+  '@tryghost/custom-fonts': 1.0.15
+  '@tryghost/debug': 2.3.23
+  '@tryghost/domain-events': 3.4.1
+  '@tryghost/errors': 3.4.8
+  '@tryghost/helpers': 1.1.110
+  '@tryghost/logging': 6.0.7
   '@tryghost/mg-clean-html': 0.12.7
-  '@tryghost/metrics': 3.7.4
+  '@tryghost/metrics': 3.7.7
   '@tryghost/mongo-knex': 0.11.2
   '@tryghost/nql': 0.13.5
   '@tryghost/nql-lang': 0.7.1
-  '@tryghost/pretty-cli': 3.4.3
-  '@tryghost/promise': 2.3.21
-  '@tryghost/request': 4.0.15
-  '@tryghost/security': 4.0.3
-  '@tryghost/string': 0.3.8
-  '@tryghost/timezone-data': 1.0.3
-  '@tryghost/tpl': 2.3.21
-  '@tryghost/url-utils': 5.4.1
+  '@tryghost/pretty-cli': 3.4.4
+  '@tryghost/promise': 2.4.0
+  '@tryghost/request': 4.1.0
+  '@tryghost/security': 4.0.4
+  '@tryghost/string': 0.3.9
+  '@tryghost/timezone-data': 1.0.4
+  '@tryghost/tpl': 2.3.22
+  '@tryghost/url-utils': 5.5.0
   '@types/csso': 5.0.5
   '@types/express': 4.17.25
   '@types/lodash': 4.17.27
@@ -138,8 +138,8 @@ catalog:
   '@vitest/ui': 4.1.12
   ajv: 8.20.0
   ajv-formats: 3.0.1
-  better-auth: 1.7.18
-  better-sqlite3: 12.11.1
+  better-auth: 1.7.22
+  better-sqlite3: 13.1.1
   body-parser: 1.20.9
   bson-objectid: 2.0.4
   chalk: 4.1.2
@@ -167,14 +167,14 @@ catalog:
   express: 4.22.3
   flexsearch: 0.7.43
   fs-extra: 11.4.1
-  glob: 14.0.4
+  glob: 14.0.6
   globals: 17.14.0
   got: 16.0.0
   html-minifier-next: 8.11.0
   html-to-text: 10.0.1
   ipaddr.js: 2.5.0
   jiti: 2.7.0
-  jose: 6.2.15
+  jose: 6.2.17
   js-yaml: 4.3.2
   jsdom: 30.0.1
   jsonc-parser: 3.3.1
@@ -183,7 +183,7 @@ catalog:
   jsonwebtoken: 9.0.3
   juice: 11.1.1
   knex: 3.3.0
-  knex-migrator: 6.2.1
+  knex-migrator: 6.4.2
   libphonenumber-js: 1.13.15
   lodash: 4.18.1
   lru-cache: 11.5.3
@@ -260,8 +260,6 @@ catalog:
   knip: 6.44.2
   lint-staged: 17.6.0
   secretlint: 13.1.0
-  '@pnpm/releasing.versioning': 1100.3.8
-  '@pnpm/workspace.workspace-manifest-reader': 1100.3.2
   execa: 10.2.1
   remark-cli: 12.0.1
   remark-validate-links: 13.1.0
@@ -274,7 +272,7 @@ catalog:
   cron-validate: 1.5.3
   '@types/stoppable': 1.1.3
   '@types/supertest': 7.2.1
-  '@tryghost/validator': 3.2.22
+  '@tryghost/validator': 3.3.0
   '@types/probability-distributions': 0.1.3
   d3-geo: 3.1.2
   rate-limiter-flexible: 11.2.3
@@ -480,3 +478,8 @@ patchedDependencies:
   # and note juice 12+ is ESM, so a major bump also needs the `require('juice')`
   # call sites updated. The malformed CSS email tests cover all three crashes.
   juice@11.1.1: patches/juice@11.1.1.patch
+  # zod ships separate ESM and CJS builds, so Core's require() and the ESM
+  # workspace packages' import loaded both (~3.6MB heap). The patch points every
+  # export at the ESM build, which require() loads natively. Re-create it with
+  # `pnpm patch zod@<version>` when zod is bumped.
+  zod@4.6.7: patches/zod@4.6.7.patch

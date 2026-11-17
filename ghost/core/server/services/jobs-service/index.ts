@@ -52,7 +52,13 @@ export function init({ knex, config }: JobsServiceInitOptions): JobsService {
     const tracker = outboxConfig.keepUntilSettled
       ? new OutboxTracker({ store, logging })
       : undefined;
-    outbox = { store, relay, tracker };
+    outbox = {
+      store,
+      relay,
+      tracker,
+      leaseMs: outboxConfig.leaseMs,
+      pollIntervalMs: outboxConfig.pollIntervalMs,
+    };
   }
 
   instance = new JobsService({

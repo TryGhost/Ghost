@@ -15,6 +15,13 @@ describe('automationTriggerRuleDefinitionSchema', () => {
       product_id: '64b6f7b7c8f1a2b3c4d5e6f8',
       direction: null,
     },
+    {
+      trigger_type: 'label_added',
+      label_id: '64b6f7b7c8f1a2b3c4d5e6f8',
+      scope: null,
+      product_id: null,
+      direction: null,
+    },
   ])('accepts valid rule $trigger_type with scope $scope', (rule) => {
     expect(automationTriggerRuleDefinitionSchema.safeParse(rule).success).toBe(true);
   });
@@ -43,4 +50,16 @@ describe('automationTriggerRuleDefinitionSchema', () => {
       ).toBe(false);
     },
   );
+
+  it.each([undefined, null, '', 'invalid'])('rejects invalid label ID %j', (label_id) => {
+    expect(
+      automationTriggerRuleDefinitionSchema.safeParse({
+        trigger_type: 'label_added',
+        label_id,
+        scope: null,
+        product_id: null,
+        direction: null,
+      }).success,
+    ).toBe(false);
+  });
 });
