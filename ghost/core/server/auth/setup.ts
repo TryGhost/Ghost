@@ -1,11 +1,60 @@
-const _ = require('lodash');
-const config = require('../../shared/config');
-const errors = require('@tryghost/errors');
-const tpl = require('@tryghost/tpl');
-const logging = require('@tryghost/logging');
-const moment = require('moment');
+import _ from 'lodash';
+import errors from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
+import logging from '@tryghost/logging';
+import moment from 'moment';
+import config from '../../shared/config';
+
 const models = require('../models');
 const mail = require('../lib/mail');
+
+/** The setup form, as the authentication endpoint passes it */
+export interface SetupUserData {
+  name: string;
+  email: string;
+  password: string;
+  blogTitle?: unknown;
+  theme?: string;
+  accentColor?: string;
+  description?: string;
+  status: string;
+}
+
+interface SetupUser {
+  id: string;
+  get(attribute: string): unknown;
+}
+
+export interface SetupData {
+  user: SetupUser;
+  userData: SetupUserData;
+}
+
+type Context = { context: Record<string, unknown> };
+
+interface SettingsAPI {
+  edit(
+    data: { settings: Array<{ key: string; value: unknown }> },
+    options: Context,
+  ): Promise<unknown>;
+}
+
+interface BrowseEditAPI<Key extends string> {
+  browse(options: { limit: 'all' }): Promise<Record<Key, Array<{ id: string; slug: string }>>>;
+  edit(
+    data: Record<Key, Array<{ name: string }>>,
+    options: { context: Record<string, unknown>; id: string },
+  ): Promise<unknown>;
+}
+
+interface MailAPI {
+  send(payload: unknown, options: Context): Promise<unknown>;
+}
+
+interface ThemesAPI {
+  install(options: Record<string, unknown>): Promise<{ themes: Array<{ name: string }> }>;
+  activate(options: Record<string, unknown>): Promise<unknown>;
+}
 
 const messages = {
   setupAlreadyCompleted: 'Setup has already been completed.',
@@ -24,23 +73,19 @@ const postSetupFixtures = {
     '{"version":"0.3.1","atoms":[],"cards":[["hr",{}]],"markups":[["a",["href","https://ghost.org"]]],"sections":[[1,"p",[[0,[],0,"{{site.title}} is an independent publication launched in {{date}} by {{author.name}}. If you subscribe today, you\'ll get full access to the website as well as email newsletters about new content when it\'s available. Your subscription makes this site possible, and allows {{site.title}} to continue to exist. Thank you!"]]],[1,"h3",[[0,[],0,"Access all areas"]]],[1,"p",[[0,[],0,"By signing up, you\'ll get access to the full archive of everything that\'s been published before and everything that\'s still to come. Your very own private library."]]],[1,"h3",[[0,[],0,"Fresh content, delivered"]]],[1,"p",[[0,[],0,"Stay up to date with new content sent straight to your inbox! No more worrying about whether you missed something because of a pesky algorithm or news feed."]]],[1,"h3",[[0,[],0,"Meet people like you"]]],[1,"p",[[0,[],0,"Join a community of other subscribers who share the same interests."]]],[10,0],[1,"h3",[[0,[],0,"Start your own thing"]]],[1,"p",[[0,[],0,"Enjoying the experience? Get started for free and set up your very own subscription business using "],[0,[0],1,"Ghost"],[0,[],0,", the same platform that powers this website."]]]],"ghostVersion":"4.0"}',
 };
 
-/**
- * Returns setup status
- *
- * @return {Promise<Boolean>}
- */
-async function checkIsSetup() {
+/** Returns setup status */
+export async function checkIsSetup(): Promise<boolean> {
   return models.User.isSetup();
 }
 
 /**
  * Allows an assertion to be made about setup status.
  *
- * @param  {Boolean} status True: setup must be complete. False: setup must not be complete.
- * @return {Function} returns a "task ready" function
+ * @param status True: setup must be complete. False: setup must not be complete.
+ * @returns a "task ready" function
  */
-function assertSetupCompleted(status) {
-  return async function checkPermission(__) {
+export function assertSetupCompleted(status: boolean) {
+  return async function checkPermission<T>(__?: T): Promise<T | undefined> {
     const isSetup = await checkIsSetup();
 
     if (isSetup === status) {
@@ -50,7 +95,7 @@ function assertSetupCompleted(status) {
     const completed = tpl(messages.setupAlreadyCompleted);
     const notCompleted = tpl(messages.setupMustBeCompleted);
 
-    function throwReason(reason) {
+    function throwReason(reason: string): never {
       throw new errors.NoPermissionError({ message: reason });
     }
 
@@ -62,7 +107,7 @@ function assertSetupCompleted(status) {
   };
 }
 
-async function setupUser(userData) {
+export async function setupUser(userData: SetupUserData): Promise<SetupData> {
   const context = { context: { internal: true } };
 
   const owner = await models.User.findOne({ role: 'Owner', status: 'all' });
@@ -73,7 +118,7 @@ async function setupUser(userData) {
     });
   }
 
-  const user = await models.User.setup(userData, _.extend({ id: owner.id }, context));
+  const user: SetupUser = await models.User.setup(userData, _.extend({ id: owner.id }, context));
 
   return {
     user: user,
@@ -81,7 +126,7 @@ async function setupUser(userData) {
   };
 }
 
-async function doSettings(data, settingsAPI) {
+export async function doSettings(data: SetupData, settingsAPI: SettingsAPI) {
   const context = { context: { user: data.user.id } };
   const user = data.user;
   const blogTitle = data.userData.blogTitle;
@@ -91,7 +136,7 @@ async function doSettings(data, settingsAPI) {
     return user;
   }
 
-  const userSettings = [
+  const userSettings: Array<{ key: string; value: unknown }> = [
     { key: 'title', value: blogTitle.trim() },
     { key: 'description', value: description || tpl(messages.sampleBlogDescription) },
   ];
@@ -108,8 +153,14 @@ async function doSettings(data, settingsAPI) {
   return user;
 }
 
-// Update names for default product and newsletter to site title
-async function doTiersAndNewsletter(data, api) {
+// Update names for default product and newsletter to site title.
+// Without a blog title this returns the user, not the setup data.
+async function doTiersAndNewsletter<
+  Data extends { user: Pick<SetupUser, 'id'>; userData: Pick<SetupUserData, 'blogTitle'> },
+>(
+  data: Data,
+  api: { tiers: BrowseEditAPI<'tiers'>; newsletters: BrowseEditAPI<'newsletters'> },
+): Promise<Data | Data['user']> {
   const { tiers: tiersAPI, newsletters: newslettersAPI } = api;
   const context = { context: { user: data.user.id } };
   const user = data.user;
@@ -159,12 +210,12 @@ async function doTiersAndNewsletter(data, api) {
   return data;
 }
 
-async function doFixtures(data) {
+export async function doFixtures(data: SetupData) {
   const date = moment().format('MMMM YYYY');
 
   _.each(postSetupFixtures, async (mobiledoc, key) => {
     // Using very simple find and replace because we control the fixtures
-    mobiledoc = mobiledoc.replace(/{{site.title}}/g, data.userData.blogTitle);
+    mobiledoc = mobiledoc.replace(/{{site.title}}/g, data.userData.blogTitle as string);
     mobiledoc = mobiledoc.replace(/{{author.name}}/g, data.userData.name);
     mobiledoc = mobiledoc.replace(/{{date}}/, date);
 
@@ -178,39 +229,43 @@ async function doFixtures(data) {
   return data;
 }
 
-function sendWelcomeEmail(email, mailAPI) {
+export function sendWelcomeEmail(email: string, mailAPI: MailAPI): Promise<void> {
   if (config.get('sendWelcomeEmail')) {
     const data = {
       ownerEmail: email,
     };
 
-    return mail.utils.generateContent({ data: data, template: 'welcome' }).then(async (content) => {
-      const message = {
-        to: email,
-        subject: tpl(messages.yourNewGhostBlog),
-        html: content.html,
-        text: content.text,
-      };
+    return mail.utils
+      .generateContent({ data: data, template: 'welcome' })
+      .then(async (content: { html: string; text: string }) => {
+        const message = {
+          to: email,
+          subject: tpl(messages.yourNewGhostBlog),
+          html: content.html,
+          text: content.text,
+        };
 
-      const payload = {
-        mail: [
-          {
-            message: message,
-            options: {},
-          },
-        ],
-      };
+        const payload = {
+          mail: [
+            {
+              message: message,
+              options: {},
+            },
+          ],
+        };
 
-      await mailAPI.send(payload, { context: { internal: true } }).catch((err) => {
-        err.context = tpl(messages.unableToSendWelcomeEmail);
-        logging.error(err);
+        await mailAPI
+          .send(payload, { context: { internal: true } })
+          .catch((err: Error & { context?: string }) => {
+            err.context = tpl(messages.unableToSendWelcomeEmail);
+            logging.error(err);
+          });
       });
-    });
   }
   return Promise.resolve();
 }
 
-async function installTheme(data, api) {
+export async function installTheme(data: SetupData, api: { themes: ThemesAPI }) {
   const { theme: themeName } = data.userData;
 
   if (!themeName) {
@@ -237,19 +292,10 @@ async function installTheme(data, api) {
     });
   } catch (error) {
     //Fallback to Casper/Source by doing nothing as the theme setting update is the last step
-    logging.warn(tpl(messages.failedThemeInstall, { themeName, error: error.message }));
+    logging.warn(tpl(messages.failedThemeInstall, { themeName, error: (error as Error).message }));
   }
 
   return data;
 }
 
-module.exports = {
-  checkIsSetup: checkIsSetup,
-  assertSetupCompleted: assertSetupCompleted,
-  setupUser: setupUser,
-  doSettings: doSettings,
-  doProductAndNewsletter: doTiersAndNewsletter,
-  installTheme: installTheme,
-  doFixtures: doFixtures,
-  sendWelcomeEmail: sendWelcomeEmail,
-};
+export { doTiersAndNewsletter as doProductAndNewsletter };

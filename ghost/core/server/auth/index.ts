@@ -16,7 +16,7 @@ export = {
     return require('./session').default;
   },
 
-  get setup() {
+  get setup(): typeof import('./setup') {
     return require('./setup');
   },
 
