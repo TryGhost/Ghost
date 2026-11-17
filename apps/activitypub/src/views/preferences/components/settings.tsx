@@ -2,22 +2,23 @@ import EditProfile from './edit-profile';
 import React, { useState } from 'react';
 import { Account } from '@src/api/activitypub';
 import {
+  ActionListItem,
   Button,
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  rowSurface,
 } from '@tryghost/shade/components';
 import { H4 } from '@tryghost/shade/primitives';
 import { Link } from '@tryghost/admin-x-framework';
-import { LucideIcon, cn, useRowPress } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { getOutboundMigrationAvailability } from './account-migration/utils';
 import { useAccountMigrationForUser } from '@hooks/use-activity-pub-queries';
 import { useAppBasePath } from '@src/hooks/use-app-base-path';
 import { useFeatureFlags } from '@src/lib/feature-flags';
 import { useNavigateWithBasePath } from '@src/hooks/use-navigate-with-base-path';
+import { useShade } from '@tryghost/shade/app';
 
 interface SettingsProps {
   account?: Account;
@@ -40,11 +41,11 @@ const Settings: React.FC<SettingsProps> = ({ account, className = '' }) => {
           <SettingDescription>Edit your profile information and account details</SettingDescription>
         </SettingHeader>
         <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
-          <SettingAction>
-            <DialogTrigger asChild>
+          <DialogTrigger>
+            <SettingAction>
               <Button variant="secondary">Edit</Button>
-            </DialogTrigger>
-          </SettingAction>
+            </SettingAction>
+          </DialogTrigger>
           <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
             <DialogHeader>
               <DialogTitle>Profile settings</DialogTitle>
@@ -162,42 +163,46 @@ export const SettingItem: React.FC<SettingItemProps> = ({
   onClick,
 }) => {
   const basePath = useAppBasePath();
+  const { admin7Design } = useShade();
   const fullPath = to && to.startsWith('/') ? `${basePath}${to}` : to;
   const interactive = withHover && Boolean(fullPath || href || onClick);
-  const press = useRowPress<HTMLElement>({}, interactive);
-  const itemClasses = cn(
-    rowSurface(interactive ? 'interactive' : 'static'),
-    'flex w-full items-center justify-between gap-4 py-3 text-left',
-    interactive && 'cursor-pointer',
-    'focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden',
-    className,
-  );
+  const legacyHoverClasses = withHover
+    ? 'relative cursor-pointer before:absolute before:inset-x-[-16px] before:inset-y-[-1px] before:rounded-md before:bg-gray-50 before:opacity-0 before:transition-opacity before:will-change-[opacity] hover:z-10 hover:cursor-pointer hover:border-b-transparent hover:before:opacity-100 dark:before:bg-gray-950'
+    : '';
+  const itemClasses = admin7Design
+    ? cn(
+        'flex w-full items-center justify-between gap-4 py-3 text-left focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden',
+        className,
+      )
+    : cn('flex items-center justify-between gap-4 py-3', legacyHoverClasses, className);
 
-  if (fullPath) {
-    return (
-      <Link className={itemClasses} to={fullPath} {...press}>
-        {children}
-      </Link>
-    );
-  }
-
-  if (href) {
-    return (
-      <a className={itemClasses} href={href} rel="noreferrer" target="_blank" {...press}>
-        {children}
-      </a>
-    );
-  }
-
-  if (onClick) {
-    return (
-      <button className={itemClasses} type="button" {...press} onClick={onClick}>
+  const item = fullPath ? (
+    <Link className={itemClasses} to={fullPath}>
+      {children}
+    </Link>
+  ) : href ? (
+    <a className={itemClasses} href={href} rel="noreferrer" target="_blank">
+      {children}
+    </a>
+  ) : onClick ? (
+    admin7Design ? (
+      <button className={itemClasses} type="button" onClick={onClick}>
         {children}
       </button>
-    );
-  }
+    ) : (
+      <div className={itemClasses} role="button" tabIndex={0} onClick={onClick}>
+        {children}
+      </div>
+    )
+  ) : (
+    <div className={itemClasses}>{children}</div>
+  );
 
-  return <div className={itemClasses}>{children}</div>;
+  return (
+    <ActionListItem hover={interactive} asChild>
+      {item}
+    </ActionListItem>
+  );
 };
 
 const SettingSeparator: React.FC = () => {

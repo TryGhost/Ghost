@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { ActorProperties } from '@tryghost/admin-x-framework/api/activitypub';
 import { Button, LoadingIndicator, Skeleton } from '@tryghost/shade/components';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
+import { useShade } from '@tryghost/shade/app';
 
 import APAvatar from '@components/global/ap-avatar';
 import AppError from '@components/layout/error';
@@ -11,6 +12,7 @@ import Layout from '@components/layout';
 import NotificationIcon from './components/notification-icon';
 import NotificationItem from './components/notification-item';
 import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-card';
+import Separator from '@components/global/separator';
 import {
   ContentWarningOverlay,
   SensitiveMediaOverlay,
@@ -303,6 +305,7 @@ const NotificationPostPreview: React.FC<NotificationPostPreviewProps> = ({ post,
 };
 
 const Notifications: React.FC = () => {
+  const { admin7Design } = useShade();
   const [openStates, setOpenStates] = React.useState<{ [key: string]: boolean }>({});
   const navigate = useNavigateWithBasePath();
 
@@ -414,8 +417,15 @@ const Notifications: React.FC = () => {
                 <React.Fragment key={group.id || `${group.type}_${index}`}>
                   <NotificationItem
                     centerAlign={group.actors.length < 2 && group.type === 'follow'}
+                    className={
+                      admin7Design ? undefined : 'hover:bg-gray-100 dark:hover:bg-gray-950'
+                    }
                     isGrouped={group.actors.length > 1}
-                    onClick={() => handleNotificationClick(group, index)}
+                    onClick={
+                      admin7Design && isLoading
+                        ? undefined
+                        : () => handleNotificationClick(group, index)
+                    }
                   >
                     {isLoading ? (
                       <Skeleton className="rounded-full" containerClassName="flex h-10 w-10" />
@@ -620,6 +630,11 @@ const Notifications: React.FC = () => {
                       )}
                     </NotificationItem.Content>
                   </NotificationItem>
+                  {!admin7Design && index < notificationGroups.length - 1 && (
+                    <div className="pl-[52px]">
+                      <Separator />
+                    </div>
+                  )}
                 </React.Fragment>
               ))}
             </div>

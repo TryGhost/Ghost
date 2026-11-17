@@ -38,14 +38,11 @@ export const SuggestedProfile: React.FC<
       <div>
         <ActivityItem
           key={profile.id}
-          onClick={
-            isLoading
-              ? undefined
-              : () => {
-                  onOpenChange?.(false);
-                  navigate(`/profile/${profile.handle}`);
-                }
-          }
+          disabled={isLoading}
+          onClick={() => {
+            onOpenChange?.(false);
+            navigate(`/profile/${profile.handle}`);
+          }}
         >
           <APAvatar
             author={{

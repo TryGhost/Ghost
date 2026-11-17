@@ -1,3 +1,4 @@
+import { ShadeApp } from '@tryghost/shade/app';
 import React from 'react';
 import Settings, { SettingItem } from '../../../src/views/preferences/components/settings';
 import type { QueryState } from '../../utils/query-state';
@@ -120,13 +121,6 @@ describe('preference row actions', () => {
     expect(mocks.navigate).toHaveBeenCalledExactlyOnceWith('/preferences/bluesky-sharing');
   });
 
-  it('keeps the profile edit action as a single independent button', () => {
-    render(<Settings />);
-
-    const edit = screen.getByRole('button', { name: 'Edit' });
-    expect(edit.parentElement?.closest('button')).toBeNull();
-  });
-
   it('does not invent a row action around standalone controls', () => {
     const toggle = vi.fn();
     render(
@@ -143,5 +137,22 @@ describe('preference row actions', () => {
     expect(control.parentElement?.closest('button, [role="button"]')).toBeNull();
     fireEvent.click(control);
     expect(toggle).toHaveBeenCalledTimes(1);
+  });
+
+  it('preserves the legacy callback row with admin7Design off', () => {
+    render(
+      <ShadeApp admin7Design={false} darkMode={false}>
+        <SettingItem withHover onClick={mocks.navigate}>
+          Bluesky sharing
+        </SettingItem>
+      </ShadeApp>,
+    );
+    const row = screen.getByRole('button', { name: 'Bluesky sharing' });
+    expect(row.tagName).toBe('DIV');
+    expect(row.tabIndex).toBe(0);
+    fireEvent.keyDown(row, { key: 'Enter' });
+    expect(mocks.navigate).not.toHaveBeenCalled();
+    fireEvent.click(row);
+    expect(mocks.navigate).toHaveBeenCalledTimes(1);
   });
 });

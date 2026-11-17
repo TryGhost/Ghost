@@ -1,3 +1,4 @@
+import { ShadeApp } from '@tryghost/shade/app';
 import ActivityItem from '../../../src/components/activities/activity-item';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
@@ -119,5 +120,36 @@ describe('activity list row actions', () => {
     expect(follow).toHaveBeenCalledTimes(1);
     expect(click).toHaveBeenCalledTimes(1);
     expect(open).toHaveBeenCalledTimes(1);
+  });
+
+  it('preserves the legacy whole-row link and non-native callback row with admin7Design off', () => {
+    const openProfile = vi.fn();
+    const { rerender } = render(
+      <ShadeApp admin7Design={false} darkMode={false}>
+        <ActivityItem url="https://example.com/alice" onClick={openProfile}>
+          <span>Avatar</span>
+          <span>Alice</span>
+        </ActivityItem>
+      </ShadeApp>,
+    );
+    const link = screen.getByRole('link');
+    expect(link.contains(screen.getByText('Avatar'))).toBe(true);
+    expect(link.contains(screen.getByText('Alice'))).toBe(true);
+    expect(screen.queryByRole('button')).toBeNull();
+    fireEvent.click(screen.getByText('Alice'));
+    expect(openProfile).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <ShadeApp admin7Design={false} darkMode={false}>
+        <ActivityItem onClick={openProfile}>
+          <span>Avatar</span>
+          <span>Alice</span>
+        </ActivityItem>
+      </ShadeApp>,
+    );
+    expect(screen.queryByRole('link')).toBeNull();
+    expect(screen.queryByRole('button')).toBeNull();
+    fireEvent.click(screen.getByText('Alice'));
+    expect(openProfile).toHaveBeenCalledTimes(2);
   });
 });
