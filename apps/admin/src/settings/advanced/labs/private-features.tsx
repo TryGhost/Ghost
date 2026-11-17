@@ -108,6 +108,11 @@ const features: Feature[] = [
       'Show who else has a post or page open, in the editor header and on list rows. Needs editor presence polling.',
     flag: 'editorPresence',
   },
+  {
+    title: 'Comments analytics',
+    description: 'Show comment volume, top posts and top commenters beside the comments list.',
+    flag: 'commentsAnalytics',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {

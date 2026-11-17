@@ -12,6 +12,11 @@ export const repliedToLink = 'replied-to-link';
 export const commentingDisabledIndicator = 'commenting-disabled-indicator';
 /** Thread sidebar rows carry the comment id: `comment-thread-row-<id>`. */
 export const commentThreadRowPrefix = 'comment-thread-row-';
+export const commentsAnalytics = 'comments-analytics';
+/** KPI values carry the metric: `comments-analytics-kpi-<comments|commenters|reported>`. */
+export const commentsAnalyticsKpiPrefix = 'comments-analytics-kpi-';
+export const commentsAnalyticsTopPosts = 'comments-analytics-top-posts';
+export const commentsAnalyticsTopCommenters = 'comments-analytics-top-commenters';
 
 // accessible names
 export const filterButton = 'Filter';
@@ -19,6 +24,9 @@ export const addFilterButton = 'Add filter';
 export const showAllCommentsButton = 'Show all comments';
 export const threadSidebarLabel = 'Thread';
 export const loadMoreRepliesButton = 'Load more replies';
+export const analyticsButton = 'Analytics';
+export const dateRangeSelect = 'Date range';
+export const viewAllButton = 'View all';
 
 // text fragments
 export const emptyStateText = 'No comments yet';

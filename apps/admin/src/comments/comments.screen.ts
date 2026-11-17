@@ -1,14 +1,21 @@
 import { page, type Locator } from 'vitest/browser';
 import {
+  analyticsButton,
   commentListRow,
+  commentsAnalytics,
+  commentsAnalyticsKpiPrefix,
+  commentsAnalyticsTopCommenters,
+  commentsAnalyticsTopPosts,
   commentThreadRowPrefix,
   commentingDisabledIndicator,
+  dateRangeSelect,
   filterButton,
   loadMoreRepliesButton,
   repliedToLink,
   repliesMetric,
   showAllCommentsButton,
   threadSidebarLabel,
+  viewAllButton,
 } from '@tryghost/test-data/selectors/comments';
 
 /** A row locator augmented with factories for the row's parts — still a locator for expect.element. */
@@ -51,6 +58,16 @@ export const commentsScreen = {
   threadRows: () => page.getByTestId(new RegExp(`^${commentThreadRowPrefix}`)),
   loadMoreRepliesButton: () =>
     commentsScreen.threadSidebar().getByRole('button', { name: loadMoreRepliesButton }),
+
+  analyticsPanel: () => page.getByTestId(commentsAnalytics),
+  analyticsButton: () => page.getByRole('button', { name: analyticsButton, exact: true }),
+  analyticsDateRange: () => page.getByRole('combobox', { name: dateRangeSelect }),
+  analyticsKpiValue: (metric: 'comments' | 'commenters' | 'reported') =>
+    page.getByTestId(`${commentsAnalyticsKpiPrefix}${metric}`),
+  analyticsKpiTab: (label: string) => page.getByRole('tab', { name: label }),
+  analyticsTopPosts: () => page.getByTestId(commentsAnalyticsTopPosts),
+  analyticsTopCommenters: () => page.getByTestId(commentsAnalyticsTopCommenters),
+  analyticsViewAll: (card: Locator) => card.getByRole('button', { name: viewAllButton }),
 
   async closeThreadSidebar(): Promise<void> {
     await commentsScreen.threadSidebar().getByRole('button', { name: 'Close' }).click();
