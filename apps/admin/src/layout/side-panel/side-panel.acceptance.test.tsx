@@ -18,6 +18,7 @@ import {
 import { adminFrameScreen } from '@/layout/admin-frame.screen';
 import { sidebarScreen } from '@/layout/sidebar.screen';
 import type { GhostSidePanelApi } from './side-panel-api';
+import type { SidePanelSize } from './side-panel-store';
 
 const panel = () => page.elementLocator(panelElement());
 function panelElement(): HTMLElement {
@@ -46,6 +47,9 @@ const CONTENT_PADDING = 8;
 const BEZEL = 8;
 /** The window's inset from the frame's edges, as the Admin 7 navigation's. */
 const WINDOW_INSET = 16;
+/** Minimized, in every layout, a bar in the window's corner. */
+const MINIMIZED_WIDTH = 320;
+const MINIMIZED_HEIGHT = 56;
 
 function sidePanel(): GhostSidePanelApi {
   const api = window.ghost?.sidePanel;
@@ -78,6 +82,11 @@ async function setWindowWidth(width: number) {
     requestAnimationFrame(() => requestAnimationFrame(resolve));
   });
 }
+
+const nextFrame = () =>
+  new Promise((resolve) => {
+    requestAnimationFrame(resolve);
+  });
 
 /** Renders Tags with the navigation, in either design, on a window wide enough to dock by default. */
 async function renderWithNavigation({ admin7Design = false, width = DOCKING_WIDTH } = {}) {
@@ -452,6 +461,181 @@ describe('Side panel', () => {
     expect(panel().element().contains(frame.element)).toBe(true);
     expect(frame.loads()).toBe(1);
     expect(sidePanel().isOpen()).toBe(true);
+  });
+
+  it.each([
+    { layout: 'docked', width: DOCKING_WIDTH, sizes: ['default', 'full'] },
+    { layout: 'window', width: NARROW_WIDTH, sizes: ['default', 'full', 'minimized'] },
+  ])('lists the sizes content can ask for: $layout', async ({ width, sizes }) => {
+    await renderWithNavigation({ width });
+
+    const listed = sidePanel().sizes;
+    expect(Array.isArray(listed)).toBe(true);
+    expect(listed).toEqual(sizes);
+    expect(Object.isFrozen(listed)).toBe(true);
+  });
+
+  it('tells its content as the window crosses the docking width', async () => {
+    await renderWithNavigation();
+    const onSizesChange = vi.fn();
+    sidePanel().open(hostFrame().element, { onSizesChange });
+    await expect.poll(panelState).toBe('default');
+
+    await page.viewport(NARROW_WIDTH, 800);
+    await expect.poll(() => onSizesChange.mock.calls.length).toBe(1);
+    expect(onSizesChange).toHaveBeenLastCalledWith(['default', 'full', 'minimized']);
+    expect(sidePanel().sizes).toEqual(['default', 'full', 'minimized']);
+
+    await page.viewport(DOCKING_WIDTH, 800);
+    await expect.poll(() => onSizesChange.mock.calls.length).toBe(2);
+    expect(onSizesChange).toHaveBeenLastCalledWith(['default', 'full']);
+    expect(sidePanel().sizes).toEqual(['default', 'full']);
+  });
+
+  it.each([
+    { size: 'minimized' as const, reason: 'not available while docked' },
+    { size: 'sideways' as unknown as SidePanelSize, reason: 'unknown' },
+  ])('ignores a size that is $reason', async ({ size }) => {
+    await renderWithNavigation();
+
+    const handle = sidePanel().open(hostFrame().element, { size });
+    await expect.poll(panelState).toBe('default');
+    handle?.setSize('full');
+    await expect.poll(panelState).toBe('full');
+    handle?.setSize(size);
+
+    await nextFrame();
+    expect(panelState()).toBe('full');
+  });
+
+  it.each([false, true])(
+    'minimizes a window to a bar in the bottom-right corner that its content fills: admin7Design %s',
+    async (admin7Design) => {
+      await renderWithNavigation({ admin7Design, width: NARROW_WIDTH });
+      const frame = hostFrame();
+      const handle = sidePanel().open(frame.element);
+      await expect.poll(frame.loads).toBe(1);
+
+      handle?.setSize('minimized');
+
+      await expect.poll(panelState).toBe('minimized');
+      await expect.poll(panelWidth).toBe(MINIMIZED_WIDTH);
+      const box = panelElement().getBoundingClientRect();
+      const inset = WINDOW_INSET + (admin7Design ? BEZEL : 0);
+      expect(box.height).toBe(MINIMIZED_HEIGHT);
+      expect(box.right).toBeCloseTo(window.innerWidth - inset, 0);
+      expect(box.bottom).toBeCloseTo(window.innerHeight - inset, 0);
+      // No room around the content: it draws the bar
+      const frameBox = frame.element.getBoundingClientRect();
+      expect(frameBox.width).toBe(MINIMIZED_WIDTH);
+      expect(frameBox.height).toBe(MINIMIZED_HEIGHT);
+      expect(frameBox.right).toBeCloseTo(box.right, 0);
+      expect(frameBox.bottom).toBeCloseTo(box.bottom, 0);
+      expect(sidePanel().isOpen()).toBe(true);
+      expect(frame.loads()).toBe(1);
+    },
+  );
+
+  it('restores from the bar without reloading', async () => {
+    await renderWithNavigation({ width: NARROW_WIDTH });
+    const frame = hostFrame();
+    const handle = sidePanel().open(frame.element, { size: 'minimized' });
+    await expect.poll(frame.loads).toBe(1);
+    await expect.poll(panelWidth).toBe(MINIMIZED_WIDTH);
+
+    handle?.setSize('default');
+
+    await expect.poll(panelWidth).toBe(WINDOW_WIDTH);
+    expect(frameWidth(frame.element)).toBe(WINDOW_WIDTH - 2 * CONTENT_PADDING);
+
+    handle?.setSize('minimized');
+    await expect.poll(panelWidth).toBe(MINIMIZED_WIDTH);
+    handle?.setSize('full');
+    await expect.poll(panelWidth).toBeGreaterThan(800);
+    expect(frame.loads()).toBe(1);
+  });
+
+  it('stays a bar on a window widened past the docking width, and restores to docked', async () => {
+    await renderWithNavigation();
+    const pageWidth = () => sidebarScreen.shellMain().element().getBoundingClientRect().width;
+    const fullPageWidth = pageWidth();
+    await setWindowWidth(NARROW_WIDTH);
+    const frame = hostFrame();
+    const handle = sidePanel().open(frame.element, { size: 'minimized' });
+    await expect.poll(frame.loads).toBe(1);
+
+    await setWindowWidth(DOCKING_WIDTH);
+
+    await expect.poll(panelLayout).toBe('docked');
+    expect(panelState()).toBe('minimized');
+    expect(panelWidth()).toBe(MINIMIZED_WIDTH);
+    // Over the page, which keeps its full width and its stacking to itself
+    expect(pageWidth()).toBe(fullPageWidth);
+    expect(pageIsolated()).toBe(true);
+
+    handle?.setSize('default');
+    await expect.poll(panelWidth).toBe(PANEL_WIDTH);
+    expect(frameWidth(frame.element)).toBe(PANEL_WIDTH - 2 * CONTENT_PADDING);
+    expect(pageIsolated()).toBe(false);
+    expect(frame.loads()).toBe(1);
+  });
+
+  it('closes the bar at once, keeping its content', async () => {
+    await renderWithNavigation({ width: NARROW_WIDTH });
+    const frame = hostFrame();
+    const handle = sidePanel().open(frame.element, { size: 'minimized' });
+    await expect.poll(frame.loads).toBe(1);
+    await expect.poll(panelWidth).toBe(MINIMIZED_WIDTH);
+
+    handle?.close();
+
+    await expect.poll(panelState).toBe('closed');
+    const style = getComputedStyle(panelElement());
+    expect(style.visibility).toBe('hidden');
+    expect(style.opacity).toBe('0');
+    expect(style.transitionProperty).toBe('none');
+    expect(frame.element.isConnected).toBe(true);
+  });
+
+  it('leaves a minimized panel open on Escape', async () => {
+    await renderWithNavigation({ width: NARROW_WIDTH });
+    const onClose = vi.fn();
+    const handle = sidePanel().open(hostFrame().element, { onClose });
+    handle?.setSize('minimized');
+    await expect.poll(panelState).toBe('minimized');
+
+    await userEvent.keyboard('{Escape}');
+
+    expect(panelState()).toBe('minimized');
+    expect(sidePanel().isOpen()).toBe(true);
+    expect(onClose).not.toHaveBeenCalled();
+
+    handle?.setSize('default');
+    await expect.poll(panelState).toBe('default');
+    await userEvent.keyboard('{Escape}');
+    await expect.poll(panelState).toBe('closed');
+  });
+
+  it('stays minimized across screens', async () => {
+    // The settings app owns its request graph; this spec asserts only the panel.
+    allowUnhandledRequests();
+    await renderWithNavigation({ width: NARROW_WIDTH });
+    const frame = hostFrame();
+    sidePanel().open(frame.element, { size: 'minimized' });
+    await expect.poll(frame.loads).toBe(1);
+    await expect.poll(panelState).toBe('minimized');
+
+    await sidebarScreen.navLink('Settings').click();
+    await expect.poll(currentRoute).toMatch(/^\/settings/);
+    const backToApp = sidebarScreen.shellNav().getByRole('button', { name: 'Back to app' });
+    await expect.element(backToApp).toBeVisible();
+    expect(panelState()).toBe('minimized');
+
+    await backToApp.click();
+    await expect.element(sidebarScreen.navLink('Tags')).toBeVisible();
+    expect(panelState()).toBe('minimized');
+    expect(panel().element().contains(frame.element)).toBe(true);
+    expect(frame.loads()).toBe(1);
   });
 
   it('hides on a route without the navigation and shows again on return', async () => {

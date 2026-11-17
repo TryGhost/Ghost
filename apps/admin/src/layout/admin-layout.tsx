@@ -40,6 +40,7 @@ import { SidePanel } from './side-panel/side-panel';
 import {
   sidePanelWidth,
   useSidePanelDocked,
+  useSidePanelMinimized,
   useSidePanelOpen,
 } from './side-panel/side-panel-layout';
 
@@ -160,6 +161,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const isViewSiteRoute = useLocation().pathname === '/site';
   const sidePanelDocked = useSidePanelDocked();
   const sidePanelOpen = useSidePanelOpen();
+  const sidePanelMinimized = useSidePanelMinimized();
 
   // With admin7Design, the desktop page sits inside a frame: a top bar and
   // thin bezels around a rounded card. View site becomes a place of its own,
@@ -481,8 +483,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       className={cn(
         'h-full w-[max(100%,calc(100vw_-_var(--side-panel-width)_-_3_*_var(--admin-frame-side)))]',
         // Keeps the page's own stacking (sticky headers are z-50) under the
-        // panel while it floats over it
-        sidePanelVisible && sidePanelOpen && !sidePanelDocked && 'isolate',
+        // panel while it floats over it, as a window or the minimized bar
+        sidePanelVisible &&
+          sidePanelOpen &&
+          (!sidePanelDocked || sidePanelMinimized) &&
+          'isolate',
       )}
     >
       {sidebarLayout}

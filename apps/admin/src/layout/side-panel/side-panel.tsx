@@ -36,16 +36,30 @@ const WINDOW_HEIGHT = 680;
 const WINDOW_RADIUS_CLASS = 'rounded-[6px]';
 const WINDOW_SIDE = `calc(var(--admin-frame-side, 0px) + ${FLOATING_SIDEBAR_INSET}px)`;
 const WINDOW_TOP = `calc(var(--admin-frame-top, 0px) + ${FLOATING_SIDEBAR_INSET}px)`;
-// Expanded, its left edge is `--side-panel-float-clear` in from the frame's
 const WINDOW_FULL_HEIGHT = `calc(100vh - ${WINDOW_TOP} - ${WINDOW_SIDE})`;
-const WINDOW_SIZE: Record<SidePanelSize, { width: string; height: string }> = {
+
+// Minimized, the panel is a bar in the window's corner, which its content
+// fills: the content draws the bar and asks to be restored. It's offered only
+// as a window, and shrinks into the bar from it. A bar stays one on a window
+// widened past the docking width, and swaps for the docked panel at once.
+const MINIMIZED_WIDTH = 320;
+const MINIMIZED_HEIGHT = 56;
+const MINIMIZE_DURATION = 160;
+const MINIMIZE_EASING = WINDOW_RESIZE_EASING;
+
+const FLOATING_SIZE: Record<SidePanelSize, { width: string; height: string }> = {
   default: {
     width: `${WINDOW_WIDTH}px`,
     height: `min(${WINDOW_HEIGHT}px, ${WINDOW_FULL_HEIGHT})`,
   },
+  // Expanded, its left edge is `--side-panel-float-clear` in from the frame's
   full: {
     width: `calc(100vw - var(--side-panel-float-clear) - var(--admin-frame-side, 0px) - ${WINDOW_SIDE})`,
     height: WINDOW_FULL_HEIGHT,
+  },
+  minimized: {
+    width: `${MINIMIZED_WIDTH}px`,
+    height: `${MINIMIZED_HEIGHT}px`,
   },
 };
 
@@ -67,13 +81,20 @@ interface SidePanelProps {
 export function SidePanel({ visible, framed, docked, locked, onReturnFocusLost }: SidePanelProps) {
   const { state, close } = useSidePanel();
   const shown = visible && state.open;
-  const windowSize = docked ? null : WINDOW_SIZE[state.size];
+  const minimized = state.size === 'minimized';
+  // Over the page, as a window or the minimized bar, rather than beside it
+  const floating = !docked || minimized;
+  const floatingSize = floating ? FLOATING_SIZE[state.size] : null;
   const regionRef = React.useRef<HTMLDivElement>(null);
   const contentRef = React.useRef<HTMLDivElement>(null);
 
   React.useLayoutEffect(() => {
     sidePanelStore.setAvailable(visible);
   }, [visible]);
+
+  React.useLayoutEffect(() => {
+    sidePanelStore.setMinimizable(!docked);
+  }, [docked]);
 
   // The panel animates when it's opened, closed or resized, and not when a
   // route hides or shows it. A screen change has a transition of its own, and
@@ -128,15 +149,33 @@ export function SidePanel({ visible, framed, docked, locked, onReturnFocusLost }
     if (!region || !content || lastSize.current === state.size) {
       return;
     }
+    const previousSize = lastSize.current;
     lastSize.current = state.size;
     if (!shown || prefersReducedMotion()) {
       return;
     }
-    const duration = docked ? MOTION_DURATION : WINDOW_RESIZE_DURATION;
-    // Before anything reads the panel's styles, which starts its transition
-    region.style.transitionDuration = `${duration}ms`;
-    region.style.transitionTimingFunction = docked ? '' : WINDOW_RESIZE_EASING;
-    // The window's content is sized in its styles
+    const toOrFromBar = previousSize === 'minimized' || minimized;
+    let duration = MOTION_DURATION;
+    let easing = '';
+    if (toOrFromBar) {
+      duration = MINIMIZE_DURATION;
+      easing = MINIMIZE_EASING;
+    } else if (!docked) {
+      duration = WINDOW_RESIZE_DURATION;
+      easing = WINDOW_RESIZE_EASING;
+    }
+    if (docked && toOrFromBar) {
+      // Between beside the page and over it there's nothing to animate from,
+      // so the panel takes its new place at once and the content fades in
+      region.style.transition = 'none';
+      void region.offsetWidth;
+      region.style.transition = '';
+    } else {
+      // Before anything reads the panel's styles, which starts its transition
+      region.style.transitionDuration = `${duration}ms`;
+      region.style.transitionTimingFunction = easing;
+    }
+    // Floating, the content is sized in its styles
     if (docked && state.size === 'full') {
       // The width the panel is growing to: the row it's in, less what it
       // stops short of and the bezel beside it
@@ -167,7 +206,7 @@ export function SidePanel({ visible, framed, docked, locked, onReturnFocusLost }
       settle();
       fade?.cancel();
     };
-  }, [state.size, shown, docked, framed]);
+  }, [state.size, shown, docked, framed, minimized]);
 
   // Docked, the content slides in and out with the panel, by as much as the
   // panel has narrowed, so the two move as one.
@@ -178,7 +217,7 @@ export function SidePanel({ visible, framed, docked, locked, onReturnFocusLost }
       return;
     }
     lastOpen.current = state.open;
-    if (!docked || !visible || typeof content.animate !== 'function' || prefersReducedMotion()) {
+    if (floating || !visible || typeof content.animate !== 'function' || prefersReducedMotion()) {
       return;
     }
     const bezel = framed
@@ -202,7 +241,7 @@ export function SidePanel({ visible, framed, docked, locked, onReturnFocusLost }
       slide.cancel();
       content.style.width = '';
     };
-  }, [state.open, docked, visible, framed]);
+  }, [state.open, floating, visible, framed]);
 
   // The layout can swap this panel for a new one, e.g. when the Admin 7 frame
   // appears once the Labs config loads. This cleanup has to run before the new
@@ -259,8 +298,9 @@ export function SidePanel({ visible, framed, docked, locked, onReturnFocusLost }
     }
   }, [state.open, state.element, onReturnFocusLost]);
 
+  // Minimized, the panel is tucked away, so an Escape meant for the page leaves it be
   React.useEffect(() => {
-    if (!shown || locked) {
+    if (!shown || locked || minimized) {
       return;
     }
     const onKeyDown = (event: KeyboardEvent) => {
@@ -271,7 +311,7 @@ export function SidePanel({ visible, framed, docked, locked, onReturnFocusLost }
     };
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [shown, locked, close]);
+  }, [shown, locked, minimized, close]);
 
   // Applied through a ref because React 18 has no first-class inert prop.
   React.useLayoutEffect(() => {
@@ -281,15 +321,15 @@ export function SidePanel({ visible, framed, docked, locked, onReturnFocusLost }
   }, [locked]);
 
   return (
-    // No role or name: the content brings its own semantics. Docked and as a
-    // window, the panel has the same nesting, so crossing the docking width
-    // keeps the content.
+    // No role or name: the content brings its own semantics. Docked, as a
+    // window and as the bar, the panel has the same nesting, so moving between
+    // them keeps the content.
     <div
       ref={regionRef}
       className={cn(
         'flex overflow-hidden ease-emphasized motion-reduce:transition-none',
         MOTION_DURATION_CLASS,
-        docked
+        !floating
           ? cn(
               'h-full shrink-0',
               !framed && 'bg-background',
@@ -306,7 +346,8 @@ export function SidePanel({ visible, framed, docked, locked, onReturnFocusLost }
           : cn(
               'fixed z-30 origin-bottom-right bg-background shadow-xl ring-1 ring-border',
               WINDOW_RADIUS_CLASS,
-              // It grows from its corner as it opens, and goes at once as it closes
+              // It grows from its corner as it opens, and goes at once as it closes,
+              // as the bar does: shrinking into the corner would read as minimizing
               shown
                 ? 'transition-[width,height,opacity,scale]'
                 : 'pointer-events-none invisible scale-[0.3] opacity-0 transition-none',
@@ -315,15 +356,15 @@ export function SidePanel({ visible, framed, docked, locked, onReturnFocusLost }
       data-side-panel={shown ? state.size : 'closed'}
       data-side-panel-layout={docked ? 'docked' : 'window'}
       style={
-        windowSize
+        floatingSize
           ? ({
               right: WINDOW_SIDE,
               bottom: WINDOW_SIDE,
-              ...windowSize,
+              ...floatingSize,
               // The content's size, as variables rather than set on the
               // content, which the resize effect clears as it settles
-              '--side-panel-content-width': windowSize.width,
-              '--side-panel-content-height': windowSize.height,
+              '--side-panel-content-width': floatingSize.width,
+              '--side-panel-content-height': floatingSize.height,
             } as React.CSSProperties)
           : undefined
       }
@@ -331,8 +372,8 @@ export function SidePanel({ visible, framed, docked, locked, onReturnFocusLost }
       <div
         className={cn(
           'flex h-full min-w-0 flex-1 justify-end',
-          !docked && 'items-end',
-          docked &&
+          floating && 'items-end',
+          !floating &&
             framed &&
             'ml-(--admin-frame-side) overflow-hidden rounded-(--admin-frame-radius) bg-background dark:ring-1 dark:ring-border-glass dark:ring-inset',
         )}
@@ -343,10 +384,10 @@ export function SidePanel({ visible, framed, docked, locked, onReturnFocusLost }
           ref={contentRef}
           className={cn(
             'shrink-0 *:size-full',
-            !docked && 'h-(--side-panel-content-height) w-(--side-panel-content-width)',
-            docked && cn('h-full', state.size === 'full' ? 'w-full' : DEFAULT_WIDTH),
+            floating && 'h-(--side-panel-content-height) w-(--side-panel-content-width)',
+            !floating && cn('h-full', state.size === 'full' ? 'w-full' : DEFAULT_WIDTH),
           )}
-          style={{ padding: PANEL_CONTENT_PADDING }}
+          style={{ padding: minimized ? 0 : PANEL_CONTENT_PADDING }}
         />
       </div>
     </div>
