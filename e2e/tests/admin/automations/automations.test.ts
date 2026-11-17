@@ -169,7 +169,7 @@ test.describe('Ghost Admin - Automations', () => {
 
       await new AutomationsPage(page).goto();
       await page.getByRole('button', { name: 'New automation', exact: true }).click();
-      await page.getByRole('button', { name: /^Label added to a member/ }).click();
+      await page.getByRole('button').getByText('Label added', { exact: true }).click();
       await page
         .getByRole('combobox', { name: 'Triggered when this label is added to a member:' })
         .click();

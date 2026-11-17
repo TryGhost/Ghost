@@ -448,7 +448,7 @@ describe('New automation', () => {
       });
       await expect.element(page.getByText('Select a trigger', { exact: true })).toBeVisible();
       await expect
-        .element(page.getByRole('button', { name: /^Label added to a member/ }))
+        .element(page.getByRole('button').getByText('Label added', { exact: true }))
         .not.toBeInTheDocument();
       await expect.element(button('Hide automation sidebar')).not.toBeInTheDocument();
       await page.getByRole('button', { name: new RegExp(`^${title}`) }).click();
@@ -496,7 +496,7 @@ describe('New automation', () => {
       .element(page.getByRole('button', { name: /^Free member signed up/ }))
       .toBeVisible();
     await expect
-      .element(page.getByRole('button', { name: /^Label added to a member/ }))
+      .element(page.getByRole('button').getByText('Label added', { exact: true }))
       .toBeVisible();
     await expect
       .element(page.getByRole('button', { name: /^Paid subscription started/ }))
@@ -515,7 +515,10 @@ describe('New automation', () => {
       fakeAdminEndpoint('GET', `/labels/${spring.id}/`, { labels: [spring] });
 
       await renderAdminApp('/automations/new', { labs: { ...labs, automationsLeadMagnets: true } });
-      await page.getByRole('button', { name: /^Label added to a member/ }).click();
+      await page.getByRole('button').getByText('Label added', { exact: true }).click();
+      await expect
+        .element(page.getByRole('heading', { name: 'Label added', exact: true }))
+        .toBeVisible();
       const picker = page.getByRole('combobox', {
         name: 'Triggered when this label is added to a member:',
       });
@@ -572,7 +575,7 @@ describe('New automation', () => {
     fakeAdminEndpoint('GET', `/labels/${spring.id}/`, { labels: [spring] });
 
     await renderAdminApp('/automations/new', { labs: { ...labs, automationsLeadMagnets: true } });
-    await page.getByRole('button', { name: /^Label added to a member/ }).click();
+    await page.getByRole('button').getByText('Label added', { exact: true }).click();
     const picker = page.getByRole('combobox', {
       name: 'Triggered when this label is added to a member:',
     });
@@ -598,7 +601,7 @@ describe('New automation', () => {
     fakeAdminEndpoint('GET', `/labels/${fall.id}/`, { labels: [fall] });
 
     await renderAdminApp('/automations/new', { labs: { ...labs, automationsLeadMagnets: true } });
-    await page.getByRole('button', { name: /^Label added to a member/ }).click();
+    await page.getByRole('button').getByText('Label added', { exact: true }).click();
     const picker = page.getByRole('combobox', {
       name: 'Triggered when this label is added to a member:',
     });

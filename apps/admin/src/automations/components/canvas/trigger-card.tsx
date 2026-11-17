@@ -273,7 +273,7 @@ function getTriggerPresentation(trigger: TriggerData, errorMessage?: string) {
       };
     case 'label_added':
       return {
-        title: 'Label added to a member',
+        title: 'Label added',
         Icon: LucideIcon.Tag,
         content: (
           <LabelTriggerPicker

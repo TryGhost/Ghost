@@ -57,7 +57,7 @@ const SUBSCRIPTION_CHANGED_OPTION = [
 const LABEL_ADDED_OPTION = [
   'label_added',
   LucideIcon.Tag,
-  'Label added to a member',
+  'Label added',
   'When a label is added to a member',
 ] as const;
 
