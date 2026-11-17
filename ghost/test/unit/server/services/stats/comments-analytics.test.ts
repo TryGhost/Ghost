@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import knex, { type Knex } from 'knex';
-import { afterEach, beforeEach, describe, it } from 'vitest';
+import { afterEach, beforeEach, describe, it, vi } from 'vitest';
 import {
   CommentsAnalyticsService,
   getCommentsStatsWindow,
@@ -21,6 +21,7 @@ describe('getCommentsStatsWindow', function () {
     assert.equal(window.from, '2026-10-18 04:00:00');
     assert.equal(window.to, '2026-11-17 05:00:00');
     assert.equal(window.previousFrom, '2026-09-18 04:00:00');
+    assert.equal(window.previousTo, '2026-10-18 04:00:00');
     assert.equal(window.buckets.length, 30);
     assert.deepEqual(
       window.buckets.filter(({ date }) => date >= '2026-11-01' && date <= '2026-11-02'),
@@ -29,6 +30,18 @@ describe('getCommentsStatsWindow', function () {
         { date: '2026-11-02', start: '2026-11-02 05:00:00' },
       ],
     );
+  });
+
+  it('ends the previous period at the same elapsed point while the range runs', function () {
+    const options = range('2026-11-01', '2026-11-03', 'Asia/Tokyo');
+
+    // Noon on Nov 2 in Tokyo, 36 hours into the range
+    const running = getCommentsStatsWindow(options, Date.parse('2026-11-02T03:00:00Z'));
+    assert.equal(running.previousFrom, '2026-10-28 15:00:00');
+    assert.equal(running.previousTo, '2026-10-30 03:00:00');
+
+    const notStarted = getCommentsStatsWindow(options, Date.parse('2026-10-31T00:00:00Z'));
+    assert.equal(notStarted.previousTo, notStarted.previousFrom);
   });
 
   it('handles half-hour UTC offsets', function () {
@@ -190,6 +203,21 @@ describe('CommentsAnalyticsService', function () {
         { date: '2026-11-03', comments: 1, commenters: 1, reported: 0 },
       ],
     });
+  });
+
+  it('compares a running range with the same part of the previous period', async function () {
+    await db('comment_reports').insert({ id: 'r6', comment_id: 'c4' });
+    vi.useFakeTimers({ toFake: ['Date'], now: Date.parse('2026-11-04T06:00:00Z') });
+
+    try {
+      const overview = await service.getOverview(range('2026-11-04', '2026-11-04'));
+
+      // c4 (Nov 3 23:59 UTC) is later in the previous day than now is in today
+      assert.deepEqual(overview.totals, { comments: 1, commenters: 1, reported: 1 });
+      assert.deepEqual(overview.previous_totals, { comments: 0, commenters: 0, reported: 0 });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('buckets by the site timezone', async function () {

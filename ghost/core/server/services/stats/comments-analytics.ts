@@ -9,6 +9,7 @@ export type CommentsStatsWindow = {
   from: string;
   to: string;
   previousFrom: string;
+  previousTo: string;
   interval: CommentsInterval;
   /** Ascending; `date` is the bucket's first local day, `start` its UTC start */
   buckets: { date: string; start: string }[];
@@ -149,21 +150,22 @@ function zoneOffset(instant: number, timezone: string) {
   return wall - Math.floor(instant / 1000) * 1000;
 }
 
-// UTC datetime, as stored in the database, of the date's first local instant.
-// Where DST skips midnight that is the transition; where it repeats, the first.
+const toDatetime = (ms: number) => new Date(ms).toISOString().slice(0, 19).replace('T', ' ');
+
+// UTC instant of the date's first local instant. Where DST skips midnight that
+// is the transition; where it repeats, the first.
 function startOfDay(date: string, timezone: string) {
   const midnight = dateMs(date);
-  const instant = Math.min(
+  return Math.min(
     ...[midnight - DAY_MS, midnight + DAY_MS]
       .map((probe) => midnight - zoneOffset(probe, timezone))
       .filter((candidate) => candidate + zoneOffset(candidate, timezone) >= midnight),
   );
-  return new Date(instant).toISOString().slice(0, 19).replace('T', ' ');
 }
 
-// Inclusive site-local dates in; the previous period is the same number of
-// local calendar days before date_from, so it stays aligned across DST.
-export function getCommentsStatsWindow(options: unknown): CommentsStatsWindow {
+// Inclusive site-local dates in. The previous period is as many local days before
+// date_from (DST-aligned), cut at the same elapsed point while the range runs.
+export function getCommentsStatsWindow(options: unknown, now = Date.now()): CommentsStatsWindow {
   const { date_from: dateFrom, date_to: dateTo, timezone } = parse(rangeSchema, options);
   const days = rangeDays(dateFrom, dateTo);
   const interval = getInterval(days);
@@ -171,13 +173,20 @@ export function getCommentsStatsWindow(options: unknown): CommentsStatsWindow {
 
   const buckets: CommentsStatsWindow['buckets'] = [];
   for (let date = dateFrom; date < endDate; date = nextBucketDate(date, interval)) {
-    buckets.push({ date, start: startOfDay(date, timezone) });
+    buckets.push({ date, start: toDatetime(startOfDay(date, timezone)) });
   }
 
+  const from = startOfDay(dateFrom, timezone);
+  const to = startOfDay(endDate, timezone);
+  const previousFrom = startOfDay(addDays(dateFrom, -days), timezone);
+  const previousTo =
+    now < to ? Math.min(from, Math.max(previousFrom, previousFrom + now - from)) : from;
+
   return {
-    from: buckets[0].start,
-    to: startOfDay(endDate, timezone),
-    previousFrom: startOfDay(addDays(dateFrom, -days), timezone),
+    from: toDatetime(from),
+    to: toDatetime(to),
+    previousFrom: toDatetime(previousFrom),
+    previousTo: toDatetime(previousTo),
     interval,
     buckets,
   };
@@ -279,7 +288,7 @@ export class CommentsAnalyticsService {
       .limit(limit)
       .as('t');
 
-    // Name only: commenters are visible to roles that cannot read member emails
+    // Name only: the panel needs no contact data
     const rows = await this.knex
       .select('t.member_id', 'm.name', 't.comment_count')
       .from(ranked)
@@ -330,8 +339,15 @@ export class CommentsAnalyticsService {
     return this.knex.raw(`CASE ${cases.join(' ')} ELSE -1 END AS bucket`, bindings);
   }
 
+  private skipPreviousRemainder(query: Knex.QueryBuilder, window: CommentsStatsWindow) {
+    return query
+      .where('c.created_at', '<', window.previousTo)
+      .orWhere('c.created_at', '>=', window.from);
+  }
+
   private async countPeriods(window: CommentsStatsWindow): Promise<AggregateRow[]> {
     return await this.inRange(window.previousFrom, window.to)
+      .where((query) => this.skipPreviousRemainder(query, window))
       .select(
         this.knex.raw('CASE WHEN c.created_at >= ? THEN 1 ELSE 0 END AS is_current', [window.from]),
       )
@@ -356,6 +372,7 @@ export class CommentsAnalyticsService {
       .where('c.created_at', '>=', window.previousFrom)
       .andWhere('c.created_at', '<', window.to)
       .andWhere('c.status', '<>', 'deleted')
+      .where((query) => this.skipPreviousRemainder(query, window))
       .select(this.bucketExpression(window))
       .countDistinct({ reported: 'r.comment_id' })
       .groupBy('bucket');
