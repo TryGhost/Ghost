@@ -1,0 +1,71 @@
+{
+  "name": "@tryghost/foundry",
+  "version": "private",
+  "private": true,
+  "description": "Builds what exists once per process (config, logging, the database, the event bus) for an application. Only an application's bootstrap imports it.",
+  "license": "MIT",
+  "author": "Ghost Foundation",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "foundry"
+  },
+  "files": [
+    "build"
+  ],
+  "exports": {
+    "./adapter-manager": {
+      "source": "./src/adapter-manager/index.ts",
+      "types": "./build/adapter-manager/index.d.ts",
+      "default": "./build/adapter-manager/index.js"
+    },
+    "./config": {
+      "source": "./src/config/index.ts",
+      "types": "./build/config/index.d.ts",
+      "default": "./build/config/index.js"
+    },
+    "./*": {
+      "source": "./src/*.ts",
+      "types": "./build/*.d.ts",
+      "default": "./build/*.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test:types": "tsc --noEmit",
+    "lint:code": "eslint src/ --cache",
+    "lint": "pnpm run '/^lint:/'"
+  },
+  "dependencies": {
+    "@tryghost/errors": "catalog:",
+    "@tryghost/kernel": "workspace:*",
+    "@tryghost/logging": "catalog:",
+    "jsonc-parser": "catalog:",
+    "knex": "catalog:",
+    "lodash": "catalog:",
+    "nconf": "0.13.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
+    "@types/lodash": "catalog:",
+    "@types/nconf": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:"
+  },
+  "ghostPackage": {
+    "goldenPath": "exempt",
+    "reason": "Spike: framework code compiled to CommonJS, as it was inside ghost/core. See docs/plans/domain-spike-findings.md, part 3."
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/build"
+        ]
+      }
+    }
+  }
+}

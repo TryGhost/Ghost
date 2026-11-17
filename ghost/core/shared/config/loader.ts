@@ -1,5 +1,5 @@
 import * as localUtils from './utils';
-import { loadConfigSources } from '../../foundry/config';
+import { loadConfigSources } from '@tryghost/foundry/config';
 import { createConfig, type GhostConfig } from './validated';
 
 const _debug = require('@tryghost/debug')._base;

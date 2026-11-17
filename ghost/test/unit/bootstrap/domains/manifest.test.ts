@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { definitionKind } from '../../../../core/kernel/domains/definitions';
-import { defaultExport, describeManifest } from '../../../../core/kernel/domains/discover';
+import { definitionKind } from '@tryghost/kernel/domains/definitions';
+import { defaultExport, describeManifest } from '@tryghost/kernel/domains/discover';
 import { domainsRoot, getDomainManifest } from '../../../../core/bootstrap/domains/manifest';
 
 // Creating a file in a domain has its effect: a job is scheduled, a listener is

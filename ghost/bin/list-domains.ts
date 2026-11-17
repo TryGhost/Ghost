@@ -9,7 +9,7 @@
 
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { describeManifest } from '../core/kernel/domains/discover';
+import { describeManifest } from '@tryghost/kernel/domains/discover';
 import { domainsRoot, getDomainManifest } from '../core/bootstrap/domains/manifest';
 
 const lines = describeManifest(getDomainManifest());

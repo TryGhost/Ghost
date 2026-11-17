@@ -1,4 +1,4 @@
-import { defineRoutes } from '../../../../../../core/kernel/domains/definitions';
+import { defineRoutes } from '@tryghost/kernel/domains/definitions';
 
 export default defineRoutes([
   {

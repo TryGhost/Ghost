@@ -1,4 +1,4 @@
-import { guardReadOnly as guard } from '../../foundry/config/guard';
+import { guardReadOnly as guard } from '@tryghost/foundry/config/guard';
 
 /**
  * When Ghost's config is guarded rather than frozen. The guard itself is the

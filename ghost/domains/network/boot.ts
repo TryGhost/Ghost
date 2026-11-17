@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { defineDomain } from '../../core/kernel/domains/definitions';
-import type { Logger } from '../../core/kernel/logging';
+import { defineDomain } from '@tryghost/kernel/domains/definitions';
+import type { Logger } from '@tryghost/kernel/logging';
 import type { IncomingRecommendationEmailRenderer } from './emails/incoming-recommendation-email.renderer';
 import type { BookshelfClickEventRepository } from './repositories/bookshelf-click-event.repository';
 import type { BookshelfRecommendationRepository } from './repositories/bookshelf-recommendation.repository';

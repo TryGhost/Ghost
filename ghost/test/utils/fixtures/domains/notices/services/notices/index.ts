@@ -1,4 +1,4 @@
-import { defineService } from '../../../../../../../core/kernel/define-service';
+import { defineService } from '@tryghost/kernel/define-service';
 import type { NoticesDependencies } from '../../boot';
 import { NoticeService } from './notice.service';
 

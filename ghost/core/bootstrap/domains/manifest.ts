@@ -1,4 +1,4 @@
-import type { DomainManifest } from '../../kernel/domains/discover';
+import type { DomainManifest } from '@tryghost/kernel/domains/discover';
 import application, { domainsRoot } from '../app';
 
 export { domainsRoot };

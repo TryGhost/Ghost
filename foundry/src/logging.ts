@@ -1,4 +1,4 @@
-import type { Logger, LoggerOptions } from '../kernel/logging';
+import type { Logger, LoggerOptions } from '@tryghost/kernel/logging';
 
 // The class alone. The package's entry point would build a logger of its own.
 const GhostLogger: typeof import('@tryghost/logging').GhostLogger = require('@tryghost/logging/lib/GhostLogger');

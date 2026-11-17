@@ -1,4 +1,4 @@
-import { defineSettings } from '../../core/kernel/domains/definitions';
+import { defineSettings } from '@tryghost/kernel/domains/definitions';
 
 export default defineSettings({
   groups: {

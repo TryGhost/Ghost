@@ -6,7 +6,7 @@ import {
   deepFreeze,
   validateConfig as validate,
   type ConfigPolicy,
-} from '../../foundry/config';
+} from '@tryghost/foundry/config';
 import { bindAll as bindHelpers, type ConfigHelpers } from './helpers';
 import { guardHint, shouldGuard } from './guard';
 import { configSchema, type ConfigAt, type ConfigPath, type ValidatedConfig } from './schema';

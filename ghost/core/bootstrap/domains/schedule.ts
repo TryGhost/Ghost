@@ -1,5 +1,5 @@
-import type { ScheduledJob } from '../../kernel/domains/domain-layer';
-import type { Logger } from '../../kernel/logging';
+import type { ScheduledJob } from '@tryghost/kernel/domains/domain-layer';
+import type { Logger } from '@tryghost/kernel/logging';
 
 /**
  * How Ghost runs a domain's job: a timer for "once at boot", the jobs service

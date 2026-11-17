@@ -1,4 +1,4 @@
-import { definePermissions } from '../../core/kernel/domains/definitions';
+import { definePermissions } from '@tryghost/kernel/domains/definitions';
 
 export default definePermissions({
   objects: {

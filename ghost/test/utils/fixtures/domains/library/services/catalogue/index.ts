@@ -1,4 +1,4 @@
-import { defineService } from '../../../../../../../core/kernel/define-service';
+import { defineService } from '@tryghost/kernel/define-service';
 import type { LibraryDependencies } from '../../boot';
 import { BookRepository } from '../../repositories/book.repository';
 import { CatalogueService } from './catalogue.service';

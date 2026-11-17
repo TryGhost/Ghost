@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { z } from 'zod';
-import { parseConfigSlice, type Config } from '../../kernel/config';
+import { parseConfigSlice, type Config } from '@tryghost/kernel/config';
 import { guardReadOnly } from './guard';
 import { lenient, parseLeniently } from './lenient';
 import { reportInvalid } from './report';

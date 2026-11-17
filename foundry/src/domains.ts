@@ -1,5 +1,9 @@
 import { readdirSync } from 'node:fs';
-import { discoverDomains, type DomainManifest, type FolderEntry } from '../kernel/domains/discover';
+import {
+  discoverDomains,
+  type DomainManifest,
+  type FolderEntry,
+} from '@tryghost/kernel/domains/discover';
 
 function list(directory: string): FolderEntry[] | undefined {
   try {

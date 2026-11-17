@@ -1,14 +1,14 @@
-import type { Config } from '../kernel/config';
-import type { Database } from '../kernel/database';
-import type { EventBus } from '../kernel/events';
-import type { Foundation } from '../kernel/foundation';
-import type { Logger } from '../kernel/logging';
-import type { DomainManifest } from '../kernel/domains/discover';
+import type { Config } from '@tryghost/kernel/config';
+import type { Database } from '@tryghost/kernel/database';
+import type { EventBus } from '@tryghost/kernel/events';
+import type { Foundation } from '@tryghost/kernel/foundation';
+import type { Logger } from '@tryghost/kernel/logging';
+import type { DomainManifest } from '@tryghost/kernel/domains/discover';
 import {
   createDomainLayer,
   type DomainLayer,
   type ScheduledJob,
-} from '../kernel/domains/domain-layer';
+} from '@tryghost/kernel/domains/domain-layer';
 import { readDomains } from './domains';
 import { createEventBus } from './events';
 

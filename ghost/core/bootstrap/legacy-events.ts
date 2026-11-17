@@ -1,4 +1,4 @@
-import type { EventBus } from '../kernel/events';
+import type { EventBus } from '@tryghost/kernel/events';
 
 /**
  * Ghost's event bus, as the foundation hands it out. `@tryghost/domain-events`

@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import type { LoggerOptions } from '../kernel/logging';
+import type { LoggerOptions } from '@tryghost/kernel/logging';
 import type { GhostConfig } from '../shared/config/validated';
 
 const ghostVersion: { original: string } = require('@tryghost/version');

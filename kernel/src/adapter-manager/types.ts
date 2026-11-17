@@ -67,3 +67,18 @@ export type AdapterName<Registry extends AdapterRegistry> = keyof Registry exten
  */
 export type ResolvedAdapter<Registry extends AdapterRegistry, Name extends string> =
   AdapterType<Name> extends keyof Registry ? Registry[AdapterType<Name>] : never;
+
+/**
+ * A map from an adapter type name (e.g. "storage") to the base class every
+ * adapter of that type must extend.
+ */
+export type BaseClassMap = Record<string, AdapterConstructor>;
+
+/**
+ * The type-only registry derived from a `BaseClassMap`: each adapter type name
+ * mapped to the instance type of its base class. Read back by `getAdapter` to
+ * return a precisely-typed instance.
+ */
+export type RegistryOf<BaseClasses extends BaseClassMap> = {
+  [Type in keyof BaseClasses]: InstanceType<BaseClasses[Type]>;
+};

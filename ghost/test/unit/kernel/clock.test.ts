@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import { getUnixTime, moment as legacyMoment } from '../../../core/kernel/clock';
+import { getUnixTime, moment as legacyMoment } from '@tryghost/kernel/clock';
 
 describe('Clock', function () {
   afterEach(function () {

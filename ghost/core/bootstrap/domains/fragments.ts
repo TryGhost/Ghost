@@ -5,12 +5,12 @@ import {
   type DomainFragment,
   type DomainRoute,
   type FragmentKind,
-} from '../../kernel/domains/domain-layer';
+} from '@tryghost/kernel/domains/domain-layer';
 import type {
   PermissionsDefinition,
   SchemaDefinition,
   SettingsDefinition,
-} from '../../kernel/domains/definitions';
+} from '@tryghost/kernel/domains/definitions';
 import { getDomainManifest } from './manifest';
 
 /**

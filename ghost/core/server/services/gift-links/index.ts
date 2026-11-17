@@ -1,5 +1,5 @@
 import logging from '@tryghost/logging';
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '@tryghost/kernel/define-service';
 import { GiftLinksService } from './service';
 import { recordGiftLinkAction, type RecordGiftLinkAction } from './actions';
 

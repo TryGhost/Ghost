@@ -1,5 +1,5 @@
 import knex, { type Knex } from 'knex';
-import type { Database } from '../kernel/database';
+import type { Database } from '@tryghost/kernel/database';
 
 /**
  * Builds the database handle from Knex options an application supplies. No

@@ -1,13 +1,11 @@
-// Known break of the kernel rules: loading an adapter reads package.json files
-// and resolves modules from disk. The adapter manager exists once per process,
-// so by the same reasoning as the logger it belongs in the foundry.
-// oxlint-disable-next-line ghost/kernel-purity -- see docs/plans/domain-spike-findings.md
+// Loading an adapter reads package.json files and resolves modules from disk,
+// and the adapter manager exists once per process. Both are why this is in the
+// foundry and not the kernel.
 import fs from 'node:fs';
 import path from 'node:path';
-// oxlint-disable-next-line ghost/kernel-purity -- see above
 import { createRequire } from 'node:module';
 import errors from '@tryghost/errors';
-import type { AdapterConstructor } from './types';
+import type { AdapterConstructor } from '@tryghost/kernel/adapter-manager';
 
 /**
  * Whether `filePath` resolves to a location inside `directory`.

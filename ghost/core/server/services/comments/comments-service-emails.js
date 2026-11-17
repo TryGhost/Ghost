@@ -1,5 +1,5 @@
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
-const { moment } = require('../../../kernel/clock');
+const { moment } = require('@tryghost/kernel/clock');
 const CommentsServiceEmailRenderer = require('./comments-service-email-renderer');
 const { toPlain } = require('../../lib/common/to-plain');
 

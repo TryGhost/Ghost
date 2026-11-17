@@ -1,5 +1,5 @@
 import { IncorrectUsageError } from '@tryghost/errors';
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '@tryghost/kernel/define-service';
 
 // link-redirect-repository.js is CommonJS without declarations, so its instance type is
 // opaque here; the consumers that borrow it are CommonJS too.

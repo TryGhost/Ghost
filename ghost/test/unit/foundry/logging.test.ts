@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { createLogger } from '../../../core/foundry/logging';
+import { createLogger } from '@tryghost/foundry/logging';
 
 describe('createLogger', function () {
   it('builds a logger from the options it is given and nothing else', function () {

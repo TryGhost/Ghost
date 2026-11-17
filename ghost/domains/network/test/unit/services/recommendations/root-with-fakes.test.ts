@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { createLoggerFake } from '../../../../../../core/kernel/testing';
+import { createLoggerFake } from '@tryghost/kernel/testing';
 import type { NetworkDependencies } from '../../../../boot';
 
 const ROOT_PATH = require.resolve('../../../../services/recommendations');

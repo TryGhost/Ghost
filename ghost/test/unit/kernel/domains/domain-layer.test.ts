@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { defineService } from '../../../../core/kernel/define-service';
+import { defineService } from '@tryghost/kernel/define-service';
 import {
   defineDomain,
   defineEvent,
@@ -7,13 +7,9 @@ import {
   defineListener,
   defineRoutes,
   defineSettings,
-} from '../../../../core/kernel/domains/definitions';
-import type {
-  DomainFile,
-  DomainFileKind,
-  DomainManifest,
-} from '../../../../core/kernel/domains/discover';
-import { createDomainLayer, type ScheduledJob } from '../../../../core/kernel/domains/domain-layer';
+} from '@tryghost/kernel/domains/definitions';
+import type { DomainFile, DomainFileKind, DomainManifest } from '@tryghost/kernel/domains/discover';
+import { createDomainLayer, type ScheduledJob } from '@tryghost/kernel/domains/domain-layer';
 import { createLoggingFake } from '../../../utils/logging-utils';
 
 // A manifest written by hand: these tests are about what is done with found

@@ -5,7 +5,7 @@ import {
   describeManifest,
   discoverDomains,
   type FolderEntry,
-} from '../../../../core/kernel/domains/discover';
+} from '@tryghost/kernel/domains/discover';
 
 // The kernel reads nothing: these tests describe folders in memory. Reading a
 // real folder is the foundry's, tested in ../../foundry/domains.test.ts.

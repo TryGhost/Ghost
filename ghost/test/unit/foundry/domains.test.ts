@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { defaultExport, describeManifest } from '../../../core/kernel/domains/discover';
-import { readDomains } from '../../../core/foundry/domains';
+import { defaultExport, describeManifest } from '@tryghost/kernel/domains/discover';
+import { readDomains } from '@tryghost/foundry/domains';
 
 describe('readDomains', function () {
   let root: string;

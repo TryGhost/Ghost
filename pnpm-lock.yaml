@@ -2193,6 +2193,55 @@ importers:
         specifier: 'catalog:'
         version: 4.6.7
 
+  foundry:
+    dependencies:
+      '@tryghost/errors':
+        specifier: 3.4.8
+        version: 3.4.8
+      '@tryghost/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@tryghost/logging':
+        specifier: 6.0.7
+        version: 6.0.7(supports-color@10.2.2)
+      jsonc-parser:
+        specifier: 'catalog:'
+        version: 3.3.1
+      knex:
+        specifier: 'catalog:'
+        version: 3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
+      lodash:
+        specifier: 'catalog:'
+        version: 4.18.1
+      nconf:
+        specifier: 0.13.0
+        version: 0.13.0
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@internal/cfg-eslint':
+        specifier: workspace:*
+        version: link:../tools/configs/eslint
+      '@types/lodash':
+        specifier: 'catalog:'
+        version: 4.17.27
+      '@types/nconf':
+        specifier: 'catalog:'
+        version: 0.10.7
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.5
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+
   ghost:
     dependencies:
       '@aws-sdk/client-s3':
@@ -2267,6 +2316,9 @@ importers:
       '@tryghost/errors':
         specifier: 3.4.8
         version: 3.4.8
+      '@tryghost/foundry':
+        specifier: workspace:*
+        version: link:../foundry
       '@tryghost/helpers':
         specifier: 'catalog:'
         version: 1.1.110
@@ -2279,6 +2331,9 @@ importers:
       '@tryghost/image-transform':
         specifier: workspace:*
         version: link:../packages/image-transform
+      '@tryghost/kernel':
+        specifier: workspace:*
+        version: link:../kernel
       '@tryghost/kg-card-factory':
         specifier: workspace:*
         version: link:../koenig/kg-card-factory
@@ -2540,9 +2595,6 @@ importers:
       jsdom:
         specifier: 'catalog:'
         version: 30.0.1(@noble/hashes@1.8.0)
-      jsonc-parser:
-        specifier: 'catalog:'
-        version: 3.3.1
       jsonrepair:
         specifier: 'catalog:'
         version: 3.15.0
@@ -2830,6 +2882,40 @@ importers:
       better-sqlite3:
         specifier: 'catalog:'
         version: 13.1.1
+
+  kernel:
+    dependencies:
+      '@tryghost/errors':
+        specifier: 3.4.8
+        version: 3.4.8
+      '@tryghost/logging':
+        specifier: 6.0.7
+        version: 6.0.7(supports-color@10.2.2)
+      knex:
+        specifier: 'catalog:'
+        version: 3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
+      moment-timezone:
+        specifier: 0.6.6
+        version: 0.6.6
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@internal/cfg-eslint':
+        specifier: workspace:*
+        version: link:../tools/configs/eslint
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.5
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   koenig/kg-card-factory:
     devDependencies:

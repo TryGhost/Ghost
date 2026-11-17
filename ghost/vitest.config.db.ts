@@ -144,7 +144,7 @@ export default defineConfig({
       provider: 'v8',
       include: [
         'core/*.js',
-        'core/{foundry,frontend,server,shared}/**/*.{js,cjs,mjs,ts}',
+        'core/{frontend,server,shared}/**/*.{js,cjs,mjs,ts}',
         'domains/**/*.{js,cjs,mjs,ts}',
       ],
       exclude: [

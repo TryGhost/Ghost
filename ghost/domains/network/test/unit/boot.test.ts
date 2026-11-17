@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import { createFoundationFake } from '../../../../core/kernel/testing';
+import { createFoundationFake } from '@tryghost/kernel/testing';
 import boot from '../../boot';
 
 // boot.ts is the one file in the domain that reaches outside it. Given a fake

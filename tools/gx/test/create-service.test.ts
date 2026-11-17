@@ -262,7 +262,7 @@ test('the boot call the generator prints and the guides show is the one services
   );
   for (const [guide, service] of [
     ['ghost/core/server/services/README.md', name],
-    ['ghost/core/kernel/README.md', 'example'],
+    ['kernel/README.md', 'example'],
     ['.agents/skills/add-service/SKILL.md', name],
   ] as const) {
     const source = readFileSync(path.join(repo, guide), 'utf8');
@@ -280,7 +280,8 @@ test('generated output passes real lint, boundary and inventory checks with no r
   for (const file of [
     '.dependency-cruiser.cjs',
     'tools/scripts/ci/service-dependency-resolver.mjs',
-    'ghost/core/kernel/define-service.ts',
+    'kernel/src/define-service.ts',
+    'kernel/package.json',
     'ghost/eslint.config.mjs',
     'ghost/package.json',
     'ghost/tsconfig.json',

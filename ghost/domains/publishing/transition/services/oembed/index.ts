@@ -1,4 +1,4 @@
-import { defineService } from '../../../../../core/kernel/define-service';
+import { defineService } from '@tryghost/kernel/define-service';
 
 /**
  * What callers use of the oEmbed service. The implementation is JavaScript, so

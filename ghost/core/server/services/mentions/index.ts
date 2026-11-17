@@ -1,4 +1,4 @@
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '@tryghost/kernel/define-service';
 
 export default defineService('Mentions', () => {
   const MentionController = require('./mention-controller');

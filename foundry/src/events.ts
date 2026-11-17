@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events';
-import type { EventBus } from '../kernel/events';
-import type { Logger } from '../kernel/logging';
+import type { EventBus } from '@tryghost/kernel/events';
+import type { Logger } from '@tryghost/kernel/logging';
 
 /**
  * Builds an event bus. Events are keyed by the name of their class, and a

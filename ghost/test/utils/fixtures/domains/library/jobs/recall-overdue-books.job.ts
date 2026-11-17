@@ -1,4 +1,4 @@
-import { defineJob } from '../../../../../../core/kernel/domains/definitions';
+import { defineJob } from '@tryghost/kernel/domains/definitions';
 import catalogue from '../services/catalogue';
 
 export default defineJob({

@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import sinon from 'sinon';
 import { z } from 'zod';
-import { createConfig, loadConfigSources } from '../../../core/foundry/config';
+import { createConfig, loadConfigSources } from '@tryghost/foundry/config';
 
 // Ghost's own config is tested in ../shared/config. These hold the framework's
 // half to an application that is not Ghost.

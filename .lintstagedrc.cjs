@@ -138,7 +138,8 @@ module.exports = {
       ),
     ];
   },
-  'ghost/core/{server,kernel,shared,frontend}/**/*.{js,ts}': (files) => buildBoundaryCommand(files),
+  'ghost/core/{server,shared,frontend}/**/*.{js,ts}': (files) => buildBoundaryCommand(files),
+  '{kernel,foundry}/src/**/*.ts': (files) => buildBoundaryCommand(files),
   'ghost/domains/**/*.{js,ts}': (files) => buildBoundaryCommand(files),
   'apps/{admin,shade,admin-x-framework,activitypub,portal,comments-ui,signup-form,sodo-search,announcement-bar,admin-toolbar}/src/**/*.{js,ts,tsx,jsx}':
     (files) => buildBoundaryCommand(files),

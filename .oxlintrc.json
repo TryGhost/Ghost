@@ -71,7 +71,6 @@
     {
       "files": [
         "ghost/core/server/**/*.js",
-        "ghost/core/kernel/**/*.js",
         "ghost/core/shared/**/*.js",
         "ghost/core/frontend/**/*.js",
         "ghost/core/*.js",
@@ -236,7 +235,7 @@
         "ghost/service-root-shape": [
           "error",
           {
-            "helperImport": "../../../kernel/define-service"
+            "helperImport": "@tryghost/kernel/define-service"
           }
         ],
         "ghost/no-injected-service-libraries": "error"
@@ -248,7 +247,7 @@
         "ghost/service-root-shape": [
           "error",
           {
-            "helperImport": "../../../../../core/kernel/define-service"
+            "helperImport": "@tryghost/kernel/define-service"
           }
         ],
         "ghost/no-injected-service-libraries": "error"
@@ -260,13 +259,13 @@
         "ghost/service-root-shape": [
           "error",
           {
-            "helperImport": "../../../../core/kernel/define-service"
+            "helperImport": "@tryghost/kernel/define-service"
           }
         ]
       }
     },
     {
-      "files": ["ghost/core/kernel/**/*.ts"],
+      "files": ["kernel/src/**/*.ts"],
       "rules": {
         "ghost/kernel-purity": "error"
       }

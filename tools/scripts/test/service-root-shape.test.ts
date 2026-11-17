@@ -13,7 +13,7 @@ const requireRoot = createRequire(path.join(root, 'package.json'));
 const binary = path.join(path.dirname(requireRoot.resolve('oxlint/package.json')), 'bin/oxlint');
 const config = JSON.parse(readFileSync(path.join(root, '.oxlintrc.json'), 'utf8'));
 const ruleName = 'ghost/service-root-shape';
-const helperImport = '../../../kernel/define-service';
+const helperImport = '@tryghost/kernel/define-service';
 const prefix = `import { defineService } from '${helperImport}';\n`;
 const factory = `defineService('Example', () => ({}))`;
 
@@ -381,7 +381,8 @@ test('configures the rule for every service root with the kernel helper', () => 
   const overrides = config.overrides.filter(
     (override: { rules: Record<string, unknown> }) => override.rules[ruleName],
   );
-  // One override per home of a root: the path to the kernel differs in each.
+  // One override per home of a root. The kernel is a package, so every home
+  // imports the helper by the same name.
   const homes = [
     'ghost/core/server/services',
     'ghost/domains/example/transition/services',
@@ -392,15 +393,9 @@ test('configures the rule for every service root with the kernel helper', () => 
     homes.map((home) => [`${home.replace('/example/', '/*/')}/*/index.ts`]),
     'The legacy service inventory decides which roots are exempt, not a list of paths',
   );
-  for (const [index, home] of homes.entries()) {
+  for (const index of homes.keys()) {
     const settings = overrides[index].rules[ruleName];
     assert.equal(settings[0], 'error');
-    assert.equal(
-      settings[1].helperImport,
-      path
-        .relative(`${home}/example`, 'ghost/core/kernel/define-service')
-        .split(path.sep)
-        .join('/'),
-    );
+    assert.equal(settings[1].helperImport, '@tryghost/kernel/define-service');
   }
 });

@@ -83,12 +83,11 @@ export default tseslint.config(
     ...strictLinterOptions,
   },
   // ============================================================
-  // Base: server / kernel / shared / frontend / root JS files
+  // Base: server / shared / frontend / root JS files
   // ============================================================
   {
     files: [
       'core/server/**/*.js',
-      'core/kernel/**/*.js',
       'core/shared/**/*.js',
       'core/frontend/**/*.js',
       'core/*.js',

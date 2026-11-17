@@ -1,5 +1,5 @@
 import { isLocalhost } from '@tryghost/app-contracts/manifest';
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '@tryghost/kernel/define-service';
 import { ExplorePingService } from './explore-ping-service';
 
 export default defineService('Explore ping', () => {

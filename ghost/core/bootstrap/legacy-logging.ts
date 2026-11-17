@@ -1,4 +1,4 @@
-import type { Logger } from '../kernel/logging';
+import type { Logger } from '@tryghost/kernel/logging';
 
 // `@tryghost/logging` builds one logger the first time it is required and
 // keeps it on globalThis under this key, so that every copy of the package in

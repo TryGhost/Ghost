@@ -1,6 +1,3 @@
-export { AdapterManager } from './adapter-manager';
-export type { AdapterManagerOptions, BaseClassMap, RegistryOf } from './adapter-manager';
-export { loadAdapterClass, resolveAdapterEntryPoint, resolveAdapterExport } from './loader';
 export { getConfiguredFeatures, resolveAdapterOptions } from './options';
 export type { ResolvedAdapterOptions } from './options';
 export type {
@@ -11,5 +8,7 @@ export type {
   AdapterRegistry,
   AdapterType,
   AdapterTypeConfig,
+  BaseClassMap,
+  RegistryOf,
   ResolvedAdapter,
 } from './types';

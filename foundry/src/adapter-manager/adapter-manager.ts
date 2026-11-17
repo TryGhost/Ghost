@@ -1,28 +1,16 @@
 import errors from '@tryghost/errors';
+import {
+  getConfiguredFeatures,
+  resolveAdapterOptions,
+  type Adapter,
+  type AdapterConfig,
+  type AdapterConstructor,
+  type AdapterName,
+  type BaseClassMap,
+  type RegistryOf,
+  type ResolvedAdapter,
+} from '@tryghost/kernel/adapter-manager';
 import { loadAdapterClass } from './loader';
-import { getConfiguredFeatures, resolveAdapterOptions } from './options';
-import type {
-  Adapter,
-  AdapterConfig,
-  AdapterConstructor,
-  AdapterName,
-  ResolvedAdapter,
-} from './types';
-
-/**
- * A map from an adapter type name (e.g. "storage") to the base class every
- * adapter of that type must extend.
- */
-export type BaseClassMap = Record<string, AdapterConstructor>;
-
-/**
- * The type-only registry derived from a `BaseClassMap`: each adapter type name
- * mapped to the instance type of its base class. Read back by `getAdapter` to
- * return a precisely-typed instance.
- */
-export type RegistryOf<BaseClasses extends BaseClassMap> = {
-  [Type in keyof BaseClasses]: InstanceType<BaseClasses[Type]>;
-};
 
 export interface AdapterManagerOptions<BaseClasses extends BaseClassMap = BaseClassMap> {
   /** The paths to check, e.g. ['content/adapters', 'core/server/adapters'] */
