@@ -39,6 +39,7 @@ describe.skipIf(isSQLite)('Better Auth instance', function () {
       password: security.password,
       logger: { debug() {}, info() {}, warn() {}, error() {} },
       limiters,
+      sendPasswordResetEmail: async () => {},
     });
   }
 
