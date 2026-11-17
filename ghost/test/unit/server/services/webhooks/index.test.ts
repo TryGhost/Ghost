@@ -124,12 +124,14 @@ describe('Webhooks service root', function () {
 
   beforeEach(function () {
     // The unit project shares one module registry and one model event emitter, so each
-    // test loads a fresh root and starts from an emitter without webhook listeners.
+    // test loads a fresh root and parks every listener on the webhook events: other
+    // services' listeners would otherwise receive the fake models these tests emit.
     savedRoot = require.cache[rootPath];
     delete require.cache[rootPath];
     savedListeners = events
       .eventNames()
-      .map((eventName: string | symbol) => [eventName, ownListeners(eventName)]);
+      .filter((eventName: string | symbol) => WEBHOOKS.includes(String(eventName)))
+      .map((eventName: string | symbol) => [eventName, events.listeners(eventName)]);
     for (const [eventName, listeners] of savedListeners) {
       for (const listener of listeners) {
         events.removeListener(eventName, listener);

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { ACTION_KINDS } from '../../../../../core/server/lib/action-log/kinds';
 
-const schema = require('../../../../../core/server/data/schema/schema');
+import schema from '../../../../../core/server/data/schema/schema';
 const models = require('../../../../../core/server/models');
 
 describe('Unit: lib/action-log/kinds', function () {
