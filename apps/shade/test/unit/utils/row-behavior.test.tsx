@@ -100,6 +100,37 @@ describe.each([false, true])('shared rows with admin7Design=%s', (flag) => {
     expect(pointer).toHaveBeenCalledOnce();
   });
 
+  it.each(['button', 'a'] as const)('activates a slotted root %s from its content', (tag) => {
+    const click = vi.fn((event: React.MouseEvent) => event.preventDefault());
+    const content = (
+      <>
+        <span>Setting title</span>
+        <span>Setting description</span>
+        <svg aria-label="Open setting">
+          <path d="m1 1 4 4-4 4" data-testid="chevron" />
+        </svg>
+      </>
+    );
+    inShade(
+      flag,
+      <ActionListItem asChild>
+        {tag === 'button' ? (
+          <button type="button" onClick={click}>
+            {content}
+          </button>
+        ) : (
+          <a href="/settings" onClick={click}>
+            {content}
+          </a>
+        )}
+      </ActionListItem>,
+    );
+    fireEvent.click(screen.getByText('Setting title'));
+    fireEvent.click(screen.getByText('Setting description'));
+    fireEvent.click(screen.getByTestId('chevron'));
+    expect(click).toHaveBeenCalledTimes(3);
+  });
+
   it('enhances a legacy clickable div only in the enabled design', () => {
     const action = vi.fn();
     inShade(

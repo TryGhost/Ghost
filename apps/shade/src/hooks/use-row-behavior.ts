@@ -23,10 +23,13 @@ export function useRowBehavior<Element extends HTMLElement>(
     return {};
   }
 
-  const isIndependent = (event: MouseEvent<Element>) =>
-    event.target instanceof window.Element &&
-    event.target !== event.currentTarget &&
-    Boolean(event.target.closest(independentControl));
+  const isIndependent = (event: MouseEvent<Element>) => {
+    if (!(event.target instanceof window.Element)) {
+      return false;
+    }
+    const control = event.target.closest(independentControl);
+    return control !== null && control !== event.currentTarget;
+  };
 
   return {
     'data-row-pressed': press['data-row-pressed'],
