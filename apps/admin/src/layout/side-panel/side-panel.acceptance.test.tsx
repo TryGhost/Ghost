@@ -149,9 +149,23 @@ describe('Side panel', () => {
         sidePanel().close();
         return Promise.resolve();
       },
+      moveFocus: (content: HTMLElement) => {
+        content.focus();
+        return content;
+      },
     },
-    { how: 'Escape', close: () => userEvent.keyboard('{Escape}') },
-  ])('hides with $how, keeps the content and returns focus', async ({ close }) => {
+    {
+      how: 'Escape',
+      close: () => userEvent.keyboard('{Escape}'),
+      // An Escape inside the content is the content's own, so focus leaves for the page
+      moveFocus: () => {
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+        return document.body;
+      },
+    },
+  ])('hides with $how, keeps the content and returns focus', async ({ close, moveFocus }) => {
     await renderWithNavigation();
     const trigger = sidebarScreen.userMenuTrigger();
     trigger.element().focus();
@@ -159,6 +173,8 @@ describe('Side panel', () => {
     const onClose = vi.fn();
     sidePanel().open(frame.element, { onClose });
     await expect.element(panel()).toBeVisible();
+    const focused = moveFocus(frame.element);
+    expect(document.activeElement).toBe(focused);
 
     await close();
 
@@ -177,6 +193,8 @@ describe('Side panel', () => {
     const onClose = vi.fn();
     const handle = sidePanel().open(frame.element, { onClose });
     await expect.poll(frame.loads).toBe(1);
+    frame.element.focus();
+    expect(document.activeElement).toBe(frame.element);
 
     handle?.close();
     handle?.close();
@@ -366,6 +384,8 @@ describe('Side panel', () => {
       sidePanel().open(frame.element, { size });
       await expect.poll(frame.loads).toBe(1);
       await expect.poll(() => getComputedStyle(panelElement()).opacity).toBe('1');
+      frame.element.focus();
+      expect(document.activeElement).toBe(frame.element);
 
       sidePanel().close();
 
