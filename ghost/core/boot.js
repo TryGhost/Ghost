@@ -88,14 +88,13 @@ async function initDatabase({ config }) {
 }
 
 /**
- * Core is intended to be all the bits of Ghost that are fundamental and we can't do anything without them!
- * (There's more to do to make this true)
+ * Checks of config that need nothing but the foundation. They run before the
+ * shared layer so a bad value stops boot before anything is started with it.
  * @param {object} options
- * @param {object} options.ghostServer
  * @param {object} options.config
  */
-async function initCore({ ghostServer, config }) {
-  debug('Begin: initCore');
+async function initFoundationChecks({ config }) {
+  debug('Begin: initFoundationChecks');
 
   // Validate configured adapters up-front so misconfiguration fails at boot
   // rather than on first lazy use (e.g. first image upload or scheduled job)
@@ -126,6 +125,24 @@ async function initCore({ ghostServer, config }) {
     }
   }
   debug('End: image upload config');
+
+  debug('End: initFoundationChecks');
+}
+
+/**
+ * The shared layer: the modules every domain and every service may rely on.
+ * It starts after the foundation and before anything else, and starts nothing
+ * that belongs to one feature. Labs and mail are shared too and have no start:
+ * labs reads the settings cache when it is asked, and a mailer is built by
+ * whoever sends.
+ *
+ * The order inside is real: settings reads limits, and signing keys and i18n
+ * read settings.
+ * @param {object} options
+ * @param {object} options.config
+ */
+async function initShared({ config }) {
+  debug('Begin: initShared');
 
   // URL Utils is a bit slow, put it here so the timing is visible separate from models
   debug('Begin: Load urlUtils');
@@ -160,6 +177,43 @@ async function initCore({ ghostServer, config }) {
   const i18n = require('./shared/i18n');
   await i18n.init({ events: require('./server/lib/common/events') });
   debug('End: i18n');
+
+  // Builds the actions map from the permissions defined in code. It reads nothing.
+  debug('Begin: permissions');
+  const permissions = require('./server/services/permissions');
+  await permissions.init();
+  debug('End: permissions');
+
+  debug('End: initShared');
+}
+
+/**
+ * The domain layer starts directly after the shared layer and relies on nothing
+ * else. Code in a domain reaches a service that boot starts later only when it
+ * is used, never while the domain starts.
+ * @param {object} options
+ * @param {object} options.ghostServer
+ */
+async function initDomains({ ghostServer }) {
+  debug('Begin: initDomains');
+  const domains = require('./bootstrap/domains').default;
+  await domains.start();
+  if (ghostServer) {
+    ghostServer.registerCleanupTask(() => domains.stop(), 'Domains');
+  }
+  debug('End: initDomains');
+}
+
+/**
+ * Services that used to start among the shared modules and belong to one
+ * feature each. None is in a domain yet, so they start here, after the shared
+ * and domain layers. Each moves into its domain when that domain exists.
+ * @param {object} options
+ * @param {object} options.ghostServer
+ * @param {object} options.config
+ */
+async function initLegacyCore({ ghostServer, config }) {
+  debug('Begin: initLegacyCore');
 
   // Reads admin_session_secret, so it follows settings. Under legacy nothing loads
   // Better Auth itself.
@@ -219,7 +273,7 @@ async function initCore({ ghostServer, config }) {
     debug('End: Jobs Service');
   }
 
-  debug('End: initCore');
+  debug('End: initLegacyCore');
 }
 
 /**
@@ -382,7 +436,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const stripe = require('./server/services/stripe');
   const members = require('./server/services/members');
   const tiers = require('./server/services/tiers').default;
-  const permissions = require('./server/services/permissions');
   const indexnow = require('./server/services/indexnow-ping').default;
   const upgrades = require('./server/services/upgrades').default;
   const slack = require('./server/services/slack-ping').default;
@@ -454,8 +507,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   await newsletters.init();
   // Mentions hands the ready oEmbed instance to its metadata service.
   await oembed.init();
-  // The network domain's recommendations root registers on the ready Mentions
-  // instance when the domain layer starts it, below.
+  // Mentions adds the network domain's URL mapper to its own metadata service.
   await mentionsService.init();
   // Explore captures the ready Stats aggregate during initialization.
   await statsService.init();
@@ -468,7 +520,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     tagsPublic.init(),
     postsPublic.init(),
     membersEvents.init(),
-    permissions.init(),
     indexnow.init(),
     upgrades.init(),
     slack.init(),
@@ -505,14 +556,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   // Member welcome emails captures the ready Email address and Link tracking instances during
   // initialization, and automation polling sends through it once jobs start.
   await memberWelcomeEmails.init();
-
-  // The domain layer starts after everything boot initializes above, so code in a
-  // domain can rely on it, and before the job runner starts.
-  const domains = require('./bootstrap/domains').default;
-  await domains.start();
-  if (ghostServer) {
-    ghostServer.registerCleanupTask(() => domains.stop(), 'Domains');
-  }
 
   debug('Begin: Register job handlers');
   const registerJobHandlers =
@@ -814,10 +857,16 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
 
     // Step 4 - Load Ghost with all its services
     debug('Begin: Load Ghost Services & Apps');
-    await initCore({ ghostServer, config });
+    // The three layers, in order: foundation (step 0, with its config checks
+    // here), shared, domains. Everything after them is not in a domain yet.
+    await initFoundationChecks({ config });
+    await initShared({ config });
+    await initDomains({ ghostServer });
+    await initLegacyCore({ ghostServer, config });
 
     // Instrument the knex instance and connection pool if prometheus is enabled
-    // Needs to be after initCore because the pool is destroyed and recreated in initCore, which removes the event listeners
+    // Kept after the first services start. The note here said the pool is destroyed and recreated
+    // before this point, which removes the event listeners
     if (prometheusClient) {
       prometheusClient.instrumentKnex(connection);
     }
