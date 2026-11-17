@@ -1,12 +1,7 @@
 const assert = require('node:assert/strict');
-const {
-  agentProvider,
-  fixtureManager,
-  configUtils,
-  mockManager,
-} = require('../../utils/e2e-framework');
+const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
 
-const isBetterAuth = configUtils.config.get('auth:engine') === 'better-auth';
+const { isBetterAuth } = require('../../../core/server/auth');
 
 describe('Members Stripe Connect API', function () {
   let agent;

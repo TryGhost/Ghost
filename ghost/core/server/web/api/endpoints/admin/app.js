@@ -6,7 +6,6 @@ const { checkVersionMatch } = require('../../middleware/check-version-match');
 const { parseQueryBooleans } = require('../../middleware/parse-query-booleans');
 const shared = require('../../../shared');
 const auth = require('../../../../auth');
-const config = require('../../../../../shared/config');
 const express = require('../../../../../shared/express');
 const sentry = require('../../../../../shared/sentry');
 const routes = require('./routes');
@@ -24,7 +23,7 @@ module.exports = function setupApiApp() {
   apiApp.use(shared.middleware.cacheControl('private'));
 
   // Before body parsing: Better Auth reads the request stream itself
-  if (config.get('auth:engine') === 'better-auth') {
+  if (auth.isBetterAuth) {
     const { betterAuthRouter } = require('./better-auth');
     apiApp.use(betterAuthRouter(auth.betterAuth.service));
   }

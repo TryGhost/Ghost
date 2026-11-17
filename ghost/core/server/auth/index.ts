@@ -4,6 +4,11 @@
 // @ts-expect-error ignore erasableSyntaxOnly here: js endpoints require() this
 // module and read its getters straight off module.exports.
 export = {
+  // auth:engine, which is fixed for the process
+  get isBetterAuth(): boolean {
+    return require('../../shared/config').get('auth:engine') === 'better-auth';
+  },
+
   get authorize(): typeof import('./authorize') {
     return require('./authorize');
   },

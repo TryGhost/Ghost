@@ -163,7 +163,7 @@ async function initCore({ ghostServer, config }) {
 
   // Reads admin_session_secret, so it follows settings. Under legacy nothing loads
   // Better Auth itself.
-  if (config.get('auth:engine') === 'better-auth') {
+  if (require('./server/auth').isBetterAuth) {
     debug('Begin: Better Auth');
     await require('./server/auth').betterAuth.init();
     debug('End: Better Auth');

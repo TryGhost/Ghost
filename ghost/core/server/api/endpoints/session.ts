@@ -3,7 +3,6 @@ import type { NextFunction, Request, Response } from 'express';
 import * as errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import type { SpamPrevention } from '../../web/shared/middleware/api/spam-prevention';
-import config from '../../../shared/config';
 import urlUtils from '../../../shared/url-utils';
 
 const models = require('../../models');
@@ -12,7 +11,7 @@ const api = require('./index');
 const spamPrevention: SpamPrevention = require('../../web/shared/middleware/api/spam-prevention');
 
 // Chosen once at load, as in auth/authenticate.ts
-const isBetterAuth = config.get('auth:engine') === 'better-auth';
+const isBetterAuth = auth.isBetterAuth;
 
 type BetterAuthSession = ReturnType<
   typeof import('../../auth/better-auth/session-controller').createSessionController

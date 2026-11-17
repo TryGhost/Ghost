@@ -137,15 +137,14 @@ function createSessionFromToken() {
   });
 
   // Chosen once, when the backend app mounts this
-  const createSession =
-    config.get('auth:engine') === 'better-auth'
-      ? createBetterAuthSsoSession
-      : // The service attaches req.session itself before reading it
-        (sessionService.createVerifiedSessionForUser as (
-          req: Request,
-          res: Response,
-          user: { id: string },
-        ) => Promise<void>);
+  const createSession = require('../index').isBetterAuth
+    ? createBetterAuthSsoSession
+    : // The service attaches req.session itself before reading it
+      (sessionService.createVerifiedSessionForUser as (
+        req: Request,
+        res: Response,
+        user: { id: string },
+      ) => Promise<void>);
 
   return sessionFromToken({
     callNextWithError: false,

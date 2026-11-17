@@ -3,7 +3,6 @@ import { createPrincipalResolver } from './resolve-principal';
 import session from './session';
 import apiKeyAuth from './api-key';
 import * as members from './members';
-import config from '../../shared/config';
 
 export interface Authenticate {
   authenticateAdminApi: RequestHandler[];
@@ -57,7 +56,6 @@ function createBetterAuth(): Authenticate {
 }
 
 // Chosen once at load, like the handler mount in the Admin API app
-const authenticate: Authenticate =
-  config.get('auth:engine') === 'better-auth' ? createBetterAuth() : legacy;
+const authenticate: Authenticate = require('./index').isBetterAuth ? createBetterAuth() : legacy;
 
 export default authenticate;

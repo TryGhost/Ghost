@@ -1,9 +1,8 @@
-const config = require('../../../shared/config');
 const auth = require('../../auth');
 const membersService = require('../../services/members');
 
 // Chosen once at load, as in auth/authenticate.ts
-const isBetterAuth = config.get('auth:engine') === 'better-auth';
+const isBetterAuth = auth.isBetterAuth;
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {

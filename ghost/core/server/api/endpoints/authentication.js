@@ -9,10 +9,11 @@ const auth = require('../../auth');
 const invites = require('../../services/invites').default;
 const usersService = require('../../services/users').default;
 const adapterManager = require('../../services/adapter-manager').default;
+
 const schedulerAdapter = adapterManager.getAdapter('scheduling');
 
 // Chosen once at load, as in auth/authenticate.ts
-const isBetterAuth = config.get('auth:engine') === 'better-auth';
+const isBetterAuth = auth.isBetterAuth;
 
 async function destroyRequestSession(req) {
   if (!req || !req.session) {

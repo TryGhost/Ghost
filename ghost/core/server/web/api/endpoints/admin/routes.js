@@ -5,10 +5,6 @@ const auth = require('../../../../auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
 const labs = require('../../../../../shared/labs');
-const config = require('../../../../../shared/config');
-
-// Chosen once at load, as in auth/authenticate.ts
-const isBetterAuth = config.get('auth:engine') === 'better-auth';
 
 // Better Auth loads only under its engine
 function betterAuthAdminOrigin() {
@@ -21,6 +17,9 @@ function betterAuthAdminOrigin() {
 }
 
 const shared = require('../../../shared');
+
+// Chosen once at load, as in auth/authenticate.ts
+const isBetterAuth = auth.isBetterAuth;
 
 /**
  * @returns {import('express').Router}
