@@ -7,6 +7,12 @@ const meta = {
   component: SortableList,
   parameters: {
     layout: 'centered',
+    docs: {
+      description: {
+        component:
+          'Reorderable items with independent drag handles. An active drag suppresses shared row hover and focus fills while preserving drag feedback.',
+      },
+    },
   },
   tags: ['autodocs'],
 } satisfies Meta<typeof SortableList>;
@@ -21,6 +27,14 @@ const initialItems = [
 ];
 
 export const Default: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use a sortable list for editable ordered content; drag the handle to reorder without introducing a primary row action.',
+      },
+    },
+  },
   args: {
     items: [],
     renderItem: () => null,

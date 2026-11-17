@@ -13,6 +13,9 @@ import {
 import { CardDescription, CardHeader, CardTitle } from './card';
 import { Badge } from './badge';
 import { ArrowUpDown } from 'lucide-react';
+import { Box } from '@/primitives';
+import { Button } from '@/components/ui/button';
+import { rowSurfaceClasses } from '@/components/ui/row-surface';
 
 const meta = {
   title: 'Components / Table',
@@ -249,4 +252,61 @@ export const SimpleTable: Story = {
       </>
     ),
   },
+};
+
+export const InteractiveRows: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use explicit interaction for rows with native primary links. Hover or tab to a link, test both side gutters and the independent secondary button, and compare adjacent selected rows with a static row.',
+      },
+    },
+  },
+  render: () => (
+    <Box padding="lg">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Publication</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow interactive>
+            <TableCell className="static">
+              <a className={rowSurfaceClasses.primaryAction} href="#publication">
+                A linked publication
+              </a>
+            </TableCell>
+            <TableCell className="static text-right">
+              <Button className="relative z-10 text-foreground" size="sm" variant="ghost">
+                Edit
+              </Button>
+            </TableCell>
+          </TableRow>
+          <TableRow data-state="selected" interactive>
+            <TableCell className="static">
+              <a className={rowSurfaceClasses.primaryAction} href="#selected">
+                Selected publication
+              </a>
+            </TableCell>
+            <TableCell className="static text-right">Selected</TableCell>
+          </TableRow>
+          <TableRow data-state="selected" interactive>
+            <TableCell className="static">
+              <a className={rowSurfaceClasses.primaryAction} href="#adjacent">
+                Adjacent selected publication
+              </a>
+            </TableCell>
+            <TableCell className="static text-right">Selected</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Static publication information</TableCell>
+            <TableCell className="text-right">No row action</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    </Box>
+  ),
 };

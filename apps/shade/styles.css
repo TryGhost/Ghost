@@ -404,3 +404,177 @@ html.theme-switching *::after {
   > :first-child:is(.border-t) {
   border-top-width: 0;
 }
+
+/* Shared content-row chrome. The recipe opts rows in explicitly; DataList,
+   menus and navigation do not use these classes. Keep this in the published
+   stylesheet so apps receive the same behavior without scanning Shade source. */
+.shade-row {
+  position: relative;
+  isolation: isolate;
+}
+
+.shade-row::before {
+  content: '';
+  position: absolute;
+  inset: 0 calc(-4 * var(--spacing));
+  z-index: -1;
+  border-radius: var(--radius-md);
+  background-color: var(--table-row-hover);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.shade-row-interactive::before {
+  pointer-events: auto;
+}
+
+/* A native primary link/button stretches over blank row space and the side
+   gutters. Its ancestors up to the row must be static; secondary controls sit
+   above the transparent overlay with relative positioning and z-10. */
+.shade-row .shade-row-primary {
+  position: static;
+}
+
+.shade-row .shade-row-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0 calc(-4 * var(--spacing));
+  z-index: 0;
+}
+
+.shade-row.shade-row-inset::before,
+.shade-row-inset .shade-row-primary::after {
+  inset-inline: 0;
+}
+
+.shade-row > [data-row-pinned] {
+  background-color: var(--background);
+}
+
+/* The cell spacing between columns stays intact; only the outside inset is
+   removed, including row headings used in the first column. */
+.shade-row > :is(td, th):first-child {
+  padding-inline-start: 0;
+}
+
+.shade-row > :is(td, th):last-child {
+  padding-inline-end: 0;
+}
+
+.shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+    [data-state='selected'],
+    .shade-row-interactive:is(:active, :focus-visible, :has(:focus-visible))
+  )::before {
+  opacity: 1;
+}
+
+.shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+    [data-state='selected'],
+    .shade-row-interactive:is(:active, :focus-visible, :has(:focus-visible))
+  )
+  > [data-row-pinned] {
+  background-color: var(--table-row-hover);
+}
+
+.shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+    [data-state='selected'],
+    .shade-row-interactive:is(:active, :focus-visible, :has(:focus-visible))
+  )
+  [data-row-pinned-fade='normal'] {
+  opacity: 0;
+}
+
+.shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+    [data-state='selected'],
+    .shade-row-interactive:is(:active, :focus-visible, :has(:focus-visible))
+  )
+  [data-row-pinned-fade='highlight'] {
+  opacity: 1;
+}
+
+/* Only separators shared by body rows disappear; outer rules are preserved. */
+.shade-row
+  + .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+    [data-state='selected'],
+    .shade-row-interactive:is(:active, :focus-visible, :has(:focus-visible))
+  ),
+.shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+    [data-state='selected'],
+    .shade-row-interactive:is(:active, :focus-visible, :has(:focus-visible))
+  )
+  + .shade-row {
+  border-top-color: transparent;
+}
+
+.shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+    [data-state='selected'],
+    .shade-row-interactive:is(:active, :focus-visible, :has(:focus-visible))
+  ):has(+ .shade-row),
+.shade-row:has(
+  + .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+      [data-state='selected'],
+      .shade-row-interactive:is(:active, :focus-visible, :has(:focus-visible))
+    )
+) {
+  border-bottom-color: transparent;
+}
+
+/* Avoid emulated, sticky :hover after a touch tap. :active covers the press. */
+@media (hover: hover) {
+  .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+      .shade-row-interactive:hover
+    )::before {
+    opacity: 1;
+  }
+
+  .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+      .shade-row-interactive:hover
+    )
+    > [data-row-pinned] {
+    background-color: var(--table-row-hover);
+  }
+
+  .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+      .shade-row-interactive:hover
+    )
+    [data-row-pinned-fade='normal'] {
+    opacity: 0;
+  }
+
+  .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+      .shade-row-interactive:hover
+    )
+    [data-row-pinned-fade='highlight'] {
+    opacity: 1;
+  }
+
+  /* Only separators shared by body rows disappear; outer rules are preserved. */
+  .shade-row
+    + .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+      .shade-row-interactive:hover
+    ),
+  .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+      .shade-row-interactive:hover
+    )
+    + .shade-row {
+    border-top-color: transparent;
+  }
+
+  .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+      .shade-row-interactive:hover
+    ):has(+ .shade-row),
+  .shade-row:has(
+    + .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+        .shade-row-interactive:hover
+      )
+  ) {
+    border-bottom-color: transparent;
+  }
+}
+
+/* Selection wins over hover and keyboard/press fills without merging adjacent
+   rows or changing the focused control's own ring. */
+.shade-row[data-state='selected']::before,
+.shade-row[data-state='selected'] > [data-row-pinned] {
+  background-color: var(--table-row-selected);
+}

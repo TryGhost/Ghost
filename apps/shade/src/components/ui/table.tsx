@@ -3,6 +3,7 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from './button';
 import { cva, VariantProps } from 'class-variance-authority';
+import { rowSurface } from '@/components/ui/row-surface';
 
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => (
@@ -16,9 +17,7 @@ Table.displayName = 'Table';
 const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
->(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn('[&_tr:hover:before]:bg-transparent', className)} {...props} />
-));
+>(({ className, ...props }, ref) => <thead ref={ref} className={className} {...props} />);
 TableHeader.displayName = 'TableHeader';
 
 const TableBody = React.forwardRef<
@@ -39,11 +38,20 @@ const TableFooter = React.forwardRef<
 ));
 TableFooter.displayName = 'TableFooter';
 
-const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTMLTableRowElement>>(
-  ({ className, ...props }, ref) => (
+interface TableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
+  interactive?: boolean;
+}
+
+const TableRow = React.forwardRef<HTMLTableRowElement, TableRowProps>(
+  ({ className, interactive, onClick, ...props }, ref) => (
     <tr
       ref={ref}
-      className={cn('group relative border-b data-[state=selected]:bg-muted', className)}
+      className={cn(
+        'group border-b',
+        rowSurface((interactive ?? !!onClick) ? 'interactive' : 'static'),
+        className,
+      )}
+      onClick={onClick}
       {...props}
     />
   ),
@@ -97,7 +105,7 @@ const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={cn(
-      'relative p-2.5 align-middle group-hover:bg-table-row-hover [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+      'relative p-2.5 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
       className,
     )}
     {...props}

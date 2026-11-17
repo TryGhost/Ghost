@@ -69,6 +69,7 @@ export * from './components/ui/input-surface';
 export * from './components/ui/sticky-footer';
 export * from './components/ui/switch';
 export * from './components/ui/table';
+export { rowSurface, rowSurfaceClasses } from './components/ui/row-surface';
 export * from './components/ui/tabs';
 export * from './components/ui/tabs-variants';
 export * from './components/ui/textarea';

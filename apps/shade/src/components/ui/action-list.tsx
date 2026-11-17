@@ -3,13 +3,14 @@ import { type VariantProps, cva } from 'class-variance-authority';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
+import { rowSurface, rowSurfaceClasses } from '@/components/ui/row-surface';
 
 const actionListItemVariants = cva(
   'group/action-list-item relative flex min-w-0 items-stretch border-b border-border last:border-b-transparent',
   {
     variants: {
       hover: {
-        true: 'before:pointer-events-none before:absolute before:-inset-x-4 before:inset-y-0 before:z-0 before:rounded-md before:bg-table-row-hover before:opacity-0 before:transition-opacity hover:border-b-transparent hover:before:opacity-100',
+        true: rowSurfaceClasses.interactive,
         false: '',
       },
     },
@@ -31,7 +32,11 @@ interface ActionListItemProps
 
 const ActionListItem = React.forwardRef<HTMLDivElement, ActionListItemProps>(
   ({ className, hover, ...props }, ref) => (
-    <div ref={ref} className={cn(actionListItemVariants({ hover, className }))} {...props} />
+    <div
+      ref={ref}
+      className={cn(rowSurface('static'), actionListItemVariants({ hover, className }))}
+      {...props}
+    />
   ),
 );
 ActionListItem.displayName = 'ActionListItem';
@@ -45,24 +50,31 @@ const ActionListItemContent = React.forwardRef<HTMLDivElement, ActionListItemCon
     const Component = asChild ? Slot : 'div';
 
     return (
-      <Component ref={ref} className={cn('relative z-10 min-w-0 grow', className)} {...props} />
+      <Component
+        ref={ref}
+        className={cn('z-10 min-w-0 grow', asChild && rowSurfaceClasses.primaryAction, className)}
+        {...props}
+      />
     );
   },
 );
 ActionListItemContent.displayName = 'ActionListItemContent';
 
-const actionListItemActionsVariants = cva('relative z-10 flex shrink-0 items-center py-3 pl-2', {
-  variants: {
-    visibility: {
-      always: '',
-      hover:
-        'md:opacity-0 md:transition-opacity md:group-focus-within/action-list-item:opacity-100 md:group-hover/action-list-item:opacity-100',
+const actionListItemActionsVariants = cva(
+  'pointer-events-none relative z-10 flex shrink-0 items-center py-3 pl-2 [&>*]:pointer-events-auto',
+  {
+    variants: {
+      visibility: {
+        always: '',
+        hover:
+          'md:opacity-0 md:transition-opacity md:group-focus-within/action-list-item:opacity-100 md:group-hover/action-list-item:opacity-100',
+      },
+    },
+    defaultVariants: {
+      visibility: 'always',
     },
   },
-  defaultVariants: {
-    visibility: 'always',
-  },
-});
+);
 
 interface ActionListItemActionsProps
   extends
