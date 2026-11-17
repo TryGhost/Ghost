@@ -104,6 +104,13 @@ const core = (file) =>
     : `^ghost/core/${escape(file.replace(/\.(js|ts)$/, ''))}\\.(js|ts)$`;
 const service = (file) => core(`server/services/${file}`);
 
+// Packages that publish type declarations and no JavaScript. The scan resolves
+// an import the way Node would, so it cannot resolve these, and an unresolved
+// import loses its type-only label. They have no code to run or inject, so the
+// service rules skip them by name. A package with a JavaScript entry does not
+// belong here: the service dependency tests check each one.
+const typesOnlyPackages = ['type-fest'];
+
 const specialistDependencies = [
   // Provider clients.
   {
@@ -407,6 +414,7 @@ module.exports = {
         pathNot: [
           ...serviceDependencyAllowlist,
           ...specialistDependencies.map(({ dependency }) => dependency),
+          ...typesOnlyPackages.map(npm),
           `^${servicesRoot}/$1/`,
         ],
         dependencyTypesNot: ['type-only', 'type-import'],
@@ -435,7 +443,11 @@ module.exports = {
       comment: 'Resolve this runtime import so the service dependency rule can be checked.',
       severity: 'error',
       from: serviceImplementations,
-      to: { couldNotResolve: true, dependencyTypesNot: ['type-only', 'type-import'] },
+      to: {
+        couldNotResolve: true,
+        pathNot: typesOnlyPackages.map(npm),
+        dependencyTypesNot: ['type-only', 'type-import'],
+      },
     },
     {
       name: 'service-roots-in-services',
@@ -693,6 +705,11 @@ module.exports = {
     },
   ],
   options: {
+    // Read imports from the TypeScript source rather than the compiled output,
+    // where type-only imports are gone, so rules can cover types too. A rule
+    // that concerns runtime dependencies only excludes them with
+    // dependencyTypesNot.
+    tsPreCompilationDeps: true,
     // Resolve public package exports to authored workspace source when available.
     // `pnpm gx services verify` also resolves them to built output, the files Ghost
     // loads at runtime, so an allowance must hold for both.
@@ -737,4 +754,5 @@ Object.defineProperties(module.exports, {
   serviceDependencyAllowlist: { value: serviceDependencyAllowlist },
   specialistDependencies: { value: specialistDependencies },
   serviceDependencyDecisions: { value: serviceDependencyDecisions },
+  typesOnlyPackages: { value: typesOnlyPackages },
 });

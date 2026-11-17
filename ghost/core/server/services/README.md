@@ -213,7 +213,10 @@ options objects still need review; this is not general data-flow analysis.
 
 Instances belong in the root wiring. Nested `index.ts` files are implementation files, not
 extra wiring roots. The rule covers static imports, `require()`, literal dynamic
-imports and re-exports. All implementation source inside a service is checked, including
+imports and re-exports. It reads the source, so it leaves out only imports marked
+type-only; see
+[where the rules are checked](../../../../docs/practices/dependencies.md#where-the-rules-are-checked).
+All implementation source inside a service is checked, including
 nested folders named `test` or `fixtures`. The scan cannot follow a computed
 `require()` or `import()` argument, so `import/no-dynamic-require` rejects those
 in every service file.
