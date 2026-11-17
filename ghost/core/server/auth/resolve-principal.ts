@@ -98,7 +98,7 @@ export function createPrincipalResolver(deps: ResolvePrincipalDeps) {
   }
 
   /**
-   * Runs after `api-key/admin.js`: a verified key wins. The cookie is read
+   * Runs after `api-key/admin.ts`: a verified key wins. The cookie is read
    * only when no Authorization header was sent, so a token that failed
    * verification never falls back to the staff session.
    */

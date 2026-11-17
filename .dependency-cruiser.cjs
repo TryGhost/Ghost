@@ -179,7 +179,7 @@ const specialistDependencies = [
     // Signing and verifying JSON Web Tokens.
     dependency: npm('jsonwebtoken'),
     owners: [
-      core('server/auth/api-key/admin.js'),
+      core('server/auth/api-key/admin.ts'),
       core('server/adapters/scheduling/utils.ts'),
       core('server/api/endpoints/featurebase.js'),
       service('identity-tokens/identity-token-service.ts'),
