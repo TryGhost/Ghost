@@ -306,21 +306,30 @@ describe('Floating sidebar (admin7Design)', () => {
     }
     await expect.poll(() => getComputedStyle(capsule).transitionProperty).not.toBe('none');
     await expect.poll(() => saves.requests.length).toBe(1);
-    // From the capsule's own event: the key press can return after the morph has ended.
+    // Paused as it starts, so the morph is still in flight whenever the save lands.
     let growing: Animation[] = [];
+    const morphStates = () => [...new Set(growing.map((animation) => animation.playState))];
     capsule.addEventListener('transitionrun', (event) => {
       if (event.target === capsule && !growing.length) {
         growing = capsule.getAnimations();
+        for (const animation of growing) {
+          animation.pause();
+        }
         landSave();
       }
     });
 
     await userEvent.keyboard('{Control>}b{/Control}');
     await expect.poll(sidebarScreen.floatingState).toBe('pinned');
-    // A transition cut short ends up idle; one that runs to its end, finished.
-    await expect
-      .poll(() => [...new Set(growing.map((animation) => animation.playState))])
-      .toEqual(['finished']);
+    await expect.poll(morphStates).toEqual(['paused']);
+    // Saves run one at a time: the sidebar's own is sent once the held one has been applied.
+    await expect.poll(() => saves.requests.length).toBe(2);
+    // A transition the save cut short is idle; these resume and run to their end.
+    expect(morphStates()).toEqual(['paused']);
+    for (const animation of growing) {
+      animation.play();
+    }
+    await expect.poll(morphStates).toEqual(['finished']);
   });
 
   it('opens the closed circle on focus or click and closes it with Escape', async () => {
