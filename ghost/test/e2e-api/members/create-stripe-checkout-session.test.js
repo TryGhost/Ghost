@@ -836,7 +836,6 @@ describe('Create Stripe Checkout Session', function () {
 
     beforeEach(async function () {
       mockManager.mockStripe();
-      mockManager.mockLabsEnabled('stripeCheckoutCollection');
       await createShippingFields();
       const {
         body: { tiers },
@@ -910,9 +909,6 @@ describe('Create Stripe Checkout Session', function () {
 
     beforeEach(async function () {
       mockManager.mockStripe();
-      mockManager.mockLabsEnabled('stripeCheckoutCollection');
-      // The phone number saves only into a phone field.
-      mockManager.mockLabsEnabled('customFieldTypePhone');
       await adminAgent
         .post('/members/metafields/custom/')
         .body({ members_metafields: [{ name: 'Contact phone', type: 'phone' }] })
@@ -981,7 +977,6 @@ describe('Create Stripe Checkout Session', function () {
 
     beforeEach(async function () {
       mockManager.mockStripe();
-      mockManager.mockLabsEnabled('stripeCheckoutCollection');
       mockManager.mockLabsEnabled('stripeAutomaticTax');
       const {
         body: { tiers },

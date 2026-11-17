@@ -63,14 +63,11 @@ async function openCheckoutFields(
   const saveApi = fakeAdminEndpoint('PUT', '/stripe/checkout/config/', {
     checkout_config: [config],
   });
-  // Phone fields on, as the phone number saves only into one.
-  const labs = { stripeCheckoutCollection: true, customFieldTypePhone: true };
-  const siteConfig = configResponse({ labs });
+  const siteConfig = configResponse();
   if (hostSettings) {
     siteConfig.config.hostSettings = hostSettings;
   }
   await renderAdminApp('/settings/tiers/checkout', {
-    labs,
     boot: {
       browseSettings: { response: stripeSettings() },
       browseConfig: { response: siteConfig },
@@ -921,7 +918,6 @@ describe('Checkout settings', () => {
       checkout_config: [{ design: { customize: false } }],
     });
     await renderAdminApp('/settings/tiers/checkout', {
-      labs: { stripeCheckoutCollection: true },
       boot: { browseSettings: { response: stripeSettings() } },
     });
 

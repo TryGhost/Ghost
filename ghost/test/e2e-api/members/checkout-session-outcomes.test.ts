@@ -40,8 +40,6 @@ describe('Checkout session outcomes', function () {
 
   // The phone number saves into one custom field, so it's the simplest part to set up.
   async function askForPhone() {
-    mockManager.mockLabsEnabled('stripeCheckoutCollection');
-    mockManager.mockLabsEnabled('customFieldTypePhone');
     await adminAgent
       .post('/members/metafields/custom/')
       .body({ members_metafields: [{ name: 'Contact phone', type: 'phone' }] })
