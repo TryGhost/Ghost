@@ -1,5 +1,5 @@
 /** One kind of access an app gets, as a consent screen lists it. */
-export interface AccessItem {
+interface AccessItem {
   title: string;
   description: string;
   /** The bridge's scopes this entry stands for, by name, such as `posts:write`. */

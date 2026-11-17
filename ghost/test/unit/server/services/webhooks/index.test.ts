@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import nock from 'nock';
 import sinon from 'sinon';
+import ghostVersion from '@tryghost/version';
 
 // require, not import: the root and its collaborators are CommonJS and the stubs below must
 // land on the same module instances the root reads.
-const ghostVersion = require('@tryghost/version');
 const logging = require('@tryghost/logging');
 const events = require('../../../../../core/server/lib/common/events');
 const models = require('../../../../../core/server/models');

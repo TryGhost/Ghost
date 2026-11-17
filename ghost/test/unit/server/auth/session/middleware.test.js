@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const sessionMiddleware = require('../../../../../core/server/auth').session;
-const SessionMiddlware = require('../../../../../core/server/auth/session/middleware');
+const SessionMiddlware = require('../../../../../core/server/auth/session/middleware').default;
 const models = require('../../../../../core/server/models');
 const sinon = require('sinon');
 const labs = require('../../../../../core/shared/labs');
@@ -9,7 +9,7 @@ const urlUtils = require('../../../../../core/shared/url-utils').default;
 describe('Session Service', function () {
   // A session can only be created for the admin panel's own origin, so these
   // tests must present that origin or session creation fails.
-  const adminOrigin = new URL(urlUtils.getAdminUrl() || urlUtils.getSiteUrl()).origin;
+  const adminOrigin = urlUtils.getAdminOrigin();
 
   afterEach(function () {
     sinon.restore();

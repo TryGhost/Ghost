@@ -13,7 +13,12 @@ import {
 export const knownViolationsFile = '.dependency-cruiser-known-violations.json';
 const servicePrefix = `${servicesRoot}/`;
 const knownViolationSchema = z.strictObject({
-  rule: z.enum(['service-dependencies', 'service-own-root', 'service-unresolved']),
+  rule: z.enum([
+    'service-dependencies',
+    'service-own-root',
+    'service-unresolved',
+    'specialist-dependencies',
+  ]),
   from: z.string().startsWith(servicePrefix),
   to: z.string().min(1),
 });
@@ -93,6 +98,72 @@ export function compareKnownViolations(
   };
 }
 
+// The scan treats a JavaScript file beside a TypeScript file of the same name as
+// build output: it skips the JavaScript and reads the TypeScript. Node loads the
+// JavaScript, so a committed one would run without being checked. Build output
+// is never committed, so every tracked pair is an error. Outside a Git
+// repository nothing is committed and there is nothing to report. Any other
+// Git failure stops the check, so it cannot pass without having looked.
+export function committedBuildOutput(repository: string) {
+  const result = spawnSync('git', ['ls-files', '-z', '--', 'ghost/core'], {
+    cwd: repository,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+    // Git's messages are matched below, so keep them untranslated.
+    env: { ...process.env, LC_ALL: 'C' },
+  });
+  if (result.error) {
+    throw new Error(`Could not list tracked files: ${result.error.message}`);
+  }
+  if (result.status !== 0) {
+    if (/not a git repository/i.test(result.stderr)) {
+      return [];
+    }
+    throw new Error(
+      `Could not list tracked files (git exit ${result.status}): ${result.stderr.trim()}`,
+    );
+  }
+  const tracked = new Set(result.stdout.split('\0'));
+  return [...tracked].flatMap((file) => {
+    const match = /^(.*)\.([cm]?)js$/.exec(file);
+    if (!match) {
+      return [];
+    }
+    // The same pairs the scan skips: .ts and .tsx emit .js, .mts .mjs and .cts .cjs.
+    const [, stem, kind] = match;
+    const sources = kind ? [`${stem}.${kind}ts`] : [`${stem}.ts`, `${stem}.tsx`];
+    const source = sources.find((candidate) => tracked.has(candidate));
+    return source ? [{ file, source }] : [];
+  });
+}
+
+// dependency-cruiser loads the `typescript` package only if it can find it, and
+// carries on without it: it then skips TypeScript files or reads their type-only
+// imports as ordinary ones, and reports different violations with no error.
+// Whether it finds the package depends on how the scan was started. In pnpm's
+// default layout here, dependency-cruiser sits in a store outside the
+// repository and finds `typescript` only through the NODE_PATH and module hook
+// that pnpm sets for what it runs. In the layout CI and Docker use, it finds the
+// root's `typescript` by walking up from node_modules.
+//
+// Returns the compiler a scan used, such as `typescript@6.0.3`, from the
+// transpilers its report lists under summary.environment, or undefined when it
+// had none. A compiler dependency-cruiser can find but not load is listed as
+// available, with `-` for its version. Its own missing-compiler warning does not
+// cover that case and does not fail the scan.
+export function scannerTypeScript(transpilers: unknown) {
+  const found = z
+    .array(z.object({ name: z.string(), available: z.boolean(), currentVersion: z.string() }))
+    .safeParse(transpilers)
+    .data?.find(({ name }) => name === 'typescript');
+  return found?.available && found.currentVersion.startsWith('typescript@')
+    ? found.currentVersion
+    : undefined;
+}
+
+export const missingTypeScript =
+  'dependency-cruiser could not load the `typescript` package. Without it the scan skips TypeScript files or reads type-only imports as ordinary imports, and reports different violations. Run the scan through pnpm, for example `pnpm lint:boundaries`. If that fails too, run `pnpm install`.';
+
 // Lint and contributor reports use this single scan and known-violations file.
 // Reports retain all findings; only lint uses the comparison to decide success.
 // Given files, only they and what they import are scanned, as the commit hook
@@ -135,6 +206,10 @@ export function readDependencyBoundaries(repository: string, files: string[] = [
     process.stderr.write(result.stderr);
   }
   const graph: ICruiseResult = JSON.parse(result.stdout);
+  // The scan succeeds without TypeScript, so its report is checked, not its exit.
+  if (!scannerTypeScript(graph.summary?.environment?.transpilersFound)) {
+    throw new Error(missingTypeScript);
+  }
   // The full scan must find modules. A file list can be empty of them, when
   // every file given is one the scan skips.
   if (!Array.isArray(graph.modules) || !Array.isArray(graph.summary?.violations)) {
@@ -144,5 +219,10 @@ export function readDependencyBoundaries(repository: string, files: string[] = [
     throw new Error('Dependency analysis returned no modules.');
   }
   const comparison = compareKnownViolations(graph, known, legacy);
-  return { graph, ...comparison, stale: files.length ? [] : comparison.stale };
+  return {
+    graph,
+    ...comparison,
+    stale: files.length ? [] : comparison.stale,
+    buildOutput: committedBuildOutput(repository),
+  };
 }

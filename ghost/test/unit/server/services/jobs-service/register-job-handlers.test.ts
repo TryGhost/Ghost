@@ -67,7 +67,7 @@ describe('register-job-handlers', function () {
 
     registerJobHandlers({
       gifts: { startFetch: sinon.stub().resolves() },
-      automations: { startFetch: sinon.stub().resolves() },
+      automationAnalytics: { startFetch: sinon.stub().resolves() },
       newsletters: { startFetch: sinon.stub().resolves() },
       jobsService,
       memberJobs,
@@ -311,6 +311,14 @@ describe('register-job-handlers', function () {
     await sendEmailHandler(job);
 
     assert.ok(emailService.handleSendEmailJob.calledOnceWithExactly(job));
+  });
+
+  it('passes an interrupted send back to the jobs service', async function () {
+    emailService.handleSendEmailJob.resolves('interrupted');
+
+    const result = await handlerFor('send-email')(new SendEmailJob({ emailId: 'email-id' }));
+
+    assert.equal(result, 'interrupted');
   });
 
   it('registers send-email on a dedicated queue with room for two sends', function () {

@@ -95,6 +95,7 @@ services:
       - ./koenig:/home/ghost/koenig
       - ./configs:/home/ghost/configs
       - ./packages:/home/ghost/packages
+      - ./contracts:/home/ghost/contracts
       # Mount specific content subdirectories to preserve themes/adapters from source
       - ghost-dev-data:/home/ghost/ghost/content/data
       - ghost-dev-images:/home/ghost/ghost/content/images

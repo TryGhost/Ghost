@@ -101,6 +101,43 @@ describe('Automation list status actions', () => {
     await expect.element(automationsScreen.heading()).toBeVisible();
   });
 
+  it('returns to active automations after unarchiving the last archived one', async () => {
+    const { edit } = setup('archived');
+    await renderAdminApp('/automations', { labs: { automations: true } });
+    const filter = () => page.getByRole('combobox', { name: 'Automations to show' });
+
+    await filter().click();
+    await page.getByRole('option', { name: 'Archived automations', exact: true }).click();
+    await actions().click();
+    await page.getByRole('menuitem', { name: 'Unarchive', exact: true }).click();
+
+    await expect.poll(() => edit.requests.length).toBe(1);
+    await expect(filter()).toHaveCount(0);
+    await expect.element(page.getByText('Nothing archived')).not.toBeInTheDocument();
+    await expect.element(page.getByTestId('automation-list-row')).toHaveTextContent('Off');
+  });
+
+  it('preserves the All automations selection after unarchiving the last archived automation', async () => {
+    setup('archived');
+    await renderAdminApp('/automations', flags);
+    const filter = page.getByRole('combobox', { name: 'Automations to show' });
+    const row = page.getByTestId('automation-list-row');
+
+    await filter.click();
+    await page.getByRole('option', { name: 'All automations', exact: true }).click();
+    await expect.element(filter).toHaveTextContent('All automations');
+    await expect.element(row).toHaveTextContent('Archived');
+    await actions().click();
+    await page.getByRole('menuitem', { name: 'Unarchive', exact: true }).click();
+    await expect(filter).toHaveCount(0);
+    await expect.element(row).toHaveTextContent('Off');
+
+    await actions().click();
+    await page.getByRole('menuitem', { name: 'Archive', exact: true }).click();
+    await expect.element(filter).toHaveTextContent('All automations');
+    await expect.element(row).toHaveTextContent('Archived');
+  });
+
   it('keeps failed archiving unchanged and allows retry from the menu', async () => {
     const { saveStatus } = setup();
     let fail = true;

@@ -94,12 +94,7 @@ const StepNode = React.memo<NodeProps<StepFlowNode>>(({ data }) => {
   }
   if (data.wait) {
     return (
-      <EditableWaitCard
-        errorMessage={data.errorMessage}
-        isNew={data.isNew}
-        menuItems={data.contextMenuItems}
-        wait={data.wait}
-      >
+      <EditableWaitCard isNew={data.isNew} menuItems={data.contextMenuItems} wait={data.wait}>
         <HiddenHandle position={Position.Top} type="target" />
         <HiddenHandle position={Position.Bottom} type="source" />
       </EditableWaitCard>

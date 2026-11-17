@@ -22,6 +22,10 @@ type TriggerRuleOptions =
       selection: TierSelection;
       scope?: never;
       tierIds?: never;
+    }
+  | {
+      triggerType: 'label_added';
+      labelId: string;
     };
 
 export function buildTriggerRules(options: TriggerRuleOptions): AutomationTriggerRule[] {
@@ -43,6 +47,16 @@ export function buildTriggerRules(options: TriggerRuleOptions): AutomationTrigge
       ];
     case 'paid_subscription_changed':
       return subscriptionChangedRulesFromSelection(options.selection);
+    case 'label_added':
+      return [
+        {
+          trigger_type: triggerType,
+          label_id: options.labelId,
+          scope: null,
+          product_id: null,
+          direction: null,
+        },
+      ];
     default: {
       const _exhaustive: never = triggerType;
       throw new Error(`Unknown automation trigger type: ${String(_exhaustive)}`);
@@ -62,12 +76,19 @@ export const comparableTriggerRules = (rules: readonly AutomationTriggerRule[]) 
       scope: rule.scope,
       product_id: rule.product_id,
       direction: rule.direction,
+      ...(rule.trigger_type === 'label_added' ? { label_id: rule.label_id } : {}),
     }))
     .sort(
       (a, b) =>
         (a.product_id ?? '').localeCompare(b.product_id ?? '') ||
         (a.direction ?? '').localeCompare(b.direction ?? ''),
     );
+
+export const getTriggerLabelId = (rules: readonly AutomationTriggerRule[]): string | undefined =>
+  rules.find(
+    (rule): rule is Extract<AutomationTriggerRule, { trigger_type: 'label_added' }> =>
+      rule.trigger_type === 'label_added',
+  )?.label_id;
 
 function subscriptionChangedRulesFromSelection(selection: TierSelection): AutomationTriggerRule[] {
   const from: AutomationTriggerRule[] =

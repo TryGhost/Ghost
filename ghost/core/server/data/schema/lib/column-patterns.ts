@@ -35,6 +35,9 @@ const ColumnSpec = z.object({
     .optional(),
 });
 
+/** A string column's `pattern`, as schema.ts declares it. */
+export type PatternColumn = z.input<typeof ColumnSpec>;
+
 /**
  * Every pattern check on a table declared in schema.js. Throws on a pattern that is not a
  * regular expression, or that MySQL would read differently from JavaScript.

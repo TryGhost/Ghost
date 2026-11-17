@@ -170,7 +170,11 @@ A migrated service is no longer legacy:
 
 There is no lint list to update. Deleting the entry applies
 `ghost/service-root-shape` to the root and full boundary enforcement to the
-implementation. Never add a legacy entry or defer a service's dependency
+implementation. It also applies `ghost/boot-awaits-service-init` and the
+standard services boot test: boot must bind the root with `.default` and await
+its `init()`, as
+[creating a service](../../../ghost/core/server/services/README.md#creating-a-service)
+shows. Never add a legacy entry or defer a service's dependency
 checks: CI rejects both. Do not claim enforcement passed if that policy was
 only checked in a temporary integration or is still awaiting merge.
 

@@ -51,6 +51,11 @@ function catalogue(language: string): Catalogue {
   return entry;
 }
 
+/** A country's name in the site's language, or its code where the browser can't name it. */
+export function countryName(code: string): string {
+  return catalogue(i18n.language || 'en').name(code);
+}
+
 /**
  * The countries as options for a select, named in the site's language and sorted by name.
  *

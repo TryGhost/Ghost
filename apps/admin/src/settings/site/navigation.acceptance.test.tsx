@@ -304,7 +304,7 @@ describe('Navigation settings', () => {
     await expect(suggestions().getByRole('option', { name: /Tips and donations/ })).toHaveCount(0);
   });
 
-  it('offers no signup destinations when members signup is invite-only', async () => {
+  it('offers no signup or gift destinations when members signup is invite-only', async () => {
     fakeSettingsScreens();
     fakeSiteContent();
     await renderAdminApp('/settings/navigation/edit', {
@@ -325,8 +325,9 @@ describe('Navigation settings', () => {
     await expect.element(suggestions()).toBeInTheDocument();
     await expect(suggestions().getByRole('option', { name: /^Free signup/ })).toHaveCount(0);
     await expect(suggestions().getByRole('option', { name: /^Paid signup/ })).toHaveCount(0);
+    await expect(suggestions().getByRole('option', { name: /Gift subscriptions/ })).toHaveCount(0);
     await expect
-      .element(suggestions().getByRole('option', { name: /Gift subscriptions/ }))
+      .element(suggestions().getByRole('option', { name: /^Upgrade or change plan/ }))
       .toBeInTheDocument();
   });
 

@@ -1,5 +1,4 @@
 import tpl from '@tryghost/tpl';
-// @ts-expect-error This module lacks type definitions.
 import validator from '@tryghost/validator';
 import settingsCache from '../../shared/settings-cache';
 import urlUtils from '../../shared/url-utils';

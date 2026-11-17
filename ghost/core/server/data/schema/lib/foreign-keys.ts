@@ -35,6 +35,9 @@ const ColumnSpec = z.object({
   constraintName: z.string().optional(),
 });
 
+/** A column's own foreign key, as schema.ts declares it. */
+export type ForeignKeyColumn = z.input<typeof ColumnSpec>;
+
 /**
  * One foreign key constraint as the database holds it, whether schema.js declares it on a
  * column or on its table. `NO ACTION` is what the database does when none is declared.

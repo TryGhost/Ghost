@@ -19,10 +19,10 @@ const EXTERNALLY_VERSIONED = new Set(['ghost', ...CONTINUOUS_PACKAGES.map((pkg) 
 export type NamedManifest = PackageManifest & { name: string };
 
 /** Reads every workspace manifest, root included. */
-export async function loadManifests(workspace: WorkspaceManifest): Promise<NamedManifest[]> {
+export async function loadManifests(): Promise<NamedManifest[]> {
   return [
     await readJson<PackageManifest>(join(ROOT_DIR, 'package.json')),
-    ...(await getWorkspacePackages(workspace)).map((pkg) => pkg.manifest),
+    ...(await getWorkspacePackages()).map((pkg) => pkg.manifest),
   ] as NamedManifest[];
 }
 
@@ -42,7 +42,7 @@ export async function checkVersioningIgnore(
   const ignored = new Set(workspace.versioning?.ignore ?? []);
   const errors: string[] = [];
 
-  const sorted = (manifests ?? (await loadManifests(workspace))).toSorted((a, b) =>
+  const sorted = (manifests ?? (await loadManifests())).toSorted((a, b) =>
     a.name.localeCompare(b.name),
   );
   for (const { name, version, private: isPrivate } of sorted) {
@@ -81,9 +81,6 @@ export async function checkVersioningIgnore(
 
 if (import.meta.main) {
   const workspace = await getWorkspace();
-  if (!workspace) {
-    throw new Error('Could not load workspace manifest');
-  }
   const errors = await checkVersioningIgnore(workspace);
   if (errors.length > 0) {
     console.error(`Package versioning config is out of date:\n\n${errors.join('\n')}`);
