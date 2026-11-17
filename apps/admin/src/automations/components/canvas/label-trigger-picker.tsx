@@ -104,7 +104,7 @@ export function LabelTriggerPicker({
       <Combobox
         open={!disabled && open}
         modal
-        onOpenChange={(next) => !disabled && !create.isPending && changeOpen(next)}
+        onOpenChange={(next) => !create.isPending && changeOpen(next)}
       >
         <ComboboxTrigger
           aria-describedby={
