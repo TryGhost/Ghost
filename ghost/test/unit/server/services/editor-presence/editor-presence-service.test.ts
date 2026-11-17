@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
+import { vi } from 'vitest';
 import {
   DEFAULT_RETENTION_MS,
+  DEFAULT_STORE_TIMEOUT_MS,
   EditorPresenceService,
   MIN_RETENTION_MS,
   resolveRetentionMs,
@@ -78,7 +80,7 @@ describe('EditorPresenceService', function () {
     assert.equal((store as MemoryPresenceStore).size, 0);
   });
 
-  it('answers an empty request without touching the store', async function () {
+  it('answers an empty request without touching the store and rejects a missing one', async function () {
     const failing: PresenceStore = {
       kind: 'memory',
       touch: async () => assert.fail('touch called'),
@@ -87,7 +89,7 @@ describe('EditorPresenceService', function () {
     };
     const { service, now } = build({ store: failing });
     assert.deepEqual(await service.poll(USER_1, {}), { active: [], serverTime: now });
-    assert.deepEqual(await service.poll(USER_1, undefined), { active: [], serverTime: now });
+    await assert.rejects(service.poll(USER_1, undefined), { errorType: 'ValidationError' });
   });
 
   it('drops users whose last heartbeat is outside the active window', async function () {
@@ -193,10 +195,16 @@ describe('EditorPresenceService', function () {
     await assert.rejects(
       service.poll(USER_1, { editing: { id: POST_A, type: 'post' } }),
       (error: unknown) => {
-        const ghostError = error as { statusCode: number; errorType: string; message: string };
+        const ghostError = error as {
+          statusCode: number;
+          errorType: string;
+          message: string;
+          code: string;
+        };
         assert.equal(ghostError.statusCode, 503);
         assert.equal(ghostError.errorType, 'ServiceUnavailableError');
         assert.equal(ghostError.message, 'Presence is temporarily unavailable');
+        assert.equal(ghostError.code, 'PRESENCE_UNAVAILABLE');
         return true;
       },
     );
@@ -223,6 +231,56 @@ describe('EditorPresenceService', function () {
     );
   });
 
+  describe('store deadline', function () {
+    beforeEach(function () {
+      vi.useFakeTimers();
+    });
+
+    // Not a finally in the test: one that hangs would leave fake timers on for the rest of the worker.
+    afterEach(function () {
+      vi.useRealTimers();
+    });
+
+    it('answers 503 with reason timeout when the store does not respond in time', async function () {
+      const store = failingStore({
+        touch: () => new Promise<void>(() => {}),
+        read: async () => assert.fail('read called after touch timed out'),
+      });
+      const { service, recorded } = build({ store });
+      const pending = assert.rejects(
+        service.poll(USER_1, { editing: { id: POST_A, type: 'post' } }),
+        { statusCode: 503 },
+      );
+      await vi.advanceTimersByTimeAsync(DEFAULT_STORE_TIMEOUT_MS);
+      await pending;
+      const degraded = recorded.filter((entry) => entry.name === 'presence-degraded');
+      assert.deepEqual(
+        degraded.map((entry) => [entry.value.operation, entry.value.reason]),
+        [['touch', 'timeout']],
+      );
+      assert.equal(vi.getTimerCount(), 0);
+    });
+
+    it('leaves no timer armed when the store answers, or throws before returning a promise', async function () {
+      const { service } = build();
+      await service.poll(USER_1, { editing: { id: POST_A, type: 'post' } });
+      assert.equal(vi.getTimerCount(), 0);
+
+      const throwing = build({
+        store: failingStore({
+          touch: () => {
+            throw new Error('boom');
+          },
+        }),
+      });
+      await assert.rejects(
+        throwing.service.poll(USER_1, { editing: { id: POST_A, type: 'post' } }),
+        { statusCode: 503 },
+      );
+      assert.equal(vi.getTimerCount(), 0);
+    });
+  });
+
   it('labels a NOPERM reply from Redis as noperm on read and remove', async function () {
     const noperm = () => {
       throw new Error("NOPERM User 1 has no permissions to run the 'zrangebyscore' command");
@@ -245,6 +303,34 @@ describe('EditorPresenceService', function () {
       ],
     );
   });
+
+  it('labels a disconnected client as offline and a Redis reply error by its first word', async function () {
+    const offline = () => {
+      throw new Error("Stream isn't writeable and enableOfflineQueue options is false");
+    };
+    const readonly = () => {
+      throw Object.assign(new Error("READONLY You can't write against a read only replica."), {
+        name: 'ReplyError',
+      });
+    };
+    const { service, recorded } = build({
+      store: failingStore({ touch: async () => offline(), read: async () => readonly() }),
+    });
+    await assert.rejects(service.poll(USER_1, { editing: { id: POST_A, type: 'post' } }), {
+      statusCode: 503,
+    });
+    await assert.rejects(service.poll(USER_1, { resources: [{ id: POST_A, type: 'post' }] }), {
+      statusCode: 503,
+    });
+    const degraded = recorded.filter((entry) => entry.name === 'presence-degraded');
+    assert.deepEqual(
+      degraded.map((entry) => [entry.value.operation, entry.value.reason]),
+      [
+        ['touch', 'offline'],
+        ['read', 'readonly'],
+      ],
+    );
+  });
 });
 
 describe('resolveRetentionMs', function () {
@@ -255,7 +341,7 @@ describe('resolveRetentionMs', function () {
     assert.equal(resolveRetentionMs(Number.NaN), DEFAULT_RETENTION_MS);
   });
 
-  it('takes the adapter ttl in seconds, no shorter than the idle heartbeat cadence', function () {
+  it('takes the adapter ttl in seconds, no shorter than the active window', function () {
     assert.equal(resolveRetentionMs(120), 120_000);
     assert.equal(resolveRetentionMs(3_600), 3_600_000);
     assert.equal(resolveRetentionMs(5), MIN_RETENTION_MS);

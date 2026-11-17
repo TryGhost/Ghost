@@ -44,12 +44,15 @@ export interface EditorPresenceServiceOptions {
   activeWindowMs?: number;
   /** Members older than this are dropped from the store. */
   retentionMs?: number;
+  storeTimeoutMs?: number;
 }
 
 export const DEFAULT_ACTIVE_WINDOW_MS = 60_000;
-export const DEFAULT_RETENTION_MS = 60_000;
-/** Idle tabs heartbeat every 30s; a shorter retention would expire the key between their beats. */
-export const MIN_RETENTION_MS = 30_000;
+export const DEFAULT_RETENTION_MS = DEFAULT_ACTIVE_WINDOW_MS;
+/** A retention below the active window trims members that are still reported as active. */
+export const MIN_RETENTION_MS = DEFAULT_ACTIVE_WINDOW_MS;
+/** A store call past this answers 503; ioredis has no deadline of its own on a stalled connection. */
+export const DEFAULT_STORE_TIMEOUT_MS = 2_000;
 
 /** The `ttl` (seconds) on the `cache:presence` adapter, or the default when absent or invalid. */
 export function resolveRetentionMs(ttlSeconds: unknown): number {
@@ -63,22 +66,50 @@ type StoreOperation = 'touch' | 'read' | 'remove';
 
 function failureReason(error: unknown): string {
   const details = error as { code?: unknown; name?: unknown; message?: unknown };
-  if (typeof details.message === 'string' && details.message.startsWith('NOPERM')) {
+  const message = typeof details.message === 'string' ? details.message : '';
+  if (message.startsWith('NOPERM')) {
     return 'noperm';
+  }
+  // ioredis rejects at once with this message while disconnected and enableOfflineQueue is off.
+  if (message.includes('enableOfflineQueue')) {
+    return 'offline';
   }
   if (typeof details.code === 'string') {
     return details.code;
   }
+  // Redis replies such as READONLY, LOADING or WRONGTYPE arrive as a ReplyError with no code.
+  if (details.name === 'ReplyError' && message) {
+    return message.split(' ')[0].toLowerCase();
+  }
   return typeof details.name === 'string' ? details.name : 'Error';
 }
 
+function withDeadline<T>(run: () => Promise<T>, ms: number): Promise<T> {
+  // Started before the timer: a store that throws synchronously must not leave one armed.
+  const pending = run();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const deadline = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      reject(
+        new InternalServerError({
+          message: `Presence store did not answer within ${ms}ms`,
+          code: 'timeout',
+        }),
+      );
+    }, ms);
+  });
+  return Promise.race([pending, deadline]).finally(() => clearTimeout(timer));
+}
+
 function parse<T>(schema: z.ZodType<T>, input: unknown): T {
-  const result = schema.safeParse(input ?? {});
+  const result = schema.safeParse(input);
   if (!result.success) {
     throw new ValidationError({
       message: 'Invalid presence request',
       context: result.error.issues
-        .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+        .map((issue) =>
+          issue.path.length > 0 ? `${issue.path.join('.')}: ${issue.message}` : issue.message,
+        )
         .join('; '),
     });
   }
@@ -92,6 +123,7 @@ export class EditorPresenceService {
   private readonly now: () => number;
   private readonly activeWindowMs: number;
   private readonly retentionMs: number;
+  private readonly storeTimeoutMs: number;
 
   constructor(options: EditorPresenceServiceOptions) {
     this.store = options.store;
@@ -100,6 +132,7 @@ export class EditorPresenceService {
     this.metrics = options.metrics;
     this.activeWindowMs = options.activeWindowMs ?? DEFAULT_ACTIVE_WINDOW_MS;
     this.retentionMs = options.retentionMs ?? DEFAULT_RETENTION_MS;
+    this.storeTimeoutMs = options.storeTimeoutMs ?? DEFAULT_STORE_TIMEOUT_MS;
   }
 
   get storeKind(): PresenceStore['kind'] {
@@ -186,7 +219,7 @@ export class EditorPresenceService {
   /** A store failure is a 503, never a 500: editing does not depend on presence and clients back off. */
   private async fromStore<T>(operation: StoreOperation, run: () => Promise<T>): Promise<T> {
     try {
-      return await run();
+      return await withDeadline(run, this.storeTimeoutMs);
     } catch (error) {
       this.metrics?.metric('presence-degraded', {
         feature: 'presence',
@@ -199,6 +232,8 @@ export class EditorPresenceService {
         errorType: 'ServiceUnavailableError',
         level: 'normal',
         message: 'Presence is temporarily unavailable',
+        // Set here so the store's own code (a socket error, `timeout`) stays out of the response.
+        code: 'PRESENCE_UNAVAILABLE',
         err: error instanceof Error ? error : undefined,
       });
     }

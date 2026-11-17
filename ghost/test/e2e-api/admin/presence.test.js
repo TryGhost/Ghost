@@ -5,7 +5,7 @@ const {
   matchers,
   mockManager,
 } = require('../../utils/e2e-framework');
-const { anyContentVersion, anyEtag, anyErrorId, anyNumber } = matchers;
+const { anyContentLength, anyContentVersion, anyEtag, anyErrorId, anyNumber } = matchers;
 
 describe('Presence API', function () {
   let ownerAgent;
@@ -41,6 +41,8 @@ describe('Presence API', function () {
       .body({ presence: [{ editing: { id: post.id, type: 'post' } }] })
       .expectStatus(200)
       .matchHeaderSnapshot({
+        // The body carries `serverTime`, so its length is not fixed.
+        'content-length': anyContentLength,
         'content-version': anyContentVersion,
         etag: anyEtag,
       })
@@ -106,6 +108,16 @@ describe('Presence API', function () {
     await ownerAgent
       .post('presence/')
       .body({ presence: [{ editing: { id: 'nope', type: 'post' } }] })
+      .expectStatus(422)
+      .matchBodySnapshot({
+        errors: [{ id: anyErrorId }],
+      });
+  });
+
+  it('rejects a body without the presence envelope', async function () {
+    await ownerAgent
+      .post('presence/')
+      .body({ editing: { id: post.id, type: 'post' } })
       .expectStatus(422)
       .matchBodySnapshot({
         errors: [{ id: anyErrorId }],

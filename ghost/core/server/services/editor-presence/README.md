@@ -75,16 +75,24 @@ removes the caller's member immediately; closing a tab without it is covered by
 the active window.
 
 A per-process limiter allows 12 requests per user per 10 seconds and answers 429
-beyond that. Ids must be 24-character hex and `type` must be `post` or `page`.
+beyond that; on a site served by several processes the effective limit is that
+many times 12. Ids must be 24-character hex and `type` must be `post` or `page`,
+and a body without the `presence` envelope is a 422 rather than a silent no-op.
+
+Presence is advisory and visible site-wide: any staff user, Contributors
+included, can ask about any id and learn which user ids have it open, and can
+record themselves on any id. Only ids travel; names come from the staff list
+every role can already browse. The member removed by `leave` is always the
+caller's own.
 
 ## Windows
 
 - Active window (60s): heartbeats newer than this are reported.
 - Retention (60s by default): older members are trimmed on write and the key
   expires. The `ttl` (seconds) on the `cache:presence` adapter sets it when
-  present, floored at 30s because idle tabs heartbeat on a 30s cadence. A
-  config change therefore changes how long a site's key may live; keep it in
-  step with the active window.
+  present, floored at the active window: a shorter retention would trim members
+  the read still reports, so idle editors would flicker. A config change
+  therefore changes how long a site's key may live.
 
 Every write sets the key's expiry in the same pipeline as the `ZADD`, so
 nothing presence stores outlives the retention. That matters on a
@@ -92,15 +100,20 @@ nothing presence stores outlives the retention. That matters on a
 
 ## Failure
 
-A store failure (Redis down, `NOPERM`, timeout) answers 503
-`ServiceUnavailableError` with a generic message; the original error stays in
-the wrapped stack for logs. Editing and saving never depend on presence, and
-clients treat 503 as a signal to back off.
+A store failure (Redis down, `NOPERM`, or no answer within 2s) answers 503
+`ServiceUnavailableError` with a generic message and the fixed code
+`PRESENCE_UNAVAILABLE`; the original error stays in the wrapped stack for
+logs. The 2s deadline matters on a connection that is
+open but stalled, where ioredis would otherwise wait indefinitely. Editing and
+saving never depend on presence, and clients treat 503 as a signal to back off.
 
 ## Metrics
 
 `presence-poll` and `presence-leave` carry `feature: presence`, the store kind,
 duration and outcome; `presence-rate-limited` counts refusals;
 `presence-degraded` records each store failure with the operation (`touch`,
-`read`, `remove`) and a reason (`noperm`, a socket error code, or the error
-name). No ids are recorded.
+`read`, `remove`) and a reason: `noperm`, `offline` (disconnected with the
+offline queue off), `timeout`, a socket error code, the first word of a Redis
+reply error such as `readonly` or `loading`, or the error name. With the
+offline queue on, which is the adapter's default, an unreachable Redis shows
+as `timeout` because the command waits in the queue. No ids are recorded.
