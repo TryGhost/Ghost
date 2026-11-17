@@ -52,7 +52,11 @@
 
     {{#if comments}}
         <div class="gh-comments gh-canvas">
-            {{comments}}
+            {{#if comments_enabled}}
+                {{comments}}
+            {{else}}
+                <p class="comments-closed">{{t "Comments are closed for this post."}}</p>
+            {{/if}}
         </div>
     {{/if}}
 

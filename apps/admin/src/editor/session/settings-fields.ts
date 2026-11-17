@@ -31,6 +31,7 @@ export const SETTINGS_FIELD_KEYS = [
   'twitter_title',
   'twitter_description',
   'show_title_and_feature_image',
+  'comments_enabled',
 ] as const;
 
 export type SettingsFieldKey = (typeof SETTINGS_FIELD_KEYS)[number];
@@ -38,9 +39,10 @@ export type SettingsFieldKey = (typeof SETTINGS_FIELD_KEYS)[number];
 export type EditorSettingsFields = Pick<EditablePostProjection, SettingsFieldKey>;
 
 export type EditorSettingsPatch = Partial<
-  Omit<EditorSettingsFields, 'show_title_and_feature_image'>
+  Omit<EditorSettingsFields, 'show_title_and_feature_image' | 'comments_enabled'>
 > & {
   show_title_and_feature_image?: boolean;
+  comments_enabled?: boolean;
 };
 
 export const TIERS_REQUIRED = 'Please select at least one tier.';
@@ -74,6 +76,9 @@ export function identityFor(
   // the patch type admits only a boolean for it.
   if (key === 'show_title_and_feature_image') {
     return fields.show_title_and_feature_image ?? undefined;
+  }
+  if (key === 'comments_enabled') {
+    return fields.comments_enabled ?? undefined;
   }
   return fields[key];
 }

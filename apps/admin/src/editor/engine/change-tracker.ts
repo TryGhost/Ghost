@@ -82,6 +82,8 @@ export interface EditablePostProjection {
   twitter_description: string | null;
   /** Pages only; the write contract strips it from post payloads. */
   show_title_and_feature_image: boolean | null;
+  /** Posts only; the write contract strips it from page payloads. */
+  comments_enabled: boolean | null;
   /** Server collision token: carried and rebased, never a dirty signal. */
   updated_at: string | null;
 }
@@ -170,6 +172,7 @@ const PROJECTION_KEYS: ReadonlyArray<ProjectionKey> = [
   'twitter_title',
   'twitter_description',
   'show_title_and_feature_image',
+  'comments_enabled',
   'updated_at',
 ];
 

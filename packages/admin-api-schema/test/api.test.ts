@@ -98,6 +98,22 @@ describe('Exposes a correct API', function () {
       assert.equal(data.posts[0]!.author, undefined);
     });
 
+    it('Preserves comments_enabled boolean on post edit', async function () {
+      const data = {
+        posts: [
+          {
+            updated_at: '2026-11-01T12:00:00.000Z',
+            comments_enabled: false,
+          },
+        ],
+      };
+
+      await assert.doesNotReject(() =>
+        apiSchema.validate({ data, schema: 'posts-edit', definition: 'posts' }),
+      );
+      assert.equal(data.posts[0]!.comments_enabled, false);
+    });
+
     it('Incorrect use throws an error', async function () {
       const data = {
         posts: [

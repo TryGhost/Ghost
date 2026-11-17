@@ -46,6 +46,9 @@
         "featured": {
           "type": "boolean"
         },
+        "comments_enabled": {
+          "type": "boolean"
+        },
         "status": {
           "type": "string",
           "enum": ["published", "draft", "scheduled", "sent"]

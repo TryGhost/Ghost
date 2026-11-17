@@ -22,6 +22,7 @@ import {
 } from '@tryghost/admin-x-framework/api/users';
 import {
   postSettingsSidebar,
+  settingsCommentsEnabledToggle,
   settingsEditorHelpRow,
   settingsExcerptInput,
   settingsFeaturedToggle,
@@ -89,6 +90,28 @@ const ExcerptSection = memo(function ExcerptSection({ session }: { session: Edit
         onChange={(event) => session.stageSettings({ custom_excerpt: event.target.value || null })}
       />
       {error ? <FieldError id={errorId}>{error}</FieldError> : null}
+    </SettingsSection>
+  );
+});
+
+const CommentsEnabledSection = memo(function CommentsEnabledSection({
+  session,
+}: {
+  session: EditorSettingsPort;
+}) {
+  const inputId = useId();
+
+  return (
+    <SettingsSection>
+      <Inline gap="sm" justify="between">
+        <Label htmlFor={inputId}>Enable comments</Label>
+        <Switch
+          checked={session.settings.comments_enabled ?? true}
+          data-testid={settingsCommentsEnabledToggle}
+          id={inputId}
+          onCheckedChange={(next) => session.editSettings({ comments_enabled: next })}
+        />
+      </Inline>
     </SettingsSection>
   );
 });
@@ -213,6 +236,8 @@ export function PostSettingsSidebar({
     'publish-date': <MemoPublishDateSection session={session} />,
     tags: canTag ? <MemoTagsSection session={session} /> : null,
     excerpt: hasInlineExcerpt ? null : <ExcerptSection session={session} />,
+    'comments-enabled':
+      postType === 'post' && canManagePost ? <CommentsEnabledSection session={session} /> : null,
     featured: canManagePost ? <FeaturedSection postType={postType} session={session} /> : null,
     access: canManagePost ? <MemoAccessSection postType={postType} session={session} /> : null,
     authors: canCreditOthers ? (

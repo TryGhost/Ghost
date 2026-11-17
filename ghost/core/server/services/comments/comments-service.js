@@ -198,6 +198,20 @@ class CommentsService {
     }
   }
 
+  /** @private */
+  checkPostComments(postModel) {
+    const commentsEnabled =
+      typeof postModel.get === 'function'
+        ? postModel.get('comments_enabled')
+        : postModel.comments_enabled;
+
+    if (commentsEnabled === false || commentsEnabled === 0) {
+      throw new errors.NoPermissionError({
+        message: tpl(messages.cannotCommentOnPost),
+      });
+    }
+  }
+
   async #withTransaction(options, operation) {
     if (options.transacting) {
       return await operation(options);
@@ -817,6 +831,7 @@ class CommentsService {
     );
 
     this.checkPostAccess(postModel, memberModel);
+    this.checkPostComments(postModel);
 
     const commentData = {
       post_id: post,
@@ -891,6 +906,7 @@ class CommentsService {
     );
 
     this.checkPostAccess(postModel, memberModel);
+    this.checkPostComments(postModel);
 
     let inReplyToComment;
     if (parent && inReplyTo) {

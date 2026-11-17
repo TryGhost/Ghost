@@ -55,6 +55,7 @@ export const settingsMenuToggle = 'settings-menu-toggle';
 // Shared by every section that reports a failed browse.
 export const settingsLoadError = 'settings-load-error';
 export const settingsExcerptInput = 'settings-excerpt-input';
+export const settingsCommentsEnabledToggle = 'settings-comments-enabled-toggle';
 export const settingsFeaturedToggle = 'settings-featured-toggle';
 export const settingsShowTitleToggle = 'settings-show-title-toggle';
 export const settingsShowTitleWarning = 'settings-show-title-warning';

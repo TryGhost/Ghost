@@ -118,6 +118,10 @@ const post = (attrs, frame) => {
     if (fields && !fields.includes('comments')) {
       delete attrs.comments;
     }
+
+    if (fields && !fields.includes('comments_enabled')) {
+      delete attrs.comments_enabled;
+    }
   }
 
   if (columns && columns.includes('email_segment') && fields && !fields.includes('email_segment')) {
@@ -134,6 +138,10 @@ const post = (attrs, frame) => {
 
   if (attrs.type !== 'page') {
     delete attrs.show_title_and_feature_image;
+  }
+
+  if (attrs.type === 'page') {
+    delete attrs.comments_enabled;
   }
 
   delete attrs.locale;

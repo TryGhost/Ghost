@@ -19,7 +19,7 @@ module.exports = async function comments(options) {
   const commentsEnabled = settingsCache.get('comments_enabled');
   const hasAccess = !!this.access;
 
-  if (commentsEnabled === 'off' || !hasAccess) {
+  if (commentsEnabled === 'off' || !hasAccess || this.comments_enabled === false) {
     return;
   }
 

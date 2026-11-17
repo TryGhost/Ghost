@@ -147,6 +147,7 @@ module.exports = {
     plaintext: { type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true },
     feature_image: { type: 'string', maxlength: 2000, nullable: true },
     featured: { type: 'boolean', nullable: false, defaultTo: false },
+    comments_enabled: { type: 'boolean', nullable: false, defaultTo: true },
     type: {
       type: 'string',
       maxlength: 50,
