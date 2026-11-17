@@ -207,7 +207,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
         ref={ref}
         {...rest}
         className={cn(
-          'mobile-list-row group border-b border-border-default',
+          'group border-b border-border-default in-data-[admin7-mobile=true]:max-lg:border-b-border in-data-[admin7-mobile=true]:max-lg:[--table-row-hover:transparent] in-data-[admin7-mobile=true]:[@media(hover:none)]:[--table-row-hover:transparent]',
           // A light blue rather than a grey: selection is a different
           // kind of state from hover, and two greys a step apart read as
           // degrees of the same thing.
@@ -240,9 +240,9 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                 rather than the row because the link and the trailing button
                 each need to fill the row's full height to stay clickable —
                 so the row's own box has to stay flush. */}
-        <Inline align="center" className="mobile-list-end pr-4" gap="md">
+        <Inline align="center" className="pr-4 in-data-[admin7-mobile=true]:max-lg:pe-0" gap="md">
           <RowLink
-            className="mobile-list-start flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden focus-visible:ring-inset"
+            className="flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden focus-visible:ring-inset in-data-[admin7-mobile=true]:max-lg:ps-0"
             data-testid="post-list-item-link"
             offsite={linksOffsite}
             to={linksOffsite ? post.url : editorPath}

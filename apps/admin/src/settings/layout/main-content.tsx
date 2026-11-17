@@ -63,10 +63,10 @@ const MainContent: React.FC = () => {
     return (
       <Stack className="h-full min-h-0" gap="none">
         {isMobile && (
-          <SettingsHeader className="mobile-page-gutter shrink-0 px-[5vmin] pt-4 pb-2" />
+          <SettingsHeader className="shrink-0 px-[5vmin] pt-4 pb-2 in-data-[admin7-mobile=true]:max-lg:max-w-none in-data-[admin7-mobile=true]:max-lg:px-(--page-gutter)" />
         )}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain" id="settings-scroller">
-          <div className="mobile-page-gutter mx-auto max-w-5xl px-[5vmin] tablet:mt-16 xl:mt-10">
+          <div className="mx-auto max-w-5xl px-[5vmin] in-data-[admin7-mobile=true]:max-lg:max-w-none in-data-[admin7-mobile=true]:max-lg:px-(--page-gutter) tablet:mt-16 xl:mt-10">
             <Text as="h1" className="mb-[5vmin] text-4xl" leading="supertight" weight="bold">
               Settings
             </Text>
@@ -82,10 +82,12 @@ const MainContent: React.FC = () => {
   // navigation; on mobile the page carries them.
   return (
     <Stack className="h-full min-h-0" gap="none">
-      {isMobile && <SettingsHeader className="mobile-page-gutter shrink-0 px-8 pt-4 pb-2" />}
+      {isMobile && (
+        <SettingsHeader className="shrink-0 px-8 pt-4 pb-2 in-data-[admin7-mobile=true]:max-lg:max-w-none in-data-[admin7-mobile=true]:max-lg:px-(--page-gutter)" />
+      )}
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain" id="settings-scroller">
         {isMobile && (
-          <SettingsSearchStatus className="mobile-page-gutter mx-auto max-w-[760px] px-8 pt-8" />
+          <SettingsSearchStatus className="mx-auto max-w-[760px] px-8 pt-8 in-data-[admin7-mobile=true]:max-lg:max-w-none in-data-[admin7-mobile=true]:max-lg:px-(--page-gutter)" />
         )}
         <Settings />
       </div>
