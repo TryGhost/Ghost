@@ -1,6 +1,6 @@
 import moment from 'moment-timezone';
 
-import { Avatar, TableCell, TableRow } from '@tryghost/shade/components';
+import { Avatar, TableCell, TableRow, RowPrimaryAction } from '@tryghost/shade/components';
 import { type Member } from '@tryghost/admin-x-framework/api/members';
 import { buildMemberDetailPath } from '@/members/member-detail-hash';
 import { memberAvatarProps } from '@/members/member-format';
@@ -87,27 +87,29 @@ function MembersListItemName({
     <div className="flex min-w-0 items-center gap-3">
       <Avatar className="size-8 min-w-8" {...memberAvatarProps(item)} src={item.avatar_image} />
       <div className="min-w-0">
-        <Link
-          className="block min-w-0 cursor-pointer rounded-xs focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none"
-          to={buildMemberDetailPath(item.id, backPath)}
-          onClick={
-            onClick
-              ? (e) => {
-                  if (isModifiedClick(e)) {
+        <RowPrimaryAction asChild>
+          <Link
+            className="block min-w-0 cursor-pointer"
+            to={buildMemberDetailPath(item.id, backPath)}
+            onClick={
+              onClick
+                ? (e) => {
+                    if (isModifiedClick(e)) {
+                      e.stopPropagation();
+                      return;
+                    }
+                    e.preventDefault();
                     e.stopPropagation();
-                    return;
+                    onClick(item.id);
                   }
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onClick(item.id);
-                }
-              : undefined
-          }
-        >
-          <span className="block truncate text-md font-semibold">
-            {item.name || item.email || 'Anonymous'}
-          </span>
-        </Link>
+                : undefined
+            }
+          >
+            <span className="block truncate text-md font-semibold">
+              {item.name || item.email || 'Anonymous'}
+            </span>
+          </Link>
+        </RowPrimaryAction>
         {item.name && item.email && (
           <div className="truncate text-muted-foreground" data-testid="member-email">
             {item.email}
@@ -260,7 +262,7 @@ const MembersListItem = forwardRef<
     >
       <TableCell
         className={cn(
-          'min-w-0 bg-background px-4 py-3 max-sm:shade-row-end max-sm:!w-full max-sm:!min-w-0 lg:sticky lg:left-0 lg:z-20',
+          'min-w-0 bg-background px-4 py-3 group-hover:bg-table-row-hover max-sm:!w-full max-sm:!min-w-0 in-data-[admin7-design=true]:max-sm:shade-row-end lg:sticky lg:left-0 lg:z-20',
         )}
         data-row-pinned
       >
@@ -269,7 +271,7 @@ const MembersListItem = forwardRef<
           <>
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-y-px hidden w-[24px] lg:block"
+              className="pointer-events-none absolute inset-y-px hidden w-[24px] group-hover:opacity-0 lg:block"
               data-row-pinned-fade="normal"
               style={{
                 ...PINNED_EDGE_FADE_POSITION_STYLE,
@@ -279,7 +281,7 @@ const MembersListItem = forwardRef<
             />
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-y-px hidden w-[24px] opacity-0 lg:block"
+              className="pointer-events-none absolute inset-y-px hidden w-[24px] opacity-0 group-hover:opacity-100 lg:block"
               data-row-pinned-fade="highlight"
               style={{
                 ...PINNED_EDGE_FADE_POSITION_STYLE,
@@ -291,7 +293,7 @@ const MembersListItem = forwardRef<
         )}
       </TableCell>
       <TableCell
-        className="hidden px-4 py-3 sm:table-cell sm:max-lg:shade-row-end"
+        className="hidden px-4 py-3 sm:table-cell in-data-[admin7-design=true]:sm:max-lg:shade-row-end"
         style={columnStyles.status}
       >
         <MembersListItemStatus status={item.status} tiers={item.tiers} />

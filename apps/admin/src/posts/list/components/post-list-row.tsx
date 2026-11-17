@@ -3,11 +3,11 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-  rowSurface,
-  rowSurfaceClasses,
+  ActionListItem,
+  RowPrimaryAction,
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { cn, LucideIcon, useRowPress } from '@tryghost/shade/utils';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
 import { AdminLink } from '@/shared/admin-link';
 import { FadingText } from '@/shared/fading-text';
@@ -160,7 +160,6 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
       visitorCounts,
       memberCounts,
       emailSendingState,
-      className,
       // Everything else lands on the <li>: the context menu wraps each row with
       // `asChild`, so Radix hands its trigger props and ref straight through.
       ...rest
@@ -168,7 +167,6 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
     ref,
   ) {
     const [isHovered, setIsHovered] = useState(false);
-    const press = useRowPress<HTMLLIElement>(rest);
 
     const metaParts = getPostMetaParts(post, { timezone });
     const dateTooltip = getPostDateTooltip(post, { timezone });
@@ -215,12 +213,19 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
       <li
         ref={ref}
         {...rest}
-        {...press}
         className={cn(
-          rowSurface(),
           'group border-b border-border-default',
-          isSelected && 'select-none',
-          className,
+          // A light blue rather than a grey: selection is a different
+          // kind of state from hover, and two greys a step apart read as
+          // degrees of the same thing.
+          //
+          // `select-none`: a modifier-drag across rows shouldn't leave
+          // text highlighted behind the selection.
+          //
+          // Hover applies only when the row is *not* selected — a hover
+          // rule would otherwise outrank the selected background and make
+          // the row under the cursor look deselected.
+          isSelected ? 'bg-table-row-selected select-none' : 'hover:bg-table-row-hover',
         )}
         data-selected={isSelected ? 'true' : undefined}
         data-state={isSelected ? 'selected' : undefined}
@@ -236,76 +241,80 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
           setIsHovered(false);
         }}
       >
-        {/* The primary link covers the row and its outward highlight;
-            secondary controls sit above its stretched hit area. */}
-        <Inline align="center" gap="md">
-          <RowLink
-            className={cn(
-              rowSurfaceClasses.primaryAction,
-              'flex min-w-0 flex-1 items-start gap-4 py-4 no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden focus-visible:ring-inset',
-            )}
-            data-testid="post-list-item-link"
-            offsite={linksOffsite}
-            to={linksOffsite ? post.url : editorPath}
-          >
-            <FeatureImage post={post} />
-            <Stack className="min-w-0 flex-1" gap="xs">
-              <Inline align="center" gap="xs">
-                {post.featured && (
-                  <LucideIcon.Star
-                    aria-label="Featured"
-                    className="size-4 shrink-0 fill-state-warning-fill text-state-warning-fill"
-                    data-testid="post-featured"
-                  />
+        {/* `center`, not `start`: everything on the right centres
+                against the feature image.
+
+                Padding is even on all four sides. It lives on the children
+                rather than the row because the link and the trailing button
+                each need to fill the row's full height to stay clickable —
+                so the row's own box has to stay flush. */}
+        <Inline align="center" className="pr-4 in-data-[admin7-design=true]:pr-0" gap="md">
+          <RowPrimaryAction asChild>
+            <RowLink
+              className="flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden focus-visible:ring-inset in-data-[admin7-design=true]:pl-0"
+              data-testid="post-list-item-link"
+              offsite={linksOffsite}
+              to={linksOffsite ? post.url : editorPath}
+            >
+              <FeatureImage post={post} />
+              <Stack className="min-w-0 flex-1" gap="xs">
+                <Inline align="center" gap="xs">
+                  {post.featured && (
+                    <LucideIcon.Star
+                      aria-label="Featured"
+                      className="size-4 shrink-0 fill-state-warning-fill text-state-warning-fill"
+                      data-testid="post-featured"
+                    />
+                  )}
+                  <Text as="h3" className="truncate tracking-normal" weight="semibold">
+                    {post.title}
+                  </Text>
+                </Inline>
+
+                {metaParts.length > 0 && (
+                  // Joined from parts so a missing piece takes its
+                  // separator with it — no dangling " – date".
+                  //
+                  // Truncated like the title above it. Left to wrap,
+                  // a long author-and-tag line runs to three lines on
+                  // a narrow window and drives the row's height,
+                  // which reads as the metrics squashing it.
+                  <Text className="truncate" size="sm" title={dateTooltip} tone="secondary">
+                    {metaParts.join(' - ')}
+                  </Text>
                 )}
-                <Text as="h3" className="truncate tracking-normal" weight="semibold">
-                  {post.title}
-                </Text>
-              </Inline>
 
-              {metaParts.length > 0 && (
-                // Joined from parts so a missing piece takes its
-                // separator with it — no dangling " – date".
-                //
-                // Truncated like the title above it. Left to wrap,
-                // a long author-and-tag line runs to three lines on
-                // a narrow window and drives the row's height,
-                // which reads as the metrics squashing it.
-                <Text className="truncate" size="sm" title={dateTooltip} tone="secondary">
-                  {metaParts.join(' - ')}
-                </Text>
-              )}
-
-              {emailSendingState.status === 'sending' ? (
-                <EmailSendingStatusLine
-                  announce={false}
-                  className="text-sm"
-                  line={emailSendingState.line}
-                />
-              ) : (
-                <Text
-                  className={statusTone(displayedPost, displayedIsFailed)}
-                  size="sm"
-                  weight={
-                    displayedIsFailed || post.status === 'draft' || post.status === 'scheduled'
-                      ? 'medium'
-                      : 'regular'
-                  }
-                >
-                  {displayedStatusLabel}
-                  {/* Mounted only while hovered, fading in and out. A CSS
+                {emailSendingState.status === 'sending' ? (
+                  <EmailSendingStatusLine
+                    announce={false}
+                    className="text-sm"
+                    line={emailSendingState.line}
+                  />
+                ) : (
+                  <Text
+                    className={statusTone(displayedPost, displayedIsFailed)}
+                    size="sm"
+                    weight={
+                      displayedIsFailed || post.status === 'draft' || post.status === 'scheduled'
+                        ? 'medium'
+                        : 'regular'
+                    }
+                  >
+                    {displayedStatusLabel}
+                    {/* Mounted only while hovered, fading in and out. A CSS
                                   opacity fade alone would keep it in the DOM, so a screen
                                   reader would read every row's full dispatch details
                                   aloud, always. */}
-                  {emailSendingState.status !== 'failed' && statusDetail && (
-                    <FadingText show={isHovered}> {statusDetail}</FadingText>
-                  )}
-                </Text>
-              )}
-            </Stack>
-          </RowLink>
+                    {emailSendingState.status !== 'failed' && statusDetail && (
+                      <FadingText show={isHovered}> {statusDetail}</FadingText>
+                    )}
+                  </Text>
+                )}
+              </Stack>
+            </RowLink>
+          </RowPrimaryAction>
           <PostMetricsCells
-            className="relative z-10 py-4"
+            className="py-4 in-data-[admin7-design=true]:relative in-data-[admin7-design=true]:z-10"
             hideEmailMetrics={emailSendingState.status === 'sending'}
             memberCounts={memberCounts}
             paidMembersEnabled={paidMembersEnabled}
@@ -326,7 +335,8 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                 // Margin rather than a wider row gap, which would push the
                 // title away from the metrics too.
                 className={cn(
-                  'relative z-10 my-4 shrink-0',
+                  'my-4 shrink-0',
+                  'in-data-[admin7-design=true]:relative in-data-[admin7-design=true]:z-10',
                   'ms-8',
                   'text-muted-foreground hover:bg-background hover:text-foreground',
                   isHovered && 'bg-background',
@@ -360,7 +370,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
         onAction={menuOnAction ?? (() => {})}
         onOpenChange={menuOnOpenChange ?? (() => {})}
       >
-        {row}
+        <ActionListItem asChild>{row}</ActionListItem>
       </PostsContextMenu>
     );
   },

@@ -5,7 +5,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  rowSurfaceClasses,
+  RowPrimaryAction,
 } from '@tryghost/shade/components';
 import {
   LoadMoreButton,
@@ -16,6 +16,7 @@ import { cn, formatNumber } from '@tryghost/shade/utils';
 import type { Tag } from '@tryghost/admin-x-framework/api/tags';
 import { forwardRef, useRef } from 'react';
 import { AdminLink } from '@/shared/admin-link';
+import { useShade } from '@tryghost/shade/app';
 
 const SpacerRow = ({ height }: { height: number }) => (
   <tr aria-hidden="true" className="flex lg:table-row">
@@ -52,6 +53,7 @@ function TagsList({
   isFetchingNextPage?: boolean;
   fetchNextPage: () => void;
 }) {
+  const { admin7Design } = useShade();
   const parentRef = useRef<HTMLDivElement>(null);
   const { visibleItemCount, canLoadMore, loadMore } = useVirtualListWindow(totalItems);
   const { visibleItems, spaceBefore, spaceAfter } = useInfiniteVirtualScroll({
@@ -64,7 +66,7 @@ function TagsList({
   });
 
   return (
-    <div ref={parentRef}>
+    <div ref={parentRef} className={admin7Design ? undefined : 'overflow-hidden'}>
       <Table className="flex table-fixed flex-col lg:table" data-testid="tags-list">
         <TableHeader className="hidden lg:visible! lg:table-header-group!">
           <TableRow>
@@ -87,49 +89,26 @@ function TagsList({
                 key={key}
                 {...props}
                 className={cn(
-                  'group grid w-full items-center gap-x-4 py-2 lg:table-row lg:p-0',
+                  'group grid w-full items-center gap-x-4 p-2 in-data-[admin7-design=true]:px-0 lg:table-row lg:p-0',
                   'grid-cols-1 md:grid-cols-[1fr_auto]',
                 )}
                 data-testid="tag-list-row"
-                interactive
-                onAuxClick={(event) => {
-                  if (
-                    event.button !== 1 ||
-                    !(event.target instanceof Element) ||
-                    event.target.closest('a, button, input, select, textarea')
-                  ) {
-                    return;
-                  }
-                  const link = event.currentTarget.querySelector('a');
-                  if (link) {
-                    event.preventDefault();
-                    window.open(link.href, '_blank', 'noopener');
-                  }
-                }}
-                onClick={(event) => {
-                  if (
-                    event.defaultPrevented ||
-                    !(event.target instanceof Element) ||
-                    event.target.closest('a, button, input, select, textarea')
-                  ) {
-                    return;
-                  }
-                  const link = event.currentTarget.querySelector('a');
-                  if (event.metaKey || event.ctrlKey || event.shiftKey) {
-                    if (link) {
-                      window.open(link.href, '_blank', 'noopener');
-                    }
-                  } else {
-                    link?.click();
-                  }
-                }}
               >
-                <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 lg:table-cell lg:w-1/2 lg:p-4 xl:w-3/5">
-                  <AdminLink className={rowSurfaceClasses.primaryAction} to={`/tags/${item.slug}`}>
-                    <span className="block truncate text-base text-md font-semibold">
-                      {item.name}
-                    </span>
-                  </AdminLink>
+                <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 in-data-[admin7-design=true]:relative md:relative lg:table-cell lg:w-1/2 lg:p-4 xl:w-3/5">
+                  <RowPrimaryAction asChild>
+                    <AdminLink
+                      className={
+                        admin7Design
+                          ? undefined
+                          : 'before:absolute before:top-0 before:left-0 before:z-10 before:h-full before:w-[100vw]'
+                      }
+                      to={`/tags/${item.slug}`}
+                    >
+                      <span className="block truncate text-base text-md font-semibold">
+                        {item.name}
+                      </span>
+                    </AdminLink>
+                  </RowPrimaryAction>
                   <span className="block truncate text-muted-foreground">{item.description}</span>
                 </TableCell>
                 <TableCell className="col-start-1 col-end-1 row-start-2 row-end-2 flex p-0 lg:table-cell lg:p-4">
@@ -138,7 +117,7 @@ function TagsList({
                 <TableCell className="col-start-1 col-end-1 row-start-3 row-end-3 flex p-0 md:col-start-2 md:col-end-2 md:row-start-1 md:row-end-3 lg:table-cell lg:p-4">
                   {item.count?.posts ? (
                     <a
-                      className="relative z-10 -my-4 inline-block py-4 hover:underline"
+                      className="relative z-10 -m-4 inline-block p-4 hover:underline in-data-[admin7-design=true]:mx-0 in-data-[admin7-design=true]:px-0"
                       href={`#/posts?tag=${item.slug}`}
                     >
                       {`${formatNumber(item.count?.posts)}  ${item.count?.posts === 1 ? 'post' : 'posts'}`}

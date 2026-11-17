@@ -20,11 +20,11 @@ import {
   PopoverAnchor,
   Textarea,
   tokenFieldClasses,
-  rowSurface,
-  rowSurfaceClasses,
+  ActionListItem,
+  RowPrimaryAction,
 } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
-import { LucideIcon, cn, useRowPress } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import {
   buildCustomFieldSavePayload,
   customFieldSave,
@@ -695,22 +695,6 @@ const CustomFieldValue: React.FC<{ field: MemberCustomField; stored: unknown }> 
   });
 };
 
-function CustomFieldRow({ children, disabled }: { children: React.ReactNode; disabled?: boolean }) {
-  const press = useRowPress<HTMLLIElement>({}, !disabled);
-
-  return (
-    <li
-      className={cn(
-        rowSurface(disabled ? 'static' : 'interactive'),
-        'border-b border-border last:border-b-0',
-      )}
-      {...press}
-    >
-      {children}
-    </li>
-  );
-}
-
 /**
  * The Custom fields section of the member detail screen: a read-only list of
  * the member's values, one row per field defined in Settings. This screen is
@@ -768,51 +752,77 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
               const stored = metafields?.[field.namespace]?.[field.key];
               // Null rather than an empty line, so an unset value has no value in the label.
               const display = formatMemberCustomFieldValue(field, stored) || null;
-              return (
-                <CustomFieldRow key={field.key} disabled={disabled}>
+              const row = (
+                // Dividers fade around the hovered row (its own border-b, and the
+                // previous row's via :has), so the hover tint floats free of the
+                // lines — the same effect as the settings list rows.
+                <li
+                  className={
+                    admin7Design
+                      ? 'border-b border-border last:border-b-0'
+                      : 'border-b border-border transition-colors last:border-b-0 hover:border-b-transparent [&:has(+li:hover)]:border-b-transparent'
+                  }
+                >
                   {/* The whole row opens the editor (the tags list pattern);
                                         the pencil is a hover/focus-revealed affordance, not the
                                         control itself. */}
-                  <button
-                    // An explicit label overrides the inner spans as the accessible
-                    // name, so carry the value into it — otherwise a screen reader
-                    // announces only the field name and never its current value.
-                    aria-label={display ? `Edit ${field.name}: ${display}` : `Edit ${field.name}`}
-                    className={cn(
-                      rowSurfaceClasses.primaryAction,
-                      'group flex w-full items-center justify-between gap-4 py-3 text-left focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50 in-data-[admin7-design=true]:py-4',
-                    )}
-                    disabled={disabled}
-                    type="button"
-                    onClick={() => {
-                      // A drag-selection released over the row still fires a
-                      // click; copying a value is as legitimate as editing it,
-                      // so an active selection must not open the editor.
-                      if (window.getSelection()?.toString()) {
-                        return;
+                  <RowPrimaryAction asChild>
+                    <button
+                      // An explicit label overrides the inner spans as the accessible
+                      // name, so carry the value into it — otherwise a screen reader
+                      // announces only the field name and never its current value.
+                      aria-label={display ? `Edit ${field.name}: ${display}` : `Edit ${field.name}`}
+                      // -mx/px + calc width: the hover tint bleeds past the text
+                      // column like the settings rows, while the row text (and the
+                      // li dividers) stay aligned with the rest of the card.
+                      className={
+                        admin7Design
+                          ? 'group flex w-full items-center justify-between gap-4 py-4 text-left disabled:cursor-not-allowed disabled:opacity-50'
+                          : 'group -mx-3 flex w-[calc(100%+--spacing(6))] items-center justify-between gap-4 rounded-md p-3 text-left transition-colors hover:bg-table-row-hover disabled:cursor-not-allowed disabled:opacity-50 in-data-[admin7-design=true]:py-4'
                       }
-                      setEditingField(field);
-                    }}
-                  >
-                    <span className="relative z-10 min-w-0">
-                      <span className="block text-sm text-muted-foreground in-data-[admin7-design=true]:text-base">
-                        {field.name}
+                      disabled={disabled}
+                      type="button"
+                      onClick={() => {
+                        // A drag-selection released over the row still fires a
+                        // click; copying a value is as legitimate as editing it,
+                        // so an active selection must not open the editor.
+                        if (window.getSelection()?.toString()) {
+                          return;
+                        }
+                        setEditingField(field);
+                      }}
+                    >
+                      <span className="min-w-0 in-data-[admin7-design=true]:relative in-data-[admin7-design=true]:z-10">
+                        <span className="block text-sm text-muted-foreground in-data-[admin7-design=true]:text-base">
+                          {field.name}
+                        </span>
+                        <CustomFieldValue field={field} stored={stored} />
                       </span>
-                      <CustomFieldValue field={field} stored={stored} />
-                    </span>
-                    <LucideIcon.Pen
-                      aria-hidden="true"
-                      className="shrink-0 text-muted-foreground opacity-0 transition-all group-hover:opacity-100 group-focus-visible:opacity-100"
-                      size={16}
-                    />
-                  </button>
-                </CustomFieldRow>
+                      <LucideIcon.Pen
+                        aria-hidden="true"
+                        className="shrink-0 text-muted-foreground opacity-0 transition-all group-hover:opacity-100 group-focus-visible:opacity-100"
+                        size={16}
+                      />
+                    </button>
+                  </RowPrimaryAction>
+                </li>
+              );
+              return (
+                <ActionListItem key={field.key} hover={disabled ? false : undefined} asChild>
+                  {row}
+                </ActionListItem>
               );
             })}
           </ul>
-          {/* The footer divider belongs to the card, outside the body-row separators. */}
+          {/* The divider fades with the last row's hover, as the lines between rows do. */}
           {isTruncated && (
-            <div className="border-t border-border pt-3">
+            <div
+              className={
+                admin7Design
+                  ? 'border-t border-border pt-3'
+                  : 'border-t border-border pt-3 transition-colors [ul:has(>li:last-child:hover)+&]:border-t-transparent'
+              }
+            >
               <Button size="sm" type="button" variant="outline" onClick={() => setShowAll(true)}>
                 Show all
               </Button>

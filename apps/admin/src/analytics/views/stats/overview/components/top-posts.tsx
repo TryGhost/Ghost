@@ -1,6 +1,6 @@
 import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
-import { AdminLink } from '@/shared/admin-link';
 import React from 'react';
+import { useShade } from '@tryghost/shade/app';
 import {
   Card,
   CardContent,
@@ -9,23 +9,21 @@ import {
   CardTitle,
   EmptyIndicator,
   SkeletonTable,
-  rowSurface,
-  rowSurfaceClasses,
+  ActionListItem,
+  RowPrimaryAction,
 } from '@tryghost/shade/components';
 import {
   LucideIcon,
   abbreviateNumber,
   formatDisplayDate,
   formatNumber,
-  cn,
-  useRowPress,
 } from '@tryghost/shade/utils';
 import { type TopPostViewsStats } from '@tryghost/admin-x-framework/api/stats';
 import { getPeriodText } from '@/shared/analytics/chart-helpers';
 import { getPostDestination } from '@/analytics/utils/url-helpers';
 import { getPostStatusText } from '@tryghost/admin-x-framework/utils/post-utils';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
-import { useLocation } from '@tryghost/admin-x-framework';
+import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { editorReturnState } from '@/editor/api';
 import {
   useEmailTrackClicks,
@@ -81,23 +79,9 @@ interface TopPostsProps {
   isLoading: boolean;
 }
 
-function TopPostRow({ children }: { children: React.ReactNode }) {
-  const press = useRowPress<HTMLDivElement>();
-
-  return (
-    <div
-      className={cn(
-        rowSurface(),
-        'group flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 first:border-border md:items-center',
-      )}
-      {...press}
-    >
-      {children}
-    </div>
-  );
-}
-
 const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
+  const { admin7Design } = useShade();
+  const navigate = useNavigate();
   const location = useLocation();
   const { range } = useAnalytics();
   const { settings } = useAnalyticsData();
@@ -112,7 +96,7 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
   const showOpenTracking = useEmailTrackOpens() ?? false;
 
   const metricClass =
-    'flex items-center justify-end gap-1 rounded-md px-2 py-1 font-mono text-muted-foreground hover:bg-interactive-hover group-hover:text-foreground';
+    'flex items-center justify-end gap-1 rounded-md px-2 py-1 font-mono text-gray-800 hover:bg-muted-foreground/10 group-hover:text-foreground';
 
   return (
     <Card className="group/card w-full lg:col-span-2" data-testid="top-posts-card">
@@ -128,61 +112,73 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
         ) : (
           <>
             {topPostsData?.stats?.map((post: TopPostViewsStats) => {
-              const destination = getPostDestination({
-                postId: post.post_id,
-                hasEmailData: post.sent_count !== null,
-                analytics: {
-                  webAnalytics: showWebAnalytics,
-                  membersTrackSources,
-                },
-              });
-              const opensEditor = destination.startsWith('/editor/');
-
-              return (
-                <TopPostRow key={post.post_id}>
-                  <AdminLink
-                    className={cn(
-                      rowSurfaceClasses.primaryAction,
-                      'flex min-w-[160px] grow items-start gap-4 no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden md:items-center lg:min-w-[320px]',
-                    )}
-                    state={
-                      opensEditor
-                        ? editorReturnState(`${location.pathname}${location.search}`)
-                        : undefined
-                    }
-                    to={destination}
-                  >
-                    {post.feature_image ? (
-                      <div
-                        className="hidden aspect-[16/10] w-[80px] shrink-0 rounded-sm bg-cover bg-center sm:visible! sm:block! lg:w-[100px]"
-                        style={{
-                          backgroundImage: `url(${post.feature_image})`,
-                        }}
-                      ></div>
-                    ) : (
-                      <FeatureImagePlaceholder className="hidden aspect-[16/10] w-[80px] shrink-0 group-hover:bg-muted-foreground/10 sm:visible! sm:flex! lg:w-[100px]" />
-                    )}
-                    <div className="flex flex-col gap-0.5">
-                      {/* wrap-anywhere, not break-words: a title can be one unbroken
+              const row = (
+                <div
+                  className={
+                    admin7Design
+                      ? 'group flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 first:border-border md:items-center'
+                      : 'group relative flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 before:absolute before:-inset-x-4 before:inset-y-0 before:z-0 before:hidden before:rounded-md before:bg-table-row-hover before:content-[""] first:border-border! hover:cursor-pointer hover:border-transparent hover:before:block md:items-center [&+div]:hover:border-transparent'
+                  }
+                >
+                  <RowPrimaryAction asChild>
+                    <div
+                      className="z-10 flex min-w-[160px] grow items-start gap-4 md:items-center lg:min-w-[320px]"
+                      onClick={() => {
+                        const destination = getPostDestination({
+                          postId: post.post_id,
+                          hasEmailData: post.sent_count !== null,
+                          analytics: {
+                            webAnalytics: showWebAnalytics,
+                            membersTrackSources,
+                          },
+                        });
+                        const opensEditor = destination.startsWith('/editor/');
+                        navigate(destination, {
+                          state: opensEditor
+                            ? editorReturnState(`${location.pathname}${location.search}`)
+                            : undefined,
+                        });
+                      }}
+                    >
+                      {post.feature_image ? (
+                        <div
+                          className="hidden aspect-[16/10] w-[80px] shrink-0 rounded-sm bg-cover bg-center sm:visible! sm:block! lg:w-[100px]"
+                          style={{
+                            backgroundImage: `url(${post.feature_image})`,
+                          }}
+                        ></div>
+                      ) : (
+                        <FeatureImagePlaceholder className="hidden aspect-[16/10] w-[80px] shrink-0 group-hover:bg-muted-foreground/10 sm:visible! sm:flex! lg:w-[100px]" />
+                      )}
+                      <div className="flex flex-col gap-0.5">
+                        {/* wrap-anywhere, not break-words: a title can be one unbroken
                           word wider than the column, and only `anywhere` also shrinks
                           the intrinsic width the layout reserves for it. */}
-                      <span className="line-clamp-2 text-md font-semibold wrap-anywhere">
-                        {post.title}
-                      </span>
-                      <span className="text text-muted-foreground">
-                        By {post.authors} &ndash;{' '}
-                        {formatDisplayDate(post.published_at, siteTimezone)}
-                      </span>
-                      <span className="text text-muted-foreground">{getPostStatusText(post)}</span>
+                        <span className="line-clamp-2 text-md font-semibold wrap-anywhere">
+                          {post.title}
+                        </span>
+                        <span className="text text-muted-foreground">
+                          By {post.authors} &ndash;{' '}
+                          {formatDisplayDate(post.published_at, siteTimezone)}
+                        </span>
+                        <span className="text text-muted-foreground">
+                          {getPostStatusText(post)}
+                        </span>
+                      </div>
                     </div>
-                  </AdminLink>
-                  <div className="relative z-10 flex flex-col items-end justify-center gap-0.5 text-sm md:flex-row md:items-center md:justify-end md:gap-3">
+                  </RowPrimaryAction>
+                  <div
+                    className="z-10 flex flex-col items-end justify-center gap-0.5 text-sm md:flex-row md:items-center md:justify-end md:gap-3"
+                    data-row-secondary
+                  >
                     {showWebAnalytics && (
-                      <AdminLink
-                        aria-label={`Web traffic for ${post.title}`}
-                        className="group/tooltip relative flex w-[66px] no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden lg:w-[92px]"
+                      <div
+                        className="group/tooltip relative flex w-[66px] lg:w-[92px]"
                         data-testid="statistics-visitors"
-                        to={`/posts/analytics/${post.post_id}/web`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/posts/analytics/${post.post_id}/web`);
+                        }}
                       >
                         <PostListTooltip
                           metrics={[
@@ -208,13 +204,15 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                           />
                           {abbreviateNumber(post.views)}
                         </div>
-                      </AdminLink>
+                      </div>
                     )}
                     {post.sent_count !== null && (
-                      <AdminLink
-                        aria-label={`Newsletter performance for ${post.title}`}
-                        className="group/tooltip relative flex w-[66px] no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden lg:w-[92px]"
-                        to={`/posts/analytics/${post.post_id}/newsletter`}
+                      <div
+                        className="group/tooltip relative flex w-[66px] lg:w-[92px]"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/posts/analytics/${post.post_id}/newsletter`);
+                        }}
                       >
                         <PostListTooltip
                           metrics={[
@@ -277,9 +275,7 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                                     size={16}
                                     strokeWidth={1.5}
                                   />
-                                  {post.open_rate
-                                    ? `${formatNumber(Math.round(post.open_rate))}%`
-                                    : '0%'}
+                                  {post.open_rate ? `${Math.round(post.open_rate)}%` : '0%'}
                                 </>
                               );
                             } else if (showClickTracking) {
@@ -291,9 +287,7 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                                     size={16}
                                     strokeWidth={1.5}
                                   />
-                                  {post.click_rate
-                                    ? `${formatNumber(Math.round(post.click_rate))}%`
-                                    : '0%'}
+                                  {post.click_rate ? `${Math.round(post.click_rate)}%` : '0%'}
                                 </>
                               );
                             } else {
@@ -311,14 +305,16 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                             }
                           })()}
                         </div>
-                      </AdminLink>
+                      </div>
                     )}
                     {membersTrackSources && (
-                      <AdminLink
-                        aria-label={`New members for ${post.title}`}
-                        className="group/tooltip relative flex w-[66px] no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden lg:w-[92px]"
+                      <div
+                        className="group/tooltip relative flex w-[66px] lg:w-[92px]"
                         data-testid="statistics-members"
-                        to={`/posts/analytics/${post.post_id}/growth`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/posts/analytics/${post.post_id}/growth`);
+                        }}
                       >
                         <PostListTooltip
                           metrics={[
@@ -364,10 +360,15 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                           />
                           {post.members > 0 ? `+${formatNumber(post.members)}` : '0'}
                         </div>
-                      </AdminLink>
+                      </div>
                     )}
                   </div>
-                </TopPostRow>
+                </div>
+              );
+              return (
+                <ActionListItem key={post.post_id} asChild>
+                  {row}
+                </ActionListItem>
               );
             })}
             {(!topPostsData?.stats || topPostsData.stats.length === 0) && (

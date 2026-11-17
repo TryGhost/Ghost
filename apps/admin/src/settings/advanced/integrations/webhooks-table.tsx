@@ -1,4 +1,5 @@
 import WebhookModal from './webhook-modal';
+import { useShade } from '@tryghost/shade/app';
 import { useState } from 'react';
 import {
   Button,
@@ -10,6 +11,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  RowPrimaryAction,
 } from '@tryghost/shade/components';
 import { Inline, Stack } from '@tryghost/shade/primitives';
 import { type Integration } from '@tryghost/admin-x-framework/api/integrations';
@@ -21,6 +23,8 @@ import { type Webhook, useDeleteWebhook } from '@tryghost/admin-x-framework/api/
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 
 const WebhooksTable: React.FC<{ integration: Integration }> = ({ integration }) => {
+  const { admin7Design } = useShade();
+  const WebhookName = admin7Design ? 'button' : 'div';
   const { mutateAsync: deleteWebhook } = useDeleteWebhook();
   const handleError = useHandleError();
   const { confirm } = useConfirmation();
@@ -110,21 +114,19 @@ const WebhooksTable: React.FC<{ integration: Integration }> = ({ integration }) 
             <TableRow
               key={webhook.id}
               className="cursor-pointer"
-              onClick={(event) => {
-                if (event.target instanceof Element && event.target.closest('button, a')) {
-                  return;
-                }
-                setEditingWebhook(webhook);
-              }}
+              onClick={() => setEditingWebhook(webhook)}
             >
               <TableCell className="w-3/4 py-3 pr-6">
-                <button
-                  className="rounded-xs text-left font-semibold focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none"
-                  type="button"
-                  onClick={() => setEditingWebhook(webhook)}
-                >
-                  {webhook.name}
-                </button>
+                <RowPrimaryAction asChild>
+                  <WebhookName
+                    className="font-semibold"
+                    {...(admin7Design
+                      ? { type: 'button' as const, onClick: () => setEditingWebhook(webhook) }
+                      : {})}
+                  >
+                    {webhook.name}
+                  </WebhookName>
+                </RowPrimaryAction>
                 <div className="mt-1 grid grid-cols-[max-content_1fr] gap-1 text-sm leading-snug">
                   <span className="text-muted-foreground">Event:</span>
                   <span>{getWebhookEventLabel(webhook.event)}</span>

@@ -23,6 +23,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  RowPrimaryAction,
 } from '@tryghost/shade/components';
 import {
   LucideIcon,
@@ -120,34 +121,22 @@ const NewsletterTableRows: React.FC<{
     return sortedStats.length > 0 ? (
       <>
         {sortedStats.map((post) => (
-          <TableRow
-            key={post.post_id}
-            className="last:border-none [&>td]:py-2.5"
-            interactive={!!post.post_id}
-            onClick={
-              post.post_id
-                ? (event) => {
-                    if (event.target instanceof Element && event.target.closest('button, a')) {
-                      return;
-                    }
-                    navigate(`/posts/analytics/${post.post_id}/`);
-                  }
-                : undefined
-            }
-          >
+          <TableRow key={post.post_id} className="last:border-none [&>td]:py-2.5">
             <TableCell className="font-medium">
               <div className="group/link inline-flex items-center gap-2">
                 {post.post_id ? (
-                  <Button
-                    className="h-auto p-0 text-left whitespace-normal hover:underline!"
-                    title="View post analytics"
-                    variant="link"
-                    onClick={() => {
-                      navigate(`/posts/analytics/${post.post_id}/`);
-                    }}
-                  >
-                    {post.post_title}
-                  </Button>
+                  <RowPrimaryAction asChild>
+                    <Button
+                      className="h-auto p-0 text-left whitespace-normal hover:underline!"
+                      title="View post analytics"
+                      variant="link"
+                      onClick={() => {
+                        navigate(`/posts/analytics/${post.post_id}/`);
+                      }}
+                    >
+                      {post.post_title}
+                    </Button>
+                  </RowPrimaryAction>
                 ) : (
                   <>{post.post_title}</>
                 )}

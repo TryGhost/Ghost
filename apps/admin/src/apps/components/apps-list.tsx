@@ -12,6 +12,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  RowPrimaryAction,
 } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
@@ -38,7 +39,7 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall, pins })
           return (
             <TableRow
               key={id}
-              className="cursor-pointer"
+              className="cursor-pointer hover:bg-table-row-hover"
               data-testid="apps-list-row"
               onAuxClick={openRowLinkInNewTab}
               onClick={openRowLink}
@@ -51,12 +52,11 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall, pins })
                   <AppIcon app={installation} size="lg" />
                   <span className="min-w-0">
                     <Inline gap="xs">
-                      <Link
-                        className="rounded-xs text-md font-semibold focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none"
-                        to={appRoute(id)}
-                      >
-                        {manifest.name}
-                      </Link>
+                      <RowPrimaryAction asChild>
+                        <Link className="text-md font-semibold" to={appRoute(id)}>
+                          {manifest.name}
+                        </Link>
+                      </RowPrimaryAction>
                       {manifest.development && <Badge variant="secondary">Development</Badge>}
                       {status === 'suspended' && (
                         <Badge data-testid="app-needs-approval-badge" variant="warning">
