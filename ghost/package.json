@@ -338,27 +338,46 @@
         ]
       },
       "test:e2e": {
+        "cache": true,
         "dependsOn": [
           "build:assets",
           "^build"
+        ],
+        "inputs": [
+          "dbTests",
+          "^default"
         ]
       },
       "test:integration": {
+        "cache": true,
         "dependsOn": [
           "build:assets",
           "^build"
+        ],
+        "inputs": [
+          "dbTests",
+          "^default"
         ]
       },
       "test:legacy": {
+        "cache": true,
         "dependsOn": [
           "build:assets",
           "^build"
+        ],
+        "inputs": [
+          "dbTests",
+          "^default"
         ]
       },
       "test:ci:e2e": {
         "dependsOn": [
           "build:assets",
           "^build"
+        ],
+        "inputs": [
+          "dbTests",
+          "^default"
         ],
         "outputs": [
           "{projectRoot}/coverage-e2e/cobertura-coverage.xml"
@@ -368,6 +387,10 @@
         "dependsOn": [
           "build:assets",
           "^build"
+        ],
+        "inputs": [
+          "dbTests",
+          "^default"
         ],
         "outputs": [
           "{projectRoot}/coverage-integration/cobertura-coverage.xml"
