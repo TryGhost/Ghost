@@ -123,101 +123,174 @@ describe('Webhook delivery', function () {
       sinon.stub(logging, 'info');
     });
 
-    describe('using @tryghost/request (allowWebhookInternalIPs: true)', function () {
-      beforeEach(function () {
-        configUtils.set('security:allowWebhookInternalIPs', true);
-        setupWebhookModel();
-      });
+    // Each transport is exercised as Ghost runs it outside tests, where failed deliveries are
+    // retried, and as it runs under test, where they are not.
+    const transports = [
+      {
+        name: '@tryghost/request (allowWebhookInternalIPs: true)',
+        configure() {
+          configUtils.set('security:allowWebhookInternalIPs', true);
+        },
+        // @tryghost/request reads the environment on each request.
+        loadOutsideTests: () => require('@tryghost/request'),
+        // request-external replaces the timeout with its own under test.
+        keepsTimeoutUnderTests: true,
+      },
+      {
+        name: 'request-external (allowWebhookInternalIPs: false)',
+        configure() {
+          configUtils.set('security:allowWebhookInternalIPs', false);
+          configUtils.set('env', 'development'); // bypass IP validation in request-external
+        },
+        // request-external reads the environment once, when it's loaded.
+        loadOutsideTests: () => loadOutsideTests('../../../core/server/lib/request-external'),
+        keepsTimeoutUnderTests: false,
+      },
+    ];
 
-      it('destroys the webhook when the target answers 410', async function () {
-        deliveryTo(WEBHOOK_PATH).reply(410);
-        const trigger = new WebhookTrigger({ models, payload, limitService });
+    for (const transport of transports) {
+      describe(`using ${transport.name}`, function () {
+        beforeEach(function () {
+          transport.configure();
+          setupWebhookModel();
+        });
 
-        await trigger.trigger(WEBHOOK_EVENT, {});
+        it('destroys the webhook when the target answers 410', async function () {
+          deliveryTo(WEBHOOK_PATH).reply(410);
+          const trigger = new WebhookTrigger({ models, payload, limitService });
 
-        sinon.assert.calledOnceWithExactly(
-          models.Webhook.destroy,
-          { id: 'webhook-test-id' },
-          { context: { internal: true } },
-        );
-        sinon.assert.notCalled(models.Webhook.edit);
-      });
-
-      it('records the status of an error response', async function () {
-        deliveryTo(WEBHOOK_PATH).reply(500);
-        const trigger = new WebhookTrigger({ models, payload, limitService });
-
-        await trigger.trigger(WEBHOOK_EVENT, {});
-
-        sinon.assert.notCalled(models.Webhook.destroy);
-        sinon.assert.calledOnce(models.Webhook.edit);
-        const [data] = models.Webhook.edit.args[0];
-        assert.equal(data.last_triggered_status, 500);
-        assert.equal(data.last_triggered_error, 'Request failed: ERR_NON_2XX_3XX_RESPONSE');
-      });
-
-      it('gives up on a target slower than two seconds', async function () {
-        deliveryTo(WEBHOOK_PATH).delay(2500).reply(200);
-        const trigger = new WebhookTrigger({ models, payload, limitService });
-
-        await trigger.trigger(WEBHOOK_EVENT, {});
-
-        const [data] = models.Webhook.edit.args[0];
-        assert.equal(data.last_triggered_status, undefined);
-        assert.equal(data.last_triggered_error, 'Request failed: ETIMEDOUT');
-      });
-
-      it('does not retry a POST outside the test environment, despite the retry limit', async function () {
-        deliveryTo(WEBHOOK_PATH).reply(503);
-        const retry = deliveryTo(WEBHOOK_PATH).reply(200);
-        const trigger = new WebhookTrigger({ models, payload, limitService });
-        const environment = process.env.NODE_ENV;
-        process.env.NODE_ENV = 'production';
-        try {
           await trigger.trigger(WEBHOOK_EVENT, {});
-        } finally {
-          process.env.NODE_ENV = environment;
-        }
 
-        assert.equal(retry.isDone(), false);
-        const [data] = models.Webhook.edit.args[0];
-        assert.equal(data.last_triggered_status, 503);
+          sinon.assert.calledOnceWithExactly(
+            models.Webhook.destroy,
+            { id: 'webhook-test-id' },
+            { context: { internal: true } },
+          );
+          sinon.assert.notCalled(models.Webhook.edit);
+        });
+
+        it('records the status of an error response', async function () {
+          deliveryTo(WEBHOOK_PATH).reply(500);
+          const trigger = new WebhookTrigger({ models, payload, limitService });
+
+          await trigger.trigger(WEBHOOK_EVENT, {});
+
+          sinon.assert.notCalled(models.Webhook.destroy);
+          sinon.assert.calledOnce(models.Webhook.edit);
+          const [data] = models.Webhook.edit.args[0];
+          assert.equal(data.last_triggered_status, 500);
+          assert.equal(data.last_triggered_error, 'Request failed: ERR_NON_2XX_3XX_RESPONSE');
+        });
+
+        it.runIf(transport.keepsTimeoutUnderTests)(
+          'gives up on a target slower than two seconds',
+          async function () {
+            deliveryTo(WEBHOOK_PATH).delay(2500).reply(200);
+            const trigger = new WebhookTrigger({ models, payload, limitService });
+
+            await trigger.trigger(WEBHOOK_EVENT, {});
+
+            const [data] = models.Webhook.edit.args[0];
+            assert.equal(data.last_triggered_status, undefined);
+            assert.equal(data.last_triggered_error, 'Request failed: ETIMEDOUT');
+          },
+        );
+
+        describe('outside the test environment', function () {
+          async function triggerOutsideTests() {
+            const trigger = new WebhookTrigger({
+              models,
+              payload,
+              limitService,
+              request: transport.loadOutsideTests(),
+            });
+            await withEnvironment('production', () => trigger.trigger(WEBHOOK_EVENT, {}));
+          }
+
+          it('retries an error response the target may recover from', async function () {
+            deliveryTo(WEBHOOK_PATH).reply(503);
+            const retry = deliveryTo(WEBHOOK_PATH).reply(200);
+
+            await triggerOutsideTests();
+
+            assert.ok(retry.isDone(), 'Expected the failed delivery to be retried');
+            sinon.assert.calledOnce(models.Webhook.edit);
+            assert.equal(models.Webhook.edit.args[0][0].last_triggered_status, 200);
+          });
+
+          it('retries a delivery the connection failed for', async function () {
+            deliveryTo(WEBHOOK_PATH).replyWithError({
+              code: 'ECONNRESET',
+              message: 'socket hang up',
+            });
+            const retry = deliveryTo(WEBHOOK_PATH).reply(200);
+
+            await triggerOutsideTests();
+
+            assert.ok(retry.isDone(), 'Expected the failed delivery to be retried');
+            assert.equal(models.Webhook.edit.args[0][0].last_triggered_status, 200);
+          });
+
+          it('retries a delivery that timed out', async function () {
+            deliveryTo(WEBHOOK_PATH).delay(2500).reply(200);
+            const retry = deliveryTo(WEBHOOK_PATH).reply(200);
+
+            await triggerOutsideTests();
+
+            assert.ok(retry.isDone(), 'Expected the timed out delivery to be retried');
+            assert.equal(models.Webhook.edit.args[0][0].last_triggered_status, 200);
+          });
+
+          it('does not retry a response the target rejected', async function () {
+            deliveryTo(WEBHOOK_PATH).reply(400);
+            const retry = deliveryTo(WEBHOOK_PATH).reply(200);
+
+            await triggerOutsideTests();
+
+            assert.equal(retry.isDone(), false);
+            assert.equal(models.Webhook.edit.args[0][0].last_triggered_status, 400);
+          });
+
+          it('destroys the webhook on a 410 without retrying', async function () {
+            deliveryTo(WEBHOOK_PATH).reply(410);
+            const retry = deliveryTo(WEBHOOK_PATH).reply(200);
+
+            await triggerOutsideTests();
+
+            assert.equal(retry.isDone(), false);
+            sinon.assert.calledOnce(models.Webhook.destroy);
+          });
+        });
       });
-    });
-
-    describe('using request-external (allowWebhookInternalIPs: false)', function () {
-      beforeEach(function () {
-        configUtils.set('security:allowWebhookInternalIPs', false);
-        configUtils.set('env', 'development'); // bypass IP validation in request-external
-        setupWebhookModel();
-      });
-
-      // Defect, pinned as it behaves today: Got keeps the status on error.response, and
-      // only @tryghost/request copies it onto the error. onError reads error.statusCode,
-      // so the default transport neither removes a 410 target nor records the status.
-      it('records a 410 response as an unknown status instead of destroying the webhook', async function () {
-        deliveryTo(WEBHOOK_PATH).reply(410);
-        const trigger = new WebhookTrigger({ models, payload, limitService });
-
-        await trigger.trigger(WEBHOOK_EVENT, {});
-
-        sinon.assert.notCalled(models.Webhook.destroy);
-        sinon.assert.calledOnce(models.Webhook.edit);
-        const [data] = models.Webhook.edit.args[0];
-        assert.equal(data.last_triggered_status, undefined);
-        assert.equal(data.last_triggered_error, 'Request failed: ERR_NON_2XX_3XX_RESPONSE');
-      });
-
-      it('records an error response with an unknown status', async function () {
-        deliveryTo(WEBHOOK_PATH).reply(500);
-        const trigger = new WebhookTrigger({ models, payload, limitService });
-
-        await trigger.trigger(WEBHOOK_EVENT, {});
-
-        const [data] = models.Webhook.edit.args[0];
-        assert.equal(data.last_triggered_status, undefined);
-        assert.equal(data.last_triggered_error, 'Request failed: ERR_NON_2XX_3XX_RESPONSE');
-      });
-    });
+    }
   });
 });
+
+async function withEnvironment<T>(environment: string, run: () => Promise<T>): Promise<T> {
+  const previous = process.env.NODE_ENV;
+  process.env.NODE_ENV = environment;
+  try {
+    return await run();
+  } finally {
+    process.env.NODE_ENV = previous;
+  }
+}
+
+// Loads a fresh copy of a module as it is outside tests, leaving the shared copy in place.
+function loadOutsideTests(request: string) {
+  const modulePath = require.resolve(request);
+  const shared = require.cache[modulePath];
+  delete require.cache[modulePath];
+  const previous = process.env.NODE_ENV;
+  process.env.NODE_ENV = 'production';
+  try {
+    return require(modulePath);
+  } finally {
+    process.env.NODE_ENV = previous;
+    if (shared) {
+      require.cache[modulePath] = shared;
+    } else {
+      delete require.cache[modulePath];
+    }
+  }
+}

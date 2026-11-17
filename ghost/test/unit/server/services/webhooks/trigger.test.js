@@ -428,12 +428,12 @@ describe('Webhook Service', function () {
             'Content-Version': `v${ghostVersion.safe}`,
           },
           timeout: { request: 2000 },
-          retry: { limit: 0 },
+          retry: { limit: 0, methods: ['POST'] },
         },
       ]);
     });
 
-    it('asks for five retries outside the test environment', async function () {
+    it('asks for five retries of the POST outside the test environment', async function () {
       hooks(webhookFor(WEBHOOK_TARGET_URL));
       const environment = process.env.NODE_ENV;
       process.env.NODE_ENV = 'production';
@@ -443,7 +443,7 @@ describe('Webhook Service', function () {
         process.env.NODE_ENV = environment;
       }
 
-      assert.deepEqual(request.args[0][1].retry, { limit: 5 });
+      assert.deepEqual(request.args[0][1].retry, { limit: 5, methods: ['POST'] });
     });
 
     it('records the status and time of a delivery without waiting for the write', async function () {
@@ -479,7 +479,7 @@ describe('Webhook Service', function () {
       );
     });
 
-    it('records and logs a failed delivery, then delivers to the next webhook', async function () {
+    it('records and logs a failed delivery, and still delivers to the other webhooks', async function () {
       hooks(
         webhookFor('https://one.example.com', { id: 'one' }),
         webhookFor('https://two.example.com', { id: 'two' }),
@@ -495,11 +495,13 @@ describe('Webhook Service', function () {
 
       sinon.assert.calledTwice(request);
       assert.deepEqual(
-        models.Webhook.edit.args.map(([data, options]) => [
-          options.id,
-          data.last_triggered_status,
-          data.last_triggered_error,
-        ]),
+        models.Webhook.edit.args
+          .map(([data, options]) => [
+            options.id,
+            data.last_triggered_status,
+            data.last_triggered_error,
+          ])
+          .sort(),
         [
           ['one', 500, 'Request failed: ECONNRESET'],
           ['two', 200, null],
@@ -562,21 +564,49 @@ describe('Webhook Service', function () {
       sinon.assert.calledOnceWithExactly(log.warn, 'Unable to destroy webhook webhook-id.');
     });
 
-    it('delivers to one webhook at a time', async function () {
+    it('delivers to every webhook without waiting for the others, then settles once all have', async function () {
       hooks(webhookFor('https://one.example.com'), webhookFor('https://two.example.com'));
       const first = Promise.withResolvers();
       request.onFirstCall().returns(first.promise);
       request.onSecondCall().resolves({ statusCode: 200 });
+      let settled = false;
 
-      const triggered = deliveryTrigger.trigger(WEBHOOK_EVENT, {});
+      const triggered = deliveryTrigger.trigger(WEBHOOK_EVENT, {}).then(() => {
+        settled = true;
+      });
       await setImmediate();
-
-      sinon.assert.calledOnce(request);
-      first.resolve({ statusCode: 200 });
-      await triggered;
 
       sinon.assert.calledTwice(request);
       assert.equal(request.args[1][0], 'https://two.example.com');
+      assert.equal(settled, false);
+      first.resolve({ statusCode: 200 });
+      await triggered;
+    });
+
+    it('reads the status of a failed delivery from the response', async function () {
+      hooks(webhookFor(WEBHOOK_TARGET_URL));
+      request.rejects(
+        Object.assign(new Error('Request failed with status code 503'), {
+          code: 'ERR_NON_2XX_3XX_RESPONSE',
+          response: { statusCode: 503 },
+        }),
+      );
+
+      await deliveryTrigger.trigger(WEBHOOK_EVENT, {});
+
+      const [data] = models.Webhook.edit.args[0];
+      assert.equal(data.last_triggered_status, 503);
+      sinon.assert.calledOnceWithMatch(log.error, /status=503 /);
+    });
+
+    it('destroys a webhook whose response is a 410 on the response', async function () {
+      hooks(webhookFor(WEBHOOK_TARGET_URL));
+      request.rejects(Object.assign(new Error('Gone'), { response: { statusCode: 410 } }));
+
+      await deliveryTrigger.trigger(WEBHOOK_EVENT, {});
+
+      sinon.assert.calledOnce(models.Webhook.destroy);
+      sinon.assert.notCalled(models.Webhook.edit);
     });
 
     it('logs and sends nothing when the webhooks cannot be looked up', async function () {

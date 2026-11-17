@@ -85,7 +85,10 @@ class WebhookTrigger {
 
   onError(webhook) {
     return (err) => {
-      if (err.statusCode === 410) {
+      // Got keeps the status on the response; @tryghost/request also copies it onto the error.
+      const statusCode = err.response?.statusCode ?? err.statusCode;
+
+      if (statusCode === 410) {
         logging.info(
           `Webhook destroyed (410 response) for "${webhook.get('event')}" with url "${webhook.get('target_url')}".`,
         );
@@ -94,23 +97,18 @@ class WebhookTrigger {
       }
 
       this.update(webhook, {
-        statusCode: err.statusCode,
+        statusCode,
         error: `Request failed: ${err.code || 'unknown'}`,
       });
 
       logging.error(
-        `[WEBHOOK_DELIVERY_FAILURE] url=${webhook.get('target_url') || 'unknown'} status=${err.statusCode || 'none'} error_code=${err.code || 'unknown'} message=${err.message || ''}`,
+        `[WEBHOOK_DELIVERY_FAILURE] url=${webhook.get('target_url') || 'unknown'} status=${statusCode || 'none'} error_code=${err.code || 'unknown'} message=${err.message || ''}`,
         err,
       );
     };
   }
 
   async trigger(event, model) {
-    const response = {
-      onSuccess: this.onSuccess.bind(this),
-      onError: this.onError.bind(this),
-    };
-
     let hooks;
     let payload;
     try {
@@ -130,46 +128,50 @@ class WebhookTrigger {
       return;
     }
 
-    for (const webhook of hooks.models) {
-      const hookPayload = {
-        event: webhook.get('event'),
-        ...payload,
-      };
+    // Concurrently, so retries for one webhook don't hold up delivery to the others.
+    await Promise.all(hooks.models.map((webhook) => this.deliver(webhook, payload)));
+  }
 
-      const reqPayload = JSON.stringify(hookPayload);
-      const url = webhook.get('target_url');
-      const secret = webhook.get('secret') || '';
-      const ts = Date.now();
+  async deliver(webhook, payload) {
+    const hookPayload = {
+      event: webhook.get('event'),
+      ...payload,
+    };
 
-      const headers = {
-        'Content-Length': Buffer.byteLength(reqPayload),
-        'Content-Type': 'application/json',
-        'Content-Version': `v${ghostVersion.safe}`,
-      };
+    const reqPayload = JSON.stringify(hookPayload);
+    const url = webhook.get('target_url');
+    const secret = webhook.get('secret') || '';
+    const ts = Date.now();
 
-      if (secret !== '') {
-        headers['X-Ghost-Signature'] =
-          `sha256=${crypto.createHmac('sha256', secret).update(`${reqPayload}${ts}`).digest('hex')}, t=${ts}`;
-      }
+    const headers = {
+      'Content-Length': Buffer.byteLength(reqPayload),
+      'Content-Type': 'application/json',
+      'Content-Version': `v${ghostVersion.safe}`,
+    };
 
-      const opts = {
-        method: 'POST',
-        body: reqPayload,
-        headers,
-        timeout: {
-          request: 2 * 1000,
-        },
-        retry: {
-          limit: process.env.NODE_ENV?.startsWith('test') ? 0 : 5,
-        },
-      };
-
-      logging.info(`Triggering webhook for "${webhook.get('event')}" with url "${url}"`);
-
-      await this.request(url, opts)
-        .then(response.onSuccess(webhook))
-        .catch(response.onError(webhook));
+    if (secret !== '') {
+      headers['X-Ghost-Signature'] =
+        `sha256=${crypto.createHmac('sha256', secret).update(`${reqPayload}${ts}`).digest('hex')}, t=${ts}`;
     }
+
+    const opts = {
+      method: 'POST',
+      body: reqPayload,
+      headers,
+      timeout: {
+        request: 2 * 1000,
+      },
+      // Got retries network errors, timeouts, 408, 429 and 5xx gateway errors, after 1, 2, 4,
+      // 8 and 16 seconds, but only for the methods named here: its defaults leave out POST.
+      retry: {
+        limit: process.env.NODE_ENV?.startsWith('test') ? 0 : 5,
+        methods: ['POST'],
+      },
+    };
+
+    logging.info(`Triggering webhook for "${webhook.get('event')}" with url "${url}"`);
+
+    await this.request(url, opts).then(this.onSuccess(webhook)).catch(this.onError(webhook));
   }
 }
 
