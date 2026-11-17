@@ -1794,7 +1794,8 @@ without thinking".
 
 ## Part 2: final report
 
-Five commits on `claude/ghost-modular-architecture-bqbbrw` after `e8f4258`.
+Four commits on `claude/ghost-modular-architecture-bqbbrw` after `e8f4258`,
+and a fifth that corrects two figures in this report.
 
 ### The answer
 
@@ -1854,15 +1855,15 @@ and unsafe to call twice.
 
 ### What each step cost
 
-| Step                                                                                      | Commit    | Files | Added                    | Removed | Of which this log | Notes                                                                                          |
-| ----------------------------------------------------------------------------------------- | --------- | ----- | ------------------------ | ------- | ----------------- | ---------------------------------------------------------------------------------------------- |
-| 1 and 2: inventory and design                                                             | `0fd1161` | 1     | 201                      | 0       | 201               | this log only                                                                                  |
-| 3, 5 and the first half of 6: the split, the second application, foundation first in boot | `4592269` | 82    | 2,635                    | 1,012   | 176               | about 620 lines are tests; 849 lines of config machinery moved rather than written; 11 renames |
-| 4, the rest of 6, and 8: network's `boot.ts`, fakes                                       | `bbcf477` | 9     | 840                      | 182     | 275               | `boot.ts` 143, kernel fakes 111, two new tests about 150                                       |
-| 7 and 9: enforcement, naming, this report                                                 | this one  | 19    | about 740, plus this log | 58      | the rest          | the lint rule 255; about 370 lines of tests                                                    |
+| Step                                                                                      | Commit    | Files | Added | Removed | Of which this log | Notes                                                                                          |
+| ----------------------------------------------------------------------------------------- | --------- | ----- | ----- | ------- | ----------------- | ---------------------------------------------------------------------------------------------- |
+| 1 and 2: inventory and design                                                             | `0fd1161` | 1     | 201   | 0       | 201               | this log only                                                                                  |
+| 3, 5 and the first half of 6: the split, the second application, foundation first in boot | `4592269` | 82    | 2,635 | 1,012   | 176               | about 620 lines are tests; 849 lines of config machinery moved rather than written; 11 renames |
+| 4, the rest of 6, and 8: network's `boot.ts`, fakes                                       | `bbcf477` | 9     | 840   | 182     | 275               | `boot.ts` 143, kernel fakes 111, two new tests about 150                                       |
+| 7 and 9: enforcement, naming, this report                                                 | `183e3ca` | 20    | 1,136 | 59      | 396               | the lint rule 255; about 370 lines of tests                                                    |
 
-Before this last commit: 89 files changed, 3,676 lines added and 1,194
-removed since `e8f4258`, of which 652 added lines are this log.
+Through `183e3ca`: 101 files changed, 4,803 lines added and 1,244 removed
+since `e8f4258`, of which 1,047 added lines are this log.
 
 **What the next domain pays**, from one real domain: a `boot.ts` of about 140
 lines for a root with eleven outside dependencies, about 60 lines out of the
