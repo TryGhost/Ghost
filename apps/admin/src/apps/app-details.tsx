@@ -37,7 +37,6 @@ import { AccessIndicator, OPENED_APP_ACCESS_INTRO } from './components/access-in
 import { AppIcon } from './components/app-icon';
 import { AppsGate } from './components/apps-gate';
 import { SurfaceLine } from './components/surface-icon';
-import { ACCOUNT_ACCESS } from './lib/access';
 import { servedFrom } from './lib/served-from';
 import { UninstallDialog } from './components/uninstall-dialog';
 import { historyTitle, installedBy } from './lib/history';
@@ -241,7 +240,7 @@ const Details: React.FC<{
           >
             <Card variant={cardVariant}>
               <CardContent className={admin7Design ? undefined : 'pt-6'}>
-                <AccessIndicator items={ACCOUNT_ACCESS} bare />
+                <AccessIndicator manifest={manifest} bare />
               </CardContent>
             </Card>
           </Section>
