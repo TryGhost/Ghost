@@ -14,6 +14,7 @@ export interface GhostRequest {
   files?: unknown[];
   frameOptions?: { docName: string | null | undefined; method: string | null };
   get(name: string): string | undefined;
+  ip?: string;
   member?: unknown;
   originalUrl?: string;
   params?: Dictionary;
@@ -91,6 +92,7 @@ const http = (
       params: req.params,
       user: req.user,
       session: req.session,
+      ip: req.ip,
       url: {
         host: req.vhost ? req.vhost.host : (req.get('host') ?? ''),
         pathname: parseUrl(req.originalUrl || req.url).pathname,
