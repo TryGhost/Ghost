@@ -38,7 +38,8 @@ export default function slugify(
         .toLowerCase()
         .replace(/[\][!"#$%&'()*+,./:;<=>?@\\^_{|}~]/g, '')
         .replace(/\s+/g, '-')
-        .replace(/^-|-{2,}|-$/g, ''),
+        .replace(/-{2,}/g, '-')
+        .replace(/^-|-$/g, ''),
     );
   }
 }
