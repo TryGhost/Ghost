@@ -584,6 +584,8 @@ const schema = {
     identifier: { type: 'string', maxlength: 191, nullable: false, index: true },
     value: { type: 'text', maxlength: 65535, nullable: false },
     expires_at: { type: 'dateTime', precision: 3, nullable: false, index: true },
+    // Wrong device verification codes, guarded by ghostDeviceVerification
+    attempts: { type: 'integer', unsigned: true, nullable: false, defaultTo: 0 },
     created_at: { type: 'dateTime', precision: 3, nullable: false },
     updated_at: { type: 'dateTime', precision: 3, nullable: false },
   },

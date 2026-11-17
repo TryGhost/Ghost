@@ -106,13 +106,23 @@ describe.skipIf(isSQLite)('Admin API /session under auth:engine better-auth', fu
     await me(cookie).expect(403);
   });
 
-  it('leaves the session unverified when device verification is on', async function () {
+  it('asks for a code and leaves the session unverified when device verification is on', async function () {
     configUtils.set('security:staffDeviceVerification', true);
+    await db.knex('users').where({ id: owner.id }).update({ last_seen: new Date() });
 
-    const response = await signIn(owner.email, owner.password).expect(201);
+    const response = await signIn(owner.email, owner.password).expect(403);
 
+    const [error] = response.body.errors;
+    assert.equal(error.type, 'Needs2FAError');
+    assert.equal(error.code, '2FA_NEW_DEVICE_DETECTED');
+    assert.equal(error.message, 'User must verify session to login.');
+    await mockManager.assert.sentEmailEventually({
+      to: owner.email,
+      subject: /^\d{6} is your Ghost sign in verification code$/,
+    });
     const [session] = await sessions(owner.id);
     assert.equal(Boolean(session.verified), false);
+    assert.match(cookieOf(response).join(), /ghost-admin-api-session=/);
     await me(cookieOf(response)).expect(403);
   });
 

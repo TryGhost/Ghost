@@ -154,7 +154,9 @@ describe.skipIf(isSQLite)('Session revocation under auth:engine better-auth', fu
     const current = await signIn(owner);
     const other = await signIn(owner);
 
-    const response = await changePassword(current, owner.id, owner.password).expect(200);
+    const response = await changePassword(current, owner.id, owner.password)
+      .set('User-Agent', 'Change Browser/1.0')
+      .expect(200);
     const replaced = cookieOf(response);
 
     assert.equal(replaced.length, 1);
@@ -165,6 +167,8 @@ describe.skipIf(isSQLite)('Session revocation under auth:engine better-auth', fu
     const [session] = await sessions(owner.id);
     assert.equal(Boolean(session.verified), true);
     assert.equal(session.origin, adminOrigin);
+    assert.match(session.ip_address, /127\.0\.0\.1|::1/);
+    assert.equal(session.user_agent, 'Change Browser/1.0');
     assert.equal((await sessions(owner.id)).length, 1);
 
     assert.equal((await legacySessions(owner.id)).length, 0);

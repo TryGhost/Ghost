@@ -13,7 +13,15 @@ const fakeKnex = () => ({}) as Knex;
 
 // Never blocks; the rate limits have their own tests
 const allow = () => ({ consume: async () => ({ allowed: true as const }), reset: async () => {} });
-const limiters = { globalBlock: allow, globalReset: allow, userLogin: allow, userReset: allow };
+const limiters = {
+  globalBlock: allow,
+  globalReset: allow,
+  userLogin: allow,
+  userReset: allow,
+  sendVerificationCode: allow,
+  userVerification: allow,
+  verificationEmail: allow,
+};
 
 function deps({
   siteUrl = 'https://example.com/',
@@ -37,6 +45,8 @@ function deps({
     limiters,
     sendPasswordResetEmail: async () => {},
     isStaffDeviceVerificationEnabled: () => true,
+    isEmailMfaRequired: () => false,
+    sendDeviceVerificationCode: async () => {},
     getRequestOrigin: (headers) => headers.get('origin'),
   };
 }

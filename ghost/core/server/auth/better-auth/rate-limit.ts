@@ -14,7 +14,13 @@ export type Limiter = {
 
 /** Ghost's `spam` limiters, looked up per request so a reset rebuilds them. */
 export type Limiters = Record<
-  'globalBlock' | 'globalReset' | 'userLogin' | 'userReset',
+  | 'globalBlock'
+  | 'globalReset'
+  | 'userLogin'
+  | 'userReset'
+  | 'sendVerificationCode'
+  | 'userVerification'
+  | 'verificationEmail',
   () => Limiter
 >;
 
@@ -22,6 +28,7 @@ type LimiterName = keyof Limiters;
 
 const SESSION = '/session/';
 const PASSWORD_RESET = '/authentication/password_reset/';
+const SESSION_VERIFY = '/session/verify/';
 
 // Each native credential route counts against its compatibility route's limiters
 const ROUTE_LIMITERS: Record<string, { route: string; limiters: LimiterName[] }> = {
@@ -36,6 +43,9 @@ const ROUTE_LIMITERS: Record<string, { route: string; limiters: LimiterName[] }>
   // Check the current password; PUT /users/password has no limit, so these get their own
   [ROUTES.changePassword]: { route: ROUTES.changePassword, limiters: ['globalBlock'] },
   [ROUTES.verifyPassword]: { route: ROUTES.verifyPassword, limiters: ['globalBlock'] },
+  // POST and PUT /session/verify
+  [ROUTES.deviceVerificationSend]: { route: SESSION_VERIFY, limiters: ['sendVerificationCode'] },
+  [ROUTES.deviceVerificationVerify]: { route: SESSION_VERIFY, limiters: ['userVerification'] },
 };
 
 // Their Express middleware keys these on `req.path`, as Admin calls it

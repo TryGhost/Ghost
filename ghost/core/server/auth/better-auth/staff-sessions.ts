@@ -30,9 +30,12 @@ export function createStaffSessions(deps: StaffSessionsDeps) {
      * `Set-Cookie`. Callers have passed the admin-origin check, and a session
      * without an origin is anonymous.
      */
-    async createVerifiedSession(userId: string): Promise<string[]> {
+    async createVerifiedSession(
+      userId: string,
+      { ipAddress, userAgent }: { ipAddress?: string; userAgent?: string } = {},
+    ): Promise<string[]> {
       const { headers } = await deps.getAuth().createVerifiedSession({
-        body: { userId, origin: deps.getAdminOrigin() },
+        body: { userId, origin: deps.getAdminOrigin(), ipAddress, userAgent },
         returnHeaders: true,
       });
       return sessionCookies(headers);

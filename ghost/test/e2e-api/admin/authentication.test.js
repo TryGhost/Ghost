@@ -184,11 +184,15 @@ describe('Authentication API', function () {
           passwordHash: await passwordHashOf(user),
         });
 
-        const earlierSessions = await db.knex('sessions').pluck('session_id');
+        const isBetterAuth = configUtils.config.get('auth:engine') === 'better-auth';
+        const earlierSessions = isBetterAuth
+          ? await db.knex('user_sessions').pluck('id')
+          : await db.knex('sessions').pluck('session_id');
 
         // An ?ip= the client sends must not choose the IP
         await agent
           .put('authentication/password_reset/?ip=203.0.113.7')
+          .header('User-Agent', 'Reset Browser/1.0')
           .body({
             password_reset: [
               {
@@ -200,11 +204,20 @@ describe('Authentication API', function () {
           })
           .expectStatus(200);
 
-        const [resetSession] = await db
-          .knex('sessions')
-          .where({ user_id: user.id })
-          .whereNotIn('session_id', earlierSessions);
-        assert.match(JSON.parse(resetSession.session_data).ip, /127\.0\.0\.1|::1/);
+        if (isBetterAuth) {
+          const [resetSession] = await db
+            .knex('user_sessions')
+            .where({ user_id: user.id })
+            .whereNotIn('id', earlierSessions);
+          assert.match(resetSession.ip_address, /127\.0\.0\.1|::1/);
+          assert.equal(resetSession.user_agent, 'Reset Browser/1.0');
+        } else {
+          const [resetSession] = await db
+            .knex('sessions')
+            .where({ user_id: user.id })
+            .whereNotIn('session_id', earlierSessions);
+          assert.match(JSON.parse(resetSession.session_data).ip, /127\.0\.0\.1|::1/);
+        }
 
         agent.clearCookies();
         await signIn(newPassword).expectStatus(201);

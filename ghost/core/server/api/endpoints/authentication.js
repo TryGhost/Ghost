@@ -172,7 +172,7 @@ const controller = {
       },
     },
     permissions: false,
-    options: ['ip'],
+    options: ['ip', 'userAgent'],
     async query(frame) {
       await auth.setup.assertSetupCompleted(true)();
       const { options, tokenParts } = await auth.passwordreset.extractTokenParts(frame);
@@ -188,7 +188,13 @@ const controller = {
         // Signs the user out everywhere, then in here, verified (plan §5.1)
         const userId = doResetParams.user.id;
         await auth.staffSessions.revokeUserSessions(userId);
-        frame.setHeader('Set-Cookie', await auth.staffSessions.createVerifiedSession(userId));
+        frame.setHeader(
+          'Set-Cookie',
+          await auth.staffSessions.createVerifiedSession(userId, {
+            ipAddress: frame.options.ip,
+            userAgent: frame.options.userAgent,
+          }),
+        );
       } else {
         if (!frame.original.session) {
           throw new errors.InternalServerError({
