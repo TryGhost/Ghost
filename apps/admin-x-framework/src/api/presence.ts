@@ -30,8 +30,25 @@ export interface PresencePollResponse {
 export const PRESENCE_PATH = '/presence/';
 export const PRESENCE_LEAVE_PATH = '/presence/leave/';
 
+let tabId: string | undefined;
+
+/**
+ * Names this page load to the server, so each editor tab keeps its own
+ * presence entry and closing one tab does not clear another. Not
+ * `crypto.randomUUID`: that needs a secure context, which a site served over
+ * plain HTTP is not.
+ */
+export function presenceTabId(): string {
+  tabId ??= Array.from(crypto.getRandomValues(new Uint8Array(12)), (byte) =>
+    byte.toString(16).padStart(2, '0'),
+  ).join('');
+  return tabId;
+}
+
 export function presenceRequestBody(resources: PresenceResource[], editing?: PresenceResource) {
-  return { presence: [{ resources, ...(editing ? { editing } : {}) }] };
+  return {
+    presence: [{ resources, ...(editing ? { editing, tab: presenceTabId() } : {}) }],
+  };
 }
 
 // Requests
@@ -63,7 +80,7 @@ export const usePresenceApi = () => {
   // keepalive lets the request outlive a closing tab; fetchApi has no such option.
   const leave = useCallback(
     (resource: PresenceResource): void => {
-      const body = JSON.stringify({ presence: [{ resource }] });
+      const body = JSON.stringify({ presence: [{ resource, tab: presenceTabId() }] });
       void fetch(apiUrl(PRESENCE_LEAVE_PATH), {
         method: 'POST',
         keepalive: true,

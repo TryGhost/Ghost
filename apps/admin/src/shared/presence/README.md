@@ -13,6 +13,9 @@ ids and a server timestamp; names and avatars come from the staff users list.
 - The editor sends `editing` with every poll; lists send up to 50 visible
   `resources` and never `editing`. Hiding the tab, leaving the route or going
   idle sends `/presence/leave/` for the edited document with `keepalive`.
+- The editor names its tab with a random id per page load, sent with `editing`
+  and with leave, so two tabs of one user on the same document do not clear
+  each other.
 - Entries expire locally 60 seconds after their server timestamp, matching the
   server's active window. Rows outside the current poll keep their entries until
   then so scrolling does not blink.
