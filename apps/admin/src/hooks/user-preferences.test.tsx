@@ -576,7 +576,7 @@ describe('useEditUserPreferences', () => {
         });
 
         await act(async () => {
-          // Queued behind the first, the second works out that nothing is left to change
+          // The second runs after the first, and by then has nothing left to change
           await Promise.all([
             mutation.current.mutateAsync(fixtures.singlePreference),
             mutation.current.mutateAsync((current) =>

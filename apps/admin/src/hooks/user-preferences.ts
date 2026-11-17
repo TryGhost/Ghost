@@ -202,8 +202,8 @@ export const useEditUserPreferences = ({
       const accessibility = JSON.stringify(PreferencesSchema.encode(newPreferences));
 
       // Each save re-renders everything that reads the current user, so skip
-      // one that would store what's already stored, such as an edit queued
-      // behind another that already made it.
+      // one that changes nothing. Edits run one at a time (see `scope` above),
+      // and one queued behind another can find its change already made.
       if (accessibility === latestUser.accessibility) {
         return;
       }

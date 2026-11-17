@@ -26,9 +26,11 @@ export const useWhatsNew = (): WhatsNewData => {
   const lastSeenDate = preferences?.whatsNew?.lastSeenDate;
   const hasWhatsNewPreferences = !!lastSeenDate;
 
-  // Initialize default whatsNewPreferences if missing or invalid. Every
-  // component reading What's New runs this at once, so each checks again when
-  // its edit runs: the first one saves, and the rest have nothing to save.
+  // Entries published before a user's first visit shouldn't count as new, so
+  // the first visit stores now as the last seen date. The sidebar asks for
+  // What's New from a few components on the same screen, and each runs this
+  // effect, so their saves queue up. Each save checks the stored value when its
+  // turn comes, so only the first one has anything to save.
   useEffect(() => {
     if (!hasWhatsNewPreferences && isPreferencesLoaded) {
       void updatePreferences((current) =>

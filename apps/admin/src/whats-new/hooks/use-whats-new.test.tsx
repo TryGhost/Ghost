@@ -25,7 +25,7 @@ const mockUser = staffUser();
 interface SetupQueryOptions {
   accessibility?: string | null;
   changelog?: Partial<RawChangelogResponse>;
-  /** How many components read What's New at once. */
+  /** How many instances of the hook to render, as the sidebar renders several. */
   readers?: number;
 }
 
@@ -356,19 +356,22 @@ describe('useWhatsNew', () => {
   });
 
   describe('initializing lastSeenDate', () => {
-    queryTest('saves it once however many components read it', async ({ server, setup }) => {
-      const saves: string[] = [];
-      server.events.on('request:start', ({ request }) => {
-        if (request.method === 'PUT') {
-          saves.push(request.url);
-        }
-      });
+    queryTest(
+      'saves it once when several parts of the sidebar read it',
+      async ({ server, setup }) => {
+        const saves: string[] = [];
+        server.events.on('request:start', ({ request }) => {
+          if (request.method === 'PUT') {
+            saves.push(request.url);
+          }
+        });
 
-      // The sidebar, its user menu and the banner each read What's New
-      await setup({ readers: 3 });
+        // The sidebar, its footer and its banner check for a banner, and the user menu shows a badge
+        await setup({ readers: 4 });
 
-      expect(saves).toHaveLength(1);
-    });
+        expect(saves).toHaveLength(1);
+      },
+    );
   });
 });
 
