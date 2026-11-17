@@ -7,6 +7,7 @@ import type { Knex } from 'knex';
 import { CLIENT_IP_HEADER } from './client-ip';
 import { createKnexAdapter } from './knex-adapter';
 import { rateLimitStorage, type Limiters } from './rate-limit';
+import { ghostSso } from './plugins/sso';
 import { ghostStaffLifecycle } from './plugins/staff-lifecycle';
 import { ROUTES } from './routes';
 import {
@@ -227,7 +228,10 @@ export function createAuth(deps: CreateAuthDeps) {
         },
       },
     },
-    plugins: [ghostStaffLifecycle({ sendPasswordResetEmail: deps.sendPasswordResetEmail })],
+    plugins: [
+      ghostStaffLifecycle({ sendPasswordResetEmail: deps.sendPasswordResetEmail }),
+      ghostSso(),
+    ],
     telemetry: { enabled: false },
     logger: {
       log: (level, message, ...args) => deps.logger[level](message, ...args),

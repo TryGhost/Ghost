@@ -80,6 +80,10 @@ until Phase 4.
   or token (the Admin API resolver, revocation, app tokens) must check the
   user's status too. Server-only: `createVerifiedSession`, which requires the
   admin origin, `revokeUserSessions` and `revokeAllSessions`.
+- `plugins/sso.ts` (`ghostSso`): server-only `createSsoSession`, for the SSO
+  adapter hook described below. It applies the passwordless rules above
+  (unlocks `locked`, refuses `inactive`) and creates a verified session pinned
+  to the admin origin. Team SSO is `@better-auth/sso` (Phase 8).
 - `session-controller.ts`: `POST` and `DELETE /session` under `better-auth`,
   described below.
 - `staff-sessions.ts`: the security events' session changes, described below.
@@ -235,6 +239,16 @@ Under `legacy` nothing here runs: a password change and a reset already delete
 the user's legacy rows, and suspension and deletion keep legacy behaviour.
 Sessions that `createVerifiedSession` creates have no IP or user agent, since
 the API controllers don't see the request.
+
+## SSO adapter
+
+Ghost(Pro) support access implements the `@tryghost/adapter-base-sso`
+contract, which `createSessionFromToken()` in `auth/session` mounts on
+`/ghost`. The adapter still resolves the user under either engine. Under
+`better-auth` the hook calls `staffSessions.createSsoSession` and forwards its
+cookie instead of creating a legacy session; the engine is chosen when the
+backend app mounts the hook. A refused user gets no cookie, and the request
+carries on, as under `legacy`.
 
 ## Tables
 

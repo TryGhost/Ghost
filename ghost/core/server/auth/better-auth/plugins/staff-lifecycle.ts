@@ -34,7 +34,9 @@ const PASSWORDLESS_SIGN_IN: string[] = [ROUTES.magicLinkVerify, ROUTES.passkeyVe
 const isPasswordlessSignIn = (path: string | undefined) =>
   !!path && (PASSWORDLESS_SIGN_IN.includes(path) || path.startsWith(SSO_PREFIX));
 
-type StaffUser = User & { status?: string | null };
+export type StaffUser = User & { status?: string | null };
+
+type Adapter = Awaited<ReturnType<typeof getCurrentAdapter>>;
 
 export type StaffLifecycleOptions = {
   /** Emails a password reset link, as the legacy session endpoint does for a locked user */
@@ -46,22 +48,42 @@ const refusal = (status: unknown) =>
     ? APIError.from('UNAUTHORIZED', ERRORS.PASSWORD_RESET_REQUIRED)
     : APIError.from('FORBIDDEN', ERRORS.ACCOUNT_SUSPENDED);
 
+// Matches the status read earlier, so a lock or suspension committed since stands
+const setStatus = (adapter: Adapter, userId: string, from: string[], to: string) =>
+  adapter.updateMany({
+    model: 'user',
+    where: [
+      { field: 'id', value: userId },
+      { field: 'status', operator: 'in', value: from },
+    ],
+    update: { status: to },
+  });
+
+/**
+ * Throws unless the user may sign in. A passwordless sign-in unlocks a
+ * `locked` user; `inactive` is always refused.
+ */
+export async function admitStaffUser(
+  adapter: Adapter,
+  user: StaffUser,
+  { passwordless }: { passwordless: boolean },
+): Promise<void> {
+  if (isActiveStatus(user.status)) {
+    return;
+  }
+  if (user.status === 'locked' && passwordless) {
+    // No match means the user was suspended since the read
+    if (await setStatus(adapter, user.id, ['locked'], 'active')) {
+      return;
+    }
+    throw refusal('inactive');
+  }
+  throw refusal(user.status);
+}
+
 /** Ghost's staff status rules on top of Better Auth core (plan §3.3). */
 export const ghostStaffLifecycle = (options: StaffLifecycleOptions) => {
   let authContext: AuthContext;
-
-  // Matches the status read earlier, so a lock or suspension committed since stands
-  const setStatus = async (userId: string, from: string[], to: string): Promise<number> => {
-    const adapter = await getCurrentAdapter(authContext.adapter);
-    return adapter.updateMany({
-      model: 'user',
-      where: [
-        { field: 'id', value: userId },
-        { field: 'status', operator: 'in', value: from },
-      ],
-      update: { status: to },
-    });
-  };
 
   return {
     id: 'ghost-staff-lifecycle',
@@ -84,17 +106,9 @@ export const ghostStaffLifecycle = (options: StaffLifecycleOptions) => {
                   if (!user) {
                     throw APIError.from('NOT_FOUND', BASE_ERROR_CODES.USER_NOT_FOUND);
                   }
-                  if (isActiveStatus(user.status)) {
-                    return;
-                  }
-                  if (user.status === 'locked' && isPasswordlessSignIn(endpoint?.path)) {
-                    // No match means the user was suspended since the read
-                    if (await setStatus(user.id, ['locked'], 'active')) {
-                      return;
-                    }
-                    throw refusal('inactive');
-                  }
-                  throw refusal(user.status);
+                  await admitStaffUser(adapter, user, {
+                    passwordless: isPasswordlessSignIn(endpoint?.path),
+                  });
                 },
                 // Bookkeeping only: the session exists by now, so a failure is logged, not thrown
                 async after(session) {
@@ -108,7 +122,7 @@ export const ghostStaffLifecycle = (options: StaffLifecycleOptions) => {
                       where: [{ field: 'id', value: session.userId }],
                       update: { last_seen: new Date() },
                     });
-                    await setStatus(session.userId, WARN_STATUSES, 'active');
+                    await setStatus(adapter, session.userId, WARN_STATUSES, 'active');
                   } catch (err) {
                     authContext.logger.error('Updating the user after sign-in failed', err);
                   }
