@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-// @ts-expect-error This module lacks type definitions.
 import signinEmail from '../../../../../core/server/auth/emails/signin';
 
 const t = (s: string) => s;
@@ -10,7 +9,7 @@ const baseDetails = {
   siteDomain: 'blog.example.com',
   siteUrl: 'https://blog.example.com',
   siteLogo: 'https://blog.example.com/logo.png',
-  deviceDetails: 'Test Details',
+  deviceDetails: { device: 'Chrome, Mac OS', location: 'Unknown', time: '17 Nov 2026, 12:00 UTC' },
   token: '123456',
   t,
 };
