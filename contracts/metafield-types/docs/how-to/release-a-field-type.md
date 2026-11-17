@@ -22,7 +22,8 @@ once the type has settled in. Why it goes in this order is explained in
    The type keeps its entry in `FIELD_TYPE_FLAGS`. Self-hosted sites get the type in the next
    public release, with Admin and Ghost together. Don't do this while the manifest still holds
    the flag at a percentage: each Ghost(Pro) server offers the type to every site once it runs
-   this change, whatever the manifest says.
+   this change, since the sites a percentage leaves out get nothing from the manifest and fall
+   back to the released list.
 5. **Remove the flag from the remote manifest**, once the change from step 4 has reached every
    Ghost(Pro) server. Until then, a server still on the release before reads the flag as
    private, and the manifest is what switches it on there.
