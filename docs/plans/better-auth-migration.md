@@ -572,14 +572,14 @@ compatibility.
 Compatibility controllers map Better Auth `APIError`s to `@tryghost/errors`
 with today's messages, so older Admin builds keep working:
 
-| Better Auth                    | Ghost error                                                 |
-| ------------------------------ | ----------------------------------------------------------- |
-| `INVALID_EMAIL_OR_PASSWORD`    | today's messages or one generic message, decided with SC-90 |
-| `PASSWORD_RESET_REQUIRED`      | `PasswordResetRequiredError`                                |
-| `ACCOUNT_SUSPENDED`            | `NoPermissionError` `This account has been suspended.`      |
-| `DEVICE_VERIFICATION_REQUIRED` | `NoPermissionError`, `Needs2FAError`, `2FA_*` code          |
-| `INVALID_TOKEN` / expired      | existing reset-token messages                               |
-| `TOO_MANY_REQUESTS`            | `TooManyRequestsError`                                      |
+| Better Auth                    | Ghost error                                              |
+| ------------------------------ | -------------------------------------------------------- |
+| `INVALID_EMAIL_OR_PASSWORD`    | `ValidationError` `Your email or password is incorrect.` |
+| `PASSWORD_RESET_REQUIRED`      | `PasswordResetRequiredError`                             |
+| `ACCOUNT_SUSPENDED`            | `NoPermissionError` `This account has been suspended.`   |
+| `DEVICE_VERIFICATION_REQUIRED` | `NoPermissionError`, `Needs2FAError`, `2FA_*` code       |
+| `INVALID_TOKEN` / expired      | existing reset-token messages                            |
+| `TOO_MANY_REQUESTS`            | `TooManyRequestsError`                                   |
 
 The native endpoints emit the codes the React `AuthClient` expects
 (`PASSWORD_RESET_REQUIRED`, `INVALID_CODE`, `twoFactorRedirect` +
@@ -589,9 +589,11 @@ Better Auth's `INVALID_EMAIL_OR_PASSWORD`, so `USER_NOT_FOUND` and
 `INVALID_PASSWORD` are not used. Admin's sign-in form keys on those two codes
 to mark the email or password field, so its native client must treat
 `INVALID_EMAIL_OR_PASSWORD` as one error for both fields. Suspension and
-`PASSWORD_RESET_REQUIRED` only show after a matching password. Today's
-messages enumerate staff (SC-90); whether the compatibility controllers keep
-them is decided with SC-90.
+`PASSWORD_RESET_REQUIRED` only show after a matching password. The
+compatibility `POST /session` does the same (SC-90): it answers
+`INVALID_EMAIL_OR_PASSWORD` with one generic `ValidationError` (422, no `code`),
+so Admin shows the message without marking either field. Legacy sign-in keeps
+today's messages.
 
 ### 5.4 Behaviour
 

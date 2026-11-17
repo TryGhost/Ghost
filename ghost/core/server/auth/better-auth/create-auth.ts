@@ -41,7 +41,13 @@ export type CreateAuthDeps = {
   limiters: Limiters;
   /** Emails a legacy password reset link; a locked user's sign-in sends one */
   sendPasswordResetEmail(email: string): Promise<void>;
+  /** `security:staffDeviceVerification`, read per session so config changes apply */
+  isStaffDeviceVerificationEnabled(): boolean;
+  /** The legacy session's origin rule (Origin, else Referer, else the admin URL) */
+  getRequestOrigin(headers: Headers): string | null;
 };
+
+type SessionPins = { userId?: string; verified?: boolean; origin?: string | null };
 
 /**
  * Refuses a database Better Auth can't run on (plan §3.2): SQLite, or one
@@ -194,6 +200,32 @@ export function createAuth(deps: CreateAuthDeps) {
           return ctx.json(stripSessionTokens(returned) as Record<string, unknown>);
         }
       }),
+    },
+    databaseHooks: {
+      session: {
+        create: {
+          async before(session, ctx) {
+            const data: { verified?: boolean; origin?: string } = {};
+            // A rotation (`/change-password` revoking others) replaces the current session
+            const replaced = ctx?.context.session?.session as SessionPins | undefined;
+            const rotated = replaced?.userId === session.userId ? replaced : undefined;
+
+            // Never downgrades: createVerifiedSession passes `verified` itself
+            if (rotated?.verified || !deps.isStaffDeviceVerificationEnabled()) {
+              data.verified = true;
+            }
+            // Pinned at creation; resolvePrincipal treats a session without one as anonymous
+            if (!session.origin) {
+              const origin =
+                rotated?.origin ?? (ctx?.headers ? deps.getRequestOrigin(ctx.headers) : null);
+              if (origin) {
+                data.origin = origin;
+              }
+            }
+            return { data };
+          },
+        },
+      },
     },
     plugins: [ghostStaffLifecycle({ sendPasswordResetEmail: deps.sendPasswordResetEmail })],
     telemetry: { enabled: false },
