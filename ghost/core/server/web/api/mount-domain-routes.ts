@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { IncorrectUsageError } from '@tryghost/errors';
 import type { RequestHandler, Router } from 'express';
-import { domainRoutes } from '../../../bootstrap/domains/fragments';
+import { domainRoutes } from '../../../../bootstrap/domains/fragments';
 import { domainEndpoint } from '../../api/domain-endpoints';
 
 const { http } = require('@tryghost/api-framework');

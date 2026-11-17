@@ -2,7 +2,7 @@
  * This file acts as an allowlist for "public" settings
  */
 
-const { domainPublicSettings, placeFromDomains } = require('../../bootstrap/domains/fragments');
+const { domainPublicSettings, placeFromDomains } = require('../../../bootstrap/domains/fragments');
 
 // A domain declares which of its settings are public in its settings.ts. A
 // setting that used to be listed here keeps its place by being named where it

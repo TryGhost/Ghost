@@ -15,8 +15,8 @@ const serviceImplementations = {
   // Legacy JS roots remain wiring candidates; nested indexes are implementations.
   pathNot: `^${bootOwnedServiceHomes}/[^/]+/index\\.(?:js|ts)$`,
 };
-// Ghost's own server code: Core and the domains beside it.
-const ghostServer = '^ghost/(core|domains)/';
+// Ghost's own server code: Core, and the bootstrap and domains beside it.
+const ghostServer = '^ghost/(bootstrap|core|domains)/';
 
 // The service checks apply to the services directory only, so a defineService
 // root anywhere else gets none of them. Each root listed here is a reviewed
@@ -70,7 +70,7 @@ const foundationInstances = [
   '^@tryghost/metrics$|(^|/)node_modules/@tryghost/metrics/', // Metrics, built the way the logger was.
   '^ghost/core/shared/config/', // Config: Ghost's values and the module that returns the instance.
   '^ghost/core/server/data/db/', // The database handle.
-  '^ghost/core/bootstrap/', // Where the instances live.
+  '^ghost/bootstrap/', // Where the instances live.
   foundry, // What builds them.
 ];
 // What no reshaped file may import: routes are data and the web layer owns the
@@ -117,7 +117,7 @@ const serviceDependencyAllowlist = [
   '^(node:)?vm$', // Bounded script execution for caller-owned regex matching with a timeout.
   '^(node:)?(assert/strict|stream|stream/promises|buffer|timers/promises)$', // Node's in-memory primitives: assertions, streams, buffers and timers; no I/O of their own.
   kernel, // The kernel: stateless by rule (ghost/kernel-purity), so any code may import any of it.
-  '^ghost/core/bootstrap/domains/fragments\\.ts$', // What the domains describe about themselves (settings, permissions, schema, routes); reads describing files once, no application instances.
+  '^ghost/bootstrap/domains/fragments\\.ts$', // What the domains describe about themselves (settings, permissions, schema, routes); reads describing files once, no application instances.
   '^ghost/core/server/lib/db-types/date\\.ts$', // Database date codec.
   '^ghost/core/server/lib/db-types/boolean\\.ts$', // Database boolean codec.
   '^ghost/core/server/lib/db-types/json\\.ts$', // Database JSON codec.
@@ -658,12 +658,12 @@ module.exports = {
     {
       name: 'foundry-only-from-bootstrap',
       comment:
-        "The foundry builds what exists once per process: a second logger or database handle is a defect. Only an application's bootstrap imports it (ghost/core/bootstrap, and shared/config, which is Ghost's config composition). Everything else is handed the instance and imports the kernel's type.",
+        "The foundry builds what exists once per process: a second logger or database handle is a defect. Only an application's bootstrap imports it (ghost/bootstrap, and shared/config, which is Ghost's config composition). Everything else is handed the instance and imports the kernel's type.",
       severity: 'error',
       from: {
         path: '^(?:ghost|kernel)/',
         pathNot: [
-          '^ghost/core/bootstrap/',
+          '^ghost/bootstrap/',
           '^ghost/core/shared/config/',
           '^ghost/test/',
           '^ghost/domains/[^/]+/test/',

@@ -29,7 +29,7 @@ but every one of them makes it when called: a second logger writing to the same
 rotating file corrupts it, and a second database handle is a second connection
 pool. Everything else is handed the instance and imports the kernel's type.
 
-Ghost's bootstrap is [`core/bootstrap`](../ghost/core/bootstrap/README.md). A second
+Ghost's bootstrap is [`ghost/bootstrap`](../ghost/bootstrap/README.md). A second
 application, used to check that nothing here is Ghost's, is in
 [`test/utils/fixtures/second-application`](../ghost/test/utils/fixtures/second-application/bootstrap/app.ts).
 

@@ -8,7 +8,7 @@
  * Text = length 65535 (64 KiB)
  * Long text = length 1,000,000,000
  */
-const { domainTables, placeFromDomains } = require('../../../bootstrap/domains/fragments');
+const { domainTables, placeFromDomains } = require('../../../../bootstrap/domains/fragments');
 
 // A domain declares the tables it owns in its schema.ts. They are merged in
 // here, so this file still exports every table.

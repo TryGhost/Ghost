@@ -70,7 +70,7 @@ describe('domain import rules', () => {
       'ghost/core/shared/sentry.js': 'module.exports = {};',
       'ghost/core/server/data/db/index.js': 'module.exports = {};',
       'foundry/src/logging.ts': 'export const createLogger = () => ({});',
-      'ghost/core/bootstrap/app.ts': 'export default {};',
+      'ghost/bootstrap/app.ts': 'export default {};',
       'ghost/core/server/web/api/middleware.js': 'module.exports = {};',
       'ghost/core/server/api/endpoints/index.js': 'module.exports = {};',
       'ghost/domains/library/transition/services/old-catalogue/legacy.js': 'module.exports = {};',
@@ -106,6 +106,7 @@ describe('domain import rules', () => {
         cli,
         'kernel/src',
         'foundry/src',
+        'ghost/bootstrap',
         'ghost/core',
         'ghost/domains',
         '--config',
@@ -324,7 +325,7 @@ describe('domain import rules', () => {
             "const events = require('@tryghost/domain-events');",
             "const config = require('../../core/shared/config');",
             "const db = require('../../core/server/data/db');",
-            "const application = require('../../core/bootstrap/app');",
+            "const application = require('../../bootstrap/app');",
             "const { createLogger } = require('@tryghost/foundry/logging');",
             'export default [logging, events, config, db, application, createLogger] as unknown as (GhostLogger | Foundation)[];',
           ].join('\n'),
@@ -332,7 +333,7 @@ describe('domain import rules', () => {
         [
           'domain-foundation-injected: domains/alerts/boot.ts → @tryghost/domain-events',
           'domain-foundation-injected: domains/alerts/boot.ts → @tryghost/logging',
-          'domain-foundation-injected: domains/alerts/boot.ts → core/bootstrap/app.ts',
+          'domain-foundation-injected: domains/alerts/boot.ts → bootstrap/app.ts',
           'domain-foundation-injected: domains/alerts/boot.ts → core/server/data/db/index.js',
           'domain-foundation-injected: domains/alerts/boot.ts → core/shared/config/index.js',
           'domain-foundation-injected: domains/alerts/boot.ts → foundry/src/logging.ts',
@@ -390,6 +391,7 @@ describe('domain import rules', () => {
           cli,
           'kernel/src',
           'foundry/src',
+          'ghost/bootstrap',
           'ghost/core',
           'ghost/domains',
           '--config',
@@ -424,7 +426,7 @@ describe('domain import rules', () => {
         'ghost/domains/library/transition/services/old-catalogue/reach.ts',
       ],
       ['the foundry', 'foundry/src/reach.ts'],
-      ['the bootstrap', 'ghost/core/bootstrap/reach.ts'],
+      ['the bootstrap', 'ghost/bootstrap/reach.ts'],
     ] as const) {
       it(`lets ${where} import anything in the kernel`, () => {
         const existing = file.endsWith('staff/index.ts');
@@ -471,7 +473,7 @@ describe('domain import rules', () => {
           rmSync(path.join(root, file));
         }
       };
-      assert.deepEqual(tried('ghost/core/bootstrap/reach.ts'), []);
+      assert.deepEqual(tried('ghost/bootstrap/reach.ts'), []);
       assert.deepEqual(tried('ghost/core/shared/config/reach.ts'), []);
       assert.deepEqual(tried('ghost/core/server/web/api/reach.ts'), [
         'foundry-only-from-bootstrap: ghost/core/server/web/api/reach.ts → foundry/src/logging.ts',
@@ -488,11 +490,11 @@ describe('domain import rules', () => {
     it('keeps the foundry free of the application it assembles', () => {
       write(
         'foundry/src/reach.ts',
-        "const config = require('../../ghost/core/shared/config');\nconst application = require('../../ghost/core/bootstrap/app');\nexport const used = [config, application];",
+        "const config = require('../../ghost/core/shared/config');\nconst application = require('../../ghost/bootstrap/app');\nexport const used = [config, application];",
       );
       try {
         assert.deepEqual(everyRule(), [
-          'foundry-not-application: foundry/src/reach.ts → ghost/core/bootstrap/app.ts',
+          'foundry-not-application: foundry/src/reach.ts → ghost/bootstrap/app.ts',
           'foundry-not-application: foundry/src/reach.ts → ghost/core/shared/config/index.js',
         ]);
       } finally {

@@ -20,6 +20,7 @@
     "url": "git://github.com/TryGhost/Ghost.git"
   },
   "files": [
+    "bootstrap/",
     "core/",
     "domains/",
     "!domains/*/test/",
@@ -70,7 +71,7 @@
     "test:leg:slow": "vitest run -c vitest.config.db.ts --project legacy --reporter=verbose",
     "test:types": "tsc --noEmit && tsc --noEmit -p test/tsconfig.json && tsc -p scripts/tsconfig.json",
     "lint:server": "eslint 'core/server/**/*.{js,ts}' 'core/*.{js,ts}' '*.{js,ts,mts}' 'bin/**/*.{js,ts}' 'scripts/**/*.{js,ts}' 'types/**/*.ts' --cache",
-    "lint:bootstrap": "eslint 'core/bootstrap/**/*.{js,ts}' --cache",
+    "lint:bootstrap": "eslint 'bootstrap/**/*.{js,ts}' --cache",
     "lint:shared": "eslint 'core/shared/**/*.{js,ts}' --cache",
     "lint:frontend": "eslint 'core/frontend/**/*.{js,ts}' --cache",
     "lint:domains": "eslint 'domains/**/*.{js,ts}' --cache --no-error-on-unmatched-pattern",

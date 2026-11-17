@@ -8,8 +8,8 @@ const ghost = path.resolve(__dirname, '../../..');
 // legacy modules before the application: build the foundation, then compare
 // what the legacy paths return with what the application holds.
 const probe = `
-  const application = require('./core/bootstrap/app').default;
-  const { loggerOrigin } = require('./core/bootstrap/legacy-logging');
+  const application = require('./bootstrap/app').default;
+  const { loggerOrigin } = require('./bootstrap/legacy-logging');
   const builtOnImport = application.built();
   const foundation = application.startFoundation();
   const DomainEvents = require('@tryghost/domain-events');
@@ -57,8 +57,8 @@ describe('Ghost application', function () {
     // This process loaded @tryghost/logging before the application: the usual
     // case for a unit test, which never boots.
     const legacy = require('@tryghost/logging');
-    const application: typeof import('../../../core/bootstrap/app').default =
-      require('../../../core/bootstrap/app').default;
+    const application: typeof import('../../../bootstrap/app').default =
+      require('../../../bootstrap/app').default;
     assert.equal(application.foundation.logging, legacy);
     assert.equal(application.foundation.config, require('../../../core/shared/config'));
   });

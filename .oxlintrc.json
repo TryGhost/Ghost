@@ -78,6 +78,7 @@
         "ghost/bin/**/*.js",
         "ghost/scripts/**/*.js",
         "ghost/*.js",
+        "ghost/bootstrap/**/*.ts",
         "ghost/core/**/*.ts",
         "ghost/domains/**/*.ts",
         "ghost/*.ts",
@@ -145,7 +146,11 @@
       ]
     },
     {
-      "files": ["ghost/core/**/*.{js,ts}", "ghost/domains/**/*.{js,ts}"],
+      "files": [
+        "ghost/bootstrap/**/*.{js,ts}",
+        "ghost/core/**/*.{js,ts}",
+        "ghost/domains/**/*.{js,ts}"
+      ],
       "rules": {
         "local-filenames/match-regex": ["error", "^[a-z0-9.-]+$", false]
       },
@@ -288,7 +293,12 @@
       }
     },
     {
-      "files": ["ghost/core/**/*.{js,ts}", "ghost/domains/**/*.{js,ts}", "ghost/test/**/*.{js,ts}"],
+      "files": [
+        "ghost/bootstrap/**/*.{js,ts}",
+        "ghost/core/**/*.{js,ts}",
+        "ghost/domains/**/*.{js,ts}",
+        "ghost/test/**/*.{js,ts}"
+      ],
       "rules": {
         "ghost/prefer-canonical-types": "error"
       }

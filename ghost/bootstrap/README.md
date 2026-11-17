@@ -1,11 +1,11 @@
 # Bootstrap
 
-Spike: see [the findings log](../../../docs/plans/domain-spike-findings.md).
+Spike: see [the findings log](../../docs/plans/domain-spike-findings.md).
 
 Ghost, as an application of the framework. The framework's side is the
-[kernel](../../../kernel/README.md) and the [foundry](../../../foundry/README.md);
+[kernel](../../kernel/README.md) and the [foundry](../../foundry/README.md);
 this folder is what Ghost supplies, together with its config values in
-[`shared/config`](../shared/config/).
+[`shared/config`](../core/shared/config/).
 
 - [`app.ts`](app.ts) defines the application and **holds it**: this is the one
   module where Ghost's config, logger, database handle and event bus live.

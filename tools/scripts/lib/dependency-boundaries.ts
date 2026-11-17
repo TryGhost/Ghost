@@ -111,7 +111,7 @@ export function compareKnownViolations(
 export function committedBuildOutput(repository: string) {
   const result = spawnSync(
     'git',
-    ['ls-files', '-z', '--', 'ghost/core', 'ghost/domains', 'kernel', 'foundry'],
+    ['ls-files', '-z', '--', 'ghost/bootstrap', 'ghost/core', 'ghost/domains', 'kernel', 'foundry'],
     {
       cwd: repository,
       encoding: 'utf8',
@@ -148,8 +148,8 @@ export function committedBuildOutput(repository: string) {
 // The full scan covers the framework, Core, the domains beside it and the apps. A checkout
 // with no domains yet has nothing there to scan.
 const scanRoots = (repository: string) =>
-  ['kernel/src', 'foundry/src', 'ghost/core', 'ghost/domains', 'apps'].filter((root) =>
-    existsSync(path.join(repository, root)),
+  ['kernel/src', 'foundry/src', 'ghost/bootstrap', 'ghost/core', 'ghost/domains', 'apps'].filter(
+    (root) => existsSync(path.join(repository, root)),
   );
 
 // Lint and contributor reports use this single scan and known-violations file.

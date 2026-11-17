@@ -116,7 +116,7 @@ export default tseslint.config(
   // TypeScript files
   // ============================================================
   {
-    files: ['core/**/*.ts', 'domains/**/*.ts', '*.{ts,mts}'],
+    files: ['bootstrap/**/*.ts', 'core/**/*.ts', 'domains/**/*.ts', '*.{ts,mts}'],
     ignores: ['domains/*/test/**'],
     extends: [...tseslint.configs.recommended],
     languageOptions: {
@@ -157,7 +157,7 @@ export default tseslint.config(
   // TypeScript override block: must come AFTER tseslint extends to win.
   // ============================================================
   {
-    files: ['core/**/*.ts', 'domains/**/*.ts', '*.{ts,mts}'],
+    files: ['bootstrap/**/*.ts', 'core/**/*.ts', 'domains/**/*.ts', '*.{ts,mts}'],
     ignores: ['domains/*/test/**'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',

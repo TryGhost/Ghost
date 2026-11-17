@@ -1,5 +1,5 @@
 import type { Knex } from 'knex';
-import application from '../../../bootstrap/app';
+import application from '../../../../bootstrap/app';
 
 // The database handle is built once, by the application, from Ghost's
 // `database` config, and held there. This path is kept for the code that

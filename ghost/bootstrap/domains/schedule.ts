@@ -6,7 +6,7 @@ import type { Logger } from '@tryghost/kernel/logging';
  * for a cron expression. The application hands this to the framework.
  */
 
-type JobsService = ReturnType<typeof import('../../server/services/jobs-service').getInstance>;
+type JobsService = ReturnType<typeof import('../../core/server/services/jobs-service').getInstance>;
 
 const timers = new Set<NodeJS.Timeout>();
 
@@ -42,10 +42,10 @@ export function scheduleDomainJob(
   // takes queue declarations before it starts, and job files load after.
   // Boot clears the handlers each time it initializes the jobs service, so each
   // boot registers this job's handler once, here.
-  const jobsService: JobsService = require('../../server/services/jobs-service').getInstance();
+  const jobsService: JobsService = require('../../core/server/services/jobs-service').getInstance();
   const {
     Job,
-  }: typeof import('../../server/services/jobs-service/job') = require('../../server/services/jobs-service/job');
+  }: typeof import('../../core/server/services/jobs-service/job') = require('../../core/server/services/jobs-service/job');
   class DomainJob extends Job {
     static readonly type = `domain:${job.name}`;
   }

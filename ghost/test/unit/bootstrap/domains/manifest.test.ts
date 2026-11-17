@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { definitionKind } from '@tryghost/kernel/domains/definitions';
 import { defaultExport, describeManifest } from '@tryghost/kernel/domains/discover';
-import { domainsRoot, getDomainManifest } from '../../../../core/bootstrap/domains/manifest';
+import { domainsRoot, getDomainManifest } from '../../../../bootstrap/domains/manifest';
 
 // Creating a file in a domain has its effect: a job is scheduled, a listener is
 // subscribed, routes are mounted. This test makes that visible in review. It

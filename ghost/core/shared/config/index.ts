@@ -1,4 +1,4 @@
-import application from '../../bootstrap/app';
+import application from '../../../bootstrap/app';
 
 // NOTE: this file must contain no export other than the `export =` below.
 // esbuild/tsx (used by the dev + test runners) can't combine `export =` with

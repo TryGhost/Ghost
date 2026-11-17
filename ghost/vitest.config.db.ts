@@ -143,6 +143,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: [
+        'bootstrap/**/*.{js,cjs,mjs,ts}',
         'core/*.js',
         'core/{frontend,server,shared}/**/*.{js,cjs,mjs,ts}',
         'domains/**/*.{js,cjs,mjs,ts}',

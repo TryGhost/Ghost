@@ -2,14 +2,14 @@ import path from 'node:path';
 import { createApplication } from '@tryghost/foundry/application';
 import { createDatabase } from '@tryghost/foundry/database';
 import { createLogger } from '@tryghost/foundry/logging';
-import { loadNconf } from '../shared/config/loader';
-import type { GhostConfig } from '../shared/config/validated';
+import { loadNconf } from '../core/shared/config/loader';
+import type { GhostConfig } from '../core/shared/config/validated';
 import { legacyEventBus } from './legacy-events';
 import { shareLoggerWithLegacy } from './legacy-logging';
 import { loggingOptions } from './logging-options';
 
 /** The folder that holds one folder per domain. */
-export const domainsRoot = path.resolve(__dirname, '../../domains');
+export const domainsRoot = path.resolve(__dirname, '../domains');
 
 /**
  * Ghost, as an application of the framework: where its config values are, how
@@ -34,14 +34,14 @@ const application = createApplication<GhostConfig>({
 
   database: ({ config, logging }) => {
     const database = config.get('database') as
-      | import('../server/data/db/configure-knex').DatabaseConfig
+      | import('../core/server/data/db/configure-knex').DatabaseConfig
       | undefined;
     if (!database?.client) {
       return undefined;
     }
     const {
       configure,
-    }: typeof import('../server/data/db/configure-knex') = require('../server/data/db/configure-knex');
+    }: typeof import('../core/server/data/db/configure-knex') = require('../core/server/data/db/configure-knex');
     return createDatabase(configure(database, { env: config.get('env'), logging }));
   },
 
