@@ -546,6 +546,14 @@ describe('New automation', () => {
       }
       await expect.poll(currentRoute).toBe('/automations/created');
       await expect.element(button(action === 'Publish' ? 'Published' : 'Save')).toBeDisabled();
+      if (action === 'Publish') {
+        await expect.element(picker).toBeDisabled();
+        await expect
+          .element(picker)
+          .toHaveAccessibleDescription('Turn off automation to edit trigger');
+      } else {
+        await expect.element(picker).toBeEnabled();
+      }
       expect(createAutomation.requests).toHaveLength(1);
       expect(createAutomation.requests[0].body).toMatchObject({
         automations: [
