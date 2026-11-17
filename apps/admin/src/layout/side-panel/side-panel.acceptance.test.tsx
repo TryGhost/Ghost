@@ -99,6 +99,20 @@ async function renderWithNavigation({ admin7Design = false, width = DOCKING_WIDT
 
 const frameWidth = (element: HTMLElement) => element.getBoundingClientRect().width;
 
+/** Whether the page keeps its stacking to itself, so its sticky headers stay under what floats over it. */
+function pageIsolated(): boolean {
+  for (
+    let element = sidebarScreen.shellMain().element().parentElement;
+    element;
+    element = element.parentElement
+  ) {
+    if (getComputedStyle(element).isolation === 'isolate') {
+      return true;
+    }
+  }
+  return false;
+}
+
 function asContributor(): RenderAdminAppOptions {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name: 'Contributor' })];
@@ -351,6 +365,25 @@ describe('Side panel', () => {
       expect(box.bottom).toBeCloseTo(window.innerHeight - inset, 0);
       expect(frameWidth(frame.element)).toBe(WINDOW_WIDTH - 2 * CONTENT_PADDING);
       expect(pageWidth()).toBe(before);
+    },
+  );
+
+  it.each([
+    { layout: 'window', width: NARROW_WIDTH, isolated: true },
+    { layout: 'docked', width: DOCKING_WIDTH, isolated: false },
+  ])(
+    'isolates the page only while a window floats over it: $layout',
+    async ({ width, isolated }) => {
+      await renderWithNavigation({ width });
+      expect(pageIsolated()).toBe(false);
+
+      sidePanel().open(hostFrame().element);
+      await expect.poll(panelState).toBe('default');
+      expect(pageIsolated()).toBe(isolated);
+
+      sidePanel().close();
+      await expect.poll(panelState).toBe('closed');
+      expect(pageIsolated()).toBe(false);
     },
   );
 
