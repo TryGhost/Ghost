@@ -92,7 +92,7 @@ describe('FloatingSidebar', () => {
       fireEvent.mouseEnter(wrapper);
       expect(capsuleState()).toBe('open');
 
-      // e.g. Back to app clicked, then the pointer moves off before the new route renders
+      // As when Back to app is clicked and the pointer moves off before the new route renders
       fireEvent.mouseLeave(wrapper);
       fireEvent.pointerMove(document.body);
       rerender(

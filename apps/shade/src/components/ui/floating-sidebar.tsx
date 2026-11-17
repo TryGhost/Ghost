@@ -225,9 +225,10 @@ interface FloatingSidebarProps extends Omit<React.ComponentProps<'div'>, 'childr
    */
   armHoverOnRest?: boolean;
   /**
-   * Changing it (e.g. to the route's path) cancels a pending close while the
-   * pointer is over the panel: a layout shift inside the panel can fire a
-   * mouseleave though the pointer never left.
+   * A layout shift inside the panel, such as a new route rendering, can fire a
+   * mouseleave though the pointer never left. Changing this key (e.g. to the
+   * route's path) cancels the close that mouseleave scheduled, as long as the
+   * pointer is still over the panel.
    */
   resetKey?: unknown;
   pinLabel?: string;
@@ -340,8 +341,9 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
         hide();
       }
     }, [disabled, hide]);
-    // A pointer that really left closes the panel, though the change it
-    // started renders after (e.g. moving off as Back to app navigates)
+    // A route can render after the pointer has really left (e.g. moving off
+    // right after clicking Back to app), and cancelling that close would leave
+    // the panel open. So only cancel while the pointer is still over it.
     React.useEffect(() => {
       if (wrapperRef.current?.matches(':hover')) {
         cancel();
