@@ -1,16 +1,16 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const config = require('../../../shared/config');
 const models = require('../../models');
 const permissionsService = require('../../services/permissions');
 const auth = require('../../auth');
 const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 const usersService = require('../../services/users').default;
+
 const ALLOWED_INCLUDES = ['count.posts', 'permissions', 'roles', 'roles.permissions'];
 const UNSAFE_ATTRS = ['status', 'roles'];
 
 // Chosen once at load, as in auth/authenticate.ts
-const isBetterAuth = config.get('auth:engine') === 'better-auth';
+const isBetterAuth = auth.isBetterAuth;
 
 const messages = {
   noPermissionToAction: 'You do not have permission to perform this action',

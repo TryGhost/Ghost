@@ -7,11 +7,10 @@ const settingsService = require('../../services/settings/settings-service');
 const membersService = require('../../services/members');
 const stripeService = require('../../services/stripe');
 const settingsBREADService = settingsService.getSettingsBREADServiceInstance();
-const config = require('../../../shared/config');
 const auth = require('../../auth');
 
 // Chosen once at load, as in auth/authenticate.ts
-const isBetterAuth = config.get('auth:engine') === 'better-auth';
+const isBetterAuth = auth.isBetterAuth;
 
 /**
  * @param {Object} frame

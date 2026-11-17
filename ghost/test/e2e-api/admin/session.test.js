@@ -9,7 +9,7 @@ const { mockMail, assert, restore } = require('../../utils/e2e-framework-mock-ma
 const { anyContentVersion, anyEtag, stringMatching, anyUuid } = matchers;
 
 // Device verification on Better Auth is plan Phase 3
-const isBetterAuth = configUtils.config.get('auth:engine') === 'better-auth';
+const { isBetterAuth } = require('../../../core/server/auth');
 
 describe('Sessions API', function () {
   let agent;
