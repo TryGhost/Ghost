@@ -62,6 +62,12 @@ function fixture(t: TestContext, files: Record<string, string>) {
   })) {
     write(file, source);
   }
+  // The kernel is a workspace package: copy its manifest and link it where
+  // Ghost's files resolve it, so `@tryghost/kernel/x` reaches kernel/src/x.ts.
+  mkdirSync(path.join(root, 'kernel'), { recursive: true });
+  cpSync(path.join(repository, 'kernel/package.json'), path.join(root, 'kernel/package.json'));
+  mkdirSync(path.join(root, 'node_modules/@tryghost'), { recursive: true });
+  symlinkSync(path.join(root, 'kernel'), path.join(root, 'node_modules/@tryghost/kernel'));
   for (const file of [
     'tools/scripts/lib/dependency-boundaries.ts',
     'tools/configs/oxlint/legacy-services.ts',
@@ -319,7 +325,7 @@ it('matches external packages across stores without merging subpaths or workspac
 
 it('continues enforcing non-service boundaries in the same scan', (t) => {
   const f = fixture(t, {
-    'ghost/core/kernel/forbidden.ts': "import '../shared/config';",
+    'kernel/src/forbidden.ts': "import '../../ghost/core/shared/config';",
   });
   const result = f.lint();
   assert.equal(result.status, 1, result.stderr);
@@ -327,23 +333,23 @@ it('continues enforcing non-service boundaries in the same scan', (t) => {
 });
 
 it('rejects a defineService root outside the services directory unless it is a listed exception', (t) => {
-  const helper = 'ghost/core/kernel/define-service.ts';
-  const use = (depth: number) =>
-    `import { defineService } from '${'../'.repeat(depth)}kernel/define-service'; export default defineService;`;
+  const helper = 'kernel/src/define-service.ts';
+  const use = () =>
+    "import { defineService } from '@tryghost/kernel/define-service'; export default defineService;";
   const outside = 'ghost/core/server/lib/capability/index.ts';
   const nested = `${alpha}/nested/index.ts`;
   const f = fixture(t, {
     [helper]: 'export const defineService = () => ({});',
-    [`${alpha}/index.ts`]: use(3),
-    'ghost/core/server/auth/better-auth/index.ts': use(3),
+    [`${alpha}/index.ts`]: use(),
+    'ghost/core/server/auth/better-auth/index.ts': use(),
     // Types say nothing about where an instance is built.
     'ghost/core/server/web/consumer.ts':
-      "import type { defineService } from '../../kernel/define-service'; export type Root = typeof defineService;",
+      "import type { defineService } from '@tryghost/kernel/define-service'; export type Root = typeof defineService;",
   });
   const allowed = f.lint();
   assert.equal(allowed.status, 0, allowed.stderr);
-  f.write(outside, use(3));
-  f.write(nested, use(4));
+  f.write(outside, use());
+  f.write(nested, use());
   const rejected = f.lint();
   assert.equal(rejected.status, 1, rejected.stderr);
   for (const file of [outside, nested]) {
@@ -394,7 +400,7 @@ it('allows same-service code, explicit types, approved libraries and root wiring
     'ghost/core/server/lib/db-types/date.ts': 'export const date = true;',
     'ghost/core/server/lib/db-types/boolean.ts': 'export const boolean = true;',
     'ghost/core/server/lib/db-types/json.ts': 'export const json = true;',
-    'ghost/core/kernel/clock.ts': 'export const getUnixTime = () => 0; export const moment = {};',
+    'kernel/src/clock.ts': 'export const getUnixTime = () => 0; export const moment = {};',
     'ghost/core/server/lib/public-jwk.ts': 'export const key = true;',
     [`${services}/jobs-service/job.ts`]: 'export class Job {}',
     [`${alpha}/implementation.ts`]: `
@@ -404,7 +410,7 @@ it('allows same-service code, explicit types, approved libraries and root wiring
       import 'node:crypto'; import 'util'; import 'bson-objectid';
       import '../../lib/db-types/date'; import '../../lib/db-types/boolean'; import '../../lib/db-types/json';
       import '../../lib/public-jwk'; import '../jobs-service/job';
-      import {getUnixTime, moment} from '../../../kernel/clock';
+      import {getUnixTime, moment} from '@tryghost/kernel/clock';
     `,
   });
   for (const name of [
@@ -1272,10 +1278,10 @@ it('rejects outside dependencies, own roots and unresolved imports without folde
     [`${alpha}/missing.ts`]: "import '@tryghost/tpl';",
     [`${alpha}/implementation.ts`]: "import './test/helper';",
     // Any file in the kernel may be imported: it is stateless by rule.
-    [`${alpha}/kernel.ts`]: "import '../../../kernel/clock-extra';",
+    [`${alpha}/kernel.ts`]: "import '@tryghost/kernel/clock-extra';",
     [`${services}/alpha-extra/helper.ts`]: 'export {};',
     'ghost/core/server/lib/db-types/other.ts': 'export {};',
-    'ghost/core/kernel/clock-extra.ts': 'export {};',
+    'kernel/src/clock-extra.ts': 'export {};',
     'node_modules/@tryghost/errors-extra/package.json': '{"main":"index.js"}',
     'node_modules/@tryghost/errors-extra/index.js': 'module.exports = {};',
     'node_modules/@tryghost/security-extra/package.json': '{"main":"index.js"}',

@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { defineDomain } from '../../../../../core/kernel/domains/definitions';
-import type { Logger } from '../../../../../core/kernel/logging';
+import { defineDomain } from '@tryghost/kernel/domains/definitions';
+import type { Logger } from '@tryghost/kernel/logging';
 
 /** The part of the application's config the library reads, and its shape. */
 const DeskConfig = z.object({

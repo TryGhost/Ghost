@@ -1,4 +1,4 @@
-import { defineJob } from '../../../core/kernel/domains/definitions';
+import { defineJob } from '@tryghost/kernel/domains/definitions';
 import recommendations from '../services/recommendations';
 
 // Re-checks every site that recommends this one, to catch recommendations made

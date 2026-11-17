@@ -1,4 +1,4 @@
-import { defineJob } from '../../../core/kernel/domains/definitions';
+import { defineJob } from '@tryghost/kernel/domains/definitions';
 import recommendations from '../services/recommendations';
 
 // Keeps each recommendation's logo, title and one-click-subscribe support up to

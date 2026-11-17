@@ -8,7 +8,7 @@ function createDomainsHarness() {
   const start = sinon.stub().resolves();
   const stop = sinon.stub().resolves();
   const initDomains = loadBootFunction('initDomains', {
-    './bootstrap/domains': { default: { start, stop } },
+    '../bootstrap/domains': { default: { start, stop } },
   });
   return {
     init: (ghostServer?: { registerCleanupTask: sinon.SinonStub }): Promise<void> =>

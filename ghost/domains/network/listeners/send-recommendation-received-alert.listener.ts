@@ -1,4 +1,4 @@
-import { defineListener } from '../../../core/kernel/domains/definitions';
+import { defineListener } from '@tryghost/kernel/domains/definitions';
 import recommendations from '../services/recommendations';
 
 type ReceivedMention = Parameters<

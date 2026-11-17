@@ -474,10 +474,10 @@ test('reports direct allowlisted bindings and members passed to local service co
     "import tpl from '@tryghost/tpl';",
     "import {z as schema} from 'zod';",
     "import * as crypto from 'node:crypto';",
-    "import {getUnixTime as now} from '../../../kernel/clock.js';",
+    "import {getUnixTime as now} from '@tryghost/kernel/clock';",
     "const errors = require('@tryghost/errors');",
     "const {promisify: promise} = require('node:util');",
-    "const legacy = require('../../../kernel/clock').moment;",
+    "const legacy = require('@tryghost/kernel/clock').moment;",
     "const {OtherService} = require('./other-service');",
     'new Service({tpl});',
     'new Service(schema);',
@@ -527,7 +527,7 @@ test('allows local library use, computed values, injected application dependenci
     import OtherService from '../other/service';
     import errors from '@tryghost/errors';
     import {z} from 'zod';
-    import {getUnixTime} from '../../../kernel/clock';
+    import {getUnixTime} from '@tryghost/kernel/clock';
     import tpl from '@tryghost/tpl';
     import logging from '@tryghost/logging';
     const schema = z.object({url: z.string()});
@@ -591,7 +591,7 @@ test('shares the dependency-cruiser allowlist, including exact local files and p
     import json from '../../lib/db-types/json';
     import lookalike from '@tryghost/errors-extra';
     import lookalikeFile from '../../lib/db-types/boolean-extra';
-    import kernel from '../../../kernel/anything-at-all';
+    import kernel from '@tryghost/kernel/anything-at-all';
     import os from 'node:os';
     new Service({errors, manifest, contracts, otherContract, objectId, boolean, json, lookalike, lookalikeFile, kernel, os});
   `;
@@ -599,7 +599,7 @@ test('shares the dependency-cruiser allowlist, including exact local files and p
   assert.equal(original.diagnostics.length, 8);
   // Contracts and the kernel are allowed whole, so every file of either is reported.
   for (const library of [
-    '../../../kernel/anything-at-all',
+    '@tryghost/kernel/anything-at-all',
     '@tryghost/errors/subpath',
     '@tryghost/app-contracts/manifest',
     '@tryghost/app-contracts',
@@ -704,11 +704,11 @@ test('handles TypeScript require imports and literal dynamic imports', () => {
     `
     import Service = require('./service');
     import tpl = require('@tryghost/tpl');
-    const {getUnixTime} = await import('../../../kernel/clock');
+    const {getUnixTime} = await import('@tryghost/kernel/clock');
     const {OtherService} = await import('./other-service');
     new Service({tpl});
     new OtherService({getUnixTime});
-    new Service({clock: await import('../../../kernel/clock')});
+    new Service({clock: await import('@tryghost/kernel/clock')});
   `,
     serviceRoot,
   );
@@ -1032,7 +1032,7 @@ test('rejects computed require and import in service files, which the boundary s
   assert.ok(!elsewhere.diagnostics.some(({ code }) => code === 'import(no-dynamic-require)'));
 });
 
-const kernelFile = 'ghost/core/kernel/example.ts';
+const kernelFile = 'kernel/src/example.ts';
 const purity = 'ghost(kernel-purity)';
 const purityFindings = (source: string, file = kernelFile) =>
   lint(source, file)
@@ -1125,8 +1125,8 @@ test('rejects ambient reads in a kernel file, at module scope and inside functio
 
 test('applies kernel purity to the kernel only', () => {
   const source = "import fs from 'node:fs';\nlet state = fs;\nexport const get = () => state;";
-  assert.deepEqual(purityFindings(source, 'ghost/core/foundation/example.ts'), []);
-  assert.deepEqual(purityFindings(source, 'ghost/core/bootstrap/example.ts'), []);
+  assert.deepEqual(purityFindings(source, 'foundry/src/example.ts'), []);
+  assert.deepEqual(purityFindings(source, 'ghost/bootstrap/example.ts'), []);
   assert.deepEqual(purityFindings(source, 'ghost/core/server/lib/example.ts'), []);
   assert.equal(purityFindings(source).length, 2);
 });

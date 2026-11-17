@@ -17,7 +17,7 @@ complete the root instead.
 
 - Read the root and nearest `AGENTS.md`, the
   [services guide](../../../ghost/core/server/services/README.md),
-  [kernel contract](../../../ghost/core/kernel/README.md#service-initialization),
+  [kernel contract](../../../kernel/README.md#service-initialization),
   [testing guide](../../../docs/contributing/testing.md) and
   [contribution workflow](../../../docs/contributing/workflow.md).
 - Inspect status, existing branches/worktrees and related PRs. Preserve unrelated

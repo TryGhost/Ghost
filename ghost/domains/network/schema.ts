@@ -1,4 +1,4 @@
-import { defineSchema } from '../../core/kernel/domains/definitions';
+import { defineSchema } from '@tryghost/kernel/domains/definitions';
 
 export default defineSchema({
   tables: {

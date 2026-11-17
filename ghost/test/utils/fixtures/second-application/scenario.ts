@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { describeManifest } from '../../../../core/kernel/domains/discover';
+import { describeManifest } from '@tryghost/kernel/domains/discover';
 import { createLendingDesk, scheduled } from './bootstrap/app';
 import { clock, journal, reset } from './shared';
 

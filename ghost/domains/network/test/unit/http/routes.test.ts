@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { definitionKind } from '../../../../../core/kernel/domains/definitions';
+import { definitionKind } from '@tryghost/kernel/domains/definitions';
 
 const routes = require('../../../http/routes').default;
 

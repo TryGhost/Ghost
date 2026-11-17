@@ -4,7 +4,7 @@ import _ from 'lodash';
 
 import defaults from '../../../../core/shared/config/defaults.json';
 import { configSources } from '../../../utils/config-sources';
-import { resolveAdapterOptions } from '../../../../core/kernel/adapter-manager';
+import { resolveAdapterOptions } from '@tryghost/kernel/adapter-manager';
 import { normalizeAdapterConfig } from '../../../../core/server/services/adapter-manager/config';
 import { createConfig } from '../../../../core/shared/config/validated';
 

@@ -35,8 +35,8 @@ const externalRequest = require('../../../../../../core/server/lib/request-exter
 const oembedRoot = require('../../../../../publishing/transition/services/oembed').default;
 const mentionsRoot = require('../../../../../../core/server/services/mentions').default;
 const staff = require('../../../../../../core/server/services/staff').default;
-const application: typeof import('../../../../../../core/bootstrap/app').default =
-  require('../../../../../../core/bootstrap/app').default;
+const application: typeof import('../../../../../../bootstrap/app').default =
+  require('../../../../../../bootstrap/app').default;
 const boot: typeof import('../../../../boot').default = require('../../../../boot').default;
 const ROOT_PATH = require.resolve('../../../../services/recommendations');
 

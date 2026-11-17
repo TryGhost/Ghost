@@ -9,7 +9,7 @@ import {
   defineSchema,
   defineSettings,
   definitionKind,
-} from '../../../../core/kernel/domains/definitions';
+} from '@tryghost/kernel/domains/definitions';
 
 describe('domain definitions', function () {
   it('tags each definition with its kind and nothing else that can be seen', function () {

@@ -1,4 +1,6 @@
 packages:
+  - 'kernel'
+  - 'foundry'
   - 'ghost'
   - 'apps/*'
   - 'e2e'

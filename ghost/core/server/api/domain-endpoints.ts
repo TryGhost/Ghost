@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { IncorrectUsageError } from '@tryghost/errors';
-import { domainsRoot, getDomainManifest } from '../../bootstrap/domains/manifest';
+import { domainsRoot, getDomainManifest } from '../../../bootstrap/domains/manifest';
 
 const apiFramework = require('@tryghost/api-framework');
 

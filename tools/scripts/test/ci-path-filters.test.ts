@@ -236,7 +236,7 @@ describe('CI path filters', () => {
       const patterns = await getFilterPatterns(filterName);
       const matches = (path: string) =>
         patterns.every((pattern) => picomatch(pattern, { dot: true })(path));
-      const docsPaths = ['.github/CODEOWNERS', 'ghost/core/kernel/README.md'];
+      const docsPaths = ['.github/CODEOWNERS', 'kernel/README.md'];
 
       assert.strictEqual(docsPaths.some(matches), false, filterName);
       for (const path of ['ghost/core/index.js', '.github/workflows/ci.yml']) {

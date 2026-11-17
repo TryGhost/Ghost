@@ -1,8 +1,8 @@
-import { guardReadOnly as guard } from '../../foundation/config/guard';
+import { guardReadOnly as guard } from '@tryghost/foundry/config/guard';
 
 /**
  * When Ghost's config is guarded rather than frozen. The guard itself is the
- * framework's: see ../../foundation/config/guard.ts.
+ * framework's: see ../../foundry/config/guard.ts.
  *
  * Whether writes to config should throw rather than be dropped.
  *

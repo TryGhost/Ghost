@@ -1,0 +1,66 @@
+{
+  "name": "@tryghost/kernel",
+  "version": "private",
+  "private": true,
+  "description": "Types, define helpers and pure functions for Ghost applications. Importable anywhere; holds no state.",
+  "license": "MIT",
+  "author": "Ghost Foundation",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "kernel"
+  },
+  "files": [
+    "build"
+  ],
+  "exports": {
+    "./adapter-manager": {
+      "source": "./src/adapter-manager/index.ts",
+      "types": "./build/adapter-manager/index.d.ts",
+      "default": "./build/adapter-manager/index.js"
+    },
+    "./testing": {
+      "source": "./src/testing/index.ts",
+      "types": "./build/testing/index.d.ts",
+      "default": "./build/testing/index.js"
+    },
+    "./*": {
+      "source": "./src/*.ts",
+      "types": "./build/*.d.ts",
+      "default": "./build/*.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test:types": "tsc --noEmit",
+    "lint:code": "eslint src/ --cache",
+    "lint": "pnpm run '/^lint:/'"
+  },
+  "dependencies": {
+    "@tryghost/errors": "catalog:",
+    "@tryghost/logging": "catalog:",
+    "knex": "catalog:",
+    "moment-timezone": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:"
+  },
+  "ghostPackage": {
+    "goldenPath": "exempt",
+    "reason": "Spike: framework code compiled to CommonJS, as it was inside ghost/core. See docs/plans/domain-spike-findings.md, part 3."
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/build"
+        ]
+      }
+    }
+  }
+}

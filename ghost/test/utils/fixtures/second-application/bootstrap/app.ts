@@ -1,10 +1,10 @@
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { createApplication } from '../../../../../core/foundation/application';
-import { createConfig, loadConfigSources } from '../../../../../core/foundation/config';
-import { createLogger } from '../../../../../core/foundation/logging';
-import type { ScheduledJob } from '../../../../../core/kernel/domains/domain-layer';
+import { createApplication } from '@tryghost/foundry/application';
+import { createConfig, loadConfigSources } from '@tryghost/foundry/config';
+import { createLogger } from '@tryghost/foundry/logging';
+import type { ScheduledJob } from '@tryghost/kernel/domains/domain-layer';
 import { configSchema } from '../config/schema';
 
 // A second application on the same framework: a lending desk, with its own

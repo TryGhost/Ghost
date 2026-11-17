@@ -3,7 +3,7 @@ import os from 'node:os';
 import type { Knex } from 'knex';
 import _ from 'lodash';
 import errors from '@tryghost/errors';
-import type { Logger } from '../../../kernel/logging';
+import type { Logger } from '@tryghost/kernel/logging';
 
 const betterSqlitePatches = require('./better-sqlite3-patches');
 

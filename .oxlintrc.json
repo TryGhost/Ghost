@@ -71,7 +71,6 @@
     {
       "files": [
         "ghost/core/server/**/*.js",
-        "ghost/core/kernel/**/*.js",
         "ghost/core/shared/**/*.js",
         "ghost/core/frontend/**/*.js",
         "ghost/core/*.js",
@@ -79,6 +78,7 @@
         "ghost/bin/**/*.js",
         "ghost/scripts/**/*.js",
         "ghost/*.js",
+        "ghost/bootstrap/**/*.ts",
         "ghost/core/**/*.ts",
         "ghost/domains/**/*.ts",
         "ghost/*.ts",
@@ -146,7 +146,11 @@
       ]
     },
     {
-      "files": ["ghost/core/**/*.{js,ts}", "ghost/domains/**/*.{js,ts}"],
+      "files": [
+        "ghost/bootstrap/**/*.{js,ts}",
+        "ghost/core/**/*.{js,ts}",
+        "ghost/domains/**/*.{js,ts}"
+      ],
       "rules": {
         "local-filenames/match-regex": ["error", "^[a-z0-9.-]+$", false]
       },
@@ -236,7 +240,7 @@
         "ghost/service-root-shape": [
           "error",
           {
-            "helperImport": "../../../kernel/define-service"
+            "helperImport": "@tryghost/kernel/define-service"
           }
         ],
         "ghost/no-injected-service-libraries": "error"
@@ -248,7 +252,7 @@
         "ghost/service-root-shape": [
           "error",
           {
-            "helperImport": "../../../../../core/kernel/define-service"
+            "helperImport": "@tryghost/kernel/define-service"
           }
         ],
         "ghost/no-injected-service-libraries": "error"
@@ -260,13 +264,13 @@
         "ghost/service-root-shape": [
           "error",
           {
-            "helperImport": "../../../../core/kernel/define-service"
+            "helperImport": "@tryghost/kernel/define-service"
           }
         ]
       }
     },
     {
-      "files": ["ghost/core/kernel/**/*.ts"],
+      "files": ["kernel/src/**/*.ts"],
       "rules": {
         "ghost/kernel-purity": "error"
       }
@@ -289,7 +293,12 @@
       }
     },
     {
-      "files": ["ghost/core/**/*.{js,ts}", "ghost/domains/**/*.{js,ts}", "ghost/test/**/*.{js,ts}"],
+      "files": [
+        "ghost/bootstrap/**/*.{js,ts}",
+        "ghost/core/**/*.{js,ts}",
+        "ghost/domains/**/*.{js,ts}",
+        "ghost/test/**/*.{js,ts}"
+      ],
       "rules": {
         "ghost/prefer-canonical-types": "error"
       }

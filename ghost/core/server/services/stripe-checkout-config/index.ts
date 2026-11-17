@@ -1,6 +1,6 @@
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '@tryghost/kernel/define-service';
 import urlUtils from '../../../shared/url-utils';
 import * as metafields from '../members-metafields';
 import {

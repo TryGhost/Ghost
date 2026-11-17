@@ -9,8 +9,8 @@
 
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { describeManifest } from '../core/kernel/domains/discover';
-import { domainsRoot, getDomainManifest } from '../core/bootstrap/domains/manifest';
+import { describeManifest } from '@tryghost/kernel/domains/discover';
+import { domainsRoot, getDomainManifest } from '../bootstrap/domains/manifest';
 
 const lines = describeManifest(getDomainManifest());
 process.stdout.write(lines.length ? `${lines.join('\n')}\n` : '');

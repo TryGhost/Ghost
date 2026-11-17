@@ -109,13 +109,17 @@ export function compareKnownViolations(
 // repository nothing is committed and there is nothing to report. Any other
 // Git failure stops the check, so it cannot pass without having looked.
 export function committedBuildOutput(repository: string) {
-  const result = spawnSync('git', ['ls-files', '-z', '--', 'ghost/core', 'ghost/domains'], {
-    cwd: repository,
-    encoding: 'utf8',
-    maxBuffer: 64 * 1024 * 1024,
-    // Git's messages are matched below, so keep them untranslated.
-    env: { ...process.env, LC_ALL: 'C' },
-  });
+  const result = spawnSync(
+    'git',
+    ['ls-files', '-z', '--', 'ghost/bootstrap', 'ghost/core', 'ghost/domains', 'kernel', 'foundry'],
+    {
+      cwd: repository,
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+      // Git's messages are matched below, so keep them untranslated.
+      env: { ...process.env, LC_ALL: 'C' },
+    },
+  );
   if (result.error) {
     throw new Error(`Could not list tracked files: ${result.error.message}`);
   }
@@ -141,10 +145,12 @@ export function committedBuildOutput(repository: string) {
   });
 }
 
-// The full scan covers Core, the domains beside it and the apps. A checkout
+// The full scan covers the framework, Core, the domains beside it and the apps. A checkout
 // with no domains yet has nothing there to scan.
 const scanRoots = (repository: string) =>
-  ['ghost/core', 'ghost/domains', 'apps'].filter((root) => existsSync(path.join(repository, root)));
+  ['kernel/src', 'foundry/src', 'ghost/bootstrap', 'ghost/core', 'ghost/domains', 'apps'].filter(
+    (root) => existsSync(path.join(repository, root)),
+  );
 
 // Lint and contributor reports use this single scan and known-violations file.
 // Reports retain all findings; only lint uses the comparison to decide success.

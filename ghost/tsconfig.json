@@ -104,6 +104,7 @@
   "include": [
     "MigratorConfig.mts",
     "bin/**/*.ts",
+    "bootstrap/**/*.ts",
     "core/**/*.ts",
     "domains/**/*.ts",
     "types/**/*.d.ts"

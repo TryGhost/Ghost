@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import { definitionKind } from '../../../../../core/kernel/domains/definitions';
+import { definitionKind } from '@tryghost/kernel/domains/definitions';
 
 const root = require('../../../services/recommendations').default;
 const job = require('../../../jobs/refresh-incoming-recommendations.job').default;

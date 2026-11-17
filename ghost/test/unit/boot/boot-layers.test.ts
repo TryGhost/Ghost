@@ -78,7 +78,7 @@ describe('Boot layers', function () {
   });
 
   it('starts the domain layer in its own step, which requires nothing else', function () {
-    assert.deepEqual(required(step('initDomains')), ['./bootstrap/domains']);
+    assert.deepEqual(required(step('initDomains')), ['../bootstrap/domains']);
     assert.equal(boot.split('domains.start(').length - 1, 1, 'domains.start() is called once');
     assert.ok(step('initDomains').includes('await domains.start()'));
   });

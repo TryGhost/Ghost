@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { CacheBase } from '@tryghost/adapter-base-cache';
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '@tryghost/kernel/define-service';
 
 export default defineService('Tags Public', () => {
   const adapterManager = require('../adapter-manager').default;

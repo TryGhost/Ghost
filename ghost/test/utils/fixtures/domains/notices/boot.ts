@@ -1,4 +1,4 @@
-import { defineDomain } from '../../../../../core/kernel/domains/definitions';
+import { defineDomain } from '@tryghost/kernel/domains/definitions';
 
 export interface NoticesDependencies {
   readonly publish: (event: object) => Promise<void>;

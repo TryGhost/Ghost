@@ -1,4 +1,4 @@
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '@tryghost/kernel/define-service';
 import { SlackPingService } from './slack-ping-service';
 
 export default defineService('Slack ping', {

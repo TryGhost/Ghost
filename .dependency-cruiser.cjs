@@ -15,8 +15,8 @@ const serviceImplementations = {
   // Legacy JS roots remain wiring candidates; nested indexes are implementations.
   pathNot: `^${bootOwnedServiceHomes}/[^/]+/index\\.(?:js|ts)$`,
 };
-// Ghost's own server code: Core and the domains beside it.
-const ghostServer = '^ghost/(core|domains)/';
+// Ghost's own server code: Core, and the bootstrap and domains beside it.
+const ghostServer = '^ghost/(bootstrap|core|domains)/';
 
 // The service checks apply to the services directory only, so a defineService
 // root anywhere else gets none of them. Each root listed here is a reviewed
@@ -54,6 +54,12 @@ const domainShared = [
   '^ghost/core/server/lib/mail/', // Mail.
   '^ghost/core/server/lib/request-external\\.js$', // Outbound HTTP, limited by config.
 ];
+// The framework, which lives outside the Ghost application as two workspace
+// packages. Each is matched by its resolved path (source, or built output when
+// GHOST_DEPENDENCY_RESOLUTION=built); the bare name is what an unresolved
+// import looks like.
+const kernel = '^kernel/(?:src|build)/|^@tryghost/kernel(?:/|$)';
+const foundry = '^foundry/(?:src|build)/|^@tryghost/foundry(?:/|$)';
 // The foundation's instances, the modules that hold them and the code that
 // builds them. Reshaped code is handed these; it imports none of them.
 const foundationInstances = [
@@ -64,8 +70,8 @@ const foundationInstances = [
   '^@tryghost/metrics$|(^|/)node_modules/@tryghost/metrics/', // Metrics, built the way the logger was.
   '^ghost/core/shared/config/', // Config: Ghost's values and the module that returns the instance.
   '^ghost/core/server/data/db/', // The database handle.
-  '^ghost/core/bootstrap/', // Where the instances live.
-  '^ghost/core/foundation/', // What builds them.
+  '^ghost/bootstrap/', // Where the instances live.
+  foundry, // What builds them.
 ];
 // What no reshaped file may import: routes are data and the web layer owns the
 // framework, the auth middleware and the endpoint registry. The scan does not
@@ -110,8 +116,8 @@ const serviceDependencyAllowlist = [
   '^(node:)?path$', // Path string parsing and joining.
   '^(node:)?vm$', // Bounded script execution for caller-owned regex matching with a timeout.
   '^(node:)?(assert/strict|stream|stream/promises|buffer|timers/promises)$', // Node's in-memory primitives: assertions, streams, buffers and timers; no I/O of their own.
-  '^ghost/core/kernel/', // The kernel: stateless by rule (ghost/kernel-purity), so any code may import any of it.
-  '^ghost/core/bootstrap/domains/fragments\\.ts$', // What the domains describe about themselves (settings, permissions, schema, routes); reads describing files once, no application instances.
+  kernel, // The kernel: stateless by rule (ghost/kernel-purity), so any code may import any of it.
+  '^ghost/bootstrap/domains/fragments\\.ts$', // What the domains describe about themselves (settings, permissions, schema, routes); reads describing files once, no application instances.
   '^ghost/core/server/lib/db-types/date\\.ts$', // Database date codec.
   '^ghost/core/server/lib/db-types/boolean\\.ts$', // Database boolean codec.
   '^ghost/core/server/lib/db-types/json\\.ts$', // Database JSON codec.
@@ -515,14 +521,10 @@ module.exports = {
       severity: 'error',
       from: {
         path: ghostServer,
-        pathNot: [
-          `^${allServiceHomes}/[^/]+/index\\.ts$`,
-          '^ghost/core/kernel/',
-          ...serviceRootsElsewhere,
-        ],
+        pathNot: [`^${allServiceHomes}/[^/]+/index\\.ts$`, kernel, ...serviceRootsElsewhere],
       },
       to: {
-        path: '^ghost/core/kernel/define-service\\.ts$',
+        path: '^kernel/(?:src|build)/define-service\\.[jt]s$|^@tryghost/kernel/define-service$',
         dependencyTypesNot: ['type-only', 'type-import'],
       },
     },
@@ -579,7 +581,7 @@ module.exports = {
           // Everything else in another domain except its actions is reported by
           // the rules above. Its actions are for the domain file to import.
           '^ghost/domains/[^/]+/(?!actions/)',
-          '^ghost/core/kernel/',
+          kernel,
         ],
         dependencyTypesNot: ['type-only', 'type-import'],
       },
@@ -605,7 +607,7 @@ module.exports = {
       severity: 'error',
       from: { path: `^ghost/domains/([^/]+)/(?:settings|permissions|schema|http/routes)\\.ts$` },
       to: {
-        pathNot: ['^ghost/core/kernel/', '^ghost/domains/$1/data/'],
+        pathNot: [kernel, '^ghost/domains/$1/data/'],
         dependencyTypesNot: ['type-only', 'type-import'],
       },
     },
@@ -627,7 +629,7 @@ module.exports = {
       from: { path: domainWiring },
       to: {
         path: '^ghost/core/',
-        pathNot: ['^ghost/core/kernel/', ...domainShared, ...foundationInstances],
+        pathNot: [...domainShared, ...foundationInstances],
         dependencyTypesNot: ['type-only', 'type-import'],
       },
     },
@@ -651,40 +653,41 @@ module.exports = {
       to: { path: foundationInstances, dependencyTypesNot: ['type-only', 'type-import'] },
     },
     // ============================================================
-    // Kernel and foundation
+    // Kernel and foundry
     // ============================================================
     {
-      name: 'foundation-only-from-bootstrap',
+      name: 'foundry-only-from-bootstrap',
       comment:
-        "The foundation builds what exists once per process: a second logger or database handle is a defect. Only an application's bootstrap imports it (ghost/core/bootstrap, and shared/config, which is Ghost's config composition). Everything else is handed the instance and imports the kernel's type.",
+        "The foundry builds what exists once per process: a second logger or database handle is a defect. Only an application's bootstrap imports it (ghost/bootstrap, and shared/config, which is Ghost's config composition). Everything else is handed the instance and imports the kernel's type.",
       severity: 'error',
       from: {
-        path: '^ghost/',
+        path: '^(?:ghost|kernel)/',
         pathNot: [
-          '^ghost/core/foundation/',
-          '^ghost/core/bootstrap/',
+          '^ghost/bootstrap/',
           '^ghost/core/shared/config/',
           '^ghost/test/',
           '^ghost/domains/[^/]+/test/',
+          // Ghost's adapter composition, until it moves into the bootstrap.
+          '^ghost/core/server/services/adapter-manager/index\\.ts$',
         ],
       },
-      to: { path: '^ghost/core/foundation/', dependencyTypesNot: ['type-only', 'type-import'] },
+      to: { path: foundry, dependencyTypesNot: ['type-only', 'type-import'] },
     },
     {
-      name: 'foundation-not-application',
+      name: 'foundry-not-application',
       comment:
-        'Foundation is framework code: it imports the kernel and general-purpose packages, never the application it assembles.',
+        'Foundry is framework code: it imports the kernel and general-purpose packages, never the application it assembles.',
       severity: 'error',
-      from: { path: '^ghost/core/foundation/' },
-      to: { path: '^ghost/', pathNot: '^ghost/core/(?:foundation|kernel)/' },
+      from: { path: '^foundry/' },
+      to: { path: '^ghost/' },
     },
     // Kernel primitives must be independent of the application they support.
     {
       name: 'kernel-not-application',
       comment: 'Kernel code must not import application code, including shared.',
       severity: 'error',
-      from: { path: '^ghost/core/kernel/' },
-      to: { path: '^ghost/', pathNot: '^ghost/core/kernel/' },
+      from: { path: '^kernel/' },
+      to: { path: `^ghost/|${foundry}` },
     },
     // ============================================================
     // shared/ must not require server/* or frontend/*
@@ -930,6 +933,7 @@ module.exports = {
       path: [
         'node_modules',
         `^(?!${bootOwnedServiceHomes}/)(apps|ghost|packages|contracts|koenig)/.*/(build|built|dist)/`,
+        '^(kernel|foundry)/build/',
       ],
     },
     // Skip our own tests and emitted companions. All source inside services stays visible:

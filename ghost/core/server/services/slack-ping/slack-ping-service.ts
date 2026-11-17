@@ -1,7 +1,7 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import type { GhostLogger } from '@tryghost/logging';
-import { getUnixTime } from '../../../kernel/clock';
+import { getUnixTime } from '@tryghost/kernel/clock';
 
 import { messages, defaultPostSlugs } from './constants';
 

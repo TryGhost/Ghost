@@ -47,9 +47,15 @@ describe('domain import rules', () => {
         to: 'ghost/core/shared/second-application/shared.ts',
       },
     ]);
-    cpSync(path.join(repository, 'ghost/core/kernel'), path.join(root, 'ghost/core/kernel'), {
-      recursive: true,
-    });
+    // The framework is two workspace packages. Copy the kernel's source and both
+    // manifests, and link them where Ghost's files resolve them, so
+    // `@tryghost/kernel/x` reaches kernel/src/x.ts as it does in the real tree.
+    cpSync(path.join(repository, 'kernel/src'), path.join(root, 'kernel/src'), { recursive: true });
+    for (const name of ['kernel', 'foundry']) {
+      cpSync(path.join(repository, name, 'package.json'), path.join(root, name, 'package.json'));
+      mkdirSync(path.join(root, 'node_modules/@tryghost'), { recursive: true });
+      symlinkSync(path.join(root, name), path.join(root, 'node_modules/@tryghost', name));
+    }
     for (const [file, source] of Object.entries({
       'package.json': '{"private":true,"type":"commonjs"}',
       [legacyInventoryFile]: JSON.stringify({ services: {} }),
@@ -63,8 +69,8 @@ describe('domain import rules', () => {
       'ghost/core/shared/config/index.js': 'module.exports = {};',
       'ghost/core/shared/sentry.js': 'module.exports = {};',
       'ghost/core/server/data/db/index.js': 'module.exports = {};',
-      'ghost/core/foundation/logging.ts': 'export const createLogger = () => ({});',
-      'ghost/core/bootstrap/app.ts': 'export default {};',
+      'foundry/src/logging.ts': 'export const createLogger = () => ({});',
+      'ghost/bootstrap/app.ts': 'export default {};',
       'ghost/core/server/web/api/middleware.js': 'module.exports = {};',
       'ghost/core/server/api/endpoints/index.js': 'module.exports = {};',
       'ghost/domains/library/transition/services/old-catalogue/legacy.js': 'module.exports = {};',
@@ -98,6 +104,9 @@ describe('domain import rules', () => {
       process.execPath,
       [
         cli,
+        'kernel/src',
+        'foundry/src',
+        'ghost/bootstrap',
         'ghost/core',
         'ghost/domains',
         '--config',
@@ -110,7 +119,7 @@ describe('domain import rules', () => {
     assert.ifError(result.error);
     const graph = JSON.parse(result.stdout) as ICruiseResult;
     return graph.summary.violations
-      .filter(({ rule }) => /^(?:domain|foundation|kernel)-/.test(rule.name))
+      .filter(({ rule }) => /^(?:domain|foundry|kernel)-/.test(rule.name))
       .map(({ rule, from, to }) => ({
         rule: rule.name,
         severity: rule.severity,
@@ -240,7 +249,7 @@ describe('domain import rules', () => {
           [
             "import errors from '@tryghost/errors';",
             "import type { GhostLogger } from '@tryghost/logging';",
-            "import { getUnixTime } from '../../../core/kernel/clock';",
+            "import { getUnixTime } from '@tryghost/kernel/clock';",
             "import logging from '@tryghost/logging';",
             "import knex from 'knex';",
             "const models = require('../../../core/server/models');",
@@ -311,24 +320,24 @@ describe('domain import rules', () => {
           'ghost/domains/alerts/boot.ts',
           [
             "import type { GhostLogger } from '@tryghost/logging';",
-            "import type { Foundation } from '../../core/kernel/foundation';",
+            "import type { Foundation } from '@tryghost/kernel/foundation';",
             "const logging = require('@tryghost/logging');",
             "const events = require('@tryghost/domain-events');",
             "const config = require('../../core/shared/config');",
             "const db = require('../../core/server/data/db');",
-            "const application = require('../../core/bootstrap/app');",
-            "const { createLogger } = require('../../core/foundation/logging');",
+            "const application = require('../../bootstrap/app');",
+            "const { createLogger } = require('@tryghost/foundry/logging');",
             'export default [logging, events, config, db, application, createLogger] as unknown as (GhostLogger | Foundation)[];',
           ].join('\n'),
         ),
         [
           'domain-foundation-injected: domains/alerts/boot.ts → @tryghost/domain-events',
           'domain-foundation-injected: domains/alerts/boot.ts → @tryghost/logging',
-          'domain-foundation-injected: domains/alerts/boot.ts → core/bootstrap/app.ts',
-          'domain-foundation-injected: domains/alerts/boot.ts → core/foundation/logging.ts',
+          'domain-foundation-injected: domains/alerts/boot.ts → bootstrap/app.ts',
           'domain-foundation-injected: domains/alerts/boot.ts → core/server/data/db/index.js',
           'domain-foundation-injected: domains/alerts/boot.ts → core/shared/config/index.js',
-          'foundation-only-from-bootstrap: domains/alerts/boot.ts → core/foundation/logging.ts',
+          'domain-foundation-injected: domains/alerts/boot.ts → foundry/src/logging.ts',
+          'foundry-only-from-bootstrap: domains/alerts/boot.ts → foundry/src/logging.ts',
         ],
       );
     });
@@ -340,8 +349,8 @@ describe('domain import rules', () => {
         violationsOf(
           'ghost/domains/library/services/overdue/index.ts',
           [
-            "import { defineService } from '../../../../core/kernel/define-service';",
-            "import { parseConfigSlice } from '../../../../core/kernel/config';",
+            "import { defineService } from '@tryghost/kernel/define-service';",
+            "import { parseConfigSlice } from '@tryghost/kernel/config';",
             "import type { LibraryDependencies } from '../../boot';",
             "import BookLent from '../../events/book-lent.event';",
             "import { listNotices } from '../../../notices/actions/list-notices.action';",
@@ -365,14 +374,14 @@ describe('domain import rules', () => {
     });
   });
 
-  describe('kernel and foundation', () => {
+  describe('kernel and foundry', () => {
     const kernel = [
-      "import { parseConfigSlice } from 'KERNEL/config';",
-      "import { defineJob } from 'KERNEL/domains/definitions';",
-      "import { discoverDomains } from 'KERNEL/domains/discover';",
-      "import { createDomainLayer } from 'KERNEL/domains/domain-layer';",
-      "import { getUnixTime } from 'KERNEL/clock';",
-      "import { createLoggerFake } from 'KERNEL/testing';",
+      "import { parseConfigSlice } from '@tryghost/kernel/config';",
+      "import { defineJob } from '@tryghost/kernel/domains/definitions';",
+      "import { discoverDomains } from '@tryghost/kernel/domains/discover';",
+      "import { createDomainLayer } from '@tryghost/kernel/domains/domain-layer';",
+      "import { getUnixTime } from '@tryghost/kernel/clock';",
+      "import { createLoggerFake } from '@tryghost/kernel/testing';",
       'export const used = [parseConfigSlice, defineJob, discoverDomains, createDomainLayer, getUnixTime, createLoggerFake];',
     ].join('\n');
     const everyRule = () => {
@@ -380,6 +389,9 @@ describe('domain import rules', () => {
         process.execPath,
         [
           cli,
+          'kernel/src',
+          'foundry/src',
+          'ghost/bootstrap',
           'ghost/core',
           'ghost/domains',
           '--config',
@@ -395,32 +407,30 @@ describe('domain import rules', () => {
     };
 
     // Anything in the kernel can be imported by any code, whatever else that code may import.
-    for (const [where, file, up] of [
-      ['a service implementation file', 'ghost/core/server/services/staff/reach.ts', '../../..'],
-      ['a service root', 'ghost/core/server/services/staff/index.ts', '../../..'],
-      ['the front end', 'ghost/core/frontend/helpers/reach.ts', '../..'],
-      ['shared code', 'ghost/core/shared/reach.ts', '..'],
-      ['the web layer', 'ghost/core/server/web/api/reach.ts', '../../..'],
-      ['a model', 'ghost/core/server/models/reach.ts', '../..'],
+    for (const [where, file] of [
+      ['a service implementation file', 'ghost/core/server/services/staff/reach.ts'],
+      ['a service root', 'ghost/core/server/services/staff/index.ts'],
+      ['the front end', 'ghost/core/frontend/helpers/reach.ts'],
+      ['shared code', 'ghost/core/shared/reach.ts'],
+      ['the web layer', 'ghost/core/server/web/api/reach.ts'],
+      ['a model', 'ghost/core/server/models/reach.ts'],
       [
         'an implementation file in a domain',
         'ghost/domains/library/repositories/reach.repository.ts',
-        '../../../core',
       ],
-      ['a fragment', 'ghost/domains/notices/settings.ts', '../../core'],
-      ['a listener', 'ghost/domains/notices/listeners/reach.listener.ts', '../../../core'],
-      ['a domain file', 'ghost/domains/alerts/boot.ts', '../../core'],
+      ['a fragment', 'ghost/domains/notices/settings.ts'],
+      ['a listener', 'ghost/domains/notices/listeners/reach.listener.ts'],
+      ['a domain file', 'ghost/domains/alerts/boot.ts'],
       [
         'code moved in but not reshaped',
         'ghost/domains/library/transition/services/old-catalogue/reach.ts',
-        '../../../../../core',
       ],
-      ['the foundation', 'ghost/core/foundation/reach.ts', '..'],
-      ['the bootstrap', 'ghost/core/bootstrap/reach.ts', '..'],
+      ['the foundry', 'foundry/src/reach.ts'],
+      ['the bootstrap', 'ghost/bootstrap/reach.ts'],
     ] as const) {
       it(`lets ${where} import anything in the kernel`, () => {
         const existing = file.endsWith('staff/index.ts');
-        write(file, kernel.replaceAll('KERNEL', `${up}/kernel`));
+        write(file, kernel);
         try {
           assert.deepEqual(everyRule(), []);
         } finally {
@@ -439,56 +449,56 @@ describe('domain import rules', () => {
     it('keeps one exception: only a service root imports defineService', () => {
       write(
         'ghost/core/server/web/api/reach.ts',
-        "import { defineService } from '../../../kernel/define-service';\nexport const used = defineService;",
+        "import { defineService } from '@tryghost/kernel/define-service';\nexport const used = defineService;",
       );
       try {
         // An older rule, about where service roots live. It is written as an
         // import rule, so it is the one place the kernel is not freely importable.
         assert.deepEqual(everyRule(), [
-          'service-roots-in-services: ghost/core/server/web/api/reach.ts → ghost/core/kernel/define-service.ts',
+          'service-roots-in-services: ghost/core/server/web/api/reach.ts → kernel/src/define-service.ts',
         ]);
       } finally {
         rmSync(path.join(root, 'ghost/core/server/web/api/reach.ts'));
       }
     });
 
-    it("lets only the bootstrap and Ghost's config import the foundation", () => {
+    it("lets only the bootstrap and Ghost's config import the foundry", () => {
       const source =
-        "import { createLogger } from 'UP/foundation/logging';\nimport type { Logger } from 'UP/kernel/logging';\nexport const used = createLogger as unknown as Logger;";
-      const tried = (file: string, up: string) => {
-        write(file, source.replaceAll('UP', up));
+        "import { createLogger } from '@tryghost/foundry/logging';\nimport type { Logger } from '@tryghost/kernel/logging';\nexport const used = createLogger as unknown as Logger;";
+      const tried = (file: string) => {
+        write(file, source);
         try {
           return everyRule();
         } finally {
           rmSync(path.join(root, file));
         }
       };
-      assert.deepEqual(tried('ghost/core/bootstrap/reach.ts', '..'), []);
-      assert.deepEqual(tried('ghost/core/shared/config/reach.ts', '../..'), []);
-      assert.deepEqual(tried('ghost/core/server/web/api/reach.ts', '../../..'), [
-        'foundation-only-from-bootstrap: ghost/core/server/web/api/reach.ts → ghost/core/foundation/logging.ts',
+      assert.deepEqual(tried('ghost/bootstrap/reach.ts'), []);
+      assert.deepEqual(tried('ghost/core/shared/config/reach.ts'), []);
+      assert.deepEqual(tried('ghost/core/server/web/api/reach.ts'), [
+        'foundry-only-from-bootstrap: ghost/core/server/web/api/reach.ts → foundry/src/logging.ts',
       ]);
-      assert.deepEqual(tried('ghost/core/frontend/helpers/reach.ts', '../..'), [
-        'foundation-only-from-bootstrap: ghost/core/frontend/helpers/reach.ts → ghost/core/foundation/logging.ts',
+      assert.deepEqual(tried('ghost/core/frontend/helpers/reach.ts'), [
+        'foundry-only-from-bootstrap: ghost/core/frontend/helpers/reach.ts → foundry/src/logging.ts',
       ]);
-      assert.deepEqual(tried('ghost/core/kernel/reach.ts', '..'), [
-        'foundation-only-from-bootstrap: ghost/core/kernel/reach.ts → ghost/core/foundation/logging.ts',
-        'kernel-not-application: ghost/core/kernel/reach.ts → ghost/core/foundation/logging.ts',
+      assert.deepEqual(tried('kernel/src/reach.ts'), [
+        'foundry-only-from-bootstrap: kernel/src/reach.ts → foundry/src/logging.ts',
+        'kernel-not-application: kernel/src/reach.ts → foundry/src/logging.ts',
       ]);
     });
 
-    it('keeps the foundation free of the application it assembles', () => {
+    it('keeps the foundry free of the application it assembles', () => {
       write(
-        'ghost/core/foundation/reach.ts',
-        "const config = require('../shared/config');\nconst application = require('../bootstrap/app');\nexport const used = [config, application];",
+        'foundry/src/reach.ts',
+        "const config = require('../../ghost/core/shared/config');\nconst application = require('../../ghost/bootstrap/app');\nexport const used = [config, application];",
       );
       try {
         assert.deepEqual(everyRule(), [
-          'foundation-not-application: ghost/core/foundation/reach.ts → ghost/core/bootstrap/app.ts',
-          'foundation-not-application: ghost/core/foundation/reach.ts → ghost/core/shared/config/index.js',
+          'foundry-not-application: foundry/src/reach.ts → ghost/bootstrap/app.ts',
+          'foundry-not-application: foundry/src/reach.ts → ghost/core/shared/config/index.js',
         ]);
       } finally {
-        rmSync(path.join(root, 'ghost/core/foundation/reach.ts'));
+        rmSync(path.join(root, 'foundry/src/reach.ts'));
       }
     });
   });
@@ -497,16 +507,15 @@ describe('domain import rules', () => {
     for (const fragment of ['settings', 'permissions', 'schema', 'http/routes']) {
       it(`${fragment}.ts imports only the kernel, types and its own data`, () => {
         const up = fragment.includes('/') ? '../' : './';
-        const core = fragment.includes('/') ? '../../../core' : '../../core';
         assert.deepEqual(
           violationsOf(
             `ghost/domains/notices/${fragment}.ts`,
             [
-              `import { defineSettings } from '${core}/kernel/domains/definitions';`,
+              "import { defineSettings } from '@tryghost/kernel/domains/definitions';",
               `import type { Notice } from '${up}data/notice.data';`,
               `import type { NoticeService } from '${up}services/notices/notice.service';`,
               `import notices from '${up}services/notices';`,
-              `import { getUnixTime } from '${core}/kernel/clock';`,
+              "import { getUnixTime } from '@tryghost/kernel/clock';",
               "import errors from '@tryghost/errors';",
               'export default defineSettings({ groups: {} });',
               'export const used = [notices, getUnixTime, errors] as unknown as (Notice | NoticeService)[];',

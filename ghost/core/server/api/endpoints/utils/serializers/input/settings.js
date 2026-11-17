@@ -3,7 +3,7 @@ const url = require('./utils/url');
 const localUtils = require('../../index');
 const settingsCache = require('../../../../../../shared/settings-cache');
 const { WRITABLE_KEYS_ALLOWLIST } = require('../../../../../../shared/labs');
-const { domainEditableSettings } = require('../../../../../../bootstrap/domains/fragments');
+const { domainEditableSettings } = require('../../../../../../../bootstrap/domains/fragments');
 
 const EDITABLE_SETTINGS = [
   'title',

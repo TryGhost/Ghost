@@ -1,4 +1,4 @@
-import { defineService } from '../../../../../../../core/kernel/define-service';
+import { defineService } from '@tryghost/kernel/define-service';
 import type { LibraryDependencies } from '../../boot';
 
 // Nothing waits for reports: boot is not held up while it starts.

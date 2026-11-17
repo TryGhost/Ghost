@@ -1,6 +1,6 @@
 import logging from '@tryghost/logging';
 import * as security from '@tryghost/security';
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '@tryghost/kernel/define-service';
 import { assertDatabaseSupported, createAuth, type GhostAuth } from './create-auth';
 import { usesBetterAuth } from './enabled';
 

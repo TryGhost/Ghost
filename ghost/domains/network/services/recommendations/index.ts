@@ -1,4 +1,4 @@
-import { defineService } from '../../../../core/kernel/define-service';
+import { defineService } from '@tryghost/kernel/define-service';
 import type { NetworkDependencies } from '../../boot';
 import type { IncomingRecommendationController } from '../../http/incoming-recommendation.controller';
 import type { RecommendationController } from '../../http/recommendation.controller';
