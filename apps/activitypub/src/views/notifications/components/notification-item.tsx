@@ -1,6 +1,6 @@
 import NotificationIcon, { NotificationIconSize, NotificationType } from './notification-icon';
 import React from 'react';
-import { cn } from '@tryghost/shade/utils';
+import { cn, useRowPress } from '@tryghost/shade/utils';
 import { rowSurface } from '@tryghost/shade/components';
 
 // Context to share common props between compound components
@@ -29,19 +29,22 @@ const NotificationItem = ({
   url,
   className,
 }: NotificationItemProps) => {
+  const contentId = React.useId();
+  const press = useRowPress<HTMLDivElement>({}, Boolean(onClick));
+
   return (
     <NotificationContext.Provider value={{ onClick, url }}>
       <div
         className={cn(
           rowSurface(onClick ? 'interactive' : 'static'),
-          'group break-anywhere grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 border-b border-border-default py-5 text-left last:border-b-transparent focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden',
+          'group break-anywhere grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 border-b border-border-default py-5 text-left last:border-b-transparent',
           isGrouped ? 'grid' : 'flex',
           centerAlign ? 'items-center' : 'items-start',
           onClick && 'cursor-pointer',
           className,
         )}
-        role={onClick ? 'button' : undefined}
-        tabIndex={onClick ? 0 : undefined}
+        id={contentId}
+        {...press}
         onClick={(event) => {
           const target = event.target as HTMLElement;
           if (target.closest('a, button, input, select, textarea, [role="checkbox"]')) {
@@ -49,24 +52,15 @@ const NotificationItem = ({
           }
           onClick?.();
         }}
-        onKeyDown={(event) => {
-          if (event.target !== event.currentTarget || !onClick) {
-            return;
-          }
-          if (event.key === 'Enter') {
-            event.preventDefault();
-            onClick();
-          } else if (event.key === ' ') {
-            event.preventDefault();
-          }
-        }}
-        onKeyUp={(event) => {
-          if (event.target === event.currentTarget && event.key === ' ' && onClick) {
-            event.preventDefault();
-            onClick();
-          }
-        }}
       >
+        {onClick && (
+          <button
+            aria-labelledby={contentId}
+            className="absolute inset-0 -z-1 rounded-md border-0 bg-transparent p-0 focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
+            type="button"
+            onClick={onClick}
+          />
+        )}
         {children}
       </div>
     </NotificationContext.Provider>

@@ -265,7 +265,11 @@ export const InteractiveRows: Story = {
   },
   render: () => (
     <Box padding="lg">
-      <Table>
+      <Table className="table-fixed">
+        <colgroup>
+          <col className="w-4/5" />
+          <col className="w-1/5" />
+        </colgroup>
         <TableHeader>
           <TableRow>
             <TableHead>Publication</TableHead>

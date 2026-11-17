@@ -19,7 +19,8 @@ import { Box } from '@tryghost/shade/primitives';
 const primaryAction = vi.fn<(name: string) => void>();
 const secondaryAction = vi.fn<(name: string) => void>();
 const row = (index: number) => page.getByRole('listitem').nth(index).element();
-const fill = (element: Element) => getComputedStyle(element, '::before');
+const fill = (element: Element) =>
+  getComputedStyle(element.matches('tr') ? element.querySelector('td, th')! : element, '::before');
 const transparent = 'rgba(0, 0, 0, 0)';
 const geometry = (element: Element) => {
   const { x, y, width, height } = element.getBoundingClientRect();
@@ -129,7 +130,11 @@ describe('shared content row surfaces in the browser', () => {
   it('aligns table headers and cells and keeps data-only rows static', async () => {
     await renderInApp(
       <Box className="w-[480px]" padding="lg">
-        <Table>
+        <Table className="table-fixed">
+          <colgroup>
+            <col className="w-3/5" />
+            <col className="w-2/5" />
+          </colgroup>
           <TableHeader>
             <TableRow>
               <TableHead scope="col">Name</TableHead>
@@ -147,6 +152,9 @@ describe('shared content row surfaces in the browser', () => {
     );
     const header = page.getByRole('columnheader', { name: /name/i }).element();
     const cell = page.getByRole('cell', { name: 'Static entry' });
+    const table = page.getByRole('table').element();
+    expect(header.getBoundingClientRect().left).toBe(table.getBoundingClientRect().left);
+    expect(cell.element().getBoundingClientRect().left).toBe(table.getBoundingClientRect().left);
     expect(getComputedStyle(header).paddingLeft).toBe('0px');
     expect(getComputedStyle(cell.element()).paddingLeft).toBe('0px');
     await cell.hover();

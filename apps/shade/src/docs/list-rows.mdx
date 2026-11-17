@@ -70,7 +70,8 @@ make the row background into another control.
 ## Using the shared behavior
 
 `TableRow` and `ActionListItem` use the shared recipe. Opt a table body row into
-interaction only when it has a primary action; header, footer, spacer, and
+interaction with `interactive` when it has a primary action; `onClick` also
+opts it in by default. Header, footer, spacer, and
 data-only rows remain static. `ActionListItem` supports its existing `hover`
 opt-out for intentionally static or unavailable actions. Mark its primary
 link or button with `ActionListItemContent asChild` and keep secondary controls
@@ -81,9 +82,18 @@ For custom markup, import `rowSurface` and `rowSurfaceClasses` from
 row or `rowSurface('static')` for a static one. These provide shared styling;
 the consumer still owns its links, events, selection, and permissions.
 
+Custom interactive rows also use `useRowPress` from `@tryghost/shade/utils`
+and spread its returned props on the row. It supplies touch press feedback and
+clears it on release, cancellation, or movement without blocking scrolling.
+Pass existing pointer handlers as its first argument to preserve them, and
+pass `false` as its second argument when the row is static. `TableRow` and
+`ActionListItem` compose this behavior automatically.
+
 - Use `data-state="selected"` for selected rows.
 - Mark an actual primary link or button with `rowSurfaceClasses.primaryAction`
-  so the clickable extension follows the shared geometry.
+  so the clickable extension follows the shared geometry. Keep ancestors
+  between that control and the row unpositioned, and place secondary controls
+  above the stretched target with relative positioning and `z-10`.
 - Use `rowSurfaceClasses.inset` when a constrained scrollport has no outward
   gutter. Keep the row content aligned with the corresponding header.
 - Set `data-row-dragging="true"` on the sortable region while dragging to

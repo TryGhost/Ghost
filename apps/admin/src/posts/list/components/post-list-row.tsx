@@ -7,7 +7,7 @@ import {
   rowSurfaceClasses,
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { cn, LucideIcon } from '@tryghost/shade/utils';
+import { cn, LucideIcon, useRowPress } from '@tryghost/shade/utils';
 import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
 import { AdminLink } from '@/shared/admin-link';
 import { FadingText } from '@/shared/fading-text';
@@ -168,6 +168,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
     ref,
   ) {
     const [isHovered, setIsHovered] = useState(false);
+    const press = useRowPress<HTMLLIElement>(rest);
 
     const metaParts = getPostMetaParts(post, { timezone });
     const dateTooltip = getPostDateTooltip(post, { timezone });
@@ -214,6 +215,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
       <li
         ref={ref}
         {...rest}
+        {...press}
         className={cn(
           rowSurface(),
           'group border-b border-border-default',

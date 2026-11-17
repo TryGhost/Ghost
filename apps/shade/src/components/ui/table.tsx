@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { Button } from './button';
 import { cva, VariantProps } from 'class-variance-authority';
 import { rowSurface } from '@/components/ui/row-surface';
+import { useRowPress } from '@/hooks/use-row-press';
 
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => (
@@ -43,18 +44,23 @@ interface TableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
 }
 
 const TableRow = React.forwardRef<HTMLTableRowElement, TableRowProps>(
-  ({ className, interactive, onClick, ...props }, ref) => (
-    <tr
-      ref={ref}
-      className={cn(
-        'group border-b',
-        rowSurface((interactive ?? !!onClick) ? 'interactive' : 'static'),
-        className,
-      )}
-      onClick={onClick}
-      {...props}
-    />
-  ),
+  ({ className, interactive, onClick, ...props }, ref) => {
+    const isInteractive = interactive ?? !!onClick;
+    const press = useRowPress(props, isInteractive);
+    return (
+      <tr
+        ref={ref}
+        className={cn(
+          'group border-b',
+          rowSurface(isInteractive ? 'interactive' : 'static'),
+          className,
+        )}
+        onClick={onClick}
+        {...props}
+        {...press}
+      />
+    );
+  },
 );
 TableRow.displayName = 'TableRow';
 

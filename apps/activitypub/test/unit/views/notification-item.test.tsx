@@ -5,19 +5,15 @@ import NotificationItem from '../../../src/views/notifications/components/notifi
 afterEach(cleanup);
 
 describe('notification row actions', () => {
-  it('activates the primary action with Enter and Space', () => {
+  it('exposes a native primary button labelled by the notification', () => {
     const openNotification = vi.fn();
     render(<NotificationItem onClick={openNotification}>A notification</NotificationItem>);
 
-    const row = screen.getByRole('button', { name: 'A notification' });
-    expect(row.tabIndex).toBe(0);
-    fireEvent.keyDown(row, { key: 'Enter' });
+    const action = screen.getByRole('button', { name: 'A notification' });
+    expect(action.tagName).toBe('BUTTON');
+    expect(action.tabIndex).toBe(0);
+    fireEvent.click(action);
     expect(openNotification).toHaveBeenCalledTimes(1);
-
-    fireEvent.keyDown(row, { key: ' ' });
-    expect(openNotification).toHaveBeenCalledTimes(1);
-    fireEvent.keyUp(row, { key: ' ' });
-    expect(openNotification).toHaveBeenCalledTimes(2);
   });
 
   it('keeps secondary controls independent from the row action', () => {
@@ -33,6 +29,7 @@ describe('notification row actions', () => {
     );
 
     const control = screen.getByRole('button', { name: 'Follow' });
+    expect(control.parentElement?.closest('button, [role="button"]')).toBeNull();
     fireEvent.keyDown(control, { key: 'Enter' });
     fireEvent.keyUp(control, { key: ' ' });
     fireEvent.click(control);

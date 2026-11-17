@@ -18,6 +18,7 @@ import {
   formatDisplayDate,
   formatNumber,
   cn,
+  useRowPress,
 } from '@tryghost/shade/utils';
 import { type TopPostViewsStats } from '@tryghost/admin-x-framework/api/stats';
 import { getPeriodText } from '@/shared/analytics/chart-helpers';
@@ -80,6 +81,22 @@ interface TopPostsProps {
   isLoading: boolean;
 }
 
+function TopPostRow({ children }: { children: React.ReactNode }) {
+  const press = useRowPress<HTMLDivElement>();
+
+  return (
+    <div
+      className={cn(
+        rowSurface(),
+        'group flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 first:border-border md:items-center',
+      )}
+      {...press}
+    >
+      {children}
+    </div>
+  );
+}
+
 const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
   const location = useLocation();
   const { range } = useAnalytics();
@@ -122,13 +139,7 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
               const opensEditor = destination.startsWith('/editor/');
 
               return (
-                <div
-                  key={post.post_id}
-                  className={cn(
-                    rowSurface(),
-                    'group flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 first:border-border md:items-center',
-                  )}
-                >
+                <TopPostRow key={post.post_id}>
                   <AdminLink
                     className={cn(
                       rowSurfaceClasses.primaryAction,
@@ -356,7 +367,7 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                       </AdminLink>
                     )}
                   </div>
-                </div>
+                </TopPostRow>
               );
             })}
             {(!topPostsData?.stats || topPostsData.stats.length === 0) && (

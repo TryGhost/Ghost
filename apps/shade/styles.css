@@ -413,7 +413,8 @@ html.theme-switching *::after {
   isolation: isolate;
 }
 
-.shade-row::before {
+.shade-row::before,
+tr.shade-row > :is(td, th)::before {
   content: '';
   position: absolute;
   inset: 0 calc(-4 * var(--spacing));
@@ -424,7 +425,8 @@ html.theme-switching *::after {
   pointer-events: none;
 }
 
-.shade-row-interactive::before {
+.shade-row-interactive::before,
+tr.shade-row-interactive > :is(td, th)::before {
   pointer-events: auto;
 }
 
@@ -461,16 +463,63 @@ html.theme-switching *::after {
   padding-inline-end: 0;
 }
 
+/* Native table-row generated content becomes an anonymous column with a fixed
+   colgroup, even when absolutely positioned. Paint inside the real cells. */
+tr.shade-row::before {
+  content: none;
+}
+
+tr.shade-row > :is(td, th)::before {
+  inset-inline: 0;
+  border-radius: 0;
+}
+
+tr.shade-row > :is(td, th):first-child::before {
+  inset-inline-start: calc(-4 * var(--spacing));
+  border-start-start-radius: var(--radius-md);
+  border-end-start-radius: var(--radius-md);
+}
+
+tr.shade-row > :is(td, th):last-child::before {
+  inset-inline-end: calc(-4 * var(--spacing));
+  border-start-end-radius: var(--radius-md);
+  border-end-end-radius: var(--radius-md);
+}
+
+tr.shade-row-inset > :is(td, th)::before {
+  inset-inline: 0;
+}
+
 .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
     [data-state='selected'],
-    .shade-row-interactive:is(:active, :focus-visible, :has(:focus-visible))
-  )::before {
+    .shade-row-interactive:is(
+      [data-row-pressed='true'],
+      :active,
+      :focus-visible,
+      :has(:focus-visible)
+    )
+  )::before,
+tr.shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+    [data-state='selected'],
+    .shade-row-interactive:is(
+      [data-row-pressed='true'],
+      :active,
+      :focus-visible,
+      :has(:focus-visible)
+    )
+  )
+  > :is(td, th)::before {
   opacity: 1;
 }
 
 .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
     [data-state='selected'],
-    .shade-row-interactive:is(:active, :focus-visible, :has(:focus-visible))
+    .shade-row-interactive:is(
+      [data-row-pressed='true'],
+      :active,
+      :focus-visible,
+      :has(:focus-visible)
+    )
   )
   > [data-row-pinned] {
   background-color: var(--table-row-hover);
@@ -478,7 +527,12 @@ html.theme-switching *::after {
 
 .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
     [data-state='selected'],
-    .shade-row-interactive:is(:active, :focus-visible, :has(:focus-visible))
+    .shade-row-interactive:is(
+      [data-row-pressed='true'],
+      :active,
+      :focus-visible,
+      :has(:focus-visible)
+    )
   )
   [data-row-pinned-fade='normal'] {
   opacity: 0;
@@ -486,7 +540,12 @@ html.theme-switching *::after {
 
 .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
     [data-state='selected'],
-    .shade-row-interactive:is(:active, :focus-visible, :has(:focus-visible))
+    .shade-row-interactive:is(
+      [data-row-pressed='true'],
+      :active,
+      :focus-visible,
+      :has(:focus-visible)
+    )
   )
   [data-row-pinned-fade='highlight'] {
   opacity: 1;
@@ -496,11 +555,21 @@ html.theme-switching *::after {
 .shade-row
   + .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
     [data-state='selected'],
-    .shade-row-interactive:is(:active, :focus-visible, :has(:focus-visible))
+    .shade-row-interactive:is(
+      [data-row-pressed='true'],
+      :active,
+      :focus-visible,
+      :has(:focus-visible)
+    )
   ),
 .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
     [data-state='selected'],
-    .shade-row-interactive:is(:active, :focus-visible, :has(:focus-visible))
+    .shade-row-interactive:is(
+      [data-row-pressed='true'],
+      :active,
+      :focus-visible,
+      :has(:focus-visible)
+    )
   )
   + .shade-row {
   border-top-color: transparent;
@@ -508,22 +577,36 @@ html.theme-switching *::after {
 
 .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
     [data-state='selected'],
-    .shade-row-interactive:is(:active, :focus-visible, :has(:focus-visible))
+    .shade-row-interactive:is(
+      [data-row-pressed='true'],
+      :active,
+      :focus-visible,
+      :has(:focus-visible)
+    )
   ):has(+ .shade-row),
 .shade-row:has(
   + .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
       [data-state='selected'],
-      .shade-row-interactive:is(:active, :focus-visible, :has(:focus-visible))
+      .shade-row-interactive:is(
+        [data-row-pressed='true'],
+        :active,
+        :focus-visible,
+        :has(:focus-visible)
+      )
     )
 ) {
   border-bottom-color: transparent;
 }
 
-/* Avoid emulated, sticky :hover after a touch tap. :active covers the press. */
+/* Avoid emulated, sticky :hover after a touch tap. The press hook covers touch. */
 @media (hover: hover) {
   .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
       .shade-row-interactive:hover
-    )::before {
+    )::before,
+  tr.shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+      .shade-row-interactive:hover
+    )
+    > :is(td, th)::before {
     opacity: 1;
   }
 
@@ -575,6 +658,7 @@ html.theme-switching *::after {
 /* Selection wins over hover and keyboard/press fills without merging adjacent
    rows or changing the focused control's own ring. */
 .shade-row[data-state='selected']::before,
+tr.shade-row[data-state='selected'] > :is(td, th)::before,
 .shade-row[data-state='selected'] > [data-row-pinned] {
   background-color: var(--table-row-selected);
 }

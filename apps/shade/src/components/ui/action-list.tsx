@@ -4,6 +4,7 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 import { rowSurface, rowSurfaceClasses } from '@/components/ui/row-surface';
+import { useRowPress } from '@/hooks/use-row-press';
 
 const actionListItemVariants = cva(
   'group/action-list-item relative flex min-w-0 items-stretch border-b border-border last:border-b-transparent',
@@ -31,13 +32,17 @@ interface ActionListItemProps
   extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof actionListItemVariants> {}
 
 const ActionListItem = React.forwardRef<HTMLDivElement, ActionListItemProps>(
-  ({ className, hover, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn(rowSurface('static'), actionListItemVariants({ hover, className }))}
-      {...props}
-    />
-  ),
+  ({ className, hover, ...props }, ref) => {
+    const press = useRowPress(props, hover ?? true);
+    return (
+      <div
+        ref={ref}
+        className={cn(rowSurface('static'), actionListItemVariants({ hover, className }))}
+        {...props}
+        {...press}
+      />
+    );
+  },
 );
 ActionListItem.displayName = 'ActionListItem';
 

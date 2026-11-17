@@ -3,6 +3,7 @@ import { Box, Inline, Stack } from '@/primitives';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { rowSurface, rowSurfaceClasses } from '@/components/ui/row-surface';
+import { useRowPress } from '@/hooks/use-row-press';
 
 const meta: Meta = {
   title: 'Recipes / Row Surface',
@@ -21,12 +22,14 @@ export default meta;
 type Story = StoryObj;
 
 function ExampleRows({ inset = false, dragging = false }: { inset?: boolean; dragging?: boolean }) {
+  const press = useRowPress<HTMLDivElement>();
   return (
     <Box className="max-w-lg" data-row-dragging={dragging ? 'true' : undefined} padding="lg">
       <Stack className="border-t border-border" gap="none">
         <Inline
           className={cn(rowSurface(), 'border-b py-4', inset && rowSurfaceClasses.inset)}
           justify="between"
+          {...press}
         >
           <a
             className={cn(
