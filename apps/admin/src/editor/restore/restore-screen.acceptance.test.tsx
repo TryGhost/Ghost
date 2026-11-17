@@ -109,7 +109,7 @@ describe('Restore posts', () => {
   });
 
   it.each(['light', 'dark'] as const)(
-    'highlights only the hovered revision and keeps the introduction readable in %s mode',
+    'keeps revision rows static and their contents readable in %s mode',
     async (theme) => {
       storeCopy('post-1', OLDER, { title: 'An older draft', custom_excerpt: 'Earlier words' });
       storeCopy('post-2', NEWER, { title: 'A newer draft', custom_excerpt: 'Recent words' });
@@ -129,7 +129,7 @@ describe('Restore posts', () => {
 
       await row.hover();
 
-      await expect.poll(() => background(cells[0])).not.toBe(originalBackground);
+      await expect.poll(() => background(cells[0])).toBe(originalBackground);
       expect(cells.map(background)).toEqual(cells.map(() => background(cells[0])));
       expect(headers.map(background)).toEqual(headerBackgrounds);
       expect(otherCells.map(background)).toEqual(otherBackgrounds);

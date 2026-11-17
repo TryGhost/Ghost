@@ -323,6 +323,25 @@ const Growth: React.FC = () => {
                       <TableRow
                         key={`${selectedContentType}-${post.post_id || `${post.title}-${index}`}`}
                         className="last:border-none"
+                        onClick={
+                          post.post_id && post.attribution_type === 'post'
+                            ? (event) => {
+                                if (
+                                  event.target instanceof Element &&
+                                  event.target.closest('button, a')
+                                ) {
+                                  return;
+                                }
+                                getClickHandler(
+                                  post.attribution_url,
+                                  post.post_id,
+                                  site.url || '',
+                                  navigate,
+                                  'post',
+                                )();
+                              }
+                            : undefined
+                        }
                       >
                         <TableCell>
                           <div className="group/link inline-flex flex-col items-start gap-px">

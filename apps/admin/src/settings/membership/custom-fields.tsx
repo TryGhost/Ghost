@@ -112,7 +112,7 @@ const SortableFieldRow: React.FC<SortableItemContainerProps> = ({
       data-testid="custom-field-list-item"
       style={style}
     >
-      <Inline align="center" className="w-10 shrink-0">
+      <Inline align="center" className="relative z-10 w-10 shrink-0">
         <DragIndicator className="h-10" isDragging={isDragging || false} {...props} />
       </Inline>
       {children}

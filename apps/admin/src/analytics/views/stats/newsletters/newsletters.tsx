@@ -120,7 +120,21 @@ const NewsletterTableRows: React.FC<{
     return sortedStats.length > 0 ? (
       <>
         {sortedStats.map((post) => (
-          <TableRow key={post.post_id} className="last:border-none [&>td]:py-2.5">
+          <TableRow
+            key={post.post_id}
+            className="last:border-none [&>td]:py-2.5"
+            interactive={!!post.post_id}
+            onClick={
+              post.post_id
+                ? (event) => {
+                    if (event.target instanceof Element && event.target.closest('button, a')) {
+                      return;
+                    }
+                    navigate(`/posts/analytics/${post.post_id}/`);
+                  }
+                : undefined
+            }
+          >
             <TableCell className="font-medium">
               <div className="group/link inline-flex items-center gap-2">
                 {post.post_id ? (

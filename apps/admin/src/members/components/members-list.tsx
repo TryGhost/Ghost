@@ -270,7 +270,7 @@ function MembersList({
         </div>
       </div>
 
-      <div ref={horizontalScrollRef} className="w-full overflow-x-auto overflow-y-visible">
+      <div ref={horizontalScrollRef} className="-mx-4 overflow-x-auto overflow-y-hidden px-4">
         <Table
           className="w-full border-collapse max-sm:table-fixed sm:max-lg:table-auto lg:w-[var(--members-table-width)] lg:min-w-[var(--members-table-min-width)] lg:table-fixed"
           data-testid="members-list"

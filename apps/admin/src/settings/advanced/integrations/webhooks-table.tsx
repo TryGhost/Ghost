@@ -110,10 +110,21 @@ const WebhooksTable: React.FC<{ integration: Integration }> = ({ integration }) 
             <TableRow
               key={webhook.id}
               className="cursor-pointer"
-              onClick={() => setEditingWebhook(webhook)}
+              onClick={(event) => {
+                if (event.target instanceof Element && event.target.closest('button, a')) {
+                  return;
+                }
+                setEditingWebhook(webhook);
+              }}
             >
               <TableCell className="w-3/4 py-3 pr-6">
-                <div className="font-semibold">{webhook.name}</div>
+                <button
+                  className="rounded-xs text-left font-semibold focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none"
+                  type="button"
+                  onClick={() => setEditingWebhook(webhook)}
+                >
+                  {webhook.name}
+                </button>
                 <div className="mt-1 grid grid-cols-[max-content_1fr] gap-1 text-sm leading-snug">
                   <span className="text-muted-foreground">Event:</span>
                   <span>{getWebhookEventLabel(webhook.event)}</span>

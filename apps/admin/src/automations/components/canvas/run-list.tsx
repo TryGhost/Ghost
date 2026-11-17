@@ -79,6 +79,7 @@ const RunRow = forwardRef<
       {...props}
       className={isSelectionDisabled ? undefined : 'cursor-pointer'}
       data-state={selectedRunId === run.id ? 'selected' : undefined}
+      interactive={!isSelectionDisabled}
       onClick={() => {
         if (!isSelectionDisabled) {
           onSelectRun(run.id, run.memberName);

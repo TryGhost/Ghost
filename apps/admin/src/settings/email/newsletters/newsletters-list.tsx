@@ -11,6 +11,7 @@ import {
   NoValueLabelIcon,
   type SortableItemContainerProps,
   SortableList,
+  rowSurfaceClasses,
 } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
@@ -45,11 +46,15 @@ const NewsletterItemContainer: React.FC<Partial<SortableItemContainerProps>> = (
     <ActionListItem ref={setRef} className={isDragging ? 'opacity-75' : ''} style={style}>
       <ActionListItemContent className="flex">
         {(props.dragHandleAttributes || isDragging) && (
-          <Inline align="center" className="w-10 shrink-0">
+          <Inline align="center" className="relative z-10 w-10 shrink-0">
             <DragIndicator className="h-10" isDragging={isDragging || false} {...props} />
           </Inline>
         )}
-        <button className="flex min-w-0 grow text-left" type="button" onClick={showDetails}>
+        <button
+          className={`flex min-w-0 grow text-left ${rowSurfaceClasses.primaryAction}`}
+          type="button"
+          onClick={showDetails}
+        >
           {children}
         </button>
       </ActionListItemContent>

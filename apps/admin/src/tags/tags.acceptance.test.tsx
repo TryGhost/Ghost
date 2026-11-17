@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { currentRoute, fakeTags, renderAdminApp, tag } from '@test-utils/acceptance';
+import {
+  currentRoute,
+  fakeAdminEndpoint,
+  fakePosts,
+  fakePostsListScreen,
+  fakeTags,
+  renderAdminApp,
+  tag,
+} from '@test-utils/acceptance';
 import { tagsScreen } from './tags.screen';
 
 describe('Tags list', () => {
@@ -40,6 +48,30 @@ describe('Tags list', () => {
     await tagsScreen.publicTab().click();
     await expect.element(tagsScreen.link('Public Tag Name')).toBeVisible();
     await expect(tagsScreen.tagRows()).toHaveCount(2);
+  });
+
+  it('opens the tag from the expanded row gutter', async () => {
+    const news = tag({ name: 'News', slug: 'news', count: { posts: 1 } });
+    fakeTags([news]);
+    fakeAdminEndpoint('GET', /^\/tags\/slug\/news\//, { tags: [news] });
+    await renderAdminApp('/tags');
+
+    const row = tagsScreen.tagRows();
+    await expect.element(row).toBeVisible();
+    await row.click({ position: { x: -8, y: 12 } });
+
+    await expect.poll(currentRoute).toBe('/tags/news');
+  });
+
+  it('keeps the posts count link independent from the tag action', async () => {
+    fakePostsListScreen();
+    fakePosts([]);
+    fakeTags([tag({ name: 'News', slug: 'news', count: { posts: 1 } })]);
+    await renderAdminApp('/tags');
+
+    await tagsScreen.link('1 post').click();
+
+    await expect.poll(currentRoute).toBe('/posts?tag=news');
   });
 
   it('shows the empty state with a call to action when there are no tags', async () => {

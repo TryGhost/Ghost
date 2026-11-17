@@ -236,7 +236,7 @@ const ThemeList: React.FC<ThemeSettingProps> = ({ themes }) => {
           const detail = getThemeVersion(theme);
 
           return (
-            <ActionListItem key={theme.name} data-testid="theme-list-item">
+            <ActionListItem key={theme.name} data-testid="theme-list-item" hover={false}>
               <ActionListItemContent className="py-3 pr-6" id={`theme-${theme.name}`}>
                 <div>{label}</div>
                 {detail && <div className="text-sm text-muted-foreground">{detail}</div>}

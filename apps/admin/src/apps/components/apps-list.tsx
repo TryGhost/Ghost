@@ -38,7 +38,7 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall, pins })
           return (
             <TableRow
               key={id}
-              className="cursor-pointer hover:bg-table-row-hover"
+              className="cursor-pointer"
               data-testid="apps-list-row"
               onAuxClick={openRowLinkInNewTab}
               onClick={openRowLink}
@@ -51,7 +51,10 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall, pins })
                   <AppIcon app={installation} size="lg" />
                   <span className="min-w-0">
                     <Inline gap="xs">
-                      <Link className="text-md font-semibold" to={appRoute(id)}>
+                      <Link
+                        className="rounded-xs text-md font-semibold focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none"
+                        to={appRoute(id)}
+                      >
                         {manifest.name}
                       </Link>
                       {manifest.development && <Badge variant="secondary">Development</Badge>}

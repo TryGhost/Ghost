@@ -59,7 +59,7 @@ const EmailPreviewRow: React.FC<{
   onToggle,
 }) => {
   return (
-    <ActionListItem data-testid={`${emailType}-welcome-email-row`}>
+    <ActionListItem data-testid={`${emailType}-welcome-email-row`} hover={!isInitialLoading}>
       <ActionListItemContent asChild>
         <button
           className="flex w-full min-w-0 items-center gap-3 py-3 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"

@@ -18,7 +18,7 @@ import {
   TableRow,
 } from '@tryghost/shade/components';
 import { Inline, Stack } from '@tryghost/shade/primitives';
-import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
+import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { type Offer, useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
 import { type RetentionOffer, getRetentionOffers } from './offers-retention';
 import { SettingsModal } from '@tryghost/shade/patterns';
@@ -105,10 +105,19 @@ const RetentionOfferRow: React.FC<{
       : undefined;
 
   return (
-    <TableRow data-testid="retention-offer-item">
-      <TableCell className="sticky left-0 z-10 bg-background p-0">
+    <TableRow
+      className="cursor-pointer"
+      data-testid="retention-offer-item"
+      onClick={(event) => {
+        if (event.target instanceof Element && event.target.closest('button, a')) {
+          return;
+        }
+        onClick();
+      }}
+    >
+      <TableCell className="sticky left-0 z-10 bg-background p-0" data-row-pinned>
         <button
-          className="block w-full cursor-pointer p-5 text-left"
+          className="block w-full cursor-pointer py-5 pr-5 text-left"
           type="button"
           onClick={onClick}
         >
@@ -165,7 +174,7 @@ const RetentionOfferRow: React.FC<{
       </TableCell>
       <TableCell className="p-0 whitespace-nowrap">
         <button
-          className="block w-full cursor-pointer p-5 text-left"
+          className="block w-full cursor-pointer py-5 pl-5 text-left"
           type="button"
           onClick={onClick}
         >
@@ -199,10 +208,19 @@ const SignupOfferRow: React.FC<{
   );
 
   return (
-    <TableRow className={archived ? 'opacity-60' : undefined} data-testid="offer-item">
-      <TableCell className="sticky left-0 z-10 bg-background p-0">
+    <TableRow
+      className={cn('cursor-pointer', archived && 'opacity-60')}
+      data-testid="offer-item"
+      onClick={(event) => {
+        if (event.target instanceof Element && event.target.closest('button, a')) {
+          return;
+        }
+        onClick();
+      }}
+    >
+      <TableCell className="sticky left-0 z-10 bg-background p-0" data-row-pinned>
         <button
-          className="block w-full cursor-pointer p-5 text-left"
+          className="block w-full cursor-pointer py-5 pr-5 text-left"
           type="button"
           onClick={onClick}
         >
@@ -262,7 +280,7 @@ const SignupOfferRow: React.FC<{
       </TableCell>
       <TableCell className="p-0 whitespace-nowrap">
         <button
-          className="block w-full cursor-pointer p-5 text-left"
+          className="block w-full cursor-pointer py-5 pl-5 text-left"
           type="button"
           onClick={onClick}
         >
@@ -437,7 +455,7 @@ export const OffersIndexModal: React.FC = () => {
   );
 
   const listLayoutOutput = (
-    <div className="overflow-x-auto">
+    <div className="-mx-4 overflow-x-auto px-4">
       <Table className="m-0 min-w-[900px]">
         <colgroup>
           <col className="w-[25%]" />

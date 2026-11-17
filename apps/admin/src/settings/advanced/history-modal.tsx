@@ -511,7 +511,7 @@ function HistoryModal() {
                 {data.actions.map(
                   (action) =>
                     !action.skip && (
-                      <ActionListItem key={action.id}>
+                      <ActionListItem key={action.id} hover={false}>
                         <ActionListItemContent className="flex items-center gap-3 py-3">
                           <HistoryAvatar action={action} />
                           <div className="min-w-0 grow">
