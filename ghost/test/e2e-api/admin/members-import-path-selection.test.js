@@ -97,7 +97,11 @@ describe('Members import path selection', function () {
         'labelName',
         'spoolKey',
       ]);
-      sinon.assert.calledWith(loggingInfo, '[Background Job] members-import started');
+      sinon.assert.calledWith(
+        loggingInfo,
+        sinon.match.object,
+        '[Background Job] members-import started',
+      );
     });
 
     it('treats the threshold as inclusive', async function () {
