@@ -1,4 +1,4 @@
-import { loadNconf } from './loader';
+import application from '../../bootstrap/app';
 
 // NOTE: this file must contain no export other than the `export =` below.
 // esbuild/tsx (used by the dev + test runners) can't combine `export =` with
@@ -9,4 +9,6 @@ import { loadNconf } from './loader';
 // @ts-expect-error ignore erasableSyntaxOnly here because both js and ts
 // files import this, so use export = for now until we can update
 // all the imports to reference the default export.
-export = loadNconf();
+// Ghost's config is built once, by the application, and held there. This path
+// is kept for the code that imports config instead of being handed it.
+export = application.foundation.config;

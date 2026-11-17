@@ -1156,3 +1156,179 @@ Predicted here, confirmed or corrected in the report at the end:
 5. **The config loader**: it must read `process.env`, argv and files. It is in
    foundation, not kernel, so it needs no exception to the kernel rule. The
    kernel plan's "one named exception" becomes unnecessary.
+
+## Part 2, step 3: config, logging and the database, split and shared
+
+One commit holds steps 3 and 5 and the first half of step 6, because the code
+would not come apart: the second application is what shows the framework half
+is not Ghost's, and "boot builds the foundation first" is two lines once the
+application object exists.
+
+### What is where now
+
+| Case     | Kernel (importable by anything)              | Foundation (framework; only bootstrap imports it)                                                      | Ghost's values and bootstrap                                                                                                                                        |
+| -------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Config   | `Config` type, `parseConfigSlice` (40 lines) | `config/`: `loadConfigSources`, `createConfig`, guard, lenient parse, report, secret files (849 lines) | `shared/config/`: `defaults.json`, `env/`, `overrides.json`, the schema, six helper methods, when a violation is fatal, when writes throw (629 lines of TypeScript) |
+| Logging  | `Logger`, `LoggerOptions` types (15 lines)   | `logging.ts`: `createLogger(options)` (18 lines)                                                       | `bootstrap/logging-options.ts` (what `loggingrc.js` used to compute), `bootstrap/legacy-logging.ts` (the seam to the package's instance)                            |
+| Database | `Database` type (11 lines)                   | `database.ts`: `createDatabase(knexOptions)` (13 lines)                                                | `server/data/db/configure-knex.ts` (Ghost's Knex options), now given the environment name and a logger instead of importing them                                    |
+| Events   | `EventBus` type (10 lines)                   | `events.ts`: `createEventBus({ logging })` (32 lines)                                                  | `bootstrap/legacy-events.ts`: an adapter over `@tryghost/domain-events`                                                                                             |
+| Assembly | `Foundation` type (19 lines)                 | `application.ts`: `createApplication` (141 lines); `domains.ts`: `readDomains` (30 lines)              | `bootstrap/app.ts` (62 lines): the one module that holds instances                                                                                                  |
+
+**Config, in detail.** Before, `shared/config/` held 1,257 lines of TypeScript
+with machinery and Ghost's decisions interleaved. After, 849 lines are generic
+and in `foundation/config/`, and 629 stay with Ghost. What made it generic:
+
+- `createConfig(sources, policy)` takes the schema, the config's name for
+  messages, and two functions of the tree: `strict` and `guard`. Ghost's
+  `isStrict` and `shouldGuard` read `GHOST_CONFIG_SCHEMA_STRICT` and
+  `GHOST_CONFIG_GUARD` and stay Ghost's.
+- `loadConfigSources(options)` takes the two folders, the environment name,
+  whether local files are read, extra environment files (Ghost's Docker file)
+  and a hook called with each bundled store (Ghost's sqlite path fix).
+- Ghost binds its URL helpers and six methods onto the result, as before.
+- `shared/config/{guard,lenient,report,secrets,utils,validated,loader}.ts` keep
+  their exports, so **the nine existing config test files (173 tests) pass
+  without a change** (verified).
+
+**Config for a domain: a typed slice, parsed once.** `config.slice(path,
+schema)` is on every config `createConfig` builds. It is `app-installations`'
+`AppsConfig` pattern as a method: `safeParse(config.get(path) ?? {})`, and an
+`InternalServerError` with `code: 'CONFIG_SLICE_INVALID'` and Zod's report as
+context. A domain's `boot.ts` calls it, so a bad value fails boot.
+
+### One instance, not two (verified)
+
+`test/unit/bootstrap/app.test.ts` starts a process of its own, builds the
+foundation as boot does, and compares:
+
+| Legacy path                                                                                                | Same object as the foundation's? |
+| ---------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| `require('core/shared/config')`                                                                            | yes                              |
+| `require('@tryghost/logging')`                                                                             | yes; built by the application    |
+| `require('core/server/data/db').knex`                                                                      | yes                              |
+| `require('core/server/data/db/connection')`                                                                | yes                              |
+| A subscriber added through `@tryghost/domain-events` sees an event dispatched through the foundation's bus | yes                              |
+
+It also checks that importing `bootstrap/app` builds nothing, and that the
+build order is config, logging, database, events.
+
+When legacy code loads `@tryghost/logging` before the application exists (any
+unit test that never boots), the application **adopts** that logger instead of
+building a second. That path is tested in the same file. In a real boot the
+application builds it: `boot.js` builds the foundation before it requires
+anything that logs.
+
+### Logging: what the package needs
+
+The smallest change that works **without** touching the package, which is what
+was built: `createLogger` requires the class from
+`@tryghost/logging/lib/GhostLogger` (the entry point would build the
+singleton), and Ghost's bootstrap places the logger it built at
+`globalThis[Symbol.for('@tryghost/logging@6')]`, where the package looks before
+building its own. Both rely on things the package does not promise: a file
+path inside it, and the name of its cache key.
+
+What `@tryghost/logging` should offer instead (TryGhost/framework is not
+attached to this session, so this is specified, not made):
+
+1. **A factory that builds nothing on import**, as a subpath export:
+   `require('@tryghost/logging/logger')` returning `{ GhostLogger,
+   createLogger(options) }`. Today the only supported import builds the
+   singleton and reads `loggingrc`.
+2. **A supported way to give the package its instance**:
+   `logging.setInstance(logger)` (or `adopt`), documented as "call before
+   anything else requires the package". It replaces writing to the
+   `globalThis` key. It should throw if an instance already exists and is not
+   the one given, so two loggers cannot happen silently.
+3. Optional, later: **the entry point resolves lazily**, so that requiring the
+   package before the application exists does not build a logger from
+   `loggingrc`. Without this the "adopt" path above has to stay.
+
+`@tryghost/metrics` has the same shape (it builds `new GhostMetrics(require(
+'loggingrc'))` on import) and needs the same two exports. It was not
+changed; it still reads `loggingrc.js`, which now returns
+`loggingOptions(config)`.
+
+`@tryghost/domain-events` needs `createEventBus()` returning an instance with
+`subscribe`, `dispatch` and `unsubscribe`, and to be given its logger. The
+foundation has a 32-line bus of that shape, used by the second application;
+Ghost stays on the package's static emitter through the adapter, so legacy
+subscribers and domain listeners share it.
+
+### The database and what sits on it
+
+- The handle is built by the application from `configure(database, { env,
+  logging })`. `configure` no longer imports config or the logging package at
+  module scope; called without the second argument (the migrator config, its
+  own test) it looks them up as before.
+- **Bookshelf and the models registry sit on the same handle unchanged**:
+  `models/base/bookshelf.js` calls `bookshelf(db.knex)`, and `db.knex` is the
+  application's. Nothing about models was changed. A reshaped repository is
+  still handed a model by its domain's `boot.ts`.
+- Not changed, and on the same handle: the jobs service (`init({ knex })`),
+  Sentry query tracing and the Prometheus instrumentation in `boot.js`, and
+  `DatabaseStateManager`, which gives knex-migrator Ghost's database config to
+  open connections of its own.
+
+### Discovery no longer reads from kernel
+
+`kernel/domains/discover.ts` now takes `{ list, load }`: how a folder is
+listed and how a file is loaded. It imports no `fs` and uses no ambient
+`require`. `foundation/domains.ts` (`readDomains`) supplies both. The kernel's
+discovery tests no longer touch the disk; four tests of real folders moved to
+`test/unit/foundation/domains.test.ts`.
+
+**Capability subfolders, one level deep.** `actions/`, `events/`,
+`listeners/` and `jobs/` may each hold subfolders: `jobs/gifts/x.job.ts` is
+found as the job `gifts/x`, with the capability in its name so two
+capabilities can each have a `send`. A second level is not read. Tests:
+`discover.test.ts` (found one level deep, not two, wrong role ignored) and
+`foundation/domains.test.ts` (on a real folder). The naming and shape checks
+follow in step 7.
+
+Decision the rule did not make: `services/` is not given capability
+subfolders. `services/<name>/` is already one folder per root, and
+`services/<capability>/<name>/index.ts` would change every service location
+rule from part 1.
+
+### Verified
+
+- Typecheck (`nx run ghost:test:types`), oxlint, ESLint, boundaries (5938
+  modules, 286 known, 189 deferred), `lint:domain-rules`, knip, `format:check`:
+  pass.
+- Unit suite: 11,648 passed plus the new tests; the same 34 baseline failures
+  in the same 3 files and no others.
+- New unit tests: `foundation/` 4 files and `bootstrap/app.test.ts`, 38 tests
+  with the moved bootstrap tests; kernel 101 tests.
+- DB-backed, the part 1 set: 8 files, 76 tests pass against MySQL.
+- `tools/scripts` tests: 438 tests, the same 20 baseline failures and no
+  others, when run through `pnpm`.
+- Real boot from source, six runs: "Ghost booted in" 3.26s to 3.66s (baseline
+  3.29s to 3.53s). "Ghost server started in" 1.07s to 1.47s (baseline 1.10s to
+  1.29s). No change that six runs can show.
+
+### Cost
+
+45 files changed in tracked code (254 lines added and 561 removed under
+`ghost/core`, which is mostly the config machinery leaving `shared/config`),
+plus about 1,570 lines in new files, of which about 620 are tests and 250 are
+`create-config.ts`, which is `validated.ts` made generic rather than new code.
+
+### What this step showed
+
+- **The config split was already half made.** `loadNconf` took
+  `baseConfigPath` and `customConfigPath`; `validated.ts` separated building
+  from binding helpers. The Ghost-specific parts were five: the schema, the two
+  environment switches, the Docker file, the sqlite path fix and the helpers.
+- **Three messages name Ghost** and are pinned by tests ("Ghost config failed
+  validation", "Ghost expects an object there", the guard's pointer to
+  `SCHEMA.md`). They became parameters. A framework message cannot say "Ghost".
+- **`configure-knex.ts` was the one place where importing a pure function
+  built the logger**: its module-scope `import logging from
+  '@tryghost/logging'` would have made the application's own database setup
+  build the package's logger before the application's. Any file the bootstrap
+  imports has to be free of singleton imports all the way down. That is a
+  constraint on what bootstrap can reuse, and it is not visible until it bites.
+- **The formatter reflows files it has not seen**, so new files need
+  `pnpm exec oxfmt` before `format:check` passes; `npx oxfmt` fails on the
+  engine check.

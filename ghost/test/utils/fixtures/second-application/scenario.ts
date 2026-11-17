@@ -1,9 +1,10 @@
+import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { discoverDomains, describeManifest } from '../../../../core/kernel/domains/discover';
-import { createDomainLayer, type ScheduledJob } from '../../../../core/kernel/domains/domain-layer';
-import { bus, journal, reset } from './index';
+import { describeManifest } from '../../../../core/kernel/domains/discover';
+import { createLendingDesk, scheduled } from './bootstrap/app';
+import { journal, reset } from './shared';
 
-// Starts the fixture domains through discovery and reports what happened as
+// Starts the second application and its domains and reports what happened as
 // plain data. The same file runs under the unit test runner and, compiled by
 // tsc, under plain node, so both can be held to one expected result.
 
@@ -27,18 +28,17 @@ const newlyLoaded = (before: string[]) => loadedFixtureFiles().filter((file) => 
 
 export async function runScenario() {
   reset();
-  const manifest = discoverDomains(root);
-  const found = describeManifest(manifest);
+  scheduled.length = 0;
+  const application = createLendingDesk();
+  const builtBeforeAnythingAsked = application.built();
+  const found = describeManifest(application.manifest);
   const loadedByDiscovery = loadedFixtureFiles();
+  const builtByDiscovery = application.built();
 
-  const scheduled: ScheduledJob[] = [];
-  const errors: unknown[] = [];
-  const layer = createDomainLayer({
-    manifest,
-    subscribe: bus.subscribe,
-    schedule: (job) => scheduled.push(job),
-    logging: { error: (...values: unknown[]) => errors.push(values) },
-  });
+  // The foundation, built first and in order, as boot does.
+  const foundation = application.startFoundation();
+  const built = application.built();
+  const layer = application.domains;
 
   await layer.start();
   const journalAfterStart = [...journal];
@@ -92,17 +92,35 @@ export async function runScenario() {
   const loadedByFragments = newlyLoaded(beforeFragments);
 
   // Stopping and starting again, as tests that boot Ghost repeatedly do.
+  const BookLent = require(path.join(root, 'library/events/book-lent.event')).default;
   await layer.stop();
-  await bus.dispatch(new (require(path.join(root, 'library/events/book-lent.event')).default)({
-    bookId: 'emma',
-    borrower: 'Ignored',
-    lentAt: '',
-  }));
+  foundation.events.dispatch(new BookLent({ bookId: 'emma', borrower: 'Ignored', lentAt: '' }));
   const noticesWhileStopped = listNotices().length;
   await layer.start();
-  const subscriptionsAfterRestart = bus.subscriptions('BookLent');
+  // One more notice for one more event: the listener is subscribed once, not twice.
+  foundation.events.dispatch(new BookLent({ bookId: 'emma', borrower: 'Grace', lentAt: '' }));
+  const noticesAfterRestart = listNotices().length;
+
+  // What the logger wrote, read back from the file the application's config sent it to.
+  const logger = foundation.logging as import('@tryghost/logging').GhostLogger;
+  await logger.flush();
+  const logged = readdirSync(logger.path)
+    .flatMap((file) => readFileSync(path.join(logger.path, file), 'utf8').split('\n'))
+    .filter(Boolean)
+    .map((line) => (JSON.parse(line) as { msg: string }).msg);
 
   return {
+    application: {
+      name: application.name,
+      builtBeforeAnythingAsked,
+      builtByDiscovery,
+      built,
+      deskName: foundation.config.get('desk:name'),
+      loanDays: foundation.config.get('desk:loanDays'),
+      hasDatabase: foundation.database !== undefined,
+      logger: { name: logger.name, level: logger.level, transports: logger.transports },
+      logged,
+    },
     found,
     loadedByDiscovery,
     journalAfterStart,
@@ -120,9 +138,8 @@ export async function runScenario() {
     fragments,
     loadedByFragments,
     noticesWhileStopped,
-    subscriptionsAfterRestart,
+    noticesAfterRestart,
     loadedFromTransitionOrTest: loadedFixtureFiles().filter((file) => /\/(transition|test)\//.test(file)),
-    errors,
   };
 }
 

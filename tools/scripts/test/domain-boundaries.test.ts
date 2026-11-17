@@ -41,8 +41,8 @@ describe('domain import rules', () => {
     copyRelocated(repository, root, [
       { from: 'ghost/test/utils/fixtures/domains', to: 'ghost/domains' },
       {
-        from: 'ghost/test/utils/fixtures/domain-foundation',
-        to: 'ghost/core/foundation/domain-foundation',
+        from: 'ghost/test/utils/fixtures/second-application',
+        to: 'ghost/core/bootstrap/second-application',
       },
     ]);
     cpSync(path.join(repository, 'ghost/core/kernel'), path.join(root, 'ghost/core/kernel'), {
@@ -267,7 +267,7 @@ describe('domain import rules', () => {
   describe('service roots and the domain file', () => {
     it('counts legacy and transition imports without failing', () => {
       write(
-        'ghost/domains/notices/boot.ts',
+        'ghost/domains/alerts/boot.ts',
         [
           "const staff = require('../../core/server/services/staff');",
           "const config = require('../../core/shared/config');",
@@ -279,17 +279,19 @@ describe('domain import rules', () => {
         assert.deepEqual(errors(), []);
         assert.deepEqual(
           findings()
-            .filter(({ severity }) => severity === 'info')
+            // The fixtures' own domain files import what their application shares,
+            // which is counted too. This looks at the file added here.
+            .filter(({ severity, edge }) => severity === 'info' && edge.includes('alerts/boot.ts'))
             .map(({ rule, edge }) => `${rule}: ${edge}`)
             .sort(),
           [
             // Config is foundation, so it is not counted.
-            'domain-legacy-imports: domains/notices/boot.ts → core/server/services/staff/index.ts',
-            'domain-transition-imports: domains/notices/boot.ts → domains/library/transition/services/old-catalogue/legacy.js',
+            'domain-legacy-imports: domains/alerts/boot.ts → core/server/services/staff/index.ts',
+            'domain-transition-imports: domains/alerts/boot.ts → domains/library/transition/services/old-catalogue/legacy.js',
           ],
         );
       } finally {
-        rmSync(path.join(root, 'ghost/domains/notices/boot.ts'));
+        rmSync(path.join(root, 'ghost/domains/alerts'), { recursive: true });
       }
     });
   });

@@ -5,7 +5,7 @@
 // Owner is not listed: it has no permissions of its own and is handled as a
 // bypass in canThis.
 
-import { domainFragments } from '../../../foundation/domains/fragments';
+import { domainFragments } from '../../../bootstrap/domains/fragments';
 
 export type RolePermissionValue = 'all' | readonly string[];
 

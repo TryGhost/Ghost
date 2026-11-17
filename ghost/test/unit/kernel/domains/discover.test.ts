@@ -1,25 +1,36 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
   defaultExport,
   describeManifest,
   discoverDomains,
+  type FolderEntry,
 } from '../../../../core/kernel/domains/discover';
 
+// The kernel reads nothing: these tests describe folders in memory. Reading a
+// real folder is the foundation's, tested in ../../foundation/domains.test.ts.
 describe('discoverDomains', function () {
-  let root: string;
-  const write = (file: string, content = '') => {
-    mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
-    writeFileSync(path.join(root, file), content);
+  const root = path.join(path.sep, 'app', 'domains');
+  let written: string[];
+  const write = (file: string) => {
+    written.push(file);
   };
+  // What a folder holds, worked out from the files written beneath it.
+  const list = (directory: string): FolderEntry[] | undefined => {
+    const inside = path.relative(root, directory);
+    const prefix = inside === '' ? '' : `${inside.split(path.sep).join('/')}/`;
+    const entries = new Map<string, FolderEntry>();
+    for (const file of written.filter((name) => name.startsWith(prefix))) {
+      const [name, ...rest] = file.slice(prefix.length).split('/');
+      entries.set(name!, { name: name!, kind: rest.length ? 'folder' : 'file' });
+    }
+    return entries.size ? [...entries.values()] : undefined;
+  };
+  const discover = (load: (module: string) => unknown = () => ({})) =>
+    discoverDomains(root, { list, load });
 
   beforeEach(function () {
-    root = mkdtempSync(path.join(tmpdir(), 'ghost-domains-'));
-  });
-  afterEach(function () {
-    rmSync(root, { recursive: true, force: true });
+    written = [];
   });
 
   it('finds each kind of file by its fixed folder and role, in a stable order', function () {
@@ -44,7 +55,7 @@ describe('discoverDomains', function () {
     ]) {
       write(file);
     }
-    const manifest = discoverDomains(root, () => ({}));
+    const manifest = discover();
     assert.deepEqual(manifest.domains, ['alerts', 'gifts']);
     assert.deepEqual(describeManifest(manifest), [
       'action      alerts/actions/raise-alert.action',
@@ -76,7 +87,7 @@ describe('discoverDomains', function () {
     ]) {
       write(file);
     }
-    assert.deepEqual(discoverDomains(root, () => ({})).files, []);
+    assert.deepEqual(discover().files, []);
   });
 
   it('ignores files without the role for their folder, declarations and tests', function () {
@@ -91,7 +102,7 @@ describe('discoverDomains', function () {
     ]) {
       write(file);
     }
-    assert.deepEqual(discoverDomains(root, () => ({})).files, []);
+    assert.deepEqual(discover().files, []);
   });
 
   it('finds a module once when a build has left JavaScript beside the TypeScript', function () {
@@ -100,7 +111,7 @@ describe('discoverDomains', function () {
     write('gifts/services/gifts/index.ts');
     write('gifts/services/gifts/index.js');
     const loaded: string[] = [];
-    const manifest = discoverDomains(root, (module) => {
+    const manifest = discover((module) => {
       loaded.push(module);
       return {};
     });
@@ -115,16 +126,14 @@ describe('discoverDomains', function () {
 
   it('finds built JavaScript when the TypeScript source is not shipped', function () {
     write('gifts/jobs/clean.job.js');
-    assert.deepEqual(describeManifest(discoverDomains(root, () => ({}))), [
-      'job         gifts/jobs/clean.job',
-    ]);
+    assert.deepEqual(describeManifest(discover()), ['job         gifts/jobs/clean.job']);
   });
 
   it('loads nothing until asked, and each file only once', function () {
     write('gifts/jobs/clean.job.ts');
     write('gifts/listeners/thanks.listener.ts');
     let loads = 0;
-    const manifest = discoverDomains(root, (module) => {
+    const manifest = discover((module) => {
       loads += 1;
       return { default: module };
     });
@@ -135,14 +144,44 @@ describe('discoverDomains', function () {
     assert.equal(loads, 1);
   });
 
-  it('loads real files with require by default', function () {
-    write('gifts/jobs/clean.job.js', 'module.exports = { default: { cleaned: true } };');
-    const [job] = discoverDomains(root).files;
-    assert.deepEqual(defaultExport(job!), { cleaned: true });
+  it('finds files in a capability subfolder of a layer folder, one level deep', function () {
+    for (const file of [
+      'gifts/jobs/clean-expired-gifts.job.ts',
+      'gifts/jobs/reminders/send-reminders.job.ts',
+      'gifts/listeners/reminders/note-reminder-sent.listener.ts',
+      'gifts/actions/reminders/schedule-reminder.action.ts',
+      'gifts/events/reminders/reminder-sent.event.ts',
+    ]) {
+      write(file);
+    }
+    const manifest = discover();
+    assert.deepEqual(describeManifest(manifest), [
+      'action      gifts/actions/reminders/schedule-reminder.action',
+      'event       gifts/events/reminders/reminder-sent.event',
+      'job         gifts/jobs/clean-expired-gifts.job',
+      'job         gifts/jobs/reminders/send-reminders.job',
+      'listener    gifts/listeners/reminders/note-reminder-sent.listener',
+    ]);
+    // The capability is part of the name, so two capabilities may each have a `send`.
+    const job = manifest.files.find((file) => file.id.includes('reminders/send-reminders'))!;
+    assert.equal(job.name, 'reminders/send-reminders');
+    assert.equal(job.module, path.join(root, 'gifts/jobs/reminders/send-reminders.job'));
+  });
+
+  it('does not look deeper than one capability subfolder', function () {
+    write('gifts/jobs/reminders/weekly/send-digest.job.ts');
+    write('gifts/services/gifts/nested/index.ts');
+    assert.deepEqual(discover().files, []);
+  });
+
+  it('ignores a wrongly named file in a capability subfolder', function () {
+    write('gifts/jobs/reminders/helper.ts');
+    write('gifts/jobs/reminders/send.listener.ts');
+    assert.deepEqual(discover().files, []);
   });
 
   it('returns nothing when the folder does not exist', function () {
-    const manifest = discoverDomains(path.join(root, 'missing'));
+    const manifest = discoverDomains(path.join(root, 'missing'), { list, load: () => ({}) });
     assert.deepEqual(manifest.domains, []);
     assert.deepEqual(manifest.files, []);
   });

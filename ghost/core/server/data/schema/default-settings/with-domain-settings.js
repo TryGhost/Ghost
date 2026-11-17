@@ -1,4 +1,4 @@
-const { domainSettingGroups } = require('../../../../foundation/domains/fragments');
+const { domainSettingGroups } = require('../../../../bootstrap/domains/fragments');
 
 /**
  * A domain declares the settings it owns in its settings.ts. This merges them

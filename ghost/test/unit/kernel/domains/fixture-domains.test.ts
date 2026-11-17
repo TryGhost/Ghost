@@ -5,19 +5,33 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 const ghost = path.resolve(__dirname, '../../../..');
-const scenarioFile = 'test/utils/fixtures/domain-foundation/scenario';
+const scenarioFile = 'test/utils/fixtures/second-application/scenario';
 // The compiler `pnpm build:tsc` runs.
 const compiler = path.join(ghost, 'node_modules/.bin/tsc');
 
 type Scenario = Awaited<
-  ReturnType<typeof import('../../../utils/fixtures/domain-foundation/scenario').runScenario>
+  ReturnType<typeof import('../../../utils/fixtures/second-application/scenario').runScenario>
 >;
 
 // Two fixture domains that between them hold every kind of file. Library owns
 // books; notices listens to library's event and calls library's action. The
 // same expectations hold however the files were loaded.
 function assertScenario(result: Scenario) {
-  assert.deepEqual(result.errors, []);
+  // The application built its foundation from its own values, once, in order,
+  // and only when asked: finding the domains built nothing.
+  assert.deepEqual(result.application, {
+    name: 'Lending desk',
+    builtBeforeAnythingAsked: [],
+    builtByDiscovery: [],
+    built: ['config', 'logging', 'database', 'events'],
+    // defaults.json says "Front desk"; env/config.testing.json overrides it.
+    deskName: 'Test desk',
+    loanDays: 14,
+    hasDatabase: false,
+    logger: { name: 'lending-desk', level: 'info', transports: ['file'] },
+    // Written by a service root that was handed the logger and its config slice.
+    logged: ['The catalogue is open at the Test desk for loans of 14 days'],
+  });
 
   // Found by reading the folders, and nothing loaded by finding it.
   assert.deepEqual(result.found, [
@@ -34,6 +48,7 @@ function assertScenario(result: Scenario) {
     'service     library/services/reports/index',
     'settings    library/settings',
     'action      notices/actions/list-notices.action',
+    'domain      notices/boot',
     'event       notices/events/notice-recorded.event',
     'listener    notices/listeners/record-loan-notice.listener',
     'service     notices/services/notices/index',
@@ -50,6 +65,7 @@ function assertScenario(result: Scenario) {
     'library/boot',
     'library/services/catalogue/index',
     'library/services/lending/index',
+    'notices/boot',
     'notices/services/notices/index',
     'notices/listeners/record-loan-notice.listener',
   ]) {
@@ -109,7 +125,7 @@ function assertScenario(result: Scenario) {
 
   // Stop and start again: listeners ignore events while stopped and are not subscribed twice.
   assert.equal(result.noticesWhileStopped, 1);
-  assert.equal(result.subscriptionsAfterRestart, 1);
+  assert.equal(result.noticesAfterRestart, 2);
 
   // Nothing in transition/ or test/ is found, loaded or started.
   assert.deepEqual(result.loadedFromTransitionOrTest, []);
@@ -121,7 +137,7 @@ describe('fixture domains', function () {
     // scenario must share its module instances with them.
     const {
       runScenario,
-    }: typeof import('../../../utils/fixtures/domain-foundation/scenario') = require(
+    }: typeof import('../../../utils/fixtures/second-application/scenario') = require(
       path.join(ghost, scenarioFile),
     );
     assertScenario(await runScenario());
@@ -130,13 +146,16 @@ describe('fixture domains', function () {
   describe('built with tsc', function () {
     let built: string;
 
-    // Builds the kernel and the fixtures in place, as build:tsc builds Ghost.
+    // Builds the framework (kernel and foundation) and the fixtures in place, as
+    // build:tsc builds Ghost. Nothing else of Ghost is copied: the second
+    // application runs on the framework alone.
     beforeAll(function () {
       built = mkdtempSync(path.join(tmpdir(), 'ghost-built-domains-'));
       for (const directory of [
         'core/kernel',
+        'core/foundation',
         'test/utils/fixtures/domains',
-        'test/utils/fixtures/domain-foundation',
+        'test/utils/fixtures/second-application',
       ]) {
         cpSync(path.join(ghost, directory), path.join(built, directory), { recursive: true });
       }
@@ -146,7 +165,11 @@ describe('fixture domains', function () {
         JSON.stringify({
           extends: path.join(ghost, 'tsconfig.json'),
           compilerOptions: { incremental: false },
-          include: ['core/kernel/**/*.ts', 'test/utils/fixtures/**/*.ts'],
+          include: [
+            'core/kernel/**/*.ts',
+            'core/foundation/**/*.ts',
+            'test/utils/fixtures/**/*.ts',
+          ],
           exclude: [],
         }),
       );

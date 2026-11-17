@@ -1,12 +1,17 @@
-import { existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 
 /**
- * Finds the files in each domain by reading the fixed folders. Nothing is
- * loaded here: every entry carries a `load()` that requires the file the first
- * time it is called.
+ * Works out what each domain contains from a listing of its fixed folders.
+ * Nothing is read or loaded here: the caller says how a folder is listed and
+ * how a file is loaded, and every entry carries a `load()` that loads the file
+ * the first time it is called. The framework's reader for a real folder is
+ * `readDomains` in ../../foundation/domains.ts.
  *
- * transition/ and test/ are never read. Nothing in them is found.
+ * A layer folder (actions/, events/, listeners/, jobs/) may hold capability
+ * subfolders one level deep: `jobs/gifts/send-reminders.job.ts` is found and
+ * named `gifts/send-reminders`. Anything deeper is not.
+ *
+ * transition/ and test/ are never listed. Nothing in them is found.
  */
 
 /** What a found file is. One kind per fixed folder or fixed file name. */
@@ -45,25 +50,41 @@ export interface DomainManifest {
 
 type Loader = (module: string) => unknown;
 
+/** One entry of a folder: a file or a folder, by name. */
+export interface FolderEntry {
+  readonly name: string;
+  readonly kind: 'file' | 'folder';
+}
+
+export interface DomainFolders {
+  /** The entries of a folder, or undefined when it does not exist. */
+  readonly list: (directory: string) => readonly FolderEntry[] | undefined;
+  /** How a file is loaded, given its absolute path without an extension. */
+  readonly load: Loader;
+}
+
 // A source file or its build output, never a declaration file or a test.
 const source = /^(.+?)\.(?:ts|js)$/;
 const ignored = /\.d\.ts$|\.test\.(?:ts|js)$/;
 
 // One name per module: a build leaves x.js beside x.ts, and both are the same file.
-function modulesIn(directory: string, pattern: RegExp) {
-  if (!existsSync(directory)) {
-    return [];
-  }
+function modulesIn(entries: readonly FolderEntry[] | undefined, pattern: RegExp) {
   const names = new Set<string>();
-  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+  for (const entry of entries ?? []) {
     const stem =
-      entry.isFile() && !ignored.test(entry.name) ? source.exec(entry.name)?.[1] : undefined;
+      entry.kind === 'file' && !ignored.test(entry.name) ? source.exec(entry.name)?.[1] : undefined;
     if (stem !== undefined && pattern.test(stem)) {
       names.add(stem);
     }
   }
   return [...names].sort();
 }
+
+const foldersIn = (entries: readonly FolderEntry[] | undefined) =>
+  (entries ?? [])
+    .filter((entry) => entry.kind === 'folder')
+    .map((entry) => entry.name)
+    .sort();
 
 const folders = [
   { folder: 'actions', kind: 'action', role: /^(.+)\.action$/ },
@@ -81,22 +102,13 @@ const fixedFiles = [
 ] as const;
 
 /**
- * Reads `root` and returns what each domain folder in it contains.
+ * Returns what each domain folder in `root` contains.
  *
  * @param root - The folder holding one folder per domain.
- * @param load - How a file is loaded. Defaults to `require`, so the loader the
- * process runs under decides between TypeScript source and built JavaScript.
+ * @param folders - How a folder is listed and how a file is loaded.
  */
-export function discoverDomains(
-  root: string,
-  load: Loader = (module) => require(module),
-): DomainManifest {
-  const domains = existsSync(root)
-    ? readdirSync(root, { withFileTypes: true })
-        .filter((entry) => entry.isDirectory())
-        .map((entry) => entry.name)
-        .sort()
-    : [];
+export function discoverDomains(root: string, { list, load }: DomainFolders): DomainManifest {
+  const domains = foldersIn(list(root));
   const files: DomainFile[] = [];
 
   for (const domain of domains) {
@@ -119,7 +131,7 @@ export function discoverDomains(
 
     for (const { file, kind } of fixedFiles) {
       const [stem] = modulesIn(
-        path.join(directory, path.dirname(file)),
+        list(path.join(directory, path.dirname(file))),
         new RegExp(`^${path.basename(file)}$`),
       );
       if (stem !== undefined) {
@@ -127,16 +139,20 @@ export function discoverDomains(
       }
     }
     for (const { folder, kind, role } of folders) {
-      for (const stem of modulesIn(path.join(directory, folder), role)) {
+      const entries = list(path.join(directory, folder));
+      for (const stem of modulesIn(entries, role)) {
         add(kind, role.exec(stem)![1]!, `${folder}/${stem}`);
       }
-    }
-    const services = path.join(directory, 'services');
-    if (existsSync(services)) {
-      for (const entry of readdirSync(services, { withFileTypes: true })) {
-        if (entry.isDirectory() && modulesIn(path.join(services, entry.name), /^index$/).length) {
-          add('service', entry.name, `services/${entry.name}/index`);
+      // Capability subfolders, one level deep and no deeper.
+      for (const capability of foldersIn(entries)) {
+        for (const stem of modulesIn(list(path.join(directory, folder, capability)), role)) {
+          add(kind, `${capability}/${role.exec(stem)![1]!}`, `${folder}/${capability}/${stem}`);
         }
+      }
+    }
+    for (const service of foldersIn(list(path.join(directory, 'services')))) {
+      if (modulesIn(list(path.join(directory, 'services', service)), /^index$/).length) {
+        add('service', service, `services/${service}/index`);
       }
     }
   }

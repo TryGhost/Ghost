@@ -3,8 +3,7 @@ import os from 'node:os';
 import type { Knex } from 'knex';
 import _ from 'lodash';
 import errors from '@tryghost/errors';
-import logging from '@tryghost/logging';
-import config from '../../../shared/config';
+import type { Logger } from '../../../kernel/logging';
 
 const betterSqlitePatches = require('./better-sqlite3-patches');
 
@@ -19,10 +18,21 @@ export interface DatabaseConfig {
   [key: string]: unknown;
 }
 
-// @TODO:
-// - if you require this file before config file was loaded,
-// - then this file is cached and you have no chance to connect to the db anymore
-// - bring dynamic into this file (db.connect())
+/** What `configure` needs besides the `database` config itself. */
+export interface DatabaseEnvironment {
+  /** The environment Ghost runs as, from config's `env`. */
+  readonly env: string;
+  readonly logging: Pick<Logger, 'info'>;
+}
+
+// For callers that have not been handed these: the migrator config and tests.
+// Required when called, so loading this file builds neither.
+function legacyEnvironment(): DatabaseEnvironment {
+  return {
+    env: require('../../../shared/config').get('env'),
+    logging: require('@tryghost/logging'),
+  };
+}
 
 /**
  * Build knex's config from Ghost's `database` config.
@@ -31,8 +41,15 @@ export interface DatabaseConfig {
  * is config's own, and nconf's merge shares nested subtrees by reference, so the
  * old in-place version leaked `connection.timezone`, `connection.charset` and
  * `connection.decimalNumbers` into every later reader of `database`.
+ *
+ * @param environment - The environment name and a logger. The application's
+ * bootstrap passes its own; without them the process-wide ones are looked up.
  */
-export function configure(dbConfig: DatabaseConfig): Knex.Config {
+export function configure(
+  dbConfig: DatabaseConfig,
+  environment: DatabaseEnvironment = legacyEnvironment(),
+): Knex.Config {
+  const { env, logging } = environment;
   let client = dbConfig.client;
   const derived: DatabaseConfig = {
     ...dbConfig,
@@ -63,7 +80,7 @@ export function configure(dbConfig: DatabaseConfig): Knex.Config {
 
         // These two are meant to improve performance at the cost of reliability
         // Should be safe for tests. We add them here and leave them on
-        if (config.get('env').startsWith('testing')) {
+        if (env.startsWith('testing')) {
           conn.pragma('synchronous = OFF');
           conn.pragma('journal_mode = TRUNCATE');
         }

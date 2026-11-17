@@ -508,7 +508,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
 
   // The domain layer starts after everything boot initializes above, so code in a
   // domain can rely on it, and before the job runner starts.
-  const domains = require('./foundation/domains').default;
+  const domains = require('./bootstrap/domains').default;
   await domains.start();
   if (ghostServer) {
     ghostServer.registerCleanupTask(() => domains.stop(), 'Domains');
@@ -584,7 +584,7 @@ async function initBackgroundServices({ config }) {
 
   // Domain services that do not block boot start now, and domain jobs are
   // scheduled. Nothing waits for it, and no job is scheduled under test.
-  const domains = require('./foundation/domains').default;
+  const domains = require('./bootstrap/domains').default;
   domains.ready({ jobs: !process.env.NODE_ENV.startsWith('test') }).catch((err) => {
     const logging = require('@tryghost/logging');
     logging.error(err);
@@ -735,25 +735,26 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
 
   // These require their own try-catch block and error format, because we can't log an error if logging isn't working
   try {
-    // Step 0 - Load config and logging - fundamental required components
+    // Step 0 - Build the foundation: config, logging, the database handle and the
+    // event bus, in that order, before anything else. The application owns these
+    // instances. Everything that still imports `shared/config`, `@tryghost/logging`
+    // or the database connection gets the same ones.
     // Version is required by logging, sentry & Migration config & so is fundamental to booting
     // However, it involves reading package.json so its slow & it's here for visibility on that slowness
     debug('Begin: Load version info');
     require('@tryghost/version');
     debug('End: Load version info');
 
-    // Loading config must be the first thing we do, because it is required for absolutely everything
-    debug('Begin: Load config');
-    config = require('./shared/config');
-    debug('End: Load config');
+    debug('Begin: Foundation');
+    const application = require('./bootstrap/app').default;
+    const foundation = application.startFoundation();
+    config = foundation.config;
+    logging = foundation.logging;
+    debug('End: Foundation');
 
-    // Logging is also used absolutely everywhere
-    debug('Begin: Load logging');
-    logging = require('@tryghost/logging');
     metrics = require('@tryghost/metrics');
     flushLogsAndMetrics = require('./shared/flush').flushLogsAndMetrics;
     bootLogger = new BootLogger(logging, metrics, startTime);
-    debug('End: Load logging');
 
     // At this point logging is required, so we can handle errors better
 

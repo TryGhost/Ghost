@@ -4,7 +4,7 @@ const {
   domainSettingGroups,
   domainTables,
   placeFromDomains,
-}: typeof import('../../../../core/foundation/domains/fragments') = require('../../../../core/foundation/domains/fragments');
+}: typeof import('../../../../core/bootstrap/domains/fragments') = require('../../../../core/bootstrap/domains/fragments');
 
 describe('domain fragments for the central registries', function () {
   // The settings model adds `group`, `key` and a function to every default

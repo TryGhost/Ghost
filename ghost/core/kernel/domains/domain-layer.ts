@@ -1,5 +1,5 @@
 import { IncorrectUsageError } from '@tryghost/errors';
-import type { GhostLogger } from '@tryghost/logging';
+import type { Logger } from '../logging';
 import {
   definitionKind,
   type DefinitionKind,
@@ -17,8 +17,8 @@ import {
 
 /**
  * Starts what discovery found. This file holds no state of its own and knows
- * nothing about Ghost: the event bus, the job scheduler and the logger are
- * passed in.
+ * nothing about Ghost: the foundation, the event bus, the job scheduler and the
+ * logger are passed in.
  *
  * Start order:
  *   1. start()  each domain's blocking service roots, then its listeners.
@@ -35,6 +35,11 @@ interface StartableRoot {
 
 export interface DomainLayerDependencies {
   readonly manifest: DomainManifest;
+  /**
+   * The application's foundation. Each domain's boot.ts receives it; a domain
+   * without one hands it to its roots unchanged.
+   */
+  readonly foundation?: unknown;
   /** Subscribes a handler to the event with this name, for the life of the process. */
   readonly subscribe: (
     event: { readonly name: string },
@@ -42,7 +47,7 @@ export interface DomainLayerDependencies {
   ) => void;
   /** Schedules a job. Called once per job each time Ghost becomes ready. */
   readonly schedule: (job: ScheduledJob) => void;
-  readonly logging: Pick<GhostLogger, 'error'>;
+  readonly logging: Pick<Logger, 'error'>;
 }
 
 export interface ScheduledJob extends JobDefinition {
@@ -169,6 +174,7 @@ export function collectRoutes(manifest: DomainManifest, surface: string): Domain
 
 export function createDomainLayer({
   manifest,
+  foundation,
   subscribe,
   schedule,
   logging,
@@ -188,8 +194,11 @@ export function createDomainLayer({
     let dependencies = supplied.get(domain);
     if (!dependencies) {
       const [file] = filesOf('domain', domain);
-      const build = file ? definition<DomainDefinition>(file, 'domain').dependencies : undefined;
-      dependencies = Promise.resolve(build?.());
+      const build = file
+        ? definition<DomainDefinition<unknown, unknown>>(file, 'domain').dependencies
+        : undefined;
+      // The domain file is handed the foundation; without one, the roots are.
+      dependencies = Promise.resolve().then(() => (build ? build(foundation) : foundation));
       supplied.set(domain, dependencies);
     }
     return dependencies;

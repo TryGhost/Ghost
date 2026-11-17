@@ -6,6 +6,8 @@
  * @see [Domains](../README.md#domains)
  */
 
+import type { Foundation } from '../foundation';
+
 const kind = Symbol.for('ghost.domain.definition');
 
 export type DefinitionKind =
@@ -207,18 +209,25 @@ export function defineSchema<Schema extends SchemaDefinition>(
 
 // --- the domain file --------------------------------------------------------
 
-export interface DomainDefinition<Dependencies = unknown> {
+export interface DomainDefinition<Dependencies = unknown, AppFoundation = Foundation> {
   /**
    * Builds what the domain's service roots need from outside the domain. The
-   * domain layer calls it once, before the first root starts, and passes the
-   * result to every root's `create`.
+   * domain layer calls it once, before the first root starts, with the
+   * application's foundation, and passes the result to every root's `create`.
+   *
+   * The foundation arrives as the argument and is never imported. Anything else
+   * the domain needs (shared services, code not yet in a domain, another
+   * domain's actions) is imported here, inside this function, so it stays
+   * visible in the import graph and nowhere else in the domain imports it.
+   *
+   * Without this, the roots receive the foundation unchanged.
    */
-  readonly dependencies?: () => Dependencies | Promise<Dependencies>;
+  readonly dependencies?: (foundation: AppFoundation) => Dependencies | Promise<Dependencies>;
 }
 
-/** Declares the file boot reads for a domain. */
-export function defineDomain<Dependencies>(
-  definition: DomainDefinition<Dependencies> = {},
-): Tagged<'domain', DomainDefinition<Dependencies>> {
+/** Declares what a domain's service roots are given. */
+export function defineDomain<Dependencies, AppFoundation = Foundation>(
+  definition: DomainDefinition<Dependencies, AppFoundation> = {},
+): Tagged<'domain', DomainDefinition<Dependencies, AppFoundation>> {
   return tag('domain', { ...definition });
 }

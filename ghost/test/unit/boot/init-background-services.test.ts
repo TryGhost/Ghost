@@ -43,7 +43,7 @@ function createBackgroundHarness(environment = 'production') {
       './server/services/update-check': updateCheck,
       './server/services/remote-flags': { init() {} },
       './server/services/milestones': milestones,
-      './foundation/domains': { default: domains },
+      './bootstrap/domains': { default: domains },
     },
     { globals: { process: { env: { NODE_ENV: environment } } } },
   );

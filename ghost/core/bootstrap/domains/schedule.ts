@@ -1,21 +1,19 @@
-import { createDomainLayer, type ScheduledJob } from '../../kernel/domains/domain-layer';
-import { Job } from '../../server/services/jobs-service/job';
-import { getDomainManifest } from './manifest';
+import type { ScheduledJob } from '../../kernel/domains/domain-layer';
+import type { Logger } from '../../kernel/logging';
 
 /**
- * The domain layer boot starts: the kernel's runner given Ghost's own event
- * bus, logger and job runner. Boot calls start() after everything it
- * initializes itself and before the job runner starts, then ready() once Ghost
- * is ready.
+ * How Ghost runs a domain's job: a timer for "once at boot", the jobs service
+ * for a cron expression. The application hands this to the framework.
  */
 
-type DomainEvents = typeof import('@tryghost/domain-events');
 type JobsService = ReturnType<typeof import('../../server/services/jobs-service').getInstance>;
 
 const timers = new Set<NodeJS.Timeout>();
 
-function schedule(job: ScheduledJob) {
-  const logging: typeof import('@tryghost/logging') = require('@tryghost/logging');
+export function scheduleDomainJob(
+  job: ScheduledJob,
+  { logging }: { logging: Pick<Logger, 'error'> },
+) {
   const run = async () => {
     try {
       await job.run();
@@ -45,6 +43,9 @@ function schedule(job: ScheduledJob) {
   // Boot clears the handlers each time it initializes the jobs service, so each
   // boot registers this job's handler once, here.
   const jobsService: JobsService = require('../../server/services/jobs-service').getInstance();
+  const {
+    Job,
+  }: typeof import('../../server/services/jobs-service/job') = require('../../server/services/jobs-service/job');
   class DomainJob extends Job {
     static readonly type = `domain:${job.name}`;
   }
@@ -54,29 +55,10 @@ function schedule(job: ScheduledJob) {
     .catch((error: unknown) => logging.error(`[domains] could not schedule ${job.name}`, error));
 }
 
-const layer = createDomainLayer({
-  manifest: getDomainManifest(),
-  subscribe: (event, handler) => {
-    const domainEvents: DomainEvents = require('@tryghost/domain-events');
-    // The bus keys a subscription by the event's name.
-    domainEvents.subscribe(event as never, handler as never);
-  },
-  schedule,
-  logging: {
-    error: (...values: unknown[]) => {
-      const logging: typeof import('@tryghost/logging') = require('@tryghost/logging');
-      logging.error(...(values as [unknown]));
-    },
-  },
-});
-
-export default {
-  ...layer,
-  async stop() {
-    for (const timer of timers) {
-      clearTimeout(timer);
-    }
-    timers.clear();
-    await layer.stop();
-  },
-};
+/** Cancels the jobs still waiting on a timer. */
+export function clearDomainTimers() {
+  for (const timer of timers) {
+    clearTimeout(timer);
+  }
+  timers.clear();
+}

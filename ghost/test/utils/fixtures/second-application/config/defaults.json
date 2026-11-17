@@ -1,0 +1,13 @@
+{
+    "desk": {
+        "name": "Front desk",
+        "loanDays": 14
+    },
+    "logging": {
+        "level": "info",
+        "transports": ["file"],
+        "rotation": {
+            "enabled": false
+        }
+    }
+}

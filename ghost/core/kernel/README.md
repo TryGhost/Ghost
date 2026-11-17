@@ -157,6 +157,26 @@ resource ownership; each caller must respect the extra's documented timing.
 This is a temporary migration interface. The [services guide](../server/services/README.md)
 describes how to catalogue extras while their eventual ownership is established.
 
+## Foundation types
+
+Spike: see [the findings log](../../../docs/plans/domain-spike-findings.md).
+
+Code that needs configuration, a logger, the database or the event bus is
+handed one. These files say what it is handed. Each is a type, so importing one
+builds nothing and reads nothing:
+
+- [`logging.ts`](logging.ts): `Logger`, and `LoggerOptions` for whoever builds one.
+- [`config.ts`](config.ts): `Config`, with `get` and `slice`. `parseConfigSlice`
+  is the one function here: it parses a value with the schema its reader
+  declares.
+- [`database.ts`](database.ts): `Database`.
+- [`events.ts`](events.ts): `EventBus`.
+- [`foundation.ts`](foundation.ts): `Foundation`, the four together. A domain's
+  `boot.ts` receives it.
+
+The [foundation](../foundation/README.md) builds the instances. Nothing in the
+kernel can.
+
 ## Domains
 
 Spike: see [the findings log](../../../docs/plans/domain-spike-findings.md).
@@ -168,11 +188,14 @@ three parts, none of which knows anything about Ghost:
   `defineListener`, `defineJob`, `defineRoutes`, `defineSettings`,
   `definePermissions`, `defineSchema` and `defineDomain`. Each only describes:
   it tags and returns what it is given, so importing a file has no effect.
-- [`discover.ts`](domains/discover.ts) reads the fixed folders of every domain
-  and returns what it found. It loads nothing; each entry loads its file on
-  first use. `transition/` and `test/` are never read.
-- [`domain-layer.ts`](domains/domain-layer.ts) starts what was found, given an
-  event bus, a job scheduler and a logger: service roots in the order they
+- [`discover.ts`](domains/discover.ts) works out what every domain contains
+  from a listing of its fixed folders, and returns what it found. It reads and
+  loads nothing: the caller says how a folder is listed and how a file is
+  loaded, and each entry loads its file on first use. A layer folder may hold
+  capability subfolders one level deep. `transition/` and `test/` are never
+  listed.
+- [`domain-layer.ts`](domains/domain-layer.ts) starts what was found, given
+  the foundation, an event bus, a job scheduler and a logger: service roots in the order they
   declare within their domain, then listeners; after Ghost is ready, roots that
   do not block boot and jobs. It also hands a web layer the routes of a surface
   and a registry the fragments of a kind.
@@ -180,6 +203,8 @@ three parts, none of which knows anything about Ghost:
 `defineService` takes two optional declarations that only the domain layer
 reads: `startAfter`, naming other roots in the same domain, and
 `blocking: false`. A root started by the domain layer receives what its
-domain's `boot.ts` supplies as the argument to `create`.
+domain's `boot.ts` supplies as the argument to `create`. `boot.ts` is handed
+the foundation; a domain without one hands it to its roots unchanged.
 
-The [foundation](../foundation/README.md) holds the instance boot starts.
+The [foundation](../foundation/README.md) reads the folders and assembles the
+application whose domain layer boot starts.

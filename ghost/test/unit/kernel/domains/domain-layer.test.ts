@@ -57,7 +57,7 @@ function manifestOf(
   };
 }
 
-function layerOf(manifest: DomainManifest) {
+function layerOf(manifest: DomainManifest, foundation?: unknown) {
   const handlers = new Map<string, ((event: unknown) => unknown)[]>();
   const scheduled: ScheduledJob[] = [];
   const logging = createLoggingFake();
@@ -65,6 +65,7 @@ function layerOf(manifest: DomainManifest) {
   const errors = logging.error.args as unknown[][];
   const layer = createDomainLayer({
     manifest,
+    foundation,
     subscribe: (event, handler) => {
       handlers.set(event.name, [...(handlers.get(event.name) ?? []), handler]);
     },
@@ -203,9 +204,50 @@ describe('domain layer', function () {
       assert.deepEqual(received, {
         orders: { clock: 'tick' },
         stock: { clock: 'tick' },
-        // A domain with no domain file supplies nothing.
+        // A domain with no domain file supplies nothing more than the foundation,
+        // and this layer was given none.
         audit: undefined,
       });
+    });
+
+    it('hands the domain file the foundation, and the roots what it makes of it', async function () {
+      const foundation = { logging: 'the logger', config: 'the config' };
+      const received: Record<string, unknown> = {};
+      const { layer } = layerOf(
+        manifestOf({
+          'shop/boot': defineDomain({
+            // The foundation arrives as an argument. The domain says what its roots get.
+            dependencies: (given: typeof foundation) => ({ log: given.logging }),
+          }),
+          'shop/services/orders/index': defineService('orders', (dependencies: unknown) => {
+            received.orders = dependencies;
+            return {};
+          }),
+          'warehouse/services/audit/index': defineService('audit', (dependencies: unknown) => {
+            received.audit = dependencies;
+            return {};
+          }),
+        }),
+        foundation,
+      );
+      await layer.start();
+      assert.deepEqual(received.orders, { log: 'the logger' });
+      // Without a domain file, the roots are handed the foundation itself.
+      assert.equal(received.audit, foundation);
+    });
+
+    it('fails boot when a domain file cannot build what its roots need', async function () {
+      const { layer } = layerOf(
+        manifestOf({
+          'shop/boot': defineDomain({
+            dependencies: () => {
+              throw new Error('The shop config is not valid.');
+            },
+          }),
+          'shop/services/orders/index': defineService('orders', () => ({})),
+        }),
+      );
+      await assert.rejects(layer.start(), /The shop config is not valid/);
     });
 
     it('stops what it started in reverse, and starts it again', async function () {

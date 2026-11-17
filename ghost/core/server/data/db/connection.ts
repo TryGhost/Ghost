@@ -1,14 +1,10 @@
-import knex, { type Knex } from 'knex';
-import config from '../../../shared/config';
-import { configure, type DatabaseConfig } from './configure-knex';
+import type { Knex } from 'knex';
+import application from '../../../bootstrap/app';
 
-// @TODO:
-// - if you require this file before config file was loaded,
-// - then this file is cached and you have no chance to connect to the db anymore
-// - bring dynamic into this file (db.connect())
-
-const dbConfig = config.get('database') as DatabaseConfig | undefined;
-const knexInstance: Knex | undefined = dbConfig?.client ? knex(configure(dbConfig)) : undefined;
+// The database handle is built once, by the application, from Ghost's
+// `database` config, and held there. This path is kept for the code that
+// imports the connection instead of being handed it.
+const knexInstance: Knex | undefined = application.foundation.database?.knex;
 
 // NOTE: this file must contain no export other than the `export =` below - see
 // the same note in shared/config/index.ts.

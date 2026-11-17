@@ -87,7 +87,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './server/services/jobs-service/register-job-handlers': { default: register },
       './server/services/signing-keys': { default: { service: signingKeys } },
       './server/services/automations': { automationsService: { init: automations } },
-      './foundation/domains': { default: { start: domains, stop: domainsStop } },
+      './bootstrap/domains': { default: { start: domains, stop: domainsStop } },
     },
     { fallback: () => ({ ...genericService, default: genericService }) },
   );
