@@ -222,7 +222,7 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
           </aside>
         ) : (
           <Sheet open={analyticsSheetOpen} onOpenChange={setAnalyticsSheetOpen}>
-            <SheetContent aria-describedby={undefined} className="overflow-y-auto sm:max-w-[440px]">
+            <SheetContent aria-describedby={undefined} className="overflow-y-auto sm:max-w-[400px]">
               <SheetTitle className="sr-only">Comment analytics</SheetTitle>
               <CommentsAnalyticsPanel
                 analytics={analytics}

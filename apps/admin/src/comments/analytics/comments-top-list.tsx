@@ -97,7 +97,7 @@ const CommentsTopList: React.FC<{
                 View all <LucideIcon.TableOfContents />
               </Button>
             </SheetTrigger>
-            <SheetContent className="overflow-y-auto pt-0 sm:max-w-[420px]">
+            <SheetContent className="overflow-y-auto pt-0 sm:max-w-[400px]">
               <SheetHeader className="sticky top-0 z-40 -mx-6 bg-surface-elevated/60 p-6 backdrop-blur">
                 <SheetTitle>{title}</SheetTitle>
                 <SheetDescription>{description}</SheetDescription>
