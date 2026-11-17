@@ -7,7 +7,11 @@ afterEach(cleanup);
 describe('notification row actions', () => {
   it('exposes a native primary button labelled by the notification', () => {
     const openNotification = vi.fn();
-    render(<NotificationItem onClick={openNotification}>A notification</NotificationItem>);
+    render(
+      <NotificationItem onClick={openNotification}>
+        <NotificationItem.Description>A notification</NotificationItem.Description>
+      </NotificationItem>,
+    );
 
     const action = screen.getByRole('button', { name: 'A notification' });
     expect(action.tagName).toBe('BUTTON');
@@ -21,7 +25,7 @@ describe('notification row actions', () => {
     const follow = vi.fn();
     render(
       <NotificationItem onClick={openNotification}>
-        A notification
+        <NotificationItem.Description>A notification</NotificationItem.Description>
         <button type="button" onClick={follow}>
           Follow
         </button>
@@ -29,6 +33,7 @@ describe('notification row actions', () => {
     );
 
     const control = screen.getByRole('button', { name: 'Follow' });
+    expect(screen.getByRole('button', { name: 'A notification' })).toBeTruthy();
     expect(control.parentElement?.closest('button, [role="button"]')).toBeNull();
     fireEvent.keyDown(control, { key: 'Enter' });
     fireEvent.keyUp(control, { key: ' ' });

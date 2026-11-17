@@ -551,9 +551,9 @@ const Notifications: React.FC = () => {
                         ) : (
                           <div className="flex justify-between">
                             <div className="flex items-center gap-1">
-                              <span className="truncate">
+                              <NotificationItem.Description className="truncate">
                                 <NotificationGroupDescription group={group} />
-                              </span>
+                              </NotificationItem.Description>
                               {group.actors.length < 2 && (
                                 <>
                                   <span className="mt-px text-[8px] text-gray-700 dark:text-gray-600">

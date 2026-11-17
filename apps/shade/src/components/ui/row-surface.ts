@@ -5,6 +5,7 @@ export const rowSurfaceClasses = {
   base: 'shade-row',
   interactive: 'shade-row-interactive',
   inset: 'shade-row-inset',
+  end: 'shade-row-end',
   primaryAction: 'shade-row-primary',
 } as const;
 

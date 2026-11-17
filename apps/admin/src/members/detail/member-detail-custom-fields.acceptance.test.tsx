@@ -168,6 +168,57 @@ describe('Member detail custom fields', () => {
     expect(saved.name).toBeUndefined();
   });
 
+  it('uses the shared expanded row target and separators for custom fields', async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    fakeMemberDetailWorld(m, { job_title: 'Editor', company: 'Ghost', home_address: ADDRESS });
+    await renderAdminApp(`/members/${m.id}`);
+
+    const action = memberDetailScreen.editFieldButton('Company');
+    await expect.element(action).toBeVisible();
+    const row = action.element().parentElement!;
+    const value = memberDetailScreen.fieldValue('Ghost');
+    const contentX = value.element().getBoundingClientRect().x;
+    await action.hover();
+
+    expect(getComputedStyle(row, '::before').left).toBe('-16px');
+    expect(getComputedStyle(row, '::before').opacity).toBe('1');
+    expect(getComputedStyle(row).borderBottomColor).toBe('rgba(0, 0, 0, 0)');
+    expect(getComputedStyle(row.previousElementSibling!).borderBottomColor).toBe(
+      'rgba(0, 0, 0, 0)',
+    );
+    expect(value.element().getBoundingClientRect().x).toBe(contentX);
+
+    await action.click({
+      position: { x: -8, y: action.element().getBoundingClientRect().height / 2 },
+    });
+    await expect.element(modal().getByLabelText('Company')).toBeVisible();
+  });
+
+  it('retains selected field text instead of opening its editor', async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    fakeMemberDetailWorld(m, { job_title: 'Editor' });
+    await renderAdminApp(`/members/${m.id}`);
+
+    const value = memberDetailScreen.fieldValue('Editor');
+    await expect.element(value).toBeVisible();
+    const selection = window.getSelection()!;
+    const range = document.createRange();
+    range.selectNodeContents(value.element());
+    selection.removeAllRanges();
+    selection.addRange(range);
+    try {
+      const action = memberDetailScreen.editFieldButton('Job title').element();
+      if (!(action instanceof HTMLButtonElement)) {
+        throw new Error('The field editor must be a button');
+      }
+      action.click();
+      await expect.element(modal()).not.toBeInTheDocument();
+      expect(selection.toString()).toBe('Editor');
+    } finally {
+      selection.removeAllRanges();
+    }
+  });
+
   it('leaves an unsaved page edit intact when a custom field is saved', async () => {
     const m = member({ name: 'Ada Lovelace' });
     const editApi = fakeMemberDetailWorld(m, { job_title: 'Editor' });

@@ -10,7 +10,9 @@ describe('notification row primary and secondary actions', () => {
     const open = vi.fn();
     await renderInApp(
       <Box className="w-[480px]" padding="lg">
-        <NotificationItem onClick={open}>A notification</NotificationItem>
+        <NotificationItem onClick={open}>
+          <NotificationItem.Description>A notification</NotificationItem.Description>
+        </NotificationItem>
       </Box>,
     );
 
@@ -38,13 +40,18 @@ describe('notification row primary and secondary actions', () => {
     await renderInApp(
       <Box className="w-[480px]" padding="lg">
         <NotificationItem onClick={open}>
-          A notification
+          <NotificationItem.Description>A notification</NotificationItem.Description>
           <Button onClick={follow}>Follow</Button>
+          <Button>Show all</Button>
+          <Button>Hide</Button>
         </NotificationItem>
       </Box>,
     );
 
     const secondary = page.getByRole('button', { name: 'Follow', exact: true });
+    await expect
+      .element(page.getByRole('button', { name: 'A notification', exact: true }))
+      .toHaveAccessibleName('A notification');
     expect(secondary.element().parentElement?.closest('button, [role="button"]')).toBeNull();
     await secondary.click();
     expect(follow).toHaveBeenCalledTimes(1);

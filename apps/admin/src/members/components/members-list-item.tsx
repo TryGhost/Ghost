@@ -260,7 +260,7 @@ const MembersListItem = forwardRef<
     >
       <TableCell
         className={cn(
-          'min-w-0 bg-background px-4 py-3 max-sm:!w-full max-sm:!min-w-0 max-sm:pr-0 lg:sticky lg:left-0 lg:z-20',
+          'min-w-0 bg-background px-4 py-3 max-sm:shade-row-end max-sm:!w-full max-sm:!min-w-0 lg:sticky lg:left-0 lg:z-20',
         )}
         data-row-pinned
       >
@@ -291,7 +291,7 @@ const MembersListItem = forwardRef<
         )}
       </TableCell>
       <TableCell
-        className="hidden px-4 py-3 sm:table-cell sm:max-lg:pr-0"
+        className="hidden px-4 py-3 sm:table-cell sm:max-lg:shade-row-end"
         style={columnStyles.status}
       >
         <MembersListItemStatus status={item.status} tiers={item.tiers} />

@@ -9,12 +9,46 @@ import {
 } from '@test-utils/acceptance';
 import { sidebarScreen } from '@/layout/sidebar.screen';
 import { membersScreen } from './members.screen';
+import { rowSurfaceClasses } from '@tryghost/shade/components';
 
 afterEach(async () => {
   await page.viewport(1280, 800);
 });
 
 describe('Members row surfaces', () => {
+  it.each([390, 768])('extends and rounds the last visible cell at %spx', async (width) => {
+    await page.viewport(width, 800);
+    const ada = member({ name: 'Ada Lovelace' });
+    fakeMembers([ada]);
+    fakeAdminEndpoint('GET', new RegExp(`^/members/${ada.id}/`), { members: [ada] });
+    fakeAdminEndpoint('GET', /^\/members\/events\//, {
+      events: [],
+      meta: { pagination: { page: 1, limit: 5, pages: 1, total: 0, next: null, prev: null } },
+    });
+    await renderAdminApp('/members');
+
+    const row = membersScreen.memberRow('Ada Lovelace');
+    await expect.element(row).toBeVisible();
+    const cells = row.getByRole('cell').elements();
+    expect(cells).toHaveLength(width < 480 ? 1 : 2);
+    const end = cells.at(-1)!;
+    await row.hover();
+    const surface = getComputedStyle(end, '::before');
+    expect(surface.right).toBe('-16px');
+    expect(parseFloat(surface.borderTopRightRadius)).toBeGreaterThan(0);
+    expect(parseFloat(surface.borderBottomRightRadius)).toBeGreaterThan(0);
+    expect(getComputedStyle(end).paddingRight).toBe('0px');
+    expect(surface.opacity).toBe('1');
+
+    row.element().classList.add(rowSurfaceClasses.inset);
+    expect(getComputedStyle(cells[0], '::before').left).toBe('0px');
+    expect(getComputedStyle(end, '::before').right).toBe('0px');
+    row.element().classList.remove(rowSurfaceClasses.inset);
+
+    await row.click({ position: { x: row.element().getBoundingClientRect().width + 8, y: 12 } });
+    await expect.poll(currentRoute).toBe(`/members/${ada.id}?back=%2Fmembers`);
+  });
+
   it('opens a member from the expanded row gutter', async () => {
     const ada = member({ name: 'Ada Lovelace' });
     fakeMembers([ada]);

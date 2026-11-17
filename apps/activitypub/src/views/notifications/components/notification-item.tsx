@@ -7,6 +7,7 @@ import { rowSurface } from '@tryghost/shade/components';
 interface NotificationContextType {
   onClick?: () => void;
   url?: string;
+  descriptionId: string;
 }
 
 const NotificationContext = React.createContext<NotificationContextType | undefined>(undefined);
@@ -29,11 +30,11 @@ const NotificationItem = ({
   url,
   className,
 }: NotificationItemProps) => {
-  const contentId = React.useId();
+  const descriptionId = React.useId();
   const press = useRowPress<HTMLDivElement>({}, Boolean(onClick));
 
   return (
-    <NotificationContext.Provider value={{ onClick, url }}>
+    <NotificationContext.Provider value={{ onClick, url, descriptionId }}>
       <div
         className={cn(
           rowSurface(onClick ? 'interactive' : 'static'),
@@ -43,7 +44,6 @@ const NotificationItem = ({
           onClick && 'cursor-pointer',
           className,
         )}
-        id={contentId}
         {...press}
         onClick={(event) => {
           const target = event.target as HTMLElement;
@@ -55,7 +55,7 @@ const NotificationItem = ({
       >
         {onClick && (
           <button
-            aria-labelledby={contentId}
+            aria-labelledby={descriptionId}
             className="absolute inset-0 -z-1 rounded-md border-0 bg-transparent p-0 focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden"
             type="button"
             onClick={onClick}
@@ -84,9 +84,26 @@ const Content = ({ children }: { children: React.ReactNode }) => {
   return <div className="col-start-2 row-start-2 -mt-0.5 grow overflow-hidden">{children}</div>;
 };
 
+const Description = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
+  const context = React.useContext(NotificationContext);
+
+  return (
+    <span className={className} id={context?.descriptionId}>
+      {children}
+    </span>
+  );
+};
+
 // Attach sub-components to the main component
 NotificationItem.Icon = Icon;
 NotificationItem.Avatars = Avatars;
 NotificationItem.Content = Content;
+NotificationItem.Description = Description;
 
 export default NotificationItem;

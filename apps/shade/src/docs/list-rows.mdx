@@ -96,6 +96,11 @@ pass `false` as its second argument when the row is static. `TableRow` and
   above the stretched target with relative positioning and `z-10`.
 - Use `rowSurfaceClasses.inset` when a constrained scrollport has no outward
   gutter. Keep the row content aligned with the corresponding header.
+- When responsive tables hide trailing cells, mark the last visible cell at
+  that breakpoint with a literal utility such as `max-sm:shade-row-end` or
+  `sm:max-lg:shade-row-end`. This removes its outer padding and preserves the
+  highlight extension and rounded end. `rowSurfaceClasses.end` supplies the
+  unconditional utility.
 - Set `data-row-dragging="true"` on the sortable region while dragging to
   suppress ordinary row fills, including in its drag overlay.
 

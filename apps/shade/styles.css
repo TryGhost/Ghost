@@ -408,6 +408,24 @@ html.theme-switching *::after {
 /* Shared content-row chrome. The recipe opts rows in explicitly; DataList,
    menus and navigation do not use these classes. Keep this in the published
    stylesheet so apps receive the same behavior without scanning Shade source. */
+/* A responsive table can hide its trailing cells. Mark the visible end with
+   this utility (e.g. max-sm:shade-row-end) at the same breakpoint. */
+@utility shade-row-end {
+  tr.shade-row > & {
+    padding-inline-end: 0;
+  }
+
+  tr.shade-row > &::before {
+    inset-inline-end: calc(-4 * var(--spacing));
+    border-start-end-radius: var(--radius-md);
+    border-end-end-radius: var(--radius-md);
+  }
+
+  tr.shade-row-inset > &::before {
+    inset-inline-end: 0;
+  }
+}
+
 .shade-row {
   position: relative;
   isolation: isolate;
@@ -486,7 +504,7 @@ tr.shade-row > :is(td, th):last-child::before {
   border-end-end-radius: var(--radius-md);
 }
 
-tr.shade-row-inset > :is(td, th)::before {
+tr.shade-row.shade-row-inset > :is(td, th)::before {
   inset-inline: 0;
 }
 
