@@ -1862,8 +1862,8 @@ jobs:
           tags: ${{ steps.meta-full.outputs.tags }}
           labels: ${{ steps.meta-full.outputs.labels }}
           cache-from: type=registry,ref=${{ steps.strategy.outputs.image-full-name }}:cache-main
-          # See core image above: PRs skip cache-to; only main/tag publish cache-main.
-          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && github.event_name != 'pull_request' && format('type=registry,ref={0}:cache-main,mode=max', steps.strategy.outputs.image-full-name) || '' }}
+          # See core image above: PRs skip cache-to; only main/tag publish cache-main, mode=min.
+          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && github.event_name != 'pull_request' && format('type=registry,ref={0}:cache-main,mode=min', steps.strategy.outputs.image-full-name) || '' }}
 
       # The production image artifact is saved before the e2e steps below:
       # Ghost-Moya CD discovers `docker-image-production` by name in this run
