@@ -15,6 +15,7 @@ import {
   TableHeadButton,
   TableHeader,
   TableRow,
+  TableRowAction,
 } from '@tryghost/shade/components';
 import { Box, Grid, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
@@ -88,16 +89,22 @@ const RunRow = forwardRef<
     >
       <TableCell className="h-[72px] p-4">
         <Stack className="min-w-0" gap="none">
-          <button
-            aria-label={`View run history for ${run.memberName}, started ${run.enteredDescription}`}
-            aria-pressed={selectedRunId === run.id}
-            className="truncate text-left font-medium outline-offset-4 focus-visible:outline-2 focus-visible:outline-focus-ring"
-            disabled={isSelectionDisabled}
-            title={run.memberName}
-            type="button"
-          >
-            {run.memberName}
-          </button>
+          <TableRowAction asChild>
+            <button
+              aria-label={`View run history for ${run.memberName}, started ${run.enteredDescription}`}
+              aria-pressed={selectedRunId === run.id}
+              className="truncate text-left font-medium outline-offset-4 focus-visible:outline-2 focus-visible:outline-focus-ring"
+              disabled={isSelectionDisabled}
+              title={run.memberName}
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                onSelectRun(run.id, run.memberName);
+              }}
+            >
+              {run.memberName}
+            </button>
+          </TableRowAction>
           {run.memberEmail && (
             <span className="truncate text-muted-foreground" title={run.memberEmail}>
               {run.memberEmail}
