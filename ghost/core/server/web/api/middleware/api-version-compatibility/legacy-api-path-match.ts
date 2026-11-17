@@ -13,11 +13,7 @@ module.exports = (url) => {
     urlToMatch += '/';
   }
 
-  let { version, api } = pathMatch(apiRouteMatcher)(urlToMatch);
+  const { version, api } = pathMatch(apiRouteMatcher)(urlToMatch);
 
-  if (version === undefined) {
-    version = null;
-  }
-
-  return { version, api };
+  return { version: version === undefined ? null : version, api };
 };
