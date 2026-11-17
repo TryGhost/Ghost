@@ -104,16 +104,22 @@ describe('Presence API', function () {
       .body({ presence: [{ resource: editing, tab: 'tab-one-0001' }] })
       .expectStatus(204);
 
-    const { body } = await ownerAgent
-      .post('presence/')
-      .body({ presence: [{ resources: [editing] }] })
-      .expectStatus(200);
-    assert.equal(body.presence[0].active.length, 1);
+    const seen = () =>
+      ownerAgent
+        .post('presence/')
+        .body({ presence: [{ resources: [editing] }] })
+        .expectStatus(200);
+    const oneLeft = await seen();
+    assert.equal(oneLeft.body.presence[0].active.length, 1);
 
     await editorAgent
       .post('presence/leave/')
       .body({ presence: [{ resource: editing, tab: 'tab-two-0002' }] })
       .expectStatus(204);
+
+    // Gone only if each leave removed the tab it named.
+    const noneLeft = await seen();
+    assert.deepEqual(noneLeft.body.presence[0].active, []);
   });
 
   it('accepts a contributor', async function () {
