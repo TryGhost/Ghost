@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { startActivityPoller, type PauseReason } from './activity-poller';
+import {
+  IDLE_INTERVAL_MS,
+  UNSUPPORTED_RETRY_MS,
+  startActivityPoller,
+  type PauseReason,
+} from './activity-poller';
 
 function setHidden(hidden: boolean) {
   Object.defineProperty(document, 'hidden', { configurable: true, value: hidden });
@@ -86,15 +91,34 @@ describe('activity poller', () => {
     expect(poll).toHaveBeenCalledTimes(5);
   });
 
-  it('stops for good when the endpoint is unsupported', async () => {
-    const poll = vi.fn().mockResolvedValue(false);
+  it('pauses when the endpoint is missing and asks again only after five minutes', async () => {
+    const poll = vi.fn().mockResolvedValueOnce(false).mockResolvedValue(true);
     const onPause = vi.fn<(reason: PauseReason) => void>();
     stop = startActivityPoller({ poll, onPause });
     await vi.advanceTimersByTimeAsync(0);
     expect(onPause).toHaveBeenCalledWith('unsupported');
     document.dispatchEvent(new Event('keydown'));
-    await vi.advanceTimersByTimeAsync(120_000);
+    await vi.advanceTimersByTimeAsync(UNSUPPORTED_RETRY_MS - 1);
     expect(poll).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(poll).toHaveBeenCalledTimes(2);
+    // Served now, so the normal cadence is back; the last input was five minutes ago.
+    await vi.advanceTimersByTimeAsync(IDLE_INTERVAL_MS);
+    expect(poll).toHaveBeenCalledTimes(3);
+  });
+
+  it('does not ask a missing endpoint again while the tab is hidden, and asks on return', async () => {
+    const poll = vi.fn().mockResolvedValue(false);
+    stop = startActivityPoller({ poll, onPause: vi.fn() });
+    await vi.advanceTimersByTimeAsync(0);
+    setHidden(true);
+    document.dispatchEvent(new Event('visibilitychange'));
+    await vi.advanceTimersByTimeAsync(UNSUPPORTED_RETRY_MS * 2);
+    expect(poll).toHaveBeenCalledTimes(1);
+    setHidden(false);
+    document.dispatchEvent(new Event('visibilitychange'));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(poll).toHaveBeenCalledTimes(2);
   });
 
   it('ignores a late response after hiding and never overlaps requests', async () => {

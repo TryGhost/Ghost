@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { dequal } from 'dequal';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
-import { APIError } from '@tryghost/admin-x-framework/errors';
+import { APIError, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import { usePresenceApi } from '@tryghost/admin-x-framework/api/presence';
 import { startActivityPoller } from './activity-poller';
 import { mergeActive, type LivePresence } from './merge-active';
@@ -86,9 +86,11 @@ export function usePresence(
             }
             return true;
           } catch (error) {
+            // An expired session is a 403 too, and clears once the editor's re-auth dialog succeeds.
             if (
               error instanceof APIError &&
-              [401, 403, 404].includes(error.response?.status ?? 0)
+              !(error instanceof SessionExpiredError) &&
+              [403, 404].includes(error.response?.status ?? 0)
             ) {
               return false;
             }

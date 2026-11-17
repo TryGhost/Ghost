@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { APIError } from '@tryghost/admin-x-framework/errors';
+import { APIError, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
 import type { PresenceResource } from '@tryghost/admin-x-framework/api/presence';
 import { usePresence, usePresenceEnabled } from './use-presence';
 import { useVisibleResources } from './use-visible-resources';
@@ -82,13 +82,40 @@ describe('usePresence', () => {
     hook.unmount();
   });
 
-  it('stops after one request against an older backend and does not send leave', async () => {
+  it('asks an older backend once, again only after five minutes, and never sends leave', async () => {
     mocks.poll.mockRejectedValue(new APIError(new Response(null, { status: 404 })));
+    const hook = renderHook(() => usePresence([resource], resource));
+    await act(() => vi.advanceTimersByTimeAsync(120_000));
+    expect(mocks.poll).toHaveBeenCalledTimes(1);
+    await act(() => vi.advanceTimersByTimeAsync(180_000));
+    expect(mocks.poll).toHaveBeenCalledTimes(2);
+    hook.unmount();
+    expect(mocks.leave).not.toHaveBeenCalled();
+  });
+
+  it('treats a 403 that is not an expired session as a missing endpoint', async () => {
+    mocks.poll.mockRejectedValue(new APIError(new Response(null, { status: 403 })));
     const hook = renderHook(() => usePresence([resource], resource));
     await act(() => vi.advanceTimersByTimeAsync(120_000));
     expect(mocks.poll).toHaveBeenCalledTimes(1);
     hook.unmount();
     expect(mocks.leave).not.toHaveBeenCalled();
+  });
+
+  it('backs off on an expired session and resumes, since the editor re-authenticates in place', async () => {
+    // Ghost answers an expired session with a 403, which the framework raises as this error.
+    mocks.poll.mockRejectedValueOnce(
+      new SessionExpiredError(new Response(null, { status: 403 }), {}),
+    );
+    const hook = renderHook(() => usePresence([resource], resource));
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(hook.result.current.active).toEqual([]);
+    await act(() => vi.advanceTimersByTimeAsync(19_999));
+    expect(mocks.poll).toHaveBeenCalledTimes(1);
+    await act(() => vi.advanceTimersByTimeAsync(1));
+    expect(mocks.poll).toHaveBeenCalledTimes(2);
+    expect(hook.result.current.active).toEqual([other]);
+    hook.unmount();
   });
 
   it('clears and backs off on a server failure, then polls the latest rows', async () => {

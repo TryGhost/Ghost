@@ -5,11 +5,13 @@ export const IDLE_AFTER_MS = 60_000;
 /** No input for this long stops polling until the next input. */
 export const STOP_AFTER_MS = 30 * 60_000;
 export const MAX_BACKOFF_MS = 60_000;
+/** A missing endpoint may be a flag that has not reached this server process yet; ask again this often. */
+export const UNSUPPORTED_RETRY_MS = 5 * 60_000;
 
 export type PauseReason = 'hidden' | 'idle' | 'unsupported' | 'disposed';
 
 export interface ActivityPollerOptions {
-  /** true when served, false to stop for good, undefined to skip without touching backoff. */
+  /** true when served, false when the endpoint is not there, undefined to skip without touching backoff. */
   poll: (isCurrent: () => boolean) => Promise<boolean | undefined>;
   onPause: (reason: PauseReason) => void;
   document?: Document;
@@ -24,7 +26,7 @@ export function startActivityPoller({
   now = Date.now,
 }: ActivityPollerOptions) {
   let disposed = false;
-  let disabled = false;
+  let retryAt = 0;
   let active = false;
   let inFlight = false;
   let generation = 0;
@@ -32,9 +34,11 @@ export function startActivityPoller({
   let failures = 0;
   let nextPoll: ReturnType<typeof setTimeout> | undefined;
   let stopTimer: ReturnType<typeof setTimeout> | undefined;
+  let retryTimer: ReturnType<typeof setTimeout> | undefined;
 
   const idleFor = () => now() - lastInteraction;
-  const eligible = () => !disposed && !disabled && !target.hidden && idleFor() < STOP_AFTER_MS;
+  const eligible = () =>
+    !disposed && now() >= retryAt && !target.hidden && idleFor() < STOP_AFTER_MS;
   const interval = () => (idleFor() < IDLE_AFTER_MS ? ACTIVE_INTERVAL_MS : IDLE_INTERVAL_MS);
 
   function pause(reason: PauseReason) {
@@ -58,8 +62,11 @@ export function startActivityPoller({
     try {
       const served = await poll(isCurrent);
       if (served === false && !disposed) {
-        disabled = true;
+        // Input must not ask sooner, or an older backend would get a request per keystroke.
+        retryAt = now() + UNSUPPORTED_RETRY_MS;
         pause('unsupported');
+        clearTimeout(retryTimer);
+        retryTimer = setTimeout(resume, UNSUPPORTED_RETRY_MS);
       }
       if (served === true) {
         failures = 0;
@@ -92,8 +99,19 @@ export function startActivityPoller({
     }, STOP_AFTER_MS - idleFor());
   }
 
+  function resume() {
+    if (active || !eligible()) {
+      return;
+    }
+    active = true;
+    failures = 0;
+    clearTimeout(nextPoll);
+    scheduleStop();
+    void run();
+  }
+
   function interact() {
-    if (disposed || disabled || target.hidden) {
+    if (disposed || target.hidden) {
       return;
     }
     // Pointer moves arrive constantly; one timestamp update a second is enough.
@@ -101,13 +119,7 @@ export function startActivityPoller({
       return;
     }
     lastInteraction = now();
-    if (!active) {
-      active = true;
-      failures = 0;
-      clearTimeout(nextPoll);
-      scheduleStop();
-      void run();
-    }
+    resume();
   }
 
   function visibilityChanged() {
@@ -127,6 +139,7 @@ export function startActivityPoller({
 
   return () => {
     disposed = true;
+    clearTimeout(retryTimer);
     pause('disposed');
     for (const event of events) {
       target.removeEventListener(event, interact, true);

@@ -38,8 +38,10 @@ export function presenceRequestBody(resources: PresenceResource[], editing?: Pre
 
 /**
  * Presence is background traffic: a poll never retries, never redirects the
- * session and gives up after five seconds. The response is returned unparsed
- * so the caller can validate it.
+ * session, gives up after five seconds and stays out of the maintenance and
+ * upgrade alerts: the server answers 503 whenever its store is unavailable,
+ * and any other request still reports an upgrade. The response is returned
+ * unparsed so the caller can validate it.
  */
 export const usePresenceApi = () => {
   const fetchApi = useFetchApi();
@@ -52,6 +54,7 @@ export const usePresenceApi = () => {
         retry: false,
         timeout: 5000,
         sessionExpiryRedirect: false,
+        reportUpgradeStatus: false,
         body: JSON.stringify(presenceRequestBody(resources, editing)),
       }),
     [fetchApi],

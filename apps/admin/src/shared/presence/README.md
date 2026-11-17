@@ -16,10 +16,14 @@ ids and a server timestamp; names and avatars come from the staff users list.
 - Entries expire locally 60 seconds after their server timestamp, matching the
   server's active window. Rows outside the current poll keep their entries until
   then so scrolling does not blink.
-- Gated by the `editorPresencePolling` Labs flag. A 401, 403 or 404 stops
-  polling for the session, so an older backend without the endpoint costs one
-  request. Other failures back off exponentially up to 60 seconds and clear
-  what is shown.
+- Gated by the `editorPresencePolling` Labs flag. A 404, or a 403 that is not
+  an expired session, means the endpoint is not there: polling pauses and asks
+  again every five minutes while the tab is in use. An older backend therefore
+  costs one request per mount and one per five minutes, and a flag that reaches
+  a server process late is picked up without a reload.
+- Other failures, an expired session included, back off exponentially up to 60
+  seconds and clear what is shown. Polling resumes by itself once the editor's
+  re-authentication dialog succeeds.
 
 ## Modules
 

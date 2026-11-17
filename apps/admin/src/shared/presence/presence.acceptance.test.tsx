@@ -38,6 +38,12 @@ function fakeLeave() {
   return fakeAdminEndpoint('POST', '/presence/leave/', () => new Response(null, { status: 204 }));
 }
 
+/** Long enough for a list's debounced first poll to leave, or for a captured response to render. */
+const settle = () =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, 500);
+  });
+
 function fakePostRead(title: string) {
   fakeAdminEndpoint('GET', new RegExp(`^/posts/${POST_ID}/\\?`), {
     posts: [post({ id: POST_ID, title })],
@@ -71,18 +77,33 @@ describe('presence polling', () => {
     expect(presence.requests[0].body).not.toHaveProperty('presence.0.editing');
   });
 
-  it('sends nothing while the flag is off', async () => {
+  it('sends nothing from a list while the flag is off', async () => {
     fakePostsListScreen();
     fakePosts([post({ id: POST_ID, title: 'Presence example', status: 'draft' })]);
     const presence = fakePresence();
     await renderAdminApp('/posts?type=draft');
     await expect.element(page.getByText('Presence example')).toBeVisible();
+    await settle();
+    expect(presence.requests).toHaveLength(0);
+  });
+
+  it('sends nothing from the editor while the flag is off', async () => {
+    fakeEditorChrome();
+    fakePostRead('Presence example');
+    const presence = fakePresence();
+    await renderAdminApp(`/editor/post/${POST_ID}`);
+    await expect
+      .element(page.getByRole('textbox', { name: 'Post title', exact: true }))
+      .toHaveValue('Presence example');
+    await settle();
     expect(presence.requests).toHaveLength(0);
   });
 
   it('stops after one request against an older backend and leaves the editor usable', async () => {
     fakeEditorChrome();
     fakePostRead('Older backend');
+    // Teardown can unmount before the 404 lands, and a poller that is still active sends a leave.
+    fakeLeave();
     const presence = fakePresence(404);
     await renderAdminApp(`/editor/post/${POST_ID}`, POLLING_ON);
     await expect

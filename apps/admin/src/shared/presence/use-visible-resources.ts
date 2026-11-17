@@ -23,7 +23,7 @@ export function useVisibleResources(
   resources: PresenceResource[],
   enabled: boolean,
 ): PresenceResource[] {
-  const key = JSON.stringify(resources);
+  const key = enabled ? JSON.stringify(resources) : '';
   const [visible, setVisible] = useState<PresenceResource[]>([]);
   useEffect(() => {
     const container = root.current;
