@@ -96,6 +96,18 @@ const features: Feature[] = [
       'Open Help in a sidebar inside Admin instead of a new tab. Needs a host script that provides the support app.',
     flag: 'inAppSupport',
   },
+  {
+    title: 'Editor presence polling',
+    description:
+      'Record which staff have a post open in the editor and poll for it. Shows nothing yet.',
+    flag: 'editorPresencePolling',
+  },
+  {
+    title: 'Editor presence indicators',
+    description:
+      'Show who else has a post or page open, in the editor header and on list rows. Needs editor presence polling.',
+    flag: 'editorPresence',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {

@@ -53,6 +53,9 @@ describe('setClientIPHeader', function () {
       password: { hash: async () => '', compare: async () => false },
       logger: { debug() {}, info() {}, warn() {}, error() {} },
       limiters,
+      sendPasswordResetEmail: async () => {},
+      isStaffDeviceVerificationEnabled: () => true,
+      getRequestOrigin: (headers) => headers.get('origin'),
     });
     const { options } = await auth.$context;
 

@@ -50,13 +50,25 @@ export function forRoles(names: readonly string[]): Permission[] {
   return result;
 }
 
-/**
- * Every permission that exists, regardless of role. This is the universe the
- * actions map is built from.
- */
-export function all(): Permission[] {
-  return allPermissions.slice();
+const actions: Record<string, string[]> = {};
+
+for (const perm of allPermissions) {
+  const objectTypes = (actions[perm.action_type] ??= []);
+
+  if (!objectTypes.includes(perm.object_type)) {
+    objectTypes.push(perm.object_type);
+  }
 }
+
+for (const objectTypes of Object.values(actions)) {
+  Object.freeze(objectTypes);
+}
+
+/**
+ * Every action that exists and the object types it applies to, e.g.
+ * `{edit: ['post', 'tag', ...], ...}`. canThis builds its chain from this.
+ */
+export const actionsMap: Readonly<Record<string, readonly string[]>> = Object.freeze(actions);
 
 /**
  * The roles the map knows about. Owner is not among them: it has no

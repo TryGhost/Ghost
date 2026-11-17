@@ -1,7 +1,7 @@
 # Better Auth migration plan
 
-Status: Phase 0 done (go for Phase 2). Findings and settled decisions are in
-the [Better Auth README](../../ghost/core/server/auth/better-auth/README.md#phase-0-findings).
+Status: Phases 0 and 1 done; Phase 2 next. Findings and settled decisions are
+in the [Better Auth README](../../ghost/core/server/auth/better-auth/README.md#phase-0-findings).
 
 This plan moves Ghost's staff authentication onto
 [Better Auth](https://www.better-auth.com) without changing the wire contract of
@@ -219,14 +219,14 @@ not, so legacy boot works without the tables until `user_accounts` graduates
 
 Built-in plugins:
 
-| Plugin          | Package                       | Use                                                                                                                                                                     | Table                 | Phase       |
-| --------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | ----------- |
-| `apiKey`        | `@better-auth/api-key`        | Personal Access Tokens and site tokens: hashed, scoped, expiring                                                                                                        | `api_tokens`          | 4           |
-| `magicLink`     | `better-auth/plugins`         | Staff magic links, `disableSignUp`, Ghost mail                                                                                                                          | `verifications`       | 5           |
-| `passkey`       | `@better-auth/passkey`        | WebAuthn; `rpID`/origin from admin URL                                                                                                                                  | `user_passkeys`       | 5 (stretch) |
-| `twoFactor`     | `better-auth/plugins`         | Authenticator app + backup codes, per-user opt-in; not `otpOptions` (Ghost has its own email codes, and OTP enrolment leaves no row for the virtual `twoFactorEnabled`) | `user_two_factors`    | 5 (stretch) |
-| `sso`           | `@better-auth/sso`            | OIDC/SAML for teams                                                                                                                                                     | `sso_providers`       | 8           |
-| `oauthProvider` | `@better-auth/oauth-provider` | Installed apps and third-party clients as OAuth clients with scopes                                                                                                     | four `oauth_*` tables | 4b          |
+| Plugin          | Package                       | Use                                                                                                                                                                     | Table                 | Phase         |
+| --------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | ------------- |
+| `apiKey`        | `@better-auth/api-key`        | Personal Access Tokens and site tokens: hashed, scoped, expiring                                                                                                        | `api_tokens`          | 4             |
+| `magicLink`     | `better-auth/plugins`         | Staff magic links, `disableSignUp`, Ghost mail                                                                                                                          | `verifications`       | 5             |
+| `passkey`       | `@better-auth/passkey`        | WebAuthn; `rpID`/origin from admin URL                                                                                                                                  | `user_passkeys`       | 5 (follow-on) |
+| `twoFactor`     | `better-auth/plugins`         | Authenticator app + backup codes, per-user opt-in; not `otpOptions` (Ghost has its own email codes, and OTP enrolment leaves no row for the virtual `twoFactorEnabled`) | `user_two_factors`    | 5 (follow-on) |
+| `sso`           | `@better-auth/sso`            | OIDC/SAML for teams                                                                                                                                                     | `sso_providers`       | 8             |
+| `oauthProvider` | `@better-auth/oauth-provider` | Installed apps and third-party clients as OAuth clients with scopes                                                                                                     | four `oauth_*` tables | 4b            |
 
 ### 3.2 The Knex adapter
 
@@ -270,19 +270,27 @@ the session (Phase 2), so they create a Better Auth session directly.
 **`ghostStaffLifecycle`** (Phase 2). Ghost's status rules layered on Better
 Auth core.
 
-- Before `/sign-in/email`: `locked` sends the reset email and throws
-  `PASSWORD_RESET_REQUIRED`; `inactive` throws `ACCOUNT_SUSPENDED`; unknown
-  email and wrong password map to today's messages (§5.3).
+- `/sign-in/email` does not enumerate staff (§5.3): an unknown email and a
+  wrong password are both `INVALID_EMAIL_OR_PASSWORD`. A failed attempt for a
+  `locked` user still sends the reset email, without changing the response.
 - Before magic-link, passkey and SSO sign-in: refuse `inactive`, and set a
   `locked` user's `status` to `active` (as reset does today). This runs before
-  the session is created, so the session guard below admits them.
-- After every sign-in: set `last_seen`, set `status` to `active`.
+  the session is created, so the session guard below admits them. The unlock
+  only matches a `locked` user, and a user suspended in the meantime is refused.
+- A successful `/reset-password` sets a `locked` user `active`, as legacy
+  `doReset` does, so the user can sign in afterwards (step 8, PLA-620). Until
+  then a native reset leaves the user locked.
+- After every sign-in: set `last_seen`, and set a `warn-*` status to `active`.
+  Both are bookkeeping, so a failure is logged and the sign-in stands.
 - `databaseHooks.session.create.before`: refuse non-active users on every path.
   It runs after the before-hooks above, so only users still non-active by then
   are refused.
 - Server-only: `setupOwner`, `acceptInvitation` (user + credential account +
-  role in one transaction), `createVerifiedSession`, `revokeUserSessions`,
-  `revokeAllSessions`, `lockAllUsers`.
+  role in one transaction), `createVerifiedSession` (the admin origin is
+  required, since a session without one is anonymous), `revokeUserSessions`,
+  `revokeAllSessions`. Authentication reset keeps legacy `lockAll`, which
+  locks users and replaces their credentials in the same transaction as the
+  key rotation and audit row, and calls `revokeAllSessions` after the commit.
 
 **`ghostDeviceVerification`** (Phase 3). `twoFactor` and `emailOTP` are per-user
 opt-in; Ghost's rule is "every staff user, trusted browser, satisfied by any
@@ -564,19 +572,28 @@ compatibility.
 Compatibility controllers map Better Auth `APIError`s to `@tryghost/errors`
 with today's messages, so older Admin builds keep working:
 
-| Better Auth                              | Ghost error                                                          |
-| ---------------------------------------- | -------------------------------------------------------------------- |
-| `USER_NOT_FOUND`                         | `NotFoundError` `There is no user with that email address.`          |
-| `INVALID_EMAIL_OR_PASSWORD` (known user) | `ValidationError` `PASSWORD_INCORRECT` `Your password is incorrect.` |
-| `PASSWORD_RESET_REQUIRED`                | `PasswordResetRequiredError`                                         |
-| `ACCOUNT_SUSPENDED`                      | `NoPermissionError` `This account has been suspended.`               |
-| `DEVICE_VERIFICATION_REQUIRED`           | `NoPermissionError`, `Needs2FAError`, `2FA_*` code                   |
-| `INVALID_TOKEN` / expired                | existing reset-token messages                                        |
-| `TOO_MANY_REQUESTS`                      | `TooManyRequestsError`                                               |
+| Better Auth                    | Ghost error                                              |
+| ------------------------------ | -------------------------------------------------------- |
+| `INVALID_EMAIL_OR_PASSWORD`    | `ValidationError` `Your email or password is incorrect.` |
+| `PASSWORD_RESET_REQUIRED`      | `PasswordResetRequiredError`                             |
+| `ACCOUNT_SUSPENDED`            | `NoPermissionError` `This account has been suspended.`   |
+| `DEVICE_VERIFICATION_REQUIRED` | `NoPermissionError`, `Needs2FAError`, `2FA_*` code       |
+| `INVALID_TOKEN` / expired      | existing reset-token messages                            |
+| `TOO_MANY_REQUESTS`            | `TooManyRequestsError`                                   |
 
-The native endpoints emit the codes the React `AuthClient` already expects
-(`USER_NOT_FOUND`, `INVALID_PASSWORD`, `PASSWORD_RESET_REQUIRED`,
-`INVALID_CODE`, `twoFactorRedirect` + `twoFactorReason`).
+The native endpoints emit the codes the React `AuthClient` expects
+(`PASSWORD_RESET_REQUIRED`, `INVALID_CODE`, `twoFactorRedirect` +
+`twoFactorReason`), except that sign-in does not enumerate staff: an unknown
+email, a wrong password and a wrong password on a suspended account are all
+Better Auth's `INVALID_EMAIL_OR_PASSWORD`, so `USER_NOT_FOUND` and
+`INVALID_PASSWORD` are not used. Admin's sign-in form keys on those two codes
+to mark the email or password field, so its native client must treat
+`INVALID_EMAIL_OR_PASSWORD` as one error for both fields. Suspension and
+`PASSWORD_RESET_REQUIRED` only show after a matching password. The
+compatibility `POST /session` does the same (SC-90): it answers
+`INVALID_EMAIL_OR_PASSWORD` with one generic `ValidationError` (422, no `code`),
+so Admin shows the message without marking either field. Legacy sign-in keeps
+today's messages.
 
 ### 5.4 Behaviour
 
@@ -604,9 +621,27 @@ Every phase ends with `pnpm check` green, the e2e API suite green under each
 engine setting it touches, and an update to
 [authentication.md](../codebase/authentication.md). Sizes are rough, for one
 engineer. Phase 4b (OAuth clients for apps) runs alongside Phase 5. The
-Linear project "BetterAuth Migration" covers Phases 0–5; Phases
+Linear project "BetterAuth Migration" covers Phases 0–5 and 4b; Phases
 6 and 7 are a follow-on project, and Phase 8 overlaps Berlin's "Permissions
 and auth" project.
+
+The Linear project has six weeks, 4 November to 18 December, skipping
+Thanksgiving week:
+
+| Milestone | Target | Phases                                                         |
+| --------- | ------ | -------------------------------------------------------------- |
+| Weeks 1–2 | 13 Nov | 0 and 1 (done 11 Nov)                                          |
+| Week 3    | 20 Nov | 2 (started 12 Nov)                                             |
+| Week 4    | 4 Dec  | 3, plus Phase 4's spike, scope vocabulary and site-token owner |
+| Week 5    | 11 Dec | 4                                                              |
+| 4b        | 18 Dec | 4b, across weeks 5 and 6 once Phase 4's token policy lands     |
+| Week 6    | 18 Dec | 5, without passkeys and authenticator apps                     |
+
+Sessions, verification and Bearer tokens are the core. Magic link is the first
+thing to drop if a phase runs over, and drops before 4b. Passkeys and
+authenticator apps move to the follow-on project. Berlin's project starts on
+7 December against the agreed scope vocabulary, with the token store landing
+in its first week.
 
 ### Phase 0: Spikes (S)
 
@@ -646,7 +681,8 @@ Exit: merged to main; full e2e API suite green under `legacy`.
 
 1. The handler is already mounted under `better-auth` (Phase 1, item 6).
 2. Better Auth issues `ghost-admin-api-session` from `user_sessions`; the
-   legacy `sessions` table is left untouched for rollback. Legacy cookies are
+   legacy `sessions` table stays in place for rollback (only revocation in
+   step 7 deletes from it). Legacy cookies are
    not recognised, so staff sign in again once.
 3. `ghostStaffLifecycle` (§3.3).
 4. `Principal` and `resolvePrincipal` wired into `mw.authAdminApi`,
@@ -662,7 +698,9 @@ Exit: merged to main; full e2e API suite green under `legacy`.
    Until 7.0 drops `sessions`, both also delete the user's legacy `sessions`
    rows, so a rollback (§8) cannot revive a session a security event revoked.
 8. `PUT /users/password` and `PUT /authentication/password_reset` use
-   `createVerifiedSession`.
+   `createVerifiedSession`. `ghostStaffLifecycle` sets a `locked` user
+   `active` on a successful `/reset-password`, or `createVerifiedSession`
+   refuses the user it just reset.
 9. Cleanup job (§4.6).
 10. Run `session`, `session-invalidation`, `users`, `api-tokens`,
     `key-authentication`, `sso` e2e API tests and `e2e/tests/admin/signin.test.ts`
@@ -682,7 +720,8 @@ upgrade test (§7) passes.
    `e2e/tests/admin/two-factor-auth.test.ts` with verification on.
 5. Graduate `user_accounts`, `verifications` and `user_sessions` (versioned
    migrations, password copy into `user_accounts`, §4.5), then switch
-   internal Ghost(Pro) sites to `better-auth`.
+   internal Ghost(Pro) sites to `better-auth`, telling staff to expect one
+   sign-in and one code.
 
 Exit: identical client experience for new-device verification and
 `require_email_mfa` on internal sites.
@@ -690,8 +729,10 @@ Exit: identical client experience for new-device verification and
 ### Phase 4: Bearer tokens with scopes (M)
 
 1. In-development `api_tokens`; `apiKey` plugin reading `Bearer`,
-   `enableSessionForAPIKeys` left off, `ghost_pat_` prefix, expiry limits, scopes from
-   `auth/policy/scopes.ts`. No `bearer` plugin (§10).
+   `enableSessionForAPIKeys` left off, `ghost_pat_` prefix, expiry limits, a
+   per-key rate limit, scopes from `auth/policy/scopes.ts`. No `bearer`
+   plugin (§10). Agree the scope vocabulary with Berlin before their project
+   starts on 7 December.
 2. `resolvePrincipal` (and `api-key/admin.js` under `legacy`) passes `Bearer`
    to `verifyApiKey` instead of returning `INVALID_AUTH_HEADER`;
    `tokenPermissionCheck` enforces scopes, including the finer scopes and
@@ -729,11 +770,13 @@ Runs alongside Phase 5, after Phase 4's token policy and scopes.
    Integrations settings, Administrators only. Document Bearer as the
    recommended Admin API method.
 3. Graduate `api_tokens`; run `better-auth` on a Ghost(Pro) cohort.
-4. Stretch: `passkey` and `twoFactor` with in-development `user_passkeys` and
+4. Follow-on project, not the Linear project's week six: `passkey` and
+   `twoFactor` with in-development `user_passkeys` and
    `user_two_factors`, enrolment in profile settings and sign-in options
    behind `staffPasskeys` and `staffAuthenticatorApp`.
 5. Tests: e2e for each method creating a verified session; browser tests for
    magic link (MailPit) and the token UI.
+6. Handoff note for Phases 6 and 7 and for Berlin.
 
 ### Phase 6: Passwords, setup, invitations (M)
 
@@ -894,8 +937,8 @@ Decided:
   tokens in JSON: a top-level `token` from `/sign-in/email` and
   `/change-password`, `session.token` from `/get-session`, and a `token` on
   each session from `/list-sessions`. A global after-hook removes them from
-  every native response, with a test per shape, before the handler is mounted
-  (Phase 2). Revoking one session therefore goes through a Ghost endpoint that
+  every native response, with a test per shape; it landed with the handler
+  mount in Phase 1. Revoking one session therefore goes through a Ghost endpoint that
   takes a session id, checks it belongs to the user and resolves the token
   server-side (Phase 8), not `revokeSession`.
 - Installed apps are OAuth clients (Phase 4b) with an `app` principal, not
@@ -923,7 +966,7 @@ Open:
    way.
 2. Whether credential rows join content exports in 7.0. Decide in Phase 10.
 3. Who owns a site token: `apiKey` references only a `user` or an
-   `organization`. Decide before Phase 4.
+   `organization`. Decide in Week 4, before Berlin starts on 7 December.
 
 ## 11. Out of scope and later extensions
 

@@ -35,6 +35,9 @@ function deps({
     },
     logger: { debug() {}, info() {}, warn() {}, error() {} },
     limiters,
+    sendPasswordResetEmail: async () => {},
+    isStaffDeviceVerificationEnabled: () => true,
+    getRequestOrigin: (headers) => headers.get('origin'),
   };
 }
 

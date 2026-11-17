@@ -63,7 +63,8 @@ async function getStripeConnectTokenData(encodedData, getSessionProp) {
 
   const state = await getSessionProp(STATE_PROP);
 
-  if (state !== data.s) {
+  // No stored state never matches, whatever the token carries
+  if (!state || state !== data.s) {
     throw new errors.NoPermissionError({ message: tpl(messages.incorrectState) });
   }
 

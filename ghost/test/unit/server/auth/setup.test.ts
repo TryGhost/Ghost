@@ -1,4 +1,3 @@
-// @ts-expect-error This module lacks type definitions.
 import { doProductAndNewsletter as doTierAndNewsletter } from '../../../../core/server/auth/setup';
 import sinon from 'sinon';
 

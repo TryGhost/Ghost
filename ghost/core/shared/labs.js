@@ -63,6 +63,8 @@ const PRIVATE_FEATURES = [
   'machinePayments',
   'apps',
   'inAppSupport',
+  'editorPresencePolling',
+  'editorPresence',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

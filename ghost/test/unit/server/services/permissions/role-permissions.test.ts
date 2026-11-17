@@ -21,30 +21,25 @@ const actionsFor = (permissions: Permission[], objectType: string) =>
 
 describe('Permissions', function () {
   describe('rolePermissions', function () {
-    describe('all', function () {
-      it('returns every permission in the data file as plain objects', function () {
-        const expected = Object.entries(permissionData).flatMap(([object_type, actions]) =>
-          actions.map((action_type) => ({ action_type, object_type })),
-        );
+    describe('actionsMap', function () {
+      it('maps every action to the object types it exists for', function () {
+        const expected: Record<string, string[]> = {};
 
-        assert.deepEqual(rolePermissions.all(), expected);
+        for (const [objectType, actions] of Object.entries(permissionData)) {
+          for (const action of actions) {
+            (expected[action] ??= []).push(objectType);
+          }
+        }
+
+        assert.deepEqual(rolePermissions.actionsMap, expected);
       });
 
-      it('returns a fresh array each time', function () {
-        const first = rolePermissions.all();
-        const length = first.length;
-        first.pop();
+      it('is frozen', function () {
+        assert(Object.isFrozen(rolePermissions.actionsMap));
 
-        assert.equal(rolePermissions.all().length, length);
-      });
-
-      it('returns frozen permissions', function () {
-        const [perm] = rolePermissions.all();
-
-        assert.throws(() => {
-          (perm as { action_type: string }).action_type = 'changed';
-        }, TypeError);
-        assert.notEqual(rolePermissions.all()[0].action_type, 'changed');
+        for (const objectTypes of Object.values(rolePermissions.actionsMap)) {
+          assert(Object.isFrozen(objectTypes));
+        }
       });
     });
 

@@ -227,6 +227,14 @@ export default class AdapterCacheRedis extends CacheBase {
     return this._keyPrefix + prefixHash;
   }
 
+  /**
+   * Configured prefix without the rotating prefix hash, for features that
+   * own their keys on the raw client and are not reset with the cache.
+   */
+  get rawKeyPrefix(): string {
+    return this._keyPrefix;
+  }
+
   handleRedisError(error: Error) {
     logging.error(error);
   }

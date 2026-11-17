@@ -33,7 +33,7 @@ Start with:
 
 - [`auth/authenticate.ts`](../../ghost/core/server/auth/authenticate.ts)
   for the authentication middleware assembled for each API.
-- [`auth/authorize.js`](../../ghost/core/server/auth/authorize.js)
+- [`auth/authorize.ts`](../../ghost/core/server/auth/authorize.ts)
   for the identity checks after authentication.
 - [`web/api/endpoints/admin/middleware.js`](../../ghost/core/server/web/api/endpoints/admin/middleware.js)
   and [`web/api/endpoints/content/middleware.js`](../../ghost/core/server/web/api/endpoints/content/middleware.js)
@@ -95,7 +95,7 @@ account-wide operations rejects staff tokens explicitly.
 
 See [Staff Access Token authentication](https://docs.ghost.org/admin-api#staff-access-token-authentication)
 for the client contract and
-[`auth/api-key/admin.js`](../../ghost/core/server/auth/api-key/admin.js)
+[`auth/api-key/admin.ts`](../../ghost/core/server/auth/api-key/admin.ts)
 for verification.
 
 ## Integrations
@@ -111,7 +111,7 @@ request. Integration tokens can access only the endpoint and method combinations
 allowlisted in the Admin API middleware.
 
 See [Admin API token authentication](https://docs.ghost.org/admin-api#token-authentication)
-and [`auth/api-key/admin.js`](../../ghost/core/server/auth/api-key/admin.js).
+and [`auth/api-key/admin.ts`](../../ghost/core/server/auth/api-key/admin.ts).
 
 ### Content API keys
 
@@ -121,7 +121,7 @@ the request. A Content API key identifies the integration but is not a secret:
 it is expected to be used in browsers and other public clients.
 
 See [Content API key authentication](https://docs.ghost.org/content-api#key)
-and [`auth/api-key/content.js`](../../ghost/core/server/auth/api-key/content.js).
+and [`auth/api-key/content.ts`](../../ghost/core/server/auth/api-key/content.ts).
 
 ## Members
 
@@ -145,7 +145,7 @@ Start with:
   for sending and verifying sign-in tokens.
 - [`services/members/members-ssr.js`](../../ghost/core/server/services/members/members-ssr.js)
   for member session cookies and identity-token exchange.
-- [`auth/members/index.js`](../../ghost/core/server/auth/members/index.js)
+- [`auth/members/index.ts`](../../ghost/core/server/auth/members/index.ts)
   for Content API member-token authentication.
 
 ## Changing authentication

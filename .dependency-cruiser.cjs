@@ -179,7 +179,7 @@ const specialistDependencies = [
     // Signing and verifying JSON Web Tokens.
     dependency: npm('jsonwebtoken'),
     owners: [
-      core('server/auth/api-key/admin.js'),
+      core('server/auth/api-key/admin.ts'),
       core('server/adapters/scheduling/utils.ts'),
       core('server/api/endpoints/featurebase.js'),
       service('identity-tokens/identity-token-service.ts'),
@@ -251,8 +251,7 @@ const specialistDependencies = [
     // Matching URLs against route patterns.
     dependency: npm('path-match'),
     owners: [
-      core('frontend/services/data/match-permalink-params.js'),
-      core('server/web/api/middleware/api-version-compatibility/legacy-api-path-match.js'),
+      core('frontend/services/data/match-permalink-params.ts'),
       service('url/permalink-matcher.ts'),
     ],
   },
@@ -364,7 +363,7 @@ const serviceDependencyDecisions = {
       until: 'PLA-543 moves job handler registration into boot',
     },
     {
-      from: '^ghost/core/server/services/permissions/can-this\\.js$',
+      from: '^ghost/core/server/services/permissions/can-this\\.ts$',
       to: '^ghost/core/server/models/role-utils\\.ts$',
       until: 'Permissions moves to server/auth/permissions and settles where role checks live',
     },

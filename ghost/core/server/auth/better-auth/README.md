@@ -40,6 +40,16 @@ session tokens from native response bodies, by shape: a top-level `token`,
 and CSRF checks are pinned on, since Better Auth turns them off when
 `NODE_ENV` is `test` or `TEST` is set. Admin config publishes `auth: {engine}`.
 
+Under `better-auth`, `auth/authenticate.ts` keeps the `api-key` middleware and
+then runs `resolvePrincipal` (`auth/resolve-principal.ts`), which sets
+`req.auth` to a `Principal` (`auth/principal.ts`) and derives `req.user` and
+`req.api_key` from it. A verified key wins; otherwise the cookie branch reads
+Better Auth's session, pins it to the admin origin and to the session's own
+`origin`, and treats an unverified session, or one with no `origin`, as
+anonymous. A request that sends an `Authorization` header never falls back to
+the cookie. Legacy session cookies are not read. `Bearer` is still rejected
+until Phase 4.
+
 - `create-auth.ts`: `createAuth()` builds the instance with Ghost's options
   (plan §3.1) from injected dependencies; `assertDatabaseSupported()` is the
   boot check above.
@@ -50,6 +60,40 @@ and CSRF checks are pinned on, since Better Auth turns them off when
   outside `server/services`, so the
   [service checks](../../services/README.md#roots-outside-this-directory) do
   not apply to it.
+- `plugins/staff-lifecycle.ts`: `ghostStaffLifecycle`, Ghost's staff status
+  rules (plan §3.3). `/sign-in/email` keeps Better Auth's
+  `INVALID_EMAIL_OR_PASSWORD` for an unknown email, a wrong password and a
+  wrong password on a suspended account, so it can't enumerate staff (unlike
+  legacy sign-in, SC-90). A `session.create.before` hook refuses non-active
+  users on every path, so a matching password on a `locked` account is
+  `PASSWORD_RESET_REQUIRED` and on an `inactive` one `ACCOUNT_SUSPENDED`;
+  magic-link, passkey and SSO sign-in instead set a `locked` user `active`.
+  Any failed password sign-in for a `locked` user emails the legacy reset
+  link, as legacy sign-in does, without awaiting it or changing the response.
+  The after-hook that does this runs after the endpoint's CSRF check, so a
+  cross-origin request sends nothing. Every new session sets `last_seen` and
+  moves a `warn-*` status to `active`; a lock or suspension committed after
+  the guard's read stands, and a failure is logged without failing sign-in.
+  The guard reads the status without a lock, so a suspension that commits
+  while a session is being created can leave a session row, which
+  `revokeUserSessions` in the same gap misses. Anything that trusts a session
+  or token (the Admin API resolver, revocation, app tokens) must check the
+  user's status too. Server-only: `createVerifiedSession`, which requires the
+  admin origin, `revokeUserSessions` and `revokeAllSessions`.
+- `plugins/sso.ts` (`ghostSso`): server-only `createSsoSession`, for the SSO
+  adapter hook described below. It applies the passwordless rules above
+  (unlocks `locked`, refuses `inactive`) and creates a verified session pinned
+  to the admin origin. Team SSO is `@better-auth/sso` (Phase 8).
+- `session-controller.ts`: `POST` and `DELETE /session` under `better-auth`,
+  described below.
+- `staff-sessions.ts`: the security events' session changes, described below.
+- `stripe-connect-state.ts`: Stripe Connect's OAuth `state`, which legacy
+  keeps on `req.session`. Under `better-auth` it is a `verifications` row with
+  the identifier `stripe-connect:<userId>`, expiring after an hour. Starting
+  a connection replaces it, a mismatch or a failed save keeps it as legacy
+  does, and a successful save deletes it, so a token saves once.
+- `routes.ts`: the Better Auth paths that matchers, limiters and
+  `disabledPaths` refer to. A mistyped path matches nothing, silently.
 
 Ghost mounts at the subdirectory, so on a subdirectory install requests reach
 Better Auth as `/blog/ghost/api/admin/auth/...`. `basePath` therefore carries
@@ -130,6 +174,86 @@ table graduates), all of this uses `users.password` as before.
 > There's no migration path between these states. Reset the database instead
 > (`pnpm reset:db`, or `pnpm reset:data` for generated content), or reset the
 > affected users' passwords.
+
+## Running Better Auth locally
+
+The monorepo's development config already has the tables and
+`auth:betterAuthDev`, so only the engine needs switching:
+
+```bash
+auth__engine=better-auth pnpm dev:up
+```
+
+Or set `"auth": {"engine": "better-auth"}` in `ghost/config.local.json`.
+Outside the monorepo's config, also set `auth:betterAuthDev` to `true`. Legacy
+session cookies are not read, so staff sign in again once, and again after
+switching back to `legacy`. Sign-in pins each session to the admin origin, so
+sign in through the admin URL Ghost is configured with; a session used from
+another origin is refused. Development config has
+`security:staffDeviceVerification` off, so every new session is verified; with
+it on, sign-in can't complete until device verification moves (plan Phase 3).
+
+## Compatibility routes
+
+Under `better-auth`, `POST /session` (`session-controller.ts`) calls
+`signInEmail` with headers only and `returnHeaders`, and forwards the session
+cookie, with the legacy body, `201`, rate limits and `userLogin` reset on
+success. `DELETE /session` calls `signOut` and answers `204`. Server-side calls skip Better
+Auth's origin checks, so the controller keeps the legacy login-CSRF check. It
+answers Better Auth's `INVALID_EMAIL_OR_PASSWORD` with one generic error, a
+`422` `ValidationError` "Your email or password is incorrect." with no `code`,
+for an unknown email, a wrong password and a wrong password on a suspended
+account. Status errors still need a matching password. The legacy `sessions` table is untouched.
+
+A `session.create.before` hook in `create-auth.ts` sets what
+`resolvePrincipal` checks on every new session:
+
+- `origin`: the request's origin, by the legacy session's rule (Origin, else
+  Referer, else the admin URL). On `POST /session` the controller has already
+  required it to be the admin origin, and native `/sign-in/email` has Better
+  Auth's origin check. A session without one resolves as anonymous.
+- `verified`: `true` while `security:staffDeviceVerification` is off, as
+  legacy does.
+
+A rotation (`/change-password` with `revokeOtherSessions`) carries `origin`
+and `verified` over from the replaced session. The hook keeps the `origin`
+that `createVerifiedSession` requires, and never sets `verified` back to
+`false`.
+
+## Revocation
+
+Under `better-auth`, security events go through `staff-sessions.ts` (plan §5.4):
+
+- A password change (`PUT /users/password`) and a password reset
+  (`PUT /authentication/password_reset`) revoke the user's sessions, then, for
+  the user's own browser, call `createVerifiedSession` with the admin origin
+  and forward its cookie. The current browser stays signed in and verified;
+  every other session ends. `PUT /authentication/password_reset` skips the
+  legacy `initSession`, and a route middleware keeps the legacy admin-origin
+  check, since the controller can't see the request.
+- Suspending or locking a user (`PUT /users/:id` with an inactive status) and
+  deleting one revoke their sessions. Deletion revokes after its transaction
+  commits, which holds the user's rows until then.
+- The authentication reset (`POST /authentication/reset`) calls
+  `revokeAllSessions` after it deletes every legacy session, as it does under
+  either engine.
+
+Revoking a user's sessions also deletes their legacy `sessions` rows, so a
+rollback to `legacy` (plan §8) can't revive a session a security event ended.
+Under `legacy` nothing here runs: a password change and a reset already delete
+the user's legacy rows, and suspension and deletion keep legacy behaviour.
+Sessions that `createVerifiedSession` creates have no IP or user agent, since
+the API controllers don't see the request.
+
+## SSO adapter
+
+Ghost(Pro) support access implements the `@tryghost/adapter-base-sso`
+contract, which `createSessionFromToken()` in `auth/session` mounts on
+`/ghost`. The adapter still resolves the user under either engine. Under
+`better-auth` the hook calls `staffSessions.createSsoSession` and forwards its
+cookie instead of creating a legacy session; the engine is chosen when the
+backend app mounts the hook. A refused user gets no cookie, and the request
+carries on, as under `legacy`.
 
 ## Tables
 
@@ -283,8 +407,8 @@ Settled in Phase 0 (plan §10):
 - Scopes use the `object_type:action` permission keys, with finer scopes where
   one key covers more than one capability. They are checked on includes and
   relations too. Phase 4 starts with a spike on both.
-- The principal has `kind: 'app'` with `actingFor: User | null` for installed
-  apps. It lands with `resolvePrincipal` in Phase 2.
+- The principal's `app` kind lands with app tokens in Phase 4b. Its shape is
+  settled with the Apps scope vocabulary, not ahead of it.
 - No `bearer` plugin. Better Auth still returns session tokens in JSON
   without it: a top-level `token` from `/sign-in/email` and
   `/change-password`, `session.token` from `/get-session`, and a `token` on
