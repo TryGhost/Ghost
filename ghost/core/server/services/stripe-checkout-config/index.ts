@@ -47,7 +47,6 @@ export default defineService(
   (): StripeCheckoutServices => {
     const { knex } = require('../../data/db');
     const models = require('../../models');
-    const labs = require('../../../shared/labs');
 
     // Boot sets up the custom fields services first, as shipping saves into custom fields.
     if (!metafields.bindings || !metafields.fields) {
@@ -68,7 +67,7 @@ export default defineService(
       requirements: () => tiersRoot.default.service.requirements,
       logging,
     });
-    const checkouts = new CheckoutService({ config, labs, logging });
+    const checkouts = new CheckoutService({ config, logging });
 
     return {
       config,

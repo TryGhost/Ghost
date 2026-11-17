@@ -1,11 +1,6 @@
 import assert from 'node:assert/strict';
 
-const {
-  agentProvider,
-  dbUtils,
-  fixtureManager,
-  mockManager,
-} = require('../../utils/e2e-framework');
+const { agentProvider, dbUtils, fixtureManager } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 
 describe('Stripe Checkout Config Admin API', function () {
@@ -18,7 +13,9 @@ describe('Stripe Checkout Config Admin API', function () {
     useZapierAdminAPIKey: () => Promise<void>;
   };
 
-  const DASHBOARD_DESIGN = { design: { customize: false } };
+  // The collected parts have their own tests, so these only see them asking for nothing.
+  const NOTHING_COLLECTED = { shipping: { collect: false }, phone: { collect: false } };
+  const DASHBOARD_DESIGN = { design: { customize: false }, ...NOTHING_COLLECTED };
 
   async function setCheckout(config: Record<string, unknown>, status = 200) {
     const { body } = await agent
@@ -50,13 +47,7 @@ describe('Stripe Checkout Config Admin API', function () {
     await agent.loginAsOwner();
   });
 
-  beforeEach(function () {
-    // The collected parts have their own tests, so these see the design alone.
-    mockManager.mockLabsDisabled('stripeCheckoutCollection');
-  });
-
   afterEach(async function () {
-    mockManager.restore();
     await models.Base.knex('stripe_checkout_config').del();
     await models.Base.knex('actions').where('resource_type', 'stripe_checkout_config').del();
   });
@@ -89,6 +80,7 @@ describe('Stripe Checkout Config Admin API', function () {
           border_style: 'pill',
           font_family: 'roboto_slab',
         },
+        ...NOTHING_COLLECTED,
       });
     });
 

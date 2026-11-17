@@ -1,6 +1,5 @@
 import type { GhostLogger } from '@tryghost/logging';
 import {
-  COLLECTION_FLAG,
   type AskedPart,
   type AskedParts,
   type Asking,
@@ -50,15 +49,13 @@ function asksOn(part: AskedPart, tierId: string) {
 /** What deciding checkouts needs. */
 export interface CheckoutServiceDeps {
   config: Pick<StripeCheckoutConfigService, 'readForCheckout'>;
-  labs: { isSet(flag: string): boolean };
   logging: GhostLogger;
 }
 
 /**
  * Decides the Stripe Checkout pages Ghost opens from the site's config: the checkout a buyer
- * gets, and previews of settings not saved yet. The collected parts don't apply while their
- * flag is off, and a checkout Ghost has no settings for is null, so Stripe uses the
- * merchant's own.
+ * gets, and previews of settings not saved yet. A checkout Ghost has no settings for is null,
+ * so Stripe uses the merchant's own.
  */
 export class CheckoutService {
   private deps: CheckoutServiceDeps;
@@ -88,33 +85,15 @@ export class CheckoutService {
     tierId: string,
     { design, ...unsaved }: { design: StripeCheckoutDesign | null } & RequestedParts,
   ): Promise<CheckoutDefinition> {
-    const collection = this.collecting()
-      ? await this.deps.config.readForCheckout(unsaved)
-      : NOTHING_COLLECTED;
+    const collection = await this.deps.config.readForCheckout(unsaved);
     return checkoutForTier({ ...collection, design }, tierId);
-  }
-
-  /**
-   * The config as checkouts use it, without the collected parts while their flag is off. Null
-   * when the config can't be read.
-   */
-  private async readConfig(): Promise<CheckoutSessionConfig | null> {
-    const config = await this.readSaved();
-    if (!config) {
-      return null;
-    }
-    return this.collecting() ? config : { design: config.design, ...NOTHING_COLLECTED };
-  }
-
-  private collecting(): boolean {
-    return this.deps.labs.isSet(COLLECTION_FLAG);
   }
 
   /**
    * The config as saved, or null when it can't be read. This never throws: a checkout without
    * Ghost's settings still takes payment, while a failed one doesn't.
    */
-  private async readSaved(): Promise<CheckoutSessionConfig | null> {
+  private async readConfig(): Promise<CheckoutSessionConfig | null> {
     try {
       return await this.deps.config.readForCheckout();
     } catch (err) {

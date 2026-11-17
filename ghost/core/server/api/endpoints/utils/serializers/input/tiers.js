@@ -2,8 +2,6 @@ const { BadRequestError } = require('@tryghost/errors');
 const localUtils = require('../../index');
 const nql = require('@tryghost/nql-lang');
 const tpl = require('@tryghost/tpl');
-const labs = require('../../../../../../shared/labs');
-const { COLLECTION_FLAG } = require('../../../../../services/stripe-checkout-config/models');
 
 const messages = {
   invalidNQLFilter: 'The NQL filter you passed was invalid.',
@@ -89,9 +87,8 @@ module.exports = {
     }
 
     // What a tier's members must give is listed only to callers that ask, so other readers of
-    // tiers don't read it, and only while checkouts ask for it, which is in Labs.
-    frame.options.withRequirements =
-      Boolean(frame.options.withRelated?.includes('requirements')) && labs.isSet(COLLECTION_FLAG);
+    // tiers don't read it.
+    frame.options.withRequirements = Boolean(frame.options.withRelated?.includes('requirements'));
 
     if (!frame.options.withRelated) {
       return;

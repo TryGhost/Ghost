@@ -119,9 +119,7 @@ export const FIELD_STRUCTURES = {
  * entry releases it. `docs/how-to/add-a-field-type.md` and `docs/how-to/release-a-field-type.md`
  * cover both steps.
  */
-export const FIELD_TYPE_FLAGS: { readonly [T in FieldType]?: string } = {
-  phone: 'customFieldTypePhone',
-};
+export const FIELD_TYPE_FLAGS: { readonly [T in FieldType]?: string } = {};
 
 /**
  * Whether a field of `type` can be created where `isFlagOn` says which Labs flags are on. Creating

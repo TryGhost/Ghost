@@ -334,16 +334,6 @@ describe('Stripe Checkout collected parts', function () {
         await models.Base.knex('products').where('id', SECOND_TIER_ID).del();
         assert.deepEqual((await readCheckout())[part], OFF);
       });
-
-      it('is left out, and refused, while its flag is off', async function () {
-        mockManager.mockLabsDisabled('stripeCheckoutCollection');
-
-        assert.equal((await readCheckout())[part], undefined);
-        assert.deepEqual(await refusal({ [part]: on() }), {
-          property: part,
-          message: `${noun[0].toUpperCase()}${noun.slice(1)} collection is not available yet.`,
-        });
-      });
     });
 
     const { listed, fieldKey } = requirement;
@@ -423,20 +413,6 @@ describe('Stripe Checkout collected parts', function () {
         assertAsks(await preview());
         assert.equal((await preview(OFF))[stripeParam], undefined);
       });
-
-      it('is refused while its flag is off, as saving it is', async function () {
-        mockManager.mockLabsDisabled('stripeCheckoutCollection');
-        const { body } = await requestPreview(on(), 422);
-
-        assert.deepEqual(
-          { property: body.errors[0].property, message: body.errors[0].context },
-          {
-            property: part,
-            message: `${noun[0].toUpperCase()}${noun.slice(1)} collection is not available yet.`,
-          },
-        );
-        assert.equal(stripeMocker.checkoutSessions.length, 0);
-      });
     });
 
     describe(`${part}: checkouts`, function () {
@@ -466,13 +442,6 @@ describe('Stripe Checkout collected parts', function () {
 
         await setCheckout({ [part]: on({ tier_ids: [paidTierId, SECOND_TIER_ID] }) });
         assertAsks(await startCheckout());
-      });
-
-      it('asks nothing while its flag is off, even when it is on', async function () {
-        await setCheckout({ [part]: on() });
-        mockManager.mockLabsDisabled('stripeCheckoutCollection');
-
-        assert.equal((await startCheckout())[stripeParam], undefined);
       });
     });
   };
@@ -520,7 +489,7 @@ describe('Stripe Checkout collected parts', function () {
     assert.equal((await readCheckout()).shipping.collect, false);
   });
 
-  it('lists what members must give to anyone who asks, through the Content API, only while checkouts ask for it', async function () {
+  it('lists what members must give to anyone who asks, through the Content API', async function () {
     await setCheckout({ phone: PARTS.phone.on() });
     const listsNone = (tiers: object[]) => tiers.every((tier) => !('requirements' in tier));
 
@@ -533,16 +502,6 @@ describe('Stripe Checkout collected parts', function () {
     // Readers that don't ask, such as themes listing tiers, don't pay for reading them.
     const { body: unasked } = await contentAPIAgent.get('/tiers/').expectStatus(200);
     assert.ok(listsNone(unasked.tiers));
-
-    mockManager.mockLabsDisabled('stripeCheckoutCollection');
-    const { body: content } = await contentAPIAgent
-      .get('/tiers/?include=requirements')
-      .expectStatus(200);
-    assert.ok(listsNone(content.tiers));
-    const { body: admin } = await adminAgent
-      .get(`tiers/${paidTierId}/?include=requirements`)
-      .expectStatus(200);
-    assert.ok(listsNone(admin.tiers));
   });
 
   it('lists the countries an address must be in, when shipping is limited to some', async function () {

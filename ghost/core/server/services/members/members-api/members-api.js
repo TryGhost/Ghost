@@ -197,7 +197,6 @@ module.exports = function MembersAPI({
     metafieldValues,
     metafieldBindings,
     requirements: tierRequirements,
-    labs: labsService,
   });
 
   const memberController = new MemberController({

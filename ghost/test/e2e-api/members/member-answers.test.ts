@@ -494,15 +494,6 @@ describe('Member answers by port', function () {
       assert.deepEqual(await heldAsStaff(memberId), {});
     });
 
-    it('drops every answer while checkouts ask for nothing, and still changes tier', async function () {
-      mockManager.mockLabsDisabled('stripeCheckoutCollection');
-
-      await changeTier(toTierId, 204, { 'checkout.shipping.name': 'Ada Lovelace' });
-
-      assert.equal(await tierNow(), toTierId);
-      assert.deepEqual(await heldAsStaff(memberId), {});
-    });
-
     it('reports a change of tier as made when its answers fail to save, logging that they were lost', async function () {
       // Nothing a request can do fails the save once the answers are checked, so the member edit
       // that saves them fails here as a database write would.
