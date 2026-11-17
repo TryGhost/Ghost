@@ -108,6 +108,12 @@ const features: Feature[] = [
       'Open Help in a sidebar inside Admin instead of a new tab. Needs a host script that provides the support app.',
     flag: 'inAppSupport',
   },
+  {
+    title: 'OAuth bridge',
+    description:
+      'Connect Stripe through account.ghost.org, which sends the connection back to Admin, instead of pasting a secure key.',
+    flag: 'oauthBridge',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {
