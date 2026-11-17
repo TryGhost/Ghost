@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import * as rolePermissions from '../../../../../core/server/services/permissions/role-permissions';
+import { permissions as permissionData } from '../../../../../core/server/services/permissions/permissions-data';
 
 // Which roles hold each permission.
 //
@@ -305,6 +306,10 @@ const GRANTS: [string, string, string[]][] = [
   ['destroy', 'email_design_setting', ['Administrator', 'Admin Integration']],
 ];
 
+const allPermissionKeys = Object.entries(permissionData).flatMap(([objectType, actions]) =>
+  actions.map((actionType) => `${actionType}:${objectType}`),
+);
+
 const holders = (actionType: string, objectType: string) =>
   ROLE_ORDER.filter((role) =>
     rolePermissions
@@ -316,16 +321,12 @@ describe('Permissions', function () {
   describe('role grants', function () {
     it('defines 149 permissions', function () {
       // If you have to change this number, add the relevant rows to GRANTS.
-      assert.equal(rolePermissions.all().length, 149);
+      assert.equal(allPermissionKeys.length, 149);
     });
 
     it('lists every permission exactly once in GRANTS', function () {
       const grantKeys = GRANTS.map(([actionType, objectType]) => `${actionType}:${objectType}`);
-      const permissionKeys = rolePermissions
-        .all()
-        .map((perm) => `${perm.action_type}:${perm.object_type}`);
-
-      assert.deepEqual(grantKeys.sort(), permissionKeys.sort());
+      assert.deepEqual(grantKeys.sort(), [...allPermissionKeys].sort());
     });
 
     it('knows about every role in ROLE_ORDER except Owner', function () {
@@ -338,9 +339,7 @@ describe('Permissions', function () {
     for (const [actionType, objectType, roles] of GRANTS) {
       it(`grants ${actionType}:${objectType} to the expected roles`, function () {
         assert(
-          rolePermissions
-            .all()
-            .some((perm) => perm.action_type === actionType && perm.object_type === objectType),
+          allPermissionKeys.includes(`${actionType}:${objectType}`),
           `${actionType}:${objectType} does not exist`,
         );
 

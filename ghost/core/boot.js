@@ -382,7 +382,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const stripe = require('./server/services/stripe');
   const members = require('./server/services/members');
   const tiers = require('./server/services/tiers').default;
-  const permissions = require('./server/services/permissions');
   const indexnow = require('./server/services/indexnow-ping').default;
   const upgrades = require('./server/services/upgrades').default;
   const slack = require('./server/services/slack-ping').default;
@@ -466,7 +465,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     tagsPublic.init(),
     postsPublic.init(),
     membersEvents.init(),
-    permissions.init(),
     indexnow.init(),
     upgrades.init(),
     slack.init(),

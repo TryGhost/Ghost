@@ -7,16 +7,12 @@ const permissions = require('../../../../../core/server/services/permissions');
 const providers = require('../../../../../core/server/services/permissions/providers');
 const rolePermissions = require('../../../../../core/server/services/permissions/role-permissions');
 const { limitService } = require('../../../../../core/server/services/limits');
-const actionsMap = require('../../../../../core/server/services/permissions/actions-map-cache');
 
 describe('Permissions', function () {
-  let fakePermissions = [];
   let findPostSpy;
   let findTagSpy;
 
   beforeEach(function () {
-    fakePermissions = loadFakePermissions();
-
     findPostSpy = sinon.stub(models.Post, 'findOne').callsFake(function () {
       // @TODO: the test env has no concept of including relations
       const post = models.Post.forge(testUtils.DataGenerator.Content.posts[0]);
@@ -30,44 +26,11 @@ describe('Permissions', function () {
     findTagSpy = sinon.stub(models.Tag, 'findOne').callsFake(function () {
       return Promise.resolve({});
     });
-
-    actionsMap.init(fakePermissions);
   });
 
   afterEach(function () {
     sinon.restore();
   });
-
-  /**
-   * Default test actionMap looks like this:
-   * {
-   *   browse: [ 'post' ],
-   *   edit: [ 'post', 'tag', 'user', 'page' ],
-   *   add: [ 'post', 'user', 'page' ],
-   *   destroy: [ 'post', 'user' ]
-   * }
-   *
-   * @param {object} options
-   * @return {Array|*}
-   */
-  function loadFakePermissions(options) {
-    options = options || {};
-
-    const fixturePermissions = _.cloneDeep(testUtils.DataGenerator.Content.permissions);
-    const extraPerm = {
-      name: 'test',
-      action_type: 'edit',
-      object_type: 'post',
-    };
-
-    if (options.extra) {
-      fixturePermissions.push(extraPerm);
-    }
-
-    return _.map(fixturePermissions, function (testPerm) {
-      return { action_type: testPerm.action_type, object_type: testPerm.object_type };
-    });
-  }
 
   describe('CanThis', function () {
     it('canThisResult gets build properly', function () {
@@ -80,12 +43,10 @@ describe('Permissions', function () {
       assert.equal(typeof canThisResult.edit.post, 'function');
       assert.equal(typeof canThisResult.edit.tag, 'function');
       assert.equal(typeof canThisResult.edit.user, 'function');
-      assert.equal(typeof canThisResult.edit.page, 'function');
 
       assert(_.isPlainObject(canThisResult.add));
       assert.equal(typeof canThisResult.add.post, 'function');
       assert.equal(typeof canThisResult.add.user, 'function');
-      assert.equal(typeof canThisResult.add.page, 'function');
 
       assert(_.isPlainObject(canThisResult.destroy));
       assert.equal(typeof canThisResult.destroy.post, 'function');
@@ -618,8 +579,6 @@ describe('Permissions', function () {
     });
 
     it('does not duplicate user reads or nested role-assignment checks', async function () {
-      actionsMap.init([...fakePermissions, { action_type: 'assign', object_type: 'role' }]);
-
       const userProviderStub = sinon.stub(providers, 'user').resolves({
         permissions: rolePermissions.forRoles(['Administrator']),
         roles: [{ id: 'admin-role', name: 'Administrator' }],

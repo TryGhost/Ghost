@@ -4,13 +4,11 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const providers = require('./providers');
 const parseContext = require('./parse-context');
-const actionsMap = require('./actions-map-cache');
+const { actionsMap } = require('./role-permissions');
 const { setIsRoles } = require('../../models/role-utils');
 
 const messages = {
   noPermissionToAction: 'You do not have permission to perform this action',
-  noActionsMapFoundError:
-    'No actions map found, ensure permissions.init() has been called before use.',
 };
 
 /**
@@ -144,10 +142,6 @@ class CanThisResult {
     // Get context.user, context.api_key and context.app
     context = parseContext(context);
 
-    if (actionsMap.empty()) {
-      throw new errors.InternalServerError({ message: tpl(messages.noActionsMapFoundError) });
-    }
-
     // Kick off loading of user permissions if necessary
     if (context.user) {
       userPermissionLoad = providers.user(context.user);
@@ -175,7 +169,7 @@ class CanThisResult {
     );
 
     // Iterate through the actions and their related object types
-    _.each(actionsMap.getAll(), function (objTypes, actType) {
+    _.each(actionsMap, function (objTypes, actType) {
       // Build up the object type handlers;
       // the '.post()' parts in canThis(user).edit.post()
       const objTypeHandlers = self.buildObjectTypeHandlers(

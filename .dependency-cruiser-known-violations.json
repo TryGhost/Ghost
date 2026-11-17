@@ -896,11 +896,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/permissions/actions-map-cache.js",
-    "to": "lodash"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/permissions/can-this.js",
     "to": "ghost/core/server/models/index.js"
   },
