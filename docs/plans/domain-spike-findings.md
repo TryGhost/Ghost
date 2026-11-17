@@ -2041,3 +2041,249 @@ may import `kernel/adapter-manager/` at runtime.
    `monorepo-structure.md`. The evidence does not favour either; what it
    rules out is having both. Whichever is kept, a domain's `boot.ts` should
    not share the word (step 4 suggests `dependencies.ts`).
+
+## Part 3: the foundry, and the framework at the top of the repository
+
+Decided by the project owner before this part: the folder of code that builds
+once-per-process things is the **foundry**; "foundation" means only the built
+instances and the `Foundation` type; framework code leaves `ghost/`; and
+`ghost/core` is legacy. Same conventions: **verified** means run here,
+**inferred** means read.
+
+### The answer
+
+**Top-level works, as two workspace packages. It does not work as plain
+folders, and it does not work as `@kernel/x`.**
+
+| Target                                   | Result                                                                        |
+| ---------------------------------------- | ----------------------------------------------------------------------------- |
+| `/kernel`                                | Done: the `@tryghost/kernel` package, source in `kernel/src/`                 |
+| `/foundry`                               | Done: the `@tryghost/foundry` package, source in `foundry/src/`               |
+| `/ghost/bootstrap`                       | Done, inside the `ghost` package beside `core/` and `domains/`                |
+| `/ghost/domains`                         | Unchanged, except the import lines                                            |
+| Adapter manager class and loader         | Moved to the foundry; its types and option functions stay in the kernel       |
+| Import spelling                          | `@tryghost/kernel/<file>`. `@kernel/<file>` fails in three of the six tools   |
+| Release archive                          | Builds with no change to `pack.mjs`; installs; Ghost boots from it (verified) |
+| A domain's `boot.ts`, shared, boot order | Not touched, as instructed                                                    |
+
+What a developer types:
+
+```ts
+import { defineService } from '@tryghost/kernel/define-service';
+import { createFoundationFake } from '@tryghost/kernel/testing';
+```
+
+Nothing else is needed inside `ghost/`. Another workspace package adds
+`"@tryghost/kernel": "workspace:*"` to its `package.json` first.
+
+### Why a package (verified)
+
+`ghost/scripts/pack.mjs` builds the archive from `pnpm pack` of the `ghost`
+package plus a tarball for each of its production workspace dependencies. A
+folder outside `ghost/` that is not a package is in neither. A relative import
+such as `../../kernel/x` would also point outside the archive's root. So the
+choices were: change the archive's layout, or make the framework a workspace
+dependency. The second needed no change to the pack script: the archive holds
+`components/tryghost-kernel-private.tgz` and `tryghost-foundry-private.tgz`,
+and `package.json` lists both as `file:` dependencies.
+
+The packages are CommonJS, compiled by their own `tsc` to `build/`, with an
+`exports` map of `source` (TypeScript), `types` and `default` (built). That is
+the same three conditions the existing internal packages use, so every tool
+already knew how to read them. They are **not** on the internal-package golden
+path, which is ESM: converting was not attempted (see "Not done").
+
+### What moved, per commit
+
+| Commit    | What                                      | Files | Added | Removed | Renames | Notes                                                                                                                                                       |
+| --------- | ----------------------------------------- | ----- | ----- | ------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `d47bd61` | `foundation/` renamed `foundry/` in place | 38    | 68    | 72      | 18      | Two rule names, one lint script, tests, READMEs. No behaviour change                                                                                        |
+| `20dd660` | Kernel and foundry to top-level packages  | 177   | 816   | 477     | 30      | 8 new files (2 manifests, 2 tsconfigs, 2 ESLint configs, 1 index, 1 README); 89 lines are the lockfile; 104 files import the kernel by name, 19 the foundry |
+| `8e517db` | Bootstrap to `ghost/bootstrap`            | 41    | 85    | 63      | 9       | 19 files had 32 import paths rewritten; the rest is config                                                                                                  |
+| this one  | The dev watch list and this report        | 2     |       |         | 0       |                                                                                                                                                             |
+
+Through `8e517db`: 198 files changed, 909 lines added and 552 removed since
+`b4464b4`. About 150 of the 198 are one-line import changes made by a script.
+
+### What each tool needed
+
+| Tool                         | Change                                                                                                                                                                                                     | Verified by                                     |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| pnpm                         | `kernel` and `foundry` in `pnpm-workspace.yaml`; each declares its own dependencies; `ghost` depends on both; `jsonc-parser` left `ghost` (only the foundry uses it)                                       | install, knip                                   |
+| Node from source             | Nothing. `--conditions=source --import=tsx` resolves the name to `kernel/src/*.ts`                                                                                                                         | resolution printed; DB-backed tests             |
+| Node from a build            | Nothing. The name resolves to `kernel/build/*.js`                                                                                                                                                          | boot from the archive                           |
+| `tsc` (ghost)                | `bootstrap/**/*.ts` added to `include`. The kernel is read through `build/*.d.ts`, so **it must be built first**; Nx does that through `^build`                                                            | typecheck; archive build log                    |
+| `tsc` (packages)             | A `tsconfig.json` each: CommonJS, `src` to `build`, declarations                                                                                                                                           | build                                           |
+| Vitest                       | Nothing for imports: the unit and DB configs already set the `source` condition. Coverage globs: `bootstrap/` added, `core/foundry` dropped                                                                | unit and DB-backed runs                         |
+| oxlint                       | `ghost/kernel-purity` points at `kernel/src/**`; the three `helperImport` settings became one value; bootstrap added to three globs                                                                        | a probe file with module state was reported     |
+| ESLint                       | An `eslint.config.mjs` in each package, with the three relaxations the files had under Ghost's config; `bootstrap/**` in Ghost's TypeScript blocks                                                         | lint                                            |
+| dependency-cruiser           | Kernel and foundry are matched by resolved path (`kernel/src` or `kernel/build`) or by package name; three scan roots added; `ghostServer` includes the bootstrap; build output of the two is not followed | boundaries; each rule's test                    |
+| knip                         | Nothing in `knip.json`. It found the one dependency Ghost no longer used                                                                                                                                   | `lint:dependencies`                             |
+| Nx                           | Nothing: a `build` script is enough for `^build`. Boundary-lint inputs gained three folders                                                                                                                | `nx run ghost:archive` built both               |
+| lint-staged, nodemon, prune  | Globs and watch paths for the three new locations                                                                                                                                                          | the commit hooks ran; nodemon and prune not run |
+| CI path filter               | `kernel/**` and `foundry/**` added to `core`, or a framework-only change would skip Ghost's acceptance jobs                                                                                                | **inferred**; CI was not run                    |
+| Legacy service inventory     | 35 lines of evidence paths rewritten as `../kernel/src/...` or `../foundry/src/...`; its test allowed only paths inside `ghost/` and now allows the two packages                                           | inventory test, `lint:legacy-services`          |
+| Tool tests (`tools/scripts`) | Four files. Three fixture builders now copy the package manifests and link `node_modules/@tryghost/{kernel,foundry}`, because a rule that names a package must be able to resolve it                       | same failures as before, no others              |
+| `gx` service generator       | Template imports by name                                                                                                                                                                                   | `tools/gx` tests, 155 pass                      |
+| CODEOWNERS, docs, skills     | `/kernel/`; 47 markdown links; the monorepo structure table; the adapter manager section moved to the foundry README                                                                                       | `lint:docs`                                     |
+
+### The alias: `@kernel/x` (verified with a probe, then removed)
+
+A `paths` entry `"@kernel/*": ["../kernel/src/*"]` in `ghost/tsconfig.json`
+and one file importing `@kernel/clock`:
+
+| Tool                         | `@kernel/clock`                                                                                                                                      | `@tryghost/kernel/clock` |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| `tsc`, typecheck             | Works                                                                                                                                                | Works                    |
+| Runtime from source (`tsx`)  | Works: `tsx` reads `paths`                                                                                                                           | Works                    |
+| `tsc` build, then plain Node | **Fails.** `tsc` emits `require("@kernel/clock")` as written; Node: `Cannot find module '@kernel/clock'`                                             | Works                    |
+| Vitest                       | **Fails**: `Cannot find package '@kernel/clock'`. Needs an alias in both configs (inferred to work)                                                  | Works                    |
+| dependency-cruiser           | **Not resolved** (`couldNotResolve: true`), so no path rule sees it. Needs its `tsConfig` option, or rules written against the alias text (inferred) | Works                    |
+| oxlint                       | Passes. The rules here compare the text of the import, so each would be told the alias                                                               | Works                    |
+| knip                         | Passes                                                                                                                                               | Works                    |
+
+**Verdict: no.** The build is the blocker. Nothing in Node resolves
+`@kernel/x`: a package name is `@scope/name`, so `@kernel/clock` would have to
+be a package called `clock`. Making it work means a step that rewrites emitted
+JavaScript, a runtime hook, or a hand-made `node_modules/@kernel` link that
+pnpm does not manage and the archive would not contain (all inferred, none
+tried). The closest spelling Node supports natively is the `imports` field,
+`#kernel/clock`, mapped to the package; not tried. `@tryghost/kernel/x` costs
+ten more characters and needed no configuration in any tool.
+
+### The release archive (verified)
+
+- `pnpm archive` succeeded. Nx built `@tryghost/kernel` and
+  `@tryghost/foundry` before `ghost:build:tsc` without being told to.
+- The archive holds `bootstrap/`, `core/`, `domains/` and the two component
+  tarballs. Each tarball holds `build/` only.
+- Extracted to an empty directory, `pnpm install --prod --frozen-lockfile`
+  succeeded, and `node index.js` (no TypeScript loader, no `source` condition)
+  against an empty MySQL 8.4 database logged `Ghost booted in 9.186s`, which
+  includes the first run's migrations. `GET /` returned 200 and
+  `/ghost/api/admin/site/` returned the site. The kernel resolved to
+  `node_modules/@tryghost/kernel/build/define-service.js`.
+- This also closes part 2's "a production build was not run".
+
+### `kernel/testing`, the second application, the adapter manager
+
+- **`kernel/testing`** is `@tryghost/kernel/testing`, one explicit entry in
+  the `exports` map. It works unchanged. It also **ships in the archive**
+  (`build/testing/index.js` is in the tarball), which it did not need to
+  before in any meaningful sense and does not need to now.
+- **The second application** got simpler. It imports the two packages as
+  Ghost does, and the "built with tsc" test no longer copies the framework
+  into its temporary directory. It now needs the packages built first.
+- **The adapter manager** was cheap to move: two files and one test to the
+  foundry, two types (`BaseClassMap`, `RegistryOf`) into the kernel's types
+  file. The kernel's inline purity suppressions fell from 4 to 2 (both in
+  `clock.ts`). Cost: `foundry-only-from-bootstrap` has a named exception for
+  `server/services/adapter-manager/index.ts`, where Ghost still builds its
+  one manager.
+
+### What the other branches need to land on this layout (inferred; neither was merged or run)
+
+- **PR #32165** (its file list was read, not its patches): it adds
+  `ghost/core/boot/` with the email address composition, a rule in
+  `.dependency-cruiser.cjs`, and entries in `ghost/eslint.config.mjs` and
+  `ghost/package.json`. Here those files go in `ghost/bootstrap/`, their
+  imports of Core gain `../core/`, Core's imports of them gain one `../`, the
+  rule's path becomes `^ghost/bootstrap/`, and `ghost/test/unit/boot/` would
+  be `ghost/test/unit/bootstrap/`. The ESLint and `files` entries are already
+  here.
+- **`claude/adapter-manager-ghost-separation-147218`**: `core/boot/adapters/`
+  becomes `ghost/bootstrap/adapters/`. It imports `AdapterManager` from
+  `@tryghost/foundry/adapter-manager`, not from the kernel. Its rule
+  `adapter-manager-composed-in-boot` is deleted: `foundry-only-from-bootstrap`
+  covers it, and the exception added here for
+  `server/services/adapter-manager/index.ts` goes with it.
+
+### What got worse
+
+1. **The framework has to be built before Ghost is typechecked.**
+   Ghost's `tsc` reads the kernel through `build/*.d.ts`, and plain Node and
+   the "built with tsc" fixture test load `build/*.js`. Nx does the build
+   through `^build`. What fails without it has not been run yet (inferred).
+2. **The framework's tests are still in the application.** They stayed in
+   `ghost/test/unit/{kernel,foundry}`, with their fixtures. The two packages
+   have no test runner of their own, so a change to the kernel is tested only
+   by running Ghost's unit suite.
+3. **Legacy Core now reaches out of `core/` for the bootstrap.** Twelve
+   imports, the longest `../../../../../../../bootstrap/domains/fragments`.
+4. **Two packages are off the golden path, and nothing checks them.**
+   `lint:packages` looks only under `packages/` and `contracts/`, so these two
+   are not held to any package standard. They are marked `exempt` in their
+   manifests for whoever extends the check.
+5. **Dependencies are declared three times.** `zod`, `knex` and
+   `@tryghost/logging` are in the kernel, the foundry and Ghost. "One logger"
+   now also depends on pnpm resolving one copy of `@tryghost/logging` for the
+   foundry and for Ghost. It does in this workspace (the identity test in
+   `test/unit/bootstrap/app.test.ts` passes). `nconf` is a literal `0.13.0`
+   in two manifests because it was never in the catalog.
+6. **Coverage.** The foundry was in the DB lanes' coverage `include`; a file
+   outside the package root is not, without `coverage.allowExternal`. Dropped,
+   not replaced.
+7. **The inventory's evidence check is weaker**: it accepted only files inside
+   `ghost/` and now also accepts the two packages.
+8. **Fixture repositories in tool tests are heavier**: a manifest copy and a
+   `node_modules` link each, where a folder copy did before.
+
+### What got better
+
+- One spelling for every importer. The lint config's three per-home relative
+  paths to `define-service` are one value; tool tests lost their "how many
+  `../`" parameters.
+- **The kernel cannot resolve Ghost or the foundry** as packages: it does not
+  depend on them, and hoisting is off. A probe importing
+  `@tryghost/foundry/logging` from the kernel was unresolved (verified). The
+  boundary rule still exists for a relative path out of the package.
+- Kernel purity has two suppressions left instead of four.
+- The archive needed nothing.
+
+### Test and check results at the end
+
+| Check                                                 | Result                                                                                                                    |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| format, oxlint, ESLint (ghost and both packages)      | pass, at each of the three commits                                                                                        |
+| Boundaries                                            | pass: 5941 modules, 286 known violations, 189 deferred (5940 before; one new file)                                        |
+| Domain rules, knip, `lint:packages`, versioning, docs | pass                                                                                                                      |
+| Typecheck (`nx run ghost:test:types`)                 | pass                                                                                                                      |
+| Unit suite                                            | 828 files pass; 34 tests fail in the same 3 Mailgun and mailer files as baseline, at each commit                          |
+| DB-backed domain set, MySQL 8.4                       | 7 files, 75 tests pass, at each commit                                                                                    |
+| Legacy inventory test                                 | 71 pass                                                                                                                   |
+| `tools/scripts` tests                                 | 463 tests: 432 pass, 29 fail, 2 cancelled, **the same before `d47bd61` and after `8e517db`**                              |
+| `tools/gx` tests                                      | 155 pass                                                                                                                  |
+| Release archive                                       | built, installed, booted                                                                                                  |
+| Full integration, e2e and legacy suites, MySQL 8.4    | integration: 79 files pass, 5 skipped; 1,288 tests pass, 104 skipped. e2e and legacy: still running when this was written |
+
+Two baseline figures differ from part 2's report and were measured here on the
+commit before any change: the DB-backed set is 7 files and 75 tests (part 2
+says 8 and 76; one listed path, `test/e2e-api/admin/oembed.test.js`, does not
+exist), and `tools/scripts` has 29 failing tests in this container (part 2
+says 20). Five of the 29 are in `domain-boundaries.test.ts`.
+
+### Not done
+
+- **ESM.** The packages are CommonJS, as the code was. The golden path needs
+  `.ts` extensions on relative imports, `createRequire` in place of `require`
+  in the foundry's logger, loader and domain reader, and stricter compiler
+  options. Not attempted.
+- **Moving the framework's tests and fixtures into the packages.**
+- **`declarationMap`.** Without it, "go to definition" from Ghost lands in
+  `build/*.d.ts` (inferred).
+- **Renaming any `boot.ts`, moving shared modules, boot order**: out of scope.
+
+### Not verified
+
+- **CI.** The path-filter change and the Nx graph on a runner.
+- **The Docker image** (`Dockerfile.production`). It builds and injects
+  workspace dependencies generically, so it should carry both packages
+  (inferred).
+- **One logger and one database handle from the archive.** Ghost booted and
+  served; instance identity was checked from source only.
+- **nodemon** restarting on a kernel edit, and **`prune.mts`** on the image
+  profile: both edited, neither run.
+- **Coverage numbers**, **worker threads**, **Admin against this backend**,
+  **`gx services verify`**: as in part 2.
+- **Boot time**: from source, not measured in this part.
+- MySQL was `mysql:8.4` (8.4.13) from Docker Hub, not a pinned digest.
