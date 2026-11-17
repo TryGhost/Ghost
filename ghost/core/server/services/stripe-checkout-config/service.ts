@@ -27,7 +27,7 @@ import {
 } from '@tryghost/metafield-types/identity';
 import { toDatabaseDate } from '../../lib/db-types/date';
 import type { RequestContext } from '../../lib/actor';
-import type { ActionLog } from '../../lib/action-log/action-log';
+import type { OnStripeCheckoutConfigUpdated } from './changes';
 import { configRow, type ConfigRowSchema } from './codec';
 import {
   COLLECTED_NOUNS,
@@ -269,7 +269,7 @@ export type TierRequirements = Pick<TierRequirementsService, 'browse' | 'require
 /** Reads and saves the site-wide Stripe Checkout config. */
 export class StripeCheckoutConfigService {
   private knex: Knex;
-  private actionLog: ActionLog;
+  private onStripeCheckoutConfigUpdated: OnStripeCheckoutConfigUpdated;
   private bindings: PortBinder;
   private fields: FieldReads;
   private requirements: () => TierRequirements;
@@ -277,14 +277,15 @@ export class StripeCheckoutConfigService {
 
   constructor({
     knex,
-    actionLog,
+    onStripeCheckoutConfigUpdated,
     bindings,
     fields,
     requirements,
     logging,
   }: {
     knex: Knex;
-    actionLog: ActionLog;
+    /** Called with each change a command makes, inside the command's transaction. */
+    onStripeCheckoutConfigUpdated: OnStripeCheckoutConfigUpdated;
     bindings: PortBinder;
     fields: FieldReads;
     /** Looked up on each use, as tiers are set up after the config. */
@@ -292,7 +293,7 @@ export class StripeCheckoutConfigService {
     logging: GhostLogger;
   }) {
     this.knex = knex;
-    this.actionLog = actionLog;
+    this.onStripeCheckoutConfigUpdated = onStripeCheckoutConfigUpdated;
     this.bindings = bindings;
     this.fields = fields;
     this.requirements = requirements;
@@ -391,8 +392,8 @@ export class StripeCheckoutConfigService {
   }
 
   /**
-   * Saves the parts of the config that the request includes, and records the save in the staff
-   * history.
+   * Saves the parts of the config that the request includes, and reports the save as an edit of
+   * the config.
    *
    * The tiers and fields the collected parts name are checked inside the same transaction as
    * the write, with their rows locked, so nothing can change between the check and the write.
@@ -439,6 +440,7 @@ export class StripeCheckoutConfigService {
 
       await assertTargets(trx, changes, this.fields);
       const before = await this.requirements().browse(trx);
+      const previous = await this.readSaved(trx);
 
       await trx(CONFIG_TABLE)
         .where('id', saved.id)
@@ -447,12 +449,12 @@ export class StripeCheckoutConfigService {
       for (const change of changes) {
         await this.writeTargets(trx, change, at);
       }
-      await this.actionLog.record(trx, context, {
-        resourceType: 'stripe_checkout_config',
-        event: 'edited',
-        resourceId: saved.id,
-        // The config has no name of its own, so the entry is named after what it configures.
-        primaryName: 'Stripe Checkout',
+      await this.onStripeCheckoutConfigUpdated(trx, context, {
+        type: 'StripeCheckoutConfigSaved',
+        verb: 'edited',
+        previous,
+        next: await this.readSaved(trx),
+        configId: saved.id,
       });
       return {
         changedRequirements: !isDeepStrictEqual(before, await this.requirements().browse(trx)),
