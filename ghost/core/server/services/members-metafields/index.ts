@@ -1,5 +1,6 @@
 import errors from '@tryghost/errors';
 import { ActionLog } from '../../lib/action-log/action-log';
+import { recordCustomFieldChanges } from '../../lib/action-log/custom-fields';
 import { limitService } from '../limits';
 import { MetafieldDefinitionsService } from './custom-fields/definitions-service';
 import { MemberMetafieldValues } from './member-values';
@@ -102,7 +103,9 @@ export function init(): void {
   definitions = new MetafieldDefinitionsService({
     knex,
     fields,
-    actionLog: new ActionLog(),
+    // Each change to a field definition is logged as a staff action inside the command that
+    // made it.
+    onCustomFieldUpdated: recordCustomFieldChanges(new ActionLog()),
     namespaces,
     tracking,
     labs,

@@ -30,9 +30,15 @@ import {
   type FieldSource,
 } from '../metafields/queries';
 import { mintableKey } from './key';
-import type { ActionLog } from '../../../lib/action-log/action-log';
 import type { RequestContext } from '../../../lib/actor';
-import { fieldAction, reorderAction, type FieldAction } from './field-actions';
+import {
+  CustomFieldAdded,
+  CustomFieldDeleted,
+  CustomFieldEdited,
+  CustomFieldsAdded,
+  CustomFieldsReordered,
+  type OnCustomFieldUpdated,
+} from './changes';
 import type { MetafieldsTracking } from '../metafields/tracking';
 import { ensureTransaction } from '../../../lib/ensure-transaction';
 
@@ -125,7 +131,7 @@ export interface EditedField {
 export class MetafieldDefinitionsService {
   private knex: Knex;
   private fields: FieldSource<Caller>;
-  private actionLog: ActionLog;
+  private onCustomFieldUpdated: OnCustomFieldUpdated;
   private namespaces: Namespaces<Caller>;
   private tracking: MetafieldsTracking;
   private labs: { isSet(flag: string): boolean };
@@ -134,14 +140,15 @@ export class MetafieldDefinitionsService {
   constructor({
     knex,
     fields,
-    actionLog,
+    onCustomFieldUpdated,
     namespaces,
     tracking,
     labs,
   }: {
     knex: Knex;
     fields: FieldSource<Caller>;
-    actionLog: ActionLog;
+    /** Called with each change a command makes, inside the command's transaction. */
+    onCustomFieldUpdated: OnCustomFieldUpdated;
     namespaces: Namespaces<Caller>;
     tracking: MetafieldsTracking;
     /** Asked on every create, as a type's flag can be switched on while Ghost runs. */
@@ -149,7 +156,7 @@ export class MetafieldDefinitionsService {
   }) {
     this.knex = knex;
     this.fields = fields;
-    this.actionLog = actionLog;
+    this.onCustomFieldUpdated = onCustomFieldUpdated;
     this.namespaces = namespaces;
     this.tracking = tracking;
     this.labs = labs;
@@ -293,10 +300,10 @@ export class MetafieldDefinitionsService {
             keys.push(key);
           }
           const added = await this.readMany(trx, namespace, keys);
-          await this.record(
+          await this.onCustomFieldUpdated(
             trx,
             context,
-            added.map((field) => fieldAction('create', field)),
+            new CustomFieldsAdded(added.map((field) => new CustomFieldAdded(field))),
           );
           return added;
         });
@@ -355,20 +362,6 @@ export class MetafieldDefinitionsService {
   }
 
   /**
-   * Writes the staff history entries for a command, inside the command's transaction, so they are
-   * saved when the change is saved and never without it.
-   */
-  private async record(
-    trx: Knex.Transaction,
-    context: RequestContext,
-    actions: FieldAction[],
-  ): Promise<void> {
-    for (const action of actions) {
-      await this.actionLog.record(trx, context, action);
-    }
-  }
-
-  /**
    * Refuses adding `adding` fields to a namespace its limits leave no room in, counting every
    * field it holds, archived ones included.
    *
@@ -409,6 +402,8 @@ export class MetafieldDefinitionsService {
 
       return ensureTransaction(executor, async (trx) => {
         await this.assertNamesEveryField(trx, namespace, keys);
+        const everyField = { caller: 'admin', status: ANY_STATUS, namespace } as const;
+        const previous = await this.list(this.fields.definitions(trx, everyField));
 
         // Ranks come from the request's order; the statements go out in key order, so
         // two concurrent reorders take their row locks in the same sequence and
@@ -422,10 +417,8 @@ export class MetafieldDefinitionsService {
         }
 
         // An order covers the whole list, archived definitions included.
-        const ordered = await this.list(
-          this.fields.definitions(trx, { caller: 'admin', status: ANY_STATUS, namespace }),
-        );
-        await this.record(trx, context, [reorderAction(ordered.length)]);
+        const ordered = await this.list(this.fields.definitions(trx, everyField));
+        await this.onCustomFieldUpdated(trx, context, new CustomFieldsReordered(previous, ordered));
         return ordered;
       });
     });
@@ -610,10 +603,9 @@ export class MetafieldDefinitionsService {
           });
         }
 
-        // Only what actually changes is written and logged, so re-saving an unchanged field is a
-        // no-op rather than a spurious edit.
-        const recorded: FieldAction[] = [];
-        const name = patch.name ?? existing.name;
+        // Only what actually changes is written, so re-saving an unchanged field writes nothing
+        // and reports nothing. An edit that does change the field is reported once, when it is
+        // whole, from the field as it was to the field as it now is.
 
         if (patch.name !== undefined && patch.name !== existing.name) {
           attempt.changing('rename');
@@ -631,13 +623,6 @@ export class MetafieldDefinitionsService {
             }
             throw err;
           }
-          recorded.push(
-            fieldAction(
-              'rename',
-              { id: existing.id, name: patch.name, key },
-              { previous_name: existing.name },
-            ),
-          );
         }
 
         if (settings && !isDeepStrictEqual(settings.data.settings, existing.settings)) {
@@ -646,7 +631,6 @@ export class MetafieldDefinitionsService {
             .table(trx)
             .where({ namespace, key })
             .update({ ...z.encode(DbTypedSettings, settings.data), updated_at: new Date() });
-          recorded.push(fieldAction('changeSettings', { id: existing.id, name, key }));
         }
 
         if (patch.access !== undefined && patch.access.member !== existing.access.member) {
@@ -655,16 +639,6 @@ export class MetafieldDefinitionsService {
             .table(trx)
             .where({ namespace, key })
             .update({ member_access: patch.access.member, updated_at: new Date() });
-          recorded.push(
-            fieldAction(
-              'changeAccess',
-              { id: existing.id, name, key },
-              {
-                member_access: patch.access.member,
-                previous_member_access: existing.access.member,
-              },
-            ),
-          );
         }
 
         // A status change is the archive/restore transition.
@@ -675,12 +649,22 @@ export class MetafieldDefinitionsService {
             .table(trx)
             .where({ namespace, key })
             .update({ status: patch.status, updated_at: new Date() });
-          recorded.push(fieldAction(verb, { id: existing.id, name, key }));
         }
 
-        await this.record(trx, context, recorded);
+        // Read with a lock, as `existing` was, so the two are compared as the database holds
+        // them now. A plain read could see the field as it was when a caller's transaction first
+        // read anything, and report a change this edit did not make.
+        const field = await this.lockedField(trx, { namespace, key });
+        if (!field) {
+          throw new errors.InternalServerError({
+            message: 'The custom field was not found right after editing it.',
+          });
+        }
+        if (!isDeepStrictEqual(existing, field)) {
+          await this.onCustomFieldUpdated(trx, context, new CustomFieldEdited(existing, field));
+        }
         return {
-          field: await this.read(namespace, key, 'admin', trx),
+          field,
           changedForMembers:
             (await this.isReadByMembers(trx, { namespace, key })) !== readByMembers,
         };
@@ -733,7 +717,7 @@ export class MetafieldDefinitionsService {
       await ensureTransaction(executor, async (trx) => {
         // Locked, so a restore that lands between this check and the delete waits, rather than
         // having the field it just restored deleted.
-        const stored = await this.fields.table(trx).where({ namespace, key }).forUpdate().first();
+        const stored = await this.lockedField(trx, { namespace, key });
         if (!stored) {
           throw new errors.NotFoundError({ message: 'Custom field not found.' });
         }
@@ -744,9 +728,7 @@ export class MetafieldDefinitionsService {
           });
         }
         await this.fields.table(trx).where({ namespace, key }).del();
-        await this.record(trx, context, [
-          fieldAction('delete', { id: stored.id, name: stored.name, key }),
-        ]);
+        await this.onCustomFieldUpdated(trx, context, new CustomFieldDeleted(stored));
       });
     });
   }
