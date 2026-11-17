@@ -427,7 +427,7 @@ describe('Side panel', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
-  it('hides in Settings, which swaps the navigation for its own, and shows again on return', async () => {
+  it('stays open in Settings, which has a navigation of its own, and on return', async () => {
     // The settings app owns its request graph; this spec asserts only the panel.
     allowUnhandledRequests();
     await renderWithNavigation();
@@ -438,12 +438,14 @@ describe('Side panel', () => {
 
     await sidebarScreen.navLink('Settings').click();
     await expect.poll(currentRoute).toMatch(/^\/settings/);
-    await expect.poll(panelState).toBe('closed');
-    expect(sidePanel().isOpen()).toBe(true);
-    expect(sidePanel().open(hostFrame('Other').element)).toBeNull();
+    const backToApp = sidebarScreen.shellNav().getByRole('button', { name: 'Back to app' });
+    await expect.element(backToApp).toBeVisible();
+    expect(panelState()).toBe('default');
+    expect(panel().element().contains(frame.element)).toBe(true);
 
-    await sidebarScreen.shellNav().getByRole('button', { name: 'Back to app' }).click();
-    await expect.poll(panelState).toBe('default');
+    await backToApp.click();
+    await expect.element(sidebarScreen.navLink('Tags')).toBeVisible();
+    expect(panelState()).toBe('default');
     expect(panel().element().contains(frame.element)).toBe(true);
     expect(frame.loads()).toBe(1);
     expect(onClose).not.toHaveBeenCalled();
