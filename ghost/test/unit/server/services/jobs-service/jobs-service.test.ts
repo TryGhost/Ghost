@@ -828,7 +828,7 @@ describe('JobsService', function () {
       assert.equal(logger.calls.error.length, 1);
       assert.equal(logger.calls.error[0]![0], boom);
       assert.match(
-        String(logger.calls.error[0]![1]),
+        String(logger.calls.error[0]!.at(-1)),
         /^\[Background Job\] greet failed after \d+ms$/,
       );
     });
@@ -855,7 +855,7 @@ describe('JobsService', function () {
       logger.calls.info.splice(0, startLines);
 
       assert.equal(logger.calls.info.length, 2);
-      assert.equal(logger.calls.info[0]![0], '[Background Job] greet started');
+      assert.equal(logger.calls.info[0]!.at(-1), '[Background Job] greet started');
 
       const [event, message] = logger.calls.info[1]! as [
         { system: { event: string; job_type: string; duration_ms: number } },
@@ -881,7 +881,7 @@ describe('JobsService', function () {
       assert.equal(logger.calls.error.length, 0);
       assert.deepEqual(captured, []);
       assert.match(
-        String(logger.calls.info.at(-1)![0]),
+        String(logger.calls.info.at(-1)!.at(-1)),
         /^\[Background Job\] greet interrupted after \d+ms$/,
       );
     });
@@ -900,6 +900,57 @@ describe('JobsService', function () {
 
       assert.equal(logger.calls.info.length, 1, 'only the started line is logged');
       assert.equal(logger.calls.error.length, 1);
+    });
+  });
+
+  describe('lifecycle log fields', function () {
+    type Line = { system: { event: string; job_type: string; outbox_mode: string } };
+    const fieldsOf = (lines: unknown[][]) =>
+      lines
+        .map((args) =>
+          args.find(
+            (arg): arg is Line => typeof arg === 'object' && arg !== null && 'system' in arg,
+          ),
+        )
+        .filter((line): line is Line => line !== undefined)
+        .map(({ system }) => [system.event, system.job_type, system.outbox_mode]);
+
+    async function runOnce(
+      outbox: ReturnType<typeof makeOutbox> | undefined,
+      handler: () => Promise<void | 'interrupted'>,
+    ) {
+      const service = makeService({ outbox });
+      service.handle(GreetJob, handler);
+      await service.start();
+      logger.calls.info.length = 0;
+      assert.ok(backend.processor);
+      await backend.processor({ type: 'greet', payload: '{"name":"Ada"}' }).catch(() => {});
+    }
+
+    it('tags the started and completed lines with the job type and outbox mode', async function () {
+      await runOnce(makeOutbox(), async () => {});
+
+      assert.deepEqual(fieldsOf(logger.calls.info), [
+        ['job.started', 'greet', 'retain'],
+        ['job.completed', 'greet', 'retain'],
+      ]);
+    });
+
+    it('tags the failed line', async function () {
+      await runOnce(makeOutbox({ tracked: false }), async () => {
+        throw new Error('handler exploded');
+      });
+
+      assert.deepEqual(fieldsOf(logger.calls.error), [['job.failed', 'greet', 'on']]);
+    });
+
+    it('tags the interrupted line', async function () {
+      await runOnce(undefined, async () => 'interrupted' as const);
+
+      assert.deepEqual(fieldsOf(logger.calls.info), [
+        ['job.started', 'greet', 'off'],
+        ['job.interrupted', 'greet', 'off'],
+      ]);
     });
   });
 

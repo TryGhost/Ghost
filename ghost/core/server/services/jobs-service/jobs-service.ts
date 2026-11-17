@@ -377,16 +377,22 @@ export class JobsService {
       });
     }
 
+    // The outbox mode lets dashboards compare jobs on sites with the outbox on
+    const fields = (event: string, extra: Record<string, number> = {}) => ({
+      system: { event, job_type: envelope.type, outbox_mode: this.#outboxMode(), ...extra },
+    });
     const startedAt = Date.now();
-    this.#logging.info(`[Background Job] ${envelope.type} started`);
+    this.#logging.info(fields('job.started'), `[Background Job] ${envelope.type} started`);
 
     let result: void | 'interrupted';
     try {
       result = await deliver(envelope.payload);
     } catch (err) {
+      const durationMs = Date.now() - startedAt;
       this.#logging.error(
         err,
-        `[Background Job] ${envelope.type} failed after ${Date.now() - startedAt}ms`,
+        fields('job.failed', { duration_ms: durationMs }),
+        `[Background Job] ${envelope.type} failed after ${durationMs}ms`,
       );
       this.#sentry?.captureException(err, { tags: { job_type: envelope.type } });
       throw err;
@@ -394,17 +400,14 @@ export class JobsService {
 
     const durationMs = Date.now() - startedAt;
     if (result === 'interrupted') {
-      this.#logging.info(`[Background Job] ${envelope.type} interrupted after ${durationMs}ms`);
+      this.#logging.info(
+        fields('job.interrupted', { duration_ms: durationMs }),
+        `[Background Job] ${envelope.type} interrupted after ${durationMs}ms`,
+      );
       return 'interrupted';
     }
     this.#logging.info(
-      {
-        system: {
-          event: 'job.completed',
-          job_type: envelope.type,
-          duration_ms: durationMs,
-        },
-      },
+      fields('job.completed', { duration_ms: durationMs }),
       `[Background Job] ${envelope.type} completed in ${durationMs}ms`,
     );
   }
