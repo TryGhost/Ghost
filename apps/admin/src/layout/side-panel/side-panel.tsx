@@ -60,9 +60,11 @@ interface SidePanelProps {
   docked: boolean;
   /** Makes the panel inert, as the navigation and page are while the unpaid-subscription takeover shows. */
   locked: boolean;
+  /** Moves focus somewhere sensible when closing, if what had focus before opening has gone. */
+  onReturnFocusLost?: () => void;
 }
 
-export function SidePanel({ visible, framed, docked, locked }: SidePanelProps) {
+export function SidePanel({ visible, framed, docked, locked, onReturnFocusLost }: SidePanelProps) {
   const { state, close } = useSidePanel();
   const shown = visible && state.open;
   const windowSize = docked ? null : WINDOW_SIZE[state.size];
@@ -229,7 +231,8 @@ export function SidePanel({ visible, framed, docked, locked }: SidePanelProps) {
   }, [state.element]);
 
   // The content takes focus itself if it wants it. Closing returns focus to
-  // where it was before opening, as the content it was in is hidden.
+  // where it was before opening, as the content it was in is hidden, or, if
+  // that has gone with a screen change, wherever the layout sends it.
   const returnFocusRef = React.useRef<Element | null>(null);
   React.useLayoutEffect(() => {
     const region = regionRef.current;
@@ -246,10 +249,15 @@ export function SidePanel({ visible, framed, docked, locked }: SidePanelProps) {
     returnFocusRef.current = null;
     const focusWasWithin =
       region.contains(document.activeElement) || document.activeElement === document.body;
-    if (focusWasWithin && returnFocus instanceof HTMLElement && returnFocus.isConnected) {
-      returnFocus.focus({ preventScroll: true });
+    if (!focusWasWithin || !(returnFocus instanceof HTMLElement)) {
+      return;
     }
-  }, [state.open, state.element]);
+    if (returnFocus.isConnected) {
+      returnFocus.focus({ preventScroll: true });
+    } else {
+      onReturnFocusLost?.();
+    }
+  }, [state.open, state.element, onReturnFocusLost]);
 
   React.useEffect(() => {
     if (!shown || locked) {

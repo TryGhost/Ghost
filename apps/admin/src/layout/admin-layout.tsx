@@ -29,6 +29,7 @@ import {
 import { SidebarSwapTransition } from './sidebar-swap-transition';
 import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
 import { SkipLink } from './skip-link';
+import { focusMain } from './focus-main';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
 import { DunningBanner, DunningOverlay, useDunningLockTakeover } from '@/dunning';
 import { AdminFrame, type AdminFrameMode } from './admin-frame';
@@ -239,6 +240,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const sidebarRef = React.useRef<HTMLDivElement>(null);
   const mainRef = React.useRef<HTMLElement>(null);
   const contributorMenuRef = React.useRef<HTMLDivElement>(null);
+
+  // Closing the side panel after the screen has changed under it, e.g. Help
+  // opened from the main navigation and closed in Settings, returns focus to
+  // the Help link on screen now, or else to the page
+  const focusAfterSidePanelOpenerLost = React.useCallback(() => {
+    const help = document.querySelector<HTMLElement>('[data-ghost-help]');
+    if (help) {
+      help.focus({ preventScroll: true });
+    } else if (mainRef.current) {
+      focusMain(mainRef.current, { preventScroll: true });
+    }
+  }, []);
   React.useLayoutEffect(() => {
     for (const region of [mainRef.current, contributorMenuRef.current]) {
       if (region) {
@@ -454,6 +467,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       framed={adminFrame}
       locked={dunningLocked}
       visible={sidePanelVisible}
+      onReturnFocusLost={focusAfterSidePanelOpenerLost}
     />
   );
 
