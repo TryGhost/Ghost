@@ -24,6 +24,7 @@ export function configSources(extra: Record<string, unknown> = {}): Record<strin
       paths: { ...defaults.paths, ...overrides.paths },
       auth: defaults.auth,
       spam: defaults.spam,
+      services: defaults.services,
       database: { client: 'better-sqlite3', connection: { filename: '/tmp/ghost-test.db' } },
     },
     extra,

@@ -1,4 +1,5 @@
 import type { GhostLogger } from '@tryghost/logging';
+import type { ConfigInstance } from '../../../shared/config/loader';
 import {
   buildSignedWebhookRequest,
   describeWebhookError,
@@ -17,9 +18,7 @@ type ExportRequestBody = {
 };
 
 type ExportRequestsServiceDependencies = {
-  config: {
-    get: (key: string) => unknown;
-  };
+  config: Pick<ConfigInstance, 'get'>;
   logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
   request: (url: string, options: unknown) => Promise<unknown>;
 };

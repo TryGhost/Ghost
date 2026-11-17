@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import createKnex from 'knex';
 import sinon from 'sinon';
+import defaults from '../../../../../core/shared/config/defaults.json';
 
 // require, not import: the root and its collaborators are CommonJS and the stubs below must
 // land on the same module instances the root reads at init.
@@ -85,7 +86,13 @@ describe('Mentions service root', function () {
     sandbox.stub(logging);
     backend = new InMemoryJobsBackend();
     sandbox.stub(adapterManager, 'getAdapter').withArgs('jobs').returns(backend);
-    const jobsService = require(jobsServicePath).init({ knex, config: { get: () => undefined } });
+    const jobsService = require(jobsServicePath).init({
+      knex,
+      config: {
+        get: (key: string) =>
+          key === 'services:jobs:outbox' ? defaults.services.jobs.outbox : undefined,
+      },
+    });
     dispatch = sandbox.stub(jobsService, 'dispatch').resolves();
     getSiteUrl = sandbox.stub(urlUtils, 'getSiteUrl').returns('https://publication.example/');
     urlFor = sandbox.stub(urlUtils, 'urlFor');

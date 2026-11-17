@@ -3,7 +3,9 @@ import { z } from 'zod';
 import { auth } from './schema/auth';
 import { database } from './schema/database';
 import { explore } from './schema/explore';
+import { hostSettings } from './schema/host-settings';
 import { httpUrl } from './schema/primitives';
+import { services } from './schema/services';
 import { spam } from './schema/spam';
 import { makePathsAbsolute } from './utils';
 
@@ -117,6 +119,8 @@ export const configSchema = z.looseObject({
   // Feature config, one file per area in ./schema. See SCHEMA.md.
   auth,
   explore,
+  hostSettings,
+  services,
   spam,
 });
 

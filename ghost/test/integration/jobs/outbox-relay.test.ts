@@ -8,6 +8,7 @@ import { OutboxTracker } from '../../../core/server/services/jobs-service/outbox
 import { Job } from '../../../core/server/services/jobs-service/job';
 import InMemoryJobsBackend from '../../../core/server/adapters/jobs/InMemoryJobsBackend';
 import SendEmailJob from '../../../core/server/services/email-service/jobs/send-email-job';
+import defaults from '../../../core/shared/config/defaults.json';
 
 const testUtils = require('../../utils');
 const jobsService = require('../../../core/server/services/jobs-service');
@@ -1034,11 +1035,18 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       }
     });
 
+    const outboxDefaults = defaults.services.jobs.outbox;
+
     function initWithOutbox(keepUntilSettled: boolean) {
       const config = {
         get: (key: string) =>
           key === 'services:jobs:outbox'
-            ? { enabled: true, keepUntilSettled, pollIntervalMs: TIMINGS.pollIntervalMs }
+            ? {
+                ...outboxDefaults,
+                enabled: true,
+                keepUntilSettled,
+                pollIntervalMs: TIMINGS.pollIntervalMs,
+              }
             : undefined,
       };
       return wrapper.init({ knex, config });
