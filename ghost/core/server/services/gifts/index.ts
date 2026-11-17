@@ -152,6 +152,7 @@ export function init(options: GiftServiceInitOptions): void {
           : null,
       planAnswers: (given, memberId, tier, attempt) =>
         membersService.api.account.planAnswers(given, memberId, tier, attempt),
+      validateAnswers: (given, tier) => membersService.api.account.validateAnswers(given, tier),
     },
     tracking: giftsTracking({ tracer, outcomes: requirementOutcomes }),
     tiersService,

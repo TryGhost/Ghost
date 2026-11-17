@@ -1007,10 +1007,23 @@ module.exports = class RouterController {
       /** @type {{inboxLinks?: {desktop: string; android: string; provider: string}; otc_ref?: string}} */
       const resBody = {};
 
+      // `answers` holds the visitor's values for the requirements of the gift's tier, such as a
+      // shipping address. They are validated here, before the email is sent, so the visitor can
+      // correct them on the redemption page. They are stored with the magic link and saved when
+      // the link redeems the gift.
+      const giftAnswers =
+        giftToken && req.body.answers !== undefined
+          ? await this._giftService.service.validateAnswers({
+              token: giftToken,
+              answers: req.body.answers,
+            })
+          : undefined;
+      const gift = giftToken ? { giftToken, ...(giftAnswers ? { giftAnswers } : {}) } : {};
+
       if (emailType === 'signup' || emailType === 'subscribe') {
-        await this._handleSignup(req, normalizedEmail, referrer, giftToken);
+        await this._handleSignup(req, normalizedEmail, referrer, gift);
       } else {
-        const signIn = await this._handleSignin(req, normalizedEmail, referrer, giftToken);
+        const signIn = await this._handleSignin(req, normalizedEmail, referrer, gift);
         if (signIn.otcRef) {
           resBody.otc_ref = signIn.otcRef;
         }
@@ -1117,7 +1130,14 @@ module.exports = class RouterController {
     return `${timestamp}:${hash}`;
   }
 
-  async _handleSignup(req, normalizedEmail, referrer = null, giftToken = null) {
+  /**
+   * @param {object} req
+   * @param {string} normalizedEmail
+   * @param {string | null} [referrer]
+   * @param {{giftToken?: string, giftAnswers?: Record<string, unknown>}} [gift] The gift the magic link redeems, with the values to save for its tier's requirements
+   */
+  async _handleSignup(req, normalizedEmail, referrer = null, gift = {}) {
+    const { giftToken } = gift;
     const signupAccess = this._settingsCache.get('members_signup_access');
 
     // A gift is a paid membership, so paid-members-only sites accept new members redeeming one.
@@ -1156,7 +1176,7 @@ module.exports = class RouterController {
       reqIp: req.ip ?? undefined,
       newsletters: await this._validateNewsletters(req.body?.newsletters),
       attribution: await this._memberAttributionService.getAttribution(req.body.urlHistory),
-      ...(giftToken ? { giftToken } : {}),
+      ...gift,
     };
 
     return await this._sendEmailWithMagicLink({
@@ -1167,7 +1187,13 @@ module.exports = class RouterController {
     });
   }
 
-  async _handleSignin(req, normalizedEmail, referrer = null, giftToken = null) {
+  /**
+   * @param {object} req
+   * @param {string} normalizedEmail
+   * @param {string | null} [referrer]
+   * @param {{giftToken?: string, giftAnswers?: Record<string, unknown>}} [gift] The gift the magic link redeems, with the values to save for its tier's requirements
+   */
+  async _handleSignin(req, normalizedEmail, referrer = null, gift = {}) {
     const { emailType, includeOTC: reqIncludeOTC } = req.body;
 
     let includeOTC = false;
@@ -1188,7 +1214,7 @@ module.exports = class RouterController {
 
     const tokenData = {
       ...(name ? { name } : {}),
-      ...(giftToken ? { giftToken } : {}),
+      ...gift,
     };
     return await this._sendEmailWithMagicLink({
       email: normalizedEmail,

@@ -297,6 +297,9 @@ module.exports = function MembersAPI({
       reqIp,
       type,
       giftToken,
+      // The values the visitor entered for the requirements of the gift's tier, validated before
+      // the magic link was sent. They are validated again and saved when the gift is redeemed.
+      giftAnswers,
     } = await getTokenDataFromMagicLinkToken(token, otcVerification);
     if (!email) {
       return null;
@@ -318,6 +321,7 @@ module.exports = function MembersAPI({
         await giftService.service.redeem({
           token: giftToken,
           memberId: member.id,
+          ...(giftAnswers === undefined ? {} : { answers: giftAnswers }),
         });
       }
 
@@ -356,6 +360,7 @@ module.exports = function MembersAPI({
           memberId: created.id,
           transacting,
           newMember: true,
+          ...(giftAnswers === undefined ? {} : { answers: giftAnswers }),
         });
         return created;
       });

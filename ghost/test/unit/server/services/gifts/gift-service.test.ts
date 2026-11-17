@@ -264,6 +264,7 @@ describe('GiftService', function () {
       requirements: {
         forTier: async () => null,
         planAnswers: async () => [],
+        validateAnswers: async () => ({}),
       },
       tracking: giftsTracking({
         tracer: { track: (_name, fn) => fn({ setAttribute() {} }) },

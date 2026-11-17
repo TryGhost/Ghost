@@ -183,31 +183,7 @@ export class MetafieldBindingsService {
     writer: PortWriter,
     executor: Knex = this.knex,
   ): Promise<RoutedPlans> {
-    const fields = await this.fieldsFor(
-      executor,
-      values.map(({ port }) => port),
-    );
-    const input: Record<string, unknown> = {};
-    const routed = new Map<string, { port: string; field: BoundField }>();
-    for (const { port, value } of values) {
-      const field = fields.get(port);
-      if (field) {
-        input[identityOf(field)] = whole(field.type, value);
-        routed.set(identityOf(field), { port, field });
-      }
-    }
-    const kept = new Set(fields.keys());
-    if (routed.size === 0) {
-      return { plans: [], refused: [], kept };
-    }
-
-    const { writes, refusals } = await this.values.planOrRefuse(
-      input,
-      INTERNAL,
-      // Every value planned came through a port, so each refusal names one.
-      (identity) => routed.get(identity)?.port ?? identity,
-      executor,
-    );
+    const { writes, refused, routed, kept } = await this.route(values, executor);
 
     // One plan for each writer, so a member's answers are one change and each binding's value is
     // its own.
@@ -223,7 +199,58 @@ export class MetafieldBindingsService {
       plan.writes.push(write);
       plans.set(key, plan);
     }
-    return { plans: [...plans.values()], refused: refusals, kept };
+    return { plans: [...plans.values()], refused, kept };
+  }
+
+  /**
+   * Validates the values a source sent through ports with the same rules as `planThrough`, without
+   * planning any writes. It needs no writer, so it can run before the member the values are for
+   * exists.
+   */
+  async validateThrough(
+    values: Array<{ port: string; value: unknown }>,
+  ): Promise<Pick<RoutedPlans, 'refused' | 'kept'>> {
+    const { refused, kept } = await this.route(values, this.knex);
+    return { refused, kept };
+  }
+
+  /** Finds the field each value's port writes into and validates the value for that field. */
+  private async route(
+    values: Array<{ port: string; value: unknown }>,
+    executor: Knex,
+  ): Promise<{
+    writes: MetafieldPlan['writes'];
+    refused: PortRefusal[];
+    routed: Map<string, { port: string; field: BoundField }>;
+    kept: ReadonlySet<string>;
+  }> {
+    const fields = await this.fieldsFor(
+      executor,
+      values.map(({ port }) => port),
+    );
+    const input: Record<string, unknown> = {};
+    const routed = new Map<string, { port: string; field: BoundField }>();
+    for (const { port, value } of values) {
+      const field = fields.get(port);
+      if (field) {
+        input[identityOf(field)] = whole(field.type, value);
+        routed.set(identityOf(field), { port, field });
+      }
+    }
+    const kept = new Set(fields.keys());
+    if (routed.size === 0) {
+      return { writes: [], refused: [], routed, kept };
+    }
+
+    const { writes, refusals } = await this.values.planOrRefuse(
+      input,
+      INTERNAL,
+      // Every value planned came through a port, so each refusal names one.
+      (identity) => routed.get(identity)?.port ?? identity,
+      executor,
+    );
+
+    return { writes, refused: refusals, routed, kept };
   }
 
   /**

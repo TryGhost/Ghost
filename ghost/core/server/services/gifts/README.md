@@ -16,7 +16,10 @@ transactions, or Stripe objects.
   When the checkout collection flag is on, the DTO lists the gift tier's
   requirements, such as a shipping address. `redeem` accepts `answers`, the
   redeemer's values for those requirements. It validates them before redeeming
-  the gift, and saves them in the redemption's transaction.
+  the gift, and saves them in the redemption's transaction. A visitor who isn't
+  signed in sends `answers` with the magic link request. `validateAnswers`
+  validates them before the email is sent, they are stored with the magic
+  link, and the link passes them to `redeem` when it is used.
 - `completePurchase(input)` and `handlePaymentRefund(input)` accept normalized
   payment outcomes.
 - `handlePaidSubscriptionActivation(memberId)` consumes gift time when a paid

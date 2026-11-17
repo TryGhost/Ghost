@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { isRecordValue } from '@tryghost/metafield-types/structure';
 import { CHECKOUT_PORTS, matchRequirement } from '@tryghost/checkout';
 import { MEMBERS } from '../members-metafields';
-import type { MetafieldBindingsService } from '../members-metafields/bindings-service';
+import type { MetafieldBindingsService, RoutedPlans } from '../members-metafields/bindings-service';
 import {
   refusalError,
   type MetafieldPlan,
@@ -74,7 +74,7 @@ interface EmailSuppressionList {
 }
 
 type MetafieldValues = Pick<MetafieldValuesService, 'unwrapWire' | 'planWrite'>;
-type MetafieldBindings = Pick<MetafieldBindingsService, 'planThrough'>;
+type MetafieldBindings = Pick<MetafieldBindingsService, 'planThrough' | 'validateThrough'>;
 
 const AnswersInput = z.object({
   // An answer holds something: a `null` would clear what the field holds, which no answer can.
@@ -184,37 +184,76 @@ export class MemberAccountService {
     if (!this.#labs.isSet(COLLECTION_FLAG)) {
       return [];
     }
+    const { required, answers, routed, refusals } = await this.#validate(given, tier, (values) =>
+      this.#metafieldBindings.planThrough(values, { type: 'member', id: memberId }),
+    );
+    attempt.answering({ required, answers, kept: routed.kept });
+    throwRefusals(refusals);
+    return routed.plans;
+  }
+
+  /**
+   * Validates answers for a tier's requirements with the same rules as `planAnswers`, and throws
+   * the same validation error. It takes no member, so it can run before the member exists, such
+   * as when a visitor redeems a gift before they have signed up.
+   *
+   * Returns the answers to keep and save later with `planAnswers`: the ones the tier asks for that
+   * are bound to an active field. Anything else in `given` is left out.
+   */
+  async validateAnswers(given: unknown, tier: { id: string; type: string }): Promise<Answers> {
+    if (!this.#labs.isSet(COLLECTION_FLAG)) {
+      return {};
+    }
+    const { asked, answers, routed, refusals } = await this.#validate(given, tier, (values) =>
+      this.#metafieldBindings.validateThrough(values),
+    );
+    throwRefusals(refusals);
+
+    const accepted: Answers = {};
+    for (const port of asked) {
+      if (Object.hasOwn(answers, port) && routed.kept.has(port)) {
+        accepted[port] = answers[port];
+      }
+    }
+    return accepted;
+  }
+
+  /**
+   * Parses `given`, passes the answers the tier asks for to `through`, and collects every
+   * validation error: the ones from the fields the answers are saved in, and the ones from the
+   * tier's requirements.
+   */
+  async #validate<Routed extends Pick<RoutedPlans, 'refused' | 'kept'>>(
+    given: unknown,
+    tier: { id: string; type: string },
+    through: (values: Array<{ port: string; value: unknown }>) => Promise<Routed>,
+  ) {
     const { answers } = parseRequest(AnswersInput, { answers: given }, 'answers');
     const required = (await this.#requirements().forTiers([tier])).get(tier.id) ?? [];
     const asked = required.flatMap(({ ports }) => Object.values(ports).map(({ port }) => port));
-    const { plans, refused, kept } = await this.#metafieldBindings.planThrough(
+    const routed = await through(
       asked
         .filter((port) => Object.hasOwn(answers, port))
         .map((port) => ({ port, value: answers[port] })),
-      { type: 'member', id: memberId },
     );
-    attempt.answering({ required, answers, kept });
 
     // Every refusal at once, each named as the request named the answer. Where a field refuses a
     // value a rule here also refuses, such as a country that isn't a code at all, the field's own
     // reason says more.
-    const byFields = refused.map(({ message, property }) => ({
+    const byFields = routed.refused.map(({ message, property }) => ({
       message,
       property: `answers.${property}`,
     }));
-    const [first, ...rest] = [
+    const refusals: Refusal[] = [
       ...byFields,
       ...required
         .flatMap((requirement) => [
           ...answeredInPart(requirement, answers),
-          ...refusedBy(requirement, answers, kept),
+          ...refusedBy(requirement, answers, routed.kept),
         ])
         .filter(({ property }) => !byFields.some((refusal) => refusal.property === property)),
     ];
-    if (first) {
-      throw refusalError(first, rest);
-    }
-    return plans;
+    return { required, asked, answers, routed, refusals };
   }
 
   /** Saves the answers `planAnswers` worked out, once the change of tier has been made. */
@@ -235,6 +274,13 @@ export class MemberAccountService {
   async allowEmail(memberId: string, email: string): Promise<void> {
     await this.#emailSuppressionList.removeEmail(email);
     await this.#members.update({ email_disabled: false }, { id: memberId });
+  }
+}
+
+/** Throws one validation error that lists every refusal, when there are any. */
+function throwRefusals([first, ...rest]: Refusal[]): void {
+  if (first) {
+    throw refusalError(first, rest);
   }
 }
 

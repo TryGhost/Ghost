@@ -135,6 +135,14 @@ export interface GiftRequirements {
     tier: { id: string; type: string },
     attempt: Pick<GiftRedemptionAttempt, 'answering'>,
   ): Promise<MetafieldPlan[]>;
+  /**
+   * Validates `given` with the same rules as `planAnswers`, without a member, and returns the
+   * values to store until the gift is redeemed. Throws the same ValidationError.
+   */
+  validateAnswers(
+    given: unknown,
+    tier: { id: string; type: string },
+  ): Promise<Record<string, unknown>>;
 }
 
 interface GiftEmailService {
@@ -878,6 +886,31 @@ export class GiftService {
     this.assertRedeemable(gift, input.memberStatus);
 
     return this.serializeRedemption(gift);
+  }
+
+  /**
+   * Validates `answers`, a visitor's values for the gift tier's requirements, before a magic link
+   * that redeems the gift is emailed to them. The visitor may not be a member yet, so nothing is
+   * saved here. Returns the values to store with the magic link and pass to `redeem` when the
+   * link is used. A validation error is thrown before any email is sent, so the visitor can
+   * correct the values on the redemption page.
+   */
+  async validateAnswers(input: {
+    token: string;
+    answers: unknown;
+  }): Promise<Record<string, unknown>> {
+    const gift = await this.deps.giftRepository.getByToken(input.token);
+    if (!gift) {
+      throw new errors.NotFoundError({
+        message: tpl(errorMessages.giftNotFound),
+        code: 'GIFT_NOT_FOUND',
+      });
+    }
+    const tier = await this.readTier(gift);
+    return this.deps.requirements.validateAnswers(input.answers, {
+      id: gift.tierId,
+      type: tier.type,
+    });
   }
 
   /**
