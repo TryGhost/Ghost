@@ -71,6 +71,19 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
     },
     [filters, searchParams, setFilters, setSearchParams, singleCommentId, timezone],
   );
+  // Panel rows show the list for one post or member, so they replace either filter
+  const handleAnalyticsFilter = useCallback(
+    (field: 'post' | 'author', id: string) => {
+      setFilters(
+        [
+          ...filters.filter((filter) => filter.field !== 'post' && filter.field !== 'author'),
+          createFilter(field, 'is', [id]),
+        ],
+        { replace: false },
+      );
+    },
+    [filters, setFilters],
+  );
   const effectiveFilter = useMemo(() => {
     if (singleCommentId) {
       return `id:${escapeNqlString(singleCommentId)}`;
@@ -204,14 +217,20 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
         (wideLayout ? (
           <aside className="w-[400px] shrink-0 border-l border-border">
             <div className="sticky top-0 max-h-dvh overflow-y-auto p-6">
-              <CommentsAnalyticsPanel analytics={analytics} />
+              <CommentsAnalyticsPanel analytics={analytics} onFilter={handleAnalyticsFilter} />
             </div>
           </aside>
         ) : (
           <Sheet open={analyticsSheetOpen} onOpenChange={setAnalyticsSheetOpen}>
             <SheetContent className="overflow-y-auto sm:max-w-[440px]">
               <SheetTitle className="sr-only">Comment analytics</SheetTitle>
-              <CommentsAnalyticsPanel analytics={analytics} />
+              <CommentsAnalyticsPanel
+                analytics={analytics}
+                onFilter={(field, id) => {
+                  setAnalyticsSheetOpen(false);
+                  handleAnalyticsFilter(field, id);
+                }}
+              />
             </SheetContent>
           </Sheet>
         ))}

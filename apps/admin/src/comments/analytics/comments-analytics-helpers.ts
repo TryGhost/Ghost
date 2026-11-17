@@ -35,7 +35,7 @@ export function getCommentsStatsSearchParams(range: number, timezone: string) {
 }
 
 export type CommentsTrend = {
-  direction: 'up' | 'down' | 'same' | 'hidden';
+  direction: 'up' | 'down' | 'hidden';
   value: string;
 };
 
@@ -45,7 +45,7 @@ export function getTrend(current: number, previous: number, range: number): Comm
   }
   const change = (current - previous) / previous;
   if (change === 0) {
-    return { direction: 'same', value: '0%' };
+    return { direction: 'hidden', value: '' };
   }
   return {
     direction: change > 0 ? 'up' : 'down',
@@ -53,11 +53,12 @@ export function getTrend(current: number, previous: number, range: number): Comm
   };
 }
 
-export function getComparisonText(range: number): string {
+// Also the only place the percentage shows when a narrow tab collapses the badge
+export function getComparisonText(value: string, range: number): string {
   if (range === STATS_RANGES.yearToDate.value) {
-    return 'Compared to the same number of days before January 1';
+    return `${value} compared to the same number of days before January 1`;
   }
-  return `Compared to the previous ${range} days`;
+  return `${value} compared to the previous ${range} days`;
 }
 
 // Day counts that make Shade's date formatters read as day, week or month

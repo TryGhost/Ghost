@@ -24,12 +24,13 @@ import {
 } from '@tryghost/shade/utils';
 import { STATS_RANGES } from '@/shared/analytics/constants';
 import { truncateLeadingEmptyData } from '@/shared/analytics/chart-helpers';
+import { useShade } from '@tryghost/shade/app';
 import type { CommentsOverviewStats } from '@tryghost/admin-x-framework/api/stats';
 
 const TABS: Record<CommentsAnalyticsTab, { label: string; color: string; inverted?: boolean }> = {
-  comments: { label: 'Comments', color: 'var(--chart-blue)' },
+  comments: { label: 'Comments', color: 'var(--chart-darkblue)' },
   commenters: { label: 'Commenters', color: 'var(--chart-teal)' },
-  reported: { label: 'Reported', color: 'var(--chart-orange)', inverted: true },
+  reported: { label: 'Reported', color: 'var(--chart-rose)', inverted: true },
 };
 
 type ChartRow = { date: string; value: number };
@@ -65,6 +66,8 @@ const CommentsKpis: React.FC<{
   onTabChange: (tab: CommentsAnalyticsTab) => void;
 }> = ({ stats, range, tab, isLoading, onTabChange }) => {
   const { label, color } = TABS[tab];
+  // admin7Design charts are flat, like the newsletter analytics bars
+  const { admin7Design } = useShade();
   const displayRange = stats ? DISPLAY_RANGE_BY_INTERVAL[stats.interval] : 30;
 
   const chartData = useMemo(() => {
@@ -96,12 +99,14 @@ const CommentsKpis: React.FC<{
             ? getTrend(stats.totals[key], stats.previous_totals[key], range)
             : { direction: 'hidden' as const, value: '' };
           return (
-            <KpiTabTrigger key={key} className="h-auto p-4" value={key}>
+            <KpiTabTrigger key={key} className="@container/kpi h-auto p-4" value={key}>
               <KpiTabValue
+                // Narrow tabs keep the trend arrow; the tooltip still gives the percentage
+                className="@max-[10rem]/kpi:[&_[data-slot=trend-badge-value]]:hidden"
                 data-testid={`comments-analytics-kpi-${key}`}
                 diffDirection={trend.direction}
                 diffInverted={TABS[key].inverted}
-                diffTooltip={getComparisonText(range)}
+                diffTooltip={getComparisonText(trend.value, range)}
                 diffValue={trend.value}
                 label={TABS[key].label}
                 value={stats ? formatNumber(stats.totals[key]) : '–'}
@@ -144,12 +149,20 @@ const CommentsKpis: React.FC<{
                 cursor={{ fill: 'var(--muted)', opacity: 0.5 }}
                 isAnimationActive={false}
               />
+              <defs>
+                <linearGradient id="commentsAnalyticsBar" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stopColor={color} stopOpacity={admin7Design ? 1 : 0.8} />
+                  <stop offset="100%" stopColor={color} stopOpacity={admin7Design ? 1 : 0.6} />
+                </linearGradient>
+              </defs>
               <Recharts.Bar
+                activeBar={{ fillOpacity: 1 }}
                 dataKey="value"
-                fill={color}
+                fill="url(#commentsAnalyticsBar)"
+                fillOpacity={0.6}
                 isAnimationActive={false}
                 maxBarSize={24}
-                radius={[3, 3, 0, 0]}
+                radius={4}
               />
             </Recharts.BarChart>
           </ChartContainer>

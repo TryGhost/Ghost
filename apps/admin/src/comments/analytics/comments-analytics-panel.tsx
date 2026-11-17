@@ -7,7 +7,10 @@ import { Inline, Stack } from '@tryghost/shade/primitives';
 import { getPeriodText } from '@/shared/analytics/chart-helpers';
 import type { CommentsAnalytics } from './use-comments-analytics';
 
-const CommentsAnalyticsPanel: React.FC<{ analytics: CommentsAnalytics }> = ({ analytics }) => {
+const CommentsAnalyticsPanel: React.FC<{
+  analytics: CommentsAnalytics;
+  onFilter: (field: 'post' | 'author', id: string) => void;
+}> = ({ analytics, onFilter }) => {
   const { range, setRange, tab, setTab, overview, topPosts, topCommenters } = analytics;
   const period = getPeriodText(range);
   const queries = [overview, topPosts, topCommenters];
@@ -67,6 +70,7 @@ const CommentsAnalyticsPanel: React.FC<{ analytics: CommentsAnalytics }> = ({ an
             isLoading={topPosts.isLoading}
             rows={postRows}
             title="Top posts"
+            onSelect={({ id }) => onFilter('post', id)}
           />
           <CommentsTopList
             data-testid="comments-analytics-top-commenters"
@@ -74,6 +78,7 @@ const CommentsAnalyticsPanel: React.FC<{ analytics: CommentsAnalytics }> = ({ an
             isLoading={topCommenters.isLoading}
             rows={commenterRows}
             title="Top commenters"
+            onSelect={({ id }) => onFilter('author', id)}
           />
         </>
       )}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Button,
   Card,
@@ -27,13 +27,23 @@ const PREVIEW_ROWS = 5;
 
 export type TopListRow = { id: string; label: string; comments: number };
 
-const Rows: React.FC<{ rows: TopListRow[] }> = ({ rows }) => (
+const Rows: React.FC<{ rows: TopListRow[]; onSelect: (row: TopListRow) => void }> = ({
+  rows,
+  onSelect,
+}) => (
   <DataList>
     <DataListBody>
       {rows.map((row) => (
-        <DataListRow key={row.id}>
+        <DataListRow key={row.id} className="group/row relative hover:cursor-pointer">
           <DataListItemContent>
-            <span className="truncate font-medium">{row.label}</span>
+            {/* The button's overlay makes the whole row the click target */}
+            <button
+              className="truncate text-left font-medium group-hover/row:underline after:absolute after:inset-0 focus-visible:outline-none"
+              type="button"
+              onClick={() => onSelect(row)}
+            >
+              {row.label}
+            </button>
           </DataListItemContent>
           <DataListItemValue>
             <DataListItemValueAbs>{formatNumber(row.comments)}</DataListItemValueAbs>
@@ -49,41 +59,52 @@ const CommentsTopList: React.FC<{
   description: string;
   rows: TopListRow[] | undefined;
   isLoading: boolean;
+  onSelect: (row: TopListRow) => void;
   'data-testid'?: string;
-}> = ({ title, description, rows, isLoading, 'data-testid': testId }) => (
-  <Card data-testid={testId}>
-    <CardHeader>
-      <CardTitle>{title}</CardTitle>
-      <CardDescription>{description}</CardDescription>
-    </CardHeader>
-    <CardContent>
-      {isLoading || !rows ? (
-        <SkeletonTable lines={PREVIEW_ROWS} />
-      ) : rows.length ? (
-        <Rows rows={rows.slice(0, PREVIEW_ROWS)} />
-      ) : (
-        <p className="py-6 text-center text-sm text-muted-foreground">No comments in this period</p>
+}> = ({ title, description, rows, isLoading, onSelect, 'data-testid': testId }) => {
+  const [viewAllOpen, setViewAllOpen] = useState(false);
+  const selectFromSheet = (row: TopListRow) => {
+    setViewAllOpen(false);
+    onSelect(row);
+  };
+
+  return (
+    <Card data-testid={testId}>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {isLoading || !rows ? (
+          <SkeletonTable lines={PREVIEW_ROWS} />
+        ) : rows.length ? (
+          <Rows rows={rows.slice(0, PREVIEW_ROWS)} onSelect={onSelect} />
+        ) : (
+          <p className="py-6 text-center text-sm text-muted-foreground">
+            No comments in this period
+          </p>
+        )}
+      </CardContent>
+      {rows && rows.length > PREVIEW_ROWS && (
+        <CardFooter>
+          <Sheet open={viewAllOpen} onOpenChange={setViewAllOpen}>
+            <SheetTrigger asChild>
+              <Button variant="subtle">
+                View all <LucideIcon.TableOfContents />
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="overflow-y-auto pt-0 sm:max-w-[420px]">
+              <SheetHeader className="sticky top-0 z-40 -mx-6 bg-surface-elevated/60 p-6 backdrop-blur">
+                <SheetTitle>{title}</SheetTitle>
+                <SheetDescription>{description}</SheetDescription>
+              </SheetHeader>
+              <Rows rows={rows} onSelect={selectFromSheet} />
+            </SheetContent>
+          </Sheet>
+        </CardFooter>
       )}
-    </CardContent>
-    {rows && rows.length > PREVIEW_ROWS && (
-      <CardFooter>
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="subtle">
-              View all <LucideIcon.TableOfContents />
-            </Button>
-          </SheetTrigger>
-          <SheetContent className="overflow-y-auto pt-0 sm:max-w-[420px]">
-            <SheetHeader className="sticky top-0 z-40 -mx-6 bg-surface-elevated/60 p-6 backdrop-blur">
-              <SheetTitle>{title}</SheetTitle>
-              <SheetDescription>{description}</SheetDescription>
-            </SheetHeader>
-            <Rows rows={rows} />
-          </SheetContent>
-        </Sheet>
-      </CardFooter>
-    )}
-  </Card>
-);
+    </Card>
+  );
+};
 
 export default CommentsTopList;

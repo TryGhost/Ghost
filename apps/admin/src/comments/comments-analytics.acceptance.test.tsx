@@ -6,6 +6,11 @@ import {
   currentRoute,
   fakeAdminEndpoint,
   fakeComments,
+  fakeMembers,
+  fakePages,
+  fakePosts,
+  member,
+  post,
   renderAdminApp,
 } from '@test-utils/acceptance';
 import { commentsScreen } from './comments.screen';
@@ -33,11 +38,7 @@ function fakeCommentsStats() {
     ],
   });
   const topPostsApi = fakeAdminEndpoint('GET', /^\/stats\/comments\/top-posts\/\?/, {
-    stats: Array.from({ length: 7 }, (_, index) => ({
-      post_id: `post${index}`,
-      title: `Popular post ${index + 1}`,
-      comments: 10 - index,
-    })),
+    stats: topPosts.map(({ id, title }, index) => ({ post_id: id, title, comments: 10 - index })),
   });
   const topCommentersApi = fakeAdminEndpoint('GET', /^\/stats\/comments\/top-commenters\/\?/, {
     stats: [
@@ -46,6 +47,17 @@ function fakeCommentsStats() {
     ],
   });
   return { overviewApi, topPostsApi, topCommentersApi };
+}
+
+const topPosts = Array.from({ length: 7 }, (_, index) =>
+  post({ id: `post${index}`, title: `Popular post ${index + 1}` }),
+);
+
+/** The list's filter chips look up post and member names for the ids a panel click applies. */
+function fakeFilterLookups() {
+  fakePosts(topPosts);
+  fakePages([]);
+  fakeMembers([member({ id: 'member1', name: 'Regular Reader' })]);
 }
 
 const requestedDays = (url: string) => {
@@ -97,24 +109,54 @@ describe('Comments analytics', () => {
       .toHaveAttribute('aria-selected', 'true');
   });
 
+  it('filters the list to a top post or commenter, one at a time', async () => {
+    const commentsApi = fakeComments([comment()]);
+    fakeCommentsStats();
+    fakeFilterLookups();
+    await renderAdminApp('/comments', { labs });
+
+    await commentsScreen
+      .analyticsTopPosts()
+      .getByRole('button', { name: 'Popular post 1' })
+      .click();
+
+    await expect(commentsApi).toHaveSentFilter(/^post_id:'?post0'?$/);
+
+    await commentsScreen
+      .analyticsTopCommenters()
+      .getByRole('button', { name: 'Regular Reader' })
+      .click();
+
+    // The commenter replaces the post filter rather than narrowing it
+    await expect(commentsApi).toHaveSentFilter(/^member_id:'?member1'?$/);
+  });
+
   it('lists the top 25 in a sheet from View all', async () => {
     fakeComments([comment()]);
     fakeCommentsStats();
+    fakeFilterLookups();
     await renderAdminApp('/comments', { labs });
 
-    const topPosts = commentsScreen.analyticsTopPosts();
-    await expect.element(topPosts).toHaveTextContent('Popular post 5');
-    await expect.element(topPosts.getByText('Popular post 6')).not.toBeInTheDocument();
+    const topPostsCard = commentsScreen.analyticsTopPosts();
+    await expect.element(topPostsCard).toHaveTextContent('Popular post 5');
+    await expect.element(topPostsCard.getByText('Popular post 6')).not.toBeInTheDocument();
 
-    await commentsScreen.analyticsViewAll(topPosts).click();
+    await commentsScreen.analyticsViewAll(topPostsCard).click();
 
-    await expect.element(page.getByRole('dialog').getByText('Popular post 7')).toBeVisible();
+    const viewAll = page.getByRole('dialog');
+    await expect.element(viewAll.getByText('Popular post 7')).toBeVisible();
+
+    await viewAll.getByRole('button', { name: 'Popular post 7' }).click();
+
+    await expect.element(viewAll).not.toBeInTheDocument();
+    await expect.poll(currentRoute).toContain('post_id');
   });
 
   it('opens the panel from the header on narrower screens', async () => {
     await page.viewport(1000, 800);
     fakeComments([comment()]);
     fakeCommentsStats();
+    fakeFilterLookups();
     await renderAdminApp('/comments', { labs });
 
     await expect.element(commentsScreen.analyticsPanel()).not.toBeInTheDocument();
@@ -123,6 +165,14 @@ describe('Comments analytics', () => {
 
     await expect.element(page.getByRole('dialog').getByTestId('comments-analytics')).toBeVisible();
     await expect.element(commentsScreen.analyticsKpiValue('comments')).toHaveTextContent('12');
+
+    await commentsScreen
+      .analyticsTopCommenters()
+      .getByRole('button', { name: 'Regular Reader' })
+      .click();
+
+    await expect.element(commentsScreen.analyticsPanel()).not.toBeInTheDocument();
+    await expect.poll(currentRoute).toContain('member_id');
   });
 
   it('hides itself when Core has no comments stats endpoint', async () => {
