@@ -1,7 +1,11 @@
+import type { NextFunction, Request, Response } from 'express';
+import errors from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
+import { limitService } from '../../services/limits';
+import type { AuthenticatedRequest } from '../principal';
+import type { LoadedApiKey } from './admin';
+
 const models = require('../../models');
-const errors = require('@tryghost/errors');
-const { limitService } = require('../../services/limits');
-const tpl = require('@tryghost/tpl');
 
 const messages = {
   invalidRequest: 'Invalid Request',
@@ -9,7 +13,11 @@ const messages = {
   invalidApiKeyType: 'Invalid API Key type',
 };
 
-const authenticateContentApiKey = async function authenticateContentApiKey(req, res, next) {
+export const authenticateContentApiKey = async function authenticateContentApiKey(
+  req: Request & AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+) {
   // allow fallthrough to other auth methods or final ensureAuthenticated check
   if (!req.query || !req.query.key) {
     return next();
@@ -27,7 +35,10 @@ const authenticateContentApiKey = async function authenticateContentApiKey(req, 
   const key = req.query.key;
 
   try {
-    const apiKey = await models.ApiKey.findOne({ secret: key }, { withRelated: ['integration'] });
+    const apiKey: LoadedApiKey | null = await models.ApiKey.findOne(
+      { secret: key },
+      { withRelated: ['integration'] },
+    );
 
     if (!apiKey) {
       return next(
@@ -51,7 +62,7 @@ const authenticateContentApiKey = async function authenticateContentApiKey(req, 
     if (
       limitService.isLimited('customIntegrations') &&
       apiKey.relations.integration &&
-      !['internal', 'core'].includes(apiKey.relations.integration.get('type'))
+      !['internal', 'core'].includes(apiKey.relations.integration.get('type') as string)
     ) {
       // NOTE: using "checkWouldGoOverLimit" instead of "checkIsOverLimit" here because flag limits don't have
       //       a concept of measuring if the limit has been surpassed
@@ -66,11 +77,7 @@ const authenticateContentApiKey = async function authenticateContentApiKey(req, 
     if (err instanceof errors.HostLimitError) {
       next(err);
     } else {
-      next(new errors.InternalServerError({ err }));
+      next(new errors.InternalServerError({ err: err as Error }));
     }
   }
-};
-
-module.exports = {
-  authenticateContentApiKey,
 };

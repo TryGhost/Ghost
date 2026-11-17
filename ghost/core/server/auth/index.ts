@@ -1,13 +1,18 @@
-module.exports = {
-  get authorize() {
+// NOTE: this file must contain no export other than the `export =` below; see
+// shared/config/index.ts. Each getter loads its module on first use.
+
+// @ts-expect-error ignore erasableSyntaxOnly here: js endpoints require() this
+// module and read its getters straight off module.exports.
+export = {
+  get authorize(): typeof import('./authorize') {
     return require('./authorize');
   },
 
-  get authenticate() {
+  get authenticate(): typeof import('./authenticate').default {
     return require('./authenticate').default;
   },
 
-  get session() {
+  get session(): typeof import('./session').default {
     return require('./session').default;
   },
 
@@ -15,21 +20,21 @@ module.exports = {
     return require('./setup');
   },
 
-  get passwordreset() {
+  get passwordreset(): typeof import('./passwordreset').default {
     return require('./passwordreset').default;
   },
 
-  get resetAuthentication() {
+  get resetAuthentication(): typeof import('./reset-authentication').default {
     return require('./reset-authentication').default;
   },
 
   // Loads Better Auth; only boot under auth:engine better-auth should touch it
-  get betterAuth() {
+  get betterAuth(): typeof import('./better-auth').default {
     return require('./better-auth').default;
   },
 
   // Better Auth's session revocation; only under auth:engine better-auth
-  get staffSessions() {
+  get staffSessions(): ReturnType<typeof import('./better-auth/staff-sessions').default> {
     return require('./better-auth/staff-sessions').default();
   },
 };

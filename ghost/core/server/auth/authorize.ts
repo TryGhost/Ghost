@@ -1,5 +1,9 @@
-const errors = require('@tryghost/errors');
-const tpl = require('@tryghost/tpl');
+import type { NextFunction, Request, Response } from 'express';
+import errors from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
+import type { AuthenticatedRequest } from './principal';
+
+type AuthorizeRequest = Request & AuthenticatedRequest & { member?: unknown };
 
 const messages = {
   authorizationFailed: 'Authorization failed',
@@ -9,39 +13,35 @@ const messages = {
     'Unable to determine the authenticated user or integration. Check that cookies are being passed through if using session authentication.',
 };
 
-const authorize = {
-  authorizeContentApi(req, res, next) {
-    const hasApiKey = req.api_key && req.api_key.id;
-    const hasMember = req.member;
-    if (hasApiKey) {
-      return next();
-    }
-    if (hasMember) {
-      return next();
-    }
+export function authorizeContentApi(req: AuthorizeRequest, res: Response, next: NextFunction) {
+  const hasApiKey = req.api_key && req.api_key.id;
+  const hasMember = req.member;
+  if (hasApiKey) {
+    return next();
+  }
+  if (hasMember) {
+    return next();
+  }
+  return next(
+    new errors.NoPermissionError({
+      message: tpl(messages.authorizationFailed),
+      context: tpl(messages.missingContentMemberOrIntegration),
+    }),
+  );
+}
+
+export function authorizeAdminApi(req: AuthorizeRequest, res: Response, next: NextFunction) {
+  const hasUser = req.user && req.user.id;
+  const hasApiKey = req.api_key && req.api_key.id;
+
+  if (hasUser || hasApiKey) {
+    return next();
+  } else {
     return next(
       new errors.NoPermissionError({
         message: tpl(messages.authorizationFailed),
-        context: tpl(messages.missingContentMemberOrIntegration),
+        context: tpl(messages.missingAdminUserOrIntegration),
       }),
     );
-  },
-
-  authorizeAdminApi(req, res, next) {
-    const hasUser = req.user && req.user.id;
-    const hasApiKey = req.api_key && req.api_key.id;
-
-    if (hasUser || hasApiKey) {
-      return next();
-    } else {
-      return next(
-        new errors.NoPermissionError({
-          message: tpl(messages.authorizationFailed),
-          context: tpl(messages.missingAdminUserOrIntegration),
-        }),
-      );
-    }
-  },
-};
-
-module.exports = authorize;
+  }
+}
