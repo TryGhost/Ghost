@@ -263,7 +263,7 @@ export interface SaveEngine {
   reauthSucceeded(): void;
   reauthAbandoned(): void;
   /** Validates recovery, calls the synchronous non-throwing adoption, then notifies subscribers. */
-  contentReloaded(updatedAt?: string, adopt?: () => void): boolean;
+  contentReloaded(updatedAt?: string, adopt?: () => void, discardedVersion?: number): boolean;
   leaveRequested(): Promise<LeaveDecision>;
   /** Also aborts the in-flight signal; a response arriving afterwards is never reconciled. */
   dispose(): void;
@@ -1145,8 +1145,15 @@ export function createSaveEngine<
 
   // A server document that no longer carries the rejected updated_at ends the
   // halt the collision caused. A candidate lets the caller check before replacing it.
-  function contentReloaded(updatedAt?: string, adopt?: () => void): boolean {
-    const candidate = updatedAt ?? readSnapshot()?.updatedAt;
+  function contentReloaded(
+    updatedAt?: string,
+    adopt?: () => void,
+    discardedVersion?: number,
+  ): boolean {
+    const snapshot = readSnapshot();
+    const candidate = updatedAt ?? snapshot?.updatedAt;
+    const discardConfirmed =
+      discardedVersion !== undefined && snapshot?.version === discardedVersion;
     if (
       adopting ||
       disposed ||
@@ -1154,10 +1161,19 @@ export function createSaveEngine<
       inFlight ||
       frozen ||
       !isCollisionToken(candidate) ||
-      // Without a collision to recover from, only a post with nothing unsaved is replaced.
-      (conflict ? candidate === conflict.updatedAt : readSnapshot()?.isDirty !== false)
+      (discardedVersion !== undefined && !discardConfirmed) ||
+      // Dirty content needs a collision or explicit consent for this exact edit version.
+      (conflict
+        ? candidate === conflict.updatedAt
+        : snapshot?.isDirty !== false && !discardConfirmed)
     ) {
       return false;
+    }
+    // Discarded draft work must not leave a debounce or timed save armed.
+    if (discardConfirmed) {
+      const waiters: Waiter[] = [];
+      clearTimers(waiters);
+      settle(waiters, dropped('clean'));
     }
     // Consume recovery before adoption can notify its own subscribers and reenter.
     conflict = null;

@@ -398,6 +398,11 @@ close and reopen whose own read fails cannot resurrect the version it first read
 A reload whose read comes back after the writer has left the editor changes
 nothing, since the query by then belongs to whichever editor opens the post next.
 
+The presence warning reuses the session’s reload path. Its explicit discard
+confirmation captures the current edit version before reading the server and
+passes it through `recordReloaded`; a changed edit version refuses adoption, so
+work written while the read is in flight is not discarded by earlier consent.
+
 The screen's query also refetches on its own, after every save that lands and
 on reconnect once it is stale. Opening a post always sends a read of its own,
 even while a copy from an earlier visit is cached: the session saves against the

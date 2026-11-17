@@ -103,6 +103,50 @@ describe('createSaveEngine', () => {
     });
   });
 
+  describe('a confirmed discard before a collision', () => {
+    it('replaces only the confirmed edit version and cancels its pending saves', async () => {
+      const h = setup();
+      const autosave = h.engine.dispatch('autosave');
+      const confirmedVersion = h.snapshot.version;
+      expect(h.engine.contentReloaded(FUTURE)).toBe(false);
+
+      expect(
+        h.engine.contentReloaded(
+          FUTURE,
+          () => h.patch({ isDirty: false, updatedAt: FUTURE }),
+          confirmedVersion,
+        ),
+      ).toBe(true);
+
+      await expect(autosave).resolves.toEqual({ kind: 'dropped', reason: 'clean' });
+      await vi.advanceTimersByTimeAsync(TIMED_SAVE_INTERVAL_MS);
+      expect(h.execute).not.toHaveBeenCalled();
+      expect(h.engine.getState()).toEqual({ kind: 'idle' });
+    });
+
+    it('refuses consent for an edit version that has since changed', () => {
+      const h = setup();
+      const confirmedVersion = h.snapshot.version;
+      h.edit();
+      const adopt = vi.fn();
+
+      expect(h.engine.contentReloaded(FUTURE, adopt, confirmedVersion)).toBe(false);
+      expect(adopt).not.toHaveBeenCalled();
+      expect(h.snapshot.isDirty).toBe(true);
+    });
+
+    it('does not let a confirmed discard bypass the rejected collision token', async () => {
+      const h = setup();
+      void h.engine.dispatch('explicit');
+      await h.fail(conflict);
+      const adopt = vi.fn();
+
+      expect(h.engine.contentReloaded(BASELINE, adopt, h.snapshot.version)).toBe(false);
+      expect(adopt).not.toHaveBeenCalled();
+      expect(h.engine.getState().kind).toBe('conflict');
+    });
+  });
+
   describe('collisions', () => {
     // Two engines over the same post; the fake server accepts only the updated_at it last returned.
     it('gives the second writer a typed conflict that halts its automatic saves until it reloads', async () => {

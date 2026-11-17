@@ -513,7 +513,7 @@ describe('Post editor saving', () => {
     });
     await expect
       .element(editorScreen.conflictBanner())
-      .toHaveTextContent('Someone else is editing this post');
+      .toHaveTextContent('Someone else saved changes. Your changes weren’t saved.');
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more again');
   });
 
@@ -801,7 +801,7 @@ describe('Post editor saving', () => {
 
     await expect
       .element(editorScreen.conflictBanner())
-      .toHaveTextContent('Someone else is editing this post');
+      .toHaveTextContent('Someone else saved changes. Your changes weren’t saved.');
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and more');
 
     await appendToBody(' again');

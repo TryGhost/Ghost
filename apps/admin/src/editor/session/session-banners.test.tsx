@@ -8,9 +8,20 @@ import { toast } from 'sonner';
 import type { PendingSave, SaveEngineState, SaveError } from '@/editor/engine/save-engine';
 import { reportShownAlert } from '@/editor/report-error';
 import { SessionBanners } from './session-banners';
+import type { ActivePresence, PresenceResourceType } from '@/shared/presence/presence-api';
 import type { ReloadOutcome } from './use-editor-session';
 
 vi.mock('@/editor/report-error', () => ({ reportShownAlert: vi.fn() }));
+
+const { staff } = vi.hoisted(() => ({
+  staff: { users: [{ id: 'alex', name: 'Alex Smith', profile_image: null }] },
+}));
+vi.mock('@tryghost/admin-x-framework/api/users', () => ({
+  useBrowseUsers: () => ({ data: { users: staff.users } }),
+}));
+const ACTIVE: ActivePresence[] = [
+  { userId: 'alex', resourceId: 'post', resourceType: 'post', ts: Date.now() },
+];
 
 vi.mock('@tryghost/admin-x-framework/api/config', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@tryghost/admin-x-framework/api/config')>()),
@@ -18,6 +29,8 @@ vi.mock('@tryghost/admin-x-framework/api/config', async (importOriginal) => ({
 }));
 
 interface BannerOverrides {
+  activePresence?: ActivePresence[];
+  resourceType?: PresenceResourceType;
   pendingSave?: PendingSave;
   newerVersionAvailable?: boolean;
   hasUnsavedContent?: () => boolean;
@@ -28,10 +41,12 @@ interface BannerOverrides {
 function renderBanners(state: SaveEngineState, overrides: BannerOverrides = {}) {
   return render(
     <SessionBanners
+      activePresence={overrides.activePresence}
       contentText={overrides.contentText ?? (() => '')}
       hasUnsavedContent={overrides.hasUnsavedContent ?? (() => false)}
       newerVersionAvailable={overrides.newerVersionAvailable}
       pendingSave={overrides.pendingSave}
+      resourceType={overrides.resourceType}
       state={state}
       onReload={overrides.onReload ?? (() => Promise.resolve('reloaded'))}
     />,
@@ -114,15 +129,96 @@ describe('SessionBanners', () => {
   it('names a collision and offers both ways out', () => {
     renderBanners(CONFLICT);
 
-    expect(screen.getByRole('alert')).toHaveTextContent('Someone else is editing this post');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Someone else saved changes. Your changes weren’t saved.',
+    );
     expect(screen.getByRole('alert')).toHaveClass('bg-state-danger/10');
     expect(screen.getByRole('alert')).not.toHaveClass('bg-destructive');
     expect(screen.getByRole('alert').firstElementChild).toHaveClass('justify-center', 'flex-wrap');
-    expect(
-      screen.getByText(/Someone else is editing this post/).closest('.text-center'),
-    ).not.toBeNull();
+    expect(screen.getByText(/Someone else saved changes/).closest('.text-center')).not.toBeNull();
     expect(screen.getByRole('button', { name: 'Reload' })).toHaveClass('bg-destructive');
+    expect(screen.getByRole('button', { name: 'Copy content' })).toHaveClass('bg-primary');
+  });
+
+  it('warns about presence before a save and offers copy before a guarded reload', async () => {
+    const writeText = vi.fn(() => Promise.resolve());
+    vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
+    const onReload = vi.fn((): Promise<ReloadOutcome> => Promise.resolve('reloaded'));
+    renderBanners(
+      { kind: 'idle' },
+      {
+        activePresence: ACTIVE,
+        contentText: () => 'My unsaved words',
+        hasUnsavedContent: () => true,
+        onReload,
+      },
+    );
+
+    const warning = screen.getByRole('status', { name: 'Other editors' });
+    expect(warning).toHaveTextContent(
+      'Alex Smith also has this post open. Your changes may not save.',
+    );
+    expect(warning).toHaveAttribute('data-variant', 'warning');
+    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual([
+      'Copy content',
+      'Reload',
+    ]);
+    fireEvent.click(screen.getByRole('button', { name: 'Copy content' }));
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith('My unsaved words'));
+    fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
+    expect(await screen.findByTestId(editorConflictReloadConfirm)).toBeVisible();
+    expect(onReload).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Discard and reload' }));
+    expect(onReload).toHaveBeenCalledTimes(1);
+  });
+
+  it('warns even when the staff list cannot name someone present', () => {
+    renderBanners({ kind: 'idle' }, { activePresence: [{ ...ACTIVE[0], userId: 'unknown' }] });
+    expect(screen.getByRole('status', { name: 'Other editors' })).toHaveTextContent(
+      'Someone else also has this post open.',
+    );
+  });
+
+  it('names several people with page wording and the plural verb', () => {
+    staff.users.push({ id: 'sam', name: 'Sam Kim', profile_image: null });
+    try {
+      renderBanners(
+        { kind: 'idle' },
+        {
+          resourceType: 'page',
+          activePresence: [...ACTIVE, { ...ACTIVE[0], userId: 'sam' }],
+        },
+      );
+      expect(screen.getByRole('status', { name: 'Other editors' })).toHaveTextContent(
+        'Alex Smith and Sam Kim also have this page open.',
+      );
+    } finally {
+      staff.users.pop();
+    }
+  });
+
+  it('keeps the confirmed conflict after presence disappears', () => {
+    const { rerender } = renderBanners(CONFLICT, { activePresence: ACTIVE });
+    expect(screen.queryByRole('status', { name: 'Other editors' })).not.toBeInTheDocument();
+    rerender(
+      <SessionBanners
+        activePresence={[]}
+        contentText={() => ''}
+        hasUnsavedContent={() => false}
+        state={CONFLICT}
+        onReload={() => Promise.resolve('reloaded')}
+      />,
+    );
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Someone else saved changes. Your changes weren’t saved.',
+    );
     expect(screen.getByRole('button', { name: 'Copy content' })).toBeVisible();
+  });
+
+  it('shows a known newer version instead of presence', () => {
+    renderBanners({ kind: 'idle' }, { activePresence: ACTIVE, newerVersionAvailable: true });
+    expect(screen.getByTestId(editorNewerVersionNotice)).toBeVisible();
+    expect(screen.queryByRole('status', { name: 'Other editors' })).not.toBeInTheDocument();
   });
 
   it('reloads without asking when nothing local is unsaved', () => {
@@ -166,7 +262,9 @@ describe('SessionBanners', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
 
     await waitFor(() => expect(error).toHaveBeenCalledWith('Couldn’t reload this post'));
-    expect(screen.getByRole('alert')).toHaveTextContent('Someone else is editing this post');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Someone else saved changes. Your changes weren’t saved.',
+    );
     expect(screen.getByRole('button', { name: 'Copy content' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Reload' })).toBeVisible();
   });
@@ -265,7 +363,9 @@ describe('SessionBanners', () => {
   it('gives way to a collision', () => {
     renderBanners(CONFLICT, { newerVersionAvailable: true });
 
-    expect(screen.getByRole('alert')).toHaveTextContent('Someone else is editing this post');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Someone else saved changes. Your changes weren’t saved.',
+    );
     expect(screen.queryByTestId(editorNewerVersionNotice)).not.toBeInTheDocument();
   });
 
@@ -317,7 +417,7 @@ describe('SessionBanners reporting', () => {
 
     expect(reportShownAlert).toHaveBeenCalledTimes(1);
     expect(reportShownAlert).toHaveBeenCalledWith(
-      expect.stringContaining('Someone else is editing this post'),
+      expect.stringContaining('Someone else saved changes. Your changes weren’t saved.'),
       CONFLICT_ERROR,
     );
   });

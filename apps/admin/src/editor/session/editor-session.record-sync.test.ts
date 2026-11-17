@@ -251,6 +251,30 @@ describe('createEditorSession', () => {
         expect(session.getView().newerVersionAvailable).toBe(false);
       });
 
+      it('replaces unsaved content when that exact edit version was confirmed for discard', () => {
+        const { session } = sessionHarness({ record: record(), baseline: record().lexical });
+        session.patchLexical(body('My words'));
+        const confirmedVersion = session.getSaveSnapshot().version;
+
+        expect(session.recordReloaded(theirs(), confirmedVersion)).toBe(true);
+        expect(session.getLiveLexical()).toBe(theirs().lexical);
+        expect(session.getSaveSnapshot()).toMatchObject({
+          updatedAt: THEIR_SAVE_AT,
+          isDirty: false,
+        });
+      });
+
+      it('keeps edits made while a confirmed reload was reading the server', () => {
+        const { session } = sessionHarness({ record: record(), baseline: record().lexical });
+        session.patchLexical(body('My words'));
+        const confirmedVersion = session.getSaveSnapshot().version;
+        session.patchLexical(body('Words added during reload'));
+
+        expect(session.recordReloaded(theirs(), confirmedVersion)).toBe(false);
+        expect(session.getLiveLexical()).toBe(JSON.stringify(body('Words added during reload')));
+        expect(session.getSaveSnapshot()).toMatchObject({ updatedAt: LOADED_AT, isDirty: true });
+      });
+
       it('and never reloads it over unsaved work', () => {
         const { session } = sessionHarness({ record: record(), baseline: record().lexical });
         session.patchLexical(body('My words'));

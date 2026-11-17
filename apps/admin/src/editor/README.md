@@ -219,7 +219,13 @@ save, its banner offers the ways out instead.
 What the status line cannot hold has a banner above the header, which moves
 down with the settings toggle beneath it: a collision, a deleted post, lost
 access and a crashed editor, each with Reload or Copy content, and a newer
-version saved elsewhere. Changes held back by a field's rule have no banner;
+version saved elsewhere. With `editorPresence` enabled, another staff member
+having the post or page open shows a non-destructive warning with avatars and
+Copy content followed by Reload. Both actions use the existing title/body
+plain-text copy and unsaved-changes reload confirmation. Save collisions,
+terminal failures and known newer versions take priority over presence; a
+collision remains visible after the other staff leave. Presence grants no
+editing ownership and does not make simultaneous edits safe. Changes held back by a field's rule have no banner;
 the field names its rule, and the status line does once a save the writer asks
 for is refused over it.
 

@@ -13,7 +13,6 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { AdminLink } from '@/shared/admin-link';
 import { usePresence } from '@/shared/presence/use-presence';
-import { PresenceAvatars } from '@/shared/presence/presence-avatars';
 import { getPostListReturnUrl } from '@/posts/api';
 import { reloadAdmin } from '@/auth/api';
 import { NotFound } from '@/shared/not-found';
@@ -445,10 +444,12 @@ function EditorContent({
           settings toggle floating on it move down together. */}
       <Box className="shrink-0">
         <SessionBanners
+          activePresence={showPresence ? presence.active : undefined}
           contentText={session.contentText}
           hasUnsavedContent={session.hasUnsavedContent}
           newerVersionAvailable={session.newerVersionAvailable}
           pendingSave={session.pendingSave}
+          resourceType={postType}
           state={session.state}
           onReload={session.reload}
         />
@@ -504,9 +505,6 @@ function EditorContent({
               ) : null}
               <Box className="col-start-3 ml-auto" data-writing-focus={writingFocus}>
                 <PageHeader.ActionGroup className="gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
-                  {showPresence ? (
-                    <PresenceAvatars active={presence.active} resourceType={postType} />
-                  ) : null}
                   <EditorHeaderActions
                     bottomBar={bottomBar}
                     currentUser={currentUser}

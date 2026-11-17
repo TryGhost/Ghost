@@ -202,7 +202,7 @@ describe('Post editor refetch', () => {
     expect(submittedPost(shared.saveApi)).toMatchObject({ updated_at: MY_SAVE_AT });
     await expect
       .element(editorScreen.conflictBanner())
-      .toHaveTextContent('Someone else is editing this post');
+      .toHaveTextContent('Someone else saved changes. Your changes weren’t saved.');
     await expect.element(editorScreen.titleInput()).toHaveValue('My title');
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and mine');
     expect(shared.stored()).toMatchObject({ title: 'Their title', updated_at: THEIR_SAVE_AT });
@@ -571,7 +571,7 @@ describe('Post editor newer version notice', () => {
     expect(submittedPost(shared.saveApi)).toMatchObject({ updated_at: LOADED_AT });
     await expect
       .element(editorScreen.conflictBanner())
-      .toHaveTextContent('Someone else is editing this post');
+      .toHaveTextContent('Someone else saved changes. Your changes weren’t saved.');
     await expect(editorScreen.newerVersionNotice()).toHaveCount(0);
     await expect.element(editorScreen.body()).toHaveTextContent('Hello from React and mine');
   });

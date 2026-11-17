@@ -215,7 +215,7 @@ export interface EditorSession {
   getLiveLexical: () => string | null;
   recordRefetched: (record: EditorRecord) => boolean;
   /** Replaces the whole document when the server copy safely advances this session. */
-  recordReloaded: (record: EditorRecord) => boolean;
+  recordReloaded: (record: EditorRecord, discardedVersion?: number) => boolean;
   reauthSucceeded: () => void;
   reauthAbandoned: () => void;
   leaveRequested: () => Promise<LeaveDecision>;
@@ -1153,7 +1153,7 @@ export function createEditorSession({
 
     // A document boundary, not a refetch: the tracker reloads, so the baseline
     // the hidden instance reported for the old document is discarded with it.
-    recordReloaded: (next) => {
+    recordReloaded: (next, discardedVersion) => {
       // The read outlives a session the writer navigated away from.
       const updatedAt = next.updated_at ?? '';
       if (
@@ -1165,24 +1165,28 @@ export function createEditorSession({
         return false;
       }
       if (
-        !engine.contentReloaded(updatedAt, () => {
-          identity = { id: next.id, updatedAt };
-          status = next.status ?? 'draft';
-          publishedAt = next.published_at ?? null;
-          latestRevision = latestRevisionOf(next);
-          live = projectionOf(next);
-          stagedPublishedAt = null;
-          publishedAtEditedAt = 0;
-          pendingSlugEdits.clear();
-          writerEdits.clear();
-          inFlightSince = null;
-          version += 1;
-          tracker.load(identity.id, live);
-          slug.reset();
-          // The machine may notify subscribers, so the document boundary must be
-          // complete first and no later mutation may overwrite a subscriber edit.
-          machine.loaded({ slug: live.slug, title: live.title });
-        })
+        !engine.contentReloaded(
+          updatedAt,
+          () => {
+            identity = { id: next.id, updatedAt };
+            status = next.status ?? 'draft';
+            publishedAt = next.published_at ?? null;
+            latestRevision = latestRevisionOf(next);
+            live = projectionOf(next);
+            stagedPublishedAt = null;
+            publishedAtEditedAt = 0;
+            pendingSlugEdits.clear();
+            writerEdits.clear();
+            inFlightSince = null;
+            version += 1;
+            tracker.load(identity.id, live);
+            slug.reset();
+            // The machine may notify subscribers, so the document boundary must be
+            // complete first and no later mutation may overwrite a subscriber edit.
+            machine.loaded({ slug: live.slug, title: live.title });
+          },
+          discardedVersion,
+        )
       ) {
         return false;
       }

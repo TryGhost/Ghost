@@ -97,7 +97,7 @@ export interface EditorSessionHandle {
   /** The unsaved title and body as plain text, for the writer to keep. */
   contentText: () => string;
   /** Replaces the document with the server's copy, or says why it could not. */
-  reload: () => Promise<ReloadOutcome>;
+  reload: (options?: { discardUnsaved?: boolean }) => Promise<ReloadOutcome>;
   /** A later version was saved elsewhere, and a reload onto it would lose nothing. */
   newerVersionAvailable: boolean;
   /** Puts a revision's content back into the editor and saves it; true once persisted. */
@@ -451,59 +451,67 @@ export function useEditorSession({
   }, [saved, session, state]);
 
   // Its own request: a query refetch would land before the session could refuse the copy.
-  const reload = useCallback(async (): Promise<ReloadOutcome> => {
-    if (!persistedId) {
-      return 'failed';
-    }
+  const reload = useCallback(
+    async (options?: { discardUnsaved?: boolean }): Promise<ReloadOutcome> => {
+      if (!persistedId) {
+        return 'failed';
+      }
 
-    // The writer may leave while the read is out. Whatever it finds no longer
-    // concerns them, and the query belongs to whatever editor opens the post next:
-    // cancelling its opening read would revert it to the copy cached before that read.
-    const left = () => session.getState().kind === 'disposed';
-    const { url, queryKey } = editorRead(postType, persistedId);
-    let data: EditorReadResponse;
-    try {
-      data = await fetchApi<EditorReadResponse>(url, EDITOR_REQUEST_OPTIONS);
-    } catch (error) {
+      // A confirmation authorizes only the work present before the read starts.
+      const discardedVersion = options?.discardUnsaved
+        ? session.getSaveSnapshot().version
+        : undefined;
+
+      // The writer may leave while the read is out. Whatever it finds no longer
+      // concerns them, and the query belongs to whatever editor opens the post next:
+      // cancelling its opening read would revert it to the copy cached before that read.
+      const left = () => session.getState().kind === 'disposed';
+      const { url, queryKey } = editorRead(postType, persistedId);
+      let data: EditorReadResponse;
+      try {
+        data = await fetchApi<EditorReadResponse>(url, EDITOR_REQUEST_OPTIONS);
+      } catch (error) {
+        if (left()) {
+          return 'abandoned';
+        }
+        return error instanceof APIError && error.response?.status === 404 ? 'gone' : 'failed';
+      }
       if (left()) {
         return 'abandoned';
       }
-      return error instanceof APIError && error.response?.status === 404 ? 'gone' : 'failed';
-    }
-    if (left()) {
-      return 'abandoned';
-    }
 
-    let fresh = recordIn(postType, data);
-    if (!fresh) {
-      return 'gone';
-    }
+      let fresh = recordIn(postType, data);
+      if (!fresh) {
+        return 'gone';
+      }
 
-    // Before adopting: an older refetch must not land after the seed below, and an
-    // edit made while this waits must reach the session's own refusal.
-    await queryClient.cancelQueries({ queryKey, exact: true });
+      // Before adopting: an older refetch must not land after the seed below, and an
+      // edit made while this waits must reach the session's own refusal.
+      await queryClient.cancelQueries({ queryKey, exact: true });
 
-    // A normal detail refetch may have completed while this isolated reload was
-    // in flight. Never replace a version we already know is newer.
-    const cachedData = queryClient.getQueryData<EditorReadResponse>(queryKey);
-    const cached = recordIn(postType, cachedData);
-    if (cachedData && isLaterVersion(cached, fresh)) {
-      data = cachedData;
-      fresh = cached;
-    }
+      // A normal detail refetch may have completed while this isolated reload was
+      // in flight. Never replace a version we already know is newer.
+      const cachedData = queryClient.getQueryData<EditorReadResponse>(queryKey);
+      const cached = recordIn(postType, cachedData);
+      if (cachedData && isLaterVersion(cached, fresh)) {
+        data = cachedData;
+        fresh = cached;
+      }
 
-    if (!session.recordReloaded(fresh)) {
-      return 'failed';
-    }
-    // The loader owns the same query. Seed it with the accepted document so a
-    // quick close and reopen cannot resurrect the stale version it first read.
-    queryClient.setQueryData(queryKey, data);
-    setTitle(fresh.title === DEFAULT_TITLE ? '' : fresh.title);
-    setInitialLexical(fresh.lexical ?? null);
-    setLoadedRecord(fresh);
-    setContentKey((key) => key + 1);
-    return 'reloaded';
-  }, [fetchApi, persistedId, postType, queryClient, session]);
+      if (!session.recordReloaded(fresh, discardedVersion)) {
+        return 'failed';
+      }
+      // The loader owns the same query. Seed it with the accepted document so a
+      // quick close and reopen cannot resurrect the stale version it first read.
+      queryClient.setQueryData(queryKey, data);
+      setTitle(fresh.title === DEFAULT_TITLE ? '' : fresh.title);
+      setInitialLexical(fresh.lexical ?? null);
+      setLoadedRecord(fresh);
+      setContentKey((key) => key + 1);
+      return 'reloaded';
+    },
+    [fetchApi, persistedId, postType, queryClient, session],
+  );
 
   // The editor surface re-seeds from the restored content in one commit with the
   // record it was saved onto, so the feature image is read back from that record.

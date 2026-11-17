@@ -120,11 +120,12 @@ describe('presence polling', () => {
     fakeEditorChrome();
     fakePostRead('Older backend');
     const presence = fakePresence(404);
-    await renderAdminApp(`/editor/post/${POST_ID}`, POLLING_ON);
+    await renderAdminApp(`/editor/post/${POST_ID}`, INDICATORS_ON);
     await expect
       .element(page.getByRole('textbox', { name: 'Post title', exact: true }))
       .toHaveValue('Older backend');
     await expect.poll(() => presence.requests.length).toBe(1);
+    await expect(page.getByRole('status', { name: 'Other editors' })).toHaveCount(0);
   });
 
   it('polls the rows of a list reached by leaving the editor', async () => {
