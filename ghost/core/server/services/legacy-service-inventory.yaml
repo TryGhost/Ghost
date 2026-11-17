@@ -5805,7 +5805,7 @@ services:
       sources:
         - core/server/services/permissions/index.js
         - core/server/services/permissions/role-permissions.ts
-        - core/server/services/permissions/can-this.js
+        - core/server/services/permissions/can-this.ts
         - core/server/models/user.js
       dependencies:
         complexity: complex
@@ -5823,8 +5823,8 @@ services:
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
           - core/server/services/permissions/index.js
-          - core/server/services/permissions/can-this.js
-          - core/server/services/permissions/providers.js
+          - core/server/services/permissions/can-this.ts
+          - core/server/services/permissions/providers.ts
           - core/server/models/user.js
           - core/server/api/endpoints/utils/permissions.js
     entryPoints:
@@ -5847,7 +5847,7 @@ services:
           shapes, not descriptors or detached exports.
         sources:
           - core/server/services/permissions/index.js
-          - core/server/services/permissions/can-this.js
+          - core/server/services/permissions/can-this.ts
           - core/server/services/permissions/parse-context.js
           - core/server/models/post.js
         tests:
@@ -5863,8 +5863,8 @@ services:
           built from the static data; import purity and provider-query timing are source-only.
         sources:
           - core/server/services/permissions/index.js
-          - core/server/services/permissions/can-this.js
-          - core/server/services/permissions/providers.js
+          - core/server/services/permissions/can-this.ts
+          - core/server/services/permissions/providers.ts
           - core/server/services/permissions/role-permissions.ts
         tests:
           - test/unit/server/services/permissions/index.test.js
@@ -5900,7 +5900,7 @@ services:
           including before database setup, though handlers still need the model registry and
           database to load user/key permissions.
         sources:
-          - core/server/services/permissions/can-this.js
+          - core/server/services/permissions/can-this.ts
           - core/server/services/permissions/role-permissions.ts
         tests:
           - test/unit/server/services/permissions/index.test.js
@@ -5912,8 +5912,8 @@ services:
           load fresh user/key data. These retention contracts are source-only.
         sources:
           - core/server/services/permissions/role-permissions.ts
-          - core/server/services/permissions/can-this.js
-          - core/server/services/permissions/providers.js
+          - core/server/services/permissions/can-this.ts
+          - core/server/services/permissions/providers.ts
         tests: []
       configuration:
         summary: >-
@@ -5929,8 +5929,8 @@ services:
           staff-key precedence; mixed internal/content-key contexts and every model rule are untested.
         sources:
           - core/server/services/permissions/parse-context.js
-          - core/server/services/permissions/providers.js
-          - core/server/services/permissions/can-this.js
+          - core/server/services/permissions/providers.ts
+          - core/server/services/permissions/can-this.ts
           - core/server/models/role-utils.ts
           - core/server/models/role.js
           - core/server/models/relations/authors.js
@@ -5950,8 +5950,8 @@ services:
           also contains a user/key. Pending-query shutdown, unused checks and rejection handling in
           that mixed internal path have no focused coverage.
         sources:
-          - core/server/services/permissions/can-this.js
-          - core/server/services/permissions/providers.js
+          - core/server/services/permissions/can-this.ts
+          - core/server/services/permissions/providers.ts
           - core/server/data/db/connection.ts
           - core/server/ghost-server.ts
           - core/server/models/relations/authors.js
@@ -5965,8 +5965,8 @@ services:
           serialization instead omits roles on any check failure. Provider and canThis units pin
           selected missing/inactive/denied and override errors with fake queries, not DB failures.
         sources:
-          - core/server/services/permissions/providers.js
-          - core/server/services/permissions/can-this.js
+          - core/server/services/permissions/providers.ts
+          - core/server/services/permissions/can-this.ts
           - core/server/api/endpoints/utils/permissions.js
           - core/server/api/endpoints/utils/serializers/output/roles.js
         tests:
