@@ -7,7 +7,6 @@ import { classifyFailure, FAILURE_CODES } from './webhook/failures';
 import {
   readEnvelope,
   toWebhookEvent,
-  type CheckoutSessionEventType,
   type StripeEventEnvelope,
   type StripeObject,
   type WebhookEvent,
@@ -22,7 +21,10 @@ export interface WebhookControllerDeps {
     parseWebhook(body: unknown, signature: string): unknown;
   };
   checkoutSessionEventService: {
-    handleEvent(session: StripeObject, type: CheckoutSessionEventType): Promise<unknown>;
+    completeSubscriptionCheckout(session: StripeObject): Promise<unknown>;
+    updateCard(session: StripeObject): Promise<unknown>;
+    completeGiftPurchase(session: StripeObject): Promise<unknown>;
+    recordDonation(session: StripeObject): Promise<unknown>;
   };
   subscriptionEventService: {
     handleSubscriptionEvent(subscription: StripeObject): Promise<unknown>;
@@ -81,8 +83,20 @@ export class WebhookController {
   constructor(deps: WebhookControllerDeps) {
     this.#deps = deps;
     this.#commands = {
-      checkout_session: async ({ session, type }) => {
-        await deps.checkoutSessionEventService.handleEvent(session, type);
+      subscription_checkout: async ({ session }) => {
+        await deps.checkoutSessionEventService.completeSubscriptionCheckout(session);
+        return HANDLED;
+      },
+      card_update_checkout: async ({ session }) => {
+        await deps.checkoutSessionEventService.updateCard(session);
+        return HANDLED;
+      },
+      gift_checkout: async ({ session }) => {
+        await deps.checkoutSessionEventService.completeGiftPurchase(session);
+        return HANDLED;
+      },
+      donation_checkout: async ({ session }) => {
+        await deps.checkoutSessionEventService.recordDonation(session);
         return HANDLED;
       },
       subscription: async ({ type, subscription }) => {
@@ -109,7 +123,7 @@ export class WebhookController {
         await deps.chargeRefundedEventService.handleEvent(charge);
         return HANDLED;
       },
-      unhandled: async () => ({ result: 'ignored', reason: 'unhandled_type' }),
+      ignored: async ({ reason }) => ({ result: 'ignored', reason }),
     };
   }
 
