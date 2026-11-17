@@ -30,8 +30,6 @@ interface KpiTabValueProps {
   /** A rise is bad for this metric, so up reads as danger */
   diffInverted?: boolean;
   diffTooltip?: React.ReactNode;
-  /** Keep the trend badge below the value, for narrow fixed-width tabs. */
-  stacked?: boolean;
   className?: string;
   'data-testid'?: string;
 }
@@ -45,7 +43,6 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
   diffValue,
   diffInverted,
   diffTooltip,
-  stacked,
   className,
   'data-testid': testId,
 }) => {
@@ -84,7 +81,6 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
       className={cn('group', className)}
       label={labelNode}
       size="lg"
-      stacked={stacked}
       trailing={trailing}
       value={value}
       valueTestId={testId}

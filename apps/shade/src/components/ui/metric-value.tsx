@@ -29,14 +29,12 @@ export interface MetricValueProps
   value: string | number;
   /** Optional element (e.g. TrendBadge) rendered after the value. */
   trailing?: React.ReactNode;
-  /** Keep `trailing` below the value at every width, for narrow fixed-width slots. */
-  stacked?: boolean;
   /** Forwarded to the value element for testing. */
   valueTestId?: string;
 }
 
 const MetricValue = React.forwardRef<HTMLDivElement, MetricValueProps>(
-  ({ className, label, value, size = 'md', trailing, stacked, valueTestId, ...props }, ref) => {
+  ({ className, label, value, size = 'md', trailing, valueTestId, ...props }, ref) => {
     return (
       <div ref={ref} className={cn(metricValueRootVariants(), className)} {...props}>
         {label !== undefined && label !== null && (
@@ -44,7 +42,7 @@ const MetricValue = React.forwardRef<HTMLDivElement, MetricValueProps>(
             {label}
           </div>
         )}
-        <div className={cn('flex flex-col items-start gap-2', !stacked && 'lg:flex-row xl:gap-3')}>
+        <div className="flex flex-col items-start gap-2 lg:flex-row xl:gap-3">
           <div
             className={metricValueNumberVariants({ size })}
             data-slot="metric-value-number"

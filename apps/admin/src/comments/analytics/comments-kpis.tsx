@@ -36,9 +36,13 @@ const TABS: Record<CommentsAnalyticsTab, { label: string; color: string; inverte
 
 type ChartRow = { date: string; value: number };
 
-// Each tab is ~78px wide: "9,999" fits under the label, five digits need "12.3k"
-const formatKpi = (value: number) =>
-  value >= 10000 ? abbreviateNumber(value) : formatNumber(value);
+// A rail tab is ~78px: past the trend arrow there is room for "999", "9.9k" or "99k"
+const formatKpi = (value: number) => {
+  if (value >= 10000 && value < 999500) {
+    return `${Math.round(value / 1000)}k`;
+  }
+  return value >= 1000 ? abbreviateNumber(value) : formatNumber(value);
+};
 
 const ChartTooltipContent: React.FC<{
   active?: boolean;
@@ -110,10 +114,9 @@ const CommentsKpis: React.FC<{
                 diffDirection={trend.direction}
                 diffInverted={TABS[key].inverted}
                 diffTooltip={getComparisonText(trend.value, range)}
-                diffValue={trend.value}
+                diffValue=""
                 label={TABS[key].label}
                 value={stats ? formatKpi(stats.totals[key]) : '–'}
-                stacked
               />
             </KpiTabTrigger>
           );
