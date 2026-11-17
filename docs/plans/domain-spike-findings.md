@@ -2003,3 +2003,41 @@ side is proven against the published packages through two seams in
   it**, which decides how hard "shared strictly second" is.
 - **`gx services verify`**, which still needs the branch rebased.
 - MySQL was 8.4 from a registry mirror, not the pinned image.
+
+## Part 2, addendum: the adapter manager branch
+
+Asked after the final report: how `origin/claude/adapter-manager-ghost-separation-147218`
+(two commits on main `bf9aecf`) fits. It was read (inferred), not merged,
+rebased onto or run.
+
+What it does: moves Ghost's adapter registry, search paths and config
+normalisation to `ghost/core/boot/adapters/`, builds the one `AdapterManager`
+there when the file is imported, leaves `server/services/adapter-manager` as a
+re-export, and adds `adapter-manager-composed-in-boot`: only `ghost/core/boot/`
+may import `kernel/adapter-manager/` at runtime.
+
+1. **Does `boot/adapters` map onto `bootstrap/`? Yes, as it is.** It is
+   Ghost's values and the module that holds a once-per-process instance, with
+   the old path kept as an alias: the same three moves this spike made for
+   config and the database. Two differences from the spike's shape. It builds
+   the instance on import and imports the `shared/config` singleton; here it
+   would be an entry in the application definition, built once on first use
+   and handed config. And **the `AdapterManager` class belongs in foundation,
+   not kernel**: it is a class meant to be instantiated once, and its loader
+   reads the disk, which is why `ghost/kernel-purity` reports it (step 7).
+2. **Is the lint rule a special case of "only bootstrap may import foundation
+   at runtime"? Yes, and the general rule was built**:
+   `foundation-only-from-bootstrap` (step 7), with types allowed anywhere, the
+   same as theirs. As written, their rule restricts importing a kernel folder,
+   so it is a second exception to "anything in kernel may be imported", beside
+   `service-roots-in-services`. Move the class to foundation and their rule is
+   deleted: the general one covers it, and the kernel rule loses an exception
+   instead of gaining one. One gap either way: both rules scan `ghost/core`
+   and `ghost/domains`, so `ghost/bin/validate-adapters.ts` is outside them.
+3. **The name clash is real and is one thing under two names.** `core/boot/`
+   there and `core/bootstrap/` here hold the same kind of code. Pick one.
+   `bootstrap/` is Laravel's word and does not sit beside a file called
+   `boot.js`; `boot/` is shorter and that branch already documents it in
+   `monorepo-structure.md`. The evidence does not favour either; what it
+   rules out is having both. Whichever is kept, a domain's `boot.ts` should
+   not share the word (step 4 suggests `dependencies.ts`).
