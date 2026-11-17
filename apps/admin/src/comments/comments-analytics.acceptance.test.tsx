@@ -100,7 +100,7 @@ describe('Comments analytics', () => {
     await renderAdminApp('/comments', { labs });
 
     await commentsScreen.analyticsDateRange().click();
-    await page.getByRole('option', { name: 'Last 7 days' }).click();
+    await commentsScreen.analyticsDateRangeOption('Last 7 days').click();
 
     await expect.poll(() => requestedDays(overviewApi.requests.at(-1)!.url)).toBe(7);
     await expect.poll(currentRoute).toContain('range=7');
@@ -119,17 +119,11 @@ describe('Comments analytics', () => {
     fakeFilterLookups();
     await renderAdminApp('/comments', { labs });
 
-    await commentsScreen
-      .analyticsTopPosts()
-      .getByRole('button', { name: 'Popular post 1' })
-      .click();
+    await commentsScreen.analyticsTopPosts().row('Popular post 1').click();
 
     await expect(commentsApi).toHaveSentFilter(/^post_id:'?post0'?$/);
 
-    await commentsScreen
-      .analyticsTopCommenters()
-      .getByRole('button', { name: 'Regular Reader' })
-      .click();
+    await commentsScreen.analyticsTopCommenters().row('Regular Reader').click();
 
     // The commenter replaces the post filter rather than narrowing it
     await expect(commentsApi).toHaveSentFilter(/^member_id:'?member1'?$/);
@@ -141,18 +135,20 @@ describe('Comments analytics', () => {
     fakeFilterLookups();
     await renderAdminApp('/comments', { labs });
 
-    const topPostsCard = commentsScreen.analyticsTopPosts();
-    await expect.element(topPostsCard).toHaveTextContent('Popular post 5');
-    await expect.element(topPostsCard.getByText('Popular post 6')).not.toBeInTheDocument();
+    await expect.element(commentsScreen.analyticsTopPosts()).toHaveTextContent('Popular post 5');
+    await expect
+      .element(commentsScreen.analyticsTopPosts().row('Popular post 6'))
+      .not.toBeInTheDocument();
 
-    await commentsScreen.analyticsViewAll(topPostsCard).click();
+    await commentsScreen.analyticsTopPosts().viewAll().click();
 
-    const viewAll = page.getByRole('dialog');
-    await expect.element(viewAll.getByText('Popular post 7')).toBeVisible();
+    await expect
+      .element(commentsScreen.analyticsTopPostsSheet().row('Popular post 7'))
+      .toBeVisible();
 
-    await viewAll.getByRole('button', { name: 'Popular post 7' }).click();
+    await commentsScreen.analyticsTopPostsSheet().row('Popular post 7').click();
 
-    await expect.element(viewAll).not.toBeInTheDocument();
+    await expect.element(commentsScreen.analyticsTopPostsSheet()).not.toBeInTheDocument();
     await expect(commentsApi).toHaveSentFilter(/^post_id:'?post6'?$/);
   });
 
@@ -167,13 +163,11 @@ describe('Comments analytics', () => {
 
     await commentsScreen.analyticsButton().click();
 
-    await expect.element(page.getByRole('dialog').getByTestId('comments-analytics')).toBeVisible();
+    await expect.element(commentsScreen.analyticsSheet()).toBeVisible();
+    await expect.element(commentsScreen.analyticsPanel()).toBeVisible();
     await expect.element(commentsScreen.analyticsKpiValue('comments')).toHaveTextContent('12');
 
-    await commentsScreen
-      .analyticsTopCommenters()
-      .getByRole('button', { name: 'Regular Reader' })
-      .click();
+    await commentsScreen.analyticsTopCommenters().row('Regular Reader').click();
 
     await expect.element(commentsScreen.analyticsPanel()).not.toBeInTheDocument();
     await expect(commentsApi).toHaveSentFilter(/^member_id:'?member1'?$/);
@@ -188,7 +182,7 @@ describe('Comments analytics', () => {
     await expect.element(commentsScreen.commentRow('Still listed')).toBeVisible();
     await expect.element(commentsScreen.analyticsPanel()).not.toBeInTheDocument();
     await expect.element(commentsScreen.analyticsButton()).not.toBeInTheDocument();
-    await expect.element(page.getByText(/went wrong/i)).not.toBeInTheDocument();
+    await expect.element(commentsScreen.errorMessage()).not.toBeInTheDocument();
   });
 
   it('shows a retry for other errors', async () => {
@@ -206,8 +200,8 @@ describe('Comments analytics', () => {
     await renderAdminApp('/comments', { labs });
 
     await expect.element(commentsScreen.analyticsPanel()).toBeVisible();
-    await expect.element(page.getByText(/couldn.t be loaded/)).toBeVisible();
-    await expect.element(page.getByRole('button', { name: 'Retry' })).toBeVisible();
+    await expect.element(commentsScreen.analyticsError()).toBeVisible();
+    await expect.element(commentsScreen.analyticsRetryButton()).toBeVisible();
   });
 
   it('stays off without the labs flag', async () => {

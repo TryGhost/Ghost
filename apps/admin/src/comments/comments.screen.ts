@@ -1,6 +1,8 @@
 import { page, type Locator } from 'vitest/browser';
 import {
   analyticsButton,
+  analyticsErrorText,
+  analyticsSheetLabel,
   commentListRow,
   commentsAnalytics,
   commentsAnalyticsKpiPrefix,
@@ -13,8 +15,12 @@ import {
   loadMoreRepliesButton,
   repliedToLink,
   repliesMetric,
+  retryButton,
   showAllCommentsButton,
+  somethingWentWrongText,
   threadSidebarLabel,
+  topCommentersLabel,
+  topPostsLabel,
   viewAllButton,
 } from '@tryghost/test-data/selectors/comments';
 
@@ -25,6 +31,19 @@ export type CommentRowScope = Locator & {
   repliesMetric(): Locator;
   repliedToLink(): Locator;
 };
+
+/** A top posts/commenters list, with factories for its rows and View all button. */
+export type TopListScope = Locator & {
+  row(name: string): Locator;
+  viewAll(): Locator;
+};
+
+function topListScope(list: Locator): TopListScope {
+  return Object.assign(list, {
+    row: (name: string) => list.getByRole('button', { name }),
+    viewAll: () => list.getByRole('button', { name: viewAllButton }),
+  });
+}
 
 function rowScope(row: Locator): CommentRowScope {
   return Object.assign(row, {
@@ -61,15 +80,22 @@ export const commentsScreen = {
 
   analyticsPanel: () => page.getByTestId(commentsAnalytics),
   analyticsButton: () => page.getByRole('button', { name: analyticsButton, exact: true }),
+  analyticsSheet: () => page.getByRole('dialog', { name: analyticsSheetLabel }),
   analyticsDateRange: () => page.getByRole('combobox', { name: dateRangeSelect }),
+  analyticsDateRangeOption: (name: string) => page.getByRole('option', { name }),
   analyticsKpiValue: (metric: 'comments' | 'commenters' | 'reported') =>
     page.getByTestId(`${commentsAnalyticsKpiPrefix}${metric}`),
   analyticsKpiTrend: (metric: 'comments' | 'commenters' | 'reported') =>
     page.getByTestId(`${commentsAnalyticsKpiPrefix}${metric}-diff`),
   analyticsKpiTab: (label: string) => page.getByRole('tab', { name: label }),
-  analyticsTopPosts: () => page.getByTestId(commentsAnalyticsTopPosts),
-  analyticsTopCommenters: () => page.getByTestId(commentsAnalyticsTopCommenters),
-  analyticsViewAll: (card: Locator) => card.getByRole('button', { name: viewAllButton }),
+  analyticsTopPosts: () => topListScope(page.getByTestId(commentsAnalyticsTopPosts)),
+  analyticsTopCommenters: () => topListScope(page.getByTestId(commentsAnalyticsTopCommenters)),
+  analyticsTopPostsSheet: () => topListScope(page.getByRole('dialog', { name: topPostsLabel })),
+  analyticsTopCommentersSheet: () =>
+    topListScope(page.getByRole('dialog', { name: topCommentersLabel })),
+  analyticsError: () => page.getByText(analyticsErrorText),
+  analyticsRetryButton: () => page.getByRole('button', { name: retryButton }),
+  errorMessage: () => page.getByText(somethingWentWrongText),
 
   async closeThreadSidebar(): Promise<void> {
     await commentsScreen.threadSidebar().getByRole('button', { name: 'Close' }).click();

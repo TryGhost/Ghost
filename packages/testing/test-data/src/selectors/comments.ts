@@ -27,8 +27,14 @@ export const loadMoreRepliesButton = 'Load more replies';
 export const analyticsButton = 'Analytics';
 export const dateRangeSelect = 'Date range';
 export const viewAllButton = 'View all';
+export const retryButton = 'Retry';
+export const analyticsSheetLabel = 'Comment analytics';
+export const topPostsLabel = 'Top posts';
+export const topCommentersLabel = 'Top commenters';
 
 // text fragments
 export const emptyStateText = 'No comments yet';
 export const notFoundText = 'Comment not found';
 export const repliedToText = 'Replied to:';
+export const analyticsErrorText = "Comment analytics couldn't be loaded";
+export const somethingWentWrongText = 'Something went wrong';
