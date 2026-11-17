@@ -45,7 +45,7 @@ The command lives in `tools/gx`; its golden-post fixture remains under Ghost tes
 ## Database migration generator
 
 Run `pnpm gx generate migration <slug>` from the repository root. The slug must
-be kebab-case. The existing generator creates a timestamped migration in the
+be kebab-case. The generator creates a timestamped TypeScript migration in the
 next minor-version folder and promotes package versions to RC when needed.
 See [database migrations](../../docs/practices/database-migrations.md) for the
 workflow.
