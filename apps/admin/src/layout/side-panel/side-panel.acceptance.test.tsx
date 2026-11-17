@@ -29,10 +29,23 @@ function panelElement(): HTMLElement {
 }
 const panelState = () =>
   document.querySelector('[data-side-panel]')?.getAttribute('data-side-panel');
+const panelLayout = () =>
+  document.querySelector('[data-side-panel]')?.getAttribute('data-side-panel-layout');
 const panelWidth = () =>
   document.querySelector('[data-side-panel]')?.getBoundingClientRect().width ?? 0;
-/** The width of the navigation, which the panel matches at its default size. */
-const NAVIGATION_WIDTH = 316;
+/** From this window width the panel docks beside the page; below it, it's a window over it. */
+const DOCKING_WIDTH = 1600;
+const NARROW_WIDTH = 1280;
+/** The docked panel's width on a window without room to spare beside the page. */
+const PANEL_WIDTH = 400;
+const WINDOW_WIDTH = 440;
+const WINDOW_HEIGHT = 680;
+/** The room between the panel's edge and its content. */
+const CONTENT_PADDING = 8;
+/** The Admin 7 frame's bezel beside the page, inside the docked panel's width. */
+const BEZEL = 8;
+/** The window's inset from the frame's edges, as the Admin 7 navigation's. */
+const WINDOW_INSET = 16;
 
 function sidePanel(): GhostSidePanelApi {
   const api = window.ghost?.sidePanel;
@@ -54,8 +67,21 @@ function hostFrame(title = 'Help content') {
   return { element, loads: () => loads };
 }
 
-/** Renders Tags with the navigation, in either design. */
-async function renderWithNavigation({ admin7Design = false } = {}) {
+/**
+ * Resizing the window turns the panel's transitions off for a moment, so a
+ * spec that animates the panel waits for the resize to land before rendering.
+ */
+async function setWindowWidth(width: number) {
+  await page.viewport(width, 800);
+  await expect.poll(() => window.innerWidth).toBe(width);
+  await new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  });
+}
+
+/** Renders Tags with the navigation, in either design, on a window wide enough to dock by default. */
+async function renderWithNavigation({ admin7Design = false, width = DOCKING_WIDTH } = {}) {
+  await setWindowWidth(width);
   fakeTags([]);
   if (admin7Design) {
     // The Admin 7 frame's top bar shows the site's numbers
@@ -71,6 +97,8 @@ async function renderWithNavigation({ admin7Design = false } = {}) {
   }
 }
 
+const frameWidth = (element: HTMLElement) => element.getBoundingClientRect().width;
+
 function asContributor(): RenderAdminAppOptions {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name: 'Contributor' })];
@@ -79,7 +107,7 @@ function asContributor(): RenderAdminAppOptions {
 
 describe('Side panel', () => {
   afterEach(async () => {
-    await page.viewport(1280, 800);
+    await page.viewport(NARROW_WIDTH, 800);
   });
 
   it.each([false, true])(
@@ -91,12 +119,14 @@ describe('Side panel', () => {
       expect(sidePanel().open(frame.element)).not.toBeNull();
 
       await expect.element(panel()).toBeVisible();
+      expect(panelLayout()).toBe('docked');
       expect(panel().element().contains(frame.element)).toBe(true);
-      await expect.poll(panelWidth).toBe(NAVIGATION_WIDTH);
-      // It moves on the easing the Admin 7 frame opens and closes with
-      expect(getComputedStyle(panelElement()).transitionTimingFunction).toBe(
-        'cubic-bezier(0.16, 1, 0.3, 1)',
-      );
+      await expect.poll(panelWidth).toBe(PANEL_WIDTH + (admin7Design ? BEZEL : 0));
+      expect(frameWidth(frame.element)).toBe(PANEL_WIDTH - 2 * CONTENT_PADDING);
+      // It moves as the Admin 7 navigation pins and unpins
+      const style = getComputedStyle(panelElement());
+      expect(style.transitionTimingFunction).toBe('cubic-bezier(0.16, 1, 0.3, 1)');
+      expect(style.transitionDuration).toBe('0.52s');
       const pageRight = sidebarScreen.shellMain().element().getBoundingClientRect().right;
       const panelBox = panel().element().getBoundingClientRect();
       expect(pageRight).toBeLessThanOrEqual(panelBox.left);
@@ -196,15 +226,21 @@ describe('Side panel', () => {
     await renderWithNavigation();
     const frame = hostFrame();
     const handle = sidePanel().open(frame.element, { size: 'full' });
+    const contentRight = () => frame.element.getBoundingClientRect().right + CONTENT_PADDING;
+    const panelRight = () => panelElement().getBoundingClientRect().right;
+    // Once it has slid in
+    await expect.poll(panelState).toBe('full');
+    await Promise.all(
+      (frame.element.parentElement?.getAnimations() ?? []).map((animation) => animation.finished),
+    );
     await expect.poll(panelWidth).toBeGreaterThan(800);
 
     handle?.setSize('default');
     await expect.poll(panelState).toBe('default');
 
     // Mid-collapse, the panel is still wider than the content it's shrinking to
-    expect(panelWidth()).toBeGreaterThan(NAVIGATION_WIDTH);
-    const contentRight = frame.element.getBoundingClientRect().right;
-    expect(contentRight).toBeCloseTo(panelElement().getBoundingClientRect().right, 0);
+    expect(panelWidth()).toBeGreaterThan(PANEL_WIDTH);
+    expect(contentRight()).toBeCloseTo(panelRight(), 0);
   });
 
   it.each([false, true])(
@@ -213,9 +249,10 @@ describe('Side panel', () => {
       await renderWithNavigation({ admin7Design });
       const frame = hostFrame();
       const handle = sidePanel().open(frame.element);
-      await expect.poll(panelWidth).toBe(NAVIGATION_WIDTH);
+      const bezel = admin7Design ? BEZEL : 0;
+      await expect.poll(panelWidth).toBe(PANEL_WIDTH + bezel);
       const pageWidth = () => sidebarScreen.shellMain().element().getBoundingClientRect().width;
-      const contentWidth = () => frame.element.getBoundingClientRect().width;
+      const contentWidth = () => frame.element.getBoundingClientRect().width + 2 * CONTENT_PADDING;
       const beside = pageWidth();
 
       handle?.setSize('full');
@@ -229,11 +266,11 @@ describe('Side panel', () => {
       expect(heldWidth).toBeGreaterThan(800);
 
       // Once expanded, the panel has reached the content's width, and the page hasn't moved
-      await expect.poll(() => Math.abs(panelWidth() - heldWidth)).toBeLessThan(1);
+      await expect.poll(() => Math.abs(panelWidth() - bezel - heldWidth)).toBeLessThan(1);
       expect(pageWidth()).toBeCloseTo(beside, 0);
 
       handle?.setSize('default');
-      await expect.poll(panelWidth).toBe(NAVIGATION_WIDTH);
+      await expect.poll(panelWidth).toBe(PANEL_WIDTH + bezel);
       expect(pageWidth()).toBeCloseTo(beside, 0);
     },
   );
@@ -246,9 +283,9 @@ describe('Side panel', () => {
 
     handle?.setSize('full');
     await expect.poll(panelState).toBe('full');
-    await expect.poll(panelWidth).toBeGreaterThan(NAVIGATION_WIDTH);
+    await expect.poll(panelWidth).toBeGreaterThan(PANEL_WIDTH);
     handle?.setSize('default');
-    await expect.poll(panelWidth).toBe(NAVIGATION_WIDTH);
+    await expect.poll(panelWidth).toBe(PANEL_WIDTH);
     expect(frame.loads()).toBe(1);
 
     const other = hostFrame('Other');
@@ -260,6 +297,108 @@ describe('Side panel', () => {
     expect(panelState()).toBe('default');
     expect(sidePanel().isOpen()).toBe(true);
     expect(replaced).not.toBeNull();
+  });
+
+  it.each([
+    { width: 2200, panel: 524 },
+    { width: 2600, panel: 655 },
+  ])(
+    'grows into the room beside a full-width page: $width wide',
+    async ({ width, panel: expected }) => {
+      await renderWithNavigation({ width });
+      sidePanel().open(hostFrame().element);
+
+      await expect.poll(panelWidth).toBe(expected);
+    },
+  );
+
+  it.each([false, true])(
+    'floats over the page in the bottom-right corner on a narrower window: admin7Design %s',
+    async (admin7Design) => {
+      await renderWithNavigation({ admin7Design, width: NARROW_WIDTH });
+      const pageWidth = () => sidebarScreen.shellMain().element().getBoundingClientRect().width;
+      const before = pageWidth();
+      const frame = hostFrame();
+
+      sidePanel().open(frame.element);
+
+      await expect.element(panel()).toBeVisible();
+      expect(panelLayout()).toBe('window');
+      // Once it has grown out of its corner
+      await expect.poll(panelWidth).toBe(WINDOW_WIDTH);
+      const box = panelElement().getBoundingClientRect();
+      const inset = WINDOW_INSET + (admin7Design ? BEZEL : 0);
+      expect(box.height).toBe(WINDOW_HEIGHT);
+      expect(box.right).toBeCloseTo(window.innerWidth - inset, 0);
+      expect(box.bottom).toBeCloseTo(window.innerHeight - inset, 0);
+      expect(frameWidth(frame.element)).toBe(WINDOW_WIDTH - 2 * CONTENT_PADDING);
+      expect(pageWidth()).toBe(before);
+    },
+  );
+
+  it('expands the window up and across the page, clear of the navigation', async () => {
+    await renderWithNavigation({ width: NARROW_WIDTH });
+    const frame = hostFrame();
+    const handle = sidePanel().open(frame.element);
+    await expect.poll(panelWidth).toBe(WINDOW_WIDTH);
+
+    handle?.setSize('full');
+
+    await expect.poll(panelState).toBe('full');
+    const navigationRight = sidebarScreen.shellNav().element().getBoundingClientRect().right;
+    await expect
+      .poll(() => panelElement().getBoundingClientRect().left)
+      .toBeCloseTo(navigationRight + WINDOW_INSET, 0);
+    expect(panelElement().getBoundingClientRect().top).toBeCloseTo(WINDOW_INSET, 0);
+
+    handle?.setSize('default');
+    await expect.poll(panelWidth).toBe(WINDOW_WIDTH);
+    expect(frame.loads()).toBe(1);
+  });
+
+  it.each(['default', 'full'] as const)(
+    'closes a window at once, keeping its content: %s',
+    async (size) => {
+      await renderWithNavigation({ width: NARROW_WIDTH });
+      const trigger = sidebarScreen.userMenuTrigger();
+      trigger.element().focus();
+      const frame = hostFrame();
+      sidePanel().open(frame.element, { size });
+      await expect.poll(frame.loads).toBe(1);
+      await expect.poll(() => getComputedStyle(panelElement()).opacity).toBe('1');
+
+      sidePanel().close();
+
+      await expect.poll(panelState).toBe('closed');
+      const style = getComputedStyle(panelElement());
+      expect(style.visibility).toBe('hidden');
+      expect(style.opacity).toBe('0');
+      expect(style.transitionProperty).toBe('none');
+      expect(document.activeElement).toBe(trigger.element());
+      expect(frame.element.isConnected).toBe(true);
+
+      sidePanel().open(frame.element);
+      await expect.element(panel()).toBeVisible();
+      expect(frame.loads()).toBe(1);
+    },
+  );
+
+  it('keeps its content as the window crosses the docking width', async () => {
+    await renderWithNavigation({ width: NARROW_WIDTH });
+    const frame = hostFrame();
+    sidePanel().open(frame.element);
+    await expect.poll(frame.loads).toBe(1);
+    expect(panelLayout()).toBe('window');
+
+    await page.viewport(DOCKING_WIDTH, 800);
+    await expect.poll(panelLayout).toBe('docked');
+    await expect.poll(panelWidth).toBe(PANEL_WIDTH);
+    await page.viewport(NARROW_WIDTH, 800);
+    await expect.poll(panelLayout).toBe('window');
+
+    expect(panel().element().contains(frame.element)).toBe(true);
+    expect(frame.loads()).toBe(1);
+    expect(sidePanel().isOpen()).toBe(true);
   });
 
   it('hides on a route without the navigation and shows again on return', async () => {
@@ -282,7 +421,7 @@ describe('Side panel', () => {
     window.history.back();
     await expect.poll(panelState).toBe('default');
     // Back at once too
-    expect(panelWidth()).toBe(NAVIGATION_WIDTH);
+    expect(panelWidth()).toBe(PANEL_WIDTH);
     expect(panel().element().contains(frame.element)).toBe(true);
     expect(frame.loads()).toBe(1);
     expect(onClose).not.toHaveBeenCalled();
