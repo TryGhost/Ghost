@@ -99,6 +99,20 @@ async function renderWithNavigation({ admin7Design = false, width = DOCKING_WIDT
 
 const frameWidth = (element: HTMLElement) => element.getBoundingClientRect().width;
 
+/** Whether the page keeps its stacking to itself, so its sticky headers stay under what floats over it. */
+function pageIsolated(): boolean {
+  for (
+    let element = sidebarScreen.shellMain().element().parentElement;
+    element;
+    element = element.parentElement
+  ) {
+    if (getComputedStyle(element).isolation === 'isolate') {
+      return true;
+    }
+  }
+  return false;
+}
+
 function asContributor(): RenderAdminAppOptions {
   const me = currentUserResponse();
   me.users[0].roles = [staffRole({ name: 'Contributor' })];
@@ -149,9 +163,23 @@ describe('Side panel', () => {
         sidePanel().close();
         return Promise.resolve();
       },
+      moveFocus: (content: HTMLElement) => {
+        content.focus();
+        return content;
+      },
     },
-    { how: 'Escape', close: () => userEvent.keyboard('{Escape}') },
-  ])('hides with $how, keeps the content and returns focus', async ({ close }) => {
+    {
+      how: 'Escape',
+      close: () => userEvent.keyboard('{Escape}'),
+      // An Escape inside the content is the content's own, so focus leaves for the page
+      moveFocus: () => {
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+        return document.body;
+      },
+    },
+  ])('hides with $how, keeps the content and returns focus', async ({ close, moveFocus }) => {
     await renderWithNavigation();
     const trigger = sidebarScreen.userMenuTrigger();
     trigger.element().focus();
@@ -159,6 +187,8 @@ describe('Side panel', () => {
     const onClose = vi.fn();
     sidePanel().open(frame.element, { onClose });
     await expect.element(panel()).toBeVisible();
+    const focused = moveFocus(frame.element);
+    expect(document.activeElement).toBe(focused);
 
     await close();
 
@@ -177,6 +207,8 @@ describe('Side panel', () => {
     const onClose = vi.fn();
     const handle = sidePanel().open(frame.element, { onClose });
     await expect.poll(frame.loads).toBe(1);
+    frame.element.focus();
+    expect(document.activeElement).toBe(frame.element);
 
     handle?.close();
     handle?.close();
@@ -336,6 +368,25 @@ describe('Side panel', () => {
     },
   );
 
+  it.each([
+    { layout: 'window', width: NARROW_WIDTH, isolated: true },
+    { layout: 'docked', width: DOCKING_WIDTH, isolated: false },
+  ])(
+    'isolates the page only while a window floats over it: $layout',
+    async ({ width, isolated }) => {
+      await renderWithNavigation({ width });
+      expect(pageIsolated()).toBe(false);
+
+      sidePanel().open(hostFrame().element);
+      await expect.poll(panelState).toBe('default');
+      expect(pageIsolated()).toBe(isolated);
+
+      sidePanel().close();
+      await expect.poll(panelState).toBe('closed');
+      expect(pageIsolated()).toBe(false);
+    },
+  );
+
   it('expands the window up and across the page, clear of the navigation', async () => {
     await renderWithNavigation({ width: NARROW_WIDTH });
     const frame = hostFrame();
@@ -366,6 +417,8 @@ describe('Side panel', () => {
       sidePanel().open(frame.element, { size });
       await expect.poll(frame.loads).toBe(1);
       await expect.poll(() => getComputedStyle(panelElement()).opacity).toBe('1');
+      frame.element.focus();
+      expect(document.activeElement).toBe(frame.element);
 
       sidePanel().close();
 
@@ -427,7 +480,7 @@ describe('Side panel', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
-  it('hides in Settings, which swaps the navigation for its own, and shows again on return', async () => {
+  it('stays open in Settings, which has a navigation of its own, and on return', async () => {
     // The settings app owns its request graph; this spec asserts only the panel.
     allowUnhandledRequests();
     await renderWithNavigation();
@@ -438,12 +491,14 @@ describe('Side panel', () => {
 
     await sidebarScreen.navLink('Settings').click();
     await expect.poll(currentRoute).toMatch(/^\/settings/);
-    await expect.poll(panelState).toBe('closed');
-    expect(sidePanel().isOpen()).toBe(true);
-    expect(sidePanel().open(hostFrame('Other').element)).toBeNull();
+    const backToApp = sidebarScreen.shellNav().getByRole('button', { name: 'Back to app' });
+    await expect.element(backToApp).toBeVisible();
+    expect(panelState()).toBe('default');
+    expect(panel().element().contains(frame.element)).toBe(true);
 
-    await sidebarScreen.shellNav().getByRole('button', { name: 'Back to app' }).click();
-    await expect.poll(panelState).toBe('default');
+    await backToApp.click();
+    await expect.element(sidebarScreen.navLink('Tags')).toBeVisible();
+    expect(panelState()).toBe('default');
     expect(panel().element().contains(frame.element)).toBe(true);
     expect(frame.loads()).toBe(1);
     expect(onClose).not.toHaveBeenCalled();

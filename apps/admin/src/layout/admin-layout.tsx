@@ -36,7 +36,11 @@ import { AdminFrameTopBar } from './admin-frame-top-bar';
 import { FloatingSidebarContentSync } from './floating-sidebar-content-sync';
 import { GlobalSearchProvider } from '@/global-search/global-search-provider';
 import { SidePanel } from './side-panel/side-panel';
-import { sidePanelWidth, useSidePanelDocked } from './side-panel/side-panel-layout';
+import {
+  sidePanelWidth,
+  useSidePanelDocked,
+  useSidePanelOpen,
+} from './side-panel/side-panel-layout';
 
 const networkPageChrome = {
   contentClassName: 'max-w-[1920px]',
@@ -154,6 +158,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const admin7Design = useFeatureFlag('admin7Design');
   const isViewSiteRoute = useLocation().pathname === '/site';
   const sidePanelDocked = useSidePanelDocked();
+  const sidePanelOpen = useSidePanelOpen();
 
   // With admin7Design, the desktop page sits inside a frame: a top bar and
   // thin bezels around a rounded card. View site becomes a place of its own,
@@ -437,18 +442,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     </SidebarProvider>
   );
 
-  // The side panel shows only where the main navigation does, as that's where
-  // it's opened from: not on full-screen screens, nor in Settings, which swaps
-  // the navigation for its own. In the Admin 7 frame it sits beside the card,
+  // The side panel shows only where a navigation does, as that's where it's
+  // opened from: not on full-screen screens. In the Admin 7 frame it sits beside the card,
   // below the top bar, and otherwise runs the full height on the right. It
   // stays in one place across the mobile breakpoint, so its content isn't
   // reloaded. On a window too narrow to dock it floats over the page instead.
+  const sidePanelVisible = sidebarVisible && !isMobile;
   const sidePanel = (
     <SidePanel
       docked={sidePanelDocked}
       framed={adminFrame}
       locked={dunningLocked}
-      visible={sidebarVisible && !isSettingsRoute && !isMobile}
+      visible={sidePanelVisible}
     />
   );
 
@@ -462,8 +467,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       className={cn(
         'h-full w-[max(100%,calc(100vw_-_var(--side-panel-width)_-_3_*_var(--admin-frame-side)))]',
         // Keeps the page's own stacking (sticky headers are z-50) under the
-        // panel floating over it
-        !sidePanelDocked && 'isolate',
+        // panel while it floats over it
+        sidePanelVisible && sidePanelOpen && !sidePanelDocked && 'isolate',
       )}
     >
       {sidebarLayout}

@@ -1,7 +1,13 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
-import { fakeAdminStats, fakeTags, renderAdminApp } from '@test-utils/acceptance';
+import {
+  allowUnhandledRequests,
+  currentRoute,
+  fakeAdminStats,
+  fakeTags,
+  renderAdminApp,
+} from '@test-utils/acceptance';
 import { sidebarScreen } from './sidebar.screen';
 
 /** Opens Help clicks in the side panel, as a host script that provides in-app support does. */
@@ -24,6 +30,19 @@ function fakeAdmin7Chrome(): void {
   fakeTags([]);
   fakeAdminStats.memberCount();
   fakeAdminStats.mrr();
+}
+
+/** Opens Settings from Tags, which swaps the main navigation for the Settings one. */
+async function openSettings(labs: { inAppSupport: boolean }): Promise<void> {
+  // The settings app owns its request graph; these specs assert only the navigation.
+  allowUnhandledRequests();
+  fakeTags([]);
+  await renderAdminApp('/tags', { labs });
+  await sidebarScreen.navLink('Settings').click();
+  await expect.poll(currentRoute).toMatch(/^\/settings/);
+  await expect
+    .element(sidebarScreen.shellNav().getByRole('button', { name: 'Back to app' }))
+    .toBeVisible();
 }
 
 describe('In-app support Help links', () => {
@@ -93,4 +112,36 @@ describe('In-app support Help links', () => {
         .toBe(true);
     },
   );
+
+  it('adds Help under the Settings navigation, marked for host scripts', async () => {
+    await openSettings({ inAppSupport: true });
+
+    const help = sidebarScreen.navLink('Help');
+    await expect.element(help).toBeVisible();
+    await expect.element(help).toHaveAttribute('data-ghost-help');
+    await expect
+      .element(help)
+      .toHaveAttribute('href', 'https://ghost.org/help?utm_source=admin&utm_campaign=help');
+    await expect.element(help).toHaveAttribute('target', '_blank');
+  });
+
+  it('leaves Help out of the Settings navigation without inAppSupport', async () => {
+    await openSettings({ inAppSupport: false });
+
+    await expect.element(sidebarScreen.navLink('Help')).not.toBeInTheDocument();
+  });
+
+  it('opens Help in the side panel from Settings', async () => {
+    const content = document.createElement('iframe');
+    content.title = 'Help content';
+    stopOpeningHelp = openHelpInSidePanel(content);
+    await openSettings({ inAppSupport: true });
+
+    await sidebarScreen.navLink('Help').click();
+
+    await expect
+      .poll(() => document.querySelector('[data-side-panel]')?.getAttribute('data-side-panel'))
+      .toBe('default');
+    expect(document.querySelector('[data-side-panel]')?.contains(content)).toBe(true);
+  });
 });

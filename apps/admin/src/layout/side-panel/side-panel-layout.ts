@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { sidePanelStore } from './side-panel-store';
 
 /**
  * From this window width the panel docks beside the page, which gets narrower.
@@ -38,4 +39,11 @@ const subscribeToResize = (onChange: () => void) => {
 /** Whether the window is wide enough for the panel to dock beside the page. */
 export function useSidePanelDocked(): boolean {
   return useSyncExternalStore(subscribeToResize, hasRoomToDock);
+}
+
+const isOpen = () => sidePanelStore.getState().open;
+
+/** Whether the panel has content open, whether or not a screen hides it. */
+export function useSidePanelOpen(): boolean {
+  return useSyncExternalStore(sidePanelStore.subscribe, isOpen);
 }
