@@ -2,7 +2,7 @@
 // canThis(someUser).edit.post(somePost|somePostId)
 
 module.exports = {
-  canThis: require('./can-this'),
+  canThis: require('./can-this').default,
   // @TODO: Make it so that we don't need to export these
   parseContext: require('./parse-context'),
 };

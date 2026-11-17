@@ -1,28 +1,53 @@
-const _ = require('lodash');
+import _ from 'lodash';
+import errors from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
+import providers, { type LoadedPermissions } from './providers';
+import { actionsMap, type Permission } from './role-permissions';
+import { setIsRoles } from '../../models/role-utils';
+
 const models = require('../../models');
-const errors = require('@tryghost/errors');
-const tpl = require('@tryghost/tpl');
-const providers = require('./providers');
 const parseContext = require('./parse-context');
-const { actionsMap } = require('./role-permissions');
-const { setIsRoles } = require('../../models/role-utils');
 
 const messages = {
   noPermissionToAction: 'You do not have permission to perform this action',
 };
 
+/** The parsed `frame.options.context`, see parse-context.js */
+interface ParsedContext {
+  internal: boolean;
+  user: string | null;
+  api_key: { id: string; type: string } | null;
+  integration: unknown;
+  member: unknown;
+  public: boolean;
+}
+
+/** User and API key permissions, each null when that actor is absent */
+interface LoadedActors {
+  user: LoadedPermissions | null;
+  apiKey: Awaited<ReturnType<typeof providers.apiKey>> | null;
+}
+
+/** canThis(context).edit.post(idOrModel, unsafeAttrs) */
+type ObjectTypeHandler = (
+  modelOrId?: string | number | { id: string } | null,
+  unsafeAttrs?: Record<string, unknown>,
+) => Promise<unknown>;
+
+export type CanThisResult = Record<string, Record<string, ObjectTypeHandler>>;
+
 /**
  * Calculates grants without performing I/O or running model-specific rules.
  */
-function getGrantFlags(loadedPermissions, actType, objType) {
+function getGrantFlags(loadedPermissions: LoadedActors, actType: string, objType: string) {
   // Iterate through the user permissions looking for an affirmation
   const userPermissions = loadedPermissions.user ? loadedPermissions.user.permissions : null;
   const apiKeyPermissions = loadedPermissions.apiKey ? loadedPermissions.apiKey.permissions : null;
 
-  let hasUserPermission;
-  let hasApiKeyPermission;
+  let hasUserPermission: boolean | undefined;
+  let hasApiKeyPermission: boolean;
 
-  const checkPermission = function (perm) {
+  const checkPermission = function (perm: Permission) {
     // Look for a matching action type and object type first
     if (perm.action_type !== actType || perm.object_type !== objType) {
       return false;
@@ -55,9 +80,14 @@ function getGrantFlags(loadedPermissions, actType, objType) {
   return { hasUserPermission, hasApiKeyPermission };
 }
 
-class CanThisResult {
-  buildObjectTypeHandlers(objTypes, actType, context, permissionLoad) {
-    const objectTypeModelMap = {
+class CanThisResultBuilder {
+  buildObjectTypeHandlers(
+    objTypes: readonly string[],
+    actType: string,
+    context: ParsedContext,
+    permissionLoad: Promise<LoadedActors>,
+  ) {
+    const objectTypeModelMap: Record<string, { permissible?: (...args: unknown[]) => unknown }> = {
       post: models.Post,
       role: models.Role,
       user: models.User,
@@ -70,14 +100,14 @@ class CanThisResult {
     // Iterate through the object types, i.e. ['post', 'tag', 'user']
     return _.reduce(
       objTypes,
-      function (objTypeHandlers, objType) {
+      function (objTypeHandlers: Record<string, ObjectTypeHandler>, objType) {
         // Grab the TargetModel through the objectTypeModelMap
         const TargetModel = objectTypeModelMap[objType];
 
         // Create the 'handler' for the object type;
         // the '.post()' in canThis(user).edit.post()
         objTypeHandlers[objType] = function (modelOrId, unsafeAttrs) {
-          let modelId;
+          let modelId: string | number | undefined;
           unsafeAttrs = unsafeAttrs || {};
 
           // If it's an internal request, resolve immediately
@@ -134,12 +164,12 @@ class CanThisResult {
     );
   }
 
-  beginCheck(context) {
-    let userPermissionLoad;
-    let apiKeyPermissionLoad;
+  beginCheck(rawContext: unknown): CanThisResult {
+    let userPermissionLoad: Promise<LoadedPermissions | null>;
+    let apiKeyPermissionLoad: Promise<LoadedActors['apiKey']>;
 
     // Get context.user, context.api_key and context.app
-    context = parseContext(context);
+    const context: ParsedContext = parseContext(rawContext);
 
     // Kick off loading of user permissions if necessary
     if (context.user) {
@@ -159,7 +189,7 @@ class CanThisResult {
 
     // Wait for both user and api key permissions to load
     const permissionsLoad = Promise.all([userPermissionLoad, apiKeyPermissionLoad]).then(
-      function (result) {
+      function (result): LoadedActors {
         return {
           user: result[0],
           apiKey: result[1],
@@ -189,12 +219,12 @@ class CanThisResult {
     });
 
     // Return this for chaining
-    return this;
+    return this as unknown as CanThisResult;
   }
 }
 
-module.exports = function canThis(context) {
-  const result = new CanThisResult();
+export default function canThis(context: unknown): CanThisResult {
+  const result = new CanThisResultBuilder();
 
   return result.beginCheck(context);
-};
+}

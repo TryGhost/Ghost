@@ -4,7 +4,6 @@ import sinon from 'sinon';
 import testUtils from '../../../../utils';
 // @ts-expect-error This module lacks type definitions.
 import models from '../../../../../core/server/models';
-// @ts-expect-error This module lacks type definitions.
 import providers from '../../../../../core/server/services/permissions/providers';
 import * as rolePermissions from '../../../../../core/server/services/permissions/role-permissions';
 
@@ -32,7 +31,7 @@ describe('Permission Providers', function () {
     it('errors if user cannot be found', async function () {
       const findUserSpy = sinon.stub(models.User, 'findOne').resolves();
 
-      await assert.rejects(() => providers.user(1), { errorType: 'NotFoundError' });
+      await assert.rejects(() => providers.user('1'), { errorType: 'NotFoundError' });
       sinon.assert.calledOnce(findUserSpy);
     });
 
@@ -41,15 +40,15 @@ describe('Permission Providers', function () {
         .stub(models.User, 'findOne')
         .resolves(fakeUserWithRoles([roles[0]]));
 
-      await providers.user(1);
+      await providers.user('1');
 
-      sinon.assert.calledOnceWithExactly(findUserSpy, { id: 1 }, { withRelated: ['roles'] });
+      sinon.assert.calledOnceWithExactly(findUserSpy, { id: '1' }, { withRelated: ['roles'] });
     });
 
     it('takes permissions from the role map for the user role', async function () {
       sinon.stub(models.User, 'findOne').resolves(fakeUserWithRoles([roles[0]]));
 
-      const res = await providers.user(1);
+      const res = await providers.user('1');
 
       assert.equal(roles[0].name, 'Administrator');
       assert.deepEqual(
@@ -65,7 +64,7 @@ describe('Permission Providers', function () {
     it('unions permissions across roles without duplicates', async function () {
       sinon.stub(models.User, 'findOne').resolves(fakeUserWithRoles([roles[1], roles[2]]));
 
-      const res = await providers.user(1);
+      const res = await providers.user('1');
       const keys = toKeys(res.permissions);
 
       assert.deepEqual(keys, toKeys(rolePermissions.forRoles(['Editor', 'Author'])));
@@ -75,7 +74,7 @@ describe('Permission Providers', function () {
     it('gives Owner no permissions of its own', async function () {
       sinon.stub(models.User, 'findOne').resolves(fakeUserWithRoles([roles[3]]));
 
-      const res = await providers.user(1);
+      const res = await providers.user('1');
 
       assert.equal(roles[3].name, 'Owner');
       assert.deepEqual(res.permissions, []);
@@ -87,7 +86,7 @@ describe('Permission Providers', function () {
         .stub(models.User, 'findOne')
         .resolves(fakeUserWithRoles([roles[0]], 'locked'));
 
-      await assert.rejects(() => providers.user(1), { errorType: 'UnauthorizedError' });
+      await assert.rejects(() => providers.user('1'), { errorType: 'UnauthorizedError' });
       sinon.assert.calledOnce(findUserSpy);
     });
   });
@@ -96,7 +95,7 @@ describe('Permission Providers', function () {
     it('errors if api_key cannot be found', async function () {
       const findApiKeySpy = sinon.stub(models.ApiKey, 'findOne').resolves();
 
-      await assert.rejects(() => providers.apiKey(1), { errorType: 'NotFoundError' });
+      await assert.rejects(() => providers.apiKey('1'), { errorType: 'NotFoundError' });
       sinon.assert.calledOnce(findApiKeySpy);
     });
 
@@ -108,16 +107,16 @@ describe('Permission Providers', function () {
         return Promise.resolve(fakeApiKey);
       });
 
-      const res = await providers.apiKey(1);
+      const res = await providers.apiKey('1');
 
-      sinon.assert.calledOnceWithExactly(findApiKeySpy, { id: 1 }, { withRelated: ['role'] });
+      sinon.assert.calledOnceWithExactly(findApiKeySpy, { id: '1' }, { withRelated: ['role'] });
       assert.equal(roles[5].name, 'Admin Integration');
       assert.deepEqual(
         toKeys(res.permissions),
         toKeys(rolePermissions.forRoles(['Admin Integration'])),
       );
       assert.equal(res.roles.length, 1);
-      assert.equal(res.roles[0].name, 'Admin Integration');
+      assert.equal(res.roles[0]?.name, 'Admin Integration');
       assert(!(res.roles[0] instanceof models.Base.Model));
     });
 
@@ -129,7 +128,7 @@ describe('Permission Providers', function () {
         return Promise.resolve(fakeApiKey);
       });
 
-      const res = await providers.apiKey(1);
+      const res = await providers.apiKey('1');
 
       assert.equal(apiKeys[1].type, 'content');
       assert.deepEqual(res.permissions, []);

@@ -4,7 +4,7 @@ const testUtils = require('../../../../utils');
 const _ = require('lodash');
 const models = require('../../../../../core/server/models');
 const permissions = require('../../../../../core/server/services/permissions');
-const providers = require('../../../../../core/server/services/permissions/providers');
+const providers = require('../../../../../core/server/services/permissions/providers').default;
 const rolePermissions = require('../../../../../core/server/services/permissions/role-permissions');
 const { limitService } = require('../../../../../core/server/services/limits');
 
