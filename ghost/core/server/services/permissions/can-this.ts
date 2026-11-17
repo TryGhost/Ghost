@@ -135,7 +135,6 @@ class CanThisResult {
   }
 
   beginCheck(context) {
-    const self = this;
     let userPermissionLoad;
     let apiKeyPermissionLoad;
 
@@ -169,10 +168,10 @@ class CanThisResult {
     );
 
     // Iterate through the actions and their related object types
-    _.each(actionsMap, function (objTypes, actType) {
+    _.each(actionsMap, (objTypes, actType) => {
       // Build up the object type handlers;
       // the '.post()' parts in canThis(user).edit.post()
-      const objTypeHandlers = self.buildObjectTypeHandlers(
+      const objTypeHandlers = this.buildObjectTypeHandlers(
         objTypes,
         actType,
         context,
@@ -181,7 +180,7 @@ class CanThisResult {
 
       // Define a property for the action on the result;
       // the '.edit' in canThis(user).edit.post()
-      Object.defineProperty(self, actType, {
+      Object.defineProperty(this, actType, {
         writable: false,
         enumerable: false,
         configurable: false,

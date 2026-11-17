@@ -363,7 +363,7 @@ const serviceDependencyDecisions = {
       until: 'PLA-543 moves job handler registration into boot',
     },
     {
-      from: '^ghost/core/server/services/permissions/can-this\\.js$',
+      from: '^ghost/core/server/services/permissions/can-this\\.ts$',
       to: '^ghost/core/server/models/role-utils\\.ts$',
       until: 'Permissions moves to server/auth/permissions and settles where role checks live',
     },
