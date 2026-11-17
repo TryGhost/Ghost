@@ -2200,10 +2200,14 @@ ten more characters and needed no configuration in any tool.
 
 ### What got worse
 
-1. **The framework has to be built before Ghost is typechecked.**
-   Ghost's `tsc` reads the kernel through `build/*.d.ts`, and plain Node and
-   the "built with tsc" fixture test load `build/*.js`. Nx does the build
-   through `^build`. What fails without it has not been run yet (inferred).
+1. **The framework has to be built before Ghost is typechecked.** With both
+   `build/` folders removed (verified): Ghost's `tsc` reports 94 errors,
+   starting with `Cannot find module '@tryghost/kernel/domains/discover'`;
+   plain `node` cannot load the kernel; and the "built with tsc" fixture test
+   fails. Running from source (`--conditions=source --import=tsx`) and the
+   other 37 kernel, foundry, bootstrap and network unit test files do not need
+   the build. Nx does the build through `^build`, as for every other
+   workspace package.
 2. **The framework's tests are still in the application.** They stayed in
    `ghost/test/unit/{kernel,foundry}`, with their fixtures. The two packages
    have no test runner of their own, so a change to the kernel is tested only
@@ -2242,19 +2246,19 @@ ten more characters and needed no configuration in any tool.
 
 ### Test and check results at the end
 
-| Check                                                 | Result                                                                                                                    |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| format, oxlint, ESLint (ghost and both packages)      | pass, at each of the three commits                                                                                        |
-| Boundaries                                            | pass: 5941 modules, 286 known violations, 189 deferred (5940 before; one new file)                                        |
-| Domain rules, knip, `lint:packages`, versioning, docs | pass                                                                                                                      |
-| Typecheck (`nx run ghost:test:types`)                 | pass                                                                                                                      |
-| Unit suite                                            | 828 files pass; 34 tests fail in the same 3 Mailgun and mailer files as baseline, at each commit                          |
-| DB-backed domain set, MySQL 8.4                       | 7 files, 75 tests pass, at each commit                                                                                    |
-| Legacy inventory test                                 | 71 pass                                                                                                                   |
-| `tools/scripts` tests                                 | 463 tests: 432 pass, 29 fail, 2 cancelled, **the same before `d47bd61` and after `8e517db`**                              |
-| `tools/gx` tests                                      | 155 pass                                                                                                                  |
-| Release archive                                       | built, installed, booted                                                                                                  |
-| Full integration, e2e and legacy suites, MySQL 8.4    | integration: 79 files pass, 5 skipped; 1,288 tests pass, 104 skipped. e2e and legacy: still running when this was written |
+| Check                                                 | Result                                                                                                                                                               |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| format, oxlint, ESLint (ghost and both packages)      | pass, at each of the three commits                                                                                                                                   |
+| Boundaries                                            | pass: 5941 modules, 286 known violations, 189 deferred (5940 before; one new file)                                                                                   |
+| Domain rules, knip, `lint:packages`, versioning, docs | pass                                                                                                                                                                 |
+| Typecheck (`nx run ghost:test:types`)                 | pass                                                                                                                                                                 |
+| Unit suite                                            | 828 files pass; 34 tests fail in the same 3 Mailgun and mailer files as baseline, at each commit                                                                     |
+| DB-backed domain set, MySQL 8.4                       | 7 files, 75 tests pass, at each commit                                                                                                                               |
+| Legacy inventory test                                 | 71 pass                                                                                                                                                              |
+| `tools/scripts` tests                                 | 463 tests: 432 pass, 29 fail, 2 cancelled, **the same before `d47bd61` and after `8e517db`**                                                                         |
+| `tools/gx` tests                                      | 155 pass                                                                                                                                                             |
+| Release archive                                       | built, installed, booted                                                                                                                                             |
+| Full integration, e2e and legacy suites, MySQL 8.4    | pass. Integration: 79 files, 1,288 tests (5 files and 104 tests skipped by the suite). e2e: 209 files, 3,329 tests, 6 expected failures. Legacy: 35 files, 464 tests |
 
 Two baseline figures differ from part 2's report and were measured here on the
 commit before any change: the DB-backed set is 7 files and 75 tests (part 2
@@ -2285,5 +2289,8 @@ says 20). Five of the 29 are in `domain-boundaries.test.ts`.
   profile: both edited, neither run.
 - **Coverage numbers**, **worker threads**, **Admin against this backend**,
   **`gx services verify`**: as in part 2.
-- **Boot time**: from source, not measured in this part.
+- **Boot time against a baseline.** From source after the moves, four boots
+  against MySQL logged 4.281s (first), then 2.469s, 2.192s and 2.328s. The
+  commit before was not timed in this container, and part 2's figures are
+  from another one, so no comparison is claimed.
 - MySQL was `mysql:8.4` (8.4.13) from Docker Hub, not a pinned digest.
