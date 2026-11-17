@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const url = require('url');
 const debug = require('@tryghost/debug')('services:data:entry-lookup');
-const matchPermalinkParams = require('./match-permalink-params');
+const { matchPermalinkParams } = require('./match-permalink-params');
 
 /**
  * Query API for a single entry/resource.

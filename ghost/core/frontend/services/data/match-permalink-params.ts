@@ -1,9 +1,11 @@
-const routeMatch = require('path-match')();
+import pathMatch from 'path-match';
+
+const routeMatch = pathMatch();
 
 const PARAM = /:([A-Za-z_]\w*)(?:\([^)]*\))?[+*?]?/g;
 const BARE_PARAM = /:([A-Za-z_]\w*)(?![\w(])/g;
 
-function constrainHyphenatedPermalinkParams(permalinks) {
+function constrainHyphenatedPermalinkParams(permalinks: string): string {
   // Hyphen-separated params need explicit bounds so earlier params do not
   // consume hyphenated values that belong to later params.
   return permalinks
@@ -30,7 +32,10 @@ function constrainHyphenatedPermalinkParams(permalinks) {
     .join('/');
 }
 
-module.exports = function matchPermalinkParams(permalinks, targetPath) {
+export function matchPermalinkParams(
+  permalinks: string,
+  targetPath: string,
+): Record<string, string> | false {
   const matchFunc = routeMatch(constrainHyphenatedPermalinkParams(permalinks));
   return matchFunc(targetPath);
-};
+}

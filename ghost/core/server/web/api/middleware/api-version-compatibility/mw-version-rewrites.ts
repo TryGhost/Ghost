@@ -1,27 +1,23 @@
-const legacyApiPathMatch = require('./legacy-api-path-match');
-const urlUtils = require('../../../../../shared/url-utils').default;
+import type { RequestHandler } from 'express';
+import urlUtils from '../../../../../shared/url-utils';
+import { legacyApiPathMatch } from './legacy-api-path-match';
 
 /**
  * If there is a version in the URL, and this is a valid API URL containing admin/content
  * Rewrite the URL and add the accept-version & deprecation headers
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- * @param {import('express').NextFunction} next
  */
-module.exports = function mwVersionRewrites(req, res, next) {
-  let { version } = legacyApiPathMatch(req.url);
+export const versionRewrites: RequestHandler = (req, res, next) => {
+  const { version: matchedVersion } = legacyApiPathMatch(req.url);
 
   // If we don't match a valid version, carry on
-  if (!version) {
+  if (!matchedVersion) {
     return next();
   }
 
-  const versionlessUrl = req.url.replace(`${version}/`, '');
+  const versionlessUrl = req.url.replace(`${matchedVersion}/`, '');
 
   // Always send the explicit, numeric version in headers
-  if (version === 'canary') {
-    version = 'v4';
-  }
+  const version = matchedVersion === 'canary' ? 'v4' : matchedVersion;
 
   // Rewrite the url
   req.url = versionlessUrl;

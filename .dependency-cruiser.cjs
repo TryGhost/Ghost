@@ -252,7 +252,6 @@ const specialistDependencies = [
     dependency: npm('path-match'),
     owners: [
       core('frontend/services/data/match-permalink-params.ts'),
-      core('server/web/api/middleware/api-version-compatibility/legacy-api-path-match.ts'),
       service('url/permalink-matcher.ts'),
     ],
   },
