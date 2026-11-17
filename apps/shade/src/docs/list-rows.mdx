@@ -1,0 +1,97 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Components / Lists and Tables" />
+
+<div className="sb-doc">
+
+# Lists and tables
+
+<p className="excerpt">Content aligns with its header. Interactive rows highlight outward into the gutter, while their contents stay still. Shade owns the shared treatment for tables and content lists.</p>
+
+## Scope
+
+Use this contract for content lists and data tables in pages, cards, dialogs,
+and settings, including notification rows. Prefer `Table` for tabular data and
+`ActionList` for rows with a primary action and optional secondary controls.
+Use the shared row recipe when a custom row must keep different markup.
+
+**DataList is an explicit exception.** Keep its layout, data bars, hover effects,
+and sliding values unchanged. Navigation, dropdown options, command menus, and
+full feed/article cards follow their own components' treatments.
+
+Static rows align with their headers but have no row hover treatment. Controls
+inside a static row retain their own interactions. A sortable settings form is
+still a settings list; it is distinct from the navigation UI it may configure.
+
+## Alignment and gutters
+
+Align the outer edges of row content with its page or section header and the
+corresponding table column headings. Remove outer horizontal row padding while
+preserving spacing between columns. Contents stay in place when highlighted.
+
+The rounded background extends **16px on each side** of the aligned content.
+Use Shade's existing radius, hover, and selection tokens. Reuse the container's
+gutter and reduce the extension when the gutter is smaller. A highlight must
+not be clipped or introduce horizontal scrolling. Preserve existing scrollports,
+sticky columns, and virtualized row positioning.
+
+## Separators
+
+Hide the separators immediately above and below a highlighted body row,
+including the separator owned by its neighbor. Preserve the divider beneath
+table column headings and the outer border of a card or container. Keep row
+heights unchanged when separators disappear and return.
+
+## Primary and secondary actions
+
+For a row with a primary action, its entire highlighted area, including the
+sideways extension, activates that destination. Keep secondary links, buttons,
+checkboxes, and drag handles independent. Preserve native link behavior, such as
+opening a destination in a new tab, and give the actual control a visible
+keyboard focus indicator.
+
+Only rows with a row-level interaction receive the interactive treatment.
+Where there is no primary row action, keep the existing controls and do not
+make the row background into another control.
+
+## State behavior
+
+| State                  | Row treatment                                                                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Resting                | Aligned content and body-row separators.                                                                                                                            |
+| Pointer hover          | Expanded, rounded hover background; adjacent body separators hidden.                                                                                                |
+| Keyboard focus inside  | Same background and separators as hover, plus a visible indicator on the focused link or control.                                                                   |
+| Selected               | Persistent expanded, rounded selection background; adjacent body separators hidden. Selection color remains stronger than hover.                                    |
+| Adjacent selected rows | Each retains its individual rounded shape, without added gaps or changed row heights.                                                                               |
+| Touch press            | Same treatment during the press; clears on release or cancellation. A tap activates directly, a secondary control activates only itself, and scrolling still works. |
+| Dragging               | Ordinary hover and focus fills are suppressed temporarily. Existing drag feedback remains; normal styling returns afterward.                                        |
+| Static or disabled     | No invented row action or row hover treatment; individual enabled controls keep their own states.                                                                   |
+
+## Using the shared behavior
+
+`TableRow` and `ActionListItem` use the shared recipe. Opt a table body row into
+interaction only when it has a primary action; header, footer, spacer, and
+data-only rows remain static. `ActionListItem` supports its existing `hover`
+opt-out for intentionally static or unavailable actions. Mark its primary
+link or button with `ActionListItemContent asChild` and keep secondary controls
+in `ActionListItemActions`.
+
+For custom markup, import `rowSurface` and `rowSurfaceClasses` from
+`@tryghost/shade/components`. Use `rowSurface('interactive')` for an interactive
+row or `rowSurface('static')` for a static one. These provide shared styling;
+the consumer still owns its links, events, selection, and permissions.
+
+- Use `data-state="selected"` for selected rows.
+- Mark an actual primary link or button with `rowSurfaceClasses.primaryAction`
+  so the clickable extension follows the shared geometry.
+- Use `rowSurfaceClasses.inset` when a constrained scrollport has no outward
+  gutter. Keep the row content aligned with the corresponding header.
+- Set `data-row-dragging="true"` on the sortable region while dragging to
+  suppress ordinary row fills, including in its drag overlay.
+
+Use the live **Table**, **ActionList**, **SortableList**, and **rowSurface**
+stories to inspect variants and states. Check light and dark themes, primary
+edge clicks, independent secondary controls, the first/last body rows,
+consecutive selections, keyboard focus, touch scrolling, and drag cancellation.
+
+</div>
