@@ -1,5 +1,5 @@
 import { renderHookWithProviders } from '../../../src/test/test-utils';
-import { usePresenceApi } from '../../../src/api/presence';
+import { presenceRequestBody, presenceTabId, usePresenceApi } from '../../../src/api/presence';
 import { onUpgradeStatus } from '../../../src/utils/api/upgrade-status';
 import { SessionExpiredError } from '../../../src/utils/errors';
 import { withMockFetch } from '../../utils/mock-fetch';
@@ -17,9 +17,15 @@ describe('presence api', () => {
       expect(String(url)).toMatch(/\/ghost\/api\/admin\/presence\/$/);
       expect(init.method).toBe('POST');
       expect(JSON.parse(String(init.body))).toEqual({
-        presence: [{ resources: [resource], editing: resource }],
+        presence: [{ resources: [resource], editing: resource, tab: presenceTabId() }],
       });
     });
+  });
+
+  it('names the tab with one id per page load, and only when recording the editor', () => {
+    expect(presenceTabId()).toMatch(/^[a-f0-9]{24}$/);
+    expect(presenceTabId()).toBe(presenceTabId());
+    expect(presenceRequestBody([resource])).toEqual({ presence: [{ resources: [resource] }] });
   });
 
   it('keeps a 503 from the poll out of the maintenance alert', async () => {
@@ -62,7 +68,9 @@ describe('presence api', () => {
         'content-type': 'application/json',
         'app-pragma': 'no-cache',
       });
-      expect(JSON.parse(String(init.body))).toEqual({ presence: [{ resource }] });
+      expect(JSON.parse(String(init.body))).toEqual({
+        presence: [{ resource, tab: presenceTabId() }],
+      });
     });
   });
 });

@@ -63,6 +63,8 @@ describe('presence polling', () => {
         { editing: { id: POST_ID, type: 'post' }, resources: [{ id: POST_ID, type: 'post' }] },
       ],
     });
+    const [{ tab }] = (presence.requests[0].body as { presence: [{ tab: string }] }).presence;
+    expect(tab).toMatch(/^[a-f0-9]{24}$/);
   });
 
   it('asks about the visible rows from the posts list without advertising the viewer', async () => {
@@ -115,7 +117,7 @@ describe('presence polling', () => {
   it('polls the rows of a list reached by leaving the editor', async () => {
     fakeEditorChrome();
     fakePostRead('Presence example');
-    fakeLeave();
+    const leave = fakeLeave();
     fakePostsListScreen();
     fakePosts([post({ id: POST_ID, title: 'Presence example', status: 'draft' })]);
     const presence = fakePresence();
@@ -123,6 +125,12 @@ describe('presence polling', () => {
     await expect.poll(() => presence.requests.length).toBeGreaterThan(0);
     await page.getByRole('link', { name: 'Posts', exact: true }).click();
     await expect.element(page.getByText('Presence example')).toBeVisible();
+    // Leaving the editor removes this tab's entry, named by the same id the heartbeat carried.
+    await expect.poll(() => leave.requests.length).toBeGreaterThan(0);
+    const heartbeat = presence.requests[0].body as { presence: [{ tab: string }] };
+    expect(leave.requests[0].body).toEqual({
+      presence: [{ resource: { id: POST_ID, type: 'post' }, tab: heartbeat.presence[0].tab }],
+    });
     await expect
       .poll(() =>
         presence.requests.some(
