@@ -415,29 +415,36 @@ export class StripeCheckoutConfigService {
     const now = toDatabaseDate(at);
 
     return ensureTransaction(executor, async (trx) => {
-      await assertTargets(trx, changes, this.fields);
-      const before = await this.requirements().browse(trx);
-
+      // The config row is locked before anything is read, so saves run one at a time and each
+      // reads what the save before it committed. A site that has never saved has no row to lock,
+      // so an empty one is inserted first. An existing row is left as it is: merging its own slug
+      // changes nothing, and unlike ignoring the conflict it takes the row's exclusive lock, so
+      // two saves can't each hold a shared lock while waiting for the other's.
       await trx(CONFIG_TABLE)
         .insert({
           id: new ObjectID().toHexString(),
           slug: CONFIG_SLUG,
           created_at: now,
           updated_at: now,
-          ...columns,
         })
         .onConflict('slug')
-        .merge({ ...columns, updated_at: now });
+        .merge(['slug']);
+      const saved = await trx(CONFIG_TABLE).where('slug', CONFIG_SLUG).forUpdate().first('id');
+      if (!saved) {
+        throw new errors.InternalServerError({
+          message: 'The Stripe Checkout config was not found right after inserting it.',
+        });
+      }
+
+      await assertTargets(trx, changes, this.fields);
+      const before = await this.requirements().browse(trx);
+
+      await trx(CONFIG_TABLE)
+        .where('id', saved.id)
+        .update({ ...columns, updated_at: now });
 
       for (const change of changes) {
         await this.writeTargets(trx, change, at);
-      }
-      // An existing row keeps its id, so read the id back for the history entry.
-      const saved = await trx(CONFIG_TABLE).where('slug', CONFIG_SLUG).first('id');
-      if (!saved) {
-        throw new errors.InternalServerError({
-          message: 'The Stripe Checkout config was not found right after saving it.',
-        });
       }
       await this.actionLog.record(trx, context, {
         resourceType: 'stripe_checkout_config',
