@@ -218,6 +218,18 @@ describe('Webhook delivery', function () {
             assert.equal(models.Webhook.edit.args[0][0].last_triggered_status, 200);
           });
 
+          it('retries a 429 after the wait its Retry-After asks for', async function () {
+            deliveryTo(WEBHOOK_PATH).reply(429, '', { 'Retry-After': '3' });
+            const retry = deliveryTo(WEBHOOK_PATH).reply(200);
+            const started = Date.now();
+
+            await triggerOutsideTests();
+
+            assert.ok(retry.isDone(), 'Expected the rate limited delivery to be retried');
+            assert.ok(Date.now() - started >= 3000, 'Expected the retry to wait for Retry-After');
+            assert.equal(models.Webhook.edit.args[0][0].last_triggered_status, 200);
+          });
+
           it('retries a delivery the connection failed for', async function () {
             deliveryTo(WEBHOOK_PATH).replyWithError({
               code: 'ECONNRESET',

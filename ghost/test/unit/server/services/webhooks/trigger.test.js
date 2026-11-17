@@ -428,7 +428,7 @@ describe('Webhook Service', function () {
             'Content-Version': `v${ghostVersion.safe}`,
           },
           timeout: { request: 2000 },
-          retry: { limit: 0, methods: ['POST'] },
+          retry: { limit: 0, methods: ['POST'], maxRetryAfter: 16000 },
         },
       ]);
     });
@@ -443,7 +443,11 @@ describe('Webhook Service', function () {
         process.env.NODE_ENV = environment;
       }
 
-      assert.deepEqual(request.args[0][1].retry, { limit: 5, methods: ['POST'] });
+      assert.deepEqual(request.args[0][1].retry, {
+        limit: 5,
+        methods: ['POST'],
+        maxRetryAfter: 16000,
+      });
     });
 
     it('records the status and time of a delivery without waiting for the write', async function () {

@@ -163,9 +163,12 @@ class WebhookTrigger {
       },
       // Got retries network errors, timeouts, 408, 429 and 5xx gateway errors, after 1, 2, 4,
       // 8 and 16 seconds, but only for the methods named here: its defaults leave out POST.
+      // A Retry-After up to the longest of those waits is honoured; a longer one isn't retried.
+      // Without maxRetryAfter, got caps it at the two second timeout.
       retry: {
         limit: process.env.NODE_ENV?.startsWith('test') ? 0 : 5,
         methods: ['POST'],
+        maxRetryAfter: 16 * 1000,
       },
     };
 
