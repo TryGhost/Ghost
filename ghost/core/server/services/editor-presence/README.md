@@ -11,7 +11,7 @@ One sorted set per site:
 
 ```
 key     <keyPrefix>active        e.g. 2368:presence:active
-member  <type>:<resourceId>:<userId>
+member  <type>:<resourceId>:<userId>[:<tab>]
 score   last heartbeat, server milliseconds
 ```
 
@@ -22,8 +22,9 @@ next heartbeat repairs a partial write, and the Redis user then needs only
 `ZADD`, `PEXPIRE`, `ZREMRANGEBYSCORE`, `ZRANGEBYSCORE` and `ZREM`. A read is one
 `ZRANGEBYSCORE` for the active window;
 the service filters to the requested resource ids and drops the caller in
-process. Idle sites hold no key. Multiple tabs for one user collapse to one
-member.
+process. Idle sites hold no key. A client that names its editor tab gets one
+member per tab, so closing one tab leaves the others in place; the response
+still lists each user once per resource, with their latest heartbeat.
 
 Only ids are stored. Admin resolves names and avatars from the staff users list.
 
@@ -74,10 +75,12 @@ integration keys are rejected. The route exists only while the
 stop polling.
 
 ```json
-{ "presence": [{ "resources": [{ "id": "…", "type": "post" }], "editing": { "id": "…", "type": "post" } }] }
+{ "presence": [{ "resources": [{ "id": "…", "type": "post" }], "editing": { "id": "…", "type": "post" }, "tab": "…" }] }
 ```
 
 `editing` records a heartbeat; `resources` (up to 50) selects what to report.
+`tab` is optional: an id the client chooses for one editor tab, 8 to 36
+letters, digits or hyphens.
 The response lists other users active on those ids with their last heartbeat and
 the server time:
 
@@ -85,9 +88,9 @@ the server time:
 { "presence": [{ "active": [{ "userId": "…", "resourceId": "…", "resourceType": "post", "ts": 1761580337890 }], "serverTime": 1761580350123 }] }
 ```
 
-`POST /ghost/api/admin/presence/leave/` with `{ "presence": [{ "resource": { "id": "…", "type": "post" } }] }`
-removes the caller's member immediately; closing a tab without it is covered by
-the active window.
+`POST /ghost/api/admin/presence/leave/` with `{ "presence": [{ "resource": { "id": "…", "type": "post" }, "tab": "…" }] }`
+removes the caller's member for that tab immediately; closing a tab without it
+is covered by the active window.
 
 Both routes carry Ghost's shared rate limiter under `spam.presence_block`: 12
 requests per staff user per 10 seconds, counted in process memory, then a 429

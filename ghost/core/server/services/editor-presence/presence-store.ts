@@ -5,6 +5,8 @@ export interface PresenceMember {
   type: ResourceType;
   resourceId: string;
   userId: string;
+  /** Set when the client names its editor tab, so each tab is a member of its own. */
+  tab?: string;
 }
 
 export interface StoredPresence {
@@ -13,8 +15,8 @@ export interface StoredPresence {
 }
 
 /**
- * One site's presence set: member = `type:resourceId:userId`, score = last
- * heartbeat in server milliseconds. Implementations are site-scoped by
+ * One site's presence set: member = `type:resourceId:userId[:tab]`, score =
+ * last heartbeat in server milliseconds. Implementations are site-scoped by
  * construction; Ghost runs one site per process.
  */
 export interface PresenceStore {
@@ -31,17 +33,18 @@ export function isResourceType(value: string): value is ResourceType {
 }
 
 export function encodeMember(member: PresenceMember): string {
-  return `${member.type}:${member.resourceId}:${member.userId}`;
+  const base = `${member.type}:${member.resourceId}:${member.userId}`;
+  return member.tab ? `${base}:${member.tab}` : base;
 }
 
 export function decodeMember(member: string): PresenceMember | null {
   const parts = member.split(':');
-  if (parts.length !== 3) {
+  if (parts.length !== 3 && parts.length !== 4) {
     return null;
   }
-  const [type, resourceId, userId] = parts;
-  if (!isResourceType(type) || !resourceId || !userId) {
+  const [type, resourceId, userId, tab] = parts;
+  if (!isResourceType(type) || !resourceId || !userId || tab === '') {
     return null;
   }
-  return { type, resourceId, userId };
+  return tab === undefined ? { type, resourceId, userId } : { type, resourceId, userId, tab };
 }

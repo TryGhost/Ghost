@@ -10,13 +10,16 @@ import {
 
 const objectId = z.string().regex(/^[a-f0-9]{24}$/i);
 const resourceSchema = z.object({ id: objectId, type: z.enum(RESOURCE_TYPES) }).strict();
+/** Chosen by the client for one editor tab. No colon: that separates the parts of a member. */
+const tabId = z.string().regex(/^[a-z0-9-]{8,36}$/i);
 const pollSchema = z
   .object({
     resources: z.array(resourceSchema).max(50).default([]),
     editing: resourceSchema.optional(),
+    tab: tabId.optional(),
   })
   .strict();
-const leaveSchema = z.object({ resource: resourceSchema }).strict();
+const leaveSchema = z.object({ resource: resourceSchema, tab: tabId.optional() }).strict();
 
 export interface ActivePresence {
   userId: string;
@@ -137,10 +140,12 @@ export class EditorPresenceService {
 
   /**
    * Record that `userId` has `editing` open, then return everyone else active on
-   * the requested resources. Callers see only the ids they asked about.
+   * the requested resources. Callers see only the ids they asked about. `tab`
+   * keeps each of the caller's editor tabs as its own member, so closing one
+   * does not clear the others.
    */
   async poll(userId: string, input: unknown): Promise<PollResult> {
-    const { resources, editing } = parse(pollSchema, input);
+    const { resources, editing, tab } = parse(pollSchema, input);
     const now = this.now();
 
     const requested = new Set(resources.map((resource) => resource.id));
@@ -156,7 +161,7 @@ export class EditorPresenceService {
       if (editing) {
         await this.fromStore('touch', () =>
           this.store.touch(
-            encodeMember({ type: editing.type, resourceId: editing.id, userId }),
+            encodeMember({ type: editing.type, resourceId: editing.id, userId, tab }),
             now,
             this.retentionMs,
           ),
@@ -165,20 +170,25 @@ export class EditorPresenceService {
       const stored = await this.fromStore('read', () => this.store.read(now - this.activeWindowMs));
       this.record('presence-poll', started, { outcome: 'ok', write: Boolean(editing) });
 
-      const active: ActivePresence[] = [];
+      // A user with the document open in several tabs is reported once, with the latest heartbeat.
+      const latest = new Map<string, ActivePresence>();
       for (const { member, ts } of stored) {
         const decoded = decodeMember(member);
         if (!decoded || decoded.userId === userId || !requested.has(decoded.resourceId)) {
           continue;
         }
-        active.push({
-          userId: decoded.userId,
-          resourceId: decoded.resourceId,
-          resourceType: decoded.type,
-          ts,
-        });
+        const key = `${decoded.resourceId}:${decoded.userId}`;
+        const seen = latest.get(key);
+        if (!seen || ts > seen.ts) {
+          latest.set(key, {
+            userId: decoded.userId,
+            resourceId: decoded.resourceId,
+            resourceType: decoded.type,
+            ts,
+          });
+        }
       }
-      return { active, serverTime: now };
+      return { active: [...latest.values()], serverTime: now };
     } catch (error) {
       this.record('presence-poll', started, { outcome: 'error', write: Boolean(editing) });
       throw error;
@@ -186,11 +196,13 @@ export class EditorPresenceService {
   }
 
   async leave(userId: string, input: unknown): Promise<void> {
-    const { resource } = parse(leaveSchema, input);
+    const { resource, tab } = parse(leaveSchema, input);
     const started = performance.now();
     try {
       await this.fromStore('remove', () =>
-        this.store.remove(encodeMember({ type: resource.type, resourceId: resource.id, userId })),
+        this.store.remove(
+          encodeMember({ type: resource.type, resourceId: resource.id, userId, tab }),
+        ),
       );
       this.record('presence-leave', started, { outcome: 'ok' });
     } catch (error) {

@@ -30,10 +30,23 @@ describe('presence member encoding', function () {
     assert.deepEqual(decodeMember(encodeMember(member)), member);
   });
 
+  it('round-trips a member that names its tab', function () {
+    const member = {
+      type: 'post' as const,
+      resourceId: 'a'.repeat(24),
+      userId: 'b'.repeat(24),
+      tab: 'c0ffee-tab-1',
+    };
+    assert.equal(encodeMember(member), `post:${member.resourceId}:${member.userId}:c0ffee-tab-1`);
+    assert.deepEqual(decodeMember(encodeMember(member)), member);
+  });
+
   it('rejects malformed members', function () {
     assert.equal(decodeMember('post:only-two'), null);
     assert.equal(decodeMember('comment:a:b'), null);
     assert.equal(decodeMember('post::b'), null);
+    assert.equal(decodeMember('post:a:b:'), null);
+    assert.equal(decodeMember('post:a:b:c:d'), null);
   });
 });
 
