@@ -10,31 +10,6 @@ const { COLLECTION_FLAG } = require('../../../stripe-checkout-config/models');
 /** @typedef {import('../../../../lib/member-signup-contexts').SignupContext} SignupContext */
 /** @typedef {import('../../tracking').CheckoutCompletionAttempt} CheckoutCompletionAttempt */
 
-function isStripeMetadataTrue(value) {
-  return value === true || value === 'true';
-}
-
-function hasStripeMetadataKey(metadata, key) {
-  return Object.hasOwn(metadata || {}, key);
-}
-
-function isGiftCheckoutSession(session) {
-  return (
-    hasStripeMetadataKey(session.metadata, 'ghost_gift_id') ||
-    isStripeMetadataTrue(session.metadata?.ghost_gift)
-  );
-}
-
-function isDonationCheckoutSession(session) {
-  return isStripeMetadataTrue(session.metadata?.ghost_donation);
-}
-
-// Matches the donation marker on key presence, not truthiness, so an ill-formed
-// donation marker alongside a true gift marker still counts as a conflict.
-function hasConflictingCheckoutFlowMetadata(session) {
-  return hasStripeMetadataKey(session.metadata, 'ghost_donation') && isGiftCheckoutSession(session);
-}
-
 /**
  * The wallet the buyer paid for the checkout's subscription with, as Stripe names it, such as
  * `apple_pay` or `google_pay`: `none` for a card or another method, and `unknown` when the
@@ -138,73 +113,56 @@ module.exports = class CheckoutSessionEventService {
   }
 
   /**
-   * Handles a `checkout.session.completed` event
-   * Delegates to the appropriate handler based on the session mode and metadata
+   * Completes a paid signup or upgrade from a completed Checkout session in `subscription` mode:
+   * makes the buyer a paid member, or links the subscription to the member who bought it, and
+   * saves what the checkout collected. Records a `stripe_checkout.complete` span.
+   *
    * @param {import('stripe').Stripe.Checkout.Session} session
-   * @param {import('stripe').Stripe.Event.Type} [eventType]
    */
-  async handleEvent(session, eventType = 'checkout.session.completed') {
+  async completeSubscriptionCheckout(session) {
     return this.deps.tracking.checkoutCompletion(async (attempt) => {
-      if (eventType === 'checkout.session.async_payment_failed') {
-        return;
-      }
-
-      if (eventType === 'checkout.session.async_payment_succeeded') {
-        if (session.mode === 'payment' && isGiftCheckoutSession(session)) {
-          await this.handlePaymentEvent(session, attempt);
-        }
-        return;
-      }
-
-      if (session.mode === 'setup') {
-        attempt.completing('setup');
-        await this.handleSetupEvent(session);
-      }
-
-      if (session.mode === 'subscription') {
-        attempt.completing('subscription');
-        await this.handleSubscriptionEvent(session, attempt);
-      }
-
-      if (session.mode === 'payment') {
-        await this.handlePaymentEvent(session, attempt);
-      }
+      attempt.completing('subscription');
+      await this.handleSubscriptionEvent(session, attempt);
     });
   }
 
   /**
-   * Routes a `payment` mode session to the donation or gift handler. Gift purchases
-   * may complete asynchronously, so their handler only runs once Stripe reports the
-   * session as paid, whichever event carried it.
+   * Saves the card a member added in a completed Checkout session in `setup` mode as the payment
+   * method of their subscriptions. Records a `stripe_checkout.complete` span.
    *
    * @param {import('stripe').Stripe.Checkout.Session} session
-   * @param {CheckoutCompletionAttempt} attempt
    */
-  async handlePaymentEvent(session, attempt) {
-    if (hasConflictingCheckoutFlowMetadata(session)) {
-      logging.warn(
-        {
-          event: { name: 'stripe_checkout.session.payment_flow_conflict' },
-          session_id: session.id,
-        },
-        'Ignored a checkout session marked as both a donation and a gift',
-      );
-      return;
-    }
+  async updateCard(session) {
+    return this.deps.tracking.checkoutCompletion(async (attempt) => {
+      attempt.completing('setup');
+      await this.handleSetupEvent(session);
+    });
+  }
 
-    if (isGiftCheckoutSession(session)) {
-      if (session.payment_status !== 'paid') {
-        return;
-      }
+  /**
+   * Completes a gift purchase once Stripe has received the payment. Records a
+   * `stripe_checkout.complete` span.
+   *
+   * @param {import('stripe').Stripe.Checkout.Session} session
+   */
+  async completeGiftPurchase(session) {
+    return this.deps.tracking.checkoutCompletion(async (attempt) => {
       attempt.completing('gift');
       await this.handleGiftEvent(session);
-      return;
-    }
+    });
+  }
 
-    if (isDonationCheckoutSession(session)) {
+  /**
+   * Records a donation and tells the site's staff about it. Records a `stripe_checkout.complete`
+   * span.
+   *
+   * @param {import('stripe').Stripe.Checkout.Session} session
+   */
+  async recordDonation(session) {
+    return this.deps.tracking.checkoutCompletion(async (attempt) => {
       attempt.completing('donation');
       await this.handleDonationEvent(session);
-    }
+    });
   }
 
   /**

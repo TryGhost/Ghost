@@ -4683,7 +4683,7 @@ describe('Members API', function () {
           outcome: 'failure',
           error: 'Error',
           type: 'checkout.session.completed',
-          kind: 'checkout_session',
+          kind: 'subscription_checkout',
           result: 'failed',
           reason: 'unclassified',
           owner: 'ghost',
