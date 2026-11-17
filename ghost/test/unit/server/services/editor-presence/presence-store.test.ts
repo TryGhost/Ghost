@@ -82,9 +82,9 @@ for (const { label, build } of scenarios) {
 describe('RedisPresenceStore pipeline', function () {
   it('expires the key for the retention window', async function () {
     const client = new FakeRedisClient();
-    const store = new RedisPresenceStore({ client, key: 'site:{1:presence}:active' });
+    const store = new RedisPresenceStore({ client, key: '2368:presence:active' });
     await store.touch('post:a:u1', 1_000, RETENTION);
-    assert.equal(client.ttls.get('site:{1:presence}:active'), RETENTION);
+    assert.equal(client.ttls.get('2368:presence:active'), RETENTION);
   });
 
   it('sets the TTL before trimming so a new key never lacks one', async function () {

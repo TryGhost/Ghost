@@ -10,7 +10,7 @@ for `UPDATE_COLLISION` on `updated_at`.
 One sorted set per site:
 
 ```
-key     <keyPrefix>active        e.g. site:{<id>:presence}:active, or presence:active
+key     <keyPrefix>active        e.g. 2368:presence:active
 member  <type>:<resourceId>:<userId>
 score   last heartbeat, server milliseconds
 ```
@@ -33,23 +33,38 @@ The root asks the adapter manager for `cache:presence`. When that adapter is
 Redis-backed, the service borrows its client and key prefix and uses the sorted
 set above. Any other adapter, including the default memory cache, selects an
 in-process map with the same contract. The memory store is correct for a single
-process only; multi-process deployments configure Redis:
+process only; a site served by several processes configures Redis:
 
 ```json
 {
   "adapters": {
     "cache": {
+      "Redis": {
+        "host": "127.0.0.1",
+        "port": 6379
+      },
       "presence": {
         "adapter": "Redis",
-        "host": "127.0.0.1",
-        "port": 6379,
-        "keyPrefix": "presence:",
-        "featureName": "presence"
+        "keyPrefix": "2368:presence:",
+        "featureName": "presence",
+        "ttl": 60
       }
     }
   }
 }
 ```
+
+- Redis cache adapters share one connection per process, the first one
+  created, so presence uses the connection settings under `Redis` like every
+  other feature. To put presence on a different Redis, set `host` and `port` on
+  the `presence` object together with `"reuseConnection": false`; without that
+  they are ignored once another Redis adapter exists.
+- The key is `<keyPrefix>active`, or `presence:active` without a prefix. Sites
+  that share a Redis database must each use their own prefix, or they read
+  each other's presence.
+- `ttl` is the retention in seconds, described under Windows. A feature
+  inherits any `ttl` set under `Redis`, which is usually far longer than
+  presence wants, so set it here.
 
 ## Endpoint
 
