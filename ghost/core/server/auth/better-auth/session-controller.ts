@@ -17,6 +17,8 @@ const messages = {
     'Could not determine origin of request. Please ensure an Origin or Referrer header is present.',
   codeSent:
     'A 6-digit sign-in verification code has been sent to your email to keep your account safe.',
+  noSessionUser: 'Could not fetch user from the session.',
+  tooManyAttempts: 'Too many attempts.',
 };
 
 const NEEDS_2FA: string[] = [
@@ -29,7 +31,10 @@ const API_ERROR_HEADERS = Symbol.for('better-call:api-error-headers');
 
 export type SessionControllerDeps = {
   /** Read per call: the instance is built by boot */
-  getAuth(): Pick<GhostAuth['api'], 'signInEmail' | 'signOut'>;
+  getAuth(): Pick<
+    GhostAuth['api'],
+    'signInEmail' | 'signOut' | 'sendDeviceVerification' | 'verifyDevice'
+  >;
   /** The legacy session's origin rule: Origin, else Referer, else the admin URL */
   getOriginOfRequest(req: Request): string | null;
   getAdminOrigin(): string;
@@ -51,6 +56,14 @@ export const sessionCookies = (headers: Headers) => headers.getSetCookie().filte
 function forwardSessionCookie(headers: Headers, res: Response) {
   // An array, as express-session sends it
   res.setHeader('Set-Cookie', sessionCookies(headers));
+}
+
+// Headers an endpoint set before it threw
+function forwardErrorCookies(err: unknown, res: Response) {
+  const headers = (err as Record<symbol, unknown>)?.[API_ERROR_HEADERS];
+  if (headers instanceof Headers) {
+    forwardSessionCookie(headers, res);
+  }
 }
 
 type OriginDeps = Pick<SessionControllerDeps, 'getOriginOfRequest' | 'getAdminOrigin'>;
@@ -82,8 +95,8 @@ export function requireAdminOrigin(deps: OriginDeps) {
 }
 
 /**
- * `POST` and `DELETE /session` on Better Auth, with the legacy responses and
- * errors (plan §5.1, §5.3).
+ * `/session` and `/session/verify` on Better Auth, with the legacy responses
+ * and errors (plan §5.1, §5.3).
  */
 export function createSessionController(deps: SessionControllerDeps) {
   // One error for an unknown email or a wrong password, so sign-in does not enumerate staff
@@ -109,6 +122,13 @@ export function createSessionController(deps: SessionControllerDeps) {
     }
 
     switch (code) {
+      case DEVICE_VERIFICATION_ERROR_CODES.TOO_MANY_EMAILS.code:
+        return new errors.TooManyRequestsError({
+          message: err.message,
+          context: messages.tooManyAttempts,
+        });
+      case DEVICE_VERIFICATION_ERROR_CODES.EMAIL_FAILED.code:
+        return new errors.EmailError({ message: err.message, err });
       case BASE_ERROR_CODES.INVALID_EMAIL_OR_PASSWORD.code:
       case BASE_ERROR_CODES.INVALID_EMAIL.code:
         return credentialsError();
@@ -128,7 +148,7 @@ export function createSessionController(deps: SessionControllerDeps) {
     req: Request,
     res: Response,
     next: NextFunction,
-    { email, password }: { email: string; password: string },
+    { email, password, token }: { email: string; password: string; token?: string },
   ) {
     try {
       assertAdminOrigin(deps, req);
@@ -136,17 +156,15 @@ export function createSessionController(deps: SessionControllerDeps) {
       let headers: Headers;
       try {
         // `headers` without `request`, so Better Auth returns headers rather than a Response
+        // The device verification plugin reads an inline `token` before validation strips it
         ({ headers } = await deps.getAuth().signInEmail({
-          body: { email, password },
+          body: { email, password, ...(token ? { token } : {}) },
           headers: fromNodeHeaders(req.headers),
           returnHeaders: true,
         }));
       } catch (err) {
         // An unverified session keeps its cookie, so the browser can verify it
-        const errorHeaders = (err as Record<symbol, unknown>)?.[API_ERROR_HEADERS];
-        if (errorHeaders instanceof Headers) {
-          forwardSessionCookie(errorHeaders, res);
-        }
+        forwardErrorCookies(err, res);
         throw toGhostError(err);
       }
 
@@ -175,5 +193,46 @@ export function createSessionController(deps: SessionControllerDeps) {
     }
   }
 
-  return { signIn, signOut };
+  async function sendVerification(req: Request, res: Response, next: NextFunction) {
+    try {
+      assertAdminOrigin(deps, req);
+      await deps.getAuth().sendDeviceVerification({ headers: fromNodeHeaders(req.headers) });
+      res.sendStatus(200);
+    } catch (err) {
+      // No session, or a verified one, which the gate does not let through
+      if (isAPIError(err) && err.statusCode === 401) {
+        return next(new errors.BadRequestError({ message: messages.noSessionUser }));
+      }
+      next(toGhostError(err));
+    }
+  }
+
+  async function verify(req: Request, res: Response, next: NextFunction) {
+    try {
+      assertAdminOrigin(deps, req);
+      const token = req.body?.token;
+      if (typeof token !== 'string' || !token) {
+        res.sendStatus(401);
+        return;
+      }
+
+      const { headers } = await deps.getAuth().verifyDevice({
+        body: { code: token },
+        headers: fromNodeHeaders(req.headers),
+        returnHeaders: true,
+      });
+      // The device-trust cookie
+      forwardSessionCookie(headers, res);
+      res.sendStatus(200);
+    } catch (err) {
+      // A wrong code, or no session to verify: legacy answers a bare 401
+      if (isAPIError(err) && err.statusCode === 401) {
+        res.sendStatus(401);
+        return;
+      }
+      next(toGhostError(err));
+    }
+  }
+
+  return { signIn, signOut, sendVerification, verify };
 }
