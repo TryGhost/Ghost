@@ -86,7 +86,7 @@ function TagsList({
                 key={key}
                 {...props}
                 className={cn(
-                  'group grid w-full items-center gap-x-4 p-2 lg:table-row lg:p-0',
+                  'mobile-list-row mobile-tags-row mobile-list-start mobile-list-end group grid w-full items-center gap-x-4 p-2 lg:table-row lg:p-0',
                   'grid-cols-1 md:grid-cols-[1fr_auto]',
                 )}
                 data-testid="tag-list-row"

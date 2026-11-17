@@ -393,6 +393,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                   // Not under a large title, whose header has
                   // its own separator.
                   className={cn(
+                    'mobile-posts-list',
                     !largeTitles && 'border-t border-border-default',
                     selection.modifierHeld && [
                       'cursor-default',

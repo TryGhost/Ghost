@@ -140,7 +140,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const isSettingsRoute = useIsSettingsSidebarRoute();
   const isMobile = useIsMobile();
   const admin7Design = useFeatureFlag('admin7Design');
-  const isViewSiteRoute = useLocation().pathname === '/site';
+  const { pathname } = useLocation();
+  const isViewSiteRoute = pathname === '/site';
+  const hasMobilePageSpacing =
+    /^\/(analytics|members|members-activity|posts|pages|tags|settings)(\/|$)/.test(pathname);
 
   // With admin7Design, the desktop page sits inside a frame: a top bar and
   // thin bezels around a rounded card. View site becomes a place of its own,
@@ -379,6 +382,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           ref={mainRef}
           className={cn(
             'flex-1 focus:outline-hidden',
+            hasMobilePageSpacing && 'mobile-page-spacing',
             sidebarVisible ? pageChromeClassName : 'min-h-0',
             floatingSidebar && largeTitleClassName,
             floatingSidebar &&

@@ -676,3 +676,66 @@ html[data-screen-transition='return']::view-transition-new(admin-mobile-nav):onl
     transform: translateY(100%);
   }
 }
+
+/* Mobile hardening shares the page gutter without changing excluded surfaces. */
+@media (width < 1024px) {
+  [data-admin7-mobile='true'] .mobile-page-spacing {
+    --page-gutter: 16px;
+  }
+
+  [data-admin7-mobile='true'] .mobile-page-gutter {
+    max-width: none;
+    padding-inline: var(--page-gutter);
+  }
+
+  [data-admin7-mobile='true'] .mobile-settings-sections {
+    gap: 48px;
+    padding-top: 40px;
+  }
+
+  [data-admin7-mobile='true'] .mobile-settings-heading {
+    margin-bottom: 0;
+    padding-bottom: 24px;
+  }
+
+  [data-admin7-mobile='true'] .mobile-settings-cards {
+    gap: 24px;
+  }
+
+  [data-admin7-mobile='true'] .mobile-posts-list {
+    border-top-width: 0;
+  }
+
+  [data-admin7-mobile='true'] .mobile-list-row {
+    border-bottom-color: var(--border);
+  }
+
+  [data-admin7-mobile='true'] .mobile-members-row > td,
+  [data-admin7-mobile='true'] .mobile-tags-row {
+    padding-block: 16px;
+  }
+
+  [data-admin7-mobile='true'] .mobile-list-start {
+    padding-inline-start: 0;
+  }
+
+  [data-admin7-mobile='true'] .mobile-list-end {
+    padding-inline-end: 0;
+  }
+}
+
+@media (width < 480px) {
+  [data-admin7-mobile='true'] .mobile-member-name {
+    padding-inline-end: 0;
+  }
+}
+
+@media (width < 1024px), (hover: none) {
+  [data-admin7-mobile='true'] .mobile-list-row {
+    --table-row-hover: transparent;
+  }
+
+  [data-admin7-mobile='true'] .mobile-member-name {
+    background-color: var(--background);
+  }
+}

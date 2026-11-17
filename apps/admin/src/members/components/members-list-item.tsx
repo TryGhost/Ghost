@@ -253,14 +253,14 @@ const MembersListItem = forwardRef<
     <TableRow
       {...props}
       ref={ref}
-      className={cn('group cursor-pointer', props.className)}
+      className={cn('mobile-list-row mobile-members-row group cursor-pointer', props.className)}
       data-testid="members-list-item"
       onAuxClick={handleRowAuxClick}
       onClick={handleRowClick}
     >
       <TableCell
         className={cn(
-          'min-w-0 bg-background px-4 py-3 group-hover:bg-table-row-hover max-sm:!w-full max-sm:!min-w-0 lg:sticky lg:left-0 lg:z-20',
+          'mobile-member-name mobile-list-start min-w-0 bg-background px-4 py-3 group-hover:bg-table-row-hover max-sm:!w-full max-sm:!min-w-0 lg:sticky lg:left-0 lg:z-20',
         )}
       >
         <MembersListItemName backPath={backPath} item={item} onClick={onClick} />
@@ -287,7 +287,10 @@ const MembersListItem = forwardRef<
           </>
         )}
       </TableCell>
-      <TableCell className="hidden px-4 py-3 sm:table-cell" style={columnStyles.status}>
+      <TableCell
+        className="mobile-list-end hidden px-4 py-3 sm:table-cell"
+        style={columnStyles.status}
+      >
         <MembersListItemStatus status={item.status} tiers={item.tiers} />
       </TableCell>
       {showEmailOpenRate && (
