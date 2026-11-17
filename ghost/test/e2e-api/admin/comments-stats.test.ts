@@ -92,6 +92,18 @@ describe('Comments stats API', function () {
     ]);
   });
 
+  it('starts an all-time range on the first comment', async function () {
+    const { body } = await agent
+      .get('stats/comments?date_to=2020-03-03&timezone=UTC')
+      .expectStatus(200);
+    const [stats] = body.stats;
+
+    assert.equal(stats.interval, 'day');
+    assert.equal(stats.series[0].date, '2020-02-28');
+    assert.deepEqual(stats.totals, { comments: 5, commenters: 2, reported: 1 });
+    assert.deepEqual(stats.previous_totals, { comments: 0, commenters: 0, reported: 0 });
+  });
+
   it('returns the posts with the most comments', async function () {
     const { body } = await agent.get(`stats/comments/top-posts${range}`).expectStatus(200);
     const titles = await models.Base.knex('posts')

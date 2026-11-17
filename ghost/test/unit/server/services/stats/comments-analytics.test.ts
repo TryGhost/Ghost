@@ -5,6 +5,7 @@ import {
   CommentsAnalyticsService,
   getCommentsStatsWindow,
   getInterval,
+  parseCommentsStatsRange,
 } from '../../../../../core/server/services/stats/comments-analytics';
 
 const range = (date_from: string, date_to: string, timezone?: string) => ({
@@ -13,9 +14,14 @@ const range = (date_from: string, date_to: string, timezone?: string) => ({
   ...(timezone ? { timezone } : {}),
 });
 
+const windowFor = (options: unknown, now?: number) => {
+  const parsed = parseCommentsStatsRange(options);
+  return getCommentsStatsWindow({ ...parsed, dateFrom: parsed.dateFrom! }, { now });
+};
+
 describe('getCommentsStatsWindow', function () {
   it('resolves local days to UTC across a DST change', function () {
-    const window = getCommentsStatsWindow(range('2026-10-18', '2026-11-16', 'America/New_York'));
+    const window = windowFor(range('2026-10-18', '2026-11-16', 'America/New_York'));
 
     assert.equal(window.interval, 'day');
     assert.equal(window.from, '2026-10-18 04:00:00');
@@ -36,16 +42,16 @@ describe('getCommentsStatsWindow', function () {
     const options = range('2026-11-01', '2026-11-03', 'Asia/Tokyo');
 
     // Noon on Nov 2 in Tokyo, 36 hours into the range
-    const running = getCommentsStatsWindow(options, Date.parse('2026-11-02T03:00:00Z'));
+    const running = windowFor(options, Date.parse('2026-11-02T03:00:00Z'));
     assert.equal(running.previousFrom, '2026-10-28 15:00:00');
     assert.equal(running.previousTo, '2026-10-30 03:00:00');
 
-    const notStarted = getCommentsStatsWindow(options, Date.parse('2026-10-31T00:00:00Z'));
+    const notStarted = windowFor(options, Date.parse('2026-10-31T00:00:00Z'));
     assert.equal(notStarted.previousTo, notStarted.previousFrom);
   });
 
   it('handles half-hour UTC offsets', function () {
-    const window = getCommentsStatsWindow(range('2026-11-01', '2026-11-02', 'Asia/Kolkata'));
+    const window = windowFor(range('2026-11-01', '2026-11-02', 'Asia/Kolkata'));
 
     assert.equal(window.from, '2026-10-31 18:30:00');
     assert.equal(window.to, '2026-11-02 18:30:00');
@@ -53,7 +59,7 @@ describe('getCommentsStatsWindow', function () {
   });
 
   it('starts a day at the DST transition when midnight is skipped', function () {
-    const window = getCommentsStatsWindow(range('2026-09-05', '2026-09-07', 'America/Santiago'));
+    const window = windowFor(range('2026-09-05', '2026-09-07', 'America/Santiago'));
 
     assert.deepEqual(
       window.buckets.map(({ start }) => start),
@@ -62,13 +68,13 @@ describe('getCommentsStatsWindow', function () {
   });
 
   it('starts a day at the first midnight when DST repeats midnight', function () {
-    const window = getCommentsStatsWindow(range('2021-10-29', '2021-10-29', 'Asia/Amman'));
+    const window = windowFor(range('2021-10-29', '2021-10-29', 'Asia/Amman'));
 
     assert.equal(window.from, '2021-10-28 21:00:00');
   });
 
   it('defaults to UTC', function () {
-    const window = getCommentsStatsWindow(range('2026-11-01', '2026-11-03'));
+    const window = windowFor(range('2026-11-01', '2026-11-03'));
 
     assert.equal(window.from, '2026-11-01 00:00:00');
     assert.equal(window.to, '2026-11-04 00:00:00');
@@ -76,7 +82,7 @@ describe('getCommentsStatsWindow', function () {
   });
 
   it('starts weekly buckets on date_from, then on Sundays', function () {
-    const window = getCommentsStatsWindow(range('2026-08-19', '2026-11-16', 'Europe/London'));
+    const window = windowFor(range('2026-08-19', '2026-11-16', 'Europe/London'));
 
     assert.equal(window.interval, 'week');
     assert.equal(window.buckets[0].date, '2026-08-19');
@@ -87,13 +93,31 @@ describe('getCommentsStatsWindow', function () {
   });
 
   it('starts monthly buckets on date_from, then on the first of each month', function () {
-    const window = getCommentsStatsWindow(range('2024-02-22', '2026-11-17', 'UTC'));
+    const window = windowFor(range('2024-02-22', '2026-11-17', 'UTC'));
 
     assert.equal(window.interval, 'month');
     assert.equal(window.buckets[0].date, '2024-02-22');
     assert.equal(window.buckets[1].date, '2024-03-01');
     assert.equal(window.buckets.at(-1)!.date, '2026-11-01');
     assert.equal(window.buckets.length, 34);
+  });
+
+  it('leaves the previous period empty when told not to compare', function () {
+    const window = getCommentsStatsWindow(
+      { dateFrom: '2026-11-01', dateTo: '2026-11-03', timezone: 'UTC' },
+      { comparePrevious: false },
+    );
+
+    assert.equal(window.previousFrom, window.from);
+    assert.equal(window.previousTo, window.from);
+  });
+
+  it('accepts a range without date_from', function () {
+    assert.deepEqual(parseCommentsStatsRange({ date_to: '2026-11-03' }), {
+      dateFrom: null,
+      dateTo: '2026-11-03',
+      timezone: 'UTC',
+    });
   });
 
   it('uses the same interval bands as Admin charts', function () {
@@ -104,7 +128,6 @@ describe('getCommentsStatsWindow', function () {
   });
 
   for (const [name, options] of [
-    ['missing dates', {}],
     ['a missing date_to', { date_from: '2026-11-01' }],
     ['an invalid date', range('2026-11-31', '2026-12-01')],
     ['a reversed range', range('2026-11-02', '2026-11-01')],
@@ -112,7 +135,7 @@ describe('getCommentsStatsWindow', function () {
     ['a range over 3660 days', range('2016-01-01', '2026-11-01')],
   ] as const) {
     it(`rejects ${name}`, function () {
-      assert.throws(() => getCommentsStatsWindow(options), { errorType: 'ValidationError' });
+      assert.throws(() => parseCommentsStatsRange(options), { errorType: 'ValidationError' });
     });
   }
 });
@@ -249,6 +272,38 @@ describe('CommentsAnalyticsService', function () {
       overview.series.reduce((sum, { comments }) => sum + comments, 0),
       overview.totals.comments,
     );
+  });
+
+  it('starts an unbounded range on the first comment, with nothing to compare', async function () {
+    const overview = await service.getOverview({ date_to: '2026-11-03', timezone: 'Asia/Tokyo' });
+
+    // c8 (Oct 28 23:59 UTC) is Oct 29 in Tokyo; deleted comments do not count
+    assert.equal(overview.interval, 'day');
+    assert.equal(overview.series[0].date, '2026-10-29');
+    assert.equal(overview.series.at(-1)!.date, '2026-11-03');
+    assert.deepEqual(overview.totals, { comments: 5, commenters: 3, reported: 2 });
+    assert.deepEqual(overview.previous_totals, { comments: 0, commenters: 0, reported: 0 });
+  });
+
+  it('returns one empty bucket for an unbounded range with no comments', async function () {
+    await db('comment_reports').del();
+    await db('comments').del();
+
+    const overview = await service.getOverview({ date_to: '2026-11-03' });
+
+    assert.deepEqual(overview.series, [
+      { date: '2026-11-03', comments: 0, commenters: 0, reported: 0 },
+    ]);
+  });
+
+  it('ranks over every comment when the range is unbounded', async function () {
+    const { data } = await service.getTopCommenters({ date_to: '2026-11-03' });
+
+    assert.deepEqual(data, [
+      { member_id: 'member_1', name: 'Ann', comments: 2 },
+      { member_id: 'member_2', name: null, comments: 2 },
+      { member_id: 'member_3', name: 'Cal', comments: 1 },
+    ]);
   });
 
   it('ranks posts by comments, breaking ties by id', async function () {

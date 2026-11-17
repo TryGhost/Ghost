@@ -33,6 +33,36 @@ const newsletterBasicCache = {
   },
 };
 
+/**
+ * A comments stats method; its cache key covers exactly the options it accepts
+ * @param {string} method
+ * @param {'getCommentsOverview' | 'getCommentsTopPosts' | 'getCommentsTopCommenters'} serviceMethod
+ * @param {string[]} [extraOptions]
+ */
+function commentsStatsEndpoint(method, serviceMethod, extraOptions = []) {
+  const options = ['date_from', 'date_to', 'timezone', ...extraOptions];
+  return {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options,
+    permissions: {
+      docName: 'comments',
+      method: 'browse',
+    },
+    cache: statsCache,
+    generateCacheKeyData(frame) {
+      return {
+        method,
+        options: Object.fromEntries(options.map((option) => [option, frame.options[option]])),
+      };
+    },
+    async query(frame) {
+      return await statsService.service.api[serviceMethod](frame.options);
+    },
+  };
+}
+
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
   docName: 'stats',
@@ -155,80 +185,13 @@ const controller = {
       return await statsService.service.api.getTopContent(frame.options);
     },
   },
-  commentsOverview: {
-    headers: {
-      cacheInvalidate: false,
-    },
-    options: ['date_from', 'date_to', 'timezone'],
-    permissions: {
-      docName: 'comments',
-      method: 'browse',
-    },
-    cache: statsCache,
-    generateCacheKeyData(frame) {
-      return {
-        method: 'commentsOverview',
-        options: {
-          date_from: frame.options.date_from,
-          date_to: frame.options.date_to,
-          timezone: frame.options.timezone,
-        },
-      };
-    },
-    async query(frame) {
-      return await statsService.service.api.getCommentsOverview(frame.options);
-    },
-  },
-  commentsTopPosts: {
-    headers: {
-      cacheInvalidate: false,
-    },
-    options: ['date_from', 'date_to', 'timezone', 'limit'],
-    permissions: {
-      docName: 'comments',
-      method: 'browse',
-    },
-    cache: statsCache,
-    generateCacheKeyData(frame) {
-      return {
-        method: 'commentsTopPosts',
-        options: {
-          date_from: frame.options.date_from,
-          date_to: frame.options.date_to,
-          timezone: frame.options.timezone,
-          limit: frame.options.limit,
-        },
-      };
-    },
-    async query(frame) {
-      return await statsService.service.api.getCommentsTopPosts(frame.options);
-    },
-  },
-  commentsTopCommenters: {
-    headers: {
-      cacheInvalidate: false,
-    },
-    options: ['date_from', 'date_to', 'timezone', 'limit'],
-    permissions: {
-      docName: 'comments',
-      method: 'browse',
-    },
-    cache: statsCache,
-    generateCacheKeyData(frame) {
-      return {
-        method: 'commentsTopCommenters',
-        options: {
-          date_from: frame.options.date_from,
-          date_to: frame.options.date_to,
-          timezone: frame.options.timezone,
-          limit: frame.options.limit,
-        },
-      };
-    },
-    async query(frame) {
-      return await statsService.service.api.getCommentsTopCommenters(frame.options);
-    },
-  },
+  commentsOverview: commentsStatsEndpoint('commentsOverview', 'getCommentsOverview'),
+  commentsTopPosts: commentsStatsEndpoint('commentsTopPosts', 'getCommentsTopPosts', ['limit']),
+  commentsTopCommenters: commentsStatsEndpoint(
+    'commentsTopCommenters',
+    'getCommentsTopCommenters',
+    ['limit'],
+  ),
   topPosts: {
     headers: {
       cacheInvalidate: false,
