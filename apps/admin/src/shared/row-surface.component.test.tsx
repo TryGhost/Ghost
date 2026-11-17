@@ -119,9 +119,12 @@ describe('shared content row surfaces in the browser', () => {
     expect(parseFloat(fill(row(0)).borderTopLeftRadius)).toBeGreaterThan(0);
     expect(parseFloat(fill(row(1)).borderTopLeftRadius)).toBeGreaterThan(0);
 
+    page.getByRole('list').element().setAttribute('data-row-dragging', 'true');
+    expect(fill(row(0)).opacity).toBe('1');
+    expect(fill(row(1)).opacity).toBe('1');
+    expect(fill(row(1)).backgroundColor).toBe(selectionColor);
     row(0).removeAttribute('data-state');
     row(1).removeAttribute('data-state');
-    page.getByRole('list').element().setAttribute('data-row-dragging', 'true');
     expect(fill(row(1)).opacity).toBe('0');
     page.getByRole('list').element().removeAttribute('data-row-dragging');
     expect(fill(row(1)).opacity).toBe('1');

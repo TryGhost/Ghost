@@ -490,62 +490,62 @@ tr.shade-row-inset > :is(td, th)::before {
   inset-inline: 0;
 }
 
-.shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+.shade-row:where(
     [data-state='selected'],
-    .shade-row-interactive:is(
-      [data-row-pressed='true'],
-      :active,
-      :focus-visible,
-      :has(:focus-visible)
-    )
+    :not([data-row-dragging='true'], [data-row-dragging='true'] *).shade-row-interactive:is(
+        [data-row-pressed='true'],
+        :active,
+        :focus-visible,
+        :has(:focus-visible)
+      )
   )::before,
-tr.shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+tr.shade-row:where(
     [data-state='selected'],
-    .shade-row-interactive:is(
-      [data-row-pressed='true'],
-      :active,
-      :focus-visible,
-      :has(:focus-visible)
-    )
+    :not([data-row-dragging='true'], [data-row-dragging='true'] *).shade-row-interactive:is(
+        [data-row-pressed='true'],
+        :active,
+        :focus-visible,
+        :has(:focus-visible)
+      )
   )
   > :is(td, th)::before {
   opacity: 1;
 }
 
-.shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+.shade-row:where(
     [data-state='selected'],
-    .shade-row-interactive:is(
-      [data-row-pressed='true'],
-      :active,
-      :focus-visible,
-      :has(:focus-visible)
-    )
+    :not([data-row-dragging='true'], [data-row-dragging='true'] *).shade-row-interactive:is(
+        [data-row-pressed='true'],
+        :active,
+        :focus-visible,
+        :has(:focus-visible)
+      )
   )
   > [data-row-pinned] {
   background-color: var(--table-row-hover);
 }
 
-.shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+.shade-row:where(
     [data-state='selected'],
-    .shade-row-interactive:is(
-      [data-row-pressed='true'],
-      :active,
-      :focus-visible,
-      :has(:focus-visible)
-    )
+    :not([data-row-dragging='true'], [data-row-dragging='true'] *).shade-row-interactive:is(
+        [data-row-pressed='true'],
+        :active,
+        :focus-visible,
+        :has(:focus-visible)
+      )
   )
   [data-row-pinned-fade='normal'] {
   opacity: 0;
 }
 
-.shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+.shade-row:where(
     [data-state='selected'],
-    .shade-row-interactive:is(
-      [data-row-pressed='true'],
-      :active,
-      :focus-visible,
-      :has(:focus-visible)
-    )
+    :not([data-row-dragging='true'], [data-row-dragging='true'] *).shade-row-interactive:is(
+        [data-row-pressed='true'],
+        :active,
+        :focus-visible,
+        :has(:focus-visible)
+      )
   )
   [data-row-pinned-fade='highlight'] {
   opacity: 1;
@@ -553,47 +553,47 @@ tr.shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *
 
 /* Only separators shared by body rows disappear; outer rules are preserved. */
 .shade-row
-  + .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+  + .shade-row:where(
     [data-state='selected'],
-    .shade-row-interactive:is(
-      [data-row-pressed='true'],
-      :active,
-      :focus-visible,
-      :has(:focus-visible)
-    )
-  ),
-.shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
-    [data-state='selected'],
-    .shade-row-interactive:is(
-      [data-row-pressed='true'],
-      :active,
-      :focus-visible,
-      :has(:focus-visible)
-    )
-  )
-  + .shade-row {
-  border-top-color: transparent;
-}
-
-.shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
-    [data-state='selected'],
-    .shade-row-interactive:is(
-      [data-row-pressed='true'],
-      :active,
-      :focus-visible,
-      :has(:focus-visible)
-    )
-  ):has(+ .shade-row),
-.shade-row:has(
-  + .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
-      [data-state='selected'],
-      .shade-row-interactive:is(
+    :not([data-row-dragging='true'], [data-row-dragging='true'] *).shade-row-interactive:is(
         [data-row-pressed='true'],
         :active,
         :focus-visible,
         :has(:focus-visible)
       )
-    )
+  ),
+.shade-row:where(
+    [data-state='selected'],
+    :not([data-row-dragging='true'], [data-row-dragging='true'] *).shade-row-interactive:is(
+        [data-row-pressed='true'],
+        :active,
+        :focus-visible,
+        :has(:focus-visible)
+      )
+  )
+  + .shade-row {
+  border-top-color: transparent;
+}
+
+.shade-row:where(
+    [data-state='selected'],
+    :not([data-row-dragging='true'], [data-row-dragging='true'] *).shade-row-interactive:is(
+        [data-row-pressed='true'],
+        :active,
+        :focus-visible,
+        :has(:focus-visible)
+      )
+  ):has(+ .shade-row),
+.shade-row:has(
+  + .shade-row:where(
+    [data-state='selected'],
+    :not([data-row-dragging='true'], [data-row-dragging='true'] *).shade-row-interactive:is(
+        [data-row-pressed='true'],
+        :active,
+        :focus-visible,
+        :has(:focus-visible)
+      )
+  )
 ) {
   border-bottom-color: transparent;
 }
