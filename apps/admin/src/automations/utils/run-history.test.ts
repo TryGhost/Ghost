@@ -37,6 +37,7 @@ const mapStep = (overrides: Partial<typeof step>) =>
       'automation disabled',
       'member changed status',
       'member changed tier',
+      'member lost label',
       'member unsubscribed',
     ].includes(overrides.status ?? '')
       ? 'exited_early'
@@ -195,6 +196,7 @@ describe('recorded run history presentation', () => {
     ['automation disabled', 'Automation turned off', 'exited'],
     ['member changed status', 'Member changed subscription status', 'exited'],
     ['member changed tier', 'Member changed subscription tier', 'exited'],
+    ['member lost label', 'Label removed', 'exited'],
     ['member unsubscribed', 'Unsubscribed', 'exited'],
   ] as const)(
     'places the recorded %s reason and stop time in one event card',
