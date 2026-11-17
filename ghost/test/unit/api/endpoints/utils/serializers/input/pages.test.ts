@@ -4,9 +4,8 @@ import sinon from 'sinon';
 import serializers from '../../../../../../../core/server/api/endpoints/utils/serializers';
 // @ts-expect-error This module lacks type definitions.
 import urlService from '../../../../../../../core/server/services/url';
-// @ts-expect-error This module lacks type definitions.
-import schema from '../../../../../../../core/server/data/schema';
-const postsSchema = schema.tables.posts;
+import { tables } from '../../../../../../../core/server/data/schema';
+const postsSchema = tables.posts;
 
 type FrameOutput = {
   filter?: string;

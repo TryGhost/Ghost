@@ -5,13 +5,13 @@ starts with.
 
 ## Sources of truth
 
-- `schema.js` is the final table and index structure expected after every
+- `schema.ts` is the final table and index structure expected after every
   migration has run.
 - `fixtures/fixtures.json` contains durable records and relationships required
   by a new site, including roles, the owner, starter content, tiers, and a
   newsletter. Permissions are defined in
   `core/server/services/permissions/permissions-data.ts`; the permissions
-  tables in `schema.js` are unused until they are dropped.
+  tables in `schema.ts` are unused until they are dropped.
 - `default-settings/default-settings.json` defines the settings a site starts
   with, grouped by responsibility.
 
@@ -83,7 +83,7 @@ configuration belongs in Ghost's configuration system; see the
 
 ## Schema changes
 
-Changing `schema.js` alone does not update an existing database. Every schema
+Changing `schema.ts` alone does not update an existing database. Every schema
 change needs a migration that moves an installed database to the new shape.
 Follow the [database migrations guide](../../../../../docs/practices/database-migrations.md)
 for generation, iteration, testing, and review requirements.

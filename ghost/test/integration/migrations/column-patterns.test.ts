@@ -36,7 +36,7 @@ describe('A column pattern on MySQL', function () {
     await refused({ slug: 'company\n' });
   });
 
-  // The check that compares a migrated database with schema.js reads checks back this way.
+  // The check that compares a migrated database with schema.ts reads checks back this way.
   it('reads back from MySQL as it was declared', async function () {
     const tableSpec = { slug: { ...slug, pattern: '^[a-z]+(_[a-z]+)?$' } };
     await commands.createTable(TABLE, knex, tableSpec);

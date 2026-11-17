@@ -341,7 +341,7 @@ const serviceDependencyDecisions = {
     '^@tryghost/image-transform$|^packages/image-transform/(src|build)/index\\.(ts|js)$', // Reads and writes image files.
     '^glob$|^@tryghost/zip$|^gscan$', // Read or write files.
     '^@tryghost/metrics$', // Process-wide metrics, set up from the logging config.
-    '^ghost/core/server/data/schema/index\\.js$', // Reaches the database through schema commands.
+    '^ghost/core/server/data/schema/index\\.ts$', // Reaches the database through schema commands.
     '^ghost/core/server/data/importer/(content-files|import-archive)\\.ts$', // Importer code; reads files and config.
     '^ghost/core/server/adapters/scheduling/build-signed-job\\.ts$', // Uses URL utils.
     '^ghost/core/server/adapters/storage/(utils|LocalStorageBase)\\.ts$', // Storage code; reads config, URL utils and files.

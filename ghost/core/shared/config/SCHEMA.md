@@ -20,7 +20,7 @@ nconf's own reset-then-reapply rebuild was not.
 ## Where a schema belongs
 
 Every key belongs in the central schema, the same way every table belongs in
-`schema.js` however many models read it. Config is grouped by who sets it —
+`schema.ts` however many models read it. Config is grouped by who sets it —
 Ghost(Pro), a self-hoster, a feature's deployment knobs — not by which code
 reads it, and most keys have readers in more than one place: `hostSettings`,
 `tinybird:stats`, `apps` and `explore` all do. A schema owned by one of those
@@ -32,7 +32,7 @@ reference for self-hosters generated from `configSchema` alone.
 
 The schema knows feature names, but not feature code: the files hold shapes,
 import `zod` and pure helpers from this directory such as `makePathsAbsolute`, and
-never a feature module. That is the same trade `schema.js` makes. Files in
+never a feature module. That is the same trade `schema.ts` makes. Files in
 [`schema/`](schema/) go further and import only `zod` and each other; the
 `config-schema-zod-only` boundary rule enforces it.
 

@@ -1387,7 +1387,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/url/routable-resources.js",
-    "to": "ghost/core/server/data/schema/index.js"
+    "to": "ghost/core/server/data/schema/index.ts"
   },
   {
     "rule": "service-dependencies",

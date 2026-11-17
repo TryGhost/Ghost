@@ -9,7 +9,7 @@ export type PatternCheck = {
   constraintName: string;
   column: string;
   /**
-   * The pattern as MySQL holds it. schema.js states it in JavaScript's syntax; here it
+   * The pattern as MySQL holds it. schema.ts states it in JavaScript's syntax; here it
    * matches case-sensitively whatever the column's collation, and each `$` that ends the
    * value is written `\z`, because MySQL's `$` also matches before a final line break.
    */
@@ -39,7 +39,7 @@ const ColumnSpec = z.object({
 export type PatternColumn = z.input<typeof ColumnSpec>;
 
 /**
- * Every pattern check on a table declared in schema.js. Throws on a pattern that is not a
+ * Every pattern check on a table declared in schema.ts. Throws on a pattern that is not a
  * regular expression, or that MySQL would read differently from JavaScript.
  */
 export function patternChecksOf(

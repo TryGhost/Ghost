@@ -6,8 +6,8 @@ import testUtils from '../../../../utils';
 // @ts-expect-error This module lacks type definitions.
 import models from '../../../../../core/server/models';
 import { validateSchema } from '../../../../../core/server/data/schema/validator';
-// @ts-expect-error This module lacks type definitions.
 import schema from '../../../../../core/server/data/schema/schema';
+import type { StringColumn } from '../../../../../core/server/data/schema/types';
 
 describe('Validate Schema', function () {
   describe('models.add', function () {
@@ -150,14 +150,16 @@ describe('Validate Schema', function () {
     });
   });
 
-  // No table in schema.js has a pattern yet, so these lend one to a real column.
+  // No table in schema.ts has a pattern yet, so these lend one to a real column.
   describe('a column pattern', function () {
+    const slugColumn: StringColumn = schema.posts.slug;
+
     beforeEach(function () {
-      schema.posts.slug.pattern = '^[a-z-]+$';
+      slugColumn.pattern = '^[a-z-]+$';
     });
 
     afterEach(function () {
-      delete schema.posts.slug.pattern;
+      delete slugColumn.pattern;
     });
 
     it('refuses a value outside it, one ending in a line break included', function () {
