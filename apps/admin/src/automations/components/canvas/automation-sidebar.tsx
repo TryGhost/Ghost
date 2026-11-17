@@ -199,11 +199,17 @@ const PerformanceContent: React.FC<{
 
 function getStopConditionDescription({
   triggerRules,
+  triggerLabelName,
   tiers,
 }: {
   triggerRules: readonly AutomationTriggerRule[];
+  triggerLabelName?: string;
   tiers: readonly Tier[];
 }): string {
+  if (triggerRules[0]?.trigger_type === 'label_added') {
+    const labelDescription = triggerLabelName ? `${triggerLabelName} label` : 'label';
+    return `Members stop early if they unsubscribe or the ${labelDescription} is removed.`;
+  }
   // paid_subscription_changed runs stay eligible while the member matches a destination tier.
   const eligibilityRules =
     triggerRules[0]?.trigger_type === 'paid_subscription_changed'
@@ -249,6 +255,7 @@ export const AutomationSidebar: React.FC<{
   automationId: string;
   description: string;
   triggerRules: readonly AutomationTriggerRule[];
+  triggerLabelName?: string;
   tiers: readonly Tier[];
   performanceEnabled: boolean;
   metadata: AutomationMetadata;
@@ -265,6 +272,7 @@ export const AutomationSidebar: React.FC<{
   automationId,
   description,
   triggerRules,
+  triggerLabelName,
   tiers,
   performanceEnabled,
   metadata,
@@ -315,6 +323,7 @@ export const AutomationSidebar: React.FC<{
 
   const stopConditionDescription = getStopConditionDescription({
     triggerRules,
+    triggerLabelName,
     tiers,
   });
 

@@ -605,6 +605,15 @@ describe('New automation', () => {
       await page.getByRole('option', { name: spring.name, exact: true }).click();
       await expect.element(picker).toHaveTextContent(spring.name);
       await expect.element(picker).not.toHaveAttribute('aria-invalid');
+      await button('Show automation sidebar').click();
+      await expect
+        .element(
+          page.getByText(
+            `Members stop early if they unsubscribe or the ${spring.name} label is removed.`,
+            { exact: true },
+          ),
+        )
+        .toBeVisible();
       await button(action).click();
       if (action === 'Publish') {
         await page
