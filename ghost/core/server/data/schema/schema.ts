@@ -1930,6 +1930,7 @@ const schema = {
     '@@INDEXES@@': [
       ['post_id', 'parent_id', 'pinned_at'],
       ['created_at'],
+      ['created_at', 'status', 'member_id', 'post_id'],
       ['status'],
       ['in_reply_to_id', 'status'],
       ['parent_id', 'in_reply_to_id', 'status'],
