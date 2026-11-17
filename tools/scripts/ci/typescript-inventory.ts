@@ -28,9 +28,13 @@ const preservedTestInputs = [
   'ghost/test/utils/fixtures/themes/casper/assets/built/',
   'ghost/test/utils/fixtures/themes/source/assets/built/',
 ];
+// Released JavaScript migrations are frozen; new migrations are TypeScript.
+const frozenMigrationPattern =
+  /(^|\/)core\/server\/data\/migrations\/versions\/[^/]+\/[^/]+\.[cm]?js$/;
 export function excludedSource(file: string): boolean {
   return (
     excludedPattern.test(file) ||
+    frozenMigrationPattern.test(file) ||
     preservedTestInputs.some((prefix) => file.startsWith(prefix)) ||
     file === 'ghost/test/utils/fixtures/sloppy-config-writer.js'
   );
@@ -387,7 +391,7 @@ export function inventory(root: string, { scope = '' } = {}): Inventory {
   }
   return {
     schemaVersion: 2,
-    measurementVersion: 2,
+    measurementVersion: 3,
     committedAt: execFileSync('git', ['show', '-s', '--format=%cI', 'HEAD'], { cwd: root })
       .toString()
       .trim(),
@@ -506,7 +510,7 @@ export function inventoryAtRevision(root: string, ref: string, scope = ''): Revi
   }
   return {
     schemaVersion: 2,
-    measurementVersion: 2,
+    measurementVersion: 3,
     mode: 'counts-only',
     revision,
     committedAt,
@@ -532,7 +536,7 @@ if (import.meta.main) {
     });
     if (values.help) {
       console.log(
-        'Usage: pnpm inventory:typescript [--root /path/to/Ghost] [--revision SHA] [--scope ghost] [--output /tmp/ghost-typescript]\nWrites a .json report when --output is supplied. Counts tracked working-tree files, excluding preserved test inputs, vendored code and build output; submodules are not included.',
+        'Usage: pnpm inventory:typescript [--root /path/to/Ghost] [--revision SHA] [--scope ghost] [--output /tmp/ghost-typescript]\nWrites a .json report when --output is supplied. Counts tracked working-tree files, excluding preserved test inputs, frozen JavaScript migrations, vendored code and build output; submodules are not included.',
       );
     } else {
       const root = values.root

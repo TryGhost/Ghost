@@ -18,11 +18,15 @@ JavaScript, the package template, and SimpleMDE's generated debug bundles.
 Explicit test-input exclusions cover Core's assets-minification fixture directory,
 the bundled Casper/Source theme assets under test fixtures, and
 `sloppy-config-writer.js`, which deliberately exercises non-strict JavaScript.
+Released JavaScript migrations under `core/server/data/migrations/versions/` are
+excluded because migrations are immutable once released; TypeScript migrations
+are counted.
 Other files are not excluded merely because their directory is named `fixtures`.
 
-`measurementVersion: 2` identifies these counting rules separately from the JSON
-schema. Reports without this field used the earlier fixture exclusion and are
-not directly comparable. Ghost-Benchmarks recounts historical revisions with the current rules instead
+`measurementVersion: 3` identifies these counting rules separately from the JSON
+schema. Version 3 added the frozen-migration exclusion; version 2 counted those files.
+Reports without this field used the earlier fixture exclusion. Reports with
+different measurement versions are not directly comparable. Ghost-Benchmarks recounts historical revisions with the current rules instead
 of combining different counting baselines.
 
 Declaration files are counted separately. Exclusion paths and declaration totals

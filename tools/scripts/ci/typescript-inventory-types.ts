@@ -52,7 +52,7 @@ export interface Counts {
 }
 export interface Inventory {
   schemaVersion: 2;
-  measurementVersion: 2;
+  measurementVersion: 3;
   revision: string;
   committedAt?: string;
   scope: string;

@@ -195,6 +195,11 @@ test('counts maintained fixture modules and classifies test support without hidi
     ['ghost/core/server/data/schema/fixtures/index.js', 'backend'],
     ['ghost/test/unit/server/data/schema/fixtures/fixture-manager.test.js', 'tests'],
     ['ghost/test/utils/fixtures/email-service/malformed-css.js', 'tests'],
+    [
+      'ghost/core/server/data/migrations/versions/6.79/2026-11-16-00-00-00-add-column.ts',
+      'backend',
+    ],
+    ['ghost/core/server/data/migrations/utils/legacy.js', 'backend'],
     ['packages/image-transform/test/integration/fixtures/index.ts', 'tests'],
     ['packages/testing/test-data/src/fixtures/data/config.ts', 'tests'],
     ['packages/testing/test-data/src/fixtures/index.ts', 'tests'],
@@ -202,6 +207,8 @@ test('counts maintained fixture modules and classifies test support without hidi
   const excluded = [
     'ghost/test/unit/frontend/services/assets-minification/fixtures/basic-cards/js/gallery.js',
     'ghost/test/utils/fixtures/sloppy-config-writer.js',
+    'ghost/core/server/data/migrations/versions/6.78/2026-11-11-22-41-39-add-column.js',
+    'ghost/core/core/server/data/migrations/versions/6.20/2026-01-01-00-00-00-old-path.js',
     'ghost/test/utils/fixtures/themes/casper/assets/built/casper.js',
     'ghost/test/utils/fixtures/themes/source/assets/built/source.js',
     'ghost/core/frontend/public/admin-auth/admin-auth.min.js',
@@ -231,10 +238,10 @@ test('counts maintained fixture modules and classifies test support without hidi
     { cwd: root },
   );
   const report = inventory(root);
-  assert.equal(report.measurementVersion, 2);
+  assert.equal(report.measurementVersion, 3);
   assert.equal(report.files.length, included.length);
-  assert.equal(report.summary.javascript, 4);
-  assert.equal(report.summary.typescript, 6);
+  assert.equal(report.summary.javascript, 5);
+  assert.equal(report.summary.typescript, 7);
   assert.deepEqual(report.excluded.sort(), excluded.sort());
   for (const [file, expected] of included) {
     assert.equal(report.files.find((entry) => entry.path === file)?.category, expected, file);
@@ -297,7 +304,7 @@ test('classifies retired Ember tooling in revisions after its deletion', (t) => 
 
   const historical = inventoryAtRevision(root, 'HEAD^');
   assert.deepEqual(historical.groups, beforeDeletion.groups);
-  assert.equal(historical.measurementVersion, 2);
+  assert.equal(historical.measurementVersion, 3);
   assert.equal(historical.groups.category.tooling!.javascript, tooling.length - 1);
   assert.equal(historical.groups.category.tooling!.typescript, 1);
   assert.equal(historical.groups.category.frontend!.javascript, 2);
