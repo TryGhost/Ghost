@@ -130,6 +130,12 @@
             "maxWait": 3600000,
             "lifetime": 3600
         },
+        "presence_block": {
+            "freeRetries": 11,
+            "minWait": 10000,
+            "maxWait": 10000,
+            "lifetime": 10
+        },
         "email_preview_block": {
             "minWait": 360000,
             "maxWait": 360000,
