@@ -6,14 +6,14 @@ import {
   deepFreeze,
   validateConfig as validate,
   type ConfigPolicy,
-} from '../../foundation/config';
+} from '../../foundry/config';
 import { bindAll as bindHelpers, type ConfigHelpers } from './helpers';
 import { guardHint, shouldGuard } from './guard';
 import { configSchema, type ConfigAt, type ConfigPath, type ValidatedConfig } from './schema';
 
 // Ghost's side of config: its schema, when a violation is fatal, when writes
 // throw, and the helpers bound to the instance. Building, validating and
-// freezing the tree is the framework's: see ../../foundation/config.
+// freezing the tree is the framework's: see ../../foundry/config.
 
 export { deepFreeze };
 

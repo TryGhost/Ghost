@@ -1,8 +1,8 @@
-# Foundation
+# Foundry
 
 Spike: see [the findings log](../../../docs/plans/domain-spike-findings.md).
 
-The foundation is the framework's code for what exists once per process. It
+The foundry is the framework's code for what exists once per process. It
 builds the instances that the [kernel](../kernel/README.md)'s types describe,
 from values an application supplies, and assembles them into an application.
 It knows nothing about Ghost.

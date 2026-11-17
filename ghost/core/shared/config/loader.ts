@@ -1,5 +1,5 @@
 import * as localUtils from './utils';
-import { loadConfigSources } from '../../foundation/config';
+import { loadConfigSources } from '../../foundry/config';
 import { createConfig, type GhostConfig } from './validated';
 
 const _debug = require('@tryghost/debug')._base;
@@ -22,7 +22,7 @@ function loadNconf(options?: LoadNconfOptions): ConfigInstance {
 
   // ## Load Config
 
-  // Layering the sources is the framework's: see ../../foundation/config/sources.ts.
+  // Layering the sources is the framework's: see ../../foundry/config/sources.ts.
   // Ghost says where its files are and which of them it reads.
   const tree = loadConfigSources({
     env,

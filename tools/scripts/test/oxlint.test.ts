@@ -1125,7 +1125,7 @@ test('rejects ambient reads in a kernel file, at module scope and inside functio
 
 test('applies kernel purity to the kernel only', () => {
   const source = "import fs from 'node:fs';\nlet state = fs;\nexport const get = () => state;";
-  assert.deepEqual(purityFindings(source, 'ghost/core/foundation/example.ts'), []);
+  assert.deepEqual(purityFindings(source, 'ghost/core/foundry/example.ts'), []);
   assert.deepEqual(purityFindings(source, 'ghost/core/bootstrap/example.ts'), []);
   assert.deepEqual(purityFindings(source, 'ghost/core/server/lib/example.ts'), []);
   assert.equal(purityFindings(source).length, 2);

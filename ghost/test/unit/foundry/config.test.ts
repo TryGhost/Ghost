@@ -4,11 +4,11 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import sinon from 'sinon';
 import { z } from 'zod';
-import { createConfig, loadConfigSources } from '../../../core/foundation/config';
+import { createConfig, loadConfigSources } from '../../../core/foundry/config';
 
 // Ghost's own config is tested in ../shared/config. These hold the framework's
 // half to an application that is not Ghost.
-describe('foundation config', function () {
+describe('foundry config', function () {
   const schema = z.looseObject({
     env: z.string(),
     desk: z.object({ name: z.string().min(1), loanDays: z.number().int().positive() }),
@@ -92,7 +92,7 @@ describe('foundation config', function () {
     };
 
     beforeEach(function () {
-      root = mkdtempSync(path.join(tmpdir(), 'foundation-config-'));
+      root = mkdtempSync(path.join(tmpdir(), 'foundry-config-'));
       write('app/defaults.json', { desk: { name: 'Default', loanDays: 14 }, a: 'defaults' });
       write('app/env/config.staging.json', { desk: { name: 'Staging' }, b: 'env' });
       write('app/env/config.extra.json', { c: 'extra' });

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { createEventBus } from '../../../core/foundation/events';
+import { createEventBus } from '../../../core/foundry/events';
 
 describe('createEventBus', function () {
   it('delivers an event to the handlers subscribed to its class name', function () {

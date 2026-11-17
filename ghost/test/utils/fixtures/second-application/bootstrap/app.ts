@@ -1,9 +1,9 @@
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { createApplication } from '../../../../../core/foundation/application';
-import { createConfig, loadConfigSources } from '../../../../../core/foundation/config';
-import { createLogger } from '../../../../../core/foundation/logging';
+import { createApplication } from '../../../../../core/foundry/application';
+import { createConfig, loadConfigSources } from '../../../../../core/foundry/config';
+import { createLogger } from '../../../../../core/foundry/logging';
 import type { ScheduledJob } from '../../../../../core/kernel/domains/domain-layer';
 import { configSchema } from '../config/schema';
 

@@ -174,7 +174,7 @@ builds nothing and reads nothing:
 - [`foundation.ts`](foundation.ts): `Foundation`, the four together. A domain's
   `boot.ts` receives it.
 
-The [foundation](../foundation/README.md) builds the instances. Nothing in the
+The [foundry](../foundry/README.md) builds the instances. Nothing in the
 kernel can.
 
 ## Testing
@@ -214,5 +214,5 @@ reads: `startAfter`, naming other roots in the same domain, and
 domain's `boot.ts` supplies as the argument to `create`. `boot.ts` is handed
 the foundation; a domain without one hands it to its roots unchanged.
 
-The [foundation](../foundation/README.md) reads the folders and assembles the
+The [foundry](../foundry/README.md) reads the folders and assembles the
 application whose domain layer boot starts.

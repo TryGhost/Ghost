@@ -1,4 +1,4 @@
-import * as report from '../../foundation/config/report';
+import * as report from '../../foundry/config/report';
 
 // How validation failures are reported is the framework's. Ghost names its config.
 const name = 'Ghost config';

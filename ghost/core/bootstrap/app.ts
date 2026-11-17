@@ -1,7 +1,7 @@
 import path from 'node:path';
-import { createApplication } from '../foundation/application';
-import { createDatabase } from '../foundation/database';
-import { createLogger } from '../foundation/logging';
+import { createApplication } from '../foundry/application';
+import { createDatabase } from '../foundry/database';
+import { createLogger } from '../foundry/logging';
 import { loadNconf } from '../shared/config/loader';
 import type { GhostConfig } from '../shared/config/validated';
 import { legacyEventBus } from './legacy-events';

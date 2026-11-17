@@ -3,7 +3,7 @@
 Spike: see [the findings log](../../../docs/plans/domain-spike-findings.md).
 
 Ghost, as an application of the framework. The framework's side is the
-[kernel](../kernel/README.md) and the [foundation](../foundation/README.md);
+[kernel](../kernel/README.md) and the [foundry](../foundry/README.md);
 this folder is what Ghost supplies, together with its config values in
 [`shared/config`](../shared/config/).
 

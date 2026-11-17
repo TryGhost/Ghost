@@ -65,7 +65,7 @@ const foundationInstances = [
   '^ghost/core/shared/config/', // Config: Ghost's values and the module that returns the instance.
   '^ghost/core/server/data/db/', // The database handle.
   '^ghost/core/bootstrap/', // Where the instances live.
-  '^ghost/core/foundation/', // What builds them.
+  '^ghost/core/foundry/', // What builds them.
 ];
 // What no reshaped file may import: routes are data and the web layer owns the
 // framework, the auth middleware and the endpoint registry. The scan does not
@@ -651,32 +651,32 @@ module.exports = {
       to: { path: foundationInstances, dependencyTypesNot: ['type-only', 'type-import'] },
     },
     // ============================================================
-    // Kernel and foundation
+    // Kernel and foundry
     // ============================================================
     {
-      name: 'foundation-only-from-bootstrap',
+      name: 'foundry-only-from-bootstrap',
       comment:
-        "The foundation builds what exists once per process: a second logger or database handle is a defect. Only an application's bootstrap imports it (ghost/core/bootstrap, and shared/config, which is Ghost's config composition). Everything else is handed the instance and imports the kernel's type.",
+        "The foundry builds what exists once per process: a second logger or database handle is a defect. Only an application's bootstrap imports it (ghost/core/bootstrap, and shared/config, which is Ghost's config composition). Everything else is handed the instance and imports the kernel's type.",
       severity: 'error',
       from: {
         path: '^ghost/',
         pathNot: [
-          '^ghost/core/foundation/',
+          '^ghost/core/foundry/',
           '^ghost/core/bootstrap/',
           '^ghost/core/shared/config/',
           '^ghost/test/',
           '^ghost/domains/[^/]+/test/',
         ],
       },
-      to: { path: '^ghost/core/foundation/', dependencyTypesNot: ['type-only', 'type-import'] },
+      to: { path: '^ghost/core/foundry/', dependencyTypesNot: ['type-only', 'type-import'] },
     },
     {
-      name: 'foundation-not-application',
+      name: 'foundry-not-application',
       comment:
-        'Foundation is framework code: it imports the kernel and general-purpose packages, never the application it assembles.',
+        'Foundry is framework code: it imports the kernel and general-purpose packages, never the application it assembles.',
       severity: 'error',
-      from: { path: '^ghost/core/foundation/' },
-      to: { path: '^ghost/', pathNot: '^ghost/core/(?:foundation|kernel)/' },
+      from: { path: '^ghost/core/foundry/' },
+      to: { path: '^ghost/', pathNot: '^ghost/core/(?:foundry|kernel)/' },
     },
     // Kernel primitives must be independent of the application they support.
     {

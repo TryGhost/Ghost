@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { z } from 'zod';
-import { createApplication } from '../../../core/foundation/application';
-import { createConfig } from '../../../core/foundation/config';
+import { createApplication } from '../../../core/foundry/application';
+import { createConfig } from '../../../core/foundry/config';
 import type { Logger } from '../../../core/kernel/logging';
 
 const logger = {} as Logger;

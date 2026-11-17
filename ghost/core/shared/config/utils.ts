@@ -1,7 +1,7 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import type { Provider } from 'nconf';
-import { jsoncFormat, mergeStores as merge } from '../../foundation/config/sources';
+import { jsoncFormat, mergeStores as merge } from '../../foundry/config/sources';
 
 type Tree = Record<string, unknown>;
 

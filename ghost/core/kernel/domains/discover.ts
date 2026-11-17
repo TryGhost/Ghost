@@ -5,7 +5,7 @@ import path from 'node:path';
  * Nothing is read or loaded here: the caller says how a folder is listed and
  * how a file is loaded, and every entry carries a `load()` that loads the file
  * the first time it is called. The framework's reader for a real folder is
- * `readDomains` in ../../foundation/domains.ts.
+ * `readDomains` in ../../foundry/domains.ts.
  *
  * A layer folder (actions/, events/, listeners/, jobs/) may hold capability
  * subfolders one level deep: `jobs/gifts/send-reminders.job.ts` is found and

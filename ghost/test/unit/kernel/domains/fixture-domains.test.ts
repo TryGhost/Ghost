@@ -146,14 +146,14 @@ describe('fixture domains', function () {
   describe('built with tsc', function () {
     let built: string;
 
-    // Builds the framework (kernel and foundation) and the fixtures in place, as
+    // Builds the framework (kernel and foundry) and the fixtures in place, as
     // build:tsc builds Ghost. Nothing else of Ghost is copied: the second
     // application runs on the framework alone.
     beforeAll(function () {
       built = mkdtempSync(path.join(tmpdir(), 'ghost-built-domains-'));
       for (const directory of [
         'core/kernel',
-        'core/foundation',
+        'core/foundry',
         'test/utils/fixtures/domains',
         'test/utils/fixtures/second-application',
       ]) {
@@ -165,11 +165,7 @@ describe('fixture domains', function () {
         JSON.stringify({
           extends: path.join(ghost, 'tsconfig.json'),
           compilerOptions: { incremental: false },
-          include: [
-            'core/kernel/**/*.ts',
-            'core/foundation/**/*.ts',
-            'test/utils/fixtures/**/*.ts',
-          ],
+          include: ['core/kernel/**/*.ts', 'core/foundry/**/*.ts', 'test/utils/fixtures/**/*.ts'],
           exclude: [],
         }),
       );
