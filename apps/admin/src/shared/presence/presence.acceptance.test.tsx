@@ -114,6 +114,23 @@ describe('presence polling', () => {
       .toBeVisible();
   });
 
+  it('names someone the first page of staff does not hold', async () => {
+    fakeEditorChrome();
+    fakePostRead('Presence example');
+    fakeLeave();
+    const users = fakeUsers((query) =>
+      query.filter?.startsWith('id:[')
+        ? [staffUser({ id: OTHER_USER, name: 'Alex Smith', profile_image: null })]
+        : [staffUser({ id: 'c'.repeat(24), name: 'Someone Else', profile_image: null })],
+    );
+    fakePresence();
+    await renderAdminApp(`/editor/post/${POST_ID}`, INDICATORS_ON);
+    await expect
+      .element(page.getByRole('img', { name: 'Alex Smith has this post open' }))
+      .toBeVisible();
+    expect(users.requests.map((request) => request.filter)).toContain(`id:['${OTHER_USER}']`);
+  });
+
   it('keeps the header clear while only polling is on', async () => {
     fakeEditorChrome();
     fakePostRead('Presence example');

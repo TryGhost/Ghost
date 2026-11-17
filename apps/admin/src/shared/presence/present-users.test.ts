@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { describePresence, presentUsers, userInitials } from './present-users';
+import { describePresence, presentUsers, unnamedUserIds, userInitials } from './present-users';
 import type { ActivePresence } from './presence-api';
 
 const POST = 'p'.repeat(24);
@@ -42,6 +42,32 @@ describe('presentUsers', () => {
   it('is empty without a staff list or without entries', () => {
     expect(presentUsers([entry(users[0].id, 1)], undefined)).toEqual([]);
     expect(presentUsers([], users)).toEqual([]);
+  });
+});
+
+describe('unnamedUserIds', () => {
+  it('lists each present id the staff list lacks once, in a stable order', () => {
+    const late = 'f'.repeat(24);
+    const early = 'c'.repeat(24);
+    const result = unnamedUserIds(
+      [
+        entry(late, 300),
+        entry(users[0].id, 200),
+        entry(early, 100),
+        entry(late, 50, 'q'.repeat(24)),
+      ],
+      users,
+    );
+    expect(result).toEqual([early, late]);
+  });
+
+  it('is empty when everyone is named or the staff list has not loaded', () => {
+    expect(unnamedUserIds([entry(users[0].id, 1)], users)).toEqual([]);
+    expect(unnamedUserIds([entry('c'.repeat(24), 1)], undefined)).toEqual([]);
+  });
+
+  it('drops ids that would not be safe inside a filter', () => {
+    expect(unnamedUserIds([entry("x']+status:active", 1), entry('1', 1)], users)).toEqual(['1']);
   });
 });
 

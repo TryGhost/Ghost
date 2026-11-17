@@ -38,6 +38,28 @@ export function presentUsers(
   );
 }
 
+/**
+ * Present ids the staff list cannot name, sorted so the lookup they key stays
+ * the same between polls. Empty until the list has loaded.
+ */
+export function unnamedUserIds(
+  active: ActivePresence[],
+  users: readonly StaffUserLike[] | undefined,
+): string[] {
+  if (!users) {
+    return [];
+  }
+  const known = new Set(users.map((user) => user.id));
+  const unnamed = new Set<string>();
+  for (const { userId } of active) {
+    // Ids go into a filter string, so anything that is not a plain id is dropped.
+    if (!known.has(userId) && /^[a-z0-9]+$/i.test(userId)) {
+      unnamed.add(userId);
+    }
+  }
+  return [...unnamed].sort();
+}
+
 /** "Alex", "Alex and Sam", "Alex, Sam and Kim". */
 export function listNames(names: string[]): string {
   if (names.length <= 1) {

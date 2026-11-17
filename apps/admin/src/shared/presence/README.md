@@ -26,8 +26,10 @@ ids and a server timestamp; names and avatars come from the staff users list.
   re-authentication dialog succeeds.
 - Indicators are a second flag, `editorPresence`. The editor header shows the
   other staff on the open document as avatars with an overflow count, named
-  from the staff users list, which is read only once someone is present. Users
-  missing from that list are not shown. Hovering or focusing the cluster names
+  from the staff users list, which is read only once someone is present. That
+  list is one page of the most recently seen staff, so anyone present beyond it
+  is read by id in a second request. Users neither request returns are not
+  shown. Hovering or focusing the cluster names
   everyone in one sentence, "Alex and Sam have this post open". Below the `sm`
   breakpoint one avatar with a count badge stands for everyone.
 
