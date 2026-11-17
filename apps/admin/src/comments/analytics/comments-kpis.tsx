@@ -15,7 +15,7 @@ import {
   getTrend,
 } from './comments-analytics-helpers';
 import { Inline } from '@tryghost/shade/primitives';
-import { KpiTabTrigger, KpiTabValue } from '@tryghost/shade/patterns';
+import { GhCustomTooltipContent, KpiTabTrigger, KpiTabValue } from '@tryghost/shade/patterns';
 import {
   Recharts,
   abbreviateNumber,
@@ -24,8 +24,6 @@ import {
   formatNumber,
   getYRange,
 } from '@tryghost/shade/utils';
-import { STATS_RANGES } from '@/shared/analytics/constants';
-import { truncateLeadingEmptyData } from '@/shared/analytics/chart-helpers';
 import { useShade } from '@tryghost/shade/app';
 import type { CommentsOverviewStats } from '@tryghost/admin-x-framework/api/stats';
 
@@ -35,37 +33,12 @@ const TABS: Record<CommentsAnalyticsTab, { label: string; color: string; inverte
   reported: { label: 'Reported', color: 'var(--chart-rose)', inverted: true },
 };
 
-type ChartRow = { date: string; value: number };
-
 // A rail tab is ~78px: past the trend arrow there is room for "999", "9.9k" or "99k"
 const formatKpi = (value: number) => {
   if (value >= 10000 && value < 999500) {
     return `${Math.round(value / 1000)}k`;
   }
   return value >= 1000 ? abbreviateNumber(value) : formatNumber(value);
-};
-
-const ChartTooltipContent: React.FC<{
-  active?: boolean;
-  payload?: { payload: ChartRow }[];
-  label: string;
-  displayRange: number;
-}> = ({ active, payload, label, displayRange }) => {
-  if (!active || !payload?.length) {
-    return null;
-  }
-  const { date, value } = payload[0].payload;
-  return (
-    <div className="min-w-[160px] rounded-lg border bg-background px-3 py-2 shadow-lg">
-      <div className="mb-1 text-sm text-foreground">
-        {formatDisplayDateWithRange(date, displayRange)}
-      </div>
-      <Inline gap="lg" justify="between">
-        <span className="text-sm text-muted-foreground">{label}</span>
-        <span className="font-mono font-medium">{formatNumber(value)}</span>
-      </Inline>
-    </div>
-  );
 };
 
 const CommentsKpis: React.FC<{
@@ -80,16 +53,16 @@ const CommentsKpis: React.FC<{
   const { admin7Design } = useShade();
   const displayRange = stats ? DISPLAY_RANGE_BY_INTERVAL[stats.interval] : 30;
 
-  const chartData = useMemo(() => {
-    if (!stats) {
-      return [];
-    }
-    const series =
-      range === STATS_RANGES.allTime.value
-        ? truncateLeadingEmptyData(stats.series, 'comments')
-        : stats.series;
-    return series.map((row) => ({ date: row.date, value: row[tab] }));
-  }, [stats, range, tab]);
+  const chartData = useMemo(
+    () =>
+      stats?.series.map((row) => ({
+        date: row.date,
+        value: row[tab],
+        formattedValue: formatNumber(row[tab]),
+        label,
+      })) ?? [],
+    [stats, tab, label],
+  );
 
   const yRange = getYRange(chartData);
   const yTicks = [0, Math.max(yRange.max, 1)];
@@ -153,7 +126,7 @@ const CommentsKpis: React.FC<{
                 width={calculateYAxisWidth(yTicks, formatNumber)}
               />
               <ChartTooltip
-                content={<ChartTooltipContent displayRange={displayRange} label={label} />}
+                content={<GhCustomTooltipContent color={color} range={displayRange} />}
                 cursor={{ fill: 'var(--muted)', opacity: 0.5 }}
                 isAnimationActive={false}
               />

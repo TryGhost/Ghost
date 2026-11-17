@@ -5,7 +5,6 @@ import {
   parseRangeParam,
   parseTabParam,
 } from './comments-analytics-helpers';
-import { keepPreviousData } from '@tanstack/react-query';
 import {
   useCommentsOverview,
   useCommentsTopCommenters,
@@ -27,7 +26,6 @@ export function useCommentsAnalytics(timezone: string, enabled: boolean) {
     enabled,
     // Older Core has no endpoint: hide the panel instead of toasting the 404
     defaultErrorHandler: false,
-    placeholderData: keepPreviousData,
   };
   const overview = useCommentsOverview(query);
   const topPosts = useCommentsTopPosts(query);

@@ -1,6 +1,6 @@
-import moment from 'moment-timezone';
 import { STATS_RANGES, STATS_RANGE_OPTIONS } from '@/shared/analytics/constants';
 import { formatPercentage } from '@tryghost/shade/utils';
+import { formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
 import type { CommentsStatsInterval } from '@tryghost/admin-x-framework/api/stats';
 
 export const COMMENTS_ANALYTICS_TABS = ['comments', 'commenters', 'reported'] as const;
@@ -19,17 +19,16 @@ export function parseTabParam(value: string | null): CommentsAnalyticsTab {
   return COMMENTS_ANALYTICS_TABS.find((tab) => tab === value) ?? 'comments';
 }
 
-// Site-local dates, so the server's buckets line up with the list's date filters
-export function getCommentsStatsSearchParams(range: number, timezone: string) {
-  const today = moment().tz(timezone);
-  const start =
-    range === STATS_RANGES.yearToDate.value
-      ? today.clone().startOf('year')
-      : today.clone().subtract(range - 1, 'days');
-
+// Site-local dates, so the server's buckets line up with the list's date filters.
+// All time sends no date_from: Core starts it at the first comment.
+export function getCommentsStatsSearchParams(
+  range: number,
+  timezone: string,
+): Record<string, string> {
+  const { startDate, endDate } = getRangeDates(range, timezone);
   return {
-    date_from: start.format('YYYY-MM-DD'),
-    date_to: today.format('YYYY-MM-DD'),
+    ...(range === STATS_RANGES.allTime.value ? {} : { date_from: formatQueryDate(startDate) }),
+    date_to: formatQueryDate(endDate),
     timezone,
   };
 }

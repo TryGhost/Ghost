@@ -35,6 +35,13 @@ describe('comments analytics helpers', () => {
     expect(getCommentsStatsSearchParams(-1, 'UTC').date_from).toBe('2026-01-01');
   });
 
+  it('leaves the start of all time to the server', () => {
+    expect(getCommentsStatsSearchParams(1000, 'UTC')).toEqual({
+      date_to: '2026-11-17',
+      timezone: 'UTC',
+    });
+  });
+
   it('falls back to the defaults for unknown params', () => {
     expect(parseRangeParam('90')).toBe(90);
     expect(parseRangeParam('42')).toBe(30);

@@ -23,20 +23,22 @@ const totals = (comments: number, commenters: number, reported: number) => ({
   reported,
 });
 
-function fakeCommentsStats() {
-  const overviewApi = fakeAdminEndpoint('GET', /^\/stats\/comments\/\?/, {
-    stats: [
-      {
-        totals: totals(12, 7, 2),
-        previous_totals: totals(10, 7, 1),
-        interval: 'day',
-        series: [
-          { date: '2026-11-15', ...totals(5, 4, 1) },
-          { date: '2026-11-16', ...totals(7, 5, 1) },
-        ],
-      },
-    ],
-  });
+const overview = {
+  stats: [
+    {
+      totals: totals(12, 7, 2),
+      previous_totals: totals(10, 7, 1),
+      interval: 'day',
+      series: [
+        { date: '2026-11-15', ...totals(5, 4, 1) },
+        { date: '2026-11-16', ...totals(7, 5, 1) },
+      ],
+    },
+  ],
+};
+
+function fakeCommentsStats(overviewResponse: Parameters<typeof fakeAdminEndpoint>[2] = overview) {
+  const overviewApi = fakeAdminEndpoint('GET', /^\/stats\/comments\/\?/, overviewResponse);
   const topPostsApi = fakeAdminEndpoint('GET', /^\/stats\/comments\/top-posts\/\?/, {
     stats: topPosts.map(({ id, title }, index) => ({ post_id: id, title, comments: 10 - index })),
   });
@@ -105,12 +107,50 @@ describe('Comments analytics', () => {
     await expect.poll(() => requestedDays(overviewApi.requests.at(-1)!.url)).toBe(7);
     await expect.poll(currentRoute).toContain('range=7');
 
+    await commentsScreen.analyticsDateRange().click();
+    await commentsScreen.analyticsDateRangeOption('All time').click();
+
+    // Core starts all time at the first comment
+    await expect.poll(currentRoute).toContain('range=1000');
+    await expect
+      .poll(() => new URL(overviewApi.requests.at(-1)!.url).searchParams.has('date_from'))
+      .toBe(false);
+
     await commentsScreen.analyticsKpiTab('Reported').click();
 
     await expect.poll(currentRoute).toContain('tab=reported');
     await expect
       .element(commentsScreen.analyticsKpiTab('Reported'))
       .toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('shows no figures from the previous range while the new one loads', async () => {
+    fakeComments([comment()]);
+    let release = () => {};
+    const released = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const { topPostsApi, topCommentersApi } = fakeCommentsStats(async ({ url }) => {
+      if (requestedDays(url) !== 1) {
+        return overview;
+      }
+      await released;
+      return { stats: [{ ...overview.stats[0], totals: totals(3, 2, 0) }] };
+    });
+    await renderAdminApp('/comments', { labs });
+
+    await expect.element(commentsScreen.analyticsKpiValue('comments')).toHaveTextContent('12');
+
+    await commentsScreen.analyticsDateRange().click();
+    await commentsScreen.analyticsDateRangeOption('Today').click();
+
+    await expect.poll(() => topPostsApi.requests.length).toBe(2);
+    await expect.poll(() => topCommentersApi.requests.length).toBe(2);
+    await expect.element(commentsScreen.analyticsKpiValue('comments')).not.toHaveTextContent('12');
+
+    release();
+
+    await expect.element(commentsScreen.analyticsKpiValue('comments')).toHaveTextContent('3');
   });
 
   it('filters the list to a top post or commenter, one at a time', async () => {
@@ -155,11 +195,16 @@ describe('Comments analytics', () => {
   it('opens the panel from the header on narrower screens', async () => {
     await page.viewport(1000, 800);
     const commentsApi = fakeComments([comment()]);
-    fakeCommentsStats();
+    const { overviewApi, topPostsApi, topCommentersApi } = fakeCommentsStats();
     fakeFilterLookups();
     await renderAdminApp('/comments', { labs });
 
     await expect.element(commentsScreen.analyticsPanel()).not.toBeInTheDocument();
+    await expect.element(commentsScreen.analyticsButton()).toBeVisible();
+    // Nothing is fetched behind the closed sheet
+    expect(
+      [overviewApi, topPostsApi, topCommentersApi].map(({ requests }) => requests.length),
+    ).toEqual([0, 0, 0]);
 
     await commentsScreen.analyticsButton().click();
 

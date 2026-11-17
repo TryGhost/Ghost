@@ -41,10 +41,15 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
   const { filters, nql, setFilters } = useFilterState(timezone);
   const dislikesEnabled = true;
   const analyticsEnabled = useFeatureFlag('commentsAnalytics') && !singleCommentId;
-  const analytics = useCommentsAnalytics(timezone, analyticsEnabled);
-  const showAnalytics = analyticsEnabled && !analytics.unavailable;
-  const [analyticsSheetOpen, setAnalyticsSheetOpen] = useState(false);
   const wideLayout = useWideLayout();
+  const [analyticsSheetOpen, setAnalyticsSheetOpen] = useState(false);
+  // Narrow screens fetch nothing until the sheet first opens
+  const [analyticsSheetOpened, setAnalyticsSheetOpened] = useState(false);
+  const analytics = useCommentsAnalytics(
+    timezone,
+    analyticsEnabled && (wideLayout || analyticsSheetOpened),
+  );
+  const showAnalytics = analyticsEnabled && !analytics.unavailable;
   const handleAddFilter = useCallback(
     (field: string, value: string, operator: string = 'is') => {
       const nextFilters = [
@@ -132,7 +137,10 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
                       {showAnalytics && !wideLayout && (
                         <PageHeader.Action
                           label="Analytics"
-                          onClick={() => setAnalyticsSheetOpen(true)}
+                          onClick={() => {
+                            setAnalyticsSheetOpen(true);
+                            setAnalyticsSheetOpened(true);
+                          }}
                         >
                           <LucideIcon.ChartNoAxesColumn />
                           Analytics
