@@ -9,7 +9,7 @@ import CleanTokensJob from '../members/jobs/clean-tokens-job';
 import CleanExpiredCompedJob from '../members/jobs/clean-expired-comped-job';
 import CleanGiftsJob from '../gifts/jobs/clean-gifts-job';
 import SendGiftRemindersJob from '../gifts/jobs/send-gift-reminders-job';
-import ExternalMediaInliner from '../media-inliner/external-media-inliner';
+import type ExternalMediaInliner from '../media-inliner/external-media-inliner';
 import ExternalMediaInlinerJob from '../media-inliner/external-media-inliner-job';
 import ContentCSVImportJob from '../content-import/jobs/content-csv-import-job';
 import ContentImportJob from '../../data/importer/jobs/content-import-job';

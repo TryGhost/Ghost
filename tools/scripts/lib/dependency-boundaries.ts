@@ -137,6 +137,53 @@ export function committedBuildOutput(repository: string) {
   });
 }
 
+// dependency-cruiser loads the `typescript` package only if it can find it, and
+// carries on without it: it then skips TypeScript files or reads their type-only
+// imports as ordinary ones, and reports different violations with no error.
+// Whether it finds the package depends on how the scan was started. In pnpm's
+// default layout here, dependency-cruiser sits in a store outside the
+// repository and finds `typescript` only through the NODE_PATH and module hook
+// that pnpm sets for what it runs. In the layout CI and Docker use, it finds the
+// root's `typescript` by walking up from node_modules.
+//
+// Returns the compiler the scan would use, such as `typescript@6.0.3`, from what
+// dependency-cruiser's getAvailableTranspilers() reports, or undefined when it
+// has none. A compiler it can find but not load is listed as available, with
+// `-` for its version.
+export function scannerTypeScript(transpilers: unknown) {
+  const found = z
+    .array(z.object({ name: z.string(), available: z.boolean(), currentVersion: z.string() }))
+    .safeParse(transpilers)
+    .data?.find(({ name }) => name === 'typescript');
+  return found?.available && found.currentVersion.startsWith('typescript@')
+    ? found.currentVersion
+    : undefined;
+}
+
+// Arguments for Node that print getAvailableTranspilers() as JSON. Run with the
+// Node and environment of the scan, they load the same dependency-cruiser, which
+// looks for `typescript` from its own location just as the scan does.
+export function scannerProbe() {
+  const entry = import.meta.resolve('dependency-cruiser');
+  return [
+    '--input-type=module',
+    '--eval',
+    `import { getAvailableTranspilers } from ${JSON.stringify(entry)}; console.log(JSON.stringify(getAvailableTranspilers()));`,
+  ];
+}
+
+// Reads the probe's output; anything but the list it prints counts as no compiler.
+export function probedTypeScript(output: string) {
+  try {
+    return scannerTypeScript(JSON.parse(output));
+  } catch {
+    return undefined;
+  }
+}
+
+export const missingTypeScript =
+  'dependency-cruiser could not load the `typescript` package. Without it the scan skips TypeScript files or reads type-only imports as ordinary imports, and reports different violations. Run the scan through pnpm, for example `pnpm lint:boundaries`. If that fails too, run `pnpm install`.';
+
 // Lint and contributor reports use this single scan and known-violations file.
 // Reports retain all findings; only lint uses the comparison to decide success.
 // Given files, only they and what they import are scanned, as the commit hook
@@ -153,6 +200,13 @@ export function readDependencyBoundaries(repository: string, files: string[] = [
     .object({ bin: z.object({ depcruise: z.string() }) })
     .parse(JSON.parse(readFileSync(manifest, 'utf8')));
   const cli = path.join(path.dirname(manifest), bin.depcruise);
+  const probe = spawnSync(process.execPath, scannerProbe(), { cwd: repository, encoding: 'utf8' });
+  if (probe.error) {
+    throw probe.error;
+  }
+  if (!probedTypeScript(probe.stdout)) {
+    throw new Error(missingTypeScript);
+  }
   const result = spawnSync(
     process.execPath,
     [

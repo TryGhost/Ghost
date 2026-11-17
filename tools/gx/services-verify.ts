@@ -9,6 +9,11 @@ import {
   parseLegacyServices,
   servicesRoot,
 } from '../configs/oxlint/legacy-services.ts';
+import {
+  missingTypeScript,
+  probedTypeScript,
+  scannerProbe,
+} from '../scripts/lib/dependency-boundaries.ts';
 
 const bootPath = 'ghost/core/boot.js';
 const allowlistPath = '.dependency-cruiser.cjs';
@@ -371,12 +376,18 @@ export function verifyService({
   // Ghost runs workspace packages from their built output, while boundary lint resolves
   // them to authored source. Service dependencies must hold under both.
   const cruises: Cruise[] = [];
-  for (const resolution of ['source', 'built'] as const) {
-    const env: NodeJS.ProcessEnv = {
-      ...process.env,
-      NODE_PATH: path.join(repository, 'node_modules'),
-      GHOST_DEPENDENCY_RESOLUTION: resolution,
-    };
+  const cruiseEnv = { ...process.env, NODE_PATH: path.join(repository, 'node_modules') };
+  // Without TypeScript the scans would report different violations, so run neither.
+  const probe = run('pnpm', ['exec', 'node', ...scannerProbe()], {
+    cwd: repository,
+    env: cruiseEnv,
+  });
+  const readsTypeScript = probedTypeScript(probe.stdout ?? probe.output) !== undefined;
+  if (!readsTypeScript) {
+    record('dependencies-typescript', 'fail', [missingTypeScript]);
+  }
+  for (const resolution of readsTypeScript ? (['source', 'built'] as const) : []) {
+    const env: NodeJS.ProcessEnv = { ...cruiseEnv, GHOST_DEPENDENCY_RESOLUTION: resolution };
     const result = run(
       'pnpm',
       ['exec', 'depcruise', servicesRoot, '--config', allowlistPath, '--output-type', 'json'],

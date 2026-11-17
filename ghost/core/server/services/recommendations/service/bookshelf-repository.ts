@@ -1,4 +1,4 @@
-import { Knex } from 'knex';
+import type { Knex } from 'knex';
 import { mapKeys, chainTransformers } from '@tryghost/mongo-utils';
 import errors from '@tryghost/errors';
 
