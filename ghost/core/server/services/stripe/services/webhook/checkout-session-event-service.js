@@ -6,7 +6,11 @@ const {
   canWelcomeEmailReplaceSignupPaidEmail,
 } = require('../../../../lib/member-signup-contexts');
 const { CHECKOUT_PORT } = require('@tryghost/checkout');
-const { collectedFrom } = require('../checkout/completed-session');
+const {
+  CheckoutCustomer,
+  buyerNamesFrom,
+  collectedFrom,
+} = require('../checkout/completed-session');
 const { COLLECTION_FLAG } = require('../../../stripe-checkout-config/models');
 /** @typedef {import('../../../../lib/member-signup-contexts').SignupContext} SignupContext */
 /** @typedef {import('../../tracking').CheckoutCompletionAttempt} CheckoutCompletionAttempt */
@@ -282,7 +286,7 @@ module.exports = class CheckoutSessionEventService {
 
     const { DonationPaymentEvent } = require('../../../donations/donation-payment-event');
     const data = DonationPaymentEvent.create({
-      name: member?.get('name') ?? session.customer_details.name,
+      name: member?.get('name') ?? buyerNamesFrom.parse(session).customer,
       email: member?.get('email') ?? session.customer_details.email,
       memberId: member?.id ?? null,
       amount,
@@ -387,9 +391,11 @@ module.exports = class CheckoutSessionEventService {
    * @param {CheckoutCompletionAttempt} attempt
    */
   async handleSubscriptionEvent(session, attempt) {
-    const customer = await this.api.getCustomer(session.customer, {
-      expand: ['subscriptions.data.default_payment_method'],
-    });
+    const { customer, payerName } = CheckoutCustomer.parse(
+      await this.api.getCustomer(session.customer, {
+        expand: ['subscriptions.data.default_payment_method'],
+      }),
+    );
 
     const memberRepository = this.deps.memberRepository;
 
@@ -411,7 +417,7 @@ module.exports = class CheckoutSessionEventService {
     attempt.buying({ existing: memberPreexisted, verified: canUpdateMember });
 
     if (!member) {
-      const metadataName = _.get(session, 'metadata.name');
+      const signupName = buyerNamesFrom.parse(session).signup;
       const metadataNewsletters = _.get(session, 'metadata.newsletters');
       const attribution = {
         id: session.metadata?.attribution_id ?? null,
@@ -422,11 +428,7 @@ module.exports = class CheckoutSessionEventService {
         referrerUrl: session.metadata?.referrer_url ?? null,
       };
 
-      const payerName = _.get(
-        customer,
-        'subscriptions.data[0].default_payment_method.billing_details.name',
-      );
-      const name = metadataName || payerName || null;
+      const name = signupName || payerName || null;
 
       const memberData = { email: customer.email, name, attribution };
       if (metadataNewsletters) {
@@ -450,10 +452,6 @@ module.exports = class CheckoutSessionEventService {
       };
       member = await memberRepository.create(memberDataWithStripeCustomer);
     } else {
-      const payerName = _.get(
-        customer,
-        'subscriptions.data[0].default_payment_method.billing_details.name',
-      );
       const attribution = {
         id: session.metadata?.attribution_id ?? null,
         url: session.metadata?.attribution_url ?? null,

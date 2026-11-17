@@ -26,6 +26,7 @@ const {
 } = require('../../../automations/events/start-automations-poll-event');
 const { MEMBER_WELCOME_EMAIL_SLUGS } = require('../../../member-welcome-emails/constants');
 const db = require('../../../../data/db');
+const { truncateCharacters } = require('../../../../lib/truncate-characters');
 const schema = require('../../../../data/schema');
 const labs = require('../../../../../shared/labs');
 /** @import {Knex} from 'knex' */
@@ -92,9 +93,7 @@ function attributionColumns(table, attribution) {
   const columns = schema.tables[table];
   /** @param {'attribution_url' | 'referrer_source' | 'referrer_medium' | 'referrer_url' | 'utm_source' | 'utm_medium' | 'utm_campaign' | 'utm_term' | 'utm_content'} column */
   const fitted = (column, /** @type {string | null | undefined} */ value) =>
-    // By character rather than UTF-16 unit, as the column counts them, so an emoji
-    // is never split in half.
-    value ? Array.from(value).slice(0, columns[column].maxlength).join('') : null;
+    value ? truncateCharacters(value, columns[column].maxlength) : null;
 
   return {
     attribution_id: attribution?.id ?? null,

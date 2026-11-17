@@ -1,11 +1,77 @@
 import { z } from 'zod';
 import { PORT_FIELD, CHECKOUT_PORT, CHECKOUT_PORTS, type CheckoutPort } from '@tryghost/checkout';
 import { FIELD_STRUCTURES, keysOf, phoneNumberIn, type ValueOf } from '@tryghost/metafield-types';
+import { truncateCharacters } from '../../../../lib/truncate-characters';
 
 const Collected = z
   .string()
   .nullish()
   .transform((given) => (given && given.trim() !== '' ? given : undefined));
+
+const { tables } = require('../../../../data/schema');
+
+/**
+ * The longest buyer name Ghost can store: the smallest maxlength of the name columns a completed
+ * checkout writes to, in `members`, `members_stripe_customers` and `donation_payment_events`.
+ */
+const NAME_LENGTH: number = Math.min(
+  tables.members.name.maxlength,
+  tables.members_stripe_customers.name.maxlength,
+  tables.donation_payment_events.name.maxlength,
+);
+
+/**
+ * A buyer's name from Stripe, truncated to `NAME_LENGTH`. Stripe accepts longer names than
+ * Ghost's name columns. The buyer has already paid when the checkout completes, so a long name is
+ * truncated rather than rejected: rejecting it would fail the webhook on every retry and leave the
+ * buyer without the membership or donation they paid for.
+ */
+const BuyerName = z
+  .string()
+  .nullish()
+  .transform((name) => (name ? truncateCharacters(name, NAME_LENGTH) : name));
+
+/**
+ * A subscription's default payment method: its ID, or the payment method object when expanded.
+ * Ghost only reads the cardholder name from it, as a fallback for the member's name, so an
+ * unexpected shape parses as null instead of failing the webhook.
+ */
+const PaymentMethod = z
+  .union([
+    z.string(),
+    z.object({ billing_details: z.object({ name: BuyerName }).loose().nullish() }).loose(),
+  ])
+  .nullish()
+  .catch(null);
+
+/**
+ * Parses the Stripe customer of a completed subscription checkout, fetched with its subscriptions'
+ * payment methods expanded. Returns the customer and `payerName`, the cardholder name on the first
+ * subscription's payment method. Only the fields the webhook uses are validated, so a customer
+ * missing one fails before Ghost starts creating the member rather than partway through. Names are
+ * truncated to fit. Other fields are passed through unchanged, because the member repository reads
+ * more of Stripe's subscription objects when it links them to the member.
+ */
+export const CheckoutCustomer = z
+  .object({
+    id: z.string(),
+    email: z.string(),
+    name: BuyerName,
+    subscriptions: z
+      .object({
+        data: z.array(z.object({ default_payment_method: PaymentMethod }).loose()),
+      })
+      .loose(),
+  })
+  .loose()
+  .transform((customer) => {
+    const paymentMethod = customer.subscriptions.data[0]?.default_payment_method;
+    return {
+      customer,
+      payerName:
+        typeof paymentMethod === 'object' ? paymentMethod?.billing_details?.name : undefined,
+    };
+  });
 
 const ShippingDetails = z
   .object({
@@ -36,11 +102,13 @@ const CompletedSession = z
     collected_information: z.object({ shipping_details: ShippingDetails }).nullish().catch(null),
     customer_details: z
       .object({
+        name: BuyerName,
         phone: Collected,
         address: z.object({ country: Collected }).nullish().catch(null),
       })
       .nullish()
       .catch(null),
+    metadata: z.object({ name: BuyerName }).loose().nullish().catch(null),
   })
   .loose();
 type CompletedSession = z.output<typeof CompletedSession>;
@@ -171,3 +239,13 @@ export const collectedFrom = CompletedSession.transform(
     phone: phoneCollected(session),
   }),
 );
+
+/**
+ * Returns the buyer's names from a completed checkout session, truncated to fit: `signup`, the
+ * name entered in the site's signup form before checkout, and `customer`, the name entered in
+ * Stripe Checkout, which donations are recorded under.
+ */
+export const buyerNamesFrom = CompletedSession.transform((session) => ({
+  signup: session.metadata?.name,
+  customer: session.customer_details?.name,
+}));

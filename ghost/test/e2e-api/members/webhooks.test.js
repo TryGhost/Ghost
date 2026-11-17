@@ -1699,6 +1699,29 @@ describe('Members API', function () {
       assert.equal(body.members[0].status, 'paid', 'The member should be "paid"');
     });
 
+    it('Creates a paid member when the buyer name is longer than the name column', async function () {
+      // Stripe accepts longer names than Ghost's name columns. The emoji sits on the truncation
+      // point, so the expected name checks that truncation counts the emoji as one character.
+      const email = 'checkout-long-name@email.com';
+      const longName = `${'x'.repeat(190)}🙂${'y'.repeat(60)}`;
+      const storedName = `${'x'.repeat(190)}🙂`;
+
+      const status = await completeCheckout({
+        key: 'long_name',
+        email,
+        customerName: longName,
+        metadata: { name: longName },
+      });
+
+      assert.equal(status, 200);
+      const { body } = await adminAgent.get(`/members/?search=${email}`);
+      assert.equal(body.members.length, 1, 'The member was not created');
+      const [member] = body.members;
+      assert.equal(member.status, 'paid', 'The member should be "paid"');
+      assert.equal(member.name, storedName);
+      assert.equal(member.subscriptions[0].customer.name, storedName);
+    });
+
     it('Does not 500 if the member is unknown', async function () {
       set(paymentMethod, {
         id: 'card_456',
