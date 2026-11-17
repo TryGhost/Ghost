@@ -18,16 +18,24 @@ function UserAvatar({
   user,
   label,
   count,
+  stack,
   className,
 }: {
   user: PresentUser;
   label: string;
   /** Total people this one avatar stands for; shown as a badge when above one. */
   count?: number;
+  /** Higher sits on top where avatars overlap. */
+  stack?: number;
   className?: string;
 }) {
   return (
-    <span aria-label={label} className={cn('relative', className)} role="img">
+    <span
+      aria-label={label}
+      className={cn('relative', className)}
+      role="img"
+      style={stack === undefined ? undefined : { zIndex: stack }}
+    >
       <Avatar
         className="size-7 border-2 border-background"
         colorSeed={user.name}
@@ -75,7 +83,7 @@ export function PresenceAvatars({
     <Tooltip>
       <TooltipTrigger asChild>
         <Inline
-          className={cn('pointer-events-auto shrink-0', className)}
+          className={cn('pointer-events-auto isolate shrink-0', className)}
           data-testid="presence-avatars"
           gap="none"
           tabIndex={0}
@@ -88,6 +96,8 @@ export function PresenceAvatars({
               key={user.id}
               className={cn(users.length > 1 && 'max-sm:hidden', index > 0 && '-ml-2')}
               label={describePresence([user.name], resourceType)}
+              // The first avatar overlaps the next, so the row reads left to right.
+              stack={shown.length - index}
               user={user}
             />
           ))}
