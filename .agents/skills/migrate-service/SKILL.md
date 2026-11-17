@@ -163,6 +163,8 @@ A migrated service is no longer legacy:
   the inventory's `followUps` section. A suggested future home, and
   notes on what `defineService` does not do for the service yet, go there too.
   That entry holds nothing else; leave it out when nothing is open.
+- Move any bug the entry's `blockers` describe to the inventory's `knownBugs`
+  section, so deleting the entry does not lose it.
 - Repair affected file references and startup-order descriptions in other
   legacy entries mechanically, without changing their unrelated assessments.
   An audit SHA you add must be a commit on main: a branch commit disappears on
