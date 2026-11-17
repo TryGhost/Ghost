@@ -107,15 +107,17 @@ describe('Recorded trigger, wait, and outcome cards', () => {
     await expect(canvas().getByRole('listitem')).toHaveCount(2);
   });
 
-  it('shows the exit reason once after the stopped step', async () => {
-    const label = 'Wait step failed';
+  it.each([
+    ['failed', 'Wait step failed'],
+    ['member lost label', 'Label removed'],
+  ] as const)('shows the %s exit reason once after the stopped step', async (status, label) => {
     setup();
     const data = history('a');
     data.status = 'exited_early';
-    data.failed = true;
+    data.failed = status === 'failed';
     data.steps[0] = {
       ...data.steps[0],
-      status: 'failed',
+      status,
       finished_at: finished,
       updated_at: updated,
     };

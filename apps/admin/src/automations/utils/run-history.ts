@@ -32,6 +32,7 @@ const stepStates = {
   'automation disabled': { state: 'exited', label: 'Automation turned off' },
   'member changed status': { state: 'exited', label: 'Member changed subscription status' },
   'member changed tier': { state: 'exited', label: 'Member changed subscription tier' },
+  'member lost label': { state: 'exited', label: 'Label removed' },
   // The server also uses this status for a missing member.
   'member unsubscribed': { state: 'exited', label: 'Unsubscribed' },
 } as const satisfies Record<Step['status'], { state: HistoryCardState; label: string }>;
