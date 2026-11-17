@@ -55,12 +55,18 @@ describe('MemberWelcomeEmailRenderer', function () {
     });
   }
 
+  // Renders the template and personalizes it for one recipient, as every send does.
+  async function renderFor(renderer, { member, automationRunStepId, ...options }) {
+    const rendered = await renderer.render(options);
+    return renderer.personalize(rendered, { member, automationRunStepId });
+  }
+
   describe('render', function () {
     it('renders Lexical content to HTML via lexicalLib.render', async function () {
       const renderer = createRenderer();
       const lexicalJson = '{"root":{"children":[]}}';
 
-      await renderer.render({
+      await renderFor(renderer, {
         lexical: lexicalJson,
         subject: 'Welcome!',
         member: { name: 'John', email: 'john@example.com' },
@@ -102,7 +108,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       lexicalRenderStub.resolves('<p>Hello {name}, or {first_name}! Contact: {email}</p>');
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { name: 'John Doe', email: 'john@example.com' },
@@ -118,7 +124,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       lexicalRenderStub.resolves('<p>Welcome to {site_title} at {site_url}</p>');
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { name: 'John', email: 'john@example.com' },
@@ -135,7 +141,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       );
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { name: 'John', email: 'john@example.com', uuid: 'abc-123-def' },
@@ -156,7 +162,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       lexicalRenderStub.resolves('<p><a href="https://example.com">Click here</a></p>');
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { name: 'John', email: 'john@example.com' },
@@ -172,7 +178,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       lexicalRenderStub.resolves(html);
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { name: 'John', email: 'john@example.com' },
@@ -185,7 +191,7 @@ describe('MemberWelcomeEmailRenderer', function () {
     it('substitutes template variables in subject', async function () {
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome to {site_title}, {first_name}!',
         member: { name: 'John Doe', email: 'john@example.com' },
@@ -199,7 +205,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       lexicalRenderStub.resolves('<p>Hello {name}!</p>');
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { email: 'john@example.com' },
@@ -214,7 +220,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       lexicalRenderStub.resolves('<p>Hello {name, "there"}</p>');
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { email: 'john@example.com' },
@@ -224,11 +230,26 @@ describe('MemberWelcomeEmailRenderer', function () {
       assert(result.html.includes('Hello there'));
     });
 
+    it('applies each fallback of the same token separately', async function () {
+      lexicalRenderStub.resolves('<p>{first_name, "friend"} and {first_name, "pal"}</p>');
+      const renderer = createRenderer();
+
+      const result = await renderFor(renderer, {
+        lexical: '{}',
+        subject: 'Hi {first_name, "there"}',
+        member: { name: '', email: 'john@example.com' },
+        siteSettings: defaultSiteSettings,
+      });
+
+      assert(result.html.includes('friend and pal'));
+      assert.equal(result.subject, 'Hi there');
+    });
+
     it('uses custom fallback for first_name when missing', async function () {
       lexicalRenderStub.resolves('<p>Hey {first_name, "friend"}</p>');
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { email: 'john@example.com' },
@@ -242,7 +263,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       lexicalRenderStub.resolves('<p>Hello {name, "there"}</p>');
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { name: 'Jane Smith', email: 'jane@example.com' },
@@ -256,7 +277,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       lexicalRenderStub.resolves('<p>Email: {email}!</p>');
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { name: 'John' },
@@ -271,7 +292,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       lexicalRenderStub.resolves('<p>Hi {first_name}</p>');
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { name: 'John Michael Doe', email: 'john@example.com' },
@@ -285,7 +306,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       lexicalRenderStub.resolves('<p>Hi {first_name, "friend"}</p>');
       const renderer = createRenderer();
 
-      const paddedResult = await renderer.render({
+      const paddedResult = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { name: '  Jane  Doe  ', email: 'jane@example.com' },
@@ -293,7 +314,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       });
       assert(paddedResult.html.includes('Hi Jane'));
 
-      const emptyResult = await renderer.render({
+      const emptyResult = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { name: '   ', email: 'empty@example.com' },
@@ -307,7 +328,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       const renderer = createRenderer();
       const year = new Date().getFullYear();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Test Subject',
         member: { name: 'John', email: 'john@example.com' },
@@ -327,17 +348,22 @@ describe('MemberWelcomeEmailRenderer', function () {
       );
     });
 
-    it('shows an unsubscribe link in the footer when an unsubscribeUrl is provided', async function () {
+    it('shows an unsubscribe link in the footer when getUnsubscribeUrl is provided', async function () {
       lexicalRenderStub.resolves('<p>Content</p>');
       const renderer = createRenderer();
+      const getUnsubscribeUrl = (uuid) =>
+        `https://example.com/unsubscribe/?uuid=${uuid}&key=def&updatesandannouncements=1`;
 
-      const result = await renderer.render({
+      const template = await renderer.render({
         lexical: '{}',
         subject: 'Test Subject',
-        member: { name: 'John', email: 'john@example.com' },
         siteSettings: defaultSiteSettings,
-        unsubscribeUrl:
-          'https://example.com/unsubscribe/?uuid=abc&key=def&updatesandannouncements=1',
+        getUnsubscribeUrl,
+      });
+      assert(template.html.includes('href="%%{unsubscribe_url}%%"'));
+
+      const result = renderer.personalize(template, {
+        member: { name: 'John', email: 'john@example.com', uuid: 'abc' },
       });
 
       const $ = cheerio.load(result.html);
@@ -347,7 +373,17 @@ describe('MemberWelcomeEmailRenderer', function () {
           .trim(),
         'Unsubscribe',
       );
+      assert(
+        result.html.includes(
+          // Server-generated, so inserted unescaped, as newsletters do.
+          'href="https://example.com/unsubscribe/?uuid=abc&key=def&updatesandannouncements=1"',
+        ),
+      );
       assert.equal($('a:contains("Manage your preferences")').length, 0);
+      assert.equal(
+        result.listUnsubscribe,
+        'https://example.com/unsubscribe/?uuid=abc&key=def&updatesandannouncements=1',
+      );
     });
 
     it('preserves multiline code block whitespace in the shared email wrapper', async function () {
@@ -356,7 +392,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       );
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { name: 'John', email: 'john@example.com' },
@@ -375,7 +411,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       );
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { name: 'John', email: 'john@example.com' },
@@ -435,7 +471,7 @@ describe('MemberWelcomeEmailRenderer', function () {
         },
       });
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical,
         subject: 'Welcome!',
         member: { name: 'John', email: 'john@example.com' },
@@ -455,7 +491,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       lexicalRenderStub.resolves('<p>Hello World</p>');
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { name: 'John', email: 'john@example.com' },
@@ -471,7 +507,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       const renderer = createRenderer();
 
       await assert.rejects(
-        renderer.render({
+        renderFor(renderer, {
           lexical: 'invalid',
           subject: 'Welcome!',
           member: { name: 'John', email: 'john@example.com' },
@@ -486,7 +522,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       const renderer = createRenderer();
 
       await assert.rejects(
-        renderer.render({
+        renderFor(renderer, {
           lexical: 'invalid',
           subject: 'Welcome!',
           member: { name: 'John', email: 'john@example.com' },
@@ -500,11 +536,98 @@ describe('MemberWelcomeEmailRenderer', function () {
       );
     });
 
+    it('renders a template with member placeholders and their definitions', async function () {
+      lexicalRenderStub.resolves(
+        '<p>Hi {first_name, "there"}, {name} at {site_title}. {unknown}</p><p><a href="https://partner.example/?u={uuid}">Link</a></p>',
+      );
+      const renderer = createRenderer();
+
+      const template = await renderer.render({
+        lexical: '{}',
+        subject: 'Hi {first_name, "there"} from {site_title}',
+        siteSettings: defaultSiteSettings,
+      });
+
+      assert.match(template.html, /Hi %%\{first_name\w*\}%%, %%\{name\}%% at Test Site\. <\/p>/);
+      assert(template.html.includes('href="https://partner.example/?u=%%{uuid}%%"'));
+      assert.match(template.text, /Hi %%\{first_name\w*\}%%, %%\{name\}%% at Test Site\./);
+      assert.match(template.subject, /^Hi %%\{first_name\w*\}%% from Test Site$/);
+      const trusted = Object.fromEntries(
+        template.replacementDefinitions.map(({ id, trusted: isTrusted }) => [id, isTrusted]),
+      );
+      assert.equal(trusted.name, false);
+      assert.equal(trusted.uuid, true);
+
+      const personalize = (member) => renderer.personalize(template, { member });
+      const ann = personalize({ name: '  Ann  Marie ', uuid: 'member-uuid' });
+      assert(ann.html.includes('Hi Ann,   Ann  Marie  at Test Site.'));
+      assert(ann.html.includes('href="https://partner.example/?u=member-uuid"'));
+      assert.equal(ann.subject, 'Hi Ann from Test Site');
+      const anonymous = personalize({ name: '', uuid: 'member-uuid' });
+      assert(anonymous.html.includes('Hi there,  at Test Site.'));
+      assert.equal(anonymous.subject, 'Hi there from Test Site');
+    });
+
+    it('does not fill in placeholders that appear inside a member value', async function () {
+      lexicalRenderStub.resolves('<p>Hello {name} / {email} / {first_name, "there"}</p>');
+      const renderer = createRenderer();
+      const template = await renderer.render({
+        lexical: '{}',
+        subject: '{name} / {email}',
+        siteSettings: defaultSiteSettings,
+      });
+
+      // Each value is inserted once and never scanned again, as Mailgun substitutes in one pass.
+      const known = renderer.personalize(template, {
+        member: { name: '%%{email}%%', email: 'jo@example.com' },
+      });
+      assert(known.html.includes('Hello %%{email}%% / jo@example.com / %%{email}%%</p>'));
+      assert(known.text.includes('Hello %%{email}%% / jo@example.com / %%{email}%%'));
+      assert.equal(known.subject, '%%{email}%% / jo@example.com');
+
+      const unknown = renderer.personalize(template, {
+        member: { name: 'Ann %%{unknown}%%', email: 'ann@example.com' },
+      });
+      assert(unknown.html.includes('Hello Ann %%{unknown}%% / ann@example.com / Ann</p>'));
+      assert.equal(unknown.subject, 'Ann %%{unknown}%% / ann@example.com');
+    });
+
+    it('personalizes member values, escaped only in the HTML body', async function () {
+      lexicalRenderStub.resolves(
+        '<p>Hello {name}!</p><p><a href="https://partner.example/?u={uuid}">{first_name, "friend"}</a></p>',
+      );
+      const renderer = createRenderer();
+      const template = await renderer.render({
+        lexical: '{}',
+        subject: 'Welcome {name}',
+        siteSettings: defaultSiteSettings,
+      });
+
+      const name = '<b>Tom & "Jo"</b> O\'Brien `a=b` Zoë 😀';
+      const result = renderer.personalize(template, {
+        member: { name, email: 'tom@example.com', uuid: 'abc-123' },
+      });
+
+      // Handlebars' escapeExpression, as newsletters use for their `_html` recipient variables:
+      // & < > " ' ` = become entities; everything else, including non-ASCII, stays as is.
+      const escapedName =
+        '&lt;b&gt;Tom &amp; &quot;Jo&quot;&lt;/b&gt; O&#x27;Brien &#x60;a&#x3D;b&#x60; Zoë 😀';
+      assert(result.html.includes(`Hello ${escapedName}!`));
+      assert(result.html.includes(`<title>Welcome ${escapedName}</title>`));
+      assert(result.html.includes('href="https://partner.example/?u=abc-123"'));
+      assert(result.html.includes('>&lt;b&gt;Tom</a>'));
+      assert(result.text.includes(`Hello ${name}!`));
+      assert(result.text.includes('<b>Tom [https://partner.example/?u=abc-123]'));
+      assert.equal(result.subject, `Welcome ${name}`);
+      assert.equal(result.listUnsubscribe, undefined);
+      assert(!/%%\{/.test(result.html + result.text + result.subject));
+    });
+
     it('escapes HTML in member values for body but not subject', async function () {
       lexicalRenderStub.resolves('<p>Hello {name}</p>');
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome {name}!',
         member: { name: '<script>alert("xss")</script>', email: 'test@example.com' },
@@ -521,7 +644,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       lexicalRenderStub.resolves("<p>It's great to have you!</p>");
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { name: 'John', email: 'john@example.com' },
@@ -536,7 +659,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       lexicalRenderStub.resolves('<p>Hello {unknown_token} and {another}</p>');
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome {invalid}!',
         member: { name: 'John', email: 'john@example.com' },
@@ -552,7 +675,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       lexicalRenderStub.resolves('<p>Hello <code>{first_name}</code></p>');
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { name: 'John Doe', email: 'john@example.com' },
@@ -570,7 +693,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       );
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { name: 'John Doe', email: 'john@example.com' },
@@ -587,7 +710,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       lexicalRenderStub.resolves('<p>Hey <code>{first_name, "friend"}</code></p>');
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { email: 'john@example.com' },
@@ -603,7 +726,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       lexicalRenderStub.resolves('<p>Hey <code>{first_name "friend"}</code></p>');
       const renderer = createRenderer();
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { email: 'john@example.com' },
@@ -626,7 +749,7 @@ describe('MemberWelcomeEmailRenderer', function () {
         },
       });
 
-      const result = await renderer.render({
+      const result = await renderFor(renderer, {
         lexical: '{}',
         subject: 'Welcome!',
         member: { name: 'John', email: 'john@example.com' },
@@ -643,6 +766,7 @@ describe('MemberWelcomeEmailRenderer', function () {
       let addAutomationTrackingToUrl;
 
       beforeEach(function () {
+        // Mirrors LinkClickTrackingService.addAutomationTrackingToUrl.
         addAutomationTrackingToUrl = sinon
           .stub()
           .callsFake(async (url, revisionId, runStepId, uuid) => {
@@ -656,7 +780,7 @@ describe('MemberWelcomeEmailRenderer', function () {
 
       const renderTracked = async (html, options = {}) => {
         lexicalRenderStub.resolves(html);
-        return await createRenderer({ linkTracking: { addAutomationTrackingToUrl } }).render({
+        return await renderFor(createRenderer({ linkTracking: { addAutomationTrackingToUrl } }), {
           lexical: '{}',
           subject: 'Welcome!',
           member: { name: 'John', email: 'john@example.com', uuid: memberUuid },
@@ -677,8 +801,8 @@ describe('MemberWelcomeEmailRenderer', function () {
           addAutomationTrackingToUrl,
           sinon.match((url) => url.href === 'https://external.example/page'),
           'revision-id',
-          'run-step-id',
-          memberUuid,
+          sinon.match.string,
+          sinon.match.string,
         );
         assert(
           result.html.includes(`https://example.com/r/abc123?m=${memberUuid}&amp;step=run-step-id`),
@@ -749,19 +873,151 @@ describe('MemberWelcomeEmailRenderer', function () {
         assert.equal($('a[href="https://external.example/page"]').text(), 'Link');
       });
 
-      it('does not rewrite links when the member UUID is absent', async function () {
-        await renderTracked('<p><a href="https://external.example/page">Link</a></p>', {
-          member: { name: 'John', email: 'john@example.com' },
+      it('looks up one redirect per link and leaves the member UUID and step ID as placeholders', async function () {
+        lexicalRenderStub.resolves(
+          '<p><a href="https://external.example/page">Link</a> <a href="https://external.example/{uuid}/feed">Feed</a></p>',
+        );
+        const renderer = createRenderer({ linkTracking: { addAutomationTrackingToUrl } });
+
+        const template = await renderer.render({
+          lexical: '{}',
+          subject: 'Welcome!',
+          siteSettings: defaultSiteSettings,
+          trackClicks: true,
+          automationActionRevisionId: 'revision-id',
         });
 
-        sinon.assert.notCalled(addAutomationTrackingToUrl);
+        sinon.assert.calledTwice(addAutomationTrackingToUrl);
+        // The redirect fills in %%{uuid}%% from ?m= when a member clicks.
+        sinon.assert.calledWith(
+          addAutomationTrackingToUrl,
+          sinon.match((url) => url.href === 'https://external.example/%%%7Buuid%7D%%/feed'),
+        );
+        assert.equal(
+          template.html.match(
+            /https:\/\/example\.com\/r\/abc123\?m=%%\{uuid\}%%&amp;step=%%\{step_id\}%%/g,
+          )?.length,
+          2,
+        );
+        assert(
+          template.text.includes('https://example.com/r/abc123?m=%%{uuid}%%&step=%%{step_id}%%'),
+        );
+        assert.deepEqual(
+          template.replacementDefinitions.map(({ id, trusted }) => ({ id, trusted })),
+          [
+            { id: 'uuid', trusted: true },
+            { id: 'step_id', trusted: true },
+          ],
+        );
       });
 
-      it('does not rewrite links when the automation run step ID is absent', async function () {
-        await renderTracked('<p><a href="https://external.example/page">Link</a></p>', {
-          automationRunStepId: null,
+      it('does not track links that carry member values other than the UUID', async function () {
+        // One redirect can't serve every recipient when its destination differs per member.
+        const result = await renderTracked(
+          '<p><a href="https://forms.example/?email={email}&amp;name={first_name}">Form</a></p>',
+        );
+
+        sinon.assert.notCalled(addAutomationTrackingToUrl);
+        assert(
+          result.html.includes(
+            'href="https://forms.example/?email=john@example.com&amp;name=John"',
+          ),
+        );
+      });
+
+      it('does not recognise a fallback token in a link URL, as before', async function () {
+        // Lexical writes the fallback's quotes as &quot; inside an href, which the token pattern
+        // does not match, so the token stays literal and the link is tracked to that destination.
+        const result = await renderTracked(
+          '<p><a href="https://feeds.example/?u={uuid, &quot;anonymous&quot;}">Feed</a></p>',
+        );
+
+        sinon.assert.calledOnceWithExactly(
+          addAutomationTrackingToUrl,
+          sinon.match((url) => url.href === 'https://feeds.example/?u={uuid,%20%22anonymous%22}'),
+          'revision-id',
+          sinon.match.string,
+          sinon.match.string,
+        );
+        assert(
+          result.html.includes(
+            `href="https://example.com/r/abc123?m=${memberUuid}&amp;step=run-step-id"`,
+          ),
+        );
+      });
+
+      it('fills in only the m and step values when the redirect path contains the marker text', async function () {
+        // A site installed under a path such as /--uuid--/ puts that path in every redirect URL.
+        addAutomationTrackingToUrl.callsFake(async (url, revisionId, runStepId, uuid) => {
+          const tracked = new URL('https://example.com/--uuid--/--step-id--/r/abc123');
+          tracked.searchParams.set('m', uuid);
+          tracked.searchParams.set('step', runStepId);
+          return tracked;
         });
 
+        const result = await renderTracked(
+          '<p><a href="https://external.example/page">Link</a></p>',
+        );
+
+        assert(
+          result.html.includes(
+            `href="https://example.com/--uuid--/--step-id--/r/abc123?m=${memberUuid}&amp;step=run-step-id"`,
+          ),
+        );
+      });
+
+      it('tracks a link with the member UUID in its query string through one shared redirect', async function () {
+        const result = await renderTracked(
+          '<p><a href="https://partner.example/feed?u={uuid}&amp;x=1">Feed</a></p>',
+        );
+
+        // The redirect fills in %%{uuid}%% from ?m= when a member clicks.
+        sinon.assert.calledOnceWithExactly(
+          addAutomationTrackingToUrl,
+          sinon.match((url) => url.href === 'https://partner.example/feed?u=%%{uuid}%%&x=1'),
+          'revision-id',
+          sinon.match.string,
+          sinon.match.string,
+        );
+        assert(
+          result.html.includes(
+            `href="https://example.com/r/abc123?m=${memberUuid}&amp;step=run-step-id"`,
+          ),
+        );
+      });
+
+      it('leaves a link whose whole href is a member value as that value, untracked', async function () {
+        // As in newsletters, the value is only known per recipient, so neither the site URL nor
+        // tracking is added to it.
+        const html =
+          '<p><a href="{email}">Email</a> <a href="{uuid}">Uuid</a> <a href="{name}">Name</a></p>';
+        const hrefs = (result) =>
+          [...result.html.matchAll(/<a href="([^"]*)"[^>]*>(?:Email|Uuid|Name)<\/a>/g)].map(
+            ([, href]) => href,
+          );
+
+        for (const trackClicks of [false, true]) {
+          const fullUrl = await renderTracked(html, {
+            trackClicks,
+            member: {
+              name: 'https://other.example/go?a=1&b=2',
+              email: 'john@example.com',
+              uuid: memberUuid,
+            },
+          });
+          assert.deepEqual(hrefs(fullUrl), [
+            'john@example.com',
+            memberUuid,
+            // Handlebars' escapeExpression turns = into &#x3D; and & into &amp;.
+            'https://other.example/go?a&#x3D;1&amp;b&#x3D;2',
+          ]);
+
+          const anchor = await renderTracked(html, {
+            trackClicks,
+            member: { name: '#section', email: 'john@example.com', uuid: memberUuid },
+          });
+          assert.equal(hrefs(anchor)[2], '#section');
+        }
         sinon.assert.notCalled(addAutomationTrackingToUrl);
       });
     });
@@ -787,7 +1043,7 @@ describe('MemberWelcomeEmailRenderer', function () {
           title_font_weight: 'medium',
         };
 
-        await renderer.render({
+        await renderFor(renderer, {
           lexical: '{}',
           subject: 'Welcome!',
           designSettings,
@@ -821,7 +1077,7 @@ describe('MemberWelcomeEmailRenderer', function () {
         lexicalRenderStub.resolves('<p>Content</p>');
         const renderer = createRenderer();
 
-        const result = await renderer.render({
+        const result = await renderFor(renderer, {
           lexical: '{}',
           subject: 'Test Subject',
           designSettings: {
@@ -844,7 +1100,7 @@ describe('MemberWelcomeEmailRenderer', function () {
         lexicalRenderStub.resolves('<p>Content</p>');
         const renderer = createRenderer();
 
-        const result = await renderer.render({
+        const result = await renderFor(renderer, {
           lexical: '{}',
           subject: 'Test Subject',
           designSettings: {
@@ -865,7 +1121,7 @@ describe('MemberWelcomeEmailRenderer', function () {
         lexicalRenderStub.resolves('<p>Content</p>');
         const renderer = createRenderer();
 
-        const result = await renderer.render({
+        const result = await renderFor(renderer, {
           lexical: '{}',
           subject: 'Test Subject',
           designSettings: {
@@ -886,7 +1142,7 @@ describe('MemberWelcomeEmailRenderer', function () {
         lexicalRenderStub.resolves('<p>Content</p>');
         const renderer = createRenderer();
 
-        const result = await renderer.render({
+        const result = await renderFor(renderer, {
           lexical: '{}',
           subject: 'Test Subject',
           designSettings: {
@@ -910,7 +1166,7 @@ describe('MemberWelcomeEmailRenderer', function () {
         lexicalRenderStub.resolves('<p>Content</p>');
         const renderer = createRenderer();
 
-        const result = await renderer.render({
+        const result = await renderFor(renderer, {
           lexical: '{}',
           subject: 'Test Subject',
           member: { name: 'John', email: 'john@example.com' },
@@ -933,7 +1189,7 @@ describe('MemberWelcomeEmailRenderer', function () {
         lexicalRenderStub.resolves('<p>Content</p>');
         const renderer = createRenderer();
 
-        const result = await renderer.render({
+        const result = await renderFor(renderer, {
           lexical: '{}',
           subject: 'Test Subject',
           designSettings: {
@@ -953,7 +1209,7 @@ describe('MemberWelcomeEmailRenderer', function () {
         lexicalRenderStub.resolves('<p><a href="https://example.com">Custom link</a></p>');
         const renderer = createRenderer();
 
-        const result = await renderer.render({
+        const result = await renderFor(renderer, {
           lexical: '{}',
           subject: 'Test Subject',
           designSettings: {
@@ -971,7 +1227,7 @@ describe('MemberWelcomeEmailRenderer', function () {
         lexicalRenderStub.resolves('<p>Content</p>');
         const renderer = createRenderer();
 
-        const result = await renderer.render({
+        const result = await renderFor(renderer, {
           lexical: '{}',
           subject: 'Test Subject',
           designSettings: {
@@ -1016,7 +1272,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 `);
         const renderer = createRenderer();
 
-        const result = await renderer.render({
+        const result = await renderFor(renderer, {
           lexical: '{}',
           subject: 'Welcome!',
           member: { name: 'John', email: 'john@example.com' },
@@ -1045,7 +1301,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 `);
         const renderer = createRenderer();
 
-        const result = await renderer.render({
+        const result = await renderFor(renderer, {
           lexical: '{}',
           subject: 'Welcome!',
           member: { name: 'John', email: 'john@example.com', uuid: 'abc-123-def' },
@@ -1097,7 +1353,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 `);
         const renderer = createRenderer();
 
-        const result = await renderer.render({
+        const result = await renderFor(renderer, {
           lexical: '{}',
           subject: 'Welcome!',
           member: { name: 'John', email: 'john@example.com' },
@@ -1159,7 +1415,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 `);
         const renderer = createRenderer();
 
-        const result = await renderer.render({
+        const result = await renderFor(renderer, {
           lexical: '{}',
           subject: 'Welcome!',
           member: { name: 'John', email: 'john@example.com' },
@@ -1204,7 +1460,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 `);
         const renderer = createRenderer();
 
-        const result = await renderer.render({
+        const result = await renderFor(renderer, {
           lexical: '{}',
           subject: 'Welcome!',
           member: { name: 'John', email: 'john@example.com' },
@@ -1230,7 +1486,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 `);
         const renderer = createRenderer();
 
-        const result = await renderer.render({
+        const result = await renderFor(renderer, {
           lexical: '{}',
           subject: 'Welcome!',
           member: { name: 'John', email: 'john@example.com' },
@@ -1260,7 +1516,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 `);
         const renderer = createRenderer();
 
-        const result = await renderer.render({
+        const result = await renderFor(renderer, {
           lexical: '{}',
           subject: 'Welcome!',
           member: { name: 'John', email: 'john@example.com' },
@@ -1301,7 +1557,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 `);
         const renderer = createRenderer();
 
-        const result = await renderer.render({
+        const result = await renderFor(renderer, {
           lexical: '{}',
           subject: 'Welcome!',
           member: { name: 'John', email: 'john@example.com' },
@@ -1337,7 +1593,7 @@ describe('MemberWelcomeEmailRenderer', function () {
                 `);
         const renderer = createRenderer();
 
-        const result = await renderer.render({
+        const result = await renderFor(renderer, {
           lexical: '{}',
           subject: 'Welcome!',
           member: { name: 'John', email: 'john@example.com' },

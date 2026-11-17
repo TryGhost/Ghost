@@ -13,6 +13,7 @@ const {
   MESSAGES,
 } = require('../../../core/server/services/member-welcome-emails/constants');
 const memberWelcomeEmails = require('../../../core/server/services/member-welcome-emails').default;
+const linkTracking = require('../../../core/server/services/link-tracking');
 
 function parseDatabaseDate(date) {
   if (date instanceof Date) {
@@ -226,7 +227,17 @@ describe('Member Welcome Emails Integration', function () {
       });
     }
 
-    async function sendAutomationEmail({ trackOpens, reuseService = false } = {}) {
+    async function sendAutomationEmail({
+      trackOpens,
+      reuseService = false,
+      children = [{ type: 'text', text: 'Hello' }],
+      member = {
+        email: 'automation-member@example.com',
+        name: 'Automation Member',
+        uuid: '99999999-9999-4999-8999-999999999999',
+      },
+      ...trackingOptions
+    } = {}) {
       if (!reuseService) {
         // The boot-owned instance is retained, so reload to drop the cached sender options.
         await memberWelcomeEmails.service.loadMemberWelcomeEmails();
@@ -240,7 +251,7 @@ describe('Member Welcome Emails Integration', function () {
               children: [
                 {
                   type: 'paragraph',
-                  children: [{ type: 'text', text: 'Hello' }],
+                  children,
                 },
               ],
               direction: null,
@@ -252,12 +263,9 @@ describe('Member Welcome Emails Integration', function () {
           }),
           subject: 'Automation email',
         },
-        member: {
-          email: 'automation-member@example.com',
-          name: 'Automation Member',
-          uuid: '99999999-9999-4999-8999-999999999999',
-        },
+        member,
         trackOpens,
+        ...trackingOptions,
       });
     }
 
@@ -661,12 +669,74 @@ describe('Member Welcome Emails Integration', function () {
 
       assert.match(
         message.html,
-        /\/unsubscribe\/\?uuid=99999999-9999-4999-8999-999999999999&amp;key=[a-f0-9]+&amp;updatesandannouncements=1/,
+        /href="http[^"]*\/unsubscribe\/\?uuid=99999999-9999-4999-8999-999999999999&key=[a-f0-9]+&updatesandannouncements=1"/,
       );
       assert.match(
         recipientData['automation-member@example.com'].list_unsubscribe,
         /^http.*\/unsubscribe\/\?uuid=99999999-9999-4999-8999-999999999999&key=[a-f0-9]+&updatesandannouncements=1$/,
       );
+    });
+
+    describe('automation click tracking', function () {
+      const linkChildren = [
+        {
+          type: 'link',
+          url: 'https://external.example/page',
+          children: [{ type: 'text', text: 'Read more' }],
+        },
+      ];
+      let addAutomationTrackingToUrl;
+
+      beforeEach(function () {
+        addAutomationTrackingToUrl = sinon
+          .stub(linkTracking.service, 'addAutomationTrackingToUrl')
+          .callsFake(async (url, revisionId, runStepId, memberUuid) => {
+            const tracked = new URL('https://example.com/r/abc123');
+            tracked.searchParams.set('m', memberUuid);
+            tracked.searchParams.set('step', runStepId);
+            return tracked;
+          });
+      });
+
+      async function sendTracked(options = {}) {
+        await sendAutomationEmail({
+          children: linkChildren,
+          trackClicks: true,
+          automationActionRevisionId: 'revision-id',
+          automationRunStepId: 'run-step-id',
+          ...options,
+        });
+        return MailgunClient.prototype.send.firstCall.args[0].html;
+      }
+
+      it('tracks links with the member UUID and run step ID', async function () {
+        const html = await sendTracked();
+
+        sinon.assert.calledOnce(addAutomationTrackingToUrl);
+        assert(
+          html.includes(
+            'href="https://example.com/r/abc123?m=99999999-9999-4999-8999-999999999999&amp;step=run-step-id"',
+          ),
+        );
+      });
+
+      it('does not track links when the member UUID is absent', async function () {
+        const html = await sendTracked({
+          member: { email: 'automation-member@example.com', name: 'Automation Member' },
+        });
+
+        sinon.assert.notCalled(addAutomationTrackingToUrl);
+        assert(html.includes('href="https://external.example/page"'));
+        assert.doesNotMatch(html, /\/r\/abc123/);
+      });
+
+      it('does not track links when the automation run step ID is absent', async function () {
+        const html = await sendTracked({ automationRunStepId: null });
+
+        sinon.assert.notCalled(addAutomationTrackingToUrl);
+        assert(html.includes('href="https://external.example/page"'));
+        assert.doesNotMatch(html, /\/r\/abc123/);
+      });
     });
 
     it('does not add an unsubscribe link or one-click headers when automations is disabled', async function () {
