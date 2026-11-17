@@ -278,8 +278,8 @@ Auth core.
   the session is created, so the session guard below admits them. The unlock
   only matches a `locked` user, and a user suspended in the meantime is refused.
 - A successful `/reset-password` sets a `locked` user `active`, as legacy
-  `doReset` does, so the user can sign in afterwards (step 8, PLA-620). Until
-  then a native reset leaves the user locked.
+  `doReset` does, so the user can sign in afterwards (step 8, PLA-620). It
+  refuses an `inactive` user's token before changing the password.
 - After every sign-in: set `last_seen`, and set a `warn-*` status to `active`.
   Both are bookkeeping, so a failure is logged and the sign-in stands.
 - `databaseHooks.session.create.before`: refuse non-active users on every path.

@@ -93,6 +93,19 @@ export const ghostStaffLifecycle = (options: StaffLifecycleOptions) => {
       authContext = ctx;
       return {
         options: {
+          emailAndPassword: {
+            // Required by the type; the instance's own options take precedence
+            enabled: true,
+            // As legacy doReset; a user suspended since keeps their status
+            async onPasswordReset({ user }) {
+              await setStatus(
+                await getCurrentAdapter(authContext.adapter),
+                user.id,
+                ['locked'],
+                'active',
+              );
+            },
+          },
           databaseHooks: {
             session: {
               create: {
@@ -135,6 +148,30 @@ export const ghostStaffLifecycle = (options: StaffLifecycleOptions) => {
     },
 
     hooks: {
+      before: [
+        {
+          // Legacy doReset refuses a suspended user before changing the password
+          matcher: (ctx) => ctx.path === ROUTES.resetPassword,
+          handler: createAuthMiddleware(async (ctx) => {
+            const token: unknown = ctx.body?.token || ctx.query?.token;
+            if (typeof token !== 'string') {
+              return;
+            }
+            const verification = await ctx.context.internalAdapter.findVerificationValue(
+              `reset-password:${token}`,
+            );
+            if (!verification || verification.expiresAt < new Date()) {
+              return;
+            }
+            const user = (await ctx.context.internalAdapter.findUserById(
+              verification.value,
+            )) as StaffUser | null;
+            if (user?.status === 'inactive') {
+              throw refusal('inactive');
+            }
+          }),
+        },
+      ],
       // After the endpoint, so its CSRF check and validation have run
       after: [
         {

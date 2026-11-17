@@ -2856,3 +2856,5 @@ const schema = {
 } satisfies Record<string, TableDefinition>;
 
 export default schema;
+
+export type TableName = keyof typeof schema;

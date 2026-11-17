@@ -536,6 +536,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     contentImport,
     updateCheck,
     signingKeys: signingKeys.service,
+    authCleanup: require('./server/auth/better-auth/cleanup'),
   });
   await jobsService.start();
   debug('End: Register job handlers');
@@ -639,6 +640,14 @@ async function initBackgroundServices({ config }) {
   try {
     const signingKeys = require('./server/services/signing-keys').default;
     await signingKeys.extras.scheduleCheckJob(jobsService);
+  } catch (err) {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
+  }
+
+  try {
+    const authCleanup = require('./server/auth/better-auth/cleanup');
+    await authCleanup.scheduleClearExpiredJob(jobsService);
   } catch (err) {
     const logging = require('@tryghost/logging');
     logging.error(err);

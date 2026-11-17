@@ -487,6 +487,11 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
+    "to": "ghost/core/server/auth/better-auth/clear-expired-auth-rows-job.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
     "to": "ghost/core/server/data/importer/jobs/content-import-job.ts"
   },
   {

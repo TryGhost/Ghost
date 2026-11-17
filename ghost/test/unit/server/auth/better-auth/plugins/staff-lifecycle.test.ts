@@ -257,6 +257,100 @@ describe('ghostStaffLifecycle', function () {
     });
   });
 
+  describe('/reset-password', function () {
+    const NEW_PASSWORD = 'a brand new password';
+
+    // `query` sends the token in the query; `emptyBody` adds an empty body token too
+    async function resetPassword(
+      auth: ReturnType<typeof setup>['auth'],
+      userId: string,
+      via: 'body' | 'query' | 'emptyBody' = 'body',
+    ) {
+      const token = `token-${userId}`;
+      const ctx = await auth.$context;
+      await ctx.internalAdapter.createVerificationValue({
+        identifier: `reset-password:${token}`,
+        value: userId,
+        expiresAt: new Date(Date.now() + 60_000),
+      });
+      if (via === 'body') {
+        return auth.api.resetPassword({ body: { token, newPassword: NEW_PASSWORD } });
+      }
+      return auth.api.resetPassword({
+        body: { newPassword: NEW_PASSWORD, ...(via === 'emptyBody' ? { token: '' } : {}) },
+        query: { token },
+      });
+    }
+
+    it('sets a locked user active, so they can sign in', async function () {
+      const { auth, signIn, sessionsOf, user } = setup([{ id: 'locked', status: 'locked' }]);
+
+      await resetPassword(auth, 'locked');
+
+      assert.equal(user('locked').status, 'active');
+      await signIn('locked', NEW_PASSWORD);
+      assert.equal(sessionsOf('locked').length, 1);
+    });
+
+    it('refuses a suspended user and keeps their password', async function () {
+      const { auth, db, signIn, user } = setup([{ id: 'inactive', status: 'inactive' }]);
+
+      await assert.rejects(
+        resetPassword(auth, 'inactive'),
+        apiError('FORBIDDEN', 'ACCOUNT_SUSPENDED'),
+      );
+
+      assert.equal(user('inactive').status, 'inactive');
+      assert.equal(db.account[0].password, `hashed:${PASSWORD}`);
+      await assert.rejects(
+        signIn('inactive', NEW_PASSWORD),
+        apiError('UNAUTHORIZED', 'INVALID_EMAIL_OR_PASSWORD'),
+      );
+    });
+
+    it('reads a query token as the endpoint does', async function () {
+      const { auth, user } = setup([
+        { id: 'locked', status: 'locked' },
+        { id: 'inactive', status: 'inactive' },
+      ]);
+
+      await resetPassword(auth, 'locked', 'query');
+      assert.equal(user('locked').status, 'active');
+
+      // An empty body token falls back to the query token
+      await assert.rejects(
+        resetPassword(auth, 'inactive', 'emptyBody'),
+        apiError('FORBIDDEN', 'ACCOUNT_SUSPENDED'),
+      );
+    });
+
+    it('keeps a suspension that lands during the reset', async function () {
+      const { auth, signIn, user } = setup([{ id: 'locked', status: 'locked' }]);
+      const ctx = await auth.$context;
+      const updatePassword = ctx.internalAdapter.updatePassword.bind(ctx.internalAdapter);
+      ctx.internalAdapter.updatePassword = async (userId, password) => {
+        user('locked').status = 'inactive';
+        return updatePassword(userId, password);
+      };
+
+      await resetPassword(auth, 'locked');
+
+      assert.equal(user('locked').status, 'inactive');
+      await assert.rejects(
+        signIn('locked', NEW_PASSWORD),
+        apiError('FORBIDDEN', 'ACCOUNT_SUSPENDED'),
+      );
+    });
+
+    it('leaves an active user active', async function () {
+      const { auth, user } = setup([{ id: 'active', status: 'active' }]);
+
+      await resetPassword(auth, 'active');
+
+      assert.equal(user('active').status, 'active');
+    });
+  });
+
   describe('after a session', function () {
     it('keeps a suspension that lands before the status update', async function () {
       const { auth, user } = setup([{ id: 'warned', status: 'warn-1' }]);
