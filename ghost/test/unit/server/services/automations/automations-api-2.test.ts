@@ -684,6 +684,29 @@ describe('automations API', function () {
       expect(ObjectId.isValid(recipient.id)).toBe(true);
     });
 
+    it('waits for the sent count update before inserting the recipient', async function () {
+      let releaseCount!: () => void;
+      vi.mocked(repository.incrementEmailSentCount).mockImplementation(
+        () =>
+          new Promise<void>((resolve) => {
+            releaseCount = resolve;
+          }),
+      );
+
+      const pending = createApi({ repository }).recordEmailSent(options);
+      try {
+        for (let i = 0; i < 10; i += 1) {
+          await Promise.resolve();
+        }
+        expect(repository.incrementEmailSentCount).toHaveBeenCalledOnce();
+        expect(repository.insertEmailRecipient).not.toHaveBeenCalled();
+      } finally {
+        releaseCount();
+        await pending;
+      }
+      expect(repository.insertEmailRecipient).toHaveBeenCalledOnce();
+    });
+
     it('records recipients without a Mailgun message ID or member name', async function () {
       const { mailgunMessageId: _mailgunMessageId, ...withoutMailgunId } = options;
 
