@@ -1,7 +1,13 @@
 import { ActivityPubHostLayoutProvider } from '@tryghost/activitypub/api';
 import React from 'react';
 import { useLocation } from '@tryghost/admin-x-framework';
-import { FLOATING_SIDEBAR_SPRING, SidebarInset, SidebarProvider } from '@tryghost/shade/components';
+import {
+  FLOATING_SIDEBAR_INSET,
+  FLOATING_SIDEBAR_SPRING,
+  getFloatingSidebarGapWidth,
+  SidebarInset,
+  SidebarProvider,
+} from '@tryghost/shade/components';
 import { PageChromeProvider } from '@tryghost/shade/page-templates';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
@@ -30,6 +36,7 @@ import { AdminFrameTopBar } from './admin-frame-top-bar';
 import { FloatingSidebarContentSync } from './floating-sidebar-content-sync';
 import { GlobalSearchProvider } from '@/global-search/global-search-provider';
 import { SidePanel } from './side-panel/side-panel';
+import { sidePanelWidth, useSidePanelDocked } from './side-panel/side-panel-layout';
 
 const networkPageChrome = {
   contentClassName: 'max-w-[1920px]',
@@ -117,6 +124,8 @@ const backdropInsetClassName = [
 
 const SIDEBAR_WIDTH = '316px';
 const ADMIN7_SIDEBAR_WIDTH = 269;
+// The pinned Admin 7 navigation's footprint: its capsule and the inset either side
+const ADMIN7_SIDEBAR_CLEAR = `${getFloatingSidebarGapWidth(true, ADMIN7_SIDEBAR_WIDTH)}px`;
 
 const SIDEBAR_PANEL_CLASS_NAME = '[&>[data-sidebar=sidebar]]:relative';
 // Lands on the desktop panel only; the mobile sidebar is a sheet that ignores it.
@@ -144,6 +153,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const isMobile = useIsMobile();
   const admin7Design = useFeatureFlag('admin7Design');
   const isViewSiteRoute = useLocation().pathname === '/site';
+  const sidePanelDocked = useSidePanelDocked();
 
   // With admin7Design, the desktop page sits inside a frame: a top bar and
   // thin bezels around a rounded card. View site becomes a place of its own,
@@ -432,9 +442,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   // the navigation for its own. In the Admin 7 frame it sits beside the card,
   // below the top bar, and otherwise runs the full height on the right. It
   // stays in one place across the mobile breakpoint, so its content isn't
-  // reloaded.
+  // reloaded. On a window too narrow to dock it floats over the page instead.
   const sidePanel = (
     <SidePanel
+      docked={sidePanelDocked}
       framed={adminFrame}
       locked={dunningLocked}
       visible={sidebarVisible && !isSettingsRoute && !isMobile}
@@ -447,7 +458,14 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   // squashed and laid out again on every frame. The width is worked out from
   // the viewport: the panel's, and in the frame its bezels and the panel's.
   const page = (
-    <div className="h-full w-[max(100%,calc(100vw_-_var(--side-panel-navigation-width)_-_3_*_var(--admin-frame-side)))]">
+    <div
+      className={cn(
+        'h-full w-[max(100%,calc(100vw_-_var(--side-panel-width)_-_3_*_var(--admin-frame-side)))]',
+        // Keeps the page's own stacking (sticky headers are z-50) under the
+        // panel floating over it
+        !sidePanelDocked && 'isolate',
+      )}
+    >
       {sidebarLayout}
     </div>
   );
@@ -457,7 +475,21 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       {!dunningLocked && <SkipLink target={mainRef} />}
       <div
         className="flex size-full"
-        style={{ '--side-panel-navigation-width': SIDEBAR_WIDTH } as React.CSSProperties}
+        style={
+          {
+            '--side-panel-navigation-width': SIDEBAR_WIDTH,
+            // In the full frame, its bezels either side of the page and beside the panel
+            '--side-panel-width': sidePanelWidth(frameMode === 'full' ? 24 : 0),
+            // What the expanded panel stops short of: docked, the navigation's
+            // footprint, leaving the same gap beside the Admin 7 capsule as it
+            // has on its other sides, and as a window, its own inset from the
+            // classic navigation too
+            '--side-panel-full-clear': framed ? ADMIN7_SIDEBAR_CLEAR : SIDEBAR_WIDTH,
+            '--side-panel-float-clear': framed
+              ? ADMIN7_SIDEBAR_CLEAR
+              : `calc(${SIDEBAR_WIDTH} + ${FLOATING_SIDEBAR_INSET}px)`,
+          } as React.CSSProperties
+        }
       >
         <div className="h-full min-w-0 flex-1 overflow-hidden">
           {adminFrame ? (
