@@ -144,7 +144,7 @@ export const PrototypeMenu: React.FC = () => {
                   />
                 </Field>
               </Section>
-              <Section title="Member page">
+              <Section title="Members">
                 <Field>
                   <FieldLabel htmlFor="prototype-hint-style">Label automation changes</FieldLabel>
                   <Select

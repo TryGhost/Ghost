@@ -1,52 +1,99 @@
-// PROTOTYPE ONLY (NY-1750): the one sentence the member page's banner and one-sentence hint share,
-// saying what saving starts and stops for this member. Names always come with "automation(s)", so
-// a name like "VIP welcome" isn't mistaken for something else. Don't merge this folder.
+// PROTOTYPE ONLY (NY-1750): what the member page's banner and one-sentence hint both say about
+// the label automations saving starts and stops for this member. Each line names the label that
+// causes it, as the Save dialog and the bulk hint do: "VIP will start the Welcome VIPs automation
+// when you save". Names always come with "automation(s)", so a name like "VIP welcome" isn't
+// mistaken for something else. Don't merge this folder.
 import React from 'react';
 import type { LeadMagnetLabelChanges } from './lead-magnets';
 
-type Automation = { id: string; name: string };
+type Outcome = LeadMagnetLabelChanges['starts'][number];
 
-// The banner emphasises the names; the hint stays plain.
-const Emphasis: React.FC<React.PropsWithChildren<{ on: boolean }>> = ({ on, children }) =>
-  on ? <span className="font-semibold">{children}</span> : <>{children}</>;
+// From this many label changes at once, the lines become one count.
+const SUMMARY_FROM = 3;
 
-// "A", "A and B", "A, B and C".
-const Names: React.FC<{ automations: Automation[]; emphasis: boolean }> = ({
-  automations,
+// The banner's names are semibold; the hint's medium, in the foreground colour, as the bulk hint's.
+type EmphasisStyle = boolean | 'medium';
+const Emphasis: React.FC<React.PropsWithChildren<{ on: EmphasisStyle }>> = ({ on, children }) =>
+  on === 'medium' ? (
+    <span className="font-medium text-foreground">{children}</span>
+  ) : on ? (
+    <span className="font-semibold">{children}</span>
+  ) : (
+    <>{children}</>
+  );
+
+// "the A automation", "the A and B automations", "the A, B and C automations".
+const Automations: React.FC<{ outcomes: Outcome[]; emphasis: EmphasisStyle }> = ({
+  outcomes,
   emphasis,
 }) => (
   <>
-    {automations.map(({ id, name }, index) => (
+    the{' '}
+    {outcomes.map(({ id, name }, index) => (
       <React.Fragment key={id}>
-        {index > 0 && (index === automations.length - 1 ? ' and ' : ', ')}
+        {index > 0 && (index === outcomes.length - 1 ? ' and ' : ', ')}
         <Emphasis on={emphasis}>{name}</Emphasis>
       </React.Fragment>
-    ))}
+    ))}{' '}
+    {outcomes.length > 1 ? 'automations' : 'automation'}
   </>
 );
 
-// "Saving will start the A automation for this member",
-// "Saving will stop the A and B automations for this member",
-// "Saving will start A and stop B automations for this member" (one trailing "automations" covers
-// both names, which reads more lightly than "the A automation and … the B automation").
+// Outcomes grouped by the label that causes them, in order.
+const byLabel = (outcomes: Outcome[]) => {
+  const groups = new Map<string, Outcome[]>();
+  for (const outcome of outcomes) {
+    groups.set(outcome.labelSlug, [...(groups.get(outcome.labelSlug) ?? []), outcome]);
+  }
+  return [...groups];
+};
+
+const plural = (count: number, noun: string) => (count === 1 ? `1 ${noun}` : `${count} ${noun}s`);
+
+// One line per label change:
+// "VIP will start the Welcome VIPs automation when you save",
+// "Removing Trial will stop the Trial nurture automation when you save".
+// From three label changes, one line: "The 3 labels you added will start 3 automations when you
+// save", or with removals, "Your 3 label changes will start 2 automations and stop 1 when you save".
 export const LeadMagnetSaveSummary: React.FC<
-  Pick<LeadMagnetLabelChanges, 'starts' | 'ends'> & { emphasis?: boolean }
-> = ({ starts, ends, emphasis = false }) => {
-  if (starts.length > 0 && ends.length > 0) {
+  Pick<LeadMagnetLabelChanges, 'starts' | 'ends'> & {
+    // Label slug → name.
+    labelNames: Record<string, string>;
+    emphasis?: EmphasisStyle;
+  }
+> = ({ starts, ends, labelNames, emphasis = false }) => {
+  const added = byLabel(starts);
+  const removed = byLabel(ends);
+  const changes = added.length + removed.length;
+  if (changes >= SUMMARY_FROM) {
+    const parts = [
+      starts.length > 0 && `start ${plural(starts.length, 'automation')}`,
+      ends.length > 0 &&
+        `stop ${starts.length > 0 ? ends.length : plural(ends.length, 'automation')}`,
+    ].filter(Boolean);
+    const subject =
+      removed.length === 0 ? `The ${changes} labels you added` : `Your ${changes} label changes`;
     return (
       <>
-        Saving will start <Names automations={starts} emphasis={emphasis} />
-        {starts.length > 1 ? ', and ' : ' and '}stop{' '}
-        <Names automations={ends} emphasis={emphasis} /> automations for this member
+        {subject} will {parts.join(' and ')} when you save
       </>
     );
   }
-  const automations = starts.length > 0 ? starts : ends;
+  const label = (slug: string) => <Emphasis on={emphasis}>{labelNames[slug] ?? slug}</Emphasis>;
   return (
     <>
-      Saving will {starts.length > 0 ? 'start' : 'stop'} the{' '}
-      <Names automations={automations} emphasis={emphasis} />{' '}
-      {automations.length > 1 ? 'automations' : 'automation'} for this member
+      {added.map(([slug, outcomes]) => (
+        <span key={`add-${slug}`} className="block">
+          {label(slug)} will start <Automations emphasis={emphasis} outcomes={outcomes} /> when you
+          save
+        </span>
+      ))}
+      {removed.map(([slug, outcomes]) => (
+        <span key={`remove-${slug}`} className="block">
+          Removing {label(slug)} will stop <Automations emphasis={emphasis} outcomes={outcomes} />{' '}
+          when you save
+        </span>
+      ))}
     </>
   );
 };

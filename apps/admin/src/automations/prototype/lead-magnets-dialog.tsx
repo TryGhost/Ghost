@@ -12,10 +12,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import type { LeadMagnetLabelChanges } from './lead-magnets';
+import { LeadMagnetAutomationNames } from './lead-magnets-bulk-patterns';
 
 type SaveChanges = Pick<LeadMagnetLabelChanges, 'starts' | 'ends'>;
 type Outcome = SaveChanges['starts'][number];
@@ -24,6 +31,9 @@ type DescriptionProps = {
   changes: SaveChanges;
   // Label slug → name, for the labels added and removed.
   labelNames: Record<string, string>;
+  // arrows (default): "Add Lead magnet → Starts Free guide delivery". table: a two-column table,
+  // Label and Automations, after Peter (2026-11-17) found the arrows too much.
+  layout?: 'arrows' | 'table';
 };
 
 // One group per label change, with every automation it starts or stops.
@@ -49,8 +59,55 @@ const summary = ({ starts, ends }: SaveChanges) => {
 // The dialog's body, also shown on the states page: "Add Lead magnet → Starts Free guide
 // delivery", one row per automation, grouped by label. Labels line up in one column so the
 // arrows do too.
-export const LeadMagnetSaveDescription: React.FC<DescriptionProps> = ({ changes, labelNames }) => {
+export const LeadMagnetSaveDescription: React.FC<DescriptionProps> = ({
+  changes,
+  labelNames,
+  layout = 'arrows',
+}) => {
   const groups = [...groupByLabel(changes.starts, 'Add'), ...groupByLabel(changes.ends, 'Remove')];
+  // One label added: one sentence, since a row would only repeat the intro (2026-11-17).
+  if (groups.length === 1 && groups[0].verb === 'Add') {
+    const [{ labelSlug, items }] = groups;
+    return (
+      <p>
+        Adding <strong>{labelNames[labelSlug] ?? labelSlug}</strong> also starts{' '}
+        <LeadMagnetAutomationNames names={items.map(({ name }) => name)} /> for this member.
+      </p>
+    );
+  }
+  if (layout === 'table') {
+    // One row per label, its automations one per line.
+    return (
+      <Stack gap="lg">
+        <p>Saving also {summary(changes)} for this member.</p>
+        <Table className="text-foreground">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Label</TableHead>
+              <TableHead>Automations</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {groups.map(({ verb, labelSlug, items }) => (
+              <TableRow key={`${verb}-${labelSlug}`}>
+                <TableCell className="align-top">
+                  {verb === 'Add' ? 'Added' : 'Removed'}{' '}
+                  <strong>{labelNames[labelSlug] ?? labelSlug}</strong>
+                </TableCell>
+                <TableCell className="align-top">
+                  {items.map(({ id, name }) => (
+                    <span key={id} className="block">
+                      {verb === 'Add' ? 'Starts' : 'Stops'} <strong>{name}</strong>
+                    </span>
+                  ))}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Stack>
+    );
+  }
   return (
     <Stack gap="lg">
       <p>Saving also {summary(changes)} for this member.</p>
@@ -90,10 +147,15 @@ export const LeadMagnetSaveDialog: React.FC<
     <AlertDialogContent>
       <AlertDialogHeader>
         <AlertDialogTitle>Save changes?</AlertDialogTitle>
-        {/* A div, so the description keeps its id and text size; its rows can't sit in a <p>. */}
+        {/* A div, so the description keeps its id and text size; its rows can't sit in a <p>.
+            Removals say nothing (Peter, 2026-11-17). */}
         <AlertDialogDescription asChild>
           <div>
-            <LeadMagnetSaveDescription {...description} />
+            <LeadMagnetSaveDescription
+              changes={{ starts: description.changes.starts, ends: [] }}
+              labelNames={description.labelNames}
+              layout={description.layout}
+            />
           </div>
         </AlertDialogDescription>
       </AlertDialogHeader>

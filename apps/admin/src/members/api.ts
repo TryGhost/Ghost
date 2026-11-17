@@ -19,3 +19,5 @@ export { canCreateLabel } from './label-picker/can-create-label';
 export { useLabelPicker } from './hooks/use-label-picker';
 // PROTOTYPE ONLY (NY-1750): the member Details card's form, for the lead magnet patterns page.
 export { default as MemberDetailForm } from './detail/member-detail-form';
+// PROTOTYPE ONLY (NY-1750): the import's mapping step on made-up rows, for the lead magnet patterns page.
+export { ImportMappingPreview } from './components/bulk-action-modals/import-members/import-mapping-preview';

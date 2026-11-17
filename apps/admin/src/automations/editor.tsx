@@ -53,7 +53,6 @@ import {
   getLeadMagnetDeletedLabelName,
   getLeadMagnetLabel,
   setLeadMagnetLabel,
-  useLeadMagnetInProgressCount,
 } from './prototype/lead-magnets';
 
 const AUTOMATION_LIMITS = ['limitAutomations'] as const;
@@ -307,8 +306,6 @@ const AutomationEditorContent: React.FC<{
         : undefined,
     [labelSelection, onLabelSelectionChange, isTriggerLocked, isLabelMissing],
   );
-  // PROTOTYPE ONLY (NY-1750): members in this automation, from the prototype's fake store.
-  const labelInProgressCount = useLeadMagnetInProgressCount(draft?.id);
 
   const validateForAction = (
     automationToValidate: AutomationDetail,
@@ -693,7 +690,6 @@ const AutomationEditorContent: React.FC<{
         />
       )}
       <AutomationStatusDialog
-        inProgressCount={labelSelection ? labelInProgressCount : undefined}
         isError={editState.phase === 'failed'}
         isPending={isEditRequestActive}
         labelTrigger={publishLabelTrigger}

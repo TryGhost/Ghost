@@ -17,8 +17,8 @@ type Store = {
   inProgress: Record<string, string[]>;
   // Automation id → every member who has entered it, since members can't enter twice.
   entered: Record<string, string[]>;
-  // Label slug → name, for labels deleted while an automation used them, so its trigger can say
-  // "Spring ebook (deleted)".
+  // Label slug → name, for labels deleted while an automation used them, so its trigger knows the
+  // label was deleted. It says "(label deleted)": the name won't be kept for real.
   deletedLabels: Record<string, string>;
   // Automation id → its name and status at its last save in the editor, so the label picker can
   // check a delete without asking the API (it has no data provider in some places).
@@ -128,8 +128,9 @@ export const useLeadMagnetLabelAutomations = (
   });
 };
 
-// From this many members, the bulk note adds that it may take longer for everyone to start.
-export const BULK_NOTE_THRESHOLD = 1000;
+// From this many members, the bulk note adds that it may take longer for everyone to start. A
+// placeholder for the demo until engineering knows where it slows down.
+export const BULK_NOTE_THRESHOLD = 100_000;
 
 // A deleted label an automation still uses is remembered by name.
 export const recordLeadMagnetLabelDeleted = (labelSlug: string, labelName: string) => {
@@ -217,5 +218,5 @@ export const useLeadMagnetLabelChanges = (
   }, [current, data, memberId, savedSlugs, draftSlugs]);
 };
 
-export const hasLeadMagnetChanges = ({ starts, ends }: LeadMagnetLabelChanges) =>
-  starts.length > 0 || ends.length > 0;
+// Only starts ask first: removals say nothing (Peter, 2026-11-17).
+export const hasLeadMagnetChanges = ({ starts }: LeadMagnetLabelChanges) => starts.length > 0;

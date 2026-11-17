@@ -59,18 +59,18 @@ export const useStripeConnectedWithPrototype = (siteStripeEnabled: boolean): boo
   return override ?? siteStripeEnabled;
 };
 
-// How the member page says saving starts or stops a label automation, switched in the prototype
-// menu. Hints are plain text: design review (2026-11-10) dropped the icons and bold names, and
-// asked for a dialog on Save instead.
-// - lines: a hint under Labels, one line per automation
-// - sentence: a hint under Labels, one sentence for all of them
-// - dialog (default, chosen in design review): no hint; Save asks first
-export type HintStyle = 'lines' | 'sentence' | 'dialog' | 'banner';
+// How adding a label says it starts an automation, switched in the prototype menu, for the member
+// page, bulk add and import together (2026-11-17), so each pattern can be felt in every place.
+// Removing a label says nothing in any of them (Peter, 2026-11-17).
+// - dialog (default, where Peter landed): nothing while picking; Save, Add label or Import asks
+//   first, the bulk dialogs changing in place to a confirmation step
+// - hint: a muted line under the label field
+// - banner: a banner under the member page header, or at the top of the bulk dialogs
+export type HintStyle = 'dialog' | 'hint' | 'banner';
 export const HINT_STYLES: { value: HintStyle; label: string }[] = [
-  { value: 'dialog', label: 'Dialog on Save' },
-  { value: 'banner', label: 'Banner under the header' },
-  { value: 'lines', label: 'Hint, one line per automation' },
-  { value: 'sentence', label: 'Hint, one sentence' },
+  { value: 'dialog', label: 'Dialog' },
+  { value: 'hint', label: 'Hint below the field' },
+  { value: 'banner', label: 'Banner' },
 ];
 const HINT_STYLE_KEY = 'prototype.ny1750.hintStyle';
 

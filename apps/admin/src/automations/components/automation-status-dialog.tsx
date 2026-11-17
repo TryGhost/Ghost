@@ -29,8 +29,6 @@ interface AutomationStatusDialogProps {
   isError: boolean;
   onCloseAutoFocus?: (event: Event) => void;
   labelTrigger?: PublishLabelTrigger;
-  // Members in the automation now, for a turn-off that says how many it removes (NY-1750).
-  inProgressCount?: number;
 }
 
 const AutomationStatusDialog = ({
@@ -42,7 +40,6 @@ const AutomationStatusDialog = ({
   isError,
   onCloseAutoFocus,
   labelTrigger,
-  inProgressCount,
 }: AutomationStatusDialogProps) => {
   const { title, description, buttonLabel, pendingLabel } = (() => {
     switch (status) {
@@ -84,8 +81,6 @@ const AutomationStatusDialog = ({
           <AlertDialogTitle>{title}</AlertDialogTitle>
           {status === 'active' && labelTrigger ? (
             <LabelTriggerDescription labelTrigger={labelTrigger} />
-          ) : status === 'inactive' && inProgressCount !== undefined ? (
-            <TurnOffDescription inProgressCount={inProgressCount} />
           ) : (
             <AlertDialogDescription>{description}</AlertDialogDescription>
           )}
@@ -114,8 +109,9 @@ const AutomationStatusDialog = ({
   );
 };
 
-// Names the trigger's label, and says members who already have it won't start (NY-1750).
-const LabelTriggerDescription = ({ labelTrigger }: { labelTrigger: PublishLabelTrigger }) => {
+// Names the trigger's label, and says members who already have it won't start (NY-1750). The
+// message alone, so the lead magnet patterns page can show it outside a dialog.
+export const LabelTriggerMessage = ({ labelTrigger }: { labelTrigger: PublishLabelTrigger }) => {
   const { name, memberCount } = labelTrigger;
   const goesLive = (
     <>
@@ -124,42 +120,24 @@ const LabelTriggerDescription = ({ labelTrigger }: { labelTrigger: PublishLabelT
     </>
   );
   if (!memberCount) {
-    return <AlertDialogDescription>{goesLive}</AlertDialogDescription>;
+    return <p>{goesLive}</p>;
   }
   return (
-    <AlertDialogDescription asChild>
-      <Stack gap="lg">
-        <p>{goesLive}</p>
-        <p>
-          The <strong>{formatNumber(memberCount)}</strong>{' '}
-          {memberCount === 1 ? 'member' : 'members'} already labeled <strong>{name}</strong> will
-          not be enrolled.
-        </p>
-      </Stack>
-    </AlertDialogDescription>
+    <Stack gap="lg">
+      <p>{goesLive}</p>
+      <p>
+        The <strong>{formatNumber(memberCount)}</strong> {memberCount === 1 ? 'member' : 'members'}{' '}
+        already labeled <strong>{name}</strong> will not be enrolled.
+      </p>
+    </Stack>
   );
 };
 
-// Says how many members turning off removes, and that nobody can come back (NY-1750).
-const TurnOffDescription = ({ inProgressCount }: { inProgressCount: number }) => (
+const LabelTriggerDescription = ({ labelTrigger }: { labelTrigger: PublishLabelTrigger }) => (
   <AlertDialogDescription asChild>
-    <Stack gap="lg">
-      <p>
-        {inProgressCount > 0 ? (
-          <>
-            The <strong>{formatNumber(inProgressCount)}</strong>{' '}
-            {inProgressCount === 1 ? 'member' : 'members'} in progress will be removed, and their
-            remaining emails won&apos;t be sent.
-          </>
-        ) : (
-          'Your automation will no longer run.'
-        )}
-      </p>
-      <p>
-        Members who have already entered this automation can&apos;t enter it again, even if you turn
-        it back on.
-      </p>
-    </Stack>
+    <div>
+      <LabelTriggerMessage labelTrigger={labelTrigger} />
+    </div>
   </AlertDialogDescription>
 );
 

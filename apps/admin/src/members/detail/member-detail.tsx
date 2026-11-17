@@ -286,7 +286,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     () => (draft?.labels ?? []).map((label) => label.slug),
     [draft],
   );
-  // Label slug → name, for the Save dialog's added and removed labels.
+  // Label slug → name, for the Save dialog, banner and hint's added and removed labels.
   const leadMagnetLabelNames = React.useMemo(
     () =>
       Object.fromEntries(
@@ -550,7 +550,12 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
               </PageHeader>
             </MemberMapHeader>
             {/* PROTOTYPE ONLY (NY-1750) */}
-            {showEditor && draft && <LeadMagnetLabelsBanner changes={leadMagnetChanges} />}
+            {showEditor && draft && (
+              <LeadMagnetLabelsBanner
+                changes={leadMagnetChanges}
+                labelNames={leadMagnetLabelNames}
+              />
+            )}
           </DetailPage.Header>
 
           {/* The body scrolls, so it clips anything past its edges. Fields now run flush
@@ -599,7 +604,12 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                           draft={draft}
                           emailError={emailError}
                           // PROTOTYPE ONLY (NY-1750)
-                          labelsHint={<LeadMagnetLabelsHint changes={leadMagnetChanges} />}
+                          labelsHint={
+                            <LeadMagnetLabelsHint
+                              changes={leadMagnetChanges}
+                              labelNames={leadMagnetLabelNames}
+                            />
+                          }
                           onChange={onFieldChange}
                           onEmailBlur={() => {
                             setEmailTouched(true);

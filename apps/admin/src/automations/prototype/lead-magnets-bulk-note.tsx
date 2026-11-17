@@ -1,13 +1,35 @@
 // PROTOTYPE ONLY (NY-1750): the note under the label field when adding labels to many members at
-// once (bulk add, import). Peter's sketch, simplified in design review (2026-11-10): plain hint
-// text, no icon or bold. From 1,000 members, a second, general sentence sets expectations on speed;
-// it gives no count, since not every member labelled will start (some already have the label or
-// have been through it), and the automations docs give the detail. Nothing is blocked. Don't merge
-// this folder.
-import { Stack, Text } from '@tryghost/shade/primitives';
+// once (bulk add, import). As in the Linear example (2026-11-17), after Peter's review: a muted zap
+// (the Automations icon) and the label and automation names in medium weight, so it isn't missed in
+// light gray. From 100,000 members (a placeholder), a second, general sentence sets expectations on speed; it gives
+// no count, since not every member labelled will start (some already have the label or have been
+// through it), and the automations docs give the detail. Nothing is blocked. Don't merge this
+// folder.
+import React from 'react';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { BULK_NOTE_THRESHOLD, useLeadMagnetLabelAutomations } from './lead-magnets';
+import { useHintStyle } from './settings';
 
 type Match = { labelName: string; automationName: string };
+
+// A name in the note: medium weight, in the foreground colour.
+export const LeadMagnetHintName: React.FC<React.PropsWithChildren> = ({ children }) => (
+  <span className="font-medium text-foreground">{children}</span>
+);
+
+// The note's frame: a muted zap, then muted text. Also used by the bulk remove note.
+export const LeadMagnetHintLine: React.FC<React.PropsWithChildren> = ({ children }) => (
+  <Inline align="start" gap="sm">
+    {/* One line tall (1lh), so the icon centres on the first line. */}
+    <span className="flex h-[1lh] shrink-0 items-center text-sm text-muted-foreground" aria-hidden>
+      <LucideIcon.Zap className="size-3" />
+    </span>
+    <Text as="p" size="sm" tone="secondary">
+      {children}
+    </Text>
+  </Inline>
+);
 
 // The note itself, for the real fields below and the states page.
 type Source = 'bulk' | 'import';
@@ -20,21 +42,21 @@ export const LeadMagnetBulkNoteText: React.FC<{
   if (matches.length === 0) {
     return null;
   }
-  const sentences = matches.map(
-    ({ labelName, automationName }) => `${labelName} starts the ${automationName} automation`,
-  );
-  if (memberCount >= BULK_NOTE_THRESHOLD) {
-    sentences.push(
-      source === 'import'
-        ? 'Large imports can take longer to start'
-        : 'Adding this many members at once can take longer to start',
-    );
-  }
   // No final period, as for other hints.
   return (
-    <Text as="p" size="sm" tone="secondary">
-      {sentences.join('. ')}
-    </Text>
+    <LeadMagnetHintLine>
+      {matches.map(({ labelName, automationName }, index) => (
+        <React.Fragment key={`${labelName}-${automationName}`}>
+          {index > 0 && '. '}
+          <LeadMagnetHintName>{labelName}</LeadMagnetHintName> starts the{' '}
+          <LeadMagnetHintName>{automationName}</LeadMagnetHintName> automation
+        </React.Fragment>
+      ))}
+      {memberCount >= BULK_NOTE_THRESHOLD &&
+        (source === 'import'
+          ? '. Large imports can take longer to start'
+          : '. Adding this many members at once can take longer to start')}
+    </LeadMagnetHintLine>
   );
 };
 
@@ -50,6 +72,10 @@ export const LeadMagnetBulkNote: React.FC<{
     labelName: labels.find((label) => label.slug === labelSlug)?.name ?? labelSlug,
     automationName: name,
   }));
+  // Only when the prototype menu picks hints.
+  if (useHintStyle() !== 'hint') {
+    return null;
+  }
   return <LeadMagnetBulkNoteText matches={matches} memberCount={memberCount} source={source} />;
 };
 

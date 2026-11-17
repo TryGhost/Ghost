@@ -40,7 +40,7 @@ export type TriggerData = {
   labelSelection?: {
     value: LabelSelection;
     onChange: (next: LabelSelection) => void;
-    // The chosen label's name, kept by the automation after the label is deleted.
+    // Set when the chosen label has been deleted. Only says so: the name isn't shown.
     deletedName?: string;
     // An active automation's label can't change until it's turned off.
     locked?: boolean;
@@ -267,6 +267,8 @@ const SubscriptionChangedPicker: React.FC<{ trigger: TriggerData; errorMessage?:
 
 // One label, on the "Paid subscription changed" field in its one-choice mode, with a row to create
 // the typed label. Picking or creating a label replaces the current one.
+const DELETED_LABEL_NAME = '(label deleted)';
+
 const LabelAddedPicker: React.FC<{
   labelSelection: NonNullable<TriggerData['labelSelection']>;
   errorMessage?: string;
@@ -280,11 +282,12 @@ const LabelAddedPicker: React.FC<{
   });
   const { isInitialLoad, hasMore, isLoadingMore, loadMore, onSearchChange } = picker.optionSource;
   // In name order: the label source lists the chosen label first, which would move it on each pick.
-  // A deleted label stays listed while it's chosen, as archived tiers do.
+  // A deleted label stays listed while it's chosen, as archived tiers do. Its name isn't kept once
+  // it's deleted, so it reads "(label deleted)".
   const options = React.useMemo(() => {
     const labels = picker.labels.map((label) => ({ id: label.slug, name: label.name }));
     if (deletedName && value !== null && !labels.some((label) => label.id === value)) {
-      labels.push({ id: value, name: `${deletedName} (deleted)` });
+      labels.push({ id: value, name: DELETED_LABEL_NAME });
     }
     return labels.sort((a, b) => a.name.localeCompare(b.name));
   }, [picker.labels, deletedName, value]);
@@ -341,12 +344,8 @@ const LabelAddedPicker: React.FC<{
         inputLabel="Label"
         invalid={Boolean(errorMessage)}
         missingTierLabel={
-          // Like an archived tier's "Silver (archived)".
-          deletedName
-            ? `${deletedName} (deleted)`
-            : isInitialLoad
-              ? 'Loading label...'
-              : 'Label deleted'
+          // Like an archived tier's "Silver (archived)", but without the name, which isn't kept.
+          isInitialLoad && !deletedName ? 'Loading label...' : DELETED_LABEL_NAME
         }
         notice={isInitialLoad ? <Text size="md">Loading labels...</Text> : undefined}
         options={options}

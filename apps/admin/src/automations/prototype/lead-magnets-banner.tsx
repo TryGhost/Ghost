@@ -13,9 +13,11 @@ import { useHintStyle } from './settings';
 import { LeadMagnetSaveSummary } from './lead-magnets-summary';
 
 type Changes = Pick<LeadMagnetLabelChanges, 'starts' | 'ends'>;
+// Label slug → name, for the labels added and removed.
+type LabelNames = Record<string, string>;
 
-// The banner itself, for the member page and the patterns page.
-export const LeadMagnetBannerBody: React.FC<Changes> = ({ starts, ends }) => (
+// The banner's frame: the zap, then the text. Also used for the bulk add concept.
+export const LeadMagnetBannerFrame: React.FC<React.PropsWithChildren> = ({ children }) => (
   <Banner className="pl-4 hover:shadow-sm" size="md">
     <Inline align="start" gap="sm">
       {/* One line tall (1lh), so the icon centres on the first line. */}
@@ -23,40 +25,81 @@ export const LeadMagnetBannerBody: React.FC<Changes> = ({ starts, ends }) => (
         <LucideIcon.Zap className="size-4" />
       </span>
       <Text as="p" size="sm">
-        <LeadMagnetSaveSummary ends={ends} starts={starts} emphasis />
+        {children}
       </Text>
     </Inline>
   </Banner>
 );
 
-// Opens when saving would start or stop an automation, and closes when it wouldn't. Used under a
-// header whose children are spaced by gap-5.
-export const LeadMagnetAnimatedBanner: React.FC<{ changes: Changes }> = ({ changes }) => {
-  const isOpen = changes.starts.length > 0 || changes.ends.length > 0;
-  // Keeps the last changes while the banner closes, so its text doesn't vanish mid-animation.
-  const shownRef = React.useRef(changes);
-  if (isOpen) {
-    shownRef.current = changes;
+// The banner itself, for the member page and the patterns page.
+export const LeadMagnetBannerBody: React.FC<Changes & { labelNames: LabelNames }> = ({
+  starts,
+  ends,
+  labelNames,
+}) => (
+  <LeadMagnetBannerFrame>
+    <LeadMagnetSaveSummary ends={ends} labelNames={labelNames} starts={starts} emphasis />
+  </LeadMagnetBannerFrame>
+);
+
+// Opens and closes its content by animating its height (0fr to 1fr) and fading, so what's around
+// it slides rather than jumps. Used in a parent whose children are spaced by gap-5: closed, a -5
+// margin cancels that gap, above it (at the bottom of a stack) or below it (at the top, where the
+// content also slides down into place). Keeps the last content while closing, so it doesn't
+// vanish mid-animation.
+// With `ownSpacing`, in a parent without that gap, it brings its own 20px above instead.
+export const LeadMagnetReveal: React.FC<
+  React.PropsWithChildren<{ open: boolean; from?: 'top' | 'bottom'; ownSpacing?: boolean }>
+> = ({ open, from = 'bottom', ownSpacing = false, children }) => {
+  const shownRef = React.useRef(children);
+  if (open) {
+    shownRef.current = children;
   }
   return (
-    // Opens and closes by animating its height (0fr to 1fr) and fading, so the page below slides
-    // rather than jumps. Closed, -mt-5 cancels the header's gap above it.
     <div
-      aria-hidden={!isOpen}
+      aria-hidden={!open}
       className={cn(
         'grid transition-[grid-template-rows,opacity,margin] duration-300 ease-out motion-reduce:transition-none',
-        isOpen ? 'grid-rows-[1fr] opacity-100' : '-mt-5 grid-rows-[0fr] opacity-0',
+        open && 'grid-rows-[1fr] opacity-100',
+        !open && 'grid-rows-[0fr] opacity-0',
+        !ownSpacing && !open && (from === 'top' ? '-mb-5' : '-mt-5'),
+        ownSpacing && open && 'mt-5',
       )}
-      {...(isOpen ? {} : { inert: '' })}
+      {...(open ? {} : { inert: '' })}
     >
       {/* -m-1 p-1 gives the banner's shadow room inside the clip without moving it. */}
-      <div className="-m-1 min-h-0 overflow-hidden p-1">
-        <LeadMagnetBannerBody {...shownRef.current} />
+      <div
+        className={cn(
+          '-m-1 min-h-0 overflow-hidden p-1',
+          from === 'top' &&
+            'transition-transform duration-300 ease-out motion-reduce:transition-none',
+          from === 'top' && !open && '-translate-y-2',
+        )}
+      >
+        {shownRef.current}
       </div>
     </div>
   );
 };
 
-// On the member page, only when the prototype menu picks the banner.
-export const LeadMagnetLabelsBanner: React.FC<{ changes: Changes }> = ({ changes }) =>
-  useHintStyle() === 'banner' ? <LeadMagnetAnimatedBanner changes={changes} /> : null;
+// The member page's banner, open when saving would start or stop an automation.
+export const LeadMagnetAnimatedBanner: React.FC<{ changes: Changes; labelNames: LabelNames }> = ({
+  changes,
+  labelNames,
+}) => (
+  <LeadMagnetReveal open={changes.starts.length > 0 || changes.ends.length > 0}>
+    <LeadMagnetBannerBody {...changes} labelNames={labelNames} />
+  </LeadMagnetReveal>
+);
+
+// On the member page, only when the prototype menu picks the banner. Removals say nothing.
+export const LeadMagnetLabelsBanner: React.FC<{ changes: Changes; labelNames: LabelNames }> = ({
+  changes,
+  labelNames,
+}) =>
+  useHintStyle() === 'banner' ? (
+    <LeadMagnetAnimatedBanner
+      changes={{ starts: changes.starts, ends: [] }}
+      labelNames={labelNames}
+    />
+  ) : null;

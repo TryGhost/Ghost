@@ -49,19 +49,38 @@ import { TierScopePicker } from '@/automations/components/canvas/tier-scope-pick
 import { TriggerCard, type TriggerData } from '@/automations/components/canvas/trigger-card';
 import { buildTriggerRules } from '@/automations/utils/trigger-rules';
 import type { LabelSelection } from '@/automations/types';
-import { LabelPicker, MemberDetailForm, canCreateLabel, useLabelPicker } from '@/members/api';
+import {
+  ImportMappingPreview,
+  LabelPicker,
+  MemberDetailForm,
+  canCreateLabel,
+  useLabelPicker,
+} from '@/members/api';
 import { TriggerPickerCard } from '@/automations/components/trigger-picker-card';
+import { LabelTriggerMessage } from '@/automations/components/automation-status-dialog';
 import {
   FREE_SIGNUP_OPTION,
   LABEL_ADDED_OPTION,
   PAID_STARTED_OPTION,
   SUBSCRIPTION_CHANGED_OPTION,
 } from '@/automations/utils/trigger-options';
-import { LeadMagnetSaveDescription } from './lead-magnets-dialog';
+import { LeadMagnetSaveDialog } from './lead-magnets-dialog';
 import { LeadMagnetDeleteBlockedDescription } from './lead-magnets-delete-dialog';
-import { LeadMagnetBulkNoteText, LeadMagnetMemberNoteText } from './lead-magnets-bulk-note';
-import { LeadMagnetAnimatedBanner } from './lead-magnets-banner';
+import {
+  LeadMagnetBulkNoteText,
+  LeadMagnetHintLine,
+  LeadMagnetHintName,
+  LeadMagnetMemberNoteText,
+} from './lead-magnets-bulk-note';
+import {
+  LeadMagnetAnimatedBanner,
+  LeadMagnetBannerFrame,
+  LeadMagnetReveal,
+} from './lead-magnets-banner';
+import { BULK_NOTE_THRESHOLD } from './lead-magnets';
+import { LeadMagnetBulkBannerText, LeadMagnetBulkConfirmText } from './lead-magnets-bulk-patterns';
 import { PageHeader } from '@tryghost/shade/patterns';
+import { toast } from 'sonner';
 
 // --- Page structure ---
 
@@ -219,8 +238,10 @@ const DialogCard: React.FC<
     actionLabel: string;
     cancelLabel?: string;
     body?: React.ReactNode;
+    onAction?: () => void;
+    onCancel?: () => void;
   }>
-> = ({ title, actionLabel, cancelLabel = 'Cancel', body, children }) => (
+> = ({ title, actionLabel, cancelLabel = 'Cancel', body, onAction, onCancel, children }) => (
   <Box
     aria-label={title}
     className="grid w-[512px] gap-6 rounded-lg bg-surface-elevated-2 p-6 shadow-lg"
@@ -232,11 +253,16 @@ const DialogCard: React.FC<
     </AlertDialogHeader>
     {body}
     <AlertDialogFooter>
-      <Button variant="outline">{cancelLabel}</Button>
-      <Button>{actionLabel}</Button>
+      <Button variant="outline" onClick={onCancel}>
+        {cancelLabel}
+      </Button>
+      <Button onClick={onAction}>{actionLabel}</Button>
     </AlertDialogFooter>
   </Box>
 );
+
+// Stands in for the action itself, which this page doesn't run.
+const notRun = (what: string) => toast(`Prototype: ${what}`);
 
 // "Turn off automation?" with the number of members it removes, and that nobody starts while it's off.
 const ProposedTurnOffCard: React.FC<{ inProgressCount: number }> = ({ inProgressCount }) => (
@@ -290,12 +316,11 @@ const TriggerStatesState: React.FC = () => {
     () => ({ data, isLoading, isError, refetch }),
     [data, isLoading, isError, refetch],
   );
-  return (
-    <State location="Automation editor" title="Trigger">
-      <Column
-        description="Picking a trigger for a new automation. Label added sits with the others, behind the lead magnets flag."
-        name="Picker"
-      >
+  // Tabs, as on the other pages; a hint under the cases with something to click.
+  const cases: { name: string; hint?: string; render: () => React.ReactNode }[] = [
+    {
+      name: 'Picker',
+      render: () => (
         <TriggerPickerCard
           options={[
             FREE_SIGNUP_OPTION,
@@ -305,50 +330,96 @@ const TriggerStatesState: React.FC = () => {
           ]}
           onPick={() => {}}
         />
-      </Column>
-      <Column
-        description="The default. Pick a label, or create one, and the automation starts when it's added to a member."
-        name="Set up"
-      >
-        <LabelTriggerState initialLabel={null} tierQuery={tierQuery} />
-      </Column>
-      <Column
-        description="While the automation is on, its trigger can't change. Turning it off unlocks it."
-        name="Locked while live"
-      >
+      ),
+    },
+    {
+      name: 'Set up',
+      render: () => <LabelTriggerState initialLabel={null} tierQuery={tierQuery} />,
+    },
+    {
+      name: 'Locked',
+      render: () => (
         <TriggerShell Icon={LucideIcon.Tag} title="Label added">
           <LockedTriggerField
             fieldLabel="Triggered when this label is added to a member:"
             value="Lead magnet"
           />
         </TriggerShell>
-      </Column>
-      <Column
-        description="Publishing without a label. The error clears once one is picked."
-        name="Error: empty at publish"
-      >
+      ),
+    },
+    {
+      name: 'Label missing',
+      hint: 'Pick a label to clear the error',
+      render: () => (
         <LabelTriggerState
           errorMessage="Select a label"
           initialLabel={null}
           tierQuery={tierQuery}
         />
-      </Column>
-      <Column
-        description="The label was deleted while the automation was off, perhaps by a colleague. The error shows as soon as the automation opens, so it's caught before publishing."
-        name="Error: label deleted"
-      >
+      ),
+    },
+    {
+      name: 'Label deleted',
+      hint: 'Pick a different label to clear the error',
+      render: () => (
         <LabelTriggerState
           deletedName="Spring ebook"
           errorMessage="Select a different label"
           initialLabel={DELETED_LABEL_SLUG}
           tierQuery={tierQuery}
         />
-      </Column>
+      ),
+    },
+  ];
+  return (
+    <State location="Automation editor" title="Trigger">
+      <CaseSwitcher cases={cases}>
+        {({ hint, render }) => (
+          // 40px, twice Shade's lg, so the hint reads apart from the UI.
+          <Stack className="gap-10" gap="none">
+            {render()}
+            {hint && (
+              <Text className="italic" size="sm" tone="secondary">
+                {hint}
+              </Text>
+            )}
+          </Stack>
+        )}
+      </CaseSwitcher>
     </State>
   );
 };
 
 // --- 2. Turn off automation ---
+
+// The editor's Publish confirmation (automation-status-dialog.tsx), with the real message for a
+// Label added trigger: it names the label, and says members who already have it won't start.
+// Tabs, as on the other dialog pages.
+// Default is today's copy, for every other trigger; memberCount null marks it.
+const START_AUTOMATION_CASES: { name: string; memberCount: number | null }[] = [
+  { name: 'Default', memberCount: null },
+  { name: 'Label in use', memberCount: 1240 },
+  { name: 'Empty label', memberCount: 0 },
+];
+
+const StartAutomationState: React.FC = () => (
+  <State location="Automation editor, Publish" title="Start automation">
+    <CaseSwitcher cases={START_AUTOMATION_CASES}>
+      {({ memberCount }) => (
+        <DialogCard actionLabel="Publish" title="Start your automation?">
+          {memberCount === null ? (
+            <p>
+              Once published, your automation goes live. Any member who meets the trigger will be
+              enrolled automatically.
+            </p>
+          ) : (
+            <LabelTriggerMessage labelTrigger={{ name: 'Lead magnet', memberCount }} />
+          )}
+        </DialogCard>
+      )}
+    </CaseSwitcher>
+  </State>
+);
 
 const TurnOffState: React.FC = () => (
   <State location="Automation editor" title="Turn off">
@@ -439,71 +510,74 @@ const FakeLabelField: React.FC = () => {
   const optionSource = React.useMemo(() => staticOptionSource(labels), [labels]);
 
   return (
-    // On the trigger cards' white card, so the field reads against the canvas.
-    <AutomationCard className="w-[400px]" role={undefined}>
-      <LabelPicker
-        labels={labels}
-        optionSource={optionSource}
-        selectedSlugs={selectedSlugs}
-        onDelete={(id) => {
-          const label = labels.find((l) => l.id === id);
-          setLabels((current) => current.filter((l) => l.id !== id));
-          setSelectedSlugs((current) => current.filter((slug) => slug !== label?.slug));
-          return Promise.resolve();
-        }}
-        // Blocked on the first Delete click, before the inline "Delete label?" confirm.
-        onDeleteClick={(id) => {
-          const label = labels.find((l) => l.id === id);
-          const automation = label && LABEL_AUTOMATIONS[label.slug];
-          if (label && automation?.active) {
-            setBlocked({ labelName: label.name, automationName: automation.name });
-            return true;
-          }
-          return false;
-        }}
-        onEdit={(id, name) => {
-          setLabels((current) => current.map((l) => (l.id === id ? { ...l, name } : l)));
-          return Promise.resolve();
-        }}
-        onToggle={(slug) =>
-          setSelectedSlugs((current) =>
-            current.includes(slug) ? current.filter((s) => s !== slug) : [...current, slug],
-          )
-        }
-      />
-      {/* The picker closes on any pointerdown outside it, and the dialog is portalled outside.
+    // In the members list's Add label dialog, for context: the picker most people delete from.
+    <DialogCard
+      actionLabel="Add label"
+      body={
+        <>
+          <LabelPicker
+            // Opens on Lead magnet's edit row, so Delete is one click away.
+            initialEditingId={ACTIVE_LABEL}
+            labels={labels}
+            optionSource={optionSource}
+            selectedSlugs={selectedSlugs}
+            onDelete={(id) => {
+              const label = labels.find((l) => l.id === id);
+              setLabels((current) => current.filter((l) => l.id !== id));
+              setSelectedSlugs((current) => current.filter((slug) => slug !== label?.slug));
+              return Promise.resolve();
+            }}
+            // Blocked on the first Delete click, before the inline "Delete label?" confirm.
+            onDeleteClick={(id) => {
+              const label = labels.find((l) => l.id === id);
+              const automation = label && LABEL_AUTOMATIONS[label.slug];
+              if (label && automation?.active) {
+                setBlocked({ labelName: label.name, automationName: automation.name });
+                return true;
+              }
+              return false;
+            }}
+            onEdit={(id, name) => {
+              setLabels((current) => current.map((l) => (l.id === id ? { ...l, name } : l)));
+              return Promise.resolve();
+            }}
+            onToggle={(slug) =>
+              setSelectedSlugs((current) =>
+                current.includes(slug) ? current.filter((s) => s !== slug) : [...current, slug],
+              )
+            }
+          />
+          {/* The picker closes on any pointerdown outside it, and the dialog is portalled outside.
           React events bubble through portals, so stopping them here keeps the dropdown open
           behind the dialog and after it closes. `contents` adds no box to the card. */}
-      <div className="contents" onPointerDown={(event) => event.stopPropagation()}>
-        <DeleteBlockedDialog blocked={blocked} onClose={() => setBlocked(null)} />
-      </div>
-    </AutomationCard>
+          <div className="contents" onPointerDown={(event) => event.stopPropagation()}>
+            <DeleteBlockedDialog blocked={blocked} onClose={() => setBlocked(null)} />
+          </div>
+        </>
+      }
+      title="Add label to 48 members"
+    />
   );
 };
 
+// As on the other dialog pages: the UI, and a hint under it to click through. The picker opens
+// on Lead magnet's edit row, whose automation is on, so Delete brings up the real "Can't delete
+// label" dialog; Spring ebook's is off, so it deletes as normal.
 const DeleteLabelState: React.FC = () => (
   <State
     location="Any label picker: Member profile, Members index filter and bulk actions, Members import"
     title="Delete label"
   >
-    <Column
-      description="Open a label's pencil and click Delete. Lead magnet's automation is on, so it's blocked; Spring ebook's is off, so it deletes as normal."
-      name="Input"
-    >
-      <FakeLabelField />
-    </Column>
-    {/* The real dialog's message (lead-magnets-delete-dialog.tsx). */}
-    <Column
-      description="Shown on the first Delete click when an active automation uses the label. The picker stays open behind it."
-      name="Dialog"
-    >
-      <DialogCard actionLabel="Go to automation" cancelLabel="Close" title="Can't delete label">
-        <LeadMagnetDeleteBlockedDescription
-          automationName={ACTIVE_AUTOMATION}
-          labelName="Lead magnet"
-        />
-      </DialogCard>
-    </Column>
+    {/* 40px, twice Shade's lg. The open dropdown hangs about 100px below the dialog, so the
+        hint sits under the room it takes (pb-24) rather than behind it. */}
+    <Stack className="gap-10" gap="none">
+      <Box className="pb-24">
+        <FakeLabelField />
+      </Box>
+      <Text className="italic" size="sm" tone="secondary">
+        Click Delete to see response
+      </Text>
+    </Stack>
   </State>
 );
 
@@ -644,6 +718,16 @@ const MEMBER_CASES = [
   { name: '1 added, 1 removed', labels: ['lead-magnet'] },
 ];
 
+// The dialog concept's cases: labels added only.
+// The dialog's cases: Emily's labels with one or two automation labels added, unsaved. A label
+// starting two automations is an edge case: its rows stack the same way.
+// "Table" tries the dialog's rows as a two-column table instead of arrows (Peter, 2026-11-17).
+const MEMBER_DIALOG_CASES: { name: string; labels: string[]; layout?: 'arrows' | 'table' }[] = [
+  { name: 'Single label', labels: ['lead-magnet', 'vip'] },
+  { name: 'Multiple labels', labels: ['lead-magnet', 'free-trial', 'vip'] },
+  { name: 'Table', labels: ['lead-magnet', 'free-trial', 'vip'], layout: 'table' },
+];
+
 // What saving starts and stops for Emily with these labels.
 const memberChanges = (selectedSlugs: string[]) => {
   const toAutomations = (slugs: string[]) =>
@@ -734,7 +818,12 @@ const MemberNoteDemo: React.FC<{ labels: string[] }> = ({ labels }) => {
 
 // The top of the member page: its header with Save, the banner, and the Details card, built from
 // the real components on made-up data. Change Emily's labels and the banner opens and closes.
-const MemberPageExcerpt: React.FC<{ labels: string[] }> = ({ labels }) => {
+// Without the banner, Save can open the Save dialog instead.
+const MemberPageExcerpt: React.FC<{
+  labels: string[];
+  showBanner?: boolean;
+  onSave?: (changes: ReturnType<typeof memberChanges>) => void;
+}> = ({ labels, showBanner = true, onSave }) => {
   const [draft, setDraft] = useState<MemberDraft>({
     name: MEMBER_NAME,
     email: 'emily@example.com',
@@ -770,12 +859,19 @@ const MemberPageExcerpt: React.FC<{ labels: string[] }> = ({ labels }) => {
           <PageHeader.Actions>
             <PageHeader.ActionGroup>
               <PageHeader.ActionGroup.Primary>
-                <Button className="min-w-16">Save</Button>
+                <Button className="min-w-16" onClick={() => onSave?.(changes)}>
+                  Save
+                </Button>
               </PageHeader.ActionGroup.Primary>
             </PageHeader.ActionGroup>
           </PageHeader.Actions>
         </PageHeader>
-        <LeadMagnetAnimatedBanner changes={changes} />
+        {showBanner && (
+          <LeadMagnetAnimatedBanner
+            changes={changes}
+            labelNames={Object.fromEntries(FAKE_LABELS.map(({ slug, name }) => [slug, name]))}
+          />
+        )}
         <MemberDetailsCard draft={draft} onChange={setDraft} />
       </Stack>
     </Box>
@@ -783,18 +879,22 @@ const MemberPageExcerpt: React.FC<{ labels: string[] }> = ({ labels }) => {
 };
 
 // One example, with tabs that switch it between the cases. Remounts the example on each switch,
-// so its labels start from that case, unless keepMounted.
-const MemberCaseSwitcher: React.FC<{
-  children: (labels: string[]) => React.ReactNode;
-  // Keeps the example mounted and passes it the new labels, so it can animate the change.
+// so it starts from that case, unless keepMounted: then the example gets the new case and can
+// animate the change.
+function CaseSwitcher<C extends { name: string }>({
+  cases,
+  keepMounted = false,
+  children,
+}: {
+  cases: readonly C[];
   keepMounted?: boolean;
-  cases?: typeof MEMBER_CASES;
-}> = ({ children, keepMounted = false, cases = MEMBER_CASES }) => {
-  const [current, setCurrent] = useState(cases[0].name);
-  const { labels } = cases.find(({ name }) => name === current) ?? cases[0];
+  children: (current: C) => React.ReactNode;
+}) {
+  const [currentName, setCurrentName] = useState(cases[0].name);
+  const current = cases.find(({ name }) => name === currentName) ?? cases[0];
   return (
     <Stack gap="lg">
-      <Tabs value={current} variant="button-sm" onValueChange={setCurrent}>
+      <Tabs value={current.name} variant="button-sm" onValueChange={setCurrentName}>
         <TabsList className="flex-wrap">
           {cases.map(({ name }) => (
             <TabsTrigger
@@ -808,35 +908,74 @@ const MemberCaseSwitcher: React.FC<{
           ))}
         </TabsList>
       </Tabs>
-      <React.Fragment key={keepMounted ? undefined : current}>{children(labels)}</React.Fragment>
+      <React.Fragment key={keepMounted ? undefined : current.name}>
+        {children(current)}
+      </React.Fragment>
     </Stack>
+  );
+}
+
+// The member page with its labels changed; Save opens the real Save dialog when a label added
+// starts an automation, and otherwise stands in for saving. Removals say nothing (Peter,
+// 2026-11-17).
+const MemberSaveFlow: React.FC<{ labels: string[]; layout?: 'arrows' | 'table' }> = ({
+  labels,
+  layout,
+}) => {
+  const [dialogChanges, setDialogChanges] = useState<ReturnType<typeof memberChanges> | null>(null);
+  return (
+    <>
+      <MemberPageExcerpt
+        labels={labels}
+        showBanner={false}
+        onSave={(changes) =>
+          changes.starts.length > 0 ? setDialogChanges(changes) : notRun("Emily wasn't saved")
+        }
+      />
+      <LeadMagnetSaveDialog
+        changes={dialogChanges ?? { starts: [], ends: [] }}
+        labelNames={Object.fromEntries(FAKE_LABELS.map(({ slug, name }) => [slug, name]))}
+        layout={layout}
+        open={dialogChanges !== null}
+        onConfirm={() => {
+          setDialogChanges(null);
+          notRun("Emily wasn't saved");
+        }}
+        onOpenChange={(open) => !open && setDialogChanges(null)}
+      />
+    </>
   );
 };
 
 const MemberSaveDialogState: React.FC = () => (
   <State location="Member profile" title="Member update">
-    <Column name="A. Banner (Recommended)" stacked>
-      <MemberCaseSwitcher keepMounted>
-        {(labels) => <MemberPageExcerpt labels={labels} />}
-      </MemberCaseSwitcher>
+    <CaseSwitcher cases={MEMBER_DIALOG_CASES}>
+      {({ labels, layout }) => (
+        // 40px, twice Shade's lg, so the hint reads apart from the page.
+        <Stack className="gap-10" gap="none">
+          <MemberSaveFlow labels={labels} layout={layout} />
+          <Text className="italic" size="sm" tone="secondary">
+            Click Save to see the confirmation.
+          </Text>
+        </Stack>
+      )}
+    </CaseSwitcher>
+  </State>
+);
+
+// The member page's other concepts, archived for the demo (2026-11-17).
+const MemberUpdateAlternatives: React.FC = () => (
+  <State location="Member profile" title="Member update: banner and hint">
+    <Column name="Banner" stacked>
+      <CaseSwitcher cases={MEMBER_CASES} keepMounted>
+        {({ labels }) => <MemberPageExcerpt labels={labels} />}
+      </CaseSwitcher>
     </Column>
     <Separator />
-    <Column name="B. Hint" stacked>
-      <MemberCaseSwitcher>{(labels) => <MemberNoteDemo labels={labels} />}</MemberCaseSwitcher>
-    </Column>
-    <Separator />
-    <Column name="C. Dialog" stacked>
-      {/* A dialog only opens when something starts or stops, so there's no "No change". */}
-      <MemberCaseSwitcher cases={MEMBER_CASES.filter(({ name }) => name !== 'No change')}>
-        {(labels) => (
-          <DialogCard actionLabel="Save" title="Save changes?">
-            <LeadMagnetSaveDescription
-              changes={memberChanges(labels)}
-              labelNames={Object.fromEntries(FAKE_LABELS.map(({ slug, name }) => [slug, name]))}
-            />
-          </DialogCard>
-        )}
-      </MemberCaseSwitcher>
+    <Column name="Hint" stacked>
+      <CaseSwitcher cases={MEMBER_CASES}>
+        {({ labels }) => <MemberNoteDemo labels={labels} />}
+      </CaseSwitcher>
     </Column>
   </State>
 );
@@ -867,11 +1006,12 @@ const BulkRemoveCard: React.FC<{ inProgressCount: number }> = ({ inProgressCount
             onToggle={(slug) => setSelectedSlugs((current) => toggleSlug(current, slug))}
           />
           {leaving && (
-            <Text as="p" size="sm" tone="secondary">
+            <LeadMagnetHintLine>
               {formatNumber(inProgressCount)} of these{' '}
-              {inProgressCount === 1 ? 'member is' : 'members are'} in the {ACTIVE_AUTOMATION}{' '}
-              automation and will be removed from it
-            </Text>
+              {inProgressCount === 1 ? 'member is' : 'members are'} in the{' '}
+              <LeadMagnetHintName>{ACTIVE_AUTOMATION}</LeadMagnetHintName> automation and will be
+              removed from it
+            </LeadMagnetHintLine>
           )}
         </Stack>
       }
@@ -1180,22 +1320,106 @@ const BulkStartNote: React.FC<{ count: number; source: 'bulk' | 'import' }> = ({
   />
 );
 
-// The members list's "Add label" dialog (add-label-modal.tsx), laid out in place.
-const BulkAddCard: React.FC<{ count: number }> = ({ count }) => {
-  const [selectedSlugs, setSelectedSlugs] = useState<string[]>([ACTIVE_LABEL]);
+type BulkCase = { name: string; count: number; slugs: string[]; layout?: 'arrows' | 'table' };
+
+// No change picks a label without an automation.
+const bulkCases = (under: number, over: number): BulkCase[] => [
+  { name: 'No change', count: under, slugs: ['vip'] },
+  { name: 'Under 100k', count: under, slugs: [ACTIVE_LABEL] },
+  { name: 'Over 100k', count: over, slugs: [ACTIVE_LABEL] },
+];
+const BULK_ADD_CASES = bulkCases(48, 124_800);
+const IMPORT_CASES = bulkCases(50, 120_000);
+
+// The label picker and the note under it, for bulk add and import.
+const BulkLabelField: React.FC<{
+  count: number;
+  slugs: string[];
+  source: 'bulk' | 'import';
+  // Set by the banner concept, which shows its own message instead of the note.
+  hideNote?: boolean;
+  onSelectionChange?: (slugs: string[]) => void;
+}> = ({ count, slugs, source, hideNote = false, onSelectionChange }) => {
+  const [selectedSlugs, setSelectedSlugs] = useState(slugs);
+  // Another state swaps in its labels without remounting, so the banner can animate.
+  const [shownSlugs, setShownSlugs] = useState(slugs);
+  if (slugs !== shownSlugs) {
+    setShownSlugs(slugs);
+    setSelectedSlugs(slugs);
+  }
   const optionSource = React.useMemo(() => staticOptionSource(FAKE_LABELS), []);
+  return (
+    <Stack gap="sm">
+      <LabelPicker
+        labels={FAKE_LABELS}
+        optionSource={optionSource}
+        selectedSlugs={selectedSlugs}
+        onToggle={(slug) => {
+          const next = toggleSlug(selectedSlugs, slug);
+          setSelectedSlugs(next);
+          onSelectionChange?.(next);
+        }}
+      />
+      {!hideNote && selectedSlugs.includes(ACTIVE_LABEL) && (
+        <BulkStartNote count={count} source={source} />
+      )}
+    </Stack>
+  );
+};
+
+// The members list's "Add label" dialog (add-label-modal.tsx), laid out in place.
+const BulkAddDemo: React.FC<{ current: BulkCase }> = ({ current: { count, slugs } }) => (
+  <DialogCard
+    actionLabel="Add label"
+    body={<BulkLabelField count={count} slugs={slugs} source="bulk" />}
+    title={`Add label to ${formatNumber(count)} ${count === 1 ? 'member' : 'members'}`}
+  />
+);
+
+// The banner concepts' made-up automations: three labels start one each, so picking two or more
+// shows how the banner grows. VIP starts nothing.
+const BULK_BANNER_AUTOMATIONS: Record<string, string> = {
+  [ACTIVE_LABEL]: ACTIVE_AUTOMATION,
+  'free-trial': 'Trial nurture',
+  'spring-ebook': 'Spring ebook series',
+};
+// The picked labels that start an automation, with it.
+const bulkBannerMatches = (selectedSlugs: string[]) =>
+  selectedSlugs.flatMap((slug) =>
+    BULK_BANNER_AUTOMATIONS[slug]
+      ? [{ slug, label: labelName(slug), automation: BULK_BANNER_AUTOMATIONS[slug] }]
+      : [],
+  );
+
+// Concept B: the member page's banner slides in at the top of the dialog in place of the hint,
+// naming each label and the automation it starts, and from 100k members that it can take longer.
+const BulkAddBannerDemo: React.FC<{ current: BulkCase }> = ({ current: { count, slugs } }) => {
+  const [selectedSlugs, setSelectedSlugs] = useState(slugs);
+  const [shownSlugs, setShownSlugs] = useState(slugs);
+  if (slugs !== shownSlugs) {
+    setShownSlugs(slugs);
+    setSelectedSlugs(slugs);
+  }
+  const large = count >= BULK_NOTE_THRESHOLD;
+  const matches = bulkBannerMatches(selectedSlugs);
   return (
     <DialogCard
       actionLabel="Add label"
       body={
-        <Stack gap="sm">
-          <LabelPicker
-            labels={FAKE_LABELS}
-            optionSource={optionSource}
-            selectedSlugs={selectedSlugs}
-            onToggle={(slug) => setSelectedSlugs((current) => toggleSlug(current, slug))}
+        // gap-5, which the banner's animation expects.
+        <Stack gap="lg">
+          <LeadMagnetReveal from="top" open={matches.length > 0}>
+            <LeadMagnetBannerFrame>
+              <LeadMagnetBulkBannerText large={large} matches={matches} source="bulk" />
+            </LeadMagnetBannerFrame>
+          </LeadMagnetReveal>
+          <BulkLabelField
+            count={count}
+            slugs={slugs}
+            source="bulk"
+            hideNote
+            onSelectionChange={setSelectedSlugs}
           />
-          {selectedSlugs.includes(ACTIVE_LABEL) && <BulkStartNote count={count} source="bulk" />}
         </Stack>
       }
       title={`Add label to ${formatNumber(count)} ${count === 1 ? 'member' : 'members'}`}
@@ -1203,44 +1427,451 @@ const BulkAddCard: React.FC<{ count: number }> = ({ count }) => {
   );
 };
 
-// The import's "Label these members" field (mapping-step.tsx), with the CSV's row count.
-const ImportStartCard: React.FC<{ count: number }> = ({ count }) => {
-  const id = useId();
-  const [selectedSlugs, setSelectedSlugs] = useState<string[]>([ACTIVE_LABEL]);
-  const optionSource = React.useMemo(() => staticOptionSource(FAKE_LABELS), []);
+// --- Dialog concept for bulk add and import (Peter, 2026-11-17) ---
+// Nothing shows while picking labels. On Add label or Import, if a picked label starts an active
+// automation, the dialog changes in place to a confirmation step, as the member page's Save does.
+// Back returns to the picker with the labels kept; the button repeats the action. No member
+// counts, since not everyone labelled starts. Every label gets a row, however many. From 100k
+// members (a placeholder), a line on speed. With nothing to start, the action runs as today.
+
+// Each opens on today's Add label dialog with its labels picked; Add label shows the
+// confirmation. With no automation label picked there's no confirmation, so that's not a case.
+const BULK_CONFIRM_CASES: BulkCase[] = [
+  { name: 'Single label', count: 48, slugs: [ACTIVE_LABEL] },
+  { name: 'Multiple labels', count: 48, slugs: [ACTIVE_LABEL, 'free-trial', 'spring-ebook'] },
+  { name: '100k+ members', count: 124_800, slugs: [ACTIVE_LABEL] },
+  // The rows as a table instead of arrows, to compare (Peter, 2026-11-17).
+  {
+    name: 'Table',
+    count: 48,
+    slugs: [ACTIVE_LABEL, 'free-trial', 'spring-ebook'],
+    layout: 'table',
+  },
+];
+
+// Today's dialog, which changes in place to the confirmation on Add label when a picked label
+// starts an automation, and back on Back, keeping the labels. Add label on the confirmation
+// stands in for adding them, and starts over.
+const BulkAddFlow: React.FC<{ current: BulkCase }> = ({ current: { count, slugs, layout } }) => {
+  const [selectedSlugs, setSelectedSlugs] = useState(slugs);
+  const [confirming, setConfirming] = useState(false);
+  const matches = bulkBannerMatches(selectedSlugs);
+  const title = `Add label to ${formatNumber(count)} ${count === 1 ? 'member' : 'members'}`;
+  const finish = () => {
+    notRun("the labels weren't added");
+    setConfirming(false);
+  };
+  if (confirming) {
+    return (
+      <DialogCard
+        actionLabel="Add label"
+        cancelLabel="Back"
+        title={`${title}?`}
+        onAction={finish}
+        onCancel={() => setConfirming(false)}
+      >
+        <LeadMagnetBulkConfirmText
+          large={count >= BULK_NOTE_THRESHOLD}
+          layout={layout}
+          matches={matches}
+          source="bulk"
+        />
+      </DialogCard>
+    );
+  }
   return (
-    <AutomationCard className="w-[400px]" gap="sm" role={undefined}>
-      <Label id={`${id}-label`}>Label these members</Label>
-      <LabelPicker
-        labels={FAKE_LABELS}
-        optionSource={optionSource}
-        selectedSlugs={selectedSlugs}
-        onToggle={(slug) => setSelectedSlugs((current) => toggleSlug(current, slug))}
-      />
-      {selectedSlugs.includes(ACTIVE_LABEL) && <BulkStartNote count={count} source="import" />}
-    </AutomationCard>
+    <DialogCard
+      actionLabel="Add label"
+      body={
+        <BulkLabelField
+          count={count}
+          slugs={selectedSlugs}
+          source="bulk"
+          hideNote
+          onSelectionChange={setSelectedSlugs}
+        />
+      }
+      title={title}
+      onAction={() => (matches.length > 0 ? setConfirming(true) : finish())}
+    />
   );
 };
 
+// As on Member update: the UI by default, and a hint under it to click through.
 const BulkAddState: React.FC = () => (
-  <State location="Members index, bulk actions, and Members import" title="Bulk add label">
-    <Column
-      description="Adding a label that starts an active automation names it."
-      name="Under 1k members"
-    >
-      <BulkAddCard count={5} />
+  <State location="Members index, bulk actions" title="Bulk add label">
+    <CaseSwitcher cases={BULK_CONFIRM_CASES}>
+      {(current) => (
+        // 40px, twice Shade's lg, so the hint reads apart from the dialog.
+        <Stack className="gap-10" gap="none">
+          <BulkAddFlow current={current} />
+          <Text className="italic" size="sm" tone="secondary">
+            Click Add label to see the confirmation.
+          </Text>
+        </Stack>
+      )}
+    </CaseSwitcher>
+  </State>
+);
+
+// Bulk add's other concepts, archived for the demo (2026-11-17).
+const BulkAddAlternatives: React.FC = () => (
+  <State location="Members index, bulk actions" title="Bulk add label: hint and banner">
+    <Column name="Hint" stacked>
+      <CaseSwitcher cases={BULK_ADD_CASES}>
+        {(current) => <BulkAddDemo current={current} />}
+      </CaseSwitcher>
     </Column>
-    <Column
-      description="From 1,000 members, a second sentence says it can take longer. The docs give the detail."
-      name="1k+ members"
-    >
-      <BulkAddCard count={BULK_MEMBER_COUNT} />
+    <Separator />
+    <Column name="Banner from the top" stacked>
+      <CaseSwitcher cases={BULK_ADD_CASES} keepMounted>
+        {(current) => <BulkAddBannerDemo current={current} />}
+      </CaseSwitcher>
     </Column>
+  </State>
+);
+
+// The import's real mapping step (from the members domain) on made-up rows, in a dialog frame,
+// with the label field from this page. Nothing is imported.
+const ImportDemo: React.FC<{ current: BulkCase }> = ({ current: { count, slugs } }) => (
+  <Box className="rounded-lg bg-surface-elevated-2 p-6 shadow-lg">
+    <h3 className="text-xl font-semibold in-data-[admin7-design=true]:font-title">
+      Import members
+    </h3>
+    <Box className="mt-5">
+      <ImportMappingPreview
+        labelField={<BulkLabelField count={count} slugs={slugs} source="import" />}
+        rowCount={count}
+      />
+    </Box>
+  </Box>
+);
+
+// Concept B: as on bulk add, the banner slides in at the top of the dialog in place of the hint,
+// saying the automation starts, and from 100k members that large imports can take longer.
+const ImportBannerDemo: React.FC<{ current: BulkCase }> = ({ current: { count, slugs } }) => {
+  const [selectedSlugs, setSelectedSlugs] = useState(slugs);
+  // Another state swaps in its labels without remounting, so the banner animates.
+  const [shownSlugs, setShownSlugs] = useState(slugs);
+  if (slugs !== shownSlugs) {
+    setShownSlugs(slugs);
+    setSelectedSlugs(slugs);
+  }
+  const matches = bulkBannerMatches(selectedSlugs);
+  return (
+    <Box className="rounded-lg bg-surface-elevated-2 p-6 shadow-lg">
+      <h3 className="text-xl font-semibold in-data-[admin7-design=true]:font-title">
+        Import members
+      </h3>
+      {/* gap-5, which the banner's animation expects. */}
+      <Stack className="mt-5" gap="lg">
+        <LeadMagnetReveal from="top" open={matches.length > 0}>
+          <LeadMagnetBannerFrame>
+            <LeadMagnetBulkBannerText
+              large={count >= BULK_NOTE_THRESHOLD}
+              matches={matches}
+              source="import"
+            />
+          </LeadMagnetBannerFrame>
+        </LeadMagnetReveal>
+        <ImportMappingPreview
+          labelField={
+            <BulkLabelField
+              count={count}
+              slugs={slugs}
+              source="import"
+              hideNote
+              onSelectionChange={setSelectedSlugs}
+            />
+          }
+          rowCount={count}
+        />
+      </Stack>
+    </Box>
+  );
+};
+
+// Concept C: the file has its own labels column (Evan, 2026-11-12), so labels differ by row.
+// Mapped to Labels, the hint names each file label that starts an automation, "in your file", so
+// it reads apart from the field, which labels every row. Labels picked in the field join the same
+// note. Unmap the column and the file's lines go. A file label that doesn't exist yet is created
+// by the import, so no automation uses it and it gets no line.
+type FileLabelsCase = { name: string; labelsByRow: string[] };
+const FILE_LABELS_CASES: FileLabelsCase[] = [
+  { name: 'No change', labelsByRow: ['VIP'] },
+  { name: '1 label', labelsByRow: ['Lead magnet,VIP', 'VIP'] },
+  { name: '2 labels', labelsByRow: ['Lead magnet', 'Free trial,VIP'] },
+  { name: '3 or more', labelsByRow: ['Lead magnet', 'Free trial', 'Spring ebook,VIP'] },
+];
+const FILE_IMPORT_COUNT = 50;
+
+const slugForName = (name: string) =>
+  FAKE_LABELS.find((label) => label.name.toLowerCase() === name.toLowerCase())?.slug;
+
+const FileLabelsNote: React.FC<{ fieldSlugs: string[]; fileLabels: string[] }> = ({
+  fieldSlugs,
+  fileLabels,
+}) => {
+  const fieldMatches = bulkBannerMatches(fieldSlugs).map((match) => ({ ...match, inFile: false }));
+  const fileSlugs = fileLabels.flatMap((name) => {
+    const slug = slugForName(name);
+    return slug && !fieldSlugs.includes(slug) ? [slug] : [];
+  });
+  const fileMatches = bulkBannerMatches(fileSlugs).map((match) => ({ ...match, inFile: true }));
+  const matches = [...fieldMatches, ...fileMatches];
+  if (matches.length === 0) {
+    return null;
+  }
+  // No final period, as for other hints.
+  if (matches.length >= 3) {
+    const count = formatNumber(matches.length);
+    return (
+      <LeadMagnetHintLine>
+        The {count} labels {fieldMatches.length === 0 && 'in your file '}start {count} automations
+      </LeadMagnetHintLine>
+    );
+  }
+  return (
+    <LeadMagnetHintLine>
+      {matches.map(({ slug, label, automation, inFile }, index) => (
+        <React.Fragment key={slug}>
+          {index > 0 && '. '}
+          <LeadMagnetHintName>{label}</LeadMagnetHintName>
+          {inFile && ' in your file'} starts the{' '}
+          <LeadMagnetHintName>{automation}</LeadMagnetHintName> automation
+        </React.Fragment>
+      ))}
+    </LeadMagnetHintLine>
+  );
+};
+
+const FileLabelsField: React.FC<{ fileLabels: string[] }> = ({ fileLabels }) => {
+  const [fieldSlugs, setFieldSlugs] = useState<string[]>([]);
+  return (
+    <Stack gap="sm">
+      <BulkLabelField
+        count={FILE_IMPORT_COUNT}
+        slugs={[]}
+        source="import"
+        hideNote
+        onSelectionChange={setFieldSlugs}
+      />
+      <FileLabelsNote fieldSlugs={fieldSlugs} fileLabels={fileLabels} />
+    </Stack>
+  );
+};
+
+const ImportFileLabelsDemo: React.FC<{ current: FileLabelsCase }> = ({
+  current: { labelsByRow },
+}) => (
+  <Box className="rounded-lg bg-surface-elevated-2 p-6 shadow-lg">
+    <h3 className="text-xl font-semibold in-data-[admin7-design=true]:font-title">
+      Import members
+    </h3>
+    <Box className="mt-5">
+      <ImportMappingPreview
+        labelField={(fileLabels) => <FileLabelsField fileLabels={fileLabels} />}
+        labelsByRow={labelsByRow}
+        rowCount={FILE_IMPORT_COUNT}
+      />
+    </Box>
+  </Box>
+);
+
+type ImportConfirmCase = BulkCase & { labelsByRow?: string[] };
+// Each opens on the mapping step with its labels; Import shows the confirmation. With no
+// automation label there's no confirmation, so that's not a case.
+const IMPORT_CONFIRM_CASES: ImportConfirmCase[] = [
+  { name: 'Single label', count: 50, slugs: [ACTIVE_LABEL] },
+  { name: 'Multiple labels', count: 50, slugs: [ACTIVE_LABEL, 'free-trial'] },
+  {
+    name: 'Labels in the file',
+    count: 50,
+    slugs: [],
+    labelsByRow: ['Lead magnet', 'Free trial,VIP'],
+  },
+  { name: '100k+ members', count: 120_000, slugs: [ACTIVE_LABEL] },
+  // The rows as a table instead of arrows, to compare (Peter, 2026-11-17).
+  { name: 'Table', count: 50, slugs: [ACTIVE_LABEL, 'free-trial'], layout: 'table' },
+];
+
+// The label names in a file's labels column, each once.
+const namesInFile = (labelsByRow: string[] = []) => [
+  ...new Set(labelsByRow.flatMap((cell) => cell.split(',').map((name) => name.trim()))),
+];
+
+// Labels picked in the field, then any others the file's labels column brings.
+const importMatches = (fieldSlugs: string[], fileLabels: string[]) => {
+  const fileSlugs = fileLabels.flatMap((name) => {
+    const slug = slugForName(name);
+    return slug && !fieldSlugs.includes(slug) ? [slug] : [];
+  });
+  return bulkBannerMatches([...fieldSlugs, ...fileSlugs]);
+};
+
+// The mapping step stays mounted behind the confirmation step, so Back keeps the mapping too.
+const ImportConfirmDemo: React.FC<{ current: ImportConfirmCase }> = ({
+  current: { count, slugs, labelsByRow, layout },
+}) => {
+  const [fieldSlugs, setFieldSlugs] = useState(slugs);
+  const [fileLabels, setFileLabels] = useState(() => namesInFile(labelsByRow));
+  const [confirming, setConfirming] = useState(false);
+  const matches = importMatches(fieldSlugs, fileLabels);
+  const finish = () => {
+    notRun("the members weren't imported");
+    setConfirming(false);
+  };
+  // Both steps share one grid cell, centred, so the confirmation sits at the middle of where the
+  // mapping step was, as a modal would. The mapping step stays mounted and keeps its room while
+  // hidden (invisible), so Back keeps the mapping and nothing below jumps.
+  return (
+    <div className="grid place-items-center">
+      <Box
+        className={cn(
+          'w-full rounded-lg bg-surface-elevated-2 p-6 shadow-lg [grid-area:1/1]',
+          confirming && 'invisible',
+        )}
+      >
+        <h3 className="text-xl font-semibold in-data-[admin7-design=true]:font-title">
+          Import members
+        </h3>
+        <Box className="mt-5">
+          <ImportMappingPreview
+            labelField={
+              <BulkLabelField
+                count={count}
+                slugs={fieldSlugs}
+                source="import"
+                hideNote
+                onSelectionChange={setFieldSlugs}
+              />
+            }
+            labelsByRow={labelsByRow}
+            rowCount={count}
+            onImport={(names) => {
+              setFileLabels(names);
+              if (importMatches(fieldSlugs, names).length > 0) {
+                setConfirming(true);
+              } else {
+                finish();
+              }
+            }}
+          />
+        </Box>
+      </Box>
+      {confirming && (
+        // A standard dialog's 512px.
+        <Box className="w-[512px] rounded-lg bg-surface-elevated-2 p-6 shadow-lg [grid-area:1/1]">
+          <h3 className="text-xl font-semibold in-data-[admin7-design=true]:font-title">
+            {`Import ${formatNumber(count)} members?`}
+          </h3>
+          <Stack className="mt-5 text-base" gap="2xl">
+            <LeadMagnetBulkConfirmText
+              large={count >= BULK_NOTE_THRESHOLD}
+              layout={layout}
+              matches={matches}
+              source="import"
+            />
+            <AlertDialogFooter>
+              <Button variant="outline" onClick={() => setConfirming(false)}>
+                Back
+              </Button>
+              <Button onClick={finish}>Import</Button>
+            </AlertDialogFooter>
+          </Stack>
+        </Box>
+      )}
+    </div>
+  );
+};
+
+// As on Member update: the UI by default, and a hint under it to click through.
+const ImportState: React.FC = () => (
+  <State location="Members import" title="Import members">
+    <CaseSwitcher cases={IMPORT_CONFIRM_CASES}>
+      {(current) => (
+        // 40px, twice Shade's lg, so the hint reads apart from the dialog.
+        <Stack className="gap-10" gap="none">
+          <ImportConfirmDemo current={current} />
+          <Text className="italic" size="sm" tone="secondary">
+            Click Import to see the confirmation.
+          </Text>
+        </Stack>
+      )}
+    </CaseSwitcher>
+  </State>
+);
+
+// Import's other concepts, archived for the demo (2026-11-17).
+const ImportAlternatives: React.FC = () => (
+  <State location="Members import" title="Import members: hint and banner">
+    <Column name="Hint" stacked>
+      <CaseSwitcher cases={IMPORT_CASES}>
+        {(current) => <ImportDemo current={current} />}
+      </CaseSwitcher>
+    </Column>
+    <Separator />
+    <Column name="Banner from the top" stacked>
+      <CaseSwitcher cases={IMPORT_CASES} keepMounted>
+        {(current) => <ImportBannerDemo current={current} />}
+      </CaseSwitcher>
+    </Column>
+    <Separator />
+    <Column name="Hint, labels column in the file" stacked>
+      <CaseSwitcher cases={FILE_LABELS_CASES}>
+        {(current) => <ImportFileLabelsDemo current={current} />}
+      </CaseSwitcher>
+    </Column>
+  </State>
+);
+
+// --- Alert banner: the basic pattern, details left to the team ---
+
+const BANNER_EXAMPLES: { name: string; text: React.ReactNode }[] = [
+  {
+    name: 'Label added',
+    text: (
+      <>
+        <span className="font-semibold">VIP</span> will start the{' '}
+        <span className="font-semibold">Welcome VIPs</span> automation when you save
+      </>
+    ),
+  },
+  {
+    name: 'Label removed',
+    text: (
+      <>
+        Removing <span className="font-semibold">VIP</span> will stop the{' '}
+        <span className="font-semibold">VIP onboarding</span> automation when you save
+      </>
+    ),
+  },
+  {
+    name: '3 or more changes',
+    text: 'The 3 labels you added will start 3 automations when you save',
+  },
+];
+
+const AlertBannerState: React.FC = () => (
+  <State
+    location="Member profile, Members index bulk actions, and Members import"
+    title="Alert banner"
+  >
     <Column
-      description="The same note on the import's label field, counted by rows in the CSV."
-      name="1k+ members: import"
+      description="Each line names the label that causes it. From 3 changes, one count line."
+      name="Pattern"
+      stacked
     >
-      <ImportStartCard count={IMPORT_MEMBER_COUNT} />
+      <Stack className="max-w-xl gap-6" gap="none">
+        {BANNER_EXAMPLES.map(({ name, text }) => (
+          <Stack key={name} gap="xs">
+            <Text className="font-mono text-[10px]" size="sm" tone="secondary">
+              {name}
+            </Text>
+            <LeadMagnetBannerFrame>{text}</LeadMagnetBannerFrame>
+          </Stack>
+        ))}
+      </Stack>
     </Column>
   </State>
 );
@@ -1328,9 +1959,25 @@ const BulkTriggersSlowly: React.FC = () => (
 //   a help doc rather than limits on the card.
 // - Member page hint: design review (2026-11-10) chose a dialog on Save.
 // - B1 and B2: bulk isn't blocked or flagged on the trigger; the bulk add dialog says it instead.
+// - Banner and hint concepts for the member page, bulk add and import: the dialog is the
+//   direction (Peter, 2026-11-17); the others are kept here and in the prototype menu.
+// - Bulk remove, Turn off and Alert banner: pulled from scope with Peter (2026-11-17). Turn off
+//   applies to every trigger, so it belongs with polish.
 const ArchivedStates: React.FC = () => (
   <Stack gap="2xl">
     {/* The stack's 32px gap plus my-8: 64px above and below each separator. */}
+    <MemberUpdateAlternatives />
+    <Separator className="my-8" />
+    <BulkAddAlternatives />
+    <Separator className="my-8" />
+    <ImportAlternatives />
+    <Separator className="my-8" />
+    <BulkRemoveState />
+    <Separator className="my-8" />
+    <TurnOffState />
+    <Separator className="my-8" />
+    <AlertBannerState />
+    <Separator className="my-8" />
     <SignupAlternatives />
     <Separator className="my-8" />
     <MemberPageState />
@@ -1347,11 +1994,11 @@ const ArchivedStates: React.FC = () => (
 // #/automations/lead-magnet-states/<slug>.
 const PATTERNS: { slug: string; name: string; Pattern: React.FC }[] = [
   { slug: 'trigger-states', name: 'Trigger', Pattern: TriggerStatesState },
+  { slug: 'start-automation', name: 'Start automation', Pattern: StartAutomationState },
   { slug: 'member-save-dialog', name: 'Member update', Pattern: MemberSaveDialogState },
-  { slug: 'delete-label', name: 'Delete label', Pattern: DeleteLabelState },
   { slug: 'bulk-add', name: 'Bulk add label', Pattern: BulkAddState },
-  { slug: 'bulk-remove', name: 'Bulk remove label', Pattern: BulkRemoveState },
-  { slug: 'turn-off', name: 'Turn off', Pattern: TurnOffState },
+  { slug: 'import', name: 'Import members', Pattern: ImportState },
+  { slug: 'delete-label', name: 'Delete label', Pattern: DeleteLabelState },
 ];
 const ARCHIVED = { slug: 'archived', name: 'Archived', Pattern: ArchivedStates };
 
@@ -1411,11 +2058,14 @@ const LeadMagnetStates: React.FC = () => {
             />
           ))}
         </Stack>
-        <NavLink
-          isCurrent={current.slug === ARCHIVED.slug}
-          name={ARCHIVED.name}
-          slug={ARCHIVED.slug}
-        />
+        {/* Pinned to the bottom of the nav, out of the way. */}
+        <div className="mt-auto">
+          <NavLink
+            isCurrent={current.slug === ARCHIVED.slug}
+            name={ARCHIVED.name}
+            slug={ARCHIVED.slug}
+          />
+        </div>
       </nav>
       {/* Keyed by pattern, so switching starts the new one at the top. */}
       <Box key={current.slug} className="min-w-0 flex-1 overflow-y-auto p-10">

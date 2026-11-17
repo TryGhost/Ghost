@@ -46,6 +46,9 @@ export interface LabelPickerProps {
   // PROTOTYPE ONLY (NY-1750): runs on the first Delete click; returning true skips the inline
   // confirm, e.g. for a label an active automation uses. Don't merge.
   onDeleteClick?: (id: string) => boolean;
+  // PROTOTYPE ONLY (NY-1750): opens with this label's edit row showing, for the patterns page's
+  // Delete label. Don't merge.
+  initialEditingId?: string;
   // Placeholder shown in the search input when nothing is selected. Defaults
   // to 'Search labels...' — pass an empty string on surfaces where the field
   // itself is already contextualized by a nearby Label element.
@@ -114,6 +117,9 @@ interface LabelListItemsProps {
   // PROTOTYPE ONLY (NY-1750): runs on the first Delete click; returning true skips the inline
   // confirm, e.g. for a label an active automation uses. Don't merge.
   onDeleteClick?: (id: string) => boolean;
+  // PROTOTYPE ONLY (NY-1750): opens with this label's edit row showing, for the patterns page's
+  // Delete label. Don't merge.
+  initialEditingId?: string;
   onCreate?: (name: string) => Promise<Label | undefined>;
   isCreating?: boolean;
   onSearchClear?: () => void;
@@ -128,11 +134,12 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
   onEdit,
   onDelete,
   onDeleteClick,
+  initialEditingId,
   onCreate,
   isCreating,
   onSearchClear,
 }) => {
-  const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
+  const [editingLabelId, setEditingLabelId] = useState<string | null>(initialEditingId ?? null);
   const normalizedSearch = search.trim().toLowerCase();
   // When the source searches for itself, only the selected labels are checked
   // against the search here. Narrowing the matches again would empty the list
@@ -366,6 +373,7 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
   onEdit,
   onDelete,
   onDeleteClick,
+  initialEditingId,
   placeholder,
 }) => {
   const selectedLabels =
@@ -376,6 +384,7 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
 
   return (
     <ComboboxPicker
+      initialEditingId={initialEditingId}
       isCreating={isCreating}
       labels={labels}
       optionSource={optionSource}
@@ -406,6 +415,9 @@ interface ComboboxPickerProps {
   // PROTOTYPE ONLY (NY-1750): runs on the first Delete click; returning true skips the inline
   // confirm, e.g. for a label an active automation uses. Don't merge.
   onDeleteClick?: (id: string) => boolean;
+  // PROTOTYPE ONLY (NY-1750): opens with this label's edit row showing, for the patterns page's
+  // Delete label. Don't merge.
+  initialEditingId?: string;
   placeholder?: string;
 }
 
@@ -420,9 +432,10 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
   onEdit,
   onDelete,
   onDeleteClick,
+  initialEditingId,
   placeholder = 'Search labels...',
 }) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(initialEditingId !== undefined);
   const [search, setSearch] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -601,6 +614,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
             ) : (
               <CommandList className="max-h-(--label-list-max-height) overflow-y-auto">
                 <LabelListItems
+                  initialEditingId={initialEditingId}
                   isCreating={isCreating}
                   labels={labels}
                   search={search}
