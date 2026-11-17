@@ -15,21 +15,23 @@ const users = [
 ];
 
 describe('presentUsers', () => {
-  it('names users from the staff list, earliest arrival first', () => {
-    const result = presentUsers([entry(users[1].id, 200), entry(users[0].id, 100)], users);
-    expect(result.map((user) => user.name)).toEqual(['Zed Adams', 'Amy Brown']);
-    expect(result[1].image).toBe('https://example.com/amy.png');
+  it('names users from the staff list in name order, whatever their heartbeat times', () => {
+    const earlierZed = presentUsers([entry(users[1].id, 200), entry(users[0].id, 100)], users);
+    const earlierAmy = presentUsers([entry(users[0].id, 200), entry(users[1].id, 100)], users);
+    expect(earlierZed.map((user) => user.name)).toEqual(['Amy Brown', 'Zed Adams']);
+    expect(earlierAmy).toEqual(earlierZed);
+    expect(earlierZed[0].image).toBe('https://example.com/amy.png');
   });
 
-  it('collapses one user across resources to their earliest heartbeat', () => {
+  it('collapses one user across resources to one row', () => {
     const result = presentUsers(
       [entry(users[0].id, 300), entry(users[0].id, 100, 'q'.repeat(24))],
       users,
     );
-    expect(result).toEqual([{ id: users[0].id, name: 'Zed Adams', image: null, since: 100 }]);
+    expect(result).toEqual([{ id: users[0].id, name: 'Zed Adams', image: null }]);
   });
 
-  it('breaks ties by name and leaves out ids the staff list does not know', () => {
+  it('leaves out ids the staff list does not know', () => {
     const result = presentUsers(
       [entry(users[0].id, 100), entry(users[1].id, 100), entry('x'.repeat(24), 50)],
       users,

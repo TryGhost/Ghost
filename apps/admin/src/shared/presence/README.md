@@ -39,5 +39,6 @@ ids and a server timestamp; names and avatars come from the staff users list.
 - `use-presence-by-resource.ts` groups `active` by resource id for list rows.
 - `presence-api.ts` validates responses; requests live in the framework's
   `api/presence` module.
-- `present-users.ts` turns active entries into named, ordered users.
+- `present-users.ts` turns active entries into named users, ordered by name
+  so the order does not move as heartbeats land.
 - `presence-avatars.tsx` renders them.

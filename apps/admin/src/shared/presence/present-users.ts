@@ -4,8 +4,6 @@ export interface PresentUser {
   id: string;
   name: string;
   image: string | null;
-  /** Earliest heartbeat seen for this user across the given entries. */
-  since: number;
 }
 
 interface StaffUserLike {
@@ -15,9 +13,10 @@ interface StaffUserLike {
 }
 
 /**
- * One row per user, named from the staff list, oldest arrival first and then
- * by name. Users the staff list does not know are left out: a ghost of an id
- * is not worth an avatar.
+ * One row per user, named from the staff list and ordered by name. The server
+ * reports last heartbeats, which move with every poll, so any order built on
+ * them moves too. Users the staff list does not know are left out: a ghost of
+ * an id is not worth an avatar.
  */
 export function presentUsers(
   active: ActivePresence[],
@@ -30,23 +29,12 @@ export function presentUsers(
   const seen = new Map<string, PresentUser>();
   for (const entry of active) {
     const user = byId.get(entry.userId);
-    if (!user) {
-      continue;
-    }
-    const current = seen.get(user.id);
-    if (!current) {
-      seen.set(user.id, {
-        id: user.id,
-        name: user.name,
-        image: user.profile_image,
-        since: entry.ts,
-      });
-    } else if (entry.ts < current.since) {
-      current.since = entry.ts;
+    if (user && !seen.has(user.id)) {
+      seen.set(user.id, { id: user.id, name: user.name, image: user.profile_image });
     }
   }
   return [...seen.values()].sort(
-    (a, b) => a.since - b.since || a.name.localeCompare(b.name) || a.id.localeCompare(b.id),
+    (a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id),
   );
 }
 
