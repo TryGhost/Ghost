@@ -5,7 +5,7 @@ export type StaffSessionsDeps = {
   /** Read per call: the instance is built by boot */
   getAuth(): Pick<
     GhostAuth['api'],
-    'createVerifiedSession' | 'revokeUserSessions' | 'revokeAllSessions'
+    'createVerifiedSession' | 'createSsoSession' | 'revokeUserSessions' | 'revokeAllSessions'
   >;
   /** Deletes the user's legacy `sessions` rows */
   deleteLegacyUserSessions(userId: string): Promise<unknown>;
@@ -32,6 +32,15 @@ export function createStaffSessions(deps: StaffSessionsDeps) {
      */
     async createVerifiedSession(userId: string): Promise<string[]> {
       const { headers } = await deps.getAuth().createVerifiedSession({
+        body: { userId, origin: deps.getAdminOrigin() },
+        returnHeaders: true,
+      });
+      return sessionCookies(headers);
+    },
+
+    /** As `createVerifiedSession`, for a user the SSO adapter resolved; unlocks a locked user */
+    async createSsoSession(userId: string): Promise<string[]> {
+      const { headers } = await deps.getAuth().createSsoSession({
         body: { userId, origin: deps.getAdminOrigin() },
         returnHeaders: true,
       });
