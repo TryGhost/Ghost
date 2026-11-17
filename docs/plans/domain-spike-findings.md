@@ -955,3 +955,204 @@ last column gives the change without it.
 - The two recommendation jobs on their real timers.
 - MySQL was 8.4 from a registry mirror, not the pinned `8.4.11` image.
 - Timing figures are three runs each on one shared machine.
+
+## Part 2: kernel and foundation
+
+Status: in progress. Same conventions as part 1: **verified** means run in this
+spike and quoted; **inferred** means read from source.
+
+The question: can this rule be reached, and what is "foundation" if it is?
+
+> Anything in kernel can be imported directly, by any code, without thinking
+> about whether the import is allowed. Things that are importable hold no state.
+
+Head of the branch at the start of part 2: `e8f4258`.
+
+### Part 2 baseline (verified)
+
+Node v22.23.4 in the shell. MySQL 8.4 from `mirror.gcr.io/library/mysql:8.4`.
+A real boot needs `pnpm build:assets` first in a fresh checkout (the card asset
+manifest is a build output); part 1 did not record that.
+
+Boot from source, six warm runs,
+`NODE_ENV=testing-mysql GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node --conditions=source --import=tsx index.js`
+with logging sent to stdout:
+
+| Line                      | Range over six runs |
+| ------------------------- | ------------------- |
+| "Ghost server started in" | 1.095s to 1.290s    |
+| "Ghost database ready in" | 1.217s to 1.436s    |
+| "Ghost booted in"         | 3.290s to 3.532s    |
+
+## Part 2, step 1: inventory
+
+Counts are files under `ghost/core` and `ghost/domains` that import the thing,
+tests excluded, found with `grep` on the import specifier (verified by running;
+a grep can miss a re-export or an unusual specifier, so read each count as
+"about"). "Roots" is how many of those are a service root `index.{ts,js}`,
+where the Service Standard says an instance may be imported so it can be
+passed on. Everything that is not a root imports the instance directly.
+
+### Things that hold state, read the environment, or are built once per process
+
+| Thing                             | Where it lives                                                                  | How it is built and configured                                                                                                                                                            | Importers (roots)               | Can a stateless mechanism be split from the instance?                                                                                                                            | What blocks it                                                                                                                                                                               |
+| --------------------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Logging                           | `@tryghost/logging` 6.0.7 (TryGhost/framework)                                  | Built when the package is first required; cached on `globalThis[Symbol.for('@tryghost/logging@6')]`; options come from `require(<process root>/loggingrc)`, which requires Ghost's config | 352 (27)                        | Yes. The class `GhostLogger` takes an options bag and reads nothing itself. It can be required as `@tryghost/logging/lib/GhostLogger` without building the singleton             | The package's entry point always builds the instance. There is no supported factory export and no supported way to hand the package an instance. Two loggers on one rotating file corrupt it |
+| Config                            | `ghost/core/shared/config/`                                                     | `index.ts` runs `loadNconf()` when imported: nconf layers argv, env, secret files and JSON files, then a Zod schema validates and the tree is frozen (or proxied)                         | 149 (24)                        | Yes. Layering, validation, guard, lenient parse and report are generic. Values are `defaults.json`, `env/*.json`, `overrides.json`; the schema and the bound helpers are Ghost's | `validated.ts` imports Ghost's schema and binds Ghost's URL helpers; `guard.ts` and `validated.ts` read `process.env` in exported functions; the loader calls two Ghost-specific path fixes  |
+| Database (Knex)                   | `server/data/db/{index.js,connection.ts,configure-knex.ts}`                     | `connection.ts` builds Knex from `config.get('database')` when first required; `index.js` requires it lazily behind a getter                                                              | 32 (9)                          | Yes. `knex(options)` is the mechanism; `configure()` derives the options                                                                                                         | `configure()` imports the config and logging singletons and reads `process.env` (`REQUIRE_INFILE_STREAM`, `NODE_ENV`, `ALLOW_INFILE_STREAM`)                                                 |
+| Bookshelf and the models registry | `server/models/base/bookshelf.js`, `server/models/index.js`                     | `bookshelf(db.knex)` at module scope; every model file calls `ghostBookshelf.Model.extend` and registers itself while it is imported                                                      | 117 (29)                        | **No**, not without rewriting every model as a factory                                                                                                                           | About 100 model files close over the one Bookshelf instance at import. Direction says no new Bookshelf models, so this is legacy to inject until it is gone                                  |
+| Event bus                         | `@tryghost/domain-events` 3.4.1 (TryGhost/framework)                            | A class with a static `EventEmitter`; no instance, no configuration; imports the logging singleton                                                                                        | 29 (10)                         | Not in the package as published                                                                                                                                                  | Everything is `static`. It needs an instance export (`createEventBus()`), an `unsubscribe`, and an injected logger                                                                           |
+| Legacy event registry             | `server/lib/common/events.js`                                                   | One `EventEmitter` subclass instance built at import                                                                                                                                      | about 24 to 37 (9 to 13)        | Trivially (it is `new EventEmitter()`)                                                                                                                                           | Its own header says it is overused and should be removed, not promoted                                                                                                                       |
+| Job runner                        | `server/services/jobs-service/`                                                 | `init({ knex, config })` called from `boot.js`; module-level `instance`; needs the adapter manager, logging, Sentry                                                                       | 34 (5)                          | Yes: `JobsService` is a class given its backend                                                                                                                                  | Queue declarations must be known before `start()`; the instance is deliberately kept for the life of the process because Mentions captures it                                                |
+| Sentry                            | `shared/sentry.js`                                                              | Reads `config.get('sentry')` at import and initializes `@sentry/node` at module scope when a DSN is set                                                                                   | 27 (5)                          | Partly: `beforeSend` and the integrations are pure; `Sentry.init` is process-global in the SDK itself                                                                            | The SDK is a process singleton by design                                                                                                                                                     |
+| Metrics                           | `@tryghost/metrics` 3.7.7 (TryGhost/framework)                                  | `new GhostMetrics(require(<process root>/loggingrc))` at import                                                                                                                           | 13 (1)                          | Yes: `GhostMetrics` class is exported                                                                                                                                            | Same as logging: the entry point builds the instance, and it reads the logging options file                                                                                                  |
+| Tracing and metering              | `server/lib/tracing/index.ts`                                                   | `createTracer({ transport: ghostMetrics, logging })` and `createMeter(...)` at module scope                                                                                               | few; not counted                | Already split: `create-tracer.ts` and `create-meter.ts` are factories                                                                                                            | Only `index.ts` (the instance) needs to move behind injection                                                                                                                                |
+| Prometheus client                 | `shared/prometheus-client.js`                                                   | Built at import when boot requires it and `prometheus:enabled`                                                                                                                            | 1                               | Not looked at further                                                                                                                                                            |                                                                                                                                                                                              |
+| URL utils                         | `shared/url-utils.ts`                                                           | `new UrlUtils({...})` at import, given config's getters and several config values read once                                                                                               | 131 (23); 42 in `core/frontend` | Yes: `@tryghost/url-utils` exports the class                                                                                                                                     | Volume, and the front end uses it everywhere. It is a site fact, so it belongs to shared, not foundation                                                                                     |
+| Outbound HTTP                     | `server/lib/request-external.js`                                                | Two keep-alive agents built at import from four config values; SSRF checks are pure functions in the same file                                                                            | 12 (7)                          | Yes: a factory taking the agent options                                                                                                                                          | Nothing but the module-scope `config.get` calls                                                                                                                                              |
+| Settings cache                    | `shared/settings-cache/`                                                        | `new CacheManager({ publicSettings })` at import; filled by the settings service at boot                                                                                                  | 87 (22); 19 in `core/frontend`  | Yes: `CacheManager` is a class                                                                                                                                                   | It is state by definition (a cache of the settings table). Shared, not foundation: another application has no settings table                                                                 |
+| Labs                              | `shared/labs.js`                                                                | Module functions over the settings cache, config and logging singletons                                                                                                                   | 40 (8)                          | Yes: the flag lists are data; `isSet` needs the settings cache and config                                                                                                        | Shared, Ghost-specific                                                                                                                                                                       |
+| i18n                              | `shared/i18n/index.js`                                                          | Module-level `i18nInstance`, set by `init({ events })` from boot                                                                                                                          | 15 (3)                          | Yes: `@tryghost/i18n` builds an instance per locale                                                                                                                              | Shared, Ghost-specific                                                                                                                                                                       |
+| Adapter manager                   | `kernel/adapter-manager/` (class), `server/services/adapter-manager` (instance) | `new AdapterManager({...})` at import of the service file, given Ghost's registry, paths and a config getter                                                                              | 31 (12)                         | **Already split**, and the only one that is                                                                                                                                      | The kernel half reads the filesystem (see below)                                                                                                                                             |
+| Clock                             | `kernel/clock.ts`                                                               | `getUnixTime()` reads the system clock; `moment` re-exports the `moment-timezone` library object, whose default zone `server/overrides.js` sets to UTC at boot                            | 10 (0); raw `moment` in 43 more | Yes: a `Clock` type and a system clock instance                                                                                                                                  | `moment` is a mutable process-global library object. 43 files still import it directly                                                                                                       |
+| Limits                            | `server/services/limits.ts`                                                     | Module-level instance, `init()` from boot                                                                                                                                                 | 8 (4)                           | Yes (`@tryghost/limit-service` is a class)                                                                                                                                       | Shared, Ghost-specific                                                                                                                                                                       |
+| Mail                              | `server/lib/mail` (`GhostMailer`)                                               | A class; each caller does `new GhostMailer()`, which reads config and settings itself                                                                                                     | 19 (9)                          | Already a class, but its constructor reaches for singletons                                                                                                                      | Shared                                                                                                                                                                                       |
+| `process.env`                     | read directly                                                                   | n/a                                                                                                                                                                                       | 39 (1)                          | n/a                                                                                                                                                                              | Each is an ambient read. `NODE_ENV` is the common one                                                                                                                                        |
+| `@tryghost/debug`                 | npm package                                                                     | Reads `DEBUG` from the environment when a namespace is created at module scope                                                                                                            | 128 (0)                         | Not attempted                                                                                                                                                                    | A diagnostic that is meant to be ambient. Left alone                                                                                                                                         |
+| Errors, `tpl`, validator          | `@tryghost/errors` (387), `@tryghost/tpl` (179)                                 | Stateless                                                                                                                                                                                 | n/a                             | Nothing to split: these are what "import it directly" already looks like                                                                                                         |                                                                                                                                                                                              |
+
+Two things the table shows:
+
+- **"Inject" is the rule and direct import is the practice.** For logging, 325
+  of 352 importers are not service roots; for config, 125 of 149. The Service
+  Standard is being met by new code only.
+- **Only three of these are things another application would need**: config,
+  logging, the database, plus an event bus, a job runner and a clock if it has
+  domains. Everything else in the table exists because of what Ghost is
+  (settings, labs, URL shapes, mail, limits, Sentry wiring). That is the line
+  between foundation and shared, and it matches the owner's test.
+
+### Existing kernel files against the kernel rules (inferred from reading; step 7 turns this into a check)
+
+Rules: no module-level mutable state; no ambient reads (process.env, config,
+filesystem, clock) at module scope or in exported functions; exports are
+mechanisms, never instances.
+
+| File                                 | Breaks                                                                                                                                                                                |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `clock.ts`                           | `getUnixTime()` reads the system clock in an exported function. `moment` exports a library object that holds process-wide mutable state (its default timezone) and is not a mechanism |
+| `adapter-manager/loader.ts`          | `loadAdapterClass` reads the filesystem (`fs.readFileSync` of a `package.json`) and builds a `require` with `createRequire` inside an exported function                               |
+| `adapter-manager/adapter-manager.ts` | Passes: a class; its cache is instance state. But it is a once-per-process class, which matters for where it belongs (step 2)                                                         |
+| `domains/discover.ts`                | Reads the filesystem (`readdirSync`, `existsSync`) and defaults to the ambient `require`                                                                                              |
+| `domains/definitions.ts`             | `defineEvent`'s class defaults `timestamp` to `new Date()`: a clock read in an exported class                                                                                         |
+| `domains/domain-layer.ts`            | Passes: state is inside the object `createDomainLayer` returns                                                                                                                        |
+| `define-service.ts`                  | Passes: state is inside the root it returns. Note that a root **is** an exported instance holder, exported from application code, not from kernel                                     |
+
+## Part 2, step 2: design
+
+### What foundation is
+
+Three shapes were on the table. Stated plainly first, then argued.
+
+**Chosen: (b), with one sharpening.** Foundation is framework code beside
+kernel. It **builds** the once-per-process instances from an application's
+values and assembles them into an application object. Ghost supplies the
+values and one bootstrap file. "Foundation" is also the name of the first
+layer of instances that object holds. Three places, three rules:
+
+| Place                    | Holds                                                                                                                                                                         | Who may import it                                             | State                                                                   |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `ghost/core/kernel/`     | What any code may import **and use**: types (`Logger`, `Config`, `Database`, `EventBus`, `Foundation`), `define*` helpers, pure functions, the domain runner                  | Anything, always                                              | None                                                                    |
+| `ghost/core/foundation/` | Framework code that **builds** what exists once per process: `createLogger`, config loading and `createConfig`, `createDatabase`, reading domain folders, `createApplication` | An application's bootstrap, and tests                         | None in the modules; calling them makes state and reads the environment |
+| `ghost/core/bootstrap/`  | Ghost's side: the values, and the one module that holds the application object                                                                                                | `boot.js`, and the legacy singleton modules that now alias it | **This is where the instances live**                                    |
+
+The sharpening is the middle row. The brief's rule for kernel is about
+importing. The code shows a second property that matters just as much:
+**whether it is safe to call**. `new GhostLogger(options)` holds no state as a
+module and reads nothing ambient, so by the three kernel rules it could sit in
+kernel. But the logging package itself documents that two loggers on one
+rotating file corrupt it, and two Knex instances are two connection pools. If
+those factories are in kernel, "import anything from kernel without thinking"
+becomes "import anything, but think before you call these four". Putting the
+once-per-process factories in a folder only bootstrap may import keeps the
+kernel rule honest, and keeps "who builds instances" visible in the import
+graph, which is the constraint behind "no service locators".
+
+So for the three named cases the kernel half is small: a type and, for config,
+a pure function that parses a slice. That is the honest result, not a
+shortfall: what a domain needs from logging is the `Logger` type, never the
+means of making one.
+
+### Why the others lost
+
+**(a) Foundation is only a layer and a name; mechanisms in kernel,
+construction in Ghost's bootstrap.** Cheapest: no new folder. It fails twice.
+First, the once-per-process factories would be in kernel, as above. Second, it
+fails the owner's test. The order (config, then a logger built from config,
+then the database, then the event bus, then discovery and the domain runner
+given all four), build-once-on-first-use, and the shape of what a domain is
+handed are the same for any application. Under (a) a second application copies
+that file. Step 5 measures what it would have had to copy.
+
+**(c) Foundation is a folder of Ghost-specific wiring.** This is what part 1
+built (`foundation/domains/` imports Ghost's jobs service and the path of
+`ghost/domains`). It cannot pass the owner's test by definition: nothing in it
+is usable by another application. The Ghost-specific wiring is real and needs
+a home, but in Laravel's terms that home is `bootstrap/`, not the framework.
+Part 1's `foundation/domains/` moves to `bootstrap/`.
+
+### What (b) costs
+
+- A third name to learn (kernel, foundation, bootstrap), and a rule for the
+  middle one that is about calling, not importing. Step 9 returns to the names.
+- For a long time the legacy singleton modules stay, as one-line aliases of
+  the application object. Both spellings work and reach one instance.
+- Config machinery moves out of `shared/config/` and has to be made generic
+  over a schema. That is the largest single change (step 3).
+
+### How old and new share one instance
+
+The application object in `bootstrap/` owns each instance. Each legacy module
+keeps its path and its export shape and becomes an alias:
+
+| Legacy module                        | Becomes                                                                                                                                                                                                                                                                                         |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `shared/config/index.ts`             | `export = application.config`                                                                                                                                                                                                                                                                   |
+| `server/data/db/connection.ts`       | `export = application.database?.knex`                                                                                                                                                                                                                                                           |
+| `@tryghost/logging` (not ours)       | Bootstrap builds the logger and places it where the package looks for its cached instance, before the package is first required. If legacy code required the package first (a unit test that never boots), bootstrap adopts that instance instead of building a second. Either way there is one |
+| `@tryghost/domain-events` (not ours) | The foundation's event bus is an adapter over the package's static emitter                                                                                                                                                                                                                      |
+
+### How a domain gets them
+
+- The domain layer hands the **foundation** (`{ config, logging, database,
+  events }`) to the domain's `boot.ts`. `boot.ts` returns what the domain's
+  roots receive in `create`. A domain with no `boot.ts` hands its roots the
+  foundation unchanged.
+- `boot.ts` **imports** what the domain needs from shared, legacy and other
+  domains' actions, inside `dependencies()`. Those imports stay visible in the
+  import graph and stay counted. Only the foundation is injected, because only
+  the foundation is guaranteed to exist before any domain.
+- **Config reaches a domain as a typed slice it declares**, not as the whole
+  instance: `config.slice('services:recommendations', Schema)` in `boot.ts`,
+  parsed once when the domain starts, so a bad value fails boot. This is the
+  `AppsConfig` pattern in `app-installations` made a method. The cost: the
+  slice is read once, so a test that calls `config.set` after boot does not
+  reach a reshaped domain. `app-installations` re-reads per use for exactly
+  that reason. Reshaped code is tested by passing the slice in, so it does not
+  need `config.set`.
+
+### What cannot follow "kernel is always importable and stateless"
+
+Predicted here, confirmed or corrected in the report at the end:
+
+1. **The models registry**: defined against one Bookshelf instance at import.
+   Injected as an instance for as long as Bookshelf exists.
+2. **The event bus as published**: static state in a package. An adapter makes
+   it injectable; it stays one process-wide emitter until the package changes.
+3. **Sentry and `@tryghost/debug`**: process-global by design of the SDK and
+   of the diagnostic.
+4. **`moment`**: a mutable library object. It can be imported, but it is not
+   stateless, so it cannot be a kernel export under the rule.
+5. **The config loader**: it must read `process.env`, argv and files. It is in
+   foundation, not kernel, so it needs no exception to the kernel rule. The
+   kernel plan's "one named exception" becomes unnecessary.
