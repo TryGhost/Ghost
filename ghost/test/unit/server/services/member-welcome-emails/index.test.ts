@@ -249,8 +249,7 @@ describe('Member welcome emails root', function () {
         models: { Settings: {} },
       });
 
-      const active =
-        await stripe.webhookController.checkoutSessionEventService.deps.isPaidWelcomeEmailActive();
+      const active = await stripe.checkoutSessionEventService.deps.isPaidWelcomeEmailActive();
 
       assert.equal(active, true);
       sinon.assert.calledOnceWithExactly(api.isMemberWelcomeEmailActive, 'paid');
