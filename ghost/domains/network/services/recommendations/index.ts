@@ -1,6 +1,5 @@
 import { defineService } from '../../../../core/kernel/define-service';
 import type { NetworkDependencies } from '../../boot';
-import { isRecommendationUrl, PATH_SUFFIX } from '../../entities/recommendation-url.value';
 import type { IncomingRecommendationController } from '../../http/incoming-recommendation.controller';
 import type { RecommendationController } from '../../http/recommendation.controller';
 import type { IncomingRecommendationService } from './incoming-recommendation.service';
@@ -19,10 +18,9 @@ export type RecommendationsService = {
 // Everything from outside the domain arrives from ../../boot.ts. This file
 // imports the domain and the kernel, and nothing else.
 //
-// Mentions is asked when it is used, with one exception: the URL mapper below
-// is registered on it while this root is built. Every construction failure
-// happens before that registration, so a failed attempt leaves nothing to
-// release.
+// Mentions is asked when it is used, never while this root is built, so the
+// root can start before Mentions does. Building it registers nothing anywhere:
+// a failed attempt leaves nothing to release.
 export default defineService(
   'Recommendations',
   (outside: NetworkDependencies): RecommendationsService => {
@@ -112,15 +110,6 @@ export default defineService(
     if (!refreshesEnabled) {
       logging.info('[Recommendations] Background refreshes are disabled via config');
     }
-
-    // Registered last: nothing above needs unwinding when it throws.
-    mentions.addUrlMapper((url: URL) => {
-      if (isRecommendationUrl(url)) {
-        const newUrl = new URL(url.toString());
-        newUrl.pathname = newUrl.pathname.slice(0, -PATH_SUFFIX.length);
-        return newUrl;
-      }
-    });
 
     return {
       service,

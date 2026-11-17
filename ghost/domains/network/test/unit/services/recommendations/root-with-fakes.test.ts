@@ -17,7 +17,6 @@ describe('Recommendations service root, given fakes', function () {
 
   function outside(overrides: Partial<NetworkDependencies> = {}) {
     const logging = createLoggerFake();
-    const mappers: ((url: URL) => URL | undefined)[] = [];
     const sent: unknown[] = [];
     const dependencies: NetworkDependencies = {
       logging,
@@ -45,9 +44,6 @@ describe('Recommendations service root, given fakes', function () {
         sendAll: async () => {},
         refreshMentions: async () => {},
         listMentions: async () => ({ data: [] }),
-        addUrlMapper: (mapper) => {
-          mappers.push(mapper);
-        },
       },
       getStaffAlertRecipients: async () => [],
       staffService: {
@@ -55,7 +51,7 @@ describe('Recommendations service root, given fakes', function () {
       },
       ...overrides,
     };
-    return { dependencies, logging, mappers, sent };
+    return { dependencies, logging, sent };
   }
 
   beforeEach(function () {
@@ -72,14 +68,11 @@ describe('Recommendations service root, given fakes', function () {
     }
   });
 
-  it('builds the service from what it is handed and registers one URL mapper', async function () {
-    const { dependencies, logging, mappers } = outside();
+  it('builds the service from what it is handed', async function () {
+    const { dependencies, logging } = outside();
     await root.init(dependencies);
 
     assert.equal(logging.entries.length, 0);
-    assert.equal(mappers.length, 1);
-    const mapped = mappers[0]!(new URL('https://other.example/.well-known/recommendations.json'));
-    assert.equal(mapped?.toString(), 'https://other.example/');
     assert.equal(
       root.service.service.wellknownService.getURL().toString(),
       'https://site.example/.well-known/recommendations.json',

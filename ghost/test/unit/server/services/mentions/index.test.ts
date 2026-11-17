@@ -351,6 +351,24 @@ describe('Mentions service root', function () {
     sinon.assert.notCalled(logging.error);
   });
 
+  it('describes a mention of a recommendations file as the site it belongs to', async function () {
+    // The mapping is the network domain's public action. This root adds it to its
+    // own metadata service, so the domain registers nothing here when it starts.
+    const fetchPageHtml = sandbox
+      .stub(oembedService, 'fetchPageHtml')
+      .resolves({ body: '{}', contentType: 'application/json' });
+    await root.init();
+    const source = new URL('https://other.example/.well-known/recommendations.json');
+
+    const metadata = await root.service.metadata.fetch(source);
+
+    sinon.assert.calledOnce(fetchOembedData);
+    assert.equal(fetchOembedData.firstCall.args[0], 'https://other.example/');
+    sinon.assert.calledOnce(fetchPageHtml);
+    assert.equal(fetchPageHtml.firstCall.args[0], source);
+    assert.equal(metadata.body, '{}');
+  });
+
   it('compares webmention targets against the site URL captured at init', async function () {
     await root.init();
     getSiteUrl.returns('https://moved.example/');
