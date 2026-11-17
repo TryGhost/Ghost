@@ -2,7 +2,12 @@ import type { AppFailureCode, ManifestChange } from '@tryghost/app-contracts';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
-import type { ActionLog, ActionRow } from '../../lib/action-log/action-log';
+import {
+  AppChangesApproved,
+  AppInstalled,
+  AppUninstalled,
+  type OnAppInstallationUpdated,
+} from './changes';
 import type { RequestContext } from '../../lib/actor';
 import {
   alreadyInstalled,
@@ -139,32 +144,10 @@ function iconCopyKeptBy(
   }
 }
 
-type AppInstallationAction = Extract<ActionRow, { resourceType: 'app_installation' }>;
-
-/**
- * Staff history is where "who installed this, and when" lives; the installation itself does
- * not hold it. The resource is the installation, and the app's name and ID ride along, so the
- * history still reads as "Podcast" long after the manifest has changed.
- */
-function appAction(
-  event: AppInstallationAction['event'],
-  installationId: string,
-  app: { id: string; name: string },
-  approval?: { from_manifest_id: string; to_manifest_id: string },
-): AppInstallationAction {
-  return {
-    resourceType: 'app_installation',
-    event,
-    resourceId: installationId,
-    primaryName: app.name,
-    context: { app_id: app.id, ...approval },
-  };
-}
-
 export class AppInstallationsService {
   private knex: Knex;
   private repository: AppInstallationsRepository;
-  private actionLog: ActionLog;
+  private onAppInstallationUpdated: OnAppInstallationUpdated;
   private loadManifest: LoadManifest;
   private identity: IdentityChecker;
   private fetchIcon: FetchIcon;
@@ -173,20 +156,21 @@ export class AppInstallationsService {
 
   constructor({
     knex,
-    actionLog,
+    onAppInstallationUpdated,
     loadManifest,
     identity,
     fetchIcon,
   }: {
     knex: Knex;
-    actionLog: ActionLog;
+    /** Called with each change a command makes, inside the command's transaction. */
+    onAppInstallationUpdated: OnAppInstallationUpdated;
     loadManifest: LoadManifest;
     identity: IdentityChecker;
     fetchIcon: FetchIcon;
   }) {
     this.knex = knex;
     this.repository = new AppInstallationsRepository(knex);
-    this.actionLog = actionLog;
+    this.onAppInstallationUpdated = onAppInstallationUpdated;
     this.loadManifest = loadManifest;
     this.identity = identity;
     this.fetchIcon = fetchIcon;
@@ -253,11 +237,7 @@ export class AppInstallationsService {
           installChanges(loaded),
           { transacting },
         );
-        await this.actionLog.record(
-          transacting,
-          context,
-          appAction('installed', installation.id, loaded.manifest),
-        );
+        await this.onAppInstallationUpdated(transacting, context, new AppInstalled(installation));
         return installation;
       });
     // A deadlock rolls back the whole transaction, so only one this command opened can be run
@@ -306,12 +286,12 @@ export class AppInstallationsService {
     const stored = await ensureTransaction(executor, async (transacting) => {
       const outcome = await this.store(current, write, { transacting });
       if (outcome.status === 'written' && outcome.value) {
-        await this.actionLog.record(
+        await this.onAppInstallationUpdated(
           transacting,
           context,
-          appAction('changes_approved', id, loaded.manifest, {
-            from_manifest_id: current.manifest_id,
-            to_manifest_id: outcome.value,
+          new AppChangesApproved(current, await this.read(id, { executor: transacting }), {
+            id: outcome.value,
+            name: loaded.manifest.name,
           }),
         );
       }
@@ -359,10 +339,10 @@ export class AppInstallationsService {
         return;
       }
 
-      await this.actionLog.record(
+      await this.onAppInstallationUpdated(
         transacting,
         context,
-        appAction('uninstalled', id, { id: installation.app_id, name: installation.manifest.name }),
+        new AppUninstalled(installation, await this.read(id, { executor: transacting })),
       );
     });
   }
