@@ -51,6 +51,8 @@ test.describe('Ghost Public - Member Signup - Types', () => {
     const homePage = new HomePage(page);
     await homePage.goto();
     await homePage.linkWithPostName(post.title).click();
+    // signupViaPortal navigates home, which would cancel a post visit not yet recorded
+    await homePage.waitForPathInMemberHistory(`/${post.slug}/`);
     const { emailAddress, name } = await signupViaPortal(page);
 
     await finishSignupByMagicLinkInEmail(page, emailAddress);
@@ -73,6 +75,8 @@ test.describe('Ghost Public - Member Signup - Types', () => {
     const homePage = new HomePage(page);
     await homePage.goto('/', { referer: 'https://www.google.com', waitUntil: 'domcontentloaded' });
     await homePage.linkWithPostName(post.title).click();
+    // signupViaPortal navigates home, which would cancel a post visit not yet recorded
+    await homePage.waitForPathInMemberHistory(`/${post.slug}/`);
     const { emailAddress, name } = await signupViaPortal(page);
 
     await finishSignupByMagicLinkInEmail(page, emailAddress);
