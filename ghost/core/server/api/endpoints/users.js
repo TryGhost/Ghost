@@ -1,5 +1,6 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const config = require('../../../shared/config');
 const models = require('../../models');
 const permissionsService = require('../../services/permissions');
 const auth = require('../../auth');
@@ -7,6 +8,9 @@ const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 const usersService = require('../../services/users').default;
 const ALLOWED_INCLUDES = ['count.posts', 'permissions', 'roles', 'roles.permissions'];
 const UNSAFE_ATTRS = ['status', 'roles'];
+
+// Chosen once at load, as in auth/authenticate.ts
+const isBetterAuth = config.get('auth:engine') === 'better-auth';
 
 const messages = {
   noPermissionToAction: 'You do not have permission to perform this action',
@@ -47,6 +51,23 @@ async function rotateSessionForSelfPasswordChange(frame, user) {
     user,
     ip: frame.options.ip,
   });
+}
+
+// Under better-auth: revokes the user's sessions, then gives the current
+// browser a new verified one on a self password change (plan §5.1)
+async function replaceSessionsForPasswordChange(frame) {
+  const targetUserId = frame.data.password[0].user_id;
+  await auth.staffSessions.revokeUserSessions(targetUserId);
+  if (targetUserId === frame.options.context?.user) {
+    frame.setHeader('Set-Cookie', await auth.staffSessions.createVerifiedSession(targetUserId));
+  }
+}
+
+// Under better-auth: suspending or locking a user signs them out everywhere (plan §5.4)
+async function revokeSessionsOnSuspension({ status }, userId) {
+  if (isBetterAuth && models.User.inactiveStates.includes(status)) {
+    await auth.staffSessions.revokeUserSessions(userId);
+  }
 }
 
 async function fetchOrCreateStaffToken(userId) {
@@ -174,6 +195,8 @@ const controller = {
         });
       }
 
+      await revokeSessionsOnSuspension(frame.data.users[0], model.id);
+
       if (shouldInvalidateCacheAfterChange(model)) {
         frame.setHeader('X-Cache-Invalidate', '/*');
       }
@@ -197,12 +220,18 @@ const controller = {
     },
     permissions: true,
     async query(frame) {
+      let destroyed;
       try {
-        return usersService.service.destroyUser(frame.options);
+        destroyed = usersService.service.destroyUser(frame.options);
       } catch (err) {
         throw new errors.NoPermissionError({
           err: err,
         });
+      }
+      await destroyed;
+      // After the commit: the user's rows are locked until then
+      if (isBetterAuth) {
+        await auth.staffSessions.revokeUserSessions(frame.options.id);
       }
     },
   },
@@ -229,7 +258,11 @@ const controller = {
     },
     async query(frame) {
       const result = await models.User.changePassword(frame.data.password[0], frame.options);
-      await rotateSessionForSelfPasswordChange(frame, result);
+      if (isBetterAuth) {
+        await replaceSessionsForPasswordChange(frame);
+      } else {
+        await rotateSessionForSelfPasswordChange(frame, result);
+      }
       return result;
     },
   },

@@ -11,6 +11,9 @@ const usersService = require('../../services/users').default;
 const adapterManager = require('../../services/adapter-manager').default;
 const schedulerAdapter = adapterManager.getAdapter('scheduling');
 
+// Chosen once at load, as in auth/authenticate.ts
+const isBetterAuth = config.get('auth:engine') === 'better-auth';
+
 async function destroyRequestSession(req) {
   if (!req || !req.session) {
     return;
@@ -180,20 +183,27 @@ const controller = {
         api.settings,
       );
 
-      if (!frame.original.session) {
-        throw new errors.InternalServerError({
-          message: 'Could not initialize an admin session during password reset.',
+      if (isBetterAuth) {
+        // Signs the user out everywhere, then in here, verified (plan §5.1)
+        const userId = doResetParams.user.id;
+        await auth.staffSessions.revokeUserSessions(userId);
+        frame.setHeader('Set-Cookie', await auth.staffSessions.createVerifiedSession(userId));
+      } else {
+        if (!frame.original.session) {
+          throw new errors.InternalServerError({
+            message: 'Could not initialize an admin session during password reset.',
+          });
+        }
+
+        // Rotate the session_id and mint a fresh verified session so that
+        // any stolen or cloned copy of the pre-reset cookie is rejected
+        // on its next request.
+        await auth.session.sessionService.rotateAndAssignVerifiedUserToSession({
+          req: frame.original.session.req,
+          user: doResetParams.user,
+          ip: frame.options.ip,
         });
       }
-
-      // Rotate the session_id and mint a fresh verified session so that
-      // any stolen or cloned copy of the pre-reset cookie is rejected
-      // on its next request.
-      await auth.session.sessionService.rotateAndAssignVerifiedUserToSession({
-        req: frame.original.session.req,
-        user: doResetParams.user,
-        ip: frame.options.ip,
-      });
 
       // userLogin counts per IP, so clear this IP's failed sign-ins
       web.shared.middleware.api.spamPrevention
@@ -245,6 +255,7 @@ const controller = {
         schedulerAdapter,
         userService: usersService.service,
         options: frame.options,
+        revokeAllSessions: isBetterAuth ? () => auth.staffSessions.revokeAllSessions() : undefined,
       });
 
       // Express-session would otherwise re-save the current request's

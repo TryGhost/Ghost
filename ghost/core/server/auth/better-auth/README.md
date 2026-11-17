@@ -79,10 +79,10 @@ until Phase 4.
   `revokeUserSessions` in the same gap misses. Anything that trusts a session
   or token (the Admin API resolver, revocation, app tokens) must check the
   user's status too. Server-only: `createVerifiedSession`, which requires the
-  admin origin, `revokeUserSessions` and `revokeAllSessions`, which no Ghost
-  caller uses yet.
+  admin origin, `revokeUserSessions` and `revokeAllSessions`.
 - `session-controller.ts`: `POST` and `DELETE /session` under `better-auth`,
   described below.
+- `staff-sessions.ts`: the security events' session changes, described below.
 - `routes.ts`: the Better Auth paths that matchers, limiters and
   `disabledPaths` refer to. A mistyped path matches nothing, silently.
 
@@ -210,6 +210,31 @@ A rotation (`/change-password` with `revokeOtherSessions`) carries `origin`
 and `verified` over from the replaced session. The hook keeps the `origin`
 that `createVerifiedSession` requires, and never sets `verified` back to
 `false`.
+
+## Revocation
+
+Under `better-auth`, security events go through `staff-sessions.ts` (plan §5.4):
+
+- A password change (`PUT /users/password`) and a password reset
+  (`PUT /authentication/password_reset`) revoke the user's sessions, then, for
+  the user's own browser, call `createVerifiedSession` with the admin origin
+  and forward its cookie. The current browser stays signed in and verified;
+  every other session ends. `PUT /authentication/password_reset` skips the
+  legacy `initSession`, and a route middleware keeps the legacy admin-origin
+  check, since the controller can't see the request.
+- Suspending or locking a user (`PUT /users/:id` with an inactive status) and
+  deleting one revoke their sessions. Deletion revokes after its transaction
+  commits, which holds the user's rows until then.
+- The authentication reset (`POST /authentication/reset`) calls
+  `revokeAllSessions` after it deletes every legacy session, as it does under
+  either engine.
+
+Revoking a user's sessions also deletes their legacy `sessions` rows, so a
+rollback to `legacy` (plan §8) can't revive a session a security event ended.
+Under `legacy` nothing here runs: a password change and a reset already delete
+the user's legacy rows, and suspension and deletion keep legacy behaviour.
+Sessions that `createVerifiedSession` creates have no IP or user agent, since
+the API controllers don't see the request.
 
 ## Tables
 
