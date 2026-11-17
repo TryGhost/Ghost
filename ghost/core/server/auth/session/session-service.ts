@@ -5,7 +5,7 @@ import type urlUtilsInstance from '../../../shared/url-utils';
 import * as totp from '../totp';
 
 const { BadRequestError } = errors;
-const emailTemplate = require('./emails/signin');
+const emailTemplate = require('../emails/signin');
 // ua-parser-js ships no types; got is ESM-only
 const UAParser = require('ua-parser-js');
 const got = require('got').default;
