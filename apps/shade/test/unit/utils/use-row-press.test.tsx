@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { type HTMLAttributes } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import ShadeApp from '../../../src/shade-app';
 import { useRowPress } from '../../../src/hooks/use-row-press';
 
 function Row({ enabled = true, ...props }: HTMLAttributes<HTMLDivElement> & { enabled?: boolean }) {
@@ -64,4 +65,16 @@ describe('useRowPress', () => {
     expect(onPointerDown).toHaveBeenCalledOnce();
     expect(screen.getByTestId('row').hasAttribute('data-row-pressed')).toBe(false);
   });
+});
+
+it('keeps the legacy flag-off path free of touch state', () => {
+  const onPointerDown = vi.fn();
+  render(
+    <ShadeApp admin7Design={false} darkMode={false}>
+      <Row onPointerDown={onPointerDown} />
+    </ShadeApp>,
+  );
+  pointer('pointerdown');
+  expect(onPointerDown).toHaveBeenCalledOnce();
+  expect(screen.getByTestId('row').hasAttribute('data-row-pressed')).toBe(false);
 });

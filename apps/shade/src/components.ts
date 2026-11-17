@@ -87,3 +87,5 @@ export { FacebookLogo, GhostLogo, GhostOrb, GoogleLogo, TwitterLogo, XLogo } fro
 
 export { TimePicker, type TimePickerProps } from './components/ui/time-picker';
 export { tokenFieldClasses } from './components/ui/token-field';
+
+export { RowPrimaryAction, TableRowAction } from './components/ui/row-primary-action';

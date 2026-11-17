@@ -4,7 +4,8 @@ import { cn } from '@/lib/utils';
 import { Button } from './button';
 import { cva, VariantProps } from 'class-variance-authority';
 import { rowSurface } from '@/components/ui/row-surface';
-import { useRowPress } from '@/hooks/use-row-press';
+import { useRowBehavior } from '@/hooks/use-row-behavior';
+import { useShade } from '@/providers/shade-context';
 
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => (
@@ -18,7 +19,16 @@ Table.displayName = 'Table';
 const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
->(({ className, ...props }, ref) => <thead ref={ref} className={className} {...props} />);
+>(({ className, ...props }, ref) => {
+  const { admin7Design } = useShade();
+  return (
+    <thead
+      ref={ref}
+      className={cn(!admin7Design && '[&_tr:hover:before]:bg-transparent', className)}
+      {...props}
+    />
+  );
+});
 TableHeader.displayName = 'TableHeader';
 
 const TableBody = React.forwardRef<
@@ -45,19 +55,24 @@ interface TableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
 
 const TableRow = React.forwardRef<HTMLTableRowElement, TableRowProps>(
   ({ className, interactive, onClick, ...props }, ref) => {
-    const isInteractive = interactive ?? !!onClick;
-    const press = useRowPress(props, isInteractive);
+    const { admin7Design } = useShade();
+    const isInteractive = interactive ?? (onClick ? true : undefined);
+    const behavior = useRowBehavior({ ...props, onClick }, isInteractive);
     return (
       <tr
         ref={ref}
         className={cn(
-          'group border-b',
-          rowSurface(isInteractive ? 'interactive' : 'static'),
+          'group relative border-b',
+          admin7Design
+            ? rowSurface(
+                isInteractive === false ? 'static' : isInteractive ? 'interactive' : 'auto',
+              )
+            : 'data-[state=selected]:bg-muted',
           className,
         )}
         onClick={onClick}
         {...props}
-        {...press}
+        {...behavior}
       />
     );
   },
@@ -107,16 +122,20 @@ TableHeadButton.displayName = 'TableHeadButton';
 const TableCell = React.forwardRef<
   HTMLTableCellElement,
   React.TdHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
-  <td
-    ref={ref}
-    className={cn(
-      'relative p-2.5 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
-      className,
-    )}
-    {...props}
-  />
-));
+>(({ className, ...props }, ref) => {
+  const { admin7Design } = useShade();
+  return (
+    <td
+      ref={ref}
+      className={cn(
+        'relative p-2.5 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+        !admin7Design && 'group-hover:bg-table-row-hover',
+        className,
+      )}
+      {...props}
+    />
+  );
+});
 TableCell.displayName = 'TableCell';
 
 const TableCaption = React.forwardRef<

@@ -411,272 +411,317 @@ html.theme-switching *::after {
 /* A responsive table can hide its trailing cells. Mark the visible end with
    this utility (e.g. max-sm:shade-row-end) at the same breakpoint. */
 @utility shade-row-end {
-  tr.shade-row > & {
+  [data-admin7-design='true'] tr.shade-row > & {
     padding-inline-end: 0;
   }
 
-  tr.shade-row > &::before {
+  [data-admin7-design='true'] tr.shade-row > &::before {
     inset-inline-end: calc(-4 * var(--spacing));
     border-start-end-radius: var(--radius-md);
     border-end-end-radius: var(--radius-md);
   }
 
-  tr.shade-row-inset > &::before {
+  [data-admin7-design='true'] tr.shade-row-inset > &::before {
     inset-inline-end: 0;
   }
 }
 
-.shade-row {
-  position: relative;
-  isolation: isolate;
-}
+[data-admin7-design='true'] {
+  .shade-row {
+    position: relative;
+    isolation: isolate;
+    background-color: transparent;
+  }
 
-.shade-row::before,
-tr.shade-row > :is(td, th)::before {
-  content: '';
-  position: absolute;
-  inset: 0 calc(-4 * var(--spacing));
-  z-index: -1;
-  border-radius: var(--radius-md);
-  background-color: var(--table-row-hover);
-  opacity: 0;
-  pointer-events: none;
-}
+  .shade-row::before,
+  tr.shade-row > :is(td, th)::before {
+    content: '';
+    display: block;
+    position: absolute;
+    inset: 0 calc(-4 * var(--spacing));
+    z-index: -1;
+    border-radius: var(--radius-md);
+    background-color: var(--table-row-hover);
+    opacity: 0;
+    pointer-events: none;
+  }
 
-.shade-row-interactive::before,
-tr.shade-row-interactive > :is(td, th)::before {
-  pointer-events: auto;
-}
+  :is(
+    .shade-row-interactive,
+    .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
+  )::before,
+  tr:is(
+      .shade-row-interactive,
+      .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
+    )
+    > :is(td, th)::before {
+    pointer-events: auto;
+  }
 
-/* A native primary link/button stretches over blank row space and the side
+  /* A native primary link/button stretches over blank row space and the side
    gutters. Its ancestors up to the row must be static; secondary controls sit
    above the transparent overlay with relative positioning and z-10. */
-.shade-row .shade-row-primary {
-  position: static;
-}
+  .shade-row .shade-row-primary:not(.absolute, .fixed, .sticky) {
+    position: static;
+  }
 
-.shade-row .shade-row-primary::after {
-  content: '';
-  position: absolute;
-  inset: 0 calc(-4 * var(--spacing));
-  z-index: 0;
-}
+  .shade-row .shade-row-primary::after {
+    content: '';
+    display: block;
+    position: absolute;
+    inset: 0 calc(-4 * var(--spacing));
+    z-index: 0;
+  }
 
-.shade-row.shade-row-inset::before,
-.shade-row-inset .shade-row-primary::after {
-  inset-inline: 0;
-}
+  .shade-row.shade-row-inset::before,
+  .shade-row-inset .shade-row-primary::after {
+    inset-inline: 0;
+  }
 
-.shade-row > [data-row-pinned] {
-  background-color: var(--background);
-}
+  .shade-row > [data-row-pinned] {
+    background-color: var(--background);
+  }
 
-/* The cell spacing between columns stays intact; only the outside inset is
+  /* The cell spacing between columns stays intact; only the outside inset is
    removed, including row headings used in the first column. */
-.shade-row > :is(td, th):first-child {
-  padding-inline-start: 0;
-}
+  .shade-row > :is(td, th):first-child {
+    padding-inline-start: 0;
+  }
 
-.shade-row > :is(td, th):last-child {
-  padding-inline-end: 0;
-}
+  .shade-row > :is(td, th):last-child {
+    padding-inline-end: 0;
+  }
 
-/* Native table-row generated content becomes an anonymous column with a fixed
+  /* Native table-row generated content becomes an anonymous column with a fixed
    colgroup, even when absolutely positioned. Paint inside the real cells. */
-tr.shade-row::before {
-  content: none;
-}
+  tr.shade-row::before {
+    content: none;
+  }
 
-tr.shade-row > :is(td, th)::before {
-  inset-inline: 0;
-  border-radius: 0;
-}
+  tr.shade-row > :is(td, th)::before {
+    inset-inline: 0;
+    border-radius: 0;
+  }
 
-tr.shade-row > :is(td, th):first-child::before {
-  inset-inline-start: calc(-4 * var(--spacing));
-  border-start-start-radius: var(--radius-md);
-  border-end-start-radius: var(--radius-md);
-}
+  tr.shade-row > :is(td, th):first-child::before {
+    inset-inline-start: calc(-4 * var(--spacing));
+    border-start-start-radius: var(--radius-md);
+    border-end-start-radius: var(--radius-md);
+  }
 
-tr.shade-row > :is(td, th):last-child::before {
-  inset-inline-end: calc(-4 * var(--spacing));
-  border-start-end-radius: var(--radius-md);
-  border-end-end-radius: var(--radius-md);
-}
+  tr.shade-row > :is(td, th):last-child::before {
+    inset-inline-end: calc(-4 * var(--spacing));
+    border-start-end-radius: var(--radius-md);
+    border-end-end-radius: var(--radius-md);
+  }
 
-tr.shade-row.shade-row-inset > :is(td, th)::before {
-  inset-inline: 0;
-}
+  tr.shade-row.shade-row-inset > :is(td, th)::before {
+    inset-inline: 0;
+  }
 
-.shade-row:where(
-    [data-state='selected'],
-    :not([data-row-dragging='true'], [data-row-dragging='true'] *).shade-row-interactive:is(
-        [data-row-pressed='true'],
-        :active,
-        :focus-visible,
-        :has(:focus-visible)
-      )
-  )::before,
-tr.shade-row:where(
-    [data-state='selected'],
-    :not([data-row-dragging='true'], [data-row-dragging='true'] *).shade-row-interactive:is(
-        [data-row-pressed='true'],
-        :active,
-        :focus-visible,
-        :has(:focus-visible)
-      )
-  )
-  > :is(td, th)::before {
-  opacity: 1;
-}
-
-.shade-row:where(
-    [data-state='selected'],
-    :not([data-row-dragging='true'], [data-row-dragging='true'] *).shade-row-interactive:is(
-        [data-row-pressed='true'],
-        :active,
-        :focus-visible,
-        :has(:focus-visible)
-      )
-  )
-  > [data-row-pinned] {
-  background-color: var(--table-row-hover);
-}
-
-.shade-row:where(
-    [data-state='selected'],
-    :not([data-row-dragging='true'], [data-row-dragging='true'] *).shade-row-interactive:is(
-        [data-row-pressed='true'],
-        :active,
-        :focus-visible,
-        :has(:focus-visible)
-      )
-  )
-  [data-row-pinned-fade='normal'] {
-  opacity: 0;
-}
-
-.shade-row:where(
-    [data-state='selected'],
-    :not([data-row-dragging='true'], [data-row-dragging='true'] *).shade-row-interactive:is(
-        [data-row-pressed='true'],
-        :active,
-        :focus-visible,
-        :has(:focus-visible)
-      )
-  )
-  [data-row-pinned-fade='highlight'] {
-  opacity: 1;
-}
-
-/* Only separators shared by body rows disappear; outer rules are preserved. */
-.shade-row
-  + .shade-row:where(
-    [data-state='selected'],
-    :not([data-row-dragging='true'], [data-row-dragging='true'] *).shade-row-interactive:is(
-        [data-row-pressed='true'],
-        :active,
-        :focus-visible,
-        :has(:focus-visible)
-      )
-  ),
-.shade-row:where(
-    [data-state='selected'],
-    :not([data-row-dragging='true'], [data-row-dragging='true'] *).shade-row-interactive:is(
-        [data-row-pressed='true'],
-        :active,
-        :focus-visible,
-        :has(:focus-visible)
-      )
-  )
-  + .shade-row {
-  border-top-color: transparent;
-}
-
-.shade-row:where(
-    [data-state='selected'],
-    :not([data-row-dragging='true'], [data-row-dragging='true'] *).shade-row-interactive:is(
-        [data-row-pressed='true'],
-        :active,
-        :focus-visible,
-        :has(:focus-visible)
-      )
-  ):has(+ .shade-row),
-.shade-row:has(
-  + .shade-row:where(
-    [data-state='selected'],
-    :not([data-row-dragging='true'], [data-row-dragging='true'] *).shade-row-interactive:is(
-        [data-row-pressed='true'],
-        :active,
-        :focus-visible,
-        :has(:focus-visible)
-      )
-  )
-) {
-  border-bottom-color: transparent;
-}
-
-/* Avoid emulated, sticky :hover after a touch tap. The press hook covers touch. */
-@media (hover: hover) {
-  .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
-      .shade-row-interactive:hover
+  .shade-row:where(
+      [data-state='selected'],
+      :not([data-row-dragging='true'], [data-row-dragging='true'] *):is(
+          .shade-row-interactive,
+          .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
+        ):is([data-row-pressed='true'], :active, :focus-visible, :has(:focus-visible))
     )::before,
-  tr.shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
-      .shade-row-interactive:hover
+  tr.shade-row:where(
+      [data-state='selected'],
+      :not([data-row-dragging='true'], [data-row-dragging='true'] *):is(
+          .shade-row-interactive,
+          .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
+        ):is([data-row-pressed='true'], :active, :focus-visible, :has(:focus-visible))
     )
     > :is(td, th)::before {
     opacity: 1;
   }
 
-  .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
-      .shade-row-interactive:hover
+  .shade-row:where(
+      [data-state='selected'],
+      :not([data-row-dragging='true'], [data-row-dragging='true'] *):is(
+          .shade-row-interactive,
+          .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
+        ):is([data-row-pressed='true'], :active, :focus-visible, :has(:focus-visible))
     )
     > [data-row-pinned] {
     background-color: var(--table-row-hover);
   }
 
-  .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
-      .shade-row-interactive:hover
+  .shade-row:where(
+      [data-state='selected'],
+      :not([data-row-dragging='true'], [data-row-dragging='true'] *):is(
+          .shade-row-interactive,
+          .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
+        ):is([data-row-pressed='true'], :active, :focus-visible, :has(:focus-visible))
     )
     [data-row-pinned-fade='normal'] {
     opacity: 0;
   }
 
-  .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
-      .shade-row-interactive:hover
+  .shade-row:where(
+      [data-state='selected'],
+      :not([data-row-dragging='true'], [data-row-dragging='true'] *):is(
+          .shade-row-interactive,
+          .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
+        ):is([data-row-pressed='true'], :active, :focus-visible, :has(:focus-visible))
     )
     [data-row-pinned-fade='highlight'] {
     opacity: 1;
   }
 
-  /* Only separators shared by body rows disappear; outer rules are preserved. */
+  /* Keep previous-sibling eligibility flat: CSS forbids nesting :has().
+     Only body separators disappear; outer rules are preserved. */
   .shade-row
-    + .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
-      .shade-row-interactive:hover
+    + .shade-row:where(
+      [data-state='selected'],
+      :not([data-row-dragging='true'], [data-row-dragging='true'] *):is(
+          .shade-row-interactive,
+          .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
+        ):is([data-row-pressed='true'], :active, :focus-visible, :has(:focus-visible))
     ),
-  .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
-      .shade-row-interactive:hover
+  .shade-row:where(
+      [data-state='selected'],
+      :not([data-row-dragging='true'], [data-row-dragging='true'] *):is(
+          .shade-row-interactive,
+          .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
+        ):is([data-row-pressed='true'], :active, :focus-visible, :has(:focus-visible))
     )
     + .shade-row {
     border-top-color: transparent;
   }
 
-  .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
-      .shade-row-interactive:hover
+  .shade-row:where(
+      [data-state='selected'],
+      :not([data-row-dragging='true'], [data-row-dragging='true'] *):is(
+          .shade-row-interactive,
+          .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
+        ):is([data-row-pressed='true'], :active, :focus-visible, :has(:focus-visible))
     ):has(+ .shade-row),
+  .shade-row:has(+ .shade-row[data-state='selected']),
   .shade-row:has(
-    + .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
-        .shade-row-interactive:hover
+    + .shade-row-interactive:not([data-row-dragging='true'], [data-row-dragging='true'] *):is(
+        [data-row-pressed='true'],
+        :active,
+        :focus-visible
       )
-  ) {
+  ),
+  .shade-row:has(
+    + .shade-row-interactive:not([data-row-dragging='true'], [data-row-dragging='true'] *)
+      :focus-visible
+  ),
+  .shade-row:has(
+      + .shade-row-auto:not([data-row-dragging='true'], [data-row-dragging='true'] *):is(
+          [data-row-pressed='true'],
+          :active,
+          :focus-visible
+        )
+    ):has(+ .shade-row-auto .shade-row-primary:not(:disabled, [aria-disabled='true'])),
+  .shade-row:has(
+      + .shade-row-auto:not([data-row-dragging='true'], [data-row-dragging='true'] *) :focus-visible
+    ):has(+ .shade-row-auto .shade-row-primary:not(:disabled, [aria-disabled='true'])) {
     border-bottom-color: transparent;
   }
-}
 
-/* Selection wins over hover and keyboard/press fills without merging adjacent
+  /* Avoid emulated, sticky :hover after a touch tap. The press hook covers touch. */
+  @media (hover: hover) {
+    .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+        :is(
+          .shade-row-interactive,
+          .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
+        ):hover
+      )::before,
+    tr.shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+        :is(
+          .shade-row-interactive,
+          .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
+        ):hover
+      )
+      > :is(td, th)::before {
+      opacity: 1;
+    }
+
+    .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+        :is(
+          .shade-row-interactive,
+          .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
+        ):hover
+      )
+      > [data-row-pinned] {
+      background-color: var(--table-row-hover);
+    }
+
+    .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+        :is(
+          .shade-row-interactive,
+          .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
+        ):hover
+      )
+      [data-row-pinned-fade='normal'] {
+      opacity: 0;
+    }
+
+    .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+        :is(
+          .shade-row-interactive,
+          .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
+        ):hover
+      )
+      [data-row-pinned-fade='highlight'] {
+      opacity: 1;
+    }
+
+    /* Only separators shared by body rows disappear; outer rules are preserved. */
+    .shade-row
+      + .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+        :is(
+          .shade-row-interactive,
+          .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
+        ):hover
+      ),
+    .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+        :is(
+          .shade-row-interactive,
+          .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
+        ):hover
+      )
+      + .shade-row {
+      border-top-color: transparent;
+    }
+
+    .shade-row:where(:not([data-row-dragging='true'], [data-row-dragging='true'] *)):where(
+        :is(
+          .shade-row-interactive,
+          .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
+        ):hover
+      ):has(+ .shade-row),
+    .shade-row:has(
+      + .shade-row-interactive:not([data-row-dragging='true'], [data-row-dragging='true'] *):hover
+    ),
+    .shade-row:has(
+        + .shade-row-auto:not([data-row-dragging='true'], [data-row-dragging='true'] *):hover
+      ):has(+ .shade-row-auto .shade-row-primary:not(:disabled, [aria-disabled='true'])) {
+      border-bottom-color: transparent;
+    }
+  }
+
+  /* Selection wins over hover and keyboard/press fills without merging adjacent
    rows or changing the focused control's own ring. */
-.shade-row[data-state='selected']::before,
-tr.shade-row[data-state='selected'] > :is(td, th)::before,
-.shade-row[data-state='selected'] > [data-row-pinned] {
-  background-color: var(--table-row-selected);
+  .shade-row[data-state='selected']::before,
+  tr.shade-row[data-state='selected'] > :is(td, th)::before,
+  .shade-row[data-state='selected'] > [data-row-pinned] {
+    background-color: var(--table-row-selected);
+  }
+
+  :is(
+    .shade-row-interactive,
+    .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
+  ) {
+    cursor: pointer;
+  }
+
+  .shade-row [data-row-secondary] {
+    position: relative;
+    z-index: 10;
+  }
 }

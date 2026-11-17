@@ -1,10 +1,13 @@
 import { useRef, useState, type HTMLAttributes, type PointerEvent } from 'react';
+import { useShade } from '@/providers/shade-context';
 
 /** Touch feedback for a row, without capturing pointers or blocking scrolling. */
 export function useRowPress<Element extends HTMLElement>(
   props: HTMLAttributes<Element> = {},
   enabled = true,
 ) {
+  const { admin7Design } = useShade();
+  const isEnabled = admin7Design && enabled;
   const origin = useRef<{ x: number; y: number } | null>(null);
   const [pressed, setPressed] = useState(false);
 
@@ -14,11 +17,11 @@ export function useRowPress<Element extends HTMLElement>(
   };
 
   return {
-    'data-row-pressed': enabled && pressed ? 'true' : undefined,
+    'data-row-pressed': isEnabled && pressed ? 'true' : undefined,
     onPointerDown(event: PointerEvent<Element>) {
       props.onPointerDown?.(event);
       if (
-        !enabled ||
+        !isEnabled ||
         event.pointerType !== 'touch' ||
         event.isPrimary === false ||
         event.defaultPrevented
