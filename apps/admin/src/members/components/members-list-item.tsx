@@ -88,7 +88,7 @@ function MembersListItemName({
       <Avatar className="size-8 min-w-8" {...memberAvatarProps(item)} src={item.avatar_image} />
       <div className="min-w-0">
         <Link
-          className="block min-w-0 cursor-pointer"
+          className="block min-w-0 cursor-pointer rounded-xs focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none"
           to={buildMemberDetailPath(item.id, backPath)}
           onClick={
             onClick
@@ -260,15 +260,17 @@ const MembersListItem = forwardRef<
     >
       <TableCell
         className={cn(
-          'min-w-0 bg-background px-4 py-3 group-hover:bg-table-row-hover max-sm:!w-full max-sm:!min-w-0 lg:sticky lg:left-0 lg:z-20',
+          'min-w-0 bg-background px-4 py-3 max-sm:!w-full max-sm:!min-w-0 max-sm:pr-0 lg:sticky lg:left-0 lg:z-20',
         )}
+        data-row-pinned
       >
         <MembersListItemName backPath={backPath} item={item} onClick={onClick} />
         {showPinnedEdge && (
           <>
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-y-px hidden w-[24px] group-hover:opacity-0 lg:block"
+              className="pointer-events-none absolute inset-y-px hidden w-[24px] lg:block"
+              data-row-pinned-fade="normal"
               style={{
                 ...PINNED_EDGE_FADE_POSITION_STYLE,
                 background:
@@ -277,7 +279,8 @@ const MembersListItem = forwardRef<
             />
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-y-px hidden w-[24px] opacity-0 group-hover:opacity-100 lg:block"
+              className="pointer-events-none absolute inset-y-px hidden w-[24px] opacity-0 lg:block"
+              data-row-pinned-fade="highlight"
               style={{
                 ...PINNED_EDGE_FADE_POSITION_STYLE,
                 background:
@@ -287,7 +290,10 @@ const MembersListItem = forwardRef<
           </>
         )}
       </TableCell>
-      <TableCell className="hidden px-4 py-3 sm:table-cell" style={columnStyles.status}>
+      <TableCell
+        className="hidden px-4 py-3 sm:table-cell sm:max-lg:pr-0"
+        style={columnStyles.status}
+      >
         <MembersListItemStatus status={item.status} tiers={item.tiers} />
       </TableCell>
       {showEmailOpenRate && (

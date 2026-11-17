@@ -162,6 +162,23 @@ describe('Analytics overview', () => {
     await expect(postsApi).toHaveSentFilter('status:[published,sent]');
     expect(postsApi.lastRequest).toMatchObject({ order: 'published_at DESC', limit: 1 });
     await expect.element(analyticsScreen.topPostsCard()).toHaveTextContent('A Popular Post');
+    await expect
+      .element(analyticsScreen.topPostsCard().getByRole('link', { name: /^A Popular Post/ }))
+      .toHaveAttribute('href', `#/posts/analytics/${LATEST_POST_ID}`);
+    await expect
+      .element(
+        analyticsScreen
+          .topPostsCard()
+          .getByRole('link', { name: 'Web traffic for A Popular Post' }),
+      )
+      .toHaveAttribute('href', `#/posts/analytics/${LATEST_POST_ID}/web`);
+    await expect
+      .element(
+        analyticsScreen
+          .topPostsCard()
+          .getByRole('link', { name: 'New members for A Popular Post' }),
+      )
+      .toHaveAttribute('href', `#/posts/analytics/${LATEST_POST_ID}/growth`);
 
     // The header's active-visitors probe (Tinybird) resolved.
     await expect.element(analyticsScreen.activeVisitors()).toHaveTextContent('12 online');

@@ -18,6 +18,7 @@ import {
 export const membersScreen = {
   memberRows: () => page.getByTestId(membersListItem),
   memberRow: (name: string) => page.getByTestId(membersListItem).filter({ hasText: name }),
+  columnHeaders: (name: string) => page.getByRole('columnheader', { name, exact: true }),
   link: (name: string) => page.getByRole('link', { name, exact: true }),
   newMemberLink: () => page.getByRole('link', { name: newMemberLink }),
   searchInput: () => page.getByLabelText(searchLabel),
@@ -58,6 +59,18 @@ export const membersScreen = {
   /** The shell element whose scroll position drives the virtualized rows. */
   listScrollElement: () =>
     getScrollParent(document.querySelector(`[data-testid="${membersListScrollRoot}"]`)),
+
+  /** The table's horizontal scroll container, independent of the page's vertical scroll. */
+  horizontalScrollElement(): HTMLElement | undefined {
+    let element = membersScreen.memberRows().elements()[0]?.parentElement;
+    while (element) {
+      if (getComputedStyle(element).overflowX === 'auto') {
+        return element;
+      }
+      element = element.parentElement;
+    }
+    return undefined;
+  },
 
   /** The highest row index the virtualizer has rendered with data (-1 when none). */
   lastRenderedRowIndex: () =>

@@ -1,4 +1,11 @@
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade/components';
+import {
+  Button,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  rowSurface,
+  rowSurfaceClasses,
+} from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
@@ -153,6 +160,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
       visitorCounts,
       memberCounts,
       emailSendingState,
+      className,
       // Everything else lands on the <li>: the context menu wraps each row with
       // `asChild`, so Radix hands its trigger props and ref straight through.
       ...rest
@@ -207,20 +215,13 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
         ref={ref}
         {...rest}
         className={cn(
+          rowSurface(),
           'group border-b border-border-default',
-          // A light blue rather than a grey: selection is a different
-          // kind of state from hover, and two greys a step apart read as
-          // degrees of the same thing.
-          //
-          // `select-none`: a modifier-drag across rows shouldn't leave
-          // text highlighted behind the selection.
-          //
-          // Hover applies only when the row is *not* selected — a hover
-          // rule would otherwise outrank the selected background and make
-          // the row under the cursor look deselected.
-          isSelected ? 'bg-table-row-selected select-none' : 'hover:bg-table-row-hover',
+          isSelected && 'select-none',
+          className,
         )}
         data-selected={isSelected ? 'true' : undefined}
+        data-state={isSelected ? 'selected' : undefined}
         data-testid="posts-list-item"
         onClickCapture={onSelectClick}
         onMouseDownCapture={(event) => {
@@ -233,16 +234,14 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
           setIsHovered(false);
         }}
       >
-        {/* `center`, not `start`: everything on the right centres
-                against the feature image.
-
-                Padding is even on all four sides. It lives on the children
-                rather than the row because the link and the trailing button
-                each need to fill the row's full height to stay clickable —
-                so the row's own box has to stay flush. */}
-        <Inline align="center" className="pr-4" gap="md">
+        {/* The primary link covers the row and its outward highlight;
+            secondary controls sit above its stretched hit area. */}
+        <Inline align="center" gap="md">
           <RowLink
-            className="flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden focus-visible:ring-inset"
+            className={cn(
+              rowSurfaceClasses.primaryAction,
+              'flex min-w-0 flex-1 items-start gap-4 py-4 no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden focus-visible:ring-inset',
+            )}
             data-testid="post-list-item-link"
             offsite={linksOffsite}
             to={linksOffsite ? post.url : editorPath}
@@ -304,7 +303,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
             </Stack>
           </RowLink>
           <PostMetricsCells
-            className="py-4"
+            className="relative z-10 py-4"
             hideEmailMetrics={emailSendingState.status === 'sending'}
             memberCounts={memberCounts}
             paidMembersEnabled={paidMembersEnabled}
@@ -325,7 +324,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                 // Margin rather than a wider row gap, which would push the
                 // title away from the metrics too.
                 className={cn(
-                  'my-4 shrink-0',
+                  'relative z-10 my-4 shrink-0',
                   'ms-8',
                   'text-muted-foreground hover:bg-background hover:text-foreground',
                   isHovered && 'bg-background',

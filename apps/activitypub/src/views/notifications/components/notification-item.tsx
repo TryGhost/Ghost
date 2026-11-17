@@ -1,5 +1,7 @@
 import NotificationIcon, { NotificationIconSize, NotificationType } from './notification-icon';
 import React from 'react';
+import { cn } from '@tryghost/shade/utils';
+import { rowSurface } from '@tryghost/shade/components';
 
 // Context to share common props between compound components
 interface NotificationContextType {
@@ -30,9 +32,40 @@ const NotificationItem = ({
   return (
     <NotificationContext.Provider value={{ onClick, url }}>
       <div
-        className={`group relative -mx-4 -my-px ${isGrouped ? 'grid' : 'flex'} ${centerAlign ? 'items-center' : 'items-start'} break-anywhere cursor-pointer grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 rounded-lg px-4 py-5 text-left hover:bg-gray-100 ${className}`}
-        role="button"
-        onClick={onClick}
+        className={cn(
+          rowSurface(onClick ? 'interactive' : 'static'),
+          'group break-anywhere grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 border-b border-border-default py-5 text-left last:border-b-transparent focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden',
+          isGrouped ? 'grid' : 'flex',
+          centerAlign ? 'items-center' : 'items-start',
+          onClick && 'cursor-pointer',
+          className,
+        )}
+        role={onClick ? 'button' : undefined}
+        tabIndex={onClick ? 0 : undefined}
+        onClick={(event) => {
+          const target = event.target as HTMLElement;
+          if (target.closest('a, button, input, select, textarea, [role="checkbox"]')) {
+            return;
+          }
+          onClick?.();
+        }}
+        onKeyDown={(event) => {
+          if (event.target !== event.currentTarget || !onClick) {
+            return;
+          }
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            onClick();
+          } else if (event.key === ' ') {
+            event.preventDefault();
+          }
+        }}
+        onKeyUp={(event) => {
+          if (event.target === event.currentTarget && event.key === ' ' && onClick) {
+            event.preventDefault();
+            onClick();
+          }
+        }}
       >
         {children}
       </div>

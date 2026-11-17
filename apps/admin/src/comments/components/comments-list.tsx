@@ -1,6 +1,6 @@
 import CommentContent from './comment-content';
 import CommentThreadSidebar from './comment-thread-sidebar';
-import { Avatar, Button, TooltipProvider } from '@tryghost/shade/components';
+import { Avatar, Button, TooltipProvider, rowSurface } from '@tryghost/shade/components';
 import {
   type Comment,
   useHideComment,
@@ -118,7 +118,7 @@ function CommentsList({
 
   return (
     <TooltipProvider>
-      <div ref={parentRef} className="overflow-hidden border-t">
+      <div ref={parentRef} className="border-t">
         <div className="flex flex-col" data-testid="comments-list">
           <div className="flex flex-col">
             <SpacerRow height={spaceBefore} />
@@ -133,7 +133,10 @@ function CommentsList({
                 <div
                   key={key}
                   {...props}
-                  className="group/comment grid w-full grid-cols-1 items-start justify-between gap-4 border-b p-3 hover:bg-table-row-hover md:p-5 lg:grid-cols-[minmax(0,1fr)_144px]"
+                  className={cn(
+                    rowSurface('static'),
+                    'group/comment grid w-full grid-cols-1 items-start justify-between gap-4 border-b py-3 md:py-5 lg:grid-cols-[minmax(0,1fr)_144px]',
+                  )}
                   data-testid="comment-list-row"
                   onClick={() => {
                     // Close sidebar when clicking on a comment in the main list

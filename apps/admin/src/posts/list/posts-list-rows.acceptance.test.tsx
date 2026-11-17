@@ -113,6 +113,26 @@ describe('Posts list rows', () => {
       .toHaveAttribute('href', `#/editor/post/${target.id}`);
   });
 
+  it('makes both expanded row edges part of the primary link', async () => {
+    const target = post({ title: 'Expanded target', status: 'draft' });
+    fakePosts([target]);
+    await renderAdminApp('/posts');
+
+    const row = postsListScreen.listItems().first();
+    const link = postsListScreen.rowLink().first();
+    await expect.element(link).toBeVisible();
+
+    await expect
+      .poll(() => {
+        const bounds = row.element().getBoundingClientRect();
+        const y = bounds.top + bounds.height / 2;
+        return [bounds.left - 8, bounds.right + 8].every(
+          (x) => document.elementFromPoint(x, y)?.closest('a') === link.element(),
+        );
+      })
+      .toBe(true);
+  });
+
   describe('as a Contributor', () => {
     const asContributor = () => {
       const me = currentUserResponse();
