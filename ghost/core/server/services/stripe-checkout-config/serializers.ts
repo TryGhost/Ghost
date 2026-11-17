@@ -1,37 +1,14 @@
-import errors from '@tryghost/errors';
 import { z } from 'zod';
 import { CHECKOUT_PART_SETTINGS, type CollectedPart } from '@tryghost/checkout';
 import { camelKeys, snakeKeys } from '../../lib/case-keys';
 import { SnakeDesign } from './codec';
 import {
-  COLLECTED_NOUNS,
-  COLLECTED_SECTIONS,
-  SECTION_NAMES,
-  type CollectedSection,
   StripeCheckoutBranding,
   StripeCheckoutConfig,
   type PhoneSettings,
   type ShippingSettings,
   type StripeCheckoutDesign,
 } from './models';
-
-/**
- * Refuses a request, to save or to preview, that names a collected part while their flag is
- * off, as the collected parts are still in development.
- */
-export function refuseCollectionWhileOff(input: unknown, collecting: boolean): void {
-  if (collecting || typeof input !== 'object' || input === null) {
-    return;
-  }
-  const section = COLLECTED_SECTIONS.find((candidate) => SECTION_NAMES[candidate] in input);
-  if (section) {
-    const noun = COLLECTED_NOUNS[section];
-    throw new errors.ValidationError({
-      message: `${noun[0].toUpperCase()}${noun.slice(1)} collection is not available yet.`,
-      property: SECTION_NAMES[section],
-    });
-  }
-}
 
 /**
  * The design in a request.
@@ -106,11 +83,11 @@ export type CheckoutPreviewInput = z.output<typeof CheckoutPreviewInput>;
 
 /**
  * Each collected part as the Admin API returns it, in the shape a request saves, so a client can
- * save back what it read. Left out while its flag is off.
+ * save back what it read.
  */
 const CollectedResources = {
-  shipping: CHECKOUT_PART_SETTINGS.shipping.optional(),
-  phone: CHECKOUT_PART_SETTINGS.phone.optional(),
+  shipping: CHECKOUT_PART_SETTINGS.shipping,
+  phone: CHECKOUT_PART_SETTINGS.phone,
 } satisfies Record<CollectedPart, z.ZodType>;
 
 const CheckoutConfigResource = z.object({
@@ -147,42 +124,27 @@ function phoneResource(phone: PhoneSettings | null) {
   };
 }
 
-/** The collected parts a response carries: the ones the config it is given includes. */
-function collectedResources(settings: Partial<Pick<StripeCheckoutConfig, CollectedSection>>): {
-  [Part in CollectedPart]: z.input<(typeof CollectedResources)[Part]>;
-} {
-  return {
-    shipping: settings.shipping === undefined ? undefined : shippingResource(settings.shipping),
-    phone: settings.phone === undefined ? undefined : phoneResource(settings.phone),
-  };
-}
-
-/** The collected parts, which a response leaves out while their flag is off. */
-const COLLECTED_OPTIONAL: Record<CollectedSection, true> = {
-  shipping: true,
-  phone: true,
-};
-
 const CheckoutConfigResponse = z.object({
   checkout_config: z.tuple([CheckoutConfigResource]),
 });
 
 /**
  * The config as the Admin API returns it. Every part says whether it is set, so a client can
- * save back exactly what it read. The collected parts are left out while their flag is off.
+ * save back exactly what it read.
  */
-export const toCheckoutConfigResponse = StripeCheckoutConfig.partial(COLLECTED_OPTIONAL)
-  .transform((settings): z.input<typeof CheckoutConfigResponse> => ({
+export const toCheckoutConfigResponse = StripeCheckoutConfig.transform(
+  (settings): z.input<typeof CheckoutConfigResponse> => ({
     checkout_config: [
       {
         design: settings.design
           ? { customize: true as const, ...snakeKeys(settings.design) }
           : { customize: false as const },
-        ...collectedResources(settings),
+        shipping: shippingResource(settings.shipping),
+        phone: phoneResource(settings.phone),
       },
     ],
-  }))
-  .pipe(CheckoutConfigResponse);
+  }),
+).pipe(CheckoutConfigResponse);
 
 const CheckoutPreviewResponse = z.object({
   checkout_preview: z.tuple([z.object({ url: z.url() })]),

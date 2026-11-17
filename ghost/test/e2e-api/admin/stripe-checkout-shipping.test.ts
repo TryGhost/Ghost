@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 
-const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
+const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 
 describe('Stripe Checkout shipping address collection', function () {
@@ -60,7 +60,6 @@ describe('Stripe Checkout shipping address collection', function () {
   });
 
   afterEach(async function () {
-    mockManager.restore();
     await models.Base.knex('stripe_checkout_config').del();
     await models.Base.knex('members_metafield_bindings').del();
     await models.Base.knex('tier_requirement_tiers').del();

@@ -56,7 +56,7 @@ import {
 import { checkStripeEnabled, getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { useBrowseCustomThemeSettings } from '@tryghost/admin-x-framework/api/custom-theme-settings';
 import { useBrowseMemberCustomFieldsIncludingArchived } from '@tryghost/admin-x-framework/api/member-custom-fields';
-import { useFeatureFlag, useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { toast } from 'sonner';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
@@ -337,10 +337,9 @@ const CheckoutEditor: React.FC<{
 }> = ({ config, branding, onClose }) => {
   const handleError = useHandleError();
   const { mutateAsync: editConfig } = useEditStripeCheckoutConfig();
-  // Each part is only offered while the collection flag is on and Ghost says what is saved
-  // for it, which a Ghost older than the part doesn't.
-  const collecting = useFeatureFlag('stripeCheckoutCollection');
-  const offered = COLLECTED_PARTS.filter((part) => collecting && config[part] !== undefined);
+  // Each part is only offered while Ghost says what is saved for it, which a Ghost older than
+  // the part doesn't.
+  const offered = COLLECTED_PARTS.filter((part) => config[part] !== undefined);
   const { data: { tiers = [] } = {} } = useBrowseTiers();
   const { data: customFields = [] } = useBrowseMemberCustomFieldsIncludingArchived({
     enabled: offered.length > 0,

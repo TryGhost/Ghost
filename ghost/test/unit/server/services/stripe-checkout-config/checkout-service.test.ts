@@ -16,7 +16,6 @@ describe('CheckoutService', function () {
           throw new Error('database unavailable');
         },
       },
-      labs: { isSet: () => true },
       logging,
     });
 

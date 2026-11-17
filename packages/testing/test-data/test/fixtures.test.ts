@@ -14,7 +14,6 @@ describe('boot fixtures', () => {
     const expected = {
       selfServeArchives: true,
       membersCustomFields: true,
-      stripeCheckoutCollection: true,
       customFieldTypePhone: true,
       superEditors: false,
       editorExcerpt: false,

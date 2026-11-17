@@ -11,7 +11,6 @@ import {
   type Refusal,
 } from '../members-metafields/values-service';
 import { parseRequest } from '../../lib/parse-request';
-import { COLLECTION_FLAG } from '../stripe-checkout-config/models';
 import type { TierRequirement, TierRequirements } from '../tiers/requirements';
 import type { TierChangeAttempt } from './tracking';
 
@@ -95,7 +94,6 @@ export interface MemberAccountServiceDeps {
   metafieldBindings: MetafieldBindings;
   /** What each tier requires of its members, looked up on use, as tiers start later in boot. */
   requirements: () => Pick<TierRequirements, 'forTiers'>;
-  labs: { isSet(flag: string): boolean };
 }
 
 export class MemberAccountService {
@@ -105,7 +103,6 @@ export class MemberAccountService {
   #metafieldValues: MetafieldValues;
   #metafieldBindings: MetafieldBindings;
   #requirements: () => Pick<TierRequirements, 'forTiers'>;
-  #labs: { isSet(flag: string): boolean };
 
   constructor({
     memberBREADService,
@@ -114,7 +111,6 @@ export class MemberAccountService {
     metafieldValues,
     metafieldBindings,
     requirements,
-    labs,
   }: MemberAccountServiceDeps) {
     this.#memberBREADService = memberBREADService;
     this.#members = members;
@@ -122,7 +118,6 @@ export class MemberAccountService {
     this.#metafieldValues = metafieldValues;
     this.#metafieldBindings = metafieldBindings;
     this.#requirements = requirements;
-    this.#labs = labs;
   }
 
   /** Everything a member is shown about themselves. */
@@ -172,8 +167,7 @@ export class MemberAccountService {
    * field, is dropped. A requirement answered in part, an answer the field can't hold, or an answer
    * a requirement refuses, such as a shipping address outside its countries, is refused, with
    * every refusal at once, each naming the answer as the request did, such as
-   * `answers.checkout.shipping.address.country`. Nothing is written while checkouts don't collect
-   * answers, as the bindings outlive that flag and a save goes wherever they point.
+   * `answers.checkout.shipping.address.country`.
    */
   async planAnswers(
     given: unknown,
@@ -181,9 +175,6 @@ export class MemberAccountService {
     tier: { id: string; type: string },
     attempt: Pick<TierChangeAttempt, 'answering'>,
   ): Promise<MetafieldPlan[]> {
-    if (!this.#labs.isSet(COLLECTION_FLAG)) {
-      return [];
-    }
     const { answers } = parseRequest(AnswersInput, { answers: given }, 'answers');
     const required = (await this.#requirements().forTiers([tier])).get(tier.id) ?? [];
     const asked = required.flatMap(({ ports }) => Object.values(ports).map(({ port }) => port));

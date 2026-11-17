@@ -33,7 +33,6 @@ const GA_FEATURES = [
   'selfServeArchives',
   'admin7EditorImprovements',
   'membersCustomFields',
-  'stripeCheckoutCollection',
   'customFieldTypePhone',
 ];
 

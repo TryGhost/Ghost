@@ -906,7 +906,7 @@ describe('Checkout settings', () => {
   it('offers only the design on a Ghost too old to collect shipping, and saves no shipping', async () => {
     fakeSettingsScreens();
     fakeTiers([freeTier, paidTier]);
-    // An older Ghost says nothing about shipping, whatever the flag says.
+    // An older Ghost says nothing about shipping.
     fakeAdminEndpoint('GET', '/stripe/checkout/config/', {
       checkout_config: [{ design: { customize: false } }],
     });

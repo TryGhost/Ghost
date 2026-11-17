@@ -104,13 +104,6 @@ export const COLLECTED_NOUNS = {
 } as const satisfies Record<CollectedSection, string>;
 
 /**
- * The private flag the collected parts are behind. Staff only see and save the collected parts
- * while it's on, checkouts and the completed-checkout webhook only act on them while it's on,
- * and tiers only list what their members must give while it's on.
- */
-export const COLLECTION_FLAG = 'stripeCheckoutCollection';
-
-/**
  * What a checkout needs to know about every collected part to ask for it: the tiers it asks on.
  * A saved part is asked for while it's on, even while a field it saves into is archived, so an
  * archived field never changes what buyers are asked. The answers for that field are dropped.

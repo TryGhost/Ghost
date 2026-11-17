@@ -1,9 +1,5 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
 import stripeCheckoutConfig from '../../services/stripe-checkout-config';
-import { COLLECTION_FLAG } from '../../services/stripe-checkout-config/models';
-import { refuseCollectionWhileOff } from '../../services/stripe-checkout-config/serializers';
-
-const labs = require('../../../shared/labs');
 
 type AddFrame = Frame<{ data: { checkout_preview: unknown[] } }>;
 
@@ -20,7 +16,6 @@ const controller = {
     permissions: { docName: 'products', method: 'edit' },
     query(frame: AddFrame): Promise<{ url: string }> {
       const [input] = frame.data.checkout_preview;
-      refuseCollectionWhileOff(input, labs.isSet(COLLECTION_FLAG));
       return stripeCheckoutConfig.service.previews.add(input);
     },
   },

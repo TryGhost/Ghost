@@ -134,7 +134,6 @@ module.exports = class StripeService {
       async isPaidWelcomeEmailActive() {
         return memberWelcomeEmails.service.isMemberWelcomeEmailActive('paid');
       },
-      labs,
       // Getters, because these services are built later in boot than this one.
       get metafieldBindings() {
         return metafields.bindings;

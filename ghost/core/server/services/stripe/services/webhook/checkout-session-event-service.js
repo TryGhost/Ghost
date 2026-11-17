@@ -7,7 +7,6 @@ const {
 } = require('../../../../lib/member-signup-contexts');
 const { CHECKOUT_PORT } = require('@tryghost/checkout');
 const { collectedFrom } = require('../checkout/completed-session');
-const { COLLECTION_FLAG } = require('../../../stripe-checkout-config/models');
 /** @typedef {import('../../../../lib/member-signup-contexts').SignupContext} SignupContext */
 /** @typedef {import('../../tracking').CheckoutCompletionAttempt} CheckoutCompletionAttempt */
 
@@ -129,7 +128,6 @@ module.exports = class CheckoutSessionEventService {
    * @param {object} deps.staffServiceEmails
    * @param {function} deps.sendSignupEmail
    * @param {function} deps.isPaidWelcomeEmailActive
-   * @param {{isSet(flag: string): boolean}} deps.labs
    * @param {Pick<import('../../../members-metafields/bindings-service').MetafieldBindingsService, 'planThrough'>} deps.metafieldBindings
    * @param {{updateWithMetafields: (data: object, options: {id: string}, plans: import('../../../members-metafields/values-service').MetafieldPlan[]) => Promise<unknown>}} deps.memberBREADService
    */
@@ -542,9 +540,6 @@ module.exports = class CheckoutSessionEventService {
    */
   async saveCollected(memberId, session, { canUpdateMember, wallet, attempt }) {
     try {
-      if (!this.deps.labs.isSet(COLLECTION_FLAG)) {
-        return;
-      }
       const { answers: collected, phone } = collectedFrom.parse(session);
       if (collected.length === 0) {
         return;
