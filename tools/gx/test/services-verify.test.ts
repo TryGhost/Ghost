@@ -55,16 +55,18 @@ function cruise(
       source,
       dependencies: [{ module, resolved, dependencyTypes: [type] }],
     })),
-    summary: { violations },
+    summary: {
+      violations,
+      environment: {
+        transpilersFound: [
+          { name: 'typescript', available: true, currentVersion: 'typescript@6.0.3' },
+        ],
+      },
+    },
   };
 }
 
 const empty = cruise([]);
-
-// The probe that asks dependency-cruiser which compiler it loaded, and the
-// dependency runs that follow it.
-const isProbe = (args: string[]) => args[1] === 'node' && args.includes('--eval');
-const isScan = (args: string[]) => args[1] === 'depcruise' || isProbe(args);
 
 async function fixture(t: TestContext) {
   const root = await mkdtemp(join(tmpdir(), 'gx-verify-'));
@@ -94,12 +96,6 @@ async function fixture(t: TestContext) {
     if (command === 'git') {
       const result = spawnSync('git', args, { cwd, encoding: 'utf8' });
       return { status: result.status ?? 1, output: `${result.stdout}${result.stderr}` };
-    }
-    if (isProbe(args)) {
-      const output = JSON.stringify([
-        { name: 'typescript', available: true, currentVersion: 'typescript@6.0.3' },
-      ]);
-      return { status: 0, output, stdout: output };
     }
     if (args[1] === 'depcruise') {
       const output = JSON.stringify(cruises[env?.GHOST_DEPENDENCY_RESOLUTION ?? 'source']);
@@ -541,27 +537,26 @@ test('a specialist owner added since the base is checked against the scan', asyn
   assert.equal(status()['allowances-accurate'], 'pass');
 });
 
-test('a scanner without TypeScript fails before either dependency run', async (t) => {
+test('a dependency run that could not load TypeScript fails and is not compared', async (t) => {
   const f = await fixture(t);
-  const scans: string[] = [];
-  const runner: RunCommand = (command, args, options) => {
-    if (isProbe(args)) {
-      // What dependency-cruiser reports for a compiler it can find but not load.
-      return {
-        status: 0,
-        output: JSON.stringify([{ name: 'typescript', available: true, currentVersion: '-' }]),
-      };
-    }
-    if (args[1] === 'depcruise') {
-      scans.push(args.join(' '));
-    }
-    return f.run(command, args, options);
+  // What dependency-cruiser reports for a compiler it can find but not load.
+  const withoutTypeScript: Cruise = {
+    ...cruise([]),
+    summary: {
+      violations: [],
+      environment: {
+        transpilersFound: [{ name: 'typescript', available: true, currentVersion: '-' }],
+      },
+    },
   };
-  const checks = f.verify('staff', true, runner);
-  assert.deepEqual(scans, []);
-  const check = checks.find((item) => item.name === 'dependencies-typescript');
-  assert.equal(check?.status, 'fail');
-  assert.match(check?.details[0] ?? '', /could not load the `typescript` package/);
+  f.cruises.source = withoutTypeScript;
+  f.cruises.built = withoutTypeScript;
+  const checks = f.verify();
+  for (const name of ['dependencies-source', 'dependencies-built']) {
+    const check = checks.find((item) => item.name === name);
+    assert.equal(check?.status, 'fail');
+    assert.match(check?.details[0] ?? '', /could not load the `typescript` package/);
+  }
   assert.equal(
     checks.find((item) => item.name === 'built-boundaries'),
     undefined,
@@ -609,7 +604,7 @@ test('changed unit tests run shuffled and alone after the full suite', async (t)
   f.commit('test');
   const seen: Array<[string, string]> = [];
   const runner: RunCommand = (command, args, options) => {
-    if (command !== 'git' && !isScan(args)) {
+    if (command !== 'git' && args[1] !== 'depcruise') {
       seen.push([args.join(' '), options.cwd]);
       return { status: args.includes('test/unit/boot') ? 1 : 0, output: '' };
     }
@@ -628,11 +623,11 @@ test('the boot check fails when tests survive the mutation and restores boot.js'
   const f = await fixture(t);
   let during = '';
   const runner: RunCommand = (command, args, options) => {
-    if (command !== 'git' && !isScan(args) && args.includes('test/unit/boot')) {
+    if (command !== 'git' && args[1] !== 'depcruise' && args.includes('test/unit/boot')) {
       during = execFileSync('cat', ['ghost/core/boot.js'], { cwd: f.root, encoding: 'utf8' });
       return { status: 0, output: '' };
     }
-    return command === 'git' || isScan(args)
+    return command === 'git' || args[1] === 'depcruise'
       ? f.run(command, args, options)
       : { status: 0, output: '' };
   };
@@ -671,7 +666,7 @@ test('a failing tool reports its failure and the end of its output', async (t) =
   await f.write('marker.ts', '');
   f.commit('change');
   const runner: RunCommand = (command, args, options) => {
-    if (command === 'git' || isScan(args)) {
+    if (command === 'git' || args[1] === 'depcruise') {
       return f.run(command, args, options);
     }
     return args[0] === 'lint:oxlint'

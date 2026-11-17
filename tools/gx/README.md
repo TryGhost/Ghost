@@ -186,8 +186,8 @@ It replaces `pnpm audit:services`; `services dependencies` replaces
 `services verify` needs a clean tree on a branch that contains the fetched base.
 It checks new files, audit SHAs, formatting, lint, types and boundaries. It runs
 dependency-cruiser twice, resolving workspace packages to authored source and then
-to the built output Ghost loads, and fails first if dependency-cruiser cannot load
-TypeScript. Built output must add no service rule violation,
+to the built output Ghost loads, and fails a run in which dependency-cruiser could
+not load TypeScript. Built output must add no service rule violation,
 every part of an added allowance must match an import from a service, and each file
 an added allowance admits must be named in a boundary regression. It then runs the
 full unit suite, runs the changed unit tests shuffled and each one alone and, for a

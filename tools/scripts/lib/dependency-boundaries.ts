@@ -146,10 +146,11 @@ export function committedBuildOutput(repository: string) {
 // that pnpm sets for what it runs. In the layout CI and Docker use, it finds the
 // root's `typescript` by walking up from node_modules.
 //
-// Returns the compiler the scan would use, such as `typescript@6.0.3`, from what
-// dependency-cruiser's getAvailableTranspilers() reports, or undefined when it
-// has none. A compiler it can find but not load is listed as available, with
-// `-` for its version.
+// Returns the compiler a scan used, such as `typescript@6.0.3`, from the
+// transpilers its report lists under summary.environment, or undefined when it
+// had none. A compiler dependency-cruiser can find but not load is listed as
+// available, with `-` for its version. Its own missing-compiler warning does not
+// cover that case and does not fail the scan.
 export function scannerTypeScript(transpilers: unknown) {
   const found = z
     .array(z.object({ name: z.string(), available: z.boolean(), currentVersion: z.string() }))
@@ -158,27 +159,6 @@ export function scannerTypeScript(transpilers: unknown) {
   return found?.available && found.currentVersion.startsWith('typescript@')
     ? found.currentVersion
     : undefined;
-}
-
-// Arguments for Node that print getAvailableTranspilers() as JSON. Run with the
-// Node and environment of the scan, they load the same dependency-cruiser, which
-// looks for `typescript` from its own location just as the scan does.
-export function scannerProbe() {
-  const entry = import.meta.resolve('dependency-cruiser');
-  return [
-    '--input-type=module',
-    '--eval',
-    `import { getAvailableTranspilers } from ${JSON.stringify(entry)}; console.log(JSON.stringify(getAvailableTranspilers()));`,
-  ];
-}
-
-// Reads the probe's output; anything but the list it prints counts as no compiler.
-export function probedTypeScript(output: string) {
-  try {
-    return scannerTypeScript(JSON.parse(output));
-  } catch {
-    return undefined;
-  }
 }
 
 export const missingTypeScript =
@@ -200,13 +180,6 @@ export function readDependencyBoundaries(repository: string, files: string[] = [
     .object({ bin: z.object({ depcruise: z.string() }) })
     .parse(JSON.parse(readFileSync(manifest, 'utf8')));
   const cli = path.join(path.dirname(manifest), bin.depcruise);
-  const probe = spawnSync(process.execPath, scannerProbe(), { cwd: repository, encoding: 'utf8' });
-  if (probe.error) {
-    throw probe.error;
-  }
-  if (!probedTypeScript(probe.stdout)) {
-    throw new Error(missingTypeScript);
-  }
   const result = spawnSync(
     process.execPath,
     [
@@ -233,6 +206,10 @@ export function readDependencyBoundaries(repository: string, files: string[] = [
     process.stderr.write(result.stderr);
   }
   const graph: ICruiseResult = JSON.parse(result.stdout);
+  // The scan succeeds without TypeScript, so its report is checked, not its exit.
+  if (!scannerTypeScript(graph.summary?.environment?.transpilersFound)) {
+    throw new Error(missingTypeScript);
+  }
   // The full scan must find modules. A file list can be empty of them, when
   // every file given is one the scan skips.
   if (!Array.isArray(graph.modules) || !Array.isArray(graph.summary?.violations)) {

@@ -19,9 +19,7 @@ import {
   committedBuildOutput,
   dependencyIdentity,
   missingTypeScript,
-  probedTypeScript,
   readKnownViolations,
-  scannerProbe,
   scannerTypeScript,
 } from '../lib/dependency-boundaries.ts';
 import { legacyInventoryFile, readLegacyServices } from '../../configs/oxlint/legacy-services.ts';
@@ -590,17 +588,22 @@ it('reads the TypeScript compiler from what the scanner reports about itself', (
   // Found by require but not by import, so it is never loaded.
   assert.equal(scannerTypeScript(report(true, '-')), undefined);
   assert.equal(scannerTypeScript([]), undefined);
-  assert.equal(probedTypeScript(''), undefined);
-  assert.equal(probedTypeScript('not the list'), undefined);
+  assert.equal(scannerTypeScript(undefined), undefined);
+});
+
+it('finds the TypeScript compiler in the report of a scan, coloured or not', (t) => {
+  const f = fixture(t, { [`${alpha}/implementation.ts`]: 'export {};' });
   // The way these tests are run, the scanner must have it. Tools that colour
   // their output, as Nx tells them to, must not change the answer.
   for (const colour of ['0', '1']) {
-    const real = spawnSync(process.execPath, scannerProbe(), {
-      encoding: 'utf8',
-      env: { ...process.env, FORCE_COLOR: colour },
-    });
-    assert.equal(real.status, 0, real.stderr);
-    assert.match(probedTypeScript(real.stdout) ?? '', /^typescript@\d/, missingTypeScript);
+    const result = f.run('json', services, [], { ...process.env, FORCE_COLOR: colour });
+    assert.equal(result.status, 0, result.stderr);
+    const graph: ICruiseResult = JSON.parse(result.stdout);
+    assert.match(
+      scannerTypeScript(graph.summary.environment?.transpilersFound) ?? '',
+      /^typescript@\d/,
+      missingTypeScript,
+    );
   }
 });
 
@@ -618,7 +621,9 @@ it('fails instead of scanning when dependency-cruiser cannot load TypeScript', (
   // Without the guard the scan still succeeds, and reports something else.
   const hidden = f.run('json', services, [], env);
   assert.equal(hidden.status, 0, hidden.stderr);
-  assert.notDeepEqual(JSON.parse(hidden.stdout).modules, f.graph().modules);
+  const degraded: ICruiseResult = JSON.parse(hidden.stdout);
+  assert.notDeepEqual(degraded.modules, f.graph().modules);
+  assert.equal(scannerTypeScript(degraded.summary.environment?.transpilersFound), undefined);
   for (const staged of [[], [from]]) {
     const missing = f.lint(staged, env);
     assert.equal(missing.status, 1, missing.stdout);

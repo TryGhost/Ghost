@@ -163,9 +163,10 @@ the allowlist remain in `.dependency-cruiser.cjs`. The shared runner in
 `lib/dependency-boundaries.ts` reads `.dependency-cruiser-known-violations.json`
 and scans Core and apps once for both reports and `ci/check-boundaries.ts`.
 The checker rejects new violations and stale entries; reports retain all findings.
-The runner first asks Dependency Cruiser whether it can load TypeScript and stops
-if it cannot: without it the scan skips TypeScript files or reads type-only
-imports as ordinary ones, and reports different violations without an error.
+The runner reads from the scan's report which TypeScript compiler Dependency
+Cruiser loaded and fails if it had none: without it the scan skips TypeScript
+files or reads type-only imports as ordinary ones, and reports different
+violations without an error.
 With pnpm's shared store, Dependency Cruiser finds the `typescript` package only
 through the environment pnpm sets for what it runs, so run the scan through pnpm,
 as `pnpm lint:boundaries`, the commit hook and CI do.
