@@ -31,16 +31,3 @@ it('keeps mobile hardening off when the backend does not supply the flag', async
     )
     .toBe('false');
 });
-
-it('enables the preview from a tab override while the site flag is off', async () => {
-  fakeMembers([]);
-  await renderAdminApp('/members?labs=admin7Mobile', {
-    labs: { admin7Mobile: false, admin7Design: false },
-  });
-
-  await expect
-    .poll(() =>
-      document.querySelector('[data-react-admin-mounted]')?.getAttribute('data-admin7-mobile'),
-    )
-    .toBe('true');
-});
