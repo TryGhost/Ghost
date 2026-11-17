@@ -204,8 +204,9 @@ export const useEditUserPreferences = ({
       // Each save re-renders everything that reads the current user, so skip
       // one that changes nothing. Edits run one at a time (see `scope` above),
       // and one queued behind another can find its change already made. This
-      // compares encoded strings, so a stored value encoded differently (e.g.
-      // by Ember) doesn't match and is saved as before: it never drops a change.
+      // compares encoded strings, so a stored value in an older shape (e.g.
+      // `nightShift: true`) doesn't match and is saved as before: it never drops
+      // a change.
       if (accessibility === latestUser.accessibility) {
         return;
       }
