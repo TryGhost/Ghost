@@ -256,8 +256,6 @@ test.describe('Portal - member custom fields', () => {
   });
 
   test.describe('a phone field', () => {
-    test.use({ labs: { customFieldTypePhone: true } });
-
     // As Stripe Checkout asks for one: the member writes the number as they would at home,
     // beside the country it's from, and the site keeps it in one international form.
     test('keeps a number written at home in its international form', async ({
