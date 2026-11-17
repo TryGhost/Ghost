@@ -78,8 +78,16 @@ until Phase 4.
   while a session is being created can leave a session row, which
   `revokeUserSessions` in the same gap misses. Anything that trusts a session
   or token (the Admin API resolver, revocation, app tokens) must check the
-  user's status too. Server-only: `createVerifiedSession`, which requires the
+  user's status too. A successful `/reset-password` sets a `locked` user
+  `active`, as legacy `doReset` does; it refuses an `inactive` user's token
+  before changing the password, and a suspension that lands during the reset
+  stands. Server-only: `createVerifiedSession`, which requires the
   admin origin, `revokeUserSessions` and `revokeAllSessions`.
+- `cleanup.ts`: the daily `clear-expired-auth-rows` job (plan §4.6), which
+  deletes expired `user_sessions` and `verifications` rows. Better Auth checks
+  expiry on read but never deletes them. It runs under either engine wherever
+  `auth:betterAuthDev` is on, and deletes in batches by primary key, as the
+  `rate_limits` cleanup does, so it doesn't deadlock with live writes.
 - `plugins/sso.ts` (`ghostSso`): server-only `createSsoSession`, for the SSO
   adapter hook described below. It applies the passwordless rules above
   (unlocks `locked`, refuses `inactive`) and creates a verified session pinned
