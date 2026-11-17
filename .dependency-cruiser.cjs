@@ -251,8 +251,8 @@ const specialistDependencies = [
     // Matching URLs against route patterns.
     dependency: npm('path-match'),
     owners: [
-      core('frontend/services/data/match-permalink-params.js'),
-      core('server/web/api/middleware/api-version-compatibility/legacy-api-path-match.js'),
+      core('frontend/services/data/match-permalink-params.ts'),
+      core('server/web/api/middleware/api-version-compatibility/legacy-api-path-match.ts'),
       service('url/permalink-matcher.ts'),
     ],
   },
