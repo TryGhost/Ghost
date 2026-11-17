@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { useBrowseUsers } from '@tryghost/admin-x-framework/api/users';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,22 +23,29 @@ import type { PendingSave, SaveError, SaveEngineState } from '@/editor/engine/sa
 import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
 import { ErrorLine } from '@/editor/publish/components/failure-banner';
 import { reportShownAlert } from '@/editor/report-error';
+import { PresenceAvatars } from '@/shared/presence/presence-avatars';
+import { listNames, presentUsers } from '@/shared/presence/present-users';
+import type { ActivePresence, PresenceResourceType } from '@/shared/presence/presence-api';
 import { POST_DELETED, terminalSaveError } from './error-mapping';
 import type { ReloadOutcome } from './use-editor-session';
 
-const CONFLICT =
-  'Someone else is editing this post. Reloading replaces what you have with their version, so copy your content first if you need it.';
+const CONFLICT_SUMMARY = 'Someone else saved changes. Your changes weren’t saved.';
+const CONFLICT_RECOVERY = 'Copy your content, then reload before saving again.';
+const CONFLICT = `${CONFLICT_SUMMARY} ${CONFLICT_RECOVERY}`;
 const NEWER_VERSION = 'This post was updated elsewhere.';
 const RELOAD_FAILED = 'Couldn’t reload this post';
 
 export interface SessionBannersProps {
   state: SaveEngineState;
   pendingSave?: PendingSave | null;
+  /** Other staff on this document, supplied only while presence indicators are enabled. */
+  activePresence?: ActivePresence[];
+  resourceType?: PresenceResourceType;
   /** A later version was saved elsewhere, and a reload onto it would lose nothing. */
   newerVersionAvailable?: boolean;
   hasUnsavedContent: () => boolean;
   contentText: () => string;
-  onReload: () => Promise<ReloadOutcome>;
+  onReload: (options?: { discardUnsaved?: boolean }) => Promise<ReloadOutcome>;
 }
 
 // Once per banner the writer reads, not per render of it.
@@ -47,36 +55,40 @@ function useShownAlert(message: string, error: SaveError): void {
   }, [message, error]);
 }
 
-type ConflictBannerProps = Pick<
+type RecoveryActionsProps = Pick<
   SessionBannersProps,
   'hasUnsavedContent' | 'contentText' | 'onReload'
 > & {
-  error: SaveError;
-  /** Saving has stopped for good: the error says why, and copying is the only way out. */
+  resourceType: PresenceResourceType;
+  destructive?: boolean;
   stopped?: boolean;
+  onGone?: () => void;
 };
 
-function ConflictBanner({
+/** Both early presence warnings and refused saves use the same recovery safeguards. */
+function RecoveryActions({
   hasUnsavedContent,
   contentText,
   onReload,
-  error,
+  resourceType,
+  destructive = false,
   stopped = false,
-}: ConflictBannerProps) {
+  onGone,
+}: RecoveryActionsProps) {
   const [confirming, setConfirming] = useState(false);
   const [reloading, setReloading] = useState(false);
-  const [reloadFoundDeleted, setReloadFoundDeleted] = useState(false);
-  const halt = stopped ? error : reloadFoundDeleted ? POST_DELETED : null;
-  const message = halt ? halt.message : CONFLICT;
-  useShownAlert(message, halt ?? error);
 
-  const reload = async () => {
+  const reload = async (discardUnsaved = false) => {
     setConfirming(false);
     setReloading(true);
-    const outcome = await onReload();
+    const outcome = await onReload(discardUnsaved ? { discardUnsaved: true } : undefined);
     setReloading(false);
     if (outcome === 'gone') {
-      setReloadFoundDeleted(true);
+      if (onGone) {
+        onGone();
+      } else {
+        toast.error(RELOAD_FAILED);
+      }
     }
     if (outcome === 'failed') {
       toast.error(RELOAD_FAILED);
@@ -94,39 +106,22 @@ function ConflictBanner({
 
   return (
     <>
-      <Banner
-        className="mx-4 mt-3 shrink-0"
-        data-testid={editorConflictBanner}
-        role="alert"
-        size="sm"
-        variant="destructive"
-      >
-        <Inline align="center" gap="sm" justify="center" wrap>
-          <Text as="div" className="text-center">
-            <ErrorLine className="inline-flex">{message}</ErrorLine>
-          </Text>
-          <Inline align="center" gap="sm" justify="center">
-            {!halt && (
-              <Button
-                disabled={reloading}
-                size="sm"
-                variant="destructive"
-                onClick={() => (hasUnsavedContent() ? setConfirming(true) : void reload())}
-              >
-                Reload
-              </Button>
-            )}
-            <Button
-              className="bg-background"
-              size="sm"
-              variant="outline"
-              onClick={() => void copyContent()}
-            >
-              Copy content
-            </Button>
-          </Inline>
-        </Inline>
-      </Banner>
+      <Inline align="center" gap="sm" justify="center">
+        <Button size="sm" variant="default" onClick={() => void copyContent()}>
+          Copy content
+        </Button>
+        {!stopped && (
+          <Button
+            className={destructive ? undefined : 'bg-background'}
+            disabled={reloading}
+            size="sm"
+            variant={destructive ? 'destructive' : 'outline'}
+            onClick={() => (hasUnsavedContent() ? setConfirming(true) : void reload())}
+          >
+            Reload
+          </Button>
+        )}
+      </Inline>
       <AlertDialog open={confirming} onOpenChange={setConfirming}>
         <AlertDialogContent
           className={EDITOR_CONFIRM_DIALOG_LAYER}
@@ -136,8 +131,8 @@ function ConflictBanner({
           <AlertDialogHeader>
             <AlertDialogTitle>Discard your unsaved changes?</AlertDialogTitle>
             <AlertDialogDescription>
-              Reloading replaces this post with the version on the server. Anything you have not
-              saved is lost.
+              Reloading replaces this {resourceType} with the version on the server. Anything you
+              have not saved is lost.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -145,7 +140,7 @@ function ConflictBanner({
               <Button variant="outline">Cancel</Button>
             </AlertDialogCancel>
             <AlertDialogAction asChild>
-              <Button variant="destructive" onClick={() => void reload()}>
+              <Button variant="destructive" onClick={() => void reload(true)}>
                 Discard and reload
               </Button>
             </AlertDialogAction>
@@ -153,6 +148,84 @@ function ConflictBanner({
         </AlertDialogContent>
       </AlertDialog>
     </>
+  );
+}
+
+type ConflictBannerProps = RecoveryActionsProps & {
+  error: SaveError;
+};
+
+function ConflictBanner({ error, stopped = false, ...actions }: ConflictBannerProps) {
+  const [reloadFoundDeleted, setReloadFoundDeleted] = useState(false);
+  const halt = stopped ? error : reloadFoundDeleted ? POST_DELETED : null;
+  const message = halt ? halt.message : CONFLICT;
+  useShownAlert(message, halt ?? error);
+
+  return (
+    <Banner
+      className="mx-4 mt-3 shrink-0"
+      data-testid={editorConflictBanner}
+      role="alert"
+      size="sm"
+      variant="destructive"
+    >
+      <Inline align="center" gap="sm" justify="center" wrap>
+        <Text as="div" className="text-center text-base">
+          <ErrorLine className="inline-flex">
+            {halt ? (
+              message
+            ) : (
+              <>
+                <strong>{CONFLICT_SUMMARY}</strong> {CONFLICT_RECOVERY}
+              </>
+            )}
+          </ErrorLine>
+        </Text>
+        <RecoveryActions
+          {...actions}
+          stopped={halt !== null}
+          destructive
+          onGone={() => setReloadFoundDeleted(true)}
+        />
+      </Inline>
+    </Banner>
+  );
+}
+
+function PresenceWarning({
+  active,
+  resourceType,
+  ...actions
+}: RecoveryActionsProps & { active: ActivePresence[] }) {
+  const { data } = useBrowseUsers({ defaultErrorHandler: false });
+  const users = presentUsers(active, data?.users);
+  const count = new Set(active.map((entry) => entry.userId)).size;
+  const everyoneNamed = users.length === count;
+  const names = everyoneNamed
+    ? listNames(users.map((user) => user.name))
+    : count === 1
+      ? 'Someone else'
+      : 'Other staff';
+
+  return (
+    <Banner
+      aria-label="Other editors"
+      className="mx-4 mt-3 shrink-0"
+      role="status"
+      size="sm"
+      variant="warning"
+    >
+      <Inline align="center" gap="sm" justify="center" wrap>
+        <PresenceAvatars active={active} resourceType={resourceType} />
+        <Text as="div" className="text-center text-base">
+          <strong>
+            {names} also {count === 1 ? 'has' : 'have'} this {resourceType} open.
+          </strong>{' '}
+          Your changes may not save. Copy your content before reloading.
+        </Text>
+        <RecoveryActions {...actions} resourceType={resourceType} />
+      </Inline>
+    </Banner>
   );
 }
 
@@ -177,8 +250,14 @@ function NewerVersionNotice({ onReload }: Pick<SessionBannersProps, 'onReload'>)
       variant="info"
     >
       <Inline align="center" gap="sm">
-        <Text>{NEWER_VERSION}</Text>
-        <Button disabled={reloading} size="sm" variant="outline" onClick={() => void reload()}>
+        <Text className="text-base">{NEWER_VERSION}</Text>
+        <Button
+          className="bg-background"
+          disabled={reloading}
+          size="sm"
+          variant="outline"
+          onClick={() => void reload()}
+        >
           Reload
         </Button>
       </Inline>
@@ -188,13 +267,16 @@ function NewerVersionNotice({ onReload }: Pick<SessionBannersProps, 'onReload'>)
 
 /**
  * The notices above the header for what the status line cannot hold: a
- * collision or a halt with its ways out, and a newer version. A failed save is
+ * collision or a halt with its ways out, a newer version, or other staff
+ * present before any conflict. A failed save is
  * the status line's to report, with its retry; a field held by its rule is
  * marked beside the field.
  */
 export function SessionBanners({
   state,
   pendingSave,
+  activePresence,
+  resourceType = 'post',
   newerVersionAvailable = false,
   hasUnsavedContent,
   contentText,
@@ -211,6 +293,7 @@ export function SessionBanners({
         contentText={contentText}
         error={conflict}
         hasUnsavedContent={hasUnsavedContent}
+        resourceType={resourceType}
         stopped={halt !== null}
         onReload={onReload}
       />
@@ -219,6 +302,18 @@ export function SessionBanners({
 
   if (newerVersionAvailable) {
     return <NewerVersionNotice onReload={onReload} />;
+  }
+
+  if (activePresence && activePresence.length > 0) {
+    return (
+      <PresenceWarning
+        active={activePresence}
+        contentText={contentText}
+        hasUnsavedContent={hasUnsavedContent}
+        resourceType={resourceType}
+        onReload={onReload}
+      />
+    );
   }
 
   return null;

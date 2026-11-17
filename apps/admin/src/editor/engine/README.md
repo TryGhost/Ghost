@@ -94,17 +94,17 @@ Reconcile-before-drain is a hard ordering contract because the server enforces o
 
 ### Errors and states
 
-| Error kind                      | State                                                                                                                                                                     | Exit                                                                                                       |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `session-invalid`               | `reauth-pending`; queue frozen, later commands coalesce into the pending slot, content untouched                                                                          | `reauthSucceeded()` / `reauthAbandoned()`                                                                  |
-| `not-found` with an id          | `halted` (deleted elsewhere); every queued command dropped `halted`, content kept for copy-out                                                                            | none                                                                                                       |
-| `not-found` without an id       | `crashed` (corrupt new-post state)                                                                                                                                        | none                                                                                                       |
-| `forbidden` on a save           | `halted` (the writer may no longer edit the post), as for a deleted post, whether or not the post has an id                                                               | none                                                                                                       |
-| `forbidden` on a status change  | `error`, no suppression: Core refused that publish, schedule or unpublish, not the post                                                                                   | next save                                                                                                  |
-| `conflict` (`UPDATE_COLLISION`) | `conflict`; timers and the pending slot dropped `conflict`, background saves refused while the snapshot still carries the rejected `updated_at`, content intact and dirty | an explicit save, or `contentReloaded(updatedAt, adopt?)` with a candidate different from the rejected one |
-| server `validation`             | `error`; background saves suppressed until the snapshot version moves                                                                                                     | next edit, an explicit save, or a settings retry                                                           |
-| `host-limit`                    | `error`; suppression as for validation, but only for a status-preserving save (a publish limit never halts autosave)                                                      | next edit, an explicit save, or a settings retry                                                           |
-| `transport` / `unknown`         | `error`, no suppression; an update is read back before the next save                                                                                                      | next save                                                                                                  |
+| Error kind                      | State                                                                                                                                                                     | Exit                                                                                                                          |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `session-invalid`               | `reauth-pending`; queue frozen, later commands coalesce into the pending slot, content untouched                                                                          | `reauthSucceeded()` / `reauthAbandoned()`                                                                                     |
+| `not-found` with an id          | `halted` (deleted elsewhere); every queued command dropped `halted`, content kept for copy-out                                                                            | none                                                                                                                          |
+| `not-found` without an id       | `crashed` (corrupt new-post state)                                                                                                                                        | none                                                                                                                          |
+| `forbidden` on a save           | `halted` (the writer may no longer edit the post), as for a deleted post, whether or not the post has an id                                                               | none                                                                                                                          |
+| `forbidden` on a status change  | `error`, no suppression: Core refused that publish, schedule or unpublish, not the post                                                                                   | next save                                                                                                                     |
+| `conflict` (`UPDATE_COLLISION`) | `conflict`; timers and the pending slot dropped `conflict`, background saves refused while the snapshot still carries the rejected `updated_at`, content intact and dirty | an explicit save, or `contentReloaded(updatedAt, adopt?, discardedVersion?)` with a candidate different from the rejected one |
+| server `validation`             | `error`; background saves suppressed until the snapshot version moves                                                                                                     | next edit, an explicit save, or a settings retry                                                                              |
+| `host-limit`                    | `error`; suppression as for validation, but only for a status-preserving save (a publish limit never halts autosave)                                                      | next edit, an explicit save, or a settings retry                                                                              |
+| `transport` / `unknown`         | `error`, no suppression; an update is read back before the next save                                                                                                      | next save                                                                                                                     |
 
 `halted` carries the error that stopped it, as `error` and `conflict` do.
 `error` and `conflict` persist until an attempt starts; timers arming or a
@@ -112,6 +112,12 @@ dropped save do not clear them. An unsuccessful retry still returns its actual
 failure to the caller, but restores the retained conflict state so reload
 recovery remains available. A transport failure cannot prove that a rejected
 collision token is safe.
+
+A confirmed discard may pass the edit `version` captured before the reload read
+as `discardedVersion`. This permits replacing dirty content without a collision
+only while that version still matches. Edits made during the read refuse the
+reload, and confirmed adoption cancels the discarded draft’s pending timers.
+The default dirty-content guard and rejected collision-token guard still apply.
 
 `contentReloaded(updatedAt)` validates a replacement against the retained
 collision record rather than the latest activity label. It accepts a valid

@@ -208,7 +208,7 @@ describe('Post settings saving', () => {
 
     await expect
       .element(editorScreen.conflictBanner())
-      .toHaveTextContent('Someone else is editing this post');
+      .toHaveTextContent('Someone else saved changes. Your changes weren’t saved.');
     expect(saveApi.requests).toHaveLength(1);
     expect(submittedPost(saveApi)).toMatchObject({
       ...SAVED_CANVAS,

@@ -20,14 +20,21 @@ ids and a server timestamp; names and avatars come from the staff users list.
   polling for the session, so an older backend without the endpoint costs one
   request. Other failures back off exponentially up to 60 seconds and clear
   what is shown.
-- Indicators are a second flag, `editorPresence`. The editor header shows the
-  other staff on the open document, and posts and pages list rows show who has
-  that row open, as avatars with an overflow count named from the staff users
-  list, which is read only once someone is present. Users missing from that
-  list are not shown. Hovering or focusing the cluster names everyone in one
-  sentence, "Alex and Sam have this post open", the same in the editor and the
-  lists. Below the `sm` breakpoint one avatar with a count badge stands for
-  everyone.
+- Indicators are a second flag, `editorPresence`. In the editor, a persistent
+  warning above the header names the other staff who have the post or page open,
+  with avatars and Copy content followed by Reload. It warns that competing
+  changes may prevent saving; presence does not grant editing ownership or mean
+  changes can be merged. Missing staff records use a generic warning instead.
+  Reload asks before discarding unsaved changes, and Copy content copies the
+  current title and body as plain text.
+- An actual save collision or terminal failure takes priority over presence, as
+  does a known newer version. The collision warning stays after presence ends;
+  someone leaving does not make the writer's version current.
+- Posts and pages list rows still show who has that row open as avatars with an
+  overflow count named from the staff users list, read only once someone is
+  present. Users missing from that list are not shown. Hovering or focusing the
+  cluster names everyone in one sentence, "Alex and Sam have this post open".
+  Below the `sm` breakpoint one avatar with a count badge stands for everyone.
 
 ## Modules
 
