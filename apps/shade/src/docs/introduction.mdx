@@ -50,6 +50,16 @@ Page templates have their own subpath: `ListPage` comes from `@tryghost/shade/pa
 
 Never import from the root `@tryghost/shade` barrel or from a deep path into the package, such as `@tryghost/shade/src/components/ui/button`. The subpath makes the layer visible at the call site, which is the first thing a reader needs; the root barrel hides it and encourages cross-layer drift. Inside Shade itself, imports follow [Contributing to Shade](https://github.com/TryGhost/Ghost/blob/main/apps/shade/CONTRIBUTING.md#imports).
 
+## Admin mobile-hardening preview
+
+Ghost Admin passes its temporary `admin7Mobile` Labs flag into `ShadeApp`.
+Shared components can read `useShade().admin7Mobile`; styles can use the
+`data-admin7-mobile` scope, which also follows portalled menus and dialogs.
+The switch is independent of `admin7Design` and defaults to `false`, including
+in standalone surfaces. It enables responsive improvements, not a fixed mobile
+viewport. Keep ordinary component calls unchanged so the switch and legacy
+branches can be removed after rollout.
+
 ## Embedded and standalone setup
 
 Where Shade's stylesheet and `ShadeApp` come from depends on who owns the document:

@@ -226,6 +226,21 @@ chrome itself: the back link shows its arrow alone, the editor font and the
 guide to the editor leave the footer for the settings panel, and the meta data
 and social cards share one pane with a tab each.
 
+### Mobile hardening
+
+`admin7Mobile` is an opt-in private flag, independent of `admin7Design`.
+Admin passes it to ShadeApp; shared components read `useShade().admin7Mobile`,
+and ShadeApp and portal scopes carry `data-admin7-mobile`. It defaults off in
+standalone Shade consumers too. Available width selects the responsive layout;
+the flag only enables the improvements. Keep changes at their owning component
+or layout boundary and reuse data and interaction logic.
+
+Preview with `/ghost/#/members?labs=admin7Mobile`, or
+`?labs=admin7Mobile,admin7Design` for both. Clearing with `?labs=` restores the
+site's values. Network, Automations/Apps, and the editor are outside this
+project's scope. Remove the old branches and this switch when the responsive
+behavior becomes the default.
+
 ## How values are resolved
 
 For normal Labs flags, later sources in this list override earlier ones:

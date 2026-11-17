@@ -51,6 +51,11 @@ const features: Feature[] = [
     flag: 'admin7Design',
   },
   {
+    title: 'Admin 7 · Mobile hardening',
+    description: 'Preview responsive Admin improvements, independently of Admin 7 · Design.',
+    flag: 'admin7Mobile',
+  },
+  {
     title: 'Admin 7 · Customize from View site',
     description:
       'Customize the site design from View site, with a live preview. Needs Admin 7 · Design.',
