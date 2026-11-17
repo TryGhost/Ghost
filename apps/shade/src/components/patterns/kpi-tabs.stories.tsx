@@ -235,3 +235,39 @@ export const WithoutTrends: Story = {
     },
   },
 };
+
+export const InvertedTrend: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Set `diffInverted` where a rise is bad, such as reported comments, and `diffTooltip` to name the comparison period.',
+      },
+    },
+  },
+  render: () => (
+    <Tabs defaultValue="comments" variant="kpis">
+      <TabsList>
+        <KpiTabTrigger value="comments">
+          <KpiTabValue
+            diffDirection="down"
+            diffTooltip="Compared to the previous 30 days"
+            diffValue="-12%"
+            label="Comments"
+            value="79"
+          />
+        </KpiTabTrigger>
+        <KpiTabTrigger value="reported">
+          <KpiTabValue
+            diffDirection="up"
+            diffTooltip="Compared to the previous 30 days"
+            diffValue="+100%"
+            label="Reported"
+            value="2"
+            diffInverted
+          />
+        </KpiTabTrigger>
+      </TabsList>
+    </Tabs>
+  ),
+};

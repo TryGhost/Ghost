@@ -14,6 +14,9 @@ const meta = {
     },
   },
   argTypes: {
+    inverted: {
+      control: { type: 'boolean' },
+    },
     direction: {
       control: { type: 'select' },
       options: ['up', 'down', 'same', 'hidden'],
@@ -53,6 +56,21 @@ export const WithTooltip: Story = {
     direction: 'up',
     value: '+12%',
     tooltip: 'Compared to the previous 30 days',
+  },
+};
+
+export const Inverted: Story = {
+  args: {
+    direction: 'up',
+    inverted: true,
+    value: '+40%',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'For metrics where a rise is bad, such as reported comments: up reads as danger.',
+      },
+    },
   },
 };
 
