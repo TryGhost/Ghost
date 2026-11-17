@@ -50,7 +50,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     'initServices',
     {
       'node:assert/strict': assert,
-      './server/services/adapter-manager': { default: { getAdapter: () => scheduler } },
+      './boot/adapters': { default: { getAdapter: () => scheduler } },
       './server/adapters/scheduling/error-capture': { withErrorCapture: (value: unknown) => value },
       './shared/url-utils': { default: { urlFor: () => 'https://example.com/ghost/api/admin' } },
       './shared/settings-cache': { get: () => 'site-id' },

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 // Required, not imported: the loader resolves adapters with `require`, which reads the
 // package build, so an ESM import of the source would fail the `instanceof` check.
 const { UpgradeBase } = require('@tryghost/adapter-base-upgrade');
-const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
+const adapterManager = require('../../../../core/boot/adapters').default;
 
 describe('adapter-manager upgrade wiring', function () {
   afterEach(function () {

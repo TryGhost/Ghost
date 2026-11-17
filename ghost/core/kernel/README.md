@@ -29,10 +29,11 @@ they are installed or how they are configured: the application constructs
 `AdapterManager` with its base-class registry, search paths, module loader and
 a `getConfig` callback returning the [adapter configuration](adapter-manager/types.ts)
 keyed by type. Ghost's registry, search paths and configuration normalization
-live in [`server/services/adapter-manager`](../server/services/adapter-manager/index.ts),
-which exports the configured instance; `bin/validate-adapters.ts` shares the
-same loader and registry so a build-time check resolves adapters exactly as the
-server does.
+live in [`boot/adapters`](../boot/README.md#adapters), which builds the
+configured instance; `bin/validate-adapters.ts` shares the same loader and
+registry so a build-time check resolves adapters exactly as the server does.
+Boundary lint (`adapter-manager-composed-in-boot`) rejects a runtime import of
+the manager from anywhere else in Ghost Core.
 
 ### Contract
 

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import { normalizeAdapterConfig } from '../../../../../core/server/services/adapter-manager/config';
-import { createConfig } from '../../../../../core/shared/config/validated';
-import { configSources } from '../../../../utils/config-sources';
-import type { ConfigInstance } from '../../../../../core/shared/config/loader';
-import type { AdapterConfig } from '../../../../../core/kernel/adapter-manager';
+import { normalizeAdapterConfig } from '../../../../core/boot/adapters/config';
+import { createConfig } from '../../../../core/shared/config/validated';
+import { configSources } from '../../../utils/config-sources';
+import type { ConfigInstance } from '../../../../core/shared/config/loader';
+import type { AdapterConfig } from '../../../../core/kernel/adapter-manager';
 
 // The options a named store would be constructed with, read back from the
 // normalized config without assuming the type is configured.

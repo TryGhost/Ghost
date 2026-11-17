@@ -1,5 +1,5 @@
-import config from '../../../shared/config';
-import type { ConfigInstance } from '../../../shared/config/loader';
+import config from '../../shared/config';
+import type { ConfigInstance } from '../../shared/config/loader';
 
 /**
  * Where adapters are looked up, in order. Also read by bin/validate-adapters.ts,

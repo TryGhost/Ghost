@@ -14,7 +14,7 @@ function createCoreHarness() {
   const integrations = { init: sinon.stub().resolves() };
   const stripeCheckoutConfig = { init: sinon.stub().resolves() };
   const initCore = loadBootFunction('initCore', {
-    './server/services/adapter-manager': { default: { init() {} } },
+    './boot/adapters': { default: { init() {} } },
     './server/lib/image/image-decoders': { restrictImageDecoders() {} },
     './server/lib/image/image-content': {
       IMAGE_UPLOAD_TYPES: [],

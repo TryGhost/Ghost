@@ -31,46 +31,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/adapter-manager/adapter-paths.ts",
-    "to": "ghost/core/shared/config/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
-    "to": "packages/adapters/cache-base/src/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
-    "to": "packages/adapters/jobs-base/src/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
-    "to": "packages/adapters/redirects-base/src/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
-    "to": "packages/adapters/route-settings-base/src/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
-    "to": "packages/adapters/scheduling-base/src/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
-    "to": "packages/adapters/sso-base/src/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
-    "to": "packages/adapters/storage-base/src/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/content-import/csv/parse.ts",
     "to": "fs-extra"
   },

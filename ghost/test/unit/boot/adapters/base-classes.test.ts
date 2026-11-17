@@ -1,12 +1,9 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { baseClassPackages } from '../../../../../core/server/services/adapter-manager/base-classes';
+import { baseClassPackages } from '../../../../core/boot/adapters/base-classes';
 
-const sourcePath = path.join(
-  __dirname,
-  '../../../../../core/server/services/adapter-manager/base-classes.ts',
-);
+const sourcePath = path.join(__dirname, '../../../../core/boot/adapters/base-classes.ts');
 
 describe('base-classes', function () {
   it('names exactly the packages the base classes are imported from', function () {

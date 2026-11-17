@@ -1,5 +1,5 @@
-import type { AdapterConfig, AdapterTypeConfig } from '../../../kernel/adapter-manager';
-import type { ConfigInstance } from '../../../shared/config/loader';
+import type { AdapterConfig, AdapterTypeConfig } from '../../kernel/adapter-manager';
+import type { ConfigInstance } from '../../shared/config/loader';
 
 function getSchedulingConfig(config: ConfigInstance): AdapterTypeConfig | undefined {
   const adapterConfig = config.get('adapters:scheduling');

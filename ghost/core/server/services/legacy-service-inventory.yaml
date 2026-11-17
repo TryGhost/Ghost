@@ -210,6 +210,7 @@ services:
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
         - core/server/services/adapter-manager/index.ts
+        - core/boot/adapters/index.ts
         - core/kernel/adapter-manager/adapter-manager.ts
         - core/server/lib/image/index.js
         - core/server/services/post-scheduling/index.ts
@@ -228,12 +229,13 @@ services:
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
           - core/server/services/adapter-manager/index.ts
+          - core/boot/adapters/index.ts
           - core/kernel/adapter-manager/adapter-manager.ts
-          - core/server/services/adapter-manager/adapter-paths.ts
-          - core/server/services/adapter-manager/base-classes.ts
+          - core/boot/adapters/adapter-paths.ts
+          - core/boot/adapters/base-classes.ts
           - core/kernel/adapter-manager/loader.ts
           - core/kernel/adapter-manager/options.ts
-          - core/server/services/adapter-manager/config.ts
+          - core/boot/adapters/config.ts
           - bin/validate-adapters.ts
           - core/server/lib/image/index.js
           - core/server/services/post-scheduling/index.ts
@@ -241,37 +243,38 @@ services:
       - adapter-manager/index.ts
     notes: >-
       Split in progress. The reusable loading, validation and instance-management machinery
-      now lives in core/kernel/adapter-manager and takes its configuration through an
-      explicit getConfig callback, so it imports nothing from the application. This
-      directory holds only Ghost's composition: the base-class registry, search paths, the
-      legacy scheduling/storage normalization, import-storage isolation and content-path
-      defaults, and the configured instance, with live resolution on each lookup. The
-      remaining relocation is of that composition into boot. The dependency audit still
-      counts the registry and path files as implementation because the service rule treats
-      every non-root file as one; a composition-only directory has no implementation to
-      isolate, which a boot home would resolve. Reassess initialization after that move
-      rather than migrating this root in place. Preserve boot validation, lazy adapter
-      construction, lookup precedence, live configuration resolution and cached identity.
-      Consumers retain adapters outside the manager; disposal and replacement must account
-      for those references and adapter-specific resource owners.
+      lives in core/kernel/adapter-manager and takes its configuration through an explicit
+      getConfig callback, so it imports nothing from the application. Ghost's composition
+      lives in core/boot/adapters: the base-class registry, search paths, the legacy
+      scheduling/storage normalization, import-storage isolation and content-path defaults,
+      and the configured instance, with live resolution on each lookup. This directory now
+      only re-exports that instance for consumers that still look adapters up, and is
+      deleted once each consumer receives its adapters from boot. Do not migrate this root
+      in place. Preserve boot validation, lazy adapter construction, lookup precedence, live
+      configuration resolution and cached identity. Consumers retain adapters outside the
+      manager; disposal and replacement must account for those references and
+      adapter-specific resource owners.
     contracts:
       exports:
         summary: >-
-          TypeScript default-exports an eager AdapterManager instance; CommonJS callers read
-          .default. init and clearCache return void; getAdapter synchronously returns the
-          configured adapter. Methods depend on their receiver. The implementation class,
-          paths, registry and resolver utilities are deep-imported by tests and the validation
-          CLI. There is no manager shutdown or disposal API.
+          TypeScript default-exports an eager AdapterManager instance, re-exported from
+          core/boot/adapters; CommonJS callers read .default. init and clearCache return
+          void; getAdapter synchronously returns the configured adapter. Methods depend on
+          their receiver. The implementation class, paths, registry and resolver utilities
+          are deep-imported by tests and the validation CLI. There is no manager shutdown or
+          disposal API.
         sources:
           - core/server/services/adapter-manager/index.ts
+          - core/boot/adapters/index.ts
           - core/kernel/adapter-manager/adapter-manager.ts
           - core/kernel/adapter-manager/types.ts
           - bin/validate-adapters.ts
         tests:
-          - test/unit/server/services/adapter-manager/route-settings-wiring.test.ts
+          - test/unit/boot/adapters/route-settings-wiring.test.ts
       construction:
         summary: >-
-          The root is the only production manager constructor found. It captures shared config,
+          core/boot/adapters is the only production manager constructor found; the root
+          re-exports its instance. It captures shared config,
           require, import-time lookup paths and seven registered base classes. getAdapter
           resolves and loads the class before checking its name/class cache, then constructs
           an uncached adapter and validates inheritance and required methods before caching it.
@@ -281,17 +284,17 @@ services:
           The validation CLI shares loading helpers and instantiates bases, not this manager
           or configured adapters.
         sources:
-          - core/server/services/adapter-manager/index.ts
+          - core/boot/adapters/index.ts
           - core/kernel/adapter-manager/adapter-manager.ts
-          - core/server/services/adapter-manager/adapter-paths.ts
-          - core/server/services/adapter-manager/base-classes.ts
+          - core/boot/adapters/adapter-paths.ts
+          - core/boot/adapters/base-classes.ts
           - core/kernel/adapter-manager/loader.ts
-          - core/server/services/adapter-manager/config.ts
+          - core/boot/adapters/config.ts
           - bin/validate-adapters.ts
         tests:
           - test/unit/kernel/adapter-manager/adapter-manager.test.ts
-          - test/unit/server/services/adapter-manager/base-classes.test.ts
-          - test/unit/server/services/adapter-manager/adapter-paths.test.ts
+          - test/unit/boot/adapters/base-classes.test.ts
+          - test/unit/boot/adapters/adapter-paths.test.ts
       consumers:
         summary: >-
           Boot validates adapters and starts scheduling. Services retain image/settings/public
@@ -335,7 +338,7 @@ services:
           - core/server/adapters/cache/index.js
           - bin/validate-adapters.ts
         tests:
-          - test/unit/server/services/adapter-manager/route-settings-wiring.test.ts
+          - test/unit/boot/adapters/route-settings-wiring.test.ts
           - test/integration/adapters/route-settings/adapter-manager-wiring.test.ts
       startup:
         summary: >-
@@ -354,7 +357,7 @@ services:
           - core/server/lib/image/index.js
         tests:
           - test/unit/kernel/adapter-manager/adapter-manager.test.ts
-          - test/unit/server/services/adapter-manager/route-settings-wiring.test.ts
+          - test/unit/boot/adapters/route-settings-wiring.test.ts
       lifetime:
         summary: >-
           Module and instance caches retain manager/adapters across same-process boots. init
@@ -386,15 +389,15 @@ services:
           reaching an already retained adapter.
         sources:
           - core/kernel/adapter-manager/adapter-manager.ts
-          - core/server/services/adapter-manager/adapter-paths.ts
+          - core/boot/adapters/adapter-paths.ts
           - core/kernel/adapter-manager/options.ts
-          - core/server/services/adapter-manager/config.ts
+          - core/boot/adapters/config.ts
           - core/shared/config/defaults.json
         tests:
           - test/unit/kernel/adapter-manager/adapter-manager.test.ts
           - test/unit/kernel/adapter-manager/options.test.ts
-          - test/unit/server/services/adapter-manager/config.test.ts
-          - test/unit/server/services/adapter-manager/adapter-paths.test.ts
+          - test/unit/boot/adapters/config.test.ts
+          - test/unit/boot/adapters/adapter-paths.test.ts
           - test/integration/adapters/storage/imports-storage-config.test.ts
       resources:
         summary: >-
@@ -436,12 +439,12 @@ services:
         sources:
           - core/kernel/adapter-manager/adapter-manager.ts
           - core/kernel/adapter-manager/loader.ts
-          - core/server/services/adapter-manager/config.ts
+          - core/boot/adapters/config.ts
           - core/kernel/adapter-manager/types.ts
         tests:
           - test/unit/kernel/adapter-manager/adapter-manager.test.ts
-          - test/unit/server/services/adapter-manager/adapter-paths.test.ts
-          - test/unit/server/services/adapter-manager/route-settings-wiring.test.ts
+          - test/unit/boot/adapters/adapter-paths.test.ts
+          - test/unit/boot/adapters/route-settings-wiring.test.ts
     unverified: []
     blockers:
       - >-
@@ -6842,11 +6845,11 @@ services:
           - core/server/services/route-settings/index.js
           - core/server/services/route-settings/dynamic-routing-service.js
           - core/kernel/adapter-manager/adapter-manager.ts
-          - core/server/services/adapter-manager/base-classes.ts
+          - core/boot/adapters/base-classes.ts
           - core/server/adapters/route-settings/FileStore.ts
           - core/server/adapters/route-settings/S3RouteSettingsStore.ts
         tests:
-          - test/unit/server/services/adapter-manager/route-settings-wiring.test.ts
+          - test/unit/boot/adapters/route-settings-wiring.test.ts
           - test/unit/server/services/route-settings/dynamic-routing-service.test.ts
           - test/integration/services/route-settings/dynamic-routing-service.test.ts
       consumers:
@@ -6948,7 +6951,7 @@ services:
         sources:
           - core/server/services/route-settings/index.js
           - core/server/services/route-settings/route-settings-parser.ts
-          - core/server/services/adapter-manager/config.ts
+          - core/boot/adapters/config.ts
           - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/adapters/route-settings/FileStore.ts
           - core/server/adapters/route-settings/S3RouteSettingsStore.ts
@@ -6958,8 +6961,8 @@ services:
           - core/shared/url-utils.ts
           - core/frontend/services/routing/parent-router.js
         tests:
-          - test/unit/server/services/adapter-manager/route-settings-wiring.test.ts
-          - test/unit/server/services/adapter-manager/config.test.ts
+          - test/unit/boot/adapters/route-settings-wiring.test.ts
+          - test/unit/boot/adapters/config.test.ts
           - test/unit/server/adapters/route-settings/s3-route-settings-store.test.ts
           - test/unit/server/services/route-settings/route-settings-parser.test.ts
           - test/unit/server/services/route-settings/validate-route-settings.test.ts

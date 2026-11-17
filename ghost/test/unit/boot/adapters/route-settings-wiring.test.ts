@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import type { RouteSettings } from '@tryghost/adapter-base-route-settings';
-import defaults from '../../../../../core/shared/config/defaults.json';
-import { resolveAdapterOptions } from '../../../../../core/kernel/adapter-manager';
-import { normalizeAdapterConfig } from '../../../../../core/server/services/adapter-manager/config';
+import defaults from '../../../../core/shared/config/defaults.json';
+import { resolveAdapterOptions } from '../../../../core/kernel/adapter-manager';
+import { normalizeAdapterConfig } from '../../../../core/boot/adapters/config';
 
 // the adapter-manager is required via its `.default` export (so its methods stay
 // stubbable) and config-utils is untyped JS, so neither can be imported.
@@ -11,8 +11,8 @@ import { normalizeAdapterConfig } from '../../../../../core/server/services/adap
 // `require`, which reads the package's compiled build, whereas an ESM import
 // here resolves to the package source and would fail the `instanceof` check.
 const { RouteSettingsStoreBase } = require('@tryghost/adapter-base-route-settings');
-const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
-const configUtils = require('../../../../utils/config-utils');
+const adapterManager = require('../../../../core/boot/adapters').default;
+const configUtils = require('../../../utils/config-utils');
 
 describe('adapter-manager route-settings wiring', function () {
   afterEach(async function () {

@@ -347,11 +347,6 @@ const serviceDependencyDecisions = {
   // Each names the file, its dependencies and the refactor.
   deferred: [
     {
-      from: '^ghost/core/server/services/adapter-manager/base-classes\\.ts$',
-      to: '^packages/adapters/[^/]+-base/',
-      until: "PLA-541 moves Ghost's adapter registry into boot",
-    },
-    {
       from: '^ghost/core/server/services/jobs-service/register-job-handlers\\.ts$',
       to: '-job\\.(ts|js)$',
       until: 'PLA-543 moves job handler registration into boot',
@@ -462,6 +457,19 @@ module.exports = {
       severity: 'error',
       from: { path: '^ghost/core/kernel/' },
       to: { path: '^ghost/', pathNot: '^ghost/core/kernel/' },
+    },
+    // Boot composes Ghost's one configured adapter manager; everything else is
+    // handed adapters. Types may be imported anywhere.
+    {
+      name: 'adapter-manager-composed-in-boot',
+      comment:
+        'Only boot may import the kernel adapter manager at runtime. Use the adapters boot provides.',
+      severity: 'error',
+      from: { path: '^ghost/core/', pathNot: ['^ghost/core/boot/', '^ghost/core/kernel/'] },
+      to: {
+        path: '^ghost/core/kernel/adapter-manager/',
+        dependencyTypesNot: ['type-only', 'type-import'],
+      },
     },
     // ============================================================
     // shared/ must not require server/* or frontend/*

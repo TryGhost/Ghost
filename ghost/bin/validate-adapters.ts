@@ -17,11 +17,8 @@ import {
   collectLoadedFiles,
   formatDuplicateReport,
 } from './lib/duplicate-deps';
-import { adapterPaths } from '../core/server/services/adapter-manager/adapter-paths';
-import {
-  baseClasses,
-  baseClassPackages,
-} from '../core/server/services/adapter-manager/base-classes';
+import { adapterPaths } from '../core/boot/adapters/adapter-paths';
+import { baseClasses, baseClassPackages } from '../core/boot/adapters/base-classes';
 import { loadAdapterClass } from '../core/kernel/adapter-manager';
 
 type AdapterType = keyof typeof baseClasses;

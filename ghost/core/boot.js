@@ -100,7 +100,7 @@ async function initCore({ ghostServer, config }) {
   // Validate configured adapters up-front so misconfiguration fails at boot
   // rather than on first lazy use (e.g. first image upload or scheduled job)
   debug('Begin: adapters');
-  const adapterManager = require('./server/services/adapter-manager').default;
+  const adapterManager = require('./boot/adapters').default;
   adapterManager.init();
   debug('End: adapters');
 
@@ -415,7 +415,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const domainEvents = require('@tryghost/domain-events');
   const { automationsService } = require('./server/services/automations');
   const automationsApi = require('./server/services/automations/automations-api');
-  const adapterManager = require('./server/services/adapter-manager').default;
+  const adapterManager = require('./boot/adapters').default;
   const { withErrorCapture } = require('./server/adapters/scheduling/error-capture');
 
   const assert = require('node:assert/strict');
