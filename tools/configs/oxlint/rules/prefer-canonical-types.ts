@@ -9,16 +9,20 @@ interface CanonicalType {
   jsdoc: string;
 }
 
-const canonicalTypes: CanonicalType[] = [
-  {
-    label: 'logger',
-    members: new Set(['debug', 'info', 'warn', 'error', 'fatal', 'trace']),
-    typescript: "import type { GhostLogger } from '@tryghost/logging' (or Pick<GhostLogger, ...>)",
-    jsdoc: "import('@tryghost/logging').GhostLogger",
-  },
-];
+const loggerType: CanonicalType = {
+  label: 'logger',
+  members: new Set(['debug', 'info', 'warn', 'error', 'fatal', 'trace']),
+  typescript: "import type { GhostLogger } from '@tryghost/logging' (or Pick<GhostLogger, ...>)",
+  jsdoc: "import('@tryghost/logging').GhostLogger",
+};
+
+const canonicalTypes: CanonicalType[] = [loggerType];
 
 type Signature = ESTree.TSSignature;
+
+const callableTypes = new Set(['Function', 'SinonStub', 'SinonSpy']);
+const loggerNames = new Set(['logging', 'logger']);
+const vagueTypes = new Set(['TSAnyKeyword', 'TSObjectKeyword', 'TSUnknownKeyword']);
 
 function memberName(member: Signature): string | undefined {
   if (member.type !== 'TSMethodSignature' && member.type !== 'TSPropertySignature') return;
@@ -37,7 +41,7 @@ function isCallable(member: Signature) {
     annotation?.type === 'TSFunctionType' ||
     (annotation?.type === 'TSTypeReference' &&
       annotation.typeName.type === 'Identifier' &&
-      annotation.typeName.name === 'Function')
+      callableTypes.has(annotation.typeName.name))
   );
 }
 
@@ -100,7 +104,7 @@ function jsdocMember(member: string) {
   const value = (property[2] ?? '').trim();
   return {
     name: property[1],
-    callable: value === 'Function' || (value.startsWith('(') && /\)\s*=>/.test(value)),
+    callable: callableTypes.has(value) || (value.startsWith('(') && /\)\s*=>/.test(value)),
   };
 }
 
@@ -126,6 +130,7 @@ export const preferCanonicalTypes: CreateRule = {
       typescript:
         'This hand-written {{label}} type duplicates a library type. Use {{replacement}}.',
       jsdoc: 'This JSDoc {{label}} type duplicates a library type. Use {{replacement}}.',
+      vague: 'Injected logging needs a real type. Use {{replacement}}.',
     },
   },
   create(context) {
@@ -148,12 +153,38 @@ export const preferCanonicalTypes: CreateRule = {
       TSTypeLiteral(node) {
         check(node, node.members);
       },
+      TSPropertySignature(node) {
+        if (
+          !node.computed &&
+          node.key.type === 'Identifier' &&
+          loggerNames.has(node.key.name) &&
+          vagueTypes.has(node.typeAnnotation?.typeAnnotation.type ?? '')
+        ) {
+          context.report({
+            node,
+            messageId: 'vague',
+            data: { replacement: loggerType.typescript },
+          });
+        }
+      },
       TSInterfaceDeclaration(node) {
         if (node.extends.length === 0) check(node, node.body.body);
       },
       Program() {
         for (const comment of sourceCode.getAllComments()) {
           if (comment.type !== 'Block' || !comment.value.startsWith('*')) continue;
+          for (const vague of comment.value.matchAll(
+            /@(?:param|property|prop)\s*\{(?:object|Object|any|\*)\}\s*\[?(?:[\w$]+\.)*(?:logging|logger)\b/g,
+          )) {
+            context.report({
+              loc: {
+                start: sourceCode.getLocFromIndex(comment.start + 2 + vague.index),
+                end: sourceCode.getLocFromIndex(comment.start + 2 + vague.index + vague[0].length),
+              },
+              messageId: 'vague',
+              data: { replacement: loggerType.jsdoc },
+            });
+          }
           // Read only tag types, such as `@param {...}` or `@typedef {...}`.
           const tag = /@[A-Za-z]+\s*\{/g;
           for (let found = tag.exec(comment.value); found; found = tag.exec(comment.value)) {

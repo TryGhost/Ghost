@@ -81,6 +81,26 @@ export type AutomationTriggerRule =
       scope: 'specific_paid_tier';
       product_id: string;
       direction: null;
+    }
+  | {
+      trigger_type: 'paid_subscription_changed';
+      scope: 'any_paid_tier';
+      product_id: null;
+      direction: 'from';
+    }
+  | { trigger_type: 'paid_subscription_changed'; scope: 'free'; product_id: null; direction: 'to' }
+  | {
+      trigger_type: 'paid_subscription_changed';
+      scope: 'specific_paid_tier';
+      product_id: string;
+      direction: 'from' | 'to';
+    }
+  | {
+      trigger_type: 'label_added';
+      label_id: string;
+      scope: null;
+      product_id: null;
+      direction: null;
     };
 
 export type AutomationTrigger = { trigger_rules: readonly AutomationTriggerRule[] };

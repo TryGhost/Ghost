@@ -7,7 +7,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  LoadingIndicator,
 } from '@tryghost/shade/components';
 import { useDeleteTag } from '@tryghost/admin-x-framework/api/tags';
 import { useHandleError, useNavigate } from '@tryghost/admin-x-framework';
@@ -114,19 +113,12 @@ const TagDeleteModal: React.FC<TagDeleteModalProps> = ({
           </Button>
           <Button
             data-testid="confirm-delete-tag"
-            disabled={deleteTag.isPending}
+            loading={deleteTag.isPending}
             variant="destructive"
             autoFocus
             onClick={() => void onConfirm()}
           >
-            {deleteTag.isPending ? (
-              <>
-                <LoadingIndicator size="sm" />
-                <span className="sr-only">Deleting</span>
-              </>
-            ) : (
-              'Delete'
-            )}
+            Delete
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -19,6 +19,9 @@ const crypto = require('crypto');
 const { hasActiveOffer } = require('../utils/has-active-offer');
 const { afterCommit } = require('../../../../lib/after-commit');
 const {
+  LabelAddedToMembersEvent,
+} = require('../../../../../shared/events/label-added-to-members-event');
+const {
   StartAutomationsPollEvent,
 } = require('../../../automations/events/start-automations-poll-event');
 const { MEMBER_WELCOME_EMAIL_SLUGS } = require('../../../member-welcome-emails/constants');
@@ -27,6 +30,8 @@ const schema = require('../../../../data/schema');
 const labs = require('../../../../../shared/labs');
 /** @import {Knex} from 'knex' */
 /** @import * as automationsApi from '../../../automations/automations-api' */
+
+const BULK_EDIT_CHUNK_SIZE = 1000;
 
 const messages = {
   noStripeConnection: 'Cannot {action} without a Stripe Connection',
@@ -276,7 +281,7 @@ module.exports = class MemberRepository {
       options.transacting.executionPromise.then(notify).catch((err) => {
         logging.error({
           err,
-          message: `Error notifying automations for member ${payload.memberId}`,
+          message: `Error notifying automations for ${payload.eventName} event`,
         });
       });
     } else {
@@ -306,7 +311,6 @@ module.exports = class MemberRepository {
       eventName: /** @type {const} */ ('paid_subscription_changed'),
       source: this._resolveContextSource(options.context || {}),
       memberId: member.id,
-      memberEmail: member.get('email'),
       memberStatus: member.get('status'),
       previousMemberStatus: previousStatus,
       memberTierIds: tierIds,
@@ -343,7 +347,6 @@ module.exports = class MemberRepository {
     bookshelfOptions,
   }) {
     const memberId = member.id;
-    const memberEmail = member.get('email');
     const memberTierIds = await getMemberTierIds(member, memberStatus, bookshelfOptions);
 
     await this.#notifyAutomations(
@@ -351,7 +354,6 @@ module.exports = class MemberRepository {
         eventName: 'membership_started',
         source: this._resolveContextSource(bookshelfOptions.context || {}),
         memberId,
-        memberEmail,
         memberStatus,
         previousMemberStatus,
         memberTierIds,
@@ -1348,45 +1350,112 @@ module.exports = class MemberRepository {
 
     const memberIds = memberRows.map((row) => row.id);
 
+    // Each action changes the members' relations, so lock them as an edit would.
+    // A chunk at a time, so a bulk action across every member doesn't hold
+    // every member's lock until it finishes. Earlier chunks stay committed when
+    // a later one fails, so its members are reported as unsuccessful rather
+    // than failing the whole action
+    const results = [];
+    for (const chunk of _.chunk(memberIds.sort(), BULK_EDIT_CHUNK_SIZE)) {
+      try {
+        results.push(
+          await this._Member.transaction(async (transacting) => {
+            await this._Member.lockForUpdate(chunk, { transacting });
+            return this.#bulkEditChunk(data, chunk, { transacting });
+          }),
+        );
+      } catch (err) {
+        results.push({
+          successful: 0,
+          unsuccessful: chunk.length,
+          unsuccessfulData: chunk,
+          errors: chunk.map((id) => {
+            const e = Object.create(err);
+            e.errorDetails = id;
+            return e;
+          }),
+        });
+      }
+    }
+
+    return {
+      successful: _.sumBy(results, 'successful'),
+      unsuccessful: _.sumBy(results, 'unsuccessful'),
+      unsuccessfulData: results.flatMap((result) => result.unsuccessfulData),
+      errors: results.flatMap((result) => result.errors),
+    };
+  }
+
+  async #bulkEditChunk(data, memberIds, { transacting }) {
     if (data.action === 'unsubscribe') {
       const hasNewsletterSelected = Object.hasOwn(data, 'newsletter') && data.newsletter !== null;
       if (hasNewsletterSelected) {
         const membersArr = memberIds.map((i) => `'${i}'`).join(',');
         const unsubscribeRows = await this._MemberNewsletter.getFilteredCollectionQuery({
           filter: `newsletter_id:'${data.newsletter}'+member_id:[${membersArr}]`,
+          transacting,
         });
         const toUnsubscribe = unsubscribeRows.map((row) => row.id);
 
-        return await this._MemberNewsletter.bulkDestroy(toUnsubscribe);
+        return await this._MemberNewsletter.bulkDestroy(toUnsubscribe, undefined, { transacting });
       }
-      if (!hasNewsletterSelected) {
-        return await this._Member.bulkDestroy(memberIds, 'members_newsletters', {
-          column: 'member_id',
-        });
-      }
-    }
-    if (data.action === 'removeLabel') {
-      const membersLabelsRows = await this._Member.getLabelRelations({
-        labelId: data.meta.label.id,
-        memberIds,
+
+      return await this._Member.bulkDestroy(memberIds, 'members_newsletters', {
+        column: 'member_id',
+        transacting,
       });
+    }
+
+    if (data.action === 'removeLabel') {
+      const membersLabelsRows = await this._Member.getLabelRelations(
+        {
+          labelId: data.meta.label.id,
+          memberIds,
+        },
+        { transacting },
+      );
 
       const membersLabelsIds = membersLabelsRows.map((row) => row.id);
 
-      return this._Member.bulkDestroy(membersLabelsIds, 'members_labels');
+      return this._Member.bulkDestroy(membersLabelsIds, 'members_labels', { transacting });
     }
 
-    if (data.action === 'addLabel') {
-      const relations = memberIds.map((id) => {
-        return {
-          member_id: id,
-          label_id: data.meta.label.id,
-          id: ObjectId().toHexString(),
-        };
+    const existingLabelRelations = await this._Member.getLabelRelations(
+      { labelId: data.meta.label.id, memberIds },
+      { transacting },
+    );
+    const memberIdsWhoAlreadyHaveThisLabel = new Set(
+      existingLabelRelations.map((row) => row.member_id),
+    );
+
+    const relations = memberIds
+      .filter((id) => !memberIdsWhoAlreadyHaveThisLabel.has(id))
+      .map((id) => ({
+        member_id: id,
+        label_id: data.meta.label.id,
+        id: ObjectId().toHexString(),
+      }));
+
+    const result = await this._Member.bulkAdd(relations, 'members_labels', { transacting });
+
+    const failedIds = new Set(result.unsuccessfulData.map((row) => row.member_id));
+
+    const addedMemberIds = relations
+      .filter((row) => !failedIds.has(row.member_id))
+      .map((row) => row.member_id);
+    if (addedMemberIds.length) {
+      this.dispatchEvent(new LabelAddedToMembersEvent(data.meta.label.id, addedMemberIds), {
+        transacting,
       });
-
-      return this._Member.bulkAdd(relations, 'members_labels');
     }
+
+    return {
+      ...result,
+      // This addition is for API backwards compatibility. Callers expect it to
+      // be the number of affected members before any filtering (like we do
+      // above).
+      successful: result.successful + memberIdsWhoAlreadyHaveThisLabel.size,
+    };
   }
 
   async upsertCustomer(data) {

@@ -4,6 +4,7 @@ import { noop } from 'lodash';
 import { createAutomationsApi2 } from '../../../../../core/server/services/automations/automations-api-2';
 import type {
   AutomationsRepository2,
+  AutomatedEmailRecipientTrackingData,
   RunStepToInsert,
   RunToInsert,
 } from '../../../../../core/server/services/automations/automations-repository-2';
@@ -12,6 +13,9 @@ import {
   createTestAutomationsRepository2,
   type TestAutomationsRepositoryConnection,
 } from './test-automations-repository-2';
+import { alphabeticalDescribe } from '../../../../utils/alphabetical-describe';
+
+type Repository = AutomationsRepository2<TestAutomationsRepositoryConnection>;
 
 describe('automations API', function () {
   const createTestDomainEvents = () => ({
@@ -19,11 +23,9 @@ describe('automations API', function () {
       throw new Error('domainEvents.dispatch should not be called');
     },
   });
-  const createFakeLabs = (isAutomationsEnabled: boolean) => ({
-    isSet: (flag: string) => {
-      expect(flag).toBe('automations');
-      return isAutomationsEnabled;
-    },
+  const createFakeLabs = (isAutomationsEnabled: boolean, isLeadMagnetsEnabled = true) => ({
+    isSet: (flag: 'automations' | 'automationsLeadMagnets') =>
+      flag === 'automations' ? isAutomationsEnabled : isLeadMagnetsEnabled,
   });
   const createApi = (
     overrides: Partial<
@@ -49,7 +51,7 @@ describe('automations API', function () {
     });
   });
 
-  describe('getNumberOfAutomations', function () {
+  alphabeticalDescribe('getNumberOfAutomations', function () {
     it('returns the number of automations', async function () {
       const repository = createTestAutomationsRepository2({
         getNumberOfAutomations: () => 123,
@@ -60,26 +62,15 @@ describe('automations API', function () {
     });
   });
 
-  describe('requestPoll', function () {
-    it('dispatches a "start automations poll" event', function () {
-      const domainEvents = { dispatch: vi.fn<(event: unknown) => unknown>() };
-      const api = createApi({ domainEvents });
-
-      api.requestPoll();
-
-      expect(domainEvents.dispatch).toHaveBeenCalledExactlyOnceWith(
-        expect.any(StartAutomationsPollEvent),
-      );
-    });
-  });
-
-  describe('notify', function () {
-    type Repository = AutomationsRepository2<TestAutomationsRepositoryConnection>;
+  alphabeticalDescribe('notify', function () {
     type FirstAction = Awaited<ReturnType<Repository['findFirstActionRevisions']>>[number];
 
     let repository: ReturnType<typeof createTestAutomationsRepository2>;
     let domainEvents: { dispatch: ReturnType<typeof vi.fn<(event: unknown) => unknown>> };
-    let event: Parameters<ReturnType<typeof createApi>['notify']>[0];
+    let event: Extract<
+      Parameters<ReturnType<typeof createApi>['notify']>[0],
+      { eventName: 'membership_started' }
+    >;
     let firstActions: FirstAction[];
     let runs: Array<Pick<RunToInsert, 'id' | 'automation_id' | 'member_id'>>;
     let steps: RunStepToInsert[];
@@ -105,7 +96,6 @@ describe('automations API', function () {
       event = {
         eventName: 'membership_started',
         source: 'member',
-        memberEmail: 'member@example.com',
         memberId: ObjectId().toHexString(),
         memberStatus: 'free',
         previousMemberStatus: null,
@@ -113,10 +103,12 @@ describe('automations API', function () {
       };
 
       repository = createTestAutomationsRepository2({
-        lockMember: noop,
+        fetchAndLockMembers: () => [{ id: event.memberId, email: 'stored@example.com' }],
+        findAutomationMemberEnrollments: (_connection, automationIds, memberIds) =>
+          runs.filter(
+            (run) => automationIds.includes(run.automation_id) && memberIds.includes(run.member_id),
+          ),
         findFirstActionRevisions: () => firstActions,
-        hasMemberEnteredAutomation: (_connection, automationId, memberId) =>
-          runs.some((run) => run.automation_id === automationId && run.member_id === memberId),
         insertRuns: (_connection, toInsert) => {
           runs.push(...toInsert);
         },
@@ -141,7 +133,6 @@ describe('automations API', function () {
             api.notify({
               ...event,
               eventName: eventName as any,
-              memberEmail: 'foo@example.com',
               memberId: 'abc',
               memberStatus: 'free',
               memberTierIds: [],
@@ -169,9 +160,46 @@ describe('automations API', function () {
         previousMemberStatus: 'paid',
         previousMemberTierIds: ['basic'],
       });
+      await api.notify({
+        eventName: 'label_added',
+        labelId: 'label',
+        memberIds: ['member'],
+      });
 
       expect(withTransaction).not.toHaveBeenCalled();
       expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('ignores label additions before opening a transaction when lead magnets are disabled', async function () {
+      const withTransaction = vi.fn();
+      const api = createApi({
+        labs: createFakeLabs(true, false),
+        repository: { ...repository, withTransaction },
+        domainEvents,
+      });
+
+      await api.notify({ eventName: 'label_added', labelId: 'label', memberIds: ['member'] });
+
+      expect(withTransaction).not.toHaveBeenCalled();
+      expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('still processes membership events when only lead magnets are disabled', async function () {
+      const withTransaction = vi.fn().mockResolvedValue(false);
+      const api = createApi({
+        labs: createFakeLabs(true, false),
+        repository: { ...repository, withTransaction },
+      });
+
+      await api.notify(event);
+      await api.notify({
+        ...event,
+        eventName: 'paid_subscription_changed',
+        previousMemberStatus: 'paid',
+        previousMemberTierIds: ['basic'],
+      });
+
+      expect(withTransaction).toHaveBeenCalledTimes(2);
     });
 
     it.each(['admin', 'api', 'import', 'system'] as const)(
@@ -267,30 +295,29 @@ describe('automations API', function () {
       });
     });
 
-    it('locks the member before any other repository operation', async function () {
-      const lockMember = vi.fn();
-      const findFirstActionRevisions = vi.fn().mockReturnValue([createFirstAction()]);
-      const hasMemberEnteredAutomation = vi.fn().mockReturnValue(false);
+    it('locks the members before any other repository operation', async function () {
+      firstActions = [createFirstAction()];
+      const findFirstActionRevisions = vi.fn(repository.findFirstActionRevisions);
+      const fetchAndLockMembers = vi.fn(repository.fetchAndLockMembers);
+      const findAutomationMemberEnrollments = vi.fn(repository.findAutomationMemberEnrollments);
       const insertRuns = vi.fn();
       const insertRunSteps = vi.fn();
-
       const api = createApi({
-        repository: createTestAutomationsRepository2({
-          lockMember,
+        repository: {
+          ...repository,
+          findAutomationMemberEnrollments,
+          fetchAndLockMembers,
           findFirstActionRevisions,
-          hasMemberEnteredAutomation,
           insertRuns,
           insertRunSteps,
-        }),
+        },
         domainEvents,
       });
-
       await api.notify(event);
-
-      expect(lockMember).toHaveBeenCalledBefore(findFirstActionRevisions);
-      expect(lockMember).toHaveBeenCalledBefore(hasMemberEnteredAutomation);
-      expect(lockMember).toHaveBeenCalledBefore(insertRunSteps);
-      expect(lockMember).toHaveBeenCalledBefore(insertRuns);
+      expect(fetchAndLockMembers).toHaveBeenCalledBefore(findFirstActionRevisions);
+      expect(fetchAndLockMembers).toHaveBeenCalledBefore(findAutomationMemberEnrollments);
+      expect(fetchAndLockMembers).toHaveBeenCalledBefore(insertRuns);
+      expect(fetchAndLockMembers).toHaveBeenCalledBefore(insertRunSteps);
     });
 
     it('enrolls the member in matching automations and queues their first actions', async function () {
@@ -306,7 +333,7 @@ describe('automations API', function () {
           id: expect.any(String),
           automation_id: action.automation_id,
           member_id: event.memberId,
-          member_email: event.memberEmail,
+          member_email: 'stored@example.com',
           created_at: now,
           updated_at: now,
         })),
@@ -333,6 +360,143 @@ describe('automations API', function () {
       expect(domainEvents.dispatch).toHaveBeenCalledExactlyOnceWith(
         expect.any(StartAutomationsPollEvent),
       );
+    });
+
+    it.each(['membership_started', 'paid_subscription_changed'] as const)(
+      'reads the member email for %s events',
+      async function (eventName) {
+        firstActions = [createFirstAction()];
+        const api = createApi({ repository, domainEvents });
+        await api.notify({
+          ...event,
+          eventName,
+          previousMemberStatus: 'paid',
+          previousMemberTierIds: ['previous-tier'],
+        });
+        expect(runs).toEqual([expect.objectContaining({ member_email: 'stored@example.com' })]);
+      },
+    );
+
+    it.each(['member', 'admin', 'api', 'import', 'system'] as const)(
+      'enrolls labeled members from %s events',
+      async function (source) {
+        const members = [
+          { id: 'member-1', email: 'first@example.com' },
+          { id: 'member-2', email: 'second@example.com' },
+        ];
+        const wait = createFirstAction();
+        const email: FirstAction = { ...createFirstAction(), type: 'send_email' };
+        firstActions = [wait, email];
+        const findAutomationMemberEnrollments = vi.fn(repository.findAutomationMemberEnrollments);
+        const findFirstActionRevisions = vi.fn(() => firstActions);
+        const api = createApi({
+          repository: {
+            ...repository,
+            findAutomationMemberEnrollments,
+            fetchAndLockMembers: () => members,
+            findFirstActionRevisions,
+          },
+          domainEvents,
+        });
+
+        await api.notify({
+          eventName: 'label_added',
+          labelId: 'label',
+          memberIds: members.map(({ id }) => id),
+        });
+
+        expect(findAutomationMemberEnrollments).toHaveBeenCalledExactlyOnceWith(
+          expect.anything(),
+          firstActions.map((action) => action.automation_id),
+          ['member-1', 'member-2'],
+        );
+        expect(findFirstActionRevisions).toHaveBeenCalledExactlyOnceWith(expect.anything(), {
+          eventName: 'label_added',
+          labelId: 'label',
+        });
+        expect(runs).toEqual(
+          members.flatMap((member) =>
+            firstActions.map((action) => ({
+              id: expect.any(String),
+              automation_id: action.automation_id,
+              member_id: member.id,
+              member_email: member.email,
+              created_at: now,
+              updated_at: now,
+            })),
+          ),
+        );
+        expect(steps).toEqual(
+          runs.map((run) => ({
+            id: expect.any(String),
+            automation_run_id: run.id,
+            automation_action_revision_id:
+              run.automation_id === wait.automation_id
+                ? wait.automation_action_revision_id
+                : email.automation_action_revision_id,
+            created_at: now,
+            updated_at: now,
+            ready_at:
+              run.automation_id === wait.automation_id ? new Date('2026-01-02T05:04:05Z') : now,
+          })),
+        );
+        expect(domainEvents.dispatch).toHaveBeenCalledExactlyOnceWith(
+          expect.any(StartAutomationsPollEvent),
+        );
+      },
+    );
+
+    it('does nothing for an empty label event', async function () {
+      const withTransaction = vi.fn(() => {
+        throw new Error('withTransaction should not be called');
+      });
+      const api = createApi({
+        repository: { ...repository, withTransaction },
+        domainEvents,
+      });
+      await api.notify({
+        eventName: 'label_added',
+        labelId: 'label',
+        memberIds: [],
+      });
+
+      expect(withTransaction).not.toHaveBeenCalled();
+      expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('does not trigger when label has no matching automations', async function () {
+      firstActions = [];
+      const api = createApi({
+        repository: {
+          ...repository,
+          fetchAndLockMembers: () => [{ id: 'member', email: 'member@example.com' }],
+        },
+        domainEvents,
+      });
+      await api.notify({
+        eventName: 'label_added',
+        labelId: 'label',
+        memberIds: ['member'],
+      });
+      expect(runs).toEqual([]);
+      expect(steps).toEqual([]);
+      expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('does not trigger when label members are missing', async function () {
+      firstActions = [createFirstAction()];
+      const api = createApi({
+        repository: { ...repository, fetchAndLockMembers: () => [] },
+        domainEvents,
+      });
+      await api.notify({
+        eventName: 'label_added',
+        labelId: 'label',
+        memberIds: ['member'],
+      });
+      expect(runs).toEqual([]);
+      expect(steps).toEqual([]);
+      expect(domainEvents.dispatch).not.toHaveBeenCalled();
     });
 
     it.each(['free', 'paid'] as const)(
@@ -429,11 +593,11 @@ describe('automations API', function () {
     });
 
     it.each([
-      'lockMember',
+      'fetchAndLockMembers',
+      'findAutomationMemberEnrollments',
       'findFirstActionRevisions',
-      'hasMemberEnteredAutomation',
-      'insertRuns',
       'insertRunSteps',
+      'insertRuns',
     ] as const)('propagates %s failures without requesting a poll', async function (method) {
       firstActions = [createFirstAction()];
       const failure = new Error(`${method} failed`);
@@ -450,6 +614,273 @@ describe('automations API', function () {
       await expect(api.notify(event)).rejects.toBe(failure);
 
       expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+  });
+
+  alphabeticalDescribe('requestPoll', function () {
+    it('dispatches a "start automations poll" event', function () {
+      const domainEvents = { dispatch: vi.fn<(event: unknown) => unknown>() };
+      const api = createApi({ domainEvents });
+
+      api.requestPoll();
+
+      expect(domainEvents.dispatch).toHaveBeenCalledExactlyOnceWith(
+        expect.any(StartAutomationsPollEvent),
+      );
+    });
+  });
+
+  alphabeticalDescribe('trackEmailClicked', function () {
+    const click = {
+      automationActionRevisionId: 'revision-id',
+      automationRunStepId: 'step-id',
+      memberId: 'member-id',
+      clickedAt: new Date('2026-01-02T03:04:05Z'),
+    };
+    let repository: ReturnType<typeof createTestAutomationsRepository2>;
+
+    beforeEach(function () {
+      repository = createTestAutomationsRepository2({
+        lockActionRevisions: noop,
+        findEmailRecipientForClick: () => ({ id: 'recipient-id', clicked_at: null }),
+        setEmailRecipientClickedAt: vi.fn().mockReturnValue(true),
+        incrementEmailClickedCount: vi.fn(),
+      });
+    });
+
+    const trackClick = () =>
+      repository.withConnection((connection) =>
+        createApi({ repository }).trackEmailClicked(click, { connection }),
+      );
+
+    it('records when a member first clicks an email and increases its click count', async function () {
+      await trackClick();
+
+      expect(repository.setEmailRecipientClickedAt).toHaveBeenCalledExactlyOnceWith(
+        expect.anything(),
+        'recipient-id',
+        click.clickedAt,
+      );
+      expect(repository.incrementEmailClickedCount).toHaveBeenCalledExactlyOnceWith(
+        expect.anything(),
+        click.automationActionRevisionId,
+      );
+    });
+
+    it('locks the email before looking up or recording its click', async function () {
+      const lock = vi.spyOn(repository, 'lockActionRevisions');
+      const find = vi.spyOn(repository, 'findEmailRecipientForClick');
+      const save = vi.spyOn(repository, 'setEmailRecipientClickedAt');
+      const increment = vi.spyOn(repository, 'incrementEmailClickedCount');
+
+      await trackClick();
+
+      expect(lock).toHaveBeenCalledOnce();
+      for (const operation of [find, save, increment]) {
+        expect(operation).toHaveBeenCalledOnce();
+        expect(lock.mock.invocationCallOrder[0]).toBeLessThan(
+          operation.mock.invocationCallOrder[0],
+        );
+      }
+    });
+
+    it('ignores clicks when no matching email has click tracking enabled', async function () {
+      repository.findEmailRecipientForClick = () => undefined;
+
+      await trackClick();
+
+      expect(repository.setEmailRecipientClickedAt).not.toHaveBeenCalled();
+      expect(repository.incrementEmailClickedCount).not.toHaveBeenCalled();
+    });
+
+    it('keeps the first click time and count when a member clicks again', async function () {
+      repository.findEmailRecipientForClick = () => ({
+        id: 'recipient-id',
+        clicked_at: click.clickedAt,
+      });
+
+      await trackClick();
+
+      expect(repository.setEmailRecipientClickedAt).not.toHaveBeenCalled();
+      expect(repository.incrementEmailClickedCount).not.toHaveBeenCalled();
+    });
+
+    it('does not count a click already recorded by another request', async function () {
+      vi.mocked(repository.setEmailRecipientClickedAt).mockReturnValue(false);
+
+      await trackClick();
+
+      expect(repository.incrementEmailClickedCount).not.toHaveBeenCalled();
+    });
+
+    it('reports an error when the click cannot be saved', async function () {
+      const error = new Error('Could not save email click');
+      vi.mocked(repository.setEmailRecipientClickedAt).mockRejectedValue(error);
+
+      await expect(trackClick()).rejects.toBe(error);
+
+      expect(repository.incrementEmailClickedCount).not.toHaveBeenCalled();
+    });
+  });
+
+  alphabeticalDescribe('trackEmailDeliveredAndOpened', function () {
+    const deliveredAt = new Date('2026-01-01T00:00:00Z');
+    const openedAt = new Date('2026-01-02T00:00:00Z');
+
+    let repository: ReturnType<typeof createTestAutomationsRepository2>;
+    let api: ReturnType<typeof createApi>;
+
+    beforeEach(function () {
+      repository = createTestAutomationsRepository2({
+        incrementEmailOpenedCount: vi.fn<Repository['incrementEmailOpenedCount']>(),
+        lockActionRevisions: vi.fn<Repository['lockActionRevisions']>(),
+        lockNotYetOpenedEmailRecipients: vi.fn<Repository['lockNotYetOpenedEmailRecipients']>(
+          () => new Set(['recipient-1', 'recipient-2', 'recipient-3']),
+        ),
+        setEmailRecipientDeliveredAndOpenedAt:
+          vi.fn<Repository['setEmailRecipientDeliveredAndOpenedAt']>(),
+      });
+      vi.spyOn(repository, 'withTransaction');
+      api = createApi({ repository });
+    });
+
+    const track = (entries: Array<[string, AutomatedEmailRecipientTrackingData]>) =>
+      api.trackEmailDeliveredAndOpened(new Map(entries));
+
+    it('does nothing for an empty batch', async function () {
+      await track([]);
+
+      expect(repository.withTransaction).not.toHaveBeenCalled();
+    });
+
+    it('tracks deliveries and opens', async function () {
+      await track([
+        ['recipient-1', { automationActionRevisionId: 'revision-1', deliveredAt }],
+        ['recipient-2', { automationActionRevisionId: 'revision-2', openedAt }],
+        ['recipient-3', { automationActionRevisionId: 'revision-1', deliveredAt, openedAt }],
+      ]);
+
+      expect(repository.withTransaction).toHaveBeenCalledOnce();
+      expect(repository.setEmailRecipientDeliveredAndOpenedAt).toHaveBeenCalledTimes(3);
+      const connection = vi.mocked(repository.lockActionRevisions).mock.calls[0][0];
+      expect(repository.lockNotYetOpenedEmailRecipients).toHaveBeenCalledWith(connection, [
+        'recipient-2',
+        'recipient-3',
+      ]);
+      expect(repository.setEmailRecipientDeliveredAndOpenedAt).toHaveBeenNthCalledWith(
+        1,
+        connection,
+        'recipient-1',
+        { deliveredAt, openedAt: undefined },
+      );
+      expect(repository.setEmailRecipientDeliveredAndOpenedAt).toHaveBeenNthCalledWith(
+        2,
+        connection,
+        'recipient-2',
+        { deliveredAt: undefined, openedAt },
+      );
+      expect(repository.setEmailRecipientDeliveredAndOpenedAt).toHaveBeenNthCalledWith(
+        3,
+        connection,
+        'recipient-3',
+        { deliveredAt, openedAt },
+      );
+      expect(repository.incrementEmailOpenedCount).toHaveBeenCalledWith(
+        connection,
+        'revision-1',
+        1,
+      );
+      expect(repository.incrementEmailOpenedCount).toHaveBeenCalledWith(
+        connection,
+        'revision-2',
+        1,
+      );
+    });
+
+    it('waits for revision locks before locking recipients', async function () {
+      let releaseRevisions!: () => void;
+      vi.mocked(repository.lockActionRevisions).mockImplementation(
+        () =>
+          new Promise<void>((resolve) => {
+            releaseRevisions = resolve;
+          }),
+      );
+
+      const pending = track([
+        ['recipient-1', { automationActionRevisionId: 'revision-1', openedAt }],
+      ]);
+      try {
+        await new Promise<void>((resolve) => {
+          setImmediate(resolve);
+        });
+        expect(repository.lockActionRevisions).toHaveBeenCalledOnce();
+        expect(repository.lockNotYetOpenedEmailRecipients).not.toHaveBeenCalled();
+      } finally {
+        releaseRevisions();
+        await pending;
+      }
+      expect(repository.lockNotYetOpenedEmailRecipients).toHaveBeenCalledOnce();
+    });
+
+    it('counts first opens for each email version', async function () {
+      await track([
+        ['recipient-1', { automationActionRevisionId: 'revision-1', openedAt }],
+        ['recipient-2', { automationActionRevisionId: 'revision-2', openedAt }],
+        ['recipient-3', { automationActionRevisionId: 'revision-1', openedAt }],
+      ]);
+
+      const [connection, revisions] = vi.mocked(repository.lockActionRevisions).mock.calls[0];
+      expect([...revisions]).toEqual(['revision-1', 'revision-2']);
+      expect(repository.incrementEmailOpenedCount).toHaveBeenCalledTimes(2);
+      expect(repository.incrementEmailOpenedCount).toHaveBeenCalledWith(
+        connection,
+        'revision-1',
+        2,
+      );
+      expect(repository.incrementEmailOpenedCount).toHaveBeenCalledWith(
+        connection,
+        'revision-2',
+        1,
+      );
+    });
+
+    it('does not count already-opened or unknown recipients', async function () {
+      vi.mocked(repository.lockNotYetOpenedEmailRecipients).mockReturnValue(new Set());
+
+      await track([
+        ['already-opened', { automationActionRevisionId: 'revision-1', openedAt }],
+        ['unknown', { automationActionRevisionId: 'revision-2', openedAt }],
+      ]);
+
+      expect(repository.setEmailRecipientDeliveredAndOpenedAt).toHaveBeenCalledTimes(2);
+      expect(repository.incrementEmailOpenedCount).not.toHaveBeenCalled();
+    });
+
+    it('does not count deliveries as opens', async function () {
+      await track([['recipient-1', { automationActionRevisionId: 'revision-1', deliveredAt }]]);
+
+      expect(repository.incrementEmailOpenedCount).not.toHaveBeenCalled();
+    });
+
+    it('does not lock delivery-only events', async function () {
+      await track([['recipient-1', { automationActionRevisionId: 'revision-1', deliveredAt }]]);
+
+      expect([...vi.mocked(repository.lockActionRevisions).mock.calls[0][1]]).toEqual([]);
+      expect(repository.lockNotYetOpenedEmailRecipients).toHaveBeenCalledWith(
+        expect.anything(),
+        [],
+      );
+    });
+
+    it('passes events without timestamps to the repository without counting opens', async function () {
+      await track([['recipient-1', { automationActionRevisionId: 'revision-1' }]]);
+
+      expect(repository.setEmailRecipientDeliveredAndOpenedAt).toHaveBeenCalledWith(
+        expect.anything(),
+        'recipient-1',
+        { deliveredAt: undefined, openedAt: undefined },
+      );
+      expect(repository.incrementEmailOpenedCount).not.toHaveBeenCalled();
     });
   });
 });

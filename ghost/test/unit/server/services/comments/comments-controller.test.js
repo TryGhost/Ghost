@@ -210,4 +210,31 @@ describe('Comments Service: CommentsController', function () {
     await assert.rejects(() => controller.adminBrowseAll(frame), errors.BadRequestError);
     sinon.assert.notCalled(service.getAdminAllComments);
   });
+
+  it('handles array-form ids in count() without throwing an internal error', async function () {
+    // `?ids[0]=1&ids[1]=2` parses to an array; it must not reach `.split()` on a
+    // non-string and surface an internal error (and its context) to an anonymous caller.
+    const stats = {
+      getCountsByPost: sinon.stub().resolves({}),
+      getAllCounts: sinon.stub().resolves({}),
+    };
+    const controller = new CommentsController({}, stats);
+
+    await controller.count(createFrame({ options: { ids: ['1', '2'] } }));
+
+    assert.ok(stats.getCountsByPost.calledOnce);
+    assert.deepEqual(stats.getCountsByPost.firstCall.args[0], ['1', '2']);
+  });
+
+  it('splits comma-separated ids in count()', async function () {
+    const stats = {
+      getCountsByPost: sinon.stub().resolves({}),
+      getAllCounts: sinon.stub().resolves({}),
+    };
+    const controller = new CommentsController({}, stats);
+
+    await controller.count(createFrame({ options: { ids: '1,2' } }));
+
+    assert.deepEqual(stats.getCountsByPost.firstCall.args[0], ['1', '2']);
+  });
 });

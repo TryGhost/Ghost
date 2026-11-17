@@ -12,10 +12,6 @@ const hasScheduled = {
 
 let tasks;
 
-function alreadyScheduledOrTest(key) {
-  return hasScheduled[key] || process.env.NODE_ENV.startsWith('test');
-}
-
 function randomDailyCron(maxHour = 24) {
   const s = Math.floor(Math.random() * 60);
   const m = Math.floor(Math.random() * 60);
@@ -60,7 +56,7 @@ module.exports = {
   },
 
   async scheduleExpiredCompCleanupJob(jobsService) {
-    if (alreadyScheduledOrTest('expiredComped')) {
+    if (hasScheduled.expiredComped) {
       return;
     }
 
@@ -73,7 +69,7 @@ module.exports = {
   },
 
   async scheduleTokenCleanupJob(jobsService) {
-    if (alreadyScheduledOrTest('tokens')) {
+    if (hasScheduled.tokens) {
       return;
     }
 

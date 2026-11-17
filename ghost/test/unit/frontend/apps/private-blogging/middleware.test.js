@@ -8,10 +8,12 @@ const settingsCache = require('../../../../../core/shared/settings-cache');
 const config = require('../../../../../core/shared/config');
 const privateBlogging = require('../../../../../core/frontend/apps/private-blogging/lib/middleware');
 
+const SESSION_SECRET = 'test-theme-session-secret';
+
 function hash(accessCode, salt) {
-  const hasher = crypto.createHash('sha256');
-  hasher.update(accessCode + salt, 'utf8');
-  return hasher.digest('hex');
+  const hmac = crypto.createHmac('sha256', SESSION_SECRET);
+  hmac.update(`ghost-private:${accessCode}:${salt}`, 'utf8');
+  return hmac.digest('hex');
 }
 
 describe('Private Blogging', function () {
@@ -102,6 +104,7 @@ describe('Private Blogging', function () {
       // Set global settings for private mode
       settingsStub.withArgs('is_private').returns(true);
       settingsStub.withArgs('password').returns('rightpassword');
+      settingsStub.withArgs('theme_session_secret').returns(SESSION_SECRET);
       settingsStub.withArgs('public_hash').returns('777aaa');
 
       // Ensure we have an empty session (not logged in)
@@ -413,6 +416,20 @@ describe('Private Blogging', function () {
           token: hash('rightpassword', salt),
           salt,
         };
+      });
+
+      it('filterPrivateRoutes should redirect a client-computed token for the right access code', function () {
+        const salt = 'attacker-salt';
+        const unkeyedToken = crypto
+          .createHash('sha256')
+          .update('rightpassword' + salt, 'utf8')
+          .digest('hex');
+        req.path = req.url = '/welcome';
+        req.session = { token: unkeyedToken, salt };
+
+        privateBlogging.filterPrivateRoutes(req, res, next);
+        sinon.assert.notCalled(next);
+        sinon.assert.calledWith(res.redirect, '/private/?r=%2Fwelcome');
       });
 
       it('filterPrivateRoutes should redirect when stored access code is empty', function () {

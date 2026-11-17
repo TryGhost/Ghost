@@ -1,11 +1,17 @@
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import yaml from 'js-yaml';
 import { z } from 'zod';
+import { readDependencyBoundaries } from '../scripts/lib/dependency-boundaries.ts';
+import {
+  legacyInventoryFile,
+  servicesRoot as servicesDir,
+} from '../configs/oxlint/legacy-services.ts';
 
-const servicesRoot = 'ghost/core/server/services/';
+const servicesRoot = `${servicesDir}/`;
 const repository = path.resolve(import.meta.dirname, '../..');
 const complexity = z.enum(['straightforward', 'complex', 'not-applicable']);
 const assessment = z.object({
@@ -13,26 +19,22 @@ const assessment = z.object({
   reason: z.string(),
   reviewedAt: z.string(),
 });
+// The inventory lists legacy services only. A service found by the audit and
+// not listed here is standard.
 const inventorySchema = z.object({
   services: z.record(
     z.string(),
     z
       .object({
-        migrated: z.boolean().optional(),
         disposition: z.enum(['migrate', 'relocate', 'split', 'review']),
         futureHome: z.string().trim().min(1).optional(),
         notes: z.string().optional(),
         migration: assessment.extend({
           modelImpact: z.enum(['fits', 'may-change', 'not-applicable']),
-          dependencies: assessment
-            .extend({ preparation: z.array(z.string()).default([]) })
-            .optional(),
+          dependencies: assessment.extend({ preparation: z.array(z.string()).default([]) }),
         }),
         blockers: z.array(z.string()).default([]),
         unverified: z.array(z.string()).default([]),
-      })
-      .refine((entry) => entry.migrated || entry.migration.dependencies, {
-        message: 'Unmigrated entries need a dependency assessment.',
       })
       .refine(
         (entry) =>
@@ -55,26 +57,36 @@ const auditSchema = z.object({
   summary: z.object({ violations: z.array(violation) }),
 });
 
+// The boundary config records what each rejected dependency needs. One that
+// matches nothing there has no decision yet. A deferral names the importing file
+// as well, because it waits for a planned refactor of that file.
+const decisionsSchema = z.object({
+  inject: z.array(z.string()),
+  importForm: z.array(z.string()),
+  deferred: z
+    .array(z.object({ from: z.string(), to: z.string(), until: z.string().min(1) }))
+    .default([]),
+});
+const kinds = [
+  { name: 'inject', label: 'Instances to inject' },
+  { name: 'import-form', label: 'Wrong import form' },
+  { name: 'deferred', label: 'Deferred to a planned refactor' },
+  { name: 'no-decision', label: 'No decision yet' },
+] as const;
+type Kind = (typeof kinds)[number]['name'];
+
 type Entry = z.infer<typeof inventorySchema>['services'][string];
-type MigrationStatus =
-  | 'Migrated'
-  | 'Needs preparation'
-  | 'Straightforward'
-  | 'Not applicable'
-  | 'Not inventoried';
+type MigrationStatus = 'Standard' | 'Needs preparation' | 'Straightforward' | 'Not applicable';
 
 function migrationStatus(entry?: Entry): MigrationStatus {
   if (!entry) {
-    return 'Not inventoried';
-  }
-  if (entry.migrated) {
-    return 'Migrated';
+    return 'Standard';
   }
   if (entry.migration.modelImpact === 'not-applicable') {
     return 'Not applicable';
   }
   return entry.migration.complexity === 'straightforward' &&
-    entry.migration.dependencies?.complexity === 'straightforward' &&
+    entry.migration.dependencies.complexity === 'straightforward' &&
     entry.migration.modelImpact === 'fits'
     ? 'Straightforward'
     : 'Needs preparation';
@@ -93,17 +105,47 @@ function entryName(source: string) {
     : undefined;
 }
 
-// The inventory supplies assessments; the existing audit supplies current findings.
-export function buildServiceReport(inventory: unknown, audit: unknown) {
+// The inventory supplies legacy assessments; the existing audit supplies the
+// services found on disk and their current findings.
+export function buildServiceReport(
+  inventory: unknown,
+  audit: unknown,
+  decisions: unknown = { inject: [], importForm: [] },
+) {
   const { services } = inventorySchema.parse(inventory);
   const graph = auditSchema.parse(audit);
+  const { inject, importForm, deferred } = decisionsSchema.parse(decisions);
+  const patterns: [Kind, RegExp[]][] = [
+    ['inject', inject.map((pattern) => new RegExp(pattern))],
+    ['import-form', importForm.map((pattern) => new RegExp(pattern))],
+  ];
+  const deferrals = deferred.map(({ from, to, until }) => ({
+    from: new RegExp(from),
+    to: new RegExp(to),
+    until,
+  }));
+  // A deferral comes first: it records a decision about that file's imports.
+  const decide = (from: string, dependency: string): { kind: Kind; until?: string } => {
+    const deferral = deferrals.find((item) => item.from.test(from) && item.to.test(dependency));
+    if (deferral) {
+      return { kind: 'deferred', until: deferral.until };
+    }
+    return {
+      kind:
+        patterns.find(([, matchers]) =>
+          matchers.some((matcher) => matcher.test(dependency)),
+        )?.[0] ?? 'no-decision',
+    };
+  };
   const analyzed = new Set(
     graph.modules
       .filter((module) => !module.couldNotResolve)
       .map((module) => entryName(module.source))
       .filter((name) => name !== undefined),
   );
-  const findings = graph.summary.violations.filter((item) => item.rule.name.startsWith('service-'));
+  const findings = graph.summary.violations.filter(
+    (item) => item.rule.name.startsWith('service-') || item.rule.name === 'specialist-dependencies',
+  );
   const names = new Set([
     ...Object.keys(services),
     ...analyzed,
@@ -113,23 +155,35 @@ export function buildServiceReport(inventory: unknown, audit: unknown) {
     const entry = services[name];
     const matches = findings
       .filter((item) => entryName(item.from) === name)
-      .map((item) => ({
-        from: item.from,
-        to: item.dependencyTypes?.some((type) => type.startsWith('npm'))
+      .map((item) => {
+        const to = item.dependencyTypes?.some((type) => type.startsWith('npm'))
           ? (item.unresolvedTo ?? item.to)
-          : item.to,
-        rule: item.rule.name,
-      }));
+          : item.to;
+        return {
+          from: item.from,
+          to,
+          rule: item.rule.name,
+          // Only a rejected dependency has a kind; unresolved and own-root imports do not.
+          // A specialist dependency imported outside its owners is in the wrong form:
+          // the fix is to use the owning code.
+          ...(item.rule.name === 'service-dependencies'
+            ? decide(item.from, to)
+            : item.rule.name === 'specialist-dependencies'
+              ? { kind: 'import-form' as const }
+              : {}),
+        };
+      });
     const wasAnalyzed = analyzed.has(name);
     return {
       name,
-      ownership: entry ? ownership[entry.disposition] : 'Not inventoried',
+      ownership: entry ? ownership[entry.disposition] : 'Standard',
       migrationStatus: migrationStatus(entry),
       analyzed: wasAnalyzed,
       dependencies: wasAnalyzed
         ? [
             ...new Set(
-              matches.filter((item) => item.rule === 'service-dependencies').map((item) => item.to),
+              // Every rejected dependency has a kind; unresolved and own-root imports do not.
+              matches.filter((item) => item.kind).map((item) => item.to),
             ),
           ].sort()
         : null,
@@ -176,22 +230,12 @@ function list(rows: Service[]) {
 }
 
 const groups: { name: string; label: string; matches: (row: Service) => boolean }[] = [
-  { name: 'catalogued', label: 'Catalogued entries', matches: (row) => !!row.entry },
-  {
-    name: 'migrate',
-    label: 'Migrate',
-    matches: (row) => row.entry?.disposition === 'migrate',
-  },
-  { name: 'migrated', label: 'Migrated', matches: (row) => row.migrationStatus === 'Migrated' },
-  {
-    name: 'unmigrated',
-    label: 'Unmigrated entries',
-    matches: (row) => !!row.entry && !row.entry.migrated,
-  },
+  { name: 'legacy', label: 'Legacy entries', matches: (row) => !!row.entry },
+  { name: 'standard', label: 'Standard services', matches: (row) => !row.entry },
   {
     name: 'to-migrate',
     label: 'Left to migrate',
-    matches: (row) => row.entry?.disposition === 'migrate' && !row.entry.migrated,
+    matches: (row) => row.entry?.disposition === 'migrate',
   },
   {
     name: 'relocate',
@@ -238,33 +282,38 @@ const groups: { name: string; label: string; matches: (row: Service) => boolean 
       !row.findings.length,
   },
   {
-    name: 'unmigrated-with-violations',
-    label: 'Unmigrated entries with dependency violations',
-    matches: (row) => !!row.entry && !row.entry.migrated && row.findings.length > 0,
+    name: 'legacy-with-violations',
+    label: 'Legacy entries with dependency violations',
+    matches: (row) => !!row.entry && row.findings.length > 0,
   },
   {
     name: 'to-migrate-with-violations',
     label: 'Left to migrate with dependency violations',
-    matches: (row) =>
-      row.entry?.disposition === 'migrate' && !row.entry.migrated && row.findings.length > 0,
+    matches: (row) => row.entry?.disposition === 'migrate' && row.findings.length > 0,
   },
   {
-    name: 'migrated-with-violations',
-    label: 'Migrated services with dependency violations',
-    matches: (row) => row.migrationStatus === 'Migrated' && row.findings.length > 0,
+    name: 'standard-with-violations',
+    label: 'Standard services with dependency violations',
+    matches: (row) => !row.entry && row.findings.length > 0,
   },
   { name: 'not-analyzed', label: 'Not analyzed', matches: (row) => !row.analyzed },
-  {
-    name: 'not-inventoried',
-    label: 'Not inventoried',
-    matches: (row) => !row.entry,
-  },
 ];
 
 function summary(rows: Service[]) {
   return Object.fromEntries(
     groups.map((group) => [group.label, rows.filter(group.matches).length]),
   );
+}
+
+// Every rejected dependency is counted once, so the kinds add up to the total.
+function violationSummary(rows: Service[]): Record<string, number> {
+  const findings = rows.flatMap((row) => row.findings).filter((item) => item.kind);
+  return {
+    ...Object.fromEntries(
+      kinds.map((kind) => [kind.label, findings.filter((item) => item.kind === kind.name).length]),
+    ),
+    Total: findings.length,
+  };
 }
 
 function details(row: Service) {
@@ -280,17 +329,12 @@ function details(row: Service) {
     lines.push(
       `\nOverall assessment (${migration.complexity}, ${migration.reviewedAt}):\n${migration.reason.trim()}`,
     );
-    if (migration.dependencies) {
-      const deps = migration.dependencies;
-      lines.push(
-        `\nDependency assessment (${deps.complexity}, ${deps.reviewedAt}):\n${deps.reason.trim()}`,
-      );
-      if (deps.preparation.length) {
-        lines.push(
-          '\nRecorded preparation:',
-          ...deps.preparation.map((item) => `- ${item.trim()}`),
-        );
-      }
+    const deps = migration.dependencies;
+    lines.push(
+      `\nDependency assessment (${deps.complexity}, ${deps.reviewedAt}):\n${deps.reason.trim()}`,
+    );
+    if (deps.preparation.length) {
+      lines.push('\nRecorded preparation:', ...deps.preparation.map((item) => `- ${item.trim()}`));
     }
     if (blockers.length) {
       lines.push('\nRecorded blockers:', ...blockers.map((item) => `- ${item.trim()}`));
@@ -302,7 +346,9 @@ function details(row: Service) {
   lines.push('\nCurrent dependency findings:');
   if (row.findings.length) {
     for (const finding of row.findings) {
-      lines.push(`- ${finding.from}\n  → ${finding.to} [${finding.rule}]`);
+      lines.push(
+        `- ${finding.from}\n  → ${finding.to} [${finding.rule}${finding.kind ? `, ${finding.kind}` : ''}]${finding.until ? `\n  Until: ${finding.until}` : ''}`,
+      );
     }
   } else {
     lines.push(row.analyzed ? 'None found.' : 'Not analyzed; dependency counts are unknown.');
@@ -310,51 +356,47 @@ function details(row: Service) {
   return lines.join('\n');
 }
 
-function frequencies(rows: Service[]) {
-  const targets = new Map<string, Set<string>>();
+export function frequencies(rows: Service[]) {
+  // One target can have different kinds in different files, such as a deferral
+  // for one importer, so count each target and kind separately.
+  const targets = new Map<string, { dependency: string; kind: Kind; files: Set<string> }>();
   for (const row of rows) {
-    for (const finding of row.findings.filter((item) => item.rule === 'service-dependencies')) {
-      const files = targets.get(finding.to) ?? new Set<string>();
-      files.add(finding.from);
-      targets.set(finding.to, files);
+    for (const finding of row.findings) {
+      if (!finding.kind) {
+        continue;
+      }
+      const id = JSON.stringify([finding.to, finding.kind]);
+      const target = targets.get(id) ?? {
+        dependency: finding.to,
+        kind: finding.kind,
+        files: new Set<string>(),
+      };
+      target.files.add(finding.from);
+      targets.set(id, target);
     }
   }
-  return [...targets]
-    .map(([dependency, files]) => ({ dependency, files: files.size }))
+  return [...targets.values()]
+    .map(({ dependency, kind, files }) => ({ dependency, files: files.size, kind }))
     .sort((a, b) => b.files - a.files || a.dependency.localeCompare(b.dependency));
 }
 
 function readAudit() {
-  const result = spawnSync(
-    'pnpm',
-    [
-      'exec',
-      'depcruise',
-      servicesRoot,
-      '--config',
-      '.dependency-cruiser.cjs',
-      '--output-type',
-      'json',
-    ],
-    {
-      cwd: repository,
-      env: { ...process.env, GHOST_SERVICE_DEPENDENCY_AUDIT: '1' },
-      encoding: 'utf8',
-      maxBuffer: 32 * 1024 * 1024,
-    },
-  );
-  if (result.error) {
-    throw result.error;
-  }
-  if (result.status !== 0) {
-    throw new Error(result.stderr.trim() || `Dependency audit failed (exit ${result.status}).`);
-  }
-  if (result.stderr) {
-    process.stderr.write(result.stderr);
-  }
-  const data: unknown = JSON.parse(result.stdout);
+  const { graph: data } = readDependencyBoundaries(repository);
   auditSchema.parse(data);
-  return { data, json: result.stdout };
+  return { data, json: JSON.stringify(data) };
+}
+
+function readDecisions() {
+  const config: unknown = createRequire(import.meta.url)(
+    path.join(repository, '.dependency-cruiser.cjs'),
+  );
+  const decisions = z.object({ serviceDependencyDecisions: decisionsSchema }).safeParse(config);
+  if (!decisions.success) {
+    throw new Error(
+      '.dependency-cruiser.cjs must define serviceDependencyDecisions with inject and importForm pattern lists and deferred entries that name a refactor.',
+    );
+  }
+  return decisions.data.serviceDependencyDecisions;
 }
 
 export function runServices(command: string, args: string[]) {
@@ -378,13 +420,22 @@ export function runServices(command: string, args: string[]) {
         json: { type: 'boolean' },
         help: { type: 'boolean', short: 'h' },
         ...(command === 'list' ? { group: { type: 'string' as const } } : {}),
+        ...(command === 'dependencies' ? { kind: { type: 'string' as const } } : {}),
       },
       allowPositionals: command === 'report',
     });
     if (values.help) {
       process.stdout.write(
-        `Usage: pnpm gx services ${command}${command === 'report' ? ' [service]' : ''}${command === 'list' ? ' [--group <group>]' : ''} [--json]\n`,
+        `Usage: pnpm gx services ${command}${command === 'report' ? ' [service]' : ''}${command === 'list' ? ' [--group <group>]' : ''}${command === 'dependencies' ? ' [--kind <kind>]' : ''} [--json]\n`,
       );
+      if (command === 'dependencies') {
+        process.stdout.write(
+          `\n${table(
+            ['KIND', 'DESCRIPTION'],
+            kinds.map((kind) => [kind.name, kind.label]),
+          )}\n`,
+        );
+      }
       if (command === 'list') {
         process.stdout.write(
           `\n${table(
@@ -401,15 +452,19 @@ export function runServices(command: string, args: string[]) {
         `Unknown group: ${values.group}. Use "pnpm gx services list --help" to see groups.`,
       );
     }
+    const kind = kinds.find((item) => item.name === values.kind);
+    if (values.kind !== undefined && !kind) {
+      throw new Error(
+        `Unknown kind: ${values.kind}. Use "pnpm gx services dependencies --help" to see kinds.`,
+      );
+    }
     if (positionals.length > 1) {
       throw new Error('Supply at most one service name.');
     }
     const inventory = inventorySchema.parse(
-      yaml.load(
-        readFileSync(path.join(repository, servicesRoot, 'service-inventory.yaml'), 'utf8'),
-      ),
+      yaml.load(readFileSync(path.join(repository, legacyInventoryFile), 'utf8')),
     );
-    const rows = buildServiceReport(inventory, readAudit().data);
+    const rows = buildServiceReport(inventory, readAudit().data, readDecisions());
     const selected = positionals[0] ? rows.find((row) => row.name === positionals[0]) : undefined;
     if (positionals[0] && !selected) {
       throw new Error(`Unknown service: ${positionals[0]}`);
@@ -421,25 +476,34 @@ export function runServices(command: string, args: string[]) {
       output = filtered;
       text = list(filtered);
     } else if (command === 'dependencies') {
-      const counts = frequencies(rows);
+      const counts = frequencies(rows).filter((item) => !kind || item.kind === kind.name);
       output = counts;
       text = table(
-        ['FILES', 'DEPENDENCY'],
-        counts.map((item) => [String(item.files), item.dependency]),
+        ['FILES', 'KIND', 'DEPENDENCY'],
+        counts.map((item) => [String(item.files), item.kind, item.dependency]),
       );
     } else if (selected) {
       output = selected;
       text = details(selected);
     } else {
       const counts = summary(rows);
-      output = counts;
+      const violations = violationSummary(rows);
+      output = { ...counts, 'Dependency violations': violations };
       text = table(
         ['MIGRATION', 'COUNT', 'GROUP'],
         groups
-          .filter((item) => !['not-analyzed', 'not-inventoried'].includes(item.name))
+          .filter((item) => item.name !== 'not-analyzed')
           .map((item) => [item.label, String(counts[item.label]), item.name]),
       );
-      text += '\n\nList a group: pnpm gx services list --group <group>';
+      text += '\n\nList a group: pnpm gx services list --group <group>\n\n';
+      text += table(
+        ['DEPENDENCY VIOLATIONS', 'COUNT', 'KIND'],
+        [
+          ...kinds.map((item) => [item.label, String(violations[item.label]), item.name]),
+          ['Total', String(violations.Total), ''],
+        ],
+      );
+      text += '\n\nList a kind: pnpm gx services dependencies --kind <kind>';
     }
     process.stdout.write(`${values.json ? JSON.stringify(output, null, 2) : text}\n`);
     if (!values.json && (command === 'list' || selected)) {

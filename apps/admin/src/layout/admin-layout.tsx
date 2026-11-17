@@ -29,6 +29,7 @@ import { AdminFrame, type AdminFrameMode } from './admin-frame';
 import { AdminFrameTopBar } from './admin-frame-top-bar';
 import { FloatingSidebarContentSync } from './floating-sidebar-content-sync';
 import { GlobalSearchProvider } from '@/global-search/global-search-provider';
+import { SidePanel } from './side-panel/side-panel';
 
 const networkPageChrome = {
   contentClassName: 'max-w-[1920px]',
@@ -69,10 +70,12 @@ const pageChromeClassName = [
  * footprint, whichever is further right, so centred content with room to
  * spare is unaffected and narrower viewports get symmetric padding that keeps
  * it centred. Below the desktop breakpoint the mobile layout takes over.
+ * An app page's footer drops the margin that evens it up beside a pinned nav.
  */
 const compactPageChromeClassName = [
   '[--compact-page-padding:max(0px,calc(var(--floating-sidebar-footprint)_-_var(--page-gutter)))]',
   'px-(--compact-page-padding)',
+  '[&_[data-app-footer]]:mr-0',
   '[--page-bleed-start:var(--compact-page-padding)]',
   '[--page-bleed-end:var(--compact-page-padding)]',
 ].join(' ');
@@ -111,6 +114,9 @@ const backdropInsetClassName = [
   // Beneath the pinned capsule too, it keeps the page's stacking under it
   'has-[[data-page-backdrop]]:isolate',
 ].join(' ');
+
+const SIDEBAR_WIDTH = '316px';
+const ADMIN7_SIDEBAR_WIDTH = 269;
 
 const SIDEBAR_PANEL_CLASS_NAME = '[&>[data-sidebar=sidebar]]:relative';
 // Lands on the desktop panel only; the mobile sidebar is a sheet that ignores it.
@@ -323,7 +329,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           '[&_[data-sidebar=sidebar]]:rounded-xl [&_[data-sidebar=sidebar]]:border-border [&_[data-sidebar=sidebar]]:shadow-none',
       )}
       open={sidebarOpen}
-      style={sidebarVisible ? ({ '--sidebar-width': '316px' } as React.CSSProperties) : undefined}
+      style={
+        sidebarVisible ? ({ '--sidebar-width': SIDEBAR_WIDTH } as React.CSSProperties) : undefined
+      }
       onOpenChange={floatingSidebar ? onSidebarOpenChange : undefined}
     >
       {floatingSidebar ? (
@@ -334,6 +342,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           className={floatingSidebarClassName}
           disabled={dunningLocked}
           morphStyle={settingsPinMorph.morphStyle}
+          openWidth={ADMIN7_SIDEBAR_WIDTH}
           settingsNavigation={settingsNavigation}
           settingsNavigationRef={setSettingsNavigationSlot}
           onPinnedMorphEnd={settingsPinMorph.onPinnedMorphEnd}
@@ -410,6 +419,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           animate={sidebarModeLoaded}
           contentRef={insetRef}
           morphStyle={settingsPinMorph.morphStyle}
+          openWidth={ADMIN7_SIDEBAR_WIDTH}
           pinned={sidebarOpen}
           slideRef={mainRef}
         />
@@ -417,20 +427,54 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     </SidebarProvider>
   );
 
+  // The side panel shows only where the main navigation does, as that's where
+  // it's opened from: not on full-screen screens, nor in Settings, which swaps
+  // the navigation for its own. In the Admin 7 frame it sits beside the card,
+  // below the top bar, and otherwise runs the full height on the right. It
+  // stays in one place across the mobile breakpoint, so its content isn't
+  // reloaded.
+  const sidePanel = (
+    <SidePanel
+      framed={adminFrame}
+      locked={dunningLocked}
+      visible={sidebarVisible && !isSettingsRoute && !isMobile}
+    />
+  );
+
+  // The page never gets narrower than it is beside the panel at its default
+  // size. As the panel expands over it, what holds the page clips it instead,
+  // so the page keeps its layout under the panel, where it would otherwise be
+  // squashed and laid out again on every frame. The width is worked out from
+  // the viewport: the panel's, and in the frame its bezels and the panel's.
+  const page = (
+    <div className="h-full w-[max(100%,calc(100vw_-_var(--side-panel-navigation-width)_-_3_*_var(--admin-frame-side)))]">
+      {sidebarLayout}
+    </div>
+  );
+
   return (
     <GlobalSearchProvider>
       {!dunningLocked && <SkipLink target={mainRef} />}
-      {adminFrame ? (
-        <AdminFrame
-          locked={dunningLocked}
-          mode={frameMode}
-          topBar={<AdminFrameTopBar hidden={frameMode === 'hidden'} />}
-        >
-          {sidebarLayout}
-        </AdminFrame>
-      ) : (
-        sidebarLayout
-      )}
+      <div
+        className="flex size-full"
+        style={{ '--side-panel-navigation-width': SIDEBAR_WIDTH } as React.CSSProperties}
+      >
+        <div className="h-full min-w-0 flex-1 overflow-hidden">
+          {adminFrame ? (
+            <AdminFrame
+              aside={sidePanel}
+              locked={dunningLocked}
+              mode={frameMode}
+              topBar={<AdminFrameTopBar hidden={frameMode === 'hidden'} />}
+            >
+              {page}
+            </AdminFrame>
+          ) : (
+            page
+          )}
+        </div>
+        {!adminFrame && sidePanel}
+      </div>
     </GlobalSearchProvider>
   );
 }

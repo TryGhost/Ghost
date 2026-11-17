@@ -16,6 +16,8 @@ interface BannerBaseProps
    *       role="region" requires aria-label
    */
   role?: 'status' | 'alert' | 'region';
+  /** Scroll tall content inside the card, preserving the card's outer shadow and dismiss control. */
+  scroll?: boolean;
 }
 
 export type BannerProps = BannerBaseProps &
@@ -29,6 +31,7 @@ const Banner = React.forwardRef<HTMLDivElement, BannerProps>((props, ref) => {
     dismissible = false,
     onDismiss,
     role = 'status',
+    scroll = false,
     className,
     children,
     ...restProps
@@ -45,7 +48,13 @@ const Banner = React.forwardRef<HTMLDivElement, BannerProps>((props, ref) => {
   return (
     <div
       ref={ref}
-      className={cn(bannerVariants({ variant, size }), className)}
+      className={cn(
+        bannerVariants({ variant, size }),
+        scroll && 'flex min-h-0 flex-col',
+        className,
+      )}
+      data-slot="banner"
+      data-variant={variant ?? 'default'}
       role={role}
       {...restProps}
     >
@@ -60,7 +69,15 @@ const Banner = React.forwardRef<HTMLDivElement, BannerProps>((props, ref) => {
           <X className="size-5" />
         </Button>
       )}
-      {children}
+      {/* Gradient glow must paint outside clipping/scroll containers. Scroll the
+          content inside the card; adding padding around a clipped card is not a fix. */}
+      {scroll ? (
+        <div className="min-h-0 overflow-y-auto" data-slot="banner-content">
+          {children}
+        </div>
+      ) : (
+        children
+      )}
     </div>
   );
 });

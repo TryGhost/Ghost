@@ -31,7 +31,7 @@ authorization middleware:
 
 Start with:
 
-- [`auth/authenticate.js`](../../ghost/core/server/auth/authenticate.js)
+- [`auth/authenticate.ts`](../../ghost/core/server/auth/authenticate.ts)
   for the authentication middleware assembled for each API.
 - [`auth/authorize.js`](../../ghost/core/server/auth/authorize.js)
   for the identity checks after authentication.
@@ -50,11 +50,11 @@ path, and secure on HTTPS sites.
 
 Creating a session and authenticating later requests are separate steps:
 
-- [`api/endpoints/session.js`](../../ghost/core/server/api/endpoints/session.js)
+- [`api/endpoints/session.ts`](../../ghost/core/server/api/endpoints/session.ts)
   checks the credentials and begins the session.
 - [`auth/session/`](../../ghost/core/server/auth/session/)
   creates, verifies, reads, and destroys Admin sessions.
-- [`auth/session/express-session.js`](../../ghost/core/server/auth/session/express-session.js)
+- [`auth/session/express-session.ts`](../../ghost/core/server/auth/session/express-session.ts)
   defines the cookie and session store.
 
 Cookie-authenticated requests are protected by origin checks. Do not bypass the
@@ -73,10 +73,17 @@ rotates the session when signing in and after authentication resets so verified
 state cannot be carried to a different user. Verification codes are
 session-bound, short-lived, and invalidated after successful use.
 
+Both verification requests and sign-ins that include a code share a database-backed
+attempt budget per challenge, independent of IP or session ID changes. By default,
+`spam.user_verification_challenge` allows five attempts and blocks further attempts
+for the rest of the code's five-minute validity. Requesting a new code creates a
+new challenge and budget. The separate per-IP verification and resend limits still
+apply.
+
 The current flow lives in
-[`auth/session/session-service.js`](../../ghost/core/server/auth/session/session-service.js),
+[`auth/session/session-service.ts`](../../ghost/core/server/auth/session/session-service.ts),
 with request middleware in
-[`auth/session/middleware.js`](../../ghost/core/server/auth/session/middleware.js).
+[`auth/session/middleware.ts`](../../ghost/core/server/auth/session/middleware.ts).
 
 ### Staff Access Tokens
 

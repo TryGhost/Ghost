@@ -399,18 +399,30 @@ describe('App installations Admin API', function () {
       );
     });
 
-    it('refuses an app served from the site itself', async function () {
-      const siteUrl = configUtils.config.get('url');
-      serve(
-        manifest({ surfaces: [{ type: 'admin_page', url: `${siteUrl}/content/files/app.html` }] }),
-      );
+    // Every path in a manifest is on the manifest's origin, so this keeps the whole app off
+    // Ghost's host, where browsers would send it Ghost's cookies whatever the port.
+    it('refuses a manifest URL on the site’s own host, on any port, before fetching anything', async function () {
+      // The test site is on the machine itself, which only development accepts. Development
+      // also trusts the machine without a challenge, so the composition root's unit test
+      // checks that no challenge goes out either.
+      configUtils.set('env', 'development');
+      const site = new URL(configUtils.config.get('url'));
+      const sitePort = Number(site.port || (site.protocol === 'https:' ? 443 : 80));
+      const otherPort = new URL(site);
+      otherPort.port = String(sitePort + 1);
 
-      const error = await preview(MANIFEST_URL, 422);
-      assert.equal(error.code, 'APP_MANIFEST_INVALID');
-      assert.deepEqual(
-        error.details.map(({ path }: { path: string }) => path),
-        ['surfaces[0].url'],
-      );
+      for (const manifestUrl of [
+        new URL('/content/files/ghost-app.json', site).href,
+        new URL(MANIFEST_PATH, otherPort).href,
+      ]) {
+        // Served, so a manifest fetched from there would be accepted.
+        const scope = serve(manifest({ development: true }), manifestUrl);
+
+        const error = await preview(manifestUrl, 422);
+        assert.equal(error.code, 'APP_MANIFEST_URL_INVALID', manifestUrl);
+        assert.match(error.context, /Ghost itself is served from, on any port/);
+        assert.equal(scope.isDone(), false, manifestUrl);
+      }
     });
   });
 
@@ -1899,7 +1911,7 @@ describe('App installations Admin API', function () {
             nock(MANIFEST_HOST)
               .get(ICON_PATH)
               .reply(200, '<html><body>Not found</body></html>', { 'content-type': 'text/html' }),
-          'Expected an SVG, PNG, JPEG, GIF or WebP image',
+          'Expected an SVG, PNG or WebP image with a transparent background',
         ],
       ];
       for (const [serveBadIcon, message] of cases) {
@@ -2132,6 +2144,29 @@ describe('App installations Admin API', function () {
         (await actions()).map(({ event }: { event: string }) => event),
         ['installed', 'uninstalled'],
       );
+    });
+
+    it('refuses an approval whose icon stopped loading after the review, storing nothing', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+      const reviewed = await preview();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      nock(MANIFEST_HOST).get(ICON_PATH).reply(503);
+
+      const { body } = await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({
+          app_installations: [{ manifest_url: MANIFEST_URL, digest: reviewed.digest, revision: 0 }],
+        })
+        .expectStatus(422);
+
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_INVALID');
+      assert.deepEqual(body.errors[0].details, [
+        { path: 'icon.url', message: 'Expected an icon that loads, not HTTP 503' },
+      ]);
+      assert.equal((await manifestRows()).length, 1);
+      assert.equal((await installationRow(installed.id)).revision, 0);
     });
 
     // The digest doesn't cover the icon, so the copy is whatever the app serves on approval.
@@ -2375,10 +2410,7 @@ describe('App installations Admin API', function () {
 
       await agent.get('apps/installations/').expectStatus(404);
       await agent.get(`apps/installations/${installation.id}/`).expectStatus(404);
-      // Admin uses this code to tell an uninstalled app from a Ghost without app sessions,
-      // so a disabled flag must not send it.
-      const { body } = await start(installation.id, 404);
-      assert.notEqual(body.errors?.[0]?.code, 'APP_NOT_INSTALLED');
+      await start(installation.id, 404);
       await agent.delete(`apps/installations/${installation.id}/`).expectStatus(404);
       assert.equal((await service().read(installation.id)).status, 'active');
     });

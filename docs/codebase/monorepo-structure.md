@@ -11,6 +11,7 @@ across the workspace dependency graph.
 | `ghost/`         | The Ghost server, frontend rendering, migrations, and server tests            |
 | `koenig/`        | The Koenig editor and packages for storing, converting, and rendering content |
 | `packages/`      | Shared libraries, schemas, translations, test data, and adapter contracts     |
+| `contracts/`     | Packages that define the shape of data crossing a boundary                    |
 | `tools/configs/` | Shared ESLint, TypeScript, Vite, and Vitest configuration                     |
 | `e2e/`           | Playwright tests for complete Admin and public-site journeys                  |
 | `docker/`        | Containers and supporting services for local development and CI               |
@@ -81,6 +82,11 @@ commands.
 base packages define contracts for storage, scheduling, redirects, caching, and
 other replaceable services.
 
+`contracts/` contains packages that define the shape of data crossing a
+boundary, such as member custom field types or the formats Ghost and installed
+apps exchange. Ghost Core may import them anywhere through their public entry
+points. See [`contracts/README.md`](../../contracts/README.md).
+
 Read [`packages/README.md`](../../packages/README.md) before adding or
 modernizing an internal package. New internal packages start from
 `packages/_template/`; the template itself is excluded from the workspace.
@@ -106,6 +112,16 @@ separate npm copy.
 External dependency versions are managed in the catalog in
 [`pnpm-workspace.yaml`](../../pnpm-workspace.yaml). Use `catalog:` in workspace
 manifests rather than adding the same version in several packages.
+
+[Knip](https://knip.dev/) checks that each workspace declares the dependencies
+it uses and uses the ones it declares. Run `pnpm lint:dependencies`, which is
+also part of `pnpm lint` and CI. When a dependency is used in a way Knip cannot
+trace, such as a name passed as a string or a file run by path, record it in
+[`knip.json`](../../knip.json) as an `entry` or `ignoreDependencies` item. Knip
+also fails on `knip.json` items it no longer needs.
+
+`pnpm knip` prints the full report, including unused files and exports. CI does
+not enforce those.
 
 ## Nx tasks
 

@@ -114,7 +114,10 @@ describe('createTinybirdSyncService', () => {
     };
     const { service } = createService();
 
-    await assert.rejects(() => service.scheduleJob(jobsService), failure);
+    await assert.rejects(
+      () => service.scheduleJob(jobsService),
+      (thrown) => thrown === failure,
+    );
     await service.scheduleJob(jobsService);
 
     assert.equal(jobsService.scheduleRecurring.mock.calls.length, 2);

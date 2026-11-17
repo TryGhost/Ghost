@@ -5,6 +5,7 @@ const cardVariants = cva('flex flex-col bg-card text-card-foreground', {
     variant: {
       outline: 'rounded-card border border-border-default transition-all hover:shadow-xs',
       plain: '',
+      ruled: 'border-t border-border',
     },
   },
   defaultVariants: {

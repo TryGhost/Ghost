@@ -98,7 +98,7 @@ type HeaderItem =
   | { kind: 'inputs-error'; id: string; message: string; onRetry: () => void };
 
 const EMPHASIS_BUTTON =
-  'font-semibold text-state-success hover:text-state-success disabled:text-text-secondary/60 disabled:opacity-100';
+  'font-semibold text-publish-accent hover:text-publish-accent disabled:text-text-secondary/60 disabled:opacity-100';
 
 /**
  * The header's controls, in the header row, or, below the small breakpoint, in

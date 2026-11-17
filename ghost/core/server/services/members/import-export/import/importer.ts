@@ -59,7 +59,7 @@ type ReadRows = (path: string, mapping?: Record<string, string>) => Promise<Memb
 // member-tagging concern rather than a store of its own. Hides the Member and
 // Label models behind the shape the import needs.
 export interface MembersRepository {
-  get(data: { email?: string }, options: object): Promise<MemberModel | null>;
+  get(data: { email: string } | { id: string }, options: object): Promise<MemberModel | null>;
   create(values: object, options: object): Promise<MemberModel>;
   update(values: object, options: object): Promise<MemberModel>;
   getCustomerIdByEmail(email: string): Promise<string | undefined>;
@@ -186,6 +186,8 @@ const messages = {
   giftCannotCombineWithComplimentary: 'Cannot specify both gift_id and complimentary_plan.',
   giftReassignFailed: 'Failed to reassign gift to member.',
   metafieldWriteFailed: 'Failed to save the custom field values for this member.',
+  memberChangedDuringImport:
+    'The member with this email was changed while the row was imported. Import the row again.',
 };
 
 // Columns whose presence makes a row slow to import (they reach out to Stripe), so
@@ -197,6 +199,11 @@ const EXPENSIVE_COLUMNS = ['stripe_customer_id'];
 // created member is additionally flagged as imported so downstream hooks can tell.
 const IMPORT_CONTEXT = { importer: true };
 const CREATE_CONTEXT = { import: true };
+
+// How many times a row looks up the member with its email before the row fails. It only
+// looks again when another request moves the email to or from a member between the lookup
+// and the lock, in the moment between the two.
+const MEMBER_LOOKUP_ATTEMPTS = 3;
 
 // The import label members are tagged with, named for the request time. Shared by
 // the kernel (the label) and the deferred email (the error CSV filename).
@@ -482,9 +489,6 @@ class MembersCSVImporter<Plan> {
               )
             : [];
 
-        trx = await this._knex.transaction(undefined, { doNotRejectOnRollback: false });
-        const options = { transacting: trx, context: IMPORT_CONTEXT };
-
         const createdAt =
           row.created_at && moment(row.created_at).isAfter(moment())
             ? moment().toDate()
@@ -497,12 +501,53 @@ class MembersCSVImporter<Plan> {
           created_at: createdAt,
           labels: [...row.labels, ...cloneGlobalLabels()],
         };
-        const existingMember = row.email
-          ? await this._members.get(
-              { email: row.email },
-              { ...options, withRelated: ['labels', 'newsletters'] },
-            )
-          : null;
+        // The member with the row's email is locked before the transaction reads anything, as
+        // the member edit locks it. On MySQL, a read without a lock sees the database as it was
+        // when the transaction first read anything. Without this lock, a row that waits for an
+        // Admin edit to the same member replaces the custom field values from before that edit,
+        // and leaves behind values the edit added. The lock reads no relations, as reading them
+        // under a lock would lock the member's labels and newsletters too.
+        //
+        // The member is found by email before the transaction opens, then locked by id, because
+        // a lock by email can deadlock on MySQL. For an email no member has, that lock also
+        // covers the stretch of the email index where the email would go, so two imports adding
+        // emails that sort next to each other each wait for the other to add its member. For an
+        // email a member has, it locks the email before the member, the other way round from an
+        // Admin edit that changes the member's email.
+        //
+        // If a different member has the email once the lock is held, or none does, the email
+        // moved between the lookup and the lock, and the row looks it up again.
+        let existingMember: MemberModel | null = null;
+        for (let attempt = 1; ; attempt += 1) {
+          const found = row.email ? await this._members.get({ email: row.email }, {}) : null;
+          trx = await this._knex.transaction(undefined, { doNotRejectOnRollback: false });
+          if (found) {
+            await this._members.get(
+              { id: found.id },
+              { transacting: trx, context: IMPORT_CONTEXT, forUpdate: true },
+            );
+          }
+          existingMember = row.email
+            ? await this._members.get(
+                { email: row.email },
+                {
+                  transacting: trx,
+                  context: IMPORT_CONTEXT,
+                  withRelated: ['labels', 'newsletters'],
+                },
+              )
+            : null;
+          if (existingMember?.id === found?.id) {
+            break;
+          }
+          await trx.rollback();
+          trx = undefined;
+          if (attempt === MEMBER_LOOKUP_ATTEMPTS) {
+            throw new errors.DataImportError({ message: tpl(messages.memberChangedDuringImport) });
+          }
+        }
+        const options = { transacting: trx, context: IMPORT_CONTEXT };
+
         let member;
         if (existingMember) {
           const existingLabels = existingMember.related('labels').toJSON();

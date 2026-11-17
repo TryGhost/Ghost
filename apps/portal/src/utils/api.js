@@ -1,7 +1,6 @@
 import { HumanReadableError } from './errors';
 import { fetchWithEdgeChallenge } from './edge-challenge';
 import { transformApiSiteData, transformApiTiersData, getUrlHistory } from './helpers';
-import { readMemberCustomFields } from './custom-fields';
 
 function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
   const apiPath = 'members/api';
@@ -79,7 +78,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
     tiers() {
       const url = contentEndpointFor({
         resource: 'tiers',
-        params: { limit: 100, include: 'monthly_price,yearly_price,benefits' },
+        params: { limit: 100, include: 'monthly_price,yearly_price,benefits,requirements' },
       });
       return makeRequest({
         url,
@@ -278,10 +277,8 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
     },
 
     /**
-     * The custom fields the publisher has opened to members, in the publisher's order.
-     *
-     * Portal reaches older Ghost sites indefinitely, so a site without the endpoint — or
-     * a field that does not say what the member may do with it — reads as no fields.
+     * The custom fields the publisher has opened to members, in the publisher's order. A site
+     * without the endpoint reads as no fields.
      */
     customFields() {
       const url = endpointFor({ type: 'members', resource: 'member/metafields/custom' });
@@ -292,19 +289,9 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         if (!res.ok) {
           return [];
         }
-        // Read defensively: Portal and the site it talks to are deployed apart, so this
-        // endpoint may be missing, or answered by a version that shapes it differently.
-        // Anything unrecognisable reads as no fields, which is what a site with none
-        // gives, rather than breaking the page these are drawn on.
         return res
           .json()
-          .then((data) => {
-            const fields = data?.members_metafields;
-            if (!Array.isArray(fields)) {
-              return [];
-            }
-            return readMemberCustomFields(fields);
-          })
+          .then((data) => data.members_metafields)
           .catch(() => []);
       });
     },
@@ -967,6 +954,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       smartCancel,
       cancelAtPeriodEnd,
       cancellationReason,
+      answers,
     }) {
       const identity = await api.member.identity();
       const url =
@@ -977,6 +965,8 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         cancellation_reason: cancellationReason,
         identity: identity,
         priceId: planId,
+        // The member's answers to what the new tier requires, by port, saved with the change.
+        answers: answers && Object.keys(answers).length > 0 ? answers : undefined,
       };
 
       if (tierId && cadence) {
@@ -998,7 +988,11 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       });
 
       if (!res.ok) {
-        throw new Error('Failed to update subscription');
+        // A refused answer comes back naming its port, which is how the page places it.
+        throw (
+          (await HumanReadableError.fromApiResponse(res)) ??
+          new Error('Failed to update subscription')
+        );
       }
 
       return res;

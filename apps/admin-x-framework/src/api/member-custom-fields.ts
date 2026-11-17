@@ -3,10 +3,17 @@ import {
   FIELD_TYPE_IDS,
   MEMBER_ACCESS_LEVELS,
   MetafieldDefinitionSchema,
-  isRecordValue,
+  SHAPES,
+  isCreatableType,
   matchLeaf,
   matchShape,
+  shapedType,
+  type AnyLeafValue,
+  type FieldShape,
+  type FieldTypeOfShape,
   type MemberAccess,
+  type ShapeValue,
+  type ShapedType,
   type MetafieldDefinition,
   partsOf,
   type FieldType,
@@ -19,13 +26,15 @@ import { z } from 'zod';
 import { IdentityTextSchema, type Part } from '@tryghost/metafield-types/identity';
 import { csvColumnsForField } from '@tryghost/metafield-csv';
 import { LucideIcon } from '@tryghost/shade/utils';
+import { useMemo } from 'react';
+import { useFeatureFlags } from '../hooks/use-feature-flag';
 import { createMutation, createQuery, createQueryWithId } from '../utils/api/hooks';
 import { countryName, countryOptions } from '../utils/countries';
 import { ValidationError } from '../utils/errors';
 
 // Re-exported so the import mapping can recognize a custom_fields.* column (same reason
 // as the re-exports below).
-export { isMetafieldColumn } from '@tryghost/metafield-csv';
+export { isMetafieldColumn, splitOptions as splitListCell } from '@tryghost/metafield-csv';
 
 export type { Address as MemberCustomFieldAddress } from '@tryghost/metafield-types';
 export { valueSchemaFor as memberCustomFieldValueSchema } from '@tryghost/metafield-types';
@@ -115,6 +124,7 @@ const fieldTypePresentation: { [T in FieldType]: FieldTypePresentation<T> } = {
       country: 'Country',
     },
   },
+  phone: { label: 'Phone', icon: LucideIcon.Phone },
 };
 
 /**
@@ -128,10 +138,46 @@ const partLabelsFor = (type: FieldType): Record<string, string> => {
 
 // The catalog in the shared catalog's declared order, so every admin surface
 // offers and renders the field types in the same order.
-export const memberCustomFieldUserTypes: MemberCustomFieldUserType[] = FIELD_TYPE_IDS.map((id) => ({
+const memberCustomFieldUserTypes: MemberCustomFieldUserType[] = FIELD_TYPE_IDS.map((id) => ({
   id,
   ...fieldTypePresentation[id],
 }));
+
+/**
+ * Types a field can be created with on this site. Only `useCreatableMemberCustomFieldTypes` and
+ * `creatableTypesAmong` give a list of them, and every form that creates a field takes one, so no
+ * place can offer a type that hasn't been checked.
+ */
+const CreatableTypesSchema = z
+  .array(z.custom<MemberCustomFieldUserType>())
+  .readonly()
+  .brand<'CreatableMemberCustomFieldTypes'>();
+export type CreatableMemberCustomFieldTypes = z.output<typeof CreatableTypesSchema>;
+
+/**
+ * The types a field can be created with on this site, in the catalog's order: every released
+ * type, and a type still in development only where its Labs flag is on. Admin goes live before the
+ * servers it talks to, and a type's flag is switched on only once every server can store it, so
+ * Admin offers a type only where the site's Ghost will create it. The one exception is a `?labs=`
+ * session override, which shows a type in Admin that Ghost still refuses.
+ */
+export const useCreatableMemberCustomFieldTypes = (): CreatableMemberCustomFieldTypes => {
+  const isFlagOn = useFeatureFlags();
+  return useMemo(
+    () =>
+      CreatableTypesSchema.parse(
+        memberCustomFieldUserTypes.filter(({ id }) => isCreatableType(id, isFlagOn)),
+      ),
+    [isFlagOn],
+  );
+};
+
+/** The types among `ids` that a field can be created with, for a place that takes only those. */
+export const creatableTypesAmong = (
+  creatable: CreatableMemberCustomFieldTypes,
+  ids: readonly FieldType[],
+): CreatableMemberCustomFieldTypes =>
+  CreatableTypesSchema.parse(creatable.filter(({ id }) => ids.includes(id)));
 
 export const userTypeForFieldType = (type: FieldType): MemberCustomFieldUserType => ({
   id: type,
@@ -201,10 +247,10 @@ export const memberCustomFieldChoiceLists: { [F in ListSource]: MemberCustomFiel
 };
 
 /** A leaf's value as a publisher reads it: text as written, and a choice by its name. */
-export const memberCustomFieldLeafText = (leaf: Leaf, value: string): string =>
+export const memberCustomFieldLeafText = (leaf: Leaf, value: AnyLeafValue): string =>
   matchLeaf(leaf, {
-    text: () => value,
-    choice: ({ from }) => memberCustomFieldChoiceLists[from].label(value),
+    text: () => String(value),
+    choice: ({ from }) => memberCustomFieldChoiceLists[from].label(String(value)),
   });
 
 export type MemberCustomFieldPart = {
@@ -294,51 +340,49 @@ function partRunsFor(type: FieldType): string[][] {
 // Resolved once: the catalog is static, and this is read for every row of a member list.
 const partRuns = new Map(FIELD_TYPE_IDS.map((type) => [type, partRunsFor(type)]));
 
+/** How a held value of each shape reads as one line, for a field of the given type. */
+const VALUE_LINES: {
+  readonly [S in FieldShape]: (type: FieldTypeOfShape<S>, value: ShapeValue[S]) => string;
+} = {
+  scalar: (type, value) => memberCustomFieldLeafText(FIELD_STRUCTURES[type].leaf, value),
+  record: (type, value) => {
+    const leaves: Readonly<Record<string, Leaf | undefined>> = FIELD_STRUCTURES[type].parts;
+    const parts: Readonly<Record<string, AnyLeafValue | undefined>> = value;
+    return (partRuns.get(type) ?? [])
+      .map((run) =>
+        run
+          .flatMap((part) => {
+            const leaf = leaves[part];
+            const held = parts[part];
+            return leaf && held !== undefined ? [memberCustomFieldLeafText(leaf, held)] : [];
+          })
+          .join(' '),
+      )
+      .filter(Boolean)
+      .join(', ');
+  },
+  // In the order the server reads them back, which is the field's own.
+  set: (_type, value) => value.join(', '),
+};
+
+function lineOf<S extends FieldShape>({ shape, type }: ShapedType<S>, raw: unknown): string {
+  const value = SHAPES[shape].parse(type, raw);
+  return value === undefined ? '' : VALUE_LINES[shape](type, value);
+}
+
 /**
- * A member's value for one field as a single readable line: the string itself for a
- * scalar, for a composite its parts joined the way that type reads — e.g.
+ * A member's value for one field as a single readable line: the leaf's text for a scalar, for a
+ * composite its parts joined the way that type reads — e.g.
  * "1 Main St, 12 apt B, New York, NY 00001, US" — and for a list the options picked. Missing
  * parts drop out, so a partial value still reads naturally.
  *
- * Empty string for a value that is not the shape its type declares: the type decides
- * which shape is readable, so a composite reads only from its parts and a scalar only
- * from text. Callers own their own placeholder, since "no value" reads differently in a
- * table cell than in a detail row.
+ * Empty string for a value that isn't laid out as its type's shape. Callers own their own
+ * placeholder, since "no value" reads differently in a table cell than in a detail row.
  */
 export const formatMemberCustomFieldValue = (
   field: Pick<MemberCustomField, 'type'>,
   value: unknown,
-): string =>
-  matchShape(field.type, {
-    scalar: ({ leaf }) => (typeof value === 'string' ? memberCustomFieldLeafText(leaf, value) : ''),
-    record: ({ parts }, type) => {
-      if (!isRecordValue(value)) {
-        return '';
-      }
-
-      const leaves: Record<string, Leaf | undefined> = parts;
-      const readPart = (part: string): unknown => {
-        const raw = value[part];
-        const leaf = leaves[part];
-        return leaf && typeof raw === 'string' ? memberCustomFieldLeafText(leaf, raw) : raw;
-      };
-
-      return (partRuns.get(type) ?? [])
-        .map((run) =>
-          run
-            .map(readPart)
-            .filter((part): part is string => typeof part === 'string' && part !== '')
-            .join(' '),
-        )
-        .filter(Boolean)
-        .join(', ');
-    },
-    // In the order the server reads them back, which is the field's own.
-    set: () =>
-      Array.isArray(value)
-        ? value.filter((option): option is string => typeof option === 'string').join(', ')
-        : '',
-  });
+): string => lineOf(shapedType(field.type), value);
 
 const MemberCustomFieldList = z.array(MetafieldDefinitionSchema);
 const MemberCustomFieldsResponse = z.object({ members_metafields: MemberCustomFieldList });

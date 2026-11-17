@@ -1,49 +1,121 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'vitest';
+import { describe, expectTypeOf, it } from 'vitest';
+import {
+  FIELD_READING,
+  SHAPES,
+  accept,
+  shaped,
+  type FieldShape,
+  type ShapeValue,
+  type ShapeWrite,
+  type ShapedField,
+  type TypedSettings,
+} from '@tryghost/metafield-types';
+import { ALL_FIELD_FIXTURES, type AnyFieldFixture } from '@tryghost/metafield-types/test/fixtures';
 import {
   ROOT_PATH,
-  valueRowsOf,
+  VALUE_COLUMNS,
+  storedValueAs,
   valueRowsToWrite,
   valuesFromRows,
+  type RowsToWrite,
+  type ValueRow,
 } from '../../../../../core/server/services/members-metafields/storage';
 
-// Every edge of the row model lives in these three functions, and they are pure, so this
-// is the one place a unit test is cheaper than driving the HTTP boundary. The behaviour
-// they add up to — a value surviving a round trip through the database — is proven in the
-// members custom-fields API tests; what is proven here is the shape of each step.
+/**
+ * What the values service's statements do to a field's rows for a write's changes: a merge
+ * deletes the paths it clears, a replace deletes every path it doesn't set, and both upsert the
+ * rows they set.
+ */
+function rowsAfter(rows: readonly ValueRow[], changes: RowsToWrite): ValueRow[] {
+  const setPaths = new Set(changes.set.map((row) => row.path));
+  const kept = rows.filter(
+    (row) =>
+      !setPaths.has(row.path) && changes.mode === 'merge' && !changes.cleared.includes(row.path),
+  );
+  return [...kept, ...changes.set];
+}
+
+/** A field's rows after a write the field's rule accepts. */
+function written<S extends FieldShape>(
+  of: ShapedField<TypedSettings, S>,
+  rows: readonly ValueRow[],
+  raw: ShapeWrite[S],
+): ValueRow[] {
+  const acceptance = accept(of, raw);
+  assert(acceptance.success, `${of.field.type} refused ${JSON.stringify(raw)}`);
+  return rowsAfter(rows, valueRowsToWrite(acceptance.accepted));
+}
+
+/** What a field reads as, from its rows, failing on a row outside its layout. */
+function read<S extends FieldShape>(of: ShapedField<TypedSettings, S>, rows: readonly ValueRow[]) {
+  return storedValueAs(of.field, rows, () => assert.fail('a row was left out'));
+}
+
+/** Writing to the rows of any held value reads back as the shape's `apply` says. */
+function storageAgrees<S extends FieldShape>(of: ShapedField<TypedSettings, S>, raws: unknown[]) {
+  const rules = SHAPES[of.shape];
+  const reads = (value: ShapeValue[S] | undefined) =>
+    value === undefined ? undefined : FIELD_READING[of.shape].held(of.field, value);
+  const values = raws.map(
+    (raw) =>
+      rules.parse(of.field.type, raw) ??
+      assert.fail(`a ${of.field.type} fixture value isn't its shape's structure`),
+  );
+  // Holding no value at all is where every field starts.
+  for (const held of [undefined, ...values]) {
+    const heldRows = held === undefined ? [] : written(of, [], held);
+    assert.deepEqual(read(of, heldRows), reads(held));
+
+    // Clearing the whole field, the write `null`, deletes its rows in the values service, so
+    // only the writes that leave a value are storage's.
+    const writes = [
+      ...values,
+      ...[undefined, ...values].flatMap((next) => {
+        const write = rules.diff(held, next);
+        return write === undefined || write === null ? [] : [write];
+      }),
+    ];
+    for (const write of writes) {
+      assert.deepEqual(
+        read(of, written(of, heldRows, write)),
+        reads(rules.apply(held, write)),
+        JSON.stringify({ held, write }),
+      );
+    }
+  }
+}
+
+// The row layouts are pure, so a law over them is checked here, for every type the catalog has.
+// That a value survives a round trip through the database itself is proven in the members
+// custom-fields API tests.
 describe('custom field value storage', function () {
-  describe('a value becomes rows', function () {
-    it('gives a value with no parts a single row at the empty path', function () {
-      assert.deepEqual(valueRowsOf('Ghosts'), [{ path: ROOT_PATH, value_text: 'Ghosts' }]);
+  describe.each(
+    ALL_FIELD_FIXTURES.map((fixture): [string, AnyFieldFixture] => [fixture.field.type, fixture]),
+  )('a %s field', function (_type, { field, values }) {
+    it('reads back what any write to any held value leaves, as its shape says', function () {
+      storageAgrees(shaped(field), [...values]);
     });
+  });
 
-    it('gives a value with parts one row each, in the order the type declares them', function () {
-      assert.deepEqual(valueRowsOf({ line1: '1 High St', city: 'London' }), [
-        { path: 'line1', value_text: '1 High St' },
-        { path: 'city', value_text: 'London' },
-      ]);
-    });
+  // schema.js is JavaScript the compiler can't see into, so the values table is checked against
+  // the columns storage writes: one per kind of value.
+  it('has the values table keep a column for each kind of value', function () {
+    const table = require('../../../../../core/server/data/schema/schema').members_metafield_values;
+    const declared = Object.keys(table).filter((column) => column.startsWith('value_'));
+    assert.deepEqual([...declared].sort(), [...VALUE_COLUMNS].sort());
+  });
 
-    it('names an empty part too, because naming is what a write acts on', function () {
-      assert.deepEqual(valueRowsOf({ line1: '1 High St', city: '' }), [
-        { path: 'line1', value_text: '1 High St' },
-        { path: 'city', value_text: '' },
-      ]);
-    });
-
-    it('splits what a value names into what it sets and what it clears', function () {
-      // A path not mentioned appears in neither list, which is how "leave it alone"
-      // is expressed: by saying nothing about it.
-      assert.deepEqual(valueRowsToWrite({ type: 'address' }, { line1: '1 High St', city: '' }), {
-        mode: 'merge',
-        set: [{ path: 'line1', value_text: '1 High St' }],
-        cleared: ['city'],
-      });
+  // Checked by `test:types` only: each line fails it once the compiler allows what it describes.
+  describe('what the compiler refuses', function () {
+    it('writes only a value a rule accepted', function () {
+      type Writable = Parameters<typeof valueRowsToWrite>[0];
+      expectTypeOf<{ shape: 'scalar'; value: 'Bex' }>().not.toExtend<Writable>();
     });
   });
 
   describe('rows become every member’s values', function () {
-    const byPath = (_row: unknown, rows: readonly { path: string; value_text: string }[]) =>
+    const byPath = (_row: unknown, rows: readonly ValueRow[]) =>
       Object.fromEntries(rows.map(({ path, value_text: value }) => [path, value]));
 
     it('gathers each value from every row belonging to it', function () {

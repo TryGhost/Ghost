@@ -141,21 +141,6 @@
     // covers the `codemirror@<5.58.2` pnpm override key.
     'codemirror',
 
-    // https://linear.app/ghost/issue/PLA-78
-    // https://github.com/TryGhost/Ghost/pull/28180
-    // ghost is pinned to knex 2.4.2 and knex-migrator's knex is pinned
-    // back to the same version via the `knex-migrator>knex` pnpm override
-    // (knex-migrator 5.4.x bundles knex 3.x). Migrations are built with
-    // core's query builder and executed by knex-migrator's, so the two must
-    // move together; 2.5.x also strips the password from the shared
-    // `config.get('database')` object before knex-migrator connects. Ignore
-    // until core moves to knex 3.x in one coordinated upgrade.
-    'knex',
-    // Same PLA-78 pin, but Renovate treats the pnpm override key
-    // `knex-migrator>knex` as its own dependency name, so the plain "knex"
-    // ignore above doesn't match it (see #29092).
-    'knex-migrator>knex',
-
     // https://github.com/TryGhost/Ghost/pull/29099
     // The pnpm override `path-to-regexp@<0.1.13` exists only to force
     // Express 4's transitive path-to-regexp to the ReDoS-patched 0.1.13.
@@ -168,7 +153,7 @@
   packageRules: [
     // Auto-generate a changeset when an npm/package.json update (or a pnpm
     // catalog bump — the npm manager handles both) touches a publishable
-    // package (koenig/*, packages/*), directly or via a catalog entry it
+    // package (koenig/*, packages/*, contracts/*), directly or via a catalog entry it
     // references, so the PR clears the "Check app version bump" gate without
     // a human authoring one. Scoped to `npm` so Docker/GitHub-Actions updates
     // never run it. Runs once per branch after the update is applied (working
@@ -284,7 +269,7 @@
     //    Node.js runtime declared in `engines`, not a dependency — so a hard
     //    version cap is the only lever. Raise it when we bump the Node engine.
     {
-      description: 'Cap @types/node at the default Node major (devEngines: 22.23.4)',
+      description: 'Cap @types/node at the default Node major (devEngines: 22.23.5)',
       matchPackageNames: ['@types/node'],
       allowedVersions: '<23',
     },
@@ -507,9 +492,11 @@
     // change runtime behavior. Frequently-rotating upstream tags
     // (notably `tinybird-local:latest`) were opening ~5 individual PRs
     // per week, each running the full E2E lane (~70-150 job-min) for a
-    // tweak with no runtime impact. Saturday-only `schedule` batches the
+    // tweak with no runtime impact. A weekend-only `schedule` batches the
     // week's churn into one PR + one CI run; the global automergeSchedule
-    // (all weekend, weekday evenings) lands it without human review.
+    // (all weekend, weekday evenings) lands it without human review. Sunday
+    // stays in the window because updateNotScheduled: false skips
+    // off-schedule branches before the automerge check.
     // Digests for images not in this list (e.g. the pinned `redis` in
     // ci.yml services) still open individually — they're rare and
     // intentionally human-reviewed.
@@ -527,9 +514,20 @@
       ],
       matchUpdateTypes: ['digest'],
       groupName: 'Docker image digests',
-      schedule: ['* * * * 6'],
+      schedule: ['* * * * 0,6'],
       automerge: true,
       automergeType: 'pr',
+    },
+
+    // better-auth publishes several releases a week, so every soak-cleared
+    // version was opening its own PR + full CI run. Weekend-only takes the
+    // newest soaked release once a week. Sunday stays in the window because
+    // updateNotScheduled: false skips off-schedule branches before the
+    // automerge check, so a PR going green late Saturday would wait a week.
+    {
+      description: 'Weekly schedule for better-auth monorepo updates',
+      matchPackageNames: ['better-auth', '@better-auth/**'],
+      schedule: ['* * * * 0,6'],
     },
 
     // Digest and pin updates (Docker image digests, action SHAs) usually

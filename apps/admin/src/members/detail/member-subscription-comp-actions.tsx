@@ -16,6 +16,7 @@ import {
 } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useEditMember, useMembersFetching } from '@tryghost/admin-x-framework/api/members';
 import type { Member } from '@tryghost/admin-x-framework/api/members';
 
@@ -34,6 +35,7 @@ const MemberSubscriptionCompActions: React.FC<MemberSubscriptionCompActionsProps
   member,
   tierId,
 }) => {
+  const admin7Design = useFeatureFlag('admin7Design');
   const editMember = useEditMember();
   const [confirmOpen, setConfirmOpen] = React.useState(false);
   // Keep the trigger disabled through the invalidated members refetch so the
@@ -69,7 +71,7 @@ const MemberSubscriptionCompActions: React.FC<MemberSubscriptionCompActionsProps
             data-testid="subscription-actions"
             disabled={busy}
             size="icon"
-            variant="subtle"
+            variant={admin7Design ? 'outline' : 'subtle'}
           >
             {busy ? <LoadingIndicator size="sm" /> : <LucideIcon.MoreHorizontal />}
           </Button>

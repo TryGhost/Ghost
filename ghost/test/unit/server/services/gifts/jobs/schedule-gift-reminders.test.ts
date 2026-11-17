@@ -23,24 +23,9 @@ describe('gift jobs: reminder scheduling', function () {
     sinon.restore();
   });
 
-  it('does not schedule gift reminders under the test environment', async function () {
+  it('schedules a single daily off-peak send-gift-reminders job', async function () {
     await giftJobs.scheduleGiftReminderJob(jobsService);
-
-    assert.ok(
-      jobsService.scheduleRecurring.notCalled,
-      'send-gift-reminders must not be scheduled under NODE_ENV=test*',
-    );
-  });
-
-  it('schedules a single daily off-peak send-gift-reminders job outside the test environment', async function () {
-    const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'production';
-    try {
-      await giftJobs.scheduleGiftReminderJob(jobsService);
-      await giftJobs.scheduleGiftReminderJob(jobsService);
-    } finally {
-      process.env.NODE_ENV = originalEnv;
-    }
+    await giftJobs.scheduleGiftReminderJob(jobsService);
 
     assert.ok(
       jobsService.scheduleRecurring.calledOnce,

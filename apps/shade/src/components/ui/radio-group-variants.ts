@@ -4,7 +4,7 @@ import { inputSurface } from '@/components/ui/input-surface';
 const radioGroupItemVariants = cva(
   [
     inputSurface('self'),
-    'peer grid size-4 shrink-0 place-content-center rounded-full border-border-strong p-0 text-primary enabled:hover:bg-interactive-hover data-[state=checked]:border-primary',
+    'peer grid size-4 shrink-0 place-content-center rounded-full border-border-strong bg-control-surface p-0 text-primary enabled:hover:bg-interactive-hover data-[state=checked]:border-primary',
   ],
   {
     variants: {

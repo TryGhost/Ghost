@@ -827,6 +827,7 @@ module.exports = class RouterController {
             );
           }
         }
+        attempt.buying({ existing: Boolean(member), verified: isAuthenticated });
 
         await this._setAttributionMetadata(metadata);
 
@@ -1110,8 +1111,13 @@ module.exports = class RouterController {
   }
 
   async _handleSignup(req, normalizedEmail, referrer = null, giftToken = null) {
-    if (!this._allowSelfSignup()) {
-      if (this._settingsCache.get('members_signup_access') === 'paid') {
+    const signupAccess = this._settingsCache.get('members_signup_access');
+
+    // A gift is a paid membership, so paid-members-only sites accept new members redeeming one.
+    const isPaidGiftRedemption = signupAccess === 'paid' && Boolean(giftToken);
+
+    if (!this._allowSelfSignup() && !isPaidGiftRedemption) {
+      if (signupAccess === 'paid') {
         throw new errors.BadRequestError({
           message: tpl(messages.paidOnly),
         });
@@ -1128,6 +1134,11 @@ module.exports = class RouterController {
       throw new errors.BadRequestError({
         message: tpl(messages.blockedEmailDomain),
       });
+    }
+
+    // Throws the gift's own error (not found, redeemed, expired...) when it can't be redeemed.
+    if (isPaidGiftRedemption) {
+      await this._giftService.service.getRedeemable({ token: giftToken, memberStatus: null });
     }
 
     const { emailType } = req.body;

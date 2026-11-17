@@ -2,6 +2,9 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const DomainEvents = require('@tryghost/domain-events');
+const {
+  LabelAddedToMembersEvent,
+} = require('../../../../../../../core/shared/events/label-added-to-members-event');
 const logging = require('@tryghost/logging');
 const labs = require('../../../../../../../core/shared/labs');
 const MemberRepository = require('../../../../../../../core/server/services/members/members-api/repositories/member-repository');
@@ -441,6 +444,71 @@ describe('MemberRepository', function () {
         'cus_123',
         'price_active_subscription',
       );
+    });
+  });
+
+  describe('bulkEdit', function () {
+    beforeEach(function () {
+      Member.getLabelRelations = sinon.stub().resolves([]);
+    });
+
+    it('dispatches label additions successful inserts', async function () {
+      const dispatch = sinon.spy(DomainEvents, 'dispatch');
+      Member.getFilteredCollectionQuery = sinon.stub().returns({
+        select: () => ({ distinct: async () => ['added', 'failed'].map((id) => ({ id })) }),
+      });
+      Member.lockForUpdate = sinon.stub().resolves();
+      Member.bulkAdd = sinon.stub().callsFake(async (relations) => ({
+        successful: 1,
+        unsuccessful: 1,
+        errors: [],
+        unsuccessfulData: relations.filter((row) => row.member_id === 'failed'),
+      }));
+
+      const result = await buildRepo().bulkEdit(
+        { action: 'addLabel', meta: { label: { id: 'label' } } },
+        { all: true, context: { user: 'admin' } },
+      );
+
+      assert.equal(result.successful, 1);
+      assert.equal(result.unsuccessful, 1);
+      const events = dispatch.args
+        .map(([event]) => event)
+        .filter((event) => event instanceof LabelAddedToMembersEvent);
+      assert.deepEqual(
+        events.map((event) => event.data),
+        [{ labelId: 'label', memberIds: ['added'] }],
+      );
+    });
+
+    it('reports the members of a failed chunk as unsuccessful and keeps the committed chunks', async function () {
+      const memberIds = Array.from(
+        { length: 1001 },
+        (_, i) => `member-${String(i).padStart(4, '0')}`,
+      );
+      const lockError = new Error('Lock wait timeout exceeded');
+      Member.getFilteredCollectionQuery = sinon.stub().returns({
+        select: () => ({ distinct: async () => memberIds.map((id) => ({ id })) }),
+      });
+      Member.lockForUpdate = sinon
+        .stub()
+        .callsFake(async (ids) => (ids.length === 1 ? Promise.reject(lockError) : ids));
+      Member.bulkAdd = sinon.stub().callsFake(async (relations) => ({
+        successful: relations.length,
+        unsuccessful: 0,
+        unsuccessfulData: [],
+        errors: [],
+      }));
+      const result = await buildRepo().bulkEdit(
+        { action: 'addLabel', meta: { label: { id: 'label-id' } } },
+        { filter: 'status:free' },
+      );
+      assert.equal(result.successful, 1000);
+      assert.equal(result.unsuccessful, 1);
+      assert.deepEqual(result.unsuccessfulData, ['member-1000']);
+      assert.equal(result.errors.length, 1);
+      assert.equal(result.errors[0].message, 'Lock wait timeout exceeded');
+      assert.equal(result.errors[0].errorDetails, 'member-1000');
     });
   });
 
@@ -1996,7 +2064,6 @@ describe('MemberRepository', function () {
         eventName: 'membership_started',
         source: 'member',
         memberId: 'member_id_123',
-        memberEmail: 'test@example.com',
         memberStatus: 'paid',
         previousMemberStatus: null,
         memberTierIds: ['bronze'],
@@ -2058,7 +2125,6 @@ describe('MemberRepository', function () {
           source: 'member',
           previousMemberStatus: previousStatus,
           memberId: 'member',
-          memberEmail: 'member@example.com',
           memberStatus: 'free',
           memberTierIds: [],
           previousMemberTierIds: ['basic'],
@@ -2087,7 +2153,6 @@ describe('MemberRepository', function () {
           source,
           previousMemberStatus: previousStatus,
           memberId: 'member',
-          memberEmail: 'member@example.com',
           memberStatus: status,
           memberTierIds: tierIds,
           previousMemberTierIds: ['basic'],
@@ -2113,7 +2178,6 @@ describe('MemberRepository', function () {
           eventName: 'membership_started',
           source,
           memberId: 'member_id_123',
-          memberEmail: 'test@example.com',
           memberStatus: 'free',
           previousMemberStatus: null,
           memberTierIds: [],
@@ -2165,7 +2229,6 @@ describe('MemberRepository', function () {
           eventName: 'membership_started',
           source: 'member',
           memberId: 'member_id_123',
-          memberEmail: 'test@example.com',
           memberStatus: 'free',
           previousMemberStatus: null,
           memberTierIds: [],
@@ -2487,7 +2550,6 @@ describe('MemberRepository', function () {
         eventName: 'membership_started',
         source: 'member',
         memberId: 'member_id_123',
-        memberEmail: 'test@example.com',
         memberStatus: 'paid',
         previousMemberStatus: 'free',
         memberTierIds: [],
@@ -2513,7 +2575,6 @@ describe('MemberRepository', function () {
         eventName: 'membership_started',
         source: 'admin',
         memberId: 'member_id_123',
-        memberEmail: 'test@example.com',
         memberStatus: 'paid',
         previousMemberStatus: 'free',
         memberTierIds: [],
@@ -2561,7 +2622,6 @@ describe('MemberRepository', function () {
         eventName: 'paid_subscription_changed',
         source: 'member',
         memberId: 'member_id_123',
-        memberEmail: 'test@example.com',
         memberStatus: 'paid',
         previousMemberStatus: 'paid',
         memberTierIds: ['silver'],
@@ -2664,7 +2724,6 @@ describe('MemberRepository', function () {
           eventName: 'membership_started',
           source: 'member',
           memberId: 'member_id_123',
-          memberEmail: 'test@example.com',
           memberStatus: 'paid',
           previousMemberStatus: 'free',
           memberTierIds: [],

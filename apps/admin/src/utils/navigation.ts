@@ -13,15 +13,19 @@ const ALLOWED_SCHEMES = ['http:', 'https:', 'mailto:', 'tel:'];
  */
 export function navigateTo(
   route: string,
-  { replace = false }: { replace?: boolean } = {},
+  {
+    replace = false,
+    // Injectable for tests: jsdom's window.location can't be stubbed
+    location = window.location,
+  }: { replace?: boolean; location?: Pick<Location, 'href' | 'hash' | 'replace'> } = {},
 ): boolean {
   const navigateInternal = (internalRoute: string) => {
     const normalizedRoute = internalRoute.startsWith('/') ? internalRoute : `/${internalRoute}`;
 
     if (replace) {
-      window.location.replace(`#${normalizedRoute}`);
+      location.replace(`#${normalizedRoute}`);
     } else {
-      window.location.hash = normalizedRoute;
+      location.hash = normalizedRoute;
     }
   };
 
@@ -32,9 +36,9 @@ export function navigateTo(
       // Only allow explicitly safe schemes
       if (ALLOWED_SCHEMES.includes(url.protocol)) {
         if (replace) {
-          window.location.replace(route);
+          location.replace(route);
         } else {
-          window.location.href = route;
+          location.href = route;
         }
         return true;
       }

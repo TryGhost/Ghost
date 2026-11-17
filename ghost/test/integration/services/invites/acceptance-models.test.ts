@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import * as security from '@tryghost/security';
 import type { AcceptanceModels } from '../../../../core/server/services/invites/accept';
 import { agentProvider, fixtureManager } from '../../../utils/e2e-framework';
+import { passwordHashOf } from '../../../utils/password-hash';
 
 const models = require('../../../../core/server/models');
 // The registry has no declarations; this view checks the test's calls against
@@ -64,7 +65,7 @@ describe('Invite acceptance against real models', function () {
     assert.equal(await models.Invite.findOne({ email }), null);
     const user = await models.User.findOne({ email }, { withRelated: ['roles'], require: true });
     assert.equal(user.get('name'), 'Invited Author');
-    assert.equal(await security.password.compare(password, user.get('password')), true);
+    assert.equal(await security.password.compare(password, await passwordHashOf(user)), true);
     assert.deepEqual(
       user.related('roles').models.map((role: { id: string }) => role.id),
       [roleId],

@@ -4,11 +4,11 @@ module.exports = {
   },
 
   get authenticate() {
-    return require('./authenticate');
+    return require('./authenticate').default;
   },
 
   get session() {
-    return require('./session');
+    return require('./session').default;
   },
 
   get setup() {
@@ -16,10 +16,15 @@ module.exports = {
   },
 
   get passwordreset() {
-    return require('./passwordreset');
+    return require('./passwordreset').default;
   },
 
   get resetAuthentication() {
     return require('./reset-authentication').default;
+  },
+
+  // Loads Better Auth; only boot under auth:engine better-auth should touch it
+  get betterAuth() {
+    return require('./better-auth').default;
   },
 };

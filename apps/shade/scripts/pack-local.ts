@@ -82,7 +82,7 @@ export function findTargetProblem(
     );
   });
   if (!dependsOnShade) {
-    return `${appDir}/package.json doesn't depend on ${PACKAGE_NAME}. Install the published package first: npm install ${PACKAGE_NAME}@alpha`;
+    return `${appDir}/package.json doesn't depend on ${PACKAGE_NAME}. Install the published package first: npm install ${PACKAGE_NAME}`;
   }
 
   const foreign = files.find((file) => file in FOREIGN_LOCKFILES);

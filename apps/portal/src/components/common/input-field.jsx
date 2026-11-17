@@ -183,6 +183,9 @@ function InputField({
   label,
   hideLabel,
   type,
+  // What the browser may fill the input in with. A field can name its own; otherwise it
+  // comes from which input this is, below.
+  autoComplete: givenAutoComplete,
   value,
   placeholder,
   disabled = false,
@@ -195,11 +198,12 @@ function InputField({
   maxLength,
   autoFocus,
   errorMessage,
-  // Marked wrong without saying why here. A composite's inputs share one field, and its
+  // Marked wrong without saying why here. A custom field's reasons are listed under its
+  // inputs, where a reason long enough to say how to put it right has room, and a composite's
   // reasons are listed under the group rather than wedged between its rows.
   invalid = false,
-  // What says why, when it is not printed beside the input: a composite's reasons are
-  // listed under the group, and an input has to point at them to be read out with it.
+  // What says why, when it is not printed beside the input: an input has to point at the
+  // reasons listed under it to be read out with them.
   describedBy,
 }) {
   const fieldNode = useRef(null);
@@ -216,7 +220,7 @@ function InputField({
     disabled = true;
   }
 
-  let autoComplete = '';
+  let autoComplete = givenAutoComplete ?? '';
   let autoCorrect = '';
   let autoCapitalize = '';
   let inputMode;

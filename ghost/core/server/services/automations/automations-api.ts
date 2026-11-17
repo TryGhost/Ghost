@@ -1,5 +1,5 @@
-// @ts-expect-error This module lacks type definitions.
 import domainEvents from '@tryghost/domain-events';
+import type { Knex } from 'knex';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
@@ -33,6 +33,7 @@ import {
   fetchAutomationRuns,
   fetchAutomationStats,
 } from './tinybird-automation-stats';
+import type { TrackEmailClickedOptions } from './automations-repository-2';
 import { createDatabaseAutomationsRepository2 } from './database-automations-repository-2';
 import { createAutomationsApi2 } from './automations-api-2';
 
@@ -321,12 +322,8 @@ async function validateEmailLexical(actions: Automation['actions']) {
 
       // Empty editor documents are valid draft state and are classified by
       // active-body validation below. Invalid JSON is not skipped here.
-      if (isValidEmptyLexical(lexical)) {
+      if (isEmptyLexical(lexical)) {
         return;
-      }
-
-      if (isMalformedEmptyLexical(lexical)) {
-        throwValidationError(messages.invalidEmailLexical, 'actions');
       }
 
       if (!(await lexicalLib.validate(lexical))) {
@@ -360,39 +357,13 @@ function validateActiveEmailSteps(status: Automation['status'], actions: Automat
 }
 
 function isEmptyLexical(lexical: string): boolean {
+  let parsed;
   try {
-    const parsed = JSON.parse(lexical);
-    return isEmptyParsedLexical(parsed);
-  } catch {
-    return true;
-  }
-}
-
-function isValidEmptyLexical(lexical: string): boolean {
-  try {
-    return isEmptyParsedLexical(JSON.parse(lexical));
+    parsed = JSON.parse(lexical);
   } catch {
     return false;
   }
-}
 
-function isMalformedEmptyLexical(lexical: string): boolean {
-  try {
-    const children = JSON.parse(lexical)?.root?.children;
-
-    if (!Array.isArray(children) || children.length !== 1 || children[0].type !== 'paragraph') {
-      return false;
-    }
-
-    return !Array.isArray(children[0].children);
-  } catch {
-    return false;
-  }
-}
-
-function isEmptyParsedLexical(parsed: {
-  root?: { children?: Array<{ type?: string; children?: unknown }> };
-}): boolean {
   const children = parsed?.root?.children;
 
   if (!Array.isArray(children)) {
@@ -403,11 +374,17 @@ function isEmptyParsedLexical(parsed: {
     return true;
   }
 
-  if (children.length !== 1 || children[0].type !== 'paragraph') {
+  if (children.length !== 1 || children[0]?.type !== 'paragraph') {
     return false;
   }
 
-  return Array.isArray(children[0].children) && children[0].children.length === 0;
+  // Lexical's renderer accepts paragraphs without children, but these are
+  // malformed documents rather than valid empty drafts.
+  if (!Array.isArray(children[0].children)) {
+    throwValidationError(messages.invalidEmailLexical, 'actions');
+  }
+
+  return children[0].children.length === 0;
 }
 
 function validateGraph(actions: Automation['actions'], edges: Automation['edges']) {
@@ -549,14 +526,10 @@ export async function getAutomatedEmailRecipientsByMailgunIds(
   return await repository.getAutomatedEmailRecipientsByMailgunIds(...args);
 }
 
-export async function trackEmailDeliveredAndOpened(
-  ...args: Parameters<AutomationsRepository['trackEmailDeliveredAndOpened']>
-) {
-  return await repository.trackEmailDeliveredAndOpened(...args);
-}
+export const trackEmailDeliveredAndOpened =
+  automationsApi2.trackEmailDeliveredAndOpened.bind(automationsApi2);
 
-export async function trackEmailClicked(
-  ...args: Parameters<AutomationsRepository['trackEmailClicked']>
-) {
-  await repository.trackEmailClicked(...args);
-}
+export const trackEmailClicked = async (
+  options: TrackEmailClickedOptions,
+  connectionOptions: { transacting: Knex.Transaction },
+) => automationsApi2.trackEmailClicked(options, { connection: connectionOptions.transacting });

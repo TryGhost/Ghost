@@ -16,6 +16,7 @@ import {
   shouldCompileToExpectedWithGlobals,
   // @ts-expect-error This module lacks type definitions.
 } from './utils/handlebars';
+import { restoreHandlebarsAfterSuite } from '../../../utils/handlebars-state';
 
 const { handlebars } = handlebarsService.hbs;
 
@@ -29,6 +30,8 @@ const draftPostData = {
 };
 
 describe('{{concat}} helper', function () {
+  restoreHandlebarsAfterSuite();
+
   beforeAll(function () {
     handlebars.registerHelper('concat', concat);
     handlebars.registerHelper('url', url);
@@ -42,6 +45,10 @@ describe('{{concat}} helper', function () {
         },
       },
     };
+  });
+
+  afterAll(async function () {
+    await configUtils.restore();
   });
 
   it('can correctly concat nothing', function () {

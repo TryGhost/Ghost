@@ -56,7 +56,6 @@ describe('Members import and export outcomes', function () {
 
   beforeEach(function () {
     mockManager.mockMail();
-    mockManager.mockLabsEnabled('membersCustomFields');
     metrics = mockManager.mockMetrics();
   });
 

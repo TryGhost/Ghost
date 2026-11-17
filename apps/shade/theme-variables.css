@@ -58,11 +58,11 @@
   );
   --shadow-glass-floating:
     inset 0 1px 0 rgb(255 255 255 / 0.55), inset 0 -1px 0 rgb(255 255 255 / 0.12),
-    0 0 0 0.5px rgb(0 0 0 / 0.06), 0 40px 60px -15px rgb(0 0 0 / 0.18),
+    0 0 0 0.5px rgb(0 0 0 / 0.09), 0 40px 60px -15px rgb(0 0 0 / 0.18),
     0 12px 24px -8px rgb(0 0 0 / 0.1), 0 3px 8px rgb(0 0 0 / 0.04);
   --shadow-glass-docked:
     inset 0 1px 0 rgb(255 255 255 / 0), inset 0 -1px 0 rgb(255 255 255 / 0),
-    0 0 0 1px rgb(0 0 0 / 0.06), 0 8px 24px -10px rgb(0 0 0 / 0), 0 4px 12px -4px rgb(0 0 0 / 0),
+    0 0 0 1px rgb(0 0 0 / 0.09), 0 8px 24px -10px rgb(0 0 0 / 0), 0 4px 12px -4px rgb(0 0 0 / 0),
     0 2px 6px rgb(0 0 0 / 0);
   --focus-ring: var(--color-gray-600);
   --state-info: var(--color-blue-700);
@@ -70,14 +70,52 @@
   --search-result-description: #4d5156;
   --state-info-foreground: var(--color-black);
   --state-success: var(--color-green-700);
+  /* Publishing is a celebration: brighter than --state-success, which has to pass
+     AA as small text. */
+  --publish-accent: var(--color-green-600);
+  --character-count: var(--color-green-600);
+  /* Activity feed icons: a color pair for each kind of event. */
+  --event-email-surface: var(--color-blue-200);
+  --event-email-icon: var(--color-blue-700);
+  --event-gain-surface: var(--color-green-200);
+  --event-gain-icon: var(--color-green-700);
+  --event-loss-surface: var(--color-red-200);
+  --event-loss-icon: var(--color-red-700);
+  --event-warning-surface: var(--color-yellow-200);
+  --event-warning-icon: var(--color-yellow-700);
+  --event-engagement-surface: var(--color-purple-200);
+  --event-engagement-icon: var(--color-purple-700);
+  --event-gift-surface: var(--color-pink-200);
+  --event-gift-icon: var(--color-pink-700);
   --state-success-foreground: var(--color-black);
   --state-warning: var(--color-yellow-700);
+  /* --state-warning is dark enough for text, so a tint or a solid mark made from it
+     goes brown. Boxes and marks use these yellows instead. */
+  --state-warning-surface: var(--color-yellow-200);
+  --state-warning-border: transparent;
+  --state-warning-fill: var(--color-yellow-400);
+  /* Banners are a flat color with darker shades of it for text, as in Shapeshifter's
+     page headers: step 200 behind steps 800 and 700. */
+  --banner-info-surface: var(--color-blue-200);
+  --banner-info-foreground: var(--color-blue-800);
+  --banner-info-secondary: var(--color-blue-700);
+  --banner-success-surface: var(--color-green-200);
+  --banner-success-foreground: var(--color-green-800);
+  --banner-success-secondary: var(--color-green-700);
+  --banner-warning-surface: var(--state-warning-surface);
+  --banner-warning-foreground: var(--color-yellow-800);
+  --banner-warning-secondary: var(--color-yellow-700);
+  --banner-destructive-surface: var(--color-red-200);
+  --banner-destructive-foreground: var(--color-red-800);
+  --banner-destructive-secondary: var(--color-red-700);
   --state-warning-foreground: var(--color-black);
   /* A 20% tint of the dark yellow-700 reads beige, so the warning Badge gets
      its own clean pale yellow */
   --badge-warning: var(--color-yellow-200);
   --badge-warning-hover: var(--color-yellow-300);
   --badge-warning-foreground: var(--color-yellow-700);
+  --badge-purple: var(--color-purple-200);
+  --badge-purple-foreground: var(--color-purple-800);
   --state-danger: var(--color-red-600);
   --state-danger-foreground: var(--color-black);
   --control-height: 32px;
@@ -110,6 +148,8 @@
   --sidebar-border: var(--color-gray-100);
   --sidebar-ring: var(--color-gray-600);
   --tab-hover: var(--color-gray-100);
+  --tab-inactive: var(--color-gray-200);
+  --tab-inactive-hover: var(--color-gray-300);
   --tab-active: color-mix(in oklab, var(--color-gray-700) 10%, transparent);
   --button-hover: var(--color-gray-100);
   /* Translucent so a ghost Button hover darkens whatever it sits on - an opaque
@@ -127,6 +167,19 @@
   --control-readonly-surface: var(--color-gray-50);
   --control-disabled-surface: var(--color-gray-100);
   --control-border: color-mix(in oklab, var(--color-gray-200), var(--color-gray-300));
+  --text-section-heading: 1.6rem;
+  --text-section-heading-lg: 2.1rem;
+  /* Text-entry fields have a defined outline and a flat surface. */
+  --field-surface: var(--control-surface);
+  --field-readonly-surface: var(--control-readonly-surface);
+  --field-disabled-surface: var(--control-disabled-surface);
+  --field-border: var(--color-gray-400);
+  --field-shadow: 0 0 #0000;
+  --field-chip-surface: var(--secondary);
+  --field-chip-internal-surface: transparent;
+  --field-chip-internal-border: var(--field-chip-surface);
+  --radius-field: var(--radius-sm);
+  --text-field: var(--text-control-lg);
   --radius-card: var(--radius-lg);
   --control-pressed-shadow: lch(0 0 0 / 0.07) 0px 1px 2px 0px inset;
   --control-outline-shadow:
@@ -135,7 +188,10 @@
   --control-outline-pressed-shadow:
     lch(0 0 0 / 0.14) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
     lch(0 0 0 / 0.04) 0px 1px 1px 0px, var(--control-pressed-shadow);
-  --table-row-hover: var(--color-gray-100);
+  /* Between gray-50 and gray-100, and tuned by eye. */
+  --table-row-hover: oklch(98.3% 0.0005 255);
+  /* The sea on member maps: between gray-100 and gray-200, tuned by eye. */
+  --map-surface: oklch(95.5% 0.0008 255);
   /* Selected rows read as picked-out rather than merely hovered, so this is a
      hue change and not another step on the gray ramp - a darker gray would
      compete with --table-row-hover instead of contrasting with it. */
@@ -147,6 +203,14 @@
 /* admin7Design off: the previous palette and the tokens that changed with it.
    Temporary: delete with the flag, along with the previous dark block below. */
 [data-admin7-design='false'] {
+  --shadow-glass-floating:
+    inset 0 1px 0 rgb(255 255 255 / 0.55), inset 0 -1px 0 rgb(255 255 255 / 0.12),
+    0 0 0 0.5px rgb(0 0 0 / 0.06), 0 40px 60px -15px rgb(0 0 0 / 0.18),
+    0 12px 24px -8px rgb(0 0 0 / 0.1), 0 3px 8px rgb(0 0 0 / 0.04);
+  --shadow-glass-docked:
+    inset 0 1px 0 rgb(255 255 255 / 0), inset 0 -1px 0 rgb(255 255 255 / 0),
+    0 0 0 1px rgb(0 0 0 / 0.06), 0 8px 24px -10px rgb(0 0 0 / 0), 0 4px 12px -4px rgb(0 0 0 / 0),
+    0 2px 6px rgb(0 0 0 / 0);
   --color-black: oklch(20.38% 0.0067 258.4);
   --color-gray-50: oklch(98.54% 0.0013 286.4);
   --color-gray-100: oklch(96.97% 0.0017 247.8);
@@ -236,7 +300,12 @@
   --surface-glass: rgb(248 248 248 / 0.5);
   --state-info: var(--color-blue-500);
   --state-success: var(--color-green-500);
+  --publish-accent: var(--state-success);
+  --character-count: var(--state-success);
   --state-warning: var(--color-yellow-500);
+  --state-warning-surface: color-mix(in oklab, var(--state-warning) 10%, transparent);
+  --state-warning-border: color-mix(in oklab, var(--state-warning) 40%, transparent);
+  --state-warning-fill: var(--state-warning);
   --badge-warning: color-mix(in oklab, var(--state-warning) 20%, transparent);
   --badge-warning-hover: color-mix(in oklab, var(--state-warning) 30%, transparent);
   --badge-warning-foreground: var(--color-yellow-600);
@@ -267,6 +336,16 @@
     lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
     lch(0 0 0 / 0.04) 0px 1px 1px 0px, var(--control-pressed-shadow);
   --table-row-hover: var(--color-gray-50);
+  --field-surface: var(--control-surface);
+  --field-readonly-surface: var(--control-readonly-surface);
+  --field-disabled-surface: var(--control-disabled-surface);
+  --field-border: var(--control-border);
+  --field-shadow: 0 0 #0000;
+  --field-chip-surface: var(--secondary);
+  --field-chip-internal-surface: color-mix(in oklab, var(--secondary) 30%, transparent);
+  --field-chip-internal-border: var(--border);
+  --radius-field: var(--radius-control);
+  --text-field: var(--text-control);
   --radius-card: var(--radius-xl);
 }
 
@@ -280,7 +359,39 @@
   /* One-off colors (not in the standard color scale) */
   --color-sidebar-bg: oklch(0.204 0.002 255);
 
+  --publish-accent: var(--state-success);
+  --character-count: var(--state-success);
+  --event-email-surface: var(--color-blue-900);
+  --event-email-icon: var(--color-blue-300);
+  --event-gain-surface: var(--color-green-900);
+  --event-gain-icon: var(--color-green-300);
+  --event-loss-surface: var(--color-red-900);
+  --event-loss-icon: var(--color-red-300);
+  --event-warning-surface: var(--color-yellow-900);
+  --event-warning-icon: var(--color-yellow-300);
+  --event-engagement-surface: var(--color-purple-900);
+  --event-engagement-icon: var(--color-purple-300);
+  --event-gift-surface: var(--color-pink-900);
+  --event-gift-icon: var(--color-pink-300);
+  --state-warning-surface: var(--color-yellow-900);
+  --state-warning-border: transparent;
+  --state-warning-fill: var(--state-warning);
+  --banner-info-surface: var(--color-blue-900);
+  --banner-info-foreground: var(--color-blue-300);
+  --banner-info-secondary: var(--color-blue-300);
+  --banner-success-surface: var(--color-green-900);
+  --banner-success-foreground: var(--color-green-300);
+  --banner-success-secondary: var(--color-green-300);
+  --banner-warning-surface: var(--state-warning-surface);
+  --banner-warning-foreground: var(--color-yellow-300);
+  --banner-warning-secondary: var(--color-yellow-300);
+  --banner-destructive-surface: var(--color-red-900);
+  --banner-destructive-foreground: var(--color-red-300);
+  --banner-destructive-secondary: var(--color-red-300);
+
   --tab-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
+  --tab-inactive: var(--color-gray-900);
+  --tab-inactive-hover: color-mix(in oklab, var(--color-gray-800) 30%, var(--color-gray-900));
   --tab-active: color-mix(in oklab, oklch(36.77% 0.0022 255) 60%, transparent);
   --button-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
   --button-ghost-hover: var(--accent);
@@ -291,6 +402,8 @@
   --control-readonly-surface: var(--color-gray-950);
   --control-disabled-surface: var(--color-gray-950);
   --control-border: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
+  --field-border: var(--color-gray-900);
+  --field-shadow: 0 0 #0000;
   --control-pressed-shadow: lch(0 0 0 / 0.07) 0px 1px 2px 0px inset;
   --control-outline-shadow:
     lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
@@ -347,7 +460,7 @@
   --border-default: var(--color-gray-950);
   --border-strong: var(--color-gray-700);
   --surface-glass: oklch(25% 0.002 255 / 0.55);
-  --border-glass: rgb(255 255 255 / 0.1);
+  --border-glass: rgb(255 255 255 / 0.14);
   --surface-glass-highlight: linear-gradient(
     180deg,
     rgb(255 255 255 / 0.066) 0%,
@@ -368,6 +481,8 @@
   --badge-warning-hover: color-mix(in oklab, var(--state-warning) 30%, transparent);
   /* yellow-600 text falls below AA on the dark surfaces */
   --badge-warning-foreground: var(--color-yellow-400);
+  --badge-purple: var(--color-purple-900);
+  --badge-purple-foreground: var(--color-purple-300);
   --state-danger: var(--color-red-500);
   --state-danger-foreground: var(--color-black);
   --chart-gray: var(--color-gray-700);
@@ -384,6 +499,10 @@
 /* admin7Design off in dark mode: today's dark values, exactly. Temporary:
    delete with the flag. */
 .dark [data-admin7-design='false'] {
+  --field-border: var(--control-border);
+  --field-shadow: 0 0 #0000;
+  --state-warning-surface: color-mix(in oklab, var(--state-warning) 10%, transparent);
+  --state-warning-border: color-mix(in oklab, var(--state-warning) 40%, transparent);
   --color-black: oklch(20.38% 0.0067 258.4);
   /* Less-saturated gray scale for dark mode (lightness + hue preserved, chroma halved again) */
   --color-gray-50: oklch(98.54% 0.0003 286.4);

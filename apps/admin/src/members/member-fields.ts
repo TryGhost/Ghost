@@ -297,7 +297,7 @@ const CUSTOM_FIELD = domainField({
     // One column per field filtered on, named after the field itself. A value a
     // publisher collected varies member to member, which is what earns a column;
     // it is shown whatever the operator, the way Label is. No name resolved means
-    // no such field for this site (or the flag is off), so no column either.
+    // no such field for this site, so no column either.
     activeColumn: ({ params, label }) => {
       const field = fieldFromParams(params);
       return label && field ? { key: metafieldFieldId(field), label } : null;

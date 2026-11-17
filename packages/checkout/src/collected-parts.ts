@@ -9,7 +9,7 @@ import { STRIPE_ALLOWED_COUNTRIES, isStripeAllowedCountry } from './allowed-coun
  * record keyed by this list, so adding a part here is a type error until each has an entry.
  * Admin shows the parts in this order.
  */
-export const COLLECTED_PARTS = ['shipping', 'phone', 'tax_number'] as const;
+export const COLLECTED_PARTS = ['shipping', 'phone'] as const;
 export type CollectedPart = (typeof COLLECTED_PARTS)[number];
 
 const TierId = z.string().regex(/^[0-9a-f]{24}$/, { error: 'Enter a tier id.' });
@@ -60,16 +60,11 @@ const ON = {
     address: Destination,
     name: Destination,
   }),
-  /** The phone number, saved into a short text custom field. */
+  /** The phone number, saved into a phone custom field. */
   phone: z.strictObject({
     collect: z.literal(true),
     tier_ids: TierIds.optional(),
     custom_field_key: CustomFieldKey,
-  }),
-  /** A business buyer's tax ID, which Stripe keeps on the customer, so no field is named. */
-  tax_number: z.strictObject({
-    collect: z.literal(true),
-    tier_ids: TierIds.optional(),
   }),
 } satisfies Record<CollectedPart, z.ZodObject>;
 
@@ -80,7 +75,6 @@ const ON = {
 export const CHECKOUT_PART_SETTINGS = {
   shipping: z.discriminatedUnion('collect', [Off, ON.shipping]),
   phone: z.discriminatedUnion('collect', [Off, ON.phone]),
-  tax_number: z.discriminatedUnion('collect', [Off, ON.tax_number]),
 } satisfies Record<CollectedPart, z.ZodType>;
 
 /** Each part as a client sends it to the Admin API, or reads it back. */

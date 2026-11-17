@@ -247,7 +247,7 @@ const SignupOptions: React.FC<{
               <>
                 Recommended: <strong>{formatNumber(signupTermsMaxLength)}</strong> characters.
                 You&apos;ve used{' '}
-                <strong className="text-green">{formatNumber(signupTermsLength)}</strong>
+                <strong className="text-character-count">{formatNumber(signupTermsLength)}</strong>
               </>
             )
           }

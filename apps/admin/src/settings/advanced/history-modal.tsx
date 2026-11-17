@@ -424,7 +424,7 @@ const formatDateForFilter = (date: Date) => {
   return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}`;
 };
 
-const PAGE_SIZE = 200;
+const PAGE_SIZE = 100;
 
 function HistoryModal() {
   const { userId } = useParams();

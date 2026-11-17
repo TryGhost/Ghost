@@ -60,6 +60,21 @@ describe('the page’s history, once Admin owns it', () => {
     expect(moved).toHaveBeenCalledWith('/search?q=a%20b', 'push');
   });
 
+  it('refuses a pushState or replaceState to a route Admin would not open', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    window.history.pushState({ n: 1 }, '', '/a');
+    window.history.pushState({ n: 2 }, '', '/.//x/');
+    window.history.replaceState({ n: 3 }, '', '/.//x/');
+    window.history.replaceState({ n: 4 }, '', '/a');
+
+    expect(moved.mock.calls).toEqual([['/a', 'push']]);
+    expect(currentRoute()).toBe('/a');
+    expect(window.history.state).toEqual({ n: 4 });
+    expect(warn).toHaveBeenCalledTimes(2);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('//x/'));
+    warn.mockRestore();
+  });
+
   it('preserves state set on the initial route before the SDK takes over history', () => {
     watch?.stop();
     const initialState = { restoreScroll: 450, draft: 'editor-7' };
@@ -158,6 +173,18 @@ describe('the page’s history, once Admin owns it', () => {
     click({ href: '/episodes/12' });
 
     await vi.waitFor(() => expect(load).toHaveBeenCalledOnce());
+  });
+
+  it('neither loads nor reports a link to a route Admin would not open', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    expect(click({ href: '/.//x/' })).toBe(false);
+
+    expect(moved).not.toHaveBeenCalled();
+    expect(load).not.toHaveBeenCalled();
+    expect(currentRoute()).toBe('/');
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('//x/'));
+    warn.mockRestore();
   });
 
   it('loads a link to the route the page is on without reporting it', () => {

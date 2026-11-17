@@ -105,7 +105,7 @@ Finish with this message, filling in the paths:
 > outside developer would.
 >
 > When the app is built, run `npm run dev` here, then install it from
-> http://localhost:2368/ghost/#/apps/install?manifest=http%3A%2F%2Flocalhost%3A5190%2Fghost-app.json
+> http://localhost:2368/ghost/#/apps/install?manifest=http%3A%2F%2Fmy-app.localhost%3A5190%2Fghost-app.json
 >
 > To try unpublished Shade code once the app exists, run
 > `pnpm pack:local <this folder>` in `<checkout>/apps/shade`.

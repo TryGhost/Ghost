@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useArgs } from 'storybook/preview-api';
-import { Stack, Text } from '@/components/primitives';
+import { Inline, Stack, Text } from '@/components/primitives';
+import { Button } from './button';
 import { PageMenu, PageMenuItem } from './pagemenu';
 
 const meta: Meta<typeof PageMenu> = {
@@ -11,7 +12,7 @@ const meta: Meta<typeof PageMenu> = {
     docs: {
       description: {
         component:
-          'Responsive page navigation menu that automatically collapses overflowing items into a dropdown. Pass `value` and `onValueChange` to control the active item, for example from the current route, or `defaultValue` to let the menu track it.',
+          'Responsive page navigation menu that automatically collapses overflowing items into a dropdown. With admin7Design on, active items have a muted fill that stays unchanged on hover, and inactive items have an outline matching the page-header divider. Pressed and expanded items use the ghost-button background. Pass `value` and `onValueChange` to control the active item, for example from the current route, or `defaultValue` to let the menu track it.',
       },
     },
   },
@@ -56,6 +57,27 @@ export const Default: Story = {
     docs: {
       description: {
         story: 'Basic page menu with static items that always remain visible.',
+      },
+    },
+  },
+};
+
+export const WithPrimaryAction: Story = {
+  render: () => (
+    <Inline className="border-b border-border pb-4" justify="between" wrap={false}>
+      <PageMenu defaultValue="overview" responsive>
+        <PageMenuItem value="overview">Overview</PageMenuItem>
+        <PageMenuItem value="newsletter">Newsletter</PageMenuItem>
+        <PageMenuItem value="growth">Growth</PageMenuItem>
+      </PageMenu>
+      <Button>Share</Button>
+    </Inline>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use muted active navigation and outlined inactive items alongside a primary page action. With admin7Design off, navigation keeps its previous appearance.',
       },
     },
   },

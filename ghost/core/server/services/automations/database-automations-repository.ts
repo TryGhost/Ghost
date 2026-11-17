@@ -21,7 +21,6 @@ import {
   MEMBER_WELCOME_EMAIL_SLUGS,
 } from '../member-welcome-emails/constants';
 import type {
-  AutomatedEmailEvents,
   Automation,
   AutomationAction,
   AutomationEdge,
@@ -169,15 +168,6 @@ type ActionRevisionRow = {
   email_subject: string | null;
   email_lexical: string | null;
   email_design_setting_id: string | null;
-};
-
-type StepToInsert = {
-  id: string;
-  created_at: DatabaseDate;
-  updated_at: DatabaseDate;
-  automation_run_id: string;
-  automation_action_revision_id: string;
-  ready_at: DatabaseDate;
 };
 
 type NextActionRevisionRow = {
@@ -386,6 +376,8 @@ export function createDatabaseAutomationsRepository({
           }
         }
 
+        await validateTriggerLabels(trx, data.trigger_rules);
+
         const now = new Date();
         const automation: AutomationRow = {
           id: ObjectId().toHexString(),
@@ -459,6 +451,8 @@ export function createDatabaseAutomationsRepository({
             });
           }
         }
+
+        await validateTriggerLabels(trx, triggerRules);
 
         const updatedAutomation = await updateAutomation(trx, {
           ...automation,
@@ -569,108 +563,6 @@ export function createDatabaseAutomationsRepository({
         .select('id', 'mailgun_message_id', 'automation_action_revision_id')
         .whereNotNull('automation_action_revision_id')
         .whereIn('mailgun_message_id', mailgunMessageIds);
-    },
-
-    async trackEmailDeliveredAndOpened(eventsByAutomatedEmailRecipientId) {
-      if (eventsByAutomatedEmailRecipientId.size === 0) {
-        return;
-      }
-
-      await knex.transaction(async (trx) => {
-        const revisionIds = new Set<string>();
-        for (const {
-          openedAt,
-          automationActionRevisionId,
-        } of eventsByAutomatedEmailRecipientId.values()) {
-          if (openedAt) {
-            revisionIds.add(automationActionRevisionId);
-          }
-        }
-
-        const orderedRevisionIds = await lockActionRevisions(trx, revisionIds);
-
-        const notYetOpened = await lockNotYetOpened(trx, eventsByAutomatedEmailRecipientId);
-        const newOpensPerRevision = new AutoFillingMap<string, number>(() => 0);
-
-        for (const [
-          id,
-          { deliveredAt, openedAt, automationActionRevisionId },
-        ] of eventsByAutomatedEmailRecipientId) {
-          const updates: Record<string, Knex.Raw> = {};
-          if (deliveredAt) {
-            updates.delivered_at = trx.raw(
-              'CASE WHEN delivered_at IS NULL OR delivered_at > ? THEN ? ELSE delivered_at END',
-              [deliveredAt, deliveredAt],
-            );
-          }
-          if (openedAt) {
-            updates.opened_at = trx.raw(
-              'CASE WHEN opened_at IS NULL OR opened_at > ? THEN ? ELSE opened_at END',
-              [openedAt, openedAt],
-            );
-          }
-          if (Object.keys(updates).length === 0) {
-            continue;
-          }
-          await trx('automated_email_recipients').where({ id }).update(updates);
-
-          if (openedAt && notYetOpened.has(id)) {
-            newOpensPerRevision.set(
-              automationActionRevisionId,
-              newOpensPerRevision.get(automationActionRevisionId) + 1,
-            );
-          }
-        }
-
-        for (const id of orderedRevisionIds) {
-          const opens = newOpensPerRevision.get(id);
-          if (!opens) {
-            continue;
-          }
-          await trx('automation_action_revisions')
-            .where({ id })
-            .update({
-              email_opened_count: trx.raw('COALESCE(email_opened_count, 0) + ?', [opens]),
-            });
-        }
-      });
-    },
-
-    async trackEmailClicked(
-      { automationActionRevisionId, automationRunStepId, memberId, clickedAt },
-      { transacting: trx },
-    ) {
-      await lockActionRevisions(trx, [automationActionRevisionId]);
-
-      const recipient = await trx('automated_email_recipients')
-        .select('id', 'clicked_at')
-        .where({
-          automation_action_revision_id: automationActionRevisionId,
-          automation_run_step_id: automationRunStepId,
-          member_id: memberId,
-          track_clicks: true,
-        })
-        .forUpdate()
-        .first();
-
-      if (!recipient || recipient.clicked_at !== null) {
-        return;
-      }
-
-      const updated = await trx('automated_email_recipients')
-        .where({ id: recipient.id })
-        .whereNull('clicked_at')
-        .update({ clicked_at: clickedAt });
-
-      if (updated === 0) {
-        return;
-      }
-
-      await trx('automation_action_revisions')
-        .where({ id: automationActionRevisionId })
-        .update({
-          email_clicked_count: trx.raw('COALESCE(email_clicked_count, 0) + 1'),
-        });
     },
   };
 }
@@ -835,59 +727,6 @@ function buildRunHistory(
   };
 }
 
-/**
- * Lock revisions before recipients because inserting a recipient takes a shared
- * foreign-key lock on its revision. Updating that revision later can deadlock
- * with another transaction that has already locked the revision and is waiting
- * for the recipient. Keep multi-revision lock acquisition deterministic.
- */
-async function lockActionRevisions(
-  trx: Knex.Transaction,
-  revisionIds: Iterable<string>,
-): Promise<string[]> {
-  const sortedRevisionIds = [...new Set(revisionIds)].sort((left, right) =>
-    left.localeCompare(right),
-  );
-
-  if (sortedRevisionIds.length > 0) {
-    await trx('automation_action_revisions')
-      .select('id')
-      .whereIn('id', sortedRevisionIds)
-      .forUpdate();
-  }
-
-  return sortedRevisionIds;
-}
-
-/**
- * Which of these recipients have yet to open, and so should count towards their
- * revision's open count. Locks them for the transaction, so a worker racing on
- * the same open reads them as opened and doesn't count them a second time.
- */
-async function lockNotYetOpened(
-  trx: Knex.Transaction,
-  eventsByAutomatedEmailRecipientId: ReadonlyDeep<Map<string, AutomatedEmailEvents>>,
-): Promise<Set<string>> {
-  const ids: string[] = [];
-  for (const [id, { openedAt }] of eventsByAutomatedEmailRecipientId) {
-    if (openedAt) {
-      ids.push(id);
-    }
-  }
-
-  if (ids.length === 0) {
-    return new Set();
-  }
-
-  const rows = await trx('automated_email_recipients')
-    .select('id')
-    .whereIn('id', ids)
-    .whereNull('opened_at')
-    .forUpdate();
-
-  return new Set(rows.map((row) => row.id));
-}
-
 async function ensureDefaultAutomations(
   repository2: AutomationsRepository2<Knex | Knex.Transaction>,
   trx: Knex.Transaction,
@@ -1033,41 +872,6 @@ async function ensureWelcomeEmailAction(
   ]);
 }
 
-async function insertRunStep(
-  trx: Knex.Transaction,
-  options: ReadonlyDeep<{
-    automationRunId: string;
-    automationActionRevisionId: string;
-    now: Date;
-    readyAt: Date;
-  }>,
-): Promise<void> {
-  await trx('automation_run_steps').insert(createRunStep(options));
-}
-
-function createRunStep({
-  automationRunId,
-  automationActionRevisionId,
-  now,
-  readyAt,
-}: ReadonlyDeep<{
-  automationRunId: string;
-  automationActionRevisionId: string;
-  now: Date;
-  readyAt: Date;
-}>): StepToInsert {
-  const nowString = toDatabaseDate(now);
-
-  return {
-    id: ObjectId().toHexString(),
-    created_at: nowString,
-    updated_at: nowString,
-    automation_run_id: automationRunId,
-    automation_action_revision_id: automationActionRevisionId,
-    ready_at: toDatabaseDate(readyAt),
-  };
-}
-
 async function fetchAndLockSteps(
   trx: Knex.Transaction,
   limit: number,
@@ -1179,7 +983,16 @@ async function getRulesByAutomation(
   }
 
   const rules = await trx('automation_trigger_rules')
-    .select('id', 'automation_id', 'created_at', 'trigger_type', 'scope', 'product_id', 'direction')
+    .select(
+      'id',
+      'automation_id',
+      'created_at',
+      'trigger_type',
+      'scope',
+      'product_id',
+      'direction',
+      'label_id',
+    )
     .whereIn('automation_id', automationIds);
   for (const rule of rules) {
     result.get(rule.automation_id).push(automationTriggerRuleSchema.parse(rule));
@@ -1259,11 +1072,7 @@ async function finishStepAndEnqueueNext(
     return null;
   }
 
-  if (!(await repository2.isAutomationActiveForRun(trx, step.automation_run_id))) {
-    return null;
-  }
-
-  const next = await findNextActionRevision(trx, step.action_id);
+  const next = await findNextActionRevision(trx, step.action_id, step.automation_run_id);
 
   if (!next) {
     return null;
@@ -1272,12 +1081,16 @@ async function finishStepAndEnqueueNext(
   const now = new Date();
   const nextReadyAt = getReadyAtForAction(next, now, fakeWaitHoursMultiplier);
 
-  await insertRunStep(trx, {
-    automationRunId: step.automation_run_id,
-    automationActionRevisionId: next.automation_action_revision_id,
-    now,
-    readyAt: nextReadyAt,
-  });
+  await repository2.insertRunSteps(trx, [
+    {
+      id: ObjectId().toHexString(),
+      created_at: now,
+      updated_at: now,
+      automation_run_id: step.automation_run_id,
+      automation_action_revision_id: next.automation_action_revision_id,
+      ready_at: nextReadyAt,
+    },
+  ]);
 
   return nextReadyAt;
 }
@@ -1285,6 +1098,7 @@ async function finishStepAndEnqueueNext(
 async function findNextActionRevision(
   trx: Knex.Transaction,
   sourceActionId: string,
+  automationRunId: string,
 ): Promise<NextActionRevisionRow | null> {
   const row = await trx('automation_action_edges as edge')
     .select(
@@ -1296,6 +1110,13 @@ async function findNextActionRevision(
     .innerJoin('automation_actions as action', 'action.id', 'edge.target_action_id')
     .innerJoin('automation_action_revisions as revision', 'revision.action_id', 'action.id')
     .where('edge.source_action_id', sourceActionId)
+    .whereExists(function () {
+      this.select(trx.raw('1'))
+        .from('automation_runs as run')
+        .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
+        .where('run.id', automationRunId)
+        .where('automation.status', 'active');
+    })
     .whereNull('action.deleted_at')
     .where(
       'revision.created_at',
@@ -1835,7 +1656,7 @@ async function buildAutomation(
   const edgeRows = await repository2.loadEdgeRows(trx, automation.id);
   const rules = (
     await trx('automation_trigger_rules')
-      .select('trigger_type', 'scope', 'product_id', 'direction')
+      .select('trigger_type', 'scope', 'product_id', 'direction', 'label_id')
       .where('automation_id', automation.id)
       .orderBy(['product_id', 'direction'])
   ).map((rule) => automationTriggerRuleDefinitionSchema.parse(rule));
@@ -1991,4 +1812,22 @@ function buildPagination(total: number) {
     prev: null,
     next: null,
   };
+}
+
+async function validateTriggerLabels(
+  trx: Knex.Transaction,
+  rules: readonly AutomationTriggerRuleDefinition[],
+): Promise<void> {
+  for (const rule of rules) {
+    if (rule.trigger_type !== 'label_added') {
+      continue;
+    }
+    const label = await trx('labels').select('id').where('id', rule.label_id).forUpdate().first();
+    if (!label) {
+      throw new errors.ValidationError({
+        message: 'Trigger label must exist.',
+        property: 'trigger_rules',
+      });
+    }
+  }
 }

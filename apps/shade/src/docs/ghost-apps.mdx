@@ -24,15 +24,13 @@ That gives the agent `build-ghost-app-ui`, the starting point for an app's scree
 
 ## Install
 
-Install Shade from the `alpha` tag. `@tryghost/shade` on its own installs `latest`, which points at an older alpha.
-
 Shade's peers are React 18 and Tailwind CSS 4.1 or later. `npm create vite` scaffolds React 19, and npm refuses to add Shade beside it, so move the React types to 18 first, then add Shade with React 18:
 
 ```sh
 npm create vite@latest my-app -- --template react-ts --no-interactive
 cd my-app
 npm install -D @types/react@^18.3.0 @types/react-dom@^18.3.0 tailwindcss@^4.1 @tailwindcss/vite@^4.1
-npm install @tryghost/shade@alpha @fontsource/inter react@^18.3.1 react-dom@^18.3.1
+npm install @tryghost/shade @fontsource/inter react@^18.3.1 react-dom@^18.3.1
 ```
 
 Keep `skipLibCheck: true` from the Vite template's `tsconfig`. Without it, `tsc` fails inside Shade's own dependencies.

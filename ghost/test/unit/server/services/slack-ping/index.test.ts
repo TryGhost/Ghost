@@ -223,6 +223,32 @@ describe('Slack ping root', function () {
     }
   });
 
+  it('stops listening on stop and delivers to the same instance once after the next init', async function () {
+    const unrelated = () => {};
+    for (const name of ['post.published', 'slack.test']) {
+      events.on(name, unrelated);
+    }
+    await root.init();
+    const service = root.service;
+    const ping = sandbox.stub(service, 'ping');
+
+    await root.stop();
+    assert.deepEqual(events.listeners('post.published'), [unrelated]);
+    assert.deepEqual(events.listeners('slack.test'), [unrelated]);
+    events.emit('post.published', postModel);
+    events.emit('slack.test');
+    sinon.assert.notCalled(ping);
+    assert.equal(root.service, service);
+
+    await root.init();
+    assert.equal(root.service, service);
+    assert.deepEqual(events.listeners('post.published'), [unrelated, service.postListener]);
+    assert.deepEqual(events.listeners('slack.test'), [unrelated, service.testListener]);
+    events.emit('post.published', postModel);
+    events.emit('slack.test');
+    sinon.assert.calledTwice(ping);
+  });
+
   for (const eventName of ['post.published', 'slack.test']) {
     it(`removes its subscriptions when ${eventName} registration fails and allows an explicit retry`, async function () {
       const unrelated = () => {};

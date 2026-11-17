@@ -113,6 +113,38 @@ describe('useHandleError', () => {
     expect(reportedTags()).toEqual({ source: 'useHandleError', shown_to_user: false });
   });
 
+  // A caller that shows its own sentence instead of the error's says so, or the report would claim
+  // the user saw wording they never did.
+  it.each([
+    ['an API error', new APIError(undefined, undefined, 'ER_LOCK_DEADLOCK: Deadlock found')],
+    ['an unexpected error', new Error('Custom field create returned no field')],
+  ])('reports what the caller showed for %s as shown to the user', (_kind, error) => {
+    enableSentry();
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useHandleError(), { wrapper });
+
+    result.current(error, {
+      withToast: false,
+      displayedMessage: 'An unexpected error occurred, please try again.',
+    });
+
+    expect(reportedTags()).toMatchObject({ shown_to_user: true });
+    expect(sentryScope.setContext).toHaveBeenCalledWith('ghost', {
+      displayed_message: 'An unexpected error occurred, please try again.',
+    });
+  });
+
+  it("shows the caller's message in the toast in place of the error's own", () => {
+    const wrapper = createWrapper();
+    const { result } = renderHook(() => useHandleError(), { wrapper });
+
+    result.current(new APIError(undefined, undefined, 'ER_LOCK_DEADLOCK: Deadlock found'), {
+      displayedMessage: 'An unexpected error occurred, please try again.',
+    });
+
+    expect(toast.error).toHaveBeenCalledWith('An unexpected error occurred, please try again.');
+  });
+
   it('reports an API error to Sentry as shown to the user, with its request and message', () => {
     enableSentry();
     const wrapper = createWrapper();

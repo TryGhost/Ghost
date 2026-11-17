@@ -96,7 +96,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
   const mapEnabled = !!headerMember;
   // Admin 7 runs the map full bleed, from the top of the page and under the
   // floating sidebar
-  const fullBleedMap = useFeatureFlag('admin7Design');
+  const admin7Design = useFeatureFlag('admin7Design');
   // Without a map, the header opens with the list pages' space above their
   // large titles, where they show them
   const { largeTitles } = usePageChrome();
@@ -372,6 +372,16 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     title = 'Member not found';
   }
 
+  const sidebar = (
+    <MemberDetailSidebar
+      draftEmail={committedIdentity.email}
+      draftName={committedIdentity.name}
+      engagementEnabled={engagementEnabled}
+      member={member}
+      showIdentity={!mapEnabled}
+    />
+  );
+
   return (
     <Box
       className={
@@ -385,13 +395,13 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
           <DetailPage.Header
             className={cn(
               'has-[[data-member-map-location=unknown]]:py-7',
-              fullBleedMap && 'has-[[data-member-map-location=known]]:pt-0!',
+              admin7Design && 'has-[[data-member-map-location=known]]:pt-0!',
               largeTitles && 'has-[[data-member-map-location=unknown]]:pt-(--large-title-space)!',
             )}
           >
             <MemberMapHeader
               enabled={mapEnabled}
-              fullBleed={fullBleedMap}
+              fullBleed={admin7Design}
               geolocation={headerMember?.geolocation}
             >
               <PageHeader blurredBackground={false} sticky={false}>
@@ -443,7 +453,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                           'min-w-0',
                           // The size and type of the list pages' large titles, where they show them
                           largeTitles
-                            ? 'text-[length:var(--large-title-size)]! leading-[1.15]! font-medium tracking-[-0.03em] break-words'
+                            ? 'text-[length:var(--large-title-size)]! leading-[1.15]! font-title! tracking-[-0.03em] break-words'
                             : 'truncate text-2xl tracking-tight sm:text-3xl',
                         )}
                       >
@@ -455,18 +465,17 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                 {(isCreating || member) && (
                   <PageHeader.Actions>
                     <PageHeader.ActionGroup>
-                      {member &&
-                        !isCreating && (
-                          // key={member.id} unmounts+remounts on member change so
-                          // local modal state (`showDelete`, `cancelStripe`, etc.)
-                          // can't leak across members if the user navigates while a
-                          // modal is open.
-                          <MemberActionsMenu
-                            key={member.id}
-                            allowLeaveWithUnsavedChanges={bypassNextNavigation}
-                            member={member}
-                          />
-                        )}
+                      {member && !isCreating && (
+                        // key={member.id} unmounts+remounts on member change so
+                        // local modal state (`showDelete`, `cancelStripe`, etc.)
+                        // can't leak across members if the user navigates while a
+                        // modal is open.
+                        <MemberActionsMenu
+                          key={member.id}
+                          allowLeaveWithUnsavedChanges={bypassNextNavigation}
+                          member={member}
+                        />
+                      )}
                       <PageHeader.ActionGroup.Primary>
                         <Button
                           className="min-w-16"
@@ -484,7 +493,9 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
             </MemberMapHeader>
           </DetailPage.Header>
 
-          <DetailPage.Body>
+          {/* The body scrolls, so it clips anything past its edges. Fields now run flush
+              to the left edge, so give their focus rings room to show. */}
+          <DetailPage.Body className="in-data-[admin7-design=true]:-mx-3 in-data-[admin7-design=true]:px-3">
             {loadError && (
               <div
                 className="flex flex-1 flex-col items-center justify-center gap-3"
@@ -504,31 +515,42 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
             )}
 
             {showEditor && draft && (
-              <div className="flex flex-1 flex-col gap-8 lg:flex-row lg:items-start lg:gap-12">
-                <MemberDetailSidebar
-                  draftEmail={committedIdentity.email}
-                  draftName={committedIdentity.name}
-                  engagementEnabled={engagementEnabled}
-                  member={member}
-                  showIdentity={!mapEnabled}
-                />
-                <div className="flex min-w-0 flex-1 flex-col gap-8">
-                  {/* First card: name, email, labels, note — no external header. */}
-                  <Card>
-                    <CardContent className="p-6">
-                      <MemberDetailForm
-                        disabled={activeMutation.isPending}
-                        draft={draft}
-                        emailError={emailError}
-                        onChange={onFieldChange}
-                        onEmailBlur={() => {
-                          setEmailTouched(true);
-                          commitIdentityFromDraft();
-                        }}
-                        onNameBlur={commitIdentityFromDraft}
-                      />
-                    </CardContent>
-                  </Card>
+              <div className="flex flex-1 flex-col gap-8 in-data-[admin7-design=true]:[--text-section-heading:var(--text-section-heading-lg)] lg:flex-row lg:items-start lg:gap-12 in-data-[admin7-design=true]:lg:gap-20">
+                {!admin7Design && sidebar}
+                <div className="flex min-w-0 flex-1 flex-col gap-8 in-data-[admin7-design=true]:gap-18">
+                  {/* First card: name, email, labels, note. Admin 7 gives it a heading
+                                    like the sections below it. */}
+                  <section
+                    aria-labelledby={admin7Design ? 'member-details-heading' : undefined}
+                    className="flex flex-col gap-3 in-data-[admin7-design=true]:gap-4"
+                  >
+                    {admin7Design && (
+                      <h3
+                        className="section-heading text-base font-semibold"
+                        id="member-details-heading"
+                      >
+                        Details
+                      </h3>
+                    )}
+                    <Card
+                      className={admin7Design ? 'border-t-0' : undefined}
+                      variant={admin7Design ? 'ruled' : 'outline'}
+                    >
+                      <CardContent className={admin7Design ? 'pt-0' : 'p-6'}>
+                        <MemberDetailForm
+                          disabled={activeMutation.isPending}
+                          draft={draft}
+                          emailError={emailError}
+                          onChange={onFieldChange}
+                          onEmailBlur={() => {
+                            setEmailTouched(true);
+                            commitIdentityFromDraft();
+                          }}
+                          onNameBlur={commitIdentityFromDraft}
+                        />
+                      </CardContent>
+                    </Card>
+                  </section>
 
                   {/* Custom fields: a read-only record of the member's values —
                                     each field edits and saves individually through its own
@@ -536,7 +558,10 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                                     only — the create contract doesn't take values yet, and a
                                     value can't exist before its member does. */}
                   {member && (
+                    // key={member.id} so moving straight to another member, whose record
+                    // is already cached, starts it on the five-field preview again.
                     <MemberCustomFieldsField
+                      key={member.id}
                       disabled={activeMutation.isPending}
                       memberId={member.id}
                       metafields={member.metafields}
@@ -566,9 +591,12 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                   {paidMembersEnabled && (
                     <section
                       aria-labelledby="member-subscriptions-heading"
-                      className="flex flex-col gap-3"
+                      className="flex flex-col gap-3 in-data-[admin7-design=true]:gap-4"
                     >
-                      <h3 className="text-base font-semibold" id="member-subscriptions-heading">
+                      <h3
+                        className="section-heading text-base font-semibold"
+                        id="member-subscriptions-heading"
+                      >
                         Subscriptions
                       </h3>
                       <MemberSubscriptionsSection canAddComp={canAddComp} member={member} />
@@ -590,6 +618,9 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                     />
                   )}
                 </div>
+                {/* Admin 7 shows the sidebar on the right, so it comes after the form
+                                    for the keyboard too. */}
+                {admin7Design && sidebar}
               </div>
             )}
           </DetailPage.Body>

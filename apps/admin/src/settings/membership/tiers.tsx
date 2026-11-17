@@ -134,7 +134,6 @@ const Tiers: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const llmsEnabled = llmsEnabledValue !== false;
   const machinePaymentsEnabled = machinePaymentsEnabledValue === true;
   const hasMachinePaymentsLab = useFeatureFlag('machinePayments');
-  const hasCheckoutDesignLab = useFeatureFlag('stripeCheckoutDesign');
   // Admin and core deploy independently — only render controls once the
   // settings key exists in the browse payload (labs alone is not enough).
   const backendSupportsMachinePayments = settings?.some(
@@ -231,16 +230,13 @@ const Tiers: React.FC<{ keywords: string[] }> = ({ keywords }) => {
     );
   }
 
-  const connectedButton = (className: string) =>
-    hasCheckoutDesignLab ? (
-      <StripeConnectedGroup
-        className={className}
-        onConnectClick={() => void openConnectModal()}
-        onCustomizeClick={() => updateRoute('tiers/checkout')}
-      />
-    ) : (
-      <StripeConnectedButton className={className} onClick={() => void openConnectModal()} />
-    );
+  const connectedButton = (className: string) => (
+    <StripeConnectedGroup
+      className={className}
+      onConnectClick={() => void openConnectModal()}
+      onCustomizeClick={() => updateRoute('tiers/checkout')}
+    />
+  );
 
   const stripeButton = stripeEnabled ? (
     connectedButton('hidden tablet:!visible tablet:!inline-flex')

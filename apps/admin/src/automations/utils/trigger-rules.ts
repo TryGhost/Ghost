@@ -1,3 +1,4 @@
+import type { TierSelection } from '@/automations/types';
 import type { AutomationTriggerRule } from '@tryghost/admin-x-framework/api/automations';
 
 type TriggerRuleOptions =
@@ -15,6 +16,16 @@ type TriggerRuleOptions =
       triggerType: 'paid_subscription_started';
       scope: 'specific_paid_tier';
       tierIds: readonly string[];
+    }
+  | {
+      triggerType: 'paid_subscription_changed';
+      selection: TierSelection;
+      scope?: never;
+      tierIds?: never;
+    }
+  | {
+      triggerType: 'label_added';
+      labelId: string;
     };
 
 export function buildTriggerRules(options: TriggerRuleOptions): AutomationTriggerRule[] {
@@ -34,9 +45,21 @@ export function buildTriggerRules(options: TriggerRuleOptions): AutomationTrigge
       return [
         { trigger_type: triggerType, scope: 'any_paid_tier', product_id: null, direction: null },
       ];
+    case 'paid_subscription_changed':
+      return subscriptionChangedRulesFromSelection(options.selection);
+    case 'label_added':
+      return [
+        {
+          trigger_type: triggerType,
+          label_id: options.labelId,
+          scope: null,
+          product_id: null,
+          direction: null,
+        },
+      ];
     default: {
       const _exhaustive: never = triggerType;
-      throw new Error(`Unknown signup trigger type: ${String(_exhaustive)}`);
+      throw new Error(`Unknown automation trigger type: ${String(_exhaustive)}`);
     }
   }
 }
@@ -44,8 +67,8 @@ export function buildTriggerRules(options: TriggerRuleOptions): AutomationTrigge
 export const getTriggerTierIds = (rules: readonly AutomationTriggerRule[]): string[] =>
   rules.flatMap((rule) => (rule.product_id ? [rule.product_id] : []));
 
-// Rule order has no meaning for signup eligibility. Compare copies in tier order so
-// reselecting the same tiers does not mark the draft dirty or reorder its chips.
+// Rule order has no meaning for trigger eligibility. Sort copies by tier and
+// direction so reordering selections does not mark the draft dirty or reorder its chips.
 export const comparableTriggerRules = (rules: readonly AutomationTriggerRule[]) =>
   rules
     .map((rule) => ({
@@ -53,5 +76,65 @@ export const comparableTriggerRules = (rules: readonly AutomationTriggerRule[]) 
       scope: rule.scope,
       product_id: rule.product_id,
       direction: rule.direction,
+      ...(rule.trigger_type === 'label_added' ? { label_id: rule.label_id } : {}),
     }))
-    .sort((a, b) => (a.product_id ?? '').localeCompare(b.product_id ?? ''));
+    .sort(
+      (a, b) =>
+        (a.product_id ?? '').localeCompare(b.product_id ?? '') ||
+        (a.direction ?? '').localeCompare(b.direction ?? ''),
+    );
+
+export const getTriggerLabelId = (rules: readonly AutomationTriggerRule[]): string | undefined =>
+  rules.find(
+    (rule): rule is Extract<AutomationTriggerRule, { trigger_type: 'label_added' }> =>
+      rule.trigger_type === 'label_added',
+  )?.label_id;
+
+function subscriptionChangedRulesFromSelection(selection: TierSelection): AutomationTriggerRule[] {
+  const from: AutomationTriggerRule[] =
+    selection.from === 'any_paid'
+      ? [
+          {
+            trigger_type: 'paid_subscription_changed',
+            scope: 'any_paid_tier',
+            product_id: null,
+            direction: 'from',
+          },
+        ]
+      : selection.from.map((productId) => ({
+          trigger_type: 'paid_subscription_changed',
+          scope: 'specific_paid_tier',
+          product_id: productId,
+          direction: 'from',
+        }));
+  const to: AutomationTriggerRule[] =
+    selection.to === 'downgraded_to_free'
+      ? [
+          {
+            trigger_type: 'paid_subscription_changed',
+            scope: 'free',
+            product_id: null,
+            direction: 'to',
+          },
+        ]
+      : selection.to.map((productId) => ({
+          trigger_type: 'paid_subscription_changed',
+          scope: 'specific_paid_tier',
+          product_id: productId,
+          direction: 'to',
+        }));
+  return [...from, ...to];
+}
+
+export function subscriptionChangedSelectionFromRules(
+  rules: readonly AutomationTriggerRule[],
+): TierSelection {
+  const from = rules.filter((rule) => rule.direction === 'from');
+  const to = rules.filter((rule) => rule.direction === 'to');
+  return {
+    from: from.some((rule) => rule.scope === 'any_paid_tier')
+      ? 'any_paid'
+      : getTriggerTierIds(from),
+    to: to.some((rule) => rule.scope === 'free') ? 'downgraded_to_free' : getTriggerTierIds(to),
+  };
+}

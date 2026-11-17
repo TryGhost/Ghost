@@ -8,6 +8,10 @@ pnpm gx generate package email-utils --description "Email utilities for Ghost."
 pnpm gx generate package parser --dir packages/email/parser
 ```
 
+Run a command group without a subcommand, such as `pnpm gx generate`, to see
+that group's help. `--help` and `-h` show the same menu. Unknown commands still
+exit with an error and show help for the relevant group.
+
 Package generation uses `packages/_template` and the shared helpers in
 `tools/scripts/lib/`. `pnpm create-package` remains a forwarding alias.
 Run `pnpm install` after generating a package; custom destinations must be covered
@@ -46,10 +50,35 @@ next minor-version folder and promotes package versions to RC when needed.
 See [database migrations](../../docs/practices/database-migrations.md) for the
 workflow.
 
+## Service generator
+
+Run `pnpm gx generate service <name>` to create a boot-owned TypeScript service.
+Use lowercase kebab-case beginning with a letter, for example:
+
+```sh
+pnpm gx generate service delivery-receipts
+```
+
+It creates a `defineService` root, a separate implementation with typed logging
+injection, and a starter root test. It does not register the service anywhere:
+lint, boundary lint and the inventory test apply to every service that is not
+listed in the legacy service inventory. Existing service files, directories and
+tests are never overwritten, and a name that is still listed as legacy is refused.
+
+The command prints the remaining steps: the lines that bind the root and await
+its `init()` in boot, when a boot test is needed, and
+`pnpm gx services verify <name>` on the committed result. `services verify` finds the `init()` call through that binding,
+so keep the printed form. See [creating a service](../../ghost/core/server/services/README.md#creating-a-service)
+for the ownership, implementation and testing requirements.
+
 ## Rebuild development tables
 
 Run `pnpm gx db rebuild-development-tables` after editing development-only table
 schemas. This drops and recreates the listed tables, discarding their data.
+With `auth:betterAuthDev` on, that includes passwords: `user_accounts` holds
+the only copy, so users whose passwords changed are locked out afterwards. Reset
+the database (`pnpm reset:db`) or their passwords. See the
+[Better Auth README](../../ghost/core/server/auth/better-auth/README.md#passwords).
 Start the development database first. gx uses the existing development-environment
 runner and the checkout's Ghost working directory; it does not start services.
 
@@ -88,6 +117,29 @@ their development/local environment restriction and use the same Core runner.
 The former `node index.js repl` and `node index.js timetravel` entrypoints report
 their gx replacements. The old `ghost/core/cli` framework has been removed.
 
+## Automation drain benchmark
+
+Run `pnpm gx benchmark automations-drain --numberOfRuns [n] --steps
+[wait,send_email,...]` to measure how long it takes to drain the automations
+queue.
+
+Example:
+
+```sh
+pnpm gx benchmark automations-drain --numberOfRuns 1000 --steps wait,send_email
+```
+
+Benchmark boots Ghost, creates one free member per run, one automation, and
+pending runs. Timer starts when runs become ready and ends after all steps
+finish.
+
+Wait steps use one millisecond per configured hour.
+
+Email steps use configured development mail transport.
+
+Automation and members remain in development database under `Drain benchmark
+<automation-id>` and member emails beginning `benchmark-<automation-id>-`.
+
 ## Recipient preparation benchmark
 
 Run `pnpm gx benchmark recipient-preparation [members] [concurrency]` to measure
@@ -102,16 +154,17 @@ preparing a label segment. See [performance testing](../../docs/contributing/per
 
 ## Service migration reports
 
-These temporary commands combine the service inventory with the current
+These temporary commands combine the legacy service inventory with the current
 Dependency Cruiser audit. Run them from the repository root:
 
-| Command                                 | Output                                                         |
-| --------------------------------------- | -------------------------------------------------------------- |
-| `pnpm gx services report`               | Ownership totals, migration progress and remaining work        |
-| `pnpm gx services list`                 | Entries, ownership, migration status and dependency counts     |
-| `pnpm gx services report email-address` | One entry's notes, assessments, blockers and offending imports |
-| `pnpm gx services dependencies`         | Disallowed dependencies ranked by distinct importing files     |
-| `pnpm gx services audit`                | Dependency Cruiser's full native report                        |
+| Command                                 | Output                                                                |
+| --------------------------------------- | --------------------------------------------------------------------- |
+| `pnpm gx services report`               | Legacy and standard totals, ownership and remaining work              |
+| `pnpm gx services list`                 | Services, ownership, migration status and dependency counts           |
+| `pnpm gx services report email-address` | One legacy entry's notes, assessments, blockers and offending imports |
+| `pnpm gx services dependencies`         | Disallowed dependencies and their kind, ranked by importing files     |
+| `pnpm gx services audit`                | Dependency Cruiser's full native report                               |
+| `pnpm gx services verify email-address` | Pass or fail checks on a committed service change                     |
 
 List a group with `list --group <group>`. Report tables show group IDs;
 `list --help` lists all groups. For example:
@@ -121,7 +174,7 @@ pnpm gx services list --group straightforward-clear
 pnpm gx services list --group needs-preparation
 pnpm gx services list --group to-migrate
 pnpm gx services list --group undecided
-pnpm gx services list --group migrated --json
+pnpm gx services list --group standard --json
 ```
 
 `report`, `list` and `dependencies` accept `--json` for structured output.
@@ -130,47 +183,60 @@ pnpm gx services list --group migrated --json
 It replaces `pnpm audit:services`; `services dependencies` replaces
 `pnpm audit:services:summary` without requiring `jq`.
 
+`services verify` needs a clean tree on a branch that contains the fetched base.
+It checks new files, audit SHAs, formatting, lint, types and boundaries. It runs
+dependency-cruiser twice, resolving workspace packages to authored source and then
+to the built output Ghost loads. Built output must add no service rule violation,
+every part of an added allowance must match an import from a service, and each file
+an added allowance admits must be named in a boundary regression. It then runs the
+full unit suite, runs the changed unit tests shuffled and each one alone and, for a
+standard service, confirms a boot test fails when boot stops waiting for its
+`init()` but still sees it reject. A service is standard when the legacy service
+inventory does not list it.
+`--static` skips lint, types and tests. `review` lines are other inventory entries
+that mention the service, for the
+[verify-service-change skill](../../.agents/skills/verify-service-change/SKILL.md)
+to confirm. Run it again after every rebase or fix.
+
 ### Interpreting the reports
 
 Counts are calculated from the checkout, not stored in the inventory. The report
-shows one table with `MIGRATION`, `COUNT` and `GROUP` columns. Disposition
-(**Migrate**, **Relocate**, **Split** or **Undecided**) and migration progress
-are counted independently. See the [services README](../../ghost/core/server/services/README.md)
-for what each disposition means.
+shows one table with `MIGRATION`, `COUNT` and `GROUP` columns. The inventory
+lists legacy services only: a service found by the audit and not listed is
+**Standard**. Legacy entries are counted by disposition (**Left to migrate**,
+**Relocate**, **Split** or **Undecided**). See the
+[services README](../../ghost/core/server/services/README.md) for what each
+disposition means.
 
-Migration progress has three groups:
+Entries left to migrate have two progress groups:
 
-- **Migrated:** marked `migrated: true`, whatever the disposition, so this
-  group can overlap Relocate and Split.
-- **Needs preparation:** not migrated, and either assessment is
-  complex or identifies a possible model change.
-- **Straightforward:** not migrated, both assessments are
-  straightforward, and the existing model fits. This can still include
-  dependency violations and test gaps.
+- **Needs preparation:** either assessment is complex or identifies a possible
+  model change.
+- **Straightforward:** both assessments are straightforward, and the existing
+  model fits. This can still include dependency violations and test gaps.
 
 The `to-migrate` filter shows what's left to migrate:
 **needs preparation + straightforward**. Relocations, splits and undecided
 entries are listed by the `relocate`, `split` and `undecided` filters; their
 notes and migration assessments explain the work needed.
 
-Per-service reports show an entry's optional `futureHome`, a suggested home
+Per-service reports show a legacy entry's optional `futureHome`, a suggested home
 after this migration. It does not change the entry's group.
 
 Lists and per-service JSON expose independent `ownership` and `migrationStatus`
-fields instead of a combined category. Summary JSON retains labelled counts;
-ownership counts sum to **Catalogued entries**, and **Migrated + Unmigrated
-entries** gives the same total. Diagnostic counts are overlapping subsets,
-not additional services.
+fields instead of a combined category. A standard service has `Standard` in both
+and no `entry`. Summary JSON retains labelled counts; the disposition counts sum
+to **Legacy entries**, and **Legacy entries + Standard services** is every
+service found. Diagnostic counts are overlapping subsets, not additional services.
 
 Per-service reports show inventory notes before the migration assessments, so
 planned ownership changes are visible alongside earlier assessments. Notes are
 also included in JSON output as `entry.notes`.
 
-Entries found by the audit but absent from the inventory are **Not inventoried**;
-entries absent from the dependency graph have unknown counts. Malformed or
-incomplete assessments fail the report.
-The `not-analyzed` and `not-inventoried` diagnostic counts are available in
-summary JSON and list filters, but omitted from the text summary.
+Legacy entries absent from the dependency graph have unknown counts. Malformed
+or incomplete assessments fail the report.
+The `not-analyzed` diagnostic count is available in summary JSON and list
+filters, but omitted from the text summary.
 
 `list` counts distinct disallowed dependency targets per entry, with unresolved
 and own-root imports in separate columns. `dependencies` counts distinct
@@ -178,8 +244,34 @@ importing implementation files per target, largest first; it excludes unresolved
 and own-root findings. The native `audit` counts rule violations, so one import
 can appear under more than one rule.
 
-The audit checks all entries and returns success when it finds violations.
-`pnpm lint:boundaries` enforces the same rules for migrated services in CI.
+The report's second table groups every rejected dependency into one of four
+kinds, which add up to its total:
+
+- **Instances to inject** (`inject`): the dependency holds application state or
+  does its own I/O, so the root wires it.
+- **Wrong import form** (`import-form`): the library is allowed only in another
+  form, such as individual Lodash functions, or a specialist dependency is
+  imported outside its owners.
+- **Deferred to a planned refactor** (`deferred`): the import stays a known
+  violation until a named refactor moves the importing file, such as job
+  handler registration moving into boot. Per-service reports show the refactor.
+- **No decision yet** (`no-decision`): nothing has been decided.
+
+The kinds come from `serviceDependencyDecisions` in
+[`.dependency-cruiser.cjs`](../../.dependency-cruiser.cjs), next to the allowlist;
+a dependency that matches no pattern there has no decision. Record a decision by
+adding a pattern with its reason. A deferral names the importing file, the
+dependencies and the refactor, and takes precedence over the other kinds for
+that file. `dependencies --kind no-decision` lists what is
+left to decide, and per-service reports show each finding's kind.
+
+All service commands use the same full dependency-cruiser scan and
+known-violations file as `pnpm lint:boundaries`. Reports retain known and new
+findings and return success when violations are found; boundary lint fails on
+new violations or stale entries. Invalid known-violations files fail both.
+Violations in services with deferred enforcement appear in reports but do not
+fail boundary lint.
+The native `audit` output includes Core and app boundaries as well as services.
 Legacy root `index.js` files are treated as wiring candidates. Computed paths
 such as `require(name)` cannot be resolved by the static audit. No violations
 does not mean ready to migrate: recorded blockers, runtime behavior and test

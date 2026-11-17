@@ -162,7 +162,7 @@ export function FeatureImage({
         )}
         {captionTkCount > 0 && !isEditingAlt && (
           <button
-            className="rounded-sm bg-state-warning px-1.5 py-0.5 text-2xs font-bold text-foreground"
+            className="rounded-sm bg-state-warning-fill px-1.5 py-0.5 text-2xs font-bold text-foreground"
             data-testid={featureImageTkIndicator}
             type="button"
             onClick={focusCaption}

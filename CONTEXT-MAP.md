@@ -28,7 +28,7 @@ Newsletter Email Sending covers the preparation and submission of newsletter ema
 
 ### App Contracts
 
-Path: `packages/app-contracts/CONTEXT.md`
+Path: `contracts/app-contracts/CONTEXT.md`
 
 App Contracts covers what Ghost and an app must agree on: how an app describes itself in its manifest, how two versions of that manifest differ, and how Admin and an app's page talk over the bridge while Admin shows it.
 

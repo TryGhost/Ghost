@@ -3,8 +3,10 @@ import cronValidate from 'cron-validate';
 import ObjectID from 'bson-objectid';
 import type { Knex } from 'knex';
 import type {
+  JobSettlement,
   JobsBackendBase,
   JobEnvelope,
+  AttemptResult,
   DispatchEnvelope,
   JobsShutdownOptions,
   QueueDeclaration,
@@ -20,21 +22,37 @@ export interface JobsErrorReporter {
   captureException(err: unknown, captureContext?: { tags?: Record<string, string> }): void;
 }
 
+type OutboxRow = { id: string; type: string | null };
+
 export interface OutboxStore {
   insert(
     entry: { id: string; envelope: DispatchEnvelope },
     options?: { transacting?: Knex.Transaction },
   ): Promise<void>;
+  releaseSubmitted(options: {
+    replays: (type: string) => boolean;
+    staleAfterMs: number;
+  }): Promise<{ released: OutboxRow[]; dropped: OutboxRow[] }>;
+  renew(ids: string[]): Promise<void>;
 }
 
 export interface OutboxRelayLike {
   start(): void;
   stop(): Promise<void>;
+  wake(): void;
+}
+
+export interface OutboxTrackerLike {
+  onSettled(id: string, settlement: JobSettlement): Promise<void>;
 }
 
 export interface JobsOutboxWiring {
   store: OutboxStore;
   relay: OutboxRelayLike;
+  // Only when the store keeps rows until their job settles
+  tracker?: OutboxTrackerLike;
+  // How long a submitted row can go without renewal before it is handed over again
+  leaseMs: number;
 }
 
 export interface DispatchOptions {
@@ -49,7 +67,7 @@ export interface JobsServiceOptions {
   logOutboxUnavailable?: boolean;
 }
 
-type Deliverer = (payload: string) => Promise<void> | void;
+type Deliverer = (payload: string) => ReturnType<JobHandler>;
 
 // Execution policy for a job type, declared where its handler is registered:
 // either no options (the type runs on the backend's shared default lane) or a
@@ -75,6 +93,9 @@ export class JobsService {
   readonly #registry = new Map<string, Deliverer>();
   readonly #queueByType = new Map<string, string>();
   readonly #queues = new Map<string, QueueDeclaration>();
+  readonly #notReplayed = new Set<string>();
+  #leaseTimer?: ReturnType<typeof setTimeout>;
+  #leaseTick?: Promise<void>;
 
   constructor({ backend, logging, sentry, outbox, logOutboxUnavailable }: JobsServiceOptions) {
     this.#backend = backend;
@@ -101,6 +122,9 @@ export class JobsService {
       });
     }
     this.#declareQueue(type, options);
+    if (JobClass.replayAfterRestart !== true) {
+      this.#notReplayed.add(type);
+    }
     this.#registry.set(type, (payload) => handler(new JobClass(JSON.parse(payload))));
   }
 
@@ -151,7 +175,15 @@ export class JobsService {
     const id = new ObjectID().toHexString();
 
     if (this.#outbox) {
-      await this.#outbox.store.insert({ id, envelope }, { transacting });
+      const { store, relay } = this.#outbox;
+      await store.insert({ id, envelope }, { transacting });
+      // The relay's poll is only a fallback; this process wakes it for its
+      // own rows once they are visible.
+      afterCommit(
+        transacting,
+        () => relay.wake(),
+        () => {}, // Rolled back: there is no row to deliver.
+      );
       return;
     }
 
@@ -208,21 +240,98 @@ export class JobsService {
     await this.#backend.start({
       processor: (envelope) => this.#process(envelope),
       queues: Object.fromEntries(this.#queues),
+      onSettled: this.#outbox?.tracker?.onSettled,
     });
     if (this.#outbox) {
+      await this.#releaseSubmitted(this.#outbox);
       this.#outbox.relay.start();
+      this.#scheduleLease(this.#outbox);
     } else if (this.#logOutboxUnavailable) {
       this.#logging.warn(
         '[Jobs] services:jobs:outbox is enabled but the outbox is unavailable here (it needs MySQL); using the legacy direct-dispatch path.',
       );
     }
+
+    const backend = this.#backend.constructor.name;
+    const outboxMode = this.#outboxMode();
+    const described =
+      outboxMode === 'retain' ? 'on, keeping rows until their job settles' : outboxMode;
+    this.#logging.info(
+      { system: { event: 'jobs.started', backend, outbox_mode: outboxMode } },
+      `[Jobs] Started on ${backend} with the outbox ${described}`,
+    );
+  }
+
+  // Only the store that keeps rows until settlement gets a tracker
+  #outboxMode(): 'off' | 'on' | 'retain' {
+    if (!this.#outbox) {
+      return 'off';
+    }
+    return this.#outbox.tracker ? 'retain' : 'on';
+  }
+
+  // A row nobody has renewed within the lease belongs to a process that has
+  // stopped, so its job may be lost. Live processes keep renewing their rows,
+  // so this is safe with several processes per site.
+  async #releaseSubmitted({ store, leaseMs }: JobsOutboxWiring): Promise<void> {
+    const { released, dropped } = await store.releaseSubmitted({
+      replays: (type) => !this.#notReplayed.has(type),
+      staleAfterMs: leaseMs,
+    });
+    if (dropped.length > 0) {
+      this.#logging.info(
+        { system: { event: 'jobs_outbox.dropped', count: dropped.length, rows: dropped } },
+        `[Jobs Outbox] Dropped ${dropped.length} submitted rows whose job types recover on their own`,
+      );
+    }
+    if (released.length > 0) {
+      this.#logging.info(
+        { system: { event: 'jobs_outbox.released', count: released.length, rows: released } },
+        `[Jobs Outbox] Released ${released.length} submitted rows to hand over again`,
+      );
+    }
+  }
+
+  // Every quarter of the lease, renews the rows of jobs the backend still
+  // holds and hands over rows no process has renewed, such as those of a
+  // process that stopped. A backend without heldIds dedupes by id, so its
+  // stale rows are re-enqueued harmlessly.
+  #scheduleLease(outbox: JobsOutboxWiring): void {
+    this.#leaseTimer = setTimeout(() => {
+      this.#leaseTick = this.#renewLease(outbox).then(() => {
+        if (this.#leaseTimer) {
+          this.#scheduleLease(outbox);
+        }
+      });
+    }, outbox.leaseMs / 4);
+  }
+
+  async #renewLease(outbox: JobsOutboxWiring): Promise<void> {
+    try {
+      const held = this.#backend.heldIds?.() ?? [];
+      if (held.length > 0) {
+        await outbox.store.renew(held);
+      }
+      await this.#releaseSubmitted(outbox);
+    } catch (error) {
+      this.#logging.error('[Jobs Outbox] renewing or releasing submitted rows failed', error);
+      this.#sentry?.captureException(error);
+    }
   }
 
   async shutdown(options?: JobsShutdownOptions): Promise<void> {
-    if (this.#outbox) {
-      await this.#outbox.relay.stop();
+    try {
+      if (this.#outbox) {
+        await this.#outbox.relay.stop();
+      }
+      await this.#backend.shutdown(options);
+    } finally {
+      // Renewal runs until the backend has drained, so a job still finishing
+      // keeps its row
+      clearTimeout(this.#leaseTimer);
+      this.#leaseTimer = undefined;
+      await this.#leaseTick;
     }
-    await this.#backend.shutdown(options);
   }
 
   // An in-process restart (test harness) re-runs handler registration on the
@@ -232,6 +341,7 @@ export class JobsService {
     this.#registry.clear();
     this.#queueByType.clear();
     this.#queues.clear();
+    this.#notReplayed.clear();
   }
 
   #buildEnvelope(job: Job): DispatchEnvelope {
@@ -256,7 +366,7 @@ export class JobsService {
     return type;
   }
 
-  async #process(envelope: JobEnvelope): Promise<void> {
+  async #process(envelope: JobEnvelope): Promise<AttemptResult> {
     const deliver = this.#registry.get(envelope.type);
     if (!deliver) {
       // Fail the delivery so a durable backend can keep or retry the job, e.g.
@@ -270,8 +380,9 @@ export class JobsService {
     const startedAt = Date.now();
     this.#logging.info(`[Background Job] ${envelope.type} started`);
 
+    let result: void | 'interrupted';
     try {
-      await deliver(envelope.payload);
+      result = await deliver(envelope.payload);
     } catch (err) {
       this.#logging.error(
         err,
@@ -282,6 +393,10 @@ export class JobsService {
     }
 
     const durationMs = Date.now() - startedAt;
+    if (result === 'interrupted') {
+      this.#logging.info(`[Background Job] ${envelope.type} interrupted after ${durationMs}ms`);
+      return 'interrupted';
+    }
     this.#logging.info(
       {
         system: {

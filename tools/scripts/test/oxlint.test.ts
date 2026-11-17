@@ -2,11 +2,12 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import {
   cpSync,
+  existsSync,
   mkdtempSync,
   mkdirSync,
+  readdirSync,
   readFileSync,
   rmSync,
-  symlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -14,6 +15,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { legacyInventoryFile } from '../../configs/oxlint/legacy-services.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
 const requireRoot = createRequire(path.join(root, 'package.json'));
@@ -42,21 +44,28 @@ function runLint(
     cpSync(path.join(root, 'tools/configs/oxlint'), path.join(cwd, 'tools/configs/oxlint'), {
       recursive: true,
     });
-    const inventory = 'ghost/core/server/services/service-inventory.yaml';
-    mkdirSync(path.dirname(path.join(cwd, inventory)), { recursive: true });
+    // Both fixture services are legacy entries, so the root-shape rule stays
+    // out of tests for the other rules. Its own tests cover unlisted roots.
+    mkdirSync(path.dirname(path.join(cwd, legacyInventoryFile)), { recursive: true });
     writeFileSync(
-      path.join(cwd, inventory),
-      JSON.stringify({ services: { alpha: { migrated: true }, legacy: { migrated: false } } }),
+      path.join(cwd, legacyInventoryFile),
+      JSON.stringify({ services: { alpha: {}, legacy: {} } }),
     );
     writeFileSync(
       path.join(cwd, '.dependency-cruiser.cjs'),
       boundarySource ?? readFileSync(path.join(root, '.dependency-cruiser.cjs')),
     );
+    // The injection rule reads contract package names from their manifests.
+    for (const contract of readdirSync(path.join(root, 'contracts'))) {
+      const manifest = path.join('contracts', contract, 'package.json');
+      if (existsSync(path.join(root, manifest))) {
+        mkdirSync(path.join(cwd, 'contracts', contract), { recursive: true });
+        cpSync(path.join(root, manifest), path.join(cwd, manifest));
+      }
+    }
     const resolver = 'tools/scripts/ci/service-dependency-resolver.mjs';
     mkdirSync(path.dirname(path.join(cwd, resolver)), { recursive: true });
     cpSync(path.join(root, resolver), path.join(cwd, resolver));
-    mkdirSync(path.join(cwd, 'node_modules'), { recursive: true });
-    symlinkSync(path.join(root, 'node_modules/js-yaml'), path.join(cwd, 'node_modules/js-yaml'));
     for (const plugin of localConfig.jsPlugins) {
       plugin.specifier = `./tools/configs/oxlint/${path.basename(plugin.specifier)}`;
     }
@@ -105,21 +114,22 @@ function lint(...args: Parameters<typeof runLint>) {
 test('explains missing or malformed service dependency policy', () => {
   for (const policy of [
     {},
-    { forbidden: {} },
-    { forbidden: [] },
-    { forbidden: [{ name: 'renamed-service-dependencies' }] },
-    { forbidden: [{ name: 'service-dependencies', to: { pathNot: [] } }] },
-    { forbidden: [{ name: 'service-dependencies', from: { path: 42 }, to: { pathNot: [] } }] },
+    { forbidden: {}, serviceDependencyAllowlist: [] },
+    { forbidden: [], serviceDependencyAllowlist: [] },
+    { forbidden: [{ name: 'renamed-service-dependencies' }], serviceDependencyAllowlist: [] },
+    { forbidden: [{ name: 'service-dependencies' }], serviceDependencyAllowlist: [] },
+    {
+      forbidden: [{ name: 'service-dependencies', from: { path: 42 } }],
+      serviceDependencyAllowlist: [],
+    },
     { forbidden: [{ name: 'service-dependencies', from: { path: '^services/' } }] },
     {
-      forbidden: [
-        { name: 'service-dependencies', from: { path: '^services/' }, to: { pathNot: '' } },
-      ],
+      forbidden: [{ name: 'service-dependencies', from: { path: '^services/' } }],
+      serviceDependencyAllowlist: '',
     },
     {
-      forbidden: [
-        { name: 'service-dependencies', from: { path: '^services/' }, to: { pathNot: [42] } },
-      ],
+      forbidden: [{ name: 'service-dependencies', from: { path: '^services/' } }],
+      serviceDependencyAllowlist: [42],
     },
   ]) {
     const result = runLint(
@@ -132,7 +142,7 @@ test('explains missing or malformed service dependency policy', () => {
     assert.equal(result.status, 1);
     assert.match(
       result.stdout + result.stderr,
-      /ghost\/no-injected-service-libraries: \.dependency-cruiser\.cjs must define service-dependencies with a string from\.path and a string array to\.pathNot/,
+      /ghost\/no-injected-service-libraries: \.dependency-cruiser\.cjs must define service-dependencies with a string from\.path and expose serviceDependencyAllowlist/,
     );
   }
 });
@@ -537,10 +547,24 @@ test('allows local library use, computed values, injected application dependenci
   assert.deepEqual(result.diagnostics, []);
 });
 
-test('limits injection enforcement to migrated TypeScript wiring roots', () => {
+test('checks library injection in all TypeScript wiring roots, legacy or not', () => {
   for (const filename of [
     'ghost/core/server/services/legacy/index.ts',
     'ghost/core/server/services/unlisted/index.ts',
+  ]) {
+    const result = lint(
+      "import Service from './service'; import tpl from '@tryghost/tpl'; new Service({tpl});",
+      filename,
+    );
+    assert.equal(result.status, 1, filename);
+    // The unlisted root also fails the root-shape rule, which has its own tests.
+    assert.equal(
+      result.diagnostics.filter(({ code }) => code === injectionCode).length,
+      1,
+      filename,
+    );
+  }
+  for (const filename of [
     'ghost/core/server/services/alpha/helper.ts',
     'ghost/core/server/services/alpha/nested/index.ts',
     'ghost/core/server/services/alpha/index.js',
@@ -571,10 +595,13 @@ test('shares the dependency-cruiser allowlist, including exact local files and p
     new Service({errors, manifest, contracts, otherContract, objectId, boolean, json, lookalike, clock, os});
   `;
   const original = lint(source, serviceRoot);
-  assert.equal(original.diagnostics.length, 5);
+  assert.equal(original.diagnostics.length, 7);
+  // Contracts are allowed whole, so every entry of one is reported.
   for (const library of [
     '@tryghost/errors/subpath',
     '@tryghost/app-contracts/manifest',
+    '@tryghost/app-contracts',
+    '@tryghost/app-contracts/other',
     'bson-objectid',
     '../../lib/db-types/boolean',
     '../../lib/db-types/json',
@@ -589,8 +616,28 @@ test('shares the dependency-cruiser allowlist, including exact local files and p
     () => "const serviceDependencyAllowlist = ['^node:os$',",
   );
   const result = lint(source, serviceRoot, false, undefined, changed);
-  assert.equal(result.diagnostics.length, 6);
+  assert.equal(result.diagnostics.length, 8);
   assert.ok(result.diagnostics.some((d) => d.message.includes('node:os')));
+});
+
+test('lets a root pass in a specialist dependency it owns', () => {
+  // Specialist dependencies are exempt from the service rule, but only their
+  // owners may import them, so the implementation could not import one directly.
+  // An allowlisted library passed the same way is still reported.
+  const source = `
+    import Service from './service';
+    import { z } from 'zod';
+    const stripe = require('stripe');
+    import { extract } from '@extractus/oembed-extractor';
+    new Service({ z, stripe, extract });
+  `;
+  const messages = lint(source, serviceRoot).diagnostics.map((d) => d.message);
+  assert.deepEqual(
+    messages.filter((message) => message.includes('directly')),
+    [
+      'Import zod directly in the implementation instead of passing it into this service constructor.',
+    ],
+  );
 });
 
 test('recognizes exact JavaScript library paths without approving siblings', () => {
@@ -753,9 +800,232 @@ test('flags JSDoc logger shapes in JavaScript but not library or data types', ()
   );
 });
 
-test('limits canonical type checks to Ghost Core', () => {
+test('limits canonical type checks to Ghost Core and its tests', () => {
   const source = 'type Logging = { info(message: string): void };';
   assert.equal(lint(source, `${canonicalFile}.ts`).status, 1);
-  assert.equal(lint(source, 'ghost/test/utils/example.ts').status, 0);
+  assert.equal(lint(source, 'ghost/test/utils/example.ts').status, 1);
   assert.equal(lint(source, 'apps/admin/src/example.ts').status, 0);
+});
+
+test('treats sinon stubs as callable logger members', () => {
+  const source = [
+    "import type { SinonStub } from 'sinon';",
+    'let logging: { error: SinonStub; warn: SinonStub };',
+    'let other: { get: SinonStub };',
+  ].join('\n');
+  assert.deepEqual(
+    lint(source, 'ghost/test/unit/example.test.ts').diagnostics.map((d) => d.labels[0]?.span.line),
+    [2],
+  );
+});
+
+test('rejects vague types on injected logging only', () => {
+  const typescript = [
+    'type Deps = { logging: object; logger: any; other: object };',
+    'type Fine = { logging: unknown extends never ? never : string };',
+  ].join('\n');
+  assert.deepEqual(
+    lint(typescript, `${canonicalFile}.ts`).diagnostics.map((d) => [
+      d.code,
+      d.labels[0]?.span.line,
+    ]),
+    [
+      [canonicalCode, 1],
+      [canonicalCode, 1],
+    ],
+  );
+  const jsdoc = [
+    '/**',
+    ' * @param {object} deps.logging',
+    ' * @param {Object} logger',
+    ' * @param {object} deps.models',
+    " * @param {import('@tryghost/logging').GhostLogger} deps.logging",
+    ' */',
+    'export function make() {}',
+  ].join('\n');
+  assert.deepEqual(
+    lint(jsdoc, `${canonicalFile}.js`).diagnostics.map((d) => d.labels[0]?.span.line),
+    [2, 3],
+  );
+});
+
+const testFile = 'ghost/test/unit/example.test.ts';
+
+test('rejects comparing a shared error object in assert.rejects and assert.throws', () => {
+  const source = [
+    "const failure = new Error('x');",
+    'let later;',
+    "later = new TypeError('y');",
+    'assert.rejects(run, failure);',
+    'assert.throws(run, later);',
+    'assert.rejects(run, (error) => error === failure);',
+    'assert.rejects(run, TypeError);',
+    "assert.rejects(run, { message: 'x' });",
+    'other.rejects(run, failure);',
+    "const matcher = { message: 'x' };",
+    "function elsewhere() { const matcher = new Error('x'); return matcher; }",
+    'assert.rejects(run, matcher);',
+  ].join('\n');
+  const result = lint(source, testFile);
+  assert.deepEqual(
+    result.diagnostics.map((d) => [d.code, d.labels[0]?.span.line]),
+    [
+      ['ghost(no-assert-error-instance)', 4],
+      ['ghost(no-assert-error-instance)', 5],
+    ],
+  );
+  assert.deepEqual(
+    lint(source, 'ghost/core/server/example.ts').diagnostics.filter((d) =>
+      d.code.includes('no-assert-error-instance'),
+    ),
+    [],
+  );
+});
+
+test('requires a stop for the server getAgentsWithFrontend starts', () => {
+  const code = 'ghost(stop-frontend-agents)';
+  const starts = 'const agents = await e2e.getAgentsWithFrontend();';
+  const result = lint(starts, testFile);
+  assert.deepEqual(
+    result.diagnostics.map((d) => d.code),
+    [code],
+  );
+  assert.equal(lint(`${starts}\nawait agents.ghostServer.stop();`, testFile).status, 0);
+  assert.equal(lint(`${starts}\nawait stopGhost();`, testFile).status, 0);
+  assert.equal(
+    lint(
+      `({ ghostServer: server } = await e2e.getAgentsWithFrontend());\nawait server?.stop();`,
+      testFile,
+    ).status,
+    0,
+  );
+  assert.deepEqual(
+    lint(`${starts}\ntimer.stop();`, testFile).diagnostics.map((d) => d.code),
+    [code],
+  );
+  assert.equal(
+    lint(`${starts}\nconst { ghostServer: server } = agents;\nawait server.stop();`, testFile)
+      .status,
+    0,
+  );
+  assert.equal(
+    lint(
+      'let agents;\nagents = await e2e.getAgentsWithFrontend();\n({ ghostServer: server } = agents);\nawait server.stop();',
+      testFile,
+    ).status,
+    0,
+  );
+  assert.deepEqual(
+    lint(
+      `${starts}\nconst { ghostServer: timer } = unrelated;\ntimer.stop();`,
+      testFile,
+    ).diagnostics.map((d) => d.code),
+    [code],
+  );
+  assert.deepEqual(
+    lint(
+      [
+        'const first = await e2e.getAgentsWithFrontend();',
+        'await first.ghostServer.stop();',
+        'let ghostServer;',
+        'const second = await e2e.getAgentsWithFrontend();',
+        'ghostServer = second.ghostServer;',
+        'const third = await e2e.getAgentsWithFrontend();',
+        'await ghostServer.stop();',
+      ].join('\n'),
+      testFile,
+    ).diagnostics.map((d) => [d.code, d.labels[0]?.span.line]),
+    [[code, 6]],
+  );
+  assert.deepEqual(
+    lint(
+      [
+        'let agents = await e2e.getAgentsWithFrontend();',
+        'await agents.ghostServer.stop();',
+        'agents = await e2e.getAgentsWithFrontend();',
+      ].join('\n'),
+      testFile,
+    ).diagnostics.map((d) => [d.code, d.labels[0]?.span.line]),
+    [[code, 3]],
+  );
+  assert.equal(lint('const other = 1;', testFile).status, 0);
+});
+
+test('rejects passing the real logger to a class under test', () => {
+  const code = 'ghost(no-real-logger-injection)';
+  const source = [
+    "import logging from '@tryghost/logging';",
+    "const required = require('@tryghost/logging');",
+    'new One({ logging });',
+    'new Two(model, { logger: required, other: 1 });',
+    'new Three({ logging: createLoggingFake() });',
+    'run({ logging });',
+  ].join('\n');
+  assert.deepEqual(
+    lint(source, testFile).diagnostics.map((d) => [d.code, d.labels[0]?.span.line]),
+    [
+      [code, 3],
+      [code, 4],
+    ],
+  );
+  assert.equal(
+    lint('const logging = createLoggingFake();\nnew One({ logging });', testFile).status,
+    0,
+  );
+  assert.equal(
+    lint(
+      [
+        "import logging from '@tryghost/logging';",
+        'function check(logging = createLoggingFake()) { new One({ logging }); }',
+      ].join('\n'),
+      testFile,
+    ).status,
+    0,
+  );
+});
+
+test('rejects any in exported service types only', () => {
+  const code = 'ghost(no-any-in-exported-types)';
+  const source = [
+    'export type One = { value: any };',
+    'export interface Two { run(input: any): void }',
+    'type Local = { value: any };',
+    'export function run(input: any) { return input; }',
+    'export type Fine = { value: unknown };',
+    'type Public = { value: any };',
+    'export type { Public };',
+  ].join('\n');
+  const file = 'ghost/core/server/services/alpha/types.ts';
+  assert.deepEqual(
+    lint(source, file).diagnostics.map((d) => [d.code, d.labels[0]?.span.line]),
+    [
+      [code, 1],
+      [code, 2],
+      [code, 6],
+    ],
+  );
+  assert.equal(lint(source, 'ghost/core/server/lib/types.ts').status, 0);
+  const shadowed = [
+    'type Shared = { value: string };',
+    'function example() {',
+    '  type Shared = any;',
+    '  return {} as Shared;',
+    '}',
+    'export type { Shared };',
+  ].join('\n');
+  assert.equal(lint(shadowed, file).status, 0);
+});
+
+test('rejects computed require and import in service files, which the boundary scan cannot follow', () => {
+  const source = `
+    const name = ['@tryghost', 'logging'].join('/');
+    module.exports = { eager: require(name), lazy: () => import(name), own: () => import('./helper') };
+  `;
+  const service = lint(source, 'ghost/core/server/services/legacy/implementation.js');
+  assert.deepEqual(
+    service.diagnostics.map(({ code }) => code),
+    ['import(no-dynamic-require)', 'import(no-dynamic-require)'],
+  );
+  const elsewhere = lint(source, 'ghost/core/server/lib/implementation.js');
+  assert.ok(!elsewhere.diagnostics.some(({ code }) => code === 'import(no-dynamic-require)'));
 });

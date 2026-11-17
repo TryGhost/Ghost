@@ -296,6 +296,10 @@ export class RecommendationService {
   }
 
   async trackClicked({ id, memberId }: { id: string; memberId?: string }) {
+    // Ensure the recommendation exists before inserting a click event. Otherwise a
+    // non-existent id reaches a foreign-key constraint and surfaces the raw SQL in the
+    // error context to an unauthenticated caller. readRecommendation throws NotFoundError.
+    await this.readRecommendation(id);
     const clickEvent = ClickEvent.create({ recommendationId: id, memberId });
     await this.clickEventRepository.save(clickEvent);
   }

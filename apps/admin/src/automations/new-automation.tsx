@@ -18,9 +18,19 @@ import { useVisibleAutomations } from './hooks/use-visible-automations';
 import { getNewAutomationName } from './utils/get-new-automation-name';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import { ScreenEntranceContext } from '@/layout/screen-transition';
-import type { TierSelection } from './types';
 
-type PickedTrigger = AutomationTriggerRule['trigger_type'] | 'paid_subscription_changed';
+type PickedTrigger = AutomationTriggerRule['trigger_type'];
+
+function getInitialTriggerRules(triggerType: PickedTrigger): AutomationTriggerRule[] {
+  switch (triggerType) {
+    case 'paid_subscription_changed':
+      return buildTriggerRules({ triggerType, selection: { from: [], to: [] } });
+    case 'label_added':
+      return [];
+    default:
+      return buildTriggerRules({ triggerType });
+  }
+}
 
 const TRIGGER_OPTIONS = [
   [
@@ -37,7 +47,6 @@ const TRIGGER_OPTIONS = [
   ],
 ] as const;
 
-// Behind the lifecycle triggers Labs flag until the API can save it (NY-1733).
 const SUBSCRIPTION_CHANGED_OPTION = [
   'paid_subscription_changed',
   LucideIcon.ArrowRightLeft,
@@ -45,16 +54,33 @@ const SUBSCRIPTION_CHANGED_OPTION = [
   "When a member's paid subscription moves to another tier or ends",
 ] as const;
 
+const LABEL_ADDED_OPTION = [
+  'label_added',
+  LucideIcon.Tag,
+  'Label added to a member',
+  'When a label is added to a member',
+] as const;
+
 const TriggerPicker: React.FC<{
   automation: AutomationDetail;
+  labelTriggerEnabled: boolean;
+  stripeEnabled: boolean;
   // `cardTop`: where the card sits, so the editor can open with the trigger in the same place.
   onPick: (trigger: PickedTrigger, cardTop: number) => void;
-}> = ({ automation, onPick }) => {
+}> = ({ automation, labelTriggerEnabled, stripeEnabled, onPick }) => {
   const { dialogProps } = useUnsavedChangesGuard({ when: true });
-  const lifecycleTriggers = useFeatureFlag('automationsLifecycleTriggers');
-  const options = lifecycleTriggers
-    ? [...TRIGGER_OPTIONS, SUBSCRIPTION_CHANGED_OPTION]
-    : TRIGGER_OPTIONS;
+  const options: Array<
+    | (typeof TRIGGER_OPTIONS)[number]
+    | typeof SUBSCRIPTION_CHANGED_OPTION
+    | typeof LABEL_ADDED_OPTION
+  > = [TRIGGER_OPTIONS[0]];
+  if (stripeEnabled) {
+    options.push(TRIGGER_OPTIONS[1]);
+    options.push(SUBSCRIPTION_CHANGED_OPTION);
+  }
+  if (labelTriggerEnabled) {
+    options.push(LABEL_ADDED_OPTION);
+  }
   const cardRef = React.useRef<HTMLDivElement>(null);
   return (
     <Stack className="fixed inset-0 z-50 bg-background" gap="none">
@@ -137,11 +163,9 @@ const NewAutomationLoading: React.FC = () => {
 type NewAutomationProps = {
   children: (creation: {
     automation: AutomationDetail;
-    triggerType: AutomationTriggerRule['trigger_type'];
+    triggerType: PickedTrigger;
     // Where the picker's card was when the trigger was selected.
     triggerTop?: number;
-    // Local-only state for the lifecycle trigger until its persistence is enabled.
-    tierSelection?: TierSelection;
   }) => React.ReactNode;
 };
 
@@ -152,12 +176,12 @@ const NewAutomationSession: React.FC<
     isStripeReady: boolean;
   }
 > = ({ children, automations, stripeEnabled, isStripeReady }) => {
+  const isLeadMagnetsEnabled = useFeatureFlag('automationsLeadMagnets');
+  const shouldShowChooser = stripeEnabled || isLeadMagnetsEnabled;
   const [initialAutomation, setInitialAutomation] = React.useState<AutomationDetail | null>(null);
   // Where the trigger was picked, once it has been.
   const [triggerTop, setTriggerTop] = React.useState<number | null>(null);
-  const [triggerType, setTriggerType] =
-    React.useState<AutomationTriggerRule['trigger_type']>('free_signup');
-  const [tierSelection, setTierSelection] = React.useState<TierSelection>();
+  const [triggerType, setTriggerType] = React.useState<PickedTrigger>('free_signup');
   if (!initialAutomation) {
     if (isStripeReady) {
       setInitialAutomation({
@@ -169,33 +193,24 @@ const NewAutomationSession: React.FC<
         updated_at: '',
         actions: [],
         edges: [],
-        trigger_rules: stripeEnabled ? [] : buildTriggerRules({ triggerType: 'free_signup' }),
+        trigger_rules: shouldShowChooser ? [] : buildTriggerRules({ triggerType: 'free_signup' }),
       });
     }
     return <NewAutomationLoading />;
   }
-  if (stripeEnabled && triggerTop === null) {
+  if (initialAutomation.trigger_rules.length === 0 && triggerTop === null) {
     return (
       <TriggerPicker
         automation={initialAutomation}
+        labelTriggerEnabled={isLeadMagnetsEnabled}
+        stripeEnabled={stripeEnabled}
         onPick={(trigger, cardTop) => {
           setTriggerTop(cardTop);
-          setTriggerType(
-            trigger === 'paid_subscription_changed' ? 'paid_subscription_started' : trigger,
-          );
-          if (trigger === 'paid_subscription_changed') {
-            // A stand-in signup trigger loads paid tiers; lifecycle saving remains blocked.
-            setTierSelection({ from: [], to: [] });
-            setInitialAutomation({
-              ...initialAutomation,
-              trigger_rules: buildTriggerRules({ triggerType: 'paid_subscription_started' }),
-            });
-          } else {
-            setInitialAutomation({
-              ...initialAutomation,
-              trigger_rules: buildTriggerRules({ triggerType: trigger }),
-            });
-          }
+          setTriggerType(trigger);
+          setInitialAutomation({
+            ...initialAutomation,
+            trigger_rules: getInitialTriggerRules(trigger),
+          });
         }}
       />
     );
@@ -204,7 +219,7 @@ const NewAutomationSession: React.FC<
   // header replacing it shouldn't play it a second time in the same visit.
   return triggerTop !== null ? (
     <ScreenEntranceContext.Provider value={false}>
-      {children({ automation: initialAutomation, triggerType, triggerTop, tierSelection })}
+      {children({ automation: initialAutomation, triggerType, triggerTop })}
     </ScreenEntranceContext.Provider>
   ) : (
     children({ automation: initialAutomation, triggerType })

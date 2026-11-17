@@ -4,12 +4,11 @@ import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import {
+  accept,
   isRecordValue,
   matchField,
-  matchShape,
-  valueSchemaFor,
-  type FieldType,
-  type FieldValue,
+  shaped,
+  type AcceptedValue,
   type MetafieldChangeEventField,
   type TypedSettings,
 } from '@tryghost/metafield-types';
@@ -35,6 +34,7 @@ import {
 } from './schema';
 import { toDatabaseDate } from '../../lib/db-types/date';
 import type { MetafieldsTracking } from './tracking';
+import { ensureTransaction, transactionOf } from '../../lib/ensure-transaction';
 import {
   ACTIVE_ONLY,
   FIELDS_TABLE,
@@ -47,7 +47,13 @@ import {
 } from './queries';
 import { ADMIN, MemberAccessSchema, canWrite, type Audience } from './access';
 import { readStoredField } from './stored-fields';
-import { heldOptionTexts, storedValueAs, valueRowsToWrite, valuesFromRows } from './storage';
+import {
+  VALUE_COLUMNS,
+  heldOptionTexts,
+  storedValueAs,
+  valueRowsToWrite,
+  valuesFromRows,
+} from './storage';
 
 const VALUES_TABLE = 'members_metafield_values';
 
@@ -91,7 +97,7 @@ const ValuesInput = z.record(z.string().max(MAX_IDENTITY_LENGTH), z.unknown());
 const wireProperty = (identity: string): string => [QUALIFIER, identity].join(SEPARATOR);
 
 /** One value the site will not accept, against the name the write gave it. */
-interface Refusal {
+export interface Refusal {
   message: string;
   property: string;
 }
@@ -104,7 +110,7 @@ interface Refusal {
  * `errorDetails`, which the renderer already passes through as `details`, so a client
  * that wants to mark every refused input can have them all from one attempt.
  */
-function refusalError(first: Refusal, rest: Refusal[]): errors.ValidationError {
+export function refusalError(first: Refusal, rest: Refusal[]): errors.ValidationError {
   return new errors.ValidationError({
     message: first.message,
     property: first.property,
@@ -163,10 +169,10 @@ const STORED_VALUE_COLUMNS = {
 
 type AllowedField = z.output<typeof WritableField.asStored>;
 
-/** An absent `value` means clear the field. */
+/** An absent `accepted` means clear the field. */
 export interface PlannedWrite {
   field: AllowedField;
-  value?: FieldValue;
+  accepted?: AcceptedValue;
 }
 
 /** Checked writes and who is making them: everything needed to store them. */
@@ -183,19 +189,6 @@ const IMPORTED: Extract<WriteOrigin, { source: 'import' }> = {
   writtenBy: { type: 'import', id: null },
   source: 'import',
 };
-
-/**
- * Whether a write of `raw` clears the whole field. The caller handles `null`, which clears any
- * field; `''` clears a scalar, and a set picking no options clears it. For a record `''` names no
- * part, so it goes on to fail validation rather than being read as a delete.
- */
-function clearsWhole(type: FieldType, raw: unknown): boolean {
-  return matchShape(type, {
-    scalar: () => raw === '',
-    record: () => false,
-    set: () => Array.isArray(raw) && raw.length === 0,
-  });
-}
 
 /**
  * What a member holds for each defined field. Separate from the definitions service
@@ -231,6 +224,7 @@ export class MetafieldValuesService {
   // afterwards would let a member tell a hidden field from an undefined one by the
   // reply they got.
   private async allowedFieldsByIdentity(
+    executor: Knex,
     identities: string[],
     audience: Audience,
   ): Promise<Map<string, AllowedField>> {
@@ -247,7 +241,7 @@ export class MetafieldValuesService {
       return new Map();
     }
     const rows = await this.fields
-      .definitions(this.knex, { audience, status: ACTIVE_ONLY })
+      .definitions(executor, { audience, status: ACTIVE_ONLY })
       .read.where((query) => {
         for (const [namespace, keys] of keysByNamespace) {
           query.orWhere((inNamespace) =>
@@ -444,9 +438,42 @@ export class MetafieldValuesService {
   /**
    * Resolve input into the writes it implies, writing nothing. Returned so a caller can
    * validate before opening a transaction it would otherwise have to unwind, then apply
-   * the same plan without re-resolving it.
+   * the same plan without re-resolving it. A value the site won't accept refuses the whole
+   * write, with every refusal at once.
    */
-  async planWrite(input: unknown, audience: Audience): Promise<PlannedWrite[]> {
+  async planWrite(
+    input: unknown,
+    audience: Audience,
+    executor: Knex = this.knex,
+  ): Promise<PlannedWrite[]> {
+    const { writes, refusals } = await this.planOrRefuse(input, audience, undefined, executor);
+    const [first, ...rest] = refusals;
+    if (first) {
+      throw refusalError(first, rest);
+    }
+    return writes;
+  }
+
+  /**
+   * Resolve input into the writes for the values the site accepts, and what it refuses of the
+   * rest, writing nothing, for a caller that saves what it can or decides for itself what a
+   * refusal means. A write that can't be planned at all, such as one naming too many fields,
+   * still throws.
+   *
+   * A refusal names the value it refuses the way the API's body names it,
+   * `metafields.<namespace>.<key>`. A caller that took the value under another name, such as a
+   * port, passes `named`, given the value's identity, and every refusal names the value that way
+   * instead, in its property and its message, so a client is told about what it sent rather than
+   * about a field it may not know of.
+   */
+  async planOrRefuse(
+    input: unknown,
+    audience: Audience,
+    named?: (identity: string) => string,
+    executor: Knex = this.knex,
+  ): Promise<{ writes: PlannedWrite[]; refusals: Refusal[] }> {
+    const propertyOf = named ?? wireProperty;
+    const nameOf = named ?? ((identity: string) => identity);
     const values = this.parseValues(input);
     const identities = Object.keys(values);
 
@@ -460,7 +487,7 @@ export class MetafieldValuesService {
       });
     }
 
-    const byIdentity = await this.allowedFieldsByIdentity(identities, audience);
+    const byIdentity = await this.allowedFieldsByIdentity(executor, identities, audience);
     const writes: PlannedWrite[] = [];
     // Gathered rather than thrown as they are found. A write names several values, and
     // a composite is several again, so refusing at the first leaves someone correcting
@@ -471,8 +498,8 @@ export class MetafieldValuesService {
       const field = byIdentity.get(identity);
       if (!field) {
         refusals.push({
-          message: `Unknown custom field: ${identity}`,
-          property: wireProperty(identity),
+          message: `Unknown custom field: ${nameOf(identity)}`,
+          property: propertyOf(identity),
         });
         continue;
       }
@@ -481,13 +508,14 @@ export class MetafieldValuesService {
       // already see the field, so naming it discloses nothing.
       if (!canWrite(audience, field)) {
         refusals.push({
-          message: `Cannot set custom field: ${identity}`,
-          property: wireProperty(identity),
+          message: `Cannot set custom field: ${nameOf(identity)}`,
+          property: propertyOf(identity),
         });
         continue;
       }
 
-      if (raw === null || clearsWhole(field.type, raw)) {
+      // `null` clears any field; any other value, `''` and `[]` included, must pass the field's rule.
+      if (raw === null) {
         writes.push({ field });
         continue;
       }
@@ -496,35 +524,30 @@ export class MetafieldValuesService {
       // `context` when `context` is empty and prepends it when it is not, so
       // anything added here reaches the client glued to the front of the reason.
       // Which field failed rides in `property`.
-      const value = valueSchemaFor(field).safeParse(raw);
-      if (!value.success) {
+      const acceptance = accept(shaped(field), raw);
+      if (!acceptance.success) {
         // Every issue, not the first: a value with parts fails once per part, and each
         // names the part it belongs to, which is what lets a client mark them all.
-        for (const issue of value.error.issues) {
+        for (const issue of acceptance.issues) {
           refusals.push({
             message: issue.message,
-            property: [wireProperty(identity), ...issue.path].join(SEPARATOR),
+            property: [propertyOf(identity), ...issue.path].join(SEPARATOR),
           });
         }
         continue;
       }
-      writes.push({ field, value: value.data });
+      writes.push({ field, accepted: acceptance.accepted });
     }
 
-    const [first, ...rest] = refusals;
-    if (first) {
-      throw refusalError(first, rest);
-    }
-
-    return writes;
+    return { writes, refusals };
   }
 
   /**
    * Apply a plan from `planWrite`.
    *
-   * A write touches the paths it names and nothing else, at every level: naming a path
-   * with an empty value clears that part, naming the field with `null` clears all of
-   * them, and saying nothing about a path leaves it alone, so a caller that does not know
+   * A write touches the paths it names and nothing else, at every level: naming a part
+   * as `null` clears that part, naming the field as `null` clears all of them, and saying
+   * nothing about a path leaves it alone, so a caller that does not know
    * about a field cannot erase it. A list is the one value replaced whole: the options a
    * write picks are all it holds afterwards.
    *
@@ -532,8 +555,9 @@ export class MetafieldValuesService {
    * itself and where it wrote, so a new one cannot quietly inherit the identity of
    * whichever was written first.
    *
-   * Always transactional. Given an executor it joins that transaction, so a failed value
-   * write takes the member save it joined with it; given none it opens its own.
+   * Always transactional. Given a transaction as `executor` it joins that transaction, so a
+   * failed value write takes the member save it joined with it; given a plain connection it
+   * opens its own.
    *
    * Every write also puts an entry on the member's activity feed, naming the fields it
    * touched and who wrote them where, in the same transaction, so the feed cannot name a
@@ -547,163 +571,175 @@ export class MetafieldValuesService {
   async applyWrite(
     memberId: string,
     writes: PlannedWrite[],
-    origin: SingleWriteOrigin & { executor?: Knex.Transaction },
+    origin: SingleWriteOrigin,
+    executor: Knex = this.knex,
   ): Promise<void> {
     if (writes.length === 0) {
       return;
     }
-    const { executor } = origin;
-    const stored = this.store(memberId, writes, origin, executor);
+    const stored = ensureTransaction(executor, (trx) => this.store(trx, memberId, writes, origin));
 
     // A write that joined the caller's transaction is only stored once that transaction
     // finishes without an error.
+    const joined = transactionOf(executor);
     this.tracking.valuesWrite(
       { source: origin.source, fields: writes.map(({ field }) => field) },
-      executor ? stored.then(() => executor.executionPromise) : stored,
+      joined ? stored.then(() => joined.executionPromise) : stored,
     );
     await stored;
   }
 
   /**
-   * Stores the values from one row of a members import, joining the row's transaction so a
-   * value that fails takes its member with it. The import records its run as a whole, so the
-   * row's write is not reported to the tracking.
+   * Stores the values from one row of a members import. Given the row's transaction as
+   * `executor` it joins that transaction, so a value that fails takes its member with it; given
+   * a plain connection it opens its own. The import records its run as a whole, so the row's
+   * write is not reported to the tracking.
    */
   async applyImportedWrite(
     memberId: string,
     writes: PlannedWrite[],
-    executor: Knex.Transaction,
+    executor: Knex = this.knex,
   ): Promise<void> {
     if (writes.length === 0) {
       return;
     }
-    await this.store(memberId, writes, IMPORTED, executor);
+    await ensureTransaction(executor, (trx) => this.store(trx, memberId, writes, IMPORTED));
   }
 
-  /** Stores a write and its activity feed entry, joining `executor`'s transaction if given. */
+  /**
+   * Stores a write and its activity feed entry inside `trx`.
+   *
+   * The member's existing values are read without a lock. On MySQL that read sees the database
+   * as it was when the transaction first read anything without a lock, so it can miss values
+   * another request saved to the same member since then. A caller that may save a member while
+   * another request saves the same member must lock the member before reading anything, as the
+   * member edit does. The second save then waits for the first, and reads the values it saved.
+   */
   private async store(
+    trx: Knex.Transaction,
     memberId: string,
     writes: PlannedWrite[],
     { writtenBy, source }: WriteOrigin,
-    executor: Knex.Transaction | undefined,
   ): Promise<void> {
-    const apply = async (trx: Knex) => {
-      // Built first, then sent as whole statements: a handful per member rather
-      // than one per part, under one timestamp, because a write happened once
-      // however many rows record it.
-      const now = new Date();
-      const clearedFields: FieldIdentity[] = [];
-      const clearedPaths: Array<{ field: FieldIdentity; paths: string[] }> = [];
-      const replaced: Array<{ field: FieldIdentity; kept: string[] }> = [];
-      const rows: DbValueRow[] = [];
+    // Built first, then sent as whole statements: a handful per member rather
+    // than one per part, under one timestamp, because a write happened once
+    // however many rows record it. Rows are removed one statement each, for
+    // the reasons given where they are.
+    const now = new Date();
+    // The fields this write deletes rows from, each with a check on a row's path that says
+    // whether to delete that row.
+    const removals: Array<{ field: FieldIdentity; removes: (path: string) => boolean }> = [];
+    const rows: DbValueRow[] = [];
 
-      for (const { field, value } of writes) {
-        if (value === undefined) {
-          clearedFields.push(field);
-          continue;
+    for (const { field, accepted } of writes) {
+      if (accepted === undefined) {
+        removals.push({ field, removes: () => true });
+        continue;
+      }
+
+      const toWrite = valueRowsToWrite(accepted);
+      const { set } = toWrite;
+      switch (toWrite.mode) {
+        // A set is replaced as a whole. Rows for options the new set no longer picks are
+        // deleted, while rows for options it still picks are kept, along with when they were
+        // first picked.
+        case 'replace': {
+          const kept = new Set(set.map((row) => row.path));
+          removals.push({ field, removes: (path) => !kept.has(path) });
+          break;
         }
-
-        const toWrite = valueRowsToWrite(field, value);
-        const { set } = toWrite;
-        switch (toWrite.mode) {
-          case 'replace':
-            replaced.push({ field, kept: set.map((row) => row.path) });
-            break;
-          case 'merge':
-            if (toWrite.cleared.length > 0) {
-              clearedPaths.push({ field, paths: toWrite.cleared });
-            }
-            break;
-        }
-
-        rows.push(
-          ...set.map((row): DbValueRow => ({
-            ...fieldReference(field),
-            member_id: memberId,
-            path: row.path,
-            value_text: row.value_text,
-            written_by_type: writtenBy.type,
-            written_by_id: writtenBy.id,
-            created_at: now,
-            updated_at: now,
-          })),
-        );
+        case 'merge':
+          if (toWrite.cleared.length > 0) {
+            const cleared = new Set(toWrite.cleared);
+            removals.push({ field, removes: (path) => cleared.has(path) });
+          }
+          break;
       }
 
-      // One statement with a group per field, rather than a statement per field.
-      if (clearedFields.length > 0) {
+      rows.push(
+        ...set.map(({ path, ...columns }): DbValueRow => ({
+          ...fieldReference(field),
+          member_id: memberId,
+          path,
+          ...columns,
+          written_by_type: writtenBy.type,
+          written_by_id: writtenBy.id,
+          created_at: now,
+          updated_at: now,
+        })),
+      );
+    }
+
+    for (let from = 0; from < rows.length; from += UPSERT_CHUNK) {
+      // Typed as the plain row because `merge` takes its columns as `keyof` the
+      // builder's record, which for a composite table registration is the scope
+      // names rather than the columns.
+      await trx<DbValueRow>(VALUES_TABLE)
+        .insert(rows.slice(from, from + UPSERT_CHUNK))
+        // Naming the columns rather than giving values takes each from the row
+        // that lost the conflict, so every part updates to its own value.
+        .onConflict(VALUE_KEY)
+        // The writer is merged with the value, so a row names who wrote what
+        // it currently holds rather than who wrote its first value.
+        .merge([...VALUE_COLUMNS, 'written_by_type', 'written_by_id', 'updated_at']);
+    }
+
+    // Rows are removed after the rows above are written, with one DELETE per row that names
+    // the row by its primary key. On MySQL, at its default isolation level:
+    //
+    // - A DELETE that searches also locks the stretch of the index it searched through, even
+    //   when it finds no rows. New members get IDs that sort next to each other, so two
+    //   members created at once would lock the same stretch, then each wait for the other's
+    //   lock to insert its own values there, until MySQL cancels one of the requests.
+    // - MySQL can run a DELETE that names many rows as a scan of the whole table, once those
+    //   rows are a large share of it, and the scan locks every row in the table.
+    // - A DELETE of one row locks that row, and can also lock the end of an index page next
+    //   to it. Deleting after the inserts means a write takes those locks after its last
+    //   insert into this table, so it doesn't wait for another write while it holds them,
+    //   unless its transaction writes values again.
+    //
+    // The rows written above are never ones removed here: a write sets and clears different
+    // parts of a field.
+    if (removals.length > 0) {
+      const held = await trx<DbValueRow>(VALUES_TABLE)
+        .select(VALUE_KEY)
+        .where('member_id', memberId)
+        .where((builder) => {
+          for (const { field } of removals) {
+            builder.orWhere((rowsOf) => rowsOf.where(fieldReference(field)));
+          }
+        });
+      const removed = held.filter((row) =>
+        removals.some(
+          ({ field, removes }) =>
+            row.metafield_namespace === field.namespace &&
+            row.metafield_key === field.key &&
+            removes(row.path),
+        ),
+      );
+      for (const row of removed) {
         await trx(VALUES_TABLE)
-          .where('member_id', memberId)
-          .where((builder) => {
-            for (const field of clearedFields) {
-              builder.orWhere((rowsOf) => rowsOf.where(fieldReference(field)));
-            }
-          })
+          .where(Object.fromEntries(VALUE_KEY.map((column) => [column, row[column]])))
           .del();
       }
+    }
 
-      if (clearedPaths.length > 0) {
-        await trx(VALUES_TABLE)
-          .where('member_id', memberId)
-          .where((builder) => {
-            for (const { field, paths } of clearedPaths) {
-              builder.orWhere((rowsOf) =>
-                rowsOf.where(fieldReference(field)).whereIn('path', paths),
-              );
-            }
-          })
-          .del();
-      }
-
-      // A set is replaced as a whole: every row it no longer picks goes, and the ones it still
-      // picks stay, keeping when they were first picked.
-      if (replaced.length > 0) {
-        await trx(VALUES_TABLE)
-          .where('member_id', memberId)
-          .where((builder) => {
-            for (const { field, kept } of replaced) {
-              builder.orWhere((rowsOf) =>
-                rowsOf.where(fieldReference(field)).whereNotIn('path', kept),
-              );
-            }
-          })
-          .del();
-      }
-
-      for (let from = 0; from < rows.length; from += UPSERT_CHUNK) {
-        // Typed as the plain row because `merge` takes its columns as `keyof` the
-        // builder's record, which for a composite table registration is the scope
-        // names rather than the columns.
-        await trx<DbValueRow>(VALUES_TABLE)
-          .insert(rows.slice(from, from + UPSERT_CHUNK))
-          // Naming the columns rather than giving values takes each from the row
-          // that lost the conflict, so every part updates to its own value.
-          .onConflict(VALUE_KEY)
-          // The writer is merged with the value, so a row names who wrote what
-          // it currently holds rather than who wrote its first value.
-          .merge(['value_text', 'written_by_type', 'written_by_id', 'updated_at']);
-      }
-
-      const fields: MetafieldChangeEventField[] = writes.map(({ field }) => ({
-        namespace: field.namespace,
-        key: field.key,
-        name: field.name,
-      }));
-      await trx(CHANGE_EVENTS_TABLE).insert({
-        id: new ObjectID().toHexString(),
-        member_id: memberId,
-        written_by_type: writtenBy.type,
-        written_by_id: writtenBy.id,
-        source,
-        metafields: StoredFieldList.encode(fields),
-        // A string rather than the Date the value rows take: SQLite stores a bound Date
-        // as a number, which sorts before every string the feed pages through time with.
-        created_at: toDatabaseDate(now),
-      });
-    };
-
-    // Joins the caller's transaction rather than nesting a savepoint under it.
-    await (executor ? apply(executor) : this.knex.transaction(apply));
+    const fields: MetafieldChangeEventField[] = writes.map(({ field }) => ({
+      namespace: field.namespace,
+      key: field.key,
+      name: field.name,
+    }));
+    await trx(CHANGE_EVENTS_TABLE).insert({
+      id: new ObjectID().toHexString(),
+      member_id: memberId,
+      written_by_type: writtenBy.type,
+      written_by_id: writtenBy.id,
+      source,
+      metafields: StoredFieldList.encode(fields),
+      // A string rather than the Date the value rows take: SQLite stores a bound Date
+      // as a number, which sorts before every string the feed pages through time with.
+      created_at: toDatabaseDate(now),
+    });
   }
 
   /**
@@ -719,9 +755,9 @@ export class MetafieldValuesService {
    * Read from the table's key: each option a field has been answered with is one path, and every row
    * under a path holds the same text, so one row is read for each.
    */
-  async heldValues(field: FieldIdentity): Promise<string[]> {
+  async heldValues(field: FieldIdentity, executor: Knex = this.knex): Promise<string[]> {
     const [row] = await this.fields
-      .definitions(this.knex, { audience: ADMIN, status: ACTIVE_ONLY, field })
+      .definitions(executor, { audience: ADMIN, status: ACTIVE_ONLY, field })
       .read.select(...TYPED_FIELD_COLUMNS);
     // A field that can't be read even with its type's defaults is treated as missing, as the
     // definitions read treats it.
@@ -742,12 +778,12 @@ export class MetafieldValuesService {
       scalar: notAList,
       record: notAList,
       set: async () => {
-        const held = this.knex(VALUES_TABLE)
+        const held = executor(VALUES_TABLE)
           .distinct('path')
           .where(fieldReference(field))
           .as('held');
-        const rows = await this.knex.from(held).select('held.path', {
-          value_text: this.knex(VALUES_TABLE)
+        const rows = await executor.from(held).select('held.path', {
+          value_text: executor(VALUES_TABLE)
             .select('value_text')
             .where(fieldReference(field))
             .whereRaw('?? = ??', [`${VALUES_TABLE}.path`, 'held.path'])
@@ -765,16 +801,19 @@ export class MetafieldValuesService {
    * `filter` is a parsed NQL filter over this table's own columns: mapping the feed's
    * names onto them is the feed's business, and applying them is this table's.
    */
-  async browseChangeEvents({
-    limit,
-    filter,
-  }: {
-    /** Absent for every entry, as the feed asks for when paging is off. */
-    limit?: number;
-    filter?: object;
-  }): Promise<{ events: MetafieldChangeEvent[]; total: number }> {
+  async browseChangeEvents(
+    {
+      limit,
+      filter,
+    }: {
+      /** Absent for every entry, as the feed asks for when paging is off. */
+      limit?: number;
+      filter?: object;
+    },
+    executor: Knex = this.knex,
+  ): Promise<{ events: MetafieldChangeEvent[]; total: number }> {
     const filtered = () => {
-      const query = this.knex(CHANGE_EVENTS_TABLE);
+      const query = executor(CHANGE_EVENTS_TABLE);
       return filter ? knexify(query, filter, { tableName: CHANGE_EVENTS_TABLE }) : query;
     };
 

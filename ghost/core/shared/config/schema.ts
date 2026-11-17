@@ -1,5 +1,11 @@
 import type { OmitIndexSignature } from 'type-fest';
 import { z } from 'zod';
+import { auth } from './schema/auth';
+import { database } from './schema/database';
+import { explore } from './schema/explore';
+import { httpUrl } from './schema/primitives';
+import { spam } from './schema/spam';
+import { makePathsAbsolute } from './utils';
 
 /**
  * The validated shape of Ghost's config.
@@ -12,30 +18,25 @@ import { z } from 'zod';
  *
  * Two rules keep this safe to grow against config that is already running:
  *
- * 1. Validate, don't transform - for now. `z.object()` strips unknown keys and
- *    `z.coerce` rewrites values; either would silently change a live site's
- *    config, and the round-trip test in the unit suite fails if one does.
- *    Secrets are deliberately left unparsed by ./secrets.ts - a password of
- *    `01234` must stay a string. Deliberate transforms can come later, but they
- *    need `get()` rerouted by top-level key first, so a raw read of an unlisted
- *    sibling path can't disagree with a transformed one.
+ * 1. A transform must be idempotent, and its output must match what Ghost
+ *    already did to that key. Outside strict environments a bad key falls back
+ *    to its raw value, so transforms elsewhere in the tree still run. See
+ *    SCHEMA.md and ./lenient.ts.
  * 2. Nothing here may be stricter than what the loader already enforced.
  *    Tightening beyond that is its own change, with its own release note.
  */
 export const configSchema = z.looseObject({
   /**
-   * Only as strict as the `checkUrlProtocol` assertion that has always run at
-   * the end of the config load - anything this rejects, boot already rejected.
+   * Fatal in every environment, as boot has always refused a URL without a
+   * protocol, and Ghost's URL helpers throw on one `new URL()` can't parse.
    */
-  url: z
-    .string()
-    .regex(/^https?:\/\//i, {
-      message: 'URL in config must be provided with protocol, eg. "http://my-ghost-blog.com"',
-    })
-    .meta({
+  url: httpUrl('URL in config must be provided with protocol, eg. "http://my-ghost-blog.com"').meta(
+    {
       description: "The site's public URL, including protocol. A path is a subdirectory install.",
-      examples: ['https://example.com', 'https://example.com/blog'],
-    }),
+      examples: ['https://example.com', 'https://example.com/blog', 'http://localhost:2368'],
+      fatal: true,
+    },
+  ),
 
   /**
    * Set by the loader from `getNodeEnv()`, so always a non-empty string. Not an
@@ -59,10 +60,9 @@ export const configSchema = z.looseObject({
    * can override, and four by defaults.json - so all of them are present in any
    * loaded config. An env config narrows a value; none removes a key.
    *
-   * The values are absolute by the time anything reads them:
-   * `makePathsAbsolute` rewrites the whole subtree in ./loader.ts before
-   * createConfig sees it. That ordering is load-bearing, and the transform still
-   * lives in ./utils.ts rather than here - see SCHEMA.md.
+   * The values are absolute by the time anything reads them: the transform
+   * below resolves them against Ghost's install directory. It runs even when
+   * another key is invalid - see ./lenient.ts.
    *
    * Closed, unlike the top level, because every reader is in this repo and reads
    * a key named here: no `paths:<key>` read anywhere in the monorepo is missing
@@ -75,36 +75,49 @@ export const configSchema = z.looseObject({
    * The consequence to know: a key added to config but not to this list is
    * dropped, silently. Add both.
    */
-  paths: z.object({
-    appRoot: z.string().meta({ description: "Ghost's own install directory." }),
-    corePath: z.string().meta({ description: "Ghost's core/ directory." }),
-    contentPath: z.string().meta({
-      description:
-        "The site's content directory: themes, images, adapters, settings. The one path a self-hoster normally sets.",
-      examples: ['/var/www/ghost/content'],
-    }),
-    assetSrc: z.string().meta({ description: 'Frontend asset sources.' }),
-    adminAssets: z.string().meta({ description: 'Built Admin client assets.' }),
-    helperTemplates: z.string().meta({ description: 'Templates for theme helpers.' }),
-    defaultViews: z.string().meta({ description: "Ghost's own server-rendered views." }),
-    defaultRouteSettings: z.string().meta({ description: 'The default routes.yaml.' }),
-    internalAppPath: z.string().meta({ description: 'Bundled frontend apps.' }),
-    internalAdaptersPath: z.string().meta({ description: 'Bundled adapter implementations.' }),
-    /**
-     * The one key here with no default: an escape hatch for Docker builds that
-     * install adapters outside the bind-mounted content directory. Only a
-     * self-hoster's own config supplies it, so it is optional.
-     */
-    installedAdaptersPath: z.string().optional().meta({
-      description: 'Extra adapter lookup path, for images that install adapters outside content/.',
-    }),
-    migrationPath: z.string().meta({ description: 'Database migrations, read by knex-migrator.' }),
-    publicFilePath: z.string().meta({ description: 'Files served at the site root.' }),
-    fixtures: z.string().meta({ description: 'Fixture data loaded on a fresh install.' }),
-    defaultSettings: z
-      .string()
-      .meta({ description: 'Default settings loaded on a fresh install.' }),
-  }),
+  paths: z
+    .object({
+      appRoot: z.string().meta({ description: "Ghost's own install directory." }),
+      corePath: z.string().meta({ description: "Ghost's core/ directory." }),
+      contentPath: z.string().meta({
+        description:
+          "The site's content directory: themes, images, adapters, settings. The one path a self-hoster normally sets.",
+        examples: ['/var/www/ghost/content'],
+      }),
+      assetSrc: z.string().meta({ description: 'Frontend asset sources.' }),
+      adminAssets: z.string().meta({ description: 'Built Admin client assets.' }),
+      helperTemplates: z.string().meta({ description: 'Templates for theme helpers.' }),
+      defaultViews: z.string().meta({ description: "Ghost's own server-rendered views." }),
+      defaultRouteSettings: z.string().meta({ description: 'The default routes.yaml.' }),
+      internalAppPath: z.string().meta({ description: 'Bundled frontend apps.' }),
+      internalAdaptersPath: z.string().meta({ description: 'Bundled adapter implementations.' }),
+      /**
+       * The one key here with no default: an escape hatch for Docker builds that
+       * install adapters outside the bind-mounted content directory. Only a
+       * self-hoster's own config supplies it, so it is optional.
+       */
+      installedAdaptersPath: z.string().optional().meta({
+        description:
+          'Extra adapter lookup path, for images that install adapters outside content/.',
+      }),
+      migrationPath: z
+        .string()
+        .meta({ description: 'Database migrations, read by knex-migrator.' }),
+      publicFilePath: z.string().meta({ description: 'Files served at the site root.' }),
+      fixtures: z.string().meta({ description: 'Fixture data loaded on a fresh install.' }),
+      defaultSettings: z
+        .string()
+        .meta({ description: 'Default settings loaded on a fresh install.' }),
+    })
+    .transform(makePathsAbsolute),
+
+  // Boot-critical, but in its own file for its size. See SCHEMA.md.
+  database,
+
+  // Feature config, one file per area in ./schema. See SCHEMA.md.
+  auth,
+  explore,
+  spam,
 });
 
 export type ValidatedConfig = z.infer<typeof configSchema>;
@@ -131,13 +144,16 @@ export type ConfigPath<T = ValidatedConfig> = T extends object
       }[keyof Known<T> & string]
   : never;
 
+/** `undefined` when a section on the path may be absent, so its children may be too. */
+type Absent<T> = undefined extends T ? undefined : never;
+
 /** The value a key path resolves to, or `unknown` if the schema misses it. */
 export type ConfigAt<
   P extends string,
   T = ValidatedConfig,
 > = P extends `${infer Head}:${infer Rest}`
   ? Head extends keyof Known<T>
-    ? ConfigAt<Rest, Known<T>[Head]>
+    ? ConfigAt<Rest, NonNullable<Known<T>[Head]>> | Absent<Known<T>[Head]>
     : unknown
   : P extends keyof Known<T>
     ? Known<T>[P]

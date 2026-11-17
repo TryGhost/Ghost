@@ -87,6 +87,75 @@ describe('Oembed API', function () {
     );
   });
 
+  describe('upcoming YouTube livestreams', function () {
+    // YouTube's oEmbed response for a livestream that hasn't started yet has no thumbnail
+    const mockUpcomingLivestreamOembed = () =>
+      nock('https://www.youtube.com').get('/oembed').query(true).reply(200, {
+        type: 'video',
+        version: '1.0',
+        provider_name: 'YouTube',
+        provider_url: 'https://www.youtube.com/',
+        html: '<iframe width="200" height="113" src="https://www.youtube.com/embed/Xq3vT8kLm2A?feature=oembed" frameborder="0" allowfullscreen></iframe>',
+      });
+
+    const fetchEmbed = (url) =>
+      request
+        .get(localUtils.API.getApiQuery(`oembed/?url=${encodeURIComponent(url)}`))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+    const assertStoredMaxResThumbnail = (res) => {
+      assert.equal(
+        res.body.thumbnail_url,
+        `${urlUtils.urlFor('home', true)}content/images/thumbnail/image-01.png`,
+      );
+      assert.equal(res.body.thumbnail_width, 1280);
+      assert.equal(res.body.thumbnail_height, 720);
+      assert.equal(
+        res.body.thumbnail_url_original,
+        'https://i.ytimg.com/vi/Xq3vT8kLm2A/hqdefault.jpg',
+      );
+      sinon.assert.calledOnceWithExactly(
+        processImageFromUrlStub,
+        'https://i.ytimg.com/vi/Xq3vT8kLm2A/maxresdefault.jpg',
+        'thumbnail',
+      );
+    };
+
+    it.each([
+      'https://www.youtube.com/live/Xq3vT8kLm2A?si=abc123',
+      'https://www.youtube.com/watch?v=Xq3vT8kLm2A',
+      'https://youtu.be/Xq3vT8kLm2A',
+      'https://m.youtube.com/shorts/Xq3vT8kLm2A',
+    ])('fills in the thumbnail for %s', async function (url) {
+      const oembedMock = mockUpcomingLivestreamOembed();
+
+      const res = await fetchEmbed(url);
+
+      assert.equal(oembedMock.isDone(), true);
+      assertStoredMaxResThumbnail(res);
+    });
+
+    it('fills in the thumbnail for a link that redirects to the livestream', async function () {
+      const redirectMock = nock('http://short.test')
+        .get('/stream')
+        .reply(302, undefined, { Location: 'https://www.youtube.com/watch?v=Xq3vT8kLm2A' });
+      const pageMock = nock('https://www.youtube.com')
+        .get('/watch')
+        .query({ v: 'Xq3vT8kLm2A' })
+        .reply(200, '<html><head><title>Upcoming livestream</title></head></html>');
+      const oembedMock = mockUpcomingLivestreamOembed();
+
+      const res = await fetchEmbed('http://short.test/stream');
+
+      assert.equal(redirectMock.isDone(), true);
+      assert.equal(pageMock.isDone(), true);
+      assert.equal(oembedMock.isDone(), true);
+      assertStoredMaxResThumbnail(res);
+    });
+  });
+
   it('does not use http preferentially to https', async function () {
     const httpMock = nock('https://odysee.com')
       .get('/$/oembed')

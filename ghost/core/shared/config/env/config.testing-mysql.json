@@ -1,12 +1,18 @@
 {
   "url": "http://127.0.0.1:2369",
   "createInDevelopmentTables": true,
+  "auth": {
+    "betterAuthDev": true
+  },
   "services": {
     "jobs": {
       "outbox": {
         "enabled": true
       }
     }
+  },
+  "backgroundJobs": {
+    "emailAnalytics": false
   },
   "server": {
     "port": 2369
@@ -63,6 +69,12 @@
       "maxWait": 3600000,
       "lifetime": 3600,
       "freeRetries": 4
+    },
+    "send_verification_code_user": {
+      "minWait": 3600000,
+      "maxWait": 3600000,
+      "lifetime": 3600,
+      "freeRetries": 2
     },
     "global_reset": {
       "minWait": 3600000,

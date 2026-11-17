@@ -42,9 +42,13 @@ export const STRIPE_FONT_OPTIONS = STRIPE_CHECKOUT_FONTS.map((font) => ({
   name: FONT_NAMES[font],
 }));
 
-/** One stylesheet for every Stripe font, from Bunny Fonts like Ghost's own custom fonts. */
+/**
+ * One stylesheet for every Stripe font, from Bunny Fonts like Ghost's own custom fonts.
+ * Inter is left out: Admin bundles it under the same family name, and a second Inter
+ * would replace Admin's own UI font with a network fetch.
+ */
 export const STRIPE_FONTS_CSS = `https://fonts.bunny.net/css?family=${STRIPE_CHECKOUT_FONTS.filter(
-  (font) => font !== 'default',
+  (font) => font !== 'default' && font !== 'inter',
 )
   .map((font) => `${FONT_NAMES[font].toLowerCase().replace(/ /g, '-')}:400,700`)
   .join('|')}`;

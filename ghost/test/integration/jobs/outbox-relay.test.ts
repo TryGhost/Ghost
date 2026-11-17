@@ -4,8 +4,10 @@ import type { DispatchEnvelope } from '@tryghost/adapter-base-jobs';
 import { JobsOutbox } from '../../../core/server/services/jobs-service/jobs-outbox';
 import { OutboxRelay } from '../../../core/server/services/jobs-service/outbox-relay';
 import { JobsService } from '../../../core/server/services/jobs-service/jobs-service';
+import { OutboxTracker } from '../../../core/server/services/jobs-service/outbox-tracker';
 import { Job } from '../../../core/server/services/jobs-service/job';
 import InMemoryJobsBackend from '../../../core/server/adapters/jobs/InMemoryJobsBackend';
+import SendEmailJob from '../../../core/server/services/email-service/jobs/send-email-job';
 
 const testUtils = require('../../utils');
 const jobsService = require('../../../core/server/services/jobs-service');
@@ -54,6 +56,7 @@ function makeBackend() {
 
 class GreetJob extends Job {
   static type = 'e2e-greet';
+  static replayAfterRestart = true;
   name: string;
   constructor(data: { name: string }) {
     super();
@@ -79,6 +82,11 @@ class RecordingBackend extends InMemoryJobsBackend {
     }
     super.enqueue(id, envelope);
   }
+}
+
+// A submitted_at older than any lease, as a stopped process leaves its rows
+function abandonedAt(): Date {
+  return new Date(Date.now() - 10 * 60_000);
 }
 
 async function waitFor(
@@ -108,8 +116,15 @@ async function countRows(): Promise<number> {
   return Number(count);
 }
 
-async function rowById(id: string): Promise<{ available_at: Date } | undefined> {
-  return knex(TABLE).select('available_at').where('id', id).first();
+async function countUnsubmitted(): Promise<number> {
+  const [{ count }] = await knex(TABLE).whereNull('submitted_at').count({ count: '*' });
+  return Number(count);
+}
+
+async function rowById(
+  id: string,
+): Promise<{ available_at: Date; submitted_at: Date | null } | undefined> {
+  return knex(TABLE).select('available_at', 'submitted_at').where('id', id).first();
 }
 
 describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
@@ -122,7 +137,7 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
 
   beforeEach(async function () {
     await knex(TABLE).truncate();
-    outbox = new JobsOutbox({ knex });
+    outbox = new JobsOutbox({ knex, keepUntilSettled: true });
   });
 
   describe('JobsOutbox.insert', function () {
@@ -161,11 +176,136 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
     });
   });
 
+  describe('JobsOutbox.releaseSubmitted', function () {
+    const LEASE_MS = 60_000;
+
+    it('clears submitted_at on every stale submitted row and returns which it released', async function () {
+      const rows = [
+        { type: 'greet', submittedAt: abandonedAt() },
+        { type: 'not-json', submittedAt: abandonedAt() },
+        { type: 'greet', submittedAt: null },
+      ].map(({ type, submittedAt }) => ({
+        id: newId(),
+        envelope: type === 'not-json' ? '{' : JSON.stringify(envelopeFor(type)),
+        created_at: new Date(),
+        available_at: new Date(),
+        submitted_at: submittedAt,
+      }));
+      await knex(TABLE).insert(rows);
+
+      const { released, dropped } = await outbox.releaseSubmitted({
+        replays: () => true,
+        staleAfterMs: LEASE_MS,
+      });
+
+      assert.deepEqual(
+        [...released].sort((a, b) => a.id.localeCompare(b.id)),
+        [
+          { id: rows[0].id, type: 'greet' },
+          { id: rows[1].id, type: null },
+        ].sort((a, b) => a.id.localeCompare(b.id)),
+      );
+      assert.deepEqual(dropped, []);
+      const [{ count }] = await knex(TABLE).whereNotNull('submitted_at').count({ count: '*' });
+      assert.equal(Number(count), 0);
+    });
+
+    it('deletes, instead of releasing, submitted rows whose job type is not replayed', async function () {
+      const [replayed, notReplayed] = ['greet', 'own-recovery'].map((type) => ({
+        id: newId(),
+        envelope: JSON.stringify(envelopeFor(type)),
+        created_at: new Date(),
+        available_at: new Date(),
+        submitted_at: abandonedAt(),
+      }));
+      await knex(TABLE).insert([replayed, notReplayed]);
+
+      const { released, dropped } = await outbox.releaseSubmitted({
+        replays: (type) => type !== 'own-recovery',
+        staleAfterMs: LEASE_MS,
+      });
+
+      assert.deepEqual(released, [{ id: replayed.id, type: 'greet' }]);
+      assert.deepEqual(dropped, [{ id: notReplayed.id, type: 'own-recovery' }]);
+      assert.deepEqual(
+        (await knex(TABLE).select('id', 'submitted_at')).map(
+          (row: { id: string; submitted_at: Date | null }) => [row.id, row.submitted_at],
+        ),
+        [[replayed.id, null]],
+      );
+    });
+  });
+
+  describe('JobsOutbox leases', function () {
+    const LEASE_MS = 60_000;
+    const submittedRow = (submittedAt: Date | null) => ({
+      id: newId(),
+      envelope: JSON.stringify(envelopeFor('greet')),
+      created_at: new Date(),
+      available_at: new Date(),
+      submitted_at: submittedAt,
+    });
+
+    it('leaves a row renewed within the lease submitted', async function () {
+      const fresh = submittedRow(new Date());
+      await knex(TABLE).insert(fresh);
+
+      const { released } = await outbox.releaseSubmitted({
+        replays: () => true,
+        staleAfterMs: LEASE_MS,
+      });
+
+      assert.deepEqual(released, []);
+      assert.ok((await rowById(fresh.id))?.submitted_at, 'the row is still submitted');
+    });
+
+    it('renews the given submitted rows so they are not released', async function () {
+      const held = submittedRow(abandonedAt());
+      const abandoned = submittedRow(abandonedAt());
+      const unsubmitted = submittedRow(null);
+      await knex(TABLE).insert([held, abandoned, unsubmitted]);
+
+      await outbox.renew([held.id, unsubmitted.id]);
+      const { released } = await outbox.releaseSubmitted({
+        replays: () => true,
+        staleAfterMs: LEASE_MS,
+      });
+
+      assert.deepEqual(released, [{ id: abandoned.id, type: 'greet' }]);
+      assert.ok((await rowById(held.id))?.submitted_at, 'the renewed row is still submitted');
+      assert.equal(
+        (await rowById(unsubmitted.id))?.submitted_at,
+        null,
+        'renewal does not submit a row',
+      );
+    });
+  });
+
+  describe('JobsOutbox.remove', function () {
+    it('deletes only the given row', async function () {
+      const keep = newId();
+      const gone = newId();
+      await outbox.insert({ id: keep, envelope: envelopeFor() });
+      await outbox.insert({ id: gone, envelope: envelopeFor() });
+
+      await outbox.remove(gone);
+
+      assert.deepEqual(
+        (await knex(TABLE).select('id')).map((row: { id: string }) => row.id),
+        [keep],
+      );
+    });
+  });
+
   describe('JobsOutbox.processNext', function () {
-    it('forwards the exact id and envelope, then deletes on confirmed acceptance', async function () {
+    it('forwards the exact id and envelope, then marks the row submitted on confirmed acceptance', async function () {
       const id = newId();
       const envelope = envelopeFor('greet', { name: 'Ada' });
       await outbox.insert({ id, envelope });
+      const { created_at: storedCreatedAt } = await knex(TABLE)
+        .select('created_at')
+        .where('id', id)
+        .first();
 
       const seen: BackendCall[] = [];
       const outcome = await outbox.processNext(
@@ -176,10 +316,30 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       );
 
       assert.equal(outcome.status, 'delivered');
+      assert.equal(outcome.type, 'greet');
+      assert.equal(
+        outcome.createdAt.getTime(),
+        storedCreatedAt.getTime(),
+        'the outcome carries when the row was written',
+      );
       assert.equal(seen.length, 1);
       assert.equal(seen[0].id, id);
       assert.deepEqual(seen[0].envelope, envelope);
-      assert.equal(await countRows(), 0, 'a delivered row is removed');
+      const row = await knex(TABLE).select('submitted_at').where('id', id).first();
+      assert.ok(row?.submitted_at, 'the row stays, marked submitted, until its job settles');
+    });
+
+    it('deletes the row on confirmed acceptance when it does not keep rows until they settle', async function () {
+      const handOffOnly = new JobsOutbox({ knex, keepUntilSettled: false });
+      const id = newId();
+      await handOffOnly.insert({ id, envelope: envelopeFor() });
+
+      const outcome = await handOffOnly.processNext(async () => {}, {
+        retryDelayMs: TIMINGS.retryDelayMs,
+      });
+
+      assert.equal(outcome.status, 'delivered');
+      assert.equal(await rowById(id), undefined);
     });
 
     it('retains a rejected row and moves its available_at forward', async function () {
@@ -409,7 +569,7 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       await Promise.all(relays.map((relay) => relay.stop()));
     });
 
-    it('delivers a committed row and removes it', async function () {
+    it('delivers a committed row and marks it submitted', async function () {
       const id = newId();
       await outbox.insert({ id, envelope: envelopeFor() });
 
@@ -420,8 +580,33 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       assert.ok(delivered, 'the relay forwarded the committed row');
       assert.equal(backend.calls[0].id, id);
       assert.ok(
-        await waitFor(async () => (await countRows()) === 0),
-        'the delivered row is removed',
+        await waitFor(async () => (await countUnsubmitted()) === 0),
+        'the delivered row is marked submitted',
+      );
+    });
+
+    it('logs each hand-off with its dispatch id, job type and time spent in the outbox', async function () {
+      const id = newId();
+      await outbox.insert({ id, envelope: envelopeFor('greet') });
+
+      const info: unknown[][] = [];
+      const logging = { ...silentLogger, info: (...args: unknown[]) => info.push(args) };
+      makeRelay(makeBackend(), { logging }).start();
+
+      assert.ok(await waitFor(() => info.length === 1), 'the hand-off is logged');
+      const [event, message] = info[0] as [
+        {
+          system: { event: string; dispatch_id: string; job_type: string; outbox_lag_ms: number };
+        },
+        string,
+      ];
+      assert.equal(event.system.event, 'jobs_outbox.handed_off');
+      assert.equal(event.system.dispatch_id, id);
+      assert.equal(event.system.job_type, 'greet');
+      assert.ok(event.system.outbox_lag_ms >= 0);
+      assert.equal(
+        message,
+        `[Jobs Outbox] Handed off greet (dispatch ${id}) after ${event.system.outbox_lag_ms}ms`,
       );
     });
 
@@ -440,10 +625,12 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       makeRelay(backend).start();
 
       assert.ok(
-        await waitFor(async () => (await rowById(good)) === undefined),
+        await waitFor(async () => Boolean((await rowById(good))?.submitted_at)),
         'the good row is delivered despite the poison row failing',
       );
-      assert.ok(await rowById(poison), 'the poison row is retained for a later retry');
+      const poisonRow = await rowById(poison);
+      assert.ok(poisonRow, 'the poison row is retained for a later retry');
+      assert.equal(poisonRow.submitted_at, null, 'and is not marked submitted');
       assert.ok(
         backend.calls.some((call) => call.id === poison),
         'the poison row was attempted',
@@ -465,7 +652,7 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       makeRelay(backend).start();
 
       assert.ok(
-        await waitFor(async () => (await countRows()) === 0),
+        await waitFor(async () => (await countUnsubmitted()) === 0),
         'a fresh relay drains rows that were committed before it started',
       );
       assert.deepEqual(backend.calls.map((c) => c.id).sort(), [...ids].sort());
@@ -505,7 +692,7 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       makeRelay(backendB).start();
 
       assert.ok(
-        await waitFor(async () => (await countRows()) === 1),
+        await waitFor(async () => (await countUnsubmitted()) === 1),
         'relay B delivered every row relay A is not holding',
       );
       const heldId = held;
@@ -515,7 +702,7 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
 
       gate.resolve();
       assert.ok(
-        await waitFor(async () => (await countRows()) === 0),
+        await waitFor(async () => (await countUnsubmitted()) === 0),
         'the held row is delivered once released',
       );
       assert.deepEqual(delivered.slice().sort(), [...ids].sort(), 'every row delivered once');
@@ -547,9 +734,9 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       await stopping;
       assert.equal(stopped, true);
       assert.equal(
-        await countRows(),
+        await countUnsubmitted(),
         0,
-        'the in-flight submission completed and its row was removed',
+        'the in-flight submission completed and its row was marked submitted',
       );
     });
   });
@@ -560,25 +747,37 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
     function buildActiveService({
       queue,
       failFirst = false,
-    }: { queue?: string; failFirst?: boolean } = {}) {
+      run = async () => {},
+      pollIntervalMs = TIMINGS.pollIntervalMs,
+      leaseMs = 120_000,
+    }: {
+      queue?: string;
+      failFirst?: boolean;
+      run?: (job: GreetJob) => Promise<void | 'interrupted'>;
+      pollIntervalMs?: number;
+      leaseMs?: number;
+    } = {}) {
       const backend = new RecordingBackend({ failFirst });
-      const store = new JobsOutbox({ knex });
+      const store = new JobsOutbox({ knex, keepUntilSettled: true });
       const relay = new OutboxRelay({
         outbox: store,
         backend,
         logging: silentLogger,
         sentry: noopSentry,
         ...TIMINGS,
+        pollIntervalMs,
       });
+      const tracker = new OutboxTracker({ store, logging: silentLogger });
       const service = new JobsService({
         backend,
         logging: silentLogger,
         sentry: noopSentry,
-        outbox: { store, relay },
+        outbox: { store, relay, tracker, leaseMs },
       });
       const delivered: GreetJob[] = [];
       const handler = async (job: GreetJob) => {
         delivered.push(job);
+        return run(job);
       };
       if (queue) {
         service.handle(GreetJob, handler, { queue, concurrency: 1 });
@@ -597,6 +796,55 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       await Promise.all(services.map((service) => service.shutdown({ timeoutMs: 1000 })));
     });
 
+    it('leaves a job another service is still running past the lease', async function () {
+      const release = Promise.withResolvers<void>();
+      const first = buildActiveService({ run: () => release.promise, leaseMs: 2000 });
+      await first.service.start();
+      await first.service.dispatch(new GreetJob({ name: 'Ada' }));
+      assert.ok(
+        await waitFor(() => first.delivered.length === 1),
+        'the first service runs the job',
+      );
+      const submittedAt = async () =>
+        (await knex(TABLE).select('submitted_at').first())?.submitted_at;
+      const handedOffAt = await submittedAt();
+      assert.ok(
+        await waitFor(async () => (await submittedAt()) > handedOffAt),
+        'the first service renews its row',
+      );
+
+      const second = buildActiveService({ leaseMs: 2000 });
+      await second.service.start();
+      await delay(4000);
+
+      assert.equal(second.delivered.length, 0, 'the second service never takes the running job');
+      assert.equal(first.delivered.length, 1, 'and nothing runs it a second time');
+      release.resolve();
+      assert.ok(
+        await waitFor(async () => (await countRows()) === 0),
+        'and the row goes once it settles',
+      );
+    });
+
+    it("hands over a stopped service's job once the lease passes", async function () {
+      const first = buildActiveService({ run: () => new Promise<void>(() => {}), leaseMs: 2000 });
+      await first.service.start();
+      await first.service.dispatch(new GreetJob({ name: 'Ada' }));
+      assert.ok(
+        await waitFor(() => first.delivered.length === 1),
+        'the first service runs the job',
+      );
+      await first.service.shutdown({ timeoutMs: 10 });
+
+      const second = buildActiveService({ leaseMs: 2000 });
+      await second.service.start();
+
+      assert.ok(
+        await waitFor(() => second.delivered.length === 1, { timeoutMs: 8000 }),
+        'the second service runs the abandoned job',
+      );
+    });
+
     it('commits a row on a plain dispatch and the relay delivers it', async function () {
       const { service, delivered } = buildActiveService();
       await service.start();
@@ -608,6 +856,81 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       assert.ok(
         await waitFor(async () => (await countRows()) === 0),
         'the delivered row is removed',
+      );
+    });
+
+    it('keeps the row, marked submitted, while its job runs', async function () {
+      const release = Promise.withResolvers<void>();
+      const { service, delivered } = buildActiveService({ run: () => release.promise });
+      await service.start();
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+      assert.ok(await waitFor(() => delivered.length === 1), 'the job started');
+      // The job can start before the relay commits submitted_at, so wait for it
+      assert.ok(
+        await waitFor(async () => (await countRows()) === 1 && (await countUnsubmitted()) === 0),
+        'the running job keeps its row, marked submitted',
+      );
+      release.resolve();
+
+      assert.ok(
+        await waitFor(async () => (await countRows()) === 0),
+        'and its row is removed once it completes',
+      );
+    });
+
+    it('removes the row when its job dies', async function () {
+      const { service, delivered } = buildActiveService({
+        run: async () => {
+          throw new Error('boom');
+        },
+      });
+      await service.start();
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+
+      assert.ok(await waitFor(() => delivered.length === 1), 'the job ran');
+      assert.ok(await waitFor(async () => (await countRows()) === 0), 'a dead job leaves no row');
+    });
+
+    it('keeps the row of a job that was interrupted', async function () {
+      // One lane slot, so once the second job settles the first has been processed
+      const { service, delivered } = buildActiveService({
+        queue: 'serial',
+        run: async (job) => (job.name === 'interrupted' ? 'interrupted' : undefined),
+      });
+      await service.start();
+
+      await service.dispatch(new GreetJob({ name: 'interrupted' }));
+      await service.dispatch(new GreetJob({ name: 'finished' }));
+
+      assert.ok(await waitFor(() => delivered.length === 2), 'both jobs ran');
+      assert.ok(
+        await waitFor(async () => (await countRows()) === 1),
+        'the finished job removed its row',
+      );
+      const [row] = await knex(TABLE).select('envelope', 'submitted_at');
+      assert.match(row.envelope, /interrupted/);
+      assert.ok(row.submitted_at, 'the interrupted job keeps its row for a later hand-over');
+    });
+
+    it('hands over again, at start, a row a previous process had submitted', async function () {
+      await knex(TABLE).insert({
+        id: newId(),
+        envelope: JSON.stringify(envelopeFor(GreetJob.type, { name: 'Ada' })),
+        created_at: new Date(),
+        available_at: new Date(),
+        submitted_at: abandonedAt(),
+      });
+      const { service, delivered } = buildActiveService();
+
+      await service.start();
+
+      assert.ok(await waitFor(() => delivered.length === 1), 'the lost job ran again');
+      assert.equal(delivered[0].name, 'Ada');
+      assert.ok(
+        await waitFor(async () => (await countRows()) === 0),
+        'and its row is removed once it settles',
       );
     });
 
@@ -637,6 +960,18 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
 
       assert.ok(await waitFor(() => delivered.length === 1), 'a committed dispatch is delivered');
       assert.equal(delivered[0].name, 'Committed');
+    });
+
+    it('delivers a committed dispatch without waiting for the poll', async function () {
+      const { service, delivered } = buildActiveService({ pollIntervalMs: 60_000 });
+      await service.start();
+
+      await service.dispatch(new GreetJob({ name: 'Plain' }));
+      await knex.transaction(async (trx: Knex.Transaction) => {
+        await service.dispatch(new GreetJob({ name: 'Committed' }), { transacting: trx });
+      });
+
+      assert.ok(await waitFor(() => delivered.length === 2), 'both dispatches are delivered');
     });
 
     it('preserves the default lane end-to-end (no routing in the forwarded envelope)', async function () {
@@ -672,6 +1007,145 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       assert.ok(
         backend.calls.every((call) => call.envelope.payload.routing?.queue === 'greetings'),
         'every attempt, retry included, preserves the named lane',
+      );
+    });
+  });
+  describe('init wiring', function () {
+    // init() reuses the wrapper's instance, built from whatever config came
+    // first, so each test loads its own copy of the wrapper.
+    const wrapperPath = require.resolve('../../../core/server/services/jobs-service');
+    let previousWrapper: NodeJS.Module | undefined;
+    let wrapper: typeof jobsService;
+
+    beforeEach(function () {
+      previousWrapper = require.cache[wrapperPath];
+      delete require.cache[wrapperPath];
+      wrapper = require(wrapperPath);
+    });
+
+    afterEach(async function () {
+      try {
+        await wrapper.shutdown({ timeoutMs: 1000 });
+      } finally {
+        delete require.cache[wrapperPath];
+        if (previousWrapper) {
+          require.cache[wrapperPath] = previousWrapper;
+        }
+      }
+    });
+
+    function initWithOutbox(keepUntilSettled: boolean) {
+      const config = {
+        get: (key: string) =>
+          key === 'services:jobs:outbox'
+            ? { enabled: true, keepUntilSettled, pollIntervalMs: TIMINGS.pollIntervalMs }
+            : undefined,
+      };
+      return wrapper.init({ knex, config });
+    }
+
+    async function startBlockedJob(keepUntilSettled: boolean) {
+      const release = Promise.withResolvers<void>();
+      const started = Promise.withResolvers<void>();
+      const service = initWithOutbox(keepUntilSettled);
+      service.handle(GreetJob, async () => {
+        started.resolve();
+        await release.promise;
+      });
+      await service.start();
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+      await started.promise;
+      return { service, release };
+    }
+
+    it('deletes the row at hand-off by default', async function () {
+      const { release } = await startBlockedJob(false);
+
+      assert.ok(
+        await waitFor(async () => (await countRows()) === 0),
+        'the row is gone while its job still runs',
+      );
+      release.resolve();
+    });
+
+    it('with the flag off, deletes each row once, at hand-off', async function () {
+      const deletes: string[] = [];
+      const onQuery = ({ sql }: { sql: string }) => {
+        if (/^delete from `jobs_outbox`/i.test(sql)) {
+          deletes.push(sql);
+        }
+      };
+      knex.on('query', onQuery);
+      try {
+        const settled = Promise.withResolvers<void>();
+        const service = initWithOutbox(false);
+        service.handle(GreetJob, async () => {
+          settled.resolve();
+        });
+        await service.start();
+        await service.dispatch(new GreetJob({ name: 'Ada' }));
+        await settled.promise;
+        await wrapper.shutdown({ timeoutMs: 1000 });
+      } finally {
+        knex.off('query', onQuery);
+      }
+
+      assert.equal(deletes.length, 1);
+    });
+
+    it('leaves a retained newsletter send to the newsletter boot scan', async function () {
+      await knex(TABLE).insert({
+        id: newId(),
+        envelope: JSON.stringify(envelopeFor(SendEmailJob.type, { emailId: 'e1' })),
+        created_at: new Date(),
+        available_at: new Date(),
+        submitted_at: abandonedAt(),
+      });
+      const sent: SendEmailJob[] = [];
+      const service = initWithOutbox(true);
+      service.handle(SendEmailJob, async (job: SendEmailJob) => {
+        sent.push(job);
+      });
+
+      await service.start();
+      await delay(TIMINGS.pollIntervalMs * 5);
+
+      assert.equal(await countRows(), 0, 'the row is dropped at boot');
+      assert.equal(sent.length, 0, 'and the send is not handed over again');
+    });
+
+    it('with the flag turned off, still hands over rows submitted while it was on', async function () {
+      const id = newId();
+      await knex(TABLE).insert({
+        id,
+        envelope: JSON.stringify(envelopeFor(GreetJob.type, { name: 'Ada' })),
+        created_at: new Date(),
+        available_at: new Date(),
+        submitted_at: abandonedAt(),
+      });
+      const delivered: GreetJob[] = [];
+      const service = initWithOutbox(false);
+      service.handle(GreetJob, async (job: GreetJob) => {
+        delivered.push(job);
+      });
+
+      await service.start();
+
+      assert.ok(await waitFor(() => delivered.length === 1), 'the job runs');
+      assert.ok(await waitFor(async () => (await countRows()) === 0), 'and its row is gone');
+    });
+
+    it('keeps the row until its job settles when keepUntilSettled is on', async function () {
+      const { release } = await startBlockedJob(true);
+
+      assert.ok(
+        await waitFor(async () => (await countRows()) === 1 && (await countUnsubmitted()) === 0),
+        'the running job keeps its row, marked submitted',
+      );
+      release.resolve();
+      assert.ok(
+        await waitFor(async () => (await countRows()) === 0),
+        'and loses it once it settles',
       );
     });
   });

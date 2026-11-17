@@ -319,7 +319,8 @@ or a GIF and update or add the relevant stories.
 Shade is on the continuous publish lane as a `prerelease` entry in
 [`tools/scripts/release/publish-manifest.json`](../../tools/scripts/release/publish-manifest.json).
 When a merge to `main` changes what Shade ships, CI publishes the next
-`0.1.0-alpha.N` under npm's `alpha` tag. The committed version selects the alpha
-series and npm holds the counter, so no release commits or Git tags are created.
+`0.1.0-alpha.N` under npm's `latest` tag, so a plain install gets the newest
+release. The committed version selects the alpha series and npm holds the
+counter, so no release commits or Git tags are created.
 See [Shipping](../../docs/contributing/shipping.md#continuous-lane) for the
 release gates and the unchanged-package check.

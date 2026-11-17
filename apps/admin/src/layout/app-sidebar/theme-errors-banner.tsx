@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { Banner } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useActiveThemeErrors } from './hooks/use-theme-errors';
 import ThemeErrorsDialog from './theme-errors-dialog';
 
 function ThemeErrorsBanner() {
+  const admin7Design = useFeatureFlag('admin7Design');
   const { hasErrors, errors, warnings } = useActiveThemeErrors();
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -17,6 +19,7 @@ function ThemeErrorsBanner() {
       <Banner
         className="mx-2 cursor-pointer"
         role="status"
+        scroll={admin7Design}
         size="md"
         variant="destructive"
         onClick={() => setDialogOpen(true)}

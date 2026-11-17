@@ -1,4 +1,3 @@
-import { buildTriggerRuleRows } from '../../../../core/server/services/automations/trigger-rules';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import ObjectId from 'bson-objectid';
@@ -9,7 +8,6 @@ import { fromDatabaseDate, toDatabaseDate } from '../../../../core/server/lib/db
 import { createDatabaseAutomationsRepository } from '../../../../core/server/services/automations/database-automations-repository';
 import { createDatabaseAutomationsRepository2 } from '../../../../core/server/services/automations/database-automations-repository-2';
 import { createAutomationsApi2 } from '../../../../core/server/services/automations/automations-api-2';
-import type { AutomationTriggerTierScope } from '../../../../core/server/services/automations/automations-repository-2';
 import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../../../core/server/services/member-welcome-emails/constants';
 const dbUtils = require('../../../utils/db-utils');
 
@@ -35,7 +33,7 @@ describe('database automations repository', function () {
   }: {
     id?: string;
     slug?: string | null;
-    triggerTierScope?: AutomationTriggerTierScope;
+    triggerTierScope?: 'free' | 'all_paid' | 'selected_paid';
     triggerTierIds?: string[];
   } = {}): Promise<string> {
     const actionId = ObjectId().toHexString();
@@ -48,12 +46,33 @@ describe('database automations repository', function () {
       created_at: now,
       updated_at: now,
     });
-    const rules = buildTriggerRuleRows({
-      automationId: id,
-      scope: triggerTierScope,
-      tierIds: triggerTierIds,
-      createdAt: fromDatabaseDate(now),
-    });
+    let definitions: { trigger_type: string; scope: string | null; product_id: string | null }[];
+    switch (triggerTierScope) {
+      case 'free':
+        definitions = [{ trigger_type: 'free_signup', scope: null, product_id: null }];
+        break;
+      case 'all_paid':
+        definitions = [
+          { trigger_type: 'paid_subscription_started', scope: 'any_paid_tier', product_id: null },
+        ];
+        break;
+      case 'selected_paid':
+        definitions = [...new Set(triggerTierIds)].map((product_id) => ({
+          trigger_type: 'paid_subscription_started',
+          scope: 'specific_paid_tier',
+          product_id,
+        }));
+        break;
+      default:
+        throw new Error(`Unexpected trigger tier scope: ${triggerTierScope satisfies never}`);
+    }
+    const rules = definitions.map((definition) => ({
+      ...definition,
+      id: ObjectId().toHexString(),
+      automation_id: id,
+      created_at: fromDatabaseDate(now),
+      direction: null,
+    }));
     if (rules.length > 0) {
       await knex('automation_trigger_rules').insert(rules);
     }
@@ -157,11 +176,11 @@ describe('database automations repository', function () {
       const selectedAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });
       const api = createApi();
       const memberId = ObjectId().toHexString();
+      await insertMember(memberId);
       await api.notify({
         eventName: 'membership_started',
         source: 'member' as const,
         memberId,
-        memberEmail: await insertMember(memberId),
         memberStatus: 'paid',
         previousMemberStatus: null,
         memberTierIds: [ObjectId().toHexString()],
@@ -177,11 +196,11 @@ describe('database automations repository', function () {
       const selectedAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });
       const api = createApi();
       const memberId = ObjectId().toHexString();
+      await insertMember(memberId);
       await api.notify({
         eventName: 'membership_started',
         source: 'member' as const,
         memberId,
-        memberEmail: await insertMember(memberId),
         memberStatus: 'paid',
         previousMemberStatus: null,
         memberTierIds: selectedTierIds,
@@ -197,7 +216,7 @@ describe('database automations repository', function () {
 
     it('only triggers automations once per automation+member, even with race conditions', async function () {
       const memberId = ObjectId().toHexString();
-      const memberEmail = await insertMember(memberId);
+      await insertMember(memberId);
 
       {
         // Lock a member.
@@ -229,7 +248,6 @@ describe('database automations repository', function () {
           eventName: 'membership_started' as const,
           source: 'member' as const,
           memberId,
-          memberEmail,
           memberStatus: 'free' as const,
           previousMemberStatus: null,
           memberTierIds: [],
@@ -258,7 +276,7 @@ describe('database automations repository', function () {
 
     it('enrolls different members concurrently without deadlocking', async function () {
       const memberIds = [ObjectId().toHexString(), ObjectId().toHexString()];
-      const memberEmails = await Promise.all(memberIds.map(insertMember));
+      await Promise.all(memberIds.map(insertMember));
       const api = createApi();
 
       // Hold the referenced automation row so both notifications reach the run lookup
@@ -283,12 +301,11 @@ describe('database automations repository', function () {
       };
       knex.on('query-response', onKnexQueryResponse);
 
-      const notifications = memberIds.map((memberId, index) =>
+      const notifications = memberIds.map((memberId) =>
         api.notify({
           eventName: 'membership_started',
           source: 'member' as const,
           memberId,
-          memberEmail: memberEmails[index],
           memberStatus: 'free',
           previousMemberStatus: null,
           memberTierIds: [],
@@ -324,11 +341,11 @@ describe('database automations repository', function () {
       const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
       const api = createApi();
       for (const memberId of [ObjectId().toHexString(), ObjectId().toHexString()]) {
+        await insertMember(memberId);
         await api.notify({
           eventName: 'membership_started',
           source: 'member' as const,
           memberId,
-          memberEmail: await insertMember(memberId),
           memberStatus: 'paid',
           previousMemberStatus: null,
           memberTierIds: selectedTierIds,

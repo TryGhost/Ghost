@@ -1,58 +1,51 @@
 const _ = require('lodash');
+const errors = require('@tryghost/errors');
 const { byColumnValues, CHUNK_SIZE } = require('./bulk-filters');
 
-function createBulkOperation(singular, multiple) {
-  return async function (knex, table, data, options) {
-    const result = {
-      successful: 0,
-      unsuccessful: 0,
-      unsuccessfulData: [],
-      errors: [],
-    };
+const LINKED_RECORDS_CHANGED = 'LINKED_RECORDS_CHANGED';
+const LINKED_TRANSACTION_ATTEMPTS = 3;
 
-    for (const chunkedData of _.chunk(data, CHUNK_SIZE)) {
-      try {
-        await multiple(knex, table, chunkedData, options);
-        result.successful += chunkedData.length;
-      } catch (errToIgnore) {
-        if (options.throwErrors) {
-          throw errToIgnore;
-        }
-        for (const singularData of chunkedData) {
-          try {
-            await singular(knex, table, singularData, options);
-            result.successful += 1;
-          } catch (err) {
-            err.errorDetails = singularData;
-            result.errors.push(err);
-            result.unsuccessfulData.push(singularData);
-            result.unsuccessful += 1;
-          }
+async function insert(knex, table, data, options) {
+  const result = {
+    successful: 0,
+    unsuccessful: 0,
+    unsuccessfulData: [],
+    errors: [],
+  };
+
+  for (let offset = 0; offset < data.length; offset += CHUNK_SIZE) {
+    const chunkedData = data.slice(offset, offset + CHUNK_SIZE);
+    try {
+      await insertRecords(knex, table, chunkedData, options);
+      result.successful += chunkedData.length;
+    } catch (errToIgnore) {
+      if (options.throwErrors) {
+        throw errToIgnore;
+      }
+      for (const singularData of chunkedData) {
+        try {
+          await insertRecords(knex, table, singularData, options);
+          result.successful += 1;
+        } catch (err) {
+          err.errorDetails = singularData;
+          result.errors.push(err);
+          result.unsuccessfulData.push(singularData);
+          result.unsuccessful += 1;
         }
       }
     }
+  }
 
-    return result;
-  };
+  return result;
 }
 
-async function insertSingle(knex, table, record, options) {
+async function insertRecords(knex, table, records, options) {
   let k = knex(table);
   if (options.transacting) {
     k = k.transacting(options.transacting);
   }
-  await k.insert(record);
+  await k.insert(records);
 }
-
-async function insertMultiple(knex, table, chunk, options) {
-  let k = knex(table);
-  if (options.transacting) {
-    k = k.transacting(options.transacting);
-  }
-  await k.insert(chunk);
-}
-
-const insert = createBulkOperation(insertSingle, insertMultiple);
 
 /**
  * Execute a bulk operation (update or delete) with a where strategy.
@@ -87,6 +80,111 @@ module.exports = function (Bookshelf) {
   Bookshelf.Model = Bookshelf.Model.extend(
     {},
     {
+      /**
+       * Locks the rows with the given ids for the rest of the transaction, in id
+       * order so writers locking overlapping sets can't deadlock each other.
+       *
+       * An edit locks its record's row but not its relations, so anything that
+       * writes a record's relations without editing the record must take this
+       * lock first. Otherwise an in-flight edit diffs its relations against rows
+       * that changed underneath it. Reads that decide what to write afterwards
+       * should be locking reads, as plain reads come from the transaction's
+       * snapshot, which may predate the lock.
+       *
+       * @param {string[]} ids
+       * @param {object} options
+       * @param {import('knex').Knex.Transaction} options.transacting
+       * @param {string[]} [options.columns] - Columns to return from the locked rows
+       * @returns {Promise<object[]>} The locked rows that still exist
+       */
+      lockForUpdate: async function lockForUpdate(ids, { transacting, columns = ['id'] }) {
+        const sortedIds = _.uniq(ids).sort();
+        const rows = [];
+
+        for (let offset = 0; offset < sortedIds.length; offset += CHUNK_SIZE) {
+          const chunk = sortedIds.slice(offset, offset + CHUNK_SIZE);
+          rows.push(
+            ...(await Bookshelf.knex(this.prototype.tableName)
+              .transacting(transacting)
+              .whereIn('id', chunk)
+              .orderBy('id')
+              .select(columns)
+              .forUpdate()),
+          );
+        }
+
+        return rows;
+      },
+
+      /**
+       * Locks the rows linked through `linkTable` to whatever `where` matches,
+       * e.g. the posts of a tag, and returns their ids.
+       *
+       * The first read is a plain read, so it can't wait on the rows it finds
+       * before locking them, and a locking read afterwards catches rows linked
+       * in between. Locking a row found that late would take its lock after its
+       * links', the reverse of an edit, so this throws instead and
+       * `transactionLockingLinked` starts the transaction again.
+       *
+       * The plain read fixes the transaction's snapshot before the locks are
+       * held, which is why reads that decide writes afterwards must be locking
+       * reads.
+       *
+       * @param {string} linkTable
+       * @param {string} foreignKey - Column in `linkTable` holding this model's id
+       * @param {object} where
+       * @param {object} options
+       * @param {import('knex').Knex.Transaction} options.transacting
+       * @returns {Promise<string[]>}
+       */
+      lockLinkedForUpdate: async function lockLinkedForUpdate(
+        linkTable,
+        foreignKey,
+        where,
+        { transacting },
+      ) {
+        const ids = await Bookshelf.knex(linkTable)
+          .transacting(transacting)
+          .where(where)
+          .pluck(foreignKey);
+        await this.lockForUpdate(ids, { transacting });
+
+        const currentIds = await Bookshelf.knex(linkTable)
+          .transacting(transacting)
+          .where(where)
+          .forUpdate()
+          .pluck(foreignKey);
+        if (_.difference(currentIds, ids).length > 0) {
+          throw new errors.ConflictError({
+            message: 'Records were linked while being changed, please try again.',
+            code: LINKED_RECORDS_CHANGED,
+          });
+        }
+
+        return _.uniq(currentIds);
+      },
+
+      /**
+       * Runs `callback` in a new transaction for a writer that uses
+       * `lockLinkedForUpdate`, starting again when records are linked while it
+       * runs.
+       *
+       * @template T
+       * @param {(transacting: import('knex').Knex.Transaction) => Promise<T>} callback
+       * @returns {Promise<T>}
+       */
+      transactionLockingLinked: async function transactionLockingLinked(callback) {
+        for (let attempt = 1; ; attempt += 1) {
+          try {
+            return await Bookshelf.transaction(callback);
+          } catch (err) {
+            if (err.code !== LINKED_RECORDS_CHANGED || attempt >= LINKED_TRANSACTION_ATTEMPTS) {
+              throw err;
+            }
+          }
+        }
+      },
+
       bulkAdd: function bulkAdd(data, tableName, options = {}) {
         tableName = tableName || this.prototype.tableName;
 

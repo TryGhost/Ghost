@@ -39,7 +39,7 @@ require('../../core/shared/url-utils').default.unfreeze();
 // 10s, failing that file with "Hook timed out" and every test in it skipped.
 type SnapshotExports = {
   snapshotManager?: {
-    setCurrentTest: (_info: { testPath?: string; testTitle: string }) => void;
+    setCurrentTest: (_info: { testPath?: string; testTitle: string }) => Promise<void>;
   };
   mochaHooks?: {
     beforeAll?: () => Promise<void>;
@@ -79,42 +79,44 @@ beforeAll(async () => {
 // testPath/testTitle from the vitest task. testTitle must exactly match
 // mocha's `fullTitle()` (describe names + test name joined by spaces) or
 // committed .snap keys won't resolve.
-beforeEach((context: { task: { name: string; suite?: unknown; file?: { filepath?: string } } }) => {
-  // Install recording shims over console.error/console.warn. They keep
-  // passing runs quiet AND track calls. A test that installs its own
-  // spy/stub (sinon.stub / vi.spyOn) shadows these, so its calls aren't
-  // recorded here — that's the automatic exemption. Reset the per-test
-  // allow flag and the recorded-call arrays first.
-  resetConsoleAllowed();
-  recordedConsoleError = [];
-  recordedConsoleWarn = [];
-  /* eslint-disable no-console -- the guard deliberately owns console.error/warn */
-  console.error = (...args: unknown[]) => {
-    recordedConsoleError.push(args);
-  };
-  console.warn = (...args: unknown[]) => {
-    recordedConsoleWarn.push(args);
-  };
-  /* eslint-enable no-console */
+beforeEach(
+  async (context: { task: { name: string; suite?: unknown; file?: { filepath?: string } } }) => {
+    // Install recording shims over console.error/console.warn. They keep
+    // passing runs quiet AND track calls. A test that installs its own
+    // spy/stub (sinon.stub / vi.spyOn) shadows these, so its calls aren't
+    // recorded here — that's the automatic exemption. Reset the per-test
+    // allow flag and the recorded-call arrays first.
+    resetConsoleAllowed();
+    recordedConsoleError = [];
+    recordedConsoleWarn = [];
+    /* eslint-disable no-console -- the guard deliberately owns console.error/warn */
+    console.error = (...args: unknown[]) => {
+      recordedConsoleError.push(args);
+    };
+    console.warn = (...args: unknown[]) => {
+      recordedConsoleWarn.push(args);
+    };
+    /* eslint-enable no-console */
 
-  const { snapshotManager } = snapshotExports;
-  if (!snapshotManager) {
-    return;
-  }
-  const titleParts: string[] = [];
-  let node: { name?: string; suite?: unknown; filepath?: string } | undefined = context.task;
-  // Walk task -> describe(s); stop at the file node (it has `filepath`).
-  while (node && !node.filepath) {
-    if (node.name) {
-      titleParts.unshift(node.name);
+    const { snapshotManager } = snapshotExports;
+    if (!snapshotManager) {
+      return;
     }
-    node = node.suite as typeof node;
-  }
-  snapshotManager.setCurrentTest({
-    testPath: context.task.file?.filepath,
-    testTitle: titleParts.join(' '),
-  });
-});
+    const titleParts: string[] = [];
+    let node: { name?: string; suite?: unknown; filepath?: string } | undefined = context.task;
+    // Walk task -> describe(s); stop at the file node (it has `filepath`).
+    while (node && !node.filepath) {
+      if (node.name) {
+        titleParts.unshift(node.name);
+      }
+      node = node.suite as typeof node;
+    }
+    await snapshotManager.setCurrentTest({
+      testPath: context.task.file?.filepath,
+      testTitle: titleParts.join(' '),
+    });
+  },
+);
 
 afterEach(async () => {
   const domainEvents = require('@tryghost/domain-events');

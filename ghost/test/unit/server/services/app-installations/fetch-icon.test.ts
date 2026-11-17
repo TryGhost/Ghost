@@ -69,7 +69,7 @@ describe('createIconFetcher', function () {
       [
         ICON_URL,
         {
-          headers: { accept: 'image/svg+xml, image/png, image/jpeg, image/gif, image/webp' },
+          headers: { accept: 'image/svg+xml, image/png, image/webp' },
           maxBytes: 16 * 1024,
         },
       ],
@@ -92,13 +92,20 @@ describe('createIconFetcher', function () {
     );
   });
 
-  for (const contentType of ['text/html', 'image/svg', 'application/octet-stream', null]) {
+  for (const contentType of [
+    'image/jpeg',
+    'image/gif',
+    'text/html',
+    'image/svg',
+    'application/octet-stream',
+    null,
+  ]) {
     it(`refuses an icon served as ${contentType ?? 'no type'}`, async function () {
       const { fetchIcon } = setup({ fetched: serving(ICON, contentType) });
 
       assertRefused(
         await refusal(fetchIcon({ url: ICON_URL })),
-        'Expected an SVG, PNG, JPEG, GIF or WebP image',
+        'Expected an SVG, PNG or WebP image with a transparent background',
       );
     });
   }

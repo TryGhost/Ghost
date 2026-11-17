@@ -19,26 +19,36 @@ const useHandleError = () => {
    * @param options.withToast Show a toast with the error message (default: true).
    *  In general we should validate on the client side before sending the request to avoid errors,
    *  so this toast is intended as a worst-case fallback message when we don't know what else to do.
+   * @param options.displayedMessage What the user is shown in place of the error's own message: in
+   *  the toast, or by the caller without one. The report says the same.
    *
    */
   const handleError = useCallback(
-    (error: unknown, { withToast = true }: { withToast?: boolean } = {}) => {
+    (
+      error: unknown,
+      {
+        withToast = true,
+        displayedMessage,
+      }: { withToast?: boolean; displayedMessage?: string } = {},
+    ) => {
       // eslint-disable-next-line no-console
       console.error(error);
 
       if (Sentry.getClient() && !(error instanceof SessionExpiredError)) {
         Sentry.withScope((scope) => {
           scope.setTag('source', 'useHandleError');
-          // API errors reach the user through the toast or the caller's own message
-          scope.setTag('shown_to_user', error instanceof APIError);
-          if (error instanceof APIError) {
-            scope.setContext('ghost', {
-              displayed_message: getErrorMessage(error, error.message),
-            });
-            if (error.response) {
-              scope.setTag('api_url', error.response.url);
-              scope.setTag('api_response_status', error.response.status);
-            }
+          // API errors reach the user through the toast or the caller's own message, which the
+          // caller names when it isn't the error's own.
+          const displayed =
+            displayedMessage ??
+            (error instanceof APIError ? getErrorMessage(error, error.message) : undefined);
+          scope.setTag('shown_to_user', displayed !== undefined);
+          if (displayed !== undefined) {
+            scope.setContext('ghost', { displayed_message: displayed });
+          }
+          if (error instanceof APIError && error.response) {
+            scope.setTag('api_url', error.response.url);
+            scope.setTag('api_response_status', error.response.status);
           }
           Sentry.captureException(error);
         });
@@ -57,6 +67,8 @@ const useHandleError = () => {
         // Either the page is reloading to signin or nobody is signed in yet, so
         // there is nothing to report; toasts the signin flow shows must survive.
         return;
+      } else if (displayedMessage !== undefined) {
+        showErrorToast(displayedMessage);
       } else if (error instanceof APIError) {
         showErrorToast(getErrorMessage(error, error.message));
       } else {

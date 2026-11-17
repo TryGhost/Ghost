@@ -29,6 +29,15 @@ type Models = {
   Post: {
     addActions(type: string, postIds: string[], options: object): Promise<unknown>;
     reassignByAuthor(options: object): Promise<unknown>;
+    lockLinkedForUpdate(
+      linkTable: string,
+      foreignKey: string,
+      where: object,
+      options: { transacting: Knex.Transaction },
+    ): Promise<string[]>;
+    transactionLockingLinked<T>(
+      callback: (transacting: Knex.Transaction) => Promise<T>,
+    ): Promise<T>;
   };
   ApiKey: {
     destroy(options: object): Promise<unknown>;
@@ -130,7 +139,8 @@ export class UsersService {
     const userPosts = await this.models.Base.knex<{ post_id: string }>('posts_authors')
       .transacting(transacting)
       .where('author_id', id)
-      .select('post_id');
+      .select('post_id')
+      .forUpdate();
     let usersPostIds = userPosts.map((p) => p.post_id);
 
     if (usersPostIds.length === 0) {
@@ -168,7 +178,9 @@ export class UsersService {
       const taggedPostIds = await this.models.Base.knex<{ post_id: string }>('posts_tags')
         .transacting(transacting)
         .where('tag_id', tagId)
-        .select('post_id');
+        .whereIn('post_id', usersPostIds)
+        .select('post_id')
+        .forUpdate();
       const taggedPostIdSet = new Set(taggedPostIds.map((p) => p.post_id));
       usersPostIds = usersPostIds.filter((postId) => !taggedPostIdSet.has(postId));
     }
@@ -199,8 +211,16 @@ export class UsersService {
   }
 
   async destroyUser(frameOptions: UserFrameOptions): Promise<void> {
-    return this.models.Base.transaction(async (t) => {
+    return this.models.Post.transactionLockingLinked(async (t) => {
       frameOptions.transacting = t;
+
+      // The user's posts are tagged and reassigned below, so lock them first
+      await this.models.Post.lockLinkedForUpdate(
+        'posts_authors',
+        'post_id',
+        { author_id: frameOptions.id },
+        { transacting: t },
+      );
 
       // null author field for users' post revisions
       await this.removeAuthorFromRevisions(this.models.PostRevision, frameOptions.id, {

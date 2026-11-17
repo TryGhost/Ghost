@@ -10,14 +10,17 @@
 //
 // The values table holds one row per stored value: `metafield_namespace`,
 // `metafield_key`, `path` (empty for a plain field, the part's name for one part of a
-// composite) and `value_text`. A filter addresses those columns directly, so each one
+// composite) and the value, in the column its kind of value is kept in. A comparison against one
+// value is made in the column of that value's kind, as NQL types it, so a field matches only a
+// value of its own kind; a comparison against a list of values is made in the text column. A
+// filter addresses those columns directly, so each one
 // becomes an $elemMatch over them: positive asserts a matching row exists, and $not
 // asserts none does, with no lookup against the field definitions. Which path holds a
 // field's whole value is the storage layouts' to say, for every type at once.
 import errors from '@tryghost/errors';
 import { z } from 'zod';
 import { IdentityTextSchema, type Key, type Namespace } from '@tryghost/metafield-types/identity';
-import { ROOT_PATH, pathOf, pathsHolding } from './storage';
+import { ROOT_PATH, pathOf, pathsHolding, valueColumnFor } from './storage';
 
 const RELATION = 'metafields';
 const PREFIX = `${RELATION}.`;
@@ -149,8 +152,13 @@ export function createMetafieldsFilterTransformer() {
     }
 
     // Any other comparison, such as one value or a match on part of the text, is made against one
-    // row: the target's part, or the root a single-row value is kept at.
-    return some({ ...rowsOf(target), path: target.path ?? ROOT_PATH, value_text: value });
+    // row: the target's part, or the root a single-row value is kept at, in the column the compared
+    // value's kind is kept in.
+    return some({
+      ...rowsOf(target),
+      path: target.path ?? ROOT_PATH,
+      [valueColumnFor(value)]: value,
+    });
   }
 
   function toElemMatch(clauses: QueryNode[]): QueryNode {

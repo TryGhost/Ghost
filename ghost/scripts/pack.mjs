@@ -22,7 +22,7 @@
  *     from the registry.
  *  2. Pack `ghost` itself; the beforePacking hook rewrites its workspace deps to
  *     `file:components/*.tgz`, strips devDependencies/nx/scripts. Extract it into
- *     package/ and add the repo-root LICENSE.
+ *     package/ and add the repo-root README and LICENSE.
  *  3. Write a trimmed pnpm-workspace.yaml (catalogs + overrides, component
  *     tarball overrides, release-age check off).
  *  4. Seed the root lockfile, then regenerate it against the packed manifest so
@@ -166,6 +166,9 @@ if (!ghostTgz) {
 await execFileAsync('tar', ['xzf', path.join(ghostPackDir, ghostTgz), '-C', CORE_DIR]);
 await fs.rm(ghostPackDir, { recursive: true, force: true });
 
+// The package lives below the repository README, so pnpm cannot include it.
+await fs.copyFile(path.join(ROOT_DIR, 'README.md'), path.join(BUILD_DIR, 'README.md'));
+
 // pnpm pack keeps symlinks inside the package (pnpm 12.7+), but the npm registry
 // rejects any tarball containing one (E415). Drop them, as older pnpm did — today
 // that's the bundled themes' CLAUDE.md -> AGENTS.md.
@@ -292,10 +295,13 @@ reportPrune(await prune(BUILD_DIR, { profile: 'archive' }));
 
 console.log('\nValidating build output...');
 const requiredFiles = [
+  'README.md',
   'pnpm-workspace.yaml',
   'pnpm-lock.yaml',
   'package.json',
   'index.js',
+  // tsc's output: the prune drops MigratorConfig.mts, and Ghost-CLI migrates with this.
+  'MigratorConfig.mjs',
   'scripts/prune.mts',
   // Admin's client build. Ghost boots without it, so a release missing it would
   // pass an install smoke test and serve no Admin.
