@@ -47,3 +47,10 @@ const isOpen = () => sidePanelStore.getState().open;
 export function useSidePanelOpen(): boolean {
   return useSyncExternalStore(sidePanelStore.subscribe, isOpen);
 }
+
+const isMinimized = () => sidePanelStore.getState().size === 'minimized';
+
+/** Whether the panel is at its minimized size, a bar over the page in every layout. */
+export function useSidePanelMinimized(): boolean {
+  return useSyncExternalStore(sidePanelStore.subscribe, isMinimized);
+}
