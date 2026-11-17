@@ -1,10 +1,9 @@
 import type { RequestHandler } from 'express';
 import { createPrincipalResolver } from './resolve-principal';
-
-const session = require('./session').default;
-const apiKeyAuth = require('./api-key');
-const members = require('./members');
-const config = require('../../shared/config');
+import session from './session';
+import apiKeyAuth from './api-key';
+import * as members from './members';
+import config from '../../shared/config';
 
 export interface Authenticate {
   authenticateAdminApi: RequestHandler[];
@@ -12,8 +11,11 @@ export interface Authenticate {
   authenticateContentApi: RequestHandler[];
 }
 
+// Its Req type requires req.session, but the session service loads it itself
+const sessionAuthenticate = session.authenticate as unknown as RequestHandler;
+
 const legacy: Authenticate = {
-  authenticateAdminApi: [apiKeyAuth.admin.authenticate, session.authenticate],
+  authenticateAdminApi: [apiKeyAuth.admin.authenticate, sessionAuthenticate],
   authenticateAdminApiWithUrl: [apiKeyAuth.admin.authenticateWithUrl],
 
   authenticateContentApi: [

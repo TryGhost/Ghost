@@ -5,7 +5,6 @@ import {
   applyPrincipal,
   type ApiKey,
   type AuthenticatedRequest,
-  type Integration,
   type Principal,
   type Session,
   type User,
@@ -40,8 +39,7 @@ export function principalFromApiKey(
     return { kind: 'user', method: 'staff_token', user, apiKey };
   }
 
-  const integration = (apiKey as ApiKey & { relations?: { integration?: Integration } }).relations
-    ?.integration;
+  const integration = apiKey.relations?.integration;
   return { kind: 'integration', method, apiKey, integration: integration ?? null };
 }
 
@@ -98,7 +96,7 @@ export function createPrincipalResolver(deps: ResolvePrincipalDeps) {
   }
 
   /**
-   * Runs after `api-key/admin.js`: a verified key wins. The cookie is read
+   * Runs after `api-key/admin.ts`: a verified key wins. The cookie is read
    * only when no Authorization header was sent, so a token that failed
    * verification never falls back to the staff session.
    */

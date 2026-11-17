@@ -1,11 +1,25 @@
-const jwt = require('jsonwebtoken');
-const url = require('url');
+import type { NextFunction, Request, Response } from 'express';
+import jwt, { type Algorithm, type VerifyOptions } from 'jsonwebtoken';
+import url from 'node:url';
+import errors from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
+import _ from 'lodash';
+import { limitService } from '../../services/limits';
+import { legacyApiPathMatch } from '../../web/api/middleware/api-version-compatibility';
+import type { ApiKey, AuthenticatedRequest, Integration, User } from '../principal';
+
 const models = require('../../models');
-const errors = require('@tryghost/errors');
-const { limitService } = require('../../services/limits');
-const { legacyApiPathMatch } = require('../../web/api/middleware/api-version-compatibility');
-const tpl = require('@tryghost/tpl');
-const _ = require('lodash');
+
+type ApiKeyRequest = Request & AuthenticatedRequest;
+
+/** A key loaded with `withRelated: ['integration']` */
+export type LoadedApiKey = ApiKey & { relations: { integration?: Integration } };
+
+export interface AdminApiKeyResult {
+  apiKey: ApiKey;
+  /** The staff user behind a staff token, else null */
+  user: User | null;
+}
 
 const messages = {
   incorrectAuthHeaderFormat: 'Authorization header format is "Authorization: Ghost [token]"',
@@ -16,8 +30,7 @@ const messages = {
   invalidApiKeyType: 'Invalid API Key type',
 };
 
-const JWT_OPTIONS_DEFAULTS = {
-  /** @type import('jsonwebtoken').Algorithm[] */
+const JWT_OPTIONS_DEFAULTS: { algorithms: Algorithm[]; maxAge: string } = {
   algorithms: ['HS256'],
   maxAge: '5m',
 };
@@ -25,9 +38,8 @@ const JWT_OPTIONS_DEFAULTS = {
 /**
  * Remove 'Ghost' from raw authorization header and extract the JWT token.
  * Eg. Authorization: Ghost ${JWT}
- * @param {string} header
  */
-const _extractTokenFromHeader = function extractTokenFromHeader(header) {
+const _extractTokenFromHeader = function extractTokenFromHeader(header: string) {
   const [scheme, token] = header.split(' ');
 
   if (/^Ghost$/i.test(scheme)) {
@@ -38,14 +50,18 @@ const _extractTokenFromHeader = function extractTokenFromHeader(header) {
 /**
  * Extract JWT token from admin API URL query
  * Eg. ${ADMIN_API_URL}/?token=${JWT}
- * @param {string} reqUrl
  */
-const _extractTokenFromUrl = function extractTokenFromUrl(reqUrl) {
+const _extractTokenFromUrl = function extractTokenFromUrl(reqUrl: string) {
   const { query } = url.parse(reqUrl, true);
-  return query.token;
+  // A repeated ?token= is an array, which fails to decode below
+  return query.token as string | undefined;
 };
 
-const authenticate = function apiKeyAdminAuth(req, res, next) {
+export const authenticate = function apiKeyAdminAuth(
+  req: ApiKeyRequest,
+  res: Response,
+  next: NextFunction,
+) {
   // CASE: we don't have an Authorization header so allow fallthrough to other
   // auth middleware or final "ensure authenticated" check
   if (!req.headers || !req.headers.authorization) {
@@ -66,7 +82,11 @@ const authenticate = function apiKeyAdminAuth(req, res, next) {
   return wrappedAuthenticateWithToken(req, res, next, { token });
 };
 
-const authenticateWithUrl = function apiKeyAuthenticateWithUrl(req, res, next) {
+export const authenticateWithUrl = function apiKeyAuthenticateWithUrl(
+  req: ApiKeyRequest,
+  res: Response,
+  next: NextFunction,
+) {
   const token = _extractTokenFromUrl(req.originalUrl);
   if (!token) {
     return next(
@@ -80,7 +100,12 @@ const authenticateWithUrl = function apiKeyAuthenticateWithUrl(req, res, next) {
   return wrappedAuthenticateWithToken(req, res, next, { token, ignoreMaxAge: true });
 };
 
-async function wrappedAuthenticateWithToken(req, res, next, options) {
+async function wrappedAuthenticateWithToken(
+  req: ApiKeyRequest,
+  res: Response,
+  next: NextFunction,
+  options: { token: string; ignoreMaxAge?: boolean },
+) {
   try {
     const { apiKey, user } = await authenticateWithToken(
       req.originalUrl,
@@ -109,11 +134,11 @@ async function wrappedAuthenticateWithToken(req, res, next, options) {
  * - the "Audience" claim should match the requested API path
  *   https://tools.ietf.org/html/rfc7519#section-4.1.3
  */
-const authenticateWithToken = async function apiKeyAuthenticateWithToken(
-  originalUrl,
-  token,
-  ignoreMaxAge,
-) {
+export const authenticateWithToken = async function apiKeyAuthenticateWithToken(
+  originalUrl: string,
+  token: string,
+  ignoreMaxAge?: boolean,
+): Promise<AdminApiKeyResult> {
   const decoded = jwt.decode(token, { complete: true });
   const jwtValidationOptions = ignoreMaxAge
     ? _.omit(JWT_OPTIONS_DEFAULTS, 'maxAge')
@@ -135,7 +160,10 @@ const authenticateWithToken = async function apiKeyAuthenticateWithToken(
     });
   }
 
-  const apiKey = await models.ApiKey.findOne({ id: apiKeyId }, { withRelated: ['integration'] });
+  const apiKey: LoadedApiKey | null = await models.ApiKey.findOne(
+    { id: apiKeyId },
+    { withRelated: ['integration'] },
+  );
 
   if (!apiKey) {
     throw new errors.UnauthorizedError({
@@ -155,7 +183,7 @@ const authenticateWithToken = async function apiKeyAuthenticateWithToken(
   if (
     limitService.isLimited('customIntegrations') &&
     apiKey.relations.integration &&
-    !['internal', 'core'].includes(apiKey.relations.integration.get('type'))
+    !['internal', 'core'].includes(apiKey.relations.integration.get('type') as string)
   ) {
     // NOTE: using "checkWouldGoOverLimit" instead of "checkIsOverLimit" here because flag limits don't have
     //       a concept of measuring if the limit has been surpassed
@@ -166,13 +194,13 @@ const authenticateWithToken = async function apiKeyAuthenticateWithToken(
   // keep comparison of the bytes that are stored in the secret.
   // Useful context:
   // https://github.com/auth0/node-jsonwebtoken/issues/208#issuecomment-231861138
-  const secret = Buffer.from(apiKey.get('secret'), 'hex');
+  const secret = Buffer.from(apiKey.get('secret') as string, 'hex');
 
   // Using req.originalUrl means we get the right url even if version-rewrites have happened
   const { version, api } = legacyApiPathMatch(originalUrl);
 
   // ensure the token was meant for this api
-  let options;
+  let options: VerifyOptions;
 
   if (version) {
     // CASE: legacy versioned api request
@@ -195,21 +223,21 @@ const authenticateWithToken = async function apiKeyAuthenticateWithToken(
     jwt.verify(token, secret, options);
   } catch (err) {
     throw new errors.UnauthorizedError({
-      message: tpl(messages.invalidTokenWithMessage, { message: err.message }),
+      message: tpl(messages.invalidTokenWithMessage, { message: (err as Error).message }),
       code: 'INVALID_JWT',
-      err,
+      err: err as Error,
     });
   }
 
   // authenticated OK
-  const result = {
+  const result: AdminApiKeyResult = {
     user: null,
     apiKey: apiKey,
   };
 
   if (apiKey.get('user_id')) {
     // fetch the user and store it on the request for later checks and logging
-    const user = await models.User.findOne(
+    const user: User = await models.User.findOne(
       { id: apiKey.get('user_id'), status: 'active' },
       { require: true },
     );
@@ -218,10 +246,4 @@ const authenticateWithToken = async function apiKeyAuthenticateWithToken(
   }
 
   return result;
-};
-
-module.exports = {
-  authenticate,
-  authenticateWithUrl,
-  authenticateWithToken,
 };

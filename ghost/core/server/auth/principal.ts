@@ -7,8 +7,12 @@ export interface ModelLike {
 }
 
 export type User = ModelLike;
-export type ApiKey = ModelLike;
 export type Integration = ModelLike;
+
+export interface ApiKey extends ModelLike {
+  /** Set when the key was loaded with `withRelated: ['integration']` */
+  relations?: { integration?: Integration };
+}
 
 /** Token scopes, as `object_type:action` keys; populated from Phase 4. */
 export type Scopes = readonly string[];

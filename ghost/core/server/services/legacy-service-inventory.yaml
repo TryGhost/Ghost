@@ -3198,8 +3198,8 @@ services:
           - core/server/models/invite.js
           - core/server/models/integration.js
           - core/server/data/importer/importers/data/users-importer.js
-          - core/server/auth/api-key/admin.js
-          - core/server/auth/api-key/content.js
+          - core/server/auth/api-key/admin.ts
+          - core/server/auth/api-key/content.ts
           - core/server/services/webhooks/index.js
           - core/server/services/webhooks/webhook-trigger.js
           - core/server/services/newsletters/index.ts
@@ -3314,7 +3314,7 @@ services:
         sources:
           - core/server/services/limits.ts
           - core/server/services/webhooks/webhook-trigger.js
-          - core/server/auth/api-key/content.js
+          - core/server/auth/api-key/content.ts
           - core/server/api/endpoints/newsletters.js
           - core/server/api/endpoints/settings.js
         tests:
@@ -4025,7 +4025,7 @@ services:
           - core/server/web/members/app.js
           - core/server/web/members/account/routes.ts
           - core/server/web/comments/routes.js
-          - core/server/auth/members/index.js
+          - core/server/auth/members/index.ts
           - core/server/services/stripe/stripe-service.js
           - core/server/services/gifts/index.ts
           - core/server/services/members-events/index.js

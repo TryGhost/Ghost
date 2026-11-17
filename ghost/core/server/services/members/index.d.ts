@@ -21,6 +21,10 @@ interface MemberBREADService {
 }
 
 interface MembersApi {
+  getPublicConfig(): Promise<{
+    issuer: string;
+    getVerificationKey(kid?: string): Promise<string>;
+  }>;
   getMagicLink(
     email: string,
     type: 'signin' | 'signup',
