@@ -112,6 +112,13 @@ describe('EditorPresenceService', function () {
     const result = await service.poll(USER_1, { resources: [{ id: POST_A, type: 'post' }] });
     assert.equal(result.active.length, 1);
     assert.equal(result.active[0].ts, first + 5_000);
+
+    // The first tab beats again: it is the newest now, and the store still lists it first.
+    advance(5_000);
+    await service.poll(USER_2, { editing: { id: POST_A, type: 'post' }, tab: TAB_1 });
+    const again = await service.poll(USER_1, { resources: [{ id: POST_A, type: 'post' }] });
+    assert.equal(again.active.length, 1);
+    assert.equal(again.active[0].ts, first + 10_000);
   });
 
   it('keeps a user present while another of their tabs is still open', async function () {
