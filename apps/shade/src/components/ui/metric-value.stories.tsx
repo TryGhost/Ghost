@@ -50,6 +50,31 @@ export const Large: Story = {
   },
 };
 
+export const Stacked: Story = {
+  args: {
+    label: 'Comments',
+    value: '173',
+    size: 'lg',
+    stacked: true,
+    trailing: <TrendBadge direction="up" value="+62%" />,
+  },
+  decorators: [
+    (Story) => (
+      <div className="w-[80px]">
+        <Story />
+      </div>
+    ),
+  ],
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Keeps the trend below the value at every width, for narrow fixed-width slots such as a three-up KPI rail.',
+      },
+    },
+  },
+};
+
 export const ValueOnly: Story = {
   args: {
     value: '1,234',

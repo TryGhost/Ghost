@@ -47,13 +47,16 @@ export function getTrend(current: number, previous: number, range: number): Comm
   if (change === 0) {
     return { direction: 'hidden', value: '' };
   }
+  // "+999%" is the widest badge that fits a ~78px KPI tab; a fall can't pass -100%
+  if (change > 9.99) {
+    return { direction: 'up', value: '>999%' };
+  }
   return {
     direction: change > 0 ? 'up' : 'down',
     value: `${change > 0 ? '+' : '-'}${formatPercentage(Math.abs(change))}`,
   };
 }
 
-// Also the only place the percentage shows when a narrow tab collapses the badge
 export function getComparisonText(value: string, range: number): string {
   if (range === STATS_RANGES.yearToDate.value) {
     return `${value} compared to the same number of days before January 1`;

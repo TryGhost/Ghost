@@ -45,6 +45,7 @@ describe('comments analytics helpers', () => {
   it('compares against the previous period', () => {
     expect(getTrend(15, 10, 30)).toEqual({ direction: 'up', value: '+50%' });
     expect(getTrend(5, 10, 30)).toEqual({ direction: 'down', value: '-50%' });
+    expect(getTrend(1100, 100, 30)).toEqual({ direction: 'up', value: '>999%' });
   });
 
   it('hides the trend when there is no change or nothing to compare', () => {
