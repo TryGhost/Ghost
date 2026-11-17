@@ -160,11 +160,7 @@ describe('Checkout session outcomes', function () {
 
     assert.deepEqual(
       metrics.tracked('stripe_checkout.complete').map(({ labels }) => labels),
-      [
-        { type: 'donation', shipping: 'none', phone: 'none' },
-        { shipping: 'none', phone: 'none' },
-        { shipping: 'none', phone: 'none' },
-      ],
+      [{ type: 'donation', shipping: 'none', phone: 'none' }],
     );
   });
 
