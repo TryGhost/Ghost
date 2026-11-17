@@ -478,7 +478,7 @@ async function checkoutGift({ data, state, api }) {
         closeable: true,
         state,
         status: 'error',
-        message: t('Failed to process checkout, please try again'),
+        message: chooseBestErrorMessage(e, t('Failed to process checkout, please try again')),
       }),
     };
   }
