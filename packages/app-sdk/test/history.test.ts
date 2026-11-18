@@ -169,9 +169,8 @@ describe('the page’s history, once Admin owns it', () => {
         } else if (schedule === 'another link') {
           click({ href: '/b' });
           click({ href: '/a' });
-          // The newer links have settled before the old link answers.
-          await Promise.resolve();
-          expect(load.mock.calls).toEqual([['http://localhost:3000/a']]);
+          // Observe the newer load while the old report is still held.
+          await vi.waitFor(() => expect(load.mock.calls).toEqual([['http://localhost:3000/a']]));
         } else if (schedule === 'stop') {
           watch?.stop();
         }
