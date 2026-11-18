@@ -87,9 +87,10 @@ email, and `MAILGUN_BASE_URL`, used for bulk email. Never commit `.env` or
 provider credentials.
 
 The development environment supplies Ghost's Mailgun configuration for you. Do
-not add SMTP credentials or Mailgun settings to `config.local.json`. Ghost
-reads its email configuration when it starts, so restart it after setting or
-clearing the credentials.
+not add SMTP credentials or Mailgun settings to `config.local.json`. The
+development command chooses Mailgun or Mailpit when it starts, and Ghost's
+automatic reloads keep that choice. After setting or clearing the credentials,
+stop and rerun `pnpm dev`, or run `pnpm dev:down` and then `pnpm dev:up`.
 
 If you use a Mailgun sandbox domain, add and verify each intended recipient in
 Mailgun before testing delivery.
