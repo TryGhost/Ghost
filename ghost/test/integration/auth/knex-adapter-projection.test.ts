@@ -101,6 +101,43 @@ describe('Knex adapter: joined projections', () => {
     ]);
   });
 
+  it('returns multiple joined rows in order without exposing the omitted sort field', async () => {
+    const rows = await adapter.findMany({
+      model: 'parent',
+      select: ['label'],
+      sortBy: { field: 'rank', direction: 'asc' },
+      join: { child: true },
+    });
+
+    assert.deepEqual(JSON.parse(JSON.stringify(rows)), [
+      {
+        id: secondParent,
+        label: 'Second parent',
+        child: [{ id: secondChild, label: 'Second child', parentId: secondParent }],
+      },
+      {
+        id: firstParent,
+        label: 'First parent',
+        child: [{ id: firstChild, label: 'First child', parentId: firstParent }],
+      },
+    ]);
+  });
+
+  it('returns a projected findOne with its parent and without the child id', async () => {
+    const row = await adapter.findOne({
+      model: 'child',
+      where: [{ field: 'id', value: firstChild }],
+      select: ['label'],
+      join: { parent: true },
+    });
+
+    assert.deepEqual(JSON.parse(JSON.stringify(row)), {
+      label: 'First child',
+      parentId: firstParent,
+      parent: { id: firstParent, label: 'First parent', rank: 2 },
+    });
+  });
+
   it('keeps each child with its own parent when the child id is not selected', async () => {
     const rows = await adapter.findMany({
       model: 'child',
@@ -121,6 +158,67 @@ describe('Knex adapter: joined projections', () => {
         {
           label: 'Second child',
           parentId: secondParent,
+          parent: { id: secondParent, label: 'Second parent', rank: 1 },
+        },
+      ],
+    );
+  });
+
+  it('preserves a relation whose model name matches a hidden sort column', async () => {
+    const collisionAdapter = createKnexAdapter({
+      db,
+      virtualColumns: {
+        projection_children: { projection_parents: (executor) => executor.raw('1') },
+      },
+    })({
+      ...options,
+      plugins: [
+        {
+          id: 'projection-name-collision',
+          schema: {
+            ...options.plugins![0].schema,
+            child: {
+              modelName: 'projection_children',
+              fields: {
+                label: { type: 'string' },
+                rank: { type: 'number', fieldName: 'projection_parents' },
+                parentId: {
+                  type: 'string',
+                  fieldName: 'parent_id',
+                  references: { model: 'parent', field: 'id' },
+                  // A fallback lookup cannot recover the relation using this display key.
+                  transform: { output: (value) => `display:${value}` },
+                },
+              },
+            },
+          },
+        },
+      ],
+    });
+    const rows = await collisionAdapter.findMany<{
+      label: string;
+      parentId: string;
+      parent: Record<string, unknown>;
+    }>({
+      model: 'child',
+      select: ['label'],
+      sortBy: { field: 'rank', direction: 'asc' },
+      join: { parent: true },
+    });
+
+    assert.deepEqual(
+      rows
+        .map(({ label, parentId, parent }) => ({ label, parentId, parent }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+      [
+        {
+          label: 'First child',
+          parentId: `display:${firstParent}`,
+          parent: { id: firstParent, label: 'First parent', rank: 2 },
+        },
+        {
+          label: 'Second child',
+          parentId: `display:${secondParent}`,
           parent: { id: secondParent, label: 'Second parent', rank: 1 },
         },
       ],
