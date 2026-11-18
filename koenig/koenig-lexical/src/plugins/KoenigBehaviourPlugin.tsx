@@ -187,6 +187,34 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
         };
     }, [editor, containerElem, isNested]);
 
+    // an editor made read-only keeps no card selected or in edit mode, so no
+    // card toolbar, settings panel or nested editor is left open to change it
+    React.useEffect(() => {
+        if (isNested) {
+            return;
+        }
+
+        return editor.registerEditableListener((isEditable) => {
+            if (isEditable) {
+                return;
+            }
+
+            // Lexical's element follows a render later, and a key pressed
+            // before then would change the DOM without changing the document
+            const rootElement = editor.getRootElement();
+            if (rootElement) {
+                rootElement.contentEditable = 'false';
+            }
+
+            setSelectedCardKey(null);
+            setIsEditingCard(false);
+            setShowVisibilitySettings(false);
+            editor.update(() => {
+                $setSelection(null);
+            }, {tag: 'history-merge'});
+        });
+    }, [editor, isNested, setSelectedCardKey, setIsEditingCard, setShowVisibilitySettings]);
+
     // Override built-in keyboard movement around card (DecoratorNode) boundaries,
     // cards should be selected on up/down and when deleting content around them.
     // Trigger `cursorDidExitAtTop` prop if present and cursor at beginning of doc
@@ -201,6 +229,12 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 // ignore selections inside of nested editors otherwise we'll
                 // mistakenly deselect the card containing the nested editor
                 if (isNested || document.activeElement?.closest('[data-lexical-decorator]')) {
+                    return;
+                }
+
+                // a read-only editor selects no card, and deselecting must not
+                // remove an empty one from a document it may not change
+                if (!editor.isEditable()) {
                     return;
                 }
 

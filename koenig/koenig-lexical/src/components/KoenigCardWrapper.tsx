@@ -1,6 +1,7 @@
 import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
+import useLexicalEditable from '@lexical/react/useLexicalEditable';
 import {$getNodeByKey, CLICK_COMMAND, COMMAND_PRIORITY_LOW} from 'lexical';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {CardWrapper} from './ui/CardWrapper';
@@ -29,9 +30,18 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     const skipClick = React.useRef(false);
 
     const {selectedCardKey, isEditingCard, isDragging} = useKoenigSelectedCardContext();
+    const isEditable = useLexicalEditable();
 
     const isSelected = selectedCardKey === nodeKey;
     const isEditing = isSelected && isEditingCard;
+
+    // a card's own controls change the document, so a read-only editor takes
+    // no input in its cards. Through the element as React 18 has no inert prop
+    React.useEffect(() => {
+        if (containerRef.current) {
+            containerRef.current.inert = !isEditable;
+        }
+    }, [isEditable]);
 
     const handleVisibilityToggle = React.useCallback((event) => {
         event.preventDefault();
