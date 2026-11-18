@@ -187,18 +187,39 @@ function createCustomAdapter(
       build: (qb: QB) => QB,
       select: string[] | undefined,
       join: JoinConfig | undefined,
+      requiredColumns: string[] = [],
     ) => {
+      const selectedColumns = select?.map((f) => fieldColumn(modelKey, f));
+      const hasJoins = join && Object.keys(join).length > 0;
+      // Grouping and outer sorting need these columns even when not selected.
+      // Remove them only after the joined rows have been assembled.
+      const hiddenColumns =
+        hasJoins && selectedColumns?.length
+          ? [...new Set([fieldColumn(modelKey, 'id'), ...requiredColumns])].filter(
+              (column) => !selectedColumns.includes(column),
+            )
+          : [];
+      const project = (rows: Row[]) => {
+        for (const row of rows) {
+          for (const column of hiddenColumns) {
+            delete row[column];
+          }
+        }
+        return rows;
+      };
       const inner = build(
-        db.from(model).select(
-          selectColumns(
-            model,
-            model,
-            select?.map((f) => fieldColumn(modelKey, f)),
+        db
+          .from(model)
+          .select(
+            selectColumns(
+              model,
+              model,
+              selectedColumns ? [...selectedColumns, ...hiddenColumns] : undefined,
+            ),
           ),
-        ),
       );
-      if (!join || !Object.keys(join).length) {
-        return { query: inner, joined: [] };
+      if (!hasJoins) {
+        return { query: inner, joined: [], project };
       }
 
       const query = db.from(inner.as(PRIMARY)).select(`${PRIMARY}.*`);
@@ -228,7 +249,7 @@ function createCustomAdapter(
           joined.push({ joinModel, column });
         }
       }
-      return { query, joined };
+      return { query, joined, project };
     };
 
     const groupJoinedRows = (
@@ -301,7 +322,7 @@ function createCustomAdapter(
       },
 
       async findOne({ model, modelKey = model, where, select, join }) {
-        const { query, joined } = selectWithJoins(
+        const { query, joined, project } = selectWithJoins(
           model,
           modelKey,
           (qb) => applyWhere(qb, model, where).limit(1),
@@ -312,14 +333,14 @@ function createCustomAdapter(
         if (!rows.length) {
           return null;
         }
-        return (
-          join && joined.length ? groupJoinedRows(rows, modelKey, join, joined)[0] : rows[0]
-        ) as never;
+        return project(
+          join && joined.length ? groupJoinedRows(rows, modelKey, join, joined) : rows,
+        )[0] as never;
       },
 
       async findMany({ model, modelKey = model, where, limit, select, sortBy, offset, join }) {
         const sort = sortBy && columnRef(model, model, fieldColumn(modelKey, sortBy.field));
-        const { query, joined } = selectWithJoins(
+        const { query, joined, project } = selectWithJoins(
           model,
           modelKey,
           (qb) => {
@@ -341,13 +362,14 @@ function createCustomAdapter(
           },
           select,
           join,
+          sortBy ? [fieldColumn(modelKey, sortBy.field)] : [],
         );
         if (sort && joined.length) {
           query.orderBy(`${PRIMARY}.${fieldColumn(modelKey, sortBy!.field)}`, sortBy!.direction);
         }
         const rows: Row[] = await query;
-        return (
-          join && joined.length ? groupJoinedRows(rows, modelKey, join, joined) : rows
+        return project(
+          join && joined.length ? groupJoinedRows(rows, modelKey, join, joined) : rows,
         ) as never;
       },
 
