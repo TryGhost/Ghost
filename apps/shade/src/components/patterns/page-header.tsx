@@ -154,10 +154,12 @@ PageHeaderSelectTrigger.displayName = 'PageHeaderSelectTrigger';
 // Title-block primitives
 // ---------------------------------------------------------------------------
 
-// A long last crumb truncates rather than wrapping under the title or running
-// under the actions. Earlier crumbs and separators keep their width.
+// Crumbs truncate rather than wrapping under the title or running under the
+// actions. They render as blocks, since a flex link can't show an ellipsis.
+// Earlier crumbs keep their width up to a cap, so a long one can't crowd out
+// the current page, which shrinks to fit the rest.
 const breadcrumbFitClassName =
-  'min-w-0 [&_nav]:min-w-0 [&_ol]:flex-nowrap [&_li]:shrink-0 [&_li:last-child]:min-w-0 [&_li:last-child]:shrink [&_li:last-child>*]:truncate';
+  'min-w-0 [&_nav]:min-w-0 [&_ol]:flex-nowrap [&_li]:shrink-0 [&_li>*]:block [&_li>*]:truncate [&_li:not(:last-child)>*]:max-w-40 [&_li:last-child]:min-w-0 [&_li:last-child]:shrink';
 
 function PageHeaderBreadcrumb({ className, children }: PropsWithChildrenAndClassName) {
   return (

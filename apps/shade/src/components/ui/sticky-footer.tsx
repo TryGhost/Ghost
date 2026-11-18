@@ -8,9 +8,11 @@ export interface StickyFooterProps extends Omit<HTMLAttributes<HTMLDivElement>, 
   contentClassName?: string;
 }
 
+// The element sticky positioning measures against. `hidden` makes one too;
+// `clip` doesn't.
 const isScrollContainer = (element: HTMLElement) => {
   const { overflowY } = getComputedStyle(element);
-  return overflowY === 'auto' || overflowY === 'scroll';
+  return overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'hidden';
 };
 
 /**
@@ -51,14 +53,16 @@ export const StickyFooter = ({
     };
     update();
 
-    if (typeof ResizeObserver === 'undefined') {
-      return;
-    }
+    // Responsive padding follows the window or the container's size, and a
+    // breakpoint can change the padding without resizing the content box.
+    window.addEventListener('resize', update);
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
+    observer?.observe(scrollContainer);
 
-    // Responsive padding changes with the container's size.
-    const observer = new ResizeObserver(update);
-    observer.observe(scrollContainer);
-    return () => observer.disconnect();
+    return () => {
+      window.removeEventListener('resize', update);
+      observer?.disconnect();
+    };
   }, []);
 
   return (

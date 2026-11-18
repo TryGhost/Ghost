@@ -83,7 +83,12 @@ describe('SettingsModal', () => {
       </SettingsModal>,
     );
 
+    const alert = screen.getByRole('alertdialog');
+    const alertOverlay = alert.previousElementSibling;
+
     expect(document.getElementById('modal-backdrop')?.className).toContain('z-[1000]');
-    expect(screen.getByRole('alertdialog').className).toContain('z-[1100]');
+    expect(alert.className).toContain('z-[1100]');
+    expect(alertOverlay?.className).toContain('inset-0');
+    expect(alertOverlay?.className).toContain('z-[1100]');
   });
 });
