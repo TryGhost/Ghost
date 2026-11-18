@@ -235,11 +235,10 @@ standalone Shade consumers too. Available width selects the responsive layout;
 the flag only enables the improvements. Keep changes at their owning component
 or layout boundary and reuse data and interaction logic.
 
-Preview with `/ghost/#/members?labs=admin7Mobile`, or
-`?labs=admin7Mobile,admin7Design` for both. Clearing with `?labs=` restores the
-site's values. Network, Automations/Apps, and the editor are outside this
-project's scope. Remove the old branches and this switch when the responsive
-behavior becomes the default.
+Use [Admin session overrides](#admin-session-overrides) to preview the flag.
+Network, Automations/Apps, and the editor are outside this project's scope.
+Remove the old branches and this switch when the responsive behavior becomes
+the default.
 
 ## How values are resolved
 

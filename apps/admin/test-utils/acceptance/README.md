@@ -74,6 +74,7 @@ The shell requests handled by default (`boot.ts`): `browseSettings`, `browseConf
 // Labs flags (sugar for lockstep settings + config overrides; merges into
 // any browseSettings/browseConfig boot override, named flags winning):
 await renderAdminApp("/tags", {labs: {someFlag: true}});
+await renderInApp(<MyComponent />, {labs: {admin7Mobile: true}});
 
 // The editor's autosave debounce, injected as a test-only `/config/` key, so a
 // save that lands proves it was sent without waiting (`withoutAutosave()`), or
