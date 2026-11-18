@@ -1,6 +1,7 @@
 /** Acceptance-harness public surface — see README.md for the spec anatomy. */
 export { authToken, fakeSetupStatus, plainText, signedOut } from './auth';
 export { fakeAnalyticsOverview } from './analytics';
+export { fakeLabelAutomations } from './label-automations';
 export {
   UNSPLASH_PICKED,
   editorReadLanded,
