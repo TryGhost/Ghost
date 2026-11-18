@@ -85,6 +85,10 @@ describe('utils/css-url', function () {
         }
     });
 
+    it('writes a value that is not a string as text', function () {
+        assert.equal(cssUrl(5 as unknown as string), 'url(\'5\')');
+    });
+
     it('returns an empty url() for missing values', function () {
         assert.equal(cssUrl(undefined), 'url(\'\')');
         assert.equal(cssUrl(null), 'url(\'\')');

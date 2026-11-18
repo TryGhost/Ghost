@@ -15,7 +15,7 @@ import {decodeHTMLStrict} from 'entities';
 export function cssUrl(url: string | null | undefined) {
     // Entities are decoded first, so a URL stored with them isn't escaped twice (see escapeHtml).
     // The whitespace a URL parser drops is dropped here too, rather than encoded into the path.
-    const encoded = decodeHTMLStrict(url ?? '')
+    const encoded = decodeHTMLStrict(String(url ?? ''))
         // eslint-disable-next-line no-control-regex
         .replace(/^[\u0000- ]+|[\u0000- ]+$/g, '')
         .replace(/[\t\n\r]/g, '')

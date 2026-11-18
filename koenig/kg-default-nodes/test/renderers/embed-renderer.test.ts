@@ -313,6 +313,8 @@ describe('renderers/embed-renderer', function () {
 
         it('renders tweet values containing special characters', function () {
             const bad = '"Tom" <& Jerry>';
+            const badName = 'Dr. <Who> & "Co"';
+            const badUsername = 'who<&>"';
             const badUrl = 'https://example.org/a"b>c?x=1&y=<2>';
             const text = `Hello ${bad} &amp; @someone`;
             const data = getTwitterTestData();
@@ -320,7 +322,7 @@ describe('renderers/embed-renderer', function () {
                 id: '1395670367216619520',
                 author_id: '1',
                 text,
-                users: [{id: '1', name: bad, username: bad, profile_image_url: badUrl}],
+                users: [{id: '1', name: badName, username: badUsername, profile_image_url: badUrl}],
                 entities: {mentions: [{start: text.indexOf('@someone'), end: text.indexOf('@someone') + 7, username: 'someone'}]},
                 attachments: {media_keys: ['1']},
                 includes: {media: [{url: badUrl}]}
@@ -332,13 +334,14 @@ describe('renderers/embed-renderer', function () {
 
             // Text Twitter sent already encoded shows as it would on Twitter
             assert.ok(doc.body.textContent?.includes(`Hello ${bad} & @someone`));
-            assert.ok(doc.body.textContent?.includes(`${bad} `));
-            assert.ok(doc.body.textContent?.includes(`@${bad}`));
+            assert.ok(doc.body.textContent?.includes(badName));
+            assert.ok(doc.body.textContent?.includes(`@${badUsername}`));
             assert.equal(images.filter(src => src === badUrl).length, 2);
             assert.ok(Array.from(doc.querySelectorAll('span')).some(span => span.textContent === '@someone'));
-            for (const link of doc.querySelectorAll('a.kg-twitter-link')) {
-                assert.equal(link.getAttribute('href'), 'https://twitter.com/twitter/status/1395670367216619520');
-            }
+
+            const links = Array.from(doc.querySelectorAll('a')).map(link => link.getAttribute('href'));
+            assert.ok(links.length > 3);
+            assert.deepEqual(new Set(links), new Set(['https://twitter.com/twitter/status/1395670367216619520']));
         });
 
         it('falls back to the original embed html when tweet_data.id is missing', function () {
