@@ -19,8 +19,10 @@ Better Auth needs MySQL. On SQLite the config schema
 drops SQLite.
 
 Under `better-auth` the Admin API serves the handler on `/auth/*`
-(`web/api/endpoints/admin/better-auth.ts`), after the private cache header and ahead of body parsing because
-Better Auth reads the request stream. Better Auth's limiter runs on Ghost's
+(`web/api/endpoints/admin/better-auth.ts`), after the private cache header and ahead of the API's body
+parsers. Better Auth's Node handler reads bodies with no size limit, so the
+router reads them first, capped at 64 KB, and Better Auth takes the result
+from `req.body`. Better Auth's limiter runs on Ghost's
 `spam` limiters through `customStorage`, in every environment: each native
 credential route counts against its compatibility route's limiters, sharing
 their counters, and a successful sign-in or password reset clears `userLogin`
