@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {assertPrettifiesTo, callRenderer, html} from '../test-utils/index.js';
+import {assertPrettifiesTo, callRenderer, createDocument, html} from '../test-utils/index.js';
 
 describe('renderers/audio-renderer', function () {
     function getTestData(overrides = {}) {
@@ -12,6 +12,10 @@ describe('renderers/audio-renderer', function () {
             ...overrides
         };
     }
+
+    // Values containing characters that are special in HTML
+    const badTitle = 'Q&A <live> "special"';
+    const badUrl = 'https://example.org/a"b>c.mp3?x=1&y=<2>';
 
     function renderForWeb(data: Record<string, unknown>, options?: Record<string, unknown>) {
         return callRenderer('audio', data, options);
@@ -77,6 +81,14 @@ describe('renderers/audio-renderer', function () {
             const result = renderForWeb(getTestData({src: ''}));
             assert.equal(result.html, '');
         });
+
+        it('renders a title containing special characters', function () {
+            const result = renderForWeb(getTestData({title: badTitle}));
+            const document = createDocument(result.html);
+
+            assert.equal(document.querySelector('.kg-audio-title')?.textContent, badTitle);
+            assert.equal(document.querySelector('.kg-audio-title')?.children.length, 0);
+        });
     });
 
     describe('email', function () {
@@ -139,6 +151,24 @@ describe('renderers/audio-renderer', function () {
         it('renders nothing with a missing src', function () {
             const result = renderForEmail(getTestData({src: ''}));
             assert.equal(result.html, '');
+        });
+
+        it('renders a title containing special characters', function () {
+            const result = renderForEmail(getTestData({title: badTitle}));
+            const document = createDocument(result.html);
+
+            assert.equal(document.querySelector('.kg-audio-title')?.textContent, badTitle);
+            assert.equal(document.querySelector('.kg-audio-title')?.children.length, 0);
+        });
+
+        it('renders file and thumbnail URLs containing special characters', function () {
+            const result = renderForEmail(getTestData({src: badUrl, thumbnailSrc: badUrl}), {postUrl: undefined});
+            const document = createDocument(result.html);
+            const links = Array.from(document.querySelectorAll('a'));
+
+            assert.equal(links.length, 5);
+            assert.deepEqual(links.map(link => link.getAttribute('href')), Array(5).fill(badUrl));
+            assert.equal(document.querySelector('img.kg-audio-thumbnail')?.getAttribute('src'), badUrl);
         });
 
         it('links to the audio file when postUrl is missing', function () {
