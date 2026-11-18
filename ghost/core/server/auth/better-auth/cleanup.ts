@@ -5,7 +5,6 @@ import { defaultIndexName } from '../../data/schema/lib/default-index-name';
 import type { TableName } from '../../data/schema/schema';
 import type { JobsService } from '../../services/jobs-service/jobs-service';
 import ClearExpiredAuthRowsJob from './clear-expired-auth-rows-job';
-import { usesBetterAuth } from './enabled';
 
 // Better Auth reads expiry on use but never purges these rows (plan §4.6)
 const TABLES = ['user_sessions', 'verifications'] satisfies TableName[];
@@ -52,11 +51,8 @@ export async function clearExpiredAuthRows(
   return deleted;
 }
 
-/** The job handler: a no-op where the tables don't exist */
+/** The job handler */
 export async function clearExpired(): Promise<void> {
-  if (!usesBetterAuth()) {
-    return;
-  }
   const { knex } = require('../../data/db');
   const deleted = await clearExpiredAuthRows(knex);
   logging.info(
@@ -69,7 +65,7 @@ let scheduled = false;
 
 /** Schedules the daily cleanup under either engine, since sessions outlive a rollback */
 export async function scheduleClearExpiredJob(jobsService: JobsService): Promise<void> {
-  if (scheduled || !usesBetterAuth()) {
+  if (scheduled) {
     return;
   }
 

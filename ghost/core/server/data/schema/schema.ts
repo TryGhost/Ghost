@@ -537,7 +537,7 @@ const schema = {
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
-  // Better Auth's account, session and verification models (in development).
+  // Better Auth's account, session and verification models.
   // Dates keep milliseconds because Better Auth expects them to round-trip.
   user_accounts: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },

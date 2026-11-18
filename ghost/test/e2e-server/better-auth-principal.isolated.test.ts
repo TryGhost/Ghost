@@ -43,7 +43,6 @@ describe.skipIf(isSQLite)('Admin API session principal under auth:engine better-
     sandbox.stub(sentry, 'captureException');
     sandbox.stub(sentry, 'captureMessage');
     configUtils.set('auth:engine', 'better-auth');
-    configUtils.set('createInDevelopmentTables', true);
     configUtils.set('url', `${siteOrigin}/`);
     configUtils.set('admin:url', `${adminOrigin}/`);
     // Native sign-in then starts unverified; each test sets the state it needs
