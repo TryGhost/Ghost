@@ -552,11 +552,6 @@
       "count": 1
     }
   },
-  "src/settings/providers/global-data-provider.tsx": {
-    "react-hooks/set-state-in-effect": {
-      "count": 1
-    }
-  },
   "src/settings/settings-route.tsx": {
     "react-hooks/static-components": {
       "count": 1
