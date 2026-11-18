@@ -7,19 +7,13 @@ import {
   fakePostsListScreen,
   renderAdminApp,
   settingsResponse,
+  withSavedViews,
   type EditSettingsCapture,
-  type RenderAdminAppOptions,
+  type StoredView,
 } from '@test-utils/acceptance';
 import { sidebarScreen } from '@/layout/sidebar.screen';
 import { postsListScreen } from './posts-list.screen';
 import { clearStickyPostFilters } from './posts-sticky-filters';
-
-interface StoredView {
-  name: string;
-  route: 'posts';
-  color: string;
-  filter: Record<string, string>;
-}
 
 const publicPosts: StoredView = {
   name: 'Public posts',
@@ -39,17 +33,6 @@ const membersOnly: StoredView = {
   color: 'red',
   filter: { visibility: 'members' },
 };
-
-/** Views saved before the test, in the `shared_views` setting's stored form. */
-function withSavedViews(...views: StoredView[]): RenderAdminAppOptions {
-  return {
-    boot: {
-      browseSettings: {
-        response: settingsResponse({ settings: { shared_views: JSON.stringify(views) } }),
-      },
-    },
-  };
-}
 
 /** The current route's query, independent of param order. */
 function routeParams(): Record<string, string> {
