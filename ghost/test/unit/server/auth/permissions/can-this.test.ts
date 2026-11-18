@@ -1,16 +1,30 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const testUtils = require('../../../../utils');
-const _ = require('lodash');
-const models = require('../../../../../core/server/models');
-const permissions = require('../../../../../core/server/auth/permissions');
-const providers = require('../../../../../core/server/auth/permissions/providers').default;
-const rolePermissions = require('../../../../../core/server/auth/permissions/role-permissions');
-const { limitService } = require('../../../../../core/server/services/limits');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import _ from 'lodash';
+// @ts-expect-error This module lacks type definitions.
+import testUtils from '../../../../utils';
+// @ts-expect-error This module lacks type definitions.
+import models = require('../../../../../core/server/models');
+import type permissionsType from '../../../../../core/server/auth/permissions';
+import type providersType from '../../../../../core/server/auth/permissions/providers';
+import type * as limitsType from '../../../../../core/server/services/limits';
+import * as rolePermissions from '../../../../../core/server/auth/permissions/role-permissions';
+
+// require(), not import: the stubs must patch the instances the models load
+const permissions: typeof permissionsType = require('../../../../../core/server/auth/permissions');
+const providers: typeof providersType =
+  require('../../../../../core/server/auth/permissions/providers').default;
+const { limitService }: typeof limitsType = require('../../../../../core/server/services/limits');
+
+// Tests pass fake contexts, ids and provider results the real types reject
+const canThis = permissions.canThis as (
+  context?: unknown,
+) => Record<string, Record<string, (...args: unknown[]) => Promise<any>>>;
+const stubProvider = (name: 'user' | 'apiKey'): sinon.SinonStub => sinon.stub(providers, name);
 
 describe('Permissions', function () {
-  let findPostSpy;
-  let findTagSpy;
+  let findPostSpy: sinon.SinonStub;
+  let findTagSpy: sinon.SinonStub;
 
   beforeEach(function () {
     findPostSpy = sinon.stub(models.Post, 'findOne').callsFake(function () {
@@ -34,7 +48,7 @@ describe('Permissions', function () {
 
   describe('CanThis', function () {
     it('canThisResult gets build properly', function () {
-      const canThisResult = permissions.canThis();
+      const canThisResult = canThis();
 
       assert(_.isPlainObject(canThisResult.browse));
       assert.equal(typeof canThisResult.browse.post, 'function');
@@ -60,10 +74,9 @@ describe('Permissions', function () {
       describe('with permissible calls (post model)', function () {
         it('No context: does not allow edit post (no model)', async function () {
           await assert.rejects(
-            permissions
-              .canThis() // no context
+            canThis() // no context
               .edit.post(), // post id
-            function (err) {
+            function (err: any) {
               assert.equal(err.errorType, 'NoPermissionError');
               return true;
             },
@@ -74,10 +87,9 @@ describe('Permissions', function () {
 
         it('No context: does not allow edit post (model syntax)', async function () {
           await assert.rejects(
-            permissions
-              .canThis() // no context
+            canThis() // no context
               .edit.post({ id: 1 }), // post id in model syntax
-            function (err) {
+            function (err: any) {
               assert.equal(err.errorType, 'NoPermissionError');
               return true;
             },
@@ -89,10 +101,9 @@ describe('Permissions', function () {
 
         it('No context: does not allow edit post (model ID syntax)', async function () {
           await assert.rejects(
-            permissions
-              .canThis({}) // no context
+            canThis({}) // no context
               .edit.post(1), // post id using number syntax
-            function (err) {
+            function (err: any) {
               assert.equal(err.errorType, 'NoPermissionError');
               return true;
             },
@@ -103,8 +114,7 @@ describe('Permissions', function () {
         });
 
         it('Internal context: instantly grants permissions', async function () {
-          await permissions
-            .canThis({ internal: true }) // internal context
+          await canThis({ internal: true }) // internal context
             .edit.post({ id: 1 }); // post id
 
           // We don't get this far, permissions are instantly granted for internal
@@ -113,10 +123,9 @@ describe('Permissions', function () {
 
         it('External context: does not grant permissions', async function () {
           await assert.rejects(
-            permissions
-              .canThis({ external: true }) // internal context
+            canThis({ external: true }) // internal context
               .edit.post({ id: 1 }), // post id
-            function (err) {
+            function (err: any) {
               assert.equal(err.errorType, 'NoPermissionError');
               return true;
             },
@@ -130,10 +139,9 @@ describe('Permissions', function () {
       describe('without permissible (tag model)', function () {
         it('No context: does not allow edit tag (model syntax)', async function () {
           await assert.rejects(
-            permissions
-              .canThis() // no context
+            canThis() // no context
               .edit.tag({ id: 1 }), // tag id in model syntax
-            function (err) {
+            function (err: any) {
               assert.equal(err.errorType, 'NoPermissionError');
               return true;
             },
@@ -144,8 +152,7 @@ describe('Permissions', function () {
         });
 
         it('Internal context: instantly grants permissions', async function () {
-          await permissions
-            .canThis({ internal: true }) // internal context
+          await canThis({ internal: true }) // internal context
             .edit.tag({ id: 1 }); // tag id
 
           // We don't look up tags
@@ -154,10 +161,9 @@ describe('Permissions', function () {
 
         it('External context: does not grant permissions', async function () {
           await assert.rejects(
-            permissions
-              .canThis({ external: true }) // external context
+            canThis({ external: true }) // external context
               .edit.tag({ id: 1 }), // tag id
-            function (err) {
+            function (err: any) {
               assert.equal(err.errorType, 'NoPermissionError');
               return true;
             },
@@ -174,7 +180,7 @@ describe('Permissions', function () {
       // It can depend on bookshelf, but should NOT use hard coded model knowledge.
       // We use the tag model here because it doesn't have permissible, once that changes, these tests must also change
       it('No permissions: cannot edit tag (no permissible function on model)', async function () {
-        const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+        const userProviderStub = stubProvider('user').callsFake(function () {
           // Fake the response from providers.user, which contains permissions and roles
           return Promise.resolve({
             permissions: [],
@@ -183,10 +189,9 @@ describe('Permissions', function () {
         });
 
         await assert.rejects(
-          permissions
-            .canThis({ user: {} }) // user context
+          canThis({ user: {} }) // user context
             .edit.tag({ id: 1 }), // tag id in model syntax
-          function (err) {
+          function (err: any) {
             sinon.assert.calledOnce(userProviderStub);
             assert.equal(err.errorType, 'NoPermissionError');
             return true;
@@ -195,7 +200,7 @@ describe('Permissions', function () {
       });
 
       it('With permissions: can edit specific tag (no permissible function on model)', async function () {
-        const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+        const userProviderStub = stubProvider('user').callsFake(function () {
           // Fake the response from providers.user, which contains permissions and roles
           return Promise.resolve({
             permissions: testUtils.DataGenerator.Content.permissions,
@@ -203,8 +208,7 @@ describe('Permissions', function () {
           });
         });
 
-        const res = await permissions
-          .canThis({ user: {} }) // user context
+        const res = await canThis({ user: {} }) // user context
           .edit.tag({ id: 1 }); // tag id in model syntax
 
         sinon.assert.calledOnce(userProviderStub);
@@ -212,7 +216,7 @@ describe('Permissions', function () {
       });
 
       it('With permissions: can edit non-specific tag (no permissible function on model)', async function () {
-        const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+        const userProviderStub = stubProvider('user').callsFake(function () {
           // Fake the response from providers.user, which contains permissions and roles
           return Promise.resolve({
             permissions: testUtils.DataGenerator.Content.permissions,
@@ -220,8 +224,7 @@ describe('Permissions', function () {
           });
         });
 
-        const res = await permissions
-          .canThis({ user: {} }) // user context
+        const res = await canThis({ user: {} }) // user context
           .edit.tag(); // tag id in model syntax
 
         sinon.assert.calledOnce(userProviderStub);
@@ -229,7 +232,7 @@ describe('Permissions', function () {
       });
 
       it('With owner role: can edit tag (no permissible function on model)', async function () {
-        const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+        const userProviderStub = stubProvider('user').callsFake(function () {
           // Fake the response from providers.user, which contains permissions and roles
           return Promise.resolve({
             permissions: [],
@@ -238,8 +241,7 @@ describe('Permissions', function () {
           });
         });
 
-        const res = await permissions
-          .canThis({ user: {} }) // user context
+        const res = await canThis({ user: {} }) // user context
           .edit.tag({ id: 1 }); // tag id in model syntax
 
         sinon.assert.calledOnce(userProviderStub);
@@ -253,7 +255,7 @@ describe('Permissions', function () {
       // It can depend on bookshelf, but should NOT use hard coded model knowledge.
       // We use the tag model here because it doesn't have permissible, once that changes, these tests must also change
       it('With permissions: can edit non-specific tag (no permissible function on model)', async function () {
-        const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
+        const apiKeyProviderStub = stubProvider('apiKey').callsFake(() => {
           // Fake the response from providers.user, which contains permissions and roles
           return Promise.resolve({
             permissions: testUtils.DataGenerator.Content.permissions,
@@ -261,12 +263,11 @@ describe('Permissions', function () {
             roles: [testUtils.DataGenerator.Content.roles[5]],
           });
         });
-        const res = await permissions
-          .canThis({
-            api_key: {
-              id: 123,
-            },
-          }) // api key context
+        const res = await canThis({
+          api_key: {
+            id: 123,
+          },
+        }) // api key context
           .edit.tag({ id: 1 }); // tag id in model syntax
 
         sinon.assert.calledOnce(apiKeyProviderStub);
@@ -279,26 +280,24 @@ describe('Permissions', function () {
       // This is the scenario introduced by staff API keys where a user can have an associated API key
 
       it('Current behavior: User with permission + API key with permission (should pass with current logic)', async function () {
-        const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+        const userProviderStub = stubProvider('user').callsFake(function () {
           return Promise.resolve({
             permissions: testUtils.DataGenerator.Content.permissions,
             roles: [{ name: 'Administrator' }],
           });
         });
 
-        const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
+        const apiKeyProviderStub = stubProvider('apiKey').callsFake(() => {
           return Promise.resolve({
             permissions: testUtils.DataGenerator.Content.permissions,
             roles: [testUtils.DataGenerator.Content.roles[5]], // admin api key role
           });
         });
 
-        const res = await permissions
-          .canThis({
-            user: { id: 1 },
-            api_key: { id: 123, type: 'admin' },
-          })
-          .edit.tag({ id: 1 });
+        const res = await canThis({
+          user: { id: 1 },
+          api_key: { id: 123, type: 'admin' },
+        }).edit.tag({ id: 1 });
 
         sinon.assert.calledOnce(userProviderStub);
         sinon.assert.calledOnce(apiKeyProviderStub);
@@ -306,26 +305,24 @@ describe('Permissions', function () {
       });
 
       it('Fixed behavior: User with permission + API key without permission (now uses USER permission and passes)', async function () {
-        const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+        const userProviderStub = stubProvider('user').callsFake(function () {
           return Promise.resolve({
             permissions: testUtils.DataGenerator.Content.permissions,
             roles: [{ name: 'Administrator' }],
           });
         });
 
-        const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
+        const apiKeyProviderStub = stubProvider('apiKey').callsFake(() => {
           return Promise.resolve({
             permissions: [], // API key has no permissions
             roles: [],
           });
         });
 
-        const res = await permissions
-          .canThis({
-            user: { id: 1 },
-            api_key: { id: 123, type: 'admin' },
-          })
-          .edit.tag({ id: 1 });
+        const res = await canThis({
+          user: { id: 1 },
+          api_key: { id: 123, type: 'admin' },
+        }).edit.tag({ id: 1 });
 
         sinon.assert.calledOnce(userProviderStub);
         sinon.assert.calledOnce(apiKeyProviderStub);
@@ -334,14 +331,14 @@ describe('Permissions', function () {
       });
 
       it('Fixed behavior: User without permission + API key with permission (now uses USER permission and fails)', async function () {
-        const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+        const userProviderStub = stubProvider('user').callsFake(function () {
           return Promise.resolve({
             permissions: [], // User has no permissions
             roles: [{ name: 'Contributor' }],
           });
         });
 
-        const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
+        const apiKeyProviderStub = stubProvider('apiKey').callsFake(() => {
           return Promise.resolve({
             permissions: testUtils.DataGenerator.Content.permissions,
             roles: [testUtils.DataGenerator.Content.roles[5]],
@@ -349,13 +346,11 @@ describe('Permissions', function () {
         });
 
         await assert.rejects(
-          permissions
-            .canThis({
-              user: { id: 1 },
-              api_key: { id: 123, type: 'admin' },
-            })
-            .edit.tag({ id: 1 }),
-          function (err) {
+          canThis({
+            user: { id: 1 },
+            api_key: { id: 123, type: 'admin' },
+          }).edit.tag({ id: 1 }),
+          function (err: any) {
             sinon.assert.calledOnce(userProviderStub);
             sinon.assert.calledOnce(apiKeyProviderStub);
             assert.equal(err.errorType, 'NoPermissionError');
@@ -366,14 +361,14 @@ describe('Permissions', function () {
       });
 
       it('Current behavior: User without permission + API key without permission (should fail)', async function () {
-        const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+        const userProviderStub = stubProvider('user').callsFake(function () {
           return Promise.resolve({
             permissions: [],
             roles: [{ name: 'Contributor' }],
           });
         });
 
-        const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
+        const apiKeyProviderStub = stubProvider('apiKey').callsFake(() => {
           return Promise.resolve({
             permissions: [],
             roles: [],
@@ -381,13 +376,11 @@ describe('Permissions', function () {
         });
 
         await assert.rejects(
-          permissions
-            .canThis({
-              user: { id: 1 },
-              api_key: { id: 123, type: 'admin' },
-            })
-            .edit.tag({ id: 1 }),
-          function (err) {
+          canThis({
+            user: { id: 1 },
+            api_key: { id: 123, type: 'admin' },
+          }).edit.tag({ id: 1 }),
+          function (err: any) {
             sinon.assert.calledOnce(userProviderStub);
             sinon.assert.calledOnce(apiKeyProviderStub);
             assert.equal(err.errorType, 'NoPermissionError');
@@ -397,26 +390,24 @@ describe('Permissions', function () {
       });
 
       it('Current behavior: Owner user + API key without permission (owner should override)', async function () {
-        const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+        const userProviderStub = stubProvider('user').callsFake(function () {
           return Promise.resolve({
             permissions: [],
             roles: [testUtils.DataGenerator.Content.roles[3]], // owner role
           });
         });
 
-        const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
+        const apiKeyProviderStub = stubProvider('apiKey').callsFake(() => {
           return Promise.resolve({
             permissions: [],
             roles: [],
           });
         });
 
-        const res = await permissions
-          .canThis({
-            user: { id: 1 },
-            api_key: { id: 123, type: 'admin' },
-          })
-          .edit.tag({ id: 1 });
+        const res = await canThis({
+          user: { id: 1 },
+          api_key: { id: 123, type: 'admin' },
+        }).edit.tag({ id: 1 });
 
         sinon.assert.calledOnce(userProviderStub);
         sinon.assert.calledOnce(apiKeyProviderStub);
@@ -426,26 +417,24 @@ describe('Permissions', function () {
       // Tests for NEW expected behavior after fix
       describe('Expected behavior after fix: User permissions should take precedence', function () {
         it('Expected: User with permission + API key without permission (should use USER permission and pass)', async function () {
-          const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+          const userProviderStub = stubProvider('user').callsFake(function () {
             return Promise.resolve({
               permissions: testUtils.DataGenerator.Content.permissions,
               roles: [{ name: 'Administrator' }],
             });
           });
 
-          const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
+          const apiKeyProviderStub = stubProvider('apiKey').callsFake(() => {
             return Promise.resolve({
               permissions: [], // API key has no permissions
               roles: [],
             });
           });
 
-          const res = await permissions
-            .canThis({
-              user: { id: 1 },
-              api_key: { id: 123, type: 'admin' },
-            })
-            .edit.tag({ id: 1 });
+          const res = await canThis({
+            user: { id: 1 },
+            api_key: { id: 123, type: 'admin' },
+          }).edit.tag({ id: 1 });
 
           sinon.assert.calledOnce(userProviderStub);
           sinon.assert.calledOnce(apiKeyProviderStub);
@@ -453,14 +442,14 @@ describe('Permissions', function () {
         });
 
         it('Expected: User without permission + API key with permission (should use USER permission and fail)', async function () {
-          const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+          const userProviderStub = stubProvider('user').callsFake(function () {
             return Promise.resolve({
               permissions: [], // User has no permissions
               roles: [{ name: 'Contributor' }],
             });
           });
 
-          const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
+          const apiKeyProviderStub = stubProvider('apiKey').callsFake(() => {
             return Promise.resolve({
               permissions: testUtils.DataGenerator.Content.permissions,
               roles: [testUtils.DataGenerator.Content.roles[5]],
@@ -468,13 +457,11 @@ describe('Permissions', function () {
           });
 
           await assert.rejects(
-            permissions
-              .canThis({
-                user: { id: 1 },
-                api_key: { id: 123, type: 'admin' },
-              })
-              .edit.tag({ id: 1 }),
-            function (err) {
+            canThis({
+              user: { id: 1 },
+              api_key: { id: 123, type: 'admin' },
+            }).edit.tag({ id: 1 }),
+            function (err: any) {
               sinon.assert.calledOnce(userProviderStub);
               sinon.assert.calledOnce(apiKeyProviderStub);
               assert.equal(err.errorType, 'NoPermissionError');
@@ -484,26 +471,24 @@ describe('Permissions', function () {
         });
 
         it('Expected: Owner user + API key without permission (should use USER permission and pass)', async function () {
-          const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+          const userProviderStub = stubProvider('user').callsFake(function () {
             return Promise.resolve({
               permissions: [],
               roles: [testUtils.DataGenerator.Content.roles[3]], // owner role
             });
           });
 
-          const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(() => {
+          const apiKeyProviderStub = stubProvider('apiKey').callsFake(() => {
             return Promise.resolve({
               permissions: [],
               roles: [],
             });
           });
 
-          const res = await permissions
-            .canThis({
-              user: { id: 1 },
-              api_key: { id: 123, type: 'admin' },
-            })
-            .edit.tag({ id: 1 });
+          const res = await canThis({
+            user: { id: 1 },
+            api_key: { id: 123, type: 'admin' },
+          }).edit.tag({ id: 1 });
 
           sinon.assert.calledOnce(userProviderStub);
           sinon.assert.calledOnce(apiKeyProviderStub);
@@ -511,14 +496,14 @@ describe('Permissions', function () {
         });
 
         it('Expected: Author user + API key cannot update the visibility of their own post', async function () {
-          const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+          const userProviderStub = stubProvider('user').callsFake(function () {
             return Promise.resolve({
               permissions: testUtils.DataGenerator.Content.permissions,
               roles: [testUtils.DataGenerator.Content.roles[2]], // Author role
             });
           });
 
-          const apiKeyProviderStub = sinon.stub(providers, 'apiKey').callsFake(function () {
+          const apiKeyProviderStub = stubProvider('apiKey').callsFake(function () {
             return Promise.resolve({
               permissions: testUtils.DataGenerator.Content.permissions,
               roles: [testUtils.DataGenerator.Content.roles[5]], // Admin Integration
@@ -526,13 +511,11 @@ describe('Permissions', function () {
           });
 
           await assert.rejects(
-            permissions
-              .canThis({
-                user: testUtils.DataGenerator.Content.users[0].id,
-                api_key: { id: 123, type: 'admin' },
-              })
-              .edit.post({ id: 1 }, { visibility: 'members' }),
-            function (err) {
+            canThis({
+              user: testUtils.DataGenerator.Content.users[0].id,
+              api_key: { id: 123, type: 'admin' },
+            }).edit.post({ id: 1 }, { visibility: 'members' }),
+            function (err: any) {
               assert.equal(err.errorType, 'NoPermissionError');
               return true;
             },
@@ -549,21 +532,21 @@ describe('Permissions', function () {
   describe('model rules and provider reads', function () {
     it('does not reread a post that disappears after authorization', async function () {
       const author = testUtils.DataGenerator.Content.users[0];
-      const userProviderStub = sinon.stub(providers, 'user').resolves({
+      const userProviderStub = stubProvider('user').resolves({
         permissions: rolePermissions.forRoles(['Author']),
         roles: [{ name: 'Author' }],
       });
       // A second read would observe the deletion.
       findPostSpy.onSecondCall().resolves(null);
 
-      await permissions.canThis({ user: author.id }).destroy.post('post-1');
+      await canThis({ user: author.id }).destroy.post('post-1');
 
       sinon.assert.calledOnce(userProviderStub);
       sinon.assert.calledOnce(findPostSpy);
     });
 
     it('reads the post and checks publishing limits only once', async function () {
-      const userProviderStub = sinon.stub(providers, 'user').resolves({
+      const userProviderStub = stubProvider('user').resolves({
         permissions: rolePermissions.forRoles(['Administrator']),
         roles: [{ name: 'Administrator' }],
       });
@@ -571,7 +554,7 @@ describe('Permissions', function () {
       sinon.stub(limitService, 'isLimited').withArgs('members').returns(true);
       const limitCheck = sinon.stub(limitService, 'errorIfIsOverLimit').resolves();
 
-      await permissions.canThis({ user: 'admin-1' }).edit.post('post-1', { status: 'published' });
+      await canThis({ user: 'admin-1' }).edit.post('post-1', { status: 'published' });
 
       sinon.assert.calledOnce(userProviderStub);
       sinon.assert.calledOnce(findPostSpy);
@@ -579,7 +562,7 @@ describe('Permissions', function () {
     });
 
     it('does not duplicate user reads or nested role-assignment checks', async function () {
-      const userProviderStub = sinon.stub(providers, 'user').resolves({
+      const userProviderStub = stubProvider('user').resolves({
         permissions: rolePermissions.forRoles(['Administrator']),
         roles: [{ id: 'admin-role', name: 'Administrator' }],
       });
@@ -590,7 +573,7 @@ describe('Permissions', function () {
       const role = models.Role.forge({ id: 'editor-role', name: 'Editor' });
       const roleRead = sinon.stub(models.Role, 'findOne').resolves(role);
 
-      await permissions.canThis({ user: 'admin-1' }).edit.user('target-user', {
+      await canThis({ user: 'admin-1' }).edit.user('target-user', {
         roles: [{ id: role.id, name: 'Editor' }],
       });
 
@@ -604,7 +587,7 @@ describe('Permissions', function () {
 
   describe('permissible (overridden)', function () {
     it('can use permissible function on model to forbid something (post model)', async function () {
-      const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+      const userProviderStub = stubProvider('user').callsFake(function () {
         // Fake the response from providers.user, which contains permissions and roles
         return Promise.resolve({
           permissions: testUtils.DataGenerator.Content.permissions,
@@ -617,10 +600,9 @@ describe('Permissions', function () {
       });
 
       await assert.rejects(
-        permissions
-          .canThis({ user: {} }) // user context
+        canThis({ user: {} }) // user context
           .edit.post({ id: 1 }), // tag id in model syntax
-        function (err) {
+        function (err: any) {
           sinon.assert.calledOnce(permissibleStub);
           sinon.assert.calledWith(
             permissibleStub,
@@ -641,7 +623,7 @@ describe('Permissions', function () {
     });
 
     it('can use permissible function on model to allow something (post model)', async function () {
-      const userProviderStub = sinon.stub(providers, 'user').callsFake(function () {
+      const userProviderStub = stubProvider('user').callsFake(function () {
         // Fake the response from providers.user, which contains permissions and roles
         return Promise.resolve({
           permissions: testUtils.DataGenerator.Content.permissions,
@@ -653,8 +635,7 @@ describe('Permissions', function () {
         return Promise.resolve();
       });
 
-      const res = await permissions
-        .canThis({ user: {} }) // user context
+      const res = await canThis({ user: {} }) // user context
         .edit.post({ id: 1 }); // tag id in model syntax
 
       sinon.assert.calledOnce(permissibleStub);

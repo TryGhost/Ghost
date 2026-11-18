@@ -2,11 +2,11 @@
  * Parse Context
  *
  * Utility function, to expand strings out into objects.
- * @param {Object|String} context
- * @return {{internal: boolean, user: integer|null, public: boolean, api_key: Object|null}}
  */
-module.exports = function parseContext(context) {
-  const parsed = {
+export default function parseContext(rawContext?: unknown): ParsedContext {
+  // Strings carry no fields, so reading one off 'internal' is undefined
+  const context = rawContext as Partial<ParsedContext> | undefined;
+  const parsed: ParsedContext = {
     internal: false,
     user: null,
     api_key: null,
@@ -15,7 +15,7 @@ module.exports = function parseContext(context) {
     public: true,
   };
 
-  if (context && (context === 'internal' || context.internal)) {
+  if (context && (rawContext === 'internal' || context.internal)) {
     parsed.internal = true;
     parsed.public = false;
   }
@@ -36,4 +36,14 @@ module.exports = function parseContext(context) {
   }
 
   return parsed;
-};
+}
+
+/** A normalized `frame.options.context` */
+export interface ParsedContext {
+  internal: boolean;
+  user: string | null;
+  api_key: { id: string; type: string } | null;
+  integration: unknown;
+  member: unknown;
+  public: boolean;
+}

@@ -4,23 +4,13 @@ import tpl from '@tryghost/tpl';
 import providers, { type LoadedPermissions } from './providers';
 import { actionsMap, type Permission } from './role-permissions';
 import { setIsRoles } from '../../models/role-utils';
+import parseContext, { type ParsedContext } from './parse-context';
 
 const models = require('../../models');
-const parseContext = require('./parse-context');
 
 const messages = {
   noPermissionToAction: 'You do not have permission to perform this action',
 };
-
-/** The parsed `frame.options.context`, see parse-context.js */
-interface ParsedContext {
-  internal: boolean;
-  user: string | null;
-  api_key: { id: string; type: string } | null;
-  integration: unknown;
-  member: unknown;
-  public: boolean;
-}
 
 /** User and API key permissions, each null when that actor is absent */
 interface LoadedActors {
@@ -169,7 +159,7 @@ class CanThisResultBuilder {
     let apiKeyPermissionLoad: Promise<LoadedActors['apiKey']>;
 
     // Get context.user, context.api_key and context.app
-    const context: ParsedContext = parseContext(rawContext);
+    const context = parseContext(rawContext);
 
     // Kick off loading of user permissions if necessary
     if (context.user) {
