@@ -11,6 +11,8 @@ import {
 export class PostsPage extends AdminPage {
   public readonly postsList: Locator;
   public readonly postsListItem: Locator;
+  /** The title of every listed post, one per row, in the order the list shows them. */
+  public readonly postTitles: Locator;
   public readonly newPostButton: Locator;
 
   public readonly postsFilters: Locator;
@@ -30,6 +32,7 @@ export class PostsPage extends AdminPage {
 
     this.postsList = page.getByTestId(postsList);
     this.postsListItem = this.postsList.getByTestId(postsListItem);
+    this.postTitles = this.postsListItem.getByRole('heading', { level: 3 });
     this.newPostButton = page.getByRole('link', { name: 'New post', exact: true });
 
     this.postsFilters = page.getByTestId(postsFilters);
