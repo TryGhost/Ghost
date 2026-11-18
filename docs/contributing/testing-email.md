@@ -68,9 +68,11 @@ export MAILGUN_DOMAIN=sandbox123.mailgun.org
 
 With both set, `pnpm dev`, `pnpm dev:up` and the other host development
 variants send transactional, newsletter, and automation email through the
-Mailgun API instead of Mailpit, and print
-`Email: all email is sent through Mailgun` on startup. Without them, those
-variants use Mailpit as usual. `pnpm dev:mailgun` always selects Mailgun, and
+Mailgun API instead of Mailpit. On startup they print
+`Email: all email is sent through Mailgun`; `pnpm dev:up` writes it to the log
+file it names. Without credentials, those variants capture transactional email
+in Mailpit and cannot send newsletters, as described above.
+`pnpm dev:mailgun` always selects Mailgun, and
 `pnpm dev:fake-mailgun` keeps using the fake Mailgun server even when
 credentials are set. To use Mailpit for one run while credentials are set,
 clear the key:
