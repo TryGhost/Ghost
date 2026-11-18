@@ -16,6 +16,7 @@ export type ImportAction =
   | { type: 'SET_DATA_PREVIEW_INDEX'; dataPreviewIndex: number }
   | { type: 'SET_SHOW_MAPPING_ERRORS'; showMappingErrors: boolean }
   | { type: 'SET_DRAG_OVER'; dragOver: boolean }
+  | { type: 'SET_CONFIRMING'; isConfirming: boolean }
   | { type: 'UPLOAD_START' }
   | { type: 'UPLOAD_ACCEPTED' }
   | { type: 'UPLOAD_COMPLETE'; importResponse: ImportResponse }
@@ -33,6 +34,7 @@ export function importReducer(state: ImportState, action: ImportAction): ImportS
       return {
         ...state,
         status: 'MAPPING',
+        isConfirming: false,
         file: action.file,
         fileData: null,
         mapping: null,
@@ -86,6 +88,8 @@ export function importReducer(state: ImportState, action: ImportAction): ImportS
         ...state,
         dragOver: action.dragOver,
       };
+    case 'SET_CONFIRMING':
+      return state.status === 'MAPPING' ? { ...state, isConfirming: action.isConfirming } : state;
     case 'UPLOAD_START':
       return {
         ...state,
@@ -96,17 +100,20 @@ export function importReducer(state: ImportState, action: ImportAction): ImportS
       return {
         ...state,
         status: 'PROCESSING',
+        isConfirming: false,
       };
     case 'UPLOAD_COMPLETE':
       return {
         ...state,
         status: 'COMPLETE',
+        isConfirming: false,
         importResponse: action.importResponse,
       };
     case 'UPLOAD_ERROR':
       return {
         ...state,
         status: 'ERROR',
+        isConfirming: false,
         errorMessage: action.errorMessage,
         errorHeader: action.errorHeader ?? 'Import error',
         showTryAgainButton: action.showTryAgainButton ?? true,
