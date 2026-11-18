@@ -7,6 +7,11 @@ import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 
+// The videos' flat backgrounds never exactly match the page; fading the corners
+// hides the square while keeping the orb, which fills ~96% of the frame.
+const orbMask = 'radial-gradient(circle closest-side, black 94%, transparent 100%)';
+const orbStyle = { width: '100px', height: '100px', maskImage: orbMask, WebkitMaskImage: orbMask };
+
 const GlobalDataProvider = ({ children }: { children: ReactNode }) => {
   const settings = useBrowseSettings();
   const site = useBrowseSite();
@@ -38,10 +43,7 @@ const GlobalDataProvider = ({ children }: { children: ReactNode }) => {
           className="gh-loading-orb dark:hidden"
           height="100"
           preload="metadata"
-          style={{
-            width: '100px',
-            height: '100px',
-          }}
+          style={orbStyle}
           width="100"
           loop
           muted
@@ -54,10 +56,7 @@ const GlobalDataProvider = ({ children }: { children: ReactNode }) => {
           className="gh-loading-orb hidden dark:block"
           height="100"
           preload="metadata"
-          style={{
-            width: '100px',
-            height: '100px',
-          }}
+          style={orbStyle}
           width="100"
           loop
           muted
