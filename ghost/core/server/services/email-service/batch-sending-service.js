@@ -49,6 +49,8 @@ class BatchSendingService {
   #emailSegmenter;
   #domainWarmingService;
   #jobsService;
+  // DO NOT MERGE: staging-only restart test (HKG-2113)
+  #restartTestPauseMs;
   #models;
   #db;
   #sentry;
@@ -100,6 +102,7 @@ class BatchSendingService {
     sentry,
     getRequiredUrlRelations = () => [],
     batchCreationConcurrency = 2,
+    restartTestPauseMs = 0,
     BEFORE_RETRY_CONFIG,
     AFTER_RETRY_CONFIG,
     MAILGUN_API_RETRY_CONFIG,
@@ -107,6 +110,7 @@ class BatchSendingService {
     this.#emailRenderer = emailRenderer;
     this.#sendingService = sendingService;
     this.#jobsService = jobsService;
+    this.#restartTestPauseMs = restartTestPauseMs;
     this.#emailSegmenter = emailSegmenter;
     this.#domainWarmingService = domainWarmingService;
     this.#models = models;
@@ -1198,6 +1202,20 @@ class BatchSendingService {
         const batch = queue.shift();
         if (!batch) {
           return;
+        }
+        // DO NOT MERGE: slows sending on one staging site so a restart can land
+        // between batches (HKG-2113)
+        if (this.#restartTestPauseMs > 0) {
+          logging.warn(
+            `[Restart test] Pausing ${this.#restartTestPauseMs}ms before batch ${batch.id} for email ${email.id}`,
+          );
+          await new Promise((resolve) => {
+            setTimeout(resolve, this.#restartTestPauseMs);
+          });
+          if (this.#shuttingDown) {
+            queue.unshift(batch);
+            return;
+          }
         }
         const batchData = {
           email,

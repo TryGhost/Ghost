@@ -135,6 +135,9 @@ class EmailServiceWrapper {
       sentry,
       getRequiredUrlRelations,
       batchCreationConcurrency,
+      // DO NOT MERGE: slows sending on one staging site for a restart test (HKG-2113)
+      restartTestPauseMs:
+        new URL(configService.get('url')).hostname === 'testing-25.ghost.is' ? 30_000 : 0,
     });
     const sendingStatusService = new SendingStatusService({ knex: db.knex });
 
