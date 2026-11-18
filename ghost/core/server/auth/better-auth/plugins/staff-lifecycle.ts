@@ -213,10 +213,13 @@ export const ghostStaffLifecycle = (options: StaffLifecycleOptions) => {
           body: z.object({
             userId: z.string(),
             origin: z.string(),
+            // The API controllers' request, which Better Auth doesn't see
+            ipAddress: z.string().optional(),
+            userAgent: z.string().optional(),
           }),
         },
         async (ctx) => {
-          const { userId, origin } = ctx.body;
+          const { userId, origin, ipAddress, userAgent } = ctx.body;
           const user = await ctx.context.internalAdapter.findUserById(userId);
           if (!user) {
             throw APIError.from('NOT_FOUND', BASE_ERROR_CODES.USER_NOT_FOUND);
@@ -226,7 +229,7 @@ export const ghostStaffLifecycle = (options: StaffLifecycleOptions) => {
             ctx.context.internalAdapter.createSession(
               userId,
               false,
-              { verified: true, origin },
+              { verified: true, origin, ipAddress, userAgent },
               true,
             ),
           );

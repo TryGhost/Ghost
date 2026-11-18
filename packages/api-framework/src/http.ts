@@ -93,6 +93,7 @@ const http = (
       user: req.user,
       session: req.session,
       ip: req.ip,
+      userAgent: req.get('user-agent'),
       url: {
         host: req.vhost ? req.vhost.host : (req.get('host') ?? ''),
         pathname: parseUrl(req.originalUrl || req.url).pathname,

@@ -315,12 +315,15 @@ and hooks. It is replaced by `twoFactor` if Ghost moves to opt-in 2FA.
   stored hashed in `verifications` (`device-verification:<sessionId>`, 5-minute
   expiry). Attempts are an `attempts` field on `verifications`, incremented
   with `incrementOne` guarded by `attempts < 5`, so concurrent wrong codes
-  cannot pass the limit; an exhausted code is deleted and a new one must be
-  sent. The `spam` limiters still apply on top. Success sets `verified` and, unless
+  cannot pass the limit. An exhausted code refuses every later try with 429,
+  including an inline sign-in, which sends no new code, until an explicit
+  resend replaces it or it expires (legacy caps a challenge the same way).
+  The `spam` limiters still apply on top. Success sets `verified` and, unless
   `require_email_mfa` is on, a signed `ghost-admin-device` cookie bound to the
   user. Sign-out clears it when `require_email_mfa` is on.
-- Reuses `auth/session/emails/signin.js` and the device-details helper, with an
-  injectable geolocation lookup.
+- Sends through `auth/emails/sign-in-code.ts`, the email both engines share:
+  the legacy template and subject and the device details, with an injectable
+  geolocation lookup.
 
 **`ghostApiKeys`** (Phase 7 to Ghost 8.0). Better Auth's `apiKey` cannot host
 recoverable signing secrets or integration-bound keys, so this plugin maps the
@@ -714,8 +717,9 @@ upgrade test (§7) passes.
 1. `ghostDeviceVerification` (§3.3), including the unverified-session gate and
    device-trust cookie.
 2. Compatibility controllers for `/session/verify` and the inline `token`.
-3. Move the email template and device-details helper into the plugin; keep the
-   subject `<code> is your Ghost sign in verification code`.
+3. Share the email template and device-details helper between both engines
+   (`auth/emails`); keep the subject `<code> is your Ghost sign in
+   verification code`.
 4. Run the Staff 2FA block of `session.test.js`, `rate-limiting.test.js` and
    `e2e/tests/admin/two-factor-auth.test.ts` with verification on.
 5. Graduate `user_accounts`, `verifications` and `user_sessions` (versioned

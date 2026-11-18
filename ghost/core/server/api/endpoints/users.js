@@ -59,7 +59,13 @@ async function replaceSessionsForPasswordChange(frame) {
   const targetUserId = frame.data.password[0].user_id;
   await auth.staffSessions.revokeUserSessions(targetUserId);
   if (targetUserId === frame.options.context?.user) {
-    frame.setHeader('Set-Cookie', await auth.staffSessions.createVerifiedSession(targetUserId));
+    frame.setHeader(
+      'Set-Cookie',
+      await auth.staffSessions.createVerifiedSession(targetUserId, {
+        ipAddress: frame.options.ip,
+        userAgent: frame.options.userAgent,
+      }),
+    );
   }
 }
 
@@ -240,7 +246,7 @@ const controller = {
     headers: {
       cacheInvalidate: false,
     },
-    options: ['ip'],
+    options: ['ip', 'userAgent'],
     validation: {
       docName: 'password',
       data: {

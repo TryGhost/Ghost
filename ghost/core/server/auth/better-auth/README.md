@@ -92,6 +92,11 @@ until Phase 4.
   adapter hook described below. It applies the passwordless rules above
   (unlocks `locked`, refuses `inactive`) and creates a verified session pinned
   to the admin origin. Team SSO is `@better-auth/sso` (Phase 8).
+- `plugins/device-verification.ts`: `ghostDeviceVerification`, email-code
+  verification of new devices, described below.
+- The plugin emails codes through `auth/emails/sign-in-code.ts`, which the
+  legacy session service also uses: the legacy template and subject, and the
+  device details, with injectable geolocation.
 - `session-controller.ts`: `POST` and `DELETE /session` under `better-auth`,
   described below.
 - `staff-sessions.ts`: the security events' session changes, described below.
@@ -199,7 +204,9 @@ switching back to `legacy`. Sign-in pins each session to the admin origin, so
 sign in through the admin URL Ghost is configured with; a session used from
 another origin is refused. Development config has
 `security:staffDeviceVerification` off, so every new session is verified; with
-it on, sign-in can't complete until device verification moves (plan Phase 3).
+it on, native sign-in asks for an email code (see
+[Device verification](#device-verification)), but `POST /session` can't
+complete until its compatibility routes move (plan Phase 3, step 2).
 
 ## Compatibility routes
 
@@ -221,12 +228,64 @@ A `session.create.before` hook in `create-auth.ts` sets what
   required it to be the admin origin, and native `/sign-in/email` has Better
   Auth's origin check. A session without one resolves as anonymous.
 - `verified`: `true` while `security:staffDeviceVerification` is off, as
-  legacy does.
+  legacy does, or when `verifiesNewSession` from `ghostDeviceVerification`
+  says so.
 
 A rotation (`/change-password` with `revokeOtherSessions`) carries `origin`
 and `verified` over from the replaced session. The hook keeps the `origin`
 that `createVerifiedSession` requires, and never sets `verified` back to
 `false`.
+
+## Device verification
+
+With `security:staffDeviceVerification` on, `ghostDeviceVerification` asks for
+an email code on a new device (plan §3.3, §5.4). A new session is verified
+when:
+
+- the sign-in is a magic link, passkey or SSO (`require_email_mfa` applies to
+  password sign-in only);
+- it is the user's first login (`last_seen` is empty), even with
+  `require_email_mfa` on, as legacy sign-in does;
+- the browser has a valid `ghost-admin-device` cookie for the user and
+  `require_email_mfa` is off;
+- `/sign-in/email` carries the code emailed for the browser's current
+  unverified session as `token` (the legacy inline token);
+- or it replaces a verified session (rotation, above).
+
+Otherwise an after-hook emails a code and answers `403` with
+`2FA_NEW_DEVICE_DETECTED`, or `2FA_TOKEN_REQUIRED` when `require_email_mfa` is
+on. The session cookie is still set, so the browser can verify it. A sign-in
+replaces the browser's unverified session, as legacy regenerates it.
+
+- Codes are 6 random digits, stored as an HMAC of the session id and code in
+  `verifications` under `device-verification:<sessionId>`, for 5 minutes.
+  Every attempt increments `attempts` with `incrementOne` guarded by
+  `attempts < 5` before the comparison, so concurrent wrong codes can't pass
+  the limit. After five wrong codes (each `401`), every try on that code,
+  including an inline sign-in, answers `429 TOO_MANY_ATTEMPTS` and sends no
+  new code, until `/device-verification/send` replaces it or it expires, as
+  legacy caps a challenge until it is resent.
+- `POST /device-verification/send` emails a new code for the current session,
+  replacing the old one. `POST /device-verification/verify` `{code}` verifies
+  it, or answers `401 INVALID_CODE`. They count against the
+  `sendVerificationCode` and `userVerification` limiters, as
+  `POST`/`PUT /session/verify` do, and every email against the per-user
+  `verificationEmail` budget, which a verification resets. Server-side calls
+  skip the per-IP limiters.
+- A verified session sets `ghost-admin-device`, the user id and an expiry one
+  session lifetime away, signed with an HMAC under `admin_session_secret`,
+  unless `require_email_mfa` is on. The server refuses it after that expiry,
+  even if the browser kept it. Sign-out clears it when `require_email_mfa` is
+  on.
+- A global before-hook makes an unverified session anonymous everywhere except
+  `/device-verification/*` and `/sign-out`: it removes the session cookie from
+  the request, so session-protected endpoints such as `/change-password`
+  answer `401`. `resolvePrincipal` already treats one as anonymous.
+
+The plugin's endpoints and the inline `token` work through `auth.api` with
+the request's headers, for the `/session/verify` compatibility routes. Those,
+and forwarding `ghost-admin-device` from `POST /session`, are plan Phase 3
+step 2.
 
 ## Revocation
 
@@ -250,8 +309,9 @@ Revoking a user's sessions also deletes their legacy `sessions` rows, so a
 rollback to `legacy` (plan §8) can't revive a session a security event ended.
 Under `legacy` nothing here runs: a password change and a reset already delete
 the user's legacy rows, and suspension and deletion keep legacy behaviour.
-Sessions that `createVerifiedSession` creates have no IP or user agent, since
-the API controllers don't see the request.
+The API controllers pass the request's IP (`frame.options.ip`) and user agent
+(`frame.options.userAgent`) to `createVerifiedSession`, which Better Auth
+can't see on a server-side call, so those sessions record them as sign-in does.
 
 ## SSO adapter
 
@@ -270,6 +330,10 @@ carries on, as under `legacy`.
 development and testing databases and have no migration yet. Their dates are
 `DATETIME(3)` (the `precision` column option), because Better Auth expects
 dates to round-trip with their milliseconds.
+
+`verifications.attempts` counts wrong device verification codes. A
+development database created before it was added needs the table dropped
+(boot recreates missing in-development tables).
 
 `user_two_factors`, the `twoFactor` plugin's model, is an in-development table
 too, ahead of the plugin (plan §5). It holds TOTP secrets and backup codes, so
@@ -409,7 +473,8 @@ Settled in Phase 0 (plan §10):
 - Sessions last 180 days, absolute (`disableSessionRefresh`). Rolling sessions
   come later.
 - Email codes are 6 random digits, hashed in `verifications`, expiring after
-  5 minutes. Five wrong attempts delete the code; Ghost's rate limiters stay on top.
+  5 minutes. Five wrong attempts lock the code until a new one is sent or it
+  expires; Ghost's rate limiters stay on top.
 - Magic link, passkey, TOTP and SSO sign-ins count as verified.
   `require_email_mfa` applies to password sign-in only.
 - Scopes use the `object_type:action` permission keys, with finer scopes where

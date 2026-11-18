@@ -111,8 +111,10 @@ describe.skipIf(isSQLite)('SSO under auth:engine better-auth', function () {
   it('signs in with a verified session pinned to the admin origin', async function () {
     const cookie = cookieOf(await ssoSignIn(owner.email));
 
-    assert.equal(cookie.length, 1);
+    // A verified session also trusts the browser (ghostDeviceVerification)
+    assert.equal(cookie.length, 2);
     assert.match(cookie[0], /^ghost-admin-api-session=./);
+    assert.match(cookie[1], /^ghost-admin-device=./);
     const [session] = await sessions(owner.id);
     assert.equal(Boolean(session.verified), true);
     assert.equal(session.origin, adminOrigin);

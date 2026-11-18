@@ -103,6 +103,25 @@ describe('HTTP', function () {
     assert.equal('ip' in apiImpl.firstCall.firstArg.options, false);
   });
 
+  it('sets the userAgent option from the request header, not the query', function () {
+    const apiImpl: ApiImplementation & { options?: string[] } = sinon.stub().resolves();
+    apiImpl.options = ['userAgent'];
+    req.get = (name: string) => (name === 'user-agent' ? 'Test Browser/1.0' : undefined);
+    req.query = { userAgent: 'Spoofed/1.0' };
+
+    shared.http(apiImpl)(req, res, next);
+
+    assert.equal(apiImpl.firstCall.firstArg.options.userAgent, 'Test Browser/1.0');
+  });
+
+  it('leaves out the userAgent option unless the controller declares it', function () {
+    const apiImpl = sinon.stub().resolves();
+
+    shared.http(apiImpl)(req, res, next);
+
+    assert.equal('userAgent' in apiImpl.firstCall.firstArg.options, false);
+  });
+
   it('api response is fn', async function () {
     await new Promise<void>((resolve) => {
       const response = sinon.stub().callsFake(function (_req, _res, _next) {

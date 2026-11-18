@@ -12,6 +12,7 @@ const db = require('../../core/server/data/db');
 const jobsService = require('../../core/server/services/jobs-service');
 const stripe = require('../../core/server/services/stripe');
 const sentry = require('../../core/shared/sentry');
+const { GhostMailer } = require('../../core/server/lib/mail');
 const DataGenerator = require('../utils/fixtures/data-generator');
 
 const isSQLite = ['sqlite3', 'better-sqlite3'].includes(db.knex.client.config.client);
@@ -47,6 +48,8 @@ describe.skipIf(isSQLite)('Admin API session principal under auth:engine better-
     configUtils.set('admin:url', `${adminOrigin}/`);
     // Native sign-in then starts unverified; each test sets the state it needs
     configUtils.set('security:staffDeviceVerification', true);
+    // An unverified sign-in emails a code
+    sandbox.stub(GhostMailer.prototype, 'send').resolves();
 
     app = await startGhost({ backend: true, frontend: false, server: false });
     await fixtureManager.init('users');
@@ -55,12 +58,15 @@ describe.skipIf(isSQLite)('Admin API session principal under auth:engine better-
   beforeEach(async function () {
     await resetRateLimits();
     await db.knex('user_sessions').del();
+    // Not a first login, which would be verified
+    await db.knex('users').where({ id: owner.id }).update({ last_seen: new Date() });
+    // Refused until verified, with the unverified session's cookie
     const response = await request(app)
       .post('/ghost/api/admin/auth/sign-in/email')
       .set('Host', host)
       .set('Origin', adminOrigin)
       .send({ email: owner.email, password: owner.password })
-      .expect(200);
+      .expect(403);
     cookie = [response.headers['set-cookie']].flat();
   });
 

@@ -4,7 +4,8 @@ import { isAPIError } from 'better-auth/api';
 import { fromNodeHeaders } from 'better-auth/node';
 import type { NextFunction, Request, Response } from 'express';
 import type { GhostAuth } from './create-auth';
-import { SESSION_COOKIE_NAME } from './create-auth';
+import { DEVICE_COOKIE_NAME, SESSION_COOKIE_NAME } from './create-auth';
+import { DEVICE_VERIFICATION_ERROR_CODES } from './plugins/device-verification';
 import { STAFF_LIFECYCLE_ERROR_CODES } from './plugins/staff-lifecycle';
 
 // Legacy messages (`models/user.js`, `api/endpoints/session.js`), plus one generic sign-in error
@@ -14,7 +15,17 @@ const messages = {
   incorrectCredentials: 'Your email or password is incorrect.',
   noOrigin:
     'Could not determine origin of request. Please ensure an Origin or Referrer header is present.',
+  codeSent:
+    'A 6-digit sign-in verification code has been sent to your email to keep your account safe.',
 };
+
+const NEEDS_2FA: string[] = [
+  DEVICE_VERIFICATION_ERROR_CODES.TOKEN_REQUIRED.code,
+  DEVICE_VERIFICATION_ERROR_CODES.NEW_DEVICE_DETECTED.code,
+];
+
+// Where better-call keeps the headers an endpoint set before an APIError
+const API_ERROR_HEADERS = Symbol.for('better-call:api-error-headers');
 
 export type SessionControllerDeps = {
   /** Read per call: the instance is built by boot */
@@ -26,11 +37,13 @@ export type SessionControllerDeps = {
   resetUserLogin(req: Request): Promise<unknown>;
 };
 
-// Ghost sets only the session cookie; Better Auth also expires cookies Ghost never sets
-const isSessionCookie = (cookie: string) => {
-  const name = cookie.slice(0, cookie.indexOf('='));
-  return name === SESSION_COOKIE_NAME || name === `__Secure-${SESSION_COOKIE_NAME}`;
-};
+// Ghost sets only the session and device-trust cookies; Better Auth also expires cookies Ghost never sets
+const GHOST_COOKIES = [SESSION_COOKIE_NAME, DEVICE_COOKIE_NAME].flatMap((name) => [
+  name,
+  `__Secure-${name}`,
+]);
+const isSessionCookie = (cookie: string) =>
+  GHOST_COOKIES.includes(cookie.slice(0, cookie.indexOf('=')));
 
 /** Better Auth's `Set-Cookie` headers, without the cookies Ghost never sets */
 export const sessionCookies = (headers: Headers) => headers.getSetCookie().filter(isSessionCookie);
@@ -85,7 +98,17 @@ export function createSessionController(deps: SessionControllerDeps) {
         : new errors.UnauthorizedError({ message: messages.accessDenied, err: err as Error });
     }
 
-    switch (err.body?.code) {
+    const code = err.body?.code;
+    if (code && NEEDS_2FA.includes(code)) {
+      return new errors.NoPermissionError({
+        code,
+        context: messages.codeSent,
+        errorType: 'Needs2FAError',
+        message: err.message,
+      });
+    }
+
+    switch (code) {
       case BASE_ERROR_CODES.INVALID_EMAIL_OR_PASSWORD.code:
       case BASE_ERROR_CODES.INVALID_EMAIL.code:
         return credentialsError();
@@ -119,6 +142,11 @@ export function createSessionController(deps: SessionControllerDeps) {
           returnHeaders: true,
         }));
       } catch (err) {
+        // An unverified session keeps its cookie, so the browser can verify it
+        const errorHeaders = (err as Record<symbol, unknown>)?.[API_ERROR_HEADERS];
+        if (errorHeaders instanceof Headers) {
+          forwardSessionCookie(errorHeaders, res);
+        }
         throw toGhostError(err);
       }
 

@@ -8,6 +8,12 @@ import { CLIENT_IP_HEADER } from './client-ip';
 import { createKnexAdapter } from './knex-adapter';
 import { rateLimitStorage, type Limiters } from './rate-limit';
 import { ghostSso } from './plugins/sso';
+import {
+  DEVICE_TRUST_COOKIE,
+  ghostDeviceVerification,
+  verifiesNewSession,
+  type DeviceVerificationCode,
+} from './plugins/device-verification';
 import { ghostStaffLifecycle } from './plugins/staff-lifecycle';
 import { ROUTES } from './routes';
 import {
@@ -19,6 +25,7 @@ import {
 
 export const BASE_PATH = '/ghost/api/admin/auth';
 export const SESSION_COOKIE_NAME = 'ghost-admin-api-session';
+export const DEVICE_COOKIE_NAME = 'ghost-admin-device';
 
 type Logger = Record<'debug' | 'info' | 'warn' | 'error', (...args: unknown[]) => void>;
 
@@ -44,6 +51,10 @@ export type CreateAuthDeps = {
   sendPasswordResetEmail(email: string): Promise<void>;
   /** `security:staffDeviceVerification`, read per session so config changes apply */
   isStaffDeviceVerificationEnabled(): boolean;
+  /** The `require_email_mfa` setting */
+  isEmailMfaRequired(): boolean;
+  /** Emails a device verification code */
+  sendDeviceVerificationCode(message: DeviceVerificationCode): Promise<void>;
   /** The legacy session's origin rule (Origin, else Referer, else the admin URL) */
   getRequestOrigin(headers: Headers): string | null;
 };
@@ -212,7 +223,11 @@ export function createAuth(deps: CreateAuthDeps) {
             const rotated = replaced?.userId === session.userId ? replaced : undefined;
 
             // Never downgrades: createVerifiedSession passes `verified` itself
-            if (rotated?.verified || !deps.isStaffDeviceVerificationEnabled()) {
+            if (
+              rotated?.verified ||
+              !deps.isStaffDeviceVerificationEnabled() ||
+              (ctx && (await verifiesNewSession(session, ctx, deps)))
+            ) {
               data.verified = true;
             }
             // Pinned at creation; resolvePrincipal treats a session without one as anonymous
@@ -231,6 +246,12 @@ export function createAuth(deps: CreateAuthDeps) {
     plugins: [
       ghostStaffLifecycle({ sendPasswordResetEmail: deps.sendPasswordResetEmail }),
       ghostSso(),
+      ghostDeviceVerification({
+        isEnabled: deps.isStaffDeviceVerificationEnabled,
+        isEmailMfaRequired: deps.isEmailMfaRequired,
+        emailLimiter: deps.limiters.verificationEmail,
+        sendCode: deps.sendDeviceVerificationCode,
+      }),
     ],
     telemetry: { enabled: false },
     logger: {
@@ -248,6 +269,15 @@ export function createAuth(deps: CreateAuthDeps) {
       cookies: {
         session_token: {
           name: SESSION_COOKIE_NAME,
+          attributes: {
+            path: `${urlUtils.getSubdir()}/ghost`,
+            sameSite: ssl ? 'none' : 'lax',
+            httpOnly: true,
+          },
+        },
+        // Signed and bound to the user; ghostDeviceVerification sets its lifetime
+        [DEVICE_TRUST_COOKIE]: {
+          name: DEVICE_COOKIE_NAME,
           attributes: {
             path: `${urlUtils.getSubdir()}/ghost`,
             sameSite: ssl ? 'none' : 'lax',

@@ -28,6 +28,8 @@ export interface FrameInput extends Dictionary {
   file?: unknown;
   files?: unknown[];
   ip?: string;
+  /** The request's `User-Agent` header */
+  userAgent?: string;
   options?: Dictionary;
   params?: Dictionary;
   query?: Dictionary;
@@ -77,6 +79,9 @@ export class Frame<TShape extends FrameShape = FrameShape> {
       // The request's IP, never one the client sent
       if (optionNames.includes('ip') && Object.hasOwn(this.original, 'ip')) {
         this.options.ip = this.original.ip;
+      }
+      if (optionNames.includes('userAgent')) {
+        this.options.userAgent = this.original.userAgent;
       }
     }
     this.options.context = this.original.context;
