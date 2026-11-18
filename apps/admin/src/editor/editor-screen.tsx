@@ -96,11 +96,13 @@ function EditorHeader({
   postType,
   editorReturn,
   children,
+  presenceSlotRef,
   onBack,
 }: {
   postType: PostType;
   editorReturn?: EditorReturn;
   children?: ReactNode;
+  presenceSlotRef?: (node: HTMLDivElement | null) => void;
   onBack?: (event: MouseEvent<HTMLAnchorElement>) => void;
 }) {
   const listLabel = postType === 'page' ? 'Pages' : 'Posts';
@@ -136,6 +138,10 @@ function EditorHeader({
         )}
       </PageHeader.Action>
       {children}
+      <Box
+        ref={presenceSlotRef}
+        className="pointer-events-auto col-span-3 col-start-1 row-start-2 max-w-full min-w-0 justify-self-center empty:hidden lg:absolute lg:top-[calc(var(--spacing)*4+1px)] lg:left-1/2 lg:w-max lg:max-w-[calc(100%-480px)] lg:-translate-x-1/2"
+      />
     </Grid>
   );
 }
@@ -197,6 +203,7 @@ function EditorContent({
     : undefined;
   const presence = usePresence(presenceResource ? [presenceResource] : [], presenceResource);
   const showPresence = useFeatureFlag('editorPresence');
+  const [presenceTarget, setPresenceTarget] = useState<HTMLElement | null>(null);
   const [tkCount, setTkCount] = useState(0);
   const chromeEntrance = useScreenEntrance();
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
@@ -449,6 +456,7 @@ function EditorContent({
           hasUnsavedContent={session.hasUnsavedContent}
           newerVersionAvailable={session.newerVersionAvailable}
           pendingSave={session.pendingSave}
+          presenceTarget={presenceTarget}
           resourceType={postType}
           state={session.state}
           onReload={session.reload}
@@ -487,7 +495,12 @@ function EditorContent({
             )}
           >
             {/* The back link stays while the writer types, so the way out is always in view. */}
-            <EditorHeader editorReturn={editorReturn} postType={postType} onBack={holdBack}>
+            <EditorHeader
+              editorReturn={editorReturn}
+              postType={postType}
+              presenceSlotRef={setPresenceTarget}
+              onBack={holdBack}
+            >
               {editorReturn?.kind !== 'analytics' ||
               didEmailFail ||
               session.state.kind === 'error' ? (

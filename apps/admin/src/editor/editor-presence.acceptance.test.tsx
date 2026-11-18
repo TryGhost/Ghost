@@ -14,26 +14,23 @@ import { deferred } from '@/utils/deferred';
 
 const POST_ID = 'a'.repeat(24);
 const OTHER_USER = 'b'.repeat(24);
+const SECOND_USER = 'c'.repeat(24);
 const INDICATORS_ON = { labs: { editorPresencePolling: true, editorPresence: true } };
 
-function fakePresence(status = 200) {
-  return fakeAdminEndpoint('POST', '/presence/', () =>
-    status === 200
-      ? {
-          presence: [
-            {
-              active: [
-                { userId: OTHER_USER, resourceId: POST_ID, resourceType: 'post', ts: Date.now() },
-              ],
-              serverTime: Date.now(),
-            },
-          ],
-        }
-      : new Response(
-          JSON.stringify({ errors: [{ type: 'NotFoundError', message: 'Resource not found' }] }),
-          { status, headers: { 'Content-Type': 'application/json' } },
-        ),
-  );
+function fakePresence(userIds = [OTHER_USER]) {
+  return fakeAdminEndpoint('POST', '/presence/', () => ({
+    presence: [
+      {
+        active: userIds.map((userId) => ({
+          userId,
+          resourceId: POST_ID,
+          resourceType: 'post',
+          ts: Date.now(),
+        })),
+        serverTime: Date.now(),
+      },
+    ],
+  }));
 }
 
 /** Leaving the editor sends a leave with keepalive; the harness must answer it. */
@@ -58,7 +55,7 @@ describe('Editor presence warnings', () => {
     }
   });
 
-  it('lets a writer copy their work before a guarded reload from the early warning', async () => {
+  it('centers compact presence in the toolbar and copies the writer’s content', async () => {
     fakeEditorChrome();
     fakePostRead('Presence example', {
       status: 'published',
@@ -66,8 +63,11 @@ describe('Editor presence warnings', () => {
       updated_at: '2026-01-01T00:00:00.000Z',
     });
     fakeLeave();
-    fakeUsers([staffUser({ id: OTHER_USER, name: 'Alex Smith', profile_image: null })]);
-    fakePresence();
+    fakeUsers([
+      staffUser({ id: OTHER_USER, name: 'Iliana Mann', profile_image: null }),
+      staffUser({ id: SECOND_USER, name: 'Zimo', profile_image: null }),
+    ]);
+    fakePresence([OTHER_USER, SECOND_USER]);
     const copied: string[] = [];
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
@@ -80,30 +80,24 @@ describe('Editor presence warnings', () => {
     });
     await renderAdminApp(`/editor/post/${POST_ID}`, INDICATORS_ON);
     const warning = page.getByRole('status', { name: 'Other editors' });
-    await expect.element(warning).toHaveTextContent('Alex Smith also has this post open.');
-    await expect.element(warning).toHaveTextContent('Your changes may not save.');
+    await expect
+      .element(warning)
+      .toHaveTextContent(
+        'Iliana Mann and Zimo also have this post open. Your changes may not save.',
+      );
+    const bounds = warning.element().getBoundingClientRect();
+    expect(bounds.width).toBeLessThan(window.innerWidth - 32);
+    expect(Math.abs(bounds.left + bounds.width / 2 - window.innerWidth / 2)).toBeLessThan(2);
+    expect(bounds.top).toBeLessThan(30);
+    expect(bounds.height).toBeLessThan(40);
+    await expect(warning.getByRole('button', { name: 'Reload' })).toHaveCount(0);
     await editorScreen.body().fill('My unsaved body');
     await warning.getByRole('button', { name: 'Copy content' }).click();
     await expect.poll(() => copied).toEqual(['Presence example\n\nMy unsaved body']);
     await expect.element(page.getByText('Content copied', { exact: true })).toBeVisible();
-
-    fakePostRead('Latest saved title', {
-      status: 'published',
-      lexical: buildLexicalParagraph('Their latest body'),
-      updated_at: '2026-01-01T01:00:00.000Z',
-    });
-    await warning.getByRole('button', { name: 'Reload' }).click();
-    await expect.element(editorScreen.conflictReloadConfirm()).toBeVisible();
-    await editorScreen.cancelConflictReload().click();
-    await expect(editorScreen.conflictReloadConfirm()).toHaveCount(0);
-    await expect.element(editorScreen.body()).toHaveTextContent('My unsaved body');
-    await warning.getByRole('button', { name: 'Reload' }).click();
-    await editorScreen.confirmConflictReload().click();
-    await expect.element(editorScreen.titleInput()).toHaveValue('Latest saved title');
-    await expect.element(editorScreen.body()).toHaveTextContent('Their latest body');
   });
 
-  it('keeps changes typed while a confirmed presence reload is reading the server', async () => {
+  it('keeps changes typed while a confirmed conflict reload is reading the server', async () => {
     fakeEditorChrome();
     fakePostRead('Presence example', {
       status: 'published',
@@ -117,13 +111,25 @@ describe('Editor presence warnings', () => {
     const warning = page.getByRole('status', { name: 'Other editors' });
     await expect.element(warning).toBeVisible();
     await editorScreen.body().fill('My unsaved body');
+    fakeAdminEndpoint(
+      'PUT',
+      new RegExp(`^/posts/${POST_ID}/\\?`),
+      {
+        errors: [
+          { code: 'UPDATE_COLLISION', type: 'UpdateCollisionError', message: 'Post changed' },
+        ],
+      },
+      { status: 409 },
+    );
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+    await expect.element(editorScreen.conflictBanner()).toBeVisible();
     const pending = deferred<{ posts: ReturnType<typeof post>[] }>();
     const reloadRead = fakeAdminEndpoint(
       'GET',
       new RegExp(`^/posts/${POST_ID}/\\?`),
       () => pending.promise,
     );
-    await warning.getByRole('button', { name: 'Reload' }).click();
+    await editorScreen.conflictBanner().getByRole('button', { name: 'Reload' }).click();
     await editorScreen.confirmConflictReload().click();
     await expect.poll(() => reloadRead.requests.length).toBe(1);
     await editorScreen.body().fill('Words typed during reload');

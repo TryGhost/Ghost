@@ -117,7 +117,7 @@ const features: Feature[] = [
   {
     title: 'Editor presence indicators',
     description:
-      'Warn when someone else has a post open and show presence in post lists. Needs editor presence polling.',
+      'Show staff presence in the editor toolbar and post lists. Needs editor presence polling.',
     flag: 'editorPresence',
   },
 ];

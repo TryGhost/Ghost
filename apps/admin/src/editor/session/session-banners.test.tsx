@@ -140,7 +140,7 @@ describe('SessionBanners', () => {
     expect(screen.getByRole('button', { name: 'Copy content' })).toHaveClass('bg-primary');
   });
 
-  it('warns about presence before a save and offers copy before a guarded reload', async () => {
+  it('shows compact presence and lets the writer copy their content', async () => {
     const writeText = vi.fn(() => Promise.resolve());
     vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
     const onReload = vi.fn((): Promise<ReloadOutcome> => Promise.resolve('reloaded'));
@@ -161,21 +161,16 @@ describe('SessionBanners', () => {
     expect(warning).toHaveAttribute('data-variant', 'default');
     expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual([
       'Copy content',
-      'Reload',
     ]);
     fireEvent.click(screen.getByRole('button', { name: 'Copy content' }));
     await waitFor(() => expect(writeText).toHaveBeenCalledWith('My unsaved words'));
-    fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
-    expect(await screen.findByTestId(editorConflictReloadConfirm)).toBeVisible();
     expect(onReload).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Discard and reload' }));
-    expect(onReload).toHaveBeenCalledTimes(1);
   });
 
   it('warns even when the staff list cannot name someone present', () => {
     renderBanners({ kind: 'idle' }, { activePresence: [{ ...ACTIVE[0], userId: 'unknown' }] });
     expect(screen.getByRole('status', { name: 'Other editors' })).toHaveTextContent(
-      'Someone else also has this post open.',
+      'Someone else also has this post open. Your changes may not save.',
     );
   });
 
@@ -190,7 +185,7 @@ describe('SessionBanners', () => {
         },
       );
       expect(screen.getByRole('status', { name: 'Other editors' })).toHaveTextContent(
-        'Alex Smith and Sam Kim also have this page open.',
+        'Alex Smith and Sam Kim also have this page open. Your changes may not save.',
       );
     } finally {
       staff.users.pop();

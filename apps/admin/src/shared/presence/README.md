@@ -20,13 +20,13 @@ ids and a server timestamp; names and avatars come from the staff users list.
   polling for the session, so an older backend without the endpoint costs one
   request. Other failures back off exponentially up to 60 seconds and clear
   what is shown.
-- Indicators are a second flag, `editorPresence`. In the editor, a persistent
-  warning above the header names the other staff who have the post or page open,
-  with avatars and Copy content followed by Reload. It warns that competing
-  changes may prevent saving; presence does not grant editing ownership or mean
-  changes can be merged. Missing staff records use a generic warning instead.
-  Reload asks before discarding unsaved changes, and Copy content copies the
-  current title and body as plain text.
+- Indicators are a second flag, `editorPresence`. In the editor, a compact pill
+  centered in the toolbar names other staff with the post or page open and warns
+  that changes may not save, with avatars and Copy content. On narrow screens
+  it wraps within the toolbar.
+  Missing staff records use a generic notice instead. Copy content copies the
+  current title and body as plain text. Presence grants no editing ownership
+  and does not merge changes.
 - An actual save collision or terminal failure takes priority over presence, as
   does a known newer version. The collision warning stays after presence ends;
   someone leaving does not make the writer's version current.

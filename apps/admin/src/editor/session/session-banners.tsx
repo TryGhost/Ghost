@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { toast } from 'sonner';
 import { useBrowseUsers } from '@tryghost/admin-x-framework/api/users';
 import {
@@ -40,6 +41,8 @@ export interface SessionBannersProps {
   pendingSave?: PendingSave | null;
   /** Other staff on this document, supplied only while presence indicators are enabled. */
   activePresence?: ActivePresence[];
+  /** The toolbar slot; omitted for an inline notice, null while the slot mounts. */
+  presenceTarget?: HTMLElement | null;
   resourceType?: PresenceResourceType;
   /** A later version was saved elsewhere, and a reload onto it would lose nothing. */
   newerVersionAvailable?: boolean;
@@ -65,7 +68,36 @@ type RecoveryActionsProps = Pick<
   onGone?: () => void;
 };
 
-/** Both early presence warnings and refused saves use the same recovery safeguards. */
+function CopyContentButton({
+  contentText,
+  variant = 'default',
+  compact = false,
+}: Pick<SessionBannersProps, 'contentText'> & {
+  variant?: 'default' | 'secondary';
+  compact?: boolean;
+}) {
+  const copyContent = async () => {
+    try {
+      await navigator.clipboard.writeText(contentText());
+      toast.success('Content copied');
+    } catch {
+      toast.error('Couldn’t copy your content');
+    }
+  };
+
+  return (
+    <Button
+      className={compact ? 'h-6 shrink-0 px-2' : 'shrink-0'}
+      size="sm"
+      variant={variant}
+      onClick={() => void copyContent()}
+    >
+      Copy content
+    </Button>
+  );
+}
+
+/** Refused saves offer copying and a reload guarded against losing unsaved work. */
 function RecoveryActions({
   hasUnsavedContent,
   contentText,
@@ -95,21 +127,10 @@ function RecoveryActions({
     }
   };
 
-  const copyContent = async () => {
-    try {
-      await navigator.clipboard.writeText(contentText());
-      toast.success('Content copied');
-    } catch {
-      toast.error('Couldn’t copy your content');
-    }
-  };
-
   return (
     <>
       <Inline align="center" gap="sm" justify="center">
-        <Button size="sm" variant="default" onClick={() => void copyContent()}>
-          Copy content
-        </Button>
+        <CopyContentButton contentText={contentText} />
         {!stopped && (
           <Button
             disabled={reloading}
@@ -193,9 +214,12 @@ function ConflictBanner({ error, stopped = false, ...actions }: ConflictBannerPr
 
 function PresenceWarning({
   active,
+  contentText,
   resourceType,
-  ...actions
-}: RecoveryActionsProps & { active: ActivePresence[] }) {
+}: Pick<SessionBannersProps, 'contentText'> & {
+  active: ActivePresence[];
+  resourceType: PresenceResourceType;
+}) {
   const { data } = useBrowseUsers({ defaultErrorHandler: false });
   const users = presentUsers(active, data?.users);
   const count = new Set(active.map((entry) => entry.userId)).size;
@@ -209,24 +233,24 @@ function PresenceWarning({
   return (
     <Banner
       aria-label="Other editors"
-      className="mx-4 mt-3 shrink-0 border-border-glass bg-surface-glass backdrop-blur-md backdrop-saturate-150"
+      className="max-w-full min-w-0 rounded-full border-border-glass bg-surface-glass p-1 backdrop-blur-md backdrop-saturate-150"
       role="status"
       size="sm"
       style={{
         backgroundImage: 'var(--surface-glass-highlight)',
-        boxShadow: 'var(--shadow-glass-docked)',
+        boxShadow: 'var(--shadow-glass-floating)',
       }}
       variant="default"
     >
-      <Inline align="center" gap="sm" justify="center" wrap>
+      <Inline align="center" className="min-w-0" gap="sm">
         <PresenceAvatars active={active} resourceType={resourceType} />
-        <Text as="div" className="text-center text-base">
+        <Text as="div" className="min-w-0 text-base" truncate>
           <strong>
             {names} also {count === 1 ? 'has' : 'have'} this {resourceType} open.
           </strong>{' '}
           Your changes may not save.
         </Text>
-        <RecoveryActions {...actions} resourceType={resourceType} />
+        <CopyContentButton contentText={contentText} variant="secondary" compact />
       </Inline>
     </Banner>
   );
@@ -269,16 +293,15 @@ function NewerVersionNotice({ onReload }: Pick<SessionBannersProps, 'onReload'>)
 }
 
 /**
- * The notices above the header for what the status line cannot hold: a
- * collision or a halt with its ways out, a newer version, or other staff
- * present before any conflict. A failed save is
- * the status line's to report, with its retry; a field held by its rule is
- * marked beside the field.
+ * Session feedback: collisions, halts and newer versions sit above the header;
+ * presence uses the toolbar slot. Other failed saves belong to the status
+ * line, and fields held by their rules are marked beside the field.
  */
 export function SessionBanners({
   state,
   pendingSave,
   activePresence,
+  presenceTarget,
   resourceType = 'post',
   newerVersionAvailable = false,
   hasUnsavedContent,
@@ -308,15 +331,18 @@ export function SessionBanners({
   }
 
   if (activePresence && activePresence.length > 0) {
-    return (
+    const notice = (
       <PresenceWarning
         active={activePresence}
         contentText={contentText}
-        hasUnsavedContent={hasUnsavedContent}
         resourceType={resourceType}
-        onReload={onReload}
       />
     );
+    return presenceTarget === undefined
+      ? notice
+      : presenceTarget
+        ? createPortal(notice, presenceTarget)
+        : null;
   }
 
   return null;
