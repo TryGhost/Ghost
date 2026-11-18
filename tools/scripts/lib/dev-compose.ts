@@ -2,7 +2,6 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseEnv } from './ghost-dev-env.ts';
 
 export interface ComposeService {
   image?: string;
@@ -22,7 +21,15 @@ const repoRoot = fileURLToPath(new URL('../../..', import.meta.url));
 /** Whether Mailgun credentials are in the environment or the `.env` file compose reads */
 export function hasMailgunCredentials(): boolean {
   const envFile = join(repoRoot, '.env');
-  const dotenv = existsSync(envFile) ? parseEnv(readFileSync(envFile, 'utf8')) : {};
+  const dotenv: Record<string, string> = {};
+  // Read as compose does: an optional `export`, quotes around the value, or a trailing comment
+  for (const line of existsSync(envFile) ? readFileSync(envFile, 'utf8').split('\n') : []) {
+    const [, key, raw = ''] = /^\s*(?:export\s+)?(\w+)\s*=\s*(.*)$/.exec(line) ?? [];
+    if (key) {
+      const quoted = /^(["'])(.*)\1\s*(?:#.*)?$/.exec(raw);
+      dotenv[key] = quoted ? (quoted[2] ?? '') : raw.replace(/\s+#.*$/, '').trim();
+    }
+  }
   const value = (key: string) => process.env[key] ?? dotenv[key];
   return Boolean(value('MAILGUN_API_KEY') && value('MAILGUN_DOMAIN'));
 }
