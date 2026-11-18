@@ -124,7 +124,7 @@ export function renderSignupCardToDOM(dataset: SignupDatasetNode, options: Signu
         backgroundImageSrc: dataset.__backgroundImageSrc,
         backgroundSize: dataset.__backgroundSize,
         backgroundColor: sanitizeColour(dataset.__backgroundColor),
-        buttonColor: sanitizeColour(dataset.__buttonColor),
+        buttonColor: sanitizeColour(dataset.__buttonColor, 'accent'),
         labels: dataset.__labels,
         layout: dataset.__layout,
         textColor: sanitizeColour(dataset.__textColor),

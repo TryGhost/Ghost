@@ -51,11 +51,14 @@ export function renderProductNode(node: ProductNodeData, options: ProductRenderO
 
     const dataset = node.getDataset();
 
-    // A whole number of stars, as the rating images are named
+    // A whole number of stars, as the rating images are named. There's no image for zero stars.
     const starRating = Math.min(5, Math.max(0, Math.round(Number(dataset.productStarRating) || 0)));
-    const ratingImage = options.design?.backgroundIsDark
-        ? `https://static.ghost.org/v4.0.0/images/star-rating-darkmode-${starRating}.png`
-        : `https://static.ghost.org/v4.0.0/images/star-rating-${starRating}.png`;
+    let ratingImage = '';
+    if (starRating > 0) {
+        ratingImage = options.design?.backgroundIsDark
+            ? `https://static.ghost.org/v4.0.0/images/star-rating-darkmode-${starRating}.png`
+            : `https://static.ghost.org/v4.0.0/images/star-rating-${starRating}.png`;
+    }
 
     const templateData: ProductTemplateData = {
         ...dataset,
@@ -153,7 +156,7 @@ export function emailCardTemplate({data}: {data: ProductTemplateData; feature?: 
                                 <h4 class="kg-product-title">${data.productTitle}</h4>
                             </td>
                         </tr>
-                        ${data.productRatingEnabled ? `
+                        ${data.productRatingEnabled && data.ratingImage ? `
                             <tr class="kg-product-rating">
                                 <td valign="top">
                                     <img src="${escapeHtml(data.ratingImage)}" border="0" />

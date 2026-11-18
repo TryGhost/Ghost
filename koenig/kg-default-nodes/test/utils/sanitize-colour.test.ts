@@ -3,7 +3,7 @@ import {sanitizeColour} from '../../src/utils/sanitize-colour.js';
 
 describe('utils/sanitize-colour', function () {
     it('keeps the formats card settings hold', function () {
-        for (const colour of ['#fff', '#FF1A75', '#ff1a7580', 'accent', 'transparent', 'grey', 'rgb(0, 0, 0)', 'rgba(0,0,0,0.5)', 'hsl(0 0% 0% / 50%)']) {
+        for (const colour of ['#fff', '#FF1A75', '#ff1a7580', 'accent', 'transparent', 'grey', 'rgb(0, 0, 0)', 'rgba(0,0,0,0.5)', 'hsl(0 0% 0% / 50%)', 'hsl(-120, 100%, 50%)']) {
             assert.equal(sanitizeColour(colour), colour);
         }
     });

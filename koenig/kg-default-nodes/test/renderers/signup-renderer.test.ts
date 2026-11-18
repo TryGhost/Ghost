@@ -205,6 +205,7 @@ describe('renderers/signup-renderer', function () {
             const otherButton = createDocument(withBadButtonColour.html).querySelector('.kg-signup-card-button') as HTMLElement;
 
             assert.deepEqual(Array.from(otherButton.style), ['color']);
+            assert.equal(otherButton.classList.contains('kg-style-accent'), true);
         });
 
         it('removes empty elements', async function () {

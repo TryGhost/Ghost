@@ -110,8 +110,11 @@ describe('renderers/product-renderer', function () {
         });
 
         it('rounds the star rating to a whole number of stars', function () {
-            const activeStars = (rating: unknown) => createDocument(renderForWeb(getTestData({productStarRating: rating})).html)
-                .querySelectorAll('.kg-product-card-rating-active').length;
+            const activeStars = (rating: unknown) => {
+                const document = createDocument(renderForWeb(getTestData({productStarRating: rating})).html);
+                assert.equal(document.querySelectorAll('.kg-product-card-rating-star').length, 5);
+                return document.querySelectorAll('.kg-product-card-rating-active').length;
+            };
 
             assert.equal(activeStars(3.6), 4);
             assert.equal(activeStars(9), 5);
@@ -293,12 +296,18 @@ describe('renderers/product-renderer', function () {
         it('renders the rating image for a whole number of stars', function () {
             const ratingImage = (rating: unknown) => {
                 const image = createDocument(renderForEmail(getTestData({productStarRating: rating}), {feature: {}}).html).querySelector('.kg-product-rating img');
-                assert.deepEqual(image?.getAttributeNames(), ['src', 'border']);
                 return image?.getAttribute('src');
             };
 
             assert.equal(ratingImage(3.6), 'https://static.ghost.org/v4.0.0/images/star-rating-4.png');
-            assert.equal(ratingImage('4" x="'), 'https://static.ghost.org/v4.0.0/images/star-rating-0.png');
+            assert.equal(ratingImage(9), 'https://static.ghost.org/v4.0.0/images/star-rating-5.png');
+        });
+
+        it('leaves the rating image out when there are no stars', function () {
+            for (const rating of [0, 0.4, '4" x="']) {
+                const document = createDocument(renderForEmail(getTestData({productStarRating: rating}), {feature: {}}).html);
+                assert.equal(document.querySelector('.kg-product-rating'), null, String(rating));
+            }
         });
 
         it('renders dark mode rating image when background is dark', async function () {
