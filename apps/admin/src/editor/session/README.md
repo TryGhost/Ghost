@@ -398,6 +398,12 @@ close and reopen whose own read fails cannot resurrect the version it first read
 A reload whose read comes back after the writer has left the editor changes
 nothing, since the query by then belongs to whichever editor opens the post next.
 
+With no collision to recover from, a reload replaces only a document with
+nothing unsaved. `reload({ discardUnsaved: true })` replaces unsaved work too,
+for a caller that has had the writer confirm it. `hasNewerVersion()` asks the
+server whether a later version than the document's was saved, with a read of
+its own that adopts nothing, and answers false when that read fails.
+
 The screen's query also refetches on its own, after every save that lands and
 on reconnect once it is stale. Opening a post always sends a read of its own,
 even while a copy from an earlier visit is cached: the session saves against the
