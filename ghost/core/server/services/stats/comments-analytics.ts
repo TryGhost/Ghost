@@ -41,7 +41,9 @@ export type TopCommentedPost = { post_id: string; title: string; comments: numbe
 export type TopCommenter = { member_id: string; name: string | null; comments: number };
 
 const MAX_RANGE_DAYS = 3660;
-const MAX_TOP_LIMIT = 25;
+// Admin shows the top 25. Larger limits are capped by the API's maxLimitCap
+// (optimization:maxLimit, 100 by default), like every other endpoint.
+const DEFAULT_TOP_LIMIT = 25;
 
 const messages = {
   invalidOptions: 'Invalid comments stats options.',
@@ -90,7 +92,7 @@ const rangeSchema = z
 export type CommentsStatsRange = z.output<typeof rangeSchema>;
 
 const topSchema = z.object({
-  limit: z.coerce.number().int().min(1).max(MAX_TOP_LIMIT).default(MAX_TOP_LIMIT),
+  limit: z.coerce.number().int().min(1).default(DEFAULT_TOP_LIMIT),
 });
 
 function parse<T extends z.ZodType>(schema: T, options: unknown): z.output<T> {

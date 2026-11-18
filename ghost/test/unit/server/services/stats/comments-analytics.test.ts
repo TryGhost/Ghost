@@ -360,7 +360,24 @@ describe('CommentsAnalyticsService', function () {
     assert.equal(data.length, 1);
   });
 
-  for (const limit of ['0', '26', 'all']) {
+  it('returns the top 25 by default and more on request', async function () {
+    const extraPosts = Array.from({ length: 40 }, (_, index) => ({
+      id: `post_${String(index).padStart(2, '0')}`,
+      title: `Post ${index}`,
+    }));
+    await db('posts').insert(extraPosts);
+    await db('comments').insert(
+      extraPosts.map(({ id }, index) =>
+        comment(`cx${index}`, id, 'member_1', '2026-11-02 09:00:00'),
+      ),
+    );
+    const options = range('2026-11-01', '2026-11-03');
+
+    assert.equal((await service.getTopPosts(options)).data.length, 25);
+    assert.equal((await service.getTopPosts({ ...options, limit: '100' })).data.length, 42);
+  });
+
+  for (const limit of ['0', '-1', 'all']) {
     it(`rejects limit=${limit}`, async function () {
       await assert.rejects(service.getTopPosts({ ...range('2026-11-01', '2026-11-03'), limit }), {
         errorType: 'ValidationError',

@@ -155,6 +155,15 @@ describe('Comments stats API', function () {
     });
   }
 
+  for (const path of ['stats/comments/top-posts', 'stats/comments/top-commenters']) {
+    it(`accepts limits on ${path} up to the API's maximum`, async function () {
+      // The API caps any larger limit, including "all", at 100
+      for (const limit of ['100', '1001', 'all']) {
+        await agent.get(`${path}${range}&limit=${limit}`).expectStatus(200);
+      }
+    });
+  }
+
   // One login per role: sign-ins are rate limited across the file
   it('is limited to roles that can browse comments', async function () {
     const expected = {
