@@ -8,7 +8,7 @@ import {
   CardTitle,
   EmptyIndicator,
   SkeletonTable,
-  ActionListItem,
+  ListItem,
   RowPrimaryAction,
 } from '@tryghost/shade/components';
 import {
@@ -358,9 +358,9 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                 </div>
               );
               return (
-                <ActionListItem key={post.post_id} asChild>
+                <ListItem key={post.post_id} asChild>
                   {row}
-                </ActionListItem>
+                </ListItem>
               );
             })}
             {(!topPostsData?.stats || topPostsData.stats.length === 0) && (

@@ -25,7 +25,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Flexible table components for displaying structured data with sorting, headers, and footers. Built with semantic HTML and accessible markup.',
+          'Use Table when people need to compare the same details across several items, such as names, statuses and amounts. Column headings explain each value. Use List for browsing items with titles and descriptions when columns are not needed.',
       },
     },
   },
@@ -259,7 +259,7 @@ export const InteractiveRows: Story = {
     docs: {
       description: {
         story:
-          'Use explicit interaction for rows with native primary links. Hover or tab to a link, test both side gutters and the independent secondary button, and compare adjacent selected rows with a static row.',
+          'Use clickable rows when each item opens another page. Clicking the highlighted space opens the same link; the Edit button keeps its own action. Selected rows stay highlighted, while information-only rows do not react to hover.',
       },
     },
   },

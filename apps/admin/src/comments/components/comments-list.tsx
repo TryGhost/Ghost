@@ -1,6 +1,6 @@
 import CommentContent from './comment-content';
 import CommentThreadSidebar from './comment-thread-sidebar';
-import { Avatar, Button, TooltipProvider, ActionListItem } from '@tryghost/shade/components';
+import { Avatar, Button, TooltipProvider, ListItem } from '@tryghost/shade/components';
 import {
   type Comment,
   useHideComment,
@@ -243,9 +243,9 @@ function CommentsList({
                 </div>
               );
               return (
-                <ActionListItem key={key} hover={false} asChild>
+                <ListItem key={key} hover={false} asChild>
                   {row}
-                </ActionListItem>
+                </ListItem>
               );
             })}
             <SpacerRow height={spaceAfter} />

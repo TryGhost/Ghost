@@ -11,10 +11,10 @@ import WelcomeEmailCustomizeModal from '@/settings/membership/member-emails/welc
 import useQueryParams from '@/settings/hooks/use-query-params';
 import { APIError } from '@tryghost/admin-x-framework/errors';
 import {
-  ActionList,
-  ActionListItem,
-  ActionListItemActions,
-  ActionListItemContent,
+  List,
+  ListItem,
+  ListItemActions,
+  ListItemContent,
   Button,
   Select,
   SelectContent,
@@ -42,9 +42,9 @@ const TransactionalTabContent: React.FC = () => {
   };
 
   return (
-    <ActionList>
-      <ActionListItem data-testid="automations-transactional-row">
-        <ActionListItemContent asChild>
+    <List>
+      <ListItem data-testid="automations-transactional-row">
+        <ListItemContent asChild>
           <button
             className="flex w-full min-w-0 items-center gap-3 py-3 text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
             type="button"
@@ -60,15 +60,15 @@ const TransactionalTabContent: React.FC = () => {
               </span>
             </span>
           </button>
-        </ActionListItemContent>
-        <ActionListItemActions>
+        </ListItemContent>
+        <ListItemActions>
           <Button size="sm" type="button" variant="ghost" onClick={openCustomizeModal}>
             Edit
           </Button>
-        </ActionListItemActions>
-      </ActionListItem>
+        </ListItemActions>
+      </ListItem>
       {isCustomizeOpen && <WelcomeEmailCustomizeModal onClose={() => setIsCustomizeOpen(false)} />}
-    </ActionList>
+    </List>
   );
 };
 

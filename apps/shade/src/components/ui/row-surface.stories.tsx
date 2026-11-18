@@ -12,7 +12,7 @@ const meta: Meta = {
     docs: {
       description: {
         component:
-          'Shared chrome for content-list and table rows. The row retains its native semantics and actions; the recipe supplies hover, keyboard, press and selected surfaces without moving content.',
+          'Use rowSurface to give a custom row the same hover, focus and selection backgrounds as Shade lists and tables. Prefer List or Table when they fit: this helper adds styling, while your code handles clicks and touch presses.',
       },
     },
   },
@@ -38,7 +38,7 @@ function ExampleRows({ inset = false, dragging = false }: { inset?: boolean; dra
             )}
             href="#primary"
           >
-            Primary link — hover or tab here
+            Open an item — hover or press Tab
           </a>
           <Button
             className="relative z-10 text-foreground"
@@ -50,7 +50,7 @@ function ExampleRows({ inset = false, dragging = false }: { inset?: boolean; dra
           </Button>
         </Inline>
         <Box className={cn(rowSurface('static'), 'border-b py-4')}>
-          Static information — no hover treatment
+          Information only — no hover background
         </Box>
         <Box
           className={cn(rowSurface(), 'border-b py-4', inset && rowSurfaceClasses.inset)}
@@ -77,7 +77,7 @@ function ExampleRows({ inset = false, dragging = false }: { inset?: boolean; dra
             )}
             href="#adjacent"
           >
-            Adjacent selected row
+            Another selected row
           </a>
         </Box>
         <Box className={cn(rowSurface('static'), 'border-b py-4')}>
@@ -95,7 +95,7 @@ export const InteractiveAndStaticRows: Story = {
     docs: {
       description: {
         story:
-          'Use for resource rows with a primary destination, independent secondary controls, static information and adjacent selections. Test hover, Tab, and touch press.',
+          'Compare a clickable row with an extra button, information-only rows, and neighboring selected rows. Move the pointer over a row or use Tab to focus its link.',
       },
     },
   },
@@ -107,7 +107,7 @@ export const ConstrainedGutter: Story = {
     docs: {
       description: {
         story:
-          'Use the inset atom where a scroll viewport or narrow container cannot provide the outward gutter.',
+          'Keep the highlight inside the row when a narrow or scrolling container has no room beside it.',
       },
     },
   },
@@ -119,7 +119,7 @@ export const DuringDrag: Story = {
     docs: {
       description: {
         story:
-          'An active sortable ancestor suppresses ordinary row surfaces while the sortable overlay supplies drag feedback.',
+          'While an item is being dragged, ordinary row highlights stay hidden and selected rows keep their selection color.',
       },
     },
   },

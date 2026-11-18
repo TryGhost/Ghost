@@ -20,7 +20,7 @@ import {
   PopoverAnchor,
   Textarea,
   tokenFieldClasses,
-  ActionListItem,
+  ListItem,
   RowPrimaryAction,
 } from '@tryghost/shade/components';
 import { Inline } from '@tryghost/shade/primitives';
@@ -792,9 +792,9 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
                 </li>
               );
               return (
-                <ActionListItem key={field.key} hover={disabled ? false : undefined} asChild>
+                <ListItem key={field.key} hover={disabled ? false : undefined} asChild>
                   {row}
-                </ActionListItem>
+                </ListItem>
               );
             })}
           </ul>

@@ -7,7 +7,7 @@ interface RowPrimaryActionProps extends React.ButtonHTMLAttributes<HTMLButtonEle
   asChild?: boolean;
 }
 
-/** Reuses the existing control; the row owns its expanded hit area and feedback. */
+/** Makes the whole row activate its main link or button. */
 const RowPrimaryAction = React.forwardRef<HTMLButtonElement, RowPrimaryActionProps>(
   ({ asChild = false, className, children, onKeyDown, onKeyUp, ...props }, ref) => {
     const Component = asChild ? Slot : 'button';

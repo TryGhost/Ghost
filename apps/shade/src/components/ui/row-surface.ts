@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 
-/** Shared row chrome. Consumers keep their own semantics, layout and actions. */
+/** Background and spacing classes for custom list and table rows. */
 export const rowSurfaceClasses = {
   base: 'shade-row',
   interactive: 'shade-row-interactive',

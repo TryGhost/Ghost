@@ -1,9 +1,9 @@
 import React from 'react';
 import {
-  ActionList,
-  ActionListItem,
-  ActionListItemActions,
-  ActionListItemContent,
+  List,
+  ListItem,
+  ListItemActions,
+  ListItemContent,
   Button,
   DragIndicator,
   LoadingIndicator,
@@ -43,8 +43,8 @@ const NewsletterItemContainer: React.FC<Partial<SortableItemContainerProps>> = (
   };
 
   const container = (
-    <ActionListItem ref={setRef} className={isDragging ? 'opacity-75' : ''} style={style}>
-      <ActionListItemContent className="flex">
+    <ListItem ref={setRef} className={isDragging ? 'opacity-75' : ''} style={style}>
+      <ListItemContent className="flex">
         {(props.dragHandleAttributes || isDragging) && (
           <Inline align="center" className="w-10 shrink-0" data-row-secondary>
             <DragIndicator className="h-10" isDragging={isDragging || false} {...props} />
@@ -55,8 +55,8 @@ const NewsletterItemContainer: React.FC<Partial<SortableItemContainerProps>> = (
             {children}
           </button>
         </RowPrimaryAction>
-      </ActionListItemContent>
-      <ActionListItemActions>
+      </ListItemContent>
+      <ListItemActions>
         <Button
           data-testid="edit-newsletter-button"
           size="sm"
@@ -66,12 +66,12 @@ const NewsletterItemContainer: React.FC<Partial<SortableItemContainerProps>> = (
         >
           Edit
         </Button>
-      </ActionListItemActions>
-    </ActionListItem>
+      </ListItemActions>
+    </ListItem>
   );
 
   if (isDragging) {
-    return <ActionList>{container}</ActionList>;
+    return <List>{container}</List>;
   } else {
     return container;
   }
@@ -127,19 +127,19 @@ const NewslettersList: React.FC<NewslettersListProps> = ({
         getDragHandleLabel={(item) => `Reorder ${item.name}`}
         items={newsletters}
         renderItem={(item) => <NewsletterItem newsletter={item} />}
-        wrapper={ActionList}
+        wrapper={List}
         onMove={(id, overId) => onSort?.(id, overId)}
       />
     );
   } else if (newsletters.length) {
     return (
-      <ActionList>
+      <List>
         {newsletters.map((newsletter) => (
           <NewsletterItemContainer key={newsletter.id} id={newsletter.id}>
             <NewsletterItem newsletter={newsletter} />
           </NewsletterItemContainer>
         ))}
-      </ActionList>
+      </List>
     );
   } else {
     return (

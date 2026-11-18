@@ -6,14 +6,14 @@ import { cn } from '@/lib/utils';
 import { rowSurface, rowSurfaceClasses } from '@/components/ui/row-surface';
 import { useRowBehavior } from '@/hooks/use-row-behavior';
 
-const ActionList = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+const List = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
     <div ref={ref} className={cn('flex flex-col', className)} {...props} />
   ),
 );
-ActionList.displayName = 'ActionList';
+List.displayName = 'List';
 
-interface ActionListItemProps extends React.HTMLAttributes<HTMLDivElement> {
+interface ListItemProps extends React.HTMLAttributes<HTMLDivElement> {
   asChild?: boolean;
   hover?: boolean | null;
 }
@@ -29,7 +29,7 @@ const rowEvents = [
   'onPointerLeave',
 ] as const;
 
-const ActionListItem = React.forwardRef<HTMLDivElement, ActionListItemProps>(
+const ListItem = React.forwardRef<HTMLDivElement, ListItemProps>(
   ({ asChild = false, className, hover, children, ...props }, ref) => {
     const child =
       asChild && React.isValidElement<React.HTMLAttributes<HTMLDivElement>>(children)
@@ -78,13 +78,13 @@ const ActionListItem = React.forwardRef<HTMLDivElement, ActionListItemProps>(
     );
   },
 );
-ActionListItem.displayName = 'ActionListItem';
+ListItem.displayName = 'ListItem';
 
-interface ActionListItemContentProps extends React.HTMLAttributes<HTMLDivElement> {
+interface ListItemContentProps extends React.HTMLAttributes<HTMLDivElement> {
   asChild?: boolean;
 }
 
-const ActionListItemContent = React.forwardRef<HTMLDivElement, ActionListItemContentProps>(
+const ListItemContent = React.forwardRef<HTMLDivElement, ListItemContentProps>(
   ({ asChild = false, className, ...props }, ref) => {
     const Component = asChild ? Slot : 'div';
 
@@ -97,9 +97,9 @@ const ActionListItemContent = React.forwardRef<HTMLDivElement, ActionListItemCon
     );
   },
 );
-ActionListItemContent.displayName = 'ActionListItemContent';
+ListItemContent.displayName = 'ListItemContent';
 
-const actionListItemActionsVariants = cva('relative z-10 flex shrink-0 items-center py-3 pl-2', {
+const listItemActionsVariants = cva('relative z-10 flex shrink-0 items-center py-3 pl-2', {
   variants: {
     visibility: {
       always: '',
@@ -112,18 +112,16 @@ const actionListItemActionsVariants = cva('relative z-10 flex shrink-0 items-cen
   },
 });
 
-interface ActionListItemActionsProps
-  extends
-    React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof actionListItemActionsVariants> {}
+interface ListItemActionsProps
+  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof listItemActionsVariants> {}
 
-const ActionListItemActions = React.forwardRef<HTMLDivElement, ActionListItemActionsProps>(
+const ListItemActions = React.forwardRef<HTMLDivElement, ListItemActionsProps>(
   ({ className, visibility, ...props }, ref) => {
     return (
       <div
         ref={ref}
         className={cn(
-          actionListItemActionsVariants({ visibility, className }),
+          listItemActionsVariants({ visibility, className }),
           'pointer-events-none [&>*]:pointer-events-auto',
         )}
         {...props}
@@ -131,6 +129,24 @@ const ActionListItemActions = React.forwardRef<HTMLDivElement, ActionListItemAct
     );
   },
 );
-ActionListItemActions.displayName = 'ActionListItemActions';
+ListItemActions.displayName = 'ListItemActions';
 
-export { ActionList, ActionListItem, ActionListItemActions, ActionListItemContent };
+/** @deprecated Use List instead. */
+const ActionList = List;
+/** @deprecated Use ListItem instead. */
+const ActionListItem = ListItem;
+/** @deprecated Use ListItemActions instead. */
+const ActionListItemActions = ListItemActions;
+/** @deprecated Use ListItemContent instead. */
+const ActionListItemContent = ListItemContent;
+
+export {
+  List,
+  ListItem,
+  ListItemActions,
+  ListItemContent,
+  ActionList,
+  ActionListItem,
+  ActionListItemActions,
+  ActionListItemContent,
+};

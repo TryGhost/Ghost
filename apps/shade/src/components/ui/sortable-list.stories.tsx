@@ -10,7 +10,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Reorderable items with independent drag handles. An active drag suppresses shared row hover and focus fills while preserving drag feedback.',
+          'Use SortableList when people need to change the order of items, such as steps or settings. Each item has a drag handle, so people can reorder it without activating its other buttons or links.',
       },
     },
   },
@@ -31,7 +31,7 @@ export const Default: Story = {
     docs: {
       description: {
         story:
-          'Use a sortable list for editable ordered content; drag the handle to reorder without introducing a primary row action.',
+          'Drag a handle to move an item. The rest of each row remains available for its content and other controls.',
       },
     },
   },

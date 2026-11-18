@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { ActionListItem } from '@/components/ui/action-list';
+import { ListItem } from '@/components/ui/list';
 import { RowPrimaryAction } from '@/components/ui/row-primary-action';
 import { Button } from '@/components/ui/button';
 import { Box, Stack } from '@/primitives';
@@ -13,7 +13,7 @@ const meta: Meta<typeof RowPrimaryAction> = {
     docs: {
       description: {
         component:
-          'The existing primary control owns its destination. Shade supplies expanded row targets, native gesture delegation and row feedback.',
+          'Use with ListItem or TableRow when clicking a row should open an item or run an action. Wrap the main link or button to make the whole highlighted row clickable, while other row buttons keep their own actions.',
       },
     },
   },
@@ -26,26 +26,26 @@ function Rows({ admin7Design = true }: { admin7Design?: boolean }) {
     <ShadeApp admin7Design={admin7Design} darkMode={false}>
       <Box className="max-w-lg" padding="lg">
         <Stack gap="none">
-          <ActionListItem asChild>
+          <ListItem asChild>
             <div className="flex items-center justify-between gap-3 border-b py-4">
               <RowPrimaryAction asChild>
-                <a href="#native-destination">Native link — hover or Tab</a>
+                <a href="#native-destination">Open an item — hover or press Tab</a>
               </RowPrimaryAction>
               <Button size="sm" variant="ghost" data-row-secondary>
-                Secondary action
+                Another action
               </Button>
             </div>
-          </ActionListItem>
-          <ActionListItem asChild>
+          </ListItem>
+          <ListItem asChild>
             <div className="border-b py-4">
               <RowPrimaryAction asChild>
                 <div onClick={() => window.alert('Existing action')}>
-                  Legacy action — Enter or Space
+                  Run an existing action — press Enter or Space
                 </div>
               </RowPrimaryAction>
             </div>
-          </ActionListItem>
-          <ActionListItem asChild>
+          </ListItem>
+          <ListItem asChild>
             <div className="border-b py-4">
               <RowPrimaryAction asChild>
                 <button type="button" disabled>
@@ -53,10 +53,10 @@ function Rows({ admin7Design = true }: { admin7Design?: boolean }) {
                 </button>
               </RowPrimaryAction>
             </div>
-          </ActionListItem>
-          <ActionListItem asChild>
-            <div className="border-b py-4">Static information</div>
-          </ActionListItem>
+          </ListItem>
+          <ListItem asChild>
+            <div className="border-b py-4">Information only</div>
+          </ListItem>
         </Stack>
       </Box>
     </ShadeApp>
@@ -68,7 +68,7 @@ export const NativeAndLegacyActions: Story = {
     docs: {
       description: {
         story:
-          'Use existing native controls or legacy clickable markup as the primary slot; secondary controls remain independent and disabled/static rows add no action.',
+          'Use a link to open another page or a button to run an action. This example also shows how an older click handler works with Enter and Space, and how disabled rows stay inactive.',
       },
     },
   },
@@ -80,7 +80,7 @@ export const CurrentInterface: Story = {
     docs: {
       description: {
         story:
-          'Row actions, keyboard access and feedback also apply to the current interface, with admin7Design off.',
+          'The same clickable rows work in the current Admin interface, with admin7Design turned off.',
       },
     },
   },

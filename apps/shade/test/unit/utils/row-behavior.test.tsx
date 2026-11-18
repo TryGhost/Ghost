@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import ShadeApp from '../../../src/shade-app';
-import { ActionListItem } from '../../../src/components/ui/action-list';
+import { ListItem } from '../../../src/components/ui/list';
 import { RowPrimaryAction, TableRowAction } from '../../../src/components/ui/row-primary-action';
 import { TableCell, TableRow } from '../../../src/components/ui/table';
 
@@ -67,7 +67,7 @@ describe.each([false, true])('shared rows with admin7Design=%s', (flag) => {
             </tbody>
           </table>
         ) : (
-          <ActionListItem {...rowProps}>{content}</ActionListItem>
+          <ListItem {...rowProps}>{content}</ListItem>
         ),
       );
 
@@ -152,11 +152,11 @@ describe.each([false, true])('shared rows with admin7Design=%s', (flag) => {
     inShade(
       flag,
       <ul>
-        <ActionListItem asChild>
+        <ListItem asChild>
           <li ref={ref} data-testid="row" onClick={click} onPointerDown={pointer}>
             Item
           </li>
-        </ActionListItem>
+        </ListItem>
       </ul>,
     );
     expect(ref.current).toBe(screen.getByTestId('row'));
@@ -180,7 +180,7 @@ describe.each([false, true])('shared rows with admin7Design=%s', (flag) => {
     );
     inShade(
       flag,
-      <ActionListItem asChild>
+      <ListItem asChild>
         {tag === 'button' ? (
           <button type="button" onClick={click}>
             {content}
@@ -190,7 +190,7 @@ describe.each([false, true])('shared rows with admin7Design=%s', (flag) => {
             {content}
           </a>
         )}
-      </ActionListItem>,
+      </ListItem>,
     );
     fireEvent.click(screen.getByText('Setting title'));
     fireEvent.click(screen.getByText('Setting description'));
@@ -202,13 +202,13 @@ describe.each([false, true])('shared rows with admin7Design=%s', (flag) => {
     const action = vi.fn();
     inShade(
       flag,
-      <ActionListItem asChild>
+      <ListItem asChild>
         <div>
           <RowPrimaryAction asChild>
             <div onClick={action}>Legacy action</div>
           </RowPrimaryAction>
         </div>
-      </ActionListItem>,
+      </ListItem>,
     );
     const control = screen.getByText('Legacy action');
     expect(control.tagName).toBe('DIV');
@@ -224,7 +224,7 @@ describe.each([false, true])('shared rows with admin7Design=%s', (flag) => {
     const secondary = vi.fn();
     inShade(
       flag,
-      <ActionListItem asChild>
+      <ListItem asChild>
         <div data-testid="row">
           <RowPrimaryAction asChild>
             <button type="button" disabled onClick={disabled}>
@@ -235,7 +235,7 @@ describe.each([false, true])('shared rows with admin7Design=%s', (flag) => {
             Edit
           </button>
         </div>
-      </ActionListItem>,
+      </ListItem>,
     );
     fireEvent.click(screen.getByTestId('row'));
     expect(disabled).not.toHaveBeenCalled();
@@ -247,7 +247,7 @@ describe.each([false, true])('shared rows with admin7Design=%s', (flag) => {
     const action = vi.fn((event: React.MouseEvent<HTMLAnchorElement>) => event.preventDefault());
     inShade(
       flag,
-      <ActionListItem asChild>
+      <ListItem asChild>
         <div data-testid="row" onClickCapture={capture}>
           <RowPrimaryAction asChild>
             <a href="https://example.com/entry" onClick={action}>
@@ -255,7 +255,7 @@ describe.each([false, true])('shared rows with admin7Design=%s', (flag) => {
             </a>
           </RowPrimaryAction>
         </div>
-      </ActionListItem>,
+      </ListItem>,
     );
     fireEvent.click(screen.getByTestId('row'), { metaKey: true, shiftKey: true });
     expect(capture).toHaveBeenCalledOnce();
@@ -269,7 +269,7 @@ describe.each([false, true])('shared rows with admin7Design=%s', (flag) => {
     const secondary = vi.fn();
     inShade(
       flag,
-      <ActionListItem asChild>
+      <ListItem asChild>
         <div data-testid="row">
           <RowPrimaryAction asChild>
             <a href="https://example.com/entry">Entry</a>
@@ -278,7 +278,7 @@ describe.each([false, true])('shared rows with admin7Design=%s', (flag) => {
             Metrics
           </div>
         </div>
-      </ActionListItem>,
+      </ListItem>,
     );
     fireEvent.click(screen.getByText('Metrics'));
     expect(secondary).toHaveBeenCalledOnce();

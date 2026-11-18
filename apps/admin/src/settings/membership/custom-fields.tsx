@@ -4,10 +4,10 @@ import { EditCustomFieldModal } from './custom-fields/edit-custom-field-modal';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
 import {
-  ActionList,
-  ActionListItem,
-  ActionListItemActions,
-  ActionListItemContent,
+  List,
+  ListItem,
+  ListItemActions,
+  ListItemContent,
   Button,
   DragIndicator,
   NoValueLabel,
@@ -57,7 +57,7 @@ const FieldRow: React.FC<{
   const userType = userTypeForField(field);
   return (
     <>
-      <ActionListItemContent asChild>
+      <ListItemContent asChild>
         <button
           className="flex w-full items-center gap-3 py-3 text-left"
           type="button"
@@ -78,18 +78,18 @@ const FieldRow: React.FC<{
             </span>
           </span>
         </button>
-      </ActionListItemContent>
-      <ActionListItemActions>
+      </ListItemContent>
+      <ListItemActions>
         <Button size="sm" type="button" variant="ghost" onClick={() => openModal(field)}>
           Edit
         </Button>
-      </ActionListItemActions>
+      </ListItemActions>
     </>
   );
 };
 
 // The row a dragged field sits in. The drag overlay renders outside the list's wrapper,
-// so a row being dragged supplies its own ActionList to keep its styling.
+// so a row being dragged supplies its own List to keep its styling.
 const SortableFieldRow: React.FC<SortableItemContainerProps> = ({
   id,
   setRef,
@@ -106,7 +106,7 @@ const SortableFieldRow: React.FC<SortableItemContainerProps> = ({
 
   // The handle sits in a centred column because the row stretches its children.
   const row = (
-    <ActionListItem
+    <ListItem
       ref={setRef}
       className={isDragging ? 'opacity-75' : ''}
       data-testid="custom-field-list-item"
@@ -116,10 +116,10 @@ const SortableFieldRow: React.FC<SortableItemContainerProps> = ({
         <DragIndicator className="h-10" isDragging={isDragging || false} {...props} />
       </Inline>
       {children}
-    </ActionListItem>
+    </ListItem>
   );
 
-  return isDragging ? <ActionList>{row}</ActionList> : row;
+  return isDragging ? <List>{row}</List> : row;
 };
 
 const FieldList: React.FC<{
@@ -163,17 +163,17 @@ const FieldList: React.FC<{
           getDragHandleLabel={(field) => `Reorder ${field.name}`}
           items={withRowIds(visibleFields)}
           renderItem={(field) => <FieldRow field={field} openModal={openModal} />}
-          wrapper={ActionList}
+          wrapper={List}
           onMove={(key, overKey) => onMove?.(key, overKey)}
         />
       ) : (
-        <ActionList>
+        <List>
           {visibleFields.map((field) => (
-            <ActionListItem key={field.key} data-testid="custom-field-list-item">
+            <ListItem key={field.key} data-testid="custom-field-list-item">
               <FieldRow field={field} openModal={openModal} />
-            </ActionListItem>
+            </ListItem>
           ))}
-        </ActionList>
+        </List>
       )}
       {isTruncated && (
         <div className="flex items-center gap-2 border-t border-border pt-2">

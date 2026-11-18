@@ -115,7 +115,7 @@ const preview: Preview = {
           'Primitives',
           ['Primitives Guide', '*'],
           'Components',
-          ['Components Guide', '*'],
+          ['Components Guide', 'Lists and Tables', '*'],
           'Patterns',
           ['Patterns Guide', '*'],
           'Page Templates',

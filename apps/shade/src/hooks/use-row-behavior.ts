@@ -10,7 +10,7 @@ function primaryAction(row: HTMLElement): HTMLElement | null {
   );
 }
 
-/** Shared native-action delegation; routing and callbacks remain on the control. */
+/** Sends clicks on empty row space to its main link or button. */
 export function useRowBehavior<Element extends HTMLElement>(
   props: HTMLAttributes<Element>,
   interactive?: boolean,

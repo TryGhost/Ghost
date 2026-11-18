@@ -4,10 +4,10 @@ import React, { useState } from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
 import usePinturaEditor from '@/settings/hooks/use-pintura-editor';
 import {
-  ActionList,
-  ActionListItem,
-  ActionListItemActions,
-  ActionListItemContent,
+  List,
+  ListItem,
+  ListItemActions,
+  ListItemContent,
   Button,
   NoValueLabel,
   NoValueLabelIcon,
@@ -101,8 +101,8 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
   );
 
   return (
-    <ActionListItem className={disabled ? 'opacity-50 saturate-0' : ''} data-testid={testId}>
-      <ActionListItemContent asChild>
+    <ListItem className={disabled ? 'opacity-50 saturate-0' : ''} data-testid={testId}>
+      <ListItemContent asChild>
         <button
           className="flex w-full items-center gap-3 py-3 text-left"
           type="button"
@@ -121,11 +121,9 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
             <span className="block text-sm text-muted-foreground">{detail}</span>
           </span>
         </button>
-      </ActionListItemContent>
-      <ActionListItemActions visibility={disabled ? 'always' : 'hover'}>
-        {buttons}
-      </ActionListItemActions>
-    </ActionListItem>
+      </ListItemContent>
+      <ListItemActions visibility={disabled ? 'always' : 'hover'}>{buttons}</ListItemActions>
+    </ListItem>
   );
 };
 
@@ -216,7 +214,7 @@ const BuiltInIntegrations: React.FC = () => {
   ];
 
   return (
-    <ActionList>
+    <List>
       {sortedItems.map((item) => (
         <IntegrationItem
           key={item.testId}
@@ -232,7 +230,7 @@ const BuiltInIntegrations: React.FC = () => {
           upgradeRoute={upgradeRoute}
         />
       ))}
-    </ActionList>
+    </List>
   );
 };
 
@@ -244,7 +242,7 @@ const CustomIntegrations: React.FC<{ integrations: Integration[] }> = ({ integra
 
   if (integrations.length) {
     return (
-      <ActionList>
+      <List>
         {integrations.map((integration) => (
           <IntegrationItem
             key={integration.id}
@@ -289,7 +287,7 @@ const CustomIntegrations: React.FC<{ integrations: Integration[] }> = ({ integra
             }}
           />
         ))}
-      </ActionList>
+      </List>
     );
   } else {
     return (

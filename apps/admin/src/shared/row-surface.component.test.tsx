@@ -2,10 +2,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { renderInApp } from '@test-utils/acceptance';
 import {
-  ActionList,
-  ActionListItem,
-  ActionListItemActions,
-  ActionListItemContent,
+  List,
+  ListItem,
+  ListItemActions,
+  ListItemContent,
   Button,
   RowPrimaryAction,
   Table,
@@ -34,10 +34,10 @@ async function renderRows(admin7Design = true) {
   secondaryAction.mockClear();
   await renderInApp(
     <Box className="w-[480px]" padding="lg">
-      <ActionList aria-label="Content rows" className="border-t" role="list">
+      <List aria-label="Content rows" className="border-t" role="list">
         {['First', 'Second'].map((name) => (
-          <ActionListItem key={name} role="listitem">
-            <ActionListItemContent asChild>
+          <ListItem key={name} role="listitem">
+            <ListItemContent asChild>
               <Button
                 className="justify-start py-4"
                 variant="link"
@@ -45,18 +45,18 @@ async function renderRows(admin7Design = true) {
               >
                 Open {name}
               </Button>
-            </ActionListItemContent>
-            <ActionListItemActions>
+            </ListItemContent>
+            <ListItemActions>
               <Button variant="ghost" onClick={() => secondaryAction(name)}>
                 Edit {name}
               </Button>
-            </ActionListItemActions>
-          </ActionListItem>
+            </ListItemActions>
+          </ListItem>
         ))}
-        <ActionListItem hover={false} role="listitem">
-          <ActionListItemContent className="py-4">Static information</ActionListItemContent>
-        </ActionListItem>
-      </ActionList>
+        <ListItem hover={false} role="listitem">
+          <ListItemContent className="py-4">Static information</ListItemContent>
+        </ListItem>
+      </List>
     </Box>,
     { admin7Design },
   );
@@ -71,7 +71,7 @@ describe('shared content row surfaces in the browser', () => {
       await renderInApp(
         <Box className="w-[480px]" padding="lg">
           <ul>
-            <ActionListItem asChild>
+            <ListItem asChild>
               <li className="relative border-b py-4">
                 <RowPrimaryAction asChild>
                   <button type="button" onClick={open}>
@@ -82,7 +82,7 @@ describe('shared content row surfaces in the browser', () => {
                   Edit custom row
                 </button>
               </li>
-            </ActionListItem>
+            </ListItem>
           </ul>
         </Box>,
         { admin7Design },

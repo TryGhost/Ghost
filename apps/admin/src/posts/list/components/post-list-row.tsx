@@ -3,7 +3,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-  ActionListItem,
+  ListItem,
   RowPrimaryAction,
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
@@ -381,7 +381,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
         onAction={menuOnAction ?? (() => {})}
         onOpenChange={menuOnOpenChange ?? (() => {})}
       >
-        <ActionListItem asChild>{row}</ActionListItem>
+        <ListItem asChild>{row}</ListItem>
       </PostsContextMenu>
     );
   },

@@ -6,120 +6,147 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # Lists and tables
 
-<p className="excerpt">Content aligns with its header. Interactive rows highlight outward into the gutter, while their contents stay still. Shade owns the shared treatment for tables and content lists.</p>
+<p className="excerpt">Use a table to compare information across columns, or a list to browse items and act on them. Shade keeps rows aligned and makes their links and buttons easier to use.</p>
 
-## Scope
+## Choose a component
 
-Use this contract for content lists and data tables in pages, cards, dialogs,
-and settings. Prefer `Table` for tabular data and
-`ActionList` for rows with a primary action and optional secondary controls.
-Use `ActionListItem asChild` when a custom row must keep different markup.
+| Component          | When to use it                                                                                                                                                                |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Table`            | People need to compare the same details across many items, such as members' names, email addresses, and statuses.                                                             |
+| `List`             | People browse items such as posts, members, or settings. A row can show a title, description, picture, link, or extra buttons.                                                |
+| `RowPrimaryAction` | An existing custom row needs a main link or button that people can click from anywhere in the row. Use it inside `ListItem`; use its `TableRowAction` name inside `TableRow`. |
+| `rowSurface`       | You need Shade's row backgrounds on custom markup that cannot use the components above. This is a styling helper; your code still needs to handle actions and touch presses.  |
 
-**DataList is an explicit exception.** Keep its layout, data bars, hover effects,
-and sliding values unchanged. Navigation, dropdown options, command menus, and
-full feed/article cards follow their own components' treatments. ActivityPub
-retains its existing custom row appearance and interactions; it is outside this
-Admin row migration.
+These components work in pages, cards, dialogs, and settings. Rows with no
+main action, such as comments, can still contain buttons. Leave those rows
+without a hover background so they do not look clickable.
+
+## Make a row clickable
+
+A row's **main action** is what happens when someone clicks it: for example,
+opening a post. Other controls, such as an Edit button, checkbox, or drag handle,
+keep their own actions. Clicking one of those controls must not also open the row.
+
+### Lists
+
+Put the main link or button in `ListItemContent asChild`. Put other
+buttons in `ListItemActions`. Shade makes the whole row, including its
+highlighted edges, activate the main link or button.
+
+Use `hover={false}` on `ListItem` when only the individual controls
+should look clickable. This hides the row highlight; its buttons and links
+still work normally.
+
+### Custom rows
+
+Use `ListItem asChild` to keep an existing `li` or `div` as the row.
+Wrap its main link or button in `RowPrimaryAction asChild`:
+
+```tsx
+<ListItem asChild>
+  <li>
+    <RowPrimaryAction asChild>
+      <a href="/members/ada">Ada Lovelace</a>
+    </RowPrimaryAction>
+  </li>
+</ListItem>
+```
+
+`asChild` keeps the link or button you provide rather than adding another
+button around it. The link still opens its own URL, including in a new tab.
+For an action rather than a destination, use a button with an `onClick` handler.
+
+### Table rows
+
+Use `TableRowAction asChild` around the main link or button in a `TableRow`:
+
+```tsx
+<TableRow>
+  <TableCell className="static">
+    <TableRowAction asChild>
+      <a href="/posts/example">Example post</a>
+    </TableRowAction>
+  </TableCell>
+  <TableCell>Published</TableCell>
+</TableRow>
+```
+
+The rest of the row now opens the same link. A row with no main link, button,
+or row click handler gets no hover background. Column headings and table
+footers get no hover background either.
+
+For new code, use links for destinations and buttons for actions. When updating
+an older clickable `div` or `span`, `RowPrimaryAction` also makes it focusable
+and lets Enter or Space activate it.
 
 ## Shared defaults
 
-This contract applies to both the current and upcoming Admin UI, independently
-of `admin7Design`. Shade's row components own the shared appearance and
-interaction behavior. Consumers do not need a feature flag or local gesture
-handling to adopt it. Keep page-specific adapters only where structure requires
-them, such as virtualized tables' scroll gutters and pinned columns.
+Rows behave the same in the current and upcoming Admin UI, with `admin7Design`
+on or off. `TableRow` and `ListItem` handle highlighting, touch presses,
+and clicks on the empty space around the main link. You do not need to repeat
+that code in each screen. Your screen still decides where a link goes, what a
+button does, and who is allowed to use it.
 
-Static rows align with their headers but have no row hover treatment. Controls
-inside a static row retain their own interactions. A sortable settings form is
-still a settings list; it is distinct from the navigation UI it may configure.
+## Spacing and dividing lines
 
-## Alignment and gutters
+Line up row content with the page or section heading and with the table's
+column headings. Keep spacing between columns, but remove padding at the
+outside edges. Row content stays in the same place when highlighted.
 
-Align the outer edges of row content with its page or section header and the
-corresponding table column headings. Remove outer horizontal row padding while
-preserving spacing between columns. Contents stay in place when highlighted.
+The rounded background extends **16px on each side** into the space beside the
+list. If there is less room, reduce the extension so it fits. It should not be
+cut off or create a horizontal scrollbar. Keep existing scrolling, fixed
+columns, and rendering of long lists working as before.
 
-The rounded background extends **16px on each side** of the aligned content.
-Use Shade's existing radius, hover, and selection tokens. Reuse the container's
-gutter and reduce the extension when the gutter is smaller. A highlight must
-not be clipped or introduce horizontal scrolling. Preserve existing scrollports,
-sticky columns, and virtualized row positioning.
+When a row is highlighted, hide the dividing lines immediately above and
+below it. Keep the line below the column headings and any border around the
+whole card or table. Hiding a line must not change row height.
 
-## Separators
+## Hover, keyboard, selection, and touch
 
-Hide the separators immediately above and below a highlighted body row,
-including the separator owned by its neighbor. Preserve the divider beneath
-table column headings and the outer border of a card or container. Keep row
-heights unchanged when separators disappear and return.
+| When someone…                                     | What the row does                                                                                                                        |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Moves the pointer over a clickable row            | Shows the rounded background and hides the dividing lines above and below it.                                                            |
+| Tabs to a link or button in a clickable row       | Shows the same background, with a visible focus ring on the actual link or button.                                                       |
+| Selects a row                                     | Keeps the selection background visible, using the stronger selection color.                                                              |
+| Selects neighboring rows                          | Keeps a separate rounded background for each row, without adding gaps.                                                                   |
+| Presses a row on a touch screen                   | Shows the background during the press, then clears it on release, cancellation, or scrolling. A tap runs the row’s main action directly. |
+| Drags an item to reorder it                       | Hides ordinary hover and focus backgrounds during the drag. Selection remains visible, and the dragged item keeps its drag styling.      |
+| Uses a row with no main action, or a disabled row | Gets no hover background or extra row action. Any available buttons and links still work.                                                |
 
-## Primary and secondary actions
+## Custom layout details
 
-For a row with a primary action, its entire highlighted area, including the
-sideways extension, activates that destination. Keep secondary links, buttons,
-checkboxes, and drag handles independent. Preserve native link behavior, such as
-opening a destination in a new tab, and give the actual control a visible
-keyboard focus indicator.
+Use `Table` and `List` where possible. If you need a custom layout, these
+settings help keep its rows working the same way:
 
-Only rows with a row-level interaction receive the interactive treatment.
-Where there is no primary row action, keep the existing controls and do not
-make the row background into another control.
+- Set `data-state="selected"` on selected rows.
+- Keep elements between the main link and the row at `position: static` so the
+  link's clickable area can cover the row. This is why the table example uses
+  `className="static"` on its first cell. Give other controls `relative z-10`
+  so they remain above that clickable area.
+- Use `rowSurfaceClasses.inset` when a scrolling container has no room for a
+  highlight outside its edges. The highlight will stay inside the row.
+- When columns disappear on smaller screens, add `max-sm:shade-row-end` or a
+  matching breakpoint to the last visible cell. This keeps its rounded edge
+  and removes its outside padding. Use `rowSurfaceClasses.end` when that cell
+  is always last.
+- `SortableList` handles the drag state for its rows. For a custom drag
+  implementation, set `data-row-dragging="true"` on the list during the drag.
 
-## State behavior
+Try the **Table**, **List**, **Row Primary Action**, **Sortable List**,
+and **Row Surface** examples to see these behaviors.
 
-| State                  | Row treatment                                                                                                                                                       |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Resting                | Aligned content and body-row separators.                                                                                                                            |
-| Pointer hover          | Expanded, rounded hover background; adjacent body separators hidden.                                                                                                |
-| Keyboard focus inside  | Same background and separators as hover, plus a visible indicator on the focused link or control.                                                                   |
-| Selected               | Persistent expanded, rounded selection background; adjacent body separators hidden. Selection color remains stronger than hover.                                    |
-| Adjacent selected rows | Each retains its individual rounded shape, without added gaps or changed row heights.                                                                               |
-| Touch press            | Same treatment during the press; clears on release or cancellation. A tap activates directly, a secondary control activates only itself, and scrolling still works. |
-| Dragging               | Ordinary hover and focus fills are suppressed temporarily. Existing drag feedback remains; normal styling returns afterward.                                        |
-| Static or disabled     | No invented row action or row hover treatment; individual enabled controls keep their own states.                                                                   |
+## Updating existing lists
 
-## Using the shared behavior
+The older `ActionList`, `ActionListItem`, `ActionListItemContent`, and
+`ActionListItemActions` names still work. Use the shorter `List` names in new
+code; existing apps can switch names without changing how their lists behave.
 
-`TableRow` and `ActionListItem` own the surface, touch press handling, and primary
-action delegation. Consumers declare their existing primary
-control once; routing, selection, and permissions remain with the
-feature. Header, footer, spacer, and data-only rows remain static.
-`ActionListItem` retains its `hover` opt-out for intentionally static or
-unavailable actions.
+## Lists with their own appearance
 
-For a standard action list, put its primary link or button in
-`ActionListItemContent asChild` and secondary controls in `ActionListItemActions`.
-For custom `li` or `div` markup, use `ActionListItem asChild` and mark the
-existing primary control with `RowPrimaryAction asChild`. In tables, use
-`TableRowAction asChild` inside `TableRow`. These slots preserve the existing
-control while supplying the shared behavior. Existing row-level
-`onClick` remains supported; avoid duplicating filtering or gesture forwarding
-in individual screens.
-
-Prefer native links and buttons for new rows. A primary slot around an existing
-clickable `div` or `span` adds button semantics and Enter/Space activation.
-
-The `rowSurface` recipe and `rowSurfaceClasses` atoms remain available for
-unusual styling integrations. Prefer the row components so new screens inherit
-behavior automatically instead of assembling a recipe and press hook locally.
-
-- Use `data-state="selected"` for selected rows.
-- Mark an actual primary link or button with the shared primary-action slot
-  so the clickable extension follows the shared geometry. Keep ancestors
-  between that control and the row unpositioned, and place secondary controls
-  above the stretched target with relative positioning and `z-10`.
-- Use `rowSurfaceClasses.inset` when a constrained scrollport has no outward
-  gutter. Keep the row content aligned with the corresponding header.
-- When responsive tables hide trailing cells, mark the last visible cell at
-  that breakpoint with a literal utility such as `max-sm:shade-row-end` or
-  `sm:max-lg:shade-row-end`. This removes its outer padding and preserves the
-  highlight extension and rounded end. `rowSurfaceClasses.end` supplies the
-  unconditional utility.
-- Set `data-row-dragging="true"` on the sortable region while dragging to
-  suppress ordinary row fills, including in its drag overlay.
-
-Use the live **Table**, **ActionList**, **SortableList**, and **rowSurface**
-stories to inspect variants and states. Check light and dark themes, primary
-edge clicks, independent secondary controls, the first/last body rows,
-consecutive selections, keyboard focus, touch scrolling, and drag cancellation.
+`DataList` keeps its existing data bars, hover effects, and sliding values.
+Navigation, menu options, and full feed or article cards use their own
+components. ActivityPub keeps its existing custom rows and is outside this
+Admin update.
 
 </div>
