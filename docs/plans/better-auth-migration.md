@@ -79,10 +79,12 @@ Design rules:
   plugins (`magicLink`, `passkey`, `twoFactor`, `apiKey`, `sso`,
   `oauthProvider`). Not `bearer`: the session token stays in its httpOnly
   cookie, and is stripped from native responses (§10).
-- **Authorization stays in Ghost.** `canThis`, the code-defined role grants and
-  model `permissible` hooks are unchanged. Every credential resolves to one
-  `Principal`, from which `frame.options.context` is derived; token policy
-  (scopes, staff-token blocklist, integration allowlist) sits at that seam.
+- **Authorization stays in Ghost.** Every credential resolves to one
+  `Principal`, from which `frame.options.context` is derived. Access is
+  decided by `auth/policy/` from the principal: code-defined role grants and
+  row rules moved out of model `permissible` hooks, capped by token and app
+  scopes. `canThis` becomes an adapter over it (§3.6), and token policy
+  (scopes, staff-token blocklist, integration allowlist) lives there.
 - **Wire contracts are preserved** for older Admin builds (Admin and Core
   deploy independently), the comments moderation iframe, integrations and the
   Admin API SDK.
@@ -187,8 +189,8 @@ the `rate_limits` table, `shared.middleware.rateLimiting`) with success resets. 
   content keys, cookies   │  → frame.options.context (same shape)        │ │  passkey, twoFactor,   │
                           └──────────────────────────────────────────────┘ │  apiKey, sso, oauth    │
                           ┌──────────────────────────────────────────────┐ │  Ghost plugins (§3.3)  │
-                          │  Authorization (unchanged): canThis + token  │ │  adapter: Knex         │
-                          │  policy (scopes, blocklist, allowlist)       │ └────────────────────────┘
+                          │  Authorization: auth/policy (capabilities,   │ │  adapter: Knex         │
+                          │  scopes, row rules); canThis as adapter      │ └────────────────────────┘
                           └──────────────────────────────────────────────┘
 ```
 
@@ -348,9 +350,9 @@ with `overrideAll`, so `verified` is not reset to its default. Team SSO uses
   (`object_type:action` or `object_type:*`), so "user permissions ∩ token
   scopes" is a set intersection. Where one permission covers more than one
   capability, a finer scope splits it (for example sending a newsletter is
-  `post:edit` today; a token also needs `post:send_newsletter`). The
-  permissions engine is unchanged; finer scopes are extra checks at the
-  token policy. `scopes.ts` adds the coarse presets the UI offers.
+  `post:edit` today; a token also needs `post:send_newsletter`). `scopes.ts`
+  maps each finer scope to its base key, and `authorize` checks both (§3.6).
+  `scopes.ts` also adds the coarse presets the UI offers.
 - Scopes apply to everything a request reads, not only its endpoint:
   includes, relations and relation filters (for example
   `posts?include=authors`, or a filter on `tags`) are checked against the
@@ -420,6 +422,98 @@ before and the chain ends by building the same `Principal` from `req.user` and
 `frame.options.context.principal`, and `parseContext` carries it whole; a
 request with a principal is public only when it is anonymous or uses a
 content key.
+
+### 3.6 Authorization policy
+
+Role grants are code (§2), so a principal's grants no longer need a
+permissions query per check. `canThis` predates that and hard-codes two actors.
+It loads the user and the API key with their roles through `providers.ts`,
+computes `hasUserPermission` and `hasApiKeyPermission`, and passes both flags,
+with the loaded roles, to the `permissible` hooks on `Post` (with
+`relations/authors.js`), `User`, `Role`, `Invite` and `Integration`. The core
+settings guard sits in `services/settings/settings-bread-service.js` instead.
+The hooks make the final decision:
+
+- They narrow a grant: an Author edits only posts they co-author, and Owner
+  cannot be destroyed, invited or set inactive.
+- They widen one: a user edits their own profile, and an Author is allowed
+  `publish` on a post they are primary author of, which the role lacks.
+- They load the resource and throw errors callers rely on: `NotFoundError`
+  for a missing resource (the scheduler endpoint treats it as a no-op), limit
+  errors from the members, staff and custom-integrations limit checks, and
+  `NoPermissionError`.
+- They return `excludedAttrs`, which the endpoint strips before the write
+  (`api/endpoints/utils/permissions.js`).
+
+Token scopes and the `app` principal would be a third and fourth flag through
+every hook. Instead, `auth/policy/` grows into the one place that decides
+access, and `canThis` becomes an adapter over it.
+
+- **Grants and scopes.** `capabilities(principal)` returns two sets of
+  `object_type:action` keys, computed once per request from
+  `permissions-data.ts` and `role-permissions.ts`. The principal's user and
+  key views gain their role names for this; today they carry none, and the
+  roles are loaded in `providers.ts`.
+  - `granted`: the role's grants. Owner is granted every key. A staff token or
+    an app acting for a user takes the user's grants (a staff token's key
+    role is ignored, as `canThis` ignores it today). A legacy Admin API key
+    takes its integration role's grants. An app with no user, or a Phase 4
+    site token, is granted exactly its scopes.
+  - `scopes`: the token's and the app's scopes intersected, or unlimited when
+    the principal has neither (a session, a legacy key). Wildcards
+    (`post:*`) are expanded to every action of that type in
+    `permissions-data.ts` and every finer scope of that type in `scopes.ts`
+    when the set is built, so every check is an exact key match.
+
+  Owner is granted every key, but row rules still narrow it as the hooks do
+  today; a scoped Owner token is also capped by its scopes.
+
+- **Decisions.** `authorize(principal, action, objectType, {resource, attrs})`
+  resolves to `{excludedAttrs?}` when allowed and throws otherwise, with the
+  same errors as today: `NoPermissionError`, `NotFoundError`, limit errors,
+  and `UnauthorizedError` for an inactive user. `attrs` is the `unsafeAttrs`
+  `canThis` receives today. Without a row rule for the type, the request is
+  allowed when the key is in `granted` and in `scopes`. With one, the rule
+  receives the principal, whether the key is granted, the resource and
+  `attrs`, and decides, so it can narrow or widen as the hook does today. A
+  rule is reached only when the key is in `scopes`, so a widening rule never
+  lets a scoped principal past a key its scopes lack. Internal requests (an
+  `internal` context or principal) bypass the check, as in `canThis` today.
+- **Finer scopes.** Where one key covers more than one capability, a fixed
+  map in `scopes.ts` names the extra scope, and it applies only to scoped
+  principals. The check runs at every point that performs the extra action,
+  not only at the endpoint, so a scoped principal cannot reach the action by
+  another route. For `post:send_newsletter`, every path that sends,
+  schedules or retries a newsletter email requires it: a post edit that
+  sends, a post edit that schedules a post with a newsletter, and the email
+  retry endpoint. The scheduler's publish route (`schedules.js`) is closed
+  to scoped principals; only the scheduler's own key calls it. Publishing
+  without a send needs only `post:edit`. Phase 4 (PLA-639) places and tests
+  each check point.
+- **Row rules.** Per-type rules in `auth/policy/rules/` replace the
+  `permissible` hooks, one model at a time. Each keeps its hook's narrowing,
+  widening, errors, limit checks and `excludedAttrs`, and the endpoint keeps
+  stripping `excludedAttrs` before the write. Rules are async, since they load
+  the resource as the hooks do.
+- **Relations.** Includes and relation filters check the related type's key
+  against `scopes` (§3.3). The check runs where the API resolves includes and
+  filters, which the Phase 4 spike locates, and reads `scopes` from
+  `capabilities`. It does not run the related type's row rule, and role
+  grants are not checked on includes, as today.
+- **Unchanged.** Endpoint `permissions` configs and `unsafeAttrs` in
+  `api/endpoints/`, `frame.options.context` (internal callers still pass
+  `{internal: true}`), and the `canThis(context).edit.post(id, attrs)` call
+  shape stay while callers move over.
+
+Order: Phase 4 builds `capabilities` and `authorize` with scopes and finer
+scopes. `canThis` uses them for its grant flags while the hooks still decide,
+and refuses a scoped principal whose scopes lack the key before any hook runs,
+so scopes cap hooks the same way they will cap row rules. Each hook then moves
+to a row rule in its own pull request, behind characterization tests for its
+narrowing, widening, errors, limit checks and `excludedAttrs`;
+`posts`/`authors` is the largest and goes last. `canThis` call sites move to
+`authorize` directly in Phase 7. These steps keep every response for an
+unscoped principal; scopes only restrict tokens and apps.
 
 ## 4. Data model
 
@@ -749,10 +843,12 @@ Exit: identical client experience for new-device verification and
    starts on 7 December.
 2. `resolvePrincipal` (and `api-key/admin.js` under `legacy`) passes `Bearer`
    to `verifyApiKey` instead of returning `INVALID_AUTH_HEADER`;
-   `tokenPermissionCheck` enforces scopes, including the finer scopes and
-   includes/relations (§3.3). A spike before this phase maps where the API
-   resolves includes and relation filters, since that check reaches into the
-   API layer rather than staying in auth.
+   `auth/policy/` gains `capabilities` and `authorize` (§3.6), which
+   `canThis` uses for its grant flags; scopes and finer scopes are enforced
+   there, and includes/relations are checked against the same scopes (§3.3).
+   A spike before this phase maps where the API resolves includes and
+   relation filters, since that check runs in the API layer rather than in
+   auth.
 3. Reset revokes all tokens; suspension and deletion revoke the user's.
 4. Tests: success, missing scope, expired, revoked, role ceiling, audit
    attribution; `key-authentication.test.js` unchanged.
@@ -813,8 +909,12 @@ Runs alongside Phase 5, after Phase 4's token policy and scopes.
 4. `ghostSso` replaces the `session-from-token.ts` wiring; verify `sso.test.js`
    and a Ghost(Pro) support-access smoke test.
 5. Readers of `req.user`, `req.api_key`, `frame.user` and
-   `frame.original.session` read the principal.
-6. Run `api-tokens`, `key-authentication` (admin and content), `integrations`,
+   `frame.original.session` read the principal. `frame.options.context`
+   stays, derived from it.
+6. The remaining model `permissible` hooks are row rules in `auth/policy/`,
+   keeping their narrowing, widening, errors, limit checks and
+   `excludedAttrs` (§3.6), and `canThis` call sites use `authorize`.
+7. Run `api-tokens`, `key-authentication` (admin and content), `integrations`,
    `test/unit/server/web/api/admin/middleware.test.js` and scheduler tests.
 
 Exit: nothing outside the plugin reads `api_keys`, except Bookshelf reads for
@@ -999,6 +1099,12 @@ Decided:
 - Scopes are the `object_type:action` permission keys, plus finer scopes
   where one key covers more than one capability, checked on includes and
   relations too (§3.3), with UI presets on top. Phase 4 starts with a spike.
+- Access is decided in `auth/policy/` from the principal: role grants
+  (Owner granted every key) and per-type row rules that replace model
+  `permissible` hooks and may narrow or widen a grant, with the result capped
+  by token and app scopes. `canThis` is an adapter over it, not extended with
+  more actor flags (§3.6). Endpoint permission configs, `excludedAttrs` and
+  `frame.options.context` stay.
 - `user_accounts` is the only password store: the legacy engine moves to it in
   Phase 2 wherever it exists, and the migration that graduates it copies
   `users.password`. No dual write (§4.5).
@@ -1035,7 +1141,8 @@ New (under `ghost/core/server` unless stated):
 - `auth/better-auth/plugins/staff-lifecycle.ts`, `device-verification.ts`,
   `api-keys.ts`, `sso.ts`
 - `auth/principal.ts`, `auth/resolve-principal.ts`
-- `auth/policy/scopes.ts`, `token-policy.ts`
+- `auth/policy/scopes.ts`, `token-policy.ts`, `capabilities.ts`,
+  `authorize.ts`, `rules/`
 - `data/migrations/versions/<next>/…` as tables graduate
 - `apps/admin-x-framework/src/auth/`, `src/api/personal-access-tokens.ts`
 - `apps/admin/src/auth/client/better-auth-client.ts`
