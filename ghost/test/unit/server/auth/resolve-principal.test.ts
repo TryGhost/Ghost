@@ -447,4 +447,65 @@ describe('applyPrincipal', function () {
     assert.equal(keyed.req.auth?.kind, 'integration');
     assert.doesNotMatch(JSON.stringify([staff.req.auth, keyed.req.auth]), /hash|shh/);
   });
+
+  describe('app principal', function () {
+    const app = { id: 'installation' };
+    const appPrincipal = (actingFor: Principal | null = null): Principal => ({
+      kind: 'app',
+      method: actingFor ? 'oauth_authorization_code' : 'oauth_client_credentials',
+      app,
+      actingFor: actingFor && actingFor.kind === 'user' ? actingFor.user : null,
+      scopes: ['post:read'],
+    });
+    const asOwner = (): Principal => ({ kind: 'user', method: 'session', user: userView(owner) });
+
+    it('acts as the user it acts for, never as a key', function () {
+      const req: TestRequest = { api_key: staffKey } as TestRequest;
+      applyPrincipal(req, appPrincipal(asOwner()), { user: owner });
+
+      assert.equal(req.user, owner);
+      assert.equal(req.api_key, null);
+      assert.ok(req.auth?.kind === 'app');
+      assert.deepEqual(req.auth.actingFor, ownerView);
+      assert.deepEqual(req.auth.app, app);
+    });
+
+    it('sets no user when it acts on its own', function () {
+      const req: TestRequest = { user: owner, api_key: staffKey } as TestRequest;
+      applyPrincipal(req, appPrincipal());
+
+      assert.equal(req.user, null);
+      assert.equal(req.api_key, null);
+      assert.ok(req.auth?.kind === 'app');
+      assert.equal(req.auth.actingFor, null);
+    });
+
+    it('throws when the user model does not match actingFor', function () {
+      const other = model('other') as User;
+
+      for (const [principal, user] of [
+        [appPrincipal(asOwner()), undefined],
+        [appPrincipal(asOwner()), other],
+        [appPrincipal(), owner],
+      ] as const) {
+        const req: TestRequest = {} as TestRequest;
+        assert.throws(() => applyPrincipal(req, principal, { user }), {
+          errorType: 'IncorrectUsageError',
+        });
+        assert.equal(req.auth, undefined);
+      }
+    });
+
+    it('freezes req.auth, its views and scopes', function () {
+      const req: TestRequest = {} as TestRequest;
+      applyPrincipal(req, appPrincipal(asOwner()), { user: owner });
+
+      assert.ok(req.auth?.kind === 'app' && req.auth.actingFor);
+      assert.equal(Object.isFrozen(req.auth), true);
+      assert.equal(Object.isFrozen(req.auth.app), true);
+      assert.equal(Object.isFrozen(req.auth.actingFor), true);
+      assert.equal(Object.isFrozen(req.auth.scopes), true);
+      assert.doesNotMatch(JSON.stringify(req.auth), /hash/);
+    });
+  });
 });
