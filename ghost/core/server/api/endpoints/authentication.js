@@ -1,4 +1,4 @@
-const { defineMethod } = require('@tryghost/api-framework');
+const { defineMethod, resourceBody } = require('@tryghost/api-framework');
 const api = require('./index');
 const config = require('../../../shared/config');
 const tpl = require('@tryghost/tpl');
@@ -40,7 +40,7 @@ const controller = {
       cacheInvalidate: true,
     },
     schema: {
-      body: auth.setup.setupBodySchema,
+      body: resourceBody('setup', auth.setup.setupDetailsSchema),
     },
     query(frame) {
       return Promise.resolve()
@@ -48,7 +48,7 @@ const controller = {
           return auth.setup.assertSetupCompleted(false)();
         })
         .then(() => {
-          const setupDetails = { ...frame.validated.body.setup[0], status: 'active' };
+          const setupDetails = { ...frame.validated.body, status: 'active' };
 
           return auth.setup.setupUser(setupDetails);
         })
@@ -92,12 +92,12 @@ const controller = {
       }
     },
     schema: {
-      body: auth.setup.updateSetupBodySchema,
+      body: resourceBody('setup', auth.setup.updateSetupDetailsSchema),
     },
     async query(frame) {
       await auth.setup.assertSetupCompleted(true)();
 
-      const { name, email, password, blogTitle } = frame.validated.body.setup[0];
+      const { name, email, password, blogTitle } = frame.validated.body;
       const setupDetails = { name, email, password, blogTitle, status: 'active' };
 
       const data = await auth.setup.setupUser(setupDetails);
