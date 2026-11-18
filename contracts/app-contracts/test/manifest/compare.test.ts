@@ -8,7 +8,11 @@ import { manifest, manifestOf, options } from './helpers.ts';
 const approved = manifestOf(manifest());
 
 function compareWith(overrides: Record<string, unknown>, parseOptions = options) {
-  return compareManifests(approved, manifestOf(manifest(overrides), parseOptions));
+  const { changes, requiresApproval } = compareManifests(
+    approved,
+    manifestOf(manifest(overrides), parseOptions),
+  );
+  return { changes, requiresApproval };
 }
 
 const OTHER_KEY = { kty: 'OKP', crv: 'Ed25519', x: 'Z_QKSqF5_5W5r2LfGwj1UyVOFyFew44-bMShKMwpCfo' };
@@ -21,8 +25,8 @@ describe('compareManifests', function () {
   it('lets the description and accent colour change silently', function () {
     assert.deepEqual(compareWith({ description: 'New words.', accent_color: '#000000' }), {
       changes: [
-        { path: 'accent_color', requiresApproval: false },
-        { path: 'description', requiresApproval: false },
+        { kind: 'field', path: 'accent_color', requires_approval: false },
+        { kind: 'field', path: 'description', requires_approval: false },
       ],
       requiresApproval: false,
     });
@@ -38,27 +42,27 @@ describe('compareManifests', function () {
   // The identity key vouches for it, so a leaked one can be replaced without a review.
   it('lets the backend key change silently', function () {
     assert.deepEqual(compareWith({ backend_key: OTHER_KEY }), {
-      changes: [{ path: 'backend_key.x', requiresApproval: false }],
+      changes: [{ kind: 'field', path: 'backend_key.x', requires_approval: false }],
       requiresApproval: false,
     });
   });
 
   it('needs approval for a new identity key', function () {
     assert.deepEqual(compareWith({ identity_key: OTHER_KEY }).changes, [
-      { path: 'identity_key.x', requiresApproval: true },
+      { kind: 'field', path: 'identity_key.x', requires_approval: true },
     ]);
   });
 
   it('needs approval to become, or stop being, a development build', function () {
     assert.deepEqual(compareWith({ development: true }), {
-      changes: [{ path: 'development', requiresApproval: true }],
+      changes: [{ kind: 'field', path: 'development', requires_approval: true }],
       requiresApproval: true,
     });
   });
 
   it('needs approval for a new name or author', function () {
     assert.deepEqual(compareWith({ name: 'Podcasts' }).changes, [
-      { path: 'name', requiresApproval: true },
+      { kind: 'field', path: 'name', requires_approval: true },
     ]);
     assert.equal(
       compareWith({ author: { name: 'Example Audio', url: 'https://example.com/team' } })
@@ -73,7 +77,7 @@ describe('compareManifests', function () {
         surfaces: [{ type: 'admin_page', url: '/dashboard' }],
       }),
       {
-        changes: [{ path: 'surfaces[0].url', requiresApproval: true }],
+        changes: [{ kind: 'field', path: 'surfaces[0].url', requires_approval: true }],
         requiresApproval: true,
       },
     );
@@ -85,9 +89,9 @@ describe('compareManifests', function () {
     // Every path resolves against the manifest's address, so they all move with it.
     assert.deepEqual(compareWith({ manifest_url: manifestUrl }, { ...options, manifestUrl }), {
       changes: [
-        { path: 'icon.url', requiresApproval: true },
-        { path: 'manifest_url', requiresApproval: true },
-        { path: 'surfaces[0].url', requiresApproval: true },
+        { kind: 'field', path: 'icon.url', requires_approval: true },
+        { kind: 'field', path: 'manifest_url', requires_approval: true },
+        { kind: 'field', path: 'surfaces[0].url', requires_approval: true },
       ],
       requiresApproval: true,
     });
@@ -106,7 +110,7 @@ describe('compareManifests', function () {
     const withCards = { ...approved, cards: [] } as unknown as typeof approved;
 
     assert.deepEqual(compareManifests(approved, withCards).changes, [
-      { path: 'cards', requiresApproval: true },
+      { kind: 'field', path: 'cards', requires_approval: true },
     ]);
   });
 
@@ -114,8 +118,122 @@ describe('compareManifests', function () {
     const before = manifestOf(manifest({ icon: { name: 'mic' } }));
 
     assert.deepEqual(compareManifests(before, approved).changes, [
-      { path: 'icon.name', requiresApproval: false },
-      { path: 'icon.url', requiresApproval: true },
+      { kind: 'field', path: 'icon.name', requires_approval: false },
+      { kind: 'field', path: 'icon.url', requires_approval: true },
     ]);
+  });
+});
+
+describe('compareManifests, for access', function () {
+  const POSTS = {
+    post: {
+      scopes: [{ name: 'post:browse' }, { name: 'post:read', backend: true }],
+    },
+  };
+  const before = manifestOf(manifest({ access: POSTS }));
+  const withAccess = (access: unknown) =>
+    compareManifests(before, manifestOf(manifest({ access })));
+
+  it('needs approval for a new scope, under a resource already declared or a new one', function () {
+    assert.deepEqual(
+      withAccess({
+        post: { scopes: [...POSTS.post.scopes, { name: 'post:edit' }] },
+        tag: { scopes: [{ name: 'tag:browse' }] },
+      }),
+      {
+        changes: [
+          { kind: 'access', scope: 'post:edit', change: 'added', backend: false },
+          { kind: 'access', scope: 'tag:browse', change: 'added', backend: false },
+        ],
+        requiresApproval: true,
+      },
+    );
+  });
+
+  it('needs approval for a scope newly marked for the backend', function () {
+    assert.deepEqual(
+      withAccess({
+        post: {
+          scopes: [
+            { name: 'post:browse', backend: true },
+            { name: 'post:read', backend: true },
+          ],
+        },
+      }),
+      {
+        changes: [{ kind: 'access', scope: 'post:browse', change: 'backend_added', backend: true }],
+        requiresApproval: true,
+      },
+    );
+  });
+
+  it('narrows access at once when a scope or resource goes, or backend is turned off', function () {
+    assert.deepEqual(withAccess({ post: { scopes: [{ name: 'post:browse' }] } }), {
+      changes: [{ kind: 'access', scope: 'post:read', change: 'removed', backend: true }],
+      requiresApproval: false,
+    });
+    assert.equal(withAccess({}).requiresApproval, false);
+    assert.deepEqual(
+      withAccess({
+        post: { scopes: [{ name: 'post:browse' }, { name: 'post:read' }] },
+      }),
+      {
+        changes: [
+          { kind: 'access', scope: 'post:read', change: 'backend_removed', backend: false },
+        ],
+        requiresApproval: false,
+      },
+    );
+  });
+
+  it('finds no change when only the order differs', function () {
+    assert.deepEqual(
+      withAccess({
+        post: {
+          scopes: [{ name: 'post:read', backend: true }, { name: 'post:browse' }],
+        },
+      }),
+      { changes: [], requiresApproval: false },
+    );
+    const two = manifestOf(
+      manifest({
+        access: { ...POSTS, slug: { scopes: [{ name: 'slug:generate' }] } },
+      }),
+    );
+    const swapped = manifestOf(
+      manifest({
+        access: { slug: { scopes: [{ name: 'slug:generate' }] }, ...POSTS },
+      }),
+    );
+    assert.deepEqual(compareManifests(two, swapped).changes, []);
+  });
+
+  it('lists field changes by path, then access changes in the registry’s order', function () {
+    assert.deepEqual(
+      compareManifests(
+        before,
+        manifestOf(manifest({ access: {}, name: 'Podcasts', accent_color: '#000000' })),
+      ).changes,
+      [
+        { kind: 'field', path: 'accent_color', requires_approval: false },
+        { kind: 'field', path: 'name', requires_approval: true },
+        { kind: 'access', scope: 'post:browse', change: 'removed', backend: false },
+        { kind: 'access', scope: 'post:read', change: 'removed', backend: true },
+      ],
+    );
+  });
+
+  it('adds every scope and changes no field without an approved manifest, as at install', function () {
+    assert.deepEqual(compareManifests(undefined, before), {
+      changes: [
+        { kind: 'access', scope: 'post:browse', change: 'added', backend: false },
+        { kind: 'access', scope: 'post:read', change: 'added', backend: true },
+      ],
+      requiresApproval: true,
+    });
+    assert.deepEqual(compareManifests(undefined, approved), {
+      changes: [],
+      requiresApproval: false,
+    });
   });
 });

@@ -19,6 +19,7 @@ const manifest: AppManifest = {
   accent_color: '#ff5500',
   icon: { name: 'audio-lines' },
   surfaces: [{ type: 'admin_page', url: 'https://podcast.example.com/admin' }],
+  access: [],
   manifest_url: 'https://podcast.example.com/ghost-app.json',
   identity_key: FIXTURE_IDENTITY_KEY,
   backend_key: FIXTURE_BACKEND_KEY,
@@ -28,7 +29,7 @@ const loaded: LoadedManifest = {
   manifestUrl: 'https://podcast.example.com/ghost-app.json',
   manifest,
   // Differs from what re-encoding the manifest gives, so a test can check the loader's text is stored.
-  serialised: JSON.stringify(manifest, null, 2),
+  serialised: JSON.stringify({ ...manifest, access: {} }, null, 2),
   digest: 'reviewed-digest',
   identityKeyThumbprint: 'identity-thumbprint',
   backendKeyThumbprint: 'backend-thumbprint',

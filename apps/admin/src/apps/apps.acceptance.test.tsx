@@ -84,7 +84,7 @@ const fakeReview = () =>
           revision: 0,
           manifest_url: MANIFEST_URL,
           manifest: manifest(),
-          changes: [{ path: 'name', requires_approval: true }],
+          changes: [{ kind: 'field', path: 'name', requires_approval: true }],
         },
       },
     ],

@@ -10,6 +10,7 @@ const manifest = (overrides: Partial<AppManifest> = {}): AppManifest => ({
   accent_color: '#ff5500',
   icon: { name: 'audio-lines' },
   surfaces: [{ type: 'admin_page', url: 'https://podcast.example.com/admin' }],
+  access: [],
   manifest_url: 'https://podcast.example.com/ghost-app.json',
   identity_key: { kty: 'OKP', crv: 'Ed25519', x: 'xQcVt_FXHEk7Uv4dKhUL2nR5DwwsLVW4pu2il-5sX_s' },
   backend_key: { kty: 'OKP', crv: 'Ed25519', x: 'H7aU67-okztSJD3-0znkVDiCU-izOI3I851CZX8XDyk' },
@@ -34,8 +35,8 @@ describe('describeChanges', () => {
 
     expect(
       describeChanges(approved, reviewed, [
-        { path: 'author.name', requires_approval: true },
-        { path: 'name', requires_approval: true },
+        { kind: 'field', path: 'author.name', requires_approval: true },
+        { kind: 'field', path: 'name', requires_approval: true },
       ]),
     ).toEqual([
       {
@@ -66,8 +67,8 @@ describe('describeChanges', () => {
 
     expect(
       describeChanges(approved, reviewed, [
-        { path: 'manifest_url', requires_approval: true },
-        { path: 'surfaces[0].url', requires_approval: true },
+        { kind: 'field', path: 'manifest_url', requires_approval: true },
+        { kind: 'field', path: 'surfaces[0].url', requires_approval: true },
       ]).map(({ label, before, after }) => [label, before, after]),
     ).toEqual([
       [
@@ -83,9 +84,9 @@ describe('describeChanges', () => {
     const reviewed = { ...approved, manifest: manifest({ development: true }) };
 
     expect(
-      describeChanges(approved, reviewed, [{ path: 'development', requires_approval: true }]).map(
-        ({ label, before, after }) => [label, before, after],
-      ),
+      describeChanges(approved, reviewed, [
+        { kind: 'field', path: 'development', requires_approval: true },
+      ]).map(({ label, before, after }) => [label, before, after]),
     ).toEqual([['Development build', 'No', 'Yes']]);
   });
 
@@ -103,7 +104,9 @@ describe('describeChanges', () => {
     };
 
     expect(
-      describeChanges(approved, reviewed, [{ path: 'backend_key.x', requires_approval: false }]),
+      describeChanges(approved, reviewed, [
+        { kind: 'field', path: 'backend_key.x', requires_approval: false },
+      ]),
     ).toEqual([]);
   });
 
@@ -115,8 +118,8 @@ describe('describeChanges', () => {
 
     expect(
       describeChanges(approved, reviewed, [
-        { path: 'icon.name', requires_approval: false },
-        { path: 'icon.url', requires_approval: true },
+        { kind: 'field', path: 'icon.name', requires_approval: false },
+        { kind: 'field', path: 'icon.url', requires_approval: true },
       ]),
     ).toEqual([
       {
@@ -137,8 +140,8 @@ describe('describeChanges', () => {
 
     expect(
       describeChanges(approved, reviewed, [
-        { path: 'description', requires_approval: false },
-        { path: 'name', requires_approval: true },
+        { kind: 'field', path: 'description', requires_approval: false },
+        { kind: 'field', path: 'name', requires_approval: true },
       ]).map(({ field, requiresApproval }) => [field, requiresApproval]),
     ).toEqual([
       ['name', true],
@@ -153,7 +156,9 @@ describe('describeChanges', () => {
     };
 
     expect(
-      describeChanges(approved, reviewed, [{ path: 'cards[0].name', requires_approval: true }]),
+      describeChanges(approved, reviewed, [
+        { kind: 'field', path: 'cards[0].name', requires_approval: true },
+      ]),
     ).toEqual([
       {
         field: 'cards',

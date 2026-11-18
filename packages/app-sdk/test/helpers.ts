@@ -19,6 +19,7 @@ export const SOURCE = {
   accent_color: '#ff5500',
   icon: { name: 'hand' },
   surfaces: [{ type: 'admin_page', url: '/' }],
+  access: {},
 };
 
 /** A project of its own, outside any repository, with a `ghost-app.json`. */

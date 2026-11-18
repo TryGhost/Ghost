@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import {
   approvalWrite,
+  changesFrom,
   decideOnManifest,
   recheckWrite,
 } from '../../../../../core/server/services/app-installations/decide-on-manifest';
@@ -18,6 +19,7 @@ const approvedManifest: AppManifest = {
   accent_color: '#ff5500',
   icon: { name: 'audio-lines' },
   surfaces: [{ type: 'admin_page', url: 'https://podcast.example.com/admin' }],
+  access: [],
   manifest_url: MANIFEST_URL,
   identity_key: FIXTURE_IDENTITY_KEY,
   backend_key: FIXTURE_BACKEND_KEY,
@@ -33,12 +35,12 @@ const current = {
 /** A loaded manifest as the loader returns it, with a digest made from its contents. */
 function loaded(overrides: Partial<AppManifest> = {}): LoadedManifest {
   const manifest = { ...approvedManifest, ...overrides };
-  const serialised = JSON.stringify(manifest);
+  const serialised = JSON.stringify({ ...manifest, access: {} });
   return {
     manifestUrl: manifest.manifest_url,
     manifest,
     serialised,
-    digest: serialised,
+    digest: JSON.stringify(manifest),
     identityKeyThumbprint: 'identity',
     backendKeyThumbprint: 'backend',
   };
@@ -55,8 +57,8 @@ describe('decideOnManifest', function () {
       decideOnManifest({ current, pending: null, loaded: loaded({ ...silent, ...needsApproval }) })
         .changes,
       [
-        { path: 'description', requires_approval: false },
-        { path: 'name', requires_approval: true },
+        { kind: 'field', path: 'description', requires_approval: false },
+        { kind: 'field', path: 'name', requires_approval: true },
       ],
     );
     assert.deepEqual(decideOnManifest({ current, pending: null, loaded: loaded() }).changes, []);
@@ -122,7 +124,7 @@ describe('decideOnManifest', function () {
     it('uses the pending manifest when it is the one loaded, saying which it is', function () {
       assert.deepEqual(decideOnManifest({ current, pending, loaded: loaded(needsApproval) }), {
         kind: 'use_pending',
-        changes: [{ path: 'name', requires_approval: true }],
+        changes: [{ kind: 'field', path: 'name', requires_approval: true }],
         pendingManifestId: 'pending-manifest',
       });
     });
@@ -230,5 +232,34 @@ describe('recheckWrite', function () {
       kind: 'add_pending',
       row: { loaded: manifest, source: 'update', requiresApproval: true },
     });
+  });
+});
+
+describe('a change to access alone', function () {
+  const reading = {
+    ...current,
+    manifest: { ...approvedManifest, access: [{ name: 'post:read' as const, backend: false }] },
+  };
+
+  it('applies a removed scope at once, as it narrows access', function () {
+    const manifest = loaded();
+    assert.deepEqual(recheckWrite({ current: reading, pending: null, loaded: manifest }), {
+      kind: 'add_approved',
+      row: { loaded: manifest, source: 'update', requiresApproval: false },
+    });
+  });
+
+  it('approves a removed scope as a new row, not the old manifest again', function () {
+    const manifest = loaded();
+    assert.deepEqual(approvalWrite({ current: reading, pending: null, loaded: manifest }), {
+      kind: 'add_approved',
+      row: { loaded: manifest, source: 'approval', requiresApproval: false },
+    });
+  });
+
+  it('suspends the app for a new scope, though the preview doesn’t list it yet', function () {
+    const manifest = loaded({ access: [{ name: 'post:edit', backend: false }] });
+    assert.equal(recheckWrite({ current, pending: null, loaded: manifest }).kind, 'add_pending');
+    assert.deepEqual(changesFrom(current, manifest), []);
   });
 });

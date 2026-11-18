@@ -36,6 +36,7 @@ function manifest(overrides: Record<string, unknown> = {}): Record<string, unkno
     accent_color: '#ff5500',
     icon: { name: 'audio-lines' },
     surfaces: [{ type: 'admin_page', url: '/admin' }],
+    access: {},
     identity_key: keys.identity.publicJwk,
     backend_key: keys.backend.publicJwk,
     development: false,
@@ -204,7 +205,8 @@ describe('App installations Admin API', function () {
       const [stored] = await manifestRows();
       assert.equal(stored.installation_id, installation.id);
       assert.equal(stored.manifest_url, MANIFEST_URL);
-      assert.deepEqual(JSON.parse(stored.manifest), installation.manifest);
+      // Stored with access grouped by resource, as the developer wrote it.
+      assert.deepEqual(JSON.parse(stored.manifest), { ...installation.manifest, access: {} });
       assert.equal(stored.digest, installation.digest);
       assert.equal(Boolean(stored.requires_approval), false);
 
@@ -325,8 +327,8 @@ describe('App installations Admin API', function () {
         manifest: installed.manifest,
         icon_data_url: null,
         changes: [
-          { path: 'description', requires_approval: false },
-          { path: 'name', requires_approval: true },
+          { kind: 'field', path: 'description', requires_approval: false },
+          { kind: 'field', path: 'name', requires_approval: true },
         ],
       });
     });
@@ -569,8 +571,8 @@ describe('App installations Admin API', function () {
       serve(moved, NEW_URL);
       const reviewed = await preview(NEW_URL);
       assert.deepEqual(reviewed.installation.changes, [
-        { path: 'manifest_url', requires_approval: true },
-        { path: 'surfaces[0].url', requires_approval: true },
+        { kind: 'field', path: 'manifest_url', requires_approval: true },
+        { kind: 'field', path: 'surfaces[0].url', requires_approval: true },
       ]);
       serve(moved, NEW_URL);
 
@@ -620,7 +622,7 @@ describe('App installations Admin API', function () {
       serve(manifest({ description: 'Episodes and players.' }));
       const reviewed = await preview();
       assert.deepEqual(reviewed.installation.changes, [
-        { path: 'description', requires_approval: false },
+        { kind: 'field', path: 'description', requires_approval: false },
       ]);
       serve(manifest({ description: 'Episodes and players.' }));
 
@@ -697,7 +699,7 @@ describe('App installations Admin API', function () {
       assert.equal(error.details.installation.status, 'suspended');
       assert.equal(error.details.installation.revision, 1);
       assert.deepEqual(error.details.installation.changes, [
-        { path: 'name', requires_approval: true },
+        { kind: 'field', path: 'name', requires_approval: true },
       ]);
       const row = await installationRow(installed.id);
       assert.equal(row.status, 'suspended');
@@ -897,7 +899,7 @@ describe('App installations Admin API', function () {
       serve(manifest({ description: 'Episodes and players.' }));
       const reviewed = await preview();
       assert.deepEqual(reviewed.installation.changes, [
-        { path: 'description', requires_approval: false },
+        { kind: 'field', path: 'description', requires_approval: false },
       ]);
       serve(manifest({ description: 'Episodes and players.' }));
 

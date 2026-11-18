@@ -13,6 +13,7 @@ import {
   readSigningKeys,
   signAppManifest,
   signProject,
+  type ManifestSource,
 } from '../src/tooling/index.ts';
 import { SOURCE, git, makeProject, readAsGhost } from './helpers.ts';
 
@@ -386,6 +387,7 @@ describe('signing', () => {
       ...SOURCE,
       author: { ...SOURCE.author, url: 'https://example.com/' },
       surfaces: [{ type: 'admin_page', url: 'https://hello.example.com/' }],
+      access: [],
       manifest_url: MANIFEST_URL,
       identity_key: publicKeyOf(keys.identityKey),
       backend_key: keys.backendKey,
@@ -523,5 +525,20 @@ describe('signing', () => {
       ...keys,
     });
     expect(result.success && result.manifest.manifest_url).toBe(MANIFEST_URL);
+  });
+});
+
+describe('the ghost-app.json type', () => {
+  // The SDK types access from the contracts' scope registry, so a scope only fits its resource.
+  it('takes access as the scope registry names it', () => {
+    const access: ManifestSource['access'] = {
+      post: { scopes: [{ name: 'post:edit', backend: true }, { name: 'post:browse' }] },
+      slug: { scopes: [{ name: 'slug:generate' }] },
+    };
+    // @ts-expect-error A tag scope can't be listed under post.
+    const misplaced: ManifestSource['access'] = { post: { scopes: [{ name: 'tag:edit' }] } };
+    // @ts-expect-error Ghost has no such scope.
+    const unknown: ManifestSource['access'] = { post: { scopes: [{ name: 'post:publish' }] } };
+    expect([access, misplaced, unknown]).toHaveLength(3);
   });
 });

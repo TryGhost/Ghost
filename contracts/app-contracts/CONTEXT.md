@@ -105,18 +105,65 @@ for that surface: Admin ignores a hello from any other origin and addresses the
 connect only to this one. The manifest lists no other origins.
 _Avoid_: allowed origin, app origin
 
+### Access
+
+**Scope**:
+A named permission an app asks for, such as `post:edit`: the resource, then the
+action, as Platform names the permission in Core. Every scope is defined once,
+in the scope registry, and a manifest that names any other, or a wildcard, is
+refused. There are no member scopes, and pages come under the `post:*` scopes.
+_Avoid_: permission, grant, capability
+
+**Resource**:
+The kind of object a scope acts on: Platform's object type, exactly, such as
+`post` or `slug`. A manifest's access is grouped by resource, and the review
+screen shows one line per resource.
+_Avoid_: object, entity
+
+**Scope registry**:
+The one list of scopes, with each scope's resource and the words the review
+screen uses for it. Manifest validation, Admin's review screen and the
+allowlist all read it. The words are Ghost's own, never the developer's.
+_Avoid_: permission list, scope list
+
+**Access**:
+The scopes a manifest asks for, each marked whether the app's backend may use
+it. A developer groups them by resource, and a parsed manifest holds them as
+one list in the registry's order, which is what Ghost compares, describes and
+checks. A stored manifest groups them by resource again, in the registry's
+order with `backend` written out, so the same access is always stored the same
+way. Every scope is required, so approving a manifest approves exactly its
+access. `{}` asks for nothing.
+_Avoid_: permissions, scopes field
+
+**Backend scope**:
+A scope the app's backend may use on its own, at any time, with nobody present
+and no staff user's role to limit it. Shown apart on the review screen, with a
+warning.
+_Avoid_: server scope, offline access
+
+**Access change**:
+A scope added or removed between two versions of a manifest, or one newly or
+no longer marked for the backend. Access is compared by meaning, not position,
+so reordering changes nothing. A change that widens access needs approval; one
+that narrows it is silent.
+_Avoid_: permission change, scope diff
+
 ### Changes
 
 **Change**:
-One field that differs between two versions of an app's manifest, the manifest
-URL included.
+One thing that differs between two versions of an app's manifest: a field, by
+its path, the manifest URL included, or an access change, by its scope. Each
+kind decides whether it needs approval. Ghost compares, stores and serves a
+change in the one shape App Contracts defines, which names its kind.
 _Avoid_: diff, update
 
 **Silent change**:
 A change that applies without the publisher approving it again. Only the
-description, the accent colour, the name of an icon Admin ships and the backend
-key qualify; anything else that says who the app is, or is a URL Ghost loads or
-links to, does not.
+description, the accent colour, the name of an icon Admin ships, the backend
+key and an access change that narrows access qualify; anything else that says
+who the app is, widens its access, or is a URL Ghost loads or links to, does
+not.
 _Avoid_: minor change, safe change
 
 **Move**:
