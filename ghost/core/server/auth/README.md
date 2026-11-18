@@ -1,8 +1,8 @@
 # Authentication subsystem
 
 This directory keeps authentication and authorization middleware, staff sessions,
-API-key and member-token authentication, setup, password reset and authentication
-reset together. It is an interim subsystem home while the longer-term ownership
+API-key and member-token authentication, staff permission checks, setup, password
+reset and authentication reset together. It is an interim subsystem home while the longer-term ownership
 of identity policy, HTTP middleware and session resources is settled.
 
 Moving the subsystem out of `services/` does not change its runtime contract.
@@ -28,3 +28,15 @@ Cover concurrent first use, construction failure and retry, captured configurati
 same-process restart, request persistence and resource cleanup. Setup and reset
 orchestration also need ordering and transaction-failure coverage before their
 behaviour changes. These are follow-up changes, separate from relocation.
+
+## Permissions
+
+[`permissions/`](permissions/) holds `canThis`, `parseContext` and the role
+grants in `permissions-data.ts`. Grants are code, built into a frozen action map
+at import; there is no boot initializer. `canThis` reloads the user or API key
+for every check, and only `active` users pass.
+
+The [previous inventory audit](https://github.com/TryGhost/Ghost/tree/2700a443fe1ff989630efbdb5e8355f066959bbf/ghost/core/server/services/legacy-service-inventory.yaml#L5789)
+records its contracts and open coverage gaps. Injecting models into the
+providers and `canThis` still needs to keep `User.permissible`'s deferred
+`require()` of this module, which avoids a model import cycle.

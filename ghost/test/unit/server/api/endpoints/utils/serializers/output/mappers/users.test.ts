@@ -4,7 +4,7 @@ import sinon from 'sinon';
 import urlService from '../../../../../../../../../core/server/services/url';
 // @ts-expect-error This module lacks type definitions.
 import usersMapper from '../../../../../../../../../core/server/api/endpoints/utils/serializers/output/mappers/users';
-import * as rolePermissions from '../../../../../../../../../core/server/services/permissions/role-permissions';
+import * as rolePermissions from '../../../../../../../../../core/server/auth/permissions/role-permissions';
 
 describe('Unit: endpoints/utils/serializers/output/mappers/users', function () {
   beforeEach(function () {

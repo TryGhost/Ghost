@@ -22,14 +22,14 @@ class AudienceFeedbackController {
   #repository;
   /** @type {import('./audience-feedback-service')} */
   #audienceFeedbackService;
-  /** @type {typeof import('../permissions')} */
+  /** @type {typeof import('../../auth/permissions')} */
   #permissions;
 
   /**
    * @param {object} deps
    * @param {IFeedbackRepository} deps.repository
    * @param {import('./audience-feedback-service')} deps.audienceFeedbackService
-   * @param {typeof import('../permissions')} deps.permissions
+   * @param {typeof import('../../auth/permissions')} deps.permissions
    */
   constructor(deps) {
     this.#repository = deps.repository;

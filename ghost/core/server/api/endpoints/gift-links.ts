@@ -2,7 +2,7 @@ import type { Controller, Frame } from '@tryghost/api-framework';
 import { actingContext } from '../../lib/actor';
 import giftLinks from '../../services/gift-links';
 
-const permissionsService = require('../../services/permissions');
+const permissionsService = require('../../auth/permissions');
 
 type GiftLinksFrame = Frame<{
   options: {
