@@ -90,10 +90,7 @@ function generateToken(
         expires: moment().add(1, 'days').valueOf(),
         email: email,
         dbHash: dbHash,
-        passwordHash: await readPasswordHash(transaction || ghostBookshelf.knex, {
-          id: user.id,
-          password: user.get('password'),
-        }),
+        passwordHash: await readPasswordHash(transaction || ghostBookshelf.knex, { id: user.id }),
       });
 
       return {
@@ -158,7 +155,7 @@ function doReset(
       // Better Auth writes the credential row without touching users, so lock it too
       const passwordHash = await readPasswordHash(
         transacting,
-        { id: user.id, password: user.get('password') },
+        { id: user.id },
         { forUpdate: true },
       );
       const compareResult = security.tokens.resetToken.compare({

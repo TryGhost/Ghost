@@ -1,9 +1,7 @@
 import type { Knex } from 'knex';
-import { usesBetterAuth } from './enabled';
 import { generateGhostId } from './ghost-models';
 
 // Legacy password store (plan §4.5): the `credential` row in `user_accounts`
-// with auth:betterAuthDev, otherwise `users.password`
 
 /** `users.password` once the credential row holds the hash; never a valid bcrypt hash */
 export const PASSWORD_PLACEHOLDER = '!';
@@ -14,13 +12,9 @@ export const PASSWORD_PLACEHOLDER = '!';
  */
 export async function readPasswordHash(
   executor: Knex,
-  user: { id: string; password?: string | null },
+  user: { id: string },
   { forUpdate = false }: { forUpdate?: boolean } = {},
 ): Promise<string> {
-  if (!usesBetterAuth()) {
-    return user.password ?? PASSWORD_PLACEHOLDER;
-  }
-
   const query = executor('user_accounts')
     .where({ provider_id: 'credential', account_id: user.id })
     .first('password');

@@ -1,7 +1,6 @@
 {
     "auth": {
-        "engine": "legacy",
-        "betterAuthDev": false
+        "engine": "legacy"
     },
     "database": {
         "client": "better-sqlite3",

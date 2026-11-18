@@ -68,7 +68,6 @@ describe.skipIf(isSQLite)('SSO under auth:engine better-auth', function () {
     sandbox.stub(sentry, 'captureException');
     sandbox.stub(sentry, 'captureMessage');
     configUtils.set('auth:engine', 'better-auth');
-    configUtils.set('createInDevelopmentTables', true);
     configUtils.set('url', `${adminOrigin}/`);
 
     const getAdapter = adapterManager.getAdapter;

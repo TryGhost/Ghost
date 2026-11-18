@@ -8,17 +8,10 @@ const ghostBookshelf = require('../../../../core/server/models/base');
 const permissions = require('../../../../core/server/auth/permissions');
 const security = require('@tryghost/security');
 const testUtils = require('../../../utils');
-const configUtils = require('../../../utils/config-utils');
 
 describe('Unit: models/user', function () {
-  // Passwords in users.password; the credential row path has integration tests
-  beforeEach(function () {
-    configUtils.set('auth:betterAuthDev', false);
-  });
-
-  afterEach(async function () {
+  afterEach(function () {
     sinon.restore();
-    await configUtils.restore();
   });
 
   it('loads before the models index', function () {
@@ -388,6 +381,14 @@ describe('Unit: models/user', function () {
       sinon
         .stub(security.password, 'hash')
         .resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
+
+      // A Knex stand-in for the credential row check() reads the hash from
+      const query = {
+        where: () => query,
+        first: () => query,
+        then: (resolve) => resolve({ password: '$2a$10$hash' }),
+      };
+      sinon.stub(ghostBookshelf, 'knex').value(() => query);
     });
 
     it('user status is warn', function () {

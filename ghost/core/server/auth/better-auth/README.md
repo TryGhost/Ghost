@@ -8,22 +8,15 @@ for the design.
 ## Engine
 
 `auth:engine` is `legacy` (default) or `better-auth`. Under `legacy` boot never
-loads Better Auth, so Ghost runs without its tables. Under `better-auth` boot
-builds the instance after settings and refuses to start on SQLite or without
-`auth:betterAuthDev`.
+loads Better Auth, but its tables are there and the legacy engine keeps
+passwords in `user_accounts` (see [Passwords](#passwords)). Under
+`better-auth` boot builds the instance after settings.
 
-`auth:betterAuthDev` (default `false`) decides whether Ghost keeps Better
-Auth's data, under either engine: boot seeds credential rows and the legacy
-engine stores passwords in them (see [Passwords](#passwords)). It only applies
-where the in-development tables exist, and boot refuses it elsewhere. It's
-hidden from generated config docs, and it's an opt-in separate from
-`createInDevelopmentTables` because the published `config.development.json`
-turns that on, and an older Ghost-CLI local install runs as development; such
-an install gets the tables but keeps its passwords in `users.password`. The
-testing configs and the monorepo's `ghost/config.development.json` turn it on.
-Boot creates the tables before anything reads them, so these checks read config
-rather than the database; they and the flag go away when the tables get a
-migration.
+Better Auth needs MySQL. On SQLite the config schema
+([`shared/config/schema.ts`](../../../shared/config/schema.ts)) turns
+`better-auth` into `legacy` with a warning, so everything that reads
+`auth:engine` sees the engine in use. SQLite installs stay on legacy until 7.0
+drops SQLite.
 
 Under `better-auth` the Admin API serves the handler on `/auth/*`
 (`web/api/endpoints/admin/better-auth.ts`), after the private cache header and ahead of body parsing because
@@ -51,8 +44,7 @@ the cookie. Legacy session cookies are not read. `Bearer` is still rejected
 until Phase 4.
 
 - `create-auth.ts`: `createAuth()` builds the instance with Ghost's options
-  (plan §3.1) from injected dependencies; `assertDatabaseSupported()` is the
-  boot check above.
+  (plan §3.1) from injected dependencies.
 - `rate-limit.ts`: the `customStorage` that maps native credential routes to
   Ghost's limiters.
 - `index.ts`: the boot-owned service root, exposed as `auth.betterAuth`. Boot
@@ -85,8 +77,8 @@ until Phase 4.
   admin origin, `revokeUserSessions` and `revokeAllSessions`.
 - `cleanup.ts`: the daily `clear-expired-auth-rows` job (plan §4.6), which
   deletes expired `user_sessions` and `verifications` rows. Better Auth checks
-  expiry on read but never deletes them. It runs under either engine wherever
-  `auth:betterAuthDev` is on, and deletes in batches by primary key, as the
+  expiry on read but never deletes them. It runs under either engine, since
+  sessions outlive a rollback, and deletes in batches by primary key, as the
   `rate_limits` cleanup does, so it doesn't deadlock with live writes.
 - `plugins/sso.ts` (`ghostSso`): server-only `createSsoSession`, for the SSO
   adapter hook described below. It applies the passwordless rules above
@@ -141,21 +133,17 @@ IPv6 counts per /64, the block a single subscriber usually holds.
 - `ghost-models.ts`: maps Better Auth's `user`, `session`, `account` and
   `verification` models onto `users`, `user_sessions`, `user_accounts` and
   `verifications`, plus the `users` gaps described below.
-- `seed-credential-accounts.ts`: gives each user a `credential` row in
-  `user_accounts` with the hash from `users.password` (plan §4.4). Boot runs
-  it with `auth:betterAuthDev`; it skips users that already have one.
-- `enabled.ts`: `usesBetterAuth()`, which throws where `auth:betterAuthDev`
-  is on without the tables. Boot's seeder calls it, so that fails boot.
 - `credential-password.ts`: the legacy engine's password store. See
   [Passwords](#passwords).
 
 ## Passwords
 
 Both engines hash with bcrypt and read and write the same `credential` row in
-`user_accounts` with `auth:betterAuthDev` (plan §4.5), so a password changed
-through one engine works in the other. There is no dual write: `users.password`
-holds the `!` placeholder once the row has the hash, and only users the seeder
-copied still carry their old hash there, unread.
+`user_accounts` (plan §4.5), so a password changed through one engine works in
+the other. There is no dual write: `users.password` holds the `!` placeholder
+once the row has the hash. The 6.79 migrations that created the tables copied
+every user's hash into a row and left `users.password` as it was, so users
+whose password hasn't changed since still carry their old hash there, unread.
 
 - The `User` model hashes in `onSaving`, then `onSaved` writes the row with
   the save's transaction, inserting it for a new user. `add`, `changePassword`
@@ -166,47 +154,29 @@ copied still carry their old hash there, unread.
   with the hash, so a password change through either engine invalidates it.
 - A user without a credential row has no password.
 
-Without `auth:betterAuthDev` (the default, and always in production until the
-table graduates), all of this uses `users.password` as before.
-
 > [!WARNING]
-> With the flag on, the credential row is the only copy of a user's current
-> password. On a development database, anything that drops it or stops reading
-> it can lock users out or bring back an old password:
->
-> - **Turning `auth:betterAuthDev` off** puts `users.password` back in use as
->   it stands. A user whose password changed through legacy has the `!`
->   placeholder there and can't sign in. A seeded user whose password changed
->   only through Better Auth signs in with their old password.
-> - **Turning it back on** keeps any credential rows left from before, so a
->   password changed while it was off is ignored for those users.
-> - **`pnpm gx db rebuild-development-tables`** drops `user_accounts`. The
->   seeder then copies `users.password`, placeholders included, so anyone
->   whose password changed is locked out.
->
-> There's no migration path between these states. Reset the database instead
-> (`pnpm reset:db`, or `pnpm reset:data` for generated content), or reset the
-> affected users' passwords.
+> The credential row is the only copy of a user's current password. A release
+> from before 6.79 reads `users.password` instead, so rolling back to one
+> without rolling the migrations back locks out or reverts anyone whose
+> password changed since. Plan §8 has the recovery.
 
 ## Running Better Auth locally
 
-The monorepo's development config already has the tables and
-`auth:betterAuthDev`, so only the engine needs switching:
+On MySQL, as the Docker dev setup uses, only the engine needs switching (on
+SQLite Ghost stays on `legacy`):
 
 ```bash
 auth__engine=better-auth pnpm dev:up
 ```
 
-Or set `"auth": {"engine": "better-auth"}` in `ghost/config.local.json`.
-Outside the monorepo's config, also set `auth:betterAuthDev` to `true`. Legacy
+Or set `"auth": {"engine": "better-auth"}` in `ghost/config.local.json`. Legacy
 session cookies are not read, so staff sign in again once, and again after
 switching back to `legacy`. Sign-in pins each session to the admin origin, so
 sign in through the admin URL Ghost is configured with; a session used from
 another origin is refused. Development config has
 `security:staffDeviceVerification` off, so every new session is verified; with
-it on, native sign-in asks for an email code (see
-[Device verification](#device-verification)), but `POST /session` can't
-complete until its compatibility routes move (plan Phase 3, step 2).
+it on, sign-in asks for an email code (see
+[Device verification](#device-verification)).
 
 ## Compatibility routes
 
@@ -302,13 +272,14 @@ Under `better-auth`, security events go through `staff-sessions.ts` (plan §5.4)
   deleting one revoke their sessions. Deletion revokes after its transaction
   commits, which holds the user's rows until then.
 - The authentication reset (`POST /authentication/reset`) calls
-  `revokeAllSessions` after it deletes every legacy session, as it does under
-  either engine.
+  `revokeAllSessions` after it deletes every legacy session.
 
 Revoking a user's sessions also deletes their legacy `sessions` rows, so a
 rollback to `legacy` (plan §8) can't revive a session a security event ended.
-Under `legacy` nothing here runs: a password change and a reset already delete
-the user's legacy rows, and suspension and deletion keep legacy behaviour.
+The other way round, under `legacy` a password change and the authentication
+reset delete `user_sessions` rows along with the legacy ones, so switching to
+`better-auth` again can't revive a session from an earlier switch. Suspension
+and deletion keep legacy behaviour.
 The API controllers pass the request's IP (`frame.options.ip`) and user agent
 (`frame.options.userAgent`) to `createVerifiedSession`, which Better Auth
 can't see on a server-side call, so those sessions record them as sign-in does.
@@ -325,18 +296,18 @@ carries on, as under `legacy`.
 
 ## Tables
 
-`user_accounts`, `user_sessions` and `verifications` are defined in
-`schema.ts` and listed in `IN_DEVELOPMENT_TABLES`, so they exist only in
-development and testing databases and have no migration yet. Their dates are
+`user_accounts`, `user_sessions` and `verifications` are created by the 6.79
+migrations, which also backfill credential rows (plan §4.4). Their dates are
 `DATETIME(3)` (the `precision` column option), because Better Auth expects
-dates to round-trip with their milliseconds.
+dates to round-trip with their milliseconds. On a development database that had
+the in-development copies, the 6.79 migrations replace them and backfill from
+`users.password`, which holds the `!` placeholder for anyone whose password
+changed there, so reset the database (`pnpm reset:db`).
 
-`verifications.attempts` counts wrong device verification codes. A
-development database created before it was added needs the table dropped
-(boot recreates missing in-development tables).
+`verifications.attempts` counts wrong device verification codes.
 
-`user_two_factors`, the `twoFactor` plugin's model, is an in-development table
-too, ahead of the plugin (plan §5). It holds TOTP secrets and backup codes, so
+`user_two_factors`, the `twoFactor` plugin's model, is still an in-development
+table, ahead of the plugin (plan §5). It holds TOTP secrets and backup codes, so
 like the other three it is left out of exports by default.
 
 ## Columns `users` does not have

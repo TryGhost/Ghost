@@ -124,9 +124,7 @@ export const BASE_GHOST_ENV = [
   'apps__localhostAlias=host.docker.internal',
 
   // GHOST_E2E_AUTH_ENGINE=better-auth runs the suite on the Better Auth engine
-  ...(process.env.GHOST_E2E_AUTH_ENGINE === 'better-auth'
-    ? ['auth__engine=better-auth', 'auth__betterAuthDev=true']
-    : []),
+  ...(process.env.GHOST_E2E_AUTH_ENGINE === 'better-auth' ? ['auth__engine=better-auth'] : []),
 ] as const;
 
 /**

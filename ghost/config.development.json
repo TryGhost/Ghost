@@ -1,6 +1,3 @@
 {
-  "enableDeveloperExperiments": true,
-  "auth": {
-    "betterAuthDev": true
-  }
+  "enableDeveloperExperiments": true
 }

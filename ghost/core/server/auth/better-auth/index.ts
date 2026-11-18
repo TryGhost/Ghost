@@ -1,14 +1,13 @@
 import logging from '@tryghost/logging';
 import * as security from '@tryghost/security';
 import { defineService } from '../../../kernel/define-service';
-import { assertDatabaseSupported, createAuth, type GhostAuth } from './create-auth';
+import { createAuth, type GhostAuth } from './create-auth';
 import { createSignInCodeEmail } from '../emails/sign-in-code';
-import { usesBetterAuth } from './enabled';
 
 export type { GhostAuth } from './create-auth';
 
-// Boot initializes this after settings, which follows the database (and its
-// in-development tables), and only when auth:engine is better-auth
+// Boot initializes this after settings, which follows the database, and only
+// when auth:engine is better-auth
 export default defineService('Better Auth', async (): Promise<GhostAuth> => {
   const config = require('../../../shared/config');
   const settingsCache = require('../../../shared/settings-cache');
@@ -18,11 +17,6 @@ export default defineService('Better Auth', async (): Promise<GhostAuth> => {
   const { GhostMailer } = require('../../lib/mail');
   const { t } = require('../../../shared/i18n');
   const { blogIcon } = require('../../lib/image');
-
-  assertDatabaseSupported({
-    client: config.get('database:client'),
-    usesBetterAuth: usesBetterAuth(),
-  });
 
   const auth = createAuth({
     db: knex,

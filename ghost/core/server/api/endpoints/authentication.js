@@ -249,7 +249,10 @@ const controller = {
         schedulerAdapter,
         userService: usersService.service,
         options: frame.options,
-        revokeAllSessions: isBetterAuth ? () => auth.staffSessions.revokeAllSessions() : undefined,
+        // Under legacy too, so a later switch to better-auth can't revive them
+        revokeAllSessions: isBetterAuth
+          ? () => auth.staffSessions.revokeAllSessions()
+          : () => models.Base.knex('user_sessions').del(),
       });
 
       // Express-session would otherwise re-save the current request's
