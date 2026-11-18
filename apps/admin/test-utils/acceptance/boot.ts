@@ -9,7 +9,7 @@ import {
   siteResponse,
 } from '@tryghost/test-data';
 
-import { declareSharedViews, withWrittenSharedViews } from './shared-views';
+import { declareSharedViews, segmentsResponse, withWrittenSharedViews } from './shared-views';
 import { registerAdminApiHandler, registerRoute } from './worker';
 
 export { composeConfigBootOverrides, composeLabsBootOverrides } from './boot-composition';
@@ -45,6 +45,13 @@ export function defaultBootRequests() {
       method: 'GET',
       path: /^\/settings\/\?group=/,
       response: settingsResponse(),
+    },
+    // The sidebar's member views. Served from the test's `shared_views` setting (see
+    // shared-views.ts); override with a 404 for a server older than the segments API.
+    browseSegments: {
+      method: 'GET',
+      path: '/segments/',
+      response: () => segmentsResponse(),
     },
     browseConfig: {
       method: 'GET',
