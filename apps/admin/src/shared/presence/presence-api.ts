@@ -3,6 +3,8 @@ import type { PresencePollResult } from '@tryghost/admin-x-framework/api/presenc
 
 export type {
   ActivePresence,
+  PresenceLease,
+  PresenceLeaseRequest,
   PresencePollResult,
   PresenceResource,
   PresenceResourceType,
@@ -19,7 +21,13 @@ const activeSchema = z.object({
 
 const responseSchema = z.object({
   presence: z
-    .array(z.object({ active: z.array(activeSchema), serverTime: z.number().finite() }))
+    .array(
+      z.object({
+        active: z.array(activeSchema),
+        lease: z.object({ userId: z.string(), mine: z.boolean() }).optional(),
+        serverTime: z.number().finite(),
+      }),
+    )
     .length(1),
 });
 

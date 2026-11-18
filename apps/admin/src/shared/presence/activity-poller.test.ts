@@ -26,7 +26,7 @@ describe('activity poller', () => {
   it('polls every 10 s with input, every 30 s without, and stops after 30 idle minutes', async () => {
     const poll = vi.fn().mockResolvedValue(true);
     const onPause = vi.fn<(reason: PauseReason) => void>();
-    stop = startActivityPoller({ poll, onPause });
+    ({ stop } = startActivityPoller({ poll, onPause }));
     expect(poll).toHaveBeenCalledTimes(1);
     await vi.advanceTimersByTimeAsync(60_000);
     expect(poll).toHaveBeenCalledTimes(7);
@@ -43,7 +43,7 @@ describe('activity poller', () => {
 
   it('returns to the 10 s cadence once the pending idle interval has run', async () => {
     const poll = vi.fn().mockResolvedValue(true);
-    stop = startActivityPoller({ poll, onPause: vi.fn() });
+    ({ stop } = startActivityPoller({ poll, onPause: vi.fn() }));
     await vi.advanceTimersByTimeAsync(90_000);
     expect(poll).toHaveBeenCalledTimes(8);
     document.dispatchEvent(new Event('pointerdown'));
@@ -57,7 +57,7 @@ describe('activity poller', () => {
     setHidden(true);
     const poll = vi.fn().mockResolvedValue(true);
     const onPause = vi.fn<(reason: PauseReason) => void>();
-    stop = startActivityPoller({ poll, onPause });
+    ({ stop } = startActivityPoller({ poll, onPause }));
     await vi.advanceTimersByTimeAsync(120_000);
     expect(poll).not.toHaveBeenCalled();
     setHidden(false);
@@ -77,7 +77,7 @@ describe('activity poller', () => {
       .mockRejectedValueOnce(new Error('503'))
       .mockRejectedValueOnce(new Error('503'))
       .mockResolvedValue(true);
-    stop = startActivityPoller({ poll, onPause: vi.fn() });
+    ({ stop } = startActivityPoller({ poll, onPause: vi.fn() }));
     await vi.advanceTimersByTimeAsync(19_999);
     expect(poll).toHaveBeenCalledTimes(1);
     await vi.advanceTimersByTimeAsync(1);
@@ -94,7 +94,7 @@ describe('activity poller', () => {
   it('pauses when the endpoint is missing and asks again only after five minutes', async () => {
     const poll = vi.fn().mockResolvedValueOnce(false).mockResolvedValue(true);
     const onPause = vi.fn<(reason: PauseReason) => void>();
-    stop = startActivityPoller({ poll, onPause });
+    ({ stop } = startActivityPoller({ poll, onPause }));
     await vi.advanceTimersByTimeAsync(0);
     expect(onPause).toHaveBeenCalledWith('unsupported');
     document.dispatchEvent(new Event('keydown'));
@@ -109,7 +109,7 @@ describe('activity poller', () => {
 
   it('does not ask a missing endpoint again while the tab is hidden, and asks on return', async () => {
     const poll = vi.fn().mockResolvedValue(false);
-    stop = startActivityPoller({ poll, onPause: vi.fn() });
+    ({ stop } = startActivityPoller({ poll, onPause: vi.fn() }));
     await vi.advanceTimersByTimeAsync(0);
     setHidden(true);
     document.dispatchEvent(new Event('visibilitychange'));
@@ -130,7 +130,7 @@ describe('activity poller', () => {
         finish = resolve;
       });
     });
-    stop = startActivityPoller({ poll, onPause: vi.fn() });
+    ({ stop } = startActivityPoller({ poll, onPause: vi.fn() }));
     await vi.advanceTimersByTimeAsync(20_000);
     expect(poll).toHaveBeenCalledTimes(1);
     setHidden(true);
@@ -145,10 +145,69 @@ describe('activity poller', () => {
     expect(poll).toHaveBeenCalledTimes(2);
   });
 
+  it('keeps polling at the idle cadence while hidden when asked to, and at once on return', async () => {
+    const poll = vi.fn().mockResolvedValue(true);
+    const onPause = vi.fn<(reason: PauseReason) => void>();
+    ({ stop } = startActivityPoller({ poll, onPause, keepAliveWhileHidden: true }));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(poll).toHaveBeenCalledTimes(1);
+    setHidden(true);
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(onPause).not.toHaveBeenCalled();
+    // The poll already due runs on the active interval; every one after it waits the idle one.
+    await vi.advanceTimersByTimeAsync(10_000 + 2 * IDLE_INTERVAL_MS);
+    expect(poll).toHaveBeenCalledTimes(4);
+    setHidden(false);
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(poll).toHaveBeenCalledTimes(5);
+  });
+
+  it('still stops a hidden tab after 30 idle minutes', async () => {
+    const poll = vi.fn().mockResolvedValue(true);
+    const onPause = vi.fn<(reason: PauseReason) => void>();
+    ({ stop } = startActivityPoller({ poll, onPause, keepAliveWhileHidden: true }));
+    setHidden(true);
+    document.dispatchEvent(new Event('visibilitychange'));
+    await vi.advanceTimersByTimeAsync(31 * 60_000);
+    expect(onPause).toHaveBeenCalledWith('idle');
+    const atStop = poll.mock.calls.length;
+    await vi.advanceTimersByTimeAsync(5 * 60_000);
+    expect(poll).toHaveBeenCalledTimes(atStop);
+  });
+
+  it('polls at once when asked, and straight after a request in flight', async () => {
+    let finish: (served: boolean) => void = () => undefined;
+    const poll = vi.fn().mockResolvedValue(true);
+    const poller = startActivityPoller({ poll, onPause: vi.fn() });
+    ({ stop } = poller);
+    await vi.advanceTimersByTimeAsync(1_000);
+    poller.pollNow();
+    expect(poll).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(0);
+
+    poll.mockImplementationOnce(
+      () =>
+        new Promise<boolean>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    poller.pollNow();
+    poller.pollNow();
+    expect(poll).toHaveBeenCalledTimes(3);
+    finish(true);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(poll).toHaveBeenCalledTimes(4);
+    // Back on the ordinary interval afterwards.
+    await vi.advanceTimersByTimeAsync(9_999);
+    expect(poll).toHaveBeenCalledTimes(4);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(poll).toHaveBeenCalledTimes(5);
+  });
+
   it('removes listeners and timers on dispose and reports it once', async () => {
     const poll = vi.fn().mockResolvedValue(true);
     const onPause = vi.fn<(reason: PauseReason) => void>();
-    const dispose = startActivityPoller({ poll, onPause });
+    const { stop: dispose } = startActivityPoller({ poll, onPause });
     dispose();
     dispose();
     expect(onPause).toHaveBeenCalledTimes(1);

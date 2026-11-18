@@ -28,6 +28,25 @@ describe('presence api', () => {
     expect(presenceRequestBody([resource])).toEqual({ presence: [{ resources: [resource] }] });
   });
 
+  it('asks for the lease only beside the edited document', async () => {
+    expect(presenceRequestBody([resource], resource, 'take')).toEqual({
+      presence: [{ resources: [resource], editing: resource, tab: presenceTabId(), lease: 'take' }],
+    });
+    expect(presenceRequestBody([resource], undefined, 'hold')).toEqual({
+      presence: [{ resources: [resource] }],
+    });
+    await withMockFetch({ json: { presence: [{ active: [], serverTime: 1 }] } }, async (mock) => {
+      const { result } = renderHookWithProviders(() => usePresenceApi());
+      await result.current.poll([resource], resource, 'hold');
+      const [, init] = mock.calls[0] as [RequestInfo | URL, RequestInit];
+      expect(JSON.parse(String(init.body))).toEqual({
+        presence: [
+          { resources: [resource], editing: resource, tab: presenceTabId(), lease: 'hold' },
+        ],
+      });
+    });
+  });
+
   it('keeps a 503 from the poll out of the maintenance alert', async () => {
     const listener = vi.fn();
     const stop = onUpgradeStatus(listener);

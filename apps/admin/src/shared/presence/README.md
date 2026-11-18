@@ -7,7 +7,8 @@ ids and a server timestamp; names and avatars come from the staff users list.
 
 ## Behaviour
 
-- Polls only while the tab is visible: every 10 seconds after input, every 30
+- Polls only while the tab is visible, unless the editor asks for the lease
+  below: every 10 seconds after input, every 30
   seconds without, and stops after 30 minutes without input until the next
   input. One request is in flight at a time.
 - The editor sends `editing` with every poll; lists send up to 50 visible
@@ -37,6 +38,30 @@ ids and a server timestamp; names and avatars come from the staff users list.
   post open", the same in the editor and the lists. Below the `sm` breakpoint
   one avatar with a count badge stands for everyone.
 
+## The lease
+
+With `lease`, `usePresence` also queues the editor's tab for the document it is
+editing and reports who holds it: `pending` until the server answers, the
+holder and whether it is this tab, or `null` when there is no lease to obey.
+
+- Every poll asks to hold. `takeOver()` makes the next poll, sent at once, ask
+  to take the lease instead.
+- The tab keeps polling at the 30-second cadence while it is hidden and does
+  not send a leave, so switching tabs does not give the document away. The
+  30-minute idle stop still applies and still sends the leave.
+- An answer is kept through failing polls for a minute, then dropped. A first
+  answer that has not come within five seconds is treated the same way. In
+  both cases the lease reads `null` and the editor is open for editing: a
+  broken presence endpoint never holds a document shut.
+- A server that answers 422 to the lease field does not know it. The poll is
+  sent again without it, and the lease reads `null` until the editor is opened
+  again.
+- When polling stops for idleness the place has been given up, so the lease
+  reads `pending` until the next answer.
+
+What the editor does with the lease is described in the
+[editor README](../../editor/README.md#the-lease).
+
 ## Modules
 
 - `activity-poller.ts` owns cadence, visibility and backoff.
@@ -47,4 +72,5 @@ ids and a server timestamp; names and avatars come from the staff users list.
   `api/presence` module.
 - `present-users.ts` turns active entries into named users, ordered by name
   so the order does not move as heartbeats land.
+- `use-present-users.ts` reads the staff those entries name.
 - `presence-avatars.tsx` renders them.
