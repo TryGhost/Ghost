@@ -72,8 +72,9 @@ export class AutomationsService {
 
       soonestTimer.scheduleAt(date);
 
+      const schedulerPollTime = getSchedulerPollTime(date, siteIdentifier);
+
       try {
-        const schedulerPollTime = getSchedulerPollTime(date, siteIdentifier);
         const key = await internalKeys.get('ghost-scheduler');
         await schedulerAdapter.schedule(
           buildSignedJob({
