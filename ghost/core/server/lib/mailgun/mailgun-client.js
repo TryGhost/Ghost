@@ -4,9 +4,9 @@ const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 const errors = require('@tryghost/errors');
 const {
-  addRecipientMessageIds,
   isTemplatedRecipientMessageId,
   RECIPIENT_MESSAGE_ID_VARIABLE,
+  setRecipientMessageIds,
 } = require('./mailgun-recipient-message-id');
 
 const DEFAULT_BATCH_SIZE = 1000;
@@ -24,7 +24,8 @@ module.exports = class MailgunClient {
    * Creates the data payload and sends to Mailgun
    *
    * @param {Object} message
-   * @param {boolean} [message.perRecipientMessageId] Give every recipient its own Message-Id header
+   * @param {(recipient: {recipientEmail: string, domain: string}) => string} [message.buildRecipientMessageId]
+   *   Give every recipient its own Message-Id header, built by the sender from the recipient and the sending domain, without angle brackets
    * @param {Object} recipientData
    * @param {Array<Object>} replacements
    *
@@ -50,6 +51,17 @@ module.exports = class MailgunClient {
         message: `Mailgun only supports sending to ${batchSize} recipients at a time`,
       });
     }
+
+    // Use overriden domain if specified in message
+    const mailDomain = message.domainOverride ? message.domainOverride : this.#getConfig().domain;
+
+    // one Message-Id per recipient, referenced from a recipient variable like List-Unsubscribe;
+    // built before the try so a bad id is reported as a caller error, not as a failed send
+    const recipientDataWithMessageIds = message.buildRecipientMessageId
+      ? setRecipientMessageIds(recipientData, (recipientEmail) =>
+          message.buildRecipientMessageId({ recipientEmail, domain: mailDomain }),
+        )
+      : undefined;
 
     let messageData = {};
 
@@ -118,17 +130,10 @@ module.exports = class MailgunClient {
         messageData['o:deliverytime'] = message.deliveryTime.toUTCString();
       }
 
-      const mailgunConfig = this.#getConfig();
       startTime = Date.now();
 
-      // Use overriden domain if specified in message
-      const mailDomain = message.domainOverride ? message.domainOverride : mailgunConfig.domain;
-
-      if (message.perRecipientMessageId === true) {
-        // one Message-Id per recipient, referenced from a recipient variable like List-Unsubscribe above
-        messageData['recipient-variables'] = JSON.stringify(
-          addRecipientMessageIds(recipientData, { emailId: message.id, domain: mailDomain }),
-        );
+      if (recipientDataWithMessageIds) {
+        messageData['recipient-variables'] = JSON.stringify(recipientDataWithMessageIds);
         messageData['h:Message-Id'] = `<%recipient.${RECIPIENT_MESSAGE_ID_VARIABLE}%>`;
       }
 
