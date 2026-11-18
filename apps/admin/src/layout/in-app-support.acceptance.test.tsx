@@ -8,7 +8,11 @@ import {
   fakeTags,
   renderAdminApp,
 } from '@test-utils/acceptance';
+import { adminFrameScreen } from './admin-frame.screen';
 import { sidebarScreen } from './sidebar.screen';
+
+const HELP_URL = 'https://ghost.org/help?utm_source=admin&utm_campaign=help';
+const topBarHelp = () => adminFrameScreen.topBar().getByRole('link', { name: 'Help', exact: true });
 
 /** Opens Help clicks in the side panel, as a host script that provides in-app support does. */
 function openHelpInSidePanel(content: HTMLElement): () => void {
@@ -23,6 +27,17 @@ function openHelpInSidePanel(content: HTMLElement): () => void {
   };
   document.addEventListener('click', openHelp, true);
   return () => document.removeEventListener('click', openHelp, true);
+}
+
+/** Cancels Help clicks, as a host script that handles them itself does. */
+function takeOverHelpClicks(): () => void {
+  const takeOver = (event: MouseEvent) => {
+    if (event.target instanceof Element && event.target.closest('[data-ghost-help]')) {
+      event.preventDefault();
+    }
+  };
+  document.addEventListener('click', takeOver, true);
+  return () => document.removeEventListener('click', takeOver, true);
 }
 
 /** The Admin 7 frame's top bar shows the site's numbers. */
@@ -48,8 +63,9 @@ async function openSettings(labs: { inAppSupport: boolean }): Promise<void> {
 describe('In-app support Help links', () => {
   let stopOpeningHelp = () => {};
 
-  afterEach(() => {
+  afterEach(async () => {
     stopOpeningHelp();
+    await page.viewport(1280, 800);
   });
 
   it.each([true, false])(
@@ -67,22 +83,47 @@ describe('In-app support Help links', () => {
     },
   );
 
-  it.each([true, false])(
-    'marks the Admin 7 user menu Help item for host scripts: inAppSupport %s',
-    async (inAppSupport) => {
-      fakeAdmin7Chrome();
-      await renderAdminApp('/tags', { labs: { admin7Design: true, inAppSupport } });
+  it('shows Help in the Admin 7 top bar, marked for host scripts, in place of the user menu item', async () => {
+    fakeAdmin7Chrome();
+    await renderAdminApp('/tags', { labs: { admin7Design: true, inAppSupport: true } });
 
-      await sidebarScreen.userMenuTrigger().click();
-      const help = sidebarScreen.helpMenuItem();
-      await expect.element(help).toBeVisible();
-      if (inAppSupport) {
-        await expect.element(help).toHaveAttribute('data-ghost-help');
-      } else {
-        await expect.element(help).not.toHaveAttribute('data-ghost-help');
-      }
-    },
-  );
+    const help = topBarHelp();
+    await expect.element(help).toBeVisible();
+    await expect.element(help).toHaveAttribute('data-ghost-help');
+    await expect.element(help).toHaveAttribute('href', HELP_URL);
+    await expect.element(help).toHaveAttribute('target', '_blank');
+    await expect.element(help).toHaveAttribute('rel', 'noopener noreferrer');
+    await expect.element(help).toHaveAttribute('title', 'Help');
+
+    await sidebarScreen.userMenuTrigger().click();
+    await expect.element(sidebarScreen.profileMenuItem()).toBeVisible();
+    await expect.element(sidebarScreen.helpMenuItem()).not.toBeInTheDocument();
+  });
+
+  it('keeps Help in the Admin 7 user menu, unmarked, without inAppSupport', async () => {
+    fakeAdmin7Chrome();
+    await renderAdminApp('/tags', { labs: { admin7Design: true, inAppSupport: false } });
+    await expect.element(adminFrameScreen.topBar()).toBeVisible();
+
+    await expect.element(topBarHelp()).not.toBeInTheDocument();
+    await sidebarScreen.userMenuTrigger().click();
+    const help = sidebarScreen.helpMenuItem();
+    await expect.element(help).toBeVisible();
+    await expect.element(help).not.toHaveAttribute('data-ghost-help');
+  });
+
+  it('keeps Help, marked, in the Admin 7 user menu on mobile, where there is no top bar', async () => {
+    await page.viewport(390, 844);
+    fakeTags([]);
+    await renderAdminApp('/tags', { labs: { admin7Design: true, inAppSupport: true } });
+
+    await page.getByRole('button', { name: 'Toggle Sidebar' }).click();
+    await sidebarScreen.userMenuTrigger().click();
+    const help = sidebarScreen.helpMenuItem();
+    await expect.element(help).toBeVisible();
+    await expect.element(help).toHaveAttribute('data-ghost-help');
+    await expect.element(adminFrameScreen.topBar()).not.toBeInTheDocument();
+  });
 
   it.each([
     { gesture: 'click', select: () => sidebarScreen.helpMenuItem().click() },
@@ -94,24 +135,43 @@ describe('In-app support Help links', () => {
       },
     },
   ])(
-    'closes the Admin 7 user menu when a host script opens Help in the side panel: $gesture',
+    'closes the Admin 7 user menu when a host script takes over its Help click: $gesture',
     async ({ select }) => {
-      fakeAdmin7Chrome();
-      const content = document.createElement('iframe');
-      content.title = 'Help content';
-      stopOpeningHelp = openHelpInSidePanel(content);
+      await page.viewport(390, 844);
+      fakeTags([]);
+      stopOpeningHelp = takeOverHelpClicks();
       await renderAdminApp('/tags', { labs: { admin7Design: true, inAppSupport: true } });
 
+      await page.getByRole('button', { name: 'Toggle Sidebar' }).click();
       await sidebarScreen.userMenuTrigger().click();
       await expect.element(sidebarScreen.helpMenuItem()).toBeVisible();
       await select();
 
       await expect.element(sidebarScreen.helpMenuItem()).not.toBeInTheDocument();
-      await expect
-        .poll(() => document.querySelector('[data-side-panel]')?.contains(content))
-        .toBe(true);
     },
   );
+
+  it('opens Help in the side panel from the Admin 7 top bar in Settings', async () => {
+    // The settings app owns its request graph; this spec asserts only the panel.
+    allowUnhandledRequests();
+    fakeAdmin7Chrome();
+    const content = document.createElement('iframe');
+    content.title = 'Help content';
+    stopOpeningHelp = openHelpInSidePanel(content);
+    await renderAdminApp('/tags', { labs: { admin7Design: true, inAppSupport: true } });
+    await expect.element(topBarHelp()).toBeVisible();
+
+    window.location.hash = '#/settings';
+    await expect.poll(currentRoute).toMatch(/^\/settings/);
+    await expect
+      .element(sidebarScreen.shellNav().getByRole('button', { name: 'Back to app' }))
+      .toBeVisible();
+    await topBarHelp().click();
+
+    await expect
+      .poll(() => document.querySelector('[data-side-panel]')?.contains(content))
+      .toBe(true);
+  });
 
   it('adds Help under the Settings navigation, marked for host scripts', async () => {
     await openSettings({ inAppSupport: true });
