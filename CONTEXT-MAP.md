@@ -38,6 +38,12 @@ Path: `ghost/core/server/services/app-installations/CONTEXT.md`
 
 App Installations covers a site's record of the apps it has approved, from the publisher's review of an install link through approvals of later changes to uninstalling.
 
+### Segments
+
+Path: `ghost/core/server/services/segments/CONTEXT.md`
+
+Segments covers named filters over members, which Admin's members list shows as saved views.
+
 ## Relationships
 
 - **Portal ↔ Gift Subscriptions**: Portal presents the purchase and redemption journeys for gift subscriptions.
