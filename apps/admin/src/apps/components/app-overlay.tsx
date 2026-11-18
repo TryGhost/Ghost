@@ -6,7 +6,7 @@ import {
   type OverlayTint,
   type SafeArea,
 } from '@tryghost/app-contracts/bridge';
-import { ShadeScope } from '@tryghost/shade/app';
+import { overlayTint, ShadeScope } from '@tryghost/shade/app';
 import { cn } from '@tryghost/shade/utils';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX } from '@/apps/lib/frame';
 import { sameSafeArea } from '@/apps/lib/layout';
@@ -17,12 +17,6 @@ import {
   clippingAncestors,
   overlayClipPath,
 } from '@/apps/lib/overlay-clip';
-
-// Shade's own overlays: a dialog's, and a sheet's, which is lighter.
-const TINT_CLASSES: Record<OverlayTint, string> = {
-  dialog: 'bg-black/30 dark:bg-black/60',
-  sheet: 'bg-black/10',
-};
 
 interface Surroundings {
   window: { width: number; height: number };
@@ -243,7 +237,8 @@ export const AppOverlay: React.FC<{
         ref={tintElement}
         className={cn(
           'fixed inset-0 z-50 transition-opacity duration-200',
-          TINT_CLASSES[last ?? 'dialog'],
+          // Shade's own tint, so it matches Admin's dialogs and sheets.
+          overlayTint(last ?? 'dialog'),
           shown ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
         data-testid="app-overlay-tint"
