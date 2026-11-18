@@ -65,6 +65,7 @@ const PRIVATE_FEATURES = [
   'inAppSupport',
   'editorPresencePolling',
   'editorPresence',
+  'editorLease',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

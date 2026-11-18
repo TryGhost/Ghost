@@ -108,6 +108,12 @@ const features: Feature[] = [
       'Show who else has a post or page open, in the editor header and on list rows. Needs editor presence polling.',
     flag: 'editorPresence',
   },
+  {
+    title: 'Editor lease',
+    description:
+      'Let one editor tab at a time edit a post or page. Others open it read-only and can take over. Needs editor presence polling.',
+    flag: 'editorLease',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {
