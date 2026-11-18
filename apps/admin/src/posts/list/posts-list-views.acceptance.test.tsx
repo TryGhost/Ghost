@@ -110,6 +110,32 @@ describe('Posts saved views', () => {
     await expect.poll(() => sidebarScreen.viewColor('Public posts')).toBe('green');
   });
 
+  it('keeps views another session saved after the list loaded', async () => {
+    const vipMembers = { name: 'VIPs', route: 'members', filter: { filter: 'label:[VIP]' } };
+    let anotherSessionSaved = false;
+    await renderAdminApp('/posts?visibility=members', {
+      boot: {
+        browseSettings: {
+          response: () => {
+            const views = anotherSessionSaved ? [publicPosts, vipMembers] : [publicPosts];
+            return settingsResponse({ settings: { shared_views: JSON.stringify(views) } });
+          },
+        },
+      },
+    });
+    await expect.element(sidebarScreen.navLink('Public posts')).toBeVisible();
+    anotherSessionSaved = true;
+
+    await postsListScreen.saveView('Members only', 'red');
+
+    await expect(settingsApi).toHaveEditedSettings([
+      {
+        key: 'shared_views',
+        value: JSON.stringify([publicPosts, vipMembers, membersOnly]),
+      },
+    ]);
+  });
+
   it('refuses a duplicate name, ignoring case, without saving', async () => {
     await renderAdminApp('/posts?visibility=members', withSavedViews(publicPosts));
 
