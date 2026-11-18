@@ -175,6 +175,21 @@ describe('activity poller', () => {
     expect(poll).toHaveBeenCalledTimes(atStop);
   });
 
+  it('gives its place up when the page is closed or reloaded, and polls again if it comes back', async () => {
+    const poll = vi.fn().mockResolvedValue(true);
+    const onPause = vi.fn<(reason: PauseReason) => void>();
+    ({ stop } = startActivityPoller({ poll, onPause, keepAliveWhileHidden: true }));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(poll).toHaveBeenCalledTimes(1);
+    window.dispatchEvent(new Event('pagehide'));
+    expect(onPause).toHaveBeenCalledExactlyOnceWith('hidden');
+    await vi.advanceTimersByTimeAsync(IDLE_INTERVAL_MS);
+    expect(poll).toHaveBeenCalledTimes(1);
+    // The back/forward cache can bring the same page back.
+    window.dispatchEvent(new Event('pageshow'));
+    expect(poll).toHaveBeenCalledTimes(2);
+  });
+
   it('polls at once when asked, and straight after a request in flight', async () => {
     let finish: (served: boolean) => void = () => undefined;
     const poll = vi.fn().mockResolvedValue(true);

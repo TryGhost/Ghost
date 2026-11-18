@@ -12,8 +12,9 @@ ids and a server timestamp; names and avatars come from the staff users list.
   seconds without, and stops after 30 minutes without input until the next
   input. One request is in flight at a time.
 - The editor sends `editing` with every poll; lists send up to 50 visible
-  `resources` and never `editing`. Hiding the tab, leaving the route or going
-  idle sends `/presence/leave/` for the edited document with `keepalive`.
+  `resources` and never `editing`. Hiding the tab, leaving the route, going
+  idle, or closing or reloading the page sends `/presence/leave/` for the
+  edited document with `keepalive`.
 - The editor names its tab with a random id per page load, sent with `editing`
   and with leave, so two tabs of one user on the same document do not clear
   each other.
@@ -48,7 +49,10 @@ holder and whether it is this tab, or `null` when there is no lease to obey.
   to take the lease instead.
 - The tab keeps polling at the 30-second cadence while it is hidden and does
   not send a leave, so switching tabs does not give the document away. The
-  30-minute idle stop still applies and still sends the leave.
+  30-minute idle stop still applies and still sends the leave, and so does
+  closing or reloading the page, on `pagehide`. A tab that dies without that
+  event, a crash or a browser killed in the background, keeps its place until
+  its heartbeat ages out of the lease window, or until another tab takes over.
 - An answer is kept through failing polls for a minute, then dropped. A first
   answer that has not come within five seconds is treated the same way. In
   both cases the lease reads `null` and the editor is open for editing: a

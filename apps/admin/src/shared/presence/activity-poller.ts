@@ -159,11 +159,26 @@ export function startActivityPoller({
     }
   }
 
+  // A closing or reloading page gives its place up; one that keeps polling while hidden would otherwise hold it.
+  function pageHidden() {
+    pause('hidden');
+  }
+
+  // A page restored from the back/forward cache was paused by its pagehide.
+  function pageShown() {
+    if (!target.hidden) {
+      interact();
+    }
+  }
+
   const events = ['keydown', 'pointerdown', 'pointermove', 'scroll', 'touchstart'];
   for (const event of events) {
     target.addEventListener(event, interact, { passive: true, capture: true });
   }
   target.addEventListener('visibilitychange', visibilityChanged);
+  const view = target.defaultView;
+  view?.addEventListener('pagehide', pageHidden);
+  view?.addEventListener('pageshow', pageShown);
   interact();
 
   const stop = () => {
@@ -174,6 +189,8 @@ export function startActivityPoller({
       target.removeEventListener(event, interact, true);
     }
     target.removeEventListener('visibilitychange', visibilityChanged);
+    view?.removeEventListener('pagehide', pageHidden);
+    view?.removeEventListener('pageshow', pageShown);
   };
   return { stop, pollNow };
 }
