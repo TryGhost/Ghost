@@ -82,7 +82,16 @@
           "version": 1,
           "calloutText": "<p><span style=\"white-space: pre-wrap;\">Heads up</span></p>",
           "calloutEmoji": "💡",
-          "backgroundColor": "blue"
+          "backgroundColor": "blue",
+          "visibility": {
+            "web": {
+              "nonMember": true,
+              "memberSegment": "status:free,status:-free"
+            },
+            "email": {
+              "memberSegment": "status:free,status:-free"
+            }
+          }
         },
         {
           "type": "header",
@@ -131,7 +140,16 @@
           "version": 1,
           "buttonText": "Go",
           "alignment": "center",
-          "buttonUrl": "https://example.com/"
+          "buttonUrl": "https://example.com/",
+          "visibility": {
+            "web": {
+              "nonMember": true,
+              "memberSegment": "status:free,status:-free"
+            },
+            "email": {
+              "memberSegment": "status:free,status:-free"
+            }
+          }
         }
       ],
       "direction": null,

@@ -3,7 +3,6 @@ import {cssUrl} from '../../utils/css-url.js';
 import {escapeHtml} from '../../utils/escape-html.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
-import {renderWithVisibility, type Visibility} from '../../utils/visibility.js';
 import twitterRenderer from './types/twitter.js';
 
 interface EmbedNodeData {
@@ -11,7 +10,6 @@ interface EmbedNodeData {
     html: string;
     url: string;
     caption: string;
-    visibility?: Visibility;
     metadata: {
         thumbnail_url?: string;
         thumbnail_width?: number | string;
@@ -31,7 +29,7 @@ export function renderEmbedNode(node: EmbedNodeData, options: RenderOptions = {}
     const embedType = node.embedType;
 
     if (embedType === 'twitter') {
-        return renderWithVisibility(twitterRenderer(node, document, options), node.visibility, options);
+        return twitterRenderer(node, document, options);
     }
 
     return renderTemplate(node, document, options);
@@ -96,5 +94,5 @@ function renderTemplate(node: EmbedNodeData, document: Document, options: Render
         figure.setAttribute('class', `${figure.getAttribute('class')} kg-card-hascaption`);
     }
 
-    return renderWithVisibility({element: figure, type: 'outer' as const}, node.visibility, options);
+    return {element: figure, type: 'outer' as const};
 }

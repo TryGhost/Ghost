@@ -1,3 +1,4 @@
+import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {$getNodeByKey} from 'lexical';
@@ -12,6 +13,7 @@ import {useVisibilityToggle} from './useVisibilityToggle';
 // `showVisibilitySettings` is true when the panel should open on that tab.
 export function useCardVisibilitySettings(nodeKey, {hiddenToggles = []} = {}) {
     const [editor] = useLexicalComposerContext();
+    const {setEditing} = React.useContext(CardContext);
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const {showVisibilitySettings} = useKoenigSelectedCardContext();
     const {isVisibilityEnabled, visibilityOptions, toggleVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
@@ -31,8 +33,15 @@ export function useCardVisibilitySettings(nodeKey, {hiddenToggles = []} = {}) {
         toggles: group.toggles.filter(toggle => !hiddenToggles.includes(toggle.key))
     }));
 
+    // Nested text editors can leave a range selection in the parent editor.
+    // Restore the card selection before updating, as the card's other toggles do.
+    const handleToggleVisibility = (type, key, value) => {
+        setEditing(true);
+        toggleVisibility(type, key, value);
+    };
+
     return {
-        visibilitySettings: <VisibilitySettings toggleVisibility={toggleVisibility} visibilityOptions={options} />,
+        visibilitySettings: <VisibilitySettings toggleVisibility={handleToggleVisibility} visibilityOptions={options} />,
         showVisibilitySettings
     };
 }

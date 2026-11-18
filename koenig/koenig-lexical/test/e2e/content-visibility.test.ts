@@ -1,4 +1,4 @@
-import {createSnippet, ctrlOrCmd, focusEditor, initialize, insertCard} from '../utils/e2e';
+import {createSnippet, ctrlOrCmd, focusEditor, getEditorStateJSON, initialize, insertCard} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 // Every card with settings has one Edit button that opens a single settings
@@ -97,6 +97,117 @@ test.describe('Content Visibility', async () => {
         await expect(card.getByTestId('settings-panel')).not.toBeVisible();
         await expect(card.locator('[data-kg-card-toolbar]').last()).toBeVisible();
     }
+
+    for (const {name, node, tab} of [
+        {name: 'button', node: {type: 'button', version: 1, buttonText: 'Member button', buttonUrl: 'https://example.com'}, tab: 'content'},
+        {name: 'callout', node: {type: 'callout', version: 1, calloutText: 'Member note'}, tab: 'design'},
+        {name: 'product', node: {type: 'product', version: 1, productTitle: 'Member offer'}, tab: 'content'},
+        {name: 'header', node: {type: 'header', version: 2, header: 'Member banner', layout: 'full'}, tab: 'design'}
+    ]) {
+        test(`${name} keeps its settings and opens visibility from the indicator`, async function () {
+            await initialize({page, uri: `/#/?content=${content(paragraph('some text'), node)}`});
+            await focusEditor(page);
+            const card = await selectCard(name);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+Enter`);
+            await expectPanelOnTab(card, tab);
+            await card.getByTestId('tab-visibility').click();
+            await expectPanelOnTab(card, 'visibility');
+            await card.getByTestId('visibility-toggle-web-nonMembers').click();
+            await card.getByTestId('visibility-toggle-email-freeMembers').click();
+            await page.locator('[data-lexical-editor] p').first().click();
+            await page.getByTestId('visibility-indicator').click();
+            await expectPanelOnTab(card, 'visibility');
+            await expect(card.getByTestId('visibility-toggle-web-nonMembers')).not.toBeChecked();
+            await expect(card.getByTestId('visibility-toggle-email-freeMembers')).not.toBeChecked();
+            const saved = await getEditorStateJSON(page);
+            await initialize({page, uri: `/#/?content=${encodeURIComponent(saved)}`});
+            await page.getByTestId('visibility-indicator').click();
+            await expectPanelOnTab(card, 'visibility');
+            await expect(card.getByTestId('visibility-toggle-web-nonMembers')).not.toBeChecked();
+            await expect(card.getByTestId('visibility-toggle-email-freeMembers')).not.toBeChecked();
+        });
+
+        test(`${name} retains settings when visibility is disabled`, async function () {
+            await initialize({page, uri: `/#/?visibility=none&content=${content(paragraph('some text'), node)}`});
+            await focusEditor(page);
+            const card = await selectCard(name);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+Enter`);
+            await expectPanelOnTab(card, tab);
+            await expect(card.getByTestId('tab-visibility')).toHaveCount(0);
+        });
+    }
+
+    for (const {name, node, tabs} of [
+        {name: 'button', node: {type: 'button', version: 1, buttonText: 'Member button', buttonUrl: 'https://example.com'}, tabs: ['content']},
+        {name: 'callout', node: {type: 'callout', version: 1, calloutText: 'Member note'}, tabs: ['design']},
+        {name: 'product', node: {type: 'product', version: 1, productTitle: 'Member offer'}, tabs: ['content']},
+        {name: 'header', node: {type: 'header', version: 2, header: 'Member banner', layout: 'full'}, tabs: ['design']},
+        {name: 'video', node: video(), tabs: ['design']},
+        {name: 'call-to-action', node: {type: 'call-to-action', version: 1, textValue: 'Member offer'}, tabs: ['content', 'design']}
+    ]) {
+        test(`${name} indicator returns to visibility after every manual tab switch`, async function () {
+            await initialize({page, uri: `/#/?content=${content(paragraph('some text'), {...node, visibility: hidden})}`});
+            const card = page.locator(`[data-kg-card="${name}"]`);
+            const indicator = page.getByTestId('visibility-indicator');
+            await indicator.click();
+            await expectPanelOnTab(card, 'visibility');
+
+            // Repeat the same tab too, so a request must work more than once.
+            for (const tab of [...tabs, tabs[0]]) {
+                await card.getByTestId(`tab-${tab}`).click();
+                await expectPanelOnTab(card, tab);
+                await indicator.click();
+                await expectPanelOnTab(card, 'visibility');
+                await expect(card.getByTestId('visibility-toggle-web-nonMembers')).not.toBeChecked();
+            }
+        });
+    }
+
+    for (const {name, node} of [
+        {name: 'toggle', node: {type: 'toggle', version: 1, heading: 'Member heading', content: '<p>Member content</p>'}},
+        {name: 'bookmark', node: {type: 'bookmark', version: 1, url: 'https://example.com', metadata: {title: 'Member bookmark'}, caption: 'Member caption'}}
+    ]) {
+        test(`${name} offers visibility through Edit and retains settings after reloading`, async function () {
+            await initialize({page, uri: `/#/?content=${content(paragraph('some text'), node)}`});
+            const card = await selectCard(name);
+            await card.getByRole('button', {name: 'Edit', exact: true}).click();
+            await expectPanelOnTab(card, 'visibility');
+            await card.locator('[contenteditable="true"]').last().fill('Updated member content');
+            await card.getByTestId('visibility-toggle-web-nonMembers').click();
+            await card.getByTestId('visibility-toggle-email-freeMembers').click();
+            const saved = await getEditorStateJSON(page);
+            expect(saved).toContain('Updated member content');
+            await initialize({page, uri: `/#/?content=${encodeURIComponent(saved)}`});
+            await page.getByTestId('visibility-indicator').click();
+            await expectPanelOnTab(card, 'visibility');
+            await expect(card.getByTestId('visibility-toggle-web-nonMembers')).not.toBeChecked();
+            await expect(card.getByTestId('visibility-toggle-email-freeMembers')).not.toBeChecked();
+        });
+
+        test(`${name} hides visibility when the feature is disabled`, async function () {
+            await initialize({page, uri: `/#/?visibility=none&content=${content(paragraph('some text'), node)}`});
+            const card = await selectCard(name);
+            if (name === 'toggle') {
+                await card.getByRole('button', {name: 'Edit', exact: true}).click();
+                await expect(card).toHaveAttribute('data-kg-card-editing', 'true');
+            } else {
+                await expect(card.getByRole('button', {name: 'Edit', exact: true})).toHaveCount(0);
+            }
+            await expect(card.getByTestId('settings-panel')).toHaveCount(0);
+        });
+    }
+
+    test('embed has no visibility controls or edit mode', async function () {
+        await initialize({page, uri: `/#/?content=${content(paragraph('some text'), {
+            type: 'embed', version: 1, url: 'https://example.com', html: '<div>Embedded content</div>'
+        })}`});
+        await focusEditor(page);
+        const card = await selectCard('embed');
+        await expect(card.getByTestId('edit-embed-card')).toHaveCount(0);
+        await page.keyboard.press(`${ctrlOrCmd(page)}+Enter`);
+        await expect(card.getByTestId('settings-panel')).toHaveCount(0);
+        await expect(card.getByTestId('visibility-indicator')).toHaveCount(0);
+    });
 
     test.describe('Card with visibility settings only (image)', async function () {
         test.beforeEach(async () => {

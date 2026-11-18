@@ -12,14 +12,14 @@ export function isVisibilityEnabled(cardConfig) {
     return (cardConfig?.visibilitySettings ?? VISIBILITY_SETTINGS.WEB_AND_EMAIL) !== VISIBILITY_SETTINGS.NONE;
 }
 
-// an image, gallery or embed placeholder has no content to hide yet
+// an image or gallery placeholder has no content to hide yet
 function isPlaceholderCard(cardNode) {
     return cardNode.isEmpty?.() === true
         || cardNode.src === ''
         || (Array.isArray(cardNode.images) && cardNode.images.length === 0);
 }
 
-// Cards without an edit mode of their own (image, gallery, embed) still open
+// Cards without an edit mode of their own (image, gallery) still open
 // their settings panel in edit mode when visibility is something to edit
 export function cardHasEditMode(cardNode, cardConfig) {
     if (!$isKoenigCard(cardNode)) {

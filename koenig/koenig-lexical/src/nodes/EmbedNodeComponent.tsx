@@ -5,21 +5,18 @@ import {$createBookmarkNode} from './BookmarkNode';
 import {$createLinkNode} from '@lexical/link';
 import {$createParagraphNode, $createTextNode, $getNodeByKey, $isParagraphNode} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
-import {CardSettingsPanel} from '../components/CardSettingsPanel';
 import {EmbedCard} from '../components/ui/cards/EmbedCard';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
-import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
+import {ToolbarMenu, ToolbarMenuItem} from '../components/ui/ToolbarMenu.jsx';
 import {getEmbedRendererUrl} from '../utils/embed-renderer';
 import {useCallback} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {useVisibilityToggle} from '../hooks/useVisibilityToggle';
 
 export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedType, metadata, captionEditor, captionEditorInitialState}) {
     const [editor] = useLexicalComposerContext();
 
     const {cardConfig} = React.useContext(KoenigComposerContext);
-    const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
-    const {isVisibilityEnabled} = useVisibilityToggle(editor, nodeKey, cardConfig);
+    const {isSelected, isEditing} = React.useContext(CardContext);
     const [urlInputValue, setUrlInputValue] = React.useState('');
     const [loading, setLoading] = React.useState(false);
     const [urlError, setUrlError] = React.useState(false);
@@ -32,12 +29,6 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
         }
         return getEmbedRendererUrl(cardConfig.embedPreviewUrl, window.location.origin)?.href ?? null;
     }, [cardConfig.embedPreviewUrl]);
-
-    const handleToolbarEdit = (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        setEditing(true);
-    };
 
     const handleUrlChange = (event) => {
         setUrlInputValue(event.target.value);
@@ -172,18 +163,9 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
 
             <ActionToolbar
                 data-kg-card-toolbar="embed"
-                isVisible={html && isSelected && !isEditing && !showSnippetToolbar && (isVisibilityEnabled || cardConfig.createSnippet)}
+                isVisible={html && isSelected && !isEditing && !showSnippetToolbar && cardConfig.createSnippet}
             >
                 <ToolbarMenu>
-                    <ToolbarMenuItem
-                        dataTestId="edit-embed-card"
-                        hide={!isVisibilityEnabled}
-                        icon="edit"
-                        isActive={false}
-                        label="Edit"
-                        onClick={handleToolbarEdit}
-                    />
-                    <ToolbarMenuSeparator hide={!isVisibilityEnabled || !cardConfig.createSnippet} />
                     <ToolbarMenuItem
                         dataTestId="create-snippet"
                         hide={!cardConfig.createSnippet}
@@ -195,7 +177,6 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
                 </ToolbarMenu>
             </ActionToolbar>
 
-            <CardSettingsPanel />
         </>
     );
 }

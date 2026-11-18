@@ -1,14 +1,13 @@
 import PropTypes from 'prop-types';
 import {useState} from 'react';
 
-const TabView = ({tabs, defaultTab, tabContent}) => {
+const TabView = ({tabs, defaultTab, defaultTabKey, tabContent}) => {
     const [activeTab, setActiveTab] = useState(defaultTab || tabs[0].id);
-    const [previousDefaultTab, setPreviousDefaultTab] = useState(defaultTab);
+    const [previousDefault, setPreviousDefault] = useState({tab: defaultTab, key: defaultTabKey});
 
-    // follow a change of default tab, e.g. clicking a card's visibility
-    // indicator while its panel is already open
-    if (defaultTab !== previousDefaultTab) {
-        setPreviousDefaultTab(defaultTab);
+    // A new request can select the same default again after a manual tab switch.
+    if (defaultTab !== previousDefault.tab || defaultTabKey !== previousDefault.key) {
+        setPreviousDefault({tab: defaultTab, key: defaultTabKey});
         setActiveTab(defaultTab || tabs[0].id);
     }
 
@@ -52,6 +51,7 @@ TabView.propTypes = {
         })
     ).isRequired,
     defaultTab: PropTypes.string,
+    defaultTabKey: PropTypes.number,
     tabContent: PropTypes.objectOf(PropTypes.node).isRequired
 };
 

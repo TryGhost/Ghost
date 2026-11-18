@@ -140,7 +140,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
             }
         }
 
-        // cards without an edit mode of their own (image, gallery, embed) keep a
+        // cards without an edit mode of their own (image, gallery) keep a
         // second click for captions and their own controls, so their settings
         // panel opens on double-click instead
         function handleDoubleClick(event) {
