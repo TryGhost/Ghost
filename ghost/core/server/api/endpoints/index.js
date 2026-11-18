@@ -32,7 +32,7 @@ module.exports = {
   },
 
   get authentication() {
-    return apiFramework.pipeline(require('./authentication'), localUtils);
+    return apiFramework.pipeline(require('./authentication').default, localUtils);
   },
 
   get db() {

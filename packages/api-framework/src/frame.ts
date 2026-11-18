@@ -47,7 +47,7 @@ const debug = createDebug('frame');
 
 /** Holds all information associated with an API request. */
 export class Frame<TShape extends FrameShape = FrameShape> {
-  #headers: Record<string, string> = {};
+  #headers: Record<string, string | string[]> = {};
 
   original: FrameInput;
   options: FrameOptions<TShape> & { context?: Dictionary } = {} as FrameOptions<TShape> & {
@@ -133,7 +133,7 @@ export class Frame<TShape extends FrameShape = FrameShape> {
     debug('data', hasBody ? body : this.data);
   }
 
-  setHeader(header: string, value: string) {
+  setHeader(header: string, value: string | string[]) {
     this.#headers[header] = value;
   }
 

@@ -37,7 +37,7 @@ type UpdateSetupUserData = z.infer<typeof updateSetupDetailsSchema> & { status: 
 
 interface SetupUser {
   id: string;
-  get(attribute: string): unknown;
+  get(attribute: 'email'): string;
 }
 
 export interface SetupData<UserData = SetupUserData> {
@@ -144,7 +144,10 @@ export async function setupUser<UserData extends UpdateSetupUserData>(
 }
 
 export async function doSettings(
-  data: SetupData<Pick<Partial<SetupUserData>, 'blogTitle' | 'description' | 'accentColor'>>,
+  data: SetupData<
+    Pick<UpdateSetupUserData, 'blogTitle'> &
+      Pick<Partial<SetupUserData>, 'description' | 'accentColor'>
+  >,
   settingsAPI: SettingsAPI,
 ) {
   const context = { context: { user: data.user.id } };
