@@ -8,8 +8,8 @@ import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 
 // The videos' flat backgrounds never exactly match the page; fading the corners
-// hides the square while keeping the orb, which fills ~96% of the frame.
-const orbMask = 'radial-gradient(circle closest-side, black 94%, transparent 100%)';
+// hides the square while keeping the orb, which reaches ~98% of the frame's radius.
+const orbMask = 'radial-gradient(circle closest-side, black 98%, transparent 100%)';
 const orbStyle = { width: '100px', height: '100px', maskImage: orbMask, WebkitMaskImage: orbMask };
 
 const GlobalDataProvider = ({ children }: { children: ReactNode }) => {
@@ -28,7 +28,6 @@ const GlobalDataProvider = ({ children }: { children: ReactNode }) => {
   if (requests.some((request) => request.isLoading)) {
     return (
       <div
-        className="gh-loading-orb-container"
         style={{
           width: '100vw',
           height: '100vh',
@@ -39,11 +38,13 @@ const GlobalDataProvider = ({ children }: { children: ReactNode }) => {
         }}
       >
         <video
+          aria-hidden="true"
           autoPlay={true}
-          className="gh-loading-orb dark:hidden"
+          className="dark:hidden"
           height="100"
           preload="metadata"
           style={orbStyle}
+          tabIndex={-1}
           width="100"
           loop
           muted
@@ -52,11 +53,13 @@ const GlobalDataProvider = ({ children }: { children: ReactNode }) => {
           <source src={SpinningOrb} type="video/mp4" />
         </video>
         <video
+          aria-hidden="true"
           autoPlay={true}
-          className="gh-loading-orb hidden dark:block"
+          className="hidden dark:block"
           height="100"
           preload="metadata"
           style={orbStyle}
+          tabIndex={-1}
           width="100"
           loop
           muted
