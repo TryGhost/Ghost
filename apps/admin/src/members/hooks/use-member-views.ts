@@ -8,7 +8,7 @@ import {
 } from '@tryghost/admin-x-framework/api/segments';
 import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { APIError, JSONError } from '@tryghost/admin-x-framework/errors';
-import { canManageMembers } from '@tryghost/admin-x-framework/api/users';
+import { canManageMembers, hasAdminAccess } from '@tryghost/admin-x-framework/api/users';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useCallback, useEffect, useMemo } from 'react';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
@@ -108,6 +108,16 @@ export function useMemberViews(): MemberView[] {
   }, [error, handleError, storedInSettings]);
 
   return source.api === 'segments' ? source.segments : settingsViews;
+}
+
+/**
+ * Whether the signed-in staff user can save, rename and delete member views. Owners and
+ * Administrators can. A Super Editor is shown the views and can open them, but Ghost refuses a
+ * change to one, so the controls that change views are not offered.
+ */
+export function useCanChangeMemberViews(): boolean {
+  const { data: currentUser } = useCurrentUser();
+  return Boolean(currentUser && hasAdminAccess(currentUser));
 }
 
 type Write = 'add' | 'rename' | 'delete';
