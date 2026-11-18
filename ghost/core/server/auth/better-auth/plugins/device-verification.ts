@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import { defineRequestState, runWithTransaction } from '@better-auth/core/context';
-import { APIError, getCurrentAdapter } from 'better-auth';
+import { APIError, BASE_ERROR_CODES, getCurrentAdapter } from 'better-auth';
 import type { BetterAuthPlugin, GenericEndpointContext, Session, User } from 'better-auth';
 import {
   createAuthEndpoint,
@@ -45,8 +45,8 @@ export const DEVICE_VERIFICATION_ERROR_CODES = {
 
 const ERRORS = DEVICE_VERIFICATION_ERROR_CODES;
 
-// Paths an unverified session can still use
-const isUngated = (path: string | undefined) =>
+/** Paths an unverified session can still use; ghostSessionGate makes it anonymous elsewhere */
+export const allowsUnverifiedSession = (path: string | undefined) =>
   !!path && (path.startsWith(DEVICE_VERIFICATION_PREFIX) || path === ROUTES.signOut);
 
 // Sign-in methods that are a stronger factor than an email code
@@ -202,6 +202,22 @@ export async function verifiesNewSession(
   return false;
 }
 
+/**
+ * Called by ghostSessionGate for an unverified session it makes anonymous, so
+ * a sign-in can replace it and verify an inline `token` against its code.
+ */
+export async function recordUnverifiedSession(
+  ctx: Pick<GenericEndpointContext, 'path' | 'body'>,
+  session: { id: string; userId: string },
+): Promise<void> {
+  const code: unknown = ctx.path === ROUTES.signInEmail ? ctx.body?.token : undefined;
+  await previousSession.set({
+    id: session.id,
+    userId: session.userId,
+    code: typeof code === 'string' ? code : undefined,
+  });
+}
+
 /** Ghost's email-code device verification on top of Better Auth (plan §3.3). */
 export const ghostDeviceVerification = (options: DeviceVerificationOptions) => {
   async function issueCode(
@@ -209,6 +225,17 @@ export const ghostDeviceVerification = (options: DeviceVerificationOptions) => {
     session: SessionRow,
     user: Pick<User, 'id' | 'email'>,
   ): Promise<void> {
+    const revoked = () => APIError.from('UNAUTHORIZED', BASE_ERROR_CODES.SESSION_EXPIRED);
+    const bySession = [{ field: 'id', value: session.id }];
+
+    // Only a live session spends the user's email budget. The limiter takes its
+    // own pool connection, so it runs before the transaction, never inside it
+    const live = await (
+      await getCurrentAdapter(ctx.context.adapter)
+    ).findOne({ model: 'session', where: bySession });
+    if (!live) {
+      throw revoked();
+    }
     const limit = await options.emailLimiter().consume({ key: user.id });
     if (!limit.allowed) {
       throw APIError.from('TOO_MANY_REQUESTS', ERRORS.TOO_MANY_EMAILS);
@@ -217,12 +244,18 @@ export const ghostDeviceVerification = (options: DeviceVerificationOptions) => {
     const code = crypto.randomInt(0, 1_000_000).toString().padStart(6, '0');
     await runWithTransaction(ctx.context.adapter, async () => {
       const adapter = await getCurrentAdapter(ctx.context.adapter);
-      // Locks the session row, so concurrent sends leave one live code
-      await adapter.update({
+      // Locks the session row, so concurrent sends leave one live code. The
+      // cutoff: a session gone by this lock (a suspension, sign-out or
+      // replacing sign-in) gets no code; one revoked after the commit still
+      // gets an email whose code can't verify a deleted session
+      const locked = await adapter.update({
         model: 'session',
-        where: [{ field: 'id', value: session.id }],
+        where: bySession,
         update: { updatedAt: new Date() },
       });
+      if (!locked) {
+        throw revoked();
+      }
       await adapter.deleteMany({
         model: 'verification',
         where: [{ field: 'identifier', value: identifierFor(session.id) }],
@@ -296,37 +329,6 @@ export const ghostDeviceVerification = (options: DeviceVerificationOptions) => {
     },
 
     hooks: {
-      before: [
-        {
-          // An unverified session is anonymous outside device verification and
-          // sign-out, so protected endpoints refuse it (plan §5.4)
-          matcher: (ctx) => !isUngated(ctx.path) && !!ctx.headers?.get('cookie'),
-          handler: createAuthMiddleware(async (ctx) => {
-            const sessionCookie = ctx.context.authCookies.sessionToken.name;
-            const cookies = requestCookies(ctx);
-            if (!cookies.has(sessionCookie)) {
-              return;
-            }
-            const token = await ctx.getSignedCookie(sessionCookie, ctx.context.secret);
-            const found = token ? await ctx.context.internalAdapter.findSession(token) : null;
-            const session = found?.session as SessionRow | undefined;
-            if (!session || session.verified === true) {
-              return;
-            }
-
-            const code = ctx.path === ROUTES.signInEmail ? ctx.body?.token : undefined;
-            await previousSession.set({
-              id: session.id,
-              userId: session.userId,
-              code: typeof code === 'string' ? code : undefined,
-            });
-
-            cookies.delete(sessionCookie);
-            const cookie = [...cookies].map(([name, value]) => `${name}=${value}`).join('; ');
-            return { context: { headers: new Headers({ cookie }) } };
-          }),
-        },
-      ],
       after: [
         {
           matcher: () => true,
@@ -399,8 +401,15 @@ export const ghostDeviceVerification = (options: DeviceVerificationOptions) => {
             throw codeError(result);
           }
 
-          await ctx.context.internalAdapter.updateSession(session.token, { verified: true });
           await resetEmailLimit(ctx, session.userId);
+          // The cutoff: a session gone by this update gets no verification or
+          // device trust, which is set with no await in between
+          const updated = await ctx.context.internalAdapter.updateSession(session.token, {
+            verified: true,
+          });
+          if (!updated) {
+            throw APIError.from('UNAUTHORIZED', BASE_ERROR_CODES.SESSION_EXPIRED);
+          }
           await setDeviceTrust(ctx, session.userId);
           return ctx.json({ status: true });
         },

@@ -308,7 +308,8 @@ and hooks. It is replaced by `twoFactor` if Ghost moves to opt-in 2FA.
   a valid device-trust cookie when `require_email_mfa` is off. Otherwise email
   a code and respond 403 with `2FA_TOKEN_REQUIRED` or
   `2FA_NEW_DEVICE_DETECTED`.
-- A global before-hook refuses unverified sessions on every session-protected
+- A global before-hook (`ghostSessionGate`, which also refuses sessions of
+  non-active users) refuses unverified sessions on every session-protected
   Better Auth endpoint except `/device-verification/*` and `/sign-out`.
   Without it, `/change-password` would accept a session Ghost treats as
   anonymous.
@@ -952,7 +953,7 @@ integration API responses.
 | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | Table count on Ghost(Pro)                                      | In-development until shipped; migration review; Redis secondary storage for high-churn tables later |
 | SQLite cannot run Better Auth                                  | SQLite falls back to legacy with a warning; legacy until 7.0                                        |
-| Unverified sessions accepted by Better Auth endpoints          | Global before-hook in `ghostDeviceVerification`; e2e test                                           |
+| Unverified sessions accepted by Better Auth endpoints          | Global before-hook in `ghostSessionGate`; e2e test                                                  |
 | Bearer tokens widen attack surface                             | Hashed, scoped, expiring, revocable, role-capped, rate-limited, shown once; reset revokes all       |
 | Better Auth's rate limiter lacks success reset                 | `customStorage` over the `spam` limiters; an after-hook clears `userLogin` on success               |
 | Plugin schema changes on upgrade                               | Tables in development until shipped; pinned catalog version; adapter and plugin suites in CI        |
