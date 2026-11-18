@@ -123,7 +123,7 @@ export class Channel {
   #ended: GhostAppError | undefined;
   #stopWatchingTitle: (() => void) | undefined;
   #history: HistoryWatch | undefined;
-  // Counts the page's moves, so an answer to one the page has since moved on from is ignored.
+  // Counts page and Admin moves, so an answer to an earlier page move is ignored.
   #moves = 0;
 
   constructor(port: MessagePort, hostExports: readonly string[], events: ChannelEvents) {
@@ -195,6 +195,7 @@ export class Channel {
     if (!isContainedPath(path)) {
       throw refusal('invalid_argument', "Ghost sent a path this SDK doesn't understand");
     }
+    this.#moves += 1;
     this.#path = path;
     this.#history?.follow(path);
     notify(this.#pathListeners, path);
