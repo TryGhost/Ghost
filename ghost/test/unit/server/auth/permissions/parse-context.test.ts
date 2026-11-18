@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-// @ts-expect-error This module lacks type definitions.
 import parseContext from '../../../../../core/server/auth/permissions/parse-context';
 
 describe('Permissions', function () {
