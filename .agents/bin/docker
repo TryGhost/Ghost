@@ -1,2 +1,14 @@
 #!/bin/sh
-exec sudo --preserve-env=PUBLIC_URL,COMPOSE_PROFILES /usr/bin/docker "$@"
+# Orb services can't open the Docker socket, so Docker runs through sudo, which resets the
+# environment. sudo logs the variables it keeps, values included, so the Mailgun credentials
+# compose files interpolate go through a private file instead of --preserve-env.
+secrets=$(mktemp)
+env -i \
+  ${MAILGUN_API_KEY+"MAILGUN_API_KEY=$MAILGUN_API_KEY"} \
+  ${MAILGUN_DOMAIN+"MAILGUN_DOMAIN=$MAILGUN_DOMAIN"} \
+  ${MAILGUN_FROM+"MAILGUN_FROM=$MAILGUN_FROM"} \
+  ${MAILGUN_API_URL+"MAILGUN_API_URL=$MAILGUN_API_URL"} \
+  ${MAILGUN_BASE_URL+"MAILGUN_BASE_URL=$MAILGUN_BASE_URL"} \
+  /bin/sh -c 'export -p' >"$secrets"
+exec sudo --preserve-env=PUBLIC_URL,COMPOSE_PROFILES /bin/sh -c \
+  '. "$1"; rm -f "$1"; shift; exec /usr/bin/docker "$@"' sh "$secrets" "$@"

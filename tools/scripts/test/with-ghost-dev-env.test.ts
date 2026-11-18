@@ -33,6 +33,7 @@ describe('with-ghost-dev-env', { skip: process.platform === 'win32' }, () => {
           NX_INVOCATION_ROOT_PID: String(nx.pid),
           DEV_COMPOSE_FILES: '',
           COMPOSE_PROFILES: '',
+          MAILGUN_API_KEY: '',
         },
       },
     );

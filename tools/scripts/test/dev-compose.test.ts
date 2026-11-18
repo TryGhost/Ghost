@@ -1,6 +1,50 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { type ComposeConfig, hostOverlayEnv } from '../lib/dev-compose.ts';
+import { type ComposeConfig, hostOverlayEnv, overlayArgs } from '../lib/dev-compose.ts';
+
+describe('overlayArgs', () => {
+  function withEnv(env: Record<string, string>, run: () => void) {
+    const saved = Object.fromEntries(Object.keys(env).map((key) => [key, process.env[key]]));
+    Object.assign(process.env, env);
+    try {
+      run();
+    } finally {
+      for (const [key, value] of Object.entries(saved)) {
+        if (value === undefined) {
+          delete process.env[key];
+        } else {
+          process.env[key] = value;
+        }
+      }
+    }
+  }
+  const mailgun = { MAILGUN_API_KEY: 'key', MAILGUN_DOMAIN: 'mg.example.com' };
+
+  it('sends email through Mailgun when its credentials are set', () => {
+    withEnv({ ...mailgun, DEV_COMPOSE_FILES: '-f compose.dev.storage.yaml' }, () => {
+      assert.deepEqual(overlayArgs(), [
+        '-f',
+        'compose.dev.storage.yaml',
+        '-f',
+        'compose.dev.mailgun.yaml',
+      ]);
+    });
+  });
+
+  it('keeps Mailpit without both credentials', () => {
+    withEnv({ ...mailgun, MAILGUN_DOMAIN: '', DEV_COMPOSE_FILES: '' }, () => {
+      assert.deepEqual(overlayArgs(), []);
+    });
+  });
+
+  it('leaves an overlay that already configures Mailgun alone', () => {
+    for (const file of ['compose.dev.fake-mailgun.yaml', 'compose.dev.mailgun.yaml']) {
+      withEnv({ ...mailgun, DEV_COMPOSE_FILES: `-f ${file}` }, () => {
+        assert.deepEqual(overlayArgs(), ['-f', file]);
+      });
+    }
+  });
+});
 
 const baseEnv = { mail__options__host: 'mailpit', server__port: '2368' };
 const base: ComposeConfig = {
