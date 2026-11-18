@@ -290,8 +290,10 @@ pnpm migrate:db
 ```
 
 Development email is captured by Mailpit rather than delivered. Open
-[http://localhost:8025](http://localhost:8025) to inspect messages. For Mailgun
-delivery and automated-test workflows, see [Email testing](testing-email.md).
+[http://localhost:8025](http://localhost:8025) to inspect messages. When
+`MAILGUN_API_KEY` and `MAILGUN_DOMAIN` are set, Ghost sends all email through
+Mailgun instead. For Mailgun delivery and automated-test workflows, see
+[Email testing](testing-email.md).
 
 ## Updating and recovering
 
