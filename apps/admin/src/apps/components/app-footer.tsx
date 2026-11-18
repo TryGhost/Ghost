@@ -33,7 +33,7 @@ const DEVELOPMENT_CLASS_NAME = cn(
  * Says which app the page comes from: its icon, its name and its developer, who links to wherever
  * the developer takes support. It wraps rather than cutting a name short.
  */
-const AppFooter: React.FC<{ app: AppIconSource }> = ({ app }) => {
+export const AppFooter: React.FC<{ app: AppIconSource }> = ({ app }) => {
   const { name, author, development } = app.manifest;
   const support = supportLink(app.manifest);
   return (

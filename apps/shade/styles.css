@@ -181,6 +181,13 @@ html.theme-switching *::after {
   scrollbar-width: none; /* Firefox */
 }
 
+/* FloatingSidebar holds the pointer back from frames in the content beside it while it needs to
+   know where the pointer is: over a frame on another site, the pointer's events go to the frame's
+   document alone. */
+[data-floating-sidebar-frame-guard] ~ * iframe {
+  pointer-events: none !important;
+}
+
 /* CodeEditor autocomplete is portalled to a viewport-sized body child so it
    can escape form-control and accordion overflow boundaries. CodeMirror adds
    an intermediate container carrying the editor theme classes; collapse and
