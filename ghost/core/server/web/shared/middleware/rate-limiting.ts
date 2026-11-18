@@ -24,6 +24,7 @@ const rateLimiting = {
   },
   upgradeApiLimiter: use('upgradeApiBlock'),
   upgradeLimiter: use('upgradeBlock'),
+  presenceLimiter: use('presenceBlock'),
   globalBlock: use('globalBlock'),
   globalReset: use('globalReset'),
   userLogin: use('userLogin'),
@@ -57,6 +58,15 @@ const rateLimiting = {
       return next();
     }
     return use('checkoutSessionEmail')(req, res, next);
+  },
+
+  // Runs after loadIdentityTokenMember. A request without a verified identity
+  // token skips the limiter; the controller rejects it without sending anything
+  memberEmailUpdateLimiter(req: Request, res: Response, next: NextFunction) {
+    if (!spamPrevention.memberIdentityKey(req)) {
+      return next();
+    }
+    return use('memberEmailUpdateBlock')(req, res, next);
   },
 
   otcVerificationEnumeration: use('otcVerificationEnumeration'),

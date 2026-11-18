@@ -427,7 +427,6 @@ class MemberWelcomeEmailService {
    * @param {undefined | null | string} options.member.name
    * @param {string} options.member.email
    * @param {string} options.member.uuid
-   * @param {'free' | 'paid'} options.memberStatus
    * @param {object} options.email
    * @param {string} options.email.lexical
    * @param {string} options.email.subject
@@ -442,7 +441,6 @@ class MemberWelcomeEmailService {
    */
   async #sendEmail({
     member,
-    memberStatus,
     email,
     emailType,
     trackOpens,
@@ -465,7 +463,6 @@ class MemberWelcomeEmailService {
             emailType === 'automation'
               ? 'member_welcome_email.automation_sending'
               : 'member_welcome_email.sending',
-          member_status: memberStatus,
         },
       },
       `${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending ${emailType} email to ${name}${member.email}`,
@@ -633,7 +630,6 @@ class MemberWelcomeEmailService {
 
     await this.#sendEmail({
       member,
-      memberStatus,
       emailType: 'welcome',
       email,
     });
@@ -651,7 +647,6 @@ class MemberWelcomeEmailService {
    * @param {string} options.member.email
    * @param {null | string} options.member.name
    * @param {string} options.member.uuid
-   * @param {'free' | 'paid'} options.memberStatus
    * @param {boolean} options.trackOpens
    * @param {boolean} options.trackClicks
    * @param {string} options.automationActionRevisionId
@@ -661,7 +656,6 @@ class MemberWelcomeEmailService {
   async sendAutomationEmail({
     email,
     member,
-    memberStatus,
     trackOpens,
     trackClicks,
     automationActionRevisionId,
@@ -687,7 +681,6 @@ class MemberWelcomeEmailService {
 
     return await this.#sendEmail({
       member,
-      memberStatus,
       emailType: 'automation',
       email: {
         lexical: email.lexical,

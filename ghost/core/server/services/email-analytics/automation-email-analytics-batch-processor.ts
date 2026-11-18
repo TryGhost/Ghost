@@ -1,9 +1,7 @@
+import type { AutomatedEmailRecipientTrackingData } from '../automations/automations-repository-2';
 import { normalizeMailgunMessageId } from '../../lib/mailgun/mailgun-message-id';
 import type * as automationsApi from '../automations/automations-api';
-import type {
-  AutomatedEmailEvents,
-  AutomatedEmailRecipientWithMailgunId,
-} from '../automations/automations-repository';
+import type { AutomatedEmailRecipientWithMailgunId } from '../automations/automations-repository';
 import type { BatchEventProcessor } from './batch-event-processor';
 import { EventProcessingResult } from './event-processing-result';
 
@@ -45,7 +43,7 @@ const getAutomatedEmailRecipientsByMessageId = (
 };
 
 const trackEarliest = (
-  map: Map<string, AutomatedEmailEvents>,
+  map: Map<string, AutomatedEmailRecipientTrackingData>,
   recipient: AutomatedEmailRecipientWithMailgunId,
   field: 'deliveredAt' | 'openedAt',
   timestamp: Date,
@@ -81,7 +79,10 @@ export class AutomationEmailAnalyticsBatchProcessor implements BatchEventProcess
     const automatedEmailRecipientsByMessageId =
       getAutomatedEmailRecipientsByMessageId(automatedEmailRecipients);
 
-    const eventsByAutomatedEmailRecipientId = new Map<string, AutomatedEmailEvents>();
+    const eventsByAutomatedEmailRecipientId = new Map<
+      string,
+      AutomatedEmailRecipientTrackingData
+    >();
 
     for (const event of events) {
       if (!fetchData.lastEventTimestamp || event.timestamp > fetchData.lastEventTimestamp) {

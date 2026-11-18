@@ -1,4 +1,18 @@
 const commentsService = require('../../services/comments').default;
+const { rejectContentApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
+
+/**
+ * Deleted and hidden comments stay in public threads as placeholders while they have
+ * published replies, with their content withheld from the response. Restrict `filter`
+ * to the fields the Content API allows, so withheld content can't influence which
+ * comments are returned. `order` is restricted in the comments input serializer.
+ *
+ * @param {import('@tryghost/api-framework').Frame} frame
+ */
+function restrictPublicQueryOptions(frame) {
+  frame.options.mongoTransformer = rejectContentApiRestrictedFieldsTransformer;
+}
+
 const ALLOWED_INCLUDES = [
   'member',
   'replies',
@@ -31,6 +45,7 @@ const controller = {
     },
     permissions: false,
     query(frame) {
+      restrictPublicQueryOptions(frame);
       return commentsService.service.controller.browse(frame);
     },
   },
@@ -47,6 +62,7 @@ const controller = {
     },
     permissions: false,
     query(frame) {
+      restrictPublicQueryOptions(frame);
       return commentsService.service.controller.replies(frame);
     },
   },

@@ -1,5 +1,5 @@
 const PostsService = require('../../../../../core/server/services/posts/posts-service');
-const schema = require('../../../../../core/server/data/schema/schema');
+const schema = require('../../../../../core/server/data/schema/schema').default;
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');

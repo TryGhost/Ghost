@@ -2,7 +2,7 @@ const knex = require('knex').default;
 const assert = require('node:assert/strict');
 const moment = require('moment-timezone');
 const PostsStatsService = require('../../../../../core/server/services/stats/posts-stats-service');
-const logging = require('@tryghost/logging');
+const { createLoggingFake } = require('../../../../utils/logging-utils');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const {
   applyBetterSqlite3Patches,
@@ -38,6 +38,12 @@ const {
  */
 
 describe('PostsStatsService', function () {
+  let logging;
+
+  beforeEach(function () {
+    logging = createLoggingFake();
+  });
+
   /** @type {import('knex').Knex} */
   let db;
   let service;
@@ -517,14 +523,14 @@ describe('PostsStatsService', function () {
     const failingService = new PostsStatsService({ knex: failingKnex, logging });
     await assert.rejects(
       failingService.getNewsletterBasicStats(sendNewsletterId, { page: 1 }),
-      queryError,
+      (thrown) => thrown === queryError,
     );
     assert.deepEqual(await failingService.getNewsletterClickStats(sendNewsletterId, ['post-1']), {
       data: [],
     });
     await assert.rejects(
       failingService.getNewsletterClickStats(sendNewsletterId, ['post-1'], true),
-      queryError,
+      (thrown) => thrown === queryError,
     );
   });
 

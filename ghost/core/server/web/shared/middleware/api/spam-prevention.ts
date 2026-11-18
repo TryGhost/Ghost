@@ -30,10 +30,13 @@ const messages = {
   emailPreviewBlock: 'Only 10 test emails can be sent per hour',
   upgradeBlock: 'Too many update requests. Try again in a minute.',
   staffInviteBlock: 'Too many invitation requests. Try again in a minute.',
+  memberEmailUpdateBlock: 'Too many email change requests. Try again in an hour.',
+  presenceBlock: 'Too many presence requests. Try again in a few seconds.',
 };
 
 const TABLE = 'rate_limits';
 const CLEANUP_INTERVAL = 60 * 60 * 1000;
+const CLEANUP_BATCH = 500;
 
 let databaseFactory: LimiterFactory | undefined;
 let cleanupTimer: NodeJS.Timeout | undefined;
@@ -59,8 +62,38 @@ const memoryFactory: LimiterFactory = (options) => new RateLimiterMemory(options
 // required late, as before: loading db builds the knex instance
 const getDb = (): typeof import('../../../../data/db') => require('../../../../data/db');
 
-/** Deletes expired rows from every limiter. Runs hourly once a database limiter exists. */
-const clearExpired = () => getDb().knex(TABLE).where('expire', '<', Date.now()).del();
+/**
+ * Deletes expired rows from every limiter. Runs hourly once a database limiter exists.
+ *
+ * Reads the keys first, then deletes by primary key, so it locks rows in the
+ * same order as a limiter's upsert. A DELETE ranging over the expire index
+ * deadlocks with an upsert resetting the same expired row.
+ */
+const clearExpired = async () => {
+  const { knex } = getDb();
+
+  for (;;) {
+    const now = Date.now();
+    const keys: string[] = await knex(TABLE)
+      .where('expire', '<', now)
+      .limit(CLEANUP_BATCH)
+      .pluck('key');
+
+    if (keys.length === 0) {
+      return;
+    }
+
+    // MySQL may still pick the expire index for a short key list; the hint is a comment to SQLite
+    await knex.raw(
+      `DELETE /*+ NO_INDEX(${TABLE} ${TABLE}_expire_index) */ FROM ?? WHERE ?? IN (${keys.map(() => '?').join(', ')}) AND ?? < ?`,
+      [TABLE, 'key', ...keys, 'expire', now],
+    );
+
+    if (keys.length < CLEANUP_BATCH) {
+      return;
+    }
+  }
+};
 
 /**
  * Limiters over the `rate_limits` table, built lazily because loading db builds
@@ -127,21 +160,38 @@ const bodyField = (req: Request, field: string): string | undefined =>
 const emailKey = (email: unknown): string | undefined =>
   email ? String(email).trim().toLowerCase() : undefined;
 
+// Express routes match case-insensitively with an optional trailing slash, so each route gets one key
+const routeKey = (req: Request): string => `${req.path.toLowerCase().replace(/\/$/, '')}/`;
+
+/**
+ * The id of the member a verified identity token names, as set by the members
+ * `loadIdentityTokenMember` middleware, or undefined. Not the email, which the
+ * member can change to get a fresh budget.
+ */
+const memberIdentityKey = (req: Request): string | undefined =>
+  (req as Request & { identityTokenMemberId?: string | null }).identityTokenMemberId || undefined;
+
 /** A limiter for Admin requests that sets Retry-After when it blocks. */
 const requestBlock = (
   name: string,
   block: SpamBlock,
   errorOptions: ConstructorParameters<typeof errors.TooManyRequestsError>[0],
   keyOptions: Pick<LimiterOptions, 'key' | 'ignoreIP'> = {},
+  storage: { memory?: boolean } = {},
 ) =>
-  limiter(name, block, {
-    ...keyOptions,
-    onBlocked(retryAfterMs, res) {
-      res.set('Retry-After', String(Math.max(1, Math.ceil(retryAfterMs / 1000))));
+  limiter(
+    name,
+    block,
+    {
+      ...keyOptions,
+      onBlocked(retryAfterMs, res) {
+        res.set('Retry-After', String(Math.max(1, Math.ceil(retryAfterMs / 1000))));
 
-      return new errors.TooManyRequestsError({ ...errorOptions });
+        return new errors.TooManyRequestsError({ ...errorOptions });
+      },
     },
-  });
+    storage,
+  );
 
 // A staff user has one budget across IP addresses and Ghost instances.
 // Denied users cannot consume the owner or administrator budget.
@@ -166,6 +216,20 @@ const upgradeApiBlock = () =>
     help: 'Wait for Retry-After before retrying. Reuse the original idempotency_key for the same update.',
   });
 
+// A staff user has one budget across IP addresses. Kept in memory, not the
+// database: an open editor asks every ten seconds.
+const presenceBlock = () =>
+  requestBlock(
+    'presence',
+    'presence_block',
+    { message: messages.presenceBlock },
+    {
+      ignoreIP: true,
+      key: (req) => (req as Request & { user?: { id: string } }).user?.id,
+    },
+    { memory: true },
+  );
+
 // One budget for the whole site
 const staffInviteBlock = () =>
   requestBlock(
@@ -178,13 +242,25 @@ const staffInviteBlock = () =>
     { ignoreIP: true },
   );
 
+// Each request emails an address the member chooses, so a member has one
+// budget across IP addresses and email changes
+const memberEmailUpdateBlock = () =>
+  requestBlock(
+    'member_email_update',
+    'member_email_update',
+    {
+      message: messages.memberEmailUpdateBlock,
+    },
+    { ignoreIP: true, key: memberIdentityKey },
+  );
+
 // This locks a single endpoint based on excessive requests from an IP.
 // Currently only used for auth type methods.
 // We allow for a generous number of requests here to prevent communites on the same IP bing barred on account of a single user
 // Defaults to 50 attempts per hour and locks the endpoint for an hour
 const globalBlock = () =>
   limiter('globalBlock', 'global_block', {
-    key: (req) => req.path,
+    key: routeKey,
     onBlocked(retryAfterMs) {
       const { attempts, period } = quotedLimits('global_block');
 
@@ -198,7 +274,7 @@ const globalBlock = () =>
 
 const globalReset = () =>
   limiter('globalReset', 'global_reset', {
-    key: (req) => req.path,
+    key: routeKey,
     onBlocked(retryAfterMs) {
       const { attempts, period } = quotedLimits('global_reset');
 
@@ -338,9 +414,30 @@ const userVerification = () =>
     onBlocked: () => new errors.TooManyRequestsError({ message: tpl(messages.tooManyAttempts) }),
   });
 
+const userVerificationChallenge = () =>
+  limiter('userVerificationChallenge', 'user_verification_challenge', {
+    ignoreIP: true,
+    onBlocked: () =>
+      new errors.TooManyRequestsError({
+        message: 'Too many verification attempts. Please request a new code.',
+        code: 'STAFF_VERIFICATION_ATTEMPTS_RATE_LIMITED',
+      }),
+  });
+
 const sendVerificationCode = () =>
   limiter('sendVerificationCode', 'send_verification_code', {
     onBlocked: () => new errors.TooManyRequestsError({ message: tpl(messages.tooManyAttempts) }),
+  });
+
+// One verification-email budget per user, independent of IP or session.
+const verificationEmail = () =>
+  limiter('verificationEmail', 'send_verification_code_user', {
+    ignoreIP: true,
+    onBlocked: (retryAfterMs) =>
+      new errors.TooManyRequestsError({
+        message: `Too many verification emails requested, try again in ${waitText(retryAfterMs)}`,
+        context: tpl(messages.tooManyAttempts),
+      }),
   });
 
 // This protects a private blog from spam attacks. The defaults here allow 10 attempts per IP per hour
@@ -394,14 +491,19 @@ const reset = () => {
 
 const spamPrevention = {
   emailKey,
+  memberIdentityKey,
   upgradeBlock,
   upgradeApiBlock,
+  presenceBlock,
   staffInviteBlock,
+  memberEmailUpdateBlock,
   globalBlock,
   globalReset,
   userLogin,
   sendVerificationCode,
+  verificationEmail,
   userVerification,
+  userVerificationChallenge,
   membersAuth,
   membersAuthEnumeration,
   checkoutSessionGlobal,

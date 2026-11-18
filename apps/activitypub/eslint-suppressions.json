@@ -1,0 +1,76 @@
+{
+  "src/components/feed/feed-item-stats.tsx": {
+    "react-hooks/immutability": {
+      "count": 1
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/components/global/ap-avatar.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/components/global/follow-button.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/components/layout/onboarding/onboarding.tsx": {
+    "react-hooks/preserve-manual-memoization": {
+      "count": 1
+    }
+  },
+  "src/components/modals/new-note-modal.tsx": {
+    "react-hooks/immutability": {
+      "count": 1
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    }
+  },
+  "src/components/modals/search.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/hooks/use-activity-pub-queries.ts": {
+    "react-hooks/preserve-manual-memoization": {
+      "count": 2
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/hooks/use-sensitive-media-disclosure.ts": {
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    }
+  },
+  "src/lib/feature-flags.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/views/inbox/components/inbox-list.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/views/preferences/components/bluesky-sharing.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/views/preferences/components/domain.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/views/profile/components/unblock-dialog.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  }
+}

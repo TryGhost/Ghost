@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import * as security from '@tryghost/security';
-// @ts-expect-error This module lacks type definitions.
 import passwordreset from '../../../../core/server/auth/passwordreset';
 // @ts-expect-error This module lacks type definitions.
 import models from '../../../../core/server/models';
@@ -26,6 +25,7 @@ describe('Password reset token compatibility', function () {
     read: sinon.SinonStub<[object], Promise<{ settings: { value: string }[] }>>;
   };
   let replacementHash: string;
+  let credentialHash: string;
   let changePassword: sinon.SinonStub;
 
   beforeEach(async function () {
@@ -33,7 +33,8 @@ describe('Password reset token compatibility', function () {
     user = new models.User({
       id: '000000000000000000000001',
       email,
-      password: passwordHash,
+      // The credential row holds the hash, as after the backfill
+      password: '!',
       status: 'active',
     });
     settingsAPI = {
@@ -43,11 +44,26 @@ describe('Password reset token compatibility', function () {
     };
     sinon.stub(models.User, 'getByEmail').resolves(user);
     sinon.stub(models.User.prototype, 'fetch').resolves(user);
+    credentialHash = passwordHash;
+    // A Knex stand-in for the credential row
+    const credentialRow = () => {
+      const query = {
+        where: () => query,
+        first: () => query,
+        forUpdate: () => query,
+        then: (resolve: (row: { password: string }) => unknown) =>
+          resolve({ password: credentialHash }),
+      };
+      return query;
+    };
+    sinon.stub(ghostBookshelf, 'knex').value(credentialRow);
     sinon
       .stub(ghostBookshelf, 'transaction')
-      .callsFake(async (callback: (transaction: object) => Promise<unknown>) => callback({}));
+      .callsFake(async (callback: (transaction: object) => Promise<unknown>) =>
+        callback(credentialRow),
+      );
     changePassword = sinon.stub(models.User, 'changePassword').callsFake(async () => {
-      user.set('password', replacementHash);
+      credentialHash = replacementHash;
       return user;
     });
     sinon.stub(user, 'save').resolves(user);
@@ -79,6 +95,7 @@ describe('Password reset token compatibility', function () {
       },
     };
     const parts = security.tokens.resetToken.extract({ token: legacyToken });
+    assert.ok(parts);
     const result = await passwordreset.doReset(options, parts, settingsAPI);
     assert.equal(result.user, user);
     sinon.assert.calledOnce(changePassword);
@@ -86,23 +103,21 @@ describe('Password reset token compatibility', function () {
       security.tokens.resetToken.compare({
         token: legacyToken,
         dbHash,
-        passwordHash: user.get('password'),
+        passwordHash: credentialHash,
       }),
       { correct: false, reason: 'invalid' },
     );
   });
 
   it('rejects a token through Ghost if the stored password hash has changed', async function () {
-    user.set('password', replacementHash);
+    credentialHash = replacementHash;
     const options = {
       data: { password_reset: [{ token: legacyToken, newPassword: 'replacement-test-only' }] },
     };
+    const parts = security.tokens.resetToken.extract({ token: legacyToken });
+    assert.ok(parts);
     await assert.rejects(
-      passwordreset.doReset(
-        options,
-        security.tokens.resetToken.extract({ token: legacyToken }),
-        settingsAPI,
-      ),
+      passwordreset.doReset(options, parts, settingsAPI),
       /Cannot reset password/,
     );
     sinon.assert.notCalled(changePassword);

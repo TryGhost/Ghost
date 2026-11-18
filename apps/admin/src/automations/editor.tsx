@@ -86,11 +86,11 @@ const getTriggerErrors = (
   }
   if (triggerType === 'paid_subscription_changed') {
     return hasMissingTierSelection(subscriptionChangedSelectionFromRules(automation.trigger_rules))
-      ? { [TRIGGER_CANVAS_ID]: 'Select at least one tier.' }
+      ? { [TRIGGER_CANVAS_ID]: 'Select one or more tiers' }
       : {};
   }
   return !automation.trigger_rules.length
-    ? { [TRIGGER_CANVAS_ID]: 'Select at least one paid tier.' }
+    ? { [TRIGGER_CANVAS_ID]: 'Select one or more tiers' }
     : {};
 };
 
@@ -162,6 +162,7 @@ const AutomationEditorContent: React.FC<{
     });
   }, []);
   const [actionErrors, setActionErrors] = React.useState<Record<string, string>>({});
+  const [validationAttempt, setValidationAttempt] = React.useState(0);
 
   // Keep the saved snapshot separate from the live query result. Later query updates or errors
   // must not redefine the dirty state or overwrite edits made during this editing session.
@@ -196,20 +197,14 @@ const AutomationEditorContent: React.FC<{
     labelData &&
     !labelData.labels.some((label) => label.slug === labelSelection),
   );
-  React.useEffect(() => {
-    setActionErrors((oldErrors) => {
-      if (isLabelMissing) {
-        return { ...oldErrors, [TRIGGER_CANVAS_ID]: DELETED_LABEL_MESSAGE };
-      }
-      // Clears it once the label resolves, without touching other trigger errors.
-      if (oldErrors[TRIGGER_CANVAS_ID] !== DELETED_LABEL_MESSAGE) {
-        return oldErrors;
-      }
-      return Object.fromEntries(
-        Object.entries(oldErrors).filter(([stepId]) => stepId !== TRIGGER_CANVAS_ID),
-      );
-    });
-  }, [isLabelMissing]);
+  // Shown as soon as it's known, and gone once another label is picked.
+  const canvasErrors = React.useMemo(
+    () =>
+      isLabelMissing
+        ? { ...actionErrors, [TRIGGER_CANVAS_ID]: DELETED_LABEL_MESSAGE }
+        : actionErrors,
+    [actionErrors, isLabelMissing],
+  );
   React.useEffect(() => {
     if (!automation) {
       return;
@@ -324,6 +319,7 @@ const AutomationEditorContent: React.FC<{
       setActionErrors(nextActionErrors);
       setEditState({ phase: 'idle' });
       setValidationFeedback(action);
+      setValidationAttempt((attempt) => attempt + 1);
       return false;
     }
 
@@ -647,8 +643,8 @@ const AutomationEditorContent: React.FC<{
       />
 
       <AutomationCanvas
-        actionErrors={actionErrors}
         automation={draft}
+        canvasErrors={canvasErrors}
         initialSidebar={
           creation
             ? 'closed'
@@ -665,6 +661,7 @@ const AutomationEditorContent: React.FC<{
         savedTriggerTierIds={savedTriggerTierIds}
         selectedRunId={selectedRunId}
         triggerType={triggerType}
+        validationAttempt={validationAttempt}
         onChange={onDraftChange}
         onSelectRun={setSelectedRunId}
         onWaitValidityChange={onWaitValidityChange}

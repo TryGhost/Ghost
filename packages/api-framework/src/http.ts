@@ -8,12 +8,15 @@ import type { ControllerMethod } from './pipeline.ts';
 const debug = createDebug('http');
 
 export interface GhostRequest {
+  /** The request's principal, set by Ghost's auth middleware */
+  auth?: { kind: string };
   api_key?: { get(key: string): string | null | undefined };
   body?: Dictionary;
   file?: unknown;
   files?: unknown[];
   frameOptions?: { docName: string | null | undefined; method: string | null };
   get(name: string): string | undefined;
+  ip?: string;
   member?: unknown;
   originalUrl?: string;
   params?: Dictionary;
@@ -46,14 +49,19 @@ export type HttpHandler = (
  * The wrapper receives the express request, prepares the frame and forwards the request to the pipeline.
  *
  * @param {import('@tryghost/api-framework').Controller} apiImpl - Pipeline wrapper, which executes the target ctrl function.
- * @return {import('express').RequestHandler}
+ * @return {HttpHandler}
  */
-const http = (apiImpl: ControllerMethod & ((frame: Frame) => unknown)): HttpHandler => {
+const http = (
+  apiImpl: Pick<
+    ControllerMethod,
+    'schema' | 'options' | 'data' | 'headers' | 'statusCode' | 'response'
+  > &
+    ((frame: Frame) => unknown),
+): HttpHandler => {
   /**
-   * @param {import('express').Request} req - Express request object.
-   * @param {import('express').Response} res - Express response object.
-   * @param {import('express').NextFunction} next - Express next function.
-   * @returns {Promise<import('express').RequestHandler>}
+   * @param req - Express request object.
+   * @param res - Express response object.
+   * @param next - Express next function.
    */
   return async function Http(req: GhostRequest, res: GhostResponse, next: GhostNextFunction) {
     debug(`External API request to ${req.url}`);
@@ -86,6 +94,8 @@ const http = (apiImpl: ControllerMethod & ((frame: Frame) => unknown)): HttpHand
       params: req.params,
       user: req.user,
       session: req.session,
+      ip: req.ip,
+      userAgent: req.get('user-agent'),
       url: {
         host: req.vhost ? req.vhost.host : (req.get('host') ?? ''),
         pathname: parseUrl(req.originalUrl || req.url).pathname,
@@ -96,13 +106,17 @@ const http = (apiImpl: ControllerMethod & ((frame: Frame) => unknown)): HttpHand
         user: user,
         integration: integration,
         member: req.member || null,
+        principal: req.auth ?? null,
       },
     });
 
-    frame.configure({
-      options: apiImpl.options,
-      data: apiImpl.data,
-    });
+    frame.configure(
+      {
+        options: apiImpl.options,
+        data: apiImpl.data,
+      },
+      { deferBodyClone: Boolean(apiImpl.schema) },
+    );
 
     try {
       const result = await apiImpl(frame);

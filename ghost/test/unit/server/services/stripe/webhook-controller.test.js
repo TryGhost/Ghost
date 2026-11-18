@@ -1,6 +1,16 @@
 const sinon = require('sinon');
+const Stripe = require('stripe');
 const logging = require('@tryghost/logging');
 const WebhookController = require('../../../../../core/server/services/stripe/webhook-controller');
+const { createTracer } = require('../../../../../core/server/lib/tracing/create-tracer');
+const { createMeter } = require('../../../../../core/server/lib/tracing/create-meter');
+const { stripeTracking } = require('../../../../../core/server/services/stripe/tracking');
+
+const shipNothing = { transport: { metric: async () => null }, logging: { error() {} } };
+const tracking = stripeTracking({
+  tracer: createTracer(shipNothing),
+  meter: createMeter(shipNothing),
+});
 
 describe('WebhookController', function () {
   let controller;
@@ -15,6 +25,8 @@ describe('WebhookController', function () {
       checkoutSessionEventService: { handleEvent: sinon.stub(), handleDonationEvent: sinon.stub() },
       chargeRefundedEventService: { handleEvent: sinon.stub() },
       webhookManager: { parseWebhook: sinon.stub() },
+      tracking,
+      sentry: { captureException: sinon.stub() },
     };
 
     controller = new WebhookController(deps);
@@ -243,6 +255,61 @@ describe('WebhookController', function () {
 
     sinon.assert.calledWith(res.writeHead, 500);
     sinon.assert.called(res.end);
+  });
+
+  it('reports an event it failed to handle to Sentry', async function () {
+    const failure = new Error('Unexpected error');
+    deps.webhookManager.parseWebhook.returns({
+      type: 'customer.subscription.created',
+      data: { object: { customer: 'cust_123' } },
+    });
+    deps.subscriptionEventService.handleSubscriptionEvent.throws(failure);
+
+    await controller.handle(req, res);
+
+    sinon.assert.calledOnceWithExactly(deps.sentry.captureException, failure);
+  });
+
+  it('doesn’t report an event that failed because Ghost lost access to the Stripe account', async function () {
+    deps.webhookManager.parseWebhook.returns({
+      type: 'customer.subscription.created',
+      data: { object: { customer: 'cust_123' } },
+    });
+
+    for (const failure of [
+      new Stripe.errors.StripeAuthenticationError({
+        message: 'Expired API Key provided',
+        code: 'platform_api_key_expired',
+        statusCode: 401,
+      }),
+      new Stripe.errors.StripePermissionError({
+        message: 'The provided key does not have the required permissions',
+        statusCode: 403,
+      }),
+    ]) {
+      deps.subscriptionEventService.handleSubscriptionEvent.throws(failure);
+      await controller.handle(req, res);
+      sinon.assert.calledWith(res.writeHead, failure.statusCode);
+    }
+
+    sinon.assert.notCalled(deps.sentry.captureException);
+  });
+
+  it('reports an event that failed because Stripe refused a request Ghost made', async function () {
+    const failure = new Stripe.errors.StripeInvalidRequestError({
+      message: 'Must provide customer or customer_account.',
+      statusCode: 400,
+    });
+    deps.webhookManager.parseWebhook.returns({
+      type: 'customer.subscription.created',
+      data: { object: { customer: 'cust_123' } },
+    });
+    deps.subscriptionEventService.handleSubscriptionEvent.throws(failure);
+
+    await controller.handle(req, res);
+
+    sinon.assert.calledOnceWithExactly(res.writeHead, 400);
+    sinon.assert.calledOnceWithExactly(deps.sentry.captureException, failure);
   });
 
   it('should handle charge.refunded event', async function () {

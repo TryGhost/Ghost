@@ -6,7 +6,20 @@ const apiMw = require('../../middleware');
 const mw = require('./middleware');
 const labs = require('../../../../../shared/labs');
 
+// Better Auth loads only under its engine
+function betterAuthAdminOrigin() {
+  const { requireAdminOrigin } = require('../../../../auth/better-auth/session-controller');
+  const urlUtils = require('../../../../../shared/url-utils').default;
+  return requireAdminOrigin({
+    getOriginOfRequest: auth.session.getOriginOfRequest,
+    getAdminOrigin: () => urlUtils.getAdminOrigin(),
+  });
+}
+
 const shared = require('../../../shared');
+
+// Chosen once at load, as in auth/authenticate.ts
+const isBetterAuth = auth.isBetterAuth;
 
 /**
  * @returns {import('express').Router}
@@ -207,9 +220,10 @@ module.exports = function apiRoutes() {
   metafieldsRouter.get('/:namespace/:key', http(api.membersMetafields.read));
   metafieldsRouter.get('/:namespace/:key/values', http(api.membersMetafields.browseValues));
 
-  // Changing one needs the feature to exist in this build, and a 404 says it doesn't. Who may
-  // change a namespace's fields, and whether its limits let them, is the namespace's own
-  // policy, which the endpoints and the service apply.
+  // Changing one needs custom fields to be switched on, and a 404 says they aren't. They are
+  // released, so only a flag switched off from outside the site says that. Who may change a
+  // namespace's fields, and whether its limits let them, is the namespace's own policy, which
+  // the endpoints and the service apply.
   metafieldsRouter.use(labs.enabledMiddleware('membersCustomFields'));
 
   metafieldsRouter.post('/:namespace', http(api.membersMetafields.add));
@@ -406,6 +420,20 @@ module.exports = function apiRoutes() {
   // ## Slack
   router.post('/slack/test', mw.authAdminApi, http(api.slack.sendTest));
 
+  // ## Presence
+  router.post(
+    '/presence',
+    mw.authAdminApi,
+    shared.middleware.rateLimiting.presenceLimiter,
+    http(api.presence.poll),
+  );
+  router.post(
+    '/presence/leave',
+    mw.authAdminApi,
+    shared.middleware.rateLimiting.presenceLimiter,
+    http(api.presence.leave),
+  );
+
   // ## Tinybird
   router.get('/tinybird/token', mw.authAdminApi, http(api.tinybird.token));
 
@@ -445,7 +473,9 @@ module.exports = function apiRoutes() {
   router.put(
     '/authentication/password_reset',
     shared.middleware.rateLimiting.globalBlock,
-    auth.session.initSession,
+    // Better Auth sets its own session cookie in the controller, which can't
+    // check the origin as the legacy session does
+    ...(isBetterAuth ? [betterAuthAdminOrigin()] : [auth.session.initSession]),
     http(api.authentication.resetPassword),
   );
   router.post('/authentication/invitation', http(api.authentication.acceptInvitation));

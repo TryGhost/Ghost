@@ -50,8 +50,10 @@ module.exports = function accountRoutes() {
 
   // The fields a publisher has defined, which a member's client renders inputs
   // from. Under the account because a member reads them to fill in their own, and
-  // refused to an unknown caller because what a publisher collects is their
-  // configuration rather than something the site announces.
+  // refused to an unknown caller because how a publisher asks for each, its name,
+  // type and options, is their configuration rather than something the site
+  // announces. Tiers name a field members can read when a checkout saves into it,
+  // but only by its key.
   router.get(
     '/metafields/:namespace',
     middleware.rejectWhenAnonymous,

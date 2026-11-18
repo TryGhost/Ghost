@@ -11,6 +11,7 @@ import type {
 import type { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import {
   Button,
+  FieldError,
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
@@ -159,11 +160,7 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
           onRemove={(removedId) => updateTiers(tierIds.filter((tierId) => tierId !== removedId))}
         />
       )}
-      {errorMessage && (
-        <Text as="p" className="text-destructive" id={`${id}-error`} role="alert" size="sm">
-          {errorMessage}
-        </Text>
-      )}
+      {errorMessage && <FieldError id={`${id}-error`}>{errorMessage}</FieldError>}
     </Stack>
   );
 };
@@ -256,11 +253,7 @@ const SubscriptionChangedPicker: React.FC<{ trigger: TriggerData; errorMessage?:
           </Text>
         )}
       </Stack>
-      {errorMessage && (
-        <Text as="p" className="text-destructive" id={`${id}-error`} role="alert" size="sm">
-          {errorMessage}
-        </Text>
-      )}
+      {errorMessage && <FieldError id={`${id}-error`}>{errorMessage}</FieldError>}
     </Stack>
   );
 };
@@ -362,11 +355,7 @@ const LabelAddedPicker: React.FC<{
         }}
         onSearchChange={onSearchChange}
       />
-      {errorMessage && (
-        <Text as="p" className="text-destructive" id={`${id}-error`} role="alert" size="sm">
-          {errorMessage}
-        </Text>
-      )}
+      {errorMessage && <FieldError id={`${id}-error`}>{errorMessage}</FieldError>}
     </Stack>
   );
 };
@@ -402,6 +391,18 @@ function getTriggerPresentation(trigger: TriggerData, errorMessage?: string) {
         content: (
           <Text as="p" size="md" tone="secondary">
             Triggered when someone signs up as a free member
+          </Text>
+        ),
+      };
+    // PROTOTYPE ONLY (NY-1750): main's real label trigger. The prototype uses its own
+    // (`labelSelection` above), so this only names it. Don't merge.
+    case 'label_added':
+      return {
+        title: 'Label added',
+        Icon: LucideIcon.Tag,
+        content: (
+          <Text as="p" size="md" tone="secondary">
+            Triggered when a label is added to a member
           </Text>
         ),
       };

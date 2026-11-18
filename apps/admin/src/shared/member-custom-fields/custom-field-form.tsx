@@ -30,6 +30,7 @@ import {
 } from '@/shared/member-custom-fields/custom-field-form-context';
 import type { FieldType, SetSettings } from '@tryghost/metafield-types/structure';
 import type {
+  CreatableMemberCustomFieldTypes,
   MemberCustomFieldAccess,
   MemberCustomFieldUserType,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -168,14 +169,15 @@ function TypeSelect({
 }
 
 /**
- * The type a new field is made as, chosen from `types`. A place that offers one type pins it,
- * still shown so what is being made is never a surprise.
+ * The type a new field is made as, chosen from `types`, which only lists types this site can
+ * create a field with. A place that offers one type pins it, still shown so what is being made is
+ * never a surprise.
  */
 export function TypeField({
   types,
   problem,
 }: {
-  types: readonly MemberCustomFieldUserType[];
+  types: CreatableMemberCustomFieldTypes;
   /** Why the chosen type can't be made here, such as a list from a column with too many answers. */
   problem?: string;
 }) {

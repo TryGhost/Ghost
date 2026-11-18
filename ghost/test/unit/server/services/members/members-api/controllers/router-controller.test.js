@@ -4,11 +4,14 @@ const errors = require('@tryghost/errors');
 
 const RouterController = require('../../../../../../../core/server/services/members/members-api/controllers/router-controller');
 const { createTracer } = require('../../../../../../../core/server/lib/tracing/create-tracer');
+const { createMeter } = require('../../../../../../../core/server/lib/tracing/create-meter');
 const { stripeTracking } = require('../../../../../../../core/server/services/stripe/tracking');
 
-const tracking = stripeTracking(
-  createTracer({ transport: { metric: async () => null }, logging: { error() {} } }),
-);
+const shipNothing = { transport: { metric: async () => null }, logging: { error() {} } };
+const tracking = stripeTracking({
+  tracer: createTracer(shipNothing),
+  meter: createMeter(shipNothing),
+});
 
 describe('RouterController', function () {
   let offersAPI;
@@ -99,6 +102,7 @@ describe('RouterController', function () {
       getMembersSupportAddress: sinon.stub().returns('noreply@example.com'),
       arePaidMembersEnabled: sinon.stub().returns(true),
       areDonationsEnabled: sinon.stub().returns(true),
+      isMembersInviteOnly: sinon.stub().returns(false),
     };
   });
 
@@ -1368,6 +1372,31 @@ describe('RouterController', function () {
         }
       });
 
+      it('throws DisabledFeatureError on invite-only sites', async function () {
+        const controller = createGiftController({
+          tiersService: paidTierService(),
+          settingsHelpers: {
+            ...settingsHelpers,
+            isMembersInviteOnly: sinon.stub().returns(true),
+          },
+        });
+
+        await assert.rejects(
+          controller.createCheckoutSession(
+            {
+              body: { type: 'gift', tierId: 'tier_123', cadence: 'month', metadata: {} },
+            },
+            mockRes,
+          ),
+          (error) => {
+            assert(error instanceof errors.DisabledFeatureError);
+            assert.equal(error.message, 'This site is invite-only, contact the owner for access.');
+            return true;
+          },
+        );
+        sinon.assert.notCalled(giftService.service.startCheckout);
+      });
+
       it('does not block paid members from purchasing gifts', async function () {
         const controller = createGiftController({
           tiersService: paidTierService(),
@@ -2530,6 +2559,83 @@ describe('RouterController', function () {
           sendEmailWithMagicLinkStub.firstCall.args[0].tokenData.giftToken,
           'gift-token-123',
         );
+      });
+
+      describe('on restricted signup sites', function () {
+        const createRestrictedController = (signupAccess, blockedEmailDomains = []) => {
+          const get = sinon.stub();
+          get.withArgs('all_blocked_email_domains').returns(blockedEmailDomains);
+          get.withArgs('members_signup_access').returns(signupAccess);
+          giftService.service.getRedeemable = sinon.stub().resolves({});
+
+          return createRouterController({
+            allowSelfSignup: sinon.stub().returns(false),
+            giftService,
+            settingsCache: { get },
+          });
+        };
+
+        it('sends the signup link for a redeemable gift on a paid-members-only site', async function () {
+          const controller = createRestrictedController('paid');
+
+          await controller.sendMagicLink(req, res);
+
+          sinon.assert.calledOnceWithExactly(giftService.service.getRedeemable, {
+            token: 'gift-token-123',
+            memberStatus: null,
+          });
+          sinon.assert.calledOnce(sendEmailWithMagicLinkStub);
+          assert.equal(
+            sendEmailWithMagicLinkStub.firstCall.args[0].tokenData.giftToken,
+            'gift-token-123',
+          );
+        });
+
+        it('rejects a gift that cannot be redeemed on a paid-members-only site', async function () {
+          const controller = createRestrictedController('paid');
+          giftService.service.getRedeemable.rejects(
+            new errors.BadRequestError({ message: 'This gift has already been redeemed.' }),
+          );
+
+          await assert.rejects(controller.sendMagicLink(req, res), {
+            message: 'This gift has already been redeemed.',
+          });
+          sinon.assert.notCalled(sendEmailWithMagicLinkStub);
+        });
+
+        it('rejects a blocked email domain before looking up the gift on a paid-members-only site', async function () {
+          const controller = createRestrictedController('paid', ['example.com']);
+          giftService.service.getRedeemable.rejects(
+            new errors.NotFoundError({ message: 'Gift not found.' }),
+          );
+
+          await assert.rejects(controller.sendMagicLink(req, res), {
+            message: 'Signups from this email domain are currently restricted.',
+          });
+          sinon.assert.notCalled(giftService.service.getRedeemable);
+          sinon.assert.notCalled(sendEmailWithMagicLinkStub);
+        });
+
+        it('still rejects paid-members-only signups without a gift', async function () {
+          const controller = createRestrictedController('paid');
+          delete req.body.giftToken;
+
+          await assert.rejects(controller.sendMagicLink(req, res), {
+            message: 'This site only accepts paid members.',
+          });
+          sinon.assert.notCalled(giftService.service.getRedeemable);
+          sinon.assert.notCalled(sendEmailWithMagicLinkStub);
+        });
+
+        it('still rejects gift signups on an invite-only site', async function () {
+          const controller = createRestrictedController('invite');
+
+          await assert.rejects(controller.sendMagicLink(req, res), {
+            message: 'This site is invite-only, contact the owner for access.',
+          });
+          sinon.assert.notCalled(giftService.service.getRedeemable);
+          sinon.assert.notCalled(sendEmailWithMagicLinkStub);
+        });
       });
 
       it('forwards giftToken for signin flows', async function () {

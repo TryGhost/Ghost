@@ -25,6 +25,22 @@ export type ListedCustomField = Pick<MetafieldDefinition, 'name' | 'access'> & {
 export type MemberCustomField = Omit<ListedCustomField, 'type' | 'settings'> & TypedSettings;
 
 /**
+ * Something a form asks a member for: the name its inputs are labelled with, the kind of answer it
+ * takes, and whether the member may change it or only see it.
+ */
+export type FieldInput = Pick<MemberCustomField, 'key' | 'name'> &
+  TypedSettings & {
+    readOnly: boolean;
+    /** The countries a member may choose from, when fewer than every country. */
+    countries?: readonly string[] | undefined;
+  };
+
+/** A field the publisher opened to members, as a form asks for it: theirs to change if they may write it. */
+export function fieldInput(field: MemberCustomField): FieldInput {
+  return { ...field, readOnly: field.access.member !== 'write' };
+}
+
+/**
  * Whether a listed field is of a type this build knows. Only the type is checked: the rest is read
  * as the site's own Ghost sends it, which lists a field with the settings its type takes.
  */
@@ -91,12 +107,12 @@ export type PartsByName = Readonly<Record<string, string | undefined>>;
  * field they may write, and everything they hold, for one they may only see.
  */
 export function customFieldTexts(
-  fields: MemberCustomField[],
+  fields: FieldInput[],
   held: Record<string, unknown>,
 ): Record<string, CustomFieldValue> {
   return Object.fromEntries(
     fields.map((field) => {
-      const textOf = field.access.member === 'write' ? formTextOf : heldTextOf;
+      const textOf = field.readOnly ? heldTextOf : formTextOf;
       return [field.key, textOf(shaped(field), held[field.key])];
     }),
   );
@@ -124,13 +140,13 @@ export const listValue = (value: CustomFieldValue): string[] => (Array.isArray(v
  * touched the list.
  */
 export function changedCustomFields(
-  fields: MemberCustomField[],
+  fields: FieldInput[],
   values: Record<string, CustomFieldValue>,
   original: Record<string, unknown>,
 ): { custom: Record<string, FieldWrite | null> } | undefined {
   const custom: Record<string, FieldWrite | null> = {};
 
-  for (const field of fields.filter((f) => f.access.member === 'write')) {
+  for (const field of fields.filter((f) => !f.readOnly)) {
     const change = formWrite(shaped(field), values[field.key], original[field.key]);
     if (change !== undefined) {
       custom[field.key] = change;
@@ -147,7 +163,10 @@ export function changedCustomFields(
  * Marking an input that isn't on the page would hide the refusal, so the caller shows these in the
  * notification instead.
  */
-export function refusedInput(field: MemberCustomField, part: string): string | null {
+export function refusedInput(
+  field: Pick<FieldInput, 'key'> & TypedSettings,
+  part: string,
+): string | null {
   return matchShape<string | null>(field.type, {
     scalar: () => (part === '' ? `custom:${field.key}` : null),
     record: ({ parts }) =>

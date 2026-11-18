@@ -1,4 +1,8 @@
+const omit = require('lodash/omit');
 const statsService = require('../../services/stats').default;
+
+// Every staff user sees the same stats, and permissions run before the cache
+const cacheOptions = (frame) => omit(frame.options, 'context');
 
 // The API pipeline keeps each method's cache by reference when it builds the
 // controller, before boot initializes Stats. Resolve the optional stats cache
@@ -45,7 +49,7 @@ const controller = {
     generateCacheKeyData(frame) {
       return {
         method: 'memberCountHistory',
-        options: frame.options,
+        options: cacheOptions(frame),
       };
     },
     async query(frame) {
@@ -67,7 +71,7 @@ const controller = {
     generateCacheKeyData(frame) {
       return {
         method: 'mrr',
-        options: frame.options,
+        options: cacheOptions(frame),
       };
     },
     async query(frame) {
@@ -99,8 +103,9 @@ const controller = {
       cacheInvalidate: false,
     },
     data: ['id'],
+    // Returns MRR, so it needs the same permission as the mrr endpoint
     permissions: {
-      docName: 'posts',
+      docName: 'members',
       method: 'browse',
     },
     cache: statsCache,
@@ -143,7 +148,7 @@ const controller = {
     generateCacheKeyData(frame) {
       return {
         method: 'topContent',
-        options: frame.options,
+        options: cacheOptions(frame),
       };
     },
     async query(frame) {
@@ -155,8 +160,9 @@ const controller = {
       cacheInvalidate: false,
     },
     options: ['order', 'limit', 'date_from', 'date_to', 'timezone', 'post_type'],
+    // Returns MRR, so it needs the same permission as the mrr endpoint
     permissions: {
-      docName: 'posts',
+      docName: 'members',
       method: 'browse',
     },
     cache: statsCache,
@@ -332,8 +338,9 @@ const controller = {
         },
       },
     },
+    // Returns MRR, so it needs the same permission as the mrr endpoint
     permissions: {
-      docName: 'posts',
+      docName: 'members',
       method: 'browse',
     },
     cache: statsCache,
@@ -362,8 +369,9 @@ const controller = {
         },
       },
     },
+    // Returns MRR, so it needs the same permission as the mrr endpoint
     permissions: {
-      docName: 'posts',
+      docName: 'members',
       method: 'browse',
     },
     cache: statsCache,
@@ -486,8 +494,9 @@ const controller = {
       cacheInvalidate: false,
     },
     options: ['order', 'limit', 'date_from', 'date_to', 'timezone', 'member_status'],
+    // Returns MRR, so it needs the same permission as the mrr endpoint
     permissions: {
-      docName: 'posts',
+      docName: 'members',
       method: 'browse',
     },
     cache: statsCache,

@@ -7,11 +7,13 @@ import type ProcessWebmentionJob from '../../../../../core/server/services/menti
 const JOBS_SERVICE_PATH = '../../../../../core/server/services/jobs-service';
 const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
 const logging = require('@tryghost/logging');
+const { createLoggingFake } = require('../../../../utils/logging-utils');
 const MentionController = require('../../../../../core/server/services/mentions/mention-controller');
 const ProcessWebmentionJobClass =
   require('../../../../../core/server/services/mentions/process-webmention-job').default;
 
 describe('jobs-service retained consumers', function () {
+  let controllerLogging: ReturnType<typeof createLoggingFake>;
   let jobsService: typeof import('../../../../../core/server/services/jobs-service');
   let backend: InMemoryJobsBackend;
   let previousModule: NodeModule | undefined;
@@ -38,6 +40,8 @@ describe('jobs-service retained consumers', function () {
     jobsService = require(JOBS_SERVICE_PATH);
     backend = new InMemoryJobsBackend();
     sinon.stub(adapterManager, 'getAdapter').withArgs('jobs').returns(backend);
+    // Built first: the helper reads the GhostLogger class that this stub replaces.
+    controllerLogging = createLoggingFake();
     sinon.stub(logging);
   });
 
@@ -57,7 +61,7 @@ describe('jobs-service retained consumers', function () {
     const service = jobsService.init(initArgs);
     const api = { processWebmention: sinon.stub().resolves() };
     const controller = new MentionController({
-      logging,
+      logging: controllerLogging,
       api,
       jobsService: service,
       mentionResourceService: { getByID: sinon.stub() },
@@ -127,5 +131,6 @@ describe('jobs-service retained consumers', function () {
       },
     ]);
     sinon.assert.notCalled(logging.error);
+    sinon.assert.notCalled(controllerLogging.error);
   });
 });

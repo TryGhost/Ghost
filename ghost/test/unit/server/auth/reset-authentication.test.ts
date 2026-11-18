@@ -205,4 +205,62 @@ describe('resetAuthentication', function () {
 
     assert.equal(sessionsWipedBeforeReschedule, true);
   });
+
+  it('revokes Better Auth sessions after the legacy ones, before rescheduling', async function () {
+    const env = buildAuthDomain({
+      apiKeysToRotate: 1,
+      usersToLock: 1,
+      currentKey: { id: 'k', secret: 's' },
+    });
+    const deferred = () => {
+      let resolve!: () => void;
+      const promise = new Promise<void>((r) => {
+        resolve = r;
+      });
+      return { promise, resolve };
+    };
+    const legacy = deferred();
+    const betterAuth = deferred();
+    const started = { legacy: deferred(), betterAuth: deferred() };
+    let betterAuthStarted = false;
+    let rescheduleStarted = false;
+
+    const reset = resetAuthentication({
+      schedulerAdapter: {
+        rescheduleAll: async () => {
+          rescheduleStarted = true;
+        },
+      },
+      userService: env.userService,
+      options: { context: { user: 'user-1' } },
+      models: env.models,
+      internalKeys: env.internalKeys,
+      deleteAllSessions: () => {
+        started.legacy.resolve();
+        return legacy.promise;
+      },
+      revokeAllSessions: () => {
+        betterAuthStarted = true;
+        started.betterAuth.resolve();
+        return betterAuth.promise;
+      },
+    });
+
+    await started.legacy.promise;
+    await new Promise((r) => {
+      setImmediate(r);
+    });
+    assert.equal(betterAuthStarted, false, 'waits for the legacy sessions to go');
+
+    legacy.resolve();
+    await started.betterAuth.promise;
+    await new Promise((r) => {
+      setImmediate(r);
+    });
+    assert.equal(rescheduleStarted, false, 'waits for the Better Auth sessions to go');
+
+    betterAuth.resolve();
+    await reset;
+    assert.equal(rescheduleStarted, true);
+  });
 });

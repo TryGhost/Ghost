@@ -89,10 +89,13 @@ export function watchHistory(
   const { history } = window;
   const { pushState, replaceState } = history;
   let route = currentRoute();
+  // A deferred link must not load after a newer move or the end of this watch.
+  let moves = 0;
   // The state the app gave each route, so following Admin back to one gives it back.
   const states = new Map<string, unknown>([[route, history.state]]);
 
   const report = (move: PathMove) => {
+    moves += 1;
     const next = currentRoute();
     states.set(next, history.state);
     if (next !== route) {
@@ -141,11 +144,17 @@ export function watchHistory(
       return;
     }
     event.preventDefault();
-    const go = () => load(url.href);
     const next = routeOf(url);
     if (!isContained(next)) {
       return;
     }
+    moves += 1;
+    const thisMove = moves;
+    const go = () => {
+      if (thisMove === moves) {
+        load(url.href);
+      }
+    };
     if (next === route) {
       go();
       return;
@@ -158,12 +167,14 @@ export function watchHistory(
 
   return {
     follow(path) {
+      moves += 1;
       route = path;
       const state = states.get(path) ?? null;
       replaceState.call(history, state, '', path);
       window.dispatchEvent(new PopStateEvent('popstate', { state }));
     },
     stop() {
+      moves += 1;
       if (history.pushState === push) {
         history.pushState = pushState;
       }

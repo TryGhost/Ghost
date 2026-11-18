@@ -35,14 +35,10 @@ const TriggerPicker: React.FC<{
   onPick: (trigger: PickedTrigger, cardTop: number) => void;
 }> = ({ automation, stripeEnabled, onPick }) => {
   const { dialogProps } = useUnsavedChangesGuard({ when: true });
-  const lifecycleTriggers = useFeatureFlag('automationsLifecycleTriggers');
   const isLeadMagnetsEnabled = useFeatureFlag('automationsLeadMagnets');
   const options: TriggerOption[] = [FREE_SIGNUP_OPTION];
   if (stripeEnabled) {
-    options.push(PAID_STARTED_OPTION);
-    if (lifecycleTriggers) {
-      options.push(SUBSCRIPTION_CHANGED_OPTION);
-    }
+    options.push(PAID_STARTED_OPTION, SUBSCRIPTION_CHANGED_OPTION);
   }
   if (isLeadMagnetsEnabled) {
     options.push(LABEL_ADDED_OPTION);
@@ -164,11 +160,16 @@ const NewAutomationSession: React.FC<
           setTriggerType(trigger);
           setInitialAutomation({
             ...initialAutomation,
-            trigger_rules: buildTriggerRules(
-              trigger === 'paid_subscription_changed'
-                ? { triggerType: trigger, selection: { from: [], to: [] } }
-                : { triggerType: trigger },
-            ),
+            // PROTOTYPE ONLY (NY-1750): main's `label_added` needs a label; the prototype
+            // never picks it. Don't merge.
+            trigger_rules:
+              trigger === 'label_added'
+                ? []
+                : buildTriggerRules(
+                    trigger === 'paid_subscription_changed'
+                      ? { triggerType: trigger, selection: { from: [], to: [] } }
+                      : { triggerType: trigger },
+                  ),
           });
         }}
       />

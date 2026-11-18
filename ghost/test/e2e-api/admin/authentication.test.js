@@ -3,9 +3,12 @@ const {
   fixtureManager,
   matchers,
   configUtils,
+  resetRateLimits,
 } = require('../../utils/e2e-framework');
 const { mockMail, restore } = require('../../utils/e2e-framework-mock-manager');
 const models = require('../../../core/server/models');
+const db = require('../../../core/server/data/db');
+const { passwordHashOf } = require('../../utils/password-hash');
 const mailService = require('../../../core/server/lib/mail');
 const security = require('@tryghost/security');
 const settingsCache = require('../../../core/shared/settings-cache');
@@ -120,7 +123,7 @@ describe('Authentication API', function () {
         expires: moment().add(1, 'days').valueOf(),
         email: ownerUser.email,
         dbHash: dbHash,
-        passwordHash: user.get('password'),
+        passwordHash: await passwordHashOf(user),
       });
       const encodedToken = security.url.encodeBase64(resetToken);
 
@@ -150,6 +153,78 @@ describe('Authentication API', function () {
 
       // Verify we can access protected resources (session is verified)
       await agent.get('/users/me/').expectStatus(200);
+    });
+
+    it("clears this IP's sign-in block and records the IP on the new session", async function () {
+      const globalRetries = configUtils.config.get('spam').global_block.freeRetries;
+      // Leave room for every request here, so only the userLogin limit blocks
+      configUtils.set('spam:global_block:freeRetries', 100);
+      await resetRateLimits();
+      try {
+        const ownerUser = fixtureManager.get('users', 0);
+        const newPassword = 'thisissupersafe-unblocked';
+        const signIn = (password) =>
+          agent
+            .post('session/')
+            .body({ grant_type: 'password', username: ownerUser.email, password });
+
+        agent.clearCookies();
+        // +1 because this is a retry count: one request plus the retries, then blocked
+        const attempts = configUtils.config.get('spam').user_login.freeRetries + 1;
+        for (let i = 0; i < attempts; i++) {
+          await signIn('wrong-password');
+        }
+        await signIn(newPassword).expectStatus(429);
+
+        const user = await models.User.getByEmail(ownerUser.email, { context: { internal: true } });
+        const resetToken = security.tokens.resetToken.generateHash({
+          expires: moment().add(1, 'days').valueOf(),
+          email: ownerUser.email,
+          dbHash: settingsCache.get('db_hash'),
+          passwordHash: await passwordHashOf(user),
+        });
+
+        const isBetterAuth = configUtils.config.get('auth:engine') === 'better-auth';
+        const earlierSessions = isBetterAuth
+          ? await db.knex('user_sessions').pluck('id')
+          : await db.knex('sessions').pluck('session_id');
+
+        // An ?ip= the client sends must not choose the IP
+        await agent
+          .put('authentication/password_reset/?ip=203.0.113.7')
+          .header('User-Agent', 'Reset Browser/1.0')
+          .body({
+            password_reset: [
+              {
+                token: security.url.encodeBase64(resetToken),
+                newPassword,
+                ne2Password: newPassword,
+              },
+            ],
+          })
+          .expectStatus(200);
+
+        if (isBetterAuth) {
+          const [resetSession] = await db
+            .knex('user_sessions')
+            .where({ user_id: user.id })
+            .whereNotIn('id', earlierSessions);
+          assert.match(resetSession.ip_address, /127\.0\.0\.1|::1/);
+          assert.equal(resetSession.user_agent, 'Reset Browser/1.0');
+        } else {
+          const [resetSession] = await db
+            .knex('sessions')
+            .where({ user_id: user.id })
+            .whereNotIn('session_id', earlierSessions);
+          assert.match(JSON.parse(resetSession.session_data).ip, /127\.0\.0\.1|::1/);
+        }
+
+        agent.clearCookies();
+        await signIn(newPassword).expectStatus(201);
+      } finally {
+        configUtils.set('spam:global_block:freeRetries', globalRetries);
+        await resetRateLimits();
+      }
     });
 
     describe('staff account status', function () {
@@ -192,7 +267,7 @@ describe('Authentication API', function () {
         });
         assert.equal(updatedUser.get('status'), 'active');
         assert.equal(
-          await security.password.compare(newPassword, updatedUser.get('password')),
+          await security.password.compare(newPassword, await passwordHashOf(updatedUser)),
           true,
         );
 
@@ -202,7 +277,7 @@ describe('Authentication API', function () {
 
       it('rejects a reset token issued before the user was suspended', async function () {
         const token = await requestResetToken();
-        const originalPassword = user.get('password');
+        const originalPassword = await passwordHashOf(user);
         await models.User.edit(
           { status: 'inactive' },
           { id: user.id, context: { internal: true } },
@@ -222,7 +297,7 @@ describe('Authentication API', function () {
           context: { internal: true },
         });
         assert.equal(suspendedUser.get('status'), 'inactive');
-        assert.equal(suspendedUser.get('password'), originalPassword);
+        assert.equal(await passwordHashOf(suspendedUser), originalPassword);
         await agent.get('/users/me/').expectStatus(403);
       });
     });

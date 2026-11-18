@@ -35,7 +35,7 @@ describe('findTargetProblem', () => {
   });
 
   it('accepts Shade as a dev dependency', () => {
-    const manifest = JSON.stringify({ devDependencies: { '@tryghost/shade': 'alpha' } });
+    const manifest = JSON.stringify({ devDependencies: { '@tryghost/shade': 'latest' } });
     expect(findTargetProblem(app, manifest, ['package.json', 'package-lock.json'])).toBeUndefined();
   });
 

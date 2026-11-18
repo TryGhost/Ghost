@@ -212,7 +212,7 @@
     "remark-gfm": "4.0.1",
     "storybook": "catalog:",
     "tailwindcss": "catalog:",
-    "tsc-alias": "1.8.17",
+    "tsc-alias": "1.9.10",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plugin-svgr": "catalog:",

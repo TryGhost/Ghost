@@ -1,4 +1,4 @@
-const { isPlainObject, omit } = require('lodash');
+const { isPlainObject, omit, pick } = require('lodash');
 const config = require('../../../../../shared/config');
 const settingsCache = require('../../../../../shared/settings-cache');
 const labs = require('../../../../../shared/labs');
@@ -66,6 +66,8 @@ module.exports = function getConfigProperties() {
     pintura: config.get('pintura'),
     signupForm: config.get('signupForm'),
     security: config.get('security'),
+    // Allowlisted, unlike `security`, which is exposed verbatim
+    auth: pick(config.get('auth'), ['engine']),
   };
 
   if (config.get('explore') && config.get('explore:testimonials_url')) {

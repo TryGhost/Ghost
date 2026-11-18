@@ -38,6 +38,7 @@ module.exports = class StripeService {
    * @param {object} deps
    * @param {*} deps.labs
    * @param {import('./tracking').StripeTracking} deps.tracking
+   * @param {{captureException(err: unknown): unknown}} deps.sentry
    * @param {*} deps.membersService
    * @param {*} deps.donationService
    * @param {*} deps.giftService
@@ -55,6 +56,7 @@ module.exports = class StripeService {
   constructor({
     labs,
     tracking,
+    sentry,
     membersService,
     donationService,
     giftService,
@@ -99,6 +101,7 @@ module.exports = class StripeService {
 
     const checkoutSessionEventService = new CheckoutSessionEventService({
       api,
+      tracking,
       get memberRepository() {
         return membersService.api.members;
       },
@@ -153,6 +156,8 @@ module.exports = class StripeService {
       invoiceEventService,
       checkoutSessionEventService,
       chargeRefundedEventService,
+      tracking,
+      sentry,
     });
 
     this.models = models;

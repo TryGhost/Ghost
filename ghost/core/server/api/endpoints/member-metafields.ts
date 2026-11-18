@@ -1,8 +1,9 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
-import { ADMIN, actingContext, booted } from '../../services/members-metafields';
+import { actingContext } from '../../lib/actor';
+import { ADMIN, booted } from '../../services/members-metafields';
 import { fieldRoute, namespaceRoute } from '../../services/members-metafields/serializers';
 
-const permissionsService = require('../../services/permissions');
+const permissionsService = require('../../auth/permissions');
 
 interface MemberMetafieldOptions {
   namespace: string;
@@ -122,14 +123,20 @@ const controller = {
     permissions(frame: WriteFrame) {
       return canManage(frame, 'edit', frame.options.key);
     },
-    query(frame: WriteFrame) {
-      const { namespace, key } = fieldRoute(frame.options);
-      return booted().definitions.edit(
+    async query(frame: WriteFrame) {
+      const field = fieldRoute(frame.options);
+      const edited = await booted().definitions.edit(
         actingContext(frame.options.context),
-        namespace,
-        key,
+        field.namespace,
+        field.key,
         frame.data.members_metafields[0],
       );
+      // Tiers list to anyone the field a port writes into while members can read it, so the site's
+      // cache is cleared when an edit starts or stops that for a field a port writes into.
+      if (edited.changedForMembers && (await booted().bindings.isBound(field))) {
+        frame.setHeader('X-Cache-Invalidate', '/*');
+      }
+      return edited.field;
     },
   },
 
@@ -142,8 +149,18 @@ const controller = {
       return canManage(frame, 'destroy', frame.options.key);
     },
     async query(frame: WriteFrame) {
-      const { namespace, key } = fieldRoute(frame.options);
-      await booted().definitions.destroy(actingContext(frame.options.context), namespace, key);
+      const field = fieldRoute(frame.options);
+      // Deleting a field deletes its bindings, and tiers list to anyone a requirement only while
+      // each of its ports is bound, so the site's cache is cleared when a port writes into it.
+      // Checked before the delete takes the bindings with it.
+      if (await booted().bindings.isBound(field)) {
+        frame.setHeader('X-Cache-Invalidate', '/*');
+      }
+      await booted().definitions.destroy(
+        actingContext(frame.options.context),
+        field.namespace,
+        field.key,
+      );
       return null;
     },
   },

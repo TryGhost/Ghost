@@ -22,6 +22,7 @@ describe('Admin API', function () {
   function assertMatchesFixture(fixtureId, response) {
     const user = response.users[0];
     const expected = fixtureManager.get('users', fixtureId);
+    assert.equal(user.id, expected.id);
     assert.equal(user.name, expected.name);
     assert.equal(user.email, expected.email);
     assert.equal(user.slug, expected.slug);
@@ -44,6 +45,34 @@ describe('Admin API', function () {
       // the admin token has permission to access /users
       await agent.loginAsAdmin();
       await agent.get('users').expectStatus(200);
+    });
+  });
+
+  describe('Key and session cookie together', function () {
+    afterEach(function () {
+      agent.resetAuthentication();
+    });
+
+    it('uses the key, ignoring the session cookie', async function () {
+      await agent.useStaffTokenForContributor();
+      const authorization = agent.defaults.headers.Authorization;
+      await agent.loginAsAdmin();
+
+      // The cookie alone is the admin, so the key below is what changes the caller
+      await agent
+        .get('users/me')
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assertMatchesFixture(1, body);
+        });
+
+      agent.defaults.headers.Authorization = authorization;
+      await agent
+        .get('users/me')
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assertMatchesFixture(4, body);
+        });
     });
   });
 

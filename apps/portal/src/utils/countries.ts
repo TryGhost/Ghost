@@ -51,6 +51,11 @@ function catalogue(language: string): Catalogue {
   return entry;
 }
 
+/** A country's name in the site's language, or its code where the browser can't name it. */
+export function countryName(code: string): string {
+  return catalogue(i18n.language || 'en').name(code);
+}
+
 /**
  * The countries as options for a select, named in the site's language and sorted by name.
  *
@@ -65,4 +70,19 @@ export function countryOptions(stored?: string): CountryOption[] {
     return options;
   }
   return [...options, { value: stored, label: name(stored) }];
+}
+
+/**
+ * Only these countries as options for a select, named and sorted as `countryOptions` gives them. A
+ * code the catalogue does not hold, such as one only Stripe ships to, is offered too, named where
+ * the browser can, after the rest.
+ */
+export function countryOptionsAmong(codes: readonly string[]): CountryOption[] {
+  const { options, name } = catalogue(i18n.language || 'en');
+  return [
+    ...options.filter(({ value }) => codes.includes(value)),
+    ...codes
+      .filter((code) => !options.some(({ value }) => value === code))
+      .map((code) => ({ value: code, label: name(code) })),
+  ];
 }

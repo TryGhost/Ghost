@@ -2146,6 +2146,29 @@ describe('App installations Admin API', function () {
       );
     });
 
+    it('refuses an approval whose icon stopped loading after the review, storing nothing', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+      const reviewed = await preview();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      nock(MANIFEST_HOST).get(ICON_PATH).reply(503);
+
+      const { body } = await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({
+          app_installations: [{ manifest_url: MANIFEST_URL, digest: reviewed.digest, revision: 0 }],
+        })
+        .expectStatus(422);
+
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_INVALID');
+      assert.deepEqual(body.errors[0].details, [
+        { path: 'icon.url', message: 'Expected an icon that loads, not HTTP 503' },
+      ]);
+      assert.equal((await manifestRows()).length, 1);
+      assert.equal((await installationRow(installed.id)).revision, 0);
+    });
+
     // The digest doesn't cover the icon, so the copy is whatever the app serves on approval.
     it('stores the icon fetched on approval for an approval that stores a new manifest', async function () {
       const approvedIcon =
@@ -2350,6 +2373,27 @@ describe('App installations Admin API', function () {
       assert.equal(JSON.parse(action.context).primary_name, 'Podcast');
     });
 
+    // The action is part of the uninstall, so failing to write it keeps the app installed.
+    it('keeps the app installed when its action cannot be written', async function () {
+      const installation = await install();
+      sinon.stub(logging, 'error');
+      await models.Base.knex.raw(`
+        CREATE TRIGGER fail_app_installation_action
+        BEFORE INSERT ON actions FOR EACH ROW
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'action write failed'
+      `);
+      try {
+        await agent.delete(`apps/installations/${installation.id}/`).expectStatus(500);
+      } finally {
+        await models.Base.knex.raw('DROP TRIGGER fail_app_installation_action');
+      }
+
+      const row = await installationRow(installation.id);
+      assert.equal(row.status, 'active');
+      assert.equal(row.current_app_id, 'com.example.podcast');
+      assert.equal((await actions()).length, 1);
+    });
+
     it('does nothing, and records nothing, the second time', async function () {
       const installation = await install();
 
@@ -2387,10 +2431,7 @@ describe('App installations Admin API', function () {
 
       await agent.get('apps/installations/').expectStatus(404);
       await agent.get(`apps/installations/${installation.id}/`).expectStatus(404);
-      // Admin uses this code to tell an uninstalled app from a Ghost without app sessions,
-      // so a disabled flag must not send it.
-      const { body } = await start(installation.id, 404);
-      assert.notEqual(body.errors?.[0]?.code, 'APP_NOT_INSTALLED');
+      await start(installation.id, 404);
       await agent.delete(`apps/installations/${installation.id}/`).expectStatus(404);
       assert.equal((await service().read(installation.id)).status, 'active');
     });

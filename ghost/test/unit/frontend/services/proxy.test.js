@@ -52,6 +52,28 @@ describe('Proxy: prepareContextResource', function () {
     );
   });
 
+  it('keeps links, inline formatting and line breaks', function () {
+    const caption =
+      '<b><strong>Bold</strong></b> <i><em>italic</em></i> <u>underline</u> <s>struck</s> <code>code</code> <mark>marked</mark> H<sub>2</sub>O x<sup>2</sup><br>Photo by <a href="https://example.com">Jo</a>';
+    const resource = { feature_image_caption: caption };
+
+    proxy.prepareContextResource(resource);
+
+    // sanitize-html writes void elements self-closed
+    assert.equal(resource.feature_image_caption.toString(), caption.replace('<br>', '<br />'));
+  });
+
+  it('still removes other elements from feature image captions', function () {
+    const resource = {
+      feature_image_caption:
+        'By <a href="javascript:alert(1)" onclick="alert(1)">Jo</a><img src=x onerror=alert(1)><script>alert(1)</script><p>Text</p>',
+    };
+
+    proxy.prepareContextResource(resource);
+
+    assert.equal(resource.feature_image_caption.toString(), 'By <a>Jo</a>Text');
+  });
+
   it('handles a resource that has already been prepared', function () {
     const resource = {
       feature_image_caption:

@@ -1,4 +1,3 @@
-import { buildTriggerRuleRows } from '../../../../core/server/services/automations/trigger-rules';
 import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
 import { randomUUID } from 'node:crypto';
@@ -120,7 +119,9 @@ describe('database automations repository', function () {
     });
 
     afterEach(async function () {
-      await knex('automated_email_recipients').where('id', recipientId).delete();
+      await knex('automated_email_recipients')
+        .whereIn('automation_action_revision_id', revisionIds)
+        .delete();
       await knex('automation_run_steps').where('id', stepId).delete();
       await knex('automation_runs').where('id', runId).delete();
       await knex('automation_action_revisions').whereIn('id', revisionIds).delete();
@@ -154,6 +155,40 @@ describe('database automations repository', function () {
     };
   };
 
+  const useEmailTrackingFixture = () => {
+    const fixture = useEmailClickFixture();
+    const ids: Record<string, string> = {};
+    const earlier = new Date('2026-01-01T00:00:00Z');
+    const laterEvent = new Date('2026-02-01T00:00:00Z');
+
+    const getRecipient = async (id: string) => {
+      const row = await knex('automated_email_recipients').where({ id }).first();
+      return {
+        deliveredAt: row.delivered_at === null ? null : fromDatabaseDate(row.delivered_at),
+        openedAt: row.opened_at === null ? null : fromDatabaseDate(row.opened_at),
+      };
+    };
+
+    beforeEach(async function () {
+      ids.unopened = fixture.recipientId;
+      ids.opened = ObjectId().toHexString();
+      ids.other = ObjectId().toHexString();
+      ids.missing = ObjectId().toHexString();
+      const recipient = await knex('automated_email_recipients')
+        .where('id', fixture.recipientId)
+        .first();
+      await knex('automated_email_recipients').insert([
+        { ...recipient, id: ids.opened, delivered_at: earlier, opened_at: earlier },
+        { ...recipient, id: ids.other },
+      ]);
+      await knex('automation_action_revisions')
+        .where('id', fixture.revisionIds[1])
+        .update({ email_opened_count: 5 });
+    });
+
+    return { repository: fixture.repository, fixture, ids, earlier, laterEvent, getRecipient };
+  };
+
   beforeAll(async function () {
     await dbUtils.reset({ truncate: true });
     await testUtils.setup('default')();
@@ -167,6 +202,137 @@ describe('database automations repository', function () {
       const expected = actual.toSorted();
 
       expect(actual).toEqual(expected);
+    });
+  });
+
+  alphabeticalDescribe('fetchAndLockMembers', function () {
+    let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
+    let automationId: string;
+    let otherAutomationId: string;
+    let memberId: string;
+    let otherMemberId: string;
+
+    beforeEach(async function () {
+      repository = createDatabaseAutomationsRepository2({ knex });
+      automationId = ObjectId().toHexString();
+      otherAutomationId = ObjectId().toHexString();
+      memberId = ObjectId().toHexString();
+      otherMemberId = ObjectId().toHexString();
+      await knex('automations').insert(createAutomation(automationId));
+      await knex('members').insert(createMember(memberId));
+    });
+
+    afterEach(async function () {
+      await knex('automation_runs')
+        .whereIn('automation_id', [automationId, otherAutomationId])
+        .delete();
+      await knex('automations').whereIn('id', [automationId, otherAutomationId]).delete();
+      await knex('members').whereIn('id', [memberId, otherMemberId]).delete();
+    });
+
+    it('returns each existing member once with current emails', async function () {
+      await knex('members').insert(createMember(otherMemberId));
+      await knex('members').where('id', memberId).update({ email: 'changed@example.com' });
+      const members = await repository.withTransaction((trx) =>
+        repository.fetchAndLockMembers(trx, [otherMemberId, memberId, memberId, 'missing']),
+      );
+      expect(members).toHaveLength(2);
+      expect(members).toEqual(
+        expect.arrayContaining([
+          { id: memberId, email: 'changed@example.com' },
+          { id: otherMemberId, email: `${otherMemberId}@example.com` },
+        ]),
+      );
+      expect(await repository.fetchAndLockMembers(knex, [])).toEqual([]);
+      expect(await repository.fetchAndLockMembers(knex, ['missing'])).toEqual([]);
+    });
+
+    it('locks members until the transaction ends', async function () {
+      await knex('members').insert(createMember(otherMemberId));
+
+      const trx = await knex.transaction();
+      onTestFinished(async () => {
+        await trx.rollback();
+      });
+
+      await repository.fetchAndLockMembers(trx, [otherMemberId, memberId]);
+
+      for (const id of [memberId, otherMemberId]) {
+        // Use `NOWAIT` to immediately fail if another transaction holds this row's lock.
+        await repository.withTransaction(async (otherTrx) => {
+          await expect(
+            otherTrx('members').where({ id }).forUpdate().noWait().first(),
+          ).rejects.toMatchObject({ code: 'ER_LOCK_NOWAIT' });
+        });
+      }
+
+      await trx.commit();
+
+      await repository.withTransaction(async (otherTrx) => {
+        await expect(
+          otherTrx('members').where('id', memberId).forUpdate().noWait().first(),
+        ).resolves.toBeDefined();
+      });
+    });
+  });
+
+  alphabeticalDescribe('findAutomationMemberEnrollments', function () {
+    let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
+    let automationId: string;
+    let otherAutomationId: string;
+    let memberId: string;
+    let otherMemberId: string;
+
+    beforeEach(async function () {
+      repository = createDatabaseAutomationsRepository2({ knex });
+      automationId = ObjectId().toHexString();
+      otherAutomationId = ObjectId().toHexString();
+      memberId = ObjectId().toHexString();
+      otherMemberId = ObjectId().toHexString();
+      await knex('automations').insert(createAutomation(automationId));
+      await knex('members').insert(createMember(memberId));
+    });
+
+    afterEach(async function () {
+      await knex('automation_runs')
+        .whereIn('automation_id', [automationId, otherAutomationId])
+        .delete();
+      await knex('automations').whereIn('id', [automationId, otherAutomationId]).delete();
+      await knex('members').whereIn('id', [memberId, otherMemberId]).delete();
+    });
+
+    it('returns prior automation enrollments', async function () {
+      await knex('members').insert(createMember(otherMemberId));
+      await knex('automations').insert(createAutomation(otherAutomationId));
+      await knex('automation_runs').insert([
+        createRun(automationId, memberId),
+        createRun(automationId, memberId),
+        createRun(otherAutomationId, otherMemberId),
+      ]);
+
+      const result = await repository.findAutomationMemberEnrollments(
+        knex,
+        [automationId, otherAutomationId],
+        [memberId, otherMemberId],
+      );
+      expect(result).toHaveLength(2);
+      expect(result).toEqual(
+        expect.arrayContaining([
+          { automation_id: automationId, member_id: memberId },
+          { automation_id: otherAutomationId, member_id: otherMemberId },
+        ]),
+      );
+
+      expect(
+        await repository.findAutomationMemberEnrollments(knex, [automationId], [otherMemberId]),
+      ).toEqual([]);
+    });
+
+    it('returns no pairs for empty inputs', async function () {
+      expect(await repository.findAutomationMemberEnrollments(knex, [], [memberId])).toEqual([]);
+      expect(await repository.findAutomationMemberEnrollments(knex, [automationId], [])).toEqual(
+        [],
+      );
     });
   });
 
@@ -237,6 +403,7 @@ describe('database automations repository', function () {
     let automationIds: string[];
     let actionIds: string[];
     let tierIds: string[];
+    let labelIds: string[];
 
     const insertAction = async (
       automationId: string,
@@ -259,19 +426,28 @@ describe('database automations repository', function () {
 
     const insertAutomation = async (
       overrides: Partial<ReturnType<typeof createAutomation>> & {
-        triggerScope?: 'free' | 'all_paid' | 'selected_paid';
+        rulesToCreate?: 'free' | 'all_paid' | 'none';
       } = {},
     ) => {
-      const { triggerScope = 'free', ...automationOverrides } = overrides;
+      const { rulesToCreate = 'free', ...automationOverrides } = overrides;
       const automation = { ...createAutomation(), ...automationOverrides };
       automationIds.push(automation.id);
       await knex('automations').insert(automation);
-      const rules = buildTriggerRuleRows({
-        automationId: automation.id,
-        scope: triggerScope,
-        tierIds: [],
-        createdAt: now,
-      });
+      const rules =
+        rulesToCreate === 'none'
+          ? []
+          : [
+              {
+                id: ObjectId().toHexString(),
+                automation_id: automation.id,
+                created_at: now,
+                trigger_type:
+                  rulesToCreate === 'free' ? 'free_signup' : 'paid_subscription_started',
+                scope: rulesToCreate === 'free' ? null : 'any_paid_tier',
+                product_id: null,
+                direction: null,
+              },
+            ];
       if (rules.length > 0) {
         await knex('automation_trigger_rules').insert(rules);
       }
@@ -293,12 +469,34 @@ describe('database automations repository', function () {
 
     const insertAutomationTriggerTiers = async (automationId: string, productIds: string[]) => {
       await knex('automation_trigger_rules').insert(
-        buildTriggerRuleRows({
-          automationId,
-          scope: 'selected_paid',
-          tierIds: productIds,
-          createdAt: now,
-        }),
+        productIds.map((product_id) => ({
+          id: ObjectId().toHexString(),
+          automation_id: automationId,
+          created_at: now,
+          trigger_type: 'paid_subscription_started',
+          scope: 'specific_paid_tier',
+          product_id,
+          direction: null,
+        })),
+      );
+    };
+
+    const insertLabel = async () => {
+      const id = ObjectId().toHexString();
+      labelIds.push(id);
+      await knex('labels').insert({ id, name: id, slug: id, created_at: now });
+      return id;
+    };
+
+    const insertAutomationTriggerLabels = async (automationId: string, ids: string[]) => {
+      await knex('automation_trigger_rules').insert(
+        ids.map((label_id) => ({
+          id: ObjectId().toHexString(),
+          automation_id: automationId,
+          created_at: now,
+          trigger_type: 'label_added',
+          label_id,
+        })),
       );
     };
 
@@ -314,7 +512,7 @@ describe('database automations repository', function () {
     it('finds automations when members leave a selected tier and join another or become free', async function () {
       const basic = await insertTier();
       const premium = await insertTier();
-      const first = await insertAutomation({ triggerScope: 'selected_paid' });
+      const first = await insertAutomation({ rulesToCreate: 'none' });
       const rule = (direction: string, scope: string, productId: string | null) => ({
         id: ObjectId().toHexString(),
         automation_id: first.automation_id,
@@ -353,7 +551,7 @@ describe('database automations repository', function () {
       const silver = await insertTier();
       const gold = await insertTier();
       const platinum = await insertTier();
-      const first = await insertAutomation({ triggerScope: 'selected_paid' });
+      const first = await insertAutomation({ rulesToCreate: 'none' });
       await knex('automation_trigger_rules').insert(
         [
           { direction: 'from', scope: 'any_paid_tier', product_id: null },
@@ -389,6 +587,7 @@ describe('database automations repository', function () {
       automationIds = [];
       actionIds = [];
       tierIds = [];
+      labelIds = [];
     });
 
     afterEach(async function () {
@@ -397,6 +596,7 @@ describe('database automations repository', function () {
       await knex('automation_actions').whereIn('id', actionIds).delete();
       await knex('automations').whereIn('id', automationIds).delete();
       await knex('products').whereIn('id', tierIds).delete();
+      await knex('labels').whereIn('id', labelIds).delete();
     });
 
     it('uses current trigger rules for matching', async function () {
@@ -437,8 +637,8 @@ describe('database automations repository', function () {
 
     it('returns only free automations for free members, even with tier IDs', async function () {
       const free = await insertAutomation();
-      await insertAutomation({ triggerScope: 'all_paid' });
-      const selected = await insertAutomation({ triggerScope: 'selected_paid' });
+      await insertAutomation({ rulesToCreate: 'all_paid' });
+      const selected = await insertAutomation({ rulesToCreate: 'none' });
       const tierId = await insertTier();
       await insertAutomationTriggerTiers(selected.automation_id, [tierId]);
 
@@ -447,18 +647,18 @@ describe('database automations repository', function () {
 
     it('returns only all-paid automations for paid members without tier IDs', async function () {
       await insertAutomation();
-      const paid = await insertAutomation({ triggerScope: 'all_paid' });
-      await insertAutomation({ triggerScope: 'selected_paid' });
+      const paid = await insertAutomation({ rulesToCreate: 'all_paid' });
+      await insertAutomation({ rulesToCreate: 'none' });
 
       await expect(findFirstActionRevisions('paid', [])).resolves.toEqual([paid]);
     });
 
     it('returns matching selected-tier and all-paid automations without duplicates', async function () {
       await insertAutomation();
-      const paid = await insertAutomation({ triggerScope: 'all_paid' });
-      const selected = await insertAutomation({ triggerScope: 'selected_paid' });
-      const unmatched = await insertAutomation({ triggerScope: 'selected_paid' });
-      await insertAutomation({ triggerScope: 'selected_paid' });
+      const paid = await insertAutomation({ rulesToCreate: 'all_paid' });
+      const selected = await insertAutomation({ rulesToCreate: 'none' });
+      const unmatched = await insertAutomation({ rulesToCreate: 'none' });
+      await insertAutomation({ rulesToCreate: 'none' });
       const firstTierId = await insertTier();
       const secondTierId = await insertTier();
       const otherTierId = await insertTier();
@@ -475,10 +675,10 @@ describe('database automations repository', function () {
       'excludes %s automations for every tier scope',
       async function (status) {
         const free = await insertAutomation();
-        const paid = await insertAutomation({ triggerScope: 'all_paid' });
+        const paid = await insertAutomation({ rulesToCreate: 'all_paid' });
         await insertAutomation({ status });
-        await insertAutomation({ status, triggerScope: 'all_paid' });
-        const selected = await insertAutomation({ status, triggerScope: 'selected_paid' });
+        await insertAutomation({ status, rulesToCreate: 'all_paid' });
+        const selected = await insertAutomation({ status, rulesToCreate: 'none' });
         const tierId = await insertTier();
         await insertAutomationTriggerTiers(selected.automation_id, [tierId]);
 
@@ -486,6 +686,36 @@ describe('database automations repository', function () {
         await expect(findFirstActionRevisions('paid', [tierId])).resolves.toEqual([paid]);
       },
     );
+
+    it('finds label-added automations', async function () {
+      const labelId = await insertLabel();
+      const first = await insertAutomation({ rulesToCreate: 'none' });
+      const inactive = await insertAutomation({
+        status: 'inactive',
+        rulesToCreate: 'none',
+      });
+      const archived = await insertAutomation({
+        status: 'archived',
+        rulesToCreate: 'none',
+      });
+      const otherEvent = await insertAutomation();
+      await insertAutomationTriggerLabels(first.automation_id, [labelId, labelId]);
+      await insertAutomationTriggerLabels(inactive.automation_id, [labelId]);
+      await insertAutomationTriggerLabels(archived.automation_id, [labelId]);
+      await knex('automation_trigger_rules')
+        .where('automation_id', otherEvent.automation_id)
+        .update({ label_id: labelId });
+
+      expect(
+        await repository.findFirstActionRevisions(knex, { eventName: 'label_added', labelId }),
+      ).toEqual([first]);
+      expect(
+        await repository.findFirstActionRevisions(knex, {
+          eventName: 'label_added',
+          labelId: ObjectId().toHexString(),
+        }),
+      ).toEqual([]);
+    });
 
     it('returns first actions and excludes actions with active predecessors', async function () {
       const first = await insertAutomation();
@@ -577,58 +807,6 @@ describe('database automations repository', function () {
     });
   });
 
-  alphabeticalDescribe('hasMemberEnteredAutomation', function () {
-    let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
-    let automationId: string;
-    let otherAutomationId: string;
-    let memberId: string;
-    let otherMemberId: string;
-
-    const hasMemberEnteredAutomation = () =>
-      repository.withConnection((connection) =>
-        repository.hasMemberEnteredAutomation(connection, automationId, memberId),
-      );
-
-    beforeEach(async function () {
-      repository = createDatabaseAutomationsRepository2({ knex });
-      automationId = ObjectId().toHexString();
-      otherAutomationId = ObjectId().toHexString();
-      memberId = ObjectId().toHexString();
-      otherMemberId = ObjectId().toHexString();
-      await knex('automations').insert(createAutomation(automationId));
-      await knex('members').insert(createMember(memberId));
-    });
-
-    afterEach(async function () {
-      await knex('automation_runs')
-        .whereIn('automation_id', [automationId, otherAutomationId])
-        .delete();
-      await knex('automations').whereIn('id', [automationId, otherAutomationId]).delete();
-      await knex('members').whereIn('id', [memberId, otherMemberId]).delete();
-    });
-
-    it('returns false when the member has not entered any automation', async function () {
-      await expect(hasMemberEnteredAutomation()).resolves.toBe(false);
-    });
-
-    it('returns true when the member has entered the automation', async function () {
-      await knex('automation_runs').insert(createRun(automationId, memberId));
-      await expect(hasMemberEnteredAutomation()).resolves.toBe(true);
-    });
-
-    it('returns false when only another member has entered the automation', async function () {
-      await knex('members').insert(createMember(otherMemberId));
-      await knex('automation_runs').insert(createRun(automationId, otherMemberId));
-      await expect(hasMemberEnteredAutomation()).resolves.toBe(false);
-    });
-
-    it('returns false when the member has only entered another automation', async function () {
-      await knex('automations').insert(createAutomation(otherAutomationId));
-      await knex('automation_runs').insert(createRun(otherAutomationId, memberId));
-      await expect(hasMemberEnteredAutomation()).resolves.toBe(false);
-    });
-  });
-
   alphabeticalDescribe('incrementEmailClickedCount', function () {
     const fixture = useEmailClickFixture();
     const { repository } = fixture;
@@ -653,6 +831,31 @@ describe('database automations repository', function () {
         ).toBeNull();
       },
     );
+  });
+
+  alphabeticalDescribe('incrementEmailOpenedCount', function () {
+    const { fixture, repository } = useEmailTrackingFixture();
+
+    it('increments unset and existing counts without touching other revisions', async function () {
+      await repository.incrementEmailOpenedCount(knex, fixture.revisionIds[0], 2);
+      expect(
+        await knex('automation_action_revisions')
+          .select('id', 'email_opened_count')
+          .whereIn('id', fixture.revisionIds)
+          .orderBy('id'),
+      ).toEqual(
+        [
+          { id: fixture.revisionIds[0], email_opened_count: 2 },
+          { id: fixture.revisionIds[1], email_opened_count: 5 },
+        ].sort((a, b) => a.id.localeCompare(b.id)),
+      );
+
+      await repository.incrementEmailOpenedCount(knex, fixture.revisionIds[1], 3);
+      expect(
+        (await knex('automation_action_revisions').where({ id: fixture.revisionIds[1] }).first())
+          .email_opened_count,
+      ).toBe(8);
+    });
   });
 
   alphabeticalDescribe('insertActions', function () {
@@ -838,33 +1041,6 @@ describe('database automations repository', function () {
     });
   });
 
-  alphabeticalDescribe('isAutomationActiveForRun', function () {
-    const isAutomationActiveForRun = async (status: string) => {
-      const repository = createDatabaseAutomationsRepository2({ knex });
-
-      const automation = { ...createAutomation(), status };
-      const member = createMember(ObjectId().toHexString());
-      const run = createRun(automation.id, member.id);
-
-      await knex('automations').insert(automation);
-      await knex('members').insert(member);
-      await repository.insertRuns(knex, [run]);
-
-      return await repository.isAutomationActiveForRun(knex, run.id);
-    };
-
-    it('resolves with true if the associated automation is active', async function () {
-      await expect(isAutomationActiveForRun('active')).resolves.toBe(true);
-    });
-
-    it.each(['inactive', 'archived'])(
-      'resolves with false if the associated automation is %s',
-      async function (status) {
-        await expect(isAutomationActiveForRun(status)).resolves.toBe(false);
-      },
-    );
-  });
-
   alphabeticalDescribe('isAutomationActiveForRunStep', function () {
     const isAutomationActiveForRunStep = async (status: string) => {
       const repository = createDatabaseAutomationsRepository2({ knex });
@@ -998,42 +1174,62 @@ describe('database automations repository', function () {
     });
   });
 
-  alphabeticalDescribe('lockMember', function () {
-    let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
-    let memberId: string;
+  alphabeticalDescribe('lockNotYetOpenedEmailRecipients', function () {
+    const { repository, ids } = useEmailTrackingFixture();
 
-    beforeEach(async function () {
-      repository = createDatabaseAutomationsRepository2({ knex });
-      memberId = ObjectId().toHexString();
-      await knex('members').insert(createMember(memberId));
+    it('returns an empty set without querying for an empty list', async function () {
+      const query = vi.fn();
+      knex.on('query', query);
+      onTestFinished(() => {
+        knex.off('query', query);
+      });
+
+      expect(await repository.lockNotYetOpenedEmailRecipients(knex, [])).toEqual(new Set());
+
+      expect(query).not.toHaveBeenCalled();
     });
 
-    afterEach(async function () {
-      await knex('members').where('id', memberId).delete();
+    it('returns only requested, existing recipients without an open timestamp', async function () {
+      await repository.withTransaction(async (connection) => {
+        expect(
+          await repository.lockNotYetOpenedEmailRecipients(connection, [
+            ids.unopened,
+            ids.opened,
+            ids.missing,
+          ]),
+        ).toEqual(new Set([ids.unopened]));
+      });
     });
 
-    it('locks the member until the transaction ends', async function () {
+    it('locks unopened recipients until the transaction ends', async function () {
       const trx = await knex.transaction();
-      onTestFinished(async () => {
+      const recipientIds = [ids.unopened, ids.other];
+
+      try {
+        expect(await repository.lockNotYetOpenedEmailRecipients(trx, recipientIds)).toEqual(
+          new Set(recipientIds),
+        );
+
+        for (const id of recipientIds) {
+          await repository.withTransaction(async (otherTrx) => {
+            await expect(
+              otherTrx('automated_email_recipients').where({ id }).forUpdate().noWait().first(),
+            ).rejects.toMatchObject({ code: 'ER_LOCK_NOWAIT' });
+          });
+        }
+
+        await trx.commit();
+
+        for (const id of recipientIds) {
+          await repository.withTransaction(async (otherTrx) => {
+            await expect(
+              otherTrx('automated_email_recipients').where({ id }).forUpdate().noWait().first(),
+            ).resolves.toMatchObject({ id });
+          });
+        }
+      } finally {
         await trx.rollback();
-      });
-
-      await repository.lockMember(trx, memberId);
-
-      // Use `NOWAIT` to immediately fail if another transaction holds this row's lock.
-      await repository.withTransaction(async (otherTrx) => {
-        await expect(
-          otherTrx('members').where('id', memberId).forUpdate().noWait().first(),
-        ).rejects.toMatchObject({ code: 'ER_LOCK_NOWAIT' });
-      });
-
-      await trx.commit();
-
-      await repository.withTransaction(async (otherTrx) => {
-        await expect(
-          otherTrx('members').where('id', memberId).forUpdate().noWait().first(),
-        ).resolves.not.toThrow();
-      });
+      }
     });
   });
 
@@ -1060,6 +1256,86 @@ describe('database automations repository', function () {
       expect(await repository.setEmailRecipientClickedAt(knex, ObjectId().toHexString(), now)).toBe(
         false,
       );
+    });
+  });
+
+  alphabeticalDescribe('setEmailRecipientDeliveredAndOpenedAt', function () {
+    const { repository, ids, earlier, laterEvent, getRecipient } = useEmailTrackingFixture();
+
+    it('does not query when neither timestamp is supplied', async function () {
+      const query = vi.fn();
+      knex.on('query', query);
+      onTestFinished(() => {
+        knex.off('query', query);
+      });
+
+      await repository.setEmailRecipientDeliveredAndOpenedAt(knex, ids.unopened, {});
+
+      expect(query).not.toHaveBeenCalled();
+    });
+
+    it('sets both timestamps', async function () {
+      await repository.setEmailRecipientDeliveredAndOpenedAt(knex, ids.unopened, {
+        deliveredAt: earlier,
+        openedAt: laterEvent,
+      });
+
+      expect(await getRecipient(ids.unopened)).toEqual({
+        deliveredAt: earlier,
+        openedAt: laterEvent,
+      });
+    });
+
+    it('updates delivery and open timestamps independently', async function () {
+      await repository.setEmailRecipientDeliveredAndOpenedAt(knex, ids.unopened, {
+        deliveredAt: earlier,
+      });
+      expect(await getRecipient(ids.unopened)).toEqual({ deliveredAt: earlier, openedAt: null });
+
+      await repository.setEmailRecipientDeliveredAndOpenedAt(knex, ids.unopened, {
+        openedAt: laterEvent,
+      });
+      expect(await getRecipient(ids.unopened)).toEqual({
+        deliveredAt: earlier,
+        openedAt: laterEvent,
+      });
+    });
+
+    it('preserves earliest timestamps for later and repeated events', async function () {
+      for (const timestamp of [laterEvent, earlier]) {
+        await repository.setEmailRecipientDeliveredAndOpenedAt(knex, ids.opened, {
+          deliveredAt: timestamp,
+          openedAt: timestamp,
+        });
+        expect(await getRecipient(ids.opened)).toEqual({ deliveredAt: earlier, openedAt: earlier });
+      }
+    });
+
+    it('replaces timestamps with earlier events', async function () {
+      await knex('automated_email_recipients')
+        .where({ id: ids.opened })
+        .update({ delivered_at: laterEvent, opened_at: laterEvent });
+      await repository.setEmailRecipientDeliveredAndOpenedAt(knex, ids.opened, {
+        deliveredAt: earlier,
+        openedAt: earlier,
+      });
+      expect(await getRecipient(ids.opened)).toEqual({ deliveredAt: earlier, openedAt: earlier });
+    });
+
+    it('ignores unknown recipients', async function () {
+      await repository.setEmailRecipientDeliveredAndOpenedAt(knex, ids.missing, {
+        deliveredAt: earlier,
+        openedAt: earlier,
+      });
+
+      expect(
+        await knex('automated_email_recipients')
+          .whereIn('id', [ids.unopened, ids.opened, ids.other])
+          .count('* as count')
+          .first(),
+      ).toEqual({
+        count: 3,
+      });
     });
   });
 

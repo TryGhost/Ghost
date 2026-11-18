@@ -58,25 +58,14 @@ describe('Automation action validation feedback', () => {
   beforeEach(() => page.viewport(1280, 1600));
   afterEach(() => page.viewport(1280, 800));
 
-  it('dismisses a card warning when clicking another canvas card', async () => {
+  it('shows a missing subject as an error under the email preview', async () => {
     serve();
     await boot();
     await clearSubject();
-    await page.getByRole('button', { name: 'Why this step needs attention' }).click();
-    const warning = page.getByText('Add a subject line before this email can be sent.', {
-      exact: true,
-    });
-    await expect.element(warning).toBeVisible();
-    await warning.click();
-    await expect.element(warning).toBeVisible();
-    await page.getByRole('heading', { name: 'Free member signed up', exact: true }).click();
-    await expect.element(warning).not.toBeInTheDocument();
-    await page.getByRole('button', { name: 'Why this step needs attention' }).click();
-    await expect.element(warning).toBeVisible();
-    const wait = page.getByRole('textbox', { name: 'Wait for' });
-    await wait.click();
-    await expect.element(warning).not.toBeInTheDocument();
-    await expect.element(wait).toHaveFocus();
+    await expect.element(emailCard().getByText('Add a subject', { exact: true })).toBeVisible();
+    await expect
+      .element(emailCard().getByRole('button', { name: 'Edit email content' }))
+      .toHaveAttribute('aria-invalid', 'true');
   });
 
   for (const status of ['inactive', 'active'] as const) {
@@ -95,9 +84,7 @@ describe('Automation action validation feedback', () => {
       const toast = page.getByText('Automation needs a few details', { exact: true });
       await expect.element(message).toBeVisible();
       await expect.element(toast).not.toBeInTheDocument();
-      await expect
-        .element(page.getByRole('button', { name: 'Why this step needs attention' }))
-        .toBeVisible();
+      await expect.element(emailCard().getByText('Add a subject', { exact: true })).toBeVisible();
       await userEvent.keyboard('{Escape}');
       await expect.element(message).not.toBeInTheDocument();
       await expect.element(publish).toHaveFocus();

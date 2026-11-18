@@ -2,7 +2,10 @@ import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
+import { PresenceAvatars } from '@/shared/presence/presence-avatars';
+import type { ActivePresence } from '@/shared/presence/presence-api';
 import { AdminLink } from '@/shared/admin-link';
+import { FadingText } from '@/shared/fading-text';
 import { PostsContextMenu } from '@/posts/list/components/posts-context-menu';
 import type { PostContextMenuItem, PostContextMenuKey } from '@/posts/list/post-context-menu-items';
 import {
@@ -28,6 +31,8 @@ import type { PostResource } from '@/posts/list/post-resource';
 
 interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick'> {
   post: PostListItem;
+  /** Other staff with this post open; absent while presence indicators are off. */
+  presenceActive?: ActivePresence[];
   resource: PostResource;
   timezone?: string;
   /**
@@ -135,6 +140,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
   function PostListRowComponent(
     {
       post,
+      presenceActive,
       resource,
       timezone,
       isContributor,
@@ -219,6 +225,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
           // the row under the cursor look deselected.
           isSelected ? 'bg-table-row-selected select-none' : 'hover:bg-table-row-hover',
         )}
+        data-presence-id={post.id}
         data-selected={isSelected ? 'true' : undefined}
         data-testid="posts-list-item"
         onClickCapture={onSelectClick}
@@ -291,17 +298,25 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                   }
                 >
                   {displayedStatusLabel}
-                  {/* Mounted only while hovered. A CSS
-                                  opacity fade would keep it in the DOM, so a screen
-                                  reader would read every scheduled row's full
-                                  dispatch details aloud, always. */}
-                  {emailSendingState.status !== 'failed' && isHovered && statusDetail && (
-                    <span> {statusDetail}</span>
+                  {/* Mounted only while hovered, fading in and out. A CSS
+                                  opacity fade alone would keep it in the DOM, so a screen
+                                  reader would read every row's full dispatch details
+                                  aloud, always. */}
+                  {emailSendingState.status !== 'failed' && statusDetail && (
+                    <FadingText show={isHovered}> {statusDetail}</FadingText>
                   )}
                 </Text>
               )}
             </Stack>
           </RowLink>
+          {presenceActive && presenceActive.length > 0 ? (
+            <PresenceAvatars
+              active={presenceActive}
+              // Under 360px the title has no room left to give.
+              className="max-[359px]:hidden"
+              resourceType={editorType}
+            />
+          ) : null}
           <PostMetricsCells
             className="py-4"
             hideEmailMetrics={emailSendingState.status === 'sending'}
@@ -326,6 +341,9 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                 className={cn(
                   'my-4 shrink-0',
                   'ms-8',
+                  // Below 1200px the metrics are hidden, so with avatars beside it the
+                  // action needs no extra separation and the title keeps the room.
+                  presenceActive && presenceActive.length > 0 && 'max-[1200px]:ms-2',
                   'text-muted-foreground hover:bg-background hover:text-foreground',
                   isHovered && 'bg-background',
                 )}

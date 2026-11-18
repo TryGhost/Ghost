@@ -1,3 +1,4 @@
+import type { AppFailureCode } from '@tryghost/app-contracts';
 import errors from '@tryghost/errors';
 import type { GhostLogger } from '@tryghost/logging';
 import {
@@ -95,7 +96,7 @@ function challengeUnreachable(
   logging.warn(failure.reason === 'unreachable' ? failure.cause : context);
   return new errors.ValidationError({
     message: 'Could not reach the app to confirm it comes from its developer.',
-    code: 'APP_CHALLENGE_UNREACHABLE',
+    code: 'APP_CHALLENGE_UNREACHABLE' satisfies AppFailureCode,
     context,
   });
 }
@@ -103,7 +104,7 @@ function challengeUnreachable(
 function challengeFailed(origin: string, why: string) {
   return new errors.ValidationError({
     message: 'Ghost couldn’t confirm the app comes from its developer.',
-    code: 'APP_CHALLENGE_FAILED',
+    code: 'APP_CHALLENGE_FAILED' satisfies AppFailureCode,
     context: `${origin}: ${why}`,
   });
 }
@@ -177,13 +178,13 @@ export function createIdentityChecker({
       // No detail: the publisher is told it isn't from the same developer, never about keys.
       throw new errors.ValidationError({
         message: 'This app doesn’t come from the same developer as the installed one.',
-        code: 'APP_IDENTITY_MISMATCH',
+        code: 'APP_IDENTITY_MISMATCH' satisfies AppFailureCode,
       });
     }
     if (pinned?.retiredBackendKeys.has(loaded.backendKeyThumbprint)) {
       throw new errors.ValidationError({
         message: 'Ghost couldn’t confirm the app comes from its developer.',
-        code: 'APP_BACKEND_KEY_RETIRED',
+        code: 'APP_BACKEND_KEY_RETIRED' satisfies AppFailureCode,
         context: 'backend_key has been replaced, and can’t be used again',
       });
     }

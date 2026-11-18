@@ -1058,7 +1058,11 @@ describe('Email renderer', function () {
   });
 
   describe('getFromAddress', function () {
-    let siteTitle = 'Test Blog';
+    let siteTitle;
+    beforeEach(function () {
+      siteTitle = 'Test Blog';
+    });
+
     const emailRenderer = new EmailRenderer({
       settingsCache: {
         get: (key) => {
@@ -1121,32 +1125,38 @@ describe('Email renderer', function () {
   });
 
   describe('getReplyToAddress', function () {
-    const emailAddressService = {
-      getAddress(addresses) {
-        return addresses;
-      },
-      managedEmailEnabled: true,
-    };
-    const emailRenderer = new EmailRenderer({
-      settingsCache: {
-        get: (key) => {
-          if (key === 'title') {
-            return 'Test Blog';
-          }
+    // Tests reconfigure the address service, so each one starts from a fresh one
+    let emailAddressService;
+    let emailRenderer;
+
+    beforeEach(function () {
+      emailAddressService = {
+        getAddress(addresses) {
+          return addresses;
         },
-      },
-      settingsHelpers: {
-        getMembersSupportAddress: () => {
-          return 'support@example.com';
+        managedEmailEnabled: true,
+      };
+      emailRenderer = new EmailRenderer({
+        settingsCache: {
+          get: (key) => {
+            if (key === 'title') {
+              return 'Test Blog';
+            }
+          },
         },
-        getNoReplyAddress: () => {
-          return 'reply@example.com';
+        settingsHelpers: {
+          getMembersSupportAddress: () => {
+            return 'support@example.com';
+          },
+          getNoReplyAddress: () => {
+            return 'reply@example.com';
+          },
         },
-      },
-      labs: {
-        isSet: () => false,
-      },
-      emailAddressService,
+        labs: {
+          isSet: () => false,
+        },
+        emailAddressService,
+      });
     });
 
     it('returns support address', function () {
@@ -1246,25 +1256,29 @@ describe('Email renderer', function () {
   });
 
   describe('getSegments', function () {
-    let emailRenderer = new EmailRenderer({
-      renderers: {
-        lexical: {
-          render: () => {
-            return '<p> Lexical Test</p>';
+    // Tests swap in their own renderer, so each one starts from the default
+    let emailRenderer;
+    beforeEach(function () {
+      emailRenderer = new EmailRenderer({
+        renderers: {
+          lexical: {
+            render: () => {
+              return '<p> Lexical Test</p>';
+            },
+          },
+          mobiledoc: {
+            render: () => {
+              return '<p> Mobiledoc Test</p>';
+            },
           },
         },
-        mobiledoc: {
-          render: () => {
-            return '<p> Mobiledoc Test</p>';
-          },
+        getPostUrl: () => {
+          return 'http://example.com/post-id';
         },
-      },
-      getPostUrl: () => {
-        return 'http://example.com/post-id';
-      },
-      labs: {
-        isSet: () => false,
-      },
+        labs: {
+          isSet: () => false,
+        },
+      });
     });
 
     it('returns correct empty segment for post', async function () {

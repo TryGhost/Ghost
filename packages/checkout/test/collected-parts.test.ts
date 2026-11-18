@@ -31,23 +31,12 @@ describe('collected part settings', function () {
   });
 
   it('refuses an empty list, as a publisher who cleared one meant neither every tier nor everywhere', function () {
-    assert.equal(
-      CHECKOUT_PART_SETTINGS.tax_number.safeParse({ collect: true, tier_ids: [] }).success,
-      false,
-    );
+    assert.equal(shippingOn({ tier_ids: [] }).success, false);
     assert.equal(shippingOn({ allowed_countries: [] }).success, false);
   });
 
   it('refuses a country Stripe does not ship to', function () {
     assert.equal(shippingOn({ allowed_countries: ['GB'] }).success, true);
     assert.equal(shippingOn({ allowed_countries: ['UK'] }).success, false);
-  });
-
-  it('names no custom field for a tax ID, as Stripe keeps it', function () {
-    assert.equal(
-      CHECKOUT_PART_SETTINGS.tax_number.safeParse({ collect: true, custom_field_key: 'vat' })
-        .success,
-      false,
-    );
   });
 });

@@ -1,4 +1,5 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
+import { actingContext } from '../../lib/actor';
 import stripeCheckoutConfig from '../../services/stripe-checkout-config';
 import type { StripeCheckoutConfig } from '../../services/stripe-checkout-config';
 import { COLLECTION_FLAG } from '../../services/stripe-checkout-config/models';
@@ -11,9 +12,10 @@ type EditFrame = Frame<{ data: { checkout_config: unknown[] } }>;
 /**
  * The site-wide Stripe Checkout config.
  *
- * It uses the tier permissions, because checkout is where tiers are sold. Saving it doesn't
- * clear the site's cache, as no page on the site shows it. The collected parts are only read
- * and saved while their private flag is on.
+ * It uses the tier permissions, because checkout is where tiers are sold. A save clears the
+ * site's cache only when it changes what tiers list to anyone: a requirement, whether each of its
+ * ports is bound, or the field a port names. The collected parts are only read and saved while
+ * their private flag is on.
  */
 const controller = {
   docName: 'checkout_config',
@@ -33,7 +35,13 @@ const controller = {
       const [input] = frame.data.checkout_config;
       refuseCollectionWhileOff(input, labs.isSet(COLLECTION_FLAG));
       const { config } = stripeCheckoutConfig.service;
-      await config.edit(stripeCheckoutConfig.extras.actingContext(frame.options.context), input);
+      const { changedRequirements } = await config.edit(
+        actingContext(frame.options.context),
+        input,
+      );
+      if (changedRequirements) {
+        frame.setHeader('X-Cache-Invalidate', '/*');
+      }
       return config.read();
     },
   },

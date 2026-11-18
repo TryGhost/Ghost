@@ -29,7 +29,7 @@ const FIELDS: Field[] = [
   { field: 'name', label: 'Name', value: (m) => m.name },
   { field: 'description', label: 'Description', value: (m) => m.description },
   { field: 'author.name', label: 'Developer', value: (m) => m.author.name },
-  { field: 'author.url', label: 'Developer’s website', value: (m) => m.author.url },
+  { field: 'author.url', label: 'Developer’s support link', value: (m) => m.author.url },
   { field: 'accent_color', label: 'Accent color', value: (m) => m.accent_color },
   // A publisher reads the icon as one thing, named or served by the app.
   { field: 'icon', label: 'Icon', value: (m) => ('url' in m.icon ? m.icon.url : m.icon.name) },

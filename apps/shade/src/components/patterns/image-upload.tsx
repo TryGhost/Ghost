@@ -6,29 +6,37 @@ import { Button, type ButtonProps } from '@/components/ui/button';
 import { Dropzone, type DropzoneProps } from '@/components/ui/dropzone';
 import { cn } from '@/lib/utils';
 import { imageOverlayButton } from '@/components/ui/image-overlay-button';
+import { useShade } from '@/providers/shade-context';
 
+// In Admin 7, previews own clipping so dropzone borders and focus rings remain visible.
 const ImageUpload = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('relative overflow-hidden rounded-md', className)}
-      data-slot="image-upload"
-      {...props}
-    />
-  ),
+  ({ className, ...props }, ref) => {
+    const { admin7Design } = useShade();
+    return (
+      <div
+        ref={ref}
+        className={cn('relative rounded-md', !admin7Design && 'overflow-hidden', className)}
+        data-slot="image-upload"
+        {...props}
+      />
+    );
+  },
 );
 ImageUpload.displayName = 'ImageUpload';
 
 const ImageUploadDropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
-  ({ className, variant = 'filled', ...props }, ref) => (
-    <Dropzone
-      ref={ref}
-      className={cn('size-full text-foreground', className)}
-      data-slot="image-upload-dropzone"
-      variant={variant}
-      {...props}
-    />
-  ),
+  ({ className, variant = 'filled', ...props }, ref) => {
+    const { admin7Design } = useShade();
+    return (
+      <Dropzone
+        ref={ref}
+        className={cn('size-full', !admin7Design && 'text-foreground', className)}
+        data-slot="image-upload-dropzone"
+        variant={variant}
+        {...props}
+      />
+    );
+  },
 );
 ImageUploadDropzone.displayName = 'ImageUploadDropzone';
 

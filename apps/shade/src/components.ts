@@ -82,7 +82,7 @@ export type { ContextMenuCheckboxItemProps as ContextMenuCheckboxItemProps } fro
 export { IconComponents as Icon } from './components/ui/icon';
 
 // Visual assets
-export { FacebookLogo, GhostLogo, GhostOrb, GoogleLogo, TwitterLogo, XLogo } from './assets/images';
+export { FacebookLogo, GhostLogo, GhostOrb, GoogleLogo, XLogo } from './assets/images';
 
 export { TimePicker, type TimePickerProps } from './components/ui/time-picker';
 export { tokenFieldClasses } from './components/ui/token-field';

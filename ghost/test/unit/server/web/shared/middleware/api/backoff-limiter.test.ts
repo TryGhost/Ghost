@@ -78,11 +78,27 @@ describe('BackoffLimiter', function () {
     assert.deepEqual(backoffDelays(5, 5), [5]);
   });
 
-  it('defaults lifetime to long enough to reach maxWait', function () {
+  it('defaults lifetime to the sum of every wait', function () {
     const limiter = build({ lifetime: undefined });
 
-    // 7 delays plus 2 free retries, each up to 10 seconds
-    assert.equal(limiter.options.lifetime, 90);
+    // 1 + 1 + 2 + 3 + 5 + 8 + 10 seconds
+    assert.equal(limiter.options.lifetime, 30);
+  });
+
+  it('keeps the default count window open long enough to reach maxWait', async function () {
+    vi.useFakeTimers({ now: 0 });
+    const limiter = build({ freeRetries: 0, lifetime: undefined });
+
+    // climb each wait as soon as the last ends; the last one opened should be maxWait
+    let lastWait = 0;
+    for (let i = 0; i < 7; i++) {
+      assert.equal((await request(limiter)).allowed, true);
+      const blocked = await request(limiter);
+      assert.ok(blocked.allowed === false);
+      lastWait = blocked.waitMs;
+      vi.advanceTimersByTime(lastWait);
+    }
+    assert.equal(lastWait, 10000);
   });
 
   it('allows freeRetries + 1 requests, then blocks for minWait', async function () {
@@ -326,6 +342,54 @@ describe('BackoffLimiter', function () {
     assert.match(err.stack ?? '', /database gone/);
   });
 
+  it('retries a store call once when MySQL picks it as a deadlock victim', async function () {
+    let deadlocks = 0;
+    const deadlocking: LimiterFactory = (options) => {
+      const limiter = new RateLimiterMemory(options);
+      const consume = limiter.consume.bind(limiter);
+      limiter.consume = (...args) => {
+        if (deadlocks < 1) {
+          deadlocks += 1;
+          return Promise.reject(
+            Object.assign(new Error('Deadlock found'), { code: 'ER_LOCK_DEADLOCK' }),
+          );
+        }
+        return consume(...args);
+      };
+      return limiter;
+    };
+    const limiter = build({ freeRetries: 0 }, deadlocking);
+
+    assert.deepEqual(await request(limiter), { allowed: true });
+    assert.equal(deadlocks, 1);
+    // the retried consume counted, so the next request opens a wait
+    assert.equal((await request(limiter)).allowed, false);
+  });
+
+  it('fails the request when the retry deadlocks too', async function () {
+    const deadlock = Object.assign(new Error('Deadlock found'), { code: 'ER_LOCK_DEADLOCK' });
+    let calls = 0;
+    const deadlocking: LimiterFactory = (options) => {
+      const limiter = new RateLimiterMemory(options);
+      limiter.consume = () => {
+        calls += 1;
+        return Promise.reject(deadlock);
+      };
+      return limiter;
+    };
+
+    const err = await new Promise<{ errorType?: string }>((resolve) => {
+      build({}, deadlocking).middleware(
+        { ip: '127.0.0.1' } as Request,
+        {} as Response,
+        resolve as NextFunction,
+      );
+    });
+
+    assert.equal(err.errorType, 'InternalServerError');
+    assert.equal(calls, 2);
+  });
+
   it('passes an error thrown by onBlocked to next', async function () {
     const failure = new Error('onBlocked failed');
     const limiter = build({
@@ -336,7 +400,7 @@ describe('BackoffLimiter', function () {
     });
 
     await request(limiter);
-    await assert.rejects(request(limiter), failure);
+    await assert.rejects(request(limiter), (thrown) => thrown === failure);
   });
 
   it('treats a lifetime of 0 as 1 second rather than never expiring', function () {

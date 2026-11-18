@@ -51,9 +51,9 @@ export const LeadMagnetBannerBody: React.FC<Changes & { labelNames: LabelNames }
 export const LeadMagnetReveal: React.FC<
   React.PropsWithChildren<{ open: boolean; from?: 'top' | 'bottom'; ownSpacing?: boolean }>
 > = ({ open, from = 'bottom', ownSpacing = false, children }) => {
-  const shownRef = React.useRef(children);
-  if (open) {
-    shownRef.current = children;
+  const [shown, setShown] = React.useState(children);
+  if (open && shown !== children) {
+    setShown(children);
   }
   return (
     <div
@@ -76,7 +76,7 @@ export const LeadMagnetReveal: React.FC<
           from === 'top' && !open && '-translate-y-2',
         )}
       >
-        {shownRef.current}
+        {open ? children : shown}
       </div>
     </div>
   );

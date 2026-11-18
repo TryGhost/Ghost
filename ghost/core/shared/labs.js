@@ -30,9 +30,11 @@ const messages = {
 // Admin no longer reads selfServeArchives or admin7EditorImprovements; they stay
 // enabled for older Admin builds during independent deployments.
 const GA_FEATURES = [
-  'automationsLifecycleTriggers',
   'selfServeArchives',
   'admin7EditorImprovements',
+  'membersCustomFields',
+  'stripeCheckoutCollection',
+  'customFieldTypePhone',
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -57,12 +59,12 @@ const PRIVATE_FEATURES = [
   'themeTranslation',
   'pictureImageFormats',
   'getHelperDeduplication',
-  'membersCustomFields',
-  'stripeCheckoutCollection',
   'paywallImprovements',
   'machinePayments',
   'apps',
   'inAppSupport',
+  'editorPresencePolling',
+  'editorPresence',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

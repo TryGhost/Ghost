@@ -438,13 +438,18 @@ export function ImportMembersModal({
 
   // PROTOTYPE ONLY (NY-1750): the automation confirmation uses the standard dialog size.
   const [isLeadMagnetConfirming, setLeadMagnetConfirming] = useState(false);
-  const isWide =
-    (state.status === 'MAPPING' || state.status === 'UPLOADING') && !isLeadMagnetConfirming;
-  useEffect(() => {
-    if (!open || (state.status !== 'MAPPING' && state.status !== 'UPLOADING')) {
+  const isMappingStep = state.status === 'MAPPING' || state.status === 'UPLOADING';
+  const isWide = isMappingStep && !isLeadMagnetConfirming;
+  // Closing or leaving the mapping step drops the confirmation, reset while rendering rather
+  // than in an effect.
+  const isMappingOpen = open && isMappingStep;
+  const [wasMappingOpen, setWasMappingOpen] = useState(isMappingOpen);
+  if (isMappingOpen !== wasMappingOpen) {
+    setWasMappingOpen(isMappingOpen);
+    if (!isMappingOpen) {
       setLeadMagnetConfirming(false);
     }
-  }, [open, state.status]);
+  }
 
   const title = useMemo(() => {
     switch (state.status) {

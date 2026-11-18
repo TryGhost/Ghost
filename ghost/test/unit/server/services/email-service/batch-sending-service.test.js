@@ -54,7 +54,10 @@ describe('Batch Sending Service', function () {
       const jobsService = { dispatch: sinon.stub().rejects(error) };
       const service = new BatchSendingService({ jobsService });
 
-      await assert.rejects(() => service.scheduleEmail(createModel({ id: 'email-id' })), error);
+      await assert.rejects(
+        () => service.scheduleEmail(createModel({ id: 'email-id' })),
+        (thrown) => thrown === error,
+      );
     });
   });
 
@@ -2418,7 +2421,7 @@ describe('Batch Sending Service', function () {
         );
       });
       const result = await service.emailJob({ emailId: '123' });
-      assert.equal(result, undefined);
+      assert.equal(result, 'interrupted', 'the job is not done, so it runs again later');
       sinon.assert.calledOnce(sendEmail);
       sinon.assert.notCalled(errorLog);
       sinon.assert.notCalled(captureException);
@@ -2457,8 +2460,9 @@ describe('Batch Sending Service', function () {
       });
       service.onPreStop();
 
-      await service.emailJob({ emailId: '123' });
+      const result = await service.emailJob({ emailId: '123' });
 
+      assert.equal(result, 'interrupted');
       assert.equal(
         afterEmailModel.get('status'),
         'submitting',

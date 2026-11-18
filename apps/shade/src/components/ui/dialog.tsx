@@ -37,7 +37,7 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
 // The panel itself, shared by both ways a dialog can sit on the page.
 const dialogPanelClassName =
-  'z-50 grid w-full max-w-lg transform-gpu gap-6 bg-surface-elevated-2 p-6 shadow-lg outline-hidden duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95';
+  'z-50 grid w-full max-w-lg transform-gpu gap-6 bg-surface-elevated-2 p-6 shadow-lg [--sticky-footer-background:var(--surface-elevated-2)] outline-hidden duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95';
 
 export interface DialogContentProps extends React.ComponentPropsWithoutRef<
   typeof DialogPrimitive.Content
@@ -118,7 +118,7 @@ DialogHeader.displayName = 'DialogHeader';
 const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      'flex flex-col-reverse sm:flex-row sm:items-end sm:justify-end sm:gap-2 [&_button]:min-w-20',
+      'flex flex-col-reverse sm:flex-row sm:items-end sm:justify-end sm:gap-2',
       className,
     )}
     {...props}

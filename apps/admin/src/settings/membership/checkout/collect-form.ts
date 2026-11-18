@@ -28,13 +28,6 @@ export const asksNoTier = (state: CollectFormState): boolean =>
   state.collect && !state.allTiers && !state.tierIds.length;
 
 /**
- * Whether a part is on and the tiers it is asked on, for saving or previewing a part with
- * nothing else to set. Only called once validation has stopped it being on for no tier.
- */
-export const collectSettingOf = (state: CollectFormState): CollectSetting =>
-  state.collect ? { collect: true, ...tierIdsSettingOf(state) } : { collect: false };
-
-/**
  * The tiers the sketch tags a part with: empty when it is asked on every paid tier, so there
  * is nothing to tag.
  */

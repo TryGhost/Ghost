@@ -97,8 +97,6 @@ async function loadRuntime() {
   const knex: Knex = db.knex;
   const { createDatabaseAutomationsRepository } =
     await import('../../ghost/core/server/services/automations/database-automations-repository.ts');
-  const { buildTriggerRuleRows } =
-    await import('../../ghost/core/server/services/automations/trigger-rules.ts');
   const { poll } = await import('../../ghost/core/server/services/automations/poll.ts');
   const { toDatabaseDate } = await import('../../ghost/core/server/lib/db-types/date.ts');
   const require = createRequire(import.meta.url);
@@ -109,7 +107,7 @@ async function loadRuntime() {
   const welcomeEmails = welcomeEmailsModule.default ?? welcomeEmailsModule;
   const repository = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: 1 });
 
-  return { knex, buildTriggerRuleRows, poll, toDatabaseDate, welcomeEmails, repository };
+  return { knex, poll, toDatabaseDate, welcomeEmails, repository };
 }
 
 type Runtime = Awaited<ReturnType<typeof loadRuntime>>;
@@ -141,7 +139,7 @@ async function createMembers(
 }
 
 async function createAutomation(
-  { knex, buildTriggerRuleRows }: Runtime,
+  { knex }: Runtime,
   automationId: string,
   steps: StepType[],
   createdAt: string,
@@ -156,9 +154,15 @@ async function createAutomation(
     created_at: createdAt,
     updated_at: createdAt,
   });
-  await knex('automation_trigger_rules').insert(
-    buildTriggerRuleRows({ automationId, scope: 'free', tierIds: [], createdAt: new Date() }),
-  );
+  await knex('automation_trigger_rules').insert({
+    id: id(),
+    automation_id: automationId,
+    trigger_type: 'free_signup',
+    scope: null,
+    product_id: null,
+    direction: null,
+    created_at: createdAt,
+  });
   await knex('automation_actions').insert(
     actions.map((action) => ({
       id: action.id,

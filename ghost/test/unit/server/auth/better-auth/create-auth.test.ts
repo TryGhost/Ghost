@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import type { Knex } from 'knex';
 import {
-  assertDatabaseSupported,
   createAuth,
   type CreateAuthDeps,
 } from '../../../../../core/server/auth/better-auth/create-auth';
@@ -10,6 +9,18 @@ const SESSION_MAX_AGE_MS = 15552000000;
 
 // Building the instance runs no queries
 const fakeKnex = () => ({}) as Knex;
+
+// Never blocks; the rate limits have their own tests
+const allow = () => ({ consume: async () => ({ allowed: true as const }), reset: async () => {} });
+const limiters = {
+  globalBlock: allow,
+  globalReset: allow,
+  userLogin: allow,
+  userReset: allow,
+  sendVerificationCode: allow,
+  userVerification: allow,
+  verificationEmail: allow,
+};
 
 function deps({
   siteUrl = 'https://example.com/',
@@ -21,8 +32,7 @@ function deps({
     secret: 'a'.repeat(64),
     sessionMaxAgeMs: SESSION_MAX_AGE_MS,
     urlUtils: {
-      getAdminUrl: () => adminUrl,
-      getSiteUrl: () => siteUrl,
+      getAdminOrigin: () => new URL(adminUrl ?? siteUrl).origin,
       getSubdir: () => subdir,
       isSSL: (url) => url.startsWith('https://'),
     },
@@ -31,6 +41,12 @@ function deps({
       compare: async (password, hash) => hash === `hashed:${password}`,
     },
     logger: { debug() {}, info() {}, warn() {}, error() {} },
+    limiters,
+    sendPasswordResetEmail: async () => {},
+    isStaffDeviceVerificationEnabled: () => true,
+    isEmailMfaRequired: () => false,
+    sendDeviceVerificationCode: async () => {},
+    getRequestOrigin: (headers) => headers.get('origin'),
   };
 }
 
@@ -125,7 +141,7 @@ describe('createAuth', function () {
     assert.equal(context.options.session?.disableSessionRefresh, true);
   });
 
-  it('disables sign-up, account changes, social sign-in, rate limiting and telemetry', async function () {
+  it('disables sign-up, account changes, social sign-in and telemetry', async function () {
     const { options } = await createAuth(deps()).$context;
 
     assert.equal(options.emailAndPassword?.disableSignUp, true);
@@ -137,8 +153,14 @@ describe('createAuth', function () {
       '/delete-user',
       '/sign-in/social',
     ]);
-    assert.equal(options.rateLimit?.enabled, false);
     assert.equal(options.telemetry?.enabled, false);
+  });
+
+  it("rate limits on Ghost's limiters in every environment", async function () {
+    const { options } = await createAuth(deps()).$context;
+
+    assert.equal(options.rateLimit?.enabled, true);
+    assert.equal(typeof options.rateLimit?.customStorage?.consume, 'function');
   });
 
   it('never exposes the legacy password hash as a user field', async function () {
@@ -167,30 +189,30 @@ describe('createAuth', function () {
     }
   });
 
+  it('rejects a sign-in from an untrusted origin even under NODE_ENV=test', async function () {
+    vi.stubEnv('NODE_ENV', 'test');
+    vi.stubEnv('TEST', 'true');
+    try {
+      const auth = createAuth(
+        deps({ siteUrl: 'https://example.com/', adminUrl: 'https://admin.example.com/' }),
+      );
+      const response = await auth.handler(
+        new Request('https://admin.example.com/ghost/api/admin/auth/sign-in/email', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', origin: 'https://example.com' },
+          body: JSON.stringify({ email: 'owner@example.com', password: 'password' }),
+        }),
+      );
+
+      assert.equal(response.status, 403);
+      assert.equal((await response.json()).code, 'INVALID_ORIGIN');
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it('generates ObjectIds', async function () {
     const context = await createAuth(deps()).$context;
     assert.match(context.generateId({ model: 'session' }) as string, /^[0-9a-f]{24}$/);
-  });
-});
-
-describe('assertDatabaseSupported', function () {
-  it('accepts MySQL with the in-development tables', function () {
-    assertDatabaseSupported({ client: 'mysql2', inDevelopmentTables: true });
-  });
-
-  for (const client of ['sqlite3', 'better-sqlite3']) {
-    it(`refuses ${client}`, function () {
-      assert.throws(() => assertDatabaseSupported({ client, inDevelopmentTables: true }), {
-        name: 'IncorrectUsageError',
-        message: 'auth:engine better-auth requires MySQL; SQLite is not supported.',
-      });
-    });
-  }
-
-  it('refuses a database without the in-development tables', function () {
-    assert.throws(() => assertDatabaseSupported({ client: 'mysql2', inDevelopmentTables: false }), {
-      name: 'IncorrectUsageError',
-      message: /requires the in-development auth tables/,
-    });
   });
 });

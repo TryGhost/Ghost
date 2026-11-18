@@ -95,7 +95,7 @@ When you set `permissions: true`, the framework delegates to the default permiss
    permissions.canThis(context).edit.post(postId, unsafeAttrs)
    ```
 
-3. **Permission Lookup**: The permissions service checks the permissions defined in code, in `ghost/core/server/services/permissions/permissions-data.ts`:
+3. **Permission Lookup**: The permissions service checks the permissions defined in code, in `ghost/core/server/auth/permissions/permissions-data.ts`:
    - Looks for a permission with `action_type` matching the method (e.g., `edit`)
    - And `object_type` matching the singular docName (e.g., `post`)
    - Verifies the user's role (or the API key's role) holds that permission
@@ -629,12 +629,12 @@ const {
 
 ## Adding Permissions
 
-When creating a new API endpoint that uses the default permission handler (`permissions: true`), add its permissions to `ghost/core/server/services/permissions/permissions-data.ts`. Permissions live in code, so no migration is needed. Do not add permission migrations: the permissions tables still exist but are unused.
+When creating a new API endpoint that uses the default permission handler (`permissions: true`), add its permissions to `ghost/core/server/auth/permissions/permissions-data.ts`. Permissions live in code, so no migration is needed. Do not add permission migrations: the permissions tables still exist but are unused.
 
 ### Example: Adding CRUD Permissions for a New Resource
 
 ```typescript
-// ghost/core/server/services/permissions/permissions-data.ts
+// ghost/core/server/auth/permissions/permissions-data.ts
 
 export const permissions = {
   // ...
@@ -653,7 +653,7 @@ export const rolePermissions = {
 };
 ```
 
-Then update the expected grants in `ghost/test/unit/server/services/permissions/role-grants.test.ts`, and the per-role permission counts in `ghost/test/e2e-api/admin/users.test.js` for any staff role you changed.
+Then update the expected grants in `ghost/test/unit/server/auth/permissions/role-grants.test.ts`, and the per-role permission counts in `ghost/test/e2e-api/admin/users.test.js` for any staff role you changed.
 
 ### Available Roles
 

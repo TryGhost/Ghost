@@ -2,8 +2,11 @@
 import { registerHelper, shouldCompileToExpected } from './utils/handlebars';
 // @ts-expect-error This module lacks type definitions.
 import { SafeString } from '../../../../core/frontend/services/handlebars';
+import { restoreHandlebarsAfterSuite } from '../../../utils/handlebars-state';
 
 describe('{{split}} helper in block mode', function () {
+  restoreHandlebarsAfterSuite();
+
   beforeAll(function () {
     registerHelper('split');
     registerHelper('foreach');
@@ -98,6 +101,8 @@ describe('{{split}} helper in block mode', function () {
 });
 
 describe('{{split}} helper in inline mode', function () {
+  restoreHandlebarsAfterSuite();
+
   beforeAll(function () {
     registerHelper('split');
     registerHelper('foreach');

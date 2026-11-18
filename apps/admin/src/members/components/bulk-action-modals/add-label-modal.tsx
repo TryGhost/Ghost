@@ -8,7 +8,7 @@ import {
 } from '@tryghost/shade/components';
 import { LabelPicker } from '@/members/label-picker';
 import { formatNumber } from '@tryghost/shade/utils';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useLabelPicker } from '@/members/hooks/use-label-picker';
 import { Stack } from '@tryghost/shade/primitives';
 // PROTOTYPE ONLY (NY-1750): which label automations this starts. Don't merge.
@@ -64,11 +64,14 @@ export function AddLabelModal({
   const leadMagnetMatches = useLeadMagnetBulkMatches(picker.labels, selectedSlugs);
   const leadMagnetConfirmNeeded = useLeadMagnetBulkConfirmNeeded(leadMagnetMatches);
   const [isConfirming, setConfirming] = useState(false);
-  useEffect(() => {
+  // Closing goes back to the picker, reset while rendering rather than in an effect.
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
     if (!open) {
       setConfirming(false);
     }
-  }, [open]);
+  }
   const handleAddClick = () => {
     if (leadMagnetConfirmNeeded && !isConfirming) {
       setConfirming(true);

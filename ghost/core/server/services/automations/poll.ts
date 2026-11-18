@@ -22,7 +22,6 @@ type MemberWelcomeEmailService = {
       name: string | null;
       uuid: string;
     };
-    memberStatus: 'free' | 'paid';
     trackOpens: boolean;
     trackClicks: boolean;
     automationActionRevisionId: string;
@@ -56,9 +55,9 @@ type PollOptions = {
   memberWelcomeEmailService: MemberWelcomeEmailService;
 };
 
-const getFreeOrPaidForTriggerRule = (
+const getExpectedMemberStatus = (
   rule: Readonly<AutomationTriggerRuleDefinition>,
-): 'free' | 'paid' => {
+): 'free' | 'paid' | 'any' => {
   const triggerType = rule.trigger_type;
   switch (triggerType) {
     case 'free_signup':
@@ -67,6 +66,8 @@ const getFreeOrPaidForTriggerRule = (
       return 'paid';
     case 'paid_subscription_changed':
       return rule.scope === 'free' ? 'free' : 'paid';
+    case 'label_added':
+      return 'any';
     default: {
       const _exhaustive: never = triggerType;
       throw new errors.InternalServerError({
@@ -80,9 +81,9 @@ const doesMemberMatchTriggerRuleStatus = (
   member: MemberModel,
   rule: Readonly<AutomationTriggerRuleDefinition>,
 ): boolean => {
-  const expectedFreeOrPaid = getFreeOrPaidForTriggerRule(rule);
+  const expectedMemberStatus = getExpectedMemberStatus(rule);
   const actualMemberStatus = member.get('status');
-  switch (expectedFreeOrPaid) {
+  switch (expectedMemberStatus) {
     case 'free':
       if (actualMemberStatus !== 'free') {
         return false;
@@ -93,8 +94,10 @@ const doesMemberMatchTriggerRuleStatus = (
         return false;
       }
       break;
+    case 'any':
+      return true;
     default: {
-      const _exhaustive: never = expectedFreeOrPaid;
+      const _exhaustive: never = expectedMemberStatus;
       throw new errors.InternalServerError({
         message: `Unexpected expected member status: ${_exhaustive}`,
       });
@@ -269,7 +272,6 @@ const processStep = async ({
     return null;
   }
 
-  const memberStatus = getFreeOrPaidForTriggerRule(matchingRule);
   let nextReadyAt: Date | null = null;
 
   try {
@@ -295,7 +297,6 @@ const processStep = async ({
             name: member.get('name'),
             uuid: member.get('uuid'),
           },
-          memberStatus,
           trackOpens,
           trackClicks,
           automationActionRevisionId: step.automation_action_revision_id,

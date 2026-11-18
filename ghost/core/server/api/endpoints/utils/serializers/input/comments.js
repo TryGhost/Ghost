@@ -1,4 +1,14 @@
 const urlService = require('../../../../../services/url');
+const localUtils = require('../../index');
+const { rejectCommentsContentApiRestrictedOrderFields } = require('../../api-filter-utils');
+
+// Members comments are public, so ordering is limited to fields the Content API allows.
+// This runs before the default order is applied, so a removed order falls back to it.
+function restrictMembersOrder(frame) {
+  if (localUtils.isMembersAPI(frame)) {
+    frame.options.order = rejectCommentsContentApiRestrictedOrderFields(frame.options.order);
+  }
+}
 
 module.exports = {
   all(_apiConfig, frame) {
@@ -34,6 +44,8 @@ module.exports = {
   },
 
   browse(apiConfig, frame) {
+    restrictMembersOrder(frame);
+
     // for top-level comments we show newest comments first and paginate to older
     if (!frame.options.order) {
       frame.options.order = 'created_at DESC, id DESC';
@@ -41,6 +53,8 @@ module.exports = {
   },
 
   replies(apiConfig, frame) {
+    restrictMembersOrder(frame);
+
     // for replies we show the oldest comments first and paginate to newer
     if (!frame.options.order) {
       frame.options.order = 'created_at ASC, id ASC';

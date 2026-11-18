@@ -7,6 +7,7 @@ import { StorageBase } from 'ghost-storage-base';
 import tpl from '@tryghost/tpl';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
+import { detectStorageContentType } from '../../lib/file-types';
 import {
   DeleteObjectCommand,
   GetObjectCommand,
@@ -225,7 +226,8 @@ export default class S3Storage extends StorageBase {
         Bucket: this.bucket,
         Key: key,
         Body: body,
-        ContentType: file.type,
+        // Undetectable contents (SVG, text) keep the uploaded type
+        ContentType: (await detectStorageContentType(body)) ?? file.type,
       }),
     );
 
@@ -251,11 +253,14 @@ export default class S3Storage extends StorageBase {
   }
 
   private async uploadMultipart(file: UploadFile, key: string): Promise<string> {
+    // Reads the file's head, so a large upload isn't loaded to type it
+    const contentType = (await detectStorageContentType(file.path)) ?? file.type;
+
     const createResponse = await this.client.send(
       new CreateMultipartUploadCommand({
         Bucket: this.bucket,
         Key: key,
-        ContentType: file.type,
+        ContentType: contentType,
       }),
     );
 
@@ -343,6 +348,9 @@ export default class S3Storage extends StorageBase {
         Bucket: this.bucket,
         Key: key,
         Body: buffer,
+        // No uploaded type to fall back to, so undetectable contents are
+        // stored without one, as before
+        ContentType: await detectStorageContentType(buffer),
       }),
     );
 

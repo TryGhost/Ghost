@@ -1,5 +1,6 @@
-const { expect } = require('chai');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const { assertExists } = require('../../../utils/assertions');
 const { BrowserService } = require('../../../../core/frontend/src/ghost-stats/browser-service.js');
 
 // ghost-stats.js auto-runs init() at module load. Outside a browser there's no
@@ -33,8 +34,36 @@ describe('ghost-stats.js', function () {
     ghostStats.initConfig();
   };
 
+  const assertIsObject = (value) => {
+    assert.equal(Object.prototype.toString.call(value), '[object Object]');
+  };
+
+  // Every expected property is strictly equal on the actual object
+  const assertIncludes = (actual, expected) => {
+    for (const [key, value] of Object.entries(expected)) {
+      assert.equal(actual[key], value, `Property mismatch for key "${key}"`);
+    }
+  };
+
+  // As assertIncludes, but each property is compared deeply
+  const assertDeepIncludes = (actual, expected) => {
+    for (const [key, value] of Object.entries(expected)) {
+      assert.deepEqual(actual[key], value, `Property mismatch for key "${key}"`);
+    }
+  };
+
+  const assertHasAllKeys = (obj, keys) => {
+    assert.deepEqual(Object.keys(obj).sort(), [...keys].sort());
+  };
+
+  const assertHasNoKeys = (obj, keys) => {
+    for (const key of keys) {
+      assert.equal(Object.hasOwn(obj, key), false, `Unexpected key "${key}"`);
+    }
+  };
+
   const getLastRequest = () => {
-    expect(mockFetch.called).to.be.true;
+    assert.equal(mockFetch.called, true);
     const [url, options] = mockFetch.lastCall.args;
     return { url, options, payload: JSON.parse(options.body) };
   };
@@ -50,9 +79,9 @@ describe('ghost-stats.js', function () {
 
     Object.entries(expectedFields).forEach(([key, value]) => {
       if (typeof value === 'object' && value !== null) {
-        expect(innerPayload[key]).to.deep.include(value);
+        assertDeepIncludes(innerPayload[key], value);
       } else {
-        expect(innerPayload[key]).to.equal(value);
+        assert.equal(innerPayload[key], value);
       }
     });
   };
@@ -61,19 +90,19 @@ describe('ghost-stats.js', function () {
     const { url, options, payload } = getLastRequest();
 
     if (expectedStructure.url) {
-      expect(url).to.include(expectedStructure.url);
+      assert.equal(url.includes(expectedStructure.url), true);
     }
     if (expectedStructure.method) {
-      expect(options.method).to.equal(expectedStructure.method);
+      assert.equal(options.method, expectedStructure.method);
     }
     if (expectedStructure.headers) {
       Object.entries(expectedStructure.headers).forEach(([key, value]) => {
-        expect(options.headers[key]).to.equal(value);
+        assert.equal(options.headers[key], value);
       });
     }
     if (expectedStructure.payloadFields) {
       expectedStructure.payloadFields.forEach((field) => {
-        expect(payload).to.have.property(field);
+        assert.equal(field in payload, true);
       });
     }
   };
@@ -170,14 +199,14 @@ describe('ghost-stats.js', function () {
         value: true,
         configurable: true,
       });
-      expect(browserService.isTestEnvironment()).to.be.true;
+      assert.equal(browserService.isTestEnvironment(), true);
 
       // Enable synthetic monitoring flag - should bypass test detection
       Object.defineProperty(mockWindow, '__GHOST_SYNTHETIC_MONITORING__', {
         value: true,
         configurable: true,
       });
-      expect(browserService.isTestEnvironment()).to.be.false;
+      assert.equal(browserService.isTestEnvironment(), false);
 
       // Clean up
       delete mockWindow.__GHOST_SYNTHETIC_MONITORING__;
@@ -185,35 +214,38 @@ describe('ghost-stats.js', function () {
     });
 
     it('should handle browser APIs safely', function () {
-      expect(browserService.getNavigator()).to.equal(mockWindow.navigator);
-      expect(browserService.getLocation()).to.equal(mockWindow.location);
-      expect(browserService.getTimezone()).to.equal('America/New_York');
-      expect(browserService.getCurrentScript()).to.equal(mockDocument.currentScript);
-      expect(browserService.getVisibilityState()).to.equal('visible');
+      assert.equal(browserService.getNavigator(), mockWindow.navigator);
+      assert.equal(browserService.getLocation(), mockWindow.location);
+      assert.equal(browserService.getTimezone(), 'America/New_York');
+      assert.equal(browserService.getCurrentScript(), mockDocument.currentScript);
+      assert.equal(browserService.getVisibilityState(), 'visible');
     });
 
     it('should manage event listeners correctly', function () {
       const callback = () => {};
       browserService.addEventListener('window', 'test', callback);
-      expect(
+      assert.equal(
         mockWindow.addEventListener.called &&
           mockWindow.addEventListener.firstCall.args[0] === 'test' &&
           mockWindow.addEventListener.firstCall.args[1] === callback,
-      ).to.be.true;
+        true,
+      );
 
       browserService.addEventListener('document', 'test', callback);
-      expect(
+      assert.equal(
         mockDocument.addEventListener.called &&
           mockDocument.addEventListener.firstCall.args[0] === 'test' &&
           mockDocument.addEventListener.firstCall.args[1] === callback,
-      ).to.be.true;
+        true,
+      );
 
       browserService.removeEventListener('window', 'test', callback);
-      expect(
+      assert.equal(
         mockWindow.removeEventListener.called &&
           mockWindow.removeEventListener.firstCall.args[0] === 'test' &&
           mockWindow.removeEventListener.firstCall.args[1] === callback,
-      ).to.be.true;
+        true,
+      );
     });
   });
 
@@ -222,21 +254,21 @@ describe('ghost-stats.js', function () {
       mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
       mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
 
-      expect(ghostStats.initConfig()).to.be.true;
+      assert.equal(ghostStats.initConfig(), true);
     });
 
     it('should initialize with host and no token', function () {
       mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
       mockDocument.currentScript.getAttribute.withArgs('data-token').returns(null);
 
-      expect(ghostStats.initConfig()).to.be.true;
+      assert.equal(ghostStats.initConfig(), true);
     });
 
     it('should handle missing configuration gracefully', function () {
-      expect(ghostStats.initConfig()).to.be.false;
+      assert.equal(ghostStats.initConfig(), false);
 
       mockDocument.currentScript = null;
-      expect(ghostStats.initConfig()).to.be.false;
+      assert.equal(ghostStats.initConfig(), false);
     });
 
     it('should process global attributes', async function () {
@@ -251,8 +283,8 @@ describe('ghost-stats.js', function () {
       await ghostStats.trackEvent('test', {});
 
       const payload = JSON.parse(mockFetch.lastCall.args[1].body);
-      expect(payload.payload).to.include('attr1');
-      expect(payload.payload).to.include('value1');
+      assert.equal(payload.payload.includes('attr1'), true);
+      assert.equal(payload.payload.includes('value1'), true);
     });
   });
 
@@ -280,7 +312,7 @@ describe('ghost-stats.js', function () {
       expectRequestToContain(eventData);
 
       const { payload } = getLastRequest();
-      expect(payload.action).to.equal('custom_event');
+      assert.equal(payload.action, 'custom_event');
     });
 
     it('should track page hits with browser and location context', function () {
@@ -299,7 +331,7 @@ describe('ghost-stats.js', function () {
       });
 
       const { payload } = getLastRequest();
-      expect(payload.action).to.equal('page_hit');
+      assert.equal(payload.action, 'page_hit');
     });
 
     it('should include referrer and UTM tracking data in page hits', function () {
@@ -315,11 +347,11 @@ describe('ghost-stats.js', function () {
       const payload = getLastPayload();
 
       // Verify referrer structure exists and has expected fields
-      expect(payload.parsedReferrer).to.be.an('object');
-      expect(payload.parsedReferrer).to.have.all.keys(['url', 'source', 'medium']);
+      assertIsObject(payload.parsedReferrer);
+      assertHasAllKeys(payload.parsedReferrer, ['url', 'source', 'medium']);
 
       // Verify UTM fields are present at top level
-      expect(payload).to.include({
+      assertIncludes(payload, {
         utm_source: 'test-source',
         utm_medium: 'test-medium',
         utm_campaign: 'test-campaign',
@@ -336,8 +368,8 @@ describe('ghost-stats.js', function () {
       mockWindow.location.hostname = 'localhost';
       await ghostStats.trackEvent('test_event', {});
 
-      expect(consoleSpy.calledOnce).to.be.true;
-      expect(consoleSpy.calledWith('Ghost Stats error:', networkError)).to.be.true;
+      assert.equal(consoleSpy.calledOnce, true);
+      assert.equal(consoleSpy.calledWith('Ghost Stats error:', networkError), true);
     });
 
     it('should send properly structured analytics payloads', async function () {
@@ -362,13 +394,13 @@ describe('ghost-stats.js', function () {
       const innerPayload = getLastPayload();
 
       // Validate payload structure and content
-      expect(payload.action).to.equal('custom_event');
-      expect(payload.timestamp).to.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
-      expect(innerPayload).to.include(testEventData);
-      expect(innerPayload).to.have.property('site_uuid', 'test-site-uuid');
+      assert.equal(payload.action, 'custom_event');
+      assert.match(payload.timestamp, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+      assertIncludes(innerPayload, testEventData);
+      assert.equal(innerPayload.site_uuid, 'test-site-uuid');
 
       // Custom events should not include page-specific data
-      expect(innerPayload).to.not.have.any.keys(['user-agent', 'pathname', 'href']);
+      assertHasNoKeys(innerPayload, ['user-agent', 'pathname', 'href']);
     });
 
     it('should send complete page hit analytics data', function () {
@@ -384,7 +416,7 @@ describe('ghost-stats.js', function () {
       const { payload } = getLastRequest();
       const innerPayload = getLastPayload();
 
-      expect(payload.action).to.equal('page_hit');
+      assert.equal(payload.action, 'page_hit');
 
       // Verify all required page hit data is present
       const requiredPageFields = [
@@ -398,11 +430,11 @@ describe('ghost-stats.js', function () {
         'event_id',
       ];
       requiredPageFields.forEach((field) => {
-        expect(innerPayload).to.have.property(field);
+        assert.equal(field in innerPayload, true);
       });
 
       // Verify UTM tracking fields are present
-      expect(innerPayload).to.include({
+      assertIncludes(innerPayload, {
         utm_source: 'test-source',
         utm_medium: 'test-medium',
         utm_campaign: 'test-campaign',
@@ -411,17 +443,17 @@ describe('ghost-stats.js', function () {
       });
 
       // Verify data types
-      expect(innerPayload['user-agent']).to.be.a('string');
-      expect(innerPayload.pathname).to.be.a('string');
-      expect(innerPayload.href).to.be.a('string');
-      expect(innerPayload.parsedReferrer).to.be.a('object');
-      expect(innerPayload.locale).to.be.a('string');
-      expect(innerPayload.location).to.be.a('string');
-      expect(innerPayload.event_id).to.be.a('string');
+      assert.equal(typeof innerPayload['user-agent'], 'string');
+      assert.equal(typeof innerPayload.pathname, 'string');
+      assert.equal(typeof innerPayload.href, 'string');
+      assertIsObject(innerPayload.parsedReferrer);
+      assert.equal(typeof innerPayload.locale, 'string');
+      assert.equal(typeof innerPayload.location, 'string');
+      assert.equal(typeof innerPayload.event_id, 'string');
 
       // Verify referrer structure is clean (no UTM fields)
-      expect(innerPayload.parsedReferrer).to.have.all.keys(['url', 'source', 'medium']);
-      expect(innerPayload.parsedReferrer).to.not.have.any.keys([
+      assertHasAllKeys(innerPayload.parsedReferrer, ['url', 'source', 'medium']);
+      assertHasNoKeys(innerPayload.parsedReferrer, [
         'utm_source',
         'utm_medium',
         'utm_campaign',
@@ -435,30 +467,30 @@ describe('ghost-stats.js', function () {
       await ghostStats.trackEvent('test', {});
 
       const { url } = getLastRequest();
-      expect(url).to.equal('https://test.com?name=analytics_events');
+      assert.equal(url, 'https://test.com?name=analytics_events');
     });
 
     it('should handle network timeouts gracefully', async function () {
       mockFetch.rejects(new Error('Request timeout'));
 
       const result = await ghostStats.trackEvent('test_event', {});
-      expect(result).to.be.null;
-      expect(mockFetch.calledOnce).to.be.true;
+      assert.equal(result, null);
+      assert.equal(mockFetch.calledOnce, true);
     });
 
     it('should handle HTTP error responses gracefully', async function () {
       mockFetch.resolves({ ok: false, status: 500 });
 
       const result = await ghostStats.trackEvent('test_event', {});
-      expect(result).to.be.null;
-      expect(mockFetch.calledOnce).to.be.true;
+      assert.equal(result, null);
+      assert.equal(mockFetch.calledOnce, true);
     });
   });
 
   describe('GhostStats Location Detection', function () {
     it('should detect locale and country correctly', function () {
       const info = ghostStats.getLocationInfo();
-      expect(info).to.deep.equal({
+      assert.deepEqual(info, {
         locale: 'en-US',
         country: 'US',
       });
@@ -469,7 +501,7 @@ describe('ghost-stats.js', function () {
       mockWindow.navigator.language = 'en';
 
       const info = ghostStats.getLocationInfo();
-      expect(info).to.deep.equal({
+      assert.deepEqual(info, {
         locale: 'en',
         country: 'US',
       });
@@ -481,7 +513,7 @@ describe('ghost-stats.js', function () {
       };
 
       const info = ghostStats.getLocationInfo();
-      expect(info).to.deep.equal({
+      assert.deepEqual(info, {
         locale: 'en',
         country: null,
       });
@@ -498,7 +530,7 @@ describe('ghost-stats.js', function () {
     it('should handle visibility changes', async function () {
       mockDocument.visibilityState = 'hidden';
       ghostStats.setupEventListeners();
-      expect(mockDocument.addEventListener.calledWith('visibilitychange')).to.be.true;
+      assert.equal(mockDocument.addEventListener.calledWith('visibilitychange'), true);
 
       const visibilityCallback = mockDocument.addEventListener.firstCall.args[1];
       mockDocument.visibilityState = 'visible';
@@ -507,9 +539,9 @@ describe('ghost-stats.js', function () {
       const timeoutCallback = mockWindow.setTimeout.firstCall.args[0];
       await timeoutCallback();
 
-      expect(mockFetch.calledOnce).to.be.true;
+      assert.equal(mockFetch.calledOnce, true);
       const payload = JSON.parse(mockFetch.firstCall.args[1].body);
-      expect(payload.action).to.equal('page_hit');
+      assert.equal(payload.action, 'page_hit');
     });
 
     it('should not attach listeners multiple times', function () {
@@ -521,7 +553,7 @@ describe('ghost-stats.js', function () {
       ghostStats.setupEventListeners();
 
       // Verify no additional listeners were attached
-      expect(mockWindow.addEventListener.callCount).to.equal(firstCallCount);
+      assert.equal(mockWindow.addEventListener.callCount, firstCallCount);
     });
 
     it('should maintain single visibility change listener when called multiple times', function () {
@@ -534,7 +566,8 @@ describe('ghost-stats.js', function () {
       // Call setupEventListeners again
       ghostStats.setupEventListeners();
 
-      expect(mockDocument.addEventListener.withArgs('visibilitychange').callCount).to.equal(
+      assert.equal(
+        mockDocument.addEventListener.withArgs('visibilitychange').callCount,
         firstVisibilityListenerCount,
       );
     });
@@ -545,9 +578,9 @@ describe('ghost-stats.js', function () {
       mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
       mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
 
-      expect(ghostStats.init()).to.be.true;
-      expect(mockWindow.Tinybird).to.exist;
-      expect(typeof mockWindow.Tinybird.trackEvent).to.equal('function');
+      assert.equal(ghostStats.init(), true);
+      assertExists(mockWindow.Tinybird);
+      assert.equal(typeof mockWindow.Tinybird.trackEvent, 'function');
     });
 
     it('should skip initialization when in an iframe', function () {
@@ -561,8 +594,8 @@ describe('ghost-stats.js', function () {
       mockWindow.self = mockWindow;
       mockWindow.top = { different: 'window' }; // Different from self
 
-      expect(ghostStats.init()).to.be.false;
-      expect(mockWindow.Tinybird).to.not.exist;
+      assert.equal(ghostStats.init(), false);
+      assert.equal(mockWindow.Tinybird, undefined);
 
       // Restore original values
       mockWindow.self = originalSelf;
@@ -578,18 +611,20 @@ describe('ghost-stats.js', function () {
       mockWindow.self = mockWindow;
       mockWindow.top = mockWindow; // Same as self
 
-      expect(ghostStats.init()).to.be.true;
-      expect(mockWindow.Tinybird).to.exist;
-      expect(typeof mockWindow.Tinybird.trackEvent).to.equal('function');
+      assert.equal(ghostStats.init(), true);
+      assertExists(mockWindow.Tinybird);
+      assert.equal(typeof mockWindow.Tinybird.trackEvent, 'function');
     });
 
     it('should handle missing configuration gracefully', function () {
       const consoleWarnStub = sandbox.stub(console, 'warn');
 
-      expect(ghostStats.init()).to.be.false;
+      assert.equal(ghostStats.init(), false);
 
-      expect(consoleWarnStub.calledOnceWith('Ghost Stats: Missing required configuration')).to.be
-        .true;
+      assert.equal(
+        consoleWarnStub.calledOnceWith('Ghost Stats: Missing required configuration'),
+        true,
+      );
     });
 
     it('should set up global Tinybird API when initialized', function () {
@@ -598,27 +633,27 @@ describe('ghost-stats.js', function () {
 
       ghostStats.init();
 
-      expect(mockWindow.Tinybird).to.exist;
-      expect(typeof mockWindow.Tinybird.trackEvent).to.equal('function');
-      expect(typeof mockWindow.Tinybird._trackPageHit).to.equal('function');
+      assertExists(mockWindow.Tinybird);
+      assert.equal(typeof mockWindow.Tinybird.trackEvent, 'function');
+      assert.equal(typeof mockWindow.Tinybird._trackPageHit, 'function');
 
       // Test the global API works
       mockWindow.Tinybird.trackEvent('test', { data: 'value' });
-      expect(mockFetch.calledOnce).to.be.true;
+      assert.equal(mockFetch.calledOnce, true);
     });
   });
 
   describe('GhostStats UUID Generation', function () {
     it('should generate a valid UUID', function () {
       const uuid = ghostStats.generateUUID();
-      expect(uuid).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+      assert.match(uuid, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
     });
 
     it('should generate a valid UUID with fallback', function () {
       mockWindow.crypto = undefined;
 
       const uuid = ghostStats.generateUUID();
-      expect(uuid).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+      assert.match(uuid, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
     });
   });
 
@@ -640,13 +675,13 @@ describe('ghost-stats.js', function () {
       const innerPayload = getLastPayload();
 
       // Verify referrer data is properly structured
-      expect(innerPayload.parsedReferrer).to.deep.include({
+      assertDeepIncludes(innerPayload.parsedReferrer, {
         source: 'ghost-newsletter',
         medium: 'social',
       });
 
       // Verify UTM data is at top level
-      expect(innerPayload).to.include({
+      assertIncludes(innerPayload, {
         utm_source: 'twitter',
         utm_medium: 'social',
         utm_campaign: 'test-campaign',
@@ -667,10 +702,10 @@ describe('ghost-stats.js', function () {
       const innerPayload = getLastPayload();
 
       // Should preserve document referrer
-      expect(innerPayload.parsedReferrer.url).to.equal('https://example.com/internal-page');
+      assert.equal(innerPayload.parsedReferrer.url, 'https://example.com/internal-page');
 
       // UTM fields should still be present and null
-      expect(innerPayload).to.include({
+      assertIncludes(innerPayload, {
         utm_source: null,
         utm_medium: null,
         utm_campaign: null,
@@ -691,11 +726,11 @@ describe('ghost-stats.js', function () {
       const innerPayload = getLastPayload();
 
       // Should still have referrer structure
-      expect(innerPayload.parsedReferrer).to.be.an('object');
-      expect(innerPayload.parsedReferrer).to.have.all.keys(['url', 'source', 'medium']);
+      assertIsObject(innerPayload.parsedReferrer);
+      assertHasAllKeys(innerPayload.parsedReferrer, ['url', 'source', 'medium']);
 
       // UTM fields should be present and null
-      expect(innerPayload).to.include({
+      assertIncludes(innerPayload, {
         utm_source: null,
         utm_medium: null,
         utm_campaign: null,

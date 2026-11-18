@@ -5,6 +5,10 @@ import type { AutomationsRepository2 } from './automations-repository-2';
 
 type Connection = Knex | Knex.Transaction;
 
+const emailRecipientIdRowSchema = z.object({
+  id: z.string(),
+});
+
 const emailRecipientClickRowSchema = z.object({
   id: z.string(),
   clicked_at: z.coerce.date().nullable(),
@@ -46,7 +50,7 @@ const applyMembershipStartedFilters = (
 ): void => {
   query.whereExists(
     connection('automation_trigger_rules as rule')
-      .select('rule.id')
+      .select(1)
       .where('rule.automation_id', connection.ref('automation.id'))
       .where((builder) => {
         switch (memberStatus) {
@@ -100,7 +104,7 @@ const applyPaidSubscriptionChangedFilters = (
   // Is there a matching "from" rule?
   query.whereExists(
     connection('automation_trigger_rules as rule')
-      .select('rule.id')
+      .select(1)
       .where('rule.automation_id', connection.ref('automation.id'))
       .where('rule.trigger_type', 'paid_subscription_changed')
       .where('rule.direction', 'from')
@@ -112,7 +116,7 @@ const applyPaidSubscriptionChangedFilters = (
             // Don't include "from" rules if they overlap with "to" rules.
             .whereNotExists(
               connection('automation_trigger_rules as previous_destination')
-                .select('previous_destination.id')
+                .select(1)
                 .where('previous_destination.automation_id', connection.ref('automation.id'))
                 .where('previous_destination.trigger_type', 'paid_subscription_changed')
                 .where('previous_destination.direction', 'to')
@@ -125,7 +129,7 @@ const applyPaidSubscriptionChangedFilters = (
   // Is there a matching "to" rule?
   query.whereExists(
     connection('automation_trigger_rules as destination')
-      .select('destination.id')
+      .select(1)
       .where('destination.automation_id', connection.ref('automation.id'))
       .where('destination.trigger_type', 'paid_subscription_changed')
       .where('destination.direction', 'to')
@@ -135,6 +139,25 @@ const applyPaidSubscriptionChangedFilters = (
           to.orWhere('destination.scope', 'free');
         }
       }),
+  );
+};
+
+const applyLabelAddedFilters = (
+  query: Knex.QueryBuilder,
+  connection: Connection,
+  {
+    labelId,
+  }: Extract<
+    Parameters<AutomationsRepository2<Connection>['findFirstActionRevisions']>[1],
+    { eventName: 'label_added' }
+  >,
+): void => {
+  query.whereExists(
+    connection('automation_trigger_rules as rule')
+      .select(1)
+      .where('rule.automation_id', connection.ref('automation.id'))
+      .where('rule.trigger_type', 'label_added')
+      .where('rule.label_id', labelId),
   );
 };
 
@@ -152,6 +175,30 @@ export const createDatabaseAutomationsRepository2 = ({
   return {
     async deleteTriggerRules(connection, automationId) {
       await connection('automation_trigger_rules').where('automation_id', automationId).delete();
+    },
+
+    async fetchAndLockMembers(connection, memberIds) {
+      const ids = [...new Set(memberIds)];
+      if (ids.length === 0) {
+        return [];
+      }
+      const rows = await connection('members')
+        .select('id', 'email')
+        .whereIn('id', ids)
+        .orderBy('id')
+        .forUpdate();
+      return z.array(z.object({ id: z.string(), email: z.string() })).parse(rows);
+    },
+
+    async findAutomationMemberEnrollments(connection, automationIds, memberIds) {
+      if (automationIds.length === 0 || memberIds.length === 0) {
+        return [];
+      }
+      const rows = await connection('automation_runs')
+        .distinct('automation_id', 'member_id')
+        .whereIn('automation_id', automationIds)
+        .whereIn('member_id', memberIds);
+      return z.array(z.object({ automation_id: z.string(), member_id: z.string() })).parse(rows);
     },
 
     async findEmailRecipientForClick(
@@ -190,6 +237,9 @@ export const createDatabaseAutomationsRepository2 = ({
             case 'paid_subscription_changed':
               applyPaidSubscriptionChangedFilters(query, connection, options);
               break;
+            case 'label_added':
+              applyLabelAddedFilters(query, connection, options);
+              break;
             default: {
               const _exhaustive: never = options;
               throw new errors.InternalServerError({
@@ -226,17 +276,19 @@ export const createDatabaseAutomationsRepository2 = ({
       return Number(result?.count ?? 0);
     },
 
-    async hasMemberEnteredAutomation(connection, automationId, memberId) {
-      const query = connection('automation_runs')
-        .select(connection.raw('1'))
-        .where({ automation_id: automationId, member_id: memberId });
-      return await selectExists(connection, query);
-    },
-
     async incrementEmailClickedCount(connection, revisionId) {
       await connection('automation_action_revisions')
         .where({ id: revisionId })
         .update({ email_clicked_count: connection.raw('COALESCE(email_clicked_count, 0) + 1') });
+    },
+
+    async incrementEmailOpenedCount(connection, actionRevisionId, count) {
+      await connection('automation_action_revisions')
+        .where('id', actionRevisionId)
+        .update(
+          'email_opened_count',
+          connection.raw('COALESCE(email_opened_count, 0) + ?', [count]),
+        );
     },
 
     async insertActions(connection, toInsert) {
@@ -274,15 +326,6 @@ export const createDatabaseAutomationsRepository2 = ({
       if (toInsert.length > 0) {
         await connection('automation_trigger_rules').insert(toInsert);
       }
-    },
-
-    async isAutomationActiveForRun(connection, automationRunId) {
-      const query = connection('automation_runs as run')
-        .select(connection.raw('1'))
-        .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
-        .where('run.id', automationRunId)
-        .where('automation.status', 'active');
-      return await selectExists(connection, query);
     },
 
     async isAutomationActiveForRunStep(connection, runStepId) {
@@ -323,8 +366,16 @@ export const createDatabaseAutomationsRepository2 = ({
         .forUpdate();
     },
 
-    async lockMember(connection, memberId) {
-      await connection('members').where('id', memberId).forUpdate().first('id');
+    async lockNotYetOpenedEmailRecipients(connection, automatedEmailRecipientIds) {
+      if (automatedEmailRecipientIds.length === 0) {
+        return new Set<string>();
+      }
+      const rows: unknown[] = await connection('automated_email_recipients')
+        .select('id')
+        .whereIn('id', automatedEmailRecipientIds)
+        .whereNull('opened_at')
+        .forUpdate();
+      return new Set(rows.map((row) => emailRecipientIdRowSchema.parse(row).id));
     },
 
     async setEmailRecipientClickedAt(connection, recipientId, clickedAt) {
@@ -333,6 +384,32 @@ export const createDatabaseAutomationsRepository2 = ({
         .whereNull('clicked_at')
         .update({ clicked_at: clickedAt });
       return updated > 0;
+    },
+
+    async setEmailRecipientDeliveredAndOpenedAt(
+      connection,
+      automatedEmailRecipientId,
+      { deliveredAt, openedAt },
+    ) {
+      if (!deliveredAt && !openedAt) {
+        return;
+      }
+      const updates: { delivered_at?: Knex.Raw; opened_at?: Knex.Raw } = {};
+      if (deliveredAt) {
+        updates.delivered_at = connection.raw(
+          'CASE WHEN delivered_at IS NULL OR delivered_at > ? THEN ? ELSE delivered_at END',
+          [deliveredAt, deliveredAt],
+        );
+      }
+      if (openedAt) {
+        updates.opened_at = connection.raw(
+          'CASE WHEN opened_at IS NULL OR opened_at > ? THEN ? ELSE opened_at END',
+          [openedAt, openedAt],
+        );
+      }
+      await connection('automated_email_recipients')
+        .where('id', automatedEmailRecipientId)
+        .update(updates);
     },
 
     withConnection: (fn) => fn(knex),

@@ -38,12 +38,10 @@ const controller = {
       const mediaStorage = adapterManager.getAdapter('storage:media');
       const targetDir = path.dirname(mediaStorage.urlToPath(frame.data.url));
 
-      // NOTE: need to cleanup otherwise the parent media name won't match thumb name
-      //       due to "unique name" generation during save
-      if (await mediaStorage.exists(frame.file.name, targetDir)) {
-        await mediaStorage.delete(frame.file.name, targetDir);
-      }
-
+      // Both the target directory and the filename come from the request, so deleting
+      // a file that matches by name would replace media this upload is not related to.
+      // `save()` generates a unique filename when one already exists, so an upload
+      // always creates a new file.
       return await mediaStorage.save(frame.file, targetDir);
     },
   },

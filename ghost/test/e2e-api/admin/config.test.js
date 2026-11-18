@@ -41,6 +41,8 @@ describe('Config API', function () {
         .expectStatus(200)
         .matchBodySnapshot({
           config: {
+            // CI runs this suite under both auth engines
+            auth: { engine: stringMatching(/^(legacy|better-auth)$/) },
             database: 'mysql8',
             environment: 'testing-mysql',
             version: stringMatching(/\d+\.\d+\.\d+/),
@@ -50,6 +52,7 @@ describe('Config API', function () {
           },
         })
         .expect(({ body }) => {
+          assert.equal(body.config.auth.engine, configUtils.config.get('auth:engine'));
           const { labs } = body.config;
           assert.ok(
             labs && typeof labs === 'object' && !Array.isArray(labs),
