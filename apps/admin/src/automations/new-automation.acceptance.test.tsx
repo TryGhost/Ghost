@@ -6,7 +6,9 @@ import {
   currentRoute,
   fakeAdminEndpoint,
   fakeAutomations,
+  fakeMembers,
   label as buildLabel,
+  member,
   renderAdminApp,
   settingsResponse,
   settleTransitions,
@@ -510,6 +512,7 @@ describe('New automation', () => {
     it(`validates label selection before ${action.toLowerCase()} and sends the selected label`, async () => {
       fakeAutomations([]);
       const createAutomation = serveCreation();
+      fakeMembers([]);
       const spring = buildLabel({ name: 'Spring ebook' });
       fakeAdminEndpoint('GET', /^\/labels\/\?/, { labels: [spring] });
       fakeAdminEndpoint('GET', `/labels/${spring.id}/`, { labels: [spring] });
@@ -574,6 +577,36 @@ describe('New automation', () => {
       });
     });
   }
+
+  it('counts holders of the selected label before publishing', async () => {
+    fakeAutomations([]);
+    const spring = buildLabel({ name: 'Spring ebook' });
+    const members = fakeMembers(
+      Array.from({ length: 3 }, () => member({ labels: [spring] })),
+      { labels: [spring] },
+    );
+    fakeAdminEndpoint('GET', `/labels/${spring.id}/`, { labels: [spring] });
+
+    await renderAdminApp('/automations/new', { labs: { ...labs, automationsLeadMagnets: true } });
+    await page.getByRole('button').getByText('Label added', { exact: true }).click();
+    await page
+      .getByRole('combobox', { name: 'Triggered when this label is added to a member:' })
+      .click();
+    await page.getByRole('option', { name: spring.name, exact: true }).click();
+    await addWait();
+    await button('Publish').click();
+
+    const dialog = page.getByRole('alertdialog', { name: 'Start your automation?' });
+    await expect
+      .element(dialog)
+      .toHaveTextContent(
+        'Once published, your automation goes live. Members who get the Spring ebook label from now on will be enrolled automatically.',
+      );
+    await expect(members).toHaveSentFilter(`labels.id:'${spring.id}'`);
+    await expect
+      .element(dialog)
+      .toHaveTextContent('The 3 members already labeled Spring ebook will not be enrolled.');
+  });
 
   it('searches for and creates a label in the trigger picker', async () => {
     fakeAutomations([]);

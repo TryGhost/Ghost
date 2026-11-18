@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
-import { fakeAdminEndpoint, label, renderAdminApp } from '@test-utils/acceptance';
+import { fakeAdminEndpoint, fakeMembers, label, renderAdminApp } from '@test-utils/acceptance';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import { buildTriggerRules } from './utils/trigger-rules';
 import { detail } from './run-history.test-utils';
@@ -13,6 +13,7 @@ const confirm = (name: string) =>
   page.getByRole('alertdialog').getByRole('button', { name, exact: true }).click();
 
 function serve() {
+  fakeMembers([]);
   const spring = label({ name: 'Spring ebook' });
   const fall = label({ name: 'Fall guide' });
   const automation: AutomationDetail = {
