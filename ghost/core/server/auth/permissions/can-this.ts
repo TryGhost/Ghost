@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
-import providers, { type LoadedPermissions } from './providers';
-import { actionsMap, type Permission } from './role-permissions';
+import { actionsMap, forRoles, type Permission } from './role-permissions';
+import type { RoleView, UserView } from '../principal';
 import { setIsRoles } from '../../models/role-utils';
 import parseContext, { type ParsedContext } from './parse-context';
 
@@ -12,10 +12,16 @@ const messages = {
   noPermissionToAction: 'You do not have permission to perform this action',
 };
 
+/** What canThis needs to grant or deny for one actor */
+export interface LoadedPermissions {
+  permissions: Permission[];
+  roles: Array<{ id: string; name: string }>;
+}
+
 /** User and API key permissions, each null when that actor is absent */
 interface LoadedActors {
   user: LoadedPermissions | null;
-  apiKey: Awaited<ReturnType<typeof providers.apiKey>> | null;
+  apiKey: LoadedPermissions | null;
 }
 
 /** canThis(context).edit.post(idOrModel, unsafeAttrs) */
@@ -70,6 +76,64 @@ function getGrantFlags(loadedPermissions: LoadedActors, actType: string, objType
   return { hasUserPermission, hasApiKeyPermission };
 }
 
+function rolePermissions(roles: readonly RoleView[]): LoadedPermissions {
+  return {
+    permissions: forRoles(roles.map((role) => role.name)),
+    roles: roles.map(({ id, name }) => ({ id, name })),
+  };
+}
+
+const NO_ACTORS: LoadedActors = Object.freeze({ user: null, apiKey: null });
+
+function missingPrincipal() {
+  return new errors.IncorrectUsageError({
+    message: 'canThis needs the principal for the user or API key in its context.',
+  });
+}
+
+/**
+ * The actors from the roles authentication put on the principal. A context
+ * naming a user or key needs the principal for it, so a caller that drops or
+ * mismatches it fails loudly rather than checking as no one.
+ */
+function actorsFor(context: ParsedContext): LoadedActors | Error {
+  const principal = context.principal;
+  if (context.internal) {
+    return NO_ACTORS;
+  }
+
+  if (!principal) {
+    return context.user || context.api_key ? missingPrincipal() : NO_ACTORS;
+  }
+
+  // A staff token acts as its user, so its key's role is not needed
+  let user: UserView | null = null;
+  if (principal.kind === 'user') {
+    user = principal.user;
+  } else if (principal.kind === 'app') {
+    user = principal.actingFor;
+  }
+  if (user) {
+    return user.id === context.user
+      ? { user: rolePermissions(user.roles), apiKey: null }
+      : missingPrincipal();
+  }
+
+  if (principal.kind === 'integration') {
+    const matches = !context.user && principal.apiKey.id === context.api_key?.id;
+    if (!matches) {
+      return missingPrincipal();
+    }
+    const role = principal.apiKey.role;
+    return { user: null, apiKey: rolePermissions(role ? [role] : []) };
+  }
+
+  // An app with no user, or an anonymous request; the app is refused before the check
+  return context.user || (context.api_key && principal.kind !== 'app')
+    ? missingPrincipal()
+    : NO_ACTORS;
+}
+
 function isAppWithoutUser(context: ParsedContext) {
   return context.principal?.kind === 'app' && !context.user;
 }
@@ -79,7 +143,7 @@ class CanThisResultBuilder {
     objTypes: readonly string[],
     actType: string,
     context: ParsedContext,
-    permissionLoad: Promise<LoadedActors>,
+    actors: LoadedActors | Error,
   ) {
     const objectTypeModelMap: Record<string, { permissible?: (...args: unknown[]) => unknown }> = {
       post: models.Post,
@@ -123,8 +187,12 @@ class CanThisResultBuilder {
             // It's a model, get the id
             modelId = modelOrId.id;
           }
-          // Wait for the user loading to finish
-          return permissionLoad.then(function (loadedPermissions) {
+          // A context missing its principal fails here, not when canThis is called
+          if (actors instanceof Error) {
+            return Promise.reject(actors);
+          }
+
+          return Promise.resolve(actors).then(function (loadedPermissions) {
             const { hasUserPermission, hasApiKeyPermission } = getGrantFlags(
               loadedPermissions,
               actType,
@@ -166,48 +234,17 @@ class CanThisResultBuilder {
   }
 
   beginCheck(rawContext: unknown): CanThisResult {
-    let userPermissionLoad: Promise<LoadedPermissions | null>;
-    let apiKeyPermissionLoad: Promise<LoadedActors['apiKey']>;
-
     // Get context.user, context.api_key and context.app
     const context = parseContext(rawContext);
+    return this.buildHandlers(context, actorsFor(context));
+  }
 
-    // Kick off loading of user permissions if necessary
-    if (context.user) {
-      userPermissionLoad = providers.user(context.user);
-    } else {
-      // Resolve null if no context.user to prevent db call
-      userPermissionLoad = Promise.resolve(null);
-    }
-
-    // Kick off loading of api key permissions if necessary; an app never acts as a key
-    if (context.api_key && context.principal?.kind !== 'app') {
-      apiKeyPermissionLoad = providers.apiKey(context.api_key.id);
-    } else {
-      // Resolve null if no context.api_key
-      apiKeyPermissionLoad = Promise.resolve(null);
-    }
-
-    // Wait for both user and api key permissions to load
-    const permissionsLoad = Promise.all([userPermissionLoad, apiKeyPermissionLoad]).then(
-      function (result): LoadedActors {
-        return {
-          user: result[0],
-          apiKey: result[1],
-        };
-      },
-    );
-
+  buildHandlers(context: ParsedContext, actors: LoadedActors | Error): CanThisResult {
     // Iterate through the actions and their related object types
     _.each(actionsMap, (objTypes, actType) => {
       // Build up the object type handlers;
       // the '.post()' parts in canThis(user).edit.post()
-      const objTypeHandlers = this.buildObjectTypeHandlers(
-        objTypes,
-        actType,
-        context,
-        permissionsLoad,
-      );
+      const objTypeHandlers = this.buildObjectTypeHandlers(objTypes, actType, context, actors);
 
       // Define a property for the action on the result;
       // the '.edit' in canThis(user).edit.post()
