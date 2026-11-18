@@ -41,9 +41,8 @@ function takeOverHelpClicks(): () => void {
 }
 
 /**
- * The Admin 7 frame's top bar shows the site's numbers. Mobile specs fake them
- * too: right after `page.viewport()` shrinks the frame, the app can still read
- * the previous desktop width on first render and mount the top bar briefly.
+ * The Admin 7 frame's top bar shows the site's numbers. Mobile specs need them
+ * too: the viewport is back at desktop width before the app unmounts.
  */
 function fakeAdmin7Chrome(): void {
   fakeTags([]);
