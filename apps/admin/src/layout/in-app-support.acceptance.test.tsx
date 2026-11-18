@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
+import { cleanup } from 'vitest-browser-react';
 
 import {
   allowUnhandledRequests,
@@ -65,6 +66,7 @@ describe('In-app support Help links', () => {
 
   afterEach(async () => {
     stopOpeningHelp();
+    await cleanup();
     await page.viewport(1280, 800);
   });
 
