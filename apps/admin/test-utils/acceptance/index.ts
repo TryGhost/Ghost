@@ -18,12 +18,21 @@ export {
 export type { FakePintura } from './editor';
 export { failModuleLoads, holdModuleLoads } from './module-loads';
 export {
+  fakeSegmentWrites,
   holdSegmentsList,
+  replaceSavedViewsElsewhere,
   segmentsApiServers,
+  segmentsBodyError,
   withSavedViews,
   withoutSegmentsApi,
 } from './shared-views';
-export type { StoredView } from './shared-views';
+export type {
+  FakeSegmentWritesOptions,
+  SegmentBodyIssue,
+  SegmentWrite,
+  SegmentWritesCapture,
+  StoredView,
+} from './shared-views';
 export { currentRoute, renderAdminApp } from './render-admin-app';
 export type { RenderAdminAppOptions } from './render-admin-app';
 export { InAppProviders, renderInApp } from './render-in-app';
