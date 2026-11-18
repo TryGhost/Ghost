@@ -8,6 +8,7 @@
  * their URLs don't end up entity-encoded inside hrefs.
  */
 import { escapeExpression } from 'handlebars';
+import type { ReadonlyDeep } from 'type-fest';
 
 type ReplacementDefinition = {
   id: string;
@@ -23,14 +24,16 @@ type Replacement = {
 export type MessageFormat = 'html' | 'plaintext' | 'subject';
 
 /** The ids that get an `_html` copy: those of the definitions that are not trusted */
-export function getHtmlEscapedIds(replacementDefinitions: ReplacementDefinition[]): Set<string> {
+export function getHtmlEscapedIds(
+  replacementDefinitions: ReadonlyDeep<ReplacementDefinition[]>,
+): Set<string> {
   return new Set(replacementDefinitions.filter((def) => !def.trusted).map((def) => def.id));
 }
 
 /** One recipient's variables; pass `htmlEscapedIds` from `getHtmlEscapedIds` */
 export function createRecipientVariables(
-  replacements: Replacement[],
-  htmlEscapedIds: Set<string>,
+  replacements: ReadonlyDeep<Replacement[]>,
+  htmlEscapedIds: Readonly<Set<string>>,
 ): Record<string, unknown> {
   const variables: Record<string, unknown> = {};
 
@@ -47,7 +50,7 @@ export function createRecipientVariables(
 /** Replaces each token in one part of the message with the Mailgun variable that part should use */
 export function replaceTokensWithRecipientVariables(
   content: string,
-  replacementDefinitions: ReplacementDefinition[],
+  replacementDefinitions: ReadonlyDeep<ReplacementDefinition[]>,
   format: MessageFormat,
 ): string {
   for (const def of replacementDefinitions) {
