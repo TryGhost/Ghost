@@ -17,7 +17,12 @@ export {
 } from './editor';
 export type { FakePintura } from './editor';
 export { failModuleLoads, holdModuleLoads } from './module-loads';
-export { withSavedViews } from './shared-views';
+export {
+  holdSegmentsList,
+  segmentsApiServers,
+  withSavedViews,
+  withoutSegmentsApi,
+} from './shared-views';
 export type { StoredView } from './shared-views';
 export { currentRoute, renderAdminApp } from './render-admin-app';
 export type { RenderAdminAppOptions } from './render-admin-app';

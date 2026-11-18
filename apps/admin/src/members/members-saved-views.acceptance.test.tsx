@@ -3,12 +3,18 @@ import { userEvent } from 'vitest/browser';
 
 import {
   currentRoute,
+  currentUserResponse,
+  fakeAdminEndpoint,
   fakeEditSettings,
   fakeMembers,
+  fakeTags,
+  holdSegmentsList,
   label,
   member,
   renderAdminApp,
   settleRequests,
+  staffRole,
+  withSavedViews,
   type StoredView,
 } from '@test-utils/acceptance';
 import { sidebarScreen } from '@/layout/sidebar.screen';
@@ -19,6 +25,9 @@ const vipFilter = 'label:[VIP]';
 const vipRoute = `/members?filter=${encodeURIComponent(vipFilter)}`;
 const vips: StoredView = { name: 'VIPs', route: 'members', filter: { filter: vipFilter } };
 
+/** Ghost's answer to a request for an endpoint it doesn't have. */
+const notFound = { errors: [{ type: 'NotFoundError', message: 'Resource not found' }] };
+
 function vipMembers() {
   return fakeMembers(({ filter }) =>
     filter
@@ -28,6 +37,61 @@ function vipMembers() {
 }
 
 describe('Members saved views', () => {
+  it('lists the views the segments API returns', async () => {
+    vipMembers();
+    await renderAdminApp(vipRoute, {
+      boot: {
+        browseSegments: {
+          response: { segments: [{ id: 'vips', name: 'VIPs', filter: vipFilter }] },
+        },
+      },
+    });
+
+    await expect.element(sidebarScreen.navLink('VIPs')).toHaveAttribute('aria-current', 'page');
+    await expect.element(membersScreen.manageViewButton()).toHaveTextContent('Edit view');
+  });
+
+  it('shows the views from the settings while the segments list loads', async () => {
+    vipMembers();
+    const releaseSegments = holdSegmentsList();
+    await renderAdminApp(vipRoute, withSavedViews(vips));
+
+    try {
+      await expect.element(sidebarScreen.navLink('VIPs')).toHaveAttribute('aria-current', 'page');
+      await expect.element(membersScreen.manageViewButton()).toHaveTextContent('Edit view');
+    } finally {
+      releaseSegments();
+    }
+  });
+
+  it('shows the views from the settings, and no error, when the segments list fails', async () => {
+    vipMembers();
+    fakeAdminEndpoint(
+      'GET',
+      '/segments/',
+      { errors: [{ type: 'InternalServerError', message: 'Something went wrong' }] },
+      { status: 500 },
+    );
+    await renderAdminApp(vipRoute, withSavedViews(vips));
+
+    await expect.element(sidebarScreen.navLink('VIPs')).toHaveAttribute('aria-current', 'page');
+    await expect.element(membersScreen.manageViewButton()).toHaveTextContent('Edit view');
+    await expect(sidebarScreen.errorToast()).toHaveCount(0);
+  });
+
+  it('asks for segments only for staff who are shown member views', async () => {
+    fakeTags([]);
+    const segmentsApi = fakeAdminEndpoint('GET', '/segments/', { segments: [] });
+    const editor = currentUserResponse();
+    editor.users[0].roles = [staffRole({ name: 'Editor' })];
+    await renderAdminApp('/tags', { boot: { browseMe: { response: editor } } });
+
+    await expect.element(sidebarScreen.navLink('Tags')).toBeVisible();
+    await expect.element(sidebarScreen.navLink('Members')).not.toBeInTheDocument();
+    await settleRequests();
+    expect(segmentsApi.requests).toHaveLength(0);
+  });
+
   it('saves, renames and deletes views through the setting', async () => {
     vipMembers();
     const settingsApi = fakeEditSettings();
@@ -81,5 +145,26 @@ describe('Members saved views', () => {
     // while the first was held has arrived by the time they have all settled.
     await settleRequests();
     expect(settingsApi.requests).toHaveLength(1);
+  });
+
+  describe('on a server without the segments API', () => {
+    it('lists the views from the setting, asks for segments once and shows no error', async () => {
+      vipMembers();
+      fakeTags([]);
+      const segmentsApi = fakeAdminEndpoint('GET', '/segments/', notFound, { status: 404 });
+      await renderAdminApp(vipRoute, withSavedViews(vips));
+
+      await expect.element(sidebarScreen.navLink('VIPs')).toHaveAttribute('aria-current', 'page');
+      await expect.element(membersScreen.manageViewButton()).toHaveTextContent('Edit view');
+
+      await sidebarScreen.navLink('Tags').click();
+      await expect.element(membersScreen.manageViewButton()).not.toBeInTheDocument();
+      await sidebarScreen.navLink('VIPs').click();
+
+      await expect.element(membersScreen.manageViewButton()).toHaveTextContent('Edit view');
+      await settleRequests();
+      expect(segmentsApi.requests).toHaveLength(1);
+      await expect(sidebarScreen.errorToast()).toHaveCount(0);
+    });
   });
 });
