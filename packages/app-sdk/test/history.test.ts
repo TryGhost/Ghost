@@ -1,3 +1,5 @@
+import { setImmediate } from 'node:timers/promises';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { currentRoute, watchHistory, type HistoryWatch } from '../src/history.ts';
@@ -180,8 +182,9 @@ describe('the page’s history, once Admin owns it', () => {
         } else {
           refuse(new Error('The move was refused'));
         }
-        // The link's completion handler was registered first, so it has run by this point.
+        // Cross an event-loop turn after settlement before checking for an obsolete load.
         await pending.catch(() => {});
+        await setImmediate();
 
         expect(load.mock.calls).toEqual(
           schedule === 'nothing' || schedule === 'another link'
@@ -223,14 +226,16 @@ describe('the page’s history, once Admin owns it', () => {
         refuseOld(new Error('The move was refused'));
       }
       await old.catch(() => {});
+      await setImmediate();
       expect(load).not.toHaveBeenCalled();
 
       acceptLatest();
       await latest;
-      expect(load.mock.calls).toEqual([['http://localhost:3000/a']]);
+      await vi.waitFor(() => expect(load.mock.calls).toEqual([['http://localhost:3000/a']]));
 
       acceptMiddle();
       await middle;
+      await setImmediate();
       expect(load.mock.calls).toEqual([['http://localhost:3000/a']]);
     },
   );
