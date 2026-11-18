@@ -174,9 +174,7 @@ const ManageViewPopover: React.FC<ManageViewPopoverProps> = ({
   onDeleted,
 }) => {
   const [open, setOpen] = useState(false);
-  const contentKey = activeView
-    ? `edit:${activeView.name}:${activeView.filter.filter}`
-    : `save:${filter}`;
+  const contentKey = activeView ? `edit:${activeView.name}:${activeView.filter}` : `save:${filter}`;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
