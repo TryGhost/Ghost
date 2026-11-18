@@ -125,7 +125,7 @@ export class AutomationsService {
 
     schedulerAdapter.register(this);
 
-    enqueuePollAt(new Date());
+    enqueuePollNow();
 
     this.#enqueuePollAt = enqueuePollAt;
   }
