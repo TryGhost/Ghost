@@ -3,9 +3,9 @@ import {assertPrettifiesTo, callRenderer, createDocument, html} from '../test-ut
 
 describe('renderers/video-renderer', function () {
     // URLs containing characters that are special in HTML attributes and in CSS
-    const awkwardThumbnailSrc = 'https://example.org/a>b <c>.jpg';
-    const awkwardCustomThumbnailSrc = 'https://example.org/it\'s "a" (thumbnail)\\ 1.jpg';
-    const encodedAwkwardCustomThumbnailSrc = 'https://example.org/it%27s%20%22a%22%20(thumbnail)%5C%201.jpg';
+    const badThumbnailSrc = 'https://example.org/a>b <c>.jpg';
+    const badCustomThumbnailSrc = 'https://example.org/it\'s "a" (thumbnail)\\ 1.jpg';
+    const encodedBadCustomThumbnailSrc = 'https://example.org/it%27s%20%22a%22%20(thumbnail)%5C%201.jpg';
 
     function getTestData(overrides = {}) {
         return {
@@ -113,16 +113,30 @@ describe('renderers/video-renderer', function () {
         });
 
         it('renders thumbnail URLs containing special characters', function () {
-            const result = renderForWeb(getTestData({thumbnailSrc: awkwardThumbnailSrc, customThumbnailSrc: awkwardCustomThumbnailSrc}));
+            const result = renderForWeb(getTestData({thumbnailSrc: badThumbnailSrc, customThumbnailSrc: badCustomThumbnailSrc}));
             const document = createDocument(result.html);
             const figure = document.querySelector('figure.kg-video-card');
             const video = document.querySelector('video');
 
             assert.equal(document.body.children.length, 1);
             assert.deepEqual(figure?.getAttributeNames(), ['class', 'data-kg-thumbnail', 'data-kg-custom-thumbnail']);
-            assert.equal(figure?.getAttribute('data-kg-thumbnail'), awkwardThumbnailSrc);
-            assert.equal(figure?.getAttribute('data-kg-custom-thumbnail'), awkwardCustomThumbnailSrc);
-            assert.equal(video?.getAttribute('style'), `aspect-ratio: 200 / 100; background: transparent url('${encodedAwkwardCustomThumbnailSrc}') 50% 50% / cover no-repeat;`);
+            assert.equal(figure?.getAttribute('data-kg-thumbnail'), badThumbnailSrc);
+            assert.equal(figure?.getAttribute('data-kg-custom-thumbnail'), badCustomThumbnailSrc);
+            assert.equal(video?.getAttribute('style'), `aspect-ratio: 200 / 100; background: transparent url('${encodedBadCustomThumbnailSrc}') 50% 50% / cover no-repeat;`);
+        });
+
+        it('renders a file URL, dimensions and card width containing special characters', function () {
+            const badSrc = 'https://example.org/a"b>c.mp4?x=1&y=<2>';
+            const result = renderForWeb(getTestData({src: badSrc, width: '200" x="', height: '100>', cardWidth: 'wide" x="'}));
+            const document = createDocument(result.html);
+            const video = document.querySelector('video');
+
+            assert.equal(document.body.children.length, 1);
+            assert.equal(video?.getAttribute('src'), badSrc);
+            assert.equal(video?.getAttribute('width'), '200" x="');
+            assert.equal(video?.getAttribute('height'), '100>');
+            assert.equal(video?.hasAttribute('x'), false);
+            assert.equal(document.querySelector('figure')?.getAttribute('class'), 'kg-card kg-video-card kg-width-wide" x=" kg-card-hascaption');
         });
 
         it('renders loop attribute', function () {
@@ -187,14 +201,25 @@ describe('renderers/video-renderer', function () {
         });
 
         it('renders a thumbnail URL containing special characters', function () {
-            const result = renderForEmail(getTestData({customThumbnailSrc: awkwardCustomThumbnailSrc}));
+            const result = renderForEmail(getTestData({customThumbnailSrc: badCustomThumbnailSrc}));
             const document = createDocument(result.html);
             const table = document.querySelector('.kg-video-preview table');
 
             assert.deepEqual(table?.getAttributeNames(), ['cellpadding', 'cellspacing', 'border', 'width', 'background', 'role', 'style']);
-            assert.equal(table?.getAttribute('background'), awkwardCustomThumbnailSrc);
-            assert.equal(table?.getAttribute('style'), `background: url('${encodedAwkwardCustomThumbnailSrc}') left top / cover; mso-hide: all`);
+            assert.equal(table?.getAttribute('background'), badCustomThumbnailSrc);
+            assert.equal(table?.getAttribute('style'), `background: url('${encodedBadCustomThumbnailSrc}') left top / cover; mso-hide: all`);
             assert.ok(result.html.includes('<v:fill src="https://example.org/it&#039;s &quot;a&quot; (thumbnail)\\ 1.jpg" type="frame"/>'));
+        });
+
+        it('links to a video file URL containing special characters', function () {
+            const badSrc = 'https://example.org/a"b>c.mp4?x=1&y=<2>';
+            const result = renderForEmail(getTestData({src: badSrc}), {postUrl: undefined});
+            const links = Array.from(createDocument(result.html).querySelectorAll('a'));
+
+            assert.ok(links.length > 0);
+            for (const link of links) {
+                assert.equal(link.getAttribute('href'), badSrc);
+            }
         });
 
         it('links to the video file when postUrl is missing', function () {

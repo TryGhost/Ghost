@@ -79,10 +79,10 @@ function cardTemplate({node, cardClasses}: {node: VideoNodeData, cardClasses: st
         <figure class="${cardClasses}" data-kg-thumbnail="${escapeHtml(node.thumbnailSrc)}" data-kg-custom-thumbnail="${escapeHtml(node.customThumbnailSrc)}">
             <div class="kg-video-container">
                 <video
-                    src="${node.src}"
+                    src="${escapeHtml(node.src)}"
                     poster="${posterSpacerSrc}"
-                    width="${width}"
-                    height="${height}"
+                    width="${escapeHtml(String(width))}"
+                    height="${escapeHtml(String(height))}"
                     ${autoplayAttr}
                     playsinline
                     preload="metadata"
@@ -136,7 +136,7 @@ function cardTemplate({node, cardClasses}: {node: VideoNodeData, cardClasses: st
 
 function emailCardTemplate({node, options, cardClasses}: {node: VideoNodeData, options: VideoRenderOptions, cardClasses: string}) {
     const thumbnailSrc = node.customThumbnailSrc || node.thumbnailSrc;
-    const postUrl = options.postUrl || node.src;
+    const postUrl = escapeHtml(options.postUrl || node.src);
     const emailTemplateMaxWidth = 600;
     const aspectRatio = node.width && node.height ? node.width / node.height : DEFAULT_EMAIL_ASPECT_RATIO;
     const emailSpacerWidth = Math.round(emailTemplateMaxWidth / 4);
@@ -192,7 +192,7 @@ function getCardClasses(node: VideoNodeData) {
     const cardClasses = ['kg-card kg-video-card'];
 
     if (node.cardWidth) {
-        cardClasses.push(`kg-width-${node.cardWidth}`);
+        cardClasses.push(`kg-width-${escapeHtml(node.cardWidth)}`);
     }
     if (node.caption) {
         cardClasses.push(`kg-card-hascaption`);
