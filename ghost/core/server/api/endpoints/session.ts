@@ -37,7 +37,7 @@ const messages = {
   accessDenied: 'Access Denied.',
 };
 
-type SessionFrame = Frame<{ data: { username?: string; password?: string } }>;
+type SessionFrame = Frame<{ data: { username?: string; password?: string; token?: string } }>;
 
 type SessionRequest = Request & { user?: unknown; skipVerification?: boolean };
 
@@ -56,7 +56,11 @@ const controller = {
     }
 
     if (isBetterAuth) {
-      const credentials = { email: object.username, password: object.password };
+      const credentials = {
+        email: object.username,
+        password: object.password,
+        token: typeof object.token === 'string' ? object.token : undefined,
+      };
       return Promise.resolve(function betterAuthSignInMw(
         req: Request,
         res: Response,
@@ -140,6 +144,16 @@ const controller = {
     });
   },
   sendVerification(): Promise<SessionMiddleware> {
+    if (isBetterAuth) {
+      return Promise.resolve(function betterAuthSendVerificationMw(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+      ) {
+        getBetterAuthSession().sendVerification(req, res, next);
+      });
+    }
+
     return Promise.resolve(function sendAuthCodeMw(
       req: Request,
       res: Response,
@@ -149,6 +163,16 @@ const controller = {
     });
   },
   verify(): Promise<SessionMiddleware> {
+    if (isBetterAuth) {
+      return Promise.resolve(function betterAuthVerifyMw(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+      ) {
+        getBetterAuthSession().verify(req, res, next);
+      });
+    }
+
     return Promise.resolve(function verifyAuthCodeMw(
       req: Request,
       res: Response,
