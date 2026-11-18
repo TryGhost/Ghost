@@ -112,7 +112,6 @@ function RecoveryActions({
         </Button>
         {!stopped && (
           <Button
-            className={destructive ? undefined : 'bg-background'}
             disabled={reloading}
             size="sm"
             variant={destructive ? 'destructive' : 'outline'}
@@ -210,10 +209,14 @@ function PresenceWarning({
   return (
     <Banner
       aria-label="Other editors"
-      className="mx-4 mt-3 shrink-0"
+      className="mx-4 mt-3 shrink-0 border-border-glass bg-surface-glass backdrop-blur-md backdrop-saturate-150"
       role="status"
       size="sm"
-      variant="warning"
+      style={{
+        backgroundImage: 'var(--surface-glass-highlight)',
+        boxShadow: 'var(--shadow-glass-docked)',
+      }}
+      variant="default"
     >
       <Inline align="center" gap="sm" justify="center" wrap>
         <PresenceAvatars active={active} resourceType={resourceType} />
@@ -221,7 +224,7 @@ function PresenceWarning({
           <strong>
             {names} also {count === 1 ? 'has' : 'have'} this {resourceType} open.
           </strong>{' '}
-          Your changes may not save. Copy your content before reloading.
+          Your changes may not save.
         </Text>
         <RecoveryActions {...actions} resourceType={resourceType} />
       </Inline>

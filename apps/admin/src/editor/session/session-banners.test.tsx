@@ -158,7 +158,7 @@ describe('SessionBanners', () => {
     expect(warning).toHaveTextContent(
       'Alex Smith also has this post open. Your changes may not save.',
     );
-    expect(warning).toHaveAttribute('data-variant', 'warning');
+    expect(warning).toHaveAttribute('data-variant', 'default');
     expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual([
       'Copy content',
       'Reload',
