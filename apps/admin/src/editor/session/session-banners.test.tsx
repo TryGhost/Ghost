@@ -134,13 +134,19 @@ describe('SessionBanners', () => {
     );
     expect(screen.getByRole('alert')).toHaveClass('bg-state-danger/10');
     expect(screen.getByRole('alert')).not.toHaveClass('bg-destructive');
-    expect(screen.getByRole('alert').firstElementChild).toHaveClass('justify-center', 'flex-wrap');
-    expect(screen.getByText(/Someone else saved changes/).closest('.text-center')).not.toBeNull();
-    expect(screen.getByRole('button', { name: 'Reload' })).toHaveClass('bg-destructive');
-    expect(screen.getByRole('button', { name: 'Copy content' })).toHaveClass('bg-primary');
+    expect(screen.getByRole('alert')).toHaveClass('rounded-full', 'p-1');
+    expect(screen.getByRole('alert').firstElementChild).not.toHaveClass('flex-wrap');
+    expect(screen.getByRole('alert')).toHaveStyle({ boxShadow: 'var(--shadow-glass-floating)' });
+    expect(screen.getByRole('button', { name: 'Reload' })).toHaveClass(
+      'bg-state-danger/10',
+      'border-0',
+      'text-destructive',
+    );
+    expect(screen.getByRole('button', { name: 'Copy content' })).toHaveClass('h-6', 'bg-primary');
+    expect(screen.getByRole('button', { name: 'Reload' })).toHaveClass('size-6', 'rounded-full');
   });
 
-  it('shows compact presence and lets the writer copy their content', async () => {
+  it('offers copying and a guarded reload from compact presence', async () => {
     const writeText = vi.fn(() => Promise.resolve());
     vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
     const onReload = vi.fn((): Promise<ReloadOutcome> => Promise.resolve('reloaded'));
@@ -159,12 +165,18 @@ describe('SessionBanners', () => {
       'Alex Smith also has this post open. Your changes may not save.',
     );
     expect(warning).toHaveAttribute('data-variant', 'default');
-    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual([
-      'Copy content',
-    ]);
+    expect(screen.getAllByRole('button')).toHaveLength(2);
     fireEvent.click(screen.getByRole('button', { name: 'Copy content' }));
     await waitFor(() => expect(writeText).toHaveBeenCalledWith('My unsaved words'));
     expect(onReload).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
+    expect(await screen.findByTestId(editorConflictReloadConfirm)).toBeVisible();
+    expect(onReload).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(onReload).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Discard and reload' }));
+    expect(onReload).toHaveBeenCalledWith({ discardUnsaved: true });
   });
 
   it('warns even when the staff list cannot name someone present', () => {
@@ -174,7 +186,7 @@ describe('SessionBanners', () => {
     );
   });
 
-  it('names several people with page wording and the plural verb', () => {
+  it('counts several people with page wording and the plural verb', () => {
     staff.users.push({ id: 'sam', name: 'Sam Kim', profile_image: null });
     try {
       renderBanners(
@@ -185,7 +197,7 @@ describe('SessionBanners', () => {
         },
       );
       expect(screen.getByRole('status', { name: 'Other editors' })).toHaveTextContent(
-        'Alex Smith and Sam Kim also have this page open. Your changes may not save.',
+        '2 others also have this page open. Your changes may not save.',
       );
     } finally {
       staff.users.pop();

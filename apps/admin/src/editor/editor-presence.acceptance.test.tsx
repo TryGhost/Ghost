@@ -55,7 +55,7 @@ describe('Editor presence warnings', () => {
     }
   });
 
-  it('centers compact presence in the toolbar and copies the writer’s content', async () => {
+  it('centers compact presence with copying and a guarded reload', async () => {
     fakeEditorChrome();
     fakePostRead('Presence example', {
       status: 'published',
@@ -82,19 +82,37 @@ describe('Editor presence warnings', () => {
     const warning = page.getByRole('status', { name: 'Other editors' });
     await expect
       .element(warning)
-      .toHaveTextContent(
-        'Iliana Mann and Zimo also have this post open. Your changes may not save.',
-      );
+      .toHaveTextContent('2 others also have this post open. Your changes may not save.');
     const bounds = warning.element().getBoundingClientRect();
     expect(bounds.width).toBeLessThan(window.innerWidth - 32);
     expect(Math.abs(bounds.left + bounds.width / 2 - window.innerWidth / 2)).toBeLessThan(2);
     expect(bounds.top).toBeLessThan(30);
     expect(bounds.height).toBeLessThan(40);
-    await expect(warning.getByRole('button', { name: 'Reload' })).toHaveCount(0);
+    const copyButton = warning.getByRole('button', { name: 'Copy content' });
+    const reloadButton = warning.getByRole('button', { name: 'Reload' });
+    const reloadBounds = reloadButton.element().getBoundingClientRect();
+    expect(reloadBounds.height).toBe(copyButton.element().getBoundingClientRect().height);
+    expect(reloadBounds.width).toBe(reloadBounds.height);
+    expect(getComputedStyle(reloadButton.element()).backgroundColor).toBe(
+      getComputedStyle(copyButton.element()).backgroundColor,
+    );
     await editorScreen.body().fill('My unsaved body');
     await warning.getByRole('button', { name: 'Copy content' }).click();
     await expect.poll(() => copied).toEqual(['Presence example\n\nMy unsaved body']);
     await expect.element(page.getByText('Content copied', { exact: true })).toBeVisible();
+    await reloadButton.click();
+    await expect.element(editorScreen.conflictReloadConfirm()).toBeVisible();
+    await editorScreen.cancelConflictReload().click();
+    await expect.element(editorScreen.body()).toHaveTextContent('My unsaved body');
+    fakePostRead('Latest saved title', {
+      status: 'published',
+      lexical: buildLexicalParagraph('Their latest body'),
+      updated_at: '2026-01-01T01:00:00.000Z',
+    });
+    await reloadButton.click();
+    await editorScreen.confirmConflictReload().click();
+    await expect.element(editorScreen.titleInput()).toHaveValue('Latest saved title');
+    await expect.element(editorScreen.body()).toHaveTextContent('Their latest body');
   });
 
   it('keeps changes typed while a confirmed conflict reload is reading the server', async () => {
@@ -184,6 +202,10 @@ describe('Editor presence warnings', () => {
       .element(editorScreen.conflictBanner())
       .toHaveTextContent('Someone else saved changes. Your changes weren’t saved.');
     await expect(page.getByRole('status', { name: 'Other editors' })).toHaveCount(0);
+    const bounds = editorScreen.conflictBanner().element().getBoundingClientRect();
+    expect(bounds.height).toBeLessThan(40);
+    expect(bounds.top).toBeLessThan(30);
+    expect(Math.abs(bounds.left + bounds.width / 2 - window.innerWidth / 2)).toBeLessThan(2);
     await expect.element(editorScreen.body()).toHaveTextContent('My unsaved body');
   });
 });

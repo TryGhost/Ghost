@@ -21,15 +21,18 @@ ids and a server timestamp; names and avatars come from the staff users list.
   request. Other failures back off exponentially up to 60 seconds and clear
   what is shown.
 - Indicators are a second flag, `editorPresence`. In the editor, a compact pill
-  centered in the toolbar names other staff with the post or page open and warns
-  that changes may not save, with avatars and Copy content. On narrow screens
-  it wraps within the toolbar.
+  centered in the toolbar names one other staff member or counts several with
+  the post or page open and warns that changes may not save, with avatars,
+  Copy content and a round Reload
+  button. Reload asks before discarding unsaved changes. On narrow screens
+  the pill wraps within the toolbar.
   Missing staff records use a generic notice instead. Copy content copies the
   current title and body as plain text. Presence grants no editing ownership
   and does not merge changes.
 - An actual save collision or terminal failure takes priority over presence, as
-  does a known newer version. The collision warning stays after presence ends;
-  someone leaving does not make the writer's version current.
+  does a known newer version. The collision uses the same compact toolbar pill
+  with a red treatment, and stays after presence ends; someone leaving does not
+  make the writer's version current.
 - Posts and pages list rows still show who has that row open as avatars with an
   overflow count named from the staff users list, read only once someone is
   present. Users missing from that list are not shown. Hovering or focusing the

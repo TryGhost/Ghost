@@ -216,14 +216,14 @@ a retry there would save the post without changing its status, so the publish
 or update flow is where those are retried. While a collision blocks the next
 save, its banner offers the ways out instead.
 
-What the status line cannot hold has a banner above the header, which moves
-down with the settings toggle beneath it: a collision, a deleted post, lost
-access and a crashed editor, each with Reload or Copy content, and a newer
-version saved elsewhere. With `editorPresence` enabled, a compact pill centered
-in the toolbar names other staff who have the post or page open and warns that
-changes may not save, with avatars and a Copy content action for the current
-title and body as plain text. On
-narrow screens it wraps within the toolbar. Save collisions,
+What the status line cannot hold appears in a compact floating pill in the
+toolbar: a collision, a deleted post, lost access and a crashed editor, each
+with Reload or Copy content. A newer version saved elsewhere has a banner above
+the header. With `editorPresence` enabled, a compact pill centered in the toolbar
+names one other staff member or counts several who have the post or page open
+and warns that changes may not save, with avatars, Copy content for the current title and body
+as plain text, and a round Reload button. Reload asks before discarding unsaved
+changes. On narrow screens the pill wraps within the toolbar. Save collisions,
 terminal failures and known newer versions take priority over presence; a
 collision remains visible after the other staff leave. Presence grants no
 editing ownership and does not make simultaneous edits safe. Changes held back by a field's rule have no banner;

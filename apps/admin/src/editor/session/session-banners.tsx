@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { toast } from 'sonner';
 import { useBrowseUsers } from '@tryghost/admin-x-framework/api/users';
@@ -15,6 +15,7 @@ import {
   Button,
 } from '@tryghost/shade/components';
 import { Inline, Text } from '@tryghost/shade/primitives';
+import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import {
   editorConflictBanner,
   editorConflictReloadConfirm,
@@ -22,10 +23,9 @@ import {
 } from '@tryghost/test-data/selectors/editor';
 import type { PendingSave, SaveError, SaveEngineState } from '@/editor/engine/save-engine';
 import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
-import { ErrorLine } from '@/editor/publish/components/failure-banner';
 import { reportShownAlert } from '@/editor/report-error';
 import { PresenceAvatars } from '@/shared/presence/presence-avatars';
-import { listNames, presentUsers } from '@/shared/presence/present-users';
+import { presentUsers } from '@/shared/presence/present-users';
 import type { ActivePresence, PresenceResourceType } from '@/shared/presence/presence-api';
 import { POST_DELETED, terminalSaveError } from './error-mapping';
 import type { ReloadOutcome } from './use-editor-session';
@@ -41,7 +41,7 @@ export interface SessionBannersProps {
   pendingSave?: PendingSave | null;
   /** Other staff on this document, supplied only while presence indicators are enabled. */
   activePresence?: ActivePresence[];
-  /** The toolbar slot; omitted for an inline notice, null while the slot mounts. */
+  /** The toolbar slot for presence and errors; omitted for inline notices. */
   presenceTarget?: HTMLElement | null;
   resourceType?: PresenceResourceType;
   /** A later version was saved elsewhere, and a reload onto it would lose nothing. */
@@ -66,6 +66,7 @@ type RecoveryActionsProps = Pick<
   destructive?: boolean;
   stopped?: boolean;
   onGone?: () => void;
+  compact?: boolean;
 };
 
 function CopyContentButton({
@@ -106,6 +107,7 @@ function RecoveryActions({
   destructive = false,
   stopped = false,
   onGone,
+  compact = false,
 }: RecoveryActionsProps) {
   const [confirming, setConfirming] = useState(false);
   const [reloading, setReloading] = useState(false);
@@ -129,16 +131,31 @@ function RecoveryActions({
 
   return (
     <>
-      <Inline align="center" gap="sm" justify="center">
-        <CopyContentButton contentText={contentText} />
+      <Inline align="center" className="shrink-0" gap={compact ? 'xs' : 'sm'} justify="center">
+        <CopyContentButton
+          compact={compact}
+          contentText={contentText}
+          variant={compact && !destructive ? 'secondary' : 'default'}
+        />
         {!stopped && (
           <Button
+            aria-label={compact ? 'Reload' : undefined}
+            className={
+              compact
+                ? cn(
+                    'size-6 shrink-0 rounded-full p-0',
+                    destructive &&
+                      'border-0 bg-state-danger/10 text-destructive shadow-none hover:bg-state-danger/20 enabled:active:bg-state-danger/20 enabled:active:shadow-none',
+                  )
+                : undefined
+            }
             disabled={reloading}
-            size="sm"
-            variant={destructive ? 'destructive' : 'outline'}
+            size={compact ? 'icon-sm' : 'sm'}
+            title={compact ? 'Reload' : undefined}
+            variant={compact ? 'secondary' : destructive ? 'destructive' : 'outline'}
             onClick={() => (hasUnsavedContent() ? setConfirming(true) : void reload())}
           >
-            Reload
+            {compact ? <LucideIcon.RotateCw aria-hidden="true" className="stroke-2!" /> : 'Reload'}
           </Button>
         )}
       </Inline>
@@ -183,27 +200,38 @@ function ConflictBanner({ error, stopped = false, ...actions }: ConflictBannerPr
 
   return (
     <Banner
-      className="mx-4 mt-3 shrink-0"
+      className="max-w-full min-w-0 rounded-full p-1 backdrop-blur-md backdrop-saturate-150"
       data-testid={editorConflictBanner}
       role="alert"
       size="sm"
+      style={{
+        backgroundImage: 'var(--surface-glass-highlight)',
+        boxShadow: 'var(--shadow-glass-floating)',
+      }}
       variant="destructive"
     >
-      <Inline align="center" gap="sm" justify="center" wrap>
-        <Text as="div" className="text-center text-base">
-          <ErrorLine className="inline-flex">
-            {halt ? (
-              message
-            ) : (
-              <>
-                <strong>{CONFLICT_SUMMARY}</strong> {CONFLICT_RECOVERY}
-              </>
-            )}
-          </ErrorLine>
+      <Inline align="center" className="min-w-0" gap="sm">
+        <Inline
+          align="center"
+          aria-hidden="true"
+          className="size-7 shrink-0 rounded-full bg-state-danger/10"
+          justify="center"
+        >
+          <LucideIcon.TriangleAlert className="size-4 text-destructive" />
+        </Inline>
+        <Text as="div" className="min-w-0 text-base" title={message} truncate>
+          {halt ? (
+            message
+          ) : (
+            <>
+              <strong>{CONFLICT_SUMMARY}</strong> {CONFLICT_RECOVERY}
+            </>
+          )}
         </Text>
         <RecoveryActions
           {...actions}
           stopped={halt !== null}
+          compact
           destructive
           onGone={() => setReloadFoundDeleted(true)}
         />
@@ -214,21 +242,13 @@ function ConflictBanner({ error, stopped = false, ...actions }: ConflictBannerPr
 
 function PresenceWarning({
   active,
-  contentText,
   resourceType,
-}: Pick<SessionBannersProps, 'contentText'> & {
-  active: ActivePresence[];
-  resourceType: PresenceResourceType;
-}) {
+  ...actions
+}: RecoveryActionsProps & { active: ActivePresence[] }) {
   const { data } = useBrowseUsers({ defaultErrorHandler: false });
   const users = presentUsers(active, data?.users);
   const count = new Set(active.map((entry) => entry.userId)).size;
-  const everyoneNamed = users.length === count;
-  const names = everyoneNamed
-    ? listNames(users.map((user) => user.name))
-    : count === 1
-      ? 'Someone else'
-      : 'Other staff';
+  const subject = count > 1 ? `${formatNumber(count)} others` : (users[0]?.name ?? 'Someone else');
 
   return (
     <Banner
@@ -246,11 +266,11 @@ function PresenceWarning({
         <PresenceAvatars active={active} resourceType={resourceType} />
         <Text as="div" className="min-w-0 text-base" truncate>
           <strong>
-            {names} also {count === 1 ? 'has' : 'have'} this {resourceType} open.
+            {subject} also {count === 1 ? 'has' : 'have'} this {resourceType} open.
           </strong>{' '}
           Your changes may not save.
         </Text>
-        <CopyContentButton contentText={contentText} variant="secondary" compact />
+        <RecoveryActions {...actions} resourceType={resourceType} compact />
       </Inline>
     </Banner>
   );
@@ -293,8 +313,8 @@ function NewerVersionNotice({ onReload }: Pick<SessionBannersProps, 'onReload'>)
 }
 
 /**
- * Session feedback: collisions, halts and newer versions sit above the header;
- * presence uses the toolbar slot. Other failed saves belong to the status
+ * Session feedback: collisions, halts and presence use the toolbar slot;
+ * newer versions sit above the header. Other failed saves belong to the status
  * line, and fields held by their rules are marked beside the field.
  */
 export function SessionBanners({
@@ -308,13 +328,19 @@ export function SessionBanners({
   contentText,
   onReload,
 }: SessionBannersProps) {
+  const inToolbar = (notice: ReactNode) =>
+    presenceTarget === undefined
+      ? notice
+      : presenceTarget
+        ? createPortal(notice, presenceTarget)
+        : null;
   const halt = terminalSaveError(state);
   const conflict =
     state.kind === 'conflict'
       ? state.error
       : (halt ?? (pendingSave?.blockedBy?.kind === 'conflict' ? pendingSave.blockedBy : null));
   if (conflict) {
-    return (
+    return inToolbar(
       <ConflictBanner
         contentText={contentText}
         error={conflict}
@@ -322,7 +348,7 @@ export function SessionBanners({
         resourceType={resourceType}
         stopped={halt !== null}
         onReload={onReload}
-      />
+      />,
     );
   }
 
@@ -331,18 +357,15 @@ export function SessionBanners({
   }
 
   if (activePresence && activePresence.length > 0) {
-    const notice = (
+    return inToolbar(
       <PresenceWarning
         active={activePresence}
         contentText={contentText}
+        hasUnsavedContent={hasUnsavedContent}
         resourceType={resourceType}
-      />
+        onReload={onReload}
+      />,
     );
-    return presenceTarget === undefined
-      ? notice
-      : presenceTarget
-        ? createPortal(notice, presenceTarget)
-        : null;
   }
 
   return null;
