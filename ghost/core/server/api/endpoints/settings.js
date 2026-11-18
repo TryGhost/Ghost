@@ -28,7 +28,7 @@ async function getStripeConnectData(frame, checked) {
           checked.state = await auth.stripeConnectState.get(frame.options.context.user);
           return checked.state;
         }
-      : (prop) => frame.original.session[prop];
+      : (prop) => frame.original.session?.[prop];
 
     return await settingsBREADService.getStripeConnectData(
       stripeConnectIntegrationToken,

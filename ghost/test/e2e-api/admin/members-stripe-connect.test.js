@@ -89,4 +89,29 @@ describe('Members Stripe Connect API', function () {
     mockManager.restore();
     await expectConnected(save(state));
   });
+
+  describe('with a staff token beside the session cookie', function () {
+    afterEach(async function () {
+      await agent.loginAsOwner();
+    });
+
+    it(
+      isBetterAuth ? 'starts the flow for the token user' : 'needs the session, which a key skips',
+      async function () {
+        await agent.useStaffTokenForOwner();
+        const authorization = agent.defaults.headers.Authorization;
+        await agent.loginAsOwner();
+        agent.defaults.headers.Authorization = authorization;
+
+        const request = agent.get('members/stripe_connect?mode=test');
+        if (isBetterAuth) {
+          await request.expectStatus(302);
+        } else {
+          await request.expectStatus(403).expect(({ body }) => {
+            assert.match(body.errors[0].message, /signed-in staff session/);
+          });
+        }
+      },
+    );
+  });
 });

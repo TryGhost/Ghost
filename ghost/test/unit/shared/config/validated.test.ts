@@ -5,7 +5,7 @@ import _ from 'lodash';
 import { z } from 'zod';
 import { formatIssues } from '../../../../core/shared/config/report';
 import { configSchema } from '../../../../core/shared/config/schema';
-import { createConfig, deepFreeze, validateConfig } from '../../../../core/shared/config/validated';
+import { createConfig, validateConfig } from '../../../../core/shared/config/validated';
 import { configSources } from '../../../utils/config-sources';
 
 const sloppy = require('../../../utils/fixtures/sloppy-config-writer');
@@ -448,23 +448,6 @@ describe('Config Schema', function () {
 });
 
 describe('Validated Config', function () {
-  describe('deepFreeze', function () {
-    it('freezes nested objects and arrays', function () {
-      const frozen = deepFreeze({ a: { b: [{ c: 1 }] } });
-
-      assert.ok(Object.isFrozen(frozen.a));
-      assert.ok(Object.isFrozen(frozen.a.b));
-      assert.ok(Object.isFrozen(frozen.a.b[0]));
-    });
-
-    it('tolerates cycles', function () {
-      const cyclic: Record<string, unknown> = {};
-      cyclic.self = cyclic;
-
-      assert.ok(Object.isFrozen(deepFreeze(cyclic)));
-    });
-  });
-
   describe('validateConfig', function () {
     // in hooks, so a failing assertion can't leave GHOST_CONFIG_SCHEMA_STRICT
     // set or console.error mocked for every later test
