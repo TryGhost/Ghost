@@ -3,14 +3,11 @@ import type { Knex } from 'knex';
 import { z } from 'zod';
 import {
   addDays,
-  countDays,
-  dateMs,
-  localDateBounds,
+  daysBetween,
   localDateOf,
-  resolveTimezone,
+  resolveTimeZone,
   startOfLocalDay,
-  toDatetime,
-} from './utils/local-dates';
+} from '../../../kernel/clock';
 
 export type CommentsInterval = 'day' | 'week' | 'month';
 
@@ -40,6 +37,18 @@ export type CommentsOverview = {
 export type TopCommentedPost = { post_id: string; title: string; comments: number };
 export type TopCommenter = { member_id: string; name: string | null; comments: number };
 
+// Calendar dates are YYYY-MM-DD; database datetimes are UTC "YYYY-MM-DD HH:mm:ss"
+const toDatetime = (ms: number) => new Date(ms).toISOString().slice(0, 19).replace('T', ' ');
+const countDays = (dateFrom: string, dateTo: string) => daysBetween(dateFrom, dateTo) + 1;
+
+/** Half-open database bounds of inclusive local dates */
+function localDateBounds(dateFrom: string, dateTo: string, timezone: string) {
+  return {
+    from: toDatetime(startOfLocalDay(dateFrom, timezone)),
+    to: toDatetime(startOfLocalDay(addDays(dateTo, 1), timezone)),
+  };
+}
+
 const MAX_RANGE_DAYS = 3660;
 // Admin shows the top 25. Larger limits are capped by the API's maxLimitCap
 // (optimization:maxLimit, 100 by default), like every other endpoint.
@@ -60,8 +69,8 @@ const earliestDateFrom = (dateTo: string) => addDays(dateTo, 1 - MAX_RANGE_DAYS)
 
 const timezoneSchema = z
   .string()
-  .refine((value) => resolveTimezone(value) !== null, { abort: true })
-  .transform((value) => resolveTimezone(value)!)
+  .refine((value) => resolveTimeZone(value) !== null, { abort: true })
+  .transform((value) => resolveTimeZone(value)!)
   .default('UTC');
 
 // Without date_from the range starts at the first comment ("All time"), at most
@@ -127,7 +136,7 @@ function nextBucketDate(date: string, interval: CommentsInterval) {
     return addDays(date, 1);
   }
   if (interval === 'week') {
-    return addDays(date, 7 - new Date(dateMs(date)).getUTCDay());
+    return addDays(date, 7 - new Date(`${date}T00:00:00Z`).getUTCDay());
   }
   const [year, month] = date.split('-').map(Number);
   return new Date(Date.UTC(year, month, 1)).toISOString().slice(0, 10);
