@@ -1,4 +1,4 @@
-import { isFieldChange, type FieldChange, type ManifestChange } from '@tryghost/app-contracts';
+import type { ManifestChange } from '@tryghost/app-contracts';
 import { compareManifests } from '@tryghost/app-contracts/manifest';
 import type { AddedRow } from './app-installations-repository';
 import type { Installation } from './codec';
@@ -7,13 +7,16 @@ import type { LoadedManifest } from './load-manifest';
 type Approved = Pick<Installation, 'manifest'>;
 
 /**
- * Lists what differs between the approved manifest and a loaded one. The preview shows this
- * list and decisions are made from the same comparison, so a review always matches what
- * happens. Access changes are left out of the preview until the installation stores and
- * shows them; they still decide what happens.
+ * Lists what differs between the approved manifest and a loaded one. The preview shows
+ * this list and decisions are made from it, so a review always matches what happens.
  */
-export function changesFrom(approved: Approved, loaded: LoadedManifest): FieldChange[] {
-  return compareManifests(approved.manifest, loaded.manifest).changes.filter(isFieldChange);
+export function changesFrom(approved: Approved, loaded: LoadedManifest): ManifestChange[] {
+  return compareManifests(approved.manifest, loaded.manifest).changes;
+}
+
+/** What an install grants: every scope it declares, as added. */
+export function installChanges(loaded: LoadedManifest): ManifestChange[] {
+  return compareManifests(undefined, loaded.manifest).changes;
 }
 
 /** The approved, pending and just-loaded manifests. */
@@ -106,6 +109,7 @@ export function approvalWrite(manifests: Manifests): ApprovalWrite {
           loaded: manifests.loaded,
           source: 'approval',
           requiresApproval: decision.kind === 'suspend',
+          changes: decision.changes,
         },
       };
   }
@@ -131,13 +135,14 @@ export function recheckWrite(manifests: Manifests): ManifestWrite {
           loaded,
           source: decision.kind === 'resume' ? 'resume' : 'update',
           requiresApproval: false,
+          changes: decision.changes,
         },
       };
     // Replaces any older pending manifest, since only the latest is worth reviewing.
     case 'suspend':
       return {
         kind: 'add_pending',
-        row: { loaded, source: 'update', requiresApproval: true },
+        row: { loaded, source: 'update', requiresApproval: true, changes: decision.changes },
       };
   }
 }

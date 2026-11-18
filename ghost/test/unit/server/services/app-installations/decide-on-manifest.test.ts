@@ -48,6 +48,8 @@ function loaded(overrides: Partial<AppManifest> = {}): LoadedManifest {
 
 const silent = { description: 'Episodes and players.' };
 const needsApproval = { name: 'Podcasts' };
+const SILENT_CHANGES = [{ kind: 'field' as const, path: 'description', requires_approval: false }];
+const APPROVAL_CHANGES = [{ kind: 'field' as const, path: 'name', requires_approval: true }];
 
 const pending = { id: 'pending-manifest', digest: loaded(needsApproval).digest };
 
@@ -183,16 +185,28 @@ describe('approvalWrite', function () {
   });
 
   it('adds an approval row for any other manifest, which becomes the approved one', function () {
-    for (const [name, manifest, pendingManifest, requiresApproval] of [
-      ['silent changes', loaded(silent), null, false],
-      ['silent changes kept after reverting the pending ones', loaded(silent), pending, false],
-      ['changes that need approval', loaded({ ...silent, ...needsApproval }), null, true],
+    for (const [name, manifest, pendingManifest, requiresApproval, changes] of [
+      ['silent changes', loaded(silent), null, false, SILENT_CHANGES],
+      [
+        'silent changes kept after reverting the pending ones',
+        loaded(silent),
+        pending,
+        false,
+        SILENT_CHANGES,
+      ],
+      [
+        'changes that need approval',
+        loaded({ ...silent, ...needsApproval }),
+        null,
+        true,
+        [...SILENT_CHANGES, ...APPROVAL_CHANGES],
+      ],
     ] as const) {
       assert.deepEqual(
         approvalWrite({ current, pending: pendingManifest, loaded: manifest }),
         {
           kind: 'add_approved',
-          row: { loaded: manifest, source: 'approval', requiresApproval },
+          row: { loaded: manifest, source: 'approval', requiresApproval, changes },
         },
         name,
       );
@@ -214,7 +228,7 @@ describe('recheckWrite', function () {
     const manifest = loaded(silent);
     assert.deepEqual(recheckWrite({ current, pending: null, loaded: manifest }), {
       kind: 'add_approved',
-      row: { loaded: manifest, source: 'update', requiresApproval: false },
+      row: { loaded: manifest, source: 'update', requiresApproval: false, changes: SILENT_CHANGES },
     });
   });
 
@@ -222,7 +236,7 @@ describe('recheckWrite', function () {
     const manifest = loaded();
     assert.deepEqual(recheckWrite({ current, pending, loaded: manifest }), {
       kind: 'add_approved',
-      row: { loaded: manifest, source: 'resume', requiresApproval: false },
+      row: { loaded: manifest, source: 'resume', requiresApproval: false, changes: [] },
     });
   });
 
@@ -230,7 +244,12 @@ describe('recheckWrite', function () {
     const manifest = loaded(needsApproval);
     assert.deepEqual(recheckWrite({ current, pending: null, loaded: manifest }), {
       kind: 'add_pending',
-      row: { loaded: manifest, source: 'update', requiresApproval: true },
+      row: {
+        loaded: manifest,
+        source: 'update',
+        requiresApproval: true,
+        changes: APPROVAL_CHANGES,
+      },
     });
   });
 });
@@ -240,12 +259,20 @@ describe('a change to access alone', function () {
     ...current,
     manifest: { ...approvedManifest, access: [{ name: 'post:read' as const, backend: false }] },
   };
+  const removed = [
+    {
+      kind: 'access' as const,
+      scope: 'post:read' as const,
+      change: 'removed' as const,
+      backend: false,
+    },
+  ];
 
   it('applies a removed scope at once, as it narrows access', function () {
     const manifest = loaded();
     assert.deepEqual(recheckWrite({ current: reading, pending: null, loaded: manifest }), {
       kind: 'add_approved',
-      row: { loaded: manifest, source: 'update', requiresApproval: false },
+      row: { loaded: manifest, source: 'update', requiresApproval: false, changes: removed },
     });
   });
 
@@ -253,13 +280,15 @@ describe('a change to access alone', function () {
     const manifest = loaded();
     assert.deepEqual(approvalWrite({ current: reading, pending: null, loaded: manifest }), {
       kind: 'add_approved',
-      row: { loaded: manifest, source: 'approval', requiresApproval: false },
+      row: { loaded: manifest, source: 'approval', requiresApproval: false, changes: removed },
     });
   });
 
-  it('suspends the app for a new scope, though the preview doesn’t list it yet', function () {
+  it('suspends the app for a new scope, and lists it in the preview', function () {
     const manifest = loaded({ access: [{ name: 'post:edit', backend: false }] });
     assert.equal(recheckWrite({ current, pending: null, loaded: manifest }).kind, 'add_pending');
-    assert.deepEqual(changesFrom(current, manifest), []);
+    assert.deepEqual(changesFrom(current, manifest), [
+      { kind: 'access', scope: 'post:edit', change: 'added', backend: false },
+    ]);
   });
 });

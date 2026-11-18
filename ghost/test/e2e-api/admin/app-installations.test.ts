@@ -745,6 +745,39 @@ describe('App installations Admin API', function () {
       assert.equal(row.revision, 2);
     });
 
+    it('reviews and records access changes by meaning, in the preview and the history', async function () {
+      const POST_READ = { post: { scopes: [{ name: 'post:read', backend: true }] } };
+      const installed = await install({ access: POST_READ });
+      const widened = manifest({
+        access: { post: { scopes: [{ name: 'post:edit' }, ...POST_READ.post.scopes] } },
+      });
+      serve(widened);
+
+      const reviewed = await preview();
+
+      const added = [{ kind: 'access', scope: 'post:edit', change: 'added', backend: false }];
+      assert.deepEqual(reviewed.installation.changes, added);
+
+      serve(widened);
+      await approve(
+        installed.id,
+        MANIFEST_URL,
+        reviewed.digest,
+        200,
+        reviewed.installation.revision,
+      );
+      const { body } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+      assert.deepEqual(
+        body.app_installations[0].history.map((entry: any) => [entry.event, entry.changes]),
+        [
+          ['changes_approved', added],
+          ['installed', [{ kind: 'access', scope: 'post:read', change: 'added', backend: true }]],
+        ],
+      );
+    });
+
     it('approves the manifest waiting for approval as its own row, not a copy', async function () {
       const installed = await install();
       const pendingId = await suspendWithPending(installed.id, manifest({ name: 'Podcasts' }));
@@ -2436,6 +2469,24 @@ describe('App installations Admin API', function () {
       await start(installation.id, 404);
       await agent.delete(`apps/installations/${installation.id}/`).expectStatus(404);
       assert.equal((await service().read(installation.id)).status, 'active');
+    });
+
+    it('leaves a row whose stored changes it can’t read out of the history', async function () {
+      const installation = await install();
+      // As if a provisional scope the row names had since been renamed.
+      await models.Base.knex('app_installation_manifests').update({
+        changes: JSON.stringify([
+          { kind: 'access', scope: 'post:renamed', change: 'added', backend: false },
+        ]),
+      });
+
+      const { body } = await agent
+        .get(`apps/installations/${installation.id}/?include=history`)
+        .expectStatus(200);
+      assert.deepEqual(
+        body.app_installations[0].history.map((entry: any) => entry.event),
+        [],
+      );
     });
 
     it('refuses to read a stored manifest it cannot make sense of', async function () {

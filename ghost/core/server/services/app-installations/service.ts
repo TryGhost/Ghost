@@ -1,4 +1,4 @@
-import type { AppFailureCode, FieldChange } from '@tryghost/app-contracts';
+import type { AppFailureCode, ManifestChange } from '@tryghost/app-contracts';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
@@ -13,7 +13,13 @@ import {
 } from './app-installations-repository';
 import type { AppInstallationHistoryEntry, Installation, InstallationWithHistory } from './codec';
 import { ensureTransaction, transactionOf } from '../../lib/ensure-transaction';
-import { approvalWrite, changesFrom, recheckWrite, type ManifestWrite } from './decide-on-manifest';
+import {
+  approvalWrite,
+  changesFrom,
+  installChanges,
+  recheckWrite,
+  type ManifestWrite,
+} from './decide-on-manifest';
 import type { FetchIcon } from './fetch-icon';
 import { approvalManifestIds, buildHistory } from './history';
 import type { IdentityChecker, PinnedIdentity, StartedChallenge } from './identity-check';
@@ -52,7 +58,8 @@ export interface AppInstallationPreview {
     manifest_url: string;
     manifest: AppManifest;
     icon_data_url: string | null;
-    changes: FieldChange[];
+    /** Field changes by path, then access changes in the registry's order. */
+    changes: ManifestChange[];
   } | null;
 }
 
@@ -240,7 +247,12 @@ export class AppInstallationsService {
     });
     const install = () =>
       ensureTransaction(executor, async (transacting) => {
-        const installation = await this.repository.insert(loaded, iconDataUrl, { transacting });
+        const installation = await this.repository.insert(
+          loaded,
+          iconDataUrl,
+          installChanges(loaded),
+          { transacting },
+        );
         await this.actionLog.record(
           transacting,
           context,

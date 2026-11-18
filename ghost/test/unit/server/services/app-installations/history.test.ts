@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import {
-  buildHistory,
   approvalManifestIds,
+  buildHistory,
   type HistoryAction,
   type HistoryManifest,
 } from '../../../../../core/server/services/app-installations/history';
@@ -15,25 +15,32 @@ const manifestRow = (
   {
     source = 'update',
     requiresApproval = false,
+    changes = [],
   }: {
     source?: HistoryManifest['source'];
     requiresApproval?: boolean;
+    changes?: HistoryManifest['changes'];
   } = {},
 ): HistoryManifest => ({
   id,
+  changes,
   source,
   requires_approval: requiresApproval,
   created_at: new Date(createdAt),
 });
 
-const installed = (id: string, createdAt: string) =>
-  manifestRow(id, createdAt, { source: 'install' });
+const installed = (id: string, createdAt: string, changes: HistoryManifest['changes'] = []) =>
+  manifestRow(id, createdAt, { source: 'install', changes });
 
 const servedFrom = (host: string) =>
   ({
     manifest_url: `https://${host}/ghost-app.json`,
     surfaces: [{ type: 'admin_page', url: `https://${host}/admin` }],
+    access: [] as AppManifest['access'],
   }) as AppManifest;
+
+const changesOf = (entries: ReturnType<typeof buildHistory>) =>
+  entries.map(({ event, changes }) => [event, changes ?? []]);
 
 const action = (
   id: string,
@@ -251,6 +258,72 @@ describe('buildHistory', function () {
       history.map(({ event }) => event),
       ['updated', 'changes_approved', 'installed'],
     );
+  });
+});
+
+describe('buildHistory, for changes', function () {
+  const GRANTED: HistoryManifest['changes'] = [
+    { kind: 'access', scope: 'post:read', change: 'added', backend: true },
+  ];
+  const ASKED: HistoryManifest['changes'] = [
+    { kind: 'field' as const, path: 'name', requires_approval: true },
+    { kind: 'access', scope: 'post:edit', change: 'added', backend: false },
+  ];
+
+  it('shows the changes stored with each manifest row on its entry', function () {
+    const narrowed: HistoryManifest['changes'] = [
+      { kind: 'access', scope: 'post:read', change: 'backend_removed', backend: false },
+    ];
+    const history = buildHistory(
+      [
+        installed('m1', '2026-10-01T10:00:00.000Z', GRANTED),
+        manifestRow('m2', '2026-10-02T10:00:00.000Z', { requiresApproval: true, changes: ASKED }),
+        manifestRow('m3', '2026-10-03T10:00:00.000Z', { source: 'resume' }),
+        manifestRow('m4', '2026-10-04T10:00:00.000Z', { changes: narrowed }),
+      ],
+      [action('a1', 'installed', '2026-10-01T10:00:00.000Z')],
+      new Map(),
+    );
+
+    assert.deepEqual(changesOf(history), [
+      ['updated', narrowed],
+      ['resumed', []],
+      ['suspended', ASKED],
+      ['installed', GRANTED],
+    ]);
+  });
+
+  it('shows an approval with the changes stored with the manifest it approved', function () {
+    const history = buildHistory(
+      [
+        installed('m1', '2026-10-01T10:00:00.000Z', GRANTED),
+        manifestRow('m2', '2026-10-02T10:00:00.000Z', { requiresApproval: true, changes: ASKED }),
+      ],
+      [
+        action('a2', 'changes_approved', '2026-10-03T10:00:00.000Z', {
+          from_manifest_id: 'm1',
+          to_manifest_id: 'm2',
+        }),
+      ],
+      new Map(),
+    );
+
+    assert.deepEqual(changesOf(history)[0], ['changes_approved', ASKED]);
+  });
+
+  it('shows no changes for an approval of what was already approved', function () {
+    const history = buildHistory(
+      [installed('m1', '2026-10-01T10:00:00.000Z', GRANTED)],
+      [
+        action('a2', 'changes_approved', '2026-10-03T10:00:00.000Z', {
+          from_manifest_id: 'm1',
+          to_manifest_id: 'm1',
+        }),
+      ],
+      new Map(),
+    );
+
+    assert.deepEqual(changesOf(history)[0], ['changes_approved', []]);
   });
 });
 

@@ -6,9 +6,10 @@ changes are defined in [App Contracts](../../../../../contracts/app-contracts/CO
 
 ## Lifecycle
 
-1. **Install.** A publisher opens an install link, reviews the preview and
-   confirms it. The site gets a new installation, active and running that
-   manifest as its approved manifest, and pins the app's identity key.
+1. **Install.** A publisher opens an install link, reviews the preview,
+   including the access the app asks for, and confirms it. The site gets a new
+   installation, active and running that manifest as its approved manifest,
+   and pins the app's identity key.
 2. **Re-check.** Each time an app session starts, the manifest is fetched
    again and must pass the identity check. Silent changes are applied straight
    away. Any other change becomes
@@ -43,6 +44,14 @@ The manifest an installation runs: the version the publisher last approved, or
 a newer one the re-check applied because it had only silent changes.
 _Avoid_: active manifest, current manifest
 
+**Stored changes**:
+What a manifest row differs by from the approved manifest when the row was
+added, kept with the row: field changes by path and access changes by scope,
+in the shape App Contracts defines for a change. An install's are compared
+against no manifest at all, so they list every scope it grants. The preview and
+the history serve them as Ghost computed them, and Admin only displays them.
+_Avoid_: diff, changelog
+
 **Pending manifest**:
 A newer manifest the re-check found that needs the publisher's approval. An
 installation has at most one; a newer one replaces it.
@@ -59,6 +68,12 @@ _Avoid_: paused, disabled
 **Uninstalled**:
 An installation that has ended. It is kept as a record and never runs again.
 _Avoid_: deleted, removed
+
+**Approved access**:
+The access in the approved manifest. Every scope is required, so it is exactly
+what the publisher approved. The stored changes of each manifest row also
+record how access changed, for the history. A reinstall approves access afresh.
+_Avoid_: granted scopes, permissions
 
 **Pinned identity key**:
 The identity key an installation was created with. It never changes: a manifest
@@ -158,6 +173,10 @@ The timeline of an installation, newest first: installed, updated, suspended,
 resumed, changes approved and uninstalled. Each update, suspension and resume is
 one manifest row the re-check stored. Resumed means the app reverted the pending
 changes, so the re-check lifted the suspension, applying any silent changes.
+Each entry shows the changes stored with its manifest row, computed against
+the approved manifest when the row was added: an install lists everything it
+granted, a suspension what waits for approval, and an approval the changes of
+the manifest it approved.
 _Avoid_: audit log, activity
 
 **Actor**:
