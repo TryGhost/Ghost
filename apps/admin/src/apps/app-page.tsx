@@ -11,7 +11,7 @@ import { Button, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/compon
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { approvedScopes } from '@tryghost/app-contracts';
-import type { StartContext, Theme } from '@tryghost/app-contracts/bridge';
+import type { Layout, SafeArea, StartContext, Theme } from '@tryghost/app-contracts/bridge';
 import {
   Link,
   useFramework,
@@ -36,6 +36,7 @@ import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-time
 import { editorReturnState } from '@/editor/api';
 import { usePageTitle } from '@/hooks/use-document-title';
 import { useThemeContext } from '@/providers/theme-context';
+import { AppCanvas } from './components/app-canvas';
 import { WithAppFooter } from './components/app-footer';
 import { AppsGate } from './components/apps-gate';
 import { InstallDialog, type InstallDone } from './components/install-dialog/install-dialog';
@@ -221,6 +222,8 @@ function useSessionEnd(session: AppSession, onEnded: () => void) {
   }, [dataUpdatedAt, isFetching, onEnded, revision, started, since]);
 }
 
+const NO_INSETS: SafeArea = { top: 0, right: 0, bottom: 0, left: 0 };
+
 /**
  * The app's page, loaded from its own URL in a sandboxed frame and connected to Admin by the
  * bridge. The frame stays hidden until the app has started, which is what the `ready` status means.
@@ -253,6 +256,8 @@ const AppFrame: React.FC<{
     () => ({ mode: resolvedTheme, accent_color: accentColor }),
     [resolvedTheme, accentColor],
   );
+  // The canvas measures it before the page can connect.
+  const [layout, setLayout] = useState<Layout>({ safeArea: NO_INSETS });
 
   const context: StartContext = {
     site: { url: site.url, title: site.title, timezone, locale: site.locale },
@@ -260,6 +265,7 @@ const AppFrame: React.FC<{
     theme,
     session: { revision: installation.revision },
     path,
+    layout,
   };
   // Read when the page connects, so the app starts with Admin's context at that moment.
   const contextRef = useRef(context);
@@ -326,6 +332,7 @@ const AppFrame: React.FC<{
   // from Admin's own navigations.
   useEffect(() => frameSession.pathChanged(path, move), [frameSession, location.key, path, move]);
   useEffect(() => frameSession.themeChanged(theme), [frameSession, theme]);
+  useEffect(() => frameSession.layoutChanged(layout), [frameSession, layout]);
 
   if (status === 'failed') {
     return (
@@ -338,30 +345,33 @@ const AppFrame: React.FC<{
   }
 
   return (
-    <WithAppFooter app={installation}>
-      <div className="relative size-full">
-        {status === 'loading' && (
+    <AppCanvas
+      app={installation}
+      placeholder={
+        status === 'loading' && (
           <div className="absolute inset-0 flex items-center justify-center">
             <LoadingIndicator size="lg" />
           </div>
-        )}
-        <iframe
-          key={attempt}
-          ref={frameSession.attach}
-          allow={APP_FRAME_ALLOW}
-          aria-hidden={status !== 'ready'}
-          // Hidden, not transparent: a frame that's still loading mustn't take focus or clicks.
-          // A block, with no border: inline, the frame would sit on the text baseline and
-          // leave a gap under itself for the page to scroll.
-          className={cn('block size-full border-0', status !== 'ready' && 'invisible')}
-          data-testid="app-frame"
-          referrerPolicy="strict-origin-when-cross-origin"
-          sandbox={APP_FRAME_SANDBOX}
-          src={frameSource.src}
-          title={manifest.name}
-        />
-      </div>
-    </WithAppFooter>
+        )
+      }
+      onLayoutChange={setLayout}
+    >
+      <iframe
+        key={attempt}
+        ref={frameSession.attach}
+        allow={APP_FRAME_ALLOW}
+        aria-hidden={status !== 'ready'}
+        // Hidden, not transparent: a frame that's still loading mustn't take focus or clicks.
+        // A block, with no border: inline, the frame would sit on the text baseline and
+        // leave a gap under itself for the page to scroll.
+        className={cn('block size-full border-0', status !== 'ready' && 'invisible')}
+        data-testid="app-frame"
+        referrerPolicy="strict-origin-when-cross-origin"
+        sandbox={APP_FRAME_SANDBOX}
+        src={frameSource.src}
+        title={manifest.name}
+      />
+    </AppCanvas>
   );
 };
 

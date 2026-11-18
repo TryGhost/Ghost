@@ -24,6 +24,7 @@ const context = (overrides: Partial<StartContext> = {}): StartContext => ({
   theme: { mode: 'light', accent_color: '#ff5500' },
   session: { revision: 0 },
   path: '/',
+  layout: { safeArea: { top: 0, right: 0, bottom: 57, left: 0 } },
   ...overrides,
 });
 
@@ -45,6 +46,7 @@ function fakeDocument() {
     start: vi.fn<AppExports['start']>(async () => {}),
     themeChanged: vi.fn<AppExports['themeChanged']>(async () => {}),
     pathChanged: vi.fn<AppExports['pathChanged']>(async () => {}),
+    layoutChanged: vi.fn<AppExports['layoutChanged']>(async () => {}),
   };
   let thread: ThreadMessagePort<HostExports, AppExports> | undefined;
   return {
@@ -754,18 +756,31 @@ describe('createAppFrameSession', () => {
     await vi.waitFor(() => expect(frame.app.themeChanged).toHaveBeenCalledExactlyOnceWith(dark));
   });
 
+  it('sends the app a layout it doesn’t have yet, once', async () => {
+    const frame = await started();
+    const pinned = { safeArea: { top: 0, right: 0, bottom: 57, left: 285 } };
+
+    session.layoutChanged(admin.context.layout);
+    session.layoutChanged(pinned);
+    session.layoutChanged({ safeArea: { ...pinned.safeArea } });
+
+    await vi.waitFor(() => expect(frame.app.layoutChanged).toHaveBeenCalledExactlyOnceWith(pinned));
+  });
+
   it('sends a page nothing before it has connected', async () => {
     const frame = fakeFrame();
     session.attach(frame.element);
 
     session.pathChanged('/episodes');
     session.themeChanged({ mode: 'dark', accent_color: '#000000' });
+    session.layoutChanged({ safeArea: { top: 0, right: 0, bottom: 57, left: 285 } });
     admin.context = context({ path: '/episodes' });
     frame.hello();
     await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
 
     expect(frame.app.pathChanged).not.toHaveBeenCalled();
     expect(frame.app.themeChanged).not.toHaveBeenCalled();
+    expect(frame.app.layoutChanged).not.toHaveBeenCalled();
   });
 
   it('opens a place the app asks for, from the route the app is on', async () => {

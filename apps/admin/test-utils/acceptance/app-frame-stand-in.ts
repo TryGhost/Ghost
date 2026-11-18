@@ -41,13 +41,19 @@ export type AppFrameReceived =
   | { call: 'themeChanged'; value: unknown }
   | { call: 'pathChanged'; value: unknown };
 
+/** The safe area the SDK set on the page's root, in pixels, by edge. */
+export type AppFrameSafeArea = Record<'top' | 'right' | 'bottom' | 'left', string>;
+
 export type AppFrameResult<Value> = { value: Value } | { error: string };
 
 export interface AppFrameState {
   /**
    * The context the app connected with, read from `Ghost` at connect time, not its current values.
+   * The layout is CSS variables instead, which `safeArea` reads.
    */
-  context: StartContext | undefined;
+  context: Omit<StartContext, 'layout'> | undefined;
+  /** The safe area's current CSS variables. */
+  safeArea: AppFrameSafeArea;
   /** The app's current route, `Ghost.path.current`. */
   path: string | undefined;
   /** The document's own URL on the app's origin: its path and query. */
@@ -90,7 +96,13 @@ const sdk = import(
   )
 ) as Promise<typeof AppSdk>;
 const received: AppFrameReceived[] = [];
-let context: StartContext | undefined;
+let context: Omit<StartContext, 'layout'> | undefined;
+
+const safeArea = (): AppFrameSafeArea => {
+  const inset = (edge: string) =>
+    document.documentElement.style.getPropertyValue(`--ghost-safe-area-inset-${edge}`);
+  return { top: inset('top'), right: inset('right'), bottom: inset('bottom'), left: inset('left') };
+};
 let ghost: Ghost | undefined;
 let markConnected: (connecting: Promise<Ghost>) => void = () => {};
 const connected = new Promise<Ghost>((resolve) => {
@@ -119,6 +131,7 @@ window.__app = {
     path: ghost?.path.current,
     address: `${location.pathname}${location.search}`,
     theme: ghost?.theme,
+    safeArea: safeArea(),
     received,
   }),
   canShare: () => navigator.canShare({ url: location.href }),

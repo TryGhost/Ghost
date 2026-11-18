@@ -6,6 +6,7 @@ import {
   FetchRequestSchema,
   HelloMessageSchema,
   type HostExports,
+  type Layout,
   type PathMove,
   PathMoveSchema,
   type Place,
@@ -60,6 +61,7 @@ export interface AppFrameHost {
   readonly connected: boolean;
   themeChanged(theme: Theme): void;
   pathChanged(path: string): void;
+  layoutChanged(layout: Layout): void;
   /** Ends the session. The channel closes and Admin refuses every further call from the page. */
   dispose(): void;
 }
@@ -307,6 +309,7 @@ export function bindAppFrame({
     },
     themeChanged: (theme) => tell((app) => app.themeChanged(theme)),
     pathChanged: (path) => tell((app) => app.pathChanged(path)),
+    layoutChanged: (layout) => tell((app) => app.layoutChanged(layout)),
     dispose() {
       if (disposed) {
         return;
