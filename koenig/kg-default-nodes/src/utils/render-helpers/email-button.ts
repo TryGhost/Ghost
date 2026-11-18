@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {escapeHtml} from '../escape-html.js';
-import {sanitizeColour} from '../sanitize-colour.js';
+import {sanitizeColor} from '../sanitize-color.js';
 import {html} from '../tagged-template-fns.js';
 import {stylex} from '../stylex.js';
 
@@ -42,7 +42,7 @@ function _getOptions(buttonOptions: EmailButtonOptions = {}): Required<EmailButt
 
 export function renderEmailButton(buttonOptions: EmailButtonOptions = {}) {
     const options = _getOptions(buttonOptions);
-    options.color = sanitizeColour(options.color);
+    options.color = sanitizeColor(options.color);
     const {url, text} = options;
     const alignment = escapeHtml(options.alignment);
     const buttonWidth = escapeHtml(options.buttonWidth);

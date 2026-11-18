@@ -1,7 +1,7 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import {escapeAttribute} from 'entities';
 import {escapeHtml} from '../../utils/escape-html.js';
-import {sanitizeColour} from '../../utils/sanitize-colour.js';
+import {sanitizeColor} from '../../utils/sanitize-color.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
 import {getFirstHtmlElement} from '../../utils/get-first-html-element.js';
 
@@ -123,12 +123,12 @@ export function renderSignupCardToDOM(dataset: SignupDatasetNode, options: Signu
         disclaimer: dataset.__disclaimer,
         backgroundImageSrc: dataset.__backgroundImageSrc,
         backgroundSize: dataset.__backgroundSize,
-        backgroundColor: sanitizeColour(dataset.__backgroundColor),
-        buttonColor: sanitizeColour(dataset.__buttonColor, 'accent'),
+        backgroundColor: sanitizeColor(dataset.__backgroundColor),
+        buttonColor: sanitizeColor(dataset.__buttonColor, 'accent'),
         labels: dataset.__labels,
         layout: dataset.__layout,
-        textColor: sanitizeColour(dataset.__textColor),
-        buttonTextColor: sanitizeColour(dataset.__buttonTextColor),
+        textColor: sanitizeColor(dataset.__textColor),
+        buttonTextColor: sanitizeColor(dataset.__buttonTextColor),
         successMessage: dataset.__successMessage,
         swapped: dataset.__swapped
     };

@@ -28,7 +28,7 @@ describe('renderers/call-to-action-renderer', function () {
     const badText = 'Go <b>now</b> & "save"';
     const badUrl = 'https://example.org/a"b>c?x=1&y=<2>';
 
-    const badColour = 'red; width: 100%';
+    const badColor = 'red; width: 100%';
 
     function renderForWeb(data: Record<string, unknown>, options?: Record<string, unknown>) {
         return callRenderer('call-to-action', data, options);
@@ -203,7 +203,7 @@ describe('renderers/call-to-action-renderer', function () {
         });
 
         it('ignores a button text colour that isn\'t in a supported format', function () {
-            const result = renderForWeb(getTestData({buttonColor: '#000000', buttonTextColor: badColour}));
+            const result = renderForWeb(getTestData({buttonColor: '#000000', buttonTextColor: badColor}));
             const link = createDocument(result.html).querySelector('.kg-cta-button') as HTMLElement;
 
             assert.deepEqual(link.getAttributeNames(), ['href', 'class', 'style']);
@@ -631,7 +631,7 @@ describe('renderers/call-to-action-renderer', function () {
         });
 
         it('ignores a button colour that isn\'t in a supported format', function () {
-            const result = renderForEmail(getTestData({buttonColor: badColour, imageUrl: ''}));
+            const result = renderForEmail(getTestData({buttonColor: badColor, imageUrl: ''}));
             const document = createDocument(result.html);
 
             assert.equal(document.querySelector('table.btn')?.getAttribute('class'), 'btn');

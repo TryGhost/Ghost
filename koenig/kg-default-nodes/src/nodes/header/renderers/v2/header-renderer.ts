@@ -2,7 +2,7 @@ import {addCreateDocumentOption} from '../../../../utils/add-create-document-opt
 import type {ExportDOMOptions} from '../../../../export-dom.js';
 import {cssUrl} from '../../../../utils/css-url.js';
 import {escapeHtml} from '../../../../utils/escape-html.js';
-import {sanitizeColour} from '../../../../utils/sanitize-colour.js';
+import {sanitizeColor} from '../../../../utils/sanitize-color.js';
 import {getFirstHtmlElement} from '../../../../utils/get-first-html-element.js';
 import {renderEmailButton} from '../../../../utils/render-helpers/email-button.js';
 import {slugify} from '../../../../utils/slugify.js';
@@ -264,13 +264,13 @@ export function renderHeaderNodeV2(dataset: HeaderV2DatasetNode, options: Header
         backgroundImageWidth: dataset.__backgroundImageWidth,
         backgroundImageHeight: dataset.__backgroundImageHeight,
         backgroundSize: dataset.__backgroundSize,
-        backgroundColor: sanitizeColour(dataset.__backgroundColor),
-        buttonColor: sanitizeColour(dataset.__buttonColor),
+        backgroundColor: sanitizeColor(dataset.__backgroundColor),
+        buttonColor: sanitizeColor(dataset.__buttonColor),
         layout: dataset.__layout,
-        textColor: sanitizeColour(dataset.__textColor),
-        buttonTextColor: sanitizeColour(dataset.__buttonTextColor),
+        textColor: sanitizeColor(dataset.__textColor),
+        buttonTextColor: sanitizeColor(dataset.__buttonTextColor),
         swapped: dataset.__swapped,
-        accentColor: sanitizeColour(dataset.__accentColor)
+        accentColor: sanitizeColor(dataset.__accentColor)
     };
 
     if (options.target === 'email') {

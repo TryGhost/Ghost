@@ -1,7 +1,7 @@
 import {renderEmailButton} from '../../utils/render-helpers/email-button.js';
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import {escapeHtml} from '../../utils/escape-html.js';
-import {sanitizeColour} from '../../utils/sanitize-colour.js';
+import {sanitizeColor} from '../../utils/sanitize-color.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
 import {renderWithVisibility, type Visibility} from '../../utils/visibility.js';
 import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions.js';
@@ -57,8 +57,8 @@ function ctaCardTemplate(dataset: CTADataset) {
     }
     const buttonAccent = dataset.buttonColor === 'accent' ? 'kg-style-accent' : '';
     const buttonStyle = dataset.buttonColor === 'accent'
-        ? `style="color: ${sanitizeColour(dataset.buttonTextColor)};"`
-        : `style="background-color: ${dataset.buttonColor}; color: ${sanitizeColour(dataset.buttonTextColor)};"`;
+        ? `style="color: ${sanitizeColor(dataset.buttonTextColor)};"`
+        : `style="background-color: ${dataset.buttonColor}; color: ${sanitizeColor(dataset.buttonTextColor)};"`;
 
     return `
         <div class="kg-card kg-cta-card kg-cta-bg-${dataset.backgroundColor} kg-cta-${escapeHtml(dataset.layout)} ${dataset.showDividers ? '' : 'kg-cta-no-dividers'} ${dataset.imageUrl ? 'kg-cta-has-img' : ''} ${dataset.linkColor === 'accent' ? 'kg-cta-link-accent' : ''} ${dataset.alignment === 'center' ? 'kg-cta-centered' : ''}" data-layout="${escapeHtml(dataset.layout)}">

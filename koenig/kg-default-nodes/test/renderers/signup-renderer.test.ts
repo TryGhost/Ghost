@@ -23,7 +23,7 @@ describe('renderers/signup-renderer', function () {
     // Values containing characters that are special in HTML and in CSS
     const badText = 'Go <b>now</b> & "save"';
     const badUrl = 'https://example.org/a"b>c?x=1&y=<2>';
-    const badColour = 'red; width: 100%';
+    const badColor = 'red; width: 100%';
 
     function getTestData(overrides = {}) {
         return {
@@ -186,10 +186,10 @@ describe('renderers/signup-renderer', function () {
         it('ignores a colour that isn\'t in a supported format', function () {
             const result = renderForWeb(getTestData({
                 backgroundImageSrc: '',
-                backgroundColor: badColour,
-                textColor: badColour,
+                backgroundColor: badColor,
+                textColor: badColor,
                 buttonColor: '#000000',
-                buttonTextColor: badColour
+                buttonTextColor: badColor
             }));
             const document = createDocument(result.html);
             const card = document.querySelector('.kg-signup-card') as HTMLElement;
@@ -201,8 +201,8 @@ describe('renderers/signup-renderer', function () {
                 assert.equal(document.querySelector(selector)?.hasAttribute('style'), false, selector);
             }
 
-            const withBadButtonColour = renderForWeb(getTestData({buttonColor: badColour, buttonTextColor: '#ffffff'}));
-            const otherButton = createDocument(withBadButtonColour.html).querySelector('.kg-signup-card-button') as HTMLElement;
+            const withBadButtonColor = renderForWeb(getTestData({buttonColor: badColor, buttonTextColor: '#ffffff'}));
+            const otherButton = createDocument(withBadButtonColor.html).querySelector('.kg-signup-card-button') as HTMLElement;
 
             assert.deepEqual(Array.from(otherButton.style), ['color']);
             assert.equal(otherButton.classList.contains('kg-style-accent'), true);

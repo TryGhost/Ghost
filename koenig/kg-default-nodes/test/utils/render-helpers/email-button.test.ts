@@ -65,14 +65,14 @@ describe('utils/render-helpers/email-button', function () {
         });
 
         it('ignores a colour that isn\'t in a supported format', function () {
-            for (const badColour of ['red; width: 100%', '#fff" x="', 'red>']) {
+            for (const badColor of ['red; width: 100%', '#fff" x="', 'red>']) {
                 for (const style of ['fill', 'outline'] as const) {
-                    const result = renderEmailButton({url: 'http://example.com', text: 'Click me', color: badColour, style});
+                    const result = renderEmailButton({url: 'http://example.com', text: 'Click me', color: badColor, style});
                     const document = createDocument(result);
 
-                    assert.equal(document.querySelector('table')?.getAttribute('class'), 'btn', badColour);
-                    assert.deepEqual(document.querySelector('td')?.getAttributeNames(), ['align'], badColour);
-                    assert.deepEqual(document.querySelector('a')?.getAttributeNames(), ['href'], badColour);
+                    assert.equal(document.querySelector('table')?.getAttribute('class'), 'btn', badColor);
+                    assert.deepEqual(document.querySelector('td')?.getAttributeNames(), ['align'], badColor);
+                    assert.deepEqual(document.querySelector('a')?.getAttributeNames(), ['href'], badColor);
                 }
             }
         });

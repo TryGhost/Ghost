@@ -34,7 +34,7 @@ describe('renderers/header-v2-renderer', function () {
     const badUrl = 'https://example.org/a"b>c?x=1&y=<2>';
     const badImage = 'https://example.org/it\'s "a" (header).jpg';
     const encodedBadImage = 'https://example.org/it%27s%20%22a%22%20(header).jpg';
-    const badColour = 'red; width: 100%';
+    const badColor = 'red; width: 100%';
 
     function renderForWeb(data: Record<string, unknown>, options?: Record<string, unknown>) {
         return callRenderer('header', data, options);
@@ -196,10 +196,10 @@ describe('renderers/header-v2-renderer', function () {
         it('ignores a colour that isn\'t in a supported format', function () {
             const result = renderForWeb(getTestData({
                 backgroundImageSrc: '',
-                backgroundColor: badColour,
-                textColor: badColour,
+                backgroundColor: badColor,
+                textColor: badColor,
                 buttonColor: 'rgb(255, 255, 255)',
-                buttonTextColor: badColour
+                buttonTextColor: badColor
             }));
             const document = createDocument(result.html);
             const card = document.body.firstElementChild as HTMLElement;
@@ -354,9 +354,9 @@ describe('renderers/header-v2-renderer', function () {
         it('ignores a colour that isn\'t in a supported format', function () {
             const result = renderForEmail(getTestData({
                 backgroundImageSrc: '',
-                backgroundColor: badColour,
-                textColor: badColour,
-                buttonColor: badColour
+                backgroundColor: badColor,
+                textColor: badColor,
+                buttonColor: badColor
             }));
             const document = createDocument(result.html);
             const card = document.body.firstElementChild as HTMLElement;
@@ -367,7 +367,7 @@ describe('renderers/header-v2-renderer', function () {
         });
 
         it('ignores an accent colour that isn\'t in a supported format', function () {
-            const result = renderForEmail(getTestData({backgroundImageSrc: '', backgroundColor: 'accent', accentColor: badColour}));
+            const result = renderForEmail(getTestData({backgroundImageSrc: '', backgroundColor: 'accent', accentColor: badColor}));
             const card = createDocument(result.html).body.firstElementChild as HTMLElement;
 
             assert.deepEqual(Array.from(card.style), ['color', 'text-align']);
