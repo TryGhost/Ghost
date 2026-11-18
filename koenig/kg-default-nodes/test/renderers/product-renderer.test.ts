@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {assertPrettifiedIncludes, assertPrettifiesTo, callRenderer, html} from '../test-utils/index.js';
+import {assertPrettifiedIncludes, assertPrettifiesTo, callRenderer, createDocument, html} from '../test-utils/index.js';
 
 describe('renderers/product-renderer', function () {
     function getTestData(overrides = {}) {
@@ -17,6 +17,10 @@ describe('renderers/product-renderer', function () {
             ...overrides
         };
     }
+
+    // Values containing characters that are special in HTML
+    const badText = 'Go <b>now</b> & "save"';
+    const badUrl = 'https://example.org/a"b>c?x=1&y=<2>';
 
     function renderForWeb(data: Record<string, unknown>, options?: Record<string, unknown>) {
         return callRenderer('product', data, options);
@@ -80,6 +84,38 @@ describe('renderers/product-renderer', function () {
             await assertPrettifiedIncludes(result.html, html`
                 <img src="/content/images/2022/11/koenig-lexical.jpg" width="200" height="100" alt="Fits &quot;most&quot; cameras &amp; lenses" class="kg-product-card-image" loading="lazy">
             `);
+        });
+
+        it('writes button text as text', function () {
+            const result = renderForWeb(getTestData({productButton: badText}));
+            const button = createDocument(result.html).querySelector('.kg-product-card-button span');
+
+            assert.equal(button?.textContent, badText);
+            assert.equal(button?.children.length, 0);
+        });
+
+        it('renders a link, image and image dimensions containing special characters', function () {
+            const result = renderForWeb(getTestData({productUrl: badUrl, productImageSrc: badUrl, productImageWidth: '200" x="', productImageHeight: '100>'}));
+            const document = createDocument(result.html);
+            const image = document.querySelector('.kg-product-card-image');
+            const link = document.querySelector('.kg-product-card-button');
+
+            assert.equal(document.body.children.length, 1);
+            assert.deepEqual(image?.getAttributeNames(), ['src', 'width', 'height', 'alt', 'class', 'loading']);
+            assert.equal(image?.getAttribute('src'), badUrl);
+            assert.equal(image?.getAttribute('width'), '200" x="');
+            assert.equal(image?.getAttribute('height'), '100>');
+            assert.deepEqual(link?.getAttributeNames(), ['href', 'class', 'target', 'rel']);
+            assert.equal(link?.getAttribute('href'), badUrl);
+        });
+
+        it('rounds the star rating to a whole number of stars', function () {
+            const activeStars = (rating: unknown) => createDocument(renderForWeb(getTestData({productStarRating: rating})).html)
+                .querySelectorAll('.kg-product-card-rating-active').length;
+
+            assert.equal(activeStars(3.6), 4);
+            assert.equal(activeStars(9), 5);
+            assert.equal(activeStars('4" x="'), 0);
         });
 
         it('renders nothing with a missing data', function () {
@@ -242,6 +278,27 @@ describe('renderers/product-renderer', function () {
         it('renders nothing with a missing data', function () {
             const result = renderForEmail(getTestData({isEmpty: () => true}), {feature: {}});
             assert.equal(result.html, '');
+        });
+
+        it('renders an image and image dimensions containing special characters', function () {
+            const result = renderForEmail(getTestData({productImageSrc: badUrl, productImageWidth: '200" x="', productImageHeight: '100>'}), {feature: {}});
+            const image = createDocument(result.html).querySelector('.kg-product-image img');
+
+            assert.deepEqual(image?.getAttributeNames(), ['src', 'width', 'height', 'alt', 'border']);
+            assert.equal(image?.getAttribute('src'), badUrl);
+            assert.equal(image?.getAttribute('width'), '200" x="');
+            assert.equal(image?.getAttribute('height'), '100>');
+        });
+
+        it('renders the rating image for a whole number of stars', function () {
+            const ratingImage = (rating: unknown) => {
+                const image = createDocument(renderForEmail(getTestData({productStarRating: rating}), {feature: {}}).html).querySelector('.kg-product-rating img');
+                assert.deepEqual(image?.getAttributeNames(), ['src', 'border']);
+                return image?.getAttribute('src');
+            };
+
+            assert.equal(ratingImage(3.6), 'https://static.ghost.org/v4.0.0/images/star-rating-4.png');
+            assert.equal(ratingImage('4" x="'), 'https://static.ghost.org/v4.0.0/images/star-rating-0.png');
         });
 
         it('renders dark mode rating image when background is dark', async function () {
@@ -408,6 +465,15 @@ describe('renderers/product-renderer', function () {
             const result = renderForEmail(getTestData(), {feature: {}, design: {buttonCorners: 'pill'}});
 
             assert.ok(!result.html.includes('border-radius'));
+        });
+
+        it('renders a button URL and text containing special characters', function () {
+            const result = renderForEmail(getTestData({productUrl: badUrl, productButton: badText}));
+            const link = createDocument(result.html).querySelector('table.btn a');
+
+            assert.equal(link?.getAttribute('href'), badUrl);
+            assert.equal(link?.textContent, badText);
+            assert.equal(link?.children.length, 0);
         });
     });
 });

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {assertPrettifiesTo, callRenderer, html} from '../test-utils/index.js';
+import {assertPrettifiesTo, callRenderer, createDocument, html} from '../test-utils/index.js';
 
 describe('renderers/signup-renderer', function () {
     const loadingIcon = `<svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 24 24">
@@ -19,6 +19,11 @@ describe('renderers/signup-renderer', function () {
             </style>
         </g>
     </svg>`;
+
+    // Values containing characters that are special in HTML and in CSS
+    const badText = 'Go <b>now</b> & "save"';
+    const badUrl = 'https://example.org/a"b>c?x=1&y=<2>';
+    const badColour = 'red; width: 100%';
 
     function getTestData(overrides = {}) {
         return {
@@ -127,6 +132,79 @@ describe('renderers/signup-renderer', function () {
                     </div>
                 </div>
             `);
+        });
+
+        it('writes button text and the success message as text', function () {
+            const result = renderForWeb(getTestData({buttonText: badText, successMessage: badText}));
+            const document = createDocument(result.html);
+            const button = document.querySelector('.kg-signup-card-button-default');
+            const success = document.querySelector('.kg-signup-card-success');
+
+            assert.equal(button?.textContent, badText);
+            assert.equal(button?.children.length, 0);
+            assert.equal(success?.textContent?.trim(), badText);
+            assert.equal(success?.children.length, 0);
+        });
+
+        it('renders HTML entities in button text as their characters', function () {
+            const result = renderForWeb(getTestData({buttonText: 'Subscribe &rarr;'}));
+
+            assert.equal(createDocument(result.html).querySelector('.kg-signup-card-button-default')?.textContent, 'Subscribe →');
+        });
+
+        it('keeps the header, subheader and disclaimer as HTML', function () {
+            const result = renderForWeb(getTestData({header: 'Join <b>us</b>', subheader: 'Every <i>week</i>', disclaimer: 'No <em>spam</em>'}));
+            const document = createDocument(result.html);
+
+            assert.equal(document.querySelector('.kg-signup-card-heading')?.innerHTML, 'Join <b>us</b>');
+            assert.equal(document.querySelector('.kg-signup-card-subheading')?.innerHTML, 'Every <i>week</i>');
+            assert.equal(document.querySelector('.kg-signup-card-disclaimer')?.innerHTML, 'No <em>spam</em>');
+        });
+
+        it('writes each label as stored, including labels containing special characters or that aren\'t strings', function () {
+            const result = renderForWeb(getTestData({labels: [badText, 'Q&amp;A', 123, null]}));
+            const inputs = Array.from(createDocument(result.html).querySelectorAll('input[data-members-label]'));
+
+            assert.deepEqual(inputs.map(input => input.getAttributeNames()), Array(4).fill(['data-members-label', 'type', 'value']));
+            assert.deepEqual(inputs.map(input => input.getAttribute('value')), [badText, 'Q&amp;A', '123', '']);
+        });
+
+        it('renders a background image and layout containing special characters', function () {
+            const badLayout = 'regular" x="<y>';
+            const result = renderForWeb(getTestData({backgroundImageSrc: badUrl, layout: badLayout}));
+            const document = createDocument(result.html);
+            const card = document.querySelector('.kg-signup-card');
+            const image = document.querySelector('.kg-signup-card-image');
+
+            assert.equal(document.body.children.length, 1);
+            assert.deepEqual(card?.getAttributeNames(), ['class', 'data-lexical-signup-form', 'style']);
+            assert.ok(card?.getAttribute('class')?.startsWith(`kg-card kg-signup-card kg-width-${badLayout}`));
+            assert.deepEqual(image?.getAttributeNames(), ['class', 'src', 'alt']);
+            assert.equal(image?.getAttribute('src'), badUrl);
+        });
+
+        it('ignores a colour that isn\'t in a supported format', function () {
+            const result = renderForWeb(getTestData({
+                backgroundImageSrc: '',
+                backgroundColor: badColour,
+                textColor: badColour,
+                buttonColor: '#000000',
+                buttonTextColor: badColour
+            }));
+            const document = createDocument(result.html);
+            const card = document.querySelector('.kg-signup-card') as HTMLElement;
+            const button = document.querySelector('.kg-signup-card-button') as HTMLElement;
+
+            assert.deepEqual(Array.from(card.style), ['display']);
+            assert.deepEqual(Array.from(button.style), ['background-color']);
+            for (const selector of ['.kg-signup-card-heading', '.kg-signup-card-subheading', '.kg-signup-card-success', '.kg-signup-card-error', '.kg-signup-card-disclaimer']) {
+                assert.equal(document.querySelector(selector)?.hasAttribute('style'), false, selector);
+            }
+
+            const withBadButtonColour = renderForWeb(getTestData({buttonColor: badColour, buttonTextColor: '#ffffff'}));
+            const otherButton = createDocument(withBadButtonColour.html).querySelector('.kg-signup-card-button') as HTMLElement;
+
+            assert.deepEqual(Array.from(otherButton.style), ['color']);
         });
 
         it('removes empty elements', async function () {

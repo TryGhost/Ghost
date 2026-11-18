@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {assertPrettifiedIncludes, assertPrettifiesTo, callRenderer, html, visibility} from '../test-utils/index.js';
+import {assertPrettifiedIncludes, assertPrettifiesTo, callRenderer, createDocument, html, visibility} from '../test-utils/index.js';
 
 describe('renderers/call-to-action-renderer', function () {
     function getTestData(overrides = {}) {
@@ -23,6 +23,12 @@ describe('renderers/call-to-action-renderer', function () {
             ...overrides
         };
     }
+
+    // Values containing characters that are special in HTML
+    const badText = 'Go <b>now</b> & "save"';
+    const badUrl = 'https://example.org/a"b>c?x=1&y=<2>';
+
+    const badColour = 'red; width: 100%';
 
     function renderForWeb(data: Record<string, unknown>, options?: Record<string, unknown>) {
         return callRenderer('call-to-action', data, options);
@@ -169,6 +175,39 @@ describe('renderers/call-to-action-renderer', function () {
             const result = renderForWeb(getTestData({linkColor: 'accent'}));
 
             assert.ok(result.html.includes('kg-cta-link-accent'));
+        });
+
+        it('writes button text as text', function () {
+            const result = renderForWeb(getTestData({buttonText: badText}));
+            const link = createDocument(result.html).querySelector('.kg-cta-button');
+
+            assert.equal(link?.textContent?.trim(), badText);
+            assert.equal(link?.children.length, 0);
+        });
+
+        it('renders a button URL, image and layout containing special characters', function () {
+            const badLayout = 'minimal" x="<y>';
+            const result = renderForWeb(getTestData({buttonUrl: badUrl, imageUrl: badUrl, imageWidth: '200" x="', imageHeight: '100>', layout: badLayout}));
+            const document = createDocument(result.html);
+            const card = document.querySelector('.kg-cta-card');
+            const image = document.querySelector('.kg-cta-image-container img');
+
+            assert.equal(document.body.children.length, 1);
+            assert.deepEqual(card?.getAttributeNames(), ['class', 'data-layout']);
+            assert.equal(card?.getAttribute('data-layout'), badLayout);
+            assert.ok(card?.getAttribute('class')?.includes(` kg-cta-${badLayout} `));
+            assert.deepEqual(image?.getAttributeNames(), ['src', 'alt', 'data-image-dimensions']);
+            assert.equal(image?.getAttribute('src'), badUrl);
+            assert.equal(image?.getAttribute('data-image-dimensions'), '200" x="x100>');
+            assert.deepEqual(Array.from(document.querySelectorAll('a')).map(link => link.getAttribute('href')), [badUrl, badUrl]);
+        });
+
+        it('ignores a button text colour that isn\'t in a supported format', function () {
+            const result = renderForWeb(getTestData({buttonColor: '#000000', buttonTextColor: badColour}));
+            const link = createDocument(result.html).querySelector('.kg-cta-button') as HTMLElement;
+
+            assert.deepEqual(link.getAttributeNames(), ['href', 'class', 'style']);
+            assert.deepEqual(Array.from(link.style), ['background-color']);
         });
     });
 
@@ -553,6 +592,51 @@ describe('renderers/call-to-action-renderer', function () {
                     </tbody>
                 </table>
             `);
+        });
+
+        it('renders a button URL and text containing special characters', function () {
+            const result = renderForEmail(getTestData({buttonUrl: badUrl, buttonText: badText, imageUrl: ''}));
+            const link = createDocument(result.html).querySelector('table.btn a');
+
+            assert.equal(link?.getAttribute('href'), badUrl);
+            assert.equal(link?.textContent, badText);
+            assert.equal(link?.children.length, 0);
+        });
+
+        it('renders an image, image dimensions and alignment containing special characters', function () {
+            const badAlignment = 'center" x="<y>';
+            const result = renderForEmail(getTestData({layout: 'immersive', imageUrl: badUrl, imageWidth: '200" x="', imageHeight: '100>', alignment: badAlignment}));
+            const document = createDocument(result.html);
+            const image = document.querySelector('img.kg-cta-image');
+            const buttonContainer = document.querySelector('.kg-cta-button-container');
+
+            assert.deepEqual(image?.getAttributeNames(), ['src', 'alt', 'class', 'width', 'height']);
+            assert.equal(image?.getAttribute('src'), badUrl);
+            assert.equal(image?.getAttribute('width'), '200" x="');
+            assert.equal(image?.getAttribute('height'), '100>');
+            assert.deepEqual(buttonContainer?.getAttributeNames(), ['class', 'align']);
+            assert.equal(buttonContainer?.getAttribute('align'), badAlignment);
+        });
+
+        it('renders a minimal layout image and a layout containing special characters', function () {
+            const minimal = createDocument(renderForEmail(getTestData({imageUrl: badUrl})).html);
+            assert.equal(minimal.querySelector('img.kg-cta-image')?.getAttribute('src'), badUrl);
+
+            const badLayout = 'immersive" x="<y>';
+            const document = createDocument(renderForEmail(getTestData({layout: badLayout})).html);
+            const card = document.querySelector('table.kg-cta-card');
+
+            assert.deepEqual(card?.getAttributeNames(), ['class', 'border', 'cellpadding', 'cellspacing', 'width']);
+            assert.ok(card?.getAttribute('class')?.includes(` kg-cta-${badLayout} `));
+        });
+
+        it('ignores a button colour that isn\'t in a supported format', function () {
+            const result = renderForEmail(getTestData({buttonColor: badColour, imageUrl: ''}));
+            const document = createDocument(result.html);
+
+            assert.equal(document.querySelector('table.btn')?.getAttribute('class'), 'btn');
+            assert.deepEqual(document.querySelector('table.btn td')?.getAttributeNames(), ['align']);
+            assert.deepEqual(document.querySelector('table.btn a')?.getAttributeNames(), ['href']);
         });
     });
 });

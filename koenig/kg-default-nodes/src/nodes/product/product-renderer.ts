@@ -5,6 +5,7 @@ import {getFirstHtmlElement} from '../../utils/get-first-html-element.js';
 import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions.js';
 import {renderEmailButton} from '../../utils/render-helpers/email-button.js';
 import {escapeAttribute} from 'entities';
+import {escapeHtml} from '../../utils/escape-html.js';
 
 interface ProductNodeData {
     productStarRating: number;
@@ -50,9 +51,11 @@ export function renderProductNode(node: ProductNodeData, options: ProductRenderO
 
     const dataset = node.getDataset();
 
+    // A whole number of stars, as the rating images are named
+    const starRating = Math.min(5, Math.max(0, Math.round(Number(dataset.productStarRating) || 0)));
     const ratingImage = options.design?.backgroundIsDark
-        ? `https://static.ghost.org/v4.0.0/images/star-rating-darkmode-${dataset.productStarRating}.png`
-        : `https://static.ghost.org/v4.0.0/images/star-rating-${dataset.productStarRating}.png`;
+        ? `https://static.ghost.org/v4.0.0/images/star-rating-darkmode-${starRating}.png`
+        : `https://static.ghost.org/v4.0.0/images/star-rating-${starRating}.png`;
 
     const templateData: ProductTemplateData = {
         ...dataset,
@@ -68,7 +71,7 @@ export function renderProductNode(node: ProductNodeData, options: ProductRenderO
 
     const starActiveClasses = 'kg-product-card-rating-active';
     for (let i = 1; i <= 5; i++) {
-        if (node.productStarRating >= i) {
+        if (starRating >= i) {
             templateData[`star${i}` as keyof Pick<ProductTemplateData, 'star1' | 'star2' | 'star3' | 'star4' | 'star5'>] = starActiveClasses;
         }
     }
@@ -88,7 +91,7 @@ export function cardTemplate({data}: {data: ProductTemplateData; feature?: Expor
         `
         <div class="kg-card kg-product-card">
             <div class="kg-product-card-container">
-                ${data.productImageSrc ? `<img src="${data.productImageSrc}" ${data.productImageWidth ? `width="${data.productImageWidth}"` : ''} ${data.productImageHeight ? `height="${data.productImageHeight}"` : ''} alt="${escapeAttribute(data.productImageAlt ?? '')}" class="kg-product-card-image" loading="lazy" />` : ''}
+                ${data.productImageSrc ? `<img src="${escapeHtml(data.productImageSrc)}" ${data.productImageWidth ? `width="${escapeHtml(String(data.productImageWidth))}"` : ''} ${data.productImageHeight ? `height="${escapeHtml(String(data.productImageHeight))}"` : ''} alt="${escapeAttribute(data.productImageAlt ?? '')}" class="kg-product-card-image" loading="lazy" />` : ''}
                 <div class="kg-product-card-title-container">
                     <h4 class="kg-product-card-title">${data.productTitle}</h4>
                 </div>
@@ -104,7 +107,7 @@ export function cardTemplate({data}: {data: ProductTemplateData; feature?: Expor
 
                 <div class="kg-product-card-description">${data.productDescription}</div>
                 ${data.productButtonEnabled ? `
-                    <a href="${data.productUrl}" class="kg-product-card-button kg-product-card-btn-accent" target="_blank" rel="noopener noreferrer"><span>${data.productButton}</span></a>
+                    <a href="${escapeHtml(data.productUrl)}" class="kg-product-card-button kg-product-card-btn-accent" target="_blank" rel="noopener noreferrer"><span>${escapeHtml(data.productButton)}</span></a>
                 ` : ''}
             </div>
         </div>
@@ -141,7 +144,7 @@ export function emailCardTemplate({data}: {data: ProductTemplateData; feature?: 
                         ${data.productImageSrc ? `
                             <tr>
                                 <td class="kg-product-image" align="center">
-                                    <img src="${data.productImageSrc}" ${imageDimensions ? `width="${imageDimensions.width}"` : ''} ${imageDimensions ? `height="${imageDimensions.height}"` : ''} alt="${escapeAttribute(data.productImageAlt ?? '')}" border="0"/>
+                                    <img src="${escapeHtml(data.productImageSrc)}" ${imageDimensions ? `width="${escapeHtml(String(imageDimensions.width))}"` : ''} ${imageDimensions ? `height="${escapeHtml(String(imageDimensions.height))}"` : ''} alt="${escapeAttribute(data.productImageAlt ?? '')}" border="0"/>
                                 </td>
                             </tr>
                         ` : ''}
@@ -153,7 +156,7 @@ export function emailCardTemplate({data}: {data: ProductTemplateData; feature?: 
                         ${data.productRatingEnabled ? `
                             <tr class="kg-product-rating">
                                 <td valign="top">
-                                    <img src="${data.ratingImage}" border="0" />
+                                    <img src="${escapeHtml(data.ratingImage)}" border="0" />
                                 </td>
                             </tr>
                         ` : ''}
