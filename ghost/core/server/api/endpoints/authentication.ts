@@ -66,42 +66,22 @@ const controller = {
     schema: {
       body: resourceBody('setup', auth.setup.setupDetailsSchema),
     },
-    query(frame) {
-      return Promise.resolve()
-        .then(() => {
-          return auth.setup.assertSetupCompleted(false)();
-        })
-        .then(() => {
-          const setupDetails = { ...frame.validated.body, status: 'active' };
+    async query(frame) {
+      await auth.setup.assertSetupCompleted(false)();
 
-          return auth.setup.setupUser(setupDetails);
-        })
-        .then((data) => {
-          try {
-            return auth.setup.doFixtures(data);
-          } catch (e) {
-            return data;
-          }
-        })
-        .then((data) => {
-          try {
-            return auth.setup.doProductAndNewsletter(data, api);
-          } catch (e) {
-            return data;
-          }
-        })
-        .then((data) => {
-          return auth.setup.installTheme(data, api);
-        })
-        .then((data) => {
-          return auth.setup.doSettings(data, api.settings);
-        })
-        .then((user) => {
-          auth.setup.sendWelcomeEmail(user.get('email'), api.mail).catch((err) => {
-            logging.error(err);
-          });
-          return user;
-        });
+      const setupDetails = { ...frame.validated.body, status: 'active' };
+      let data = await auth.setup.setupUser(setupDetails);
+
+      data = await auth.setup.doFixtures(data);
+      data = await auth.setup.doProductAndNewsletter(data, api);
+      data = await auth.setup.installTheme(data, api);
+      const user = await auth.setup.doSettings(data, api.settings);
+
+      auth.setup.sendWelcomeEmail(user.get('email'), api.mail).catch((err) => {
+        logging.error(err);
+      });
+
+      return user;
     },
   }),
 
