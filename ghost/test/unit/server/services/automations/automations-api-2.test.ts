@@ -62,6 +62,42 @@ describe('automations API', function () {
     });
   });
 
+  alphabeticalDescribe('markStepTerminal', function () {
+    const now = new Date('2026-01-02T03:04:05Z');
+    const step = { id: 'step-id', locked_by: 'lock-id' };
+
+    beforeEach(function () {
+      vi.useFakeTimers();
+      vi.setSystemTime(now);
+    });
+
+    afterEach(function () {
+      vi.useRealTimers();
+    });
+
+    it.each([true, false])(
+      'finishes the locked step with its status and returns %s when the repository does',
+      async function (updated) {
+        const updateLockedRunStep = vi.fn<Repository['updateLockedRunStep']>(() => updated);
+        const repository = createTestAutomationsRepository2({ updateLockedRunStep });
+
+        await expect(
+          createApi({ repository }).markStepTerminal(step, 'member unsubscribed'),
+        ).resolves.toBe(updated);
+
+        expect(updateLockedRunStep).toHaveBeenCalledOnce();
+        const [, lockedStep, changes] = updateLockedRunStep.mock.calls[0];
+        expect(lockedStep).toBe(step);
+        // Completion only: no started_at or ready_at changes.
+        expect(changes).toStrictEqual({
+          status: 'member unsubscribed',
+          finished_at: now,
+          updated_at: now,
+        });
+      },
+    );
+  });
+
   alphabeticalDescribe('notify', function () {
     type FirstAction = Awaited<ReturnType<Repository['findFirstActionRevisions']>>[number];
 

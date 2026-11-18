@@ -210,16 +210,6 @@ export type AutomationsRepository = {
     step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>,
   ): Promise<Date | null>;
   /**
-   * Stop a locked step without continuing the automation, preserving the
-   * reason it ended.
-   *
-   * Returns whether the step was updated.
-   */
-  markStepTerminal(
-    step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
-    status: AutomationStepTerminalStatus,
-  ): Promise<boolean>;
-  /**
    * Put a locked step back in the queue for another attempt.
    *
    * Returns whether the step was updated.

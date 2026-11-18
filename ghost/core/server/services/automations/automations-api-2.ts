@@ -4,6 +4,7 @@ import logging from '@tryghost/logging';
 import ObjectId from 'bson-objectid';
 import type { ReadonlyDeep } from 'type-fest';
 import { AutoFillingMap } from '../../lib/auto-filling-map';
+import type { AutomationStepTerminalStatus, AutomationStepToRun } from './automations-repository';
 import type {
   AutomationsRepository2,
   AutomatedEmailRecipientTrackingData,
@@ -51,6 +52,20 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
       repository.withConnection(
         async (connection) => await repository.getNumberOfAutomations(connection),
       ),
+
+    markStepTerminal: async (
+      step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
+      status: AutomationStepTerminalStatus,
+    ): Promise<boolean> => {
+      const now = new Date();
+      return await repository.withConnection((connection) =>
+        repository.updateLockedRunStep(connection, step, {
+          status,
+          finished_at: now,
+          updated_at: now,
+        }),
+      );
+    },
 
     notify: async (
       event: ReadonlyDeep<

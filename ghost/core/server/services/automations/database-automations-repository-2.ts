@@ -427,6 +427,26 @@ export const createDatabaseAutomationsRepository2 = ({
         .update(updates);
     },
 
+    async updateLockedRunStep(connection, step, changes) {
+      const { finished_at: finishedAt, ready_at: readyAt } = changes;
+      const updated = await connection('automation_run_steps')
+        .update({
+          status: changes.status,
+          updated_at: toDatabaseDate(changes.updated_at),
+          locked_by: null,
+          locked_at: null,
+          ...(changes.started_at === undefined ? {} : { started_at: changes.started_at }),
+          ...(finishedAt === undefined
+            ? {}
+            : { finished_at: finishedAt && toDatabaseDate(finishedAt) }),
+          ...(readyAt === undefined ? {} : { ready_at: toDatabaseDate(readyAt) }),
+        })
+        .where('id', step.id)
+        .where('status', 'pending')
+        .where('locked_by', step.locked_by);
+      return updated > 0;
+    },
+
     withConnection: (fn) => fn(knex),
 
     withTransaction: (fn) => knex.transaction(async (txn) => await fn(txn)),
