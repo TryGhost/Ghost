@@ -12,6 +12,7 @@ import {
   verifiesNewSession,
   type DeviceVerificationCode,
 } from '../../../../../../core/server/auth/better-auth/plugins/device-verification';
+import { ghostSessionGate } from '../../../../../../core/server/auth/better-auth/plugins/session-gate';
 
 type Row = Record<string, unknown>;
 
@@ -36,6 +37,50 @@ const testEndpoints = {
   },
 } satisfies BetterAuthPlugin;
 
+type Adapter = ReturnType<ReturnType<typeof memoryAdapter>>;
+
+type Watch = {
+  /** Where a revocation lands: as the session is read by id, or as it's updated */
+  revokeAt?: 'read' | 'update';
+  revoke?: () => void;
+  inTransaction: boolean;
+};
+
+// Models a revocation landing at one point: that read or update finds the row
+// gone, as the Knex adapter does. The memory adapter's transactions work on a
+// copy, so the row is also deleted for later reads. Reads by token (the gate,
+// sessionMiddleware) are left alone, so the request still gets in.
+function watchSessions(adapter: Adapter, state: Watch): Adapter {
+  const byId = (where: { field: string }[] | undefined) =>
+    !!where?.some(({ field }) => field === 'id');
+  return {
+    ...adapter,
+    findOne: (query) => {
+      if (query.model === 'session' && state.revokeAt === 'read' && byId(query.where)) {
+        state.revoke?.();
+        return Promise.resolve(null);
+      }
+      return adapter.findOne(query);
+    },
+    update: (query) => {
+      if (query.model === 'session' && state.revokeAt === 'update') {
+        state.revoke?.();
+        return Promise.resolve(null);
+      }
+      return adapter.update(query);
+    },
+    transaction: (callback) =>
+      adapter.transaction(async (trx) => {
+        state.inTransaction = true;
+        try {
+          return await callback(watchSessions(trx as Adapter, state));
+        } finally {
+          state.inTransaction = false;
+        }
+      }),
+  };
+}
+
 function setup({
   lastSeen = new Date(),
   enabled = true,
@@ -47,6 +92,7 @@ function setup({
   const db: Record<string, Row[]> = {
     user: ids.map((id) => ({
       id,
+      status: 'active',
       name: id,
       email: `${id}@example.com`,
       emailVerified: true,
@@ -68,16 +114,29 @@ function setup({
   };
   const sent: DeviceVerificationCode[] = [];
   const limiterResets: string[] = [];
-  const state = { emailMfa };
+  const state: Watch & {
+    emailMfa: boolean;
+    emailsBudgeted: number;
+    /** Whether the limiter was ever called inside a transaction */
+    limiterInTransaction: boolean;
+  } = {
+    emailMfa,
+    emailsBudgeted: 0,
+    limiterInTransaction: false,
+    inTransaction: false,
+  };
 
   const options = {
     isEnabled: () => enabled,
     isEmailMfaRequired: () => state.emailMfa,
     emailLimiter: () => ({
-      consume: async () =>
-        emailAllowed
+      consume: async () => {
+        state.emailsBudgeted += 1;
+        state.limiterInTransaction ||= state.inTransaction;
+        return emailAllowed
           ? ({ allowed: true } as const)
-          : ({ allowed: false, retryAfterMs: 60_000 } as const),
+          : ({ allowed: false, retryAfterMs: 60_000 } as const);
+      },
       reset: async ({ key }: { key?: string }) => {
         limiterResets.push(key!);
       },
@@ -90,7 +149,8 @@ function setup({
   const auth = betterAuth({
     baseURL: ORIGIN,
     secret: 'a'.repeat(64),
-    database: memoryAdapter(db),
+    database: ((adapterOptions) =>
+      watchSessions(memoryAdapter(db)(adapterOptions), state)) as ReturnType<typeof memoryAdapter>,
     emailAndPassword: {
       enabled: true,
       password: {
@@ -99,7 +159,10 @@ function setup({
       },
     },
     user: {
-      additionalFields: { last_seen: { type: 'date', required: false, input: false } },
+      additionalFields: {
+        status: { type: 'string', required: false, input: false },
+        last_seen: { type: 'date', required: false, input: false },
+      },
     },
     session: {
       additionalFields: { verified: { type: 'boolean', defaultValue: false, input: false } },
@@ -120,7 +183,8 @@ function setup({
     telemetry: { enabled: false },
     logger: { disabled: true },
     advanced: { cookies: { [DEVICE_TRUST_COOKIE]: { name: DEVICE_COOKIE } } },
-    plugins: [ghostDeviceVerification(options), testEndpoints],
+    // The gate makes unverified sessions anonymous, as createAuth registers it
+    plugins: [ghostSessionGate(), ghostDeviceVerification(options), testEndpoints],
   });
 
   // A browser: requests carry the cookies earlier responses set
@@ -353,6 +417,22 @@ describe('ghostDeviceVerification', function () {
   });
 
   describe('/device-verification/verify', function () {
+    it('neither verifies nor trusts a session revoked after it was read', async function () {
+      const { signIn, verify, lastCode, db, jar, state } = setup();
+      await signIn();
+      // A revocation that lands just before the session is marked verified
+      state.revokeAt = 'update';
+      state.revoke = () => {
+        db.session.length = 0;
+      };
+
+      const response = await verify(lastCode());
+
+      assert.equal(response.status, 401);
+      assert.equal(response.body.code, 'SESSION_EXPIRED');
+      assert.equal(jar.has(DEVICE_COOKIE), false);
+    });
+
     it('verifies the session and resets the email limit', async function () {
       const { signIn, verify, lastCode, sessionsOf, limiterResets, db } = setup();
       await signIn();
@@ -490,6 +570,53 @@ describe('ghostDeviceVerification', function () {
       assert.equal(response.status, 429);
       assert.equal(response.body.code, 'TOO_MANY_VERIFICATION_EMAILS');
       assert.equal(sent.length, 0);
+    });
+
+    it('spends no budget and sends nothing for a session revoked before the send', async function () {
+      const { signIn, request, sent, state, db } = setup();
+      await signIn();
+      const stored = structuredClone(db.verification);
+      const budgeted = state.emailsBudgeted;
+      state.revokeAt = 'read';
+      state.revoke = () => {
+        db.session.length = 0;
+      };
+
+      const response = await request('/device-verification/send', { body: {} });
+
+      assert.equal(response.status, 401);
+      assert.equal(response.body.code, 'SESSION_EXPIRED');
+      assert.equal(state.emailsBudgeted, budgeted);
+      // Only the sign-in's code, still stored as it was
+      assert.equal(sent.length, 1);
+      assert.deepEqual(db.verification, stored);
+    });
+
+    it('stores and sends nothing for a session revoked before the lock', async function () {
+      const { signIn, request, sent, state, db } = setup();
+      await signIn();
+      const stored = structuredClone(db.verification);
+      state.revokeAt = 'update';
+      state.revoke = () => {
+        db.session.length = 0;
+      };
+
+      const response = await request('/device-verification/send', { body: {} });
+
+      assert.equal(response.status, 401);
+      assert.equal(response.body.code, 'SESSION_EXPIRED');
+      assert.equal(sent.length, 1);
+      assert.deepEqual(db.verification, stored);
+    });
+
+    it('never calls the limiter inside a transaction', async function () {
+      const { signIn, request, state } = setup();
+      await signIn();
+
+      assert.equal((await request('/device-verification/send', { body: {} })).status, 200);
+
+      assert.equal(state.emailsBudgeted, 2);
+      assert.equal(state.limiterInTransaction, false);
     });
   });
 

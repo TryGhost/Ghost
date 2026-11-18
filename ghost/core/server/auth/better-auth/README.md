@@ -70,8 +70,10 @@ until Phase 4.
   while a session is being created can leave a session row, which
   `revokeUserSessions` in the same gap misses. Anything that trusts a session
   or token (the Admin API resolver, revocation, app tokens) must check the
-  user's status too. A successful `/reset-password` sets a `locked` user
-  `active`, as legacy `doReset` does; it refuses an `inactive` user's token
+  user's status too. For Better Auth's own endpoints, including the
+  `/session/verify` compatibility routes, `ghostSessionGate` does (below). A
+  successful `/reset-password` sets a `locked` user `active`, as legacy
+  `doReset` does; it refuses an `inactive` user's token
   before changing the password, and a suspension that lands during the reset
   stands. Server-only: `createVerifiedSession`, which requires the
   admin origin, `revokeUserSessions` and `revokeAllSessions`.
@@ -84,6 +86,16 @@ until Phase 4.
   adapter hook described below. It applies the passwordless rules above
   (unlocks `locked`, refuses `inactive`) and creates a verified session pinned
   to the admin origin. Team SSO is `@better-auth/sso` (Phase 8).
+- `plugins/session-gate.ts`: `ghostSessionGate`, registered first, decides
+  from one session lookup per request whether the session cookie reaches the
+  endpoint. A session whose user is not active (one that outlived a
+  suspension, above) is deleted; an unverified one is anonymous outside
+  `/device-verification/*` and `/sign-out` (see
+  [Device verification](#device-verification)). Either way the endpoint runs
+  without the cookie, keeping the other cookies as sent, as
+  `resolvePrincipal` treats the session. Better Auth's server-side `auth.api`
+  calls run it too, so the compatibility routes are covered. `/sign-out`
+  skips it: it deletes the session itself.
 - `plugins/device-verification.ts`: `ghostDeviceVerification`, email-code
   verification of new devices, described below.
 - The plugin emails codes through `auth/emails/sign-in-code.ts`, which the
@@ -201,7 +213,7 @@ A `session.create.before` hook in `create-auth.ts` sets what
   legacy does, or when `verifiesNewSession` from `ghostDeviceVerification`
   says so.
 
-A rotation (`/change-password` with `revokeOtherSessions`) carries `origin`
+A rotation (`/change-password`, which always revokes other sessions) carries `origin`
 and `verified` over from the replaced session. The hook keeps the `origin`
 that `createVerifiedSession` requires, and never sets `verified` back to
 `false`.
@@ -247,10 +259,19 @@ replaces the browser's unverified session, as legacy regenerates it.
   unless `require_email_mfa` is on. The server refuses it after that expiry,
   even if the browser kept it. Sign-out clears it when `require_email_mfa` is
   on.
-- A global before-hook makes an unverified session anonymous everywhere except
+- `ghostSessionGate` makes an unverified session anonymous everywhere except
   `/device-verification/*` and `/sign-out`: it removes the session cookie from
   the request, so session-protected endpoints such as `/change-password`
   answer `401`. `resolvePrincipal` already treats one as anonymous.
+- A session revoked mid-request is cut off at one write, which answers
+  `401 SESSION_EXPIRED` when the row is gone. Sending reads the session
+  before it spends the email budget, then locks the row before it stores a
+  code; a revocation between the two spends budget but stores and sends
+  nothing, and one after the commit still gets the email, whose code can't
+  verify a deleted session. Verifying consumes the code, then marks the session verified and
+  sets device trust with no await in between; a revocation after that
+  update still leaves the device-trust cookie, as it would for any session
+  revoked after verifying.
 
 The plugin's endpoints and the inline `token` work through `auth.api` with
 the request's headers, for the `/session/verify` compatibility routes. Those,
@@ -268,6 +289,10 @@ Under `better-auth`, security events go through `staff-sessions.ts` (plan §5.4)
   every other session ends. `PUT /authentication/password_reset` skips the
   legacy `initSession`, and a route middleware keeps the legacy admin-origin
   check, since the controller can't see the request.
+- Native `/change-password` ignores the client's `revokeOtherSessions` and
+  always revokes the user's other sessions and legacy `sessions` rows, so it
+  matches `PUT /users/password`. The rotated session keeps the browser signed
+  in.
 - Suspending or locking a user (`PUT /users/:id` with an inactive status) and
   deleting one revoke their sessions. Deletion revokes after its transaction
   commits, which holds the user's rows until then.
@@ -430,7 +455,10 @@ dependency, so the hooks see the transaction. Calling the adapter's
 `transaction` alone does not. `acceptInvitation` also writes Ghost tables
 through Bookshelf, which cannot join Better Auth's transaction: the
 transaction adapter does not expose its Knex `trx`. Plan §3.3 needs a bridge
-for it before Phase 6. Inside a hook
+for it before Phase 6. For the same reason, nothing inside a transaction may call
+something that takes its own pool connection, such as Ghost's limiters: each
+caller would hold one connection while waiting for another, and concurrent
+callers can drain the pool. Inside a hook
 or plugin, write through `getCurrentAdapter(ctx.context.adapter)` (exported
 from `better-auth`); `ctx.context.adapter` is outside the transaction, so a
 write through it survives a rollback.
