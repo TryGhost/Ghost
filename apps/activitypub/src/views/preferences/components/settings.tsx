@@ -2,7 +2,6 @@ import EditProfile from './edit-profile';
 import React, { useState } from 'react';
 import { Account } from '@src/api/activitypub';
 import {
-  ActionListItem,
   Button,
   Dialog,
   DialogContent,
@@ -162,34 +161,38 @@ export const SettingItem: React.FC<SettingItemProps> = ({
   onClick,
 }) => {
   const basePath = useAppBasePath();
+  const baseClasses = 'flex items-center justify-between py-3 gap-4';
+  const hoverClasses = withHover
+    ? 'relative cursor-pointer before:absolute before:inset-x-[-16px] before:inset-y-[-1px] before:rounded-md before:bg-gray-50 before:opacity-0 before:transition-opacity before:will-change-[opacity] hover:z-10 hover:cursor-pointer hover:border-b-transparent hover:before:opacity-100 dark:before:bg-gray-950'
+    : '';
+  const itemClasses = cn(baseClasses, hoverClasses, className);
   const fullPath = to && to.startsWith('/') ? `${basePath}${to}` : to;
-  const interactive = withHover && Boolean(fullPath || href || onClick);
-  const itemClasses = cn(
-    'flex w-full items-center justify-between gap-4 py-3 text-left focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden',
-    className,
-  );
 
-  const item = fullPath ? (
-    <Link className={itemClasses} to={fullPath}>
-      {children}
-    </Link>
-  ) : href ? (
-    <a className={itemClasses} href={href} rel="noreferrer" target="_blank">
-      {children}
-    </a>
-  ) : onClick ? (
-    <button className={itemClasses} type="button" onClick={onClick}>
-      {children}
-    </button>
-  ) : (
-    <div className={itemClasses}>{children}</div>
-  );
+  if (fullPath) {
+    return (
+      <Link className={itemClasses} to={fullPath}>
+        {children}
+      </Link>
+    );
+  }
 
-  return (
-    <ActionListItem hover={interactive} asChild>
-      {item}
-    </ActionListItem>
-  );
+  if (href) {
+    return (
+      <a className={itemClasses} href={href} rel="noreferrer" target="_blank">
+        {children}
+      </a>
+    );
+  }
+
+  if (onClick) {
+    return (
+      <div className={itemClasses} role="button" tabIndex={0} onClick={onClick}>
+        {children}
+      </div>
+    );
+  }
+
+  return <div className={itemClasses}>{children}</div>;
 };
 
 const SettingSeparator: React.FC = () => {

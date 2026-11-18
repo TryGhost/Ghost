@@ -1,10 +1,9 @@
-import { ShadeApp } from '@tryghost/shade/app';
 import React from 'react';
-import Settings, { SettingItem } from '../../../src/views/preferences/components/settings';
+import Settings from '../../../src/views/preferences/components/settings';
 import type { QueryState } from '../../utils/query-state';
 import { useAccountMigrationForUser } from '@hooks/use-activity-pub-queries';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { failedQuery, loadedQuery, loadingQuery } from '../../utils/query-state';
 
 type MigrationStatus = { targetApId: string | null; targetHandle: string | null; sent: boolean };
@@ -12,7 +11,6 @@ type MigrationStatus = { targetApId: string | null; targetHandle: string | null;
 const mocks = vi.hoisted(() => ({
   migration: undefined as unknown as QueryState<MigrationStatus>,
   outboundMoveEnabled: true,
-  navigate: vi.fn(),
 }));
 
 vi.mock('@hooks/use-activity-pub-queries', () => ({
@@ -36,7 +34,7 @@ vi.mock('@src/hooks/use-app-base-path', () => ({
 }));
 
 vi.mock('@src/hooks/use-navigate-with-base-path', () => ({
-  useNavigateWithBasePath: () => mocks.navigate,
+  useNavigateWithBasePath: () => vi.fn(),
 }));
 
 vi.mock('@tryghost/admin-x-framework', async (importOriginal) => ({
@@ -108,41 +106,5 @@ describe('account migration setting', () => {
     render(<Settings />);
     expect(getMigrationRow().textContent).toContain('Move followers into this account');
     expect(getMigrationRow().textContent).not.toContain('in or out');
-  });
-});
-
-describe.each([false, true])('preference row actions with admin7Design=%s', (admin7Design) => {
-  const renderWithDesign = (children: React.ReactNode) =>
-    render(
-      <ShadeApp admin7Design={admin7Design} darkMode={false}>
-        {children}
-      </ShadeApp>,
-    );
-  it('uses a native button for callback settings and activates the destination once', () => {
-    renderWithDesign(<Settings />);
-
-    const action = screen.getByRole('button', { name: /Bluesky sharing/ });
-    expect(action.tagName).toBe('BUTTON');
-    expect(action.tabIndex).toBe(0);
-    fireEvent.click(action);
-    expect(mocks.navigate).toHaveBeenCalledExactlyOnceWith('/preferences/bluesky-sharing');
-  });
-
-  it('does not invent a row action around standalone controls', () => {
-    const toggle = vi.fn();
-    renderWithDesign(
-      <SettingItem>
-        <span>Show sensitive media</span>
-        <button type="button" onClick={toggle}>
-          Toggle
-        </button>
-      </SettingItem>,
-    );
-
-    const control = screen.getByRole('button', { name: 'Toggle' });
-    expect(screen.getAllByRole('button')).toHaveLength(1);
-    expect(control.parentElement?.closest('button, [role="button"]')).toBeNull();
-    fireEvent.click(control);
-    expect(toggle).toHaveBeenCalledTimes(1);
   });
 });

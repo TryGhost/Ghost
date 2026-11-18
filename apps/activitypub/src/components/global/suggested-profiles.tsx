@@ -38,7 +38,6 @@ export const SuggestedProfile: React.FC<
       <div>
         <ActivityItem
           key={profile.id}
-          disabled={isLoading}
           onClick={() => {
             onOpenChange?.(false);
             navigate(`/profile/${profile.handle}`);

@@ -11,6 +11,7 @@ import Layout from '@components/layout';
 import NotificationIcon from './components/notification-icon';
 import NotificationItem from './components/notification-item';
 import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-card';
+import Separator from '@components/global/separator';
 import {
   ContentWarningOverlay,
   SensitiveMediaOverlay,
@@ -414,8 +415,9 @@ const Notifications: React.FC = () => {
                 <React.Fragment key={group.id || `${group.type}_${index}`}>
                   <NotificationItem
                     centerAlign={group.actors.length < 2 && group.type === 'follow'}
+                    className="hover:bg-gray-100 dark:hover:bg-gray-950"
                     isGrouped={group.actors.length > 1}
-                    onClick={isLoading ? undefined : () => handleNotificationClick(group, index)}
+                    onClick={() => handleNotificationClick(group, index)}
                   >
                     {isLoading ? (
                       <Skeleton className="rounded-full" containerClassName="flex h-10 w-10" />
@@ -551,9 +553,9 @@ const Notifications: React.FC = () => {
                         ) : (
                           <div className="flex justify-between">
                             <div className="flex items-center gap-1">
-                              <NotificationItem.Description className="truncate">
+                              <span className="truncate">
                                 <NotificationGroupDescription group={group} />
-                              </NotificationItem.Description>
+                              </span>
                               {group.actors.length < 2 && (
                                 <>
                                   <span className="mt-px text-[8px] text-gray-700 dark:text-gray-600">
@@ -620,6 +622,11 @@ const Notifications: React.FC = () => {
                       )}
                     </NotificationItem.Content>
                   </NotificationItem>
+                  {index < notificationGroups.length - 1 && (
+                    <div className="pl-[52px]">
+                      <Separator />
+                    </div>
+                  )}
                 </React.Fragment>
               ))}
             </div>

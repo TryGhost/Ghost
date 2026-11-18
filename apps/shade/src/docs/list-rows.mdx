@@ -11,13 +11,15 @@ import { Meta } from '@storybook/addon-docs/blocks';
 ## Scope
 
 Use this contract for content lists and data tables in pages, cards, dialogs,
-and settings, including notification rows. Prefer `Table` for tabular data and
+and settings. Prefer `Table` for tabular data and
 `ActionList` for rows with a primary action and optional secondary controls.
 Use `ActionListItem asChild` when a custom row must keep different markup.
 
 **DataList is an explicit exception.** Keep its layout, data bars, hover effects,
 and sliding values unchanged. Navigation, dropdown options, command menus, and
-full feed/article cards follow their own components' treatments.
+full feed/article cards follow their own components' treatments. ActivityPub
+retains its existing custom row appearance and interactions; it is outside this
+Admin row migration.
 
 ## Shared defaults
 

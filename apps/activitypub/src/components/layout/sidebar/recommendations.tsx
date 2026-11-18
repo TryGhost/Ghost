@@ -65,7 +65,6 @@ const Recommendations: React.FC = () => {
                 >
                   <div>
                     <ActivityItem
-                      disabled={isLoadingSuggested}
                       onClick={() => {
                         if (!isLoadingSuggested && profile) {
                           handleProfileClick(profile, navigate);
