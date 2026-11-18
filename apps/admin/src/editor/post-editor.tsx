@@ -76,6 +76,8 @@ export interface PostEditorProps {
   writingFocus?: WritingFocus;
   /** The font the writer reads the post in, set on the canvas as `data-editor-font`. */
   font?: EditorFont;
+  /** Another tab holds the document: it can be read and scrolled, and nothing in it takes input. */
+  readOnly?: boolean;
 }
 
 export interface PostEditorHandle {
@@ -208,11 +210,19 @@ export function PostEditor({
   settingsMoving = false,
   writingFocus,
   font,
+  readOnly = false,
 }: PostEditorProps) {
   const { darkMode } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
   const scrollPaneRef = useRef<HTMLDivElement>(null);
   const writingAreaRef = useRef<HTMLDivElement>(null);
+  // Through a ref because React 18 has no inert prop. On the content, not its scroll pane,
+  // so a reader can still scroll.
+  useEffect(() => {
+    if (writingAreaRef.current) {
+      writingAreaRef.current.inert = readOnly;
+    }
+  }, [readOnly]);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const excerptRef = useRef<HTMLTextAreaElement>(null);
   const titleErrorId = useId();

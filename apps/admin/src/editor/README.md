@@ -35,6 +35,7 @@ again.
 | `writing-focus.ts`, `use-writing-focus.ts`       | Hides the editor's chrome while the writer types and brings it back on a pointer move or scroll                      |
 | `editor-font.ts`, `use-editor-font.ts`           | The font the writer reads the post in while editing, chosen in the settings panel                                    |
 | `settings-open.ts`, `use-settings-open.ts`       | Whether the settings panel opens with the editor, as the writer last left it                                         |
+| `lease/`                                         | Whether this tab may edit the document, read from the presence poll, and the banner for when it may not              |
 
 Two small modules are shared across all of the above. `request-options.ts`
 carries the editor's opt-out from the transport's session-expiry redirect, which
@@ -237,6 +238,38 @@ disabled states, refusals and flows. Only the controls move; the flows they open
 stay mounted, so crossing the breakpoint keeps an open flow. A failed publish
 inputs load shows its message and Retry there too. While the on-screen keyboard
 is open the bar's actions are hidden with the word count.
+
+## The lease
+
+Behind the `editorLease` Labs flag, which needs `editorPresencePolling`, one
+editor tab at a time may edit a post or page. The presence poll asks the
+server who holds the document, and `lease/use-edit-lease.ts` turns the answer
+into whether this tab is locked.
+
+A locked tab can read and scroll the document. The canvas takes no input, the
+header's actions are disabled and their shortcuts do nothing, and the settings
+panel takes no input either, since it saves each edit as it is made. A banner
+above the header says why: who is editing, or that another of the writer's own
+tabs is, with Take over or Edit here.
+
+- The tab the first answer names opens for editing as it is, since it has just
+  read the document.
+- A tab that becomes the holder later, because the holder left or went quiet,
+  reads the latest copy before it unlocks. A tab holding unsaved work is not
+  read over: it unlocks as it is, and its next save is judged by the collision
+  check.
+- After a takeover the tab waits before that read, so the previous holder's
+  last save can land: three seconds once that holder has polled again or has
+  gone, and twelve at most. The banner reads "Taking over" meanwhile.
+- A tab that loses the lease saves its draft at once, then locks. Unsaved edits
+  to a published post stay in that tab, where the writer can copy them or take
+  the document back.
+- With no lease to obey, the editor behaves as it does without the flag: the
+  flag off, a server that does not know the lease, a new post that has not
+  been created yet, or presence failing.
+
+The lease is advisory. The server refuses no save because of it, and the
+collision check still decides a save built on an older version.
 
 ## Editor font
 

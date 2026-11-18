@@ -14,6 +14,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { AdminLink } from '@/shared/admin-link';
 import { usePresence } from '@/shared/presence/use-presence';
 import { PresenceAvatars } from '@/shared/presence/presence-avatars';
+import { LeaseBanner } from './lease/lease-banner';
+import { useEditLease } from './lease/use-edit-lease';
 import { getPostListReturnUrl } from '@/posts/api';
 import { reloadAdmin } from '@/auth/api';
 import { NotFound } from '@/shared/not-found';
@@ -196,8 +198,19 @@ function EditorContent({
   const presenceResource = session.persistedId
     ? { id: session.persistedId, type: postType }
     : undefined;
-  const presence = usePresence(presenceResource ? [presenceResource] : [], presenceResource);
+  const leaseEnabled = useFeatureFlag('editorLease');
+  const presence = usePresence(presenceResource ? [presenceResource] : [], presenceResource, {
+    lease: leaseEnabled,
+  });
   const showPresence = useFeatureFlag('editorPresence');
+  const editLease = useEditLease({
+    lease: presence.lease,
+    active: presence.active,
+    currentUserId: currentUser?.id,
+    isDirty: session.isDirty,
+    flush: session.commitField,
+    reload: session.reload,
+  });
   const [tkCount, setTkCount] = useState(0);
   const chromeEntrance = useScreenEntrance();
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
@@ -264,6 +277,13 @@ function EditorContent({
   const [settingsMoving, setSettingsMoving] = useState(false);
   const shellRef = useRef<HTMLDivElement>(null);
   const settingsFrameRef = useRef<HTMLDivElement>(null);
+  // The settings panel saves each edit as it is made, so a tab without the lease gets none.
+  const settingsLocked = editLease.locked;
+  useEffect(() => {
+    if (settingsFrameRef.current) {
+      settingsFrameRef.current.inert = settingsLocked;
+    }
+  });
   const settingsToggleRef = useRef<HTMLButtonElement>(null);
   const [settingsToggleWidth, setSettingsToggleWidth] = useState(0);
   useLayoutEffect(() => {
@@ -452,6 +472,12 @@ function EditorContent({
           state={session.state}
           onReload={session.reload}
         />
+        <LeaseBanner
+          lease={editLease}
+          resourceId={session.persistedId}
+          resourceType={postType}
+          onTakeOver={presence.takeOver}
+        />
         <ReauthDialog
           email={currentUser?.email ?? ''}
           open={session.reauthOpen}
@@ -510,6 +536,7 @@ function EditorContent({
                   <EditorHeaderActions
                     bottomBar={bottomBar}
                     currentUser={currentUser}
+                    locked={editLease.locked}
                     offersEmailRetry={offersEmailRetry}
                     openFlow={openFlow}
                     post={publishPost}
@@ -543,6 +570,7 @@ function EditorContent({
                 font={editorFont.font}
                 handleRef={postEditorRef}
                 postType={postType}
+                readOnly={editLease.locked}
                 settingsMoving={settingsMoving}
                 showExcerpt={showExcerpt}
                 titleAndFeatureImageHidden={

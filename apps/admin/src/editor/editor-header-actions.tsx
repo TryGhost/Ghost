@@ -106,7 +106,16 @@ const EMPHASIS_BUTTON =
  * previews they open stay mounted where they are, so crossing the breakpoint
  * keeps an open flow and its choices.
  */
-function HeaderItems({ items, bottomBar }: { items: HeaderItem[]; bottomBar: HTMLElement | null }) {
+function HeaderItems({
+  items,
+  bottomBar,
+  locked,
+}: {
+  items: HeaderItem[];
+  bottomBar: HTMLElement | null;
+  /** Another tab holds the document, so no action here can run. */
+  locked: boolean;
+}) {
   const atBottom = !!bottomBar;
   // The bar's rightmost action, Publish, Update or Save, is its primary button.
   const lastAction = items.map((item) => item.kind).lastIndexOf('action');
@@ -135,7 +144,12 @@ function HeaderItems({ items, bottomBar }: { items: HeaderItem[]; bottomBar: HTM
     }
     if (item.plain || (atBottom && index === lastAction)) {
       return (
-        <Button key={item.id} disabled={item.disabled} size="default" onClick={item.onSelect}>
+        <Button
+          key={item.id}
+          disabled={locked || item.disabled}
+          size="default"
+          onClick={item.onSelect}
+        >
           {item.label}
         </Button>
       );
@@ -144,7 +158,7 @@ function HeaderItems({ items, bottomBar }: { items: HeaderItem[]; bottomBar: HTM
       <PageHeader.Action
         key={item.id}
         className={cn('bg-background/80 backdrop-blur-sm', item.emphasis && EMPHASIS_BUTTON)}
-        disabled={item.disabled}
+        disabled={locked || item.disabled}
         label={item.label}
         shortcut={atBottom ? undefined : item.shortcut}
         onClick={item.onSelect}
@@ -183,6 +197,8 @@ export interface EditorHeaderActionsProps {
   revealInvalidField: () => InvalidField | null;
   /** The editor's bottom bar, which holds the controls below the small breakpoint. */
   bottomBar: HTMLElement | null;
+  /** Another tab holds the document: every control is disabled and no shortcut saves or opens a flow. */
+  locked?: boolean;
 }
 
 /**
@@ -201,6 +217,7 @@ export function EditorHeaderActions({
   offersEmailRetry,
   revealInvalidField,
   bottomBar: bottomBarSlot,
+  locked = false,
 }: EditorHeaderActionsProps) {
   const bottomBar = useSmallScreen() ? bottomBarSlot : null;
   const { persistedId } = session;
@@ -209,7 +226,11 @@ export function EditorHeaderActions({
   const feedback = useSaveFeedback({ session, displayName: postType, siteUrl });
   const contributorSave = useSaveButtonPhase(feedback.save, session.contentKey);
 
-  useSaveShortcut(() => void feedback.save());
+  useSaveShortcut(() => {
+    if (!locked) {
+      void feedback.save();
+    }
+  });
 
   // Core 301-redirects a published or sent post away from /p/:uuid/ and drops the
   // audience query, so a preview is offered only while the post is a draft.
@@ -248,7 +269,7 @@ export function EditorHeaderActions({
       }
       openPreview();
     }, [onOpenFlow, openPreview, previewOpen]),
-    isDraft && persistedId !== null,
+    isDraft && persistedId !== null && !locked,
   );
 
   // A dirty draft is saved before previewing; every other post is left as it is.
@@ -318,6 +339,7 @@ export function EditorHeaderActions({
                 onSelect: () => void contributorSave.run(),
               },
             ]}
+            locked={locked}
           />
           {isDraft ? <PostPreviewModal {...preview} /> : null}
         </>
@@ -327,6 +349,7 @@ export function EditorHeaderActions({
           feedback={feedback}
           isDraft={isDraft}
           isSaving={isSaving}
+          locked={locked}
           offersEmailRetry={offersEmailRetry}
           openFlow={openFlow}
           post={post}
@@ -352,6 +375,7 @@ interface PublishActionsProps {
   tkCount: number;
   isDraft: boolean;
   isSaving: boolean;
+  locked: boolean;
   offersEmailRetry: boolean;
   openFlow: OpenFlow;
   preview: HeaderPreviewProps;
@@ -376,6 +400,7 @@ function PublishActions({
   tkCount,
   isDraft,
   isSaving,
+  locked,
   offersEmailRetry,
   openFlow,
   preview,
@@ -493,7 +518,7 @@ function PublishActions({
 
   // The chord stays off while the preview is open: the preview's own Publish
   // button is the only way into the flow from there.
-  usePublishShortcut(openPublishFlow, isDraft && inputs.isReady && !preview.open);
+  usePublishShortcut(openPublishFlow, isDraft && inputs.isReady && !preview.open && !locked);
 
   // A sent post reaches the update flow from its status line, not the header.
   const offersUpdateFlow = !isDraft && post.status !== 'sent';
@@ -597,7 +622,7 @@ function PublishActions({
 
   return (
     <>
-      <HeaderItems bottomBar={bottomBar} items={items} />
+      <HeaderItems bottomBar={bottomBar} items={items} locked={locked} />
       {isDraft ? (
         <PostPreviewModal
           {...preview}

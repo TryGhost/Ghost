@@ -24,6 +24,7 @@ export const editorFeatureImageCaption = 'editor-feature-image-caption';
 /** The status line's report of a failed or refused save, with its retry where one applies. */
 export const editorSaveError = 'editor-save-error';
 export const editorNewerVersionNotice = 'editor-newer-version-notice';
+export const editorLeaseBanner = 'editor-lease-banner';
 export const tkIndicator = 'tk-indicator';
 export const tkIndicatorExcerpt = 'tk-indicator-excerpt';
 export const postPreviewModal = 'post-preview-modal';
