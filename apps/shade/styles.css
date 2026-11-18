@@ -181,6 +181,21 @@ html.theme-switching *::after {
   scrollbar-width: none; /* Firefox */
 }
 
+/* In a Ghost app, whose SDK sets the safe area on <html>, the page's document scrolls, where Admin's
+   own pages scroll inside its layout. While a modal layer is open, Radix's scroll lock hides the
+   document's scrollbar and pads body for it, which moves anything fixed to the window by the
+   scrollbar's width. The scrollbar stays instead, as Admin's own does: the lock still stops the
+   wheel and touch from scrolling the page. */
+:root[style*='--ghost-safe-area-inset-'] > body[data-scroll-locked] {
+  overflow: visible !important;
+  margin-right: 0 !important;
+}
+
+/* While a Ghost app's page slides to a new safe area (see useSafeAreaSlide) */
+:root[data-ghost-safe-area-sliding] {
+  overflow-x: clip;
+}
+
 /* FloatingSidebar holds the pointer back from frames in the content beside it while it needs to
    know where the pointer is: over a frame on another site, the pointer's events go to the frame's
    document alone. */

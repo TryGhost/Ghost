@@ -1,0 +1,10 @@
+/* The stylesheet of the app app-page-frame.test-app.tsx builds, as Shade's docs set one up. In
+   the monorepo, Shade's stylesheet doesn't register Shade's files, so this does. */
+@import '@tryghost/shade/styles.css';
+
+@source '../../../shade/src/**/*.{ts,tsx}';
+@source './app-page-frame.test-app.tsx';
+
+html {
+  font-size: 62.5%;
+}

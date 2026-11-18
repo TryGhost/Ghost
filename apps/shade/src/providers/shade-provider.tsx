@@ -7,6 +7,18 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { ShadeScope } from '@/shade-scope';
 import { ShadeContext, type ControlShape } from '@/providers/shade-context';
 
+/**
+ * Sonner's own offsets from the window's edges, 24px and 16px on narrow windows, kept inside the
+ * safe area a Ghost app's SDK sets, clear of Admin's chrome over the app's page. Anywhere else the
+ * variables aren't set, which leaves Sonner's offsets.
+ */
+const safeAreaOffset = (offset: number) => ({
+  top: `calc(${offset}px + var(--ghost-safe-area-inset-top, 0px))`,
+  right: `calc(${offset}px + var(--ghost-safe-area-inset-right, 0px))`,
+  bottom: `calc(${offset}px + var(--ghost-safe-area-inset-bottom, 0px))`,
+  left: `calc(${offset}px + var(--ghost-safe-area-inset-left, 0px))`,
+});
+
 const ToasterPortal = () => {
   const [mounted, setMounted] = useState(false);
 
@@ -25,6 +37,8 @@ const ToasterPortal = () => {
               success: <Icon.SuccessFill className="text-green" />,
               info: <Icon.InfoFill className="text-text-tertiary" />,
             }}
+            mobileOffset={safeAreaOffset(16)}
+            offset={safeAreaOffset(24)}
             position="bottom-left"
             toastOptions={{
               classNames: {
@@ -34,7 +48,9 @@ const ToasterPortal = () => {
               },
               style: {
                 alignItems: 'flex-start',
-                maxWidth: '290px',
+                // Never wider than the safe area of a Ghost app, as offsets leave it.
+                maxWidth:
+                  'min(290px, calc(100vw - 32px - var(--ghost-safe-area-inset-left, 0px) - var(--ghost-safe-area-inset-right, 0px)))',
               },
             }}
             closeButton
