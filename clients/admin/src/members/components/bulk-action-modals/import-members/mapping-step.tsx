@@ -2,7 +2,7 @@ import {
   Button,
   Checkbox,
   DialogFooter,
-  LoadingIndicator,
+  DialogDescription,
   Table,
   TableBody,
   TableCell,
@@ -11,6 +11,15 @@ import {
   TableRow,
   rowSurfaceClasses,
 } from '@tryghost/shade/components';
+import { Stack } from '@tryghost/shade/primitives';
+import {
+  LabelAutomationNames,
+  LabelAutomationRows,
+  type LabelAutomationMatch,
+  LARGE_LABEL_AUTOMATION_BATCH_SIZE,
+  useLabelNameAutomations,
+} from '@/automations/api';
+import { countImportAutomationRows, csvAutomationLabelNames } from './automation-labels';
 import { CreateCustomFieldPopover } from '@/shared/member-custom-fields/create-custom-field-popover';
 import {
   memberCustomFieldCsvColumns,
@@ -28,10 +37,50 @@ import {
   suggestedFieldName,
   listSuggestionFor,
 } from '@/members/components/bulk-action-modals/import-members/mapping';
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { type FieldTargetGroup } from '@/members/components/bulk-action-modals/import-members/field-targets';
 import { type MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { type UseLabelPickerResult } from '@/members/hooks/use-label-picker';
+
+interface ImportLabelAutomationSummaryProps {
+  matches: LabelAutomationMatch[];
+  large: boolean;
+}
+
+function ImportLabelAutomationSummary({ matches, large }: ImportLabelAutomationSummaryProps) {
+  if (!matches.length) {
+    return null;
+  }
+  const caveat = large ? ' Large imports can take longer to process.' : '';
+  if (matches.length === 1) {
+    const { label, automations } = matches[0];
+    return (
+      <p>
+        Importing also starts <LabelAutomationNames automations={automations} /> for members labeled{' '}
+        <strong>{label.name}</strong>.{caveat}
+      </p>
+    );
+  }
+  const count = new Set(matches.flatMap(({ automations }) => automations.map(({ id }) => id))).size;
+  return (
+    <Stack gap="lg">
+      <p>
+        Importing also starts {formatNumber(count)} {count === 1 ? 'automation' : 'automations'} for
+        these members.{caveat}
+      </p>
+      <LabelAutomationRows matches={matches} showAddPrefix={false} />
+    </Stack>
+  );
+}
 
 interface MappingPreviewRow {
   key: string;
@@ -48,6 +97,8 @@ interface IncompleteImport {
 
 interface MappingStepProps {
   status: 'MAPPING' | 'UPLOADING';
+  isConfirming: boolean;
+  onConfirmingChange: (confirming: boolean) => void;
   fileData: Record<string, string>[];
   mapping: MembersFieldMapping | null;
   mappingError: string | null;
@@ -103,6 +154,8 @@ function columnFor(field: MemberCustomField): string | null {
 
 export function MappingStep({
   status,
+  isConfirming,
+  onConfirmingChange,
   fileData,
   mapping,
   mappingError,
@@ -259,8 +312,11 @@ export function MappingStep({
     onUpdateMapping(row.key, target);
   };
 
-  const isImported = (row: MappingPreviewRow) =>
-    !excludedColumns.has(row.key) && (Boolean(row.mapTo) || pendingColumns.has(row.key));
+  const isImported = useCallback(
+    (row: Pick<MappingPreviewRow, 'key' | 'mapTo'>) =>
+      !excludedColumns.has(row.key) && (Boolean(row.mapTo) || pendingColumns.has(row.key)),
+    [excludedColumns, pendingColumns],
+  );
 
   // Switching a column off leaves its field alone: excluding a column from this import and
   // choosing what it holds are different answers, and switching it back on should not make
@@ -330,8 +386,16 @@ export function MappingStep({
   // column the mapping does not mention as "pass it through under its own header" — which
   // for a custom-field column means importing it. Skipping a column therefore means naming
   // it with an empty target, never leaving it out.
-  const importMapping: Record<string, string | null> = Object.fromEntries(
-    currentlyDisplayedData.map((row) => [row.key, isImported(row) ? row.mapTo : '']),
+  const importMapping = useMemo<Record<string, string | null>>(
+    () =>
+      Object.fromEntries(
+        columnKeys.map((key) => {
+          const mapTo = mapping?.get(key) ?? null;
+          const included = isImported({ key, mapTo });
+          return [key, included ? mapTo : ''];
+        }),
+      ),
+    [columnKeys, mapping, isImported],
   );
 
   // What refuses this import, read off the mapping actually being sent. With custom fields
@@ -367,21 +431,92 @@ export function MappingStep({
     };
   };
 
-  const handleImport = () => {
-    const refusal = importRefusal();
+  const csvLabelNames = useMemo(
+    () => csvAutomationLabelNames({ fileData, mapping: importMapping }),
+    [fileData, importMapping],
+  );
+  const lookup = useLabelNameAutomations({
+    labels: labelPicker.resolvedSelectedLabels,
+    labelNames: csvLabelNames,
+    enabled: membersCount > 0,
+  });
+  const submitted = useRef(false);
+  const mounted = useRef(true);
+  const [isChecking, setChecking] = useState(false);
+  const handleError = useHandleError();
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  const refusal = importRefusal();
+  const unresolvedLabels =
+    labelPicker.resolvedSelectedLabels.length !== labelPicker.selectedSlugs.length;
+  let affectedRows = 0;
+  if (isConfirming) {
+    affectedRows = countImportAutomationRows({
+      fileData,
+      mapping: importMapping,
+      selectedLabelIds: labelPicker.resolvedSelectedLabels.map(({ id }) => id),
+      matchingLabels: lookup.matches.map(({ label }) => label),
+    });
+  }
+  const handleImport = async () => {
+    if (status === 'UPLOADING' || submitted.current) {
+      return;
+    }
     if (refusal) {
       setIncomplete(refusal);
       return;
     }
-    onUpload(importMapping);
+    if (mappingError || unresolvedLabels) {
+      return;
+    }
+    submitted.current = true;
+    setChecking(true);
+    try {
+      const matches = await lookup.check();
+      if (!mounted.current) {
+        return;
+      }
+      if (matches.length && !isConfirming) {
+        submitted.current = false;
+        onConfirmingChange(true);
+        return;
+      }
+      onUpload(importMapping);
+    } catch (error) {
+      submitted.current = false;
+      if (mounted.current) {
+        handleError(error);
+      }
+    } finally {
+      setChecking(false);
+    }
   };
+
+  let importButtonContent: ReactNode = 'Import members';
+  if (membersCount > 0) {
+    importButtonContent = `Import ${formatNumber(membersCount)} ${membersCount === 1 ? 'member' : 'members'}`;
+  }
 
   return (
     <>
       {/* A flex column inside the height-bounded dialog: the table box below grows into
                 whatever room is left, so a short file keeps a small modal and a long one
                 fills the viewport rather than scrolling inside a fixed 400px. */}
-      <div className="mt-5 flex min-h-0 flex-1 flex-col space-y-5">
+      {isConfirming && (
+        <DialogDescription asChild>
+          <Stack className="mt-5 text-base text-foreground" gap="lg">
+            <ImportLabelAutomationSummary
+              large={affectedRows >= LARGE_LABEL_AUTOMATION_BATCH_SIZE}
+              matches={lookup.matches}
+            />
+          </Stack>
+        </DialogDescription>
+      )}
+      <div className={cn('mt-5 flex min-h-0 flex-1 flex-col space-y-5', isConfirming && 'hidden')}>
         {
           <>
             <div
@@ -591,20 +726,19 @@ export function MappingStep({
       </div>
 
       <DialogFooter className="mt-5">
-        <Button disabled={status === 'UPLOADING'} variant="outline" onClick={onStartOver}>
-          Start over
+        <Button
+          disabled={status === 'UPLOADING' || isChecking}
+          variant="outline"
+          onClick={isConfirming ? () => onConfirmingChange(false) : onStartOver}
+        >
+          {isConfirming ? 'Back' : 'Start over'}
         </Button>
-        <Button disabled={status === 'UPLOADING' || membersCount === 0} onClick={handleImport}>
-          {status === 'UPLOADING' ? (
-            <span className="flex items-center gap-2">
-              <LoadingIndicator color="light" size="sm" />
-              Uploading
-            </span>
-          ) : membersCount > 0 ? (
-            `Import ${formatNumber(membersCount)} ${membersCount === 1 ? 'member' : 'members'}`
-          ) : (
-            'Import members'
-          )}
+        <Button
+          disabled={status === 'UPLOADING' || membersCount === 0 || (!refusal && unresolvedLabels)}
+          loading={status === 'UPLOADING' || isChecking || (!refusal && lookup.isLoading)}
+          onClick={() => void handleImport()}
+        >
+          {importButtonContent}
         </Button>
       </DialogFooter>
     </>
