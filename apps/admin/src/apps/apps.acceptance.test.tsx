@@ -1538,6 +1538,8 @@ describe('Managing apps', () => {
         /Surface\s*A dedicated page in Admin\s*Data accessed by\s*podcast\.example\.net/,
       );
     await expect.element(details).toHaveTextContent('by Jamie Larson');
+    // The sections sit one level under the app's name
+    await expect.element(page.getByRole('heading', { name: 'History', level: 2 })).toBeVisible();
     await expect(appsScreen.historyEntries()).toHaveCount(3);
     await expect
       .element(appsScreen.historyEntries().nth(0))
@@ -1570,6 +1572,52 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.details()).toHaveTextContent(/Made by\s*Example Audio/);
     await expect.element(page.getByRole('heading', { name: 'Permissions' })).toBeVisible();
     await expect.element(appsScreen.openLink()).toBeVisible();
+  });
+
+  it('shows that an app’s details are loading', async () => {
+    let respond: ((response: Response) => void) | undefined;
+    fakeAdminEndpoint(
+      'GET',
+      readPath('installation-1'),
+      () =>
+        new Promise<Response>((resolve) => {
+          respond = resolve;
+        }),
+    );
+
+    await renderAdminApp(DETAILS_ROUTE, { labs });
+
+    await expect.element(page.getByTestId('app-details-loading')).toBeVisible();
+    // The page can show it's loading before the request reaches the fake, so the fake has to
+    // be holding it before it can answer.
+    await expect.poll(() => respond).toBeDefined();
+    respond?.(Response.json({ app_installations: [installation()] }));
+    await expect.element(appsScreen.details()).toHaveTextContent('Permissions');
+    await expect.element(page.getByTestId('app-details-loading')).not.toBeInTheDocument();
+  });
+
+  it('reads the app’s name before its sections on a narrow screen in Admin 7', async () => {
+    fakeAdminStats.memberCount();
+    fakeAdminStats.mrr();
+    fakeDetails(installation({ history: [installedOn('2026-10-01T10:00:00.000Z')] }));
+
+    // Below the frame's breakpoint the name moves from the header into the sidebar, which
+    // shows above the sections.
+    await page.viewport(375, 720);
+    try {
+      await renderAdminApp(DETAILS_ROUTE, { labs: { ...labs, admin7Design: true } });
+
+      const name = page.getByRole('heading', { name: 'Podcast', level: 1 });
+      const permissions = page.getByRole('heading', { name: 'Permissions', level: 2 });
+      await expect.element(name).toBeVisible();
+      await expect.element(permissions).toBeVisible();
+      expect(
+        name.element().compareDocumentPosition(permissions.element()) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    } finally {
+      await page.viewport(1280, 800);
+    }
   });
 
   it('opens an email to the developer from an app’s details when their link is an email address', async () => {

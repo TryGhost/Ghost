@@ -1,4 +1,9 @@
-import { type SidePanelHandle, type SidePanelOptions, sidePanelStore } from './side-panel-store';
+import {
+  type SidePanelHandle,
+  type SidePanelOptions,
+  type SidePanelSize,
+  sidePanelStore,
+} from './side-panel-store';
 
 /**
  * Code outside Admin calls this and isn't deployed with it, so it must stay
@@ -9,6 +14,11 @@ export interface GhostSidePanelApi {
   open: (element: HTMLElement, options?: SidePanelOptions) => SidePanelHandle | null;
   close: () => void;
   isOpen: () => boolean;
+  /**
+   * The sizes content can ask for now, which change with the window: read it
+   * each time, or follow `onSizesChange`. Missing where Admin predates it.
+   */
+  readonly sizes: readonly SidePanelSize[];
 }
 
 declare global {
@@ -27,6 +37,9 @@ export function installSidePanelApi(): void {
       open: (element, options) => sidePanelStore.open(element, options),
       close: () => sidePanelStore.close(),
       isOpen: () => sidePanelStore.isOpen(),
+      get sizes() {
+        return sidePanelStore.getSizes();
+      },
     },
   };
 }

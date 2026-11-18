@@ -48,7 +48,8 @@ interface BuyerReport {
  * - `signed_in`: a member who signed in before starting the checkout, such as a free member
  *   upgrading.
  * - `unverified`: a member by the email address typed into the checkout, which doesn't prove the
- *   buyer owns it, so the checkout can't change the member's details.
+ *   buyer owns it, so the checkout saves what it collected into custom fields but can't change
+ *   the member's name.
  */
 type Buyer = 'new' | 'signed_in' | 'unverified';
 
@@ -100,8 +101,6 @@ type PartOutcome = 'applied' | 'none' | 'refused' | 'dropped';
  *   off, or the part's fields archived or deleted, while the checkout was open.
  * - `refused`: a custom field refused one of the part's answers, such as a wallet's phone number
  *   that no country the checkout knew could read.
- * - `skipped`: Ghost saved nothing the checkout collected, as it couldn't tell the buyer was the
- *   member it would have saved onto.
  * - `failed`: saving what the checkout collected failed.
  */
 type CollectedPartOutcome =
@@ -110,7 +109,6 @@ type CollectedPartOutcome =
   | 'partly_saved'
   | 'no_destination'
   | 'refused'
-  | 'skipped'
   | 'failed';
 
 /** What the checkout webhook reports to a `stripe_checkout.complete` span while it completes one. */
@@ -121,8 +119,6 @@ export interface CheckoutCompletionAttempt {
   buying(buyer: BuyerReport): void;
   /** Called with what the checkout asked the buyer for and got back, by port, before any is saved. */
   collecting(answers: readonly { port: string }[]): void;
-  /** Called when Ghost saves nothing the checkout collected, as the buyer didn't prove who they are. */
-  skipping(): void;
   /**
    * Called once Ghost has worked out what it can save of what the checkout collected: `kept` are
    * the ports with a custom field to go to, and `refused` what those fields refused, each named by
@@ -172,10 +168,8 @@ function collectedOutcome(
  *   country the checkout knew could read.
  * - `no_destination`: no field takes it now, as collection was switched off or its field deleted
  *   while the checkout was open.
- * - `skipped`: Ghost saved nothing the checkout collected, as it couldn't tell the buyer was the
- *   member it would have saved onto.
  */
-export type CollectedPhoneOutcome = 'saved' | 'refused' | 'no_destination' | 'skipped';
+export type CollectedPhoneOutcome = 'saved' | 'refused' | 'no_destination';
 
 /**
  * The wallet a buyer paid with, as Stripe names it, such as `apple_pay`: `none` for a card or
@@ -250,9 +244,6 @@ export function stripeTracking({ tracer, meter }: { tracer: Tracer; meter: Meter
               part,
               portsOf(part).filter((port) => answers.some((answer) => answer.port === port)),
             ]).filter(([, ports]) => ports.length > 0);
-          },
-          skipping() {
-            asked.forEach(([part]) => record(part, 'skipped'));
           },
           saving(plan) {
             asked.forEach(([part, ports]) => record(part, collectedOutcome(ports, plan)));

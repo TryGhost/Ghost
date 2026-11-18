@@ -21,7 +21,7 @@ Wherever possible, use the utility functions in `ghost/core/server/data/migratio
 Migration PRs should contain the minimal amount of code to create the migration. Usually this means it should only include:
 
 - the new migration file
-- updates to the schema.js file
+- updates to the schema.ts file
 - updated database integrity hashes (only when changing fixtures, default settings, or default routes)
 - updated exporter table lists (when adding or removing tables)
 

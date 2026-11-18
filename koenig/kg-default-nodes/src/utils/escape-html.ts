@@ -7,7 +7,8 @@ import {decodeHTMLStrict} from 'entities';
  * end in a semicolon: legacy ones without one would turn a URL's `&region=` into `®ion=`.
  */
 export function escapeHtml(unsafe: string | null | undefined) {
-    return decodeHTMLStrict(unsafe ?? '')
+    // Stored card data isn't always the type it's declared as, so anything else is written as text
+    return decodeHTMLStrict(String(unsafe ?? ''))
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')

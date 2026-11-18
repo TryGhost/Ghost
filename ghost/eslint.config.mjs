@@ -172,10 +172,10 @@ export default tseslint.config(
     },
   },
   // ============================================================
-  // schema.js: no created_by/updated_by columns
+  // schema.ts: no created_by/updated_by columns
   // ============================================================
   {
-    files: ['core/server/data/schema/schema.js'],
+    files: ['core/server/data/schema/schema.ts'],
     rules: {
       'no-restricted-syntax': [
         'error',

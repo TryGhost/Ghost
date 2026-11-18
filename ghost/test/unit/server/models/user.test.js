@@ -5,8 +5,7 @@ const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const models = require('../../../../core/server/models');
 const ghostBookshelf = require('../../../../core/server/models/base');
-const permissions = require('../../../../core/server/services/permissions');
-const schema = require('../../../../core/server/data/schema');
+const permissions = require('../../../../core/server/auth/permissions');
 const security = require('@tryghost/security');
 const testUtils = require('../../../utils');
 const configUtils = require('../../../utils/config-utils');
@@ -395,8 +394,6 @@ describe('Unit: models/user', function () {
       sinon.stub(security.password, 'compare').resolves(true);
 
       // NOTE: Add a user with a broken field to ensure we only validate changed fields on login
-      sinon.stub(schema, 'validate').resolves();
-
       const user = models.User.forge(
         testUtils.DataGenerator.forKnex.createUser({
           status: 'warn-1',

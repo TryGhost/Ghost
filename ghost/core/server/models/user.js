@@ -1139,7 +1139,7 @@ const User = ghostBookshelf.Model.extend(
             // models index, which requires this file. Loaded top-down from the index
             // that resolves, but loaded from this file first it leaves `User`
             // undefined while author.js extends it.
-            const permissions = require('../services/permissions');
+            const permissions = require('../auth/permissions');
 
             return permissions
               .canThis(context)

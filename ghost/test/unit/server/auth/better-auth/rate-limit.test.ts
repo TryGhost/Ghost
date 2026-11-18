@@ -25,6 +25,9 @@ function recordingLimiters(blocked: Partial<Record<keyof Limiters, number>> = {}
       globalReset: limiter('globalReset'),
       userLogin: limiter('userLogin'),
       userReset: limiter('userReset'),
+      sendVerificationCode: limiter('sendVerificationCode'),
+      userVerification: limiter('userVerification'),
+      verificationEmail: limiter('verificationEmail'),
     },
   };
 }
@@ -79,6 +82,19 @@ describe('Better Auth rate-limit storage', function () {
       await rateLimitStorage(limiters).consume(`203.0.113.7|${path}`, RULE);
 
       assert.deepEqual(calls, [{ name: 'globalBlock', ip: '203.0.113.7', key: path }]);
+    });
+  }
+
+  for (const [path, name] of [
+    ['/device-verification/send', 'sendVerificationCode'],
+    ['/device-verification/verify', 'userVerification'],
+  ]) {
+    it(`counts ${path} against ${name} by IP, as /session/verify`, async function () {
+      const { calls, limiters } = recordingLimiters();
+
+      await rateLimitStorage(limiters).consume(`203.0.113.7|${path}`, RULE);
+
+      assert.deepEqual(calls, [{ name, ip: '203.0.113.7', key: undefined }]);
     });
   }
 

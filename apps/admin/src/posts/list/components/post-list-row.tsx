@@ -9,6 +9,8 @@ import {
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
+import { PresenceAvatars } from '@/shared/presence/presence-avatars';
+import type { ActivePresence } from '@/shared/presence/presence-api';
 import { AdminLink } from '@/shared/admin-link';
 import { FadingText } from '@/shared/fading-text';
 import { PostsContextMenu } from '@/posts/list/components/posts-context-menu';
@@ -36,6 +38,8 @@ import type { PostResource } from '@/posts/list/post-resource';
 
 interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick'> {
   post: PostListItem;
+  /** Other staff with this post open; absent while presence indicators are off. */
+  presenceActive?: ActivePresence[];
   resource: PostResource;
   timezone?: string;
   /**
@@ -143,6 +147,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
   function PostListRowComponent(
     {
       post,
+      presenceActive,
       resource,
       timezone,
       isContributor,
@@ -227,6 +232,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
           // the row under the cursor look deselected.
           isSelected ? 'bg-table-row-selected select-none' : 'hover:bg-table-row-hover',
         )}
+        data-presence-id={post.id}
         data-selected={isSelected ? 'true' : undefined}
         data-state={isSelected ? 'selected' : undefined}
         data-testid="posts-list-item"
@@ -313,6 +319,14 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
               </Stack>
             </RowLink>
           </RowPrimaryAction>
+          {presenceActive && presenceActive.length > 0 ? (
+            <PresenceAvatars
+              active={presenceActive}
+              // Under 360px the title has no room left to give.
+              className="in-data-[admin7-design=true]:relative in-data-[admin7-design=true]:z-10 max-[359px]:hidden"
+              resourceType={editorType}
+            />
+          ) : null}
           <PostMetricsCells
             className="py-4 in-data-[admin7-design=true]:relative in-data-[admin7-design=true]:z-10"
             hideEmailMetrics={emailSendingState.status === 'sending'}
@@ -338,6 +352,9 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                   'my-4 shrink-0',
                   'in-data-[admin7-design=true]:relative in-data-[admin7-design=true]:z-10',
                   'ms-8',
+                  // Below 1200px the metrics are hidden, so with avatars beside it the
+                  // action needs no extra separation and the title keeps the room.
+                  presenceActive && presenceActive.length > 0 && 'max-[1200px]:ms-2',
                   'text-muted-foreground hover:bg-background hover:text-foreground',
                   isHovered && 'bg-background',
                 )}

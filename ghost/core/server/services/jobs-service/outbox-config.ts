@@ -5,8 +5,9 @@ const schema = z.object({
   // Keeps each row until its job settles, so a job cut short by a restart is
   // handed over again once its lease runs out. Off, the row goes at hand-off.
   keepUntilSettled: z.boolean().default(false),
-  // A fallback: dispatches in this process wake the relay on commit, so the
-  // poll only picks up retries and rows written by another process.
+  // A fallback: dispatches, releases and retries in this process wake the
+  // relay, so the poll only picks up rows another process left. An idle
+  // process also checks for stale rows this often.
   pollIntervalMs: z.number().int().positive().default(30000),
   submissionTimeoutMs: z.number().int().positive().default(10000),
   retryDelayMs: z.number().int().positive().default(30000),

@@ -2,16 +2,10 @@ import type { Request, Response } from 'express';
 import * as errors from '@tryghost/errors';
 import crypto from 'node:crypto';
 import type urlUtilsInstance from '../../../shared/url-utils';
+import { createSignInCodeEmail } from '../emails/sign-in-code';
 import * as totp from '../totp';
 
 const { BadRequestError } = errors;
-const emailTemplate = require('./emails/signin');
-// ua-parser-js ships no types; got is ESM-only
-const UAParser = require('ua-parser-js');
-const got = require('got').default;
-const IPV4_REGEX =
-  /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-const IPV6_REGEX = /^(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}$/i;
 const AUTH_CODE_VALIDITY_MS = 5 * 60 * 1000;
 const AUTH_CODE_CHALLENGE_BYTES = 16;
 
@@ -358,68 +352,13 @@ export default function createSessionService({
     return verifyAuthCode(session, token, secret);
   }
 
-  const formatTime = new Intl.DateTimeFormat('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'UTC',
-    timeZoneName: 'short',
-  }).format;
-
-  /**
-   * Get a readable location string from an IP address.
-   */
-  async function getGeolocationFromIP(ip: string | undefined) {
-    if (!ip || (!IPV4_REGEX.test(ip) && !IPV6_REGEX.test(ip))) {
-      return 'Unknown';
-    }
-
-    const gotOpts: { timeout: { request: number }; retry?: { limit: number } } = {
-      timeout: {
-        request: 500,
-      },
-    };
-
-    if (process.env.NODE_ENV?.startsWith('test')) {
-      gotOpts.retry = {
-        limit: 0,
-      };
-    }
-
-    const geojsUrl = `https://get.geojs.io/v1/ip/geo/${encodeURIComponent(ip)}.json`;
-
-    try {
-      const response: { city?: string; region?: string; country?: string } | undefined = await got(
-        geojsUrl,
-        gotOpts,
-      ).json();
-
-      const { city, region, country } = response || {};
-
-      // Only include non-empty parts in the result
-      const locationParts = [city, region, country].filter(Boolean);
-
-      // If no valid parts, return 'Unknown'
-      return locationParts.length > 0 ? locationParts.join(', ').trim() : 'Unknown';
-    } catch (error) {
-      return 'Unknown';
-    }
-  }
-
-  async function getDeviceDetails(userAgent: string | undefined, ip: string | undefined) {
-    const parser = new UAParser();
-    parser.setUA(userAgent);
-    const result = parser.getResult();
-    const deviceParts = [result.browser?.name || '', result.os?.name || ''].filter(Boolean);
-
-    return {
-      device: deviceParts.join(', '),
-      location: await getGeolocationFromIP(ip),
-      time: formatTime(new Date()),
-    };
-  }
+  const sendSignInCode = createSignInCodeEmail({
+    mailer,
+    t,
+    getSiteTitle: () => getSettingsCache('title'),
+    getSiteLogo: getBlogLogo,
+    getSiteUrl: () => urlUtils.urlFor('home', true),
+  });
 
   async function sendAuthCodeToUser(req: Req, res: Res) {
     const session = await getSession(req, res);
@@ -449,31 +388,13 @@ export default function createSessionService({
       });
     }
 
-    const recipient = user.get('email');
-    const siteTitle = getSettingsCache('title');
-    const siteLogo = getBlogLogo();
-    const siteUrl = urlUtils.urlFor('home', true);
-    const domain = urlUtils
-      .urlFor('home', true)
-      .match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
-    const siteDomain = domain && domain[1];
-    const email = emailTemplate({
-      t,
-      siteTitle: siteTitle,
-      email: recipient,
-      siteDomain: siteDomain,
-      siteUrl: siteUrl,
-      siteLogo: siteLogo,
-      token: token,
-      deviceDetails: await getDeviceDetails(session.user_agent, session.ip),
-      is2FARequired: isVerificationRequired(),
-    });
-
     try {
-      await mailer.send({
-        to: recipient,
-        subject: `${token} is your Ghost sign in verification code`,
-        html: email,
+      await sendSignInCode({
+        email: user.get('email'),
+        code: token,
+        userAgent: session.user_agent ?? null,
+        ipAddress: session.ip ?? null,
+        isEmailMfaRequired: isVerificationRequired(),
       });
     } catch (error) {
       throw new errors.EmailError({

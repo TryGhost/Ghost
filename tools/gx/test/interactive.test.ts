@@ -50,7 +50,7 @@ export const resolveGhostDevEnv = async () => ({GHOST_DEV_NAME: 'fixture', GHOST
     'exports.User = {findOne: () => {}};',
   );
   await writeFile(
-    join(root, 'ghost/core/server/data/schema/index.js'),
+    join(root, 'ghost/core/server/data/schema/index.ts'),
     `
 exports.tables = {posts: {title: {type: 'string'}, created_at: {type: 'dateTime'}, updated_at: {type: 'dateTime'}}, members: {created_at: {type: 'dateTime'}}, roles: {name: {type: 'string'}}};
 `,

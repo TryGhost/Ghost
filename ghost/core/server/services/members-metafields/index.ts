@@ -1,9 +1,9 @@
 import errors from '@tryghost/errors';
+import { ActionLog } from '../../lib/action-log/action-log';
 import { limitService } from '../limits';
 import { MetafieldDefinitionsService } from './definitions-service';
 import { MetafieldValuesService } from './values-service';
 import { MetafieldBindingsService } from './bindings-service';
-import { recordMetafieldAction, type RecordMetafieldAction } from './actions';
 import { resolveMaxDefinitions } from './config';
 import { customFields } from './custom-fields';
 import { createNamespaces, type Namespaces } from './namespaces';
@@ -13,8 +13,7 @@ import { metafieldsTracking } from './tracking';
 
 export type { Metafield } from './models';
 export type { FieldSource } from './queries';
-export type { RequestContext } from './actions';
-export { actingContext, adminWriteOrigin } from './actions';
+export { adminWriteOrigin } from './write-origin';
 export type { BoundField } from './bindings-service';
 export type { MetafieldChangeEvent, WriteOrigin, WrittenBy } from './schema';
 
@@ -74,10 +73,6 @@ export function init(): void {
   }
 
   const { knex } = require('../../data/db');
-  const models = require('../../models');
-
-  const recordAction: RecordMetafieldAction = (transacting, { context, verb, subject, details }) =>
-    recordMetafieldAction({ Action: models.Action, transacting, context, verb, subject, details });
 
   // Resolved here, not in the service: reading config is this module's job, and
   // the service is handed a number. A getter rather than a value because the
@@ -98,7 +93,7 @@ export function init(): void {
   definitions = new MetafieldDefinitionsService({
     knex,
     fields,
-    recordAction,
+    actionLog: new ActionLog(),
     namespaces,
     tracking,
     labs,

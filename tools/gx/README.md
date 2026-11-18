@@ -45,7 +45,7 @@ The command lives in `tools/gx`; its golden-post fixture remains under Ghost tes
 ## Database migration generator
 
 Run `pnpm gx generate migration <slug>` from the repository root. The slug must
-be kebab-case. The existing generator creates a timestamped migration in the
+be kebab-case. The generator creates a timestamped TypeScript migration in the
 next minor-version folder and promotes package versions to RC when needed.
 See [database migrations](../../docs/practices/database-migrations.md) for the
 workflow.
@@ -186,7 +186,8 @@ It replaces `pnpm audit:services`; `services dependencies` replaces
 `services verify` needs a clean tree on a branch that contains the fetched base.
 It checks new files, audit SHAs, formatting, lint, types and boundaries. It runs
 dependency-cruiser twice, resolving workspace packages to authored source and then
-to the built output Ghost loads. Built output must add no service rule violation,
+to the built output Ghost loads, and fails a run in which dependency-cruiser could
+not load TypeScript. Built output must add no service rule violation,
 every part of an added allowance must match an import from a service, and each file
 an added allowance admits must be named in a boundary regression. It then runs the
 full unit suite, runs the changed unit tests shuffled and each one alone and, for a

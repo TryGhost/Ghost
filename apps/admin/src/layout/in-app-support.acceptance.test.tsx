@@ -1,7 +1,13 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { page, userEvent } from 'vitest/browser';
 
-import { fakeAdminStats, fakeTags, renderAdminApp } from '@test-utils/acceptance';
+import {
+  allowUnhandledRequests,
+  currentRoute,
+  fakeAdminStats,
+  fakeTags,
+  renderAdminApp,
+} from '@test-utils/acceptance';
 import { sidebarScreen } from './sidebar.screen';
 
 /** Opens Help clicks in the side panel, as a host script that provides in-app support does. */
@@ -24,6 +30,19 @@ function fakeAdmin7Chrome(): void {
   fakeTags([]);
   fakeAdminStats.memberCount();
   fakeAdminStats.mrr();
+}
+
+/** Opens Settings from Tags, which swaps the main navigation for the Settings one. */
+async function openSettings(labs: { inAppSupport: boolean }): Promise<void> {
+  // The settings app owns its request graph; these specs assert only the navigation.
+  allowUnhandledRequests();
+  fakeTags([]);
+  await renderAdminApp('/tags', { labs });
+  await sidebarScreen.navLink('Settings').click();
+  await expect.poll(currentRoute).toMatch(/^\/settings/);
+  await expect
+    .element(sidebarScreen.shellNav().getByRole('button', { name: 'Back to app' }))
+    .toBeVisible();
 }
 
 describe('In-app support Help links', () => {
@@ -93,4 +112,103 @@ describe('In-app support Help links', () => {
         .toBe(true);
     },
   );
+
+  it('adds Help under the Settings navigation, marked for host scripts', async () => {
+    await openSettings({ inAppSupport: true });
+
+    const help = sidebarScreen.navLink('Help');
+    await expect.element(help).toBeVisible();
+    await expect.element(help).toHaveAttribute('data-ghost-help');
+    await expect
+      .element(help)
+      .toHaveAttribute('href', 'https://ghost.org/help?utm_source=admin&utm_campaign=help');
+    await expect.element(help).toHaveAttribute('target', '_blank');
+  });
+
+  it('leaves Help out of the Settings navigation without inAppSupport', async () => {
+    await openSettings({ inAppSupport: false });
+
+    await expect.element(sidebarScreen.navLink('Help')).not.toBeInTheDocument();
+  });
+
+  it('opens Help in the side panel from Settings', async () => {
+    const content = document.createElement('iframe');
+    content.title = 'Help content';
+    stopOpeningHelp = openHelpInSidePanel(content);
+    await openSettings({ inAppSupport: true });
+
+    await sidebarScreen.navLink('Help').click();
+
+    await expect
+      .poll(() => document.querySelector('[data-side-panel]')?.getAttribute('data-side-panel'))
+      .toBe('default');
+    expect(document.querySelector('[data-side-panel]')?.contains(content)).toBe(true);
+  });
+
+  describe('returning focus as Help closes', () => {
+    let content: HTMLIFrameElement;
+    const helpLink = () => sidebarScreen.navLink('Help');
+    const backToApp = () => sidebarScreen.shellNav().getByRole('button', { name: 'Back to app' });
+
+    /** Opens Help from the link on screen and moves focus into it, as reading Help would. */
+    async function openHelpFromLink(): Promise<HTMLElement> {
+      await expect.element(helpLink()).toBeVisible();
+      const opener = helpLink().element() as HTMLElement;
+      opener.focus();
+      await helpLink().click();
+      await expect
+        .poll(() => document.querySelector('[data-side-panel]')?.contains(content))
+        .toBe(true);
+      content.focus();
+      expect(document.activeElement).toBe(content);
+      return opener;
+    }
+
+    beforeEach(() => {
+      content = document.createElement('iframe');
+      content.title = 'Help content';
+      stopOpeningHelp = openHelpInSidePanel(content);
+    });
+
+    it('goes to the Settings Help link when Help opened from the main navigation closes in Settings', async () => {
+      // The settings app owns its request graph; this spec asserts only the navigation.
+      allowUnhandledRequests();
+      fakeTags([]);
+      await renderAdminApp('/tags', { labs: { inAppSupport: true } });
+      const opener = await openHelpFromLink();
+
+      window.location.hash = '#/settings';
+      await expect.poll(currentRoute).toMatch(/^\/settings/);
+      await expect.element(backToApp()).toBeVisible();
+      expect(opener.isConnected).toBe(false);
+      // Back in Help to close it, past Settings focusing its search as it loads
+      await expect.element(page.getByPlaceholder('Search settings')).toHaveFocus();
+      content.focus();
+      window.ghost?.sidePanel.close();
+
+      await expect.poll(() => document.activeElement).toBe(helpLink().element());
+    });
+
+    it('goes to the main navigation Help link when Help opened in Settings closes on a main screen', async () => {
+      await openSettings({ inAppSupport: true });
+      const opener = await openHelpFromLink();
+
+      window.history.back();
+      await expect.element(sidebarScreen.navLink('Tags')).toBeVisible();
+      expect(opener.isConnected).toBe(false);
+      content.focus();
+      window.ghost?.sidePanel.close();
+
+      await expect.poll(() => document.activeElement).toBe(helpLink().element());
+    });
+
+    it('goes back to the link Help opened from while it is still on screen', async () => {
+      await openSettings({ inAppSupport: true });
+      const opener = await openHelpFromLink();
+
+      window.ghost?.sidePanel.close();
+
+      await expect.poll(() => document.activeElement).toBe(opener);
+    });
+  });
 });

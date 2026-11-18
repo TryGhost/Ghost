@@ -12,7 +12,6 @@ const knexMigrator = new KnexMigrator({ knexMigratorFilePath: path.join(__dirnam
 // Ghost Internals
 const models = require('../../core/server/models');
 const { fixtureManager } = require('../../core/server/data/schema/fixtures');
-const permissions = require('../../core/server/services/permissions');
 const settingsService = require('../../core/server/services/settings/settings-service');
 const labsService = require('../../core/shared/labs');
 const {
@@ -975,9 +974,6 @@ const toDoList = {
   'owner:post': function overrideOwnerUser() {
     return fixtures.overrideOwnerUser();
   },
-  'perms:init': function initPermissions() {
-    return permissions.init();
-  },
   filter: function createFilterParamFixtures() {
     return filterData(DataGenerator);
   },
@@ -1041,7 +1037,6 @@ const toDoList = {
  *
  * This is effectively a list of instructions with regard to which fixtures should be setup for this test.
  *  * `default` - a special option which will cause the full suite of normal fixtures to be initialized
- *  * `perms:init` - build the permissions actions map
  *  * `users:roles` - create a full suite of users, one per role
  * @param {Object} toDos
  */

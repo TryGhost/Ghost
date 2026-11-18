@@ -7,6 +7,15 @@ import type { Knex } from 'knex';
 import { CLIENT_IP_HEADER } from './client-ip';
 import { createKnexAdapter } from './knex-adapter';
 import { rateLimitStorage, type Limiters } from './rate-limit';
+import { ghostSso } from './plugins/sso';
+import {
+  DEVICE_TRUST_COOKIE,
+  ghostDeviceVerification,
+  verifiesNewSession,
+  type DeviceVerificationCode,
+} from './plugins/device-verification';
+import { ghostStaffLifecycle } from './plugins/staff-lifecycle';
+import { ROUTES } from './routes';
 import {
   generateGhostId,
   ghostCreateDefaults,
@@ -16,6 +25,7 @@ import {
 
 export const BASE_PATH = '/ghost/api/admin/auth';
 export const SESSION_COOKIE_NAME = 'ghost-admin-api-session';
+export const DEVICE_COOKIE_NAME = 'ghost-admin-device';
 
 type Logger = Record<'debug' | 'info' | 'warn' | 'error', (...args: unknown[]) => void>;
 
@@ -37,7 +47,19 @@ export type CreateAuthDeps = {
   logger: Logger;
   /** Ghost's `spam` limiters, which also back the compatibility routes */
   limiters: Limiters;
+  /** Emails a legacy password reset link; a locked user's sign-in sends one */
+  sendPasswordResetEmail(email: string): Promise<void>;
+  /** `security:staffDeviceVerification`, read per session so config changes apply */
+  isStaffDeviceVerificationEnabled(): boolean;
+  /** The `require_email_mfa` setting */
+  isEmailMfaRequired(): boolean;
+  /** Emails a device verification code */
+  sendDeviceVerificationCode(message: DeviceVerificationCode): Promise<void>;
+  /** The legacy session's origin rule (Origin, else Referer, else the admin URL) */
+  getRequestOrigin(headers: Headers): string | null;
 };
+
+type SessionPins = { userId?: string; verified?: boolean; origin?: string | null };
 
 /**
  * Refuses a database Better Auth can't run on (plan §3.2): SQLite, or one
@@ -72,6 +94,8 @@ export function assertDatabaseSupported({
     });
   }
 }
+
+const CLEARS_FAILED_SIGN_INS: string[] = [ROUTES.signInEmail, ROUTES.resetPassword];
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && Object.getPrototypeOf(value) === Object.prototype;
@@ -160,11 +184,11 @@ export function createAuth(deps: CreateAuthDeps) {
     // On by default in production only
     rateLimit: { enabled: true, customStorage: rateLimitStorage(deps.limiters) },
     disabledPaths: [
-      '/sign-up/email',
-      '/update-user',
-      '/change-email',
-      '/delete-user',
-      '/sign-in/social',
+      ROUTES.signUpEmail,
+      ROUTES.updateUser,
+      ROUTES.changeEmail,
+      ROUTES.deleteUser,
+      ROUTES.signInSocial,
     ],
     hooks: {
       after: createAuthMiddleware(async (ctx) => {
@@ -175,7 +199,7 @@ export function createAuth(deps: CreateAuthDeps) {
         const returned = ctx.context.returned;
 
         // Clears this IP's failed sign-ins, as the compatibility routes do
-        if (['/sign-in/email', '/reset-password'].includes(ctx.path) && !isAPIError(returned)) {
+        if (CLEARS_FAILED_SIGN_INS.includes(ctx.path) && !isAPIError(returned)) {
           const ip = ctx.request.headers.get(CLIENT_IP_HEADER) ?? undefined;
           // Awaited, so the next request sees the cleared count
           await deps.limiters
@@ -189,6 +213,46 @@ export function createAuth(deps: CreateAuthDeps) {
         }
       }),
     },
+    databaseHooks: {
+      session: {
+        create: {
+          async before(session, ctx) {
+            const data: { verified?: boolean; origin?: string } = {};
+            // A rotation (`/change-password` revoking others) replaces the current session
+            const replaced = ctx?.context.session?.session as SessionPins | undefined;
+            const rotated = replaced?.userId === session.userId ? replaced : undefined;
+
+            // Never downgrades: createVerifiedSession passes `verified` itself
+            if (
+              rotated?.verified ||
+              !deps.isStaffDeviceVerificationEnabled() ||
+              (ctx && (await verifiesNewSession(session, ctx, deps)))
+            ) {
+              data.verified = true;
+            }
+            // Pinned at creation; resolvePrincipal treats a session without one as anonymous
+            if (!session.origin) {
+              const origin =
+                rotated?.origin ?? (ctx?.headers ? deps.getRequestOrigin(ctx.headers) : null);
+              if (origin) {
+                data.origin = origin;
+              }
+            }
+            return { data };
+          },
+        },
+      },
+    },
+    plugins: [
+      ghostStaffLifecycle({ sendPasswordResetEmail: deps.sendPasswordResetEmail }),
+      ghostSso(),
+      ghostDeviceVerification({
+        isEnabled: deps.isStaffDeviceVerificationEnabled,
+        isEmailMfaRequired: deps.isEmailMfaRequired,
+        emailLimiter: deps.limiters.verificationEmail,
+        sendCode: deps.sendDeviceVerificationCode,
+      }),
+    ],
     telemetry: { enabled: false },
     logger: {
       log: (level, message, ...args) => deps.logger[level](message, ...args),
@@ -205,6 +269,15 @@ export function createAuth(deps: CreateAuthDeps) {
       cookies: {
         session_token: {
           name: SESSION_COOKIE_NAME,
+          attributes: {
+            path: `${urlUtils.getSubdir()}/ghost`,
+            sameSite: ssl ? 'none' : 'lax',
+            httpOnly: true,
+          },
+        },
+        // Signed and bound to the user; ghostDeviceVerification sets its lifetime
+        [DEVICE_TRUST_COOKIE]: {
+          name: DEVICE_COOKIE_NAME,
           attributes: {
             path: `${urlUtils.getSubdir()}/ghost`,
             sameSite: ssl ? 'none' : 'lax',

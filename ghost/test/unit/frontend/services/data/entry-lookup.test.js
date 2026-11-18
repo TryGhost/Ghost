@@ -4,7 +4,9 @@ const sinon = require('sinon');
 
 const api = require('../../../../../core/frontend/services/proxy').api;
 const data = require('../../../../../core/frontend/services/data');
-const matchPermalinkParams = require('../../../../../core/frontend/services/data/match-permalink-params');
+const {
+  matchPermalinkParams,
+} = require('../../../../../core/frontend/services/data/match-permalink-params');
 const testUtils = require('../../../../utils');
 
 describe('Unit - frontend/data/entry-lookup', function () {

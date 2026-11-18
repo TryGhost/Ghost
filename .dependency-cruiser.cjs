@@ -104,6 +104,13 @@ const core = (file) =>
     : `^ghost/core/${escape(file.replace(/\.(js|ts)$/, ''))}\\.(js|ts)$`;
 const service = (file) => core(`server/services/${file}`);
 
+// Packages that publish type declarations and no JavaScript. The scan resolves
+// an import the way Node would, so it cannot resolve these, and an unresolved
+// import loses its type-only label. They have no code to run or inject, so the
+// service rules skip them by name. A package with a JavaScript entry does not
+// belong here: the service dependency tests check each one.
+const typesOnlyPackages = ['type-fest'];
+
 const specialistDependencies = [
   // Provider clients.
   {
@@ -172,7 +179,7 @@ const specialistDependencies = [
     // Signing and verifying JSON Web Tokens.
     dependency: npm('jsonwebtoken'),
     owners: [
-      core('server/auth/api-key/admin.js'),
+      core('server/auth/api-key/admin.ts'),
       core('server/adapters/scheduling/utils.ts'),
       core('server/api/endpoints/featurebase.js'),
       service('identity-tokens/identity-token-service.ts'),
@@ -244,8 +251,7 @@ const specialistDependencies = [
     // Matching URLs against route patterns.
     dependency: npm('path-match'),
     owners: [
-      core('frontend/services/data/match-permalink-params.js'),
-      core('server/web/api/middleware/api-version-compatibility/legacy-api-path-match.js'),
+      core('frontend/services/data/match-permalink-params.ts'),
       service('url/permalink-matcher.ts'),
     ],
   },
@@ -334,7 +340,7 @@ const serviceDependencyDecisions = {
     '^@tryghost/image-transform$|^packages/image-transform/(src|build)/index\\.(ts|js)$', // Reads and writes image files.
     '^glob$|^@tryghost/zip$|^gscan$', // Read or write files.
     '^@tryghost/metrics$', // Process-wide metrics, set up from the logging config.
-    '^ghost/core/server/data/schema/index\\.js$', // Reaches the database through schema commands.
+    '^ghost/core/server/data/schema/index\\.ts$', // Reaches the database through schema commands.
     '^ghost/core/server/data/importer/(content-files|import-archive)\\.ts$', // Importer code; reads files and config.
     '^ghost/core/server/adapters/scheduling/build-signed-job\\.ts$', // Uses URL utils.
     '^ghost/core/server/adapters/storage/(utils|LocalStorageBase)\\.ts$', // Storage code; reads config, URL utils and files.
@@ -355,11 +361,6 @@ const serviceDependencyDecisions = {
       from: '^ghost/core/server/services/jobs-service/register-job-handlers\\.ts$',
       to: '-job\\.(ts|js)$',
       until: 'PLA-543 moves job handler registration into boot',
-    },
-    {
-      from: '^ghost/core/server/services/permissions/can-this\\.js$',
-      to: '^ghost/core/server/models/role-utils\\.ts$',
-      until: 'Permissions moves to server/auth/permissions and settles where role checks live',
     },
   ],
   // Allowed only in another form. A specialist dependency imported outside its
@@ -407,6 +408,7 @@ module.exports = {
         pathNot: [
           ...serviceDependencyAllowlist,
           ...specialistDependencies.map(({ dependency }) => dependency),
+          ...typesOnlyPackages.map(npm),
           `^${servicesRoot}/$1/`,
         ],
         dependencyTypesNot: ['type-only', 'type-import'],
@@ -435,7 +437,11 @@ module.exports = {
       comment: 'Resolve this runtime import so the service dependency rule can be checked.',
       severity: 'error',
       from: serviceImplementations,
-      to: { couldNotResolve: true, dependencyTypesNot: ['type-only', 'type-import'] },
+      to: {
+        couldNotResolve: true,
+        pathNot: typesOnlyPackages.map(npm),
+        dependencyTypesNot: ['type-only', 'type-import'],
+      },
     },
     {
       name: 'service-roots-in-services',
@@ -693,6 +699,11 @@ module.exports = {
     },
   ],
   options: {
+    // Read imports from the TypeScript source rather than the compiled output,
+    // where type-only imports are gone, so rules can cover types too. A rule
+    // that concerns runtime dependencies only excludes them with
+    // dependencyTypesNot.
+    tsPreCompilationDeps: true,
     // Resolve public package exports to authored workspace source when available.
     // `pnpm gx services verify` also resolves them to built output, the files Ghost
     // loads at runtime, so an allowance must hold for both.
@@ -737,4 +748,5 @@ Object.defineProperties(module.exports, {
   serviceDependencyAllowlist: { value: serviceDependencyAllowlist },
   specialistDependencies: { value: specialistDependencies },
   serviceDependencyDecisions: { value: serviceDependencyDecisions },
+  typesOnlyPackages: { value: typesOnlyPackages },
 });

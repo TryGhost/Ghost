@@ -487,6 +487,11 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
+    "to": "ghost/core/server/auth/better-auth/clear-expired-auth-rows-job.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
     "to": "ghost/core/server/data/importer/jobs/content-import-job.ts"
   },
   {
@@ -893,31 +898,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/offers/service.js",
     "to": "ghost/core/shared/url-utils.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/permissions/actions-map-cache.js",
-    "to": "lodash"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/permissions/can-this.js",
-    "to": "ghost/core/server/models/index.js"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/permissions/can-this.js",
-    "to": "ghost/core/server/models/role-utils.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/permissions/can-this.js",
-    "to": "lodash"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/permissions/providers.js",
-    "to": "ghost/core/server/models/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -1387,7 +1367,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/url/routable-resources.js",
-    "to": "ghost/core/server/data/schema/index.js"
+    "to": "ghost/core/server/data/schema/index.ts"
   },
   {
     "rule": "service-dependencies",

@@ -16,7 +16,7 @@ const messages = {
 module.exports = function (Bookshelf) {
   Bookshelf.Model = Bookshelf.Model.extend(
     {
-      // Ghost option handling - get permitted attributes from server/data/schema.js, where the DB schema is defined
+      // Ghost option handling - get permitted attributes from server/data/schema/schema.ts, where the DB schema is defined
       permittedAttributes: function permittedAttributes() {
         return Object.keys(schema.tables[this.tableName] || {}).filter(
           (key) => key.indexOf('@@') === -1,

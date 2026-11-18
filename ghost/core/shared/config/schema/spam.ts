@@ -80,6 +80,7 @@ export const spam = knownKeys('spam', {
   webmentions_block: limiter('Incoming webmentions per IP.'),
   upgrade_api_block: limiter('Requests to the upgrade routes per IP.'),
   upgrade_block: limiter('Upgrade requests per staff user.'),
+  presence_block: limiter('Editor presence requests per staff user, counted in process memory.'),
   staff_invite_block: limiter('Staff invitations sent, across the whole site.'),
   member_email_update: limiter('Member email change requests per member, across IP addresses.'),
   email_preview_block: limiter('Test newsletter sends, across the whole site.'),

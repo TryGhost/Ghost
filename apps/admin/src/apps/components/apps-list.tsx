@@ -19,6 +19,7 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { Link } from '@tryghost/admin-x-framework';
 import type { AppInstallation } from '@tryghost/admin-x-framework/api/app-installations';
 import { AppIcon } from './app-icon';
+import { PinMenuItem } from './pin-menu-item';
 import { appDetailsRoute, appReviewRoute, appRoute } from '@/apps/lib/routes';
 import { openRowLink, openRowLinkInNewTab } from '@/apps/lib/row-link';
 import type { AppPinsState } from '@/apps/lib/use-app-pins';
@@ -98,13 +99,11 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall, pins })
                         </Link>
                       </DropdownMenuItem>
                       {pins && (
-                        <DropdownMenuItem
-                          disabled={!pins.isPinned(id) && !pins.canPinMore}
-                          onSelect={() => pins.setPinned(id, !pins.isPinned(id))}
-                        >
-                          {pins.isPinned(id) ? <LucideIcon.PinOff /> : <LucideIcon.Pin />}
-                          {pins.isPinned(id) ? 'Unpin from sidebar' : 'Pin to sidebar'}
-                        </DropdownMenuItem>
+                        <PinMenuItem
+                          full={!pins.canPinMore}
+                          pinned={pins.isPinned(id)}
+                          onPinnedChange={(pinned) => pins.setPinned(id, pinned)}
+                        />
                       )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem

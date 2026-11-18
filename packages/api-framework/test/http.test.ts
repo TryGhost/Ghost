@@ -82,6 +82,46 @@ describe('HTTP', function () {
     });
   });
 
+  it('sets the ip option from the request, not the query', function () {
+    const apiImpl: ApiImplementation & { options?: string[] } = sinon.stub().resolves();
+    apiImpl.options = ['ip'];
+    req.ip = '203.0.113.7';
+    req.query = { ip: '198.51.100.1' };
+    req.params = { ip: '198.51.100.2' };
+
+    shared.http(apiImpl)(req, res, next);
+
+    assert.equal(apiImpl.firstCall.firstArg.options.ip, '203.0.113.7');
+  });
+
+  it('leaves out the ip option unless the controller declares it', function () {
+    const apiImpl = sinon.stub().resolves();
+    req.ip = '203.0.113.7';
+
+    shared.http(apiImpl)(req, res, next);
+
+    assert.equal('ip' in apiImpl.firstCall.firstArg.options, false);
+  });
+
+  it('sets the userAgent option from the request header, not the query', function () {
+    const apiImpl: ApiImplementation & { options?: string[] } = sinon.stub().resolves();
+    apiImpl.options = ['userAgent'];
+    req.get = (name: string) => (name === 'user-agent' ? 'Test Browser/1.0' : undefined);
+    req.query = { userAgent: 'Spoofed/1.0' };
+
+    shared.http(apiImpl)(req, res, next);
+
+    assert.equal(apiImpl.firstCall.firstArg.options.userAgent, 'Test Browser/1.0');
+  });
+
+  it('leaves out the userAgent option unless the controller declares it', function () {
+    const apiImpl = sinon.stub().resolves();
+
+    shared.http(apiImpl)(req, res, next);
+
+    assert.equal('userAgent' in apiImpl.firstCall.firstArg.options, false);
+  });
+
   it('api response is fn', async function () {
     await new Promise<void>((resolve) => {
       const response = sinon.stub().callsFake(function (_req, _res, _next) {

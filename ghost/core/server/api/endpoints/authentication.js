@@ -1,3 +1,4 @@
+const { defineMethod, resourceBody } = require('@tryghost/api-framework');
 const api = require('./index');
 const config = require('../../../shared/config');
 const tpl = require('@tryghost/tpl');
@@ -9,7 +10,11 @@ const auth = require('../../auth');
 const invites = require('../../services/invites').default;
 const usersService = require('../../services/users').default;
 const adapterManager = require('../../services/adapter-manager').default;
+
 const schedulerAdapter = adapterManager.getAdapter('scheduling');
+
+// Chosen once at load, as in auth/authenticate.ts
+const isBetterAuth = auth.isBetterAuth;
 
 async function destroyRequestSession(req) {
   if (!req || !req.session) {
@@ -28,14 +33,14 @@ const messages = {
 const controller = {
   docName: 'authentication',
 
-  setup: {
+  setup: defineMethod({
     statusCode: 201,
     permissions: false,
     headers: {
       cacheInvalidate: true,
     },
-    validation: {
-      docName: 'setup',
+    schema: {
+      body: resourceBody('setup', auth.setup.setupDetailsSchema),
     },
     query(frame) {
       return Promise.resolve()
@@ -43,16 +48,7 @@ const controller = {
           return auth.setup.assertSetupCompleted(false)();
         })
         .then(() => {
-          const setupDetails = {
-            name: frame.data.setup[0].name,
-            email: frame.data.setup[0].email,
-            password: frame.data.setup[0].password,
-            blogTitle: frame.data.setup[0].blogTitle,
-            theme: frame.data.setup[0].theme,
-            accentColor: frame.data.setup[0].accentColor,
-            description: frame.data.setup[0].description,
-            status: 'active',
-          };
+          const setupDetails = { ...frame.validated.body, status: 'active' };
 
           return auth.setup.setupUser(setupDetails);
         })
@@ -83,9 +79,9 @@ const controller = {
           return user;
         });
     },
-  },
+  }),
 
-  updateSetup: {
+  updateSetup: defineMethod({
     headers: {
       cacheInvalidate: true,
     },
@@ -95,24 +91,19 @@ const controller = {
         throw new errors.NoPermissionError({ message: tpl(messages.notTheBlogOwner) });
       }
     },
-    validation: {
-      docName: 'setup',
+    schema: {
+      body: resourceBody('setup', auth.setup.updateSetupDetailsSchema),
     },
     async query(frame) {
       await auth.setup.assertSetupCompleted(true)();
 
-      const setupDetails = {
-        name: frame.data.setup[0].name,
-        email: frame.data.setup[0].email,
-        password: frame.data.setup[0].password,
-        blogTitle: frame.data.setup[0].blogTitle,
-        status: 'active',
-      };
+      const { name, email, password, blogTitle } = frame.validated.body;
+      const setupDetails = { name, email, password, blogTitle, status: 'active' };
 
       const data = await auth.setup.setupUser(setupDetails);
       return auth.setup.doSettings(data, api.settings);
     },
-  },
+  }),
 
   isSetup: {
     headers: {
@@ -168,7 +159,7 @@ const controller = {
       },
     },
     permissions: false,
-    options: ['ip'],
+    options: ['ip', 'userAgent'],
     async query(frame) {
       await auth.setup.assertSetupCompleted(true)();
       const { options, tokenParts } = await auth.passwordreset.extractTokenParts(frame);
@@ -180,20 +171,33 @@ const controller = {
         api.settings,
       );
 
-      if (!frame.original.session) {
-        throw new errors.InternalServerError({
-          message: 'Could not initialize an admin session during password reset.',
+      if (isBetterAuth) {
+        // Signs the user out everywhere, then in here, verified (plan §5.1)
+        const userId = doResetParams.user.id;
+        await auth.staffSessions.revokeUserSessions(userId);
+        frame.setHeader(
+          'Set-Cookie',
+          await auth.staffSessions.createVerifiedSession(userId, {
+            ipAddress: frame.options.ip,
+            userAgent: frame.options.userAgent,
+          }),
+        );
+      } else {
+        if (!frame.original.session) {
+          throw new errors.InternalServerError({
+            message: 'Could not initialize an admin session during password reset.',
+          });
+        }
+
+        // Rotate the session_id and mint a fresh verified session so that
+        // any stolen or cloned copy of the pre-reset cookie is rejected
+        // on its next request.
+        await auth.session.sessionService.rotateAndAssignVerifiedUserToSession({
+          req: frame.original.session.req,
+          user: doResetParams.user,
+          ip: frame.options.ip,
         });
       }
-
-      // Rotate the session_id and mint a fresh verified session so that
-      // any stolen or cloned copy of the pre-reset cookie is rejected
-      // on its next request.
-      await auth.session.sessionService.rotateAndAssignVerifiedUserToSession({
-        req: frame.original.session.req,
-        user: doResetParams.user,
-        ip: frame.options.ip,
-      });
 
       // userLogin counts per IP, so clear this IP's failed sign-ins
       web.shared.middleware.api.spamPrevention
@@ -245,6 +249,7 @@ const controller = {
         schedulerAdapter,
         userService: usersService.service,
         options: frame.options,
+        revokeAllSessions: isBetterAuth ? () => auth.staffSessions.revokeAllSessions() : undefined,
       });
 
       // Express-session would otherwise re-save the current request's

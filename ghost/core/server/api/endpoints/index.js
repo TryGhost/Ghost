@@ -200,6 +200,10 @@ module.exports = {
     return apiFramework.pipeline(require('./slack'), localUtils);
   },
 
+  get presence() {
+    return apiFramework.pipeline(require('./presence'), localUtils);
+  },
+
   get config() {
     return apiFramework.pipeline(require('./config'), localUtils);
   },

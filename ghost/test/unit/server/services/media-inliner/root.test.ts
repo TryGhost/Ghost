@@ -191,6 +191,7 @@ describe('Media inliner service root', function () {
       contentImport: { handleJob: sinon.stub().resolves() },
       updateCheck: sinon.stub().resolves(),
       signingKeys: { check: sinon.stub().resolves() },
+      authCleanup: { clearExpired: sinon.stub().resolves() },
     });
     const registration = jobsService.handle
       .getCalls()
