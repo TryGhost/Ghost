@@ -57,6 +57,11 @@ export interface IntegrationView {
   readonly slug: string;
 }
 
+// Provisional until PLA-631 settles the app principal's fields; keep it minimal
+export interface AppInstallationView {
+  readonly id: string;
+}
+
 export function userView(user: User): UserView {
   return Object.freeze({
     id: user.id,
@@ -111,7 +116,14 @@ export type Principal =
       integration: IntegrationView | null;
       scopes?: Scopes;
     }
-  // The `app` kind goes here (PLA-631); its scopes are required, and missing scopes mean no access
+  | {
+      // Field names are provisional until PLA-631; scopes are required, and missing scopes mean no access
+      kind: 'app';
+      method: 'oauth_authorization_code' | 'oauth_client_credentials';
+      app: AppInstallationView;
+      actingFor: UserView | null;
+      scopes: Scopes;
+    }
   | { kind: 'internal' }
   | { kind: 'anonymous' };
 
@@ -139,7 +151,9 @@ function missingModel(kind: string, model: string) {
 /**
  * Sets `req.auth`, frozen, and `req.user` and `req.api_key` from the models
  * behind it. An anonymous principal leaves `req.user` alone, as the legacy
- * session middleware does, since an earlier middleware may have set it.
+ * session middleware does, since an earlier middleware may have set it. An
+ * app principal sets `req.user` to the user it acts for, or none, and clears
+ * `req.api_key`.
  */
 export function applyPrincipal(
   req: AuthenticatedRequest,
@@ -159,6 +173,16 @@ export function applyPrincipal(
         throw missingModel(principal.kind, 'api key');
       }
       req.api_key = models.apiKey;
+      break;
+    case 'app':
+      // Acts as `actingFor` when set, else as no user; never as a key
+      if (principal.actingFor?.id !== models.user?.id) {
+        throw new errors.IncorrectUsageError({
+          message: "An 'app' principal's user model must match its actingFor user.",
+        });
+      }
+      req.user = principal.actingFor ? (models.user ?? null) : null;
+      req.api_key = null;
       break;
     case 'anonymous':
       break;

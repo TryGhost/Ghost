@@ -31,6 +31,7 @@ import { useScrollSectionContext, useScrollSectionNav } from '@/settings/hooks/u
 import { useSearch } from '@/settings/providers/settings-app-context';
 import ExitSettingsButton from '@/settings/components/exit-settings-button';
 import { ADMIN7_NAV_ICON_CLASS_NAME } from '@/layout/app-sidebar/nav-icon-class';
+import { NavHelpItem } from '@/layout/app-sidebar/nav-help-item';
 import { PrivateSiteBadge } from '@/shared/private-site-badge';
 
 interface NavItemProps {
@@ -329,6 +330,8 @@ const Sidebar: React.FC = () => {
   const visibility = useSettingsSectionVisibility();
   // With admin7Design, the navigation sits in the floating sidebar's glass
   const floatingSidebar = useFeatureFlag('admin7Design');
+  // Admin 7 has Help in its top bar instead
+  const showHelp = useFeatureFlag('inAppSupport') && !floatingSidebar;
   const scrollFade = useScrollFade(scrollerRef, floatingSidebar);
   const {
     visibleMembershipSearchKeywords,
@@ -699,6 +702,7 @@ const Sidebar: React.FC = () => {
                 About Ghost
               </SidebarMenuButton>
             </SidebarMenuItem>
+            {showHelp && <NavHelpItem />}
           </SidebarMenu>
         )}
       </nav>

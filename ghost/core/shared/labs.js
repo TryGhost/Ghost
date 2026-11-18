@@ -66,6 +66,7 @@ const PRIVATE_FEATURES = [
   'editorPresencePolling',
   'editorPresence',
   'editorLease',
+  'commentsAnalytics',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

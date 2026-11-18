@@ -33,6 +33,36 @@ const newsletterBasicCache = {
   },
 };
 
+/**
+ * A comments stats method; its cache key covers exactly the options it accepts
+ * @param {string} method
+ * @param {'getCommentsOverview' | 'getCommentsTopPosts' | 'getCommentsTopCommenters'} serviceMethod
+ * @param {string[]} [extraOptions]
+ */
+function commentsStatsEndpoint(method, serviceMethod, extraOptions = []) {
+  const options = ['date_from', 'date_to', 'timezone', ...extraOptions];
+  return {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options,
+    permissions: {
+      docName: 'comments',
+      method: 'browse',
+    },
+    cache: statsCache,
+    generateCacheKeyData(frame) {
+      return {
+        method,
+        options: Object.fromEntries(options.map((option) => [option, frame.options[option]])),
+      };
+    },
+    async query(frame) {
+      return await statsService.service.api[serviceMethod](frame.options);
+    },
+  };
+}
+
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
   docName: 'stats',
@@ -155,6 +185,13 @@ const controller = {
       return await statsService.service.api.getTopContent(frame.options);
     },
   },
+  commentsOverview: commentsStatsEndpoint('commentsOverview', 'getCommentsOverview'),
+  commentsTopPosts: commentsStatsEndpoint('commentsTopPosts', 'getCommentsTopPosts', ['limit']),
+  commentsTopCommenters: commentsStatsEndpoint(
+    'commentsTopCommenters',
+    'getCommentsTopCommenters',
+    ['limit'],
+  ),
   topPosts: {
     headers: {
       cacheInvalidate: false,

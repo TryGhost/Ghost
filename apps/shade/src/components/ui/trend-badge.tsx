@@ -19,14 +19,34 @@ const trendBadgeVariants = cva(
         true: 'focus-visible:ring-2 focus-visible:ring-focus-ring/25 focus-visible:outline-hidden',
         false: '',
       },
+      // For metrics where a rise is bad, such as reports: up reads as danger
+      inverted: {
+        true: '',
+        false: '',
+      },
     },
     compoundVariants: [
       { direction: 'up', interactive: true, className: 'hover:bg-state-success/20' },
       { direction: 'down', interactive: true, className: 'hover:bg-state-danger/20' },
+      { direction: 'up', inverted: true, className: 'bg-state-danger/10 text-state-danger' },
+      { direction: 'down', inverted: true, className: 'bg-state-success/10 text-state-success' },
+      {
+        direction: 'up',
+        inverted: true,
+        interactive: true,
+        className: 'hover:bg-state-danger/20',
+      },
+      {
+        direction: 'down',
+        inverted: true,
+        interactive: true,
+        className: 'hover:bg-state-success/20',
+      },
     ],
     defaultVariants: {
       direction: 'same',
       interactive: false,
+      inverted: false,
     },
   },
 );
@@ -40,7 +60,7 @@ export interface TrendBadgeProps
 }
 
 const TrendBadge = React.forwardRef<HTMLDivElement, TrendBadgeProps>(
-  ({ className, direction = 'same', value, tooltip, ...props }, ref) => {
+  ({ className, direction = 'same', inverted, value, tooltip, ...props }, ref) => {
     if (direction === 'hidden') {
       return null;
     }
@@ -50,11 +70,15 @@ const TrendBadge = React.forwardRef<HTMLDivElement, TrendBadgeProps>(
     const badge = (
       <div
         ref={ref}
-        className={cn(trendBadgeVariants({ direction, interactive }), className)}
+        className={cn(trendBadgeVariants({ direction, inverted, interactive }), className)}
         tabIndex={interactive ? 0 : undefined}
         {...props}
       >
-        <span className="leading-none font-medium">{value}</span>
+        {value !== '' ? (
+          <span className="leading-none font-medium">{value}</span>
+        ) : (
+          tooltip && <span className="sr-only">{tooltip}</span>
+        )}
         {direction === 'up' && <TrendingUp className="size-3!" strokeWidth={2} />}
         {direction === 'down' && <TrendingDown className="size-3!" strokeWidth={2} />}
       </div>

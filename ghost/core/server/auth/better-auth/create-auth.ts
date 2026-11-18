@@ -13,6 +13,7 @@ import {
   verifiesNewSession,
   type DeviceVerificationCode,
 } from './plugins/device-verification';
+import { ghostSessionGate } from './plugins/session-gate';
 import { ghostStaffLifecycle } from './plugins/staff-lifecycle';
 import { ROUTES } from './routes';
 import {
@@ -156,7 +157,19 @@ export function createAuth(deps: CreateAuthDeps) {
       ROUTES.signInSocial,
     ],
     hooks: {
+      // A password change ends every other session, as PUT /users/password does
+      before: createAuthMiddleware(async (ctx) => {
+        if (ctx.path === ROUTES.changePassword) {
+          return { context: { body: { ...ctx.body, revokeOtherSessions: true } } };
+        }
+      }),
       after: createAuthMiddleware(async (ctx) => {
+        // So a rollback to legacy can't revive them, as revokeUserSessions does
+        const changed = ctx.path === ROUTES.changePassword && ctx.context.newSession;
+        if (changed && !isAPIError(ctx.context.returned)) {
+          await deps.db('sessions').where({ user_id: changed.user.id }).del();
+        }
+
         // Server-side `auth.api` calls have no request and keep their tokens
         if (!ctx.request) {
           return;
@@ -209,6 +222,8 @@ export function createAuth(deps: CreateAuthDeps) {
       },
     },
     plugins: [
+      // First, so every other plugin's hooks see the gated request
+      ghostSessionGate(),
       ghostStaffLifecycle({ sendPasswordResetEmail: deps.sendPasswordResetEmail }),
       ghostSso(),
       ghostDeviceVerification({

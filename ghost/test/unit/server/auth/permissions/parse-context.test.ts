@@ -220,6 +220,35 @@ describe('Permissions', function () {
         assert.equal(parsed.public, false);
       });
 
+      it('never treats an app as public, with or without a user', function () {
+        const app = { id: 'installation' };
+        const withUser = parseContext({
+          user: '1',
+          principal: {
+            kind: 'app',
+            method: 'oauth_authorization_code',
+            app,
+            actingFor: user,
+            scopes: [],
+          },
+        });
+        const withoutUser = parseContext({
+          principal: {
+            kind: 'app',
+            method: 'oauth_client_credentials',
+            app,
+            actingFor: null,
+            scopes: [],
+          },
+        });
+
+        assert.equal(withUser.user, '1');
+        assert.equal(withUser.public, false);
+        assert.equal(withoutUser.user, null);
+        assert.equal(withoutUser.public, false);
+        assert.equal(withoutUser.principal?.kind, 'app');
+      });
+
       it('gives the same result when parsed twice, as canThis does', function () {
         const once = parseContext({
           api_key: contentKey,

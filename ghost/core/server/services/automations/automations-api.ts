@@ -514,11 +514,7 @@ export async function retryStep(...args: Parameters<AutomationsRepository['retry
   return await repository.retryStep(...args);
 }
 
-export async function recordEmailSent(
-  ...args: Parameters<AutomationsRepository['recordEmailSent']>
-) {
-  return await repository.recordEmailSent(...args);
-}
+export const recordEmailSent = automationsApi2.recordEmailSent.bind(automationsApi2);
 
 export async function getAutomatedEmailRecipientsByMailgunIds(
   ...args: Parameters<AutomationsRepository['getAutomatedEmailRecipientsByMailgunIds']>

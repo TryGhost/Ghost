@@ -654,4 +654,76 @@ describe('Permissions', function () {
       assert.equal(res, undefined);
     });
   });
+
+  describe('App principal', function () {
+    const app = { id: 'installation' };
+    const user = { id: '1', email: 'owner@example.com', name: 'Owner', status: 'active' };
+
+    it('refuses an app with no user, before loading or asking the model', async function () {
+      const userProviderStub = stubProvider('user');
+      const apiKeyProviderStub = stubProvider('apiKey').rejects(new Error('lookup failed'));
+      const permissibleStub = sinon.stub(models.Post, 'permissible').resolves();
+      const context = {
+        // A stale key beside the app must not be looked up
+        api_key: { id: 'key', type: 'admin' },
+        principal: {
+          kind: 'app',
+          method: 'oauth_client_credentials',
+          app,
+          actingFor: null,
+          scopes: ['post:read'],
+        },
+      };
+
+      for (const check of [canThis(context).browse.post(), canThis(context).edit.tag({ id: 1 })]) {
+        await assert.rejects(check, { errorType: 'NoPermissionError' });
+      }
+
+      sinon.assert.notCalled(permissibleStub);
+      sinon.assert.notCalled(userProviderStub);
+      sinon.assert.notCalled(apiKeyProviderStub);
+    });
+
+    // Interim, until PLA-639 enforces scopes: the empty scopes here must deny once it lands
+    it('treats an app acting for a user as that user, ignoring any key', async function () {
+      const userProviderStub = stubProvider('user').resolves({
+        permissions: testUtils.DataGenerator.Content.permissions,
+        roles: [{ name: 'Administrator' }],
+      });
+      const apiKeyProviderStub = stubProvider('apiKey');
+      const context = {
+        user: '1',
+        api_key: { id: 'key', type: 'admin' },
+        principal: {
+          kind: 'app',
+          method: 'oauth_authorization_code',
+          app,
+          actingFor: user,
+          scopes: [],
+        },
+      };
+
+      assert.equal(await canThis(context).edit.tag({ id: 1 }), undefined);
+      sinon.assert.calledOnceWithExactly(userProviderStub, '1');
+      sinon.assert.notCalled(apiKeyProviderStub);
+    });
+
+    it('refuses an app acting for a user who lacks the permission', async function () {
+      stubProvider('user').resolves({ permissions: [], roles: [{ name: 'Contributor' }] });
+      const context = {
+        user: '1',
+        principal: {
+          kind: 'app',
+          method: 'oauth_authorization_code',
+          app,
+          actingFor: user,
+          scopes: [],
+        },
+      };
+
+      await assert.rejects(canThis(context).edit.tag({ id: 1 }), {
+        errorType: 'NoPermissionError',
+      });
+    });
+  });
 });

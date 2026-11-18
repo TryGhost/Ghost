@@ -14,6 +14,13 @@ export const isActiveStatus = (status: unknown): boolean =>
   typeof status === 'string' && ACTIVE_STATUSES.includes(status);
 
 /**
+ * A user row's `status`, which Better Auth's internal adapter returns but
+ * doesn't type. Unknown or missing reads as not active.
+ */
+export const staffStatus = (user: unknown): unknown =>
+  typeof user === 'object' && user !== null && 'status' in user ? user.status : undefined;
+
+/**
  * Only shown once the user is known: after a matching password, or on a path
  * that already proved who they are. An unknown email and a wrong password
  * both stay Better Auth's `INVALID_EMAIL_OR_PASSWORD`, so sign-in can't
@@ -65,20 +72,21 @@ const setStatus = (adapter: Adapter, userId: string, from: string[], to: string)
  */
 export async function admitStaffUser(
   adapter: Adapter,
-  user: StaffUser,
+  user: Pick<User, 'id'>,
   { passwordless }: { passwordless: boolean },
 ): Promise<void> {
-  if (isActiveStatus(user.status)) {
+  const status = staffStatus(user);
+  if (isActiveStatus(status)) {
     return;
   }
-  if (user.status === 'locked' && passwordless) {
+  if (status === 'locked' && passwordless) {
     // No match means the user was suspended since the read
     if (await setStatus(adapter, user.id, ['locked'], 'active')) {
       return;
     }
     throw refusal('inactive');
   }
-  throw refusal(user.status);
+  throw refusal(status);
 }
 
 /** Ghost's staff status rules on top of Better Auth core (plan §3.3). */
@@ -163,10 +171,8 @@ export const ghostStaffLifecycle = (options: StaffLifecycleOptions) => {
             if (!verification || verification.expiresAt < new Date()) {
               return;
             }
-            const user = (await ctx.context.internalAdapter.findUserById(
-              verification.value,
-            )) as StaffUser | null;
-            if (user?.status === 'inactive') {
+            const user = await ctx.context.internalAdapter.findUserById(verification.value);
+            if (staffStatus(user) === 'inactive') {
               throw refusal('inactive');
             }
           }),
@@ -193,7 +199,7 @@ export const ghostStaffLifecycle = (options: StaffLifecycleOptions) => {
             // any attempt emails a reset link. The response stays as it is, and
             // the email isn't awaited, so neither reveals the status
             const found = await ctx.context.internalAdapter.findUserByEmail(ctx.body.email);
-            if (found && 'status' in found.user && found.user.status === 'locked') {
+            if (found && staffStatus(found.user) === 'locked') {
               options
                 .sendPasswordResetEmail(found.user.email)
                 .catch((err: unknown) =>

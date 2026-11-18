@@ -70,6 +70,10 @@ function getGrantFlags(loadedPermissions: LoadedActors, actType: string, objType
   return { hasUserPermission, hasApiKeyPermission };
 }
 
+function isAppWithoutUser(context: ParsedContext) {
+  return context.principal?.kind === 'app' && !context.user;
+}
+
 class CanThisResultBuilder {
   buildObjectTypeHandlers(
     objTypes: readonly string[],
@@ -103,6 +107,13 @@ class CanThisResultBuilder {
           // If it's an internal request, resolve immediately
           if (context.internal) {
             return Promise.resolve();
+          }
+
+          // Until scopes are enforced (PLA-639), an app is only ever the user it acts for
+          if (isAppWithoutUser(context)) {
+            return Promise.reject(
+              new errors.NoPermissionError({ message: tpl(messages.noPermissionToAction) }),
+            );
           }
 
           if (_.isNumber(modelOrId) || _.isString(modelOrId)) {
@@ -169,8 +180,8 @@ class CanThisResultBuilder {
       userPermissionLoad = Promise.resolve(null);
     }
 
-    // Kick off loading of api key permissions if necessary
-    if (context.api_key) {
+    // Kick off loading of api key permissions if necessary; an app never acts as a key
+    if (context.api_key && context.principal?.kind !== 'app') {
       apiKeyPermissionLoad = providers.apiKey(context.api_key.id);
     } else {
       // Resolve null if no context.api_key

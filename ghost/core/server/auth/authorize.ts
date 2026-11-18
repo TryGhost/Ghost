@@ -33,8 +33,10 @@ export function authorizeContentApi(req: AuthorizeRequest, res: Response, next: 
 export function authorizeAdminApi(req: AuthorizeRequest, res: Response, next: NextFunction) {
   const hasUser = req.user && req.user.id;
   const hasApiKey = req.api_key && req.api_key.id;
+  // Until scopes are enforced (PLA-639), an app needs a user to act for
+  const isApp = req.auth?.kind === 'app';
 
-  if (hasUser || hasApiKey) {
+  if (hasUser || (hasApiKey && !isApp)) {
     return next();
   } else {
     return next(

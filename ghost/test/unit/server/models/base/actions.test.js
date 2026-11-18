@@ -258,6 +258,44 @@ describe('Unit: models/base/plugins/actions', function () {
       });
     });
 
+    describe('App attribution', function () {
+      const appContext = (user) => ({
+        user,
+        principal: {
+          kind: 'app',
+          method: user ? 'oauth_authorization_code' : 'oauth_client_credentials',
+          app: { id: 'installation' },
+          actingFor: user ? { id: user } : null,
+          scopes: [],
+        },
+      });
+
+      it('records the app beside the user it acts for', function () {
+        const testModel = TestModel.forge({ id: '1234ef', email: 'test@example.com' });
+        const action = testModel.getAction('added', { context: appContext('abcd1234') });
+
+        assert.equal(action.actor_id, 'abcd1234');
+        assert.equal(action.actor_type, 'user');
+        assert.equal(action.context.app_id, 'installation');
+      });
+
+      it('records the app on bulk actions', function () {
+        const action = TestModel.getBulkAction('deleted', 2, { context: appContext('abcd1234') });
+
+        assert.equal(action.actor_id, 'abcd1234');
+        assert.equal(action.context.app_id, 'installation');
+      });
+
+      it('records no app for other principals', function () {
+        const testModel = TestModel.forge({ id: '1234ef', email: 'test@example.com' });
+        const action = testModel.getAction('added', {
+          context: { user: 'abcd1234', principal: { kind: 'user', method: 'session' } },
+        });
+
+        assert.equal(Object.hasOwn(action.context, 'app_id'), false);
+      });
+    });
+
     describe('Primary name extraction', function () {
       it('should handle models with title field', function () {
         const TitleModel = Base.Model.extend({
