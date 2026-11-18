@@ -246,24 +246,52 @@ editor tab at a time may edit a post or page. The presence poll asks the
 server who holds the document, and `lease/use-edit-lease.ts` turns the answer
 into whether this tab is locked.
 
-A locked tab can read and scroll the document. The canvas takes no input, the
-header's actions are disabled and their shortcuts do nothing, and the settings
-panel takes no input either, since it saves each edit as it is made. A banner
-above the header says why: who is editing, or that another of the writer's own
-tabs is, with Take over or Edit here.
+A locked tab opens the document read-only: it can be read, scrolled, selected
+and copied from, and nothing in it can be changed. The editor opens that way
+until the server has answered, and becomes editable once this tab holds the
+lease.
+
+| Part              | While locked                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------------- |
+| Body              | Lexical's `setEditable(false)` on the Koenig instance, set again on each instance a reload mounts |
+| Cards             | No pointer input                                                                                  |
+| Title and excerpt | `readOnly` fields; their keys that move into the body, and the title's paste handling, are off    |
+| Feature image     | `inert`, since its controls have no read-only state                                               |
+| Writing area      | Dropped files are not inserted, and a click below the body does not add a paragraph               |
+| Header actions    | Disabled, and their shortcuts do nothing                                                          |
+| Settings panel    | `inert`, since it saves each edit as it is made                                                   |
+
+A glass pill in the header says why: who is editing, with their avatar, or that
+another of the writer's own tabs is, with Take over or Edit here. From
+Tailwind's `lg` breakpoint it sits centred on the header row, and below that on
+a row of its own under it. The header's avatar row leaves out the person the
+pill names.
 
 - The tab the first answer names opens for editing as it is, since it has just
   read the document.
 - A tab that becomes the holder later, because the holder left or went quiet,
-  reads the latest copy before it unlocks. A tab holding unsaved work is not
-  read over: it unlocks as it is, and its next save is judged by the collision
-  check.
+  reads the latest copy before it unlocks.
+- A tab that becomes the holder with unsaved work is not read over. It asks
+  the server whether a later version was saved. If none was, it unlocks as it
+  is. If one was, its work is on a version that has been saved over and its
+  next save would collide, so it stays read-only and the pill says so, with
+  Copy content and Reload. Reload asks first, then discards the unsaved work
+  and reads the latest copy. If the question cannot be answered, the tab
+  unlocks and the collision check judges its save. When a save from this tab
+  has already collided, the collision banner above the header is shown alone:
+  it offers the same two ways out, and the tab stays read-only until the
+  reload.
 - After a takeover the tab waits before that read, so the previous holder's
   last save can land: three seconds once that holder has polled again or has
   gone, and twelve at most. The banner reads "Taking over" meanwhile.
 - A tab that loses the lease saves its draft at once, then locks. Unsaved edits
-  to a published post stay in that tab, where the writer can copy them or take
-  the document back.
+  to a published post are never saved for the writer, so they stay in that
+  tab: the pill says the unsaved changes are still here and offers Copy
+  content beside Take over or Edit here.
+- Closing or reloading the tab gives the lease up at once, so the next tab in
+  line, or the same tab once it has loaded again, can edit without waiting. A
+  tab that dies without telling the server keeps the lease until the server's
+  lease window runs out; Edit here or Take over does not wait for that.
 - With no lease to obey, the editor behaves as it does without the flag: the
   flag off, a server that does not know the lease, a new post that has not
   been created yet, or presence failing.

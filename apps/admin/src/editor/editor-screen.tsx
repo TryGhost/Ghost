@@ -63,6 +63,7 @@ import type { EditorStatusRecord } from './post-status';
 import { buildPublishFlowPost } from './publish/flow-post';
 import { PAID_TIERS_SEARCH_PARAMS } from './browse-params';
 import { initialEmailError } from './publish/use-publish-flow';
+import { bannerSaveError } from './session/error-mapping';
 import { SessionBanners } from './session/session-banners';
 import { type InvalidField, settingsFieldErrorFor, titleError } from './session/settings-fields';
 import { ReauthDialog } from './session/reauth-dialog';
@@ -99,11 +100,13 @@ function EditorHeader({
   postType,
   editorReturn,
   children,
+  presenceSlotRef,
   onBack,
 }: {
   postType: PostType;
   editorReturn?: EditorReturn;
   children?: ReactNode;
+  presenceSlotRef?: (node: HTMLDivElement | null) => void;
   onBack?: (event: MouseEvent<HTMLAnchorElement>) => void;
 }) {
   const listLabel = postType === 'page' ? 'Pages' : 'Posts';
@@ -139,6 +142,10 @@ function EditorHeader({
         )}
       </PageHeader.Action>
       {children}
+      <Box
+        ref={presenceSlotRef}
+        className="pointer-events-auto col-span-3 col-start-1 row-start-2 max-w-full min-w-0 justify-self-center empty:hidden lg:absolute lg:top-[calc(var(--spacing)*4+1px)] lg:left-1/2 lg:w-max lg:max-w-[calc(100%-480px)] lg:-translate-x-1/2"
+      />
     </Grid>
   );
 }
@@ -210,7 +217,19 @@ function EditorContent({
     isDirty: session.isDirty,
     flush: session.commitField,
     reload: session.reload,
+    hasNewerVersion: session.hasNewerVersion,
   });
+  const [presenceTarget, setPresenceTarget] = useState<HTMLElement | null>(null);
+  const leaseHolderId =
+    editLease.locked && editLease.reason === 'held' && !editLease.ownTab ? editLease.userId : null;
+  // The lease banner already shows the holder, so the avatar row leaves them out.
+  const otherPresence = useMemo(
+    () =>
+      leaseHolderId
+        ? presence.active.filter((entry) => entry.userId !== leaseHolderId)
+        : presence.active,
+    [presence.active, leaseHolderId],
+  );
   const [tkCount, setTkCount] = useState(0);
   const chromeEntrance = useScreenEntrance();
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
@@ -472,12 +491,21 @@ function EditorContent({
           state={session.state}
           onReload={session.reload}
         />
-        <LeaseBanner
-          lease={editLease}
-          resourceId={session.persistedId}
-          resourceType={postType}
-          onTakeOver={presence.takeOver}
-        />
+        {/* A save that already collided has the session's banner, which offers the same reload. */}
+        {editLease.locked &&
+        editLease.reason === 'outdated' &&
+        bannerSaveError(session.state, session.pendingSave) ? null : (
+          <LeaseBanner
+            contentText={session.contentText}
+            hasUnsavedContent={session.hasUnsavedContent}
+            lease={editLease}
+            resourceId={session.persistedId}
+            resourceType={postType}
+            target={presenceTarget}
+            onReload={session.reload}
+            onTakeOver={presence.takeOver}
+          />
+        )}
         <ReauthDialog
           email={currentUser?.email ?? ''}
           open={session.reauthOpen}
@@ -512,7 +540,12 @@ function EditorContent({
             )}
           >
             {/* The back link stays while the writer types, so the way out is always in view. */}
-            <EditorHeader editorReturn={editorReturn} postType={postType} onBack={holdBack}>
+            <EditorHeader
+              editorReturn={editorReturn}
+              postType={postType}
+              presenceSlotRef={setPresenceTarget}
+              onBack={holdBack}
+            >
               {editorReturn?.kind !== 'analytics' ||
               didEmailFail ||
               session.state.kind === 'error' ? (
@@ -531,7 +564,7 @@ function EditorContent({
               <Box className="col-start-3 ml-auto" data-writing-focus={writingFocus}>
                 <PageHeader.ActionGroup className="gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
                   {showPresence ? (
-                    <PresenceAvatars active={presence.active} resourceType={postType} />
+                    <PresenceAvatars active={otherPresence} resourceType={postType} />
                   ) : null}
                   <EditorHeaderActions
                     bottomBar={bottomBar}

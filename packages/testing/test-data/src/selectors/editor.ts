@@ -25,6 +25,7 @@ export const editorFeatureImageCaption = 'editor-feature-image-caption';
 export const editorSaveError = 'editor-save-error';
 export const editorNewerVersionNotice = 'editor-newer-version-notice';
 export const editorLeaseBanner = 'editor-lease-banner';
+export const editorLeaseReloadConfirm = 'editor-lease-reload-confirm';
 export const tkIndicator = 'tk-indicator';
 export const tkIndicatorExcerpt = 'tk-indicator-excerpt';
 export const postPreviewModal = 'post-preview-modal';

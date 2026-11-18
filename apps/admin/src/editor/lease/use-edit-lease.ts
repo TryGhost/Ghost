@@ -14,7 +14,9 @@ export type EditLease =
   | { locked: true; reason: 'pending' }
   | { locked: true; reason: 'held'; userId: string; ownTab: boolean; lost: boolean }
   /** This tab took the lease over and is waiting for the previous holder's last save. */
-  | { locked: true; reason: 'taking' };
+  | { locked: true; reason: 'taking' }
+  /** This tab holds the lease, but its unsaved work is on a version someone has since saved over. */
+  | { locked: true; reason: 'outdated' };
 
 export interface LeaseTrack {
   lease: LeaseStatus;
@@ -29,6 +31,8 @@ export interface LeaseTrack {
   /** Counts the times this tab became the holder of a copy that may be behind. */
   sync: number;
   syncing: boolean;
+  /** This tab became the holder with unsaved work on a version the server has moved past. */
+  outdated: boolean;
 }
 
 export const INITIAL_TRACK: LeaseTrack = {
@@ -39,6 +43,7 @@ export const INITIAL_TRACK: LeaseTrack = {
   holder: null,
   sync: 0,
   syncing: false,
+  outdated: false,
 };
 
 const holds = (lease: LeaseStatus) => typeof lease === 'object' && lease !== null && lease.mine;
@@ -57,6 +62,7 @@ export function advanceLease(track: LeaseTrack, lease: LeaseStatus): LeaseTrack 
       lost: track.lost || holds(track.lease),
       holder: lease.userId,
       syncing: false,
+      outdated: false,
     };
   }
   // The first answer finds the copy the editor has just read; any later one may find it behind.
@@ -80,15 +86,18 @@ export interface EditLeaseOptions {
   /** Saves a draft's unsaved work at once. */
   flush: () => void;
   reload: () => Promise<unknown>;
+  /** Whether the server holds a later version than this tab's document. */
+  hasNewerVersion: () => Promise<boolean>;
 }
 
 /**
  * Turns the lease into whether this tab may edit. A tab that becomes the
  * holder after someone else may have written reads the latest copy before it
- * unlocks, unless it holds unsaved work, which the save's own collision check
- * then judges. After a takeover it first gives the previous holder's editor
- * time to learn of it and land its last save. A tab that loses the lease saves
- * its draft at once, so the next holder reads those words.
+ * unlocks. One holding unsaved work is not read over: it unlocks as it is when
+ * nothing was saved meanwhile, and stays locked as outdated when something
+ * was, until the writer reloads. After a takeover it first gives the previous
+ * holder's editor time to learn of it and land its last save. A tab that loses
+ * the lease saves its draft at once, so the next holder reads those words.
  */
 export function useEditLease({
   lease,
@@ -97,16 +106,22 @@ export function useEditLease({
   isDirty,
   flush,
   reload,
+  hasNewerVersion,
 }: EditLeaseOptions): EditLease {
   const [track, setTrack] = useState<LeaseTrack>(INITIAL_TRACK);
-  if (track.lease !== lease) {
-    setTrack(advanceLease(track, lease));
+  let next = track.lease === lease ? track : advanceLease(track, lease);
+  // A reload is the only way a locked tab loses its unsaved work, and it reads the latest copy.
+  if (next.outdated && !isDirty()) {
+    next = { ...next, outdated: false };
+  }
+  if (next !== track) {
+    setTrack(next);
   }
 
-  const ports = useRef({ isDirty, flush, reload });
+  const ports = useRef({ isDirty, flush, reload, hasNewerVersion });
   // Refs may not be written during render; the effects below read the latest callbacks.
   useEffect(() => {
-    ports.current = { isDirty, flush, reload };
+    ports.current = { isDirty, flush, reload, hasNewerVersion };
   });
 
   useEffect(() => {
@@ -133,12 +148,15 @@ export function useEditLease({
       }
       finished.current = sync;
       void (async () => {
-        if (!ports.current.isDirty()) {
+        let outdated = false;
+        if (ports.current.isDirty()) {
+          outdated = await ports.current.hasNewerVersion();
+        } else {
           await ports.current.reload();
         }
         setTrack((current) =>
           current.sync === sync && current.syncing
-            ? { ...current, stale: false, syncing: false }
+            ? { ...current, stale: false, syncing: false, outdated }
             : current,
         );
       })();
@@ -165,6 +183,9 @@ export function useEditLease({
   }
   if (track.syncing) {
     return { locked: true, reason: takenAt === undefined ? 'pending' : 'taking' };
+  }
+  if (track.outdated) {
+    return { locked: true, reason: 'outdated' };
   }
   return { locked: false };
 }

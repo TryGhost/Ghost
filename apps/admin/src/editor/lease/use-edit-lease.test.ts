@@ -35,6 +35,11 @@ describe('advanceLease', () => {
     expect(advanceLease(INITIAL_TRACK, theirs).lost).toBe(false);
     expect(advanceLease(advanceLease(INITIAL_TRACK, mine), theirs).lost).toBe(true);
   });
+
+  it('forgets an outdated copy once someone else holds the lease', () => {
+    const outdated = { ...advanceLease(INITIAL_TRACK, mine), outdated: true };
+    expect(advanceLease(outdated, theirs).outdated).toBe(false);
+  });
 });
 
 describe('useEditLease', () => {
@@ -43,6 +48,7 @@ describe('useEditLease', () => {
       isDirty: vi.fn(() => dirty),
       flush: vi.fn(),
       reload: vi.fn().mockResolvedValue('reloaded'),
+      hasNewerVersion: vi.fn().mockResolvedValue(false),
     };
     const hook = renderHook(
       (props: { lease: LeaseStatus; active: ActivePresence[] }) =>
@@ -92,11 +98,44 @@ describe('useEditLease', () => {
     expect(hook.result.current).toEqual({ locked: false });
   });
 
-  it('keeps unsaved work rather than read over it', async () => {
+  it('keeps unsaved work rather than read over it, and opens when nothing was saved meanwhile', async () => {
     const { hook, ports } = setup(theirs, true);
     hook.rerender({ lease: { ...mine }, active: [] });
     await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(ports.hasNewerVersion).toHaveBeenCalledTimes(1);
     expect(ports.reload).not.toHaveBeenCalled();
+    expect(hook.result.current).toEqual({ locked: false });
+  });
+
+  it('stays locked over a version saved meanwhile until the unsaved work is gone', async () => {
+    const { hook, ports } = setup(theirs, true);
+    ports.hasNewerVersion.mockResolvedValue(true);
+    const held = { ...mine };
+    hook.rerender({ lease: held, active: [] });
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(ports.reload).not.toHaveBeenCalled();
+    expect(hook.result.current).toEqual({ locked: true, reason: 'outdated' });
+
+    // The writer's own reload is what leaves nothing unsaved.
+    ports.isDirty.mockReturnValue(false);
+    hook.rerender({ lease: held, active: [] });
+    expect(hook.result.current).toEqual({ locked: false });
+  });
+
+  it('checks again each time it takes the lease back with unsaved work', async () => {
+    const { hook, ports } = setup(theirs, true);
+    ports.hasNewerVersion.mockResolvedValue(true);
+    hook.rerender({ lease: { ...mine }, active: [] });
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(hook.result.current).toEqual({ locked: true, reason: 'outdated' });
+
+    hook.rerender({ lease: theirs, active: [] });
+    expect(hook.result.current).toMatchObject({ locked: true, reason: 'held' });
+
+    ports.hasNewerVersion.mockResolvedValue(false);
+    hook.rerender({ lease: { ...mine }, active: [] });
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(ports.hasNewerVersion).toHaveBeenCalledTimes(2);
     expect(hook.result.current).toEqual({ locked: false });
   });
 
