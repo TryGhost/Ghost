@@ -21,6 +21,12 @@ existing Moment Timezone operations available while services migrate; callers
 can change their import without rewriting date logic. It shares the existing
 library instance and leaves Ghost's timezone configuration unchanged.
 
+For calendar dates and site timezones, `clock.ts` also exposes Temporal-based
+helpers that take ISO `YYYY-MM-DD` dates and IANA timezone names:
+`resolveTimeZone()`, `startOfLocalDay()`, `localDateOf()`, `addDays()` and
+`daysBetween()`. `startOfLocalDay()` follows the timezone's daylight saving
+rules, so a day whose midnight is skipped starts at the transition.
+
 ## Adapter manager
 
 [`adapter-manager/`](adapter-manager/index.ts) loads, validates and caches

@@ -282,6 +282,14 @@ module.exports = function apiRoutes() {
   router.get('/stats/subscriptions', mw.authAdminApi, http(api.stats.subscriptions));
   router.get('/stats/referrers', mw.authAdminApi, http(api.stats.referrersHistory));
   router.get('/stats/posts/:id/stats', mw.authAdminApi, http(api.stats.postStats));
+  const commentsStats = [mw.authAdminApi, labs.enabledMiddleware('commentsAnalytics')];
+  router.get('/stats/comments', commentsStats, http(api.stats.commentsOverview));
+  router.get('/stats/comments/top-posts', commentsStats, http(api.stats.commentsTopPosts));
+  router.get(
+    '/stats/comments/top-commenters',
+    commentsStats,
+    http(api.stats.commentsTopCommenters),
+  );
   router.get('/stats/top-posts', mw.authAdminApi, http(api.stats.topPosts));
   router.get('/stats/top-posts-views', mw.authAdminApi, http(api.stats.topPostsViews));
   router.get('/stats/top-content', mw.authAdminApi, http(api.stats.topContent));
