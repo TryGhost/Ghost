@@ -256,8 +256,10 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
       };
 
       await repository.withTransaction(async (trx) => {
-        // Update the revision before inserting a recipient that references
-        // it, matching the lock order used by email tracking.
+        // Lock the revision (via this update) before the recipient insert,
+        // whose foreign key would otherwise take a shared lock on it first.
+        // Click and open tracking also lock revisions before recipients, so
+        // a consistent order avoids deadlocks between them.
         await repository.incrementEmailSentCount(trx, automationActionRevisionId);
         await repository.insertEmailRecipient(trx, recipient);
       });
