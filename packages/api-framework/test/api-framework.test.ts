@@ -47,10 +47,10 @@ describe('api-framework module exports', function () {
     const controller = compiled.pipeline(
       {
         read: compiled.defineMethod({
-          schema: { options: z.object({ page: z.coerce.number().default(1) }) },
+          schema: { query: z.object({ page: z.coerce.number().default(1) }) },
           permissions: false,
-          query(frame) {
-            return frame.validated.options.page;
+          handler(frame) {
+            return frame.query.page;
           },
         }),
       },

@@ -2,32 +2,48 @@ import createDebug from '@tryghost/debug';
 import errors from '@tryghost/errors';
 import promiseUtils from '@tryghost/promise';
 import _ from 'lodash';
+import { z } from 'zod';
 import Frame, { withoutPrincipal } from './frame.ts';
 import type { Dictionary, FrameConfiguration } from './frame.ts';
-import type { MethodSchemas, SchemaControllerMethod } from './define-method.ts';
+import { isSchemaMethod, SCHEMA_METHOD } from './define-method.ts';
+import type { MethodSchemas, SchemaControllerMethod, Transaction } from './define-method.ts';
 import parseRequest from './parse-request.ts';
 import serializers from './serializers/index.ts';
 import validators from './validators/index.ts';
 
 const debug = createDebug('pipeline');
 const { IncorrectUsageError } = errors;
-type AsyncResult = unknown | Promise<unknown>;
+export type AsyncResult = unknown | Promise<unknown>;
+
+// Sync parsing takes the generated fast path. Async parsing never does, so
+// async schemas are left as they are.
+function compileSchemas(schemas: MethodSchemas): MethodSchemas {
+  const compiled = { ...schemas };
+  for (const channel of ['params', 'query', 'body'] as const) {
+    if (compiled[channel]) {
+      Object.assign(compiled, { [channel]: z.compile(compiled[channel]) });
+    }
+  }
+  return compiled;
+}
 export interface ApiConfiguration extends FrameConfiguration, Dictionary {
   docName?: string;
   method?: string;
 }
 
-interface Cache {
+export interface Cache {
   get(key: string, loader: () => Promise<unknown>): AsyncResult;
   set(key: string, value: unknown): AsyncResult;
 }
 
-interface PermissionConfiguration<TFrame extends Frame = Frame> extends Dictionary {
+export interface PermissionConfiguration<TFrame = Frame> extends Dictionary {
   before?: (frame: TFrame) => AsyncResult;
 }
 
 export interface ControllerMethod<TFrame extends Frame = Frame> {
-  schema?: MethodSchemas;
+  /** Schema methods are created with `defineMethod()`. */
+  schema?: never;
+  handler?: never;
   cache?: Cache;
   data?: FrameConfiguration['data'];
   generateCacheKeyData?: (frame: TFrame) => AsyncResult;
@@ -276,18 +292,42 @@ const STAGES = {
 };
 
 const controllerMap = new Map<object, Record<string, ControllerHandler>>();
+
+type ChannelInput<Schemas, C extends string> =
+  Schemas extends Record<C, infer Schema extends z.ZodType> ? z.input<Schema> : unknown;
+
+/** The options object an internal caller passes to a schema method. */
+export type InternalOptions<Schemas extends MethodSchemas> = ChannelInput<Schemas, 'params'> &
+  ChannelInput<Schemas, 'query'> & { context?: Dictionary } & Transaction;
+
+type FrameCall = (frame: Frame) => Promise<unknown>;
+
+/** Call signatures of a pipelined schema method. */
+export type SchemaCall<Schemas extends MethodSchemas> = FrameCall &
+  (Schemas extends { body: infer Body extends z.ZodType }
+    ? (body: z.input<Body>, options: InternalOptions<Schemas>) => Promise<unknown>
+    : (options: InternalOptions<Schemas>) => Promise<unknown>);
+
+type SchemaOf<Method> = Method extends {
+  readonly [SCHEMA_METHOD]: true;
+  schema: infer Schemas extends MethodSchemas;
+}
+  ? Schemas
+  : never;
+
 type PipelineResult<T> = {
-  [K in Exclude<keyof T, 'docName'>]: T[K] & ControllerCall;
+  [K in Exclude<keyof T, 'docName'>]: [SchemaOf<T[K]>] extends [never]
+    ? T[K] & ControllerCall
+    : T[K] & SchemaCall<SchemaOf<T[K]>>;
 };
 
-type PipelineController<T> = {
+/** Checks each method: `defineMethod()` methods against their schemas, others as legacy methods. */
+export type PipelineController<T> = {
   [K in keyof T]: K extends 'docName'
     ? string | undefined
-    : T[K] extends { schema: infer Schemas }
-      ? Schemas extends MethodSchemas
-        ? SchemaControllerMethod<Schemas>
-        : never
-      : ControllerMethod;
+    : [SchemaOf<T[K]>] extends [never]
+      ? ControllerMethod
+      : SchemaControllerMethod<SchemaOf<T[K]>>;
 };
 
 /**
@@ -349,6 +389,22 @@ function pipeline(
     const apiImpl = _.cloneDeepWith(apiController, (value, key) =>
       key === 'cache' || key === 'schema' ? value : undefined,
     )[method] as ControllerMethod;
+    // The runtime view of a defineMethod() method; its callbacks take the parsed Frame.
+    const schemaImpl = apiImpl as unknown as {
+      schema: MethodSchemas;
+      handler(frame: Frame): AsyncResult;
+      validation?(frame: Frame): AsyncResult;
+    };
+
+    const schemaMethod = isSchemaMethod(apiController[method]);
+    if (!schemaMethod && apiImpl && ('schema' in apiImpl || 'handler' in apiImpl)) {
+      throw new IncorrectUsageError({
+        message: `${docName}.${method} declares a schema or handler; define it with defineMethod().`,
+      });
+    }
+    if (schemaMethod && !schemaImpl.schema.async) {
+      schemaImpl.schema = compileSchemas(schemaImpl.schema);
+    }
 
     Object.freeze(apiImpl.headers);
 
@@ -381,7 +437,7 @@ function pipeline(
             options: apiImpl.options,
             data: apiImpl.data,
           },
-          { deferBodyClone: Boolean(apiImpl.schema) },
+          { deferBodyClone: schemaMethod },
         );
       } else {
         frame = options;
@@ -397,30 +453,25 @@ function pipeline(
       frame.docName = docName;
       frame.method = method;
 
-      const validatedRequest = apiImpl.schema
-        ? await parseRequest(apiImpl.schema, frame)
-        : undefined;
-      if (apiImpl.schema) {
-        // Custom validation receives parsed input, even when the response is cached.
-        if (typeof apiImpl.validation === 'function') {
-          await apiImpl.validation(frame);
-        }
+      const parsed = schemaMethod ? await parseRequest(schemaImpl.schema, frame) : undefined;
+      // Custom validation receives parsed input, even when the response is cached.
+      if (schemaMethod && schemaImpl.validation) {
+        await schemaImpl.validation(frame);
       }
 
       let cacheKey = '';
       // Legacy hooks also resolve gift access when response caching is disabled.
-      if (apiImpl.cache || (!apiImpl.schema && apiImpl.generateCacheKeyData)) {
-        const keyOptions = withoutPrincipal(frame.options);
-        let cacheKeyData: unknown = validatedRequest
-          ? { options: keyOptions, validated: validatedRequest }
-          : keyOptions;
+      if (apiImpl.cache || (!schemaMethod && apiImpl.generateCacheKeyData)) {
+        let cacheKeyData: unknown = parsed
+          ? { ...withoutPrincipal({ context: frame.options.context }), ...parsed }
+          : withoutPrincipal(frame.options);
         if (apiImpl.generateCacheKeyData) {
           cacheKeyData = await apiImpl.generateCacheKeyData(frame);
         }
         if (apiImpl.cache) {
           cacheKey = JSON.stringify(
             cacheKeyData,
-            apiImpl.schema ? schemaCacheKeyReplacer : sortKeysReplacer,
+            schemaMethod ? schemaCacheKeyReplacer : sortKeysReplacer,
           );
         }
       }
@@ -428,7 +479,7 @@ function pipeline(
       // A shared response cache must never bypass request authorization. Keep
       // input preparation before permissions, but outside the cache loader so
       // it runs once per request, including cache hits.
-      if (!apiImpl.schema) {
+      if (!schemaMethod) {
         await STAGES.validation.input(apiUtils, apiConfig, apiImpl, frame);
       }
       await STAGES.serialisation.input(apiUtils, apiConfig, apiImpl, frame);
@@ -442,7 +493,9 @@ function pipeline(
       }
 
       async function getResponse() {
-        const response = await STAGES.query(apiUtils, apiConfig, apiImpl, frame);
+        const response = schemaMethod
+          ? await schemaImpl.handler(frame)
+          : await STAGES.query(apiUtils, apiConfig, apiImpl, frame);
         await STAGES.serialisation.output(response, apiUtils, apiConfig, apiImpl, frame);
         return frame.response;
       }

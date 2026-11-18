@@ -7,15 +7,14 @@ import {
   http,
   pipeline,
   type Controller,
-  type ControllerMethod,
   type InferMethodFrame,
   type SchemaControllerMethod,
-  type ValidatedFrame,
+  type SchemaFrame,
 } from '../../src/index.ts';
 
-export function optionsAndBody() {
-  const options = z.object({
-    id: z.string(),
+export function allChannels() {
+  const params = z.object({ id: z.string() });
+  const query = z.object({
     page: z.string().transform(Number).default(1),
     filter: z.string().optional(),
   });
@@ -24,171 +23,132 @@ export function optionsAndBody() {
   });
 
   const method = defineMethod({
-    schema: { options, body },
-    options: ['id', 'page', 'filter'],
+    schema: { params, query, body },
     headers: { cacheInvalidate: true },
     statusCode: 200,
     validation(frame) {
-      expectTypeOf(frame.data).toEqualTypeOf<never>();
-      // @ts-expect-error Schema validation callbacks use parsed request channels.
-      void frame.data.widgets;
-      expectTypeOf(frame.validated.options).toEqualTypeOf<z.output<typeof options>>();
-      expectTypeOf(frame.validated.body).toEqualTypeOf<z.output<typeof body>>();
+      // @ts-expect-error Schema callbacks have no working data.
+      void frame.data;
+      // @ts-expect-error Schema callbacks have no working options.
+      void frame.options;
+      // @ts-expect-error Parsed input lives on the frame itself.
+      void frame.validated;
+      expectTypeOf(frame.params).toEqualTypeOf<Readonly<z.output<typeof params>>>();
+      expectTypeOf(frame.query).toEqualTypeOf<Readonly<z.output<typeof query>>>();
+      expectTypeOf(frame.body).toEqualTypeOf<z.output<typeof body>>();
     },
     permissions(frame) {
-      expectTypeOf(frame.data).toEqualTypeOf<never>();
-      // @ts-expect-error Schema permission callbacks cannot inspect working data.
-      void frame.data.widgets;
-      expectTypeOf(frame.validated.options.id).toEqualTypeOf<string>();
-      expectTypeOf(frame.validated.options.filter).toEqualTypeOf<string | undefined>();
-      expectTypeOf(frame.options.context).toEqualTypeOf<Record<string, unknown> | undefined>();
+      expectTypeOf(frame.params.id).toEqualTypeOf<string>();
+      expectTypeOf(frame.query.filter).toEqualTypeOf<string | undefined>();
+      expectTypeOf(frame.context).toEqualTypeOf<Record<string, unknown>>();
     },
     generateCacheKeyData(frame) {
-      expectTypeOf(frame.data).toEqualTypeOf<never>();
-      // @ts-expect-error Schema cache keys use parsed request channels.
-      void frame.data.widgets;
-      expectTypeOf(frame.validated.options.page).toEqualTypeOf<number>();
-      return frame.validated.options.id;
+      expectTypeOf(frame.query.page).toEqualTypeOf<number>();
+      return frame.params.id;
     },
-    async query(frame) {
-      expectTypeOf(frame).toExtend<Frame>();
-      expectTypeOf(frame.data).toEqualTypeOf<never>();
-      // @ts-expect-error Schema queries cannot inspect working data.
-      void frame.data.id;
-      // @ts-expect-error Schema queries cannot replace working data.
-      frame.data = {};
-      expectTypeOf(frame.options.id).toEqualTypeOf<unknown>();
-      expectTypeOf(frame.validated.body.widgets).toEqualTypeOf<
-        Array<{ title: string; enabled: boolean }>
-      >();
+    async handler(frame) {
+      expectTypeOf(frame.body.widgets).toEqualTypeOf<Array<{ title: string; enabled: boolean }>>();
+      expectTypeOf(frame.transaction.forUpdate).toEqualTypeOf<boolean | undefined>();
+      expectTypeOf(frame.modelOptions).toEqualTypeOf<Readonly<Record<string, unknown>>>();
+      frame.setHeader('X-Cache-Invalidate', '/*');
+      void frame.original.body;
 
       // @ts-expect-error Only declared schema properties are available.
-      void frame.validated.options.missing;
-      // @ts-expect-error The legacy id convenience type does not validate schema-method input.
-      frame.options.id.toUpperCase();
+      void frame.query.missing;
       // @ts-expect-error Callback values use the transformed output type.
-      const page: string = frame.validated.options.page;
+      const page: string = frame.query.page;
       void page;
-      // @ts-expect-error Callbacks cannot replace the validated request.
-      frame.validated = { options: { id: 'id', page: 1 }, body: { widgets: [] } };
-      return frame.validated.body.widgets;
+      // @ts-expect-error Parsed params are readonly.
+      frame.params.id = 'other';
+      // @ts-expect-error Parsed channels cannot be replaced.
+      frame.body = { widgets: [] };
+      return frame.body.widgets;
     },
   });
 
-  expectTypeOf(method.schema.options).toEqualTypeOf<typeof options>();
+  expectTypeOf(method.schema.params).toEqualTypeOf<typeof params>();
   expectTypeOf(method.schema.body).toEqualTypeOf<typeof body>();
-  expectTypeOf<InferMethodFrame<typeof method>['validated']['options']>().toEqualTypeOf<
-    z.output<typeof options>
+  expectTypeOf<InferMethodFrame<typeof method>['query']>().toEqualTypeOf<
+    Readonly<z.output<typeof query>>
   >();
-  expectTypeOf<z.input<typeof method.schema.options>['page']>().toEqualTypeOf<string | undefined>();
 
   function helper(frame: InferMethodFrame<typeof method>) {
-    expectTypeOf(frame.data).toEqualTypeOf<never>();
-    return frame.validated.options.id;
+    return frame.params.id;
   }
   expectTypeOf(helper).returns.toEqualTypeOf<string>();
-
-  const controller = {
-    docName: 'widgets',
-    edit: method,
-  } satisfies Controller<{ edit: InferMethodFrame<typeof method> }>;
-  expectTypeOf(controller.edit.query).parameter(0).toEqualTypeOf<InferMethodFrame<typeof method>>();
-
-  const api = pipeline(controller, {});
-  expectTypeOf(api.edit).returns.toEqualTypeOf<Promise<unknown>>();
-  expectTypeOf(api.edit.schema).toEqualTypeOf<typeof method.schema>();
-  expectTypeOf(api.edit.query).parameter(0).toEqualTypeOf<InferMethodFrame<typeof method>>();
-  expectTypeOf(http(api.edit)).toBeFunction();
-  // @ts-expect-error Schema callbacks require more than an unvalidated legacy frame.
+  // @ts-expect-error Schema callbacks require more than an unparsed legacy frame.
   helper(new Frame());
+
+  const api = pipeline({ docName: 'widgets', edit: method }, {});
+  expectTypeOf(api.edit.schema).toEqualTypeOf<typeof method.schema>();
+  expectTypeOf(api.edit.handler).parameter(0).toEqualTypeOf<InferMethodFrame<typeof method>>();
+  expectTypeOf(http(api.edit)).toBeFunction();
+
+  void api.edit(
+    { widgets: [{ title: 'Title', enabled: true }] },
+    { id: 'id', page: '2', context: { internal: true }, transacting: {} },
+  );
+  void api.edit(new Frame());
+  // @ts-expect-error Internal calls flag undeclared options.
+  void api.edit({ widgets: [{ title: 'Title', enabled: true }] }, { id: 'id', extra: true });
+  // @ts-expect-error Internal calls check option types against the schema input.
+  void api.edit({ widgets: [{ title: 'Title', enabled: true }] }, { id: 1 });
+  // @ts-expect-error Internal calls check the body against the schema input.
+  void api.edit({ widgets: [{ title: 1 }] }, { id: 'id' });
 }
 
-export function optionsOnly() {
+export function undeclaredChannels() {
   defineMethod({
-    schema: { options: z.object({ id: z.string() }) },
+    schema: { params: z.object({ id: z.string() }) },
     permissions: {
       docName: 'widgets',
       before(frame) {
-        expectTypeOf(frame.data).toEqualTypeOf<never>();
-        // @ts-expect-error Schema permission hooks cannot inspect working data.
-        void frame.data.id;
-        expectTypeOf(frame.validated.options.id).toEqualTypeOf<string>();
+        expectTypeOf(frame.params.id).toEqualTypeOf<string>();
       },
     },
-    query(frame) {
-      // @ts-expect-error Undeclared channels are not claimed to be validated.
-      void frame.validated.body;
-      return frame.validated.options.id;
+    handler(frame) {
+      // @ts-expect-error Undeclared channels are not on the frame.
+      void frame.body;
+      // @ts-expect-error Undeclared channels are not on the frame.
+      void frame.query;
+      return frame.params.id;
     },
   });
-}
 
-export function bodyOnly() {
-  defineMethod({
-    schema: { body: z.object({ title: z.string() }) },
-    permissions: false,
-    query(frame) {
-      expectTypeOf(frame.data).toEqualTypeOf<never>();
-      expectTypeOf(frame.validated.body.title).toEqualTypeOf<string>();
-      // @ts-expect-error Undeclared channels are not claimed to be validated.
-      void frame.validated.options;
-      return frame.validated.body;
-    },
+  const read = defineMethod({
+    schema: { query: z.object({ limit: z.string().optional() }) },
+    permissions: true,
+    handler: (frame) => frame.query.limit,
   });
+  const api = pipeline({ read }, {});
+  void api.read({ limit: '5' });
+  // @ts-expect-error Methods without a body take only options.
+  void api.read({}, { limit: '5' });
 }
 
 export function asynchronousSchemas() {
   const body = z.string().transform(async (value) => value.length);
   defineMethod({
-    schema: { body },
+    schema: { body, async: true },
     permissions: true,
-    query(frame) {
-      expectTypeOf(frame.validated.body).toEqualTypeOf<number>();
-      return frame.validated.body;
+    handler(frame) {
+      expectTypeOf(frame.body).toEqualTypeOf<number>();
+      return frame.body;
     },
   });
 }
 
-export function optionalSchema(
-  frame: ValidatedFrame<{
-    options?: z.ZodObject<{ id: z.ZodString }>;
+export function optionalChannel(
+  frame: SchemaFrame<{
+    query?: z.ZodObject<{ id: z.ZodString }>;
     body: z.ZodObject<{ title: z.ZodString }>;
   }>,
 ) {
-  expectTypeOf(frame.validated.options).toEqualTypeOf<{ id: string } | undefined>();
-  expectTypeOf(frame.validated.body).toEqualTypeOf<{ title: string }>();
+  expectTypeOf(frame.query).toEqualTypeOf<Readonly<{ id: string }> | undefined>();
+  expectTypeOf(frame.body).toEqualTypeOf<{ title: string }>();
 }
 
-export function sharedCallbackTypes() {
-  type Schemas = { options: z.ZodObject<{ id: z.ZodString }> };
-  type SharedMethod = ControllerMethod<ValidatedFrame<Schemas>>;
-  type SchemaMethod = SchemaControllerMethod<Schemas>;
-
-  expectTypeOf<SchemaMethod['query']>().toEqualTypeOf<NonNullable<SharedMethod['query']>>();
-  expectTypeOf<SchemaMethod['permissions']>().toEqualTypeOf<
-    NonNullable<SharedMethod['permissions']>
-  >();
-  expectTypeOf<SchemaMethod['generateCacheKeyData']>().toEqualTypeOf<
-    SharedMethod['generateCacheKeyData']
-  >();
-  expectTypeOf<SchemaMethod['validation']>().toEqualTypeOf<
-    Exclude<SharedMethod['validation'], Record<string, unknown>>
-  >();
-}
-
-export function transformedId() {
-  defineMethod({
-    schema: { options: z.object({ id: z.string().transform(Number) }) },
-    permissions: true,
-    query(frame) {
-      expectTypeOf(frame.validated.options.id).toEqualTypeOf<number>();
-      expectTypeOf(frame.options.id).toEqualTypeOf<unknown>();
-      return frame.validated.options.id;
-    },
-  });
-}
-
-export function unionSchema() {
+export function unionBody() {
   const body = z.discriminatedUnion('kind', [
     z.object({ kind: z.literal('create'), title: z.string() }),
     z.object({ kind: z.literal('delete'), id: z.string() }),
@@ -196,15 +156,15 @@ export function unionSchema() {
   defineMethod({
     schema: { body },
     permissions: true,
-    query(frame) {
-      if (frame.validated.body.kind === 'create') {
-        expectTypeOf(frame.validated.body.title).toEqualTypeOf<string>();
+    handler(frame) {
+      if (frame.body.kind === 'create') {
+        expectTypeOf(frame.body.title).toEqualTypeOf<string>();
         // @ts-expect-error Discriminated unions retain their branch-specific fields.
-        void frame.validated.body.id;
+        void frame.body.id;
       } else {
-        expectTypeOf(frame.validated.body.id).toEqualTypeOf<string>();
+        expectTypeOf(frame.body.id).toEqualTypeOf<string>();
       }
-      return frame.validated.body;
+      return frame.body;
     },
   });
 }
@@ -214,53 +174,87 @@ export function invalidDefinitions() {
     // @ts-expect-error A definition must declare at least one schema.
     schema: {},
     permissions: false,
-    query() {},
+    handler() {},
   });
   defineMethod({
     // @ts-expect-error Misspelled request channels must not be silently ignored.
-    schema: { options: z.object({}), boddy: z.object({}) },
+    schema: { query: z.object({}), boddy: z.object({}) },
     permissions: false,
+    handler() {},
+  });
+  defineMethod({
+    // @ts-expect-error The options channel is gone; use params or query.
+    schema: { options: z.object({}) },
+    permissions: false,
+    handler() {},
+  });
+  defineMethod({
+    // @ts-expect-error Params and query must be object schemas.
+    schema: { query: z.string() },
+    permissions: false,
+    handler() {},
+  });
+  defineMethod({
+    // @ts-expect-error A key cannot be declared in both params and query.
+    schema: { params: z.object({ id: z.string() }), query: z.object({ id: z.string() }) },
+    permissions: false,
+    handler() {},
+  });
+  defineMethod({
+    // @ts-expect-error Reserved options cannot be declared.
+    schema: { query: z.object({ transacting: z.unknown() }) },
+    permissions: false,
+    handler() {},
+  });
+  // @ts-expect-error Permissions must be an explicit decision.
+  defineMethod({ schema: { body: z.object({}) }, handler() {} });
+  // @ts-expect-error A method must have a handler.
+  defineMethod({ schema: { body: z.object({}) }, permissions: false });
+  defineMethod({
+    schema: { body: z.object({}) },
+    permissions: false,
+    handler() {},
+    // @ts-expect-error Schema methods use handler, not query.
     query() {},
   });
   defineMethod({
-    // @ts-expect-error Request channels must contain Zod schemas.
-    schema: { options: { id: 'string' } },
+    schema: { body: z.object({}) },
     permissions: false,
-    query() {},
+    handler() {},
+    // @ts-expect-error Schema methods have no option allowlist.
+    options: ['id'],
   });
-  // @ts-expect-error Permissions must be an explicit decision.
-  defineMethod({ schema: { body: z.object({}) }, query() {} });
-  // @ts-expect-error A method must have a query callback.
-  defineMethod({ schema: { body: z.object({}) }, permissions: false });
-
-  const method: SchemaControllerMethod<{ options: z.ZodString }> = defineMethod({
-    schema: { options: z.string() },
+  defineMethod({
+    schema: { body: z.object({}) },
     permissions: false,
-    query(frame) {
-      return frame.validated.options;
-    },
+    handler() {},
+    // @ts-expect-error Schema methods have no data allowlist.
+    data: ['id'],
   });
-  expectTypeOf(method.schema.options).toEqualTypeOf<z.ZodString>();
 
-  const unvalidated = {
-    read: {
-      permissions: false,
-      query(frame: ValidatedFrame<{ options: z.ZodString }>) {
-        return frame.validated.options;
-      },
+  const method: SchemaControllerMethod<{ body: z.ZodString }> = defineMethod({
+    schema: { body: z.string() },
+    permissions: false,
+    handler: (frame) => frame.body,
+  });
+  expectTypeOf(method.schema.body).toEqualTypeOf<z.ZodString>();
+
+  // @ts-expect-error Schema methods must come from defineMethod().
+  pipeline({ read: { schema: { body: z.string() }, permissions: false, handler() {} } }, {});
+  pipeline(
+    {
+      // @ts-expect-error Legacy methods keep query, not handler.
+      read: { permissions: false, handler() {} },
     },
-  };
-  // @ts-expect-error Validated callbacks cannot run without a declared schema.
-  pipeline(unvalidated, {});
+    {},
+  );
 }
 
 export function mixedController() {
   const read = defineMethod({
-    schema: { options: z.object({ id: z.string() }) },
+    schema: { params: z.object({ id: z.string() }) },
     permissions: false,
-    query(frame) {
-      return frame.validated.options.id;
-    },
+    handler: (frame) => frame.params.id,
   });
   const controller = pipeline(
     {
