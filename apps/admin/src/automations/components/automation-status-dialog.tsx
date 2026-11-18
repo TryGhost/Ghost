@@ -10,6 +10,15 @@ import {
   Button,
   LoadingIndicator,
 } from '@tryghost/shade/components';
+import { Stack } from '@tryghost/shade/primitives';
+import { formatNumber } from '@tryghost/shade/utils';
+
+// The "Label added to a member" trigger's label, for the publish confirmation (NY-1750).
+// `memberCount` is null while it loads or when it can't be read.
+export type PublishLabelTrigger = {
+  name: string;
+  memberCount: number | null;
+};
 
 interface AutomationStatusDialogProps {
   status: AutomationStatus;
@@ -19,6 +28,7 @@ interface AutomationStatusDialogProps {
   isPending: boolean;
   isError: boolean;
   onCloseAutoFocus?: (event: Event) => void;
+  labelTrigger?: PublishLabelTrigger;
 }
 
 const AutomationStatusDialog = ({
@@ -29,6 +39,7 @@ const AutomationStatusDialog = ({
   isPending,
   isError,
   onCloseAutoFocus,
+  labelTrigger,
 }: AutomationStatusDialogProps) => {
   const { title, description, buttonLabel, pendingLabel } = (() => {
     switch (status) {
@@ -68,7 +79,11 @@ const AutomationStatusDialog = ({
       <AlertDialogContent onCloseAutoFocus={onCloseAutoFocus}>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+          {status === 'active' && labelTrigger ? (
+            <LabelTriggerDescription labelTrigger={labelTrigger} />
+          ) : (
+            <AlertDialogDescription>{description}</AlertDialogDescription>
+          )}
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
@@ -93,5 +108,37 @@ const AutomationStatusDialog = ({
     </AlertDialog>
   );
 };
+
+// Names the trigger's label, and says members who already have it won't start (NY-1750). The
+// message alone, so the lead magnet patterns page can show it outside a dialog.
+export const LabelTriggerMessage = ({ labelTrigger }: { labelTrigger: PublishLabelTrigger }) => {
+  const { name, memberCount } = labelTrigger;
+  const goesLive = (
+    <>
+      Once published, your automation goes live. Members who get the <strong>{name}</strong> label
+      from now on will be enrolled automatically.
+    </>
+  );
+  if (!memberCount) {
+    return <p>{goesLive}</p>;
+  }
+  return (
+    <Stack gap="lg">
+      <p>{goesLive}</p>
+      <p>
+        The <strong>{formatNumber(memberCount)}</strong> {memberCount === 1 ? 'member' : 'members'}{' '}
+        already labeled <strong>{name}</strong> will not be enrolled.
+      </p>
+    </Stack>
+  );
+};
+
+const LabelTriggerDescription = ({ labelTrigger }: { labelTrigger: PublishLabelTrigger }) => (
+  <AlertDialogDescription asChild>
+    <div>
+      <LabelTriggerMessage labelTrigger={labelTrigger} />
+    </div>
+  </AlertDialogDescription>
+);
 
 export default AutomationStatusDialog;

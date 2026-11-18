@@ -27,10 +27,19 @@ import {
   suggestedFieldName,
   listSuggestionFor,
 } from '@/members/components/bulk-action-modals/import-members/mapping';
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { type FieldTargetGroup } from '@/members/components/bulk-action-modals/import-members/field-targets';
 import { type MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { type UseLabelPickerResult } from '@/members/hooks/use-label-picker';
+// PROTOTYPE ONLY (NY-1750): which label automations the import starts. Don't merge.
+import {
+  LeadMagnetBulkBanner,
+  LeadMagnetBulkConfirm,
+  LeadMagnetBulkNote,
+  leadMagnetFileLabelSlugs,
+  useLeadMagnetBulkConfirmNeeded,
+  useLeadMagnetBulkMatches,
+} from '@/automations/api';
 
 interface MappingPreviewRow {
   key: string;
@@ -69,6 +78,12 @@ interface MappingStepProps {
   // that knows both the mapping and which columns are in the import, so it says the whole
   // of it rather than handing over a correction to apply.
   onUpload: (importMapping: Record<string, string | null>) => void;
+  // PROTOTYPE ONLY (NY-1750): a stand-in label field and note, for the lead magnet patterns
+  // page. Don't merge.
+  labelField?: ReactNode;
+  // PROTOTYPE ONLY (NY-1750): told when the step shows the automation confirmation, so the
+  // dialog can narrow to its standard size. Don't merge.
+  onLeadMagnetConfirmingChange?: (confirming: boolean) => void;
 }
 
 // A set with one member added or removed, since both halves of the in-or-out decision below
@@ -116,6 +131,8 @@ export function MappingStep({
   onStartOver,
   onColumnsChanged,
   onUpload,
+  labelField,
+  onLeadMagnetConfirmingChange,
 }: MappingStepProps) {
   // Columns switched on without a target yet, and columns switched off that still have one.
   // Between them and the mapping, a column is either in the import or out of it — and what it
@@ -366,10 +383,42 @@ export function MappingStep({
     };
   };
 
+  // PROTOTYPE ONLY (NY-1750): the labels the import adds, from the field and from a column
+  // mapped to Labels, and the automations they start. With the dialog pattern, Import first changes
+  // this step to a confirmation; Back returns to the table. Not on the patterns page, which
+  // brings its own label field. Don't merge.
+  const isLeadMagnetLive = labelField === undefined;
+  const leadMagnetSlugs = useMemo(() => {
+    if (!isLeadMagnetLive) {
+      return [];
+    }
+    const fromFile = leadMagnetFileLabelSlugs(
+      fileData,
+      mapping?.getKeyByValue('labels') ?? null,
+      labelPicker.labels,
+    );
+    return [...new Set([...labelPicker.selectedSlugs, ...fromFile])];
+  }, [isLeadMagnetLive, fileData, mapping, labelPicker.labels, labelPicker.selectedSlugs]);
+  const leadMagnetMatches = useLeadMagnetBulkMatches(
+    isLeadMagnetLive ? labelPicker.labels : [],
+    leadMagnetSlugs,
+  );
+  const leadMagnetConfirmNeeded = useLeadMagnetBulkConfirmNeeded(leadMagnetMatches);
+  const [isConfirming, setConfirmingState] = useState(false);
+  const setConfirming = (confirming: boolean) => {
+    setConfirmingState(confirming);
+    onLeadMagnetConfirmingChange?.(confirming);
+  };
+
   const handleImport = () => {
     const refusal = importRefusal();
     if (refusal) {
       setIncomplete(refusal);
+      return;
+    }
+    // PROTOTYPE ONLY (NY-1750)
+    if (leadMagnetConfirmNeeded && !isConfirming) {
+      setConfirming(true);
       return;
     }
     onUpload(importMapping);
@@ -380,7 +429,25 @@ export function MappingStep({
       {/* A flex column inside the height-bounded dialog: the table box below grows into
                 whatever room is left, so a short file keeps a small modal and a long one
                 fills the viewport rather than scrolling inside a fixed 400px. */}
-      <div className="mt-5 flex min-h-0 flex-1 flex-col space-y-5">
+      {/* PROTOTYPE ONLY (NY-1750) */}
+      {isLeadMagnetLive && !isConfirming && (
+        <LeadMagnetBulkBanner
+          matches={leadMagnetMatches}
+          memberCount={membersCount}
+          source="import"
+          ownSpacing
+        />
+      )}
+      {isConfirming && (
+        <div className="mt-5 text-base">
+          <LeadMagnetBulkConfirm
+            matches={leadMagnetMatches}
+            memberCount={membersCount}
+            source="import"
+          />
+        </div>
+      )}
+      <div className={cn('mt-5 flex min-h-0 flex-1 flex-col space-y-5', isConfirming && 'hidden')}>
         {
           <>
             <div
@@ -572,25 +639,42 @@ export function MappingStep({
 
             <div className="mt-5">
               <label className="mb-1 block text-sm font-semibold">Label these members</label>
-              <LabelPicker
-                isCreating={labelPicker.isCreating}
-                labels={labelPicker.labels}
-                optionSource={labelPicker.optionSource}
-                resolvedSelectedLabels={labelPicker.resolvedSelectedLabels}
-                selectedSlugs={labelPicker.selectedSlugs}
-                onCreate={labelPicker.createLabel}
-                onDelete={labelPicker.deleteLabel}
-                onEdit={labelPicker.editLabel}
-                onToggle={labelPicker.toggleLabel}
-              />
+              {labelField ?? (
+                <>
+                  <LabelPicker
+                    isCreating={labelPicker.isCreating}
+                    labels={labelPicker.labels}
+                    optionSource={labelPicker.optionSource}
+                    resolvedSelectedLabels={labelPicker.resolvedSelectedLabels}
+                    selectedSlugs={labelPicker.selectedSlugs}
+                    onCreate={labelPicker.createLabel}
+                    onDelete={labelPicker.deleteLabel}
+                    onEdit={labelPicker.editLabel}
+                    onToggle={labelPicker.toggleLabel}
+                  />
+                  {/* PROTOTYPE ONLY (NY-1750) */}
+                  <div className="mt-2">
+                    <LeadMagnetBulkNote
+                      labels={labelPicker.labels}
+                      memberCount={membersCount}
+                      selectedSlugs={leadMagnetSlugs}
+                      source="import"
+                    />
+                  </div>
+                </>
+              )}
             </div>
           </>
         }
       </div>
 
       <DialogFooter className="mt-5">
-        <Button disabled={status === 'UPLOADING'} variant="outline" onClick={onStartOver}>
-          Start over
+        <Button
+          disabled={status === 'UPLOADING'}
+          variant="outline"
+          onClick={isConfirming ? () => setConfirming(false) : onStartOver}
+        >
+          {isConfirming ? 'Back' : 'Start over'}
         </Button>
         <Button disabled={status === 'UPLOADING' || membersCount === 0} onClick={handleImport}>
           {status === 'UPLOADING' ? (

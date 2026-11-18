@@ -27,7 +27,11 @@ import {
   lazyAppPageScreen,
   lazyAppsScreen,
 } from './apps/api';
-import { lazyAutomationEditorScreen, lazyAutomationsScreen } from './automations/api';
+import {
+  lazyAutomationEditorScreen,
+  lazyAutomationsScreen,
+  lazyLeadMagnetStatesScreen,
+} from './automations/api';
 import { lazyCommentsScreen } from './comments/api';
 import { lazyMigrateScreen } from './migrate/api';
 import { lazyMemberActivityScreen, membersRouteChildren } from './members/api';
@@ -103,6 +107,16 @@ const appRoutes: RouteObject[] = [
     path: '/apps/:installationId/*',
     handle: { requiresAccess: canManageApps } satisfies AccessRouteHandle,
     lazy: lazyComponent(lazyAppPageScreen),
+  },
+  {
+    // PROTOTYPE ONLY (NY-1750): the lead magnet states, one pattern at a time, with the page's own
+    // text nav in place of Admin's. Don't merge.
+    path: '/automations/lead-magnet-states/:pattern?',
+    handle: {
+      hideAdminSidebar: true,
+      requiresAccess: canManageAutomations,
+    } satisfies AdminRouteHandle & AccessRouteHandle,
+    lazy: lazyComponent(lazyLeadMagnetStatesScreen),
   },
   {
     // The automation editor hides the admin sidebar for a focused,

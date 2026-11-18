@@ -51,13 +51,25 @@ import {
 import { memberCustomFieldCsvColumns } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { useCustomFieldDefinitions } from '@/shared/member-custom-fields/use-definitions';
 import { parseCSV } from '@/members/components/bulk-action-modals/import-members/csv';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef } from 'react';
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 import {
   CUSTOM_FIELDS_FLAG,
   CUSTOM_FIELDS_LIMIT,
 } from '@/shared/member-custom-fields/availability';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useFeatureLimit } from '@/shared/gates/use-feature-limit';
+// PROTOTYPE ONLY (NY-1750): a fake CSV for walking through the import. Don't merge.
+import { FAKE_IMPORT_SIZES, createFakeImportCsv, isFakeImportFile } from '@/automations/api';
+import { toast } from 'sonner';
 import { useLabelPicker } from '@/members/hooks/use-label-picker';
 
 interface ImportMembersModalProps {
@@ -326,6 +338,13 @@ export function ImportMembersModal({
         return;
       }
 
+      // PROTOTYPE ONLY (NY-1750): a fake CSV never reaches the server. Don't merge.
+      if (isFakeImportFile(state.file)) {
+        toast.info('Prototype: the fake CSV wasn’t imported');
+        reset();
+        return;
+      }
+
       dispatch({ type: 'UPLOAD_START' });
 
       const selectedLabelNames: string[] = [];
@@ -413,10 +432,24 @@ export function ImportMembersModal({
       importMembers,
       revokeErrorCsvUrl,
       onComplete,
+      reset,
     ],
   );
 
-  const isWide = state.status === 'MAPPING' || state.status === 'UPLOADING';
+  // PROTOTYPE ONLY (NY-1750): the automation confirmation uses the standard dialog size.
+  const [isLeadMagnetConfirming, setLeadMagnetConfirming] = useState(false);
+  const isMappingStep = state.status === 'MAPPING' || state.status === 'UPLOADING';
+  const isWide = isMappingStep && !isLeadMagnetConfirming;
+  // Closing or leaving the mapping step drops the confirmation, reset while rendering rather
+  // than in an effect.
+  const isMappingOpen = open && isMappingStep;
+  const [wasMappingOpen, setWasMappingOpen] = useState(isMappingOpen);
+  if (isMappingOpen !== wasMappingOpen) {
+    setWasMappingOpen(isMappingOpen);
+    if (!isMappingOpen) {
+      setLeadMagnetConfirming(false);
+    }
+  }
 
   const title = useMemo(() => {
     switch (state.status) {
@@ -441,6 +474,9 @@ export function ImportMembersModal({
       <DialogContent
         className={cn(
           'gap-0',
+          // PROTOTYPE ONLY (NY-1750): Shade's dialog sets a 200ms duration with no property, so a
+          // width change animates; the automation confirmation narrows instantly instead.
+          'transition-none',
           isWide && 'max-w-4xl',
           isWide && 'flex max-h-[calc(100vh-16vmin)] flex-col',
         )}
@@ -452,6 +488,24 @@ export function ImportMembersModal({
 
         {state.status === 'INIT' && (
           <InitStep
+            // PROTOTYPE ONLY (NY-1750)
+            extra={
+              <p className="text-sm text-muted-foreground">
+                Prototype: use a fake CSV with{' '}
+                {FAKE_IMPORT_SIZES.map((rows, index) => (
+                  <Fragment key={rows}>
+                    {index > 0 && ' or '}
+                    <button
+                      className="font-medium text-foreground underline"
+                      type="button"
+                      onClick={() => handleFileSelected(createFakeImportCsv(rows))}
+                    >
+                      {rows.toLocaleString()} members
+                    </button>
+                  </Fragment>
+                ))}
+              </p>
+            }
             fileError={state.fileError}
             onClose={() => handleOpenChange(false)}
             onDropAccepted={handleFileSelected}
@@ -496,6 +550,7 @@ export function ImportMembersModal({
                 });
               }}
               onFieldCreated={handleFieldCreated}
+              onLeadMagnetConfirmingChange={setLeadMagnetConfirming}
               onStartOver={reset}
               onUpdateMapping={handleUpdateMapping}
               onUpload={(importMapping) => void handleUpload(importMapping)}

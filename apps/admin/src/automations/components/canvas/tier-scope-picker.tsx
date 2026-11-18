@@ -8,10 +8,13 @@ import type { KeyboardEvent, ReactNode } from 'react';
 const LIST_MAX_HEIGHT_PX = 256;
 const VIEWPORT_GUTTER_PX = 16;
 
-export type TierScopeTier = { id: string; name: string };
+// Within two rows of the end, as the shared chip picker asks for its next page.
+const END_REACHED_PX = 64;
+
+export type TierScopeOption = { id: string; name: string };
 
 type Row = {
-  kind: 'standalone' | 'tier';
+  kind: 'standalone' | 'tier' | 'create';
   id: string;
   label: string;
   chosen: boolean;
@@ -21,12 +24,25 @@ export type TierScopePickerProps<TStandalone extends string> = {
   // The standalone option's value, or the chosen tier ids; empty is unanswered.
   value: TStandalone | readonly string[];
   // "Any paid tier" or "Free": choosing it replaces the tiers, and a tier replaces it.
-  standalone: { value: TStandalone; label: string };
-  tiers: readonly TierScopeTier[];
+  standalone?: { value: TStandalone; label: string };
+  // One option at most, read as the field's own text: a click selects it, typing searches over
+  // it, Backspace clears it, and leaving without a pick puts it back. Used by "Label added".
+  single?: boolean;
+  // A last row that turns the typed search into a new option.
+  createRow?: {
+    offer: (term: string) => boolean;
+    label: (term: string) => string;
+    onCreate: (term: string) => void;
+  };
+  // Tiers, or labels for "Label added".
+  options: readonly TierScopeOption[];
   // Missing saved tiers stay removable without becoming dropdown options.
   missingTierLabel?: string;
   onChange: (next: TStandalone | string[]) => void;
-  tiersHeading?: string;
+  optionsHeading?: string;
+  // For a list the server narrows and pages, as labels are on a large site.
+  onSearchChange?: (search: string) => void;
+  onEndReached?: () => void;
   emptyMessage: string;
   placeholder: string;
   inputLabel: string;
@@ -36,16 +52,20 @@ export type TierScopePickerProps<TStandalone extends string> = {
   notice?: ReactNode;
 };
 
-// One standalone option or several tiers in one dropdown. Built on Shade's token field
+// One standalone option or several tiers in one dropdown, or a single label. Built on Shade's token field
 // recipe rather than the shared chip picker so the standalone option reads as a plain
 // value, as a Select shows one, while tiers read as chips.
 export function TierScopePicker<TStandalone extends string>({
   value,
   standalone,
-  tiers,
+  single = false,
+  createRow,
+  options: tiers,
   missingTierLabel = 'Unavailable tier',
   onChange,
-  tiersHeading = 'Specific tiers',
+  optionsHeading = 'Specific tiers',
+  onSearchChange,
+  onEndReached,
   emptyMessage,
   placeholder,
   inputLabel,
@@ -57,12 +77,16 @@ export function TierScopePicker<TStandalone extends string>({
   const listId = useId();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
+  // One-choice mode: the field shows the chosen name as its text until it is typed over.
+  const [editing, setEditing] = useState(false);
+  // One-choice mode: no caret after a pick, until the field is clicked or typed in again.
+  const [caretHidden, setCaretHidden] = useState(false);
   const [highlighted, setHighlighted] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  const standaloneChosen = value === standalone.value;
+  const standaloneChosen = standalone !== undefined && value === standalone.value;
   const chosenIds: readonly string[] = typeof value === 'string' ? [] : value;
   const missingTierIds = chosenIds.filter((id) => !tiers.some((tier) => tier.id === id));
   const chosenTiers = [
@@ -70,6 +94,12 @@ export function TierScopePicker<TStandalone extends string>({
     ...missingTierIds.map((id) => ({ id, name: missingTierLabel })),
   ];
   const hasSelection = standaloneChosen || chosenTiers.length > 0;
+  // What reads as a plain value in the field rather than as chips.
+  const plainValue = standaloneChosen
+    ? standalone?.label
+    : single
+      ? chosenTiers[0]?.name
+      : undefined;
 
   const term = search.trim().toLowerCase();
   const updateSearch = useCallback(
@@ -77,9 +107,10 @@ export function TierScopePicker<TStandalone extends string>({
       setSearch(next);
       if (next.trim().toLowerCase() !== term) {
         setHighlighted(0);
+        onSearchChange?.(next.trim());
       }
     },
-    [term],
+    [onSearchChange, term],
   );
 
   // Fixed so an overflow-hidden ancestor can't clip the list.
@@ -104,10 +135,18 @@ export function TierScopePicker<TStandalone extends string>({
     ],
   });
 
-  const close = useCallback(() => setOpen(false), []);
+  const close = useCallback(() => {
+    setOpen(false);
+    // Leaving without a pick puts the chosen name back: the value is never left empty.
+    if (single) {
+      setEditing(false);
+      updateSearch('');
+    }
+  }, [single, updateSearch]);
 
   const closeAndDiscard = useCallback(() => {
     setOpen(false);
+    setEditing(false);
     updateSearch('');
   }, [updateSearch]);
 
@@ -152,7 +191,7 @@ export function TierScopePicker<TStandalone extends string>({
   const matches = (label: string) => term === '' || label.toLowerCase().includes(term);
   const rows: Row[] = [];
   if (!notice) {
-    if (matches(standalone.label)) {
+    if (standalone && matches(standalone.label)) {
       rows.push({
         kind: 'standalone',
         id: standalone.value,
@@ -170,6 +209,14 @@ export function TierScopePicker<TStandalone extends string>({
         });
       }
     }
+    if (createRow?.offer(search.trim())) {
+      rows.push({
+        kind: 'create',
+        id: 'create',
+        label: createRow.label(search.trim()),
+        chosen: false,
+      });
+    }
   }
   const highlightedIndex = Math.min(highlighted, Math.max(rows.length - 1, 0));
 
@@ -183,7 +230,16 @@ export function TierScopePicker<TStandalone extends string>({
     [...tiers.map((tier) => tier.id), ...missingTierIds].filter((id) => ids.includes(id));
 
   const choose = (row: Row) => {
-    if (row.kind === 'standalone') {
+    if (row.kind === 'create') {
+      createRow?.onCreate(search.trim());
+      setCaretHidden(single);
+      close();
+    } else if (single) {
+      // As a Select does: the pick replaces the value, and choosing it again keeps it.
+      onChange([row.id]);
+      setCaretHidden(true);
+      close();
+    } else if (row.kind === 'standalone' && standalone) {
       onChange(standaloneChosen ? [] : standalone.value);
       // A single choice closes the list, as a Select does.
       if (!standaloneChosen) {
@@ -194,6 +250,7 @@ export function TierScopePicker<TStandalone extends string>({
     } else {
       onChange(inTierOrder([...chosenIds, row.id]));
     }
+    setEditing(false);
     updateSearch('');
   };
 
@@ -209,8 +266,21 @@ export function TierScopePicker<TStandalone extends string>({
     if (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) {
       return;
     }
+    if (event.key !== 'Enter' && event.key !== 'Tab') {
+      setCaretHidden(false);
+    }
 
-    if (event.key === 'Backspace' && search === '') {
+    // In one-choice mode Backspace on the shown name clears the value, leaving an empty search.
+    if (event.key === 'Backspace' && single && !editing && chosenIds.length > 0) {
+      event.preventDefault();
+      onChange([]);
+      setEditing(true);
+      updateSearch('');
+      setOpen(true);
+      return;
+    }
+
+    if (event.key === 'Backspace' && search === '' && !single) {
       removeLast();
       return;
     }
@@ -263,6 +333,7 @@ export function TierScopePicker<TStandalone extends string>({
         onMouseDown={(event) => event.preventDefault()}
         onMouseEnter={() => setHighlighted(index)}
       >
+        {row.kind === 'create' && <LucideIcon.Plus className="size-4 shrink-0" />}
         <span className="min-w-0 [overflow-wrap:anywhere]">{label}</span>
         {chosen && <LucideIcon.Check className="ms-auto size-4 shrink-0 text-primary" />}
       </div>
@@ -272,9 +343,12 @@ export function TierScopePicker<TStandalone extends string>({
   // Render each row once, keeping its flat keyboard index across both sections.
   const standaloneRows: ReactNode[] = [];
   const tierRows: ReactNode[] = [];
+  const createRows: ReactNode[] = [];
   rows.forEach((row, index) => {
     if (row.kind === 'standalone') {
       standaloneRows.push(renderRow(row, index));
+    } else if (row.kind === 'create') {
+      createRows.push(renderRow(row, index));
     } else {
       tierRows.push(renderRow(row, index));
     }
@@ -295,26 +369,34 @@ export function TierScopePicker<TStandalone extends string>({
         className={cn(tokenFieldClasses.field, 'pr-8')}
         onClick={() => {
           inputRef.current?.focus();
+          setCaretHidden(false);
+          // Selects the chosen name, so typing or Backspace replaces it.
+          if (single && !editing) {
+            inputRef.current?.select();
+          }
           setOpen(true);
         }}
       >
         {/* px-2 matches the input, so the value sits where a Select's does. */}
-        {standaloneChosen && <span className="px-2 text-foreground">{standalone.label}</span>}
-        {chosenTiers.map((tier) => (
-          <Badge key={tier.id} className={tokenFieldClasses.chip} variant="outline" asChild>
-            <button
-              aria-label={`Remove ${tier.name}`}
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                onChange(chosenIds.filter((id) => id !== tier.id));
-              }}
-            >
-              <span className="min-w-0 [overflow-wrap:anywhere]">{tier.name}</span>
-              <LucideIcon.X className="mt-0.5 size-3 shrink-0 self-start" />
-            </button>
-          </Badge>
-        ))}
+        {plainValue !== undefined && !single && (
+          <span className="px-2 text-foreground">{plainValue}</span>
+        )}
+        {!single &&
+          chosenTiers.map((tier) => (
+            <Badge key={tier.id} className={tokenFieldClasses.chip} variant="outline" asChild>
+              <button
+                aria-label={`Remove ${tier.name}`}
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onChange(chosenIds.filter((id) => id !== tier.id));
+                }}
+              >
+                <span className="min-w-0 [overflow-wrap:anywhere]">{tier.name}</span>
+                <LucideIcon.X className="mt-0.5 size-3 shrink-0 self-start" />
+              </button>
+            </Badge>
+          ))}
         <input
           ref={inputRef}
           aria-activedescendant={
@@ -328,15 +410,17 @@ export function TierScopePicker<TStandalone extends string>({
           aria-label={inputId ? undefined : inputLabel}
           className={cn(
             tokenFieldClasses.input,
-            hasSelection && search === '' && 'min-w-0 not-focus:px-0',
-            // No caret beside the standalone value until something is typed.
-            standaloneChosen && search === '' && 'caret-transparent',
+            !single && hasSelection && search === '' && 'min-w-0 not-focus:px-0',
+            // No caret beside a plain value until something is typed.
+            !single && plainValue !== undefined && search === '' && 'caret-transparent',
+            single && caretHidden && 'caret-transparent',
           )}
           id={inputId}
-          placeholder={hasSelection ? '' : placeholder}
+          placeholder={single || !hasSelection ? placeholder : ''}
           role="combobox"
-          value={search}
+          value={single && !editing ? (chosenTiers[0]?.name ?? '') : search}
           onChange={(event) => {
+            setEditing(true);
             updateSearch(event.target.value);
             setOpen(true);
           }}
@@ -349,6 +433,12 @@ export function TierScopePicker<TStandalone extends string>({
           ref={refs.setFloating}
           className="z-50 w-max max-w-[min(480px,calc(100vw-32px))] overflow-y-auto rounded-md border border-border/60 bg-surface-elevated-2 p-1 text-popover-foreground shadow-md dark:border-border/30"
           style={floatingStyles}
+          onScroll={(event) => {
+            const list = event.currentTarget;
+            if (list.scrollHeight - list.scrollTop - list.clientHeight < END_REACHED_PX) {
+              onEndReached?.();
+            }
+          }}
         >
           {notice}
           <div ref={listRef} aria-label={inputLabel} id={listId} role="listbox">
@@ -361,9 +451,17 @@ export function TierScopePicker<TStandalone extends string>({
                 {standaloneRows.length > 0 && (
                   <div className="-mx-1 my-1 h-px bg-border" role="separator" />
                 )}
-                <div aria-label={tiersHeading} role="group">
+                <div aria-label={optionsHeading} role="group">
                   {tierRows}
                 </div>
+              </>
+            )}
+            {createRows.length > 0 && (
+              <>
+                {rows.length > createRows.length && (
+                  <div className="-mx-1 my-1 h-px bg-border" role="separator" />
+                )}
+                {createRows}
               </>
             )}
           </div>

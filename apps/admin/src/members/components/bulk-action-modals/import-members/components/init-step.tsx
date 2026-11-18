@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Banner, Button, DialogFooter, Dropzone } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 
@@ -6,9 +7,17 @@ interface InitStepProps {
   onClose: () => void;
   onDropAccepted: (file: File) => void;
   onDropRejected: () => void;
+  // PROTOTYPE ONLY (NY-1750): shown under the drop zone. Don't merge.
+  extra?: ReactNode;
 }
 
-export function InitStep({ fileError, onClose, onDropAccepted, onDropRejected }: InitStepProps) {
+export function InitStep({
+  fileError,
+  onClose,
+  onDropAccepted,
+  onDropRejected,
+  extra,
+}: InitStepProps) {
   return (
     <>
       <div className="mt-5 space-y-5">
@@ -68,6 +77,7 @@ export function InitStep({ fileError, onClose, onDropAccepted, onDropRejected }:
             </>
           )}
         </Dropzone>
+        {extra}
       </div>
 
       <DialogFooter className="mt-5">

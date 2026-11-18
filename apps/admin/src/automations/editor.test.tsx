@@ -185,9 +185,20 @@ vi.mock('@tryghost/admin-x-framework/api/tiers', () => ({
   useBrowseTiers: () => ({ data: { tiers: [] }, isLoading: false }),
 }));
 
-vi.mock('@tryghost/admin-x-framework/api/labels', () => {
-  const refetch = vi.fn();
-  return { useReadLabel: () => ({ data: undefined, error: null, refetch }) };
+// PROTOTYPE ONLY (NY-1750): the prototype's label trigger reads labels and member counts,
+// which these tests don't pick. Don't merge.
+vi.mock('@tryghost/admin-x-framework/api/labels', () => ({
+  useBrowseLabelsInfinite: () => ({ data: { labels: [] }, isLoading: false }),
+}));
+
+vi.mock('@tryghost/admin-x-framework/api/members', async () => {
+  const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/members')>(
+    '@tryghost/admin-x-framework/api/members',
+  );
+  return {
+    ...actual,
+    useMembersCount: () => ({ count: null, isLoading: false }),
+  };
 });
 
 // xyflow's ReactFlow needs a sized container; stub it out for unit tests.

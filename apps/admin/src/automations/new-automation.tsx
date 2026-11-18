@@ -4,10 +4,9 @@ import type {
   AutomationDetail,
   AutomationTriggerRule,
 } from '@tryghost/admin-x-framework/api/automations';
-import { Button, LoadingIndicator } from '@tryghost/shade/components';
+import { LoadingIndicator } from '@tryghost/shade/components';
 import { DirtyConfirmDialog } from '@tryghost/shade/patterns';
-import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { Box, Stack } from '@tryghost/shade/primitives';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { Background, ReactFlow } from '@xyflow/react';
 import AutomationHeader from './components/automation-header';
@@ -18,67 +17,30 @@ import { useVisibleAutomations } from './hooks/use-visible-automations';
 import { getNewAutomationName } from './utils/get-new-automation-name';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import { ScreenEntranceContext } from '@/layout/screen-transition';
-
-type PickedTrigger = AutomationTriggerRule['trigger_type'];
-
-function getInitialTriggerRules(triggerType: PickedTrigger): AutomationTriggerRule[] {
-  switch (triggerType) {
-    case 'paid_subscription_changed':
-      return buildTriggerRules({ triggerType, selection: { from: [], to: [] } });
-    case 'label_added':
-      return [];
-    default:
-      return buildTriggerRules({ triggerType });
-  }
-}
-
-const TRIGGER_OPTIONS = [
-  [
-    'free_signup',
-    LucideIcon.UserPlus,
-    'Free member signed up',
-    'When someone signs up as a free member',
-  ],
-  [
-    'paid_subscription_started',
-    LucideIcon.CreditCard,
-    'Paid subscription started',
-    'When a new or free member starts a paid subscription',
-  ],
-] as const;
-
-const SUBSCRIPTION_CHANGED_OPTION = [
-  'paid_subscription_changed',
-  LucideIcon.ArrowRightLeft,
-  'Paid subscription changed',
-  "When a member's paid subscription moves to another tier or ends",
-] as const;
-
-const LABEL_ADDED_OPTION = [
-  'label_added',
-  LucideIcon.Tag,
-  'Label added',
-  'When a label is added to a member',
-] as const;
+import type { LabelSelection } from './types';
+import { TriggerPickerCard } from './components/trigger-picker-card';
+import {
+  FREE_SIGNUP_OPTION,
+  LABEL_ADDED_OPTION,
+  PAID_STARTED_OPTION,
+  type PickedTrigger,
+  SUBSCRIPTION_CHANGED_OPTION,
+  type TriggerOption,
+} from './utils/trigger-options';
 
 const TriggerPicker: React.FC<{
   automation: AutomationDetail;
-  labelTriggerEnabled: boolean;
   stripeEnabled: boolean;
   // `cardTop`: where the card sits, so the editor can open with the trigger in the same place.
   onPick: (trigger: PickedTrigger, cardTop: number) => void;
-}> = ({ automation, labelTriggerEnabled, stripeEnabled, onPick }) => {
+}> = ({ automation, stripeEnabled, onPick }) => {
   const { dialogProps } = useUnsavedChangesGuard({ when: true });
-  const options: Array<
-    | (typeof TRIGGER_OPTIONS)[number]
-    | typeof SUBSCRIPTION_CHANGED_OPTION
-    | typeof LABEL_ADDED_OPTION
-  > = [TRIGGER_OPTIONS[0]];
+  const isLeadMagnetsEnabled = useFeatureFlag('automationsLeadMagnets');
+  const options: TriggerOption[] = [FREE_SIGNUP_OPTION];
   if (stripeEnabled) {
-    options.push(TRIGGER_OPTIONS[1]);
-    options.push(SUBSCRIPTION_CHANGED_OPTION);
+    options.push(PAID_STARTED_OPTION, SUBSCRIPTION_CHANGED_OPTION);
   }
-  if (labelTriggerEnabled) {
+  if (isLeadMagnetsEnabled) {
     options.push(LABEL_ADDED_OPTION);
   }
   const cardRef = React.useRef<HTMLDivElement>(null);
@@ -115,34 +77,11 @@ const TriggerPicker: React.FC<{
         {/* Slightly above center: 40% of the spare height above the card, 60% below. */}
         <Stack align="center" className="pointer-events-none absolute inset-0" gap="none">
           <Box className="min-h-12 flex-[2]" />
-          <Stack
+          <TriggerPickerCard
             ref={cardRef}
-            className="pointer-events-auto w-[400px] max-w-[calc(100%-32px)] rounded-xl border border-border-default bg-surface-elevated p-6 shadow-sm"
-            gap="xl"
-          >
-            <Text weight="semibold">Select a trigger</Text>
-            {options.map(([trigger, Icon, title, description]) => (
-              <Button
-                key={trigger}
-                className="-mx-2 h-auto justify-start px-2 text-left whitespace-normal"
-                shape="rounded"
-                variant="ghost"
-                onClick={() => onPick(trigger, cardRef.current?.offsetTop ?? 0)}
-              >
-                <Inline gap="md">
-                  <Inline className="size-9 shrink-0 rounded-md bg-muted" justify="center">
-                    <Icon className="size-4" />
-                  </Inline>
-                  <Stack gap="none">
-                    <Text weight="medium">{title}</Text>
-                    <Text size="sm" tone="secondary">
-                      {description}
-                    </Text>
-                  </Stack>
-                </Inline>
-              </Button>
-            ))}
-          </Stack>
+            options={options}
+            onPick={(trigger) => onPick(trigger, cardRef.current?.offsetTop ?? 0)}
+          />
           <Box className="min-h-12 flex-[3]" />
         </Stack>
       </Box>
@@ -163,9 +102,11 @@ const NewAutomationLoading: React.FC = () => {
 type NewAutomationProps = {
   children: (creation: {
     automation: AutomationDetail;
-    triggerType: PickedTrigger;
+    triggerType: AutomationTriggerRule['trigger_type'];
     // Where the picker's card was when the trigger was selected.
     triggerTop?: number;
+    // Set when the picked trigger was "Label added to a member".
+    labelSelection?: LabelSelection;
   }) => React.ReactNode;
 };
 
@@ -181,7 +122,9 @@ const NewAutomationSession: React.FC<
   const [initialAutomation, setInitialAutomation] = React.useState<AutomationDetail | null>(null);
   // Where the trigger was picked, once it has been.
   const [triggerTop, setTriggerTop] = React.useState<number | null>(null);
-  const [triggerType, setTriggerType] = React.useState<PickedTrigger>('free_signup');
+  const [triggerType, setTriggerType] =
+    React.useState<AutomationTriggerRule['trigger_type']>('free_signup');
+  const [labelSelection, setLabelSelection] = React.useState<LabelSelection>();
   if (!initialAutomation) {
     if (isStripeReady) {
       setInitialAutomation({
@@ -202,14 +145,31 @@ const NewAutomationSession: React.FC<
     return (
       <TriggerPicker
         automation={initialAutomation}
-        labelTriggerEnabled={isLeadMagnetsEnabled}
         stripeEnabled={stripeEnabled}
         onPick={(trigger, cardTop) => {
           setTriggerTop(cardTop);
+          if (trigger === 'member_label_added') {
+            // A stand-in free signup rule closes the picker; the editor never saves it (NY-1750).
+            setLabelSelection(null);
+            setInitialAutomation({
+              ...initialAutomation,
+              trigger_rules: buildTriggerRules({ triggerType: 'free_signup' }),
+            });
+            return;
+          }
           setTriggerType(trigger);
           setInitialAutomation({
             ...initialAutomation,
-            trigger_rules: getInitialTriggerRules(trigger),
+            // PROTOTYPE ONLY (NY-1750): main's `label_added` needs a label; the prototype
+            // never picks it. Don't merge.
+            trigger_rules:
+              trigger === 'label_added'
+                ? []
+                : buildTriggerRules(
+                    trigger === 'paid_subscription_changed'
+                      ? { triggerType: trigger, selection: { from: [], to: [] } }
+                      : { triggerType: trigger },
+                  ),
           });
         }}
       />
@@ -219,7 +179,7 @@ const NewAutomationSession: React.FC<
   // header replacing it shouldn't play it a second time in the same visit.
   return triggerTop !== null ? (
     <ScreenEntranceContext.Provider value={false}>
-      {children({ automation: initialAutomation, triggerType, triggerTop })}
+      {children({ automation: initialAutomation, triggerType, triggerTop, labelSelection })}
     </ScreenEntranceContext.Provider>
   ) : (
     children({ automation: initialAutomation, triggerType })

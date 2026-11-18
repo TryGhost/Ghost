@@ -37,7 +37,8 @@ const render = () =>
     labs: { automations: true, automationsLeadMagnets: true },
   });
 
-describe('Live automation label trigger', () => {
+// PROTOTYPE ONLY (NY-1750): tests main's real label trigger, which this prototype replaces. Don't merge.
+describe.skip('Live automation label trigger', () => {
   it('unlocks only after turning off, saves a replacement on publish, and locks again', async () => {
     const { spring, fall, automation, browse, save } = serve();
     await render();

@@ -40,6 +40,7 @@ import { canvasBackground } from './canvas-background';
 import { AutomationSidebar } from './automation-sidebar';
 import type { TriggerData } from './trigger-card';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
+import { useBrowseLabelsInfinite } from '@tryghost/admin-x-framework/api/labels';
 import { type StepPickerType } from './step-picker';
 import { isEmptyEmailLexical } from '@/automations/utils';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
@@ -172,8 +173,8 @@ type BuildGraphParams = {
   connectIn: boolean;
   automation: AutomationDetail;
   savedTriggerTierIds: readonly string[];
-  selectedTriggerLabel: TriggerData['selectedTriggerLabel'];
   triggerType: TriggerData['triggerType'];
+  labelSelection?: TriggerData['labelSelection'];
   tierQuery: TriggerData['tierQuery'];
   onChange: (next: AutomationDetail) => void;
   nodeSizes: Record<string, { width: number; height: number }>;
@@ -195,8 +196,8 @@ const buildGraph = ({
   connectIn,
   automation,
   savedTriggerTierIds,
-  selectedTriggerLabel,
   triggerType,
+  labelSelection,
   tierQuery,
   onChange,
   nodeSizes,
@@ -244,13 +245,12 @@ const buildGraph = ({
       },
       data: {
         trigger: {
-          isActive: automation.status === 'active',
-          selectedTriggerLabel,
           tierQuery,
           triggerType,
           rules: automation.trigger_rules,
           savedTierIds: savedTriggerTierIds,
           onUpdate: (trigger) => onChange({ ...automation, ...trigger }),
+          labelSelection,
         },
         errorMessage: canvasErrors[TRIGGER_CANVAS_ID],
         onInteract: () => onInteract(TRIGGER_CANVAS_ID),
@@ -403,8 +403,8 @@ type AutomationCanvasProps = {
   onWaitValidityChange: (stepId: string, valid: boolean) => void;
   automation?: AutomationDetail;
   savedTriggerTierIds?: readonly string[];
-  selectedTriggerLabel?: TriggerData['selectedTriggerLabel'];
   triggerType?: TriggerData['triggerType'];
+  labelSelection?: TriggerData['labelSelection'];
   isLoading: boolean;
   isError: boolean;
   onChange: (next: AutomationDetail) => void;
@@ -429,8 +429,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   canvasErrors = {},
   validationAttempt = 0,
   savedTriggerTierIds = [],
-  selectedTriggerLabel,
   triggerType,
+  labelSelection,
   onWaitValidityChange,
   automation,
   isLoading,
@@ -484,6 +484,11 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     () => ({ data: tierData, isLoading: tiersLoading, isError: tiersError, refetch: refetchTiers }),
     [tierData, tiersLoading, tiersError, refetchTiers],
   );
+  // The same request as the trigger card's, so the settings can name the trigger's labels.
+  const { data: labelData } = useBrowseLabelsInfinite({
+    searchParams: { limit: 'all' },
+    enabled: Boolean(labelSelection),
+  });
   const emailModalStepId = searchParams.get(EMAIL_STEP_QUERY_PARAM);
   const getEmailCardElement = useCallback(() => {
     if (!emailModalStepId) {
@@ -697,8 +702,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       connectIn: connecting,
       automation,
       savedTriggerTierIds,
-      selectedTriggerLabel,
       triggerType,
+      labelSelection,
       tierQuery,
       onChange,
       nodeSizes,
@@ -718,8 +723,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     validationAttempt,
     connecting,
     savedTriggerTierIds,
-    selectedTriggerLabel,
     triggerType,
+    labelSelection,
     tierQuery,
     onChange,
     automation,
@@ -865,11 +870,13 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         isOpen={sidebar.open}
         isRunSelectionDisabled={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
         isToggleHidden={isCanvasCleared}
+        labels={labelData?.labels ?? []}
         metadata={isHistoryOpen ? 'readonly' : 'editable'}
         performanceEnabled={isPerformanceEnabled}
         selectedRunId={selectedRunId}
         selectedTab={sidebar.tab === 'unknown' ? 'settings' : sidebar.tab}
         tiers={tierData?.tiers ?? []}
+        triggerLabelSlug={labelSelection?.value}
         triggerRules={automation.trigger_rules}
         onDescriptionChange={(description) => onChange({ ...automation, description })}
         onOpenChange={setAutomationSidebarOpen}

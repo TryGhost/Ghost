@@ -507,7 +507,8 @@ describe('New automation', () => {
   });
 
   for (const action of ['Save', 'Publish'] as const) {
-    it(`validates label selection before ${action.toLowerCase()} and sends the selected label`, async () => {
+    // PROTOTYPE ONLY (NY-1750): main's real label trigger, replaced here. Don't merge.
+    it.skip(`validates label selection before ${action.toLowerCase()} and sends the selected label`, async () => {
       fakeAutomations([]);
       const createAutomation = serveCreation();
       const spring = buildLabel({ name: 'Spring ebook' });
@@ -575,7 +576,8 @@ describe('New automation', () => {
     });
   }
 
-  it('searches for and creates a label in the trigger picker', async () => {
+  // PROTOTYPE ONLY (NY-1750): main's real label trigger, replaced here. Don't merge.
+  it.skip('searches for and creates a label in the trigger picker', async () => {
     fakeAutomations([]);
     const spring = buildLabel({ name: 'Spring ebook' });
     const labels = fakeAdminEndpoint('GET', /^\/labels\/\?/, { labels: [] });
@@ -595,7 +597,8 @@ describe('New automation', () => {
     expect(labels.lastRequest?.url).toContain('filter=');
   });
 
-  it('fetches fresh labels on reopen and lets a deleted draft selection be replaced', async () => {
+  // PROTOTYPE ONLY (NY-1750): main's real label trigger, replaced here. Don't merge.
+  it.skip('fetches fresh labels on reopen and lets a deleted draft selection be replaced', async () => {
     fakeAutomations([]);
     const spring = buildLabel({ name: 'Spring ebook' });
     const fall = buildLabel({ name: 'Fall guide' });
