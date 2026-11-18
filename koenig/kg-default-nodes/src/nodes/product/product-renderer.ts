@@ -52,7 +52,7 @@ export function renderProductNode(node: ProductNodeData, options: ProductRenderO
     const dataset = node.getDataset();
 
     // A whole number of stars, as the rating images are named. There's no image for zero stars.
-    const starRating = Math.min(5, Math.max(0, Math.round(Number(dataset.productStarRating) || 0)));
+    const starRating = Math.min(5, Math.max(0, Math.floor(Number(dataset.productStarRating) || 0)));
     let ratingImage = '';
     if (starRating > 0) {
         ratingImage = options.design?.backgroundIsDark

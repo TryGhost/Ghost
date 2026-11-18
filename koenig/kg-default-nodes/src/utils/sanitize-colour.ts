@@ -1,6 +1,6 @@
 // The formats card colour settings hold: hex values, keywords such as `accent`
-// or `transparent`, and rgb() or hsl() functions.
-const COLOUR_PATTERN = /^(?:#[\da-f]{3,8}|[a-z][a-z\d-]*|(?:rgb|hsl)a?\([\d\s.,%/+-]+\))$/i;
+// or `transparent`, and colour functions such as rgb(), hsl() or oklch().
+const COLOUR_PATTERN = /^(?:#[\da-f]{3,8}|[a-z][a-z\d-]*|(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([\w\s.,%/+-]+\))$/i;
 
 /**
  * Returns the colour if it's in a format a card setting can hold, and the

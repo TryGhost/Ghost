@@ -109,14 +109,14 @@ describe('renderers/product-renderer', function () {
             assert.equal(link?.getAttribute('href'), badUrl);
         });
 
-        it('rounds the star rating to a whole number of stars', function () {
+        it('rounds the star rating down to a whole number of stars', function () {
             const activeStars = (rating: unknown) => {
                 const document = createDocument(renderForWeb(getTestData({productStarRating: rating})).html);
                 assert.equal(document.querySelectorAll('.kg-product-card-rating-star').length, 5);
                 return document.querySelectorAll('.kg-product-card-rating-active').length;
             };
 
-            assert.equal(activeStars(3.6), 4);
+            assert.equal(activeStars(3.6), 3);
             assert.equal(activeStars(9), 5);
             assert.equal(activeStars('4" x="'), 0);
         });
@@ -299,7 +299,7 @@ describe('renderers/product-renderer', function () {
                 return image?.getAttribute('src');
             };
 
-            assert.equal(ratingImage(3.6), 'https://static.ghost.org/v4.0.0/images/star-rating-4.png');
+            assert.equal(ratingImage(3.6), 'https://static.ghost.org/v4.0.0/images/star-rating-3.png');
             assert.equal(ratingImage(9), 'https://static.ghost.org/v4.0.0/images/star-rating-5.png');
         });
 
