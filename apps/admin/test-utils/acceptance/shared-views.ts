@@ -15,8 +15,8 @@ import { registerAdminApiHandler, registerRoute } from './worker';
  *
  * A test starts with the `shared_views` value of its `browseSettings` boot response, or `[]`.
  * A `browseSettings` response given as a function isn't read, so its views reach `/settings/` but
- * not `/segments/`. Each write through either API replaces the value for the rest of the test, and
- * `GET /settings/` then serves the replacement.
+ * not `/segments/`. Each write through either API (`fakeEditSettings`, `fakeSegmentWrites`)
+ * replaces the value for the rest of the test, and `GET /settings/` then serves the replacement.
  */
 
 let declared: string | undefined;
@@ -219,3 +219,278 @@ export const segmentsApiServers: ReadonlyArray<{ server: string; boot: BootOverr
   { server: 'with the segments API', boot: {} },
   { server: 'without the segments API', boot: withoutSegmentsApi },
 ];
+
+/** Replaces the stored views as another session would, without Admin's caches knowing. */
+export function replaceSavedViewsElsewhere(...views: StoredView[]): void {
+  writeSharedViews(JSON.stringify(views));
+}
+
+type SegmentAction = 'save' | 'edit' | 'delete';
+
+/** The fields every Ghost error body carries, around a refusal's own. */
+function ghostError(fields: {
+  type: string;
+  message: string;
+  context: string;
+  code: string | null;
+  property: string | null;
+  details: unknown[] | null;
+}) {
+  return { ghostErrorCode: null, help: null, id: crypto.randomUUID(), ...fields };
+}
+
+/**
+ * Ghost's body for a segments write its service refuses: a generic summary in `message`, the
+ * reason in `context`, no code, and no `details`. An unknown id is a 404; anything else is a 422
+ * validation error.
+ */
+function segmentsRefusal(
+  action: SegmentAction,
+  refusal: 'not-found' | 'invalid',
+  context: string,
+  property: string | null = null,
+): Response {
+  const notFound = refusal === 'not-found';
+  const summary = notFound ? 'Resource not found error' : 'Validation error';
+  return HttpResponse.json(
+    {
+      errors: [
+        ghostError({
+          type: notFound ? 'NotFoundError' : 'ValidationError',
+          message: `${summary}, cannot ${action} segment.`,
+          context,
+          code: null,
+          property,
+          details: null,
+        }),
+      ],
+    },
+    { status: notFound ? 404 : 422 },
+  );
+}
+
+/** A problem with a write body, as a Zod issue in an error's `details`. */
+export interface SegmentBodyIssue {
+  code: string;
+  message: string;
+  path: Array<string | number>;
+  keys?: string[];
+}
+
+/**
+ * Ghost's body for a segments write the API framework refuses before the service runs, because
+ * the request body has the wrong shape: a validation error with no code, the generic context
+ * "Validation failed for body.", and the issue in `details`.
+ */
+export function segmentsBodyError(action: 'save' | 'edit', issue: SegmentBodyIssue) {
+  return {
+    errors: [
+      ghostError({
+        type: 'ValidationError',
+        message: `Validation error, cannot ${action} segment.`,
+        context: 'Validation failed for body.',
+        code: null,
+        property: issue.path.join('.'),
+        details: [issue],
+      }),
+    ],
+  };
+}
+
+const MAX_NAME_LENGTH = 191;
+const SAVED_VIEWS_INVALID = 'Cannot modify saved views because shared_views is invalid';
+
+/**
+ * The segment a write body sends, read as strictly as Ghost reads it: `name` is trimmed, a
+ * read-only `id` is ignored, and any other field is refused. Returns the refusing `Response`
+ * when the body isn't one Ghost accepts.
+ */
+function readSegmentInput(
+  body: unknown,
+  action: 'save' | 'edit',
+): { name: string; filter?: string } | Response {
+  const refuse = (issue: SegmentBodyIssue) =>
+    HttpResponse.json(segmentsBodyError(action, issue), { status: 422 });
+  const segments: unknown[] = isRecord(body) && Array.isArray(body.segments) ? body.segments : [];
+  const segment = segments[0];
+  const at = (field?: string) => ['body', 'segments', 0, ...(field ? [field] : [])];
+
+  if (!isRecord(segment)) {
+    return refuse({ code: 'invalid_type', message: 'Invalid input', path: ['body', 'segments'] });
+  }
+  const unknownKeys = Object.keys(segment).filter((key) => !['id', 'name', 'filter'].includes(key));
+  if (unknownKeys.length > 0) {
+    return refuse({
+      code: 'unrecognized_keys',
+      keys: unknownKeys,
+      message: `Unrecognized key: ${unknownKeys.map((key) => `"${key}"`).join(', ')}`,
+      path: at(),
+    });
+  }
+  if (typeof segment.name !== 'string') {
+    return refuse({ code: 'invalid_type', message: 'Name must be a string', path: at('name') });
+  }
+  const filter = segment.filter;
+  if ((filter !== undefined || action === 'save') && typeof filter !== 'string') {
+    return refuse({ code: 'invalid_type', message: 'Filter must be a string', path: at('filter') });
+  }
+
+  const name = segment.name.trim();
+  if (name.length === 0) {
+    return refuse({ code: 'custom', message: 'Name cannot be empty', path: at('name') });
+  }
+  if ([...name].length > MAX_NAME_LENGTH) {
+    return refuse({
+      code: 'custom',
+      message: `Name cannot be longer than ${MAX_NAME_LENGTH} characters`,
+      path: at('name'),
+    });
+  }
+  if (filter === '') {
+    return refuse({ code: 'custom', message: 'Filter cannot be empty', path: at('filter') });
+  }
+  return { name, filter };
+}
+
+/**
+ * Whether a saved member view, other than the one at `exceptIndex`, has `name`. As in Ghost, a
+ * member view without a filter counts, although it isn't listed as a segment.
+ */
+function isNameTaken(views: unknown[], name: string, exceptIndex?: number): boolean {
+  const normalized = name.trim().toLowerCase();
+  return views.some(
+    (view, index) =>
+      index !== exceptIndex &&
+      isRecord(view) &&
+      view.route === 'members' &&
+      isRecord(view.filter) &&
+      typeof view.name === 'string' &&
+      view.name.trim().toLowerCase() === normalized,
+  );
+}
+
+async function addSegment(body: unknown): Promise<Response> {
+  const input = readSegmentInput(body, 'save');
+  if (input instanceof Response) {
+    return input;
+  }
+  const views = storedViews();
+  if (!views) {
+    return segmentsRefusal('save', 'invalid', SAVED_VIEWS_INVALID);
+  }
+  if (isNameTaken(views, input.name)) {
+    return segmentsRefusal('save', 'invalid', 'A view with this name already exists', 'name');
+  }
+  const filter = input.filter ?? '';
+  if (views.some((view) => isStoredMemberView(view) && view.filter.filter === filter)) {
+    return segmentsRefusal('save', 'invalid', 'A view with this filter already exists', 'filter');
+  }
+
+  writeSharedViews(
+    JSON.stringify([...views, { name: input.name, route: 'members', filter: { filter } }]),
+  );
+  const { segments } = await segmentsResponse();
+  return HttpResponse.json({ segments: segments.slice(-1) }, { status: 201 });
+}
+
+async function renameSegment(id: string, body: unknown): Promise<Response> {
+  const input = readSegmentInput(body, 'edit');
+  if (input instanceof Response) {
+    return input;
+  }
+  const views = storedViews();
+  if (!views) {
+    return segmentsRefusal('edit', 'invalid', SAVED_VIEWS_INVALID);
+  }
+  const target = (await listSegments(views)).find(({ segment }) => segment.id === id);
+  if (!target) {
+    return segmentsRefusal('edit', 'not-found', 'Segment not found.');
+  }
+  if (input.filter !== undefined && input.filter !== target.segment.filter) {
+    return segmentsRefusal('edit', 'invalid', "A segment's filter cannot be changed", 'filter');
+  }
+  if (isNameTaken(views, input.name, target.index)) {
+    return segmentsRefusal('edit', 'invalid', 'A view with this name already exists', 'name');
+  }
+
+  const renamed = { ...target.view, name: input.name };
+  writeSharedViews(
+    JSON.stringify(views.map((view, index) => (index === target.index ? renamed : view))),
+  );
+  return HttpResponse.json({ segments: [{ ...target.segment, name: input.name }] });
+}
+
+async function deleteSegment(id: string): Promise<Response> {
+  const views = storedViews();
+  if (!views) {
+    return segmentsRefusal('delete', 'invalid', SAVED_VIEWS_INVALID);
+  }
+  const target = (await listSegments(views)).find(({ segment }) => segment.id === id);
+  if (!target) {
+    return segmentsRefusal('delete', 'not-found', 'Segment not found.');
+  }
+
+  writeSharedViews(JSON.stringify(views.filter((_, index) => index !== target.index)));
+  return new HttpResponse(null, { status: 204 });
+}
+
+const SEGMENT_PATH = /^\/segments\/(?:([^/?]+)\/)?$/;
+
+export interface SegmentWrite {
+  method: string;
+  /** The request path relative to the admin API, e.g. `/segments/<id>/`. */
+  path: string;
+  body: unknown;
+}
+
+export interface SegmentWritesCapture {
+  /** Every segments write, oldest first. */
+  requests: SegmentWrite[];
+}
+
+export interface FakeSegmentWritesOptions {
+  /**
+   * Holds every write until this settles, for a spec that acts while a save is in flight. Each
+   * request is still captured as soon as it arrives.
+   */
+  respondAfter?: Promise<unknown>;
+}
+
+/**
+ * Handles `POST /segments/`, `PUT /segments/:id/` and `DELETE /segments/:id/` the way Ghost does:
+ * each changes the member views in the test's `shared_views` setting, and a write Ghost would
+ * refuse is answered with Ghost's error body. Captures every write.
+ */
+export function fakeSegmentWrites({
+  respondAfter,
+}: FakeSegmentWritesOptions = {}): SegmentWritesCapture {
+  const requests: SegmentWrite[] = [];
+
+  registerRoute('POST', '/segments/');
+  registerRoute('PUT', '/segments/:id/');
+  registerRoute('DELETE', '/segments/:id/');
+  registerAdminApiHandler(async (request, apiPath) => {
+    const match = SEGMENT_PATH.exec(apiPath);
+    if (!match || !['POST', 'PUT', 'DELETE'].includes(request.method)) {
+      return undefined;
+    }
+
+    const id = match[1] === undefined ? undefined : decodeURIComponent(match[1]);
+    const body: unknown = request.method === 'DELETE' ? undefined : await request.clone().json();
+    requests.push({ method: request.method, path: apiPath, body });
+    await respondAfter;
+
+    if (request.method === 'POST' && id === undefined) {
+      return addSegment(body);
+    }
+    if (request.method === 'PUT' && id !== undefined) {
+      return renameSegment(id, body);
+    }
+    if (request.method === 'DELETE' && id !== undefined) {
+      return deleteSegment(id);
+    }
+    return undefined;
+  });
+
+  return { requests };
+}
