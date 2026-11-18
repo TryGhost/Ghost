@@ -10,7 +10,9 @@ import {
   fakePostsListScreen,
   fakeTags,
   renderAdminApp,
+  segmentsApiServers,
   settingsResponse,
+  type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { sidebarScreen } from './sidebar.screen';
 
@@ -31,7 +33,7 @@ function submenu(id: 'posts' | 'members') {
   return menu;
 }
 
-async function renderSidebar(route: string) {
+async function renderSidebar(route: string, serverBoot: RenderAdminAppOptions['boot'] = {}) {
   const me = currentUserResponse();
   me.users[0].accessibility = JSON.stringify({
     whatsNew: { lastSeenDate: '2025-01-01T00:00:00.000Z' },
@@ -48,6 +50,7 @@ async function renderSidebar(route: string) {
   await renderAdminApp(route, {
     labs: { admin7Design: true },
     boot: {
+      ...serverBoot,
       browseMe: { response: me },
       browseSettings: {
         response: settingsResponse({
@@ -71,42 +74,49 @@ describe('Admin 7 sidebar submenu navigation and motion', () => {
     fakeAdminStats.mrr();
   });
 
-  it('opens the current section, closes the others, and follows history without saving expansion preferences', async () => {
-    const preferences = await renderSidebar('/posts');
-    await expect.poll(() => submenu('posts').inert).toBe(false);
-    expect(submenu('members').inert).toBe(true);
-    await expect(sidebarScreen.postsToggle()).toHaveCount(0);
-    await expect(
-      sidebarScreen.shellNav().getByRole('button', { name: 'Toggle member views' }),
-    ).toHaveCount(0);
+  it.each(segmentsApiServers)(
+    'opens the current section, closes the others, and follows history without saving expansion preferences ($server)',
+    async ({ boot }) => {
+      const preferences = await renderSidebar('/posts', boot);
+      await expect.poll(() => submenu('posts').inert).toBe(false);
+      expect(submenu('members').inert).toBe(true);
+      await expect(sidebarScreen.postsToggle()).toHaveCount(0);
+      await expect(
+        sidebarScreen.shellNav().getByRole('button', { name: 'Toggle member views' }),
+      ).toHaveCount(0);
 
-    navigateTo('Members');
-    await expect.poll(currentRoute).toBe('/members');
-    await expect.poll(() => submenu('members').inert).toBe(false);
-    expect(submenu('posts').inert).toBe(true);
+      navigateTo('Members');
+      await expect.poll(currentRoute).toBe('/members');
+      await expect.poll(() => submenu('members').inert).toBe(false);
+      expect(submenu('posts').inert).toBe(true);
 
-    navigateTo('Tags');
-    await expect.poll(() => submenu('members').inert).toBe(true);
-    expect(submenu('posts').inert).toBe(true);
+      navigateTo('Tags');
+      await expect.poll(() => submenu('members').inert).toBe(true);
+      expect(submenu('posts').inert).toBe(true);
 
-    window.history.back();
-    await expect.poll(() => submenu('members').inert).toBe(false);
-    expect(submenu('posts').inert).toBe(true);
-    expect(preferences.requests).toHaveLength(0);
-  });
-
-  it.each([
-    { route: '/posts?type=scheduled', section: 'posts', parent: 'Posts', child: 'Scheduled' },
-    {
-      route: '/members?filter=label%3A%5BVIP%5D',
-      section: 'members',
-      parent: 'Members',
-      child: 'VIPs',
+      window.history.back();
+      await expect.poll(() => submenu('members').inert).toBe(false);
+      expect(submenu('posts').inert).toBe(true);
+      expect(preferences.requests).toHaveLength(0);
     },
-  ] as const)(
-    'opens $parent on a direct filtered route and keeps the matching child selected',
-    async ({ route, section, parent, child }) => {
-      await renderSidebar(route);
+  );
+
+  it.each(
+    (
+      [
+        { route: '/posts?type=scheduled', section: 'posts', parent: 'Posts', child: 'Scheduled' },
+        {
+          route: '/members?filter=label%3A%5BVIP%5D',
+          section: 'members',
+          parent: 'Members',
+          child: 'VIPs',
+        },
+      ] as const
+    ).flatMap((target) => segmentsApiServers.map((server) => ({ ...target, ...server }))),
+  )(
+    'opens $parent on a direct filtered route and keeps the matching child selected ($server)',
+    async ({ route, section, parent, child, boot }) => {
+      await renderSidebar(route, boot);
       await expect.poll(() => submenu(section).inert).toBe(false);
       await expect.element(sidebarScreen.navLink(child)).toHaveAttribute('aria-current', 'page');
       await expect.element(sidebarScreen.navLink(parent)).not.toHaveAttribute('aria-current');
