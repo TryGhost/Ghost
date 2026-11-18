@@ -3,7 +3,7 @@ TOKEN "axis" READ
 NODE sessions_matching_hit_filters
 DESCRIPTION >
     Get sessions where at least one hit matches the hit-level filter criteria.
-    Hit-level filters (pathname, post_uuid, member_status, location) can vary across pageviews within a session.
+    Hit-level filters (pathname, post_uuid, member_status, location, gift_link) can vary across pageviews within a session.
     A session qualifies if ANY of its hits match the specified criteria.
 
 SQL >
