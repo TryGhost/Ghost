@@ -74,7 +74,11 @@ describe('Automation run history from the execution', function () {
       domainEvents: { dispatch: () => {} },
     });
     pollOptions = {
-      automationsApi: { ...repository, recordEmailSent: automationsApi2.recordEmailSent },
+      automationsApi: {
+        ...repository,
+        markStepTerminal: automationsApi2.markStepTerminal,
+        recordEmailSent: automationsApi2.recordEmailSent,
+      },
       enqueueAnotherPollAt: sinon.stub(),
       scheduleAutomationEmailAnalyticsJob: sinon.stub().resolves(),
       memberWelcomeEmailService: {
