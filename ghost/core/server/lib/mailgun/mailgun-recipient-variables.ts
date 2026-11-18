@@ -1,5 +1,6 @@
 /**
- * Turns Ghost's `%%{id}%%` replacement tokens into Mailgun `recipient-variables`.
+ * @module
+ * Helpers to turn Ghost's `%%{id}%%` replacement tokens into Mailgun `recipient-variables`.
  *
  * Mailgun's substitution is a plain string replace with no HTML awareness, and every part of the
  * message reads the same variables. Values a member controls therefore get a second, HTML-escaped
@@ -7,6 +8,7 @@
  * the unescaped value. Trusted server-generated values (urls, uuids, hmacs) get no escaped copy, so
  * their URLs don't end up entity-encoded inside hrefs.
  */
+
 import { escapeExpression } from 'handlebars';
 import type { ReadonlyDeep } from 'type-fest';
 
@@ -30,7 +32,7 @@ export function getHtmlEscapedIds(
   return new Set(replacementDefinitions.filter((def) => !def.trusted).map((def) => def.id));
 }
 
-/** One recipient's variables; pass `htmlEscapedIds` from `getHtmlEscapedIds` */
+/** One recipient's variables; pass result from `getHtmlEscapedIds` */
 export function createRecipientVariables(
   replacements: ReadonlyDeep<Replacement[]>,
   htmlEscapedIds: Readonly<Set<string>>,
