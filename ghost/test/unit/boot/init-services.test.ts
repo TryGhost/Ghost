@@ -44,6 +44,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     service: {},
   };
   const scheduler = { run() {}, rescheduleOnBoot };
+  const schedulerWithErrorsCaptured = { ...scheduler };
   // Permissive: initServices has many dependencies, and only those listed here matter to these
   // tests. Every other dependency gets a generic service.
   const initServices = loadBootFunction(
@@ -51,7 +52,12 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     {
       'node:assert/strict': assert,
       './server/services/adapter-manager': { default: { getAdapter: () => scheduler } },
-      './server/adapters/scheduling/error-capture': { withErrorCapture: (value: unknown) => value },
+      './server/adapters/scheduling/error-capture': {
+        withErrorCapture: (adapter: unknown) => {
+          assert.equal(adapter, scheduler, 'Only scheduler is supported by this test');
+          return schedulerWithErrorsCaptured;
+        },
+      },
       './shared/url-utils': { default: { urlFor: () => 'https://example.com/ghost/api/admin' } },
       './shared/settings-cache': { get: () => 'site-id' },
       './server/services/stripe': { init: stripe },
@@ -117,6 +123,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     signingKeys,
     start,
     automations,
+    scheduler,
+    schedulerWithErrorsCaptured,
     reschedule,
   };
 }
@@ -150,6 +158,14 @@ it('initializes dependencies and starts jobs before calling automations init', a
   }
   sinon.assert.callOrder(boot.register, boot.start, boot.automations, boot.reschedule);
   sinon.assert.calledOnce(boot.automations);
+});
+
+it('lets automations observe scheduler failures while gifts use the error-capturing adapter', async function () {
+  const boot = createServicesHarness();
+  await boot.initServices();
+
+  assert.equal(boot.automations.firstCall.args[0].schedulerAdapter, boot.scheduler);
+  assert.equal(boot.gifts.firstCall.args[0].schedulerAdapter, boot.schedulerWithErrorsCaptured);
 });
 
 it('passes the eager email suppression list to email analytics before calling its init', async function () {

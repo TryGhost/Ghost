@@ -430,12 +430,12 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   // Initialize things that other services depend on first.
   emailAddressService.init();
   const apiUrl = urlUtils.urlFor('api', { type: 'admin' }, true);
-  const schedulerAdapter = withErrorCapture(adapterManager.getAdapter('scheduling'));
+  const schedulerAdapter = adapterManager.getAdapter('scheduling');
   schedulerAdapter.run();
   await stripe.init();
   giftService.init({
     apiUrl,
-    schedulerAdapter,
+    schedulerAdapter: withErrorCapture(schedulerAdapter),
     internalKeys,
     checkouts,
   });
