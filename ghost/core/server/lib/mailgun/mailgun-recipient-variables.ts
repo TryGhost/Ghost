@@ -53,8 +53,9 @@ export function replaceTokensWithRecipientVariables(
   replacementDefinitions: ReadonlyDeep<ReplacementDefinition[]>,
   format: MessageFormat,
 ): string {
+  const isHtml = format === 'html';
   for (const def of replacementDefinitions) {
-    const useHtmlVariant = format === 'html' && !def.trusted;
+    const useHtmlVariant = isHtml && !def.trusted;
     content = content.replace(def.token, `%recipient.${def.id}${useHtmlVariant ? '_html' : ''}%`);
   }
   return content;
