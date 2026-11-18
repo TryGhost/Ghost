@@ -17,6 +17,28 @@ const content =
   'Hi %%{name}%% / %%{first_name, "friend"}%% <a href="%%{unsubscribe_url}%%?u=%%{uuid}%%">x</a> %%{name}%%';
 
 describe('Mailgun recipient variables', function () {
+  describe('getHtmlEscapedIds', function () {
+    it('returns ids of untrusted definitions, including those with no trust flag', function () {
+      assert.deepEqual(
+        getHtmlEscapedIds([
+          { id: 'implicit', token: /implicit/ },
+          { id: 'explicit', token: /explicit/, trusted: false },
+          { id: 'trusted', token: /trusted/, trusted: true },
+          { id: 'implicit', token: /another/ },
+        ]),
+        new Set(['implicit', 'explicit']),
+      );
+    });
+
+    it('returns an empty set when no definitions need escaping', function () {
+      assert.deepEqual(getHtmlEscapedIds([]), new Set());
+      assert.deepEqual(
+        getHtmlEscapedIds([{ id: 'trusted', token: /trusted/, trusted: true }]),
+        new Set(),
+      );
+    });
+  });
+
   describe('replaceTokensWithRecipientVariables', function () {
     it('points the html body at the escaped copy of values that are not trusted', function () {
       assert.equal(
