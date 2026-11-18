@@ -1,3 +1,6 @@
+import assert from 'node:assert/strict';
+import { setImmediate } from 'node:timers/promises';
+
 import {
   ARGUMENT_MESSAGES,
   CONNECT_MESSAGE_TYPE,
@@ -412,6 +415,34 @@ describe('path', () => {
     await settle();
 
     expect(ghost.path.current).toBe('/episodes/13');
+  });
+
+  it('keeps Admin’s newer path when an earlier page move is acknowledged', async () => {
+    const host = hostExports();
+    let reportMove!: () => void;
+    let answerMove!: (path: string) => void;
+    const reported = new Promise<void>((resolve) => {
+      reportMove = resolve;
+    });
+    const answer = new Promise<string>((resolve) => {
+      answerMove = resolve;
+    });
+    host.pathChanged.mockImplementationOnce(() => {
+      reportMove();
+      return answer;
+    });
+    const { admin: fake, ghost } = await started(host);
+
+    window.history.pushState(null, '', '/episodes/12');
+    await reported;
+    await fake.thread.imports.pathChanged('/episodes/13');
+    answerMove('/episodes/12');
+    // Let the held handler finish, then cross the same port after its response was sent.
+    await setImmediate();
+    await fake.thread.imports.themeChanged({ mode: 'light', accent_color: '#ff5500' });
+
+    assert.equal(ghost.path.current, '/episodes/13');
+    assert.equal(window.location.pathname, '/episodes/13');
   });
 
   it('stays where the page is when Admin refuses the move, or answers with something else', async () => {
