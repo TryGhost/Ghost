@@ -130,6 +130,112 @@ describe('the page’s history, once Admin owns it', () => {
     await vi.waitFor(() => expect(load).toHaveBeenCalledWith('http://localhost:3000/episodes/12'));
   });
 
+  describe.each([
+    'Admin',
+    'Admin returning to the link route',
+    'pushState',
+    'replaceState',
+    'pushState to the link route',
+    'replaceState to the link route',
+    'another link',
+    'stop',
+    'nothing',
+  ] as const)('a link completed after %s', (schedule) => {
+    it.each(['accepted', 'refused'] as const)(
+      'loads only the current link when its report is %s',
+      async (answer) => {
+        let accept!: () => void;
+        let refuse!: (error: Error) => void;
+        const pending = new Promise<void>((resolve, reject) => {
+          accept = resolve;
+          refuse = reject;
+        });
+        moved.mockReturnValueOnce(pending);
+        click({ href: '/a' });
+        expect(load).not.toHaveBeenCalled();
+
+        if (schedule === 'Admin' || schedule === 'Admin returning to the link route') {
+          watch?.follow('/c#top');
+          if (schedule === 'Admin returning to the link route') {
+            watch?.follow('/a');
+          }
+        } else if (schedule === 'pushState' || schedule === 'replaceState') {
+          window.history[schedule](null, '', '/b');
+          window.history[schedule](null, '', '/a');
+        } else if (schedule === 'pushState to the link route') {
+          window.history.pushState(null, '', '/a');
+        } else if (schedule === 'replaceState to the link route') {
+          window.history.replaceState(null, '', '/a');
+        } else if (schedule === 'another link') {
+          click({ href: '/b' });
+          click({ href: '/a' });
+          // The newer links have settled before the old link answers.
+          await Promise.resolve();
+          expect(load.mock.calls).toEqual([['http://localhost:3000/a']]);
+        } else if (schedule === 'stop') {
+          watch?.stop();
+        }
+
+        if (answer === 'accepted') {
+          accept();
+        } else {
+          refuse(new Error('The move was refused'));
+        }
+        // The link's completion handler was registered first, so it has run by this point.
+        await pending.catch(() => {});
+
+        expect(load.mock.calls).toEqual(
+          schedule === 'nothing' || schedule === 'another link'
+            ? [['http://localhost:3000/a']]
+            : [],
+        );
+      },
+    );
+  });
+
+  it.each(['accepted', 'refused'] as const)(
+    'does not load an older %s link while the newest report is still pending',
+    async (answer) => {
+      let acceptOld!: () => void;
+      let refuseOld!: (error: Error) => void;
+      let acceptMiddle!: () => void;
+      let acceptLatest!: () => void;
+      const old = new Promise<void>((resolve, reject) => {
+        acceptOld = resolve;
+        refuseOld = reject;
+      });
+      const middle = new Promise<void>((resolve) => {
+        acceptMiddle = resolve;
+      });
+      const latest = new Promise<void>((resolve) => {
+        acceptLatest = resolve;
+      });
+      moved.mockReturnValueOnce(old).mockReturnValueOnce(middle).mockReturnValueOnce(latest);
+
+      click({ href: '/a' });
+      click({ href: '/b' });
+      click({ href: '/a' });
+      await Promise.resolve();
+      expect(load).not.toHaveBeenCalled();
+
+      if (answer === 'accepted') {
+        acceptOld();
+      } else {
+        refuseOld(new Error('The move was refused'));
+      }
+      await old.catch(() => {});
+      expect(load).not.toHaveBeenCalled();
+
+      acceptLatest();
+      await latest;
+      expect(load.mock.calls).toEqual([['http://localhost:3000/a']]);
+
+      acceptMiddle();
+      await middle;
+      expect(load.mock.calls).toEqual([['http://localhost:3000/a']]);
+    },
+  );
+
   it('finds a link inside a shadow root, and an SVG link', async () => {
     const SVG = 'http://www.w3.org/2000/svg';
     const host = document.createElement('div');
@@ -153,6 +259,7 @@ describe('the page’s history, once Admin owns it', () => {
         button: 0,
       });
       expect(label.dispatchEvent(event)).toBe(false);
+      await vi.waitFor(() => expect(load).toHaveBeenCalledTimes(moved.mock.calls.length));
     }
 
     expect(moved.mock.calls).toEqual([
