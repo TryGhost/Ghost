@@ -372,6 +372,10 @@ module.exports = {
     return apiFramework.pipeline(require('./gifts'), localUtils);
   },
 
+  get segments() {
+    return apiFramework.pipeline(require('./segments'), localUtils);
+  },
+
   get recommendationsPublic() {
     return apiFramework.pipeline(require('./recommendations-public'), localUtils, 'content');
   },
