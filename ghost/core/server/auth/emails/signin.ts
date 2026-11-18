@@ -1,4 +1,24 @@
-module.exports = ({
+export type DeviceDetails = {
+  device: string;
+  location: string;
+  time: string;
+};
+
+export type SignInEmailData = {
+  t: (key: string, options?: Record<string, unknown>) => string;
+  siteTitle: string;
+  email: string;
+  siteDomain: string | undefined;
+  siteUrl: string;
+  siteLogo: string;
+  token: string;
+  deviceDetails: DeviceDetails;
+  /** `require_email_mfa`, which drops the "new device" sentence */
+  is2FARequired: boolean;
+};
+
+/** The staff sign-in verification email, shared by both auth engines */
+export default function signInEmail({
   t,
   siteTitle,
   email,
@@ -8,7 +28,8 @@ module.exports = ({
   token,
   deviceDetails,
   is2FARequired,
-}) => `
+}: SignInEmailData): string {
+  return `
 <!doctype html>
 <html>
   <head>
@@ -176,3 +197,4 @@ module.exports = ({
   </body>
 </html>
 `;
+}

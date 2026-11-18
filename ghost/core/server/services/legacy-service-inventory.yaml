@@ -4160,7 +4160,6 @@ services:
           - core/server/services/members/single-use-token-provider.js
           - core/server/services/members/members-api/repositories/member-repository.js
           - core/server/lib/after-commit.ts
-          - core/server/services/members/members-api/services/geolocation-service.js
           - core/server/services/members/import-export/import/importer.ts
           - core/server/services/members/import-export/import/spool.ts
           - core/server/services/members/import-export/csv/parse.ts
