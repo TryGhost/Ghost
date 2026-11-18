@@ -12,6 +12,8 @@ import { StartAutomationsPollEvent } from '../../../../../core/server/services/a
 import * as automationsApi from '../../../../../core/server/services/automations/automations-api';
 import { LabelAddedToMembersEvent } from '../../../../../core/shared/events/label-added-to-members-event';
 import { AutomationsService } from '../../../../../core/server/services/automations/service';
+import { MAX_CACHED_SCHEDULER_POLL_TIMES } from '../../../../../core/server/services/automations/constants';
+import { getSchedulerPollTime } from '../../../../../core/server/services/automations/scheduler-poll-time';
 
 vi.mock(
   '../../../../../core/server/services/automations/automations-api',
@@ -253,19 +255,162 @@ describe('automations service', function () {
       );
     });
 
-    it('uses the same idempotency key when requesting the same time', async function () {
+    it('de-duplicates successful scheduler calls for the same slot', async function () {
+      sinon.useFakeTimers({ now: new Date('2026-01-01') });
+      assert(typeof initOptions.siteUuid === 'string');
+      const slot = getSchedulerPollTime(new Date(Date.now() + 60_000), initOptions.siteUuid);
+
+      await automations.__testOnlyEnqueuePollAt(slot);
+      await automations.__testOnlyEnqueuePollAt(new Date(slot.getTime() - 1));
+
+      sinon.assert.calledOnce(schedulerAdapter.schedule);
+    });
+
+    it("doesn't de-duplicate scheduler calls for different slots", async function () {
+      sinon.useFakeTimers({ now: new Date('2026-01-01') });
+      const first = Date.now() + 60_000;
+
+      await automations.__testOnlyEnqueuePollAt(new Date(first));
+      await automations.__testOnlyEnqueuePollAt(new Date(first + 15 * 60 * 1000));
+
+      sinon.assert.calledTwice(schedulerAdapter.schedule);
+    });
+
+    it('schedules an in-memory poll even when it skips the scheduler call', async function () {
+      const clock = sinon.useFakeTimers({ now: new Date('2026-01-01') });
+      assert(typeof initOptions.siteUuid === 'string');
+      const slot = getSchedulerPollTime(new Date(Date.now() + 60_000), initOptions.siteUuid);
+      const earlier = new Date(slot.getTime() - 1);
+
+      await automations.__testOnlyEnqueuePollAt(earlier);
+      await clock.tickAsync(earlier.getTime() - Date.now());
+      domainEvents.dispatch.resetHistory();
+      schedulerAdapter.schedule.resetHistory();
+
+      await automations.__testOnlyEnqueuePollAt(slot);
+      sinon.assert.notCalled(schedulerAdapter.schedule);
+      sinon.assert.notCalled(domainEvents.dispatch);
+
+      await clock.tickAsync(slot.getTime() - Date.now());
+      sinon.assert.calledOnceWithExactly(
+        domainEvents.dispatch,
+        sinon.match.instanceOf(StartAutomationsPollEvent),
+      );
+    });
+
+    it("doesn't de-duplicate failed scheduler calls", async function () {
+      sinon.useFakeTimers({ now: new Date('2026-01-01') });
+      const future = new Date(Date.now() + 10_000);
+      schedulerAdapter.schedule.onFirstCall().rejects(new Error('Scheduler unavailable'));
+
+      await automations.__testOnlyEnqueuePollAt(future);
+      await automations.__testOnlyEnqueuePollAt(future);
+
+      sinon.assert.calledTwice(schedulerAdapter.schedule);
+      assert.equal(
+        schedulerAdapter.schedule.firstCall.args[0].extra.idempotencyKey,
+        schedulerAdapter.schedule.secondCall.args[0].extra.idempotencyKey,
+      );
+    });
+
+    it("doesn't de-duplicate pending scheduler calls", async function () {
+      sinon.useFakeTimers({
+        now: new Date('2026-01-01'),
+        toFake: ['Date', 'setTimeout', 'clearTimeout'],
+      });
+      const future = new Date(Date.now() + 10_000);
+      const first = Promise.withResolvers<void>();
+      schedulerAdapter.schedule.onFirstCall().returns(first.promise);
+
+      const pending = automations.__testOnlyEnqueuePollAt(future);
+      await flushEventLoop();
+      sinon.assert.calledOnce(schedulerAdapter.schedule);
+      await automations.__testOnlyEnqueuePollAt(future);
+      sinon.assert.calledTwice(schedulerAdapter.schedule);
+
+      first.resolve();
+      await pending;
+    });
+
+    it('contacts the scheduler again for the first poll time after scheduling too many distinct times', async function () {
+      sinon.useFakeTimers({ now: new Date('2026-01-01') });
+      const interval = 15 * 60 * 1000;
+      const first = new Date(Date.now() + interval);
+      const second = new Date(first.getTime() + interval);
+
+      for (let i = 0; i <= MAX_CACHED_SCHEDULER_POLL_TIMES; i++) {
+        await automations.__testOnlyEnqueuePollAt(new Date(first.getTime() + i * interval));
+      }
+      assert.equal(schedulerAdapter.schedule.callCount, MAX_CACHED_SCHEDULER_POLL_TIMES + 1);
+
+      schedulerAdapter.schedule.resetHistory();
+      await automations.__testOnlyEnqueuePollAt(second);
+      sinon.assert.notCalled(schedulerAdapter.schedule);
+      await automations.__testOnlyEnqueuePollAt(first);
+      sinon.assert.calledOnce(schedulerAdapter.schedule);
+    });
+
+    it('still skips duplicate scheduler calls when older slots expire', async function () {
+      const clock = sinon.useFakeTimers({ now: new Date('2026-01-01') });
+      const interval = 15 * 60 * 1000;
+      const distant = new Date(Date.now() + (MAX_CACHED_SCHEDULER_POLL_TIMES + 2) * interval);
+      await automations.__testOnlyEnqueuePollAt(distant);
+
+      for (let i = 1; i < MAX_CACHED_SCHEDULER_POLL_TIMES; i++) {
+        await automations.__testOnlyEnqueuePollAt(new Date(Date.now() + i * interval));
+      }
+      clock.setSystemTime(distant.getTime() - interval);
+      await automations.__testOnlyEnqueuePollAt(new Date(distant.getTime() + interval));
+
+      schedulerAdapter.schedule.resetHistory();
+      await automations.__testOnlyEnqueuePollAt(distant);
+      sinon.assert.notCalled(schedulerAdapter.schedule);
+    });
+
+    it('contacts the scheduler again for the same time after rescheduling', async function () {
+      sinon.useFakeTimers({
+        now: new Date('2026-01-01'),
+        toFake: ['Date', 'setTimeout', 'clearTimeout'],
+      });
       const future = new Date(Date.now() + 10_000);
 
       await automations.__testOnlyEnqueuePollAt(future);
-      await automations.__testOnlyEnqueuePollAt(future);
+      await automations.rescheduleAll();
       await automations.__testOnlyEnqueuePollAt(future);
 
-      sinon.assert.calledThrice(schedulerAdapter.schedule);
+      sinon.assert.calledTwice(schedulerAdapter.schedule);
+    });
 
-      const idempotencyKeys = schedulerAdapter.schedule
-        .getCalls()
-        .map((call) => call.args[0].extra.idempotencyKey);
-      assert.equal(new Set(idempotencyKeys).size, 1);
+    it('discards the result of a scheduler call if the key rotates before it completes', async function () {
+      sinon.useFakeTimers({
+        now: new Date('2026-01-01'),
+        toFake: ['Date', 'setTimeout', 'clearTimeout'],
+      });
+      const future = new Date(Date.now() + 10_000);
+      const previous = Promise.withResolvers<void>();
+      schedulerAdapter.schedule.onFirstCall().returns(previous.promise);
+
+      const pending = automations.__testOnlyEnqueuePollAt(future);
+      await flushEventLoop();
+      sinon.assert.calledOnce(schedulerAdapter.schedule);
+      initOptions.internalKeys.set(
+        'ghost-scheduler',
+        Promise.resolve({ id: 'k2', secret: 'bbbb' }),
+      );
+      await automations.rescheduleAll();
+      previous.resolve();
+      await pending;
+
+      await automations.__testOnlyEnqueuePollAt(future);
+      sinon.assert.calledTwice(schedulerAdapter.schedule);
+      assert.equal(
+        schedulerAdapter.schedule.firstCall.args[0].time,
+        schedulerAdapter.schedule.secondCall.args[0].time,
+      );
+      assert.notEqual(
+        schedulerAdapter.schedule.firstCall.args[0].extra.idempotencyKey,
+        schedulerAdapter.schedule.secondCall.args[0].extra.idempotencyKey,
+      );
     });
   });
 

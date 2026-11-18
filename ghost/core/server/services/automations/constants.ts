@@ -1,5 +1,6 @@
 export const LOCK_TIMEOUT_MS = 30 * 60 * 1000;
 export const MAX_AUTOMATIONS = 50;
 export const MAX_ATTEMPTS = 10;
+export const MAX_CACHED_SCHEDULER_POLL_TIMES = 100;
 export const MAX_STEPS_PER_BATCH = 100;
 export const RETRY_DELAY_MS = 10 * 60 * 1000;
