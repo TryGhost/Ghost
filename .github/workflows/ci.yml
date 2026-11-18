@@ -2400,6 +2400,23 @@ jobs:
             analytics: 'true'
             shardIndex: 1
             shardTotal: 1
+          # The staff auth flows under auth:engine=better-auth, until the legacy
+          # engine goes (docs/plans/better-auth-migration.md §7)
+          - projectName: Better Auth
+            projects: main
+            analytics: 'false'
+            authEngine: better-auth
+            testFiles: >-
+              tests/admin/signin.test.ts
+              tests/admin/two-factor-auth.test.ts
+              tests/admin/reset-password.test.ts
+              tests/admin/staff-role-smoke.test.ts
+              tests/admin/onboarding.test.ts
+              tests/admin/settings/danger-zone.test.ts
+              tests/admin/settings/staff.test.ts
+              tests/admin/settings/staff-invites.test.ts
+            shardIndex: 1
+            shardTotal: 1
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -2469,7 +2486,7 @@ jobs:
       # Splits the main project by recorded file duration rather than test count;
       # falls back to an estimate from test counts until main has recorded timings.
       - name: Plan shard test files
-        if: matrix.projects == 'main'
+        if: matrix.projects == 'main' && !matrix.testFiles
         working-directory: e2e
         env:
           E2E_TIMINGS: ${{ needs.job_setup.outputs.e2e_timings }}
@@ -2506,6 +2523,8 @@ jobs:
           E2E_SHARD_INDEX: ${{ matrix.shardIndex }}
           E2E_SHARD_TOTAL: ${{ matrix.shardTotal }}
           E2E_RETRIES: 2
+          E2E_TEST_FILES: ${{ matrix.testFiles }}
+          GHOST_E2E_AUTH_ENGINE: ${{ matrix.authEngine }}
         run: bash ./e2e/scripts/run-playwright-container.sh
 
       - name: Dump E2E docker logs
@@ -2529,7 +2548,7 @@ jobs:
           retention-days: 7
 
       - name: Upload JSON report for shard timings
-        if: success() && matrix.projects == 'main' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: success() && matrix.projects == 'main' && !matrix.testFiles && github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: e2e-json-report-main-${{ matrix.shardIndex }}
