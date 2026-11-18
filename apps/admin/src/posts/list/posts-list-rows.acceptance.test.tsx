@@ -120,28 +120,25 @@ describe('Posts list rows', () => {
       .toHaveAttribute('href', `#/editor/post/${target.id}`);
   });
 
-  it.each([false, true])(
-    'gates expanded post hit areas with admin7Design %s',
-    async (admin7Design) => {
-      const target = post({ title: 'Expanded target', status: 'draft' });
-      fakePosts([target]);
-      await renderAdminApp('/posts', { labs: { admin7Design } });
+  it.each([false, true])('expands post hit areas with admin7Design %s', async (admin7Design) => {
+    const target = post({ title: 'Expanded target', status: 'draft' });
+    fakePosts([target]);
+    await renderAdminApp('/posts', { labs: { admin7Design } });
 
-      const row = postsListScreen.listItems().first();
-      const link = postsListScreen.rowLink().first();
-      await expect.element(link).toBeVisible();
+    const row = postsListScreen.listItems().first();
+    const link = postsListScreen.rowLink().first();
+    await expect.element(link).toBeVisible();
 
-      await expect
-        .poll(() => {
-          const bounds = row.element().getBoundingClientRect();
-          const y = bounds.top + bounds.height / 2;
-          return [bounds.left - 8, bounds.right + 8].every(
-            (x) => document.elementFromPoint(x, y)?.closest('a') === link.element(),
-          );
-        })
-        .toBe(admin7Design);
-    },
-  );
+    await expect
+      .poll(() => {
+        const bounds = row.element().getBoundingClientRect();
+        const y = bounds.top + bounds.height / 2;
+        return [bounds.left - 8, bounds.right + 8].every(
+          (x) => document.elementFromPoint(x, y)?.closest('a') === link.element(),
+        );
+      })
+      .toBe(true);
+  });
 
   describe('as a Contributor', () => {
     const asContributor = () => {

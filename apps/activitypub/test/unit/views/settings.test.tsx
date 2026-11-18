@@ -111,19 +111,26 @@ describe('account migration setting', () => {
   });
 });
 
-describe('preference row actions', () => {
+describe.each([false, true])('preference row actions with admin7Design=%s', (admin7Design) => {
+  const renderWithDesign = (children: React.ReactNode) =>
+    render(
+      <ShadeApp admin7Design={admin7Design} darkMode={false}>
+        {children}
+      </ShadeApp>,
+    );
   it('uses a native button for callback settings and activates the destination once', () => {
-    render(<Settings />);
+    renderWithDesign(<Settings />);
 
     const action = screen.getByRole('button', { name: /Bluesky sharing/ });
     expect(action.tagName).toBe('BUTTON');
+    expect(action.tabIndex).toBe(0);
     fireEvent.click(action);
     expect(mocks.navigate).toHaveBeenCalledExactlyOnceWith('/preferences/bluesky-sharing');
   });
 
   it('does not invent a row action around standalone controls', () => {
     const toggle = vi.fn();
-    render(
+    renderWithDesign(
       <SettingItem>
         <span>Show sensitive media</span>
         <button type="button" onClick={toggle}>
@@ -137,22 +144,5 @@ describe('preference row actions', () => {
     expect(control.parentElement?.closest('button, [role="button"]')).toBeNull();
     fireEvent.click(control);
     expect(toggle).toHaveBeenCalledTimes(1);
-  });
-
-  it('preserves the legacy callback row with admin7Design off', () => {
-    render(
-      <ShadeApp admin7Design={false} darkMode={false}>
-        <SettingItem withHover onClick={mocks.navigate}>
-          Bluesky sharing
-        </SettingItem>
-      </ShadeApp>,
-    );
-    const row = screen.getByRole('button', { name: 'Bluesky sharing' });
-    expect(row.tagName).toBe('DIV');
-    expect(row.tabIndex).toBe(0);
-    fireEvent.keyDown(row, { key: 'Enter' });
-    expect(mocks.navigate).not.toHaveBeenCalled();
-    fireEvent.click(row);
-    expect(mocks.navigate).toHaveBeenCalledTimes(1);
   });
 });

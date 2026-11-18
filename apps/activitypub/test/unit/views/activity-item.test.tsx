@@ -1,14 +1,21 @@
 import { ShadeApp } from '@tryghost/shade/app';
+import type { ReactNode } from 'react';
 import ActivityItem from '../../../src/components/activities/activity-item';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render as renderComponent, screen } from '@testing-library/react';
 
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
 });
 
-describe('activity list row actions', () => {
+describe.each([false, true])('activity list row actions with admin7Design=%s', (admin7Design) => {
+  const render = (children: ReactNode) =>
+    renderComponent(
+      <ShadeApp admin7Design={admin7Design} darkMode={false}>
+        {children}
+      </ShadeApp>,
+    );
   it('provides a native primary button labelled by the actor and opens blank row space', () => {
     const openProfile = vi.fn();
     render(
@@ -71,6 +78,33 @@ describe('activity list row actions', () => {
     expect(unblock).toHaveBeenCalledTimes(1);
   });
 
+  it('disables the primary destination while keeping independent controls available', () => {
+    const openProfile = vi.fn();
+    const follow = vi.fn();
+    render(
+      <ActivityItem
+        data-testid="disabled-row"
+        url="https://example.com/alice"
+        disabled
+        onClick={openProfile}
+      >
+        <span>Avatar</span>
+        <span>Alice</span>
+        <button type="button" onClick={follow}>
+          Follow
+        </button>
+      </ActivityItem>,
+    );
+
+    expect(screen.queryByRole('link')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Alice' })).toBeNull();
+    fireEvent.click(screen.getByTestId('disabled-row'));
+    fireEvent.click(screen.getByText('Alice'));
+    expect(openProfile).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Follow' }));
+    expect(follow).toHaveBeenCalledTimes(1);
+  });
+
   it('forwards unhandled URL-only avatar gestures to the native link with their modifiers', () => {
     const follow = vi.fn();
     const open = vi.spyOn(window, 'open').mockImplementation(() => null);
@@ -120,36 +154,5 @@ describe('activity list row actions', () => {
     expect(follow).toHaveBeenCalledTimes(1);
     expect(click).toHaveBeenCalledTimes(1);
     expect(open).toHaveBeenCalledTimes(1);
-  });
-
-  it('preserves the legacy whole-row link and non-native callback row with admin7Design off', () => {
-    const openProfile = vi.fn();
-    const { rerender } = render(
-      <ShadeApp admin7Design={false} darkMode={false}>
-        <ActivityItem url="https://example.com/alice" onClick={openProfile}>
-          <span>Avatar</span>
-          <span>Alice</span>
-        </ActivityItem>
-      </ShadeApp>,
-    );
-    const link = screen.getByRole('link');
-    expect(link.contains(screen.getByText('Avatar'))).toBe(true);
-    expect(link.contains(screen.getByText('Alice'))).toBe(true);
-    expect(screen.queryByRole('button')).toBeNull();
-    fireEvent.click(screen.getByText('Alice'));
-    expect(openProfile).toHaveBeenCalledTimes(1);
-
-    rerender(
-      <ShadeApp admin7Design={false} darkMode={false}>
-        <ActivityItem onClick={openProfile}>
-          <span>Avatar</span>
-          <span>Alice</span>
-        </ActivityItem>
-      </ShadeApp>,
-    );
-    expect(screen.queryByRole('link')).toBeNull();
-    expect(screen.queryByRole('button')).toBeNull();
-    fireEvent.click(screen.getByText('Alice'));
-    expect(openProfile).toHaveBeenCalledTimes(2);
   });
 });

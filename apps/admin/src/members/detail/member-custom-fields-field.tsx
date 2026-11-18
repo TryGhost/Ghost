@@ -753,16 +753,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
               // Null rather than an empty line, so an unset value has no value in the label.
               const display = formatMemberCustomFieldValue(field, stored) || null;
               const row = (
-                // Dividers fade around the hovered row (its own border-b, and the
-                // previous row's via :has), so the hover tint floats free of the
-                // lines — the same effect as the settings list rows.
-                <li
-                  className={
-                    admin7Design
-                      ? 'border-b border-border last:border-b-0'
-                      : 'border-b border-border transition-colors last:border-b-0 hover:border-b-transparent [&:has(+li:hover)]:border-b-transparent'
-                  }
-                >
+                <li className="border-b border-border last:border-b-0">
                   {/* The whole row opens the editor (the tags list pattern);
                                         the pencil is a hover/focus-revealed affordance, not the
                                         control itself. */}
@@ -772,14 +763,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
                       // name, so carry the value into it — otherwise a screen reader
                       // announces only the field name and never its current value.
                       aria-label={display ? `Edit ${field.name}: ${display}` : `Edit ${field.name}`}
-                      // -mx/px + calc width: the hover tint bleeds past the text
-                      // column like the settings rows, while the row text (and the
-                      // li dividers) stay aligned with the rest of the card.
-                      className={
-                        admin7Design
-                          ? 'group flex w-full items-center justify-between gap-4 py-4 text-left disabled:cursor-not-allowed disabled:opacity-50'
-                          : 'group -mx-3 flex w-[calc(100%+--spacing(6))] items-center justify-between gap-4 rounded-md p-3 text-left transition-colors hover:bg-table-row-hover disabled:cursor-not-allowed disabled:opacity-50 in-data-[admin7-design=true]:py-4'
-                      }
+                      className="group flex w-full items-center justify-between gap-4 py-3 text-left disabled:cursor-not-allowed disabled:opacity-50 in-data-[admin7-design=true]:py-4"
                       disabled={disabled}
                       type="button"
                       onClick={() => {
@@ -792,7 +776,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
                         setEditingField(field);
                       }}
                     >
-                      <span className="min-w-0 in-data-[admin7-design=true]:relative in-data-[admin7-design=true]:z-10">
+                      <span className="relative z-10 min-w-0">
                         <span className="block text-sm text-muted-foreground in-data-[admin7-design=true]:text-base">
                           {field.name}
                         </span>
@@ -814,15 +798,8 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
               );
             })}
           </ul>
-          {/* The divider fades with the last row's hover, as the lines between rows do. */}
           {isTruncated && (
-            <div
-              className={
-                admin7Design
-                  ? 'border-t border-border pt-3'
-                  : 'border-t border-border pt-3 transition-colors [ul:has(>li:last-child:hover)+&]:border-t-transparent'
-              }
-            >
+            <div className="border-t border-border pt-3">
               <Button size="sm" type="button" variant="outline" onClick={() => setShowAll(true)}>
                 Show all
               </Button>

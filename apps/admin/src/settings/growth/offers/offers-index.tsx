@@ -110,7 +110,7 @@ const RetentionOfferRow: React.FC<{
       <TableCell className="sticky left-0 z-10 bg-background p-0" data-row-pinned>
         <RowPrimaryAction asChild>
           <button
-            className="block w-full cursor-pointer p-5 text-left in-data-[admin7-design=true]:pl-0"
+            className="block w-full cursor-pointer py-5 pr-5 pl-0 text-left"
             type="button"
             onClick={onClick}
           >
@@ -168,7 +168,7 @@ const RetentionOfferRow: React.FC<{
       </TableCell>
       <TableCell className="p-0 whitespace-nowrap">
         <button
-          className="block w-full cursor-pointer p-5 text-left in-data-[admin7-design=true]:pr-0"
+          className="block w-full cursor-pointer py-5 pr-0 pl-5 text-left"
           type="button"
           onClick={onClick}
         >
@@ -206,7 +206,7 @@ const SignupOfferRow: React.FC<{
       <TableCell className="sticky left-0 z-10 bg-background p-0" data-row-pinned>
         <RowPrimaryAction asChild>
           <button
-            className="block w-full cursor-pointer p-5 text-left in-data-[admin7-design=true]:pl-0"
+            className="block w-full cursor-pointer py-5 pr-5 pl-0 text-left"
             type="button"
             onClick={onClick}
           >
@@ -267,7 +267,7 @@ const SignupOfferRow: React.FC<{
       </TableCell>
       <TableCell className="p-0 whitespace-nowrap">
         <button
-          className="block w-full cursor-pointer p-5 text-left in-data-[admin7-design=true]:pr-0"
+          className="block w-full cursor-pointer py-5 pr-0 pl-5 text-left"
           type="button"
           onClick={onClick}
         >
@@ -442,7 +442,7 @@ export const OffersIndexModal: React.FC = () => {
   );
 
   const listLayoutOutput = (
-    <div className="overflow-x-auto in-data-[admin7-design=true]:-mx-4 in-data-[admin7-design=true]:px-4">
+    <div className="-mx-4 overflow-x-auto px-4">
       <Table className="m-0 min-w-[900px]">
         <colgroup>
           <col className="w-[25%]" />

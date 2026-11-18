@@ -88,7 +88,7 @@ const AutomationsListSkeleton: React.FC = () => {
           <TableRow
             key={index}
             aria-hidden="true"
-            className="grid w-full grid-cols-[repeat(3,minmax(0,1fr))_auto] items-center gap-x-4 gap-y-3 px-2 py-6 in-data-[admin7-design=true]:px-0 lg:table-row lg:gap-0 lg:p-0"
+            className="grid w-full grid-cols-[repeat(3,minmax(0,1fr))_auto] items-center gap-x-4 gap-y-3 px-0 py-6 lg:table-row lg:gap-0 lg:p-0"
           >
             <TableCell className="col-span-3 row-start-1 min-w-0 p-0 lg:table-cell lg:p-4">
               <Skeleton className="mb-1 h-3 w-48 max-w-full " />
@@ -214,7 +214,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
             <TableRow
               key={automation.id}
               className={cn(
-                'grid w-full cursor-pointer items-center gap-x-4 gap-y-3 px-2 py-6 hover:bg-table-row-hover in-data-[admin7-design=true]:px-0 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[-2px] has-[:focus-visible]:outline-focus-ring lg:table-row lg:gap-0 lg:p-0',
+                'grid w-full cursor-pointer items-center gap-x-4 gap-y-3 px-0 py-6 hover:bg-table-row-hover has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[-2px] has-[:focus-visible]:outline-focus-ring lg:table-row lg:gap-0 lg:p-0',
                 canManage
                   ? 'grid-cols-[repeat(3,minmax(0,1fr))_auto_auto]'
                   : 'grid-cols-[repeat(3,minmax(0,1fr))_auto]',

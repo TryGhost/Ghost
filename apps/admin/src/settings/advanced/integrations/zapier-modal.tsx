@@ -140,7 +140,7 @@ function ZapierModal() {
       <ActionList>
         {zapierTemplates.map((template) => (
           <ActionListItem key={template.url} hover={false}>
-            <ActionListItemContent className="flex items-center gap-3 py-2 pl-3 in-data-[admin7-design=true]:pl-0">
+            <ActionListItemContent className="flex items-center gap-3 py-2 pl-0">
               <div className="flex flex-col gap-4 md:flex-row md:items-center">
                 <div className="flex shrink-0 flex-nowrap items-center gap-2">
                   <img

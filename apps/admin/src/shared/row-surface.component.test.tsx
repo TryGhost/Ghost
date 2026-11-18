@@ -64,7 +64,7 @@ async function renderRows(admin7Design = true) {
 
 describe('shared content row surfaces in the browser', () => {
   it.each([false, true])(
-    'keeps custom row markup and gates its expanded action: admin7Design %s',
+    'keeps custom row markup and expands its action: admin7Design %s',
     async (admin7Design) => {
       const open = vi.fn<() => void>();
       const edit = vi.fn<() => void>();
@@ -93,26 +93,22 @@ describe('shared content row surfaces in the browser', () => {
       await page.getByRole('button', { name: 'Edit custom row' }).click();
       expect(edit).toHaveBeenCalledTimes(1);
       expect(open).not.toHaveBeenCalled();
-      if (admin7Design) {
-        await custom.click({ position: { x: -8, y: 12 } });
-      } else {
-        await page.getByRole('button', { name: 'Open custom row' }).click();
-      }
+      await custom.click({ position: { x: -8, y: 12 } });
       expect(open).toHaveBeenCalledTimes(1);
     },
   );
 
-  it('preserves the previous action-list focus and click area with the flag off', async () => {
+  it('expands action-list focus and click areas with the design flag off', async () => {
     await renderRows(false);
     await page.getByText('Static information').hover();
     await userEvent.tab();
     const primary = page.getByRole('button', { name: 'Open First' });
     await expect.element(primary).toHaveFocus();
-    expect(fill(row(0)).opacity).toBe('0');
+    expect(fill(row(0)).opacity).toBe('1');
     const bounds = row(0).getBoundingClientRect();
     expect(
       document.elementFromPoint(bounds.left - 8, bounds.top + bounds.height / 2)?.closest('button'),
-    ).not.toBe(primary.element());
+    ).toBe(primary.element());
     await primary.click();
     expect(primaryAction).toHaveBeenCalledExactlyOnceWith('First');
   });
@@ -216,16 +212,12 @@ describe('shared content row surfaces in the browser', () => {
     const table = page.getByRole('table').element();
     expect(header.getBoundingClientRect().left).toBe(table.getBoundingClientRect().left);
     expect(cell.element().getBoundingClientRect().left).toBe(table.getBoundingClientRect().left);
-    expect(getComputedStyle(header).paddingLeft).toBe(admin7Design ? '0px' : '8px');
-    expect(getComputedStyle(cell.element()).paddingLeft).toBe(admin7Design ? '0px' : '10px');
+    expect(getComputedStyle(header).paddingLeft).toBe('0px');
+    expect(getComputedStyle(cell.element()).paddingLeft).toBe('0px');
     const background = getComputedStyle(cell.element()).backgroundColor;
     await cell.hover();
-    if (admin7Design) {
-      expect(fill(page.getByRole('row').nth(1).element()).opacity).toBe('0');
-      expect(getComputedStyle(cell.element()).backgroundColor).toBe(background);
-    } else {
-      expect(getComputedStyle(cell.element()).backgroundColor).not.toBe(background);
-    }
+    expect(fill(page.getByRole('row').nth(1).element()).opacity).toBe('0');
+    expect(getComputedStyle(cell.element()).backgroundColor).toBe(background);
     expect(getComputedStyle(page.getByRole('row').nth(0).element()).borderBottomColor).not.toBe(
       transparent,
     );

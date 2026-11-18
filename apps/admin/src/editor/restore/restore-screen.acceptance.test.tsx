@@ -140,11 +140,7 @@ describe('Restore posts', () => {
 
       await row.hover();
 
-      if (admin7Design) {
-        await expect.poll(() => background(cells[0])).toBe(originalBackground);
-      } else {
-        await expect.poll(() => background(cells[0])).not.toBe(originalBackground);
-      }
+      await expect.poll(() => background(cells[0])).toBe(originalBackground);
       expect(cells.map(background)).toEqual(cells.map(() => background(cells[0])));
       expect(headers.map(background)).toEqual(headerBackgrounds);
       expect(otherCells.map(background)).toEqual(otherBackgrounds);

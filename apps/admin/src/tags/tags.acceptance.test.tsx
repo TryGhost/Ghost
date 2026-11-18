@@ -57,7 +57,7 @@ describe('Tags list', () => {
   });
 
   it.each([false, true])(
-    'preserves tag navigation and gates its outer inset with admin7Design %s',
+    'aligns tags and preserves navigation with admin7Design %s',
     async (admin7Design) => {
       const news = tag({ name: 'News', slug: 'news', count: { posts: 1 } });
       fakeTags([news]);
@@ -67,12 +67,8 @@ describe('Tags list', () => {
       const row = tagsScreen.tagRows();
       await expect.element(row).toBeVisible();
       const firstCell = row.getByRole('cell').elements()[0];
-      expect(getComputedStyle(firstCell).paddingLeft).toBe(admin7Design ? '0px' : '16px');
-      if (admin7Design) {
-        await row.click({ position: { x: -8, y: 12 } });
-      } else {
-        await tagsScreen.link('News').click();
-      }
+      expect(getComputedStyle(firstCell).paddingLeft).toBe('0px');
+      await row.click({ position: { x: -8, y: 12 } });
 
       await expect.poll(currentRoute).toBe('/tags/news');
     },

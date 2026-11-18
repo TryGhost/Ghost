@@ -1,5 +1,4 @@
 import WebhookModal from './webhook-modal';
-import { useShade } from '@tryghost/shade/app';
 import { useState } from 'react';
 import {
   Button,
@@ -23,8 +22,6 @@ import { type Webhook, useDeleteWebhook } from '@tryghost/admin-x-framework/api/
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 
 const WebhooksTable: React.FC<{ integration: Integration }> = ({ integration }) => {
-  const { admin7Design } = useShade();
-  const WebhookName = admin7Design ? 'button' : 'div';
   const { mutateAsync: deleteWebhook } = useDeleteWebhook();
   const handleError = useHandleError();
   const { confirm } = useConfirmation();
@@ -118,14 +115,13 @@ const WebhooksTable: React.FC<{ integration: Integration }> = ({ integration }) 
             >
               <TableCell className="w-3/4 py-3 pr-6">
                 <RowPrimaryAction asChild>
-                  <WebhookName
+                  <button
                     className="font-semibold"
-                    {...(admin7Design
-                      ? { type: 'button' as const, onClick: () => setEditingWebhook(webhook) }
-                      : {})}
+                    type="button"
+                    onClick={() => setEditingWebhook(webhook)}
                   >
                     {webhook.name}
-                  </WebhookName>
+                  </button>
                 </RowPrimaryAction>
                 <div className="mt-1 grid grid-cols-[max-content_1fr] gap-1 text-sm leading-snug">
                   <span className="text-muted-foreground">Event:</span>

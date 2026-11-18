@@ -23,18 +23,14 @@ beforeEach(() => {
 
 describe('Members row surfaces', () => {
   it.each([false, true])(
-    'preserves legacy member insets with admin7Design %s',
+    'aligns member content and reserves hover gutters with admin7Design %s',
     async (admin7Design) => {
       fakeMembers([member({ name: 'Ada Lovelace' })]);
       await renderAdminApp('/members', { labs: { admin7Design } });
       const row = membersScreen.memberRow('Ada Lovelace');
       await expect.element(row).toBeVisible();
-      expect(getComputedStyle(row.getByRole('cell').elements()[0]).paddingLeft).toBe(
-        admin7Design ? '0px' : '16px',
-      );
-      expect(getComputedStyle(membersScreen.horizontalScrollElement()!).paddingLeft).toBe(
-        admin7Design ? '16px' : '0px',
-      );
+      expect(getComputedStyle(row.getByRole('cell').elements()[0]).paddingLeft).toBe('0px');
+      expect(getComputedStyle(membersScreen.horizontalScrollElement()!).paddingLeft).toBe('16px');
     },
   );
 

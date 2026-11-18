@@ -5,24 +5,7 @@ import { Button } from '@tryghost/shade/components';
 import { Box } from '@tryghost/shade/primitives';
 import NotificationItem from '../../../activitypub/src/views/notifications/components/notification-item';
 
-describe('notification row primary and secondary actions', () => {
-  it('preserves the legacy click target when Admin 7 design is off', async () => {
-    const open = vi.fn();
-    await renderInApp(
-      <NotificationItem onClick={open}>
-        <NotificationItem.Description>A notification</NotificationItem.Description>
-      </NotificationItem>,
-      { admin7Design: false },
-    );
-
-    const row = page.getByRole('button', { name: 'A notification' });
-    expect(row.element().tagName).toBe('DIV');
-    expect(row.element().hasAttribute('tabindex')).toBe(false);
-    expect(row.element().querySelector('.shade-row-primary')).toBeNull();
-    await row.click();
-    expect(open).toHaveBeenCalledTimes(1);
-  });
-
+describe.each([false, true])('notification row actions with admin7Design=%s', (admin7Design) => {
   it('uses native Enter and Space activation with a full-row focus target', async () => {
     const open = vi.fn();
     await renderInApp(
@@ -31,6 +14,7 @@ describe('notification row primary and secondary actions', () => {
           <NotificationItem.Description>A notification</NotificationItem.Description>
         </NotificationItem>
       </Box>,
+      { admin7Design },
     );
 
     const primary = page.getByRole('button', { name: 'A notification' });
@@ -63,6 +47,7 @@ describe('notification row primary and secondary actions', () => {
           <Button>Hide</Button>
         </NotificationItem>
       </Box>,
+      { admin7Design },
     );
 
     const secondary = page.getByRole('button', { name: 'Follow', exact: true });

@@ -18,7 +18,6 @@ import { useAccountMigrationForUser } from '@hooks/use-activity-pub-queries';
 import { useAppBasePath } from '@src/hooks/use-app-base-path';
 import { useFeatureFlags } from '@src/lib/feature-flags';
 import { useNavigateWithBasePath } from '@src/hooks/use-navigate-with-base-path';
-import { useShade } from '@tryghost/shade/app';
 
 interface SettingsProps {
   account?: Account;
@@ -163,18 +162,12 @@ export const SettingItem: React.FC<SettingItemProps> = ({
   onClick,
 }) => {
   const basePath = useAppBasePath();
-  const { admin7Design } = useShade();
   const fullPath = to && to.startsWith('/') ? `${basePath}${to}` : to;
   const interactive = withHover && Boolean(fullPath || href || onClick);
-  const legacyHoverClasses = withHover
-    ? 'relative cursor-pointer before:absolute before:inset-x-[-16px] before:inset-y-[-1px] before:rounded-md before:bg-gray-50 before:opacity-0 before:transition-opacity before:will-change-[opacity] hover:z-10 hover:cursor-pointer hover:border-b-transparent hover:before:opacity-100 dark:before:bg-gray-950'
-    : '';
-  const itemClasses = admin7Design
-    ? cn(
-        'flex w-full items-center justify-between gap-4 py-3 text-left focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden',
-        className,
-      )
-    : cn('flex items-center justify-between gap-4 py-3', legacyHoverClasses, className);
+  const itemClasses = cn(
+    'flex w-full items-center justify-between gap-4 py-3 text-left focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden',
+    className,
+  );
 
   const item = fullPath ? (
     <Link className={itemClasses} to={fullPath}>
@@ -185,15 +178,9 @@ export const SettingItem: React.FC<SettingItemProps> = ({
       {children}
     </a>
   ) : onClick ? (
-    admin7Design ? (
-      <button className={itemClasses} type="button" onClick={onClick}>
-        {children}
-      </button>
-    ) : (
-      <div className={itemClasses} role="button" tabIndex={0} onClick={onClick}>
-        {children}
-      </div>
-    )
+    <button className={itemClasses} type="button" onClick={onClick}>
+      {children}
+    </button>
   ) : (
     <div className={itemClasses}>{children}</div>
   );

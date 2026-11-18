@@ -188,23 +188,17 @@ describe('Member detail custom fields', () => {
       const contentX = value.element().getBoundingClientRect().x;
       await action.hover();
 
-      if (admin7Design) {
-        expect(getComputedStyle(row, '::before').left).toBe('-16px');
-        expect(getComputedStyle(row, '::before').opacity).toBe('1');
-        expect(getComputedStyle(row).borderBottomColor).toBe('rgba(0, 0, 0, 0)');
-        expect(getComputedStyle(row.previousElementSibling!).borderBottomColor).toBe(
-          'rgba(0, 0, 0, 0)',
-        );
-        expect(value.element().getBoundingClientRect().x).toBe(contentX);
+      expect(getComputedStyle(row, '::before').left).toBe('-16px');
+      expect(getComputedStyle(row, '::before').opacity).toBe('1');
+      expect(getComputedStyle(row).borderBottomColor).toBe('rgba(0, 0, 0, 0)');
+      expect(getComputedStyle(row.previousElementSibling!).borderBottomColor).toBe(
+        'rgba(0, 0, 0, 0)',
+      );
+      expect(value.element().getBoundingClientRect().x).toBe(contentX);
 
-        await action.click({
-          position: { x: -8, y: action.element().getBoundingClientRect().height / 2 },
-        });
-      } else {
-        expect(getComputedStyle(row, '::before').content).toBe('none');
-        expect(getComputedStyle(action.element()).marginLeft).toBe('-12px');
-        await action.click();
-      }
+      await action.click({
+        position: { x: -8, y: action.element().getBoundingClientRect().height / 2 },
+      });
       await expect.element(modal().getByLabelText('Company')).toBeVisible();
     },
   );

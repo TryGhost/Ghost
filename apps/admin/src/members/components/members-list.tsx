@@ -272,7 +272,7 @@ function MembersList({
 
       <div
         ref={horizontalScrollRef}
-        className="w-full overflow-x-auto overflow-y-visible in-data-[admin7-design=true]:-mx-4 in-data-[admin7-design=true]:w-auto in-data-[admin7-design=true]:overflow-y-hidden in-data-[admin7-design=true]:px-4"
+        className="-mx-4 w-auto overflow-x-auto overflow-y-hidden px-4"
       >
         <Table
           className="w-full border-collapse max-sm:table-fixed sm:max-lg:table-auto lg:w-[var(--members-table-width)] lg:min-w-[var(--members-table-min-width)] lg:table-fixed"

@@ -247,17 +247,11 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
           setIsHovered(false);
         }}
       >
-        {/* `center`, not `start`: everything on the right centres
-                against the feature image.
-
-                Padding is even on all four sides. It lives on the children
-                rather than the row because the link and the trailing button
-                each need to fill the row's full height to stay clickable —
-                so the row's own box has to stay flush. */}
-        <Inline align="center" className="pr-4 in-data-[admin7-design=true]:pr-0" gap="md">
+        {/* Keep the right-hand controls centered against the feature image. */}
+        <Inline align="center" gap="md">
           <RowPrimaryAction asChild>
             <RowLink
-              className="flex min-w-0 flex-1 items-start gap-4 py-4 pl-4 no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden focus-visible:ring-inset in-data-[admin7-design=true]:pl-0"
+              className="flex min-w-0 flex-1 items-start gap-4 py-4 no-underline focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden focus-visible:ring-inset"
               data-testid="post-list-item-link"
               offsite={linksOffsite}
               to={linksOffsite ? post.url : editorPath}
@@ -323,12 +317,12 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
             <PresenceAvatars
               active={presenceActive}
               // Under 360px the title has no room left to give.
-              className="in-data-[admin7-design=true]:relative in-data-[admin7-design=true]:z-10 max-[359px]:hidden"
+              className="relative z-10 max-[359px]:hidden"
               resourceType={editorType}
             />
           ) : null}
           <PostMetricsCells
-            className="py-4 in-data-[admin7-design=true]:relative in-data-[admin7-design=true]:z-10"
+            className="relative z-10 py-4"
             hideEmailMetrics={emailSendingState.status === 'sending'}
             memberCounts={memberCounts}
             paidMembersEnabled={paidMembersEnabled}
@@ -350,7 +344,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                 // title away from the metrics too.
                 className={cn(
                   'my-4 shrink-0',
-                  'in-data-[admin7-design=true]:relative in-data-[admin7-design=true]:z-10',
+                  'relative z-10',
                   'ms-8',
                   // Below 1200px the metrics are hidden, so with avatars beside it the
                   // action needs no extra separation and the title keeps the room.

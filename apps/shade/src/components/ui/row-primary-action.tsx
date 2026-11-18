@@ -1,7 +1,6 @@
 import { Slot } from '@radix-ui/react-slot';
 import * as React from 'react';
 import { cn } from '@/lib/utils';
-import { useShade } from '@/providers/shade-context';
 import { rowSurfaceClasses } from '@/components/ui/row-surface';
 
 interface RowPrimaryActionProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -11,31 +10,26 @@ interface RowPrimaryActionProps extends React.ButtonHTMLAttributes<HTMLButtonEle
 /** Reuses the existing control; the row owns its expanded hit area and feedback. */
 const RowPrimaryAction = React.forwardRef<HTMLButtonElement, RowPrimaryActionProps>(
   ({ asChild = false, className, children, onKeyDown, onKeyUp, ...props }, ref) => {
-    const { admin7Design } = useShade();
     const Component = asChild ? Slot : 'button';
     const child =
       asChild && React.isValidElement<React.HTMLAttributes<HTMLElement>>(children)
         ? children
         : undefined;
     const legacyAction =
-      admin7Design &&
       child &&
       typeof child.type === 'string' &&
       !['a', 'button', 'input', 'select', 'textarea'].includes(child.type) &&
       Boolean(child.props.onClick) &&
       child.props['aria-disabled'] !== true &&
       child.props['aria-disabled'] !== 'true';
-    const childContent =
-      admin7Design && child ? React.cloneElement(child, { className: undefined }) : children;
+    const childContent = child ? React.cloneElement(child, { className: undefined }) : children;
     return (
       <Component
         ref={ref}
         className={cn(
-          admin7Design && [
-            rowSurfaceClasses.primaryAction,
-            'focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden',
-          ],
-          admin7Design && child?.props.className,
+          rowSurfaceClasses.primaryAction,
+          'focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden',
+          child?.props.className,
           className,
         )}
         {...(!asChild ? { type: 'button' as const } : {})}

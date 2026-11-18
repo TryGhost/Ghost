@@ -67,14 +67,14 @@ describe('useRowPress', () => {
   });
 });
 
-it('keeps the legacy flag-off path free of touch state', () => {
+it.each([false, true])('provides touch feedback with admin7Design=%s', (flag) => {
   const onPointerDown = vi.fn();
   render(
-    <ShadeApp admin7Design={false} darkMode={false}>
+    <ShadeApp admin7Design={flag} darkMode={false}>
       <Row onPointerDown={onPointerDown} />
     </ShadeApp>,
   );
   pointer('pointerdown');
   expect(onPointerDown).toHaveBeenCalledOnce();
-  expect(screen.getByTestId('row').hasAttribute('data-row-pressed')).toBe(false);
+  expect(screen.getByTestId('row').getAttribute('data-row-pressed')).toBe('true');
 });

@@ -42,6 +42,6 @@ describe.each([false, true])('preference row with admin7Design=%s', (admin7Desig
     action.element().focus();
     await userEvent.keyboard('{Enter}');
     await userEvent.keyboard(' ');
-    expect(navigate).toHaveBeenCalledTimes(admin7Design ? 5 : 3);
+    expect(navigate).toHaveBeenCalledTimes(5);
   });
 });

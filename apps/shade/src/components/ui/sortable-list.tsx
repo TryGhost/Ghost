@@ -18,7 +18,6 @@ import {
 } from 'react';
 import { Separator } from './separator';
 import { cn } from '@/lib/utils';
-import { useShade } from '@/providers/shade-context';
 
 export interface SortableItemContainerProps {
   id: string;
@@ -161,7 +160,6 @@ export const SortableList = <Item extends { id: string }>({
   className,
   ...props
 }: SortableListProps<Item>) => {
-  const { admin7Design } = useShade();
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const draggingItem = items.find(({ id }) => id === draggingId);
 
@@ -172,7 +170,7 @@ export const SortableList = <Item extends { id: string }>({
   return (
     <div
       className={cn('w-full', className)}
-      data-row-dragging={admin7Design && draggingId !== null ? 'true' : undefined}
+      data-row-dragging={draggingId !== null ? 'true' : undefined}
       {...props}
     >
       {title && (

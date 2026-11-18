@@ -19,17 +19,13 @@ Use `ActionListItem asChild` when a custom row must keep different markup.
 and sliding values unchanged. Navigation, dropdown options, command menus, and
 full feed/article cards follow their own components' treatments.
 
-## Compatibility and rollout
+## Shared defaults
 
-This contract applies with `admin7Design` enabled. Shade owns the shared flag
-boundary: components read `useShade().admin7Design`, and appearance is scoped
-by `data-admin7-design`. Standalone Shade and Ghost apps retain the provider's
-default enabled design; embedded Admin surfaces inherit Admin's Labs value.
-
-With the flag disabled, retain the previous row padding, hover, selection,
-separators, hit areas, and interactions. A consumer should not need a flag hook
-for shared row behavior. Keep a local branch only for page-specific structure
-such as virtualized tables' scroll gutters and pinned columns.
+This contract applies to both the current and upcoming Admin UI, independently
+of `admin7Design`. Shade's row components own the shared appearance and
+interaction behavior. Consumers do not need a feature flag or local gesture
+handling to adopt it. Keep page-specific adapters only where structure requires
+them, such as virtualized tables' scroll gutters and pinned columns.
 
 Static rows align with their headers but have no row hover treatment. Controls
 inside a static row retain their own interactions. A sortable settings form is
@@ -81,25 +77,24 @@ make the row background into another control.
 
 ## Using the shared behavior
 
-`TableRow` and `ActionListItem` own the surface, touch press handling, primary
-action delegation, and flag boundary. Consumers declare their existing primary
+`TableRow` and `ActionListItem` own the surface, touch press handling, and primary
+action delegation. Consumers declare their existing primary
 control once; routing, selection, and permissions remain with the
-feature. Header, footer, spacer, and data-only rows remain static in the enabled
-design. `ActionListItem` retains its `hover` opt-out for intentionally static or
+feature. Header, footer, spacer, and data-only rows remain static.
+`ActionListItem` retains its `hover` opt-out for intentionally static or
 unavailable actions.
 
 For a standard action list, put its primary link or button in
 `ActionListItemContent asChild` and secondary controls in `ActionListItemActions`.
 For custom `li` or `div` markup, use `ActionListItem asChild` and mark the
 existing primary control with `RowPrimaryAction asChild`. In tables, use
-`TableRowAction asChild` inside `TableRow`. These slots are transparent with
-the flag off and supply the shared behavior with it on. Existing row-level
+`TableRowAction asChild` inside `TableRow`. These slots preserve the existing
+control while supplying the shared behavior. Existing row-level
 `onClick` remains supported; avoid duplicating filtering or gesture forwarding
 in individual screens.
 
 Prefer native links and buttons for new rows. A primary slot around an existing
-clickable `div` or `span` adds button semantics and Enter/Space activation only
-in the enabled design, so migration does not change legacy interactions.
+clickable `div` or `span` adds button semantics and Enter/Space activation.
 
 The `rowSurface` recipe and `rowSurfaceClasses` atoms remain available for
 unusual styling integrations. Prefer the row components so new screens inherit

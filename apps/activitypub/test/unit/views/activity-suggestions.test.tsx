@@ -1,8 +1,9 @@
+import { ShadeApp } from '@tryghost/shade/app';
 import Recommendations from '../../../src/components/layout/sidebar/recommendations';
 import { SuggestedProfile } from '../../../src/components/global/suggested-profiles';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render as renderComponent, screen } from '@testing-library/react';
 
 vi.mock('@components/global/profile-preview-hover-card', () => ({
   default: ({ children }: { children: ReactNode }) => <>{children}</>,
@@ -32,7 +33,13 @@ vi.mock('@tryghost/admin-x-framework', () => ({
 
 afterEach(cleanup);
 
-describe('loading profile suggestions', () => {
+describe.each([false, true])('loading profile suggestions with admin7Design=%s', (admin7Design) => {
+  const render = (children: ReactNode) =>
+    renderComponent(
+      <ShadeApp admin7Design={admin7Design} darkMode={false}>
+        {children}
+      </ShadeApp>,
+    );
   it('does not expose a primary profile action while a suggestion is loading', () => {
     render(
       <SuggestedProfile

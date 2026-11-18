@@ -13,7 +13,7 @@ const meta: Meta<typeof RowPrimaryAction> = {
     docs: {
       description: {
         component:
-          'The existing primary control owns its destination. Shade supplies expanded row targets, native gesture delegation and enabled-design feedback.',
+          'The existing primary control owns its destination. Shade supplies expanded row targets, native gesture delegation and row feedback.',
       },
     },
   },
@@ -75,12 +75,12 @@ export const NativeAndLegacyActions: Story = {
   render: () => <Rows />,
 };
 
-export const FlagOff: Story = {
+export const CurrentInterface: Story = {
   parameters: {
     docs: {
       description: {
         story:
-          'With admin7Design off, custom row and primary slots are transparent and retain the consumer’s existing markup and events.',
+          'Row actions, keyboard access and feedback also apply to the current interface, with admin7Design off.',
       },
     },
   },

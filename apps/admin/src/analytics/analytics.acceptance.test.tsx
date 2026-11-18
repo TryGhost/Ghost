@@ -169,7 +169,7 @@ describe('Analytics overview', () => {
       await expect.element(analyticsScreen.topPostsCard()).toHaveTextContent('A Popular Post');
       await expect(
         analyticsScreen.topPostsCard().getByRole('button', { name: /^A Popular Post/ }),
-      ).toHaveCount(admin7Design ? 1 : 0);
+      ).toHaveCount(1);
 
       // The header's active-visitors probe (Tinybird) resolved.
       if (!admin7Design) {

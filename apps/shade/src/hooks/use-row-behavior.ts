@@ -1,5 +1,4 @@
 import { useRef, type HTMLAttributes, type MouseEvent } from 'react';
-import { useShade } from '@/providers/shade-context';
 import { useRowPress } from '@/hooks/use-row-press';
 
 const independentControl =
@@ -16,16 +15,19 @@ export function useRowBehavior<Element extends HTMLElement>(
   props: HTMLAttributes<Element>,
   interactive?: boolean,
 ) {
-  const { admin7Design } = useShade();
   const forwarding = useRef(false);
   const press = useRowPress<Element>();
-  if (!admin7Design || interactive === false) {
+  if (interactive === false) {
     return {};
   }
 
   const isIndependent = (event: MouseEvent<Element>) => {
     if (!(event.target instanceof window.Element)) {
       return false;
+    }
+    // React portals bubble through the row without belonging to its DOM.
+    if (!event.currentTarget.contains(event.target)) {
+      return true;
     }
     const control = event.target.closest(independentControl);
     return control !== null && control !== event.currentTarget;

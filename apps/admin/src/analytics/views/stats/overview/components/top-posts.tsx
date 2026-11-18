@@ -1,6 +1,5 @@
 import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
 import React from 'react';
-import { useShade } from '@tryghost/shade/app';
 import {
   Card,
   CardContent,
@@ -80,7 +79,6 @@ interface TopPostsProps {
 }
 
 const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
-  const { admin7Design } = useShade();
   const navigate = useNavigate();
   const location = useLocation();
   const { range } = useAnalytics();
@@ -113,13 +111,7 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
           <>
             {topPostsData?.stats?.map((post: TopPostViewsStats) => {
               const row = (
-                <div
-                  className={
-                    admin7Design
-                      ? 'group flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 first:border-border md:items-center'
-                      : 'group relative flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 before:absolute before:-inset-x-4 before:inset-y-0 before:z-0 before:hidden before:rounded-md before:bg-table-row-hover before:content-[""] first:border-border! hover:cursor-pointer hover:border-transparent hover:before:block md:items-center [&+div]:hover:border-transparent'
-                  }
-                >
+                <div className="group flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 first:border-border md:items-center">
                   <RowPrimaryAction asChild>
                     <div
                       className="z-10 flex min-w-[160px] grow items-start gap-4 md:items-center lg:min-w-[320px]"
