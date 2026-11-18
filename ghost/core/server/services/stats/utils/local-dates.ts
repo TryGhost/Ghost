@@ -77,10 +77,10 @@ export function startOfLocalDay(date: string, timezone: string) {
   );
 }
 
-/** Half-open UTC bounds of inclusive local dates; `from` is null when unbounded */
-export function localDateBounds(dateFrom: string | null, dateTo: string, timezone: string) {
+/** Half-open UTC bounds of inclusive local dates */
+export function localDateBounds(dateFrom: string, dateTo: string, timezone: string) {
   return {
-    from: dateFrom === null ? null : toDatetime(startOfLocalDay(dateFrom, timezone)),
+    from: toDatetime(startOfLocalDay(dateFrom, timezone)),
     to: toDatetime(startOfLocalDay(addDays(dateTo, 1), timezone)),
   };
 }

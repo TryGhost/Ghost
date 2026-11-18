@@ -47,7 +47,14 @@ const messages = {
   invalidOptions: 'Invalid comments stats options.',
   reversedDateRange: 'date_from must be on or before date_to.',
   rangeTooLong: `The date range must not exceed ${MAX_RANGE_DAYS} days.`,
+  futureDateTo: 'date_to must not be later than tomorrow.',
 };
+
+// Tomorrow in UTC is today somewhere, so every site's today is allowed
+const latestDateTo = () => addDays(new Date().toISOString().slice(0, 10), 1);
+
+// "All time" covers the same span as the longest explicit range
+const earliestDateFrom = (dateTo: string) => addDays(dateTo, 1 - MAX_RANGE_DAYS);
 
 const timezoneSchema = z
   .string()
@@ -55,7 +62,8 @@ const timezoneSchema = z
   .transform((value) => resolveTimezone(value)!)
   .default('UTC');
 
-// Without date_from the range starts at the first comment ("All time")
+// Without date_from the range starts at the first comment ("All time"), at most
+// MAX_RANGE_DAYS before date_to
 const rangeSchema = z
   .object({
     date_from: z.iso.date().optional(),
@@ -63,10 +71,11 @@ const rangeSchema = z
     timezone: timezoneSchema,
   })
   .superRefine((options, context) => {
-    if (options.date_from === undefined) {
+    if (options.date_to > latestDateTo()) {
+      context.addIssue({ code: 'custom', message: messages.futureDateTo });
+    } else if (options.date_from === undefined) {
       return;
-    }
-    if (options.date_from > options.date_to) {
+    } else if (options.date_from > options.date_to) {
       context.addIssue({ code: 'custom', message: messages.reversedDateRange });
     } else if (countDays(options.date_from, options.date_to) > MAX_RANGE_DAYS) {
       context.addIssue({ code: 'custom', message: messages.rangeTooLong });
@@ -242,12 +251,16 @@ export class CommentsAnalyticsService {
     if (range.dateFrom !== null) {
       return getCommentsStatsWindow({ ...range, dateFrom: range.dateFrom });
     }
-    const { to } = localDateBounds(null, range.dateTo, range.timezone);
-    const first = await this.inRange(null, to).min({ first: 'c.created_at' }).first();
+    const earliest = earliestDateFrom(range.dateTo);
+    const { from, to } = localDateBounds(earliest, range.dateTo, range.timezone);
+    const first = await this.inRange(from, to).min({ first: 'c.created_at' }).first();
     const dateFrom = first?.first
       ? localDateOf(datetimeMs(first.first), range.timezone)
       : range.dateTo;
-    return getCommentsStatsWindow({ ...range, dateFrom }, { comparePrevious: false });
+    return getCommentsStatsWindow(
+      { ...range, dateFrom: dateFrom < earliest ? earliest : dateFrom },
+      { comparePrevious: false },
+    );
   }
 
   // The top `limit` values of the column by comment count, ties broken by id,
@@ -255,7 +268,11 @@ export class CommentsAnalyticsService {
   private ranked(column: 'post_id' | 'member_id', options: unknown) {
     const range = parseCommentsStatsRange(options);
     const { limit } = parse(topSchema, options);
-    const { from, to } = localDateBounds(range.dateFrom, range.dateTo, range.timezone);
+    const { from, to } = localDateBounds(
+      range.dateFrom ?? earliestDateFrom(range.dateTo),
+      range.dateTo,
+      range.timezone,
+    );
     const ranking = this.inRange(from, to)
       .whereNotNull(`c.${column}`)
       .select(`c.${column}`)
@@ -276,11 +293,11 @@ export class CommentsAnalyticsService {
 
   // Covered by comments(created_at, status, member_id, post_id). Like the Admin
   // comments list, hides only deleted comments.
-  private inRange(from: string | null, to: string) {
-    const query = this.knex('comments as c')
-      .where('c.created_at', '<', to)
+  private inRange(from: string, to: string) {
+    return this.knex('comments as c')
+      .where('c.created_at', '>=', from)
+      .andWhere('c.created_at', '<', to)
       .andWhere('c.status', '<>', 'deleted');
-    return from === null ? query : query.andWhere('c.created_at', '>=', from);
   }
 
   // Byte comparison makes MySQL's DISTINCT ~4x faster than its collation; SQLite

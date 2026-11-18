@@ -112,6 +112,18 @@ describe('getCommentsStatsWindow', function () {
     assert.equal(window.previousTo, window.from);
   });
 
+  it('accepts a date_to of tomorrow, which is already today in some timezones', function () {
+    vi.useFakeTimers({ toFake: ['Date'], now: Date.parse('2026-11-17T23:00:00Z') });
+    try {
+      assert.equal(parseCommentsStatsRange({ date_to: '2026-11-18' }).dateTo, '2026-11-18');
+      assert.throws(() => parseCommentsStatsRange({ date_to: '2026-11-19' }), {
+        errorType: 'ValidationError',
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('accepts a range without date_from', function () {
     assert.deepEqual(parseCommentsStatsRange({ date_to: '2026-11-03' }), {
       dateFrom: null,
@@ -133,6 +145,8 @@ describe('getCommentsStatsWindow', function () {
     ['a reversed range', range('2026-11-02', '2026-11-01')],
     ['an unknown timezone', range('2026-11-01', '2026-11-02', 'Mars/Olympus')],
     ['a range over 3660 days', range('2016-01-01', '2026-11-01')],
+    ['a date_to after tomorrow', { date_to: '9999-12-31' }],
+    ['a range ending after tomorrow', range('9999-12-01', '9999-12-31')],
   ] as const) {
     it(`rejects ${name}`, function () {
       assert.throws(() => parseCommentsStatsRange(options), { errorType: 'ValidationError' });
@@ -283,6 +297,19 @@ describe('CommentsAnalyticsService', function () {
     assert.equal(overview.series.at(-1)!.date, '2026-11-03');
     assert.deepEqual(overview.totals, { comments: 5, commenters: 3, reported: 2 });
     assert.deepEqual(overview.previous_totals, { comments: 0, commenters: 0, reported: 0 });
+  });
+
+  it('starts an unbounded range no more than 3660 days back', async function () {
+    await db('comments').insert(comment('c_old', 'post_a', 'member_1', '2005-06-01 12:00:00'));
+
+    const overview = await service.getOverview({ date_to: '2026-11-03' });
+    const { data } = await service.getTopCommenters({ date_to: '2026-11-03' });
+
+    // The 2005 comment is ignored rather than stretching the chart over 21 years
+    assert.equal(overview.interval, 'day');
+    assert.equal(overview.series[0].date, '2026-10-28');
+    assert.equal(overview.totals.comments, 6);
+    assert.equal(data.find(({ member_id: id }) => id === 'member_1')?.comments, 2);
   });
 
   it('returns one empty bucket for an unbounded range with no comments', async function () {

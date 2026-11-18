@@ -29,10 +29,6 @@ describe('local dates', function () {
       from: '2026-10-31 18:30:00',
       to: '2026-11-02 18:30:00',
     });
-    assert.deepEqual(localDateBounds(null, '2026-11-02', 'UTC'), {
-      from: null,
-      to: '2026-11-03 00:00:00',
-    });
   });
 
   it('finds the local date of an instant', function () {
