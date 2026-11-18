@@ -51,7 +51,7 @@ function createBetterAuth(): Authenticate {
     getOriginOfRequest: session.getOriginOfRequest,
     getAdminOrigin: () => urlUtils.getAdminOrigin(),
     findActiveUser(id) {
-      return models.User.findOne({ id, status: 'active' });
+      return models.User.findOne({ id, status: 'active' }, { withRelated: ['roles'] });
     },
   });
 

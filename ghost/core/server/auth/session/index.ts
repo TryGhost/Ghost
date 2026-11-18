@@ -87,7 +87,7 @@ const sessionService = createSessionService({
   getOriginOfRequest,
   getSession: expressSession.getSession,
   findUserById({ id }: { id: string }) {
-    return models.User.findOne({ id, status: 'active' });
+    return models.User.findOne({ id, status: 'active' }, { withRelated: ['roles'] });
   },
   getSettingsCache(key: string) {
     return settingsCache.get(key);

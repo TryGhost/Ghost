@@ -16,7 +16,13 @@ function authorize(req: Record<string, unknown>) {
 }
 
 const app = { id: 'installation' };
-const user = { id: 'owner', email: 'owner@example.com', name: 'Owner', status: 'active' };
+const user = {
+  id: 'owner',
+  email: 'owner@example.com',
+  name: 'Owner',
+  status: 'active',
+  roles: [{ id: 'role-owner', name: 'Owner' }],
+};
 const appPrincipal = (actingFor: typeof user | null): Principal => ({
   kind: 'app',
   method: actingFor ? 'oauth_authorization_code' : 'oauth_client_credentials',
