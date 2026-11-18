@@ -1,6 +1,7 @@
 import * as membersSel from '@tryghost/test-data/selectors/members';
 import { AdminPage } from '@/admin-pages';
 import { Download, JSHandle, Locator, Page } from '@playwright/test';
+import { MemberViewPopover } from './member-view-popover';
 import { readFileSync } from 'node:fs';
 
 export interface ExportedFile {
@@ -13,6 +14,8 @@ const OPEN_MEMBER_TIMEOUT_MS = 5_000;
 
 export class MembersListPage extends AdminPage {
   readonly memberRows: Locator;
+  /** The name link of every listed member, one per row, in the order the list shows them. */
+  readonly memberNames: Locator;
   readonly searchInput: Locator;
   readonly actionsButton: Locator;
   readonly newMemberButton: Locator;
@@ -25,6 +28,11 @@ export class MembersListPage extends AdminPage {
   readonly showAllButton: Locator;
   readonly loadMoreButton: Locator;
   readonly membersListScrollRoot: Locator;
+  // One trigger beside Clear, named "Edit view" when the current filter exactly
+  // matches a saved view and "Save view" otherwise.
+  readonly saveViewButton: Locator;
+  readonly editViewButton: Locator;
+  readonly viewPopover: MemberViewPopover;
   // Not part of this screen: openMemberByName reads it to tell a row click that landed
   // on the detail route from one the list navigated back out of.
   readonly memberDetailScreen: Locator;
@@ -34,6 +42,7 @@ export class MembersListPage extends AdminPage {
     this.pageUrl = '/ghost/#/members';
 
     this.memberRows = page.getByTestId(membersSel.membersListItem);
+    this.memberNames = this.memberRows.getByRole('link');
     this.searchInput = page.getByTestId(membersSel.membersSearchInput);
     this.actionsButton = page.getByTestId(membersSel.membersActions);
     this.newMemberButton = page.getByRole('link', { name: membersSel.newMemberLink });
@@ -48,6 +57,9 @@ export class MembersListPage extends AdminPage {
     this.showAllButton = page.getByRole('button', { name: membersSel.showAllButton });
     this.loadMoreButton = page.getByRole('button', { name: membersSel.loadMoreButton });
     this.membersListScrollRoot = page.getByTestId(membersSel.membersListScrollRoot);
+    this.saveViewButton = page.getByRole('button', { name: 'Save view', exact: true });
+    this.editViewButton = page.getByRole('button', { name: 'Edit view', exact: true });
+    this.viewPopover = new MemberViewPopover(page);
     this.memberDetailScreen = page.getByTestId(membersSel.memberDetail);
   }
 
@@ -256,12 +268,30 @@ export class MembersListPage extends AdminPage {
   }
 
   async saveCurrentView(name: string): Promise<void> {
-    await this.page.getByRole('button', { name: 'Save view' }).click();
-    const dialog = this.page.getByRole('dialog');
-    await dialog.waitFor({ state: 'visible' });
-    await dialog.getByRole('textbox', { name: 'View name' }).fill(name);
-    await dialog.getByRole('button', { name: 'Save' }).click();
-    await dialog.waitFor({ state: 'hidden' });
+    await this.saveViewButton.click();
+    await this.viewPopover.waitForPopover();
+    await this.viewPopover.enterName(name);
+    await this.viewPopover.save();
+  }
+
+  /** Renames the saved view that the current filter matches. */
+  async renameCurrentView(name: string): Promise<void> {
+    await this.editViewButton.click();
+    await this.viewPopover.waitForPopover();
+    await this.viewPopover.enterName(name);
+    await this.viewPopover.save();
+  }
+
+  /** Deletes the saved view that the current filter matches, confirming when asked. */
+  async deleteCurrentView(): Promise<void> {
+    await this.editViewButton.click();
+    await this.viewPopover.waitForPopover();
+    await this.viewPopover.delete();
+  }
+
+  /** The NQL filter in the list's URL, or null when the list is unfiltered. */
+  getUrlFilter(): string | null {
+    return this.getHashRoute().params.filter ?? null;
   }
 
   getMenuItem(name: string | RegExp): Locator {
@@ -337,8 +367,13 @@ export class MembersListPage extends AdminPage {
     return this.page.locator('[data-edit-row] input');
   }
 
+  /** Every filter pill in the filter bar, one per filter applied to the list. */
+  get filterItems(): Locator {
+    return this.page.locator('[data-slot="filter-item"]');
+  }
+
   getFilterItem(fieldName: string): Locator {
-    return this.page.locator('[data-slot="filter-item"]').filter({ hasText: fieldName });
+    return this.filterItems.filter({ hasText: fieldName });
   }
 
   async openFilterValue(fieldName: string): Promise<void> {
