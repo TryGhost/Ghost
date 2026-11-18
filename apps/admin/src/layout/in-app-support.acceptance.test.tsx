@@ -40,7 +40,10 @@ function takeOverHelpClicks(): () => void {
   return () => document.removeEventListener('click', takeOver, true);
 }
 
-/** The Admin 7 frame's top bar shows the site's numbers. */
+/**
+ * The Admin 7 frame's top bar shows the site's numbers. Mobile specs need them
+ * too: the viewport is back at desktop width before the app unmounts.
+ */
 function fakeAdmin7Chrome(): void {
   fakeTags([]);
   fakeAdminStats.memberCount();
@@ -114,7 +117,7 @@ describe('In-app support Help links', () => {
 
   it('keeps Help, marked, in the Admin 7 user menu on mobile, where there is no top bar', async () => {
     await page.viewport(390, 844);
-    fakeTags([]);
+    fakeAdmin7Chrome();
     await renderAdminApp('/tags', { labs: { admin7Design: true, inAppSupport: true } });
 
     await page.getByRole('button', { name: 'Toggle Sidebar' }).click();
@@ -138,7 +141,7 @@ describe('In-app support Help links', () => {
     'closes the Admin 7 user menu when a host script takes over its Help click: $gesture',
     async ({ select }) => {
       await page.viewport(390, 844);
-      fakeTags([]);
+      fakeAdmin7Chrome();
       stopOpeningHelp = takeOverHelpClicks();
       await renderAdminApp('/tags', { labs: { admin7Design: true, inAppSupport: true } });
 

@@ -1,16 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-} from '@tryghost/shade/components';
+import { Sidebar, SidebarContent } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
-import { NavHelpItem } from './nav-help-item';
 
 const FADE_HEIGHT = 48;
 
@@ -79,26 +71,6 @@ function SettingsNavigationFade({ slot }: { slot: HTMLElement | null }) {
   );
 }
 
-/** Help, where the main navigation's Help link is out of reach. */
-function SettingsHelpLink() {
-  const inAppSupport = useFeatureFlag('inAppSupport');
-
-  if (!inAppSupport) {
-    return null;
-  }
-
-  return (
-    // The Settings navigation's own side padding, so Help lines up with its items
-    <SidebarGroup className="shrink-0 border-t border-border px-5">
-      <SidebarGroupContent>
-        <SidebarMenu>
-          <NavHelpItem />
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
-  );
-}
-
 interface SettingsSidebarProps extends React.ComponentProps<typeof Sidebar> {
   slotRef: (element: HTMLDivElement | null) => void;
 }
@@ -125,7 +97,6 @@ const SettingsSidebar = React.forwardRef<HTMLDivElement, SettingsSidebarProps>(
           <Stack ref={handleSlotRef} className="min-h-0 flex-1" gap="none" />
           <SettingsNavigationFade slot={slot} />
         </SidebarContent>
-        <SettingsHelpLink />
       </Sidebar>
     );
   },
