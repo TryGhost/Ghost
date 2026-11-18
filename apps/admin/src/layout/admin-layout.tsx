@@ -29,6 +29,7 @@ import {
 import { SidebarSwapTransition } from './sidebar-swap-transition';
 import { MobileNavBar } from './app-sidebar/mobile-nav-bar';
 import { SkipLink } from './skip-link';
+import { focusMain } from './focus-main';
 import { ContributorUserMenu } from './app-sidebar/user-menu';
 import { DunningBanner, DunningOverlay, useDunningLockTakeover } from '@/dunning';
 import { AdminFrame, type AdminFrameMode } from './admin-frame';
@@ -39,6 +40,7 @@ import { SidePanel } from './side-panel/side-panel';
 import {
   sidePanelWidth,
   useSidePanelDocked,
+  useSidePanelMinimized,
   useSidePanelOpen,
 } from './side-panel/side-panel-layout';
 
@@ -159,6 +161,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const isViewSiteRoute = useLocation().pathname === '/site';
   const sidePanelDocked = useSidePanelDocked();
   const sidePanelOpen = useSidePanelOpen();
+  const sidePanelMinimized = useSidePanelMinimized();
 
   // With admin7Design, the desktop page sits inside a frame: a top bar and
   // thin bezels around a rounded card. View site becomes a place of its own,
@@ -199,7 +202,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const floatingSidebar = admin7Design && !isContributor && sidebarVisible && !isMobile;
   const settingsNavigation = floatingSidebar && isSettingsRoute;
   const [sidebarMode, setSidebarMode] = useSidebarMode();
-  const { isFetched: sidebarModeLoaded } = useNavigationPreferences();
+  // Not `isFetched`: every preferences save starts a new query, and a false
+  // here cuts off a morph in flight. Placeholder data keeps `isSuccess` true.
+  const { isSuccess: sidebarModeLoaded } = useNavigationPreferences();
   const settingsPinMorph = useSettingsPinMorph(
     settingsNavigation,
     floatingSidebar && sidebarMode !== 'full',
@@ -239,6 +244,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const sidebarRef = React.useRef<HTMLDivElement>(null);
   const mainRef = React.useRef<HTMLElement>(null);
   const contributorMenuRef = React.useRef<HTMLDivElement>(null);
+
+  // Closing the side panel after the screen has changed under it, e.g. Help
+  // opened from the main navigation and closed in Settings, returns focus to
+  // the Help link on screen now, or else to the page
+  const focusAfterSidePanelOpenerLost = React.useCallback(() => {
+    const help = document.querySelector<HTMLElement>('[data-ghost-help]');
+    if (help) {
+      help.focus({ preventScroll: true });
+    } else if (mainRef.current) {
+      focusMain(mainRef.current, { preventScroll: true });
+    }
+  }, []);
   React.useLayoutEffect(() => {
     for (const region of [mainRef.current, contributorMenuRef.current]) {
       if (region) {
@@ -454,6 +471,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       framed={adminFrame}
       locked={dunningLocked}
       visible={sidePanelVisible}
+      onReturnFocusLost={focusAfterSidePanelOpenerLost}
     />
   );
 
@@ -467,8 +485,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       className={cn(
         'h-full w-[max(100%,calc(100vw_-_var(--side-panel-width)_-_3_*_var(--admin-frame-side)))]',
         // Keeps the page's own stacking (sticky headers are z-50) under the
-        // panel while it floats over it
-        sidePanelVisible && sidePanelOpen && !sidePanelDocked && 'isolate',
+        // panel while it floats over it, as a window or the minimized bar
+        sidePanelVisible && sidePanelOpen && (!sidePanelDocked || sidePanelMinimized) && 'isolate',
       )}
     >
       {sidebarLayout}

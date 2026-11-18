@@ -244,11 +244,6 @@
       "count": 2
     }
   },
-  "src/layout/skip-link.tsx": {
-    "react-hooks/immutability": {
-      "count": 1
-    }
-  },
   "src/members/components/bulk-action-modals/import-members/import-members-modal.tsx": {
     "react-hooks/immutability": {
       "count": 2
