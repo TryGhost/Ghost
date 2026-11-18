@@ -308,7 +308,7 @@ services:
           - core/server/lib/image/index.js
           - core/server/lib/lexical.js
           - core/server/lib/mobiledoc.ts
-          - core/server/api/endpoints/authentication.js
+          - core/server/api/endpoints/authentication.ts
           - core/server/api/endpoints/images.js
           - core/server/api/endpoints/media.js
           - core/server/api/endpoints/files.js
@@ -350,7 +350,7 @@ services:
           - core/kernel/adapter-manager/adapter-manager.ts
           - core/kernel/adapter-manager/options.ts
           - core/server/services/post-scheduling/index.ts
-          - core/server/api/endpoints/authentication.js
+          - core/server/api/endpoints/authentication.ts
           - core/server/lib/image/index.js
         tests:
           - test/unit/kernel/adapter-manager/adapter-manager.test.ts
@@ -5865,7 +5865,7 @@ services:
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/adapters/scheduling/error-capture.ts
-          - core/server/api/endpoints/authentication.js
+          - core/server/api/endpoints/authentication.ts
           - core/boot.js
         tests:
           - test/unit/server/services/post-scheduling/post-scheduling.test.js
@@ -5887,7 +5887,7 @@ services:
           - core/server/models/base/plugins/events.js
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/server/auth/reset-authentication.ts
-          - core/server/api/endpoints/authentication.js
+          - core/server/api/endpoints/authentication.ts
           - core/server/web/api/endpoints/admin/routes.js
           - core/server/api/endpoints/schedules.js
           - core/server/services/posts/post-scheduling.js

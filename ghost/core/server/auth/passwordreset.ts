@@ -128,7 +128,7 @@ function doReset(
   options: PasswordResetOptions,
   tokenParts: TokenParts,
   settingsAPI: SettingsAPI,
-): Promise<{ user: unknown }> {
+): Promise<{ user: { id: string } }> {
   const data = options.data.password_reset[0];
   const resetToken = data.token;
   const oldPassword = data.oldPassword;
