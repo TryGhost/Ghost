@@ -36,6 +36,11 @@ const ManageViewPopoverContent: React.FC<ManageViewPopoverContentProps> = ({
   const isEditing = Boolean(activeView);
 
   const handleSave = async () => {
+    // Enter can be pressed again before the first save finishes.
+    if (saving) {
+      return;
+    }
+
     const trimmed = name.trim();
 
     if (!trimmed) {

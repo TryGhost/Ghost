@@ -52,6 +52,7 @@ export {
 export type {
   BrowseQuery,
   EditSettingsCapture,
+  FakeEditSettingsOptions,
   FakeMembersOptions,
   ResourceCapture,
   ResourceOptions,
