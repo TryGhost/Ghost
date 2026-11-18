@@ -23,11 +23,12 @@ describe.skipIf(process.env.GHOST_TEST_REDIS_AVAILABLE !== '1')(
       store = new RedisPresenceStore({
         client: cache.redisClient,
         key: `${cache.rawKeyPrefix}active`,
+        leaseKey: `${cache.rawKeyPrefix}leases`,
       });
     });
 
     afterEach(async function () {
-      await cache.redisClient.del(store.key);
+      await cache.redisClient.del(store.key, store.leaseKey);
       await cache.redisClient.quit();
     });
 
@@ -43,6 +44,29 @@ describe.skipIf(process.env.GHOST_TEST_REDIS_AVAILABLE !== '1')(
       assert.ok(ttl > 0 && ttl <= 60_000, `expected a TTL within 60s, got ${ttl}`);
 
       await store.remove('post:a:u2');
+      assert.deepEqual(await store.read(0), []);
+    });
+
+    it('queues first come, first served, moves a member on replace and expires the key', async function () {
+      await store.claim('post:a:u1', 1_000, 60_000);
+      await store.claim('post:a:u2', 2_000, 60_000);
+      assert.deepEqual(await store.claim('post:a:u1', 3_000, 60_000), [
+        { member: 'post:a:u1', order: 1_000 },
+        { member: 'post:a:u2', order: 2_000 },
+      ]);
+
+      const ttl = await cache.redisClient.pttl(store.leaseKey);
+      assert.ok(ttl > 0 && ttl <= 60_000, `expected a TTL within 60s, got ${ttl}`);
+
+      assert.deepEqual(await store.claim('post:a:u2', 999, 60_000, true), [
+        { member: 'post:a:u2', order: 999 },
+        { member: 'post:a:u1', order: 1_000 },
+      ]);
+
+      await store.release(['post:a:u2']);
+      await store.touch('post:a:u1', 5_000, 60_000);
+      await store.remove('post:a:u1');
+      assert.deepEqual(await store.claims(), []);
       assert.deepEqual(await store.read(0), []);
     });
   },

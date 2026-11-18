@@ -22,9 +22,16 @@ export class FakeRedisClient implements RedisPresenceClient {
   pipeline(): RedisPresencePipeline {
     const queue: Array<() => unknown> = [];
     const pipeline: RedisPresencePipeline = {
-      zadd: (key, score, member) => {
-        this.commands.push('zadd');
-        queue.push(() => this.set(key).set(member, score));
+      zadd: (key: string, ...rest: [number, string] | ['NX', number, string]) => {
+        const onlyIfAbsent = rest[0] === 'NX';
+        const [score, member] = (onlyIfAbsent ? rest.slice(1) : rest) as [number, string];
+        this.commands.push(onlyIfAbsent ? 'zadd nx' : 'zadd');
+        queue.push(() => {
+          const set = this.set(key);
+          if (!onlyIfAbsent || !set.has(member)) {
+            set.set(member, score);
+          }
+        });
         return pipeline;
       },
       pexpire: (key, milliseconds) => {
@@ -44,6 +51,11 @@ export class FakeRedisClient implements RedisPresenceClient {
             }
           }
         });
+        return pipeline;
+      },
+      zrangebyscore: (key, min, max) => {
+        this.commands.push('zrangebyscore');
+        queue.push(() => this.range(key, min, max));
         return pipeline;
       },
       exec: async () => {
@@ -69,6 +81,10 @@ export class FakeRedisClient implements RedisPresenceClient {
       this.failNext = null;
       throw error;
     }
+    return this.range(key, min, max);
+  }
+
+  private range(key: string, min: number | string, max: number | string): string[] {
     const lower = min === '-inf' ? -Infinity : Number(min);
     const upper = max === '+inf' ? Infinity : Number(max);
     const flat: string[] = [];

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { vi } from 'vitest';
 import {
+  DEFAULT_LEASE_WINDOW_MS,
   DEFAULT_RETENTION_MS,
   DEFAULT_STORE_TIMEOUT_MS,
   EditorPresenceService,
@@ -20,7 +21,7 @@ const USER_3 = '3'.repeat(24);
 const TAB_1 = 'tab-one-0001';
 const TAB_2 = 'tab-two-0002';
 
-function build(overrides: { store?: PresenceStore } = {}) {
+function build(overrides: { store?: PresenceStore; leaseWindowMs?: number } = {}) {
   let now = 1_000_000;
   const recorded: Array<{ name: string; value: Record<string, unknown> }> = [];
   const metrics: PresenceMetrics = {
@@ -32,7 +33,8 @@ function build(overrides: { store?: PresenceStore } = {}) {
     metrics,
     now: () => now,
     activeWindowMs: 60_000,
-    retentionMs: 60_000,
+    leaseWindowMs: overrides.leaseWindowMs,
+    retentionMs: overrides.leaseWindowMs ?? 60_000,
   });
   return {
     service,
@@ -87,6 +89,9 @@ describe('EditorPresenceService', function () {
       touch: async () => assert.fail('touch called'),
       read: async () => assert.fail('read called'),
       remove: async () => assert.fail('remove called'),
+      claim: async () => assert.fail('claim called'),
+      claims: async () => assert.fail('claims called'),
+      release: async () => assert.fail('release called'),
     };
     const { service, now } = build({ store: failing });
     assert.deepEqual(await service.poll(USER_1, {}), { active: [], serverTime: now });
@@ -183,6 +188,7 @@ describe('EditorPresenceService', function () {
           store: 'memory',
           outcome: 'ok',
           write: true,
+          lease: 'none',
           value: 'number',
         },
         {
@@ -202,6 +208,9 @@ describe('EditorPresenceService', function () {
       touch: async () => undefined,
       read: async () => [],
       remove: async () => undefined,
+      claim: async () => [],
+      claims: async () => [],
+      release: async () => undefined,
       ...failure,
     };
   }
@@ -248,6 +257,7 @@ describe('EditorPresenceService', function () {
           store: 'redis',
           outcome: 'error',
           write: true,
+          lease: 'none',
           value: undefined,
         },
       ],
@@ -356,6 +366,187 @@ describe('EditorPresenceService', function () {
   });
 });
 
+describe('EditorPresenceService lease', function () {
+  const LEASE_WINDOW = 150_000;
+  const editing = { id: POST_A, type: 'post' as const };
+  const hold = (tab: string) => ({ editing, tab, lease: 'hold' as const });
+  const take = (tab: string) => ({ editing, tab, lease: 'take' as const });
+
+  it('gives the lease to the first tab that asks and tells the next who holds it', async function () {
+    const { service, advance } = build({ leaseWindowMs: LEASE_WINDOW });
+    const first = await service.poll(USER_1, hold(TAB_1));
+    advance(1_000);
+    const second = await service.poll(USER_2, hold(TAB_2));
+    assert.deepEqual(first.lease, { userId: USER_1, mine: true });
+    assert.deepEqual(second.lease, { userId: USER_1, mine: false });
+  });
+
+  it('keeps the holder in place however often the others poll', async function () {
+    const { service, advance } = build({ leaseWindowMs: LEASE_WINDOW });
+    await service.poll(USER_1, hold(TAB_1));
+    for (let i = 0; i < 3; i += 1) {
+      advance(10_000);
+      assert.equal((await service.poll(USER_2, hold(TAB_2))).lease?.mine, false);
+      assert.equal((await service.poll(USER_1, hold(TAB_1))).lease?.mine, true);
+    }
+  });
+
+  it('treats the same user in a second tab as another claimant', async function () {
+    const { service, advance } = build({ leaseWindowMs: LEASE_WINDOW });
+    await service.poll(USER_1, hold(TAB_1));
+    advance(1_000);
+    const other = await service.poll(USER_1, hold(TAB_2));
+    assert.deepEqual(other.lease, { userId: USER_1, mine: false });
+  });
+
+  it('passes the lease to the next in line when the holder leaves', async function () {
+    const { service, advance } = build({ leaseWindowMs: LEASE_WINDOW });
+    await service.poll(USER_1, hold(TAB_1));
+    advance(1_000);
+    await service.poll(USER_2, hold(TAB_2));
+    await service.leave(USER_1, { resource: editing, tab: TAB_1 });
+    advance(1_000);
+    assert.deepEqual((await service.poll(USER_2, hold(TAB_2))).lease, {
+      userId: USER_2,
+      mine: true,
+    });
+  });
+
+  it('keeps a quiet holder past the active window and drops it after the lease window', async function () {
+    const { service, store, advance } = build({ leaseWindowMs: LEASE_WINDOW });
+    await service.poll(USER_1, hold(TAB_1));
+    advance(1_000);
+    await service.poll(USER_2, hold(TAB_2));
+
+    advance(90_000);
+    const quiet = await service.poll(USER_2, hold(TAB_2));
+    assert.deepEqual(quiet.active, []);
+    assert.deepEqual(quiet.lease, { userId: USER_1, mine: false });
+
+    advance(60_000);
+    const lapsed = await service.poll(USER_2, hold(TAB_2));
+    assert.deepEqual(lapsed.lease, { userId: USER_2, mine: true });
+    assert.deepEqual(
+      (await store.claims()).map((claim) => claim.member),
+      [`post:${POST_A}:${USER_2}:${TAB_2}`],
+    );
+  });
+
+  it('sends a returning holder to the back once its place has lapsed', async function () {
+    const { service, advance } = build({ leaseWindowMs: LEASE_WINDOW });
+    await service.poll(USER_1, hold(TAB_1));
+    advance(1_000);
+    await service.poll(USER_2, hold(TAB_2));
+    advance(LEASE_WINDOW + 1);
+    await service.poll(USER_2, hold(TAB_2));
+    advance(1_000);
+    assert.deepEqual((await service.poll(USER_1, hold(TAB_1))).lease, {
+      userId: USER_2,
+      mine: false,
+    });
+  });
+
+  it('moves a tab to the front on take, and the tab it passed learns on its next poll', async function () {
+    const { service, advance } = build({ leaseWindowMs: LEASE_WINDOW });
+    await service.poll(USER_1, hold(TAB_1));
+    advance(1_000);
+    await service.poll(USER_2, hold(TAB_2));
+    advance(1_000);
+    assert.deepEqual((await service.poll(USER_2, take(TAB_2))).lease, {
+      userId: USER_2,
+      mine: true,
+    });
+    advance(1_000);
+    assert.deepEqual((await service.poll(USER_1, hold(TAB_1))).lease, {
+      userId: USER_2,
+      mine: false,
+    });
+    advance(1_000);
+    assert.equal((await service.poll(USER_1, take(TAB_1))).lease?.mine, true);
+    assert.equal((await service.poll(USER_2, hold(TAB_2))).lease?.mine, false);
+  });
+
+  it('takes like a hold when nobody else queues', async function () {
+    const { service } = build({ leaseWindowMs: LEASE_WINDOW });
+    assert.deepEqual((await service.poll(USER_1, take(TAB_1))).lease, {
+      userId: USER_1,
+      mine: true,
+    });
+  });
+
+  it('keeps each document and each type of document in its own queue', async function () {
+    const { service, advance } = build({ leaseWindowMs: LEASE_WINDOW });
+    await service.poll(USER_1, hold(TAB_1));
+    advance(1_000);
+    const otherPost = await service.poll(USER_2, {
+      editing: { id: POST_B, type: 'post' },
+      tab: TAB_2,
+      lease: 'take',
+    });
+    const page = await service.poll(USER_3, {
+      editing: { id: POST_A, type: 'page' },
+      lease: 'hold',
+    });
+    assert.deepEqual(otherPost.lease, { userId: USER_2, mine: true });
+    assert.deepEqual(page.lease, { userId: USER_3, mine: true });
+    assert.equal((await service.poll(USER_1, hold(TAB_1))).lease?.mine, true);
+  });
+
+  it('leaves a tab that does not ask out of the queue and out of the answer', async function () {
+    const { service, store, advance } = build({ leaseWindowMs: LEASE_WINDOW });
+    const plain = await service.poll(USER_1, { editing, tab: TAB_1 });
+    assert.equal('lease' in plain, false);
+    assert.deepEqual(await store.claims(), []);
+
+    advance(1_000);
+    const asked = await service.poll(USER_2, hold(TAB_2));
+    assert.deepEqual(asked.lease, { userId: USER_2, mine: true });
+    assert.deepEqual(
+      asked.active.map((entry) => entry.userId),
+      [USER_1],
+    );
+  });
+
+  it('rejects a lease with no document being edited', async function () {
+    const { service } = build();
+    await assert.rejects(
+      service.poll(USER_1, { resources: [{ id: POST_A, type: 'post' }], lease: 'hold' }),
+      { errorType: 'ValidationError' },
+    );
+    await assert.rejects(service.poll(USER_1, { editing, lease: 'keep' }), {
+      errorType: 'ValidationError',
+    });
+  });
+
+  it('records which lease a poll asked for, and a failed claim as degraded', async function () {
+    const { service, recorded } = build({ leaseWindowMs: LEASE_WINDOW });
+    await service.poll(USER_1, take(TAB_1));
+    assert.equal(recorded[0].value.lease, 'take');
+
+    const failing = build({
+      store: {
+        kind: 'redis',
+        touch: async () => undefined,
+        read: async () => [],
+        remove: async () => undefined,
+        claim: async () => {
+          throw new Error("NOPERM User 1 has no permissions to run the 'zadd' command");
+        },
+        claims: async () => [],
+        release: async () => undefined,
+      },
+    });
+    await assert.rejects(failing.service.poll(USER_1, hold(TAB_1)), { statusCode: 503 });
+    assert.deepEqual(
+      failing.recorded.map((entry) => [entry.name, entry.value.operation ?? entry.value.lease]),
+      [
+        ['presence-degraded', 'claim'],
+        ['presence-poll', 'hold'],
+      ],
+    );
+  });
+});
+
 describe('resolveRetentionMs', function () {
   it('defaults when the adapter has no usable ttl', function () {
     assert.equal(resolveRetentionMs(undefined), DEFAULT_RETENTION_MS);
@@ -364,9 +555,10 @@ describe('resolveRetentionMs', function () {
     assert.equal(resolveRetentionMs(Number.NaN), DEFAULT_RETENTION_MS);
   });
 
-  it('takes the adapter ttl in seconds, no shorter than the active window', function () {
-    assert.equal(resolveRetentionMs(120), 120_000);
+  it('takes the adapter ttl in seconds, no shorter than the lease window', function () {
+    assert.equal(resolveRetentionMs(300), 300_000);
     assert.equal(resolveRetentionMs(3_600), 3_600_000);
-    assert.equal(resolveRetentionMs(5), MIN_RETENTION_MS);
+    assert.equal(resolveRetentionMs(60), MIN_RETENTION_MS);
+    assert.equal(MIN_RETENTION_MS, DEFAULT_LEASE_WINDOW_MS);
   });
 });
