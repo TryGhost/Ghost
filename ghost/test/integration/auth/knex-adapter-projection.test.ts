@@ -78,27 +78,40 @@ describe('Knex adapter: joined projections', () => {
   });
 
   afterAll(async () => {
-    await db.raw('DROP DATABASE IF EXISTS ??', [database]);
-    await db.destroy();
+    try {
+      await db.raw('DROP DATABASE IF EXISTS ??', [database]);
+    } finally {
+      await db.destroy();
+    }
   });
 
   it('sorts and paginates joined rows by a field outside the projection', async () => {
-    const rows = await adapter.findMany({
-      model: 'parent',
-      select: ['label'],
-      sortBy: { field: 'rank', direction: 'asc' },
-      limit: 1,
-      offset: 1,
-      join: { child: true },
+    const extraChild = '000000000000000000000005';
+    await adapter.create({
+      model: 'child',
+      data: { id: extraChild, label: 'Another second child', parentId: secondParent },
+      forceAllowId: true,
     });
+    try {
+      const rows = await adapter.findMany({
+        model: 'parent',
+        select: ['label'],
+        sortBy: { field: 'rank', direction: 'asc' },
+        limit: 1,
+        offset: 1,
+        join: { child: true },
+      });
 
-    assert.deepEqual(JSON.parse(JSON.stringify(rows)), [
-      {
-        id: firstParent,
-        label: 'First parent',
-        child: [{ id: firstChild, label: 'First child', parentId: firstParent }],
-      },
-    ]);
+      assert.deepEqual(JSON.parse(JSON.stringify(rows)), [
+        {
+          id: firstParent,
+          label: 'First parent',
+          child: [{ id: firstChild, label: 'First child', parentId: firstParent }],
+        },
+      ]);
+    } finally {
+      await adapter.delete({ model: 'child', where: [{ field: 'id', value: extraChild }] });
+    }
   });
 
   it('returns multiple joined rows in order without exposing the omitted sort field', async () => {
@@ -208,6 +221,7 @@ describe('Knex adapter: joined projections', () => {
 
     assert.deepEqual(
       rows
+        // Check relation ownership separately from Better Auth's primary-field name collision.
         .map(({ label, parentId, parent }) => ({ label, parentId, parent }))
         .sort((a, b) => a.label.localeCompare(b.label)),
       [
