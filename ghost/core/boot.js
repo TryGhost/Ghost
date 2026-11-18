@@ -541,7 +541,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   await jobsService.start();
   debug('End: Register job handlers');
 
-  await automationsService.init({
+  automationsService.init({
     domainEvents,
     apiUrl,
     schedulerAdapter,
