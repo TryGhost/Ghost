@@ -391,8 +391,10 @@ are its whole authority. Audit attribution records the app and, when present,
 the user. The shape lands with `resolvePrincipal` in Phase 2, before anything
 switches on it, so Phase 4b adds no new kind.
 
-`req.user`, `req.api_key` and `frame.options.context` are derived from
-`req.auth`, loading Bookshelf models by id during the transition, so
+`req.auth` is frozen and holds plain views of the user, key and integration,
+never Bookshelf models, passwords or key secrets. During the transition
+`req.user` and `req.api_key` keep the Bookshelf models the principal was
+built from, and `frame.options.context` is derived from them, so
 `authorizeAdminApi`, `canThis`, `permissible` hooks and audit attribution keep
 working unchanged.
 
@@ -410,7 +412,12 @@ if (config.get('auth:engine') === 'better-auth') {
 
 Compatibility routes stay in `routes.js` with their rate-limiting
 middleware. `mw.authAdminApi` uses `resolvePrincipal` when `auth:engine` is
-`better-auth`.
+`better-auth`. Under `legacy`, the existing key and session middleware run as
+before and the chain ends by building the same `Principal` from `req.user` and
+`req.api_key`, so both engines set `req.auth`. The API framework passes it as
+`frame.options.context.principal`, and `parseContext` carries it whole; a
+request with a principal is public only when it is anonymous or uses a
+content key.
 
 ## 4. Data model
 

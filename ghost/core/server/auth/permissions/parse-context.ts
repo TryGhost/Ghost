@@ -1,3 +1,5 @@
+import type { Principal } from '../principal';
+
 /**
  * Parse Context
  *
@@ -12,6 +14,7 @@ export default function parseContext(rawContext?: unknown): ParsedContext {
     api_key: null,
     integration: null,
     member: null,
+    principal: null,
     public: true,
   };
 
@@ -35,6 +38,19 @@ export default function parseContext(rawContext?: unknown): ParsedContext {
     parsed.member = context.member;
   }
 
+  if (context && context.principal) {
+    const principal = context.principal;
+    parsed.principal = principal;
+
+    // Only an anonymous request or a content key is public
+    const isPublic =
+      principal.kind === 'anonymous' ||
+      (principal.kind === 'integration' && principal.method === 'content_api_key');
+    if (!isPublic) {
+      parsed.public = false;
+    }
+  }
+
   return parsed;
 }
 
@@ -45,5 +61,7 @@ export interface ParsedContext {
   api_key: { id: string; type: string } | null;
   integration: unknown;
   member: unknown;
+  /** The frozen `req.auth`; its views carry no models or secrets */
+  principal: Principal | null;
   public: boolean;
 }
