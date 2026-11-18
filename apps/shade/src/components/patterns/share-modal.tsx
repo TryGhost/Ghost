@@ -72,7 +72,10 @@ const Content = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogContent
     ref={ref}
-    className={cn('max-h-[calc(100vh-16vmin)] max-w-[540px] overflow-y-auto p-8', className)}
+    className={cn(
+      'max-h-[calc(100vh-16vmin)] max-w-[540px] grid-cols-[minmax(0,1fr)] overflow-y-auto p-8',
+      className,
+    )}
     {...props}
   />
 ));

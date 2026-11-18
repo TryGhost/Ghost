@@ -3,6 +3,12 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { SettingsModal, type SettingsModalSize } from '@/components/patterns/settings-modal';
 import { settingsModalVariants } from '@/components/patterns/settings-modal-variants';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 describe('SettingsModal', () => {
   it.each<SettingsModalSize>(['sm', 'md', 'lg', 'xl', 'full'])(
@@ -63,5 +69,21 @@ describe('SettingsModal', () => {
     await waitFor(() => {
       expect(onClose).toHaveBeenCalledTimes(1);
     });
+  });
+
+  it('shows an alert dialog opened from the modal in front of it', () => {
+    render(
+      <SettingsModal title="Test modal" onClose={() => undefined}>
+        <AlertDialog open>
+          <AlertDialogContent>
+            <AlertDialogTitle>Archive tier?</AlertDialogTitle>
+            <AlertDialogDescription>Members keep access.</AlertDialogDescription>
+          </AlertDialogContent>
+        </AlertDialog>
+      </SettingsModal>,
+    );
+
+    expect(document.getElementById('modal-backdrop')?.className).toContain('z-[1000]');
+    expect(screen.getByRole('alertdialog').className).toContain('z-[1100]');
   });
 });

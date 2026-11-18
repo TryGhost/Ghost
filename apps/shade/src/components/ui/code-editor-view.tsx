@@ -205,7 +205,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
 
   const styles = cn(
     inputSurface('within'),
-    'peer order-2 w-full max-w-full overflow-hidden',
+    'peer w-full max-w-full overflow-hidden',
     clearBg && 'bg-transparent',
     height === 'full' && 'h-full',
     !editable && 'cursor-not-allowed opacity-50',
