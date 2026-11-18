@@ -37,7 +37,6 @@ describe.skipIf(isSQLite)('Better Auth native routes', function () {
     sandbox.stub(sentry, 'captureException');
     sandbox.stub(sentry, 'captureMessage');
     configUtils.set('auth:engine', 'better-auth');
-    configUtils.set('createInDevelopmentTables', true);
     configUtils.set('url', `${siteOrigin}/`);
     configUtils.set('admin:url', `${adminOrigin}/`);
 

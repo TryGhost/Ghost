@@ -32,7 +32,7 @@ module.exports = {
   },
 
   get authentication() {
-    return apiFramework.pipeline(require('./authentication'), localUtils);
+    return apiFramework.pipeline(require('./authentication').default, localUtils);
   },
 
   get db() {
@@ -198,6 +198,10 @@ module.exports = {
 
   get slack() {
     return apiFramework.pipeline(require('./slack'), localUtils);
+  },
+
+  get presence() {
+    return apiFramework.pipeline(require('./presence'), localUtils);
   },
 
   get config() {

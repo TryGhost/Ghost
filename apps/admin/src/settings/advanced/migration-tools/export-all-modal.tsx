@@ -66,7 +66,7 @@ const EXPORT_COMPONENTS: ExportComponent[] = [
     key: 'media',
     label: 'Media files',
     description:
-      'All images, video and audio files. May significantly increase export size and duration',
+      'All images, video and audio files. Exports with media are prepared in the background and emailed to you as a download link.',
     defaultChecked: false,
     asyncOnly: true,
   },
@@ -96,6 +96,7 @@ const ExportAllModal: React.FC<{
     (component) => mode === 'async' || !component.asyncOnly,
   );
   const noneSelected = visibleComponents.every((component) => !selected[component.key]);
+  const isAsyncExport = mode === 'async' && selected.media;
 
   const handleOpenChange = (next: boolean) => {
     // The export request is not idempotent: closing mid-flight would
@@ -116,7 +117,7 @@ const ExportAllModal: React.FC<{
   };
 
   const startExport = async () => {
-    if (mode === 'async') {
+    if (isAsyncExport) {
       try {
         const components = Object.fromEntries(
           visibleComponents.map((component) => [component.key, selected[component.key]]),
@@ -168,7 +169,7 @@ const ExportAllModal: React.FC<{
               <DialogTitle>Export data</DialogTitle>
               <DialogDescription>
                 {mode === 'async' ? (
-                  'Choose what to include. Your export will be prepared in the background and a download link emailed to you.'
+                  'Choose what to include in your export.'
                 ) : (
                   <>
                     Your export will be downloaded as a single zip file. Images, videos and files
@@ -194,6 +195,7 @@ const ExportAllModal: React.FC<{
                   <Checkbox
                     checked={selected[component.key]}
                     className="mt-0.5"
+                    disabled={isRequestingExport}
                     id={`export-${component.key}`}
                     onCheckedChange={(checked) =>
                       setSelected((current) => ({ ...current, [component.key]: checked === true }))
@@ -218,7 +220,15 @@ const ExportAllModal: React.FC<{
                 disabled={noneSelected || isRequestingExport}
                 onClick={() => void startExport()}
               >
-                <LucideIcon.Download /> Export
+                {isAsyncExport ? (
+                  <>
+                    <LucideIcon.Mail /> Email me the export
+                  </>
+                ) : (
+                  <>
+                    <LucideIcon.Download /> Download export
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </>

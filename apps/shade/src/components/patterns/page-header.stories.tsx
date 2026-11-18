@@ -15,6 +15,15 @@ import { Stack } from '@/components/primitives';
 import { useShade } from '@/providers/shade-context';
 import { formatNumber } from '@/utils';
 import { FilterBar } from '@/components/patterns/filter-bar';
+import { Box } from '@/components/primitives/box';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 
 const meta = {
   title: 'Patterns / Page Header',
@@ -366,5 +375,74 @@ export const DisabledActions: Story = {
         </PageHeader.Action>
       </PageHeader.ActionGroup.Primary>
     </PageHeader.ActionGroup>
+  ),
+};
+
+function BreadcrumbExample({ parent, current }: { parent: string; current: string }) {
+  return (
+    <Box className="max-w-2xl" padding="xl">
+      <PageHeader blurredBackground={false} sticky={false}>
+        <PageHeader.Left>
+          <PageHeader.Breadcrumb>
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="#">{parent}</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{current}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </PageHeader.Breadcrumb>
+          <PageHeader.Title>Edit newsletter</PageHeader.Title>
+        </PageHeader.Left>
+        <PageHeader.Actions>
+          <PageHeader.ActionGroup>
+            <PageHeader.ActionGroup.Primary>
+              <PageHeader.Action label="Save">
+                <Save />
+                Save
+              </PageHeader.Action>
+            </PageHeader.ActionGroup.Primary>
+          </PageHeader.ActionGroup>
+        </PageHeader.Actions>
+      </PageHeader>
+    </Box>
+  );
+}
+
+export const LongBreadcrumb: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use for a long current-page breadcrumb: it should ellipsize on one line without pushing the Save action out of view.',
+      },
+    },
+  },
+  render: () => (
+    <BreadcrumbExample
+      current="A very long newsletter name with publication updates, interviews, announcements and stories from our community"
+      parent="Newsletters"
+    />
+  ),
+};
+
+export const LongParentBreadcrumb: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use when parent and current breadcrumbs are both long: the parent is capped so the current page retains space. Resize to check both labels.',
+      },
+    },
+  },
+  render: () => (
+    <BreadcrumbExample
+      current="The weekly digest of community stories and upcoming events"
+      parent="Publication newsletters and special editions for all our readers"
+    />
   ),
 };

@@ -121,6 +121,8 @@ describe('Installing an app', () => {
       .element(appsScreen.accessIndicator())
       .toHaveTextContent('The app acts as whoever opens it, within their role.');
     await expect(appsScreen.accessItems()).toHaveCount(6);
+    // Where the app's data goes closes the box, but isn't one of the permissions
+    await expect(appsScreen.accessIndicator().getByRole('listitem')).toHaveCount(6);
     await expect
       .element(appsScreen.accessItems().first())
       .toHaveTextContent('View, create, edit, publish and delete posts and pages');

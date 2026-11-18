@@ -72,17 +72,30 @@ export class OutboxRelay {
   }
 
   async #run(): Promise<void> {
+    // Nothing wakes the relay for a retry, so it sleeps only until the
+    // latest one is due, even across drains started by a wake-up; one drain
+    // then retries every row that failed before it
+    let retryDueAt: number | undefined;
     while (this.#running) {
       this.#woken = false;
-      await this.#drain();
+      if (retryDueAt !== undefined && Date.now() >= retryDueAt) {
+        retryDueAt = undefined;
+      }
+      if (await this.#drain()) {
+        retryDueAt = Date.now() + this.#retryDelayMs;
+      }
       if (!this.#running) {
         break;
       }
-      await this.#sleep(this.#pollIntervalMs);
+      const untilRetry =
+        retryDueAt === undefined ? this.#pollIntervalMs : Math.max(0, retryDueAt - Date.now());
+      await this.#sleep(Math.min(this.#pollIntervalMs, untilRetry));
     }
   }
 
-  async #drain(): Promise<void> {
+  // Resolves true when a claim or a hand-off failed and needs a retry
+  async #drain(): Promise<boolean> {
+    let failed = false;
     while (this.#running) {
       let outcome: ProcessOutcome;
       try {
@@ -95,11 +108,11 @@ export class OutboxRelay {
           error,
         );
         this.#sentry?.captureException(error);
-        return;
+        return true;
       }
 
       if (outcome.status === 'idle') {
-        return;
+        return failed;
       }
       if (outcome.status === 'delivered') {
         // created_at is stored floored to the second, so this reads up to 1s high
@@ -117,6 +130,7 @@ export class OutboxRelay {
         );
       }
       if (outcome.status === 'failed') {
+        failed = true;
         this.#logging.error(
           `[Jobs Outbox] submission failed for dispatch ${outcome.id}; retrying later`,
           outcome.error,
@@ -124,6 +138,7 @@ export class OutboxRelay {
         this.#sentry?.captureException(outcome.error, { tags: { dispatch_id: outcome.id } });
       }
     }
+    return failed;
   }
 
   #submit(id: string, envelope: DispatchEnvelope): Promise<void> {

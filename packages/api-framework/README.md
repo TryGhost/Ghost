@@ -262,6 +262,36 @@ be JSON-compatible; for non-JSON schema outputs such as `Map`, `Set`, or
 Legacy key callbacks still run without a cache because some also prepare access
 context, but their unused results are not serialized.
 
+#### Resource bodies
+
+Admin API writes send one resource in an array under a root key, such as
+`{labels: [{name: 'News'}]}`. `resourceBody()` builds the schema for that body
+and parses it to the resource, so callbacks do not unwrap it themselves:
+
+```ts
+import { defineMethod, resourceBody } from '@tryghost/api-framework';
+import { z } from 'zod';
+
+const label = z.object({ name: z.string() });
+
+const add = defineMethod({
+  schema: { body: resourceBody('labels', label) },
+  permissions: true,
+  query(frame) {
+    // The label itself, not {labels: [label]}.
+    return frame.validated.body.name;
+  },
+});
+```
+
+The body must hold exactly one resource. Validation issues keep their path in
+the body as sent, such as `body.labels.0.name`, and `z.input` of the schema is
+still that body. `frame.data` is unchanged, so serializers and legacy helpers
+continue to read `frame.data.labels[0]`.
+
+The result is not a `z.object()`, so it has no `.extend()` or `.pick()`. Compose
+the resource schema first, then wrap it.
+
 `defineMethod()` preserves the supplied configuration, schemas, and callbacks by
 reference. It does not parse requests or invoke callbacks itself; the pipeline
 provides that behavior. Existing controllers without schemas continue to use

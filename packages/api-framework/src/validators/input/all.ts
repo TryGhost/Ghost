@@ -3,7 +3,7 @@ import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import validator from '@tryghost/validator';
 import _ from 'lodash';
-import type { Dictionary } from '../../frame.ts';
+import { withoutPrincipal, type Dictionary } from '../../frame.ts';
 import type { ApiConfiguration } from '../../pipeline.ts';
 
 const debug = createDebug('validators:input:all');
@@ -59,8 +59,9 @@ const validate = (config: ValidationConfiguration = {}, attrs: Dictionary = {}) 
     }
   });
 
+  const logged = withoutPrincipal(attrs);
   Object.entries(attrs).forEach(([key, value]) => {
-    debug(key, value);
+    debug(key, logged[key]);
 
     if (GLOBAL_VALIDATORS[key]) {
       debug('global validation');

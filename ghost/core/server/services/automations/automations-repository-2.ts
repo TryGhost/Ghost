@@ -42,6 +42,33 @@ export type AutomatedEmailRecipientTrackingData = {
   automationActionRevisionId: string;
 };
 
+export type RecordEmailSentOptions = Readonly<{
+  automationActionRevisionId: string;
+  automationRunStepId: string;
+  mailgunMessageId?: string;
+  memberEmail: string;
+  memberId: string;
+  memberName: string | null;
+  memberUuid: string;
+  trackClicks: boolean;
+  trackOpens: boolean;
+}>;
+
+export type EmailRecipientToInsert = {
+  id: string;
+  created_at: Date;
+  updated_at: Date;
+  member_id: string;
+  member_uuid: string;
+  member_email: string;
+  member_name: string | null;
+  automation_action_revision_id: string;
+  automation_run_step_id: string;
+  mailgun_message_id?: string;
+  track_clicks: boolean;
+  track_opens: boolean;
+};
+
 export type TrackEmailClickedOptions = ReadonlyDeep<{
   automationActionRevisionId: string;
   automationRunStepId: string;
@@ -126,10 +153,19 @@ export type AutomationsRepository2<Connection> = {
     count: number,
   ) => Promisable<void>;
 
+  /** Increment the number of emails sent for this revision. */
+  incrementEmailSentCount: (connection: Connection, revisionId: string) => Promisable<void>;
+
   /** Insert automation actions. */
   insertActions: (
     connection: Connection,
     toInsert: ReadonlyArray<ActionToInsert>,
+  ) => Promisable<void>;
+
+  /** Insert an automated email recipient. */
+  insertEmailRecipient: (
+    connection: Connection,
+    toInsert: Readonly<EmailRecipientToInsert>,
   ) => Promisable<void>;
 
   /** Insert automation run steps. Typically coupled with the insertion of an equal number of runs. */

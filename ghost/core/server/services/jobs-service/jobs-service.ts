@@ -53,6 +53,8 @@ export interface JobsOutboxWiring {
   tracker?: OutboxTrackerLike;
   // How long a submitted row can go without renewal before it is handed over again
   leaseMs: number;
+  // Only logged here; the relay does the polling
+  pollIntervalMs: number;
 }
 
 export interface DispatchOptions {
@@ -95,6 +97,7 @@ export class JobsService {
   readonly #queues = new Map<string, QueueDeclaration>();
   readonly #notReplayed = new Set<string>();
   #leaseTimer?: ReturnType<typeof setTimeout>;
+  #staleCheckDueAt = 0;
   #leaseTick?: Promise<void>;
 
   constructor({ backend, logging, sentry, outbox, logOutboxUnavailable }: JobsServiceOptions) {
@@ -244,6 +247,9 @@ export class JobsService {
     });
     if (this.#outbox) {
       await this.#releaseSubmitted(this.#outbox);
+      // Rows a previous run of this process held have all gone stale one
+      // lease after it stopped
+      this.#staleCheckDueAt = Date.now() + this.#outbox.leaseMs;
       this.#outbox.relay.start();
       this.#scheduleLease(this.#outbox);
     } else if (this.#logOutboxUnavailable) {
@@ -256,8 +262,11 @@ export class JobsService {
     const outboxMode = this.#outboxMode();
     const described =
       outboxMode === 'retain' ? 'on, keeping rows until their job settles' : outboxMode;
+    const timings = this.#outbox
+      ? { poll_interval_ms: this.#outbox.pollIntervalMs, lease_ms: this.#outbox.leaseMs }
+      : {};
     this.#logging.info(
-      { system: { event: 'jobs.started', backend, outbox_mode: outboxMode } },
+      { system: { event: 'jobs.started', backend, outbox_mode: outboxMode, ...timings } },
       `[Jobs] Started on ${backend} with the outbox ${described}`,
     );
   }
@@ -273,7 +282,7 @@ export class JobsService {
   // A row nobody has renewed within the lease belongs to a process that has
   // stopped, so its job may be lost. Live processes keep renewing their rows,
   // so this is safe with several processes per site.
-  async #releaseSubmitted({ store, leaseMs }: JobsOutboxWiring): Promise<void> {
+  async #releaseSubmitted({ store, relay, leaseMs }: JobsOutboxWiring): Promise<void> {
     const { released, dropped } = await store.releaseSubmitted({
       replays: (type) => !this.#notReplayed.has(type),
       staleAfterMs: leaseMs,
@@ -289,6 +298,7 @@ export class JobsService {
         { system: { event: 'jobs_outbox.released', count: released.length, rows: released } },
         `[Jobs Outbox] Released ${released.length} submitted rows to hand over again`,
       );
+      relay.wake();
     }
   }
 
@@ -312,7 +322,17 @@ export class JobsService {
       if (held.length > 0) {
         await outbox.store.renew(held);
       }
-      await this.#releaseSubmitted(outbox);
+      // An idle process checks rarely, so its pooled connection can close
+      // between checks; one holding jobs checks every tick
+      const due = Date.now() >= this.#staleCheckDueAt;
+      if (held.length > 0 || due) {
+        await this.#releaseSubmitted(outbox);
+        // Only a due check that ran pushes the next one back, so a failed one
+        // is retried on the next tick and a busy tick keeps it on time
+        if (due) {
+          this.#staleCheckDueAt = Date.now() + outbox.pollIntervalMs;
+        }
+      }
     } catch (error) {
       this.#logging.error('[Jobs Outbox] renewing or releasing submitted rows failed', error);
       this.#sentry?.captureException(error);
@@ -377,16 +397,22 @@ export class JobsService {
       });
     }
 
+    // The outbox mode lets dashboards compare jobs on sites with the outbox on
+    const fields = (event: string, extra: Record<string, number> = {}) => ({
+      system: { event, job_type: envelope.type, outbox_mode: this.#outboxMode(), ...extra },
+    });
     const startedAt = Date.now();
-    this.#logging.info(`[Background Job] ${envelope.type} started`);
+    this.#logging.info(fields('job.started'), `[Background Job] ${envelope.type} started`);
 
     let result: void | 'interrupted';
     try {
       result = await deliver(envelope.payload);
     } catch (err) {
+      const durationMs = Date.now() - startedAt;
       this.#logging.error(
         err,
-        `[Background Job] ${envelope.type} failed after ${Date.now() - startedAt}ms`,
+        fields('job.failed', { duration_ms: durationMs }),
+        `[Background Job] ${envelope.type} failed after ${durationMs}ms`,
       );
       this.#sentry?.captureException(err, { tags: { job_type: envelope.type } });
       throw err;
@@ -394,17 +420,14 @@ export class JobsService {
 
     const durationMs = Date.now() - startedAt;
     if (result === 'interrupted') {
-      this.#logging.info(`[Background Job] ${envelope.type} interrupted after ${durationMs}ms`);
+      this.#logging.info(
+        fields('job.interrupted', { duration_ms: durationMs }),
+        `[Background Job] ${envelope.type} interrupted after ${durationMs}ms`,
+      );
       return 'interrupted';
     }
     this.#logging.info(
-      {
-        system: {
-          event: 'job.completed',
-          job_type: envelope.type,
-          duration_ms: durationMs,
-        },
-      },
+      fields('job.completed', { duration_ms: durationMs }),
       `[Background Job] ${envelope.type} completed in ${durationMs}ms`,
     );
   }

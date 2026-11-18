@@ -36,11 +36,11 @@ import { NotFound } from '@/shared/not-found';
 import { AccessIndicator, OPENED_APP_ACCESS_INTRO } from './components/access-indicator';
 import { AppIcon } from './components/app-icon';
 import { AppsGate } from './components/apps-gate';
+import { PinMenuItem } from './components/pin-menu-item';
 import { SurfaceLine } from './components/surface-icon';
-import { ACCOUNT_ACCESS } from './lib/access';
 import { servedFrom } from './lib/served-from';
 import { UninstallDialog } from './components/uninstall-dialog';
-import { historyTitle, installedBy } from './lib/history';
+import { historyTitle } from './lib/history';
 import { isInstallationNotFound } from './lib/not-found';
 import { appReviewRoute, appRoute } from './lib/routes';
 import { useInstalledApps } from './lib/use-app-pins';
@@ -66,9 +66,9 @@ const Section: React.FC<{
     {/* Admin 7 spaces sections a little wider than the scale's md step */}
     <Stack className="in-data-[admin7-design=true]:gap-4" gap="md">
       <Stack gap="xs">
-        <h3 className="section-heading text-base font-semibold" id={id}>
+        <h2 className="section-heading text-base font-semibold" id={id}>
           {title}
-        </h3>
+        </h2>
         {description && (
           <Text size="sm" tone="secondary">
             {description}
@@ -92,7 +92,7 @@ const History: React.FC<{ entries: AppInstallationHistoryEntry[]; timezone: stri
   entries,
   timezone,
 }) => (
-  <ol className="m-0 list-none divide-y divide-border p-0" data-testid="app-history">
+  <ol className="m-0 list-none divide-y divide-border p-0">
     {entries.map((entry) => (
       <li
         key={entry.id}
@@ -130,7 +130,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   admin7Design,
 }) => {
   const { manifest, history = [] } = installation;
-  const installer = installedBy(history);
+  const installer = history.find((entry) => entry.event === 'installed')?.actor?.name;
   // Several surfaces of one kind read as one line.
   const surfaceTypes = [...new Set(manifest.surfaces.map((surface) => surface.type))];
   const uninstalled =
@@ -141,11 +141,12 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside
       className={cn(
-        'flex w-full shrink-0 flex-col gap-6 in-data-[admin7-design=true]:max-lg:order-first lg:w-80',
+        // Admin 7 shows the sidebar above the main column on narrow screens, and on its right on
+        // wide ones, wherever it comes in the DOM.
+        'flex w-full shrink-0 flex-col gap-6 in-data-[admin7-design=true]:max-lg:order-first lg:w-80 in-data-[admin7-design=true]:lg:order-last',
         admin7Design &&
           "relative lg:self-stretch lg:before:pointer-events-none lg:before:absolute lg:before:inset-y-0 lg:before:-left-10 lg:before:border-l lg:before:border-border lg:before:content-['']",
       )}
-      data-testid="app-details-sidebar"
     >
       {showIdentity && (
         <Stack gap="md">
@@ -215,6 +216,10 @@ const Details: React.FC<{
   );
   // Lists in a section sit in a ruled card in Admin 7, and an outlined one before it.
   const cardVariant = admin7Design ? 'ruled' : 'outline';
+  // Admin 7 puts the sidebar after the main column, as it shows on wide screens. Where it
+  // carries the app's name, though, it comes first, so the page's heading comes before its
+  // sections for the keyboard and screen readers too.
+  const sidebarFirst = !admin7Design || showIdentity;
 
   return (
     // Side by side on wide screens, at the member page's gaps, which go past the scale
@@ -222,7 +227,7 @@ const Details: React.FC<{
       className="flex-1 in-data-[admin7-design=true]:[--text-section-heading:var(--text-section-heading-lg)] lg:flex-row lg:items-start lg:gap-12 in-data-[admin7-design=true]:lg:gap-20"
       gap="2xl"
     >
-      {!admin7Design && sidebar}
+      {sidebarFirst && sidebar}
       <Stack className="min-w-0 flex-1 in-data-[admin7-design=true]:gap-18" gap="2xl">
         {status === 'suspended' && (
           <Banner data-testid="app-needs-approval" size="md" variant="warning">
@@ -241,7 +246,7 @@ const Details: React.FC<{
           >
             <Card variant={cardVariant}>
               <CardContent className={admin7Design ? undefined : 'pt-6'}>
-                <AccessIndicator items={ACCOUNT_ACCESS} bare />
+                <AccessIndicator manifest={manifest} bare />
               </CardContent>
             </Card>
           </Section>
@@ -255,9 +260,7 @@ const Details: React.FC<{
           </Card>
         </Section>
       </Stack>
-      {/* Admin 7 shows the sidebar on the right, so it comes after the main column for the
-          keyboard too. */}
-      {admin7Design && sidebar}
+      {!sidebarFirst && sidebar}
     </Stack>
   );
 };
@@ -269,7 +272,6 @@ interface ActionsProps {
 
 const Actions: React.FC<ActionsProps> = ({ installation, onUninstall }) => {
   const { pins } = useInstalledApps();
-  const pinned = pins.isPinned(installation.id);
 
   return (
     <PageHeader.Actions>
@@ -283,14 +285,11 @@ const Actions: React.FC<ActionsProps> = ({ installation, onUninstall }) => {
           <DropdownMenuContent align="end">
             {pins.isLoaded && (
               <>
-                {/* Disabled without a reason when no more apps fit, as in the Apps list. */}
-                <DropdownMenuItem
-                  disabled={!pinned && !pins.canPinMore}
-                  onSelect={() => pins.setPinned(installation.id, !pinned)}
-                >
-                  {pinned ? <LucideIcon.PinOff /> : <LucideIcon.Pin />}
-                  {pinned ? 'Unpin from sidebar' : 'Pin to sidebar'}
-                </DropdownMenuItem>
+                <PinMenuItem
+                  full={!pins.canPinMore}
+                  pinned={pins.isPinned(installation.id)}
+                  onPinnedChange={(pinned) => pins.setPinned(installation.id, pinned)}
+                />
                 <DropdownMenuSeparator />
               </>
             )}
@@ -382,7 +381,13 @@ export const AppDetails: React.FC = () => {
             {largeTitles && (isLoading || installation) && (
               <Stack className="min-w-0 lg:pr-40" gap="sm">
                 {isLoading || !installation ? (
-                  <Skeleton className="h-(--large-title-size) w-64" />
+                  <>
+                    <Inline className="min-w-0" gap="md">
+                      <Skeleton className="size-10 rounded-md" />
+                      <Skeleton className="h-(--large-title-size) w-64" />
+                    </Inline>
+                    <Skeleton className="h-4 w-full max-w-md" />
+                  </>
                 ) : (
                   <>
                     <Inline className="min-w-0" gap="md">
@@ -412,6 +417,29 @@ export const AppDetails: React.FC = () => {
               largeTitles && 'min-h-auto overflow-visible',
             )}
           >
+            {/* While the app loads: the sidebar's column, its name (where the header doesn't
+                show it large) over its facts */}
+            {!installation && isLoading && (
+              <Stack className="w-full max-w-md gap-6" data-testid="app-details-loading">
+                {!largeTitles && (
+                  <Stack gap="md">
+                    <Skeleton className="size-16 rounded-xl" />
+                    <Stack gap="sm">
+                      <Skeleton className="h-6 w-2/3" />
+                      <Skeleton className="h-4 w-full" />
+                    </Stack>
+                  </Stack>
+                )}
+                <Stack gap="xl">
+                  {['w-3/5', 'w-full', 'w-4/5', 'w-1/2'].map((width) => (
+                    <Stack key={width} gap="sm">
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className={cn('h-4', width)} />
+                    </Stack>
+                  ))}
+                </Stack>
+              </Stack>
+            )}
             {installation && (
               <Details
                 admin7Design={admin7Design}
@@ -421,13 +449,7 @@ export const AppDetails: React.FC = () => {
               />
             )}
             {!installation && error && (
-              <Stack
-                align="center"
-                className="flex-1"
-                data-testid="app-details-load-error"
-                gap="md"
-                justify="center"
-              >
+              <Stack align="center" className="flex-1" gap="md" justify="center">
                 <p className="text-muted-foreground">
                   {getErrorMessage(error, 'Couldn’t load this app. Please try again.')}
                 </p>

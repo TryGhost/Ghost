@@ -29,7 +29,13 @@ const messages = {
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 // Admin no longer reads selfServeArchives or admin7EditorImprovements; they stay
 // enabled for older Admin builds during independent deployments.
-const GA_FEATURES = ['selfServeArchives', 'admin7EditorImprovements', 'membersCustomFields'];
+const GA_FEATURES = [
+  'selfServeArchives',
+  'admin7EditorImprovements',
+  'membersCustomFields',
+  'stripeCheckoutCollection',
+  'customFieldTypePhone',
+];
 
 // These features are considered publicly available and can be enabled/disabled by users
 const PUBLIC_BETA_FEATURES = [
@@ -53,12 +59,13 @@ const PRIVATE_FEATURES = [
   'themeTranslation',
   'pictureImageFormats',
   'getHelperDeduplication',
-  'stripeCheckoutCollection',
   'paywallImprovements',
   'machinePayments',
   'apps',
   'inAppSupport',
-  'customFieldTypePhone',
+  'editorPresencePolling',
+  'editorPresence',
+  'commentsAnalytics',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

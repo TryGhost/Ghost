@@ -1,3 +1,4 @@
 export * from './members-list-page';
 export * from './member-details-page';
 export * from './members-import-modal';
+export * from './member-view-popover';

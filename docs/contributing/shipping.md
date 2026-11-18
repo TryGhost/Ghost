@@ -60,8 +60,18 @@ The public apps served through jsDelivr are the `cdn` entries:
 - `@tryghost/admin-toolbar`
 
 Sites load the latest patch in the major/minor line configured by Ghost, so a
-patch can go live without a Ghost release, and every publish purges the
-jsDelivr aliases. A minor or major app release is different. It changes the
+patch can go live without a Ghost release. jsDelivr caches which patch that is
+for twelve hours, so CI purges the jsDelivr aliases. A purge only takes effect
+once npm lists the new version, which takes a few minutes, so the `Purge CDN`
+job of every CI run on main waits for the versions that run published and then
+purges each alias that serves an older patch than npm lists. Nothing else in
+the run waits for it. If a later push cancels the run first, a later run's
+`Purge CDN` job purges the alias instead. That is best effort: a later run
+that gets to the job before npm lists the version finds nothing to purge and
+passes, and the patch then waits for the run after it, or goes live when
+jsDelivr's twelve hours are up.
+
+A minor or major app release is different. It changes the
 major/minor version pinned by Ghost. The new line becomes the default when that
 change is included in a public Ghost release and the site upgrades. See the
 app's README for that release process.

@@ -68,7 +68,7 @@ module.exports = { getSiteUrl: () => process.env.url, get: () => ({client: 'mysq
 `,
   );
   await writeFile(
-    join(root, 'ghost/core/server/data/schema/index.js'),
+    join(root, 'ghost/core/server/data/schema/index.ts'),
     'exports.tables = { members: {} };',
   );
   await writeFile(
@@ -135,13 +135,17 @@ async function installedFixture(root: string) {
   for (const file of [
     'package.json',
     'core/server/data/db/index.js',
-    'core/server/data/schema/index.js',
     'core/server/data/seeders/data-generator.js',
   ]) {
     const output = join(installed, file);
     await mkdir(dirname(output), { recursive: true });
     await cp(join(root, 'ghost', file), output);
   }
+  await mkdir(join(installed, 'core/server/data/schema'), { recursive: true });
+  await cp(
+    join(root, 'ghost/core/server/data/schema/index.ts'),
+    join(installed, 'core/server/data/schema/index.js'),
+  );
   await mkdir(join(installed, 'core/shared/config'), { recursive: true });
   await cp(
     join(root, 'ghost/core/shared/config/index.ts'),

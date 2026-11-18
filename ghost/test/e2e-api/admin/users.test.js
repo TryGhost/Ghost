@@ -25,7 +25,7 @@ const {
 } = matchers;
 const { cacheInvalidateHeaderNotSet, cacheInvalidateHeaderSetToWildcard } = assertions;
 const localUtils = require('./utils');
-const rolePermissions = require('../../../core/server/services/permissions/role-permissions');
+const rolePermissions = require('../../../core/server/auth/permissions/role-permissions');
 
 const userMatcher = {
   id: anyObjectId,

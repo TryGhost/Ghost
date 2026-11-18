@@ -1,6 +1,8 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
 import type {CardWidth} from '../../utils/card-widths.js';
+import {cssUrl} from '../../utils/css-url.js';
+import {escapeHtml} from '../../utils/escape-html.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
 import {renderWithVisibility, type Visibility} from '../../utils/visibility.js';
 
@@ -76,17 +78,17 @@ function cardTemplate({node, cardClasses}: {node: VideoNodeData, cardClasses: st
 
     return (
         `
-        <figure class="${cardClasses}" data-kg-thumbnail=${node.thumbnailSrc} data-kg-custom-thumbnail=${node.customThumbnailSrc}>
+        <figure class="${cardClasses}" data-kg-thumbnail="${escapeHtml(node.thumbnailSrc)}" data-kg-custom-thumbnail="${escapeHtml(node.customThumbnailSrc)}">
             <div class="kg-video-container">
                 <video
-                    src="${node.src}"
+                    src="${escapeHtml(node.src)}"
                     poster="${posterSpacerSrc}"
-                    width="${width}"
-                    height="${height}"
+                    width="${escapeHtml(String(width))}"
+                    height="${escapeHtml(String(height))}"
                     ${autoplayAttr}
                     playsinline
                     preload="metadata"
-                    style="aspect-ratio: ${aspectRatio}; background: transparent url('${thumbnailSrc}') 50% 50% / cover no-repeat;"
+                    style="aspect-ratio: ${aspectRatio}; background: transparent ${cssUrl(thumbnailSrc)} 50% 50% / cover no-repeat;"
                 ></video>
                 <div class="kg-video-overlay">
                     <button class="kg-video-large-play-icon" aria-label="Play video">
@@ -136,7 +138,7 @@ function cardTemplate({node, cardClasses}: {node: VideoNodeData, cardClasses: st
 
 function emailCardTemplate({node, options, cardClasses}: {node: VideoNodeData, options: VideoRenderOptions, cardClasses: string}) {
     const thumbnailSrc = node.customThumbnailSrc || node.thumbnailSrc;
-    const postUrl = options.postUrl || node.src;
+    const postUrl = escapeHtml(options.postUrl || node.src);
     const emailTemplateMaxWidth = 600;
     const aspectRatio = node.width && node.height ? node.width / node.height : DEFAULT_EMAIL_ASPECT_RATIO;
     const emailSpacerWidth = Math.round(emailTemplateMaxWidth / 4);
@@ -157,9 +159,9 @@ function emailCardTemplate({node, options, cardClasses}: {node: VideoNodeData, o
                     cellspacing="0"
                     border="0"
                     width="100%"
-                    background="${thumbnailSrc}"
+                    background="${escapeHtml(thumbnailSrc)}"
                     role="presentation"
-                    style="background: url('${thumbnailSrc}') left top / cover; mso-hide: all"
+                    style="background: ${cssUrl(thumbnailSrc)} left top / cover; mso-hide: all"
                 >
                     <tr style="mso-hide: all">
                         <td width="25%" style="visibility: hidden; mso-hide: all">
@@ -176,7 +178,7 @@ function emailCardTemplate({node, options, cardClasses}: {node: VideoNodeData, o
 
             <!--[if vml]>
             <v:group xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" coordsize="${emailTemplateMaxWidth},${emailSpacerHeight}" coordorigin="0,0" href="${postUrl}" style="width:${emailTemplateMaxWidth}px;height:${emailSpacerHeight}px;">
-                <v:rect fill="t" stroked="f" style="position:absolute;width:${emailTemplateMaxWidth};height:${emailSpacerHeight};"><v:fill src="${thumbnailSrc}" type="frame"/></v:rect>
+                <v:rect fill="t" stroked="f" style="position:absolute;width:${emailTemplateMaxWidth};height:${emailSpacerHeight};"><v:fill src="${escapeHtml(thumbnailSrc)}" type="frame"/></v:rect>
                 <v:oval fill="t" strokecolor="white" strokeweight="4px" style="position:absolute;left:${outlookCircleLeft};top:${outlookCircleTop};width:78;height:78"><v:fill color="black" opacity="30%" /></v:oval>
                 <v:shape coordsize="24,32" path="m,l,32,24,16,xe" fillcolor="white" stroked="f" style="position:absolute;left:${outlookPlayLeft};top:${outlookPlayTop};width:30;height:34;" />
             </v:group>
@@ -192,7 +194,7 @@ function getCardClasses(node: VideoNodeData) {
     const cardClasses = ['kg-card kg-video-card'];
 
     if (node.cardWidth) {
-        cardClasses.push(`kg-width-${node.cardWidth}`);
+        cardClasses.push(`kg-width-${escapeHtml(node.cardWidth)}`);
     }
     if (node.caption) {
         cardClasses.push(`kg-card-hascaption`);

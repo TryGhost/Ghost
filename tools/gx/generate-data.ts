@@ -60,8 +60,7 @@ async function main() {
   const knex = db.knex;
   try {
     const { default: config } = await import('../../ghost/core/shared/config/index.ts');
-    // @ts-expect-error The existing JavaScript schema has no type declarations.
-    const { default: schema } = await import('../../ghost/core/server/data/schema/index.js');
+    const schema = await import('../../ghost/core/server/data/schema/index.ts');
     const { default: DataGenerator } =
       // @ts-expect-error The existing JavaScript generator has no type declarations.
       await import('../../ghost/core/server/data/seeders/data-generator.js');

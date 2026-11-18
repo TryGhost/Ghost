@@ -8,12 +8,15 @@ import type { ControllerMethod } from './pipeline.ts';
 const debug = createDebug('http');
 
 export interface GhostRequest {
+  /** The request's principal, set by Ghost's auth middleware */
+  auth?: { kind: string };
   api_key?: { get(key: string): string | null | undefined };
   body?: Dictionary;
   file?: unknown;
   files?: unknown[];
   frameOptions?: { docName: string | null | undefined; method: string | null };
   get(name: string): string | undefined;
+  ip?: string;
   member?: unknown;
   originalUrl?: string;
   params?: Dictionary;
@@ -91,6 +94,8 @@ const http = (
       params: req.params,
       user: req.user,
       session: req.session,
+      ip: req.ip,
+      userAgent: req.get('user-agent'),
       url: {
         host: req.vhost ? req.vhost.host : (req.get('host') ?? ''),
         pathname: parseUrl(req.originalUrl || req.url).pathname,
@@ -101,6 +106,7 @@ const http = (
         user: user,
         integration: integration,
         member: req.member || null,
+        principal: req.auth ?? null,
       },
     });
 

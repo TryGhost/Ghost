@@ -119,6 +119,29 @@ The [dependency-cruiser config](../../.dependency-cruiser.cjs) holds:
   must be injected, imported in another form, or left until a named refactor
   moves the file that imports it.
 
+The scan reads imports from the TypeScript source, so it sees type-only
+imports: `import type`, `export type`, an import whose names are all marked
+`type`, and `import()` inside a type. A rule applies to them unless it leaves
+them out on purpose. These rules do, because they are about what runs and a
+type is not a runtime dependency:
+
+- `service-dependencies`, `service-own-root` and `service-unresolved`;
+- `specialist-dependencies`;
+- `service-roots-in-services`;
+- `core-sharp-via-image-transform`;
+- `public-apps-not-field-rules`.
+
+Every other rule, such as `kernel-not-application`, covers types as well.
+
+Mark an import that is used only for types as type-only. The compiler drops an
+ordinary import whose names are used only as types, but the scan reads the
+import as written and treats it as a runtime dependency.
+
+A package that publishes type declarations and no JavaScript, such as
+`type-fest`, cannot be resolved by the scan, and an unresolved import loses its
+type-only label. `typesOnlyPackages` in the config names these packages so the
+service rules skip them.
+
 `pnpm gx services report` groups the remaining violations by those decisions.
 Apart from specialist dependencies, code outside services is not checked yet.
 Apply the same rules when you change it.

@@ -1,5 +1,6 @@
 import type { RefObject } from 'react';
 import { Button } from '@tryghost/shade/components';
+import { focusMain } from './focus-main';
 
 /**
  * The shell's first tab stop: hidden until focused, it moves focus to the
@@ -7,14 +8,9 @@ import { Button } from '@tryghost/shade/components';
  */
 export function SkipLink({ target }: { target: RefObject<HTMLElement | null> }) {
   const skip = () => {
-    const main = target.current;
-    if (!main) {
-      return;
+    if (target.current) {
+      focusMain(target.current);
     }
-    // Focusable only until focus moves on, so clicks inside still focus what they hit.
-    main.tabIndex = -1;
-    main.addEventListener('blur', () => main.removeAttribute('tabindex'), { once: true });
-    main.focus();
   };
 
   return (
