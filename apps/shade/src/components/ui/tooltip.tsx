@@ -4,6 +4,7 @@ import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 
 import { cn } from '@/lib/utils';
 import { ShadeScope } from '@/shade-scope';
+import { safeAreaCollision } from '@/lib/safe-area';
 
 const TooltipInputContext = React.createContext<React.RefObject<{
   suppressFocus: boolean;
@@ -141,13 +142,18 @@ export interface TooltipContentProps
 const TooltipContent = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Content>,
   TooltipContentProps
->(({ className, sideOffset = 4, variant, ...props }, ref) => {
+>(({ className, sideOffset = 4, variant, collisionBoundary, ...props }, ref) => {
   return (
     <TooltipPrimitive.Portal>
       <ShadeScope>
         <TooltipPrimitive.Content
           ref={ref}
-          className={cn(tooltipContentVariants({ variant: variant ?? 'white' }), className)}
+          className={cn(
+            tooltipContentVariants({ variant: variant ?? 'white' }),
+            'data-[safe-area]:max-w-(--radix-tooltip-content-available-width)',
+            className,
+          )}
+          {...safeAreaCollision(collisionBoundary)}
           sideOffset={sideOffset}
           {...props}
         />
