@@ -55,7 +55,13 @@ export interface GhostPath {
 
 export type Unsubscribe = () => void;
 
-/** The connection to Ghost, once Admin has started the app. */
+/**
+ * The connection to Ghost, once Admin has started the app.
+ *
+ * Admin's chrome floats over the edges of the page. The SDK sets how far in to keep content, in
+ * pixels, as `--ghost-safe-area-inset-top`, `-right`, `-bottom` and `-left` on the page's root
+ * element, and keeps them up to date. Shade's `ShadeApp` pads the app by them already.
+ */
 export interface Ghost {
   /** The site the app is running in: its URL, title, timezone and locale. */
   readonly site: Site;
