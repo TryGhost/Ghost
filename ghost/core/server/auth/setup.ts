@@ -16,7 +16,8 @@ const maxLength = (max: number) => (value: string) => validator.isLength(value, 
 // Limits match the settings, so an oversized value fails before the owner is created
 const blogTitleSchema = z.string().trim().min(1).refine(maxLength(150));
 
-const setupDetailsSchema = z.object({
+/** The setup form */
+export const setupDetailsSchema = z.object({
   name: z.string(),
   email: z.string(),
   password: z.string(),
@@ -27,13 +28,9 @@ const setupDetailsSchema = z.object({
 });
 
 // Updating the owner has never needed a title
-const updateSetupDetailsSchema = setupDetailsSchema
+export const updateSetupDetailsSchema = setupDetailsSchema
   .pick({ name: true, email: true, password: true })
   .extend({ blogTitle: blogTitleSchema.nullish() });
-
-/** Request bodies of the setup endpoints */
-export const setupBodySchema = z.object({ setup: z.tuple([setupDetailsSchema]) });
-export const updateSetupBodySchema = z.object({ setup: z.tuple([updateSetupDetailsSchema]) });
 
 export type SetupUserData = z.infer<typeof setupDetailsSchema> & { status: string };
 type UpdateSetupUserData = z.infer<typeof updateSetupDetailsSchema> & { status: string };

@@ -6,6 +6,7 @@ export { default as validators } from './validators/index.ts';
 export { default as serializers } from './serializers/index.ts';
 export * as utils from './utils/index.ts';
 export { defineMethod } from './define-method.ts';
+export { resourceBody } from './resource-body.ts';
 
 export type {
   InferMethodFrame,
