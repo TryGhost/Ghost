@@ -34,10 +34,12 @@ function getSingleCommentIdParam(searchParams: URLSearchParams): string | undefi
   return match?.[1];
 }
 
-const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = ({
-  timezone,
-  singleCommentId,
-}) => {
+const CommentsPage: React.FC<{
+  timezone: string;
+  // The list can render on the UTC fallback; analytics would fetch every query twice
+  timezoneReady: boolean;
+  singleCommentId?: string;
+}> = ({ timezone, timezoneReady, singleCommentId }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { filters, nql, setFilters } = useFilterState(timezone);
   const dislikesEnabled = true;
@@ -48,7 +50,7 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
   const [analyticsSheetOpened, setAnalyticsSheetOpened] = useState(false);
   const analytics = useCommentsAnalytics(
     timezone,
-    analyticsEnabled && (wideLayout || analyticsSheetOpened),
+    analyticsEnabled && timezoneReady && (wideLayout || analyticsSheetOpened),
   );
   const showAnalytics = analyticsEnabled && !analytics.unavailable;
   const handleAddFilter = useCallback(
@@ -279,7 +281,13 @@ const Comments: React.FC = () => {
 
   const timezone = getSiteTimezone(settingsData?.settings ?? []);
 
-  return <CommentsPage singleCommentId={singleCommentId} timezone={timezone} />;
+  return (
+    <CommentsPage
+      singleCommentId={singleCommentId}
+      timezone={timezone}
+      timezoneReady={!isSettingsLoading}
+    />
+  );
 };
 
 export default Comments;

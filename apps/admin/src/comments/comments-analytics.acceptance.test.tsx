@@ -12,8 +12,10 @@ import {
   member,
   post,
   renderAdminApp,
+  settingsResponse,
 } from '@test-utils/acceptance';
 import { commentsScreen } from './comments.screen';
+import { deferred } from '@/utils/deferred';
 
 const labs = { commentsAnalytics: true };
 
@@ -94,6 +96,37 @@ describe('Comments analytics', () => {
 
     expect(requestedDays(overviewApi.requests[0].url)).toBe(30);
     expect(new URL(overviewApi.requests[0].url).searchParams.get('timezone')).toBeTruthy();
+  });
+
+  it('waits for the site timezone before fetching anything', async () => {
+    fakeComments([comment({ html: '<p>Listed early</p>' })]);
+    const apis = fakeCommentsStats();
+    const settingsLoaded = deferred<void>();
+    await renderAdminApp('/comments', {
+      labs,
+      boot: {
+        browseSettings: {
+          response: async () => {
+            await settingsLoaded.promise;
+            return settingsResponse({ settings: { timezone: 'Asia/Tokyo' } });
+          },
+        },
+      },
+    });
+
+    // The list doesn't wait for settings, so the panel could fetch for UTC first
+    await expect.element(commentsScreen.commentRow('Listed early')).toBeVisible();
+    await expect.element(commentsScreen.analyticsPanel()).toBeVisible();
+    expect(apis.overviewApi.requests).toHaveLength(0);
+
+    settingsLoaded.resolve();
+
+    await expect.element(commentsScreen.analyticsKpiValue('comments')).toHaveTextContent('12');
+    for (const api of Object.values(apis)) {
+      expect(api.requests.map(({ url }) => new URL(url).searchParams.get('timezone'))).toEqual([
+        'Asia/Tokyo',
+      ]);
+    }
   });
 
   it('requests the selected range and keeps the range and tab in the URL', async () => {
