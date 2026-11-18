@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button, Input, Popover, PopoverContent, PopoverTrigger } from '@tryghost/shade/components';
 import { FilterBar } from '@tryghost/shade/patterns';
 import {
+  MEMBER_VIEW_NAME_MAX_LENGTH,
   type MemberView,
   useDeleteMemberView,
   useSaveMemberView,
@@ -102,6 +103,7 @@ const ManageViewPopoverContent: React.FC<ManageViewPopoverContentProps> = ({
         <h3 className="text-sm font-semibold">{isEditing ? 'Edit view' : 'Save view'}</h3>
         <div className="flex flex-col gap-1.5">
           <Input
+            maxLength={MEMBER_VIEW_NAME_MAX_LENGTH}
             placeholder="View name"
             value={name}
             autoFocus
@@ -179,8 +181,9 @@ const ManageViewPopover: React.FC<ManageViewPopoverProps> = ({
   onDeleted,
 }) => {
   const [open, setOpen] = useState(false);
-  const contentKey = activeView ? `edit:${activeView.name}:${activeView.filter}` : `save:${filter}`;
-
+  // The content is keyed on the filters, so it starts afresh when other filters are opened. It
+  // keeps its state while the same filters are open, so the message for a refused save and the
+  // name typed stay when the views are refreshed underneath it.
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -190,7 +193,7 @@ const ManageViewPopover: React.FC<ManageViewPopoverProps> = ({
       </PopoverTrigger>
       {open && (
         <ManageViewPopoverContent
-          key={contentKey}
+          key={filter}
           activeView={activeView}
           existingViews={existingViews}
           filter={filter}
