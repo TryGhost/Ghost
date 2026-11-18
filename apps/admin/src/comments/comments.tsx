@@ -1,4 +1,5 @@
 import CommentsAnalyticsPanel from './analytics/comments-analytics-panel';
+import CommentsAnalyticsRail from './analytics/comments-analytics-rail';
 import CommentsFilters from './components/comments-filters';
 import CommentsList from './components/comments-list';
 import { Box, Container, Inline } from '@tryghost/shade/primitives';
@@ -223,11 +224,9 @@ const CommentsPage: React.FC<{ timezone: string; singleCommentId?: string }> = (
       </Box>
       {showAnalytics &&
         (wideLayout ? (
-          <aside className="w-[400px] shrink-0 border-l border-border">
-            <div className="sticky top-0 max-h-dvh overflow-y-auto p-6">
-              <CommentsAnalyticsPanel analytics={analytics} onFilter={handleAnalyticsFilter} />
-            </div>
-          </aside>
+          <CommentsAnalyticsRail>
+            <CommentsAnalyticsPanel analytics={analytics} onFilter={handleAnalyticsFilter} />
+          </CommentsAnalyticsRail>
         ) : (
           <Sheet open={analyticsSheetOpen} onOpenChange={setAnalyticsSheetOpen}>
             <SheetContent aria-describedby={undefined} className="overflow-y-auto sm:max-w-[400px]">

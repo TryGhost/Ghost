@@ -192,6 +192,26 @@ describe('Comments analytics', () => {
     await expect(commentsApi).toHaveSentFilter(/^post_id:'?post6'?$/);
   });
 
+  it('scrolls the rail with the page rather than on its own', async () => {
+    fakeComments([comment()]);
+    fakeCommentsStats();
+    await renderAdminApp('/comments', { labs });
+
+    await expect.element(commentsScreen.analyticsPanel()).toBeVisible();
+
+    const scrollers = [];
+    for (
+      let el = commentsScreen.analyticsPanel().element().parentElement;
+      el;
+      el = el.parentElement
+    ) {
+      if (/(auto|scroll)/.test(getComputedStyle(el).overflowY)) {
+        scrollers.push(el);
+      }
+    }
+    expect(scrollers).toHaveLength(1);
+  });
+
   it('opens the panel from the header on narrower screens', async () => {
     await page.viewport(1000, 800);
     const commentsApi = fakeComments([comment()]);
