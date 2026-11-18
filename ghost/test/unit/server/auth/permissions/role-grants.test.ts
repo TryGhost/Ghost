@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import * as rolePermissions from '../../../../../core/server/services/permissions/role-permissions';
-import { permissions as permissionData } from '../../../../../core/server/services/permissions/permissions-data';
+import * as rolePermissions from '../../../../../core/server/auth/permissions/role-permissions';
+import { permissions as permissionData } from '../../../../../core/server/auth/permissions/permissions-data';
 
 // Which roles hold each permission.
 //

@@ -901,26 +901,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/permissions/can-this.ts",
-    "to": "ghost/core/server/models/index.js"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/permissions/can-this.ts",
-    "to": "ghost/core/server/models/role-utils.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/permissions/can-this.ts",
-    "to": "lodash"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/permissions/providers.ts",
-    "to": "ghost/core/server/models/index.js"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/post-scheduling/post-scheduling.ts",
     "to": "@tryghost/logging"
   },

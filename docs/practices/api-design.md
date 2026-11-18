@@ -141,7 +141,7 @@ setting with the same intended exposure.
 Permission checks run after input serialization and before the controller query.
 Permissions are associated with a resource name (`docName`) and method. The
 permissions and their role assignments are defined in code, in
-`ghost/core/server/services/permissions/permissions-data.ts`.
+`ghost/core/server/auth/permissions/permissions-data.ts`.
 
 An endpoint's permission configuration can be:
 
@@ -154,7 +154,7 @@ An endpoint's permission configuration can be:
   configuration without a specific reason.
 
 Adding or changing a permission means editing `permissions-data.ts`, the
-expected grants in `ghost/test/unit/server/services/permissions/role-grants.test.ts`,
+expected grants in `ghost/test/unit/server/auth/permissions/role-grants.test.ts`,
 and the per-role counts in `ghost/test/e2e-api/admin/users.test.js` for staff
 roles.
 No migration is needed: the permissions tables still exist until they are

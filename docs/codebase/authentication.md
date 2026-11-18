@@ -35,6 +35,8 @@ Start with:
   for the authentication middleware assembled for each API.
 - [`auth/authorize.ts`](../../ghost/core/server/auth/authorize.ts)
   for the identity checks after authentication.
+- [`auth/permissions/`](../../ghost/core/server/auth/permissions/)
+  for `canThis` and the role grants in `permissions-data.ts`.
 - [`web/api/endpoints/admin/middleware.js`](../../ghost/core/server/web/api/endpoints/admin/middleware.js)
   and [`web/api/endpoints/content/middleware.js`](../../ghost/core/server/web/api/endpoints/content/middleware.js)
   for the middleware applied to API routes.

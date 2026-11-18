@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import semver from 'semver';
 
-// Permissions are defined in services/permissions/permissions-data.ts and
+// Permissions are defined in auth/permissions/permissions-data.ts and
 // nothing reads the permissions tables, so a migration that writes to them
 // does nothing. Older migrations keep using these helpers on upgrade.
 const LAST_VERSION_WITH_PERMISSION_MIGRATIONS = '6.72';
@@ -40,7 +40,7 @@ describe('Permission migrations', function () {
     assert.deepEqual(
       offenders,
       [],
-      'Permissions are defined in ghost/core/server/services/permissions/permissions-data.ts. ' +
+      'Permissions are defined in ghost/core/server/auth/permissions/permissions-data.ts. ' +
         'Add or change them there instead of in a migration.',
     );
   });

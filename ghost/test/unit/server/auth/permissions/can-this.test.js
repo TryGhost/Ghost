@@ -3,9 +3,9 @@ const sinon = require('sinon');
 const testUtils = require('../../../../utils');
 const _ = require('lodash');
 const models = require('../../../../../core/server/models');
-const permissions = require('../../../../../core/server/services/permissions');
-const providers = require('../../../../../core/server/services/permissions/providers').default;
-const rolePermissions = require('../../../../../core/server/services/permissions/role-permissions');
+const permissions = require('../../../../../core/server/auth/permissions');
+const providers = require('../../../../../core/server/auth/permissions/providers').default;
+const rolePermissions = require('../../../../../core/server/auth/permissions/role-permissions');
 const { limitService } = require('../../../../../core/server/services/limits');
 
 describe('Permissions', function () {

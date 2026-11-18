@@ -1,7 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
-const permissionsService = require('../../services/permissions');
+const permissionsService = require('../../auth/permissions');
 const auth = require('../../auth');
 const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 const usersService = require('../../services/users').default;

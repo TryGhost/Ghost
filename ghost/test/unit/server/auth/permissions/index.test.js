@@ -1,8 +1,8 @@
 const assert = require('node:assert/strict');
 const {
   permissions: permissionData,
-} = require('../../../../../core/server/services/permissions/permissions-data');
-const permissions = require('../../../../../core/server/services/permissions');
+} = require('../../../../../core/server/auth/permissions/permissions-data');
+const permissions = require('../../../../../core/server/auth/permissions');
 
 describe('Permissions', function () {
   it('builds a canThis chain for every permission defined in code', function () {

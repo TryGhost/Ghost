@@ -4,8 +4,8 @@ import sinon from 'sinon';
 import testUtils from '../../../../utils';
 // @ts-expect-error This module lacks type definitions.
 import models from '../../../../../core/server/models';
-import providers from '../../../../../core/server/services/permissions/providers';
-import * as rolePermissions from '../../../../../core/server/services/permissions/role-permissions';
+import providers from '../../../../../core/server/auth/permissions/providers';
+import * as rolePermissions from '../../../../../core/server/auth/permissions/role-permissions';
 
 const { roles, users, api_keys: apiKeys } = testUtils.DataGenerator.Content;
 

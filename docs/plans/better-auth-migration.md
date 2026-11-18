@@ -148,7 +148,7 @@ Any scheme other than `Ghost` is rejected with `INVALID_AUTH_HEADER`, so Bearer
 needs an explicit pass-through. Internal keys (`ghost-scheduler`,
 `ghost-internal-frontend`) are used in-process via `services/internal-keys`.
 
-**Permissions.** Role grants are code (`services/permissions/permissions-data.ts`,
+**Permissions.** Role grants are code (`auth/permissions/permissions-data.ts`,
 `role-permissions.ts`); Owner bypasses `canThis`. The `permissions`,
 `permissions_roles` and `permissions_users` tables are unused and unseeded and
 go in 7.0. `roles`, `roles_users` and `api_keys.role_id` remain.

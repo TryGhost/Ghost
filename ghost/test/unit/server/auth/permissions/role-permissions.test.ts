@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import * as rolePermissions from '../../../../../core/server/services/permissions/role-permissions';
+import * as rolePermissions from '../../../../../core/server/auth/permissions/role-permissions';
 import {
   permissions as permissionData,
   rolePermissions as roleData,
-} from '../../../../../core/server/services/permissions/permissions-data';
+} from '../../../../../core/server/auth/permissions/permissions-data';
 
 type Permission = { action_type: string; object_type: string };
 type RoleValues = Record<string, 'all' | readonly string[]>;

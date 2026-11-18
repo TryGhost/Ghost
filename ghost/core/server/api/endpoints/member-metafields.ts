@@ -3,7 +3,7 @@ import { actingContext } from '../../lib/actor';
 import { ADMIN, booted } from '../../services/members-metafields';
 import { fieldRoute, namespaceRoute } from '../../services/members-metafields/serializers';
 
-const permissionsService = require('../../services/permissions');
+const permissionsService = require('../../auth/permissions');
 
 interface MemberMetafieldOptions {
   namespace: string;

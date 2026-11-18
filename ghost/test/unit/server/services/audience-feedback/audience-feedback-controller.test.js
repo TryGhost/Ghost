@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const permissions = require('../../../../../core/server/services/permissions');
+const permissions = require('../../../../../core/server/auth/permissions');
 const AudienceFeedbackController = require('../../../../../core/server/services/audience-feedback/audience-feedback-controller');
 
 describe('AudienceFeedbackController', function () {
