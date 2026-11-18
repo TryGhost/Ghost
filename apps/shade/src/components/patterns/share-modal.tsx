@@ -353,7 +353,7 @@ function CopyURLBox({ children, className, copyURL, ...props }: CopyURLBoxProps)
       className={cn('flex items-center gap-2 rounded-md border bg-muted p-2', className)}
       {...props}
     >
-      <span className="min-w-0 flex-1 truncate px-2 text-sm">{copyURL}</span>
+      <span className="min-w-0 flex-1 truncate px-2 text-(length:--text-field)">{copyURL}</span>
       {children}
     </div>
   );
