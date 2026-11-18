@@ -556,13 +556,23 @@ export interface EditSettingsCapture {
   readonly lastRequest: SettingsPutBody | undefined;
 }
 
+export interface FakeEditSettingsOptions {
+  /**
+   * Holds every PUT until this settles, for a spec that acts while a save is in
+   * flight. Each request is still captured as soon as it arrives.
+   */
+  respondAfter?: Promise<unknown>;
+}
+
 /**
  * Handles PUT /settings/ the way Ghost does — echoes back the full settings
  * world with the submitted keys applied — and captures every request body so
  * specs can assert exactly what the UI saved. `shared_views` is echoed from,
  * and saved to, the test's fake setting (see shared-views.ts).
  */
-export function fakeEditSettings(): EditSettingsCapture {
+export function fakeEditSettings({
+  respondAfter,
+}: FakeEditSettingsOptions = {}): EditSettingsCapture {
   const requests: SettingsPutBody[] = [];
 
   registerRoute('PUT', '/settings/');
@@ -573,6 +583,7 @@ export function fakeEditSettings(): EditSettingsCapture {
 
     const body = (await request.json()) as SettingsPutBody;
     requests.push(body);
+    await respondAfter;
 
     const overrides = Object.fromEntries(body.settings.map(({ key, value }) => [key, value]));
     if (typeof overrides.shared_views === 'string') {
