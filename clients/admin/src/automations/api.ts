@@ -8,6 +8,7 @@
 export const lazyAutomationsScreen = () => import('./automations');
 export const lazyAutomationEditorScreen = () => import('./editor');
 
+export type { LabelAutomationMatch } from './hooks/use-label-automations';
 export { useLabelAutomations } from './hooks/use-label-automations';
 export { LabelAutomationNames, LabelAutomationRows } from './components/label-automation-rows';
 export { LARGE_LABEL_AUTOMATION_BATCH_SIZE } from './constants';
