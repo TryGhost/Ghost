@@ -91,13 +91,12 @@ export const LeadMagnetSaveDescription: React.FC<DescriptionProps> = ({
             {groups.map(({ verb, labelSlug, items }) => (
               <TableRow key={`${verb}-${labelSlug}`}>
                 <TableCell className="align-top">
-                  {verb === 'Add' ? 'Added' : 'Removed'}{' '}
-                  <strong>{labelNames[labelSlug] ?? labelSlug}</strong>
+                  {verb === 'Add' ? 'Added' : 'Removed'} {labelNames[labelSlug] ?? labelSlug}
                 </TableCell>
                 <TableCell className="align-top">
                   {items.map(({ id, name }) => (
                     <span key={id} className="block">
-                      {verb === 'Add' ? 'Starts' : 'Stops'} <strong>{name}</strong>
+                      {verb === 'Add' ? 'Starts' : 'Stops'} {name}
                     </span>
                   ))}
                 </TableCell>

@@ -301,6 +301,7 @@ const LabelAddedPicker: React.FC<{
         <InputGroup data-disabled="true">
           <InputGroupInput
             aria-describedby={`${id}-locked`}
+            className="caret-transparent"
             id={`${id}-label`}
             value={options.find((option) => option.id === value)?.name ?? value ?? ''}
             disabled

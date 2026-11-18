@@ -139,12 +139,12 @@ export const LeadMagnetBulkConfirmText: React.FC<{
               <TableRow key={slug}>
                 <TableCell className="align-top">
                   {bulk && 'Added '}
-                  <strong>{items[0].label}</strong>
+                  {items[0].label}
                 </TableCell>
                 <TableCell className="align-top">
                   {items.map(({ automation }) => (
                     <span key={automation} className="block">
-                      Starts <strong>{automation}</strong>
+                      Starts {automation}
                     </span>
                   ))}
                 </TableCell>

@@ -17,8 +17,8 @@ export const LeadMagnetDeleteBlockedDescription: React.FC<{
   automationName: string;
 }> = ({ labelName, automationName }) => (
   <>
-    <strong>{labelName}</strong> is the trigger for the active automation{' '}
-    <strong>{automationName}</strong>. Turn off the automation to delete this label.
+    <strong>{labelName}</strong> starts the <strong>{automationName}</strong> automation. Turn off
+    the automation to delete this label.
   </>
 );
 
