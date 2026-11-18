@@ -4,6 +4,7 @@ import { FilterBar } from '@tryghost/shade/patterns';
 import {
   MEMBER_VIEW_NAME_MAX_LENGTH,
   type MemberView,
+  useCanChangeMemberViews,
   useDeleteMemberView,
   useSaveMemberView,
 } from '@/members/hooks/use-member-views';
@@ -181,6 +182,12 @@ const ManageViewPopover: React.FC<ManageViewPopoverProps> = ({
   onDeleted,
 }) => {
   const [open, setOpen] = useState(false);
+  const canChangeViews = useCanChangeMemberViews();
+
+  if (!canChangeViews) {
+    return null;
+  }
+
   // The content is keyed on the filters, so it starts afresh when other filters are opened. It
   // keeps its state while the same filters are open, so the message for a refused save and the
   // name typed stay when the views are refreshed underneath it.

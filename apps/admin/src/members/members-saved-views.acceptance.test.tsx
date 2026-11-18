@@ -301,6 +301,20 @@ describe('Members saved views', () => {
     await expect.element(membersScreen.viewNameInput()).toHaveValue('');
   });
 
+  it('shows a Super Editor the saved views without the button that changes them', async () => {
+    vipMembers();
+    const superEditor = currentUserResponse();
+    superEditor.users[0].roles = [staffRole({ name: 'Super Editor' })];
+    const savedViews = withSavedViews(vips);
+    await renderAdminApp(vipRoute, {
+      boot: { ...savedViews.boot, browseMe: { response: superEditor } },
+    });
+
+    await expect.element(sidebarScreen.navLink('VIPs')).toHaveAttribute('aria-current', 'page');
+    await expect.element(membersScreen.memberRow('Vip One')).toBeVisible();
+    await expect.element(membersScreen.manageViewButton()).not.toBeInTheDocument();
+  });
+
   it('says so when the server refuses a save for lack of permission', async () => {
     vipMembers();
     fakeSegmentWrites();
