@@ -3,31 +3,49 @@ import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import logging from '@tryghost/logging';
 import moment from 'moment';
+import validator from '@tryghost/validator';
+import { z } from 'zod';
 import config from '../../shared/config';
 
 const models = require('../models');
 const mail = require('../lib/mail');
 
-/** The setup form, as the authentication endpoint passes it */
-export interface SetupUserData {
-  name: string;
-  email: string;
-  password: string;
-  blogTitle?: unknown;
-  theme?: string;
-  accentColor?: string;
-  description?: string;
-  status: string;
-}
+// The settings these become are checked with validator's isLength, which counts an emoji as one
+const maxLength = (max: number) => (value: string) => validator.isLength(value, { max });
+
+// Limits match the settings, so an oversized value fails before the owner is created
+const blogTitleSchema = z.string().trim().min(1).refine(maxLength(150));
+
+const setupDetailsSchema = z.object({
+  name: z.string(),
+  email: z.string(),
+  password: z.string(),
+  blogTitle: blogTitleSchema,
+  theme: z.string().nullish(),
+  accentColor: z.string().nullish(),
+  description: z.string().trim().refine(maxLength(200)).nullish(),
+});
+
+// Updating the owner has never needed a title
+const updateSetupDetailsSchema = setupDetailsSchema
+  .pick({ name: true, email: true, password: true })
+  .extend({ blogTitle: blogTitleSchema.nullish() });
+
+/** Request bodies of the setup endpoints */
+export const setupBodySchema = z.object({ setup: z.tuple([setupDetailsSchema]) });
+export const updateSetupBodySchema = z.object({ setup: z.tuple([updateSetupDetailsSchema]) });
+
+export type SetupUserData = z.infer<typeof setupDetailsSchema> & { status: string };
+type UpdateSetupUserData = z.infer<typeof updateSetupDetailsSchema> & { status: string };
 
 interface SetupUser {
   id: string;
   get(attribute: string): unknown;
 }
 
-export interface SetupData {
+export interface SetupData<UserData = SetupUserData> {
   user: SetupUser;
-  userData: SetupUserData;
+  userData: UserData;
 }
 
 type Context = { context: Record<string, unknown> };
@@ -107,7 +125,9 @@ export function assertSetupCompleted(status: boolean) {
   };
 }
 
-export async function setupUser(userData: SetupUserData): Promise<SetupData> {
+export async function setupUser<UserData extends UpdateSetupUserData>(
+  userData: UserData,
+): Promise<SetupData<UserData>> {
   const context = { context: { internal: true } };
 
   const owner = await models.User.findOne({ role: 'Owner', status: 'all' });
@@ -126,18 +146,21 @@ export async function setupUser(userData: SetupUserData): Promise<SetupData> {
   };
 }
 
-export async function doSettings(data: SetupData, settingsAPI: SettingsAPI) {
+export async function doSettings(
+  data: SetupData<Pick<Partial<SetupUserData>, 'blogTitle' | 'description' | 'accentColor'>>,
+  settingsAPI: SettingsAPI,
+) {
   const context = { context: { user: data.user.id } };
   const user = data.user;
   const blogTitle = data.userData.blogTitle;
-  const description = data.userData.description ? data.userData.description.trim() : null;
+  const description = data.userData.description;
 
-  if (!blogTitle || typeof blogTitle !== 'string') {
+  if (!blogTitle) {
     return user;
   }
 
   const userSettings: Array<{ key: string; value: unknown }> = [
-    { key: 'title', value: blogTitle.trim() },
+    { key: 'title', value: blogTitle },
     { key: 'description', value: description || tpl(messages.sampleBlogDescription) },
   ];
 
@@ -154,21 +177,16 @@ export async function doSettings(data: SetupData, settingsAPI: SettingsAPI) {
 }
 
 // Update names for default product and newsletter to site title.
-// Without a blog title this returns the user, not the setup data.
 async function doTiersAndNewsletter<
   Data extends { user: Pick<SetupUser, 'id'>; userData: Pick<SetupUserData, 'blogTitle'> },
 >(
   data: Data,
   api: { tiers: BrowseEditAPI<'tiers'>; newsletters: BrowseEditAPI<'newsletters'> },
-): Promise<Data | Data['user']> {
+): Promise<Data> {
   const { tiers: tiersAPI, newsletters: newslettersAPI } = api;
   const context = { context: { user: data.user.id } };
-  const user = data.user;
   const blogTitle = data.userData.blogTitle;
 
-  if (!blogTitle || typeof blogTitle !== 'string') {
-    return user;
-  }
   try {
     const tierPage = await tiersAPI.browse({ limit: 'all' });
     const newsletterPage = await newslettersAPI.browse({ limit: 'all' });
@@ -183,7 +201,7 @@ async function doTiersAndNewsletter<
         {
           tiers: [
             {
-              name: blogTitle.trim(),
+              name: blogTitle,
             },
           ],
         },
@@ -196,7 +214,7 @@ async function doTiersAndNewsletter<
         {
           newsletters: [
             {
-              name: blogTitle.trim(),
+              name: blogTitle,
             },
           ],
         },
@@ -215,7 +233,7 @@ export async function doFixtures(data: SetupData) {
 
   _.each(postSetupFixtures, async (mobiledoc, key) => {
     // Using very simple find and replace because we control the fixtures
-    mobiledoc = mobiledoc.replace(/{{site.title}}/g, data.userData.blogTitle as string);
+    mobiledoc = mobiledoc.replace(/{{site.title}}/g, data.userData.blogTitle);
     mobiledoc = mobiledoc.replace(/{{author.name}}/g, data.userData.name);
     mobiledoc = mobiledoc.replace(/{{date}}/, date);
 

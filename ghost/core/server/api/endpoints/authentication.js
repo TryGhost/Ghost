@@ -1,3 +1,4 @@
+const { defineMethod } = require('@tryghost/api-framework');
 const api = require('./index');
 const config = require('../../../shared/config');
 const tpl = require('@tryghost/tpl');
@@ -32,14 +33,14 @@ const messages = {
 const controller = {
   docName: 'authentication',
 
-  setup: {
+  setup: defineMethod({
     statusCode: 201,
     permissions: false,
     headers: {
       cacheInvalidate: true,
     },
-    validation: {
-      docName: 'setup',
+    schema: {
+      body: auth.setup.setupBodySchema,
     },
     query(frame) {
       return Promise.resolve()
@@ -47,16 +48,7 @@ const controller = {
           return auth.setup.assertSetupCompleted(false)();
         })
         .then(() => {
-          const setupDetails = {
-            name: frame.data.setup[0].name,
-            email: frame.data.setup[0].email,
-            password: frame.data.setup[0].password,
-            blogTitle: frame.data.setup[0].blogTitle,
-            theme: frame.data.setup[0].theme,
-            accentColor: frame.data.setup[0].accentColor,
-            description: frame.data.setup[0].description,
-            status: 'active',
-          };
+          const setupDetails = { ...frame.validated.body.setup[0], status: 'active' };
 
           return auth.setup.setupUser(setupDetails);
         })
@@ -87,9 +79,9 @@ const controller = {
           return user;
         });
     },
-  },
+  }),
 
-  updateSetup: {
+  updateSetup: defineMethod({
     headers: {
       cacheInvalidate: true,
     },
@@ -99,24 +91,19 @@ const controller = {
         throw new errors.NoPermissionError({ message: tpl(messages.notTheBlogOwner) });
       }
     },
-    validation: {
-      docName: 'setup',
+    schema: {
+      body: auth.setup.updateSetupBodySchema,
     },
     async query(frame) {
       await auth.setup.assertSetupCompleted(true)();
 
-      const setupDetails = {
-        name: frame.data.setup[0].name,
-        email: frame.data.setup[0].email,
-        password: frame.data.setup[0].password,
-        blogTitle: frame.data.setup[0].blogTitle,
-        status: 'active',
-      };
+      const { name, email, password, blogTitle } = frame.validated.body.setup[0];
+      const setupDetails = { name, email, password, blogTitle, status: 'active' };
 
       const data = await auth.setup.setupUser(setupDetails);
       return auth.setup.doSettings(data, api.settings);
     },
-  },
+  }),
 
   isSetup: {
     headers: {
