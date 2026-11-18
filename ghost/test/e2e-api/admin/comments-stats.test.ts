@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import ObjectId from 'bson-objectid';
-import { afterAll, beforeAll, describe, it } from 'vitest';
-import { agentProvider, fixtureManager } from '../../utils/e2e-framework';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, it } from 'vitest';
+import { agentProvider, fixtureManager, mockManager } from '../../utils/e2e-framework';
 const models = require('../../../core/server/models');
 
 describe('Comments stats API', function () {
@@ -47,7 +47,8 @@ describe('Comments stats API', function () {
   beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
     await fixtureManager.init('users', 'posts', 'members');
-    await agent.loginAsOwner();
+    // Admin, so every other test also checks the Admin role
+    await agent.loginAsAdmin();
 
     postIds = (await models.Base.knex('posts').orderBy('id').limit(2).pluck('id')) as string[];
     members = await models.Base.knex('members')
@@ -68,6 +69,14 @@ describe('Comments stats API', function () {
     await insertReport(reported);
     await insertReport(reported);
     await insertReport(deleted);
+  });
+
+  beforeEach(function () {
+    mockManager.mockLabsEnabled('commentsAnalytics');
+  });
+
+  afterEach(function () {
+    mockManager.restore();
   });
 
   afterAll(async function () {
@@ -135,11 +144,27 @@ describe('Comments stats API', function () {
     });
   }
 
+  for (const path of paths) {
+    it(`rejects ${path} ending after tomorrow`, async function () {
+      await agent.get(`${path}?date_to=9999-12-31&timezone=UTC`).expectStatus(422);
+    });
+
+    it(`hides ${path} while the labs flag is off`, async function () {
+      mockManager.mockLabsDisabled('commentsAnalytics');
+      await agent.get(`${path}${range}`).expectStatus(404);
+    });
+  }
+
   // One login per role: sign-ins are rate limited across the file
   it('is limited to roles that can browse comments', async function () {
-    const expected = { Admin: 200, Editor: 403, Author: 403, Contributor: 403 } as const;
-    for (const [role, status] of Object.entries(expected) as [keyof typeof expected, number][]) {
-      await agent[`loginAs${role}`]();
+    const expected = {
+      superEditor: 200,
+      editor: 403,
+      author: 403,
+      contributor: 403,
+    } as const;
+    for (const [role, status] of Object.entries(expected)) {
+      await agent.loginAs(null, null, role);
       for (const path of paths) {
         await agent.get(`${path}${range}`).expectStatus(status);
       }
