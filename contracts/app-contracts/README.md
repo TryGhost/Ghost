@@ -284,7 +284,7 @@ the names of the calls it exports. The ID lets Admin tell whether a hello comes
 from a document it already connected or from a new document. Over the port,
 each side exposes named calls: `HostExports` are what an app may call on Admin
 (`fetch`, `titleChanged`, `pathChanged`, `open`), and `AppExports` what Admin
-calls on the app (`start`, `themeChanged`, `pathChanged`).
+calls on the app (`start`, `themeChanged`, `pathChanged`, `layoutChanged`).
 
 The frame is untrusted, so Admin parses every argument with the schemas here
 (`FetchRequestSchema`, `AppPathSchema`, `TitleSchema`, `PlaceSchema`, …) before

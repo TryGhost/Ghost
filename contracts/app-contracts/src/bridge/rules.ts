@@ -169,6 +169,23 @@ export type Theme = {
   accent_color: string;
 };
 
+const SAFE_AREA_EDGES = ['top', 'right', 'bottom', 'left'] as const;
+
+/**
+ * How far in from each edge of the page's frame Admin's own chrome covers the page, in CSS
+ * pixels. The frame runs beneath chrome that floats over the page, such as Admin's navigation
+ * and the app's footer, so the page shows through and around it. What the publisher must see or
+ * reach stays inside the safe area; a backdrop can fill the whole frame. Beside Admin 7's
+ * unpinned navigation, the safe area keeps as far from the frame's right edge as from its left,
+ * so it's centred where Admin centres its own pages.
+ */
+export type SafeArea = Record<(typeof SAFE_AREA_EDGES)[number], number>;
+
+/** How Admin lays out the page's frame. */
+export type Layout = {
+  safeArea: SafeArea;
+};
+
 /**
  * What Admin sends an app's page when the session starts. An older SDK ignores fields a newer
  * Admin adds rather than refusing them, so they don't stop it from starting.
@@ -203,6 +220,8 @@ export type StartContext = {
    * frame at it, so it's where the page already is, unless the page's server redirected it.
    */
   path: string;
+  /** How Admin lays out the page's frame, which Admin sends again whenever it changes. */
+  layout: Layout;
 };
 
 // `Place` is written out rather than inferred from its schema, so the SDK's declarations, which
@@ -303,6 +322,20 @@ export function isTheme(value: unknown): value is Theme {
   );
 }
 
+export function isSafeArea(value: unknown): value is SafeArea {
+  return (
+    isRecord(value) &&
+    SAFE_AREA_EDGES.every((edge) => {
+      const inset = value[edge];
+      return typeof inset === 'number' && Number.isFinite(inset) && inset >= 0;
+    })
+  );
+}
+
+export function isLayout(value: unknown): value is Layout {
+  return isRecord(value) && isSafeArea(value.safeArea);
+}
+
 export function isStartContext(value: unknown): value is StartContext {
   return (
     isRecord(value) &&
@@ -312,7 +345,8 @@ export function isStartContext(value: unknown): value is StartContext {
     isRecord(value.session) &&
     Number.isSafeInteger(value.session.revision) &&
     (value.session.revision as number) >= 0 &&
-    isContainedPath(value.path)
+    isContainedPath(value.path) &&
+    isLayout(value.layout)
   );
 }
 

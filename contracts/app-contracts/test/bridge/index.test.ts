@@ -33,8 +33,10 @@ describe('the bridge entry point', () => {
       'isConnectMessage',
       'isContainedPath',
       'isFetchResponse',
+      'isLayout',
       'isRecord',
       'isReservedRequestHeader',
+      'isSafeArea',
       'isStartContext',
       'isTheme',
       'methodAllowsBody',
@@ -53,5 +55,6 @@ describe('the bridge entry point', () => {
     expectTypeOf<AppExports>().toHaveProperty('start');
     expectTypeOf<AppExports>().toHaveProperty('themeChanged');
     expectTypeOf<AppExports>().toHaveProperty('pathChanged');
+    expectTypeOf<AppExports>().toHaveProperty('layoutChanged');
   });
 });
