@@ -138,6 +138,35 @@ describe('oneAtATime', function () {
     assert.equal(isP1Resolved, true);
   });
 
+  it('waits for the queued call before resolving', async function () {
+    const first = Promise.withResolvers<void>();
+    const second = Promise.withResolvers<void>();
+    const fn = sinon
+      .stub()
+      .onFirstCall()
+      .returns(first.promise)
+      .onSecondCall()
+      .returns(second.promise);
+    const run = oneAtATime(fn);
+
+    const p1 = run();
+    const p2 = run();
+    let isResolved = false;
+    p2.then(() => {
+      isResolved = true;
+    });
+
+    first.resolve();
+    await eventLoop();
+    sinon.assert.calledTwice(fn);
+    await eventLoop();
+    assert.equal(isResolved, false);
+
+    second.resolve();
+    await Promise.all([p1, p2]);
+    assert.equal(isResolved, true);
+  });
+
   it('returns a new promise for each fresh invocation after going idle', async function () {
     const fn = sinon.stub().resolves();
     const run = oneAtATime(fn);

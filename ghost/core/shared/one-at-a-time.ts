@@ -29,6 +29,7 @@ export const oneAtATime = (fn: () => PromiseLike<unknown>): (() => Promise<void>
     if (queued) {
       queued = false;
       promise = run();
+      await promise;
     } else {
       promise = null;
     }
