@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { Toaster } from '../components/ui/sonner';
 import { createPortal } from 'react-dom';
 import { GlobalDirtyStateProvider } from '@/providers/global-dirty-state-provider';
@@ -14,15 +14,27 @@ const safeAreaOffset = (offset: number) => ({
   left: `calc(${offset}px + var(--ghost-safe-area-inset-left, 0px))`,
 });
 
-const ToasterPortal = () => {
-  const [mounted, setMounted] = useState(false);
+const ToasterPortal = ({ container }: { container: HTMLElement | undefined }) => {
+  // One host for the Toaster's whole life, moved to where toasts show: portalling into another
+  // element would remount the Toaster and restart its toasts.
+  const [host, setHost] = useState<HTMLElement>();
 
   useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
+    const element = document.createElement('div');
+    setHost(element);
+    return () => element.remove();
   }, []);
 
-  return mounted
+  useLayoutEffect(() => {
+    if (!host) {
+      return;
+    }
+    // An app's overlay document can go while a dialog is open in it.
+    const live = container?.isConnected && container.ownerDocument.defaultView !== null;
+    (live ? container : document.body).append(host);
+  }, [host, container]);
+
+  return host
     ? createPortal(
         <ShadeScope style={{ width: 'unset', height: 'unset' }}>
           <Toaster
@@ -50,7 +62,7 @@ const ToasterPortal = () => {
             closeButton
           />
         </ShadeScope>,
-        document.body,
+        host,
       )
     : null;
 };
@@ -60,6 +72,8 @@ interface ShadeProviderProps {
   admin7Design?: boolean;
   admin7Mobile?: boolean;
   controlShape?: ControlShape;
+  /** Where toasts render instead of the page: an app's overlay, while a dialog is open there. */
+  toasterContainer?: HTMLElement;
   children: React.ReactNode;
 }
 
@@ -68,6 +82,7 @@ const ShadeProvider: React.FC<ShadeProviderProps> = ({
   admin7Design = true,
   admin7Mobile = false,
   controlShape,
+  toasterContainer,
   children,
 }) => {
   const [isAnyTextFieldFocused, setIsAnyTextFieldFocused] = useState(false);
@@ -92,7 +107,7 @@ const ShadeProvider: React.FC<ShadeProviderProps> = ({
             provider; inner providers still win via nearest-provider scoping. */}
         <TooltipProvider>
           {children}
-          <ToasterPortal />
+          <ToasterPortal container={toasterContainer} />
         </TooltipProvider>
       </GlobalDirtyStateProvider>
     </ShadeContext.Provider>

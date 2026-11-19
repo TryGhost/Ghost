@@ -2,7 +2,12 @@ import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import type { AppOverlay, AppOverlayHold, AppOverlayTint } from '../../../../src/lib/app-overlay';
+import {
+  type AppOverlay,
+  AppOverlayContext,
+  type AppOverlayHold,
+  type AppOverlayTint,
+} from '../../../../src/lib/app-overlay';
 import ShadeApp from '../../../../src/shade-app';
 import {
   Dialog,
@@ -488,5 +493,122 @@ describe('a dialog in an app’s overlay', () => {
     const dialog = await screen.findByTestId('dialog');
     expect(fake.container.contains(dialog)).toBe(false);
     expect(fake.holds.length).toBe(0);
+  });
+});
+
+describe('toasts in an app with an overlay', () => {
+  let fake: ReturnType<typeof fakeOverlay>;
+
+  beforeEach(() => {
+    fake = fakeOverlay();
+  });
+
+  afterEach(() => {
+    fake.container.remove();
+    setSafeArea(document, undefined);
+  });
+
+  const toaster = () => document.querySelector('section[aria-live]') as HTMLElement;
+
+  function renderHolding() {
+    let overlay: AppOverlay | undefined;
+    function Holder() {
+      overlay = React.useContext(AppOverlayContext);
+      return null;
+    }
+    render(
+      <ShadeApp darkMode={false} overlay={fake.overlay}>
+        <Holder />
+      </ShadeApp>,
+    );
+    return (element: HTMLElement) => ({ hold: overlay!.hold('dialog', element) });
+  }
+
+  const inOverlay = () => {
+    const element = document.createElement('div');
+    fake.container.append(element);
+    return element;
+  };
+
+  it('render above a dialog in the overlay while it’s open, then back in the page', async () => {
+    render(
+      <ShadeApp darkMode={false} overlay={fake.overlay}>
+        <ProbeDialog />
+      </ShadeApp>,
+    );
+    await waitFor(() => expect(toaster()).not.toBeNull());
+    const live = toaster();
+    expect(fake.container.contains(live)).toBe(false);
+
+    fireEvent.click(screen.getByText('Open'));
+    const dialog = await screen.findByTestId('dialog');
+
+    expect(fake.container.contains(live)).toBe(true);
+    expect(toaster()).toBe(live);
+
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+
+    await waitFor(() => expect(fake.container.contains(live)).toBe(false));
+    expect(document.body.contains(live)).toBe(true);
+    expect(toaster()).toBe(live);
+  });
+
+  it('go back to the page as the last dialog in the overlay starts to close', async () => {
+    const take = renderHolding();
+    await waitFor(() => expect(toaster()).not.toBeNull());
+    const first = take(inOverlay());
+    const second = take(inOverlay());
+
+    act(() => first.hold.setOpen(true));
+    act(() => second.hold.setOpen(true));
+    expect(fake.container.contains(toaster())).toBe(true);
+
+    act(() => second.hold.setOpen(false));
+    expect(fake.container.contains(toaster())).toBe(true);
+
+    act(() => first.hold.setOpen(false));
+    expect(fake.container.contains(toaster())).toBe(false);
+    expect(fake.holds.map((hold) => hold.open)).toEqual([
+      [true, false],
+      [true, false],
+    ]);
+  });
+
+  it('go back to the page when an open dialog releases the overlay', async () => {
+    const take = renderHolding();
+    await waitFor(() => expect(toaster()).not.toBeNull());
+    const { hold } = take(inOverlay());
+    act(() => hold.setOpen(true));
+    expect(fake.container.contains(toaster())).toBe(true);
+
+    act(() => hold.release());
+
+    expect(fake.container.contains(toaster())).toBe(false);
+    expect(fake.holds[0].released).toBe(true);
+  });
+
+  it('stay in the page for a dialog the overlay had nowhere for, which renders in the page', async () => {
+    const take = renderHolding();
+    await waitFor(() => expect(toaster()).not.toBeNull());
+    const element = document.createElement('div');
+    document.body.append(element);
+
+    const { hold } = take(element);
+    act(() => hold.setOpen(true));
+
+    expect(fake.container.contains(toaster())).toBe(false);
+    element.remove();
+  });
+
+  it('stay in the page when the overlay’s document has gone', async () => {
+    const take = renderHolding();
+    await waitFor(() => expect(toaster()).not.toBeNull());
+    const element = inOverlay();
+    const { hold } = take(element);
+    fake.container.remove();
+
+    act(() => hold.setOpen(true));
+
+    expect(document.body.contains(toaster())).toBe(true);
   });
 });
