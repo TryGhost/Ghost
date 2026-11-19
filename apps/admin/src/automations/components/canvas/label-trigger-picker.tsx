@@ -98,7 +98,16 @@ export function LabelTriggerPicker({
 
   return (
     <Stack className="nowheel" gap="sm">
-      <Label className="leading-normal font-normal" htmlFor={id} id={`${id}-label`}>
+      <Label
+        className="leading-normal font-normal"
+        htmlFor={id}
+        id={`${id}-label`}
+        onClick={(event) => {
+          // Focus the picker without forwarding a click that would open it.
+          event.preventDefault();
+          document.getElementById(id)?.focus();
+        }}
+      >
         Triggered when this label is added to a member:
       </Label>
       <Combobox
