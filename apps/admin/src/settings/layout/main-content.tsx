@@ -63,7 +63,7 @@ const MainContent: React.FC = () => {
     return (
       <Stack className="h-full min-h-0" gap="none">
         {isMobile && (
-          <SettingsHeader className="shrink-0 px-[5vmin] pt-4 pb-2 in-data-[admin7-mobile=true]:max-lg:max-w-none in-data-[admin7-mobile=true]:max-lg:px-(--page-gutter)" />
+          <SettingsHeader className="shrink-0 px-[5vmin] pt-4 pb-2 in-data-[admin7-mobile=true]:max-lg:px-(--page-gutter)" />
         )}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain" id="settings-scroller">
           <div className="mx-auto max-w-5xl px-[5vmin] in-data-[admin7-mobile=true]:max-lg:max-w-none in-data-[admin7-mobile=true]:max-lg:px-(--page-gutter) tablet:mt-16 xl:mt-10">
@@ -83,7 +83,7 @@ const MainContent: React.FC = () => {
   return (
     <Stack className="h-full min-h-0" gap="none">
       {isMobile && (
-        <SettingsHeader className="shrink-0 px-8 pt-4 pb-2 in-data-[admin7-mobile=true]:max-lg:max-w-none in-data-[admin7-mobile=true]:max-lg:px-(--page-gutter)" />
+        <SettingsHeader className="shrink-0 px-8 pt-4 pb-2 in-data-[admin7-mobile=true]:max-lg:px-(--page-gutter)" />
       )}
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain" id="settings-scroller">
         {isMobile && (
