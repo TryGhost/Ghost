@@ -5,11 +5,15 @@ import { renderInApp } from '@test-utils/acceptance';
 import TagColorField from './tag-color-field';
 
 function TagColorForm() {
-  const [color, setColor] = useState('#FF0000');
+  const [colors, setColors] = useState(['#FF0000']);
   return (
     <>
-      <TagColorField value={color} onChange={setColor} onError={() => {}} />
-      <output data-testid="saved-color">{color}</output>
+      <TagColorField
+        value={colors[colors.length - 1]}
+        onChange={(color) => setColors((current) => [...current, color])}
+        onError={() => {}}
+      />
+      <output data-testid="saved-colors">{colors.join(' ')}</output>
     </>
   );
 }
@@ -39,7 +43,10 @@ it('keeps the last colour picked when the picker reports twice before a re-rende
   dispatchPointer(gradient, 'pointerdown', rect.left + rect.width / 2, rect.top + rect.height / 2);
   dispatchPointer(gradient, 'pointermove', rect.right + 5, rect.top - 5);
 
-  await expect.element(page.getByTestId('saved-color')).toHaveTextContent('#FF0000');
+  // Both colours reach the form, so it ends on red rather than the colour in the middle.
+  await expect
+    .element(page.getByTestId('saved-colors'))
+    .toHaveTextContent('#FF0000 #8F3030 #FF0000');
   await expect
     .element(page.getByRole('textbox', { name: 'Accent color hex value' }))
     .toHaveValue('FF0000');

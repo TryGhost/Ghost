@@ -170,9 +170,6 @@ const toHsla = (input: Parameters<typeof Color>[0]): HslaColor => {
 const toColor = ({ hue, saturation, lightness, alpha }: HslaColor) =>
   Color.hsl(hue, saturation, lightness).alpha(alpha / 100);
 
-// hex() drops alpha, so compare with hexa() to tell colours apart.
-const isSameColor = (a: HslaColor, b: HslaColor) => toColor(a).hexa() === toColor(b).hexa();
-
 // A control can change a channel without changing the colour, e.g. saturation on black. That
 // still counts: a caller that showed transparent as #00000000 needs to hear about #000000.
 const isSameHsla = (a: HslaColor, b: HslaColor) =>
@@ -181,10 +178,13 @@ const isSameHsla = (a: HslaColor, b: HslaColor) =>
   a.lightness === b.lightness &&
   a.alpha === b.alpha;
 
+// A change to some channels, or a function that works one out from the latest colour.
+type ColorChange = Partial<HslaColor> | ((current: HslaColor) => Partial<HslaColor>);
+
 interface ColorPickerContextValue extends HslaColor {
   mode: string;
   // Applies a change made in the picker and reports it through onChange.
-  setColor: (change: Partial<HslaColor>) => void;
+  setColor: (change: ColorChange) => void;
   setMode: (mode: string) => void;
 }
 
@@ -217,8 +217,8 @@ export const ColorPickerRoot = ({
   const [mode, setMode] = useState('hex');
   // Several changes can land before a re-render, so each one builds on the latest colour.
   const colorRef = useRef(color);
-  // Whether the current colour was made in the picker, rather than taken from value.
-  const pickedRef = useRef(false);
+  // The hex last reported through onChange, to recognise the parent echoing it back.
+  const lastReportedRef = useRef<string | null>(null);
   // An eye dropper pick resolves later, so it reports to the latest onChange.
   const onChangeRef = useRef(onChange);
 
@@ -226,29 +226,38 @@ export const ColorPickerRoot = ({
     onChangeRef.current = onChange;
   });
 
-  // Follow a controlled value without reporting it back through onChange. When the parent
-  // echoes a colour made in the picker, keep the picker's own hue and saturation, which a
-  // hex can't always carry (e.g. for greys).
-  useEffect(() => {
-    if (value) {
-      const next = toHsla(value);
-      if (!(pickedRef.current && isSameColor(next, colorRef.current))) {
-        colorRef.current = next;
-        pickedRef.current = false;
-        setColorState(next);
-      }
+  // Follow a controlled value without reporting it back through onChange. A layout effect
+  // runs in the same task as the commit, so no change can land before the sync and be undone.
+  useLayoutEffect(() => {
+    if (!value) {
+      return;
+    }
+    // The parent echoing the last report: keep the picker's own channels, which a hex can't
+    // always carry (e.g. the hue of a grey).
+    if (
+      typeof value === 'string' &&
+      value.toLowerCase() === lastReportedRef.current?.toLowerCase()
+    ) {
+      return;
+    }
+    lastReportedRef.current = null;
+    const next = toHsla(value);
+    if (!isSameHsla(next, colorRef.current)) {
+      colorRef.current = next;
+      setColorState(next);
     }
   }, [value]);
 
-  const setColor = useCallback((change: Partial<HslaColor>) => {
+  const setColor = useCallback((change: ColorChange) => {
     const previous = colorRef.current;
-    const next = { ...previous, ...change };
+    const next = { ...previous, ...(typeof change === 'function' ? change(previous) : change) };
     colorRef.current = next;
-    pickedRef.current = true;
     setColorState(next);
 
     if (!isSameHsla(next, previous)) {
-      onChangeRef.current?.(toColor(next).hex());
+      const hex = toColor(next).hex();
+      lastReportedRef.current = hex;
+      onChangeRef.current?.(hex);
     }
   }, []);
 
@@ -479,15 +488,19 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
       if (mode === 'hex') {
         setColor(toHsla(value));
       } else if ((mode === 'rgb' || mode === 'hsl') && index !== undefined) {
-        const values = color[mode]()
-          .array()
-          .map((v) => Math.round(v));
-        values[index] = parseInt(value, 10) || 0;
-        const newColor = toHsla(Color[mode](values[0], values[1], values[2]));
-        setColor({
-          hue: newColor.hue,
-          saturation: newColor.saturation,
-          lightness: newColor.lightness,
+        // Built from the latest colour, which may be newer than this render's.
+        setColor((current) => {
+          const values = Color.hsl(current.hue, current.saturation, current.lightness)
+            [mode]()
+            .array()
+            .map((v) => Math.round(v));
+          values[index] = parseInt(value, 10) || 0;
+          const newColor = toHsla(Color[mode](values[0], values[1], values[2]));
+          return {
+            hue: newColor.hue,
+            saturation: newColor.saturation,
+            lightness: newColor.lightness,
+          };
         });
       }
     } catch {

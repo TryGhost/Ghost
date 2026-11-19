@@ -39,8 +39,9 @@ const TagColorField: React.FC<TagColorFieldProps> = ({
   const allowPickerChanges = React.useRef(false);
 
   // Adopt external changes (initial load, a background refetch) without
-  // clobbering in-progress typing on unrelated re-renders.
-  React.useEffect(() => {
+  // clobbering in-progress typing on unrelated re-renders. A layout effect runs in
+  // the same task as the commit, so a picker change can't land before it.
+  React.useLayoutEffect(() => {
     if (value !== lastValueRef.current) {
       lastValueRef.current = value;
       setText(value.replace(/^#/, ''));

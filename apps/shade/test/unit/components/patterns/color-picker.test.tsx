@@ -6,6 +6,7 @@ import ColorPicker, {
   ColorPickerEyeDropper,
   ColorPickerFormat,
   ColorPickerHue,
+  ColorPickerOutput,
   ColorPickerRoot,
   ColorPickerSelection,
 } from '../../../../src/components/patterns/color-picker';
@@ -35,6 +36,8 @@ describe('ColorPicker Component', () => {
       unobserve() {}
       disconnect() {}
     } as unknown as typeof ResizeObserver;
+    // Radix Select scrolls the selected option into view, which jsdom doesn't implement
+    HTMLElement.prototype.scrollIntoView = vi.fn();
   });
 
   describe('initial color', () => {
@@ -307,8 +310,51 @@ describe('ColorPicker Component', () => {
       });
 
       // The hue step keeps the saturation and lightness the click set.
-      expect(handleChange).toHaveBeenCalledTimes(2);
-      expect(handleChange).toHaveBeenLastCalledWith('#8F3130');
+      expect(handleChange.mock.calls).toEqual([['#8F3030'], ['#8F3130']]);
+    });
+
+    it('builds an RGB channel edit on a change that landed before a re-render', () => {
+      const handleChange = vi.fn();
+      render(
+        <ColorPickerRoot defaultValue="#ff0000" onChange={handleChange}>
+          <ColorPickerSelection data-testid="gradient" />
+          <ColorPickerOutput />
+          <ColorPickerFormat />
+        </ColorPickerRoot>,
+      );
+      fireEvent.keyDown(screen.getByRole('combobox'), { key: 'Enter' });
+      fireEvent.keyDown(screen.getByRole('option', { name: 'RGB' }), { key: 'Enter' });
+      const gradient = mockGradientRect();
+
+      act(() => {
+        fireEvent.pointerDown(gradient, { clientX: 100, clientY: 100 });
+        fireEvent.change(screen.getByLabelText('RGB channel 2'), { target: { value: '64' } });
+      });
+
+      // Green changes; red and blue are the click's, not the starting red's.
+      expect(handleChange.mock.calls).toEqual([['#8F3030'], ['#8F4030']]);
+    });
+
+    it('adopts a new value with the same hex as the colour just picked', () => {
+      const handleChange = vi.fn();
+      const { rerender } = render(
+        <ColorPickerRoot value="#0000ff" onChange={handleChange}>
+          <ColorPickerSelection data-testid="gradient" />
+          <ColorPickerHue />
+        </ColorPickerRoot>,
+      );
+      // The bottom edge is black, which keeps the picker's hue of 240.
+      fireEvent.pointerDown(mockGradientRect(), { clientX: 100, clientY: 200 });
+      expect(handleChange).toHaveBeenCalledWith('#000000');
+
+      rerender(
+        <ColorPickerRoot value="hsl(120, 100%, 0%)" onChange={handleChange}>
+          <ColorPickerSelection data-testid="gradient" />
+          <ColorPickerHue />
+        </ColorPickerRoot>,
+      );
+
+      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('120');
     });
 
     it('adopts every channel of a new value, even one with the same hex', () => {
@@ -394,20 +440,26 @@ describe('ColorPicker Component', () => {
       vi.unstubAllGlobals();
     });
 
-    // An EyeDropper whose pick resolves when the test says so.
+    // An EyeDropper whose pick resolves when the test says so. Like a browser that is slow
+    // to cancel, it ignores the abort signal and only records it.
     function mockEyeDropper() {
       let resolvePick: (result: { sRGBHex: string }) => void = () => {};
+      let signal: AbortSignal | undefined;
       vi.stubGlobal(
         'EyeDropper',
         class {
-          open() {
+          open(options?: { signal?: AbortSignal }) {
+            signal = options?.signal;
             return new Promise((resolve) => {
               resolvePick = resolve;
             });
           }
         },
       );
-      return { pick: (sRGBHex: string) => act(async () => resolvePick({ sRGBHex })) };
+      return {
+        pick: (sRGBHex: string) => act(async () => resolvePick({ sRGBHex })),
+        isAborted: () => signal?.aborted,
+      };
     }
 
     function renderEyeDropper(onChange: (hex: string) => void) {
@@ -438,7 +490,7 @@ describe('ColorPicker Component', () => {
     });
 
     it('does not report a pick that resolves after the picker unmounts', async () => {
-      const { pick } = mockEyeDropper();
+      const { pick, isAborted } = mockEyeDropper();
       const handleChange = vi.fn();
       const { unmount } = renderEyeDropper(handleChange);
 
@@ -446,6 +498,7 @@ describe('ColorPicker Component', () => {
       unmount();
       await pick('#0000ff');
 
+      expect(isAborted()).toBe(true);
       expect(handleChange).not.toHaveBeenCalled();
     });
   });
