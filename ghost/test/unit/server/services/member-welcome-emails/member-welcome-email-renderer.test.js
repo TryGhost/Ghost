@@ -592,6 +592,105 @@ describe('MemberWelcomeEmailRenderer', function () {
       assert.equal(unknown.subject, 'Ann %%{unknown}%% / ann@example.com');
     });
 
+    it('fills member values into plaintext converted once from the template', async function () {
+      // As in newsletters, plaintext is converted from the template before values are filled in,
+      // so whitespace in a value is kept and an empty value can leave a double space.
+      lexicalRenderStub.resolves(
+        '<p>Hi {name} there</p><p><a href="https://example.com/u/{name}">{name}</a></p>',
+      );
+      const renderer = createRenderer();
+      const template = await renderer.render({
+        lexical: '{}',
+        subject: 'Welcome!',
+        siteSettings: defaultSiteSettings,
+      });
+
+      const spaced = renderer.personalize(template, {
+        member: { name: 'Ann   Lee', email: 'ann@example.com' },
+      });
+      assert(spaced.text.includes('Hi Ann   Lee there'));
+      assert(spaced.text.includes('Ann   Lee [https://example.com/u/Ann   Lee]'));
+
+      const empty = renderer.personalize(template, {
+        member: { name: '', email: 'ann@example.com' },
+      });
+      assert(empty.text.includes('Hi  there'));
+    });
+
+    it('fills in placeholder-shaped text in the site title and footer content', async function () {
+      // As in newsletters, placeholders are filled in across the whole rendered email.
+      lexicalRenderStub.resolves('<p>Content</p>');
+      const renderer = createRenderer();
+
+      const result = await renderFor(renderer, {
+        lexical: '{}',
+        subject: 'Welcome!',
+        siteSettings: { ...defaultSiteSettings, title: 'Club %%{first_name}%%' },
+        designSettings: { footer_content: '<p>Sent to %%{email}%%</p>' },
+        member: { name: 'Ann Lee', email: 'ann@example.com' },
+      });
+
+      assert(result.html.includes('Club Ann'));
+      assert(result.html.includes('Sent to ann@example.com'));
+      assert(!result.html.includes('%%{'));
+    });
+
+    it('serializes an attribute holding only an empty member value as an empty string', async function () {
+      lexicalRenderStub.resolves('<p><img src="https://example.com/a.png" alt="{name}"></p>');
+      const renderer = createRenderer();
+
+      const result = await renderFor(renderer, {
+        lexical: '{}',
+        subject: 'Welcome!',
+        siteSettings: defaultSiteSettings,
+        member: { name: '', email: 'ann@example.com' },
+      });
+
+      assert.match(result.html, /<img src="https:\/\/example\.com\/a\.png" alt=""/);
+    });
+
+    it('personalizes one template for several recipients without sharing their values', async function () {
+      lexicalRenderStub.resolves('<p>Hi {first_name, "friend"}, {email} / {uuid}</p>');
+      const renderer = createRenderer();
+      const template = await renderer.render({
+        lexical: '{}',
+        subject: 'Hi {name}',
+        siteSettings: defaultSiteSettings,
+      });
+      const templateBefore = JSON.stringify(template);
+
+      const ann = renderer.personalize(template, {
+        member: { name: 'Ann Lee', email: 'ann@example.com', uuid: 'uuid-ann' },
+      });
+      const bob = renderer.personalize(template, {
+        member: { name: '', email: 'bob@example.com', uuid: 'uuid-bob' },
+      });
+
+      assert(ann.html.includes('Hi Ann, ann@example.com / uuid-ann</p>'));
+      assert.equal(ann.subject, 'Hi Ann Lee');
+      assert(bob.html.includes('Hi friend, bob@example.com / uuid-bob</p>'));
+      assert.equal(bob.subject, 'Hi ');
+      assert(!/ann|Ann/.test(bob.html + bob.text + bob.subject));
+      assert.equal(JSON.stringify(template), templateBefore);
+    });
+
+    it('fills placeholders with empty strings when the member has no values', async function () {
+      lexicalRenderStub.resolves('<p>N={name}|F={first_name}|E={email}|U={uuid}</p>');
+      const renderer = createRenderer();
+
+      const result = await renderFor(renderer, {
+        lexical: '{}',
+        subject: 'Hi {name}{first_name}',
+        siteSettings: defaultSiteSettings,
+        member: {},
+      });
+
+      assert(result.html.includes('N=|F=|E=|U=</p>'));
+      assert(result.text.includes('N=|F=|E=|U='));
+      assert.equal(result.subject, 'Hi ');
+      assert(!/undefined|null|%%\{/.test(result.html + result.text + result.subject));
+    });
+
     it('personalizes member values, escaped only in the HTML body', async function () {
       lexicalRenderStub.resolves(
         '<p>Hello {name}!</p><p><a href="https://partner.example/?u={uuid}">{first_name, "friend"}</a></p>',
@@ -922,6 +1021,39 @@ describe('MemberWelcomeEmailRenderer', function () {
           result.html.includes(
             'href="https://forms.example/?email=john@example.com&amp;name=John"',
           ),
+        );
+      });
+
+      it('fills in a mailto link with the member email, untracked', async function () {
+        const result = await renderTracked('<p><a href="mailto:{email}">Reply</a></p>');
+
+        sinon.assert.notCalled(addAutomationTrackingToUrl);
+        assert(result.html.includes('href="mailto:john@example.com"'));
+        assert(result.text.includes('Reply [john@example.com]'));
+      });
+
+      it('inserts member values into link URLs without percent-encoding them', async function () {
+        // As with newsletters' Mailgun recipient variables, the raw value is inserted.
+        const result = await renderTracked(
+          '<p><a href="https://example.com/profile/{name}">Visit</a></p>',
+          {
+            trackClicks: false,
+            member: { name: 'Ric Flair', email: 'ricflair@woo.example', uuid: memberUuid },
+          },
+        );
+
+        const $ = cheerio.load(result.html);
+        const href = $('a')
+          .filter((_, link) => $(link).text() === 'Visit')
+          .attr('href');
+        const expectedUrl = 'https://example.com/profile/Ric Flair';
+
+        assert.deepEqual(
+          {
+            href,
+            plaintextLink: result.text.split('\n').find((line) => line.startsWith('Visit [')),
+          },
+          { href: expectedUrl, plaintextLink: `Visit [${expectedUrl}]` },
         );
       });
 
