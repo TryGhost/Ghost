@@ -129,6 +129,9 @@ describe('Batch Sending Service', function () {
       sinon.assert.calledOnce(errorLog);
       sinon.assert.calledWith(
         errorLog,
+        sinon.match({
+          system: { event: 'send_email.skipped', email_id: '123', email_status: 'submitting' },
+        }),
         '[Background Job] batch-sending-service-job skipped because email 123 is not pending or failed',
       );
     });
@@ -147,6 +150,9 @@ describe('Batch Sending Service', function () {
       sinon.assert.calledOnce(errorLog);
       sinon.assert.calledWith(
         errorLog,
+        sinon.match({
+          system: { event: 'send_email.skipped', email_id: '123', email_status: 'submitted' },
+        }),
         '[Background Job] batch-sending-service-job skipped because email 123 is not pending or failed',
       );
     });

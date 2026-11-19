@@ -341,7 +341,17 @@ class BatchSendingService {
       throw err;
     }
     if (claim.outcome === 'skipped') {
+      // A job that finds its email `submitting` either duplicates a live send or
+      // was replayed after a crash cut the send short. It never takes over a
+      // send, so `email_status` lets an alert pick out the ones to check by hand.
       logging.error(
+        {
+          system: {
+            event: 'send_email.skipped',
+            email_id: emailId,
+            email_status: claim.email?.get('status') ?? null,
+          },
+        },
         `[Background Job] batch-sending-service-job skipped because email ${emailId} is not pending or failed`,
       );
       return;
