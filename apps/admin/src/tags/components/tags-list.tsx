@@ -86,7 +86,7 @@ function TagsList({
                 key={key}
                 {...props}
                 className={cn(
-                  'group grid w-full items-center gap-x-4 p-2 lg:table-row lg:p-0',
+                  'group grid w-full items-center gap-x-4 p-2 in-data-[admin7-mobile=true]:max-lg:border-b-border in-data-[admin7-mobile=true]:max-lg:px-0 in-data-[admin7-mobile=true]:max-lg:py-4 in-data-[admin7-mobile=true]:max-lg:[--table-row-hover:transparent] lg:table-row lg:p-0',
                   'grid-cols-1 md:grid-cols-[1fr_auto]',
                 )}
                 data-testid="tag-list-row"
