@@ -39,8 +39,8 @@ type Entry = AppInstallationHistoryEntry;
 /**
  * `manifestContents` holds the manifests before and after each approval, by id. They're only
  * used to tell whether an approval moved the app. What each entry changed is the changes stored
- * with its manifest row: a suspension's are what waits for approval, and an approval's are the
- * approved row's.
+ * with its manifest row: an install's are what it granted, a suspension's are what waits for
+ * approval, and an approval's are the approved row's.
  */
 export function buildHistory(
   manifests: HistoryManifest[],

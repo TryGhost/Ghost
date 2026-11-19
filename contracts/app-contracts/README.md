@@ -43,6 +43,7 @@ An app describes itself to Ghost in a JSON manifest, which it serves as a
   "accent_color": "#ff5500",
   "icon": { "name": "audio-lines" },
   "surfaces": [{ "type": "admin_page", "url": "/admin" }],
+  "access": { "post": { "scopes": [{ "permission_key": "post:browse", "backend": true }, { "permission_key": "post:edit" }] } },
   "manifest_url": "https://podcast.example.com/ghost-app.json",
   "identity_key": { "kty": "OKP", "crv": "Ed25519", "x": "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo" },
   "backend_key": { "kty": "OKP", "crv": "Ed25519", "x": "H7aU67-okztSJD3-0znkVDiCU-izOI3I851CZX8XDyk" },
@@ -92,6 +93,20 @@ An app describes itself to Ghost in a JSON manifest, which it serves as a
   machine itself. A production site may run a development build to test it.
 - `surfaces` lists what the app asks for. Only `admin_page` exists today, at
   most once.
+- `access` lists the scopes the app needs, grouped by resource, and is
+  required; `{}` asks for nothing. Each key is a resource and each scope keeps
+  its full permission key, which must start with that resource. A scope is an object, and
+  `backend: true` marks one the app's backend may use on its own, with nobody
+  present; it defaults to `false`. A resource lists at least one scope, and
+  duplicates, unknown names, wildcards, `optional` and `reason` are refused.
+  A parsed manifest holds access as one list of `{ permission_key, backend }` in the
+  registry's order; `AppManifestSchema` writes it back grouped by resource, in
+  the registry's order with `backend` written out, so the same access always
+  stores, and digests, the same way. The scopes, their resources and the words Admin shows for them are in the scope
+  registry, `src/scopes.ts`, which the root entry point exports.
+  `compareManifests` compares access by meaning: a new scope, or one newly
+  marked for the backend, needs approval; a scope or resource removed, or
+  `backend` turned off, doesn't; reordering changes nothing.
 - URLs must be `https`. `localhost` and other addresses of the machine itself are
   accepted, over `http` too, only when Ghost runs in development. The manifest
   still can't be on Ghost's own host, on any port: serve the app from a name of
@@ -205,8 +220,16 @@ compareManifests(approved, next);
 // }
 ```
 
-Each change has a `kind`, which is `field`, and its path. Ghost serves changes
-in this shape: `ManifestChangeSchema`, from `/manifest`, reads one back.
+Each change has a `kind`: a `field` by its path, or one scope's `access`. Ghost
+serves and stores changes in this shape: `ManifestChangeSchema`, from
+`/manifest`, reads one back. The root entry point tells changes apart without
+loading zod: `isFieldChange`, `isAccessChange` and `splitChanges`.
+Without an approved manifest, as at install, no field counts as changed and
+every scope is added.
+
+`describeAccess(access)` gives the review screen's lines for a manifest's
+access, with the scopes its backend may use apart, and `approvedScopes(access)`
+the scopes approving it grants.
 
 ## Identity
 
@@ -330,8 +353,7 @@ group that allows it, or `invalid_path` for anything that leaves the root and
 path or what was refused. `ADMIN_API_ALLOWLIST` lists the routes apps can
 reach, by method, grouped by resource and then under the scope registry's
 names; its header comment says what the security review (BER-3992) must look
-at. The scopes, their resources and the words Admin shows for them are in the
-scope registry, `src/scopes.ts`, which the root entry point exports. Writes of
+at. Writes of
 posts, pages and tags are also checked for code injection and mobiledoc
 (`content.ts`). It all stands in for apps' own token.
 

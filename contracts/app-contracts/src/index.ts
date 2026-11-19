@@ -39,8 +39,21 @@ export {
   type AppPermissionKey,
   type AppPermissionKeyOf,
 } from './scopes.ts';
-export { describeScopes, type AccessLine } from './manifest/access.ts';
+export {
+  approvedScopes,
+  compareAccess,
+  describeAccess,
+  describeScopes,
+  widensAccess,
+  type AccessDescription,
+  type AccessLine,
+  type AppAccess,
+  type AppAccessScope,
+  type AppAccessSource,
+} from './manifest/access.ts';
+export { isAccessChange, isFieldChange, splitChanges } from './manifest/changes.ts';
 export type {
+  AccessChange,
   AppIcon,
   AppManifest,
   AppSurface,

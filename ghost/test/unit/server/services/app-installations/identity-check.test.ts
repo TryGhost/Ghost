@@ -41,6 +41,7 @@ function loaded({ manifestUrl = MANIFEST_URL }: { manifestUrl?: string } = {}): 
     accent_color: '#ff5500',
     icon: { name: 'audio-lines' },
     surfaces: [{ type: 'admin_page' as const, url: new URL('/admin', manifestUrl).href }],
+    access: [],
     manifest_url: manifestUrl,
     identity_key: keys.identity.publicJwk,
     backend_key: keys.backend.publicJwk,
@@ -49,7 +50,7 @@ function loaded({ manifestUrl = MANIFEST_URL }: { manifestUrl?: string } = {}): 
   return {
     manifestUrl,
     manifest,
-    serialised: JSON.stringify(manifest),
+    serialised: JSON.stringify({ ...manifest, access: {} }),
     digest: 'digest',
     identityKeyThumbprint: 'identity',
     backendKeyThumbprint: 'backend',

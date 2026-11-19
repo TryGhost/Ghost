@@ -119,3 +119,120 @@ describe('compareManifests', function () {
     ]);
   });
 });
+
+describe('compareManifests, for access', function () {
+  const POSTS = {
+    post: {
+      scopes: [{ permission_key: 'post:browse' }, { permission_key: 'post:read', backend: true }],
+    },
+  };
+  const before = manifestOf(manifest({ access: POSTS }));
+  const withAccess = (access: unknown) =>
+    compareManifests(before, manifestOf(manifest({ access })));
+
+  it('needs approval for a new scope, under a resource already declared or a new one', function () {
+    assert.deepEqual(
+      withAccess({
+        post: { scopes: [...POSTS.post.scopes, { permission_key: 'post:edit' }] },
+        tag: { scopes: [{ permission_key: 'tag:browse' }] },
+      }),
+      {
+        changes: [
+          { kind: 'access', scope: 'post:edit', change: 'added', backend: false },
+          { kind: 'access', scope: 'tag:browse', change: 'added', backend: false },
+        ],
+        requiresApproval: true,
+      },
+    );
+  });
+
+  it('needs approval for a scope newly marked for the backend', function () {
+    assert.deepEqual(
+      withAccess({
+        post: {
+          scopes: [
+            { permission_key: 'post:browse', backend: true },
+            { permission_key: 'post:read', backend: true },
+          ],
+        },
+      }),
+      {
+        changes: [{ kind: 'access', scope: 'post:browse', change: 'backend_added', backend: true }],
+        requiresApproval: true,
+      },
+    );
+  });
+
+  it('narrows access at once when a scope or resource goes, or backend is turned off', function () {
+    assert.deepEqual(withAccess({ post: { scopes: [{ permission_key: 'post:browse' }] } }), {
+      changes: [{ kind: 'access', scope: 'post:read', change: 'removed', backend: true }],
+      requiresApproval: false,
+    });
+    assert.equal(withAccess({}).requiresApproval, false);
+    assert.deepEqual(
+      withAccess({
+        post: { scopes: [{ permission_key: 'post:browse' }, { permission_key: 'post:read' }] },
+      }),
+      {
+        changes: [
+          { kind: 'access', scope: 'post:read', change: 'backend_removed', backend: false },
+        ],
+        requiresApproval: false,
+      },
+    );
+  });
+
+  it('finds no change when only the order differs', function () {
+    assert.deepEqual(
+      withAccess({
+        post: {
+          scopes: [
+            { permission_key: 'post:read', backend: true },
+            { permission_key: 'post:browse' },
+          ],
+        },
+      }),
+      { changes: [], requiresApproval: false },
+    );
+    const two = manifestOf(
+      manifest({
+        access: { ...POSTS, slug: { scopes: [{ permission_key: 'slug:generate' }] } },
+      }),
+    );
+    const swapped = manifestOf(
+      manifest({
+        access: { slug: { scopes: [{ permission_key: 'slug:generate' }] }, ...POSTS },
+      }),
+    );
+    assert.deepEqual(compareManifests(two, swapped).changes, []);
+  });
+
+  it('lists field changes by path, then access changes in the registry’s order', function () {
+    assert.deepEqual(
+      compareManifests(
+        before,
+        manifestOf(manifest({ access: {}, name: 'Podcasts', accent_color: '#000000' })),
+      ).changes,
+      [
+        { kind: 'field', path: 'accent_color', requires_approval: false },
+        { kind: 'field', path: 'name', requires_approval: true },
+        { kind: 'access', scope: 'post:browse', change: 'removed', backend: false },
+        { kind: 'access', scope: 'post:read', change: 'removed', backend: true },
+      ],
+    );
+  });
+
+  it('adds every scope and changes no field without an approved manifest, as at install', function () {
+    assert.deepEqual(compareManifests(undefined, before), {
+      changes: [
+        { kind: 'access', scope: 'post:browse', change: 'added', backend: false },
+        { kind: 'access', scope: 'post:read', change: 'added', backend: true },
+      ],
+      requiresApproval: true,
+    });
+    assert.deepEqual(compareManifests(undefined, approved), {
+      changes: [],
+      requiresApproval: false,
+    });
+  });
+});
