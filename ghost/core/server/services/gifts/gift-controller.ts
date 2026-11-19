@@ -15,6 +15,22 @@ type Frame = {
   };
 };
 
+/** The frame for a redemption: the gift token from the URL, and optional `answers` in the body. */
+type RedeemFrame = {
+  data: {
+    answers?: unknown;
+  };
+  options: {
+    token: string;
+    context?: {
+      member?: {
+        id: string;
+        status: string;
+      } | null;
+    };
+  };
+};
+
 export class GiftController {
   private readonly service: GiftService;
 
@@ -29,9 +45,9 @@ export class GiftController {
     return this.service.getRedeemable({ token, memberStatus });
   }
 
-  async redeem(frame: Frame) {
-    const token = frame.data.token;
-    const member = frame.options?.context?.member;
+  async redeem(frame: RedeemFrame) {
+    const token = frame.options.token;
+    const member = frame.options.context?.member;
 
     if (!member?.id) {
       throw new errors.UnauthorizedError({
@@ -42,6 +58,7 @@ export class GiftController {
     return this.service.redeem({
       token,
       memberId: member.id,
+      answers: frame.data.answers,
     });
   }
 }

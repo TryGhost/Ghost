@@ -9,6 +9,9 @@ import { SignedFlushScheduler } from '../../adapters/scheduling/signed-flush-sch
 import { GiftEmailService } from './gift-email-service';
 import { GiftController } from './gift-controller';
 import { SendGiftDeliveryEvent } from './events/send-gift-delivery-event';
+import { giftsTracking } from './tracking';
+import { COLLECTION_FLAG } from '../stripe-checkout-config/models';
+import { requirementOutcomes } from '../members/tracking';
 
 export interface GiftServiceInitOptions {
   apiUrl: string;
@@ -68,6 +71,8 @@ export function init(options: GiftServiceInitOptions): void {
   const { formatAddressForDelivery } = require('../../lib/mail/format-address-for-delivery');
   const { blogIcon } = require('../../../server/lib/image');
   const { t } = require('../../../shared/i18n');
+  const labs = require('../../../shared/labs');
+  const { tracer } = require('../../lib/tracing');
 
   const repository = new GiftBookshelfRepository({
     GiftModel,
@@ -136,6 +141,20 @@ export function init(options: GiftServiceInitOptions): void {
     get memberRepository() {
       return membersService.api.members;
     },
+    get memberWrites() {
+      return membersService.api.memberBREADService;
+    },
+    // Boot initializes gifts before tiers and members, so both are looked up when they are used.
+    requirements: {
+      forTier: async (tier) =>
+        labs.isSet(COLLECTION_FLAG)
+          ? ((await tiers.service.requirements.forTiers([tier])).get(tier.id) ?? [])
+          : null,
+      planAnswers: (given, memberId, tier, attempt) =>
+        membersService.api.account.planAnswers(given, memberId, tier, attempt),
+      validateAnswers: (given, tier) => membersService.api.account.validateAnswers(given, tier),
+    },
+    tracking: giftsTracking({ tracer, outcomes: requirementOutcomes }),
     tiersService,
     giftEmailService,
     get staffServiceEmails() {

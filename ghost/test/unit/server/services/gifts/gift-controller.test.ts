@@ -65,8 +65,9 @@ describe('GiftController', function () {
     const { controller, service } = createController();
 
     const result = await controller.redeem({
-      data: { token: 'gift-token' },
+      data: { answers: { 'checkout.phone': '+447400123456' } },
       options: {
+        token: 'gift-token',
         context: {
           member: {
             id: 'member_1',
@@ -79,6 +80,7 @@ describe('GiftController', function () {
     sinon.assert.calledOnceWithExactly(service.redeem, {
       token: 'gift-token',
       memberId: 'member_1',
+      answers: { 'checkout.phone': '+447400123456' },
     });
     assert.equal(result.token, 'gift-token');
   });
@@ -87,7 +89,7 @@ describe('GiftController', function () {
     const { controller, service } = createController();
 
     await assert.rejects(
-      () => controller.redeem({ data: { token: 'gift-token' } }),
+      () => controller.redeem({ data: {}, options: { token: 'gift-token' } }),
       (err: any) => {
         assert.ok(err instanceof errors.UnauthorizedError);
         assert.equal(err.message, 'Member authentication required.');

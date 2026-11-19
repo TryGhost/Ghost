@@ -28,11 +28,12 @@ module.exports = {
     headers: {
       cacheInvalidate: false,
     },
-    data: ['token'],
+    // The token is read from the URL as an option. The framework only copies URL params into
+    // `frame.data` when the request body is empty, and this request can have a body (`answers`).
+    options: ['token'],
     validation: {
-      data: {
+      options: {
         token: {
-          type: 'string',
           required: true,
         },
       },

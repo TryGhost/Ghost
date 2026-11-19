@@ -7,7 +7,7 @@ const debug = baseDebug('e2e:helpers:utils:email');
 // Ghost magic links typically look like: http://localhost:30000/members/?token=...&action=signup
 export function extractMagicLink(
   emailMessageBody: string,
-  expectedActionInUrl: 'signup' | 'signin' = 'signup',
+  expectedActionInUrl: 'signup' | 'signin' | 'subscribe' = 'signup',
 ): string {
   const magicLinkRegex = /https?:\/\/[^\s]+\/members\/\?token=[^\s&]+(&action=\w+)?(&r=[^\s]+)?/gi;
   const matches = emailMessageBody.match(magicLinkRegex);

@@ -948,6 +948,8 @@ describe('Gift Subscriptions', function () {
           .related('benefits')
           .toJSON()
           .map((item) => item.name),
+        // The tier's requirements, returned because the checkout collection flag is on in tests.
+        requirements: [],
       });
       assert.equal(body.gifts[0].buyer_email, undefined);
       assert.equal(body.gifts[0].delivery_status, undefined);

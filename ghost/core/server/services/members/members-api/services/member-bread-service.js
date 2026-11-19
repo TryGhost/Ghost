@@ -685,6 +685,9 @@ module.exports = class MemberBREADService {
    * event fires once, when the transaction commits, so it always sees the new metafields.
    * Without writes, updates the member as before.
    *
+   * If `options.transacting` is set, the update joins that transaction instead of opening its
+   * own. A gift redemption uses this to save the member and the gift in one transaction.
+   *
    * @param {object} data the member attributes to change
    * @param {object} options must name the member by `id`
    * @param {import('../../../members-metafields/values-service').MetafieldPlan[]} plans
@@ -695,7 +698,7 @@ module.exports = class MemberBREADService {
       return this.memberRepository.update(data, options);
     }
 
-    return this.transaction(async (transacting) => {
+    const write = async (transacting) => {
       // Locked before anything else reads. On MySQL a transaction reads from a snapshot
       // taken at its first plain read, so an edit that waited on another edit to this
       // member would otherwise read the metafields from before that edit committed.
@@ -728,7 +731,8 @@ module.exports = class MemberBREADService {
       }
 
       return model;
-    });
+    };
+    return options.transacting ? write(options.transacting) : this.transaction(write);
   }
 
   /**

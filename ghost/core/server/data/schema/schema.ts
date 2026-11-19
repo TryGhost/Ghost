@@ -1834,7 +1834,7 @@ const schema = {
       unique: true,
       validations: { isUUID: true },
     },
-    data: { type: 'string', maxlength: 2000, nullable: true },
+    data: { type: 'text', maxlength: 65535, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
     first_used_at: { type: 'dateTime', nullable: true },

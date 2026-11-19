@@ -49,6 +49,110 @@ describe.each([
 
     expect(mockDoActionFn).toHaveBeenCalledWith('redeemGift', {
       giftToken: 'gift-token-123',
+      answers: {},
+      asked: [],
+    });
+  });
+
+  // Requirements in the order the API returns them, by name, which differs from the order Portal
+  // shows them in. Each port names the custom field that holds the member's saved value.
+  const SHIPPING_AND_PHONE = [
+    { name: 'phone', ports: { number: { port: 'checkout.phone', field: 'custom.contact_phone' } } },
+    {
+      name: 'shipping',
+      ports: {
+        recipient: { port: 'checkout.shipping.name', field: 'custom.recipient_name' },
+        address: { port: 'checkout.shipping.address', field: 'custom.delivery_address' },
+      },
+    },
+  ];
+  const requiring = (requirements) => ({
+    token: 'gift-token-123',
+    gift: { ...gift, tier: { ...gift.tier, requirements } },
+  });
+
+  test("shows the tier's requirement inputs to a logged-in member, prefilled with their saved values", async () => {
+    const { getByRole, findByLabelText, getByLabelText, mockDoActionFn } = renderGiftRedemptionPage(
+      Page,
+      {
+        member: {
+          ...member.free,
+          metafields: {
+            custom: { recipient_name: 'Ada Lovelace', contact_phone: '+44 7400 123456' },
+          },
+        },
+        pageData: requiring(SHIPPING_AND_PHONE),
+      },
+    );
+
+    expect(await findByLabelText('Recipient name')).toHaveValue('Ada Lovelace');
+    expect(getByLabelText('Phone number')).toHaveValue('7400 123456');
+    // The redeem button stays disabled until every input has a value.
+    const redeem = getByRole('button', { name: buttonLabel });
+    expect(redeem).toBeDisabled();
+
+    fireEvent.change(getByLabelText('Address line 1'), { target: { value: '1 High Street' } });
+    // An address isn't complete without a country.
+    expect(redeem).toBeDisabled();
+    fireEvent.change(getByLabelText('Country'), { target: { value: 'GB' } });
+    expect(redeem).toBeEnabled();
+    fireEvent.click(redeem);
+
+    // `answers` is keyed by checkout port, and `asked` is the list of inputs that were shown.
+    expect(mockDoActionFn).toHaveBeenCalledWith('redeemGift', {
+      giftToken: 'gift-token-123',
+      answers: {
+        'checkout.shipping.name': 'Ada Lovelace',
+        'checkout.shipping.address': { line1: '1 High Street', country: 'GB' },
+        'checkout.phone': '+44 7400 123456',
+      },
+      asked: expect.arrayContaining([expect.objectContaining({ key: 'checkout.phone' })]),
+    });
+  });
+
+  test("shows the server's validation error next to the input it belongs to", async () => {
+    const { findByLabelText, getByText } = renderGiftRedemptionPage(Page, {
+      member: member.free,
+      pageData: requiring([SHIPPING_AND_PHONE[0]]),
+      fieldErrors: { 'custom:checkout.phone': 'Enter the phone number with its country code.' },
+    });
+
+    await findByLabelText('Phone number');
+    expect(getByText('Enter the phone number with its country code.')).toBeInTheDocument();
+  });
+
+  test("shows the tier's requirement inputs to a visitor who isn't signed in and sends the values with their email", async () => {
+    const { getByRole, findByLabelText, getByLabelText, mockDoActionFn } = renderGiftRedemptionPage(
+      Page,
+      { pageData: requiring(SHIPPING_AND_PHONE) },
+    );
+
+    fireEvent.change(await findByLabelText('Recipient name'), {
+      target: { value: 'Ada Lovelace' },
+    });
+    fireEvent.change(getByLabelText('Address line 1'), { target: { value: '1 High Street' } });
+    fireEvent.change(getByLabelText('Country'), { target: { value: 'GB' } });
+    // The redeem button stays disabled until every input has a value.
+    const redeem = getByRole('button', { name: buttonLabel });
+    expect(redeem).toBeDisabled();
+    fireEvent.change(getByLabelText('Phone number'), { target: { value: '+44 7400 123456' } });
+    expect(redeem).toBeEnabled();
+
+    fireEvent.change(getByLabelText(/your email/i), { target: { value: 'jamie@example.com' } });
+    fireEvent.click(redeem);
+
+    await waitFor(() => {
+      expect(mockDoActionFn).toHaveBeenCalledWith('redeemGift', {
+        email: 'jamie@example.com',
+        name: '',
+        giftToken: 'gift-token-123',
+        answers: {
+          'checkout.shipping.name': 'Ada Lovelace',
+          'checkout.shipping.address': { line1: '1 High Street', country: 'GB' },
+          'checkout.phone': '+44 7400 123456',
+        },
+        asked: expect.arrayContaining([expect.objectContaining({ key: 'checkout.phone' })]),
+      });
     });
   });
 

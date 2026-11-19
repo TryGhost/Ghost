@@ -20,7 +20,59 @@ import type { Tracer } from '../../lib/tracing/tracer';
  *   field to go to.
  * - `failed`: the tier changed, but saving its answers failed.
  */
-type RequirementOutcome = 'none' | 'dropped' | 'given' | 'saved' | 'partly_saved' | 'failed';
+export type RequirementOutcome = 'none' | 'dropped' | 'given' | 'saved' | 'partly_saved' | 'failed';
+
+/** What a tier change or a gift redemption reports after it validates `answers`. */
+export interface AnswersPlanned {
+  /** The requirements of the tier the member is joining. */
+  required: readonly { name: RequirementName }[];
+  /** The values the member sent, keyed by checkout port. */
+  answers: Readonly<Partial<Record<string, unknown>>>;
+  /** The ports that are bound to an active custom field. */
+  kept: ReadonlySet<string>;
+}
+
+/**
+ * Records the outcome of each tier requirement on a span, for a tier change or a gift redemption.
+ *
+ * Call `answering` after `answers` is validated and before the member joins the tier. It records
+ * `none`, `dropped` or `given` for each requirement. Call `settled` after the member has joined
+ * the tier, with whether the values were saved. It changes each `given` requirement to `saved`,
+ * `partly_saved` or `failed`. If the change is rejected or throws before `settled` is called, the
+ * outcomes stay as `answering` recorded them.
+ */
+export function requirementOutcomes(
+  record: (name: RequirementName, outcome: RequirementOutcome) => void,
+) {
+  // The requirements that have values to save. `partly` is true when only some of the
+  // requirement's ports are bound to an active custom field.
+  const saving: { name: RequirementName; partly: boolean }[] = [];
+  return {
+    answering({ required, answers, kept }: AnswersPlanned): void {
+      for (const { name } of required) {
+        const given = portsOf(name).filter((port) => Object.hasOwn(answers, port));
+        const keptOf = given.filter((port) => kept.has(port));
+        if (given.length === 0) {
+          record(name, 'none');
+        } else if (keptOf.length === 0) {
+          record(name, 'dropped');
+        } else {
+          record(name, 'given');
+          saving.push({ name, partly: keptOf.length < given.length });
+        }
+      }
+    },
+    settled({ saved }: { saved: boolean }): void {
+      for (const { name, partly } of saving) {
+        if (saved) {
+          record(name, partly ? 'partly_saved' : 'saved');
+        } else {
+          record(name, 'failed');
+        }
+      }
+    },
+  };
+}
 
 /** What the members API reports to a `members.tier_change` span while a member changes tier. */
 export interface TierChangeAttempt {
@@ -29,11 +81,7 @@ export interface TierChangeAttempt {
    * tier the member is changing to, the answers they gave by port, and the ports with a custom
    * field to go to.
    */
-  answering(planned: {
-    required: readonly { name: RequirementName }[];
-    answers: Readonly<Partial<Record<string, unknown>>>;
-    kept: ReadonlySet<string>;
-  }): void;
+  answering(planned: AnswersPlanned): void;
   /** Called when the tier changed but saving the answers failed. */
   answersNotSaved(): void;
 }
@@ -62,39 +110,16 @@ export function membersTracking({ tracer }: { tracer: Tracer }) {
       change: (attempt: TierChangeAttempt) => Promise<Result>,
     ): Promise<Result> {
       return tracer.track('members.tier_change', async (span) => {
-        const record = (name: RequirementName, outcome: RequirementOutcome) =>
-          span.setAttribute(name, outcome);
         span.setAttribute('answers', answered ? 'given' : 'none');
-        // The requirements whose answers are saved once the tier changes, each with whether only
-        // some of them have a field to go to.
-        const saving: { name: RequirementName; partly: boolean }[] = [];
+        const outcomes = requirementOutcomes((name, outcome) => span.setAttribute(name, outcome));
         let notSaved = false;
         const result = await change({
-          answering({ required, answers, kept }) {
-            for (const { name } of required) {
-              const given = portsOf(name).filter((port) => Object.hasOwn(answers, port));
-              const keptOf = given.filter((port) => kept.has(port));
-              if (given.length === 0) {
-                record(name, 'none');
-              } else if (keptOf.length === 0) {
-                record(name, 'dropped');
-              } else {
-                record(name, 'given');
-                saving.push({ name, partly: keptOf.length < given.length });
-              }
-            }
-          },
+          answering: outcomes.answering,
           answersNotSaved() {
             notSaved = true;
           },
         });
-        for (const { name, partly } of saving) {
-          if (notSaved) {
-            record(name, 'failed');
-          } else {
-            record(name, partly ? 'partly_saved' : 'saved');
-          }
-        }
+        outcomes.settled({ saved: !notSaved });
         return result;
       });
     },

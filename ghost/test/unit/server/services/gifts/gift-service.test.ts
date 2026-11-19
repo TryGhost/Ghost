@@ -12,6 +12,8 @@ import type {
   FindPendingReminderOptions,
   GiftRepository,
 } from '../../../../../core/server/services/gifts/gift-bookshelf-repository';
+import { giftsTracking } from '../../../../../core/server/services/gifts/tracking';
+import { requirementOutcomes } from '../../../../../core/server/services/members/tracking';
 import { buildGift } from './utils';
 
 const transacting = 'trx' as unknown as Knex.Transaction;
@@ -255,6 +257,19 @@ describe('GiftService', function () {
       giftRepository: giftRepository as any,
       giftDeliveryService,
       memberRepository,
+      // Without custom field values to save, the real method only calls the repository's update.
+      memberWrites: {
+        updateWithMetafields: (data, options) => memberRepository.update(data, options),
+      },
+      requirements: {
+        forTier: async () => null,
+        planAnswers: async () => [],
+        validateAnswers: async () => ({}),
+      },
+      tracking: giftsTracking({
+        tracer: { track: (_name, fn) => fn({ setAttribute() {} }) },
+        outcomes: requirementOutcomes,
+      }),
       tiersService,
       giftEmailService,
       staffServiceEmails,

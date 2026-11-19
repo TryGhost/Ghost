@@ -212,7 +212,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       return handleGiftResponse(res, 'Failed to load gift data');
     },
 
-    async redeem({ token }) {
+    async redeem({ token, answers }) {
       const url = endpointFor({
         type: 'members',
         resource: `gifts/${encodeURIComponent(token)}/redeem`,
@@ -224,7 +224,10 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
           'Content-Type': 'application/json',
         },
         credentials: 'same-origin',
-        body: JSON.stringify({}),
+        // `answers` holds the member's values for the tier's requirements, keyed by checkout port,
+        // such as `checkout.shipping.address`. The server saves them when it redeems the gift. A
+        // validation error names the port, which the page uses to find the input.
+        body: JSON.stringify(answers && Object.keys(answers).length > 0 ? { answers } : {}),
       });
 
       return handleGiftResponse(res, 'Failed to redeem gift');
@@ -394,6 +397,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       customUrlHistory,
       token,
       giftToken,
+      answers,
       autoRedirect = true,
       includeOTC,
     }) {
@@ -415,6 +419,12 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         autoRedirect,
         includeOTC,
       };
+      // With `giftToken`, `answers` holds the visitor's values for the requirements of the gift's
+      // tier, keyed by checkout port. The server validates them before it sends the email and
+      // saves them when the magic link redeems the gift.
+      if (answers && Object.keys(answers).length > 0) {
+        body.answers = answers;
+      }
       const urlHistory = customUrlHistory ?? getUrlHistory();
       if (urlHistory) {
         body.urlHistory = urlHistory;
