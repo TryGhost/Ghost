@@ -26,7 +26,17 @@ function isJsonBody(value: unknown): value is JsonBody {
     return false;
   }
   const prototype: unknown = Object.getPrototypeOf(value);
-  return prototype === Object.prototype || prototype === null;
+  if (prototype === Object.prototype || prototype === null) {
+    return true;
+  }
+  // Another realm's Object.prototype has its own identity, but still has no parent and
+  // owns the native Object constructor. Class and host prototypes do not meet both rules.
+  const constructor: unknown = Object.getOwnPropertyDescriptor(prototype, 'constructor')?.value;
+  return (
+    Object.getPrototypeOf(prototype) === null &&
+    typeof constructor === 'function' &&
+    Function.prototype.toString.call(constructor) === Function.prototype.toString.call(Object)
+  );
 }
 
 // A cycle or a BigInt makes `JSON.stringify` throw, and a `toJSON` that returns `undefined`

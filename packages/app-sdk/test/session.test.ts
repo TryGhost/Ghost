@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 
 import {
@@ -210,6 +211,29 @@ describe('fetch', () => {
     const body = Object.assign(Object.create(null) as Record<string, unknown>, { a: 1 });
     await ghost.fetch('/posts/', { method: 'POST', body });
     expect(host.fetch).toHaveBeenCalledWith(expect.objectContaining({ body: '{"a":1}' }));
+  });
+
+  it('sends a plain object created in a same-origin child frame as JSON', async () => {
+    const { ghost, host } = await started();
+    const iframe = document.createElement('iframe');
+    document.body.append(iframe);
+    try {
+      const child = iframe.contentWindow as Window & typeof globalThis;
+      const body = child.JSON.parse('{"posts":[{"title":"From child frame"}]}') as Record<
+        string,
+        unknown
+      >;
+      assert.equal(Object.getPrototypeOf(body), child.Object.prototype);
+      assert.notEqual(Object.getPrototypeOf(body), Object.prototype);
+
+      await ghost.fetch('/posts/', { method: 'POST', body });
+
+      assert.deepEqual(host.fetch.mock.calls, [
+        [{ path: '/posts/', method: 'POST', body: '{"posts":[{"title":"From child frame"}]}' }],
+      ]);
+    } finally {
+      iframe.remove();
+    }
   });
 
   it.each([
