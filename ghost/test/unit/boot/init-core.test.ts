@@ -4,10 +4,9 @@ import sinon from 'sinon';
 import { loadBootSequence } from './harness';
 
 function createCoreHarness() {
-  const settings = {
-    init: sinon.stub().resolves(),
-    syncEmailSettings: sinon.stub().resolves(),
-  };
+  // One root now: syncing the email settings is part of its start, covered by
+  // the shared module's own tests.
+  const settings = { init: sinon.stub().resolves() };
   const signingKeys = { init: sinon.stub().resolves() };
   const i18n = { init: sinon.stub().resolves() };
   const giftLinks = { init: sinon.stub().resolves() };
@@ -25,7 +24,8 @@ function createCoreHarness() {
       },
       './shared/url-utils': {},
       '../shared/limits': { default: { init: async () => {} } },
-      './server/services/settings/settings-service': settings,
+      '../shared/transition/settings': { default: { init: async () => {} } },
+      '../shared/settings': { default: settings },
       './server/services/signing-keys': { default: signingKeys },
       './server/services/internal-keys': { default: { init() {} } },
       './server/lib/common/events': {},
@@ -56,31 +56,25 @@ function createCoreHarness() {
   };
 }
 
-for (const stage of ['init', 'syncEmailSettings'] as const) {
-  it(`waits for settings.${stage} before initializing signing keys`, async function () {
-    const boot = createCoreHarness();
-    const ready = Promise.withResolvers<void>();
-    boot.settings[stage].returns(ready.promise);
-    const startup = boot.init();
+it('waits for settings before initializing signing keys', async function () {
+  const boot = createCoreHarness();
+  const ready = Promise.withResolvers<void>();
+  boot.settings.init.returns(ready.promise);
+  const startup = boot.init();
 
-    try {
-      await setImmediate();
-      sinon.assert.calledOnce(boot.settings[stage]);
-      sinon.assert.notCalled(boot.signingKeys.init);
-    } finally {
-      ready.resolve();
-      await Promise.allSettled([startup]);
-    }
-    await startup;
+  try {
+    await setImmediate();
+    sinon.assert.calledOnce(boot.settings.init);
+    sinon.assert.notCalled(boot.signingKeys.init);
+  } finally {
+    ready.resolve();
+    await Promise.allSettled([startup]);
+  }
+  await startup;
 
-    sinon.assert.calledOnce(boot.signingKeys.init);
-    sinon.assert.callOrder(
-      boot.settings.init,
-      boot.settings.syncEmailSettings,
-      boot.signingKeys.init,
-    );
-  });
-}
+  sinon.assert.calledOnce(boot.signingKeys.init);
+  sinon.assert.callOrder(boot.settings.init, boot.signingKeys.init);
+});
 
 it('waits for signing-key initialization before continuing or resolving initCore', async function () {
   const boot = createCoreHarness();

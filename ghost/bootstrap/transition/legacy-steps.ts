@@ -37,7 +37,6 @@ type LegacyBoot = Record<
   | 'initQueryTracing'
   | 'initFoundationChecks'
   | 'initUrlUtils'
-  | 'initSettings'
   | 'initI18n'
   | 'initEmailAddressPolicy'
   | 'initMembersMetafields'
@@ -111,8 +110,6 @@ export const legacySteps = {
     boot().initFoundationChecks({ config: foundation.config }),
 
   urlUtils: () => boot().initUrlUtils(),
-
-  settings: ({ foundation }: BootRun) => boot().initSettings({ config: foundation.config }),
 
   i18n: () => boot().initI18n(),
 

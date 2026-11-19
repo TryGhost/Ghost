@@ -50,3 +50,12 @@ goes when its importers are handed the instance.
 Anything moved here that does not meet the rules yet goes in
 `ghost/shared/transition/<name>/`, so it is unmistakable. Nothing in
 `transition/` is automatic: the list names it explicitly.
+
+[`transition/settings`](transition/settings/index.ts) is the first: it hands
+[`settings`](settings/index.ts) what settings still takes from legacy Core.
+[`settings/dependencies.ts`](settings/dependencies.ts) lists each thing and why
+it is not handed over properly yet (the Bookshelf model, the cache instance
+built at import, the legacy event emitter, the cache adapter, the calculated
+settings, tracing). The legacy
+[`settings-service.js`](../core/server/services/settings/settings-service.js)
+keeps `init()` for the tests and tools that call it, and runs the same code.

@@ -141,19 +141,6 @@ function initUrlUtils() {
   debug('End: Load urlUtils');
 }
 
-/**
- * Settings store key-value pairs used in critical pathways as well as public data like the site title.
- * @param {object} options
- * @param {object} options.config
- */
-async function initSettings({ config }) {
-  debug('Begin: settings');
-  const settings = require('./server/services/settings/settings-service');
-  await settings.init();
-  await settings.syncEmailSettings(config.get('hostSettings:emailVerification:verified'));
-  debug('End: settings');
-}
-
 /** Reads the locale setting, so it follows settings. */
 async function initI18n() {
   debug('Begin: i18n');
@@ -924,7 +911,6 @@ Object.assign(module.exports, {
   initQueryTracing,
   initFoundationChecks,
   initUrlUtils,
-  initSettings,
   initI18n,
   initEmailAddressPolicy,
   initMembersMetafields,

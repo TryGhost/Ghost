@@ -12,6 +12,13 @@ const sharedModuleAliases = [
   '^ghost/core/server/services/limits\\.ts$', // Limits: ghost/shared/limits.
 ];
 
+// Legacy files that do more than forward: each still runs a shared module's
+// code for the callers of its old methods. Unlike an alias, the service
+// dependency rules still apply to the rest of the file.
+const sharedModuleFacades = [
+  '^ghost/core/server/services/settings/settings-service\\.js$', // Settings: init() and its steps run ghost/shared/settings.
+];
+
 const serviceImplementations = {
   path: `^${servicesRoot}/([^/]+)(?:/|$)`,
   pathNot: [
@@ -30,6 +37,8 @@ const serviceRootsElsewhere = [
   // Shared modules. The shared-module rules below and the shape test in
   // ghost/test/unit/bootstrap/steps.test.ts apply to these instead.
   '^ghost/shared/limits/index\\.ts$',
+  '^ghost/shared/settings/index\\.ts$',
+  '^ghost/shared/transition/settings/index\\.ts$',
 ];
 
 // Explicit code-library and contract allowances, not application instances.
@@ -557,9 +566,16 @@ module.exports = {
     {
       name: 'shared-modules-only-from-bootstrap',
       comment:
-        'Nothing imports a shared module. The shared list in ghost/bootstrap/shared.ts starts it, and whoever needs its instance is handed it. The legacy paths in sharedModuleAliases return the instance to code that still imports them.',
+        'Nothing imports a shared module. The shared list in ghost/bootstrap/shared.ts starts it, and whoever needs its instance is handed it. The legacy paths in sharedModuleAliases and sharedModuleFacades return the instance, or run its code, for code that still imports them.',
       severity: 'error',
-      from: { pathNot: ['^ghost/bootstrap/', '^ghost/shared/', ...sharedModuleAliases] },
+      from: {
+        pathNot: [
+          '^ghost/bootstrap/',
+          '^ghost/shared/',
+          ...sharedModuleAliases,
+          ...sharedModuleFacades,
+        ],
+      },
       to: { path: '^ghost/shared/', dependencyTypesNot: ['type-only', 'type-import'] },
     },
     // ============================================================

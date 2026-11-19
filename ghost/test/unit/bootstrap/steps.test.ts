@@ -40,7 +40,8 @@ describe("Ghost's start sequence", function () {
         'shared.modules': [
           'legacy: url utils',
           'limits',
-          'legacy: settings',
+          'settings-transition',
+          'settings',
           'signing-keys',
           'internal-keys',
           'legacy: i18n',
@@ -176,6 +177,8 @@ describe("Ghost's start sequence", function () {
 
       it('finds the reshaped modules', function () {
         assert.ok(modules.includes('shared/limits'));
+        assert.ok(modules.includes('shared/settings'));
+        assert.ok(modules.includes('shared/transition/settings'));
       });
 
       for (const folder of modules) {

@@ -4,12 +4,10 @@
  */
 const events = require('../../lib/common/events');
 const logging = require('@tryghost/logging');
-const { tracer } = require('../../lib/tracing');
 const models = require('../../models');
 const labs = require('../../../shared/labs');
 const { limitService: limits } = require('../limits');
 const config = require('../../../shared/config');
-const adapterManager = require('../adapter-manager').default;
 const SettingsCache = require('../../../shared/settings-cache');
 const SettingsBREADService = require('./settings-bread-service');
 const { generatePrivateSiteAccessCode } = require('./private-site-access-code');
@@ -26,17 +24,26 @@ const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
 const MAGIC_LINK_TOKEN_MAX_USAGE_COUNT = 7;
 
-const getSettingsOverrides = () => {
-  const settingsOverrides = config.get('hostSettings:settingsOverrides') || {};
-  const limitOverrides = {};
+// LEGACY FACADE for the start of settings, which is a shared module now:
+// ghost/shared/settings, started by the shared list in ghost/bootstrap/shared.ts.
+// `init()` and the three methods below it stay for the tests and tools that
+// still call them here; each runs the shared module's code with the same
+// instances the shared step hands it.
+const {
+  loadSettings,
+  enforcePublicSiteAccessLimit,
+  syncEmailSettings,
+  validateSiteUuid,
+} = require('../../../../shared/settings/start-settings');
+const {
+  legacyDependencies,
+} = require('../../../../shared/transition/settings/legacy-dependencies');
 
-  // Transistor.fm's Ghost-based features should be treated as off if the webhooks functionality is limited by the host
-  if (config.get('hostSettings:limits:customIntegrations:disabled') === true) {
-    limitOverrides.transistor = false;
-  }
-
-  return Object.assign({}, settingsOverrides, limitOverrides);
-};
+const given = () => ({
+  foundation: { config, logging },
+  limits,
+  'settings-transition': legacyDependencies(),
+});
 
 /**
  * @returns {SettingsBREADService} instance of the PostsService
@@ -87,41 +94,12 @@ module.exports = {
    * Initialize the cache, used in boot and in testing
    */
   async init() {
-    return tracer.track('settings.init', async (span) => {
-      logging.info({ event: { name: 'settings.init.started' } }, 'Initializing settings');
-      const preparationStart = performance.now();
-      span.setAttribute('phase', 'adapter');
-      const cacheStore = adapterManager.getAdapter('cache:settings');
-      span.setAttribute('phase', 'populate_defaults');
-      await models.Settings.populateDefaults();
-      span.setAttribute('phase', 'enforce_access_limit');
-      await this.enforcePublicSiteAccessLimit();
-      span.setAttribute('preparation_ms', performance.now() - preparationStart);
-
-      span.setAttribute('phase', 'find_all');
-      const reloadStart = performance.now();
-      const settingsCollection = await models.Settings.findAll({ context: { internal: true } });
-      const readEnd = performance.now();
-      span.setAttribute('find_all_ms', readEnd - reloadStart);
-
-      span.setAttribute('phase', 'cache_rebuild');
-      const settingsOverrides = getSettingsOverrides();
-      SettingsCache.init(
-        events,
-        settingsCollection,
-        this.getCalculatedFields(),
-        cacheStore,
-        settingsOverrides,
-      );
-      const rebuildEnd = performance.now();
-      span.setAttribute('cache_rebuild_ms', rebuildEnd - readEnd);
-      span.setAttribute('reload_ms', rebuildEnd - reloadStart);
-      if (typeof settingsCollection.length === 'number') {
-        span.setAttribute('settings_count', settingsCollection.length);
-      }
-
-      span.setAttribute('phase', 'validate_uuid');
-      this.validateSiteUuid();
+    // The start itself is the shared module's (ghost/shared/settings). The
+    // three steps are passed in because tests replace them on this object.
+    return loadSettings(given(), {
+      enforcePublicSiteAccessLimit: () => this.enforcePublicSiteAccessLimit(),
+      calculatedFields: () => this.getCalculatedFields(),
+      validateSiteUuid: () => this.validateSiteUuid(),
     });
   },
 
@@ -132,37 +110,7 @@ module.exports = {
    * @private
    */
   async enforcePublicSiteAccessLimit() {
-    if (!limits.isDisabled('publicSiteAccess')) {
-      return;
-    }
-
-    const isPrivateSetting = await models.Settings.findOne(
-      { key: 'is_private' },
-      { context: { internal: true } },
-    );
-    // Note: the `password` setting is the storage key for what we call the
-    // access code; the underlying setting is staying named for compatibility
-    // and will be renamed in a separate follow-up.
-    const accessCodeSetting = await models.Settings.findOne(
-      { key: 'password' },
-      { context: { internal: true } },
-    );
-    const writes = [];
-
-    if (!isPrivateSetting || isPrivateSetting.get('value') !== true) {
-      writes.push({ key: 'is_private', value: true });
-    }
-
-    const currentAccessCode = accessCodeSetting && accessCodeSetting.get('value');
-    if (typeof currentAccessCode !== 'string' || currentAccessCode.trim() === '') {
-      writes.push({ key: 'password', value: generatePrivateSiteAccessCode() });
-    }
-
-    if (writes.length === 0) {
-      return;
-    }
-
-    await models.Settings.edit(writes, { context: { internal: true } });
+    return enforcePublicSiteAccessLimit(given());
   },
 
   /**
@@ -336,19 +284,7 @@ module.exports = {
    * @param {boolean} configValue current email verification value from local config
    */
   async syncEmailSettings(configValue) {
-    const isEmailDisabled = SettingsCache.get('email_verification_required');
-
-    if (configValue === true && isEmailDisabled) {
-      return await models.Settings.edit(
-        [
-          {
-            key: 'email_verification_required',
-            value: false,
-          },
-        ],
-        { context: { internal: true } },
-      );
-    }
+    return syncEmailSettings(given(), configValue);
   },
 
   /**
@@ -358,27 +294,7 @@ module.exports = {
    * Exits with an error if they differ
    */
   validateSiteUuid() {
-    const configSiteUuid = config.get('site_uuid');
-    const settingSiteUuid = SettingsCache.get('site_uuid');
-
-    if (
-      configSiteUuid &&
-      settingSiteUuid &&
-      configSiteUuid.toLowerCase() !== settingSiteUuid.toLowerCase()
-    ) {
-      const errors = require('@tryghost/errors');
-
-      logging.error(
-        `Site UUID mismatch: config has '${configSiteUuid}' but database has '${settingSiteUuid}'`,
-      );
-      throw new errors.IncorrectUsageError({
-        message: 'Site UUID configuration does not match database value',
-        context:
-          'Ghost will not boot if the configured site_uuid does not match the value in the settings table',
-        help: 'Please check your site_uuid configuration',
-        code: 'SITE_UUID_MISMATCH',
-      });
-    }
+    return validateSiteUuid(given());
   },
 
   obfuscatedSetting,

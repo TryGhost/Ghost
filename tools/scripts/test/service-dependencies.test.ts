@@ -406,6 +406,8 @@ it('lists only roots outside the services directory that exist and use defineSer
   assert.deepEqual(listed, [
     'ghost/core/server/auth/better-auth/index.ts',
     'ghost/shared/limits/index.ts',
+    'ghost/shared/settings/index.ts',
+    'ghost/shared/transition/settings/index.ts',
   ]);
   for (const file of listed) {
     assert.match(readFileSync(path.join(repository, file), 'utf8'), /kernel\/define-service'/);

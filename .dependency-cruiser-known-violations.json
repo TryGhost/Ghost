@@ -1077,17 +1077,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/settings/settings-service.js",
-    "to": "ghost/core/server/lib/tracing/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/settings/settings-service.js",
     "to": "ghost/core/server/models/index.js"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/settings/settings-service.js",
-    "to": "ghost/core/server/services/adapter-manager/index.ts"
   },
   {
     "rule": "service-dependencies",
@@ -1128,6 +1118,16 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/settings/settings-service.js",
     "to": "ghost/core/shared/url-utils.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-service.js",
+    "to": "ghost/shared/settings/start-settings.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-service.js",
+    "to": "ghost/shared/transition/settings/legacy-dependencies.ts"
   },
   {
     "rule": "service-dependencies",
