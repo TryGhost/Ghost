@@ -1,5 +1,8 @@
 import { cva } from 'class-variance-authority';
 
+/**
+ * @deprecated Only for Admin's legacy settings modals. Use `Dialog` from `@tryghost/shade/components` for new modals.
+ */
 const settingsModalVariants = cva(
   'relative z-50 flex max-h-full w-full flex-col justify-between overflow-x-hidden bg-background text-foreground',
   {
