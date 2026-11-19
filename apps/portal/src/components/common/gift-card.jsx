@@ -1,3 +1,5 @@
+/** @import { Ref } from 'react' */
+
 import AppContext from '../../app-context';
 import { useContext } from 'react';
 import { t } from '../../utils/i18n';
@@ -18,6 +20,17 @@ export const preloadGiftCardTextures = (siteUrl) => {
   });
 };
 
+/** @param {{
+ *   cardRef?: Ref<HTMLDivElement>,
+ *   duration?: string,
+ *   tierName?: string,
+ *   name?: string,
+ *   toName?: string,
+ *   fromName?: string,
+ *   giftValue?: string,
+ *   siteIcon?: string | null,
+ *   siteTitle: string,
+ * }} props */
 const GiftCard = ({
   cardRef,
   duration,

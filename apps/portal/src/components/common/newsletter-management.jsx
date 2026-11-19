@@ -1,3 +1,5 @@
+/** @import { ComponentType } from 'react' */
+
 import AppContext from '../../app-context';
 import CloseButton from './close-button';
 import BackButton from './back-button';
@@ -260,6 +262,20 @@ function ShowPaidMemberMessage({ site, isPaid }) {
   return null;
 }
 
+/** @param {{
+ *   hasNewslettersEnabled: boolean,
+ *   notification?: ComponentType,
+ *   subscribedNewsletters: { id: string }[],
+ *   updateSubscribedNewsletters: (newsletters: { id: string }[], enableUpdatesAndAnnouncements?: boolean) => unknown,
+ *   updateCommentNotifications: (enabled: boolean) => unknown,
+ *   updateUpdatesAndAnnouncements: (enabled: boolean) => unknown,
+ *   unsubscribeAll: () => unknown,
+ *   isPaidMember: boolean,
+ *   isCommentsEnabled: boolean,
+ *   enableCommentNotifications: boolean,
+ *   canChangeUpdatesAndAnnouncements: boolean,
+ *   enableUpdatesAndAnnouncements: boolean | null,
+ * }} props */
 export default function NewsletterManagement({
   hasNewslettersEnabled,
   notification,

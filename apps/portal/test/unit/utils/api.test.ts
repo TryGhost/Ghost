@@ -14,19 +14,6 @@ const respond = (status: number, body: unknown) =>
 describe('api.member', () => {
   const api = setupGhostApi({ siteUrl: 'https://example.com', apiUrl: '', apiKey: '' });
 
-  /** `update` is inferred from JavaScript, so its signature wants every field. A test
-   *  names the ones it is about and leaves the rest undefined, as a caller would. */
-  const update = (data: Record<string, unknown>) =>
-    api.member.update({
-      name: undefined,
-      subscribed: undefined,
-      newsletters: undefined,
-      enableCommentNotifications: undefined,
-      enableUpdatesAndAnnouncements: undefined,
-      metafields: undefined,
-      ...data,
-    });
-
   afterEach(() => {
     vi.restoreAllMocks();
   });
@@ -77,7 +64,7 @@ describe('api.member', () => {
   describe('update', () => {
     test('sends custom field values with the rest', async () => {
       const fetchSpy = respond(200, {});
-      await update({ name: 'Jamie', metafields: { custom: { nickname: 'Jam' } } });
+      await api.member.update({ name: 'Jamie', metafields: { custom: { nickname: 'Jam' } } });
 
       const body = JSON.parse(String(fetchSpy.mock.calls[0]?.[1]?.body));
       expect(body.metafields).toEqual({ custom: { nickname: 'Jam' } });
@@ -93,11 +80,11 @@ describe('api.member', () => {
         ],
       });
 
-      await expect(update({ name: 'Jamie' })).rejects.toMatchObject({
+      await expect(api.member.update({ name: 'Jamie' })).rejects.toMatchObject({
         message: 'Enter a 2-letter country code, like US.',
         property: 'metafields.custom.shipping_address.country',
       });
-      await expect(update({ name: 'Jamie' })).rejects.toBeInstanceOf(HumanReadableError);
+      await expect(api.member.update({ name: 'Jamie' })).rejects.toBeInstanceOf(HumanReadableError);
     });
   });
 });

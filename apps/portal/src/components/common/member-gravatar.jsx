@@ -1,3 +1,5 @@
+/** @import { CSSProperties } from 'react' */
+
 import UserIcon from '../../images/icons/user.svg?react';
 
 export const AvatarStyles = `
@@ -42,6 +44,14 @@ const Styles = ({ style = {} }) => {
   };
 };
 
+/** @param {{
+ *   gravatar?: string | null,
+ *   style?: {
+ *     avatarContainer?: CSSProperties,
+ *     gravatar?: CSSProperties,
+ *     userIcon?: CSSProperties
+ *   },
+ * }} props */
 function MemberGravatar({ gravatar, style }) {
   const Style = Styles({ style });
   return (

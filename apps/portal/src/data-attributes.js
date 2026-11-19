@@ -16,6 +16,23 @@ function handleError(error, form, errorEl) {
   displayErrorIfElementExists(errorEl, chooseBestErrorMessage(error, defaultMessage));
 }
 
+/** @param {{
+ *   event: {
+ *     preventDefault(): void,
+ *     target: {
+ *       querySelector(selector: string): Element | { value: string } | null | undefined,
+ *       querySelectorAll(selector: string): ArrayLike<Element | { value: string }> | undefined
+ *     }
+ *   },
+ *   form: Pick<HTMLFormElement, 'addEventListener' | 'removeEventListener' | 'dataset'> & {
+ *     classList: Pick<DOMTokenList, 'add' | 'remove'>
+ *   },
+ *   errorEl?: { innerText: string } | null,
+ *   siteUrl: string,
+ *   submitHandler: EventListener,
+ *   doAction?: (action: string, data: { email: string, otcRef: string, inboxLinks?: object }) => unknown,
+ *   captureException?: (error: unknown) => unknown,
+ * }} props */
 export async function formSubmitHandler({
   event,
   form,
@@ -231,6 +248,14 @@ export function planClickHandler({ event, el, errorEl, siteUrl, site, member, cl
     });
 }
 
+/** @param {{
+ *   siteUrl?: string,
+ *   site?: object,
+ *   member?: object | null,
+ *   offers?: object[],
+ *   doAction?: Function,
+ *   captureException?: Function
+ * }} options */
 export function handleDataAttributes({
   siteUrl,
   site = {},
