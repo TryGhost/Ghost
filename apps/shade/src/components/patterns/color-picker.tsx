@@ -252,9 +252,15 @@ export const ColorPickerRoot = ({
       return;
     }
     // The parent echoing the last report: keep the picker's own channels, which a hex can't
-    // always carry (e.g. the hue of a grey). Anything else is adopted in full, including an
-    // earlier colour, another way of writing this one, or the same hex with an alpha.
-    if (lastReportedRef.current !== null && echoKey(value) === lastReportedRef.current) {
+    // always carry (e.g. the hue of a grey). A report has no alpha, so it only stands for an
+    // opaque colour. Anything else is adopted in full, including an earlier colour, another
+    // way of writing this one, or the same hex with an alpha. A parent that echoes an older
+    // report late therefore briefly shows it, then lands on the latest.
+    if (
+      lastReportedRef.current !== null &&
+      colorRef.current.alpha === 100 &&
+      echoKey(value) === lastReportedRef.current
+    ) {
       return;
     }
     lastReportedRef.current = null;
@@ -520,7 +526,9 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
         // Invalid color, ignore
         return;
       }
-      setColor(next);
+      // Another spelling of the colour shown, such as lower case, parses to slightly
+      // different channels; it isn't a change.
+      setColor((current) => (toColor(current).hexa() === toColor(next).hexa() ? {} : next));
     } else if ((mode === 'rgb' || mode === 'hsl') && index !== undefined) {
       // Built from the latest colour, which may be newer than this render's. The color
       // library clamps out-of-range channels, so this can't throw.

@@ -412,6 +412,40 @@ describe('ColorPicker Component', () => {
       expect(screen.getByDisplayValue('#000000')).toBeTruthy();
     });
 
+    it('adopts an echo of the reported hex when the picker holds an alpha', () => {
+      function Controlled() {
+        const [value, setValue] = useState('#00ff00');
+        return (
+          <ColorPickerRoot value={value} onChange={setValue}>
+            <ColorPickerAlpha />
+            <ColorPickerFormat />
+          </ColorPickerRoot>
+        );
+      }
+      render(<Controlled />);
+
+      // Reported as #FF0000, which the parent stores and passes back.
+      fireEvent.change(screen.getByLabelText('Hex color'), { target: { value: '#FF000080' } });
+
+      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('100');
+    });
+
+    it('is not called when the hex is retyped in another case', () => {
+      const handleChange = vi.fn();
+      render(
+        <ColorPickerRoot defaultValue="#ff0000" onChange={handleChange}>
+          <ColorPickerSelection data-testid="gradient" />
+          <ColorPickerFormat />
+        </ColorPickerRoot>,
+      );
+      fireEvent.pointerDown(mockGradientRect(), { clientX: 100, clientY: 100 });
+      expect(handleChange.mock.calls).toEqual([['#8F3030']]);
+
+      fireEvent.change(screen.getByLabelText('Hex color'), { target: { value: '#8f3030' } });
+
+      expect(handleChange).toHaveBeenCalledTimes(1);
+    });
+
     it('adopts a value with the reported hex plus an alpha', () => {
       const handleChange = vi.fn();
       const { rerender } = render(
