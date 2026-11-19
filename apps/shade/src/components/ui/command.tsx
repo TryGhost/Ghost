@@ -63,7 +63,10 @@ const CommandDialog = ({
   ...props
 }: CommandDialogProps) => {
   // There's never a DialogTrigger, so Radix would leave the focus on the page body.
-  const returnFocusRef = React.useRef<HTMLElement[]>([]);
+  const returnFocusRef = React.useRef<{
+    content: EventTarget | null;
+    candidates: HTMLElement[];
+  } | null>(null);
 
   return (
     <Dialog defaultOpen={defaultOpen} modal={modal} open={open} onOpenChange={onOpenChange}>
@@ -72,20 +75,24 @@ const CommandDialog = ({
         aria-describedby={undefined}
         className={cn('overflow-hidden p-0 shadow-lg', className)}
         onCloseAutoFocus={(event) => {
+          // Only what this content saved when it opened. A palette reopened by now saved its own.
+          const saved =
+            returnFocusRef.current?.content === event.target ? returnFocusRef.current : null;
+          if (saved) {
+            returnFocusRef.current = null;
+          }
           onCloseAutoFocus?.(event);
           if (event.defaultPrevented) {
             return;
           }
           event.preventDefault();
-          const candidates = returnFocusRef.current;
-          returnFocusRef.current = [];
           // Leave the focus alone if something else has taken it.
           if (document.activeElement && document.activeElement !== document.body) {
             return;
           }
           // A candidate that's gone, or can't take the focus, doesn't.
-          for (const candidate of candidates) {
-            candidate.focus();
+          for (const candidate of saved?.candidates ?? []) {
+            candidate.focus({ preventScroll: true });
             if (document.activeElement === candidate) {
               break;
             }
@@ -93,7 +100,10 @@ const CommandDialog = ({
         }}
         onOpenAutoFocus={(event) => {
           // This runs before the dialog moves the focus inside.
-          returnFocusRef.current = returnFocusCandidates(document.activeElement);
+          returnFocusRef.current = {
+            content: event.target,
+            candidates: returnFocusCandidates(document.activeElement),
+          };
           onOpenAutoFocus?.(event);
         }}
         {...props}

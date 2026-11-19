@@ -143,6 +143,25 @@ describe('Command Components', () => {
       await waitFor(() => expect(document.activeElement).toBe(item));
     });
 
+    it('leaves the focus alone when something else has taken it', async () => {
+      const { rerender } = render(<Page open={false} />);
+      screen.getByRole('button', { name: 'Open palette' }).focus();
+
+      rerender(<Page open />);
+      await waitFor(() =>
+        expect(document.activeElement).toBe(screen.getByPlaceholderText('Search')),
+      );
+
+      // The palette closes as the app moves the focus, say to the screen an item went to.
+      rerender(<Page open={false} />);
+      const elsewhere = screen.getByRole('button', { name: 'Elsewhere' });
+      elsewhere.focus();
+      await new Promise((resolve) => {
+        setTimeout(resolve, 50);
+      });
+      expect(document.activeElement).toBe(elsewhere);
+    });
+
     it('closes on Escape and lets the app send the focus somewhere else', async () => {
       const onOpenChange = vi.fn();
       const onCloseAutoFocus = vi.fn((event: Event) => {
