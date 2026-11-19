@@ -16,10 +16,11 @@ const productProperties = {
     productUrl: {default: ''}
 } satisfies DecoratorNodePropertyMap;
 
-export type ProductData = DecoratorNodeData<typeof productProperties>;
+export type ProductData = DecoratorNodeData<typeof productProperties, true>;
 
 export class ProductNode extends generateDecoratorNode({
     nodeType: 'product',
+    hasVisibility: true,
     properties: productProperties,
     defaultRenderFn: renderProductNode
 }) {
@@ -30,6 +31,7 @@ export class ProductNode extends generateDecoratorNode({
         const isBlob = productImageSrc && productImageSrc.startsWith('data:');
 
         const dataset = {
+            ...super.exportJSON(),
             type: 'product',
             version: 1,
             productImageSrc: isBlob ? '<base64String>' : productImageSrc,

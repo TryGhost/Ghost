@@ -152,6 +152,13 @@ describe('EmbedNode', function () {
         }));
     });
 
+    describe('hasVisibility', function () {
+        it('returns false', editorTest(function () {
+            const embedNode = $createEmbedNode(dataset);
+            expect(embedNode.hasVisibility()).toBe(false);
+        }));
+    });
+
     describe('isEmpty', function () {
         it('returns true if url and html are empty', editorTest(function () {
             const embedNode = $createEmbedNode(dataset);
