@@ -1,0 +1,54 @@
+{
+  "name": "@tryghost/foundry",
+  "version": "private",
+  "private": true,
+  "description": "Builds what exists once per process (config, logging, the database handle, the event bus) for an application. Only an application's bootstrap imports it.",
+  "license": "MIT",
+  "author": "Ghost Foundation",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "foundry"
+  },
+  "files": [
+    "build"
+  ],
+  "exports": {
+    "./*": {
+      "source": "./src/*.ts",
+      "types": "./build/*.d.ts",
+      "default": "./build/*.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test:types": "tsc --noEmit",
+    "lint:code": "eslint src/ --cache",
+    "lint": "pnpm run '/^lint:/'"
+  },
+  "dependencies": {
+    "@tryghost/kernel": "workspace:*",
+    "@tryghost/logging": "catalog:",
+    "knex": "catalog:"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:"
+  },
+  "ghostPackage": {
+    "goldenPath": "exempt",
+    "reason": "Framework code compiled to CommonJS, like the kernel. Its tests run in ghost/test/unit/foundry."
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/build"
+        ]
+      }
+    }
+  }
+}

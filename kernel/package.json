@@ -2,7 +2,7 @@
   "name": "@tryghost/kernel",
   "version": "private",
   "private": true,
-  "description": "Application-independent framework primitives for Ghost: defineService, clock helpers and the adapter manager.",
+  "description": "Application-independent framework primitives for Ghost: defineService, clock helpers, the adapter manager and the foundation types. Importable anywhere; holds no state.",
   "license": "MIT",
   "author": "Ghost Foundation",
   "repository": {
@@ -33,6 +33,8 @@
   },
   "dependencies": {
     "@tryghost/errors": "catalog:",
+    "@tryghost/logging": "catalog:",
+    "knex": "catalog:",
     "moment-timezone": "catalog:",
     "temporal-polyfill": "catalog:"
   },

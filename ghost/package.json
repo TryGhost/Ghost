@@ -20,6 +20,7 @@
     "url": "git://github.com/TryGhost/Ghost.git"
   },
   "files": [
+    "bootstrap/",
     "core/",
     "!core/built/**/*.map",
     "content/*/README.md",
@@ -68,11 +69,12 @@
     "test:leg:slow": "vitest run -c vitest.config.db.ts --project legacy --reporter=verbose",
     "test:types": "tsc --noEmit && tsc --noEmit -p test/tsconfig.json && tsc -p scripts/tsconfig.json",
     "lint:server": "eslint 'core/server/**/*.{js,ts}' 'core/*.{js,ts}' '*.{js,ts,mts}' 'bin/**/*.{js,ts}' 'scripts/**/*.{js,ts}' 'types/**/*.ts' --cache",
+    "lint:bootstrap": "eslint 'bootstrap/**/*.{js,ts}' --cache",
     "lint:shared": "eslint 'core/shared/**/*.{js,ts}' --cache",
     "lint:frontend": "eslint 'core/frontend/**/*.{js,ts}' --cache",
     "lint:test": "eslint 'test/**/*.{js,ts}' --cache",
-    "lint:code": "pnpm run '/^lint:(server|shared|frontend)$/'",
-    "lint": "pnpm run '/^lint:(server|shared|frontend|test)$/'"
+    "lint:code": "pnpm run '/^lint:(server|bootstrap|shared|frontend)$/'",
+    "lint": "pnpm run '/^lint:(server|bootstrap|shared|frontend|test)$/'"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1161.0",
@@ -100,6 +102,7 @@
     "@tryghost/debug": "catalog:",
     "@tryghost/domain-events": "catalog:",
     "@tryghost/errors": "catalog:",
+    "@tryghost/foundry": "workspace:*",
     "@tryghost/helpers": "catalog:",
     "@tryghost/html-to-plaintext": "1.0.17",
     "@tryghost/i18n": "workspace:*",

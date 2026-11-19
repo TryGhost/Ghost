@@ -93,6 +93,7 @@ services:
       # case a future pnpm widens that check back to the whole workspace.
       - ./ghost:/home/ghost/ghost
       - ./kernel:/home/ghost/kernel
+      - ./foundry:/home/ghost/foundry
       - ./koenig:/home/ghost/koenig
       - ./configs:/home/ghost/configs
       - ./packages:/home/ghost/packages

@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "es2024",
+    "module": "commonjs",
+    "types": ["node"],
+    "rootDir": "src",
+    "outDir": "build",
+    "declaration": true,
+    "resolveJsonModule": true,
+    "erasableSyntaxOnly": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"]
+}

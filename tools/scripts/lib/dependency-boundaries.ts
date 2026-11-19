@@ -105,13 +105,17 @@ export function compareKnownViolations(
 // repository nothing is committed and there is nothing to report. Any other
 // Git failure stops the check, so it cannot pass without having looked.
 export function committedBuildOutput(repository: string) {
-  const result = spawnSync('git', ['ls-files', '-z', '--', 'ghost/core', 'kernel'], {
-    cwd: repository,
-    encoding: 'utf8',
-    maxBuffer: 64 * 1024 * 1024,
-    // Git's messages are matched below, so keep them untranslated.
-    env: { ...process.env, LC_ALL: 'C' },
-  });
+  const result = spawnSync(
+    'git',
+    ['ls-files', '-z', '--', 'ghost/bootstrap', 'ghost/core', 'kernel', 'foundry'],
+    {
+      cwd: repository,
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+      // Git's messages are matched below, so keep them untranslated.
+      env: { ...process.env, LC_ALL: 'C' },
+    },
+  );
   if (result.error) {
     throw new Error(`Could not list tracked files: ${result.error.message}`);
   }
@@ -164,10 +168,13 @@ export function scannerTypeScript(transpilers: unknown) {
 export const missingTypeScript =
   'dependency-cruiser could not load the `typescript` package. Without it the scan skips TypeScript files or reads type-only imports as ordinary imports, and reports different violations. Run the scan through pnpm, for example `pnpm lint:boundaries`. If that fails too, run `pnpm install`.';
 
-// The full scan covers the kernel package, Core and the apps. The kernel is
-// skipped where it is absent, as in the fixture repositories of the tool tests.
+// The full scan covers the framework packages, Ghost's bootstrap, Core and the
+// apps. The first three are skipped where they are absent, as in the fixture
+// repositories of the tool tests.
 const scanRoots = (repository: string) => [
-  ...(existsSync(path.join(repository, 'kernel/src')) ? ['kernel/src'] : []),
+  ...['kernel/src', 'foundry/src', 'ghost/bootstrap'].filter((root) =>
+    existsSync(path.join(repository, root)),
+  ),
   'ghost/core',
   'apps',
 ];

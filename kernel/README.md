@@ -14,6 +14,21 @@ must not import from the Ghost package, including `shared`.
 Helpers specific to a feature stay with that feature. Shared use alone does not
 make a helper part of the kernel.
 
+## Foundation types
+
+Code that needs configuration, a logger, the database or the event bus is
+handed one. These files say what it is handed. Each is a type, so importing one
+builds nothing and reads nothing:
+
+- [`logging.ts`](src/logging.ts): `Logger`, and `LoggerOptions` for whoever builds one.
+- [`config.ts`](src/config.ts): `Config`.
+- [`database.ts`](src/database.ts): `Database`.
+- [`events.ts`](src/events.ts): `EventBus`.
+- [`foundation.ts`](src/foundation.ts): `Foundation`, the four together.
+
+The [foundry](../foundry/README.md) builds the instances. Nothing in the
+kernel can.
+
 ## Clock
 
 [`clock.ts`](src/clock.ts) exposes `getUnixTime()` for the current time in whole

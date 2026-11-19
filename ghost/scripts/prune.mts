@@ -101,7 +101,7 @@ const RULES: Rule[] = [
       // Scoped to the app roots: content/'s READMEs ship deliberately (they
       // are ghost `files` entries, and what a self-hoster sees in each
       // content dir).
-      if (!['node_modules/', 'core/', 'bin/'].some((root) => rel.startsWith(root))) {
+      if (!['node_modules/', 'bootstrap/', 'core/', 'bin/'].some((root) => rel.startsWith(root))) {
         return false;
       }
 

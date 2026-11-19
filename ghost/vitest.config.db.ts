@@ -142,7 +142,11 @@ export default defineConfig({
     // is what reports never-loaded files under vitest 4 (there is no `all`).
     coverage: {
       provider: 'v8',
-      include: ['core/*.js', 'core/{frontend,server,shared}/**/*.{js,cjs,mjs,ts}'],
+      include: [
+        'bootstrap/**/*.{js,cjs,mjs,ts}',
+        'core/*.js',
+        'core/{frontend,server,shared}/**/*.{js,cjs,mjs,ts}',
+      ],
       exclude: [
         'core/frontend/src/**',
         'core/frontend/public/**',

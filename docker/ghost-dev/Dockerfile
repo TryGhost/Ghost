@@ -47,6 +47,7 @@ COPY patches patches
 COPY --parents \
     ghost/package.json \
     kernel/package.json \
+    foundry/package.json \
     koenig/*/package.json \
     tools/configs/*/package.json \
     packages/**/package.json \

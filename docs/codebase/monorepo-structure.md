@@ -49,12 +49,19 @@ example `@tryghost/kernel/define-service`. It is compiled to `kernel/build/`,
 which must exist before Ghost is typechecked or run without a TypeScript
 loader; Nx builds it first.
 
+[`foundry/`](../../foundry/README.md) is the `@tryghost/foundry` workspace
+package: the framework code that builds what exists once per process (config,
+the logger, the database handle, the event bus). Only
+[`ghost/bootstrap/`](../../ghost/bootstrap/README.md) imports it; that folder
+is Ghost's application definition and holds the instances.
+
 ## Ghost Core
 
 `ghost/` is the main `ghost` package. The most common paths are:
 
 | Path                   | Contains                                                        |
 | ---------------------- | --------------------------------------------------------------- |
+| `ghost/bootstrap/`     | Ghost's application definition for the framework                |
 | `ghost/core/server/`   | APIs, models, services, data access, and server startup         |
 | `ghost/core/frontend/` | Theme rendering, helpers, middleware, and public assets         |
 | `ghost/core/shared/`   | Configuration and code shared across server boundaries          |

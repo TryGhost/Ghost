@@ -466,6 +466,39 @@ module.exports = {
       from: { path: '^kernel/' },
       to: { path: '^ghost/' },
     },
+    // The foundry builds an application's once-per-process instances. It is
+    // framework code: it must not know the application it builds.
+    {
+      name: 'foundry-not-application',
+      comment:
+        'Foundry code must not import application code. An application supplies its values through its definition in its bootstrap.',
+      severity: 'error',
+      from: { path: '^foundry/' },
+      to: { path: '^ghost/' },
+    },
+    {
+      name: 'foundry-only-from-bootstrap',
+      comment:
+        "The foundry builds what exists once per process: a second logger or database handle is a defect. Only an application's bootstrap (ghost/bootstrap) imports it. Everything else is handed the instance and imports the kernel's type.",
+      severity: 'error',
+      from: { pathNot: ['^ghost/bootstrap/', '^foundry/'] },
+      to: { path: '^foundry/(?:src|build)/|^@tryghost/foundry(/|$)' },
+    },
+    {
+      name: 'bootstrap-only-from-boot',
+      comment:
+        'ghost/bootstrap holds the application and its foundation instances. Boot starts it; the legacy modules listed here return its config and database handle to code that still imports them. Everything else is handed what it needs.',
+      severity: 'error',
+      from: {
+        pathNot: [
+          '^ghost/bootstrap/',
+          '^ghost/core/boot\\.js$', // Boot builds the foundation first.
+          '^ghost/core/shared/config/index\\.ts$', // Legacy path to the foundation's config.
+          '^ghost/core/server/data/db/connection\\.ts$', // Legacy path to the foundation's database handle.
+        ],
+      },
+      to: { path: '^ghost/bootstrap/' },
+    },
     // ============================================================
     // shared/ must not require server/* or frontend/*
     // ============================================================
@@ -725,7 +758,7 @@ module.exports = {
     doNotFollow: {
       path: [
         'node_modules',
-        '^kernel/build/',
+        '^(kernel|foundry)/build/',
         '^(?!ghost/core/server/services/)(apps|ghost|packages|contracts|koenig)/.*/(build|built|dist)/',
       ],
     },

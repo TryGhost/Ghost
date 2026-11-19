@@ -728,25 +728,29 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
 
   // These require their own try-catch block and error format, because we can't log an error if logging isn't working
   try {
-    // Step 0 - Load config and logging - fundamental required components
+    // Step 0 - Build the foundation - fundamental required components
     // Version is required by logging, sentry & Migration config & so is fundamental to booting
     // However, it involves reading package.json so its slow & it's here for visibility on that slowness
     debug('Begin: Load version info');
     require('@tryghost/version');
     debug('End: Load version info');
 
-    // Loading config must be the first thing we do, because it is required for absolutely everything
-    debug('Begin: Load config');
-    config = require('./shared/config');
-    debug('End: Load config');
+    // The foundation is built first, in one place: config, then the logger,
+    // then the database handle and the event bus. Everything else is handed
+    // these or reaches them through the legacy paths, which return the same
+    // instances. Building the database handle opens no connection.
+    debug('Begin: Build foundation');
+    const foundation = require('../bootstrap/app').default.startFoundation();
+    config = foundation.config;
+    logging = foundation.logging;
+    debug('End: Build foundation');
 
-    // Logging is also used absolutely everywhere
-    debug('Begin: Load logging');
-    logging = require('@tryghost/logging');
+    // Metrics and the log flush still load their own way
+    debug('Begin: Load metrics');
     metrics = require('@tryghost/metrics');
     flushLogsAndMetrics = require('./shared/flush').flushLogsAndMetrics;
     bootLogger = new BootLogger(logging, metrics, startTime);
-    debug('End: Load logging');
+    debug('End: Load metrics');
 
     // At this point logging is required, so we can handle errors better
 
