@@ -64,6 +64,49 @@ describe('OutboxRelay', function () {
     return relay;
   }
 
+  it('leaves a job type this process has no handler for in the outbox', async function () {
+    const enqueued: string[] = [];
+    const refused = Promise.withResolvers<unknown>();
+    let claimed = false;
+    relay = new OutboxRelay({
+      outbox: {
+        async processNext(submit): Promise<ProcessOutcome> {
+          if (claimed) {
+            return { status: 'idle' };
+          }
+          claimed = true;
+          try {
+            await submit('dispatch-1', {
+              version: 1,
+              payload: { job: { type: 'from-a-newer-version', payload: '{}' } },
+            });
+          } catch (error) {
+            refused.resolve(error);
+            return { status: 'failed', id: 'dispatch-1', error };
+          }
+          refused.resolve(undefined);
+          return { status: 'idle' };
+        },
+      },
+      backend: {
+        enqueue: async (id) => {
+          enqueued.push(id);
+        },
+      },
+      handles: (type) => type === 'greet',
+      logging: silentLogger,
+      pollIntervalMs: 60_000,
+      submissionTimeoutMs: 1000,
+      retryDelayMs: 1000,
+    });
+    relay.start();
+
+    const error = await within(refused.promise, 500, 'the hand-off to be refused');
+
+    assert.match(String((error as Error)?.message), /No handler registered/);
+    assert.deepEqual(enqueued, [], 'the backend never sees the job');
+  });
+
   it('drains again at once when woken while it sleeps', async function () {
     const scripted = makeStore();
     const started = startRelay(scripted);

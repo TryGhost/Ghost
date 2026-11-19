@@ -131,6 +131,10 @@ export class JobsService {
     this.#registry.set(type, (payload) => handler(new JobClass(JSON.parse(payload))));
   }
 
+  handles(type: string): boolean {
+    return this.#registry.has(type);
+  }
+
   #declareQueue(type: string, options?: JobHandlingOptions): void {
     if (!options) {
       return;
