@@ -7,6 +7,7 @@ import testUtils from '../../../../utils';
 import models = require('../../../../../core/server/models');
 import type permissionsType from '../../../../../core/server/auth/permissions';
 import type * as limitsType from '../../../../../core/server/services/limits';
+import { toCheckResult } from '../../../../../core/server/auth/permissions/can-this';
 
 // require(), not import: the stubs must patch the instances the models load
 const permissions: typeof permissionsType = require('../../../../../core/server/auth/permissions');
@@ -430,7 +431,7 @@ describe('Permissions', function () {
       sinon.assert.notCalled(permissibleStub);
     });
 
-    const actingFor = (roles: string[]) => ({
+    const appFor = (scopes: string[], roles = ['Administrator']) => ({
       user: '1',
       // A stale key beside the app is never used
       api_key: { id: 'key', type: 'admin' },
@@ -439,17 +440,56 @@ describe('Permissions', function () {
         method: 'oauth_authorization_code',
         app,
         actingFor: userView(roles),
-        scopes: [],
+        scopes,
       },
     });
 
-    // Interim, until PLA-639 enforces scopes: the empty scopes here must deny once it lands
-    it('treats an app acting for a user as that user, ignoring any key', async function () {
-      assert.equal(await canThis(actingFor(['Administrator'])).edit.tag({ id: 1 }), undefined);
+    it('treats an app acting for a user as that user, within its scopes, ignoring any key', async function () {
+      assert.equal(await canThis(appFor(['tag:edit'])).edit.tag({ id: 1 }), undefined);
     });
 
     it('refuses an app acting for a user who lacks the permission', async function () {
-      await assert.rejects(canThis(actingFor(['Contributor'])).edit.tag({ id: 1 }), {
+      await assert.rejects(canThis(appFor(['tag:edit'], ['Contributor'])).edit.tag({ id: 1 }), {
+        errorType: 'NoPermissionError',
+      });
+    });
+
+    it('refuses a key outside the app scopes before asking the model', async function () {
+      const permissibleStub = sinon.stub(models.Post, 'permissible').resolves();
+
+      for (const scopes of [[], ['post:read']]) {
+        await assert.rejects(canThis(appFor(scopes)).edit.post({ id: 1 }), {
+          errorType: 'NoPermissionError',
+        });
+        await assert.rejects(canThis(appFor(scopes)).edit.tag({ id: 1 }), {
+          errorType: 'NoPermissionError',
+        });
+      }
+
+      // Scopes the app was issued without must not fall back to the user's full role
+      const unscoped = appFor([]);
+      delete (unscoped.principal as { scopes?: string[] }).scopes;
+      await assert.rejects(canThis(unscoped).edit.post({ id: 1 }), {
+        errorType: 'NoPermissionError',
+      });
+
+      sinon.assert.notCalled(permissibleStub);
+      assert.equal(await canThis(appFor(['post:edit'])).edit.post({ id: 1 }), undefined);
+      sinon.assert.calledOnce(permissibleStub);
+    });
+  });
+
+  describe('row rule results', function () {
+    // A rule's excludedAttrs reach the endpoint filter, as a hook's result does
+    it('keeps excludedAttrs and is otherwise undefined', function () {
+      assert.deepEqual(toCheckResult({ excludedAttrs: ['slug'] }), { excludedAttrs: ['slug'] });
+      assert.equal(toCheckResult({}), undefined);
+    });
+  });
+
+  describe('internal principal', function () {
+    it('grants nothing to a principal claiming internal without an internal context', async function () {
+      await assert.rejects(canThis({ principal: { kind: 'internal' } }).edit.tag(), {
         errorType: 'NoPermissionError',
       });
     });

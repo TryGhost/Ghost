@@ -1,16 +1,13 @@
 import _ from 'lodash';
 import errors from '@tryghost/errors';
-import tpl from '@tryghost/tpl';
 import { actionsMap, forRoles, type Permission } from './role-permissions';
-import type { RoleView, UserView } from '../principal';
-import { setIsRoles } from '../../models/role-utils';
+import { ANONYMOUS, type Principal, type RoleView, type UserView } from '../principal';
+import { authorize, noPermission, type Allowed } from '../policy/authorize';
+import { capabilities, capabilityKey } from '../policy/capabilities';
+import { scopesAllow } from '../policy/scopes';
 import parseContext, { type ParsedContext } from './parse-context';
 
 const models = require('../../models');
-
-const messages = {
-  noPermissionToAction: 'You do not have permission to perform this action',
-};
 
 /** What canThis needs to grant or deny for one actor */
 export interface LoadedPermissions {
@@ -33,47 +30,22 @@ type ObjectTypeHandler = (
 export type CanThisResult = Record<string, Record<string, ObjectTypeHandler>>;
 
 /**
- * Calculates grants without performing I/O or running model-specific rules.
+ * What a check resolves to: the endpoint filter strips `excludedAttrs` when
+ * present, as it does for the hooks' results, and an allowed check is otherwise undefined.
  */
-function getGrantFlags(loadedPermissions: LoadedActors, actType: string, objType: string) {
-  // Iterate through the user permissions looking for an affirmation
-  const userPermissions = loadedPermissions.user ? loadedPermissions.user.permissions : null;
-  const apiKeyPermissions = loadedPermissions.apiKey ? loadedPermissions.apiKey.permissions : null;
+export function toCheckResult({ excludedAttrs }: Allowed): Allowed | undefined {
+  return excludedAttrs ? { excludedAttrs } : undefined;
+}
 
-  let hasUserPermission: boolean | undefined;
-  let hasApiKeyPermission: boolean;
+/** The grant flags the model `permissible` hooks still take; they read them by truthiness. */
+export function getGrantFlags(principal: Principal, actType: string, objType: string) {
+  const granted = capabilities(principal).granted.has(capabilityKey(objType, actType));
 
-  const checkPermission = function (perm: Permission) {
-    // Look for a matching action type and object type first
-    if (perm.action_type !== actType || perm.object_type !== objType) {
-      return false;
-    }
-
-    return true;
-  };
-  const { isOwner } = setIsRoles(loadedPermissions);
-  if (isOwner) {
-    hasUserPermission = true;
-  } else if (!_.isEmpty(userPermissions)) {
-    hasUserPermission = _.some(userPermissions, checkPermission);
+  // An integration key's grant is the key's flag; every other principal's is the user's
+  if (principal.kind === 'integration') {
+    return { hasUserPermission: true, hasApiKeyPermission: granted };
   }
-
-  // Check api key permissions if they were passed
-  hasApiKeyPermission = true;
-  if (!_.isNull(apiKeyPermissions)) {
-    if (loadedPermissions.user) {
-      // Staff API key scenario: both user and API key present
-      // Use USER permissions and ignore API key permissions
-      hasApiKeyPermission = true; // Allow API key check to pass
-    } else {
-      // Traditional API key scenario: API key only, no user
-      // Use API key permissions as before
-      hasUserPermission = true;
-      hasApiKeyPermission = _.some(apiKeyPermissions, checkPermission);
-    }
-  }
-
-  return { hasUserPermission, hasApiKeyPermission };
+  return { hasUserPermission: granted, hasApiKeyPermission: true };
 }
 
 function rolePermissions(roles: readonly RoleView[]): LoadedPermissions {
@@ -173,11 +145,9 @@ class CanThisResultBuilder {
             return Promise.resolve();
           }
 
-          // Until scopes are enforced (PLA-639), an app is only ever the user it acts for
+          // Until PLA-639, an app needs a user to act for, whatever its scopes
           if (isAppWithoutUser(context)) {
-            return Promise.reject(
-              new errors.NoPermissionError({ message: tpl(messages.noPermissionToAction) }),
-            );
+            return Promise.reject(noPermission());
           }
 
           if (_.isNumber(modelOrId) || _.isString(modelOrId)) {
@@ -192,38 +162,42 @@ class CanThisResultBuilder {
             return Promise.reject(actors);
           }
 
-          return Promise.resolve(actors).then(function (loadedPermissions) {
-            const { hasUserPermission, hasApiKeyPermission } = getGrantFlags(
-              loadedPermissions,
-              actType,
-              objType,
-            );
+          // Only `context.internal` grants everything, never a principal claiming it
+          const principal =
+            !context.principal || context.principal.kind === 'internal'
+              ? ANONYMOUS
+              : context.principal;
 
-            // Ensure permission decisions are based on the user's role if present, not their staff-token.
-            const permissionsForModel = loadedPermissions.user
-              ? { ...loadedPermissions, apiKey: null }
-              : loadedPermissions;
+          return Promise.resolve(actors).then(function (loadedPermissions) {
+            // Scopes cap the hooks as they will cap row rules; unscoped principals pass
+            const { scopes } = capabilities(principal);
+            if (!scopesAllow(scopes, capabilityKey(objType, actType))) {
+              return Promise.reject(noPermission());
+            }
 
             // Offer a chance for the TargetModel to override the results
             if (TargetModel && _.isFunction(TargetModel.permissible)) {
+              const { hasUserPermission, hasApiKeyPermission } = getGrantFlags(
+                principal,
+                actType,
+                objType,
+              );
+
               return TargetModel.permissible(
                 modelId,
                 actType,
                 context,
                 unsafeAttrs,
-                permissionsForModel,
+                loadedPermissions,
                 hasUserPermission,
                 hasApiKeyPermission,
               );
             }
 
-            if (hasUserPermission && hasApiKeyPermission) {
-              return;
-            }
-
-            return Promise.reject(
-              new errors.NoPermissionError({ message: tpl(messages.noPermissionToAction) }),
-            );
+            return authorize(principal, actType, objType, {
+              resource: modelId,
+              attrs: unsafeAttrs,
+            }).then(toCheckResult);
           });
         };
 
