@@ -128,6 +128,21 @@ describe('Command Components', () => {
       );
     });
 
+    it('gives the focus back to a menu item that is still there', async () => {
+      const { rerender } = render(<Page open={false} menuOpen />);
+      const item = screen.getByRole('menuitem');
+      item.focus();
+
+      // A menu that stays open, opening the palette with a shortcut.
+      rerender(<Page menuOpen open />);
+      await waitFor(() =>
+        expect(document.activeElement).toBe(screen.getByPlaceholderText('Search')),
+      );
+
+      rerender(<Page open={false} menuOpen />);
+      await waitFor(() => expect(document.activeElement).toBe(item));
+    });
+
     it('closes on Escape and lets the app send the focus somewhere else', async () => {
       const onOpenChange = vi.fn();
       const onCloseAutoFocus = vi.fn((event: Event) => {

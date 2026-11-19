@@ -25,25 +25,29 @@ function Command({ className, ...props }: React.ComponentProps<typeof CommandPri
 }
 
 type CommandDialogProps = Pick<DialogProps, 'open' | 'defaultOpen' | 'onOpenChange' | 'modal'> &
-  Omit<DialogContentProps, 'title'> & {
+  // The palette owns what the content renders and when it mounts.
+  Omit<DialogContentProps, 'title' | 'asChild' | 'forceMount'> & {
     /** The dialog's name for screen readers. It isn't shown. */
     title?: string;
   };
 
-// Where the focus goes back to when a CommandDialog closes: the element that had it when the dialog
-// opened. A menu item unmounts with its menu, so for an item it's the button that opened the menu,
-// which labels the menu. A submenu is labelled by an item of its parent menu, so this walks up.
-function returnFocusTarget(element: Element | null): HTMLElement | null {
-  let target = element;
-  for (let depth = 0; depth < 5 && target; depth++) {
-    const menuButtonId = target.closest('[role="menu"]')?.getAttribute('aria-labelledby');
-    const menuButton = menuButtonId ? target.ownerDocument.getElementById(menuButtonId) : null;
-    if (!menuButton || menuButton === target) {
-      break;
-    }
-    target = menuButton;
+// Where the focus can go back to when a CommandDialog closes, best first: the element that had it
+// when the dialog opened, then, as a menu item unmounts with its menu, the button that opened the
+// menu, which labels it. A submenu is labelled by an item of its parent menu, so this walks up.
+function returnFocusCandidates(element: Element | null): HTMLElement[] {
+  const candidates: HTMLElement[] = [];
+  let candidate = element;
+  while (
+    candidate instanceof HTMLElement &&
+    candidate !== candidate.ownerDocument.body &&
+    !candidates.includes(candidate) &&
+    candidates.length < 5
+  ) {
+    candidates.push(candidate);
+    const menuButtonId = candidate.closest('[role="menu"]')?.getAttribute('aria-labelledby');
+    candidate = menuButtonId ? candidate.ownerDocument.getElementById(menuButtonId) : null;
   }
-  return target instanceof HTMLElement && target !== target.ownerDocument.body ? target : null;
+  return candidates;
 }
 
 const CommandDialog = ({
@@ -59,7 +63,7 @@ const CommandDialog = ({
   ...props
 }: CommandDialogProps) => {
   // There's never a DialogTrigger, so Radix would leave the focus on the page body.
-  const returnFocusRef = React.useRef<HTMLElement | null>(null);
+  const returnFocusRef = React.useRef<HTMLElement[]>([]);
 
   return (
     <Dialog defaultOpen={defaultOpen} modal={modal} open={open} onOpenChange={onOpenChange}>
@@ -73,17 +77,23 @@ const CommandDialog = ({
             return;
           }
           event.preventDefault();
-          const target = returnFocusRef.current;
-          returnFocusRef.current = null;
-          // Leave the focus alone if something else has taken it, or the element is gone.
-          const focusLost = !document.activeElement || document.activeElement === document.body;
-          if (focusLost && target?.isConnected) {
-            target.focus();
+          const candidates = returnFocusRef.current;
+          returnFocusRef.current = [];
+          // Leave the focus alone if something else has taken it.
+          if (document.activeElement && document.activeElement !== document.body) {
+            return;
+          }
+          // A candidate that's gone, or can't take the focus, doesn't.
+          for (const candidate of candidates) {
+            candidate.focus();
+            if (document.activeElement === candidate) {
+              break;
+            }
           }
         }}
         onOpenAutoFocus={(event) => {
           // This runs before the dialog moves the focus inside.
-          returnFocusRef.current = returnFocusTarget(document.activeElement);
+          returnFocusRef.current = returnFocusCandidates(document.activeElement);
           onOpenAutoFocus?.(event);
         }}
         {...props}
