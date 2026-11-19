@@ -49,6 +49,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
   let email: Email;
   let fixtureEmailIds: string[];
   let addedMemberIds: string[];
+  let addedPostIds: string[];
   let memberRestorations: { id: string; attributes: Record<string, unknown> }[];
   let service: {
     createBatch: (...args: CreateBatchArgs) => Promise<Batch>;
@@ -93,12 +94,13 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
   beforeEach(async function () {
     fixtureEmailIds = [];
     addedMemberIds = [];
+    addedPostIds = [];
     memberRestorations = [];
     sinon.stub(logging, 'info');
     sinon.stub(logging, 'error');
     sinon.stub(logging, 'warn');
     email = await models.Email.add({
-      post_id: ObjectID().toHexString(),
+      post_id: await createPublishedPostId(),
       submitted_at: new Date(),
       email_count: 10,
       preflight_email_count: 10,
@@ -137,7 +139,20 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await db.knex('email_batches').whereIn('email_id', emailIds).del();
     await db.knex('emails').whereIn('id', emailIds).del();
     await db.knex('members').whereIn('id', addedMemberIds).del();
+    for (const id of addedPostIds) {
+      await models.Post.destroy({ id }, { context: { internal: true } });
+    }
   });
+
+  // emailJob marks an email whose post is not published as failed instead of sending it.
+  async function createPublishedPostId(): Promise<string> {
+    const post = await models.Post.add(
+      { title: 'Recipient accounting', status: 'published' },
+      { context: { internal: true } },
+    );
+    addedPostIds.push(post.id);
+    return post.id;
+  }
 
   function createService(): typeof service {
     return new BatchSendingService({
@@ -218,7 +233,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
 
   async function createOtherEmail() {
     const otherEmail = await models.Email.add({
-      post_id: ObjectID().toHexString(),
+      post_id: await createPublishedPostId(),
       submitted_at: new Date(),
       email_count: 1,
     });
@@ -238,7 +253,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       sinon.stub(models.Email, 'findOne').callsFake(async (...args) => {
         const found = await findOne(...args);
         if (found) {
-          sinon.stub(found, 'getLazyRelation').resolves({});
+          sinon.stub(found, 'getLazyRelation').resolves({ get: () => 'published' });
         }
         return found;
       });
@@ -1370,7 +1385,8 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       assert.equal(email.get('status'), 'submitted');
       assert.equal(email.get('email_count'), 4 - excludedCount);
 
-      await email.save({ status: 'failed' }, { patch: true });
+      // A retry returns the email to pending before dispatching its send job.
+      await email.save({ status: 'pending' }, { patch: true });
       sinon.stub(models.Member, 'findPage').throws(new Error('Audience must stay frozen'));
       sender.send.resetHistory();
       await service.emailJob({ emailId: email.id });
