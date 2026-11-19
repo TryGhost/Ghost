@@ -80,18 +80,6 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
     ): Promise<void> => {
       const { eventName } = event;
 
-      // TypeScript makes this impossible in theory, but in practice there are
-      // untyped callers (and TypeScript doesn't have a sound type system
-      // anyway). This check is defense-in-depth.
-      switch (eventName) {
-        case 'membership_started':
-        case 'paid_subscription_changed':
-        case 'label_added':
-          break;
-        default:
-          throw new errors.IncorrectUsageError({ message: 'Unsupported automation event.' });
-      }
-
       if (!labs.isSet('automations')) {
         return;
       }
