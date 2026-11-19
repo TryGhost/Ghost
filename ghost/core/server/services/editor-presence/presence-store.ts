@@ -14,10 +14,17 @@ export interface StoredPresence {
   ts: number;
 }
 
+export interface StoredClaim {
+  member: string;
+  /** The lowest order among a document's live members holds its lease. */
+  order: number;
+}
+
 /**
  * One site's presence set: member = `type:resourceId:userId[:tab]`, score =
- * last heartbeat in server milliseconds. Implementations are site-scoped by
- * construction; Ghost runs one site per process.
+ * last heartbeat in server milliseconds. Beside it, the members queued for
+ * their document's lease, each with its place. Implementations are site-scoped
+ * by construction; Ghost runs one site per process.
  */
 export interface PresenceStore {
   readonly kind: 'redis' | 'memory';
@@ -25,7 +32,21 @@ export interface PresenceStore {
   touch(member: string, now: number, retentionMs: number): Promise<void>;
   /** Members with a heartbeat at or after `since`. */
   read(since: number): Promise<StoredPresence[]>;
+  /** Forget a member: its heartbeat and its claim. */
   remove(member: string): Promise<void>;
+  /**
+   * Queue a member at `order` and return every claim. A member already queued
+   * keeps its place unless `replace` moves it.
+   */
+  claim(
+    member: string,
+    order: number,
+    retentionMs: number,
+    replace?: boolean,
+  ): Promise<StoredClaim[]>;
+  claims(): Promise<StoredClaim[]>;
+  /** Drop the claims of members that no longer heartbeat. */
+  release(members: string[]): Promise<void>;
 }
 
 export function isResourceType(value: string): value is ResourceType {

@@ -6,6 +6,8 @@ import {
   encodeMember,
   type PresenceStore,
   type ResourceType,
+  type StoredClaim,
+  type StoredPresence,
 } from './presence-store';
 
 const objectId = z.string().regex(/^[a-f0-9]{24}$/i);
@@ -17,8 +19,14 @@ const pollSchema = z
     resources: z.array(resourceSchema).max(50).default([]),
     editing: resourceSchema.optional(),
     tab: tabId.optional(),
+    /** `hold` keeps or joins a place in the edited document's queue; `take` moves to its front. */
+    lease: z.enum(['hold', 'take']).optional(),
   })
-  .strict();
+  .strict()
+  .refine((value) => !value.lease || value.editing, {
+    path: ['lease'],
+    message: 'A lease needs the document being edited',
+  });
 const leaveSchema = z.object({ resource: resourceSchema, tab: tabId.optional() }).strict();
 
 export interface ActivePresence {
@@ -28,8 +36,17 @@ export interface ActivePresence {
   ts: number;
 }
 
+export interface PresenceLease {
+  /** The user whose tab may edit the document now. */
+  userId: string;
+  /** Whether that tab is the caller's. False for the caller's other tabs. */
+  mine: boolean;
+}
+
 export interface PollResult {
   active: ActivePresence[];
+  /** Present when the caller asked for the lease on the document it is editing. */
+  lease?: PresenceLease;
   serverTime: number;
 }
 
@@ -43,15 +60,19 @@ export interface EditorPresenceServiceOptions {
   now?: () => number;
   /** Heartbeats newer than this are reported as active. */
   activeWindowMs?: number;
+  /** A queued tab keeps its place in a lease queue while its last heartbeat is newer than this. */
+  leaseWindowMs?: number;
   /** Members older than this are dropped from the store. */
   retentionMs?: number;
   storeTimeoutMs?: number;
 }
 
 export const DEFAULT_ACTIVE_WINDOW_MS = 60_000;
-export const DEFAULT_RETENTION_MS = DEFAULT_ACTIVE_WINDOW_MS;
-/** A retention below the active window trims members that are still reported as active. */
-export const MIN_RETENTION_MS = DEFAULT_ACTIVE_WINDOW_MS;
+/** Longer than the active window: a hidden tab's timers slow to one a minute, and it must not lose its place. */
+export const DEFAULT_LEASE_WINDOW_MS = 150_000;
+export const DEFAULT_RETENTION_MS = DEFAULT_LEASE_WINDOW_MS;
+/** A retention below the lease window trims members that still hold a place in a queue. */
+export const MIN_RETENTION_MS = DEFAULT_LEASE_WINDOW_MS;
 /** A store call past this answers 503; ioredis has no deadline of its own on a stalled connection. */
 export const DEFAULT_STORE_TIMEOUT_MS = 2_000;
 
@@ -63,7 +84,7 @@ export function resolveRetentionMs(ttlSeconds: unknown): number {
   return Math.max(MIN_RETENTION_MS, Math.round(ttlSeconds * 1000));
 }
 
-type StoreOperation = 'touch' | 'read' | 'remove';
+type StoreOperation = 'touch' | 'read' | 'remove' | 'claim' | 'claims' | 'release';
 
 function failureReason(error: unknown): string {
   const details = error as { code?: unknown; name?: unknown; message?: unknown };
@@ -102,6 +123,11 @@ function withDeadline<T>(run: () => Promise<T>, ms: number): Promise<T> {
   return Promise.race([pending, deadline]).finally(() => clearTimeout(timer));
 }
 
+function isFor(member: string, resource: { id: string; type: ResourceType }): boolean {
+  const decoded = decodeMember(member);
+  return decoded?.type === resource.type && decoded.resourceId === resource.id;
+}
+
 function parse<T>(schema: z.ZodType<T>, input: unknown): T {
   const result = schema.safeParse(input);
   if (!result.success) {
@@ -122,6 +148,7 @@ export class EditorPresenceService {
   private readonly metrics?: PresenceMetrics;
   private readonly now: () => number;
   private readonly activeWindowMs: number;
+  private readonly leaseWindowMs: number;
   private readonly retentionMs: number;
   private readonly storeTimeoutMs: number;
 
@@ -130,6 +157,7 @@ export class EditorPresenceService {
     this.now = options.now ?? Date.now;
     this.metrics = options.metrics;
     this.activeWindowMs = options.activeWindowMs ?? DEFAULT_ACTIVE_WINDOW_MS;
+    this.leaseWindowMs = options.leaseWindowMs ?? DEFAULT_LEASE_WINDOW_MS;
     this.retentionMs = options.retentionMs ?? DEFAULT_RETENTION_MS;
     this.storeTimeoutMs = options.storeTimeoutMs ?? DEFAULT_STORE_TIMEOUT_MS;
   }
@@ -142,10 +170,11 @@ export class EditorPresenceService {
    * Record that `userId` has `editing` open, then return everyone else active on
    * the requested resources. Callers see only the ids they asked about. `tab`
    * keeps each of the caller's editor tabs as its own member, so closing one
-   * does not clear the others.
+   * does not clear the others. With `lease`, the caller's tab also queues for
+   * the document, and the answer names the tab at the front.
    */
   async poll(userId: string, input: unknown): Promise<PollResult> {
-    const { resources, editing, tab } = parse(pollSchema, input);
+    const { resources, editing, tab, lease } = parse(pollSchema, input);
     const now = this.now();
 
     const requested = new Set(resources.map((resource) => resource.id));
@@ -157,24 +186,37 @@ export class EditorPresenceService {
     }
 
     const started = performance.now();
+    const measured = { write: Boolean(editing), lease: lease ?? 'none' };
     try {
-      if (editing) {
-        await this.fromStore('touch', () =>
-          this.store.touch(
-            encodeMember({ type: editing.type, resourceId: editing.id, userId, tab }),
-            now,
-            this.retentionMs,
-          ),
-        );
+      const caller =
+        editing && encodeMember({ type: editing.type, resourceId: editing.id, userId, tab });
+      if (caller) {
+        await this.fromStore('touch', () => this.store.touch(caller, now, this.retentionMs));
       }
-      const stored = await this.fromStore('read', () => this.store.read(now - this.activeWindowMs));
-      this.record('presence-poll', started, { outcome: 'ok', write: Boolean(editing) });
+      // Claims are read before heartbeats: every claim seen had its heartbeat written first.
+      const claims =
+        caller && editing && lease ? await this.queue(caller, lease, editing, now) : undefined;
+      const window = claims
+        ? Math.max(this.activeWindowMs, this.leaseWindowMs)
+        : this.activeWindowMs;
+      const stored = await this.fromStore('read', () => this.store.read(now - window));
+      const held =
+        claims && caller && editing
+          ? await this.holder(claims, stored, editing, caller, now)
+          : undefined;
+      this.record('presence-poll', started, { outcome: 'ok', ...measured });
 
       // A user with the document open in several tabs is reported once, with the latest heartbeat.
+      const activeSince = now - this.activeWindowMs;
       const latest = new Map<string, ActivePresence>();
       for (const { member, ts } of stored) {
         const decoded = decodeMember(member);
-        if (!decoded || decoded.userId === userId || !requested.has(decoded.resourceId)) {
+        if (
+          ts < activeSince ||
+          !decoded ||
+          decoded.userId === userId ||
+          !requested.has(decoded.resourceId)
+        ) {
           continue;
         }
         const key = `${decoded.resourceId}:${decoded.userId}`;
@@ -188,11 +230,67 @@ export class EditorPresenceService {
           });
         }
       }
-      return { active: [...latest.values()], serverTime: now };
+      return { active: [...latest.values()], ...(held ? { lease: held } : {}), serverTime: now };
     } catch (error) {
-      this.record('presence-poll', started, { outcome: 'error', write: Boolean(editing) });
+      this.record('presence-poll', started, { outcome: 'error', ...measured });
       throw error;
     }
+  }
+
+  /** `take` moves the caller ahead of everyone queued for the document; `hold` keeps or joins a place. */
+  private async queue(
+    caller: string,
+    mode: 'hold' | 'take',
+    resource: { id: string; type: ResourceType },
+    now: number,
+  ): Promise<StoredClaim[]> {
+    if (mode === 'take') {
+      const queued = await this.fromStore('claims', () => this.store.claims());
+      const ahead = queued
+        .filter(({ member }) => member !== caller && isFor(member, resource))
+        .map(({ order }) => order);
+      if (ahead.length > 0) {
+        const front = Math.min(...ahead) - 1;
+        return this.fromStore('claim', () =>
+          this.store.claim(caller, front, this.retentionMs, true),
+        );
+      }
+    }
+    return this.fromStore('claim', () => this.store.claim(caller, now, this.retentionMs));
+  }
+
+  /**
+   * The first member in a document's queue that still heartbeats holds its
+   * lease. Claims whose member stopped are dropped, so the next in line moves up.
+   */
+  private async holder(
+    claims: StoredClaim[],
+    stored: StoredPresence[],
+    resource: { id: string; type: ResourceType },
+    caller: string,
+    now: number,
+  ): Promise<PresenceLease | undefined> {
+    const since = now - this.leaseWindowMs;
+    const live = new Set(stored.filter(({ ts }) => ts >= since).map(({ member }) => member));
+    const stale: string[] = [];
+    let first: StoredClaim | undefined;
+    for (const claim of claims) {
+      if (!live.has(claim.member)) {
+        stale.push(claim.member);
+      } else if (
+        isFor(claim.member, resource) &&
+        (!first ||
+          claim.order < first.order ||
+          (claim.order === first.order && claim.member < first.member))
+      ) {
+        first = claim;
+      }
+    }
+    if (stale.length > 0) {
+      await this.fromStore('release', () => this.store.release(stale));
+    }
+    const decoded = first && decodeMember(first.member);
+    return decoded ? { userId: decoded.userId, mine: first?.member === caller } : undefined;
   }
 
   async leave(userId: string, input: unknown): Promise<void> {

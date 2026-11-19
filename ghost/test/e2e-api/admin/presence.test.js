@@ -7,7 +7,8 @@ const {
   mockManager,
   resetRateLimits,
 } = require('../../utils/e2e-framework');
-const { anyContentLength, anyContentVersion, anyEtag, anyErrorId, anyNumber } = matchers;
+const { anyContentLength, anyContentVersion, anyEtag, anyErrorId, anyNumber, anyObjectId } =
+  matchers;
 
 describe('Presence API', function () {
   let ownerAgent;
@@ -120,6 +121,26 @@ describe('Presence API', function () {
     // Gone only if each leave removed the tab it named.
     const noneLeft = await seen();
     assert.deepEqual(noneLeft.body.presence[0].active, []);
+  });
+
+  it('gives the lease to the first tab that asks and moves it on take', async function () {
+    const editing = { id: fixtureManager.get('posts', 1).id, type: 'post' };
+    const poll = (agent, tab, lease) =>
+      agent
+        .post('presence/')
+        .body({ presence: [{ editing, tab, lease }] })
+        .expectStatus(200);
+
+    await poll(ownerAgent, 'tab-owner-0001', 'hold').matchBodySnapshot({
+      presence: [{ lease: { userId: anyObjectId }, serverTime: anyNumber }],
+    });
+    const waiting = await poll(editorAgent, 'tab-editor-001', 'hold');
+    assert.deepEqual(waiting.body.presence[0].lease, { userId: owner.id, mine: false });
+
+    const taken = await poll(editorAgent, 'tab-editor-001', 'take');
+    assert.equal(taken.body.presence[0].lease.mine, true);
+    const passed = await poll(ownerAgent, 'tab-owner-0001', 'hold');
+    assert.equal(passed.body.presence[0].lease.mine, false);
   });
 
   it('accepts a contributor', async function () {
