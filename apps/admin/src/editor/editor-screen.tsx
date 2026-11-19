@@ -503,18 +503,11 @@ function EditorContent({
               didEmailFail ||
               session.state.kind === 'error' ? (
                 <Inline
-                  align="start"
+                  align="center"
                   className="min-w-0"
                   data-writing-focus={writingFocus}
                   gap="sm"
                 >
-                  {isLocked && (
-                    <LucideIcon.LockKeyhole
-                      aria-label="Editing locked"
-                      className="mt-2.5 size-3.5 shrink-0 text-muted-foreground"
-                      role="img"
-                    />
-                  )}
                   <EditorStatus
                     isDirty={session.isDirty()}
                     pendingSave={session.pendingSave}
@@ -524,6 +517,13 @@ function EditorContent({
                     onOpenUpdateFlow={canPublish && !isLocked ? openUpdateFlow : undefined}
                     onRetrySave={session.retrySave}
                   />
+                  {isLocked && (
+                    <LucideIcon.LockKeyhole
+                      aria-label="Editing locked"
+                      className="size-3.5 shrink-0 text-muted-foreground"
+                      role="img"
+                    />
+                  )}
                 </Inline>
               ) : null}
               <Box className="col-start-3 ml-auto" data-writing-focus={writingFocus}>

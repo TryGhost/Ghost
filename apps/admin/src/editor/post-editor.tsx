@@ -55,7 +55,7 @@ export interface PostEditorProps {
   cardConfig: PostCardConfig;
   showExcerpt: boolean;
   autofocusTitle?: boolean;
-  /** Prototype lock: disables the writing surface, leaving the footer's actions available. */
+  /** Prototype lock: keeps text selectable while blocking edits. */
   readOnly?: boolean;
   onTitleChange: (title: string) => void;
   onTitleBlur?: () => void;
@@ -221,6 +221,8 @@ export function PostEditor({
   const titleErrorId = useId();
   const excerptErrorId = useId();
   const editorApiRef = useRef<KoenigInstance | null>(null);
+  const readOnlyRef = useRef(readOnly);
+  const featureImageControlsRef = useRef<HTMLDivElement>(null);
   const skipFocusEditorRef = useRef(false);
   const [wordCount, setWordCount] = useState(0);
   const [selectionWordCount, setSelectionWordCount] = useState<number | null>(null);
@@ -231,10 +233,12 @@ export function PostEditor({
   useAutosize(titleRef, title, font);
   useAutosize(excerptRef, excerpt, font);
 
-  // Inert blocks all of Koenig's nested cards as well as the title and image
-  // controls. Keep it on the writing area so Preview in the footer still works.
+  // Lexical's read-only mode preserves text selection. Only the separate feature
+  // image controls remain inert in this prototype.
   useLayoutEffect(() => {
-    writingAreaRef.current?.toggleAttribute('inert', readOnly);
+    readOnlyRef.current = readOnly;
+    editorApiRef.current?.editorInstance.setEditable?.(!readOnly);
+    featureImageControlsRef.current?.toggleAttribute('inert', readOnly);
   }, [readOnly]);
 
   // Koenig's breakout cards are sized in viewport units less
@@ -331,6 +335,7 @@ export function PostEditor({
   const registerApi = useCallback(
     (api: KoenigInstance | null) => {
       editorApiRef.current = api;
+      api?.editorInstance.setEditable?.(!readOnlyRef.current);
       registerEditorApi?.(api);
     },
     [registerEditorApi],
@@ -349,6 +354,9 @@ export function PostEditor({
   };
 
   const onTitleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (readOnly) {
+      return;
+    }
     const { key } = event;
     const { value, selectionStart } = event.currentTarget;
     const couldLeaveTitle = !value || selectionStart === value.length;
@@ -378,6 +386,9 @@ export function PostEditor({
   };
 
   const onExcerptKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (readOnly) {
+      return;
+    }
     const { key } = event;
     const { value, selectionStart } = event.currentTarget;
 
@@ -398,6 +409,9 @@ export function PostEditor({
   };
 
   const cleanPastedTitle = (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    if (readOnly) {
+      return;
+    }
     const pastedText = event.clipboardData.getData('text');
     if (!pastedText) {
       return;
@@ -431,6 +445,10 @@ export function PostEditor({
   };
 
   const onPaneDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    if (readOnly) {
+      event.preventDefault();
+      return;
+    }
     if (event.dataTransfer.files.length > 0) {
       event.preventDefault();
       editorApiRef.current?.insertFiles(Array.from(event.dataTransfer.files));
@@ -456,10 +474,26 @@ export function PostEditor({
             'min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] [--kg-breakout-adjustment:var(--editor-breakout-inset,0px)] max-[500px]:px-8 lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))] lg:[--kg-breakout-adjustment:calc(var(--editor-breakout-inset,0px)+(var(--editor-settings-width,0px)+var(--spacing)*3)*var(--editor-settings-progress,0))]',
             chromeEntrance && 'screen-enter-rise',
             'transition-opacity duration-200 motion-reduce:transition-none',
-            readOnly && 'opacity-50',
+            readOnly && 'opacity-60',
           )}
           data-editing-locked={readOnly || undefined}
           gap="none"
+          onBeforeInputCapture={(event) => {
+            if (readOnly) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+          }}
+          onClickCapture={(event) => {
+            if (
+              readOnly &&
+              event.target instanceof Element &&
+              event.target.closest('button, input, select')
+            ) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+          }}
           onDragOver={(event) => event.preventDefault()}
           onDrop={onPaneDrop}
           onMouseDown={trackMouseDown}
@@ -467,7 +501,10 @@ export function PostEditor({
         >
           <div className="relative mx-auto w-full max-w-[740px]">
             {/* Only the bar offering an image is chrome; an image is the post's own. */}
-            <div data-writing-focus={hasFeatureImage ? undefined : writingFocus}>
+            <div
+              ref={featureImageControlsRef}
+              data-writing-focus={hasFeatureImage ? undefined : writingFocus}
+            >
               <FeatureImage
                 alt={featureImage.featureImageAlt}
                 caption={featureImage.featureImageCaption}
@@ -521,6 +558,7 @@ export function PostEditor({
                 )}
                 data-testid={editorTitleInput}
                 placeholder={`${capitalize(postType)} title`}
+                readOnly={readOnly}
                 rows={1}
                 value={title}
                 onBlur={onTitleBlur}
@@ -554,6 +592,7 @@ export function PostEditor({
                   )}
                   data-testid={editorExcerptInput}
                   placeholder="Add an excerpt"
+                  readOnly={readOnly}
                   rows={1}
                   value={excerpt}
                   onBlur={onExcerptBlur}

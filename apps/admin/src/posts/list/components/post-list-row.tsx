@@ -316,8 +316,11 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
               </Stack>
             </RowLink>
           </RowPrimaryAction>
-          {editingLock.locked ? (
-            <EditingLockPrototypeListAvatar className="relative z-10" />
+          {editingLock.isDemoPost ? (
+            <EditingLockPrototypeListAvatar
+              className="relative z-10"
+              viewing={!editingLock.locked}
+            />
           ) : !editingLock.isDemoPost && presenceActive && presenceActive.length > 0 ? (
             <PresenceAvatars
               active={presenceActive}
@@ -353,7 +356,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                   'ms-8',
                   // Below 1200px the metrics are hidden, so with avatars beside it the
                   // action needs no extra separation and the title keeps the room.
-                  (editingLock.locked || (presenceActive && presenceActive.length > 0)) &&
+                  (editingLock.isDemoPost || (presenceActive && presenceActive.length > 0)) &&
                     'max-[1200px]:ms-2',
                   'text-muted-foreground hover:bg-background hover:text-foreground',
                   isHovered && 'bg-background',

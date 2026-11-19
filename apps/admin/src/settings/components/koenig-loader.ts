@@ -31,6 +31,7 @@ export type KoenigInstance = {
   [key: string]: any;
   editorInstance: {
     getRootElement: () => HTMLElement | null;
+    setEditable?: (editable: boolean) => void;
   };
   focusEditor: (options?: { position?: 'top' | 'bottom' }) => void;
   editorIsEmpty: () => boolean;
