@@ -3,6 +3,7 @@ import React, { lazy } from 'react';
 // [data-shaping-view] on <html>, so it can restyle any screen
 import './exploration-1/exploration.css';
 import './exploration-2/exploration.css';
+import './exploration-4/exploration.css';
 
 // SHAPING PROTOTYPE ONLY — never merge (see src/shaping/README.md).
 //
@@ -21,6 +22,15 @@ export interface Exploration {
   // One line for the menu: what's different
   description: string;
   screens: Record<string, React.LazyExoticComponent<React.FC>>;
+  // Its version of a post's analytics Overview (/posts/analytics/:id), which
+  // sits outside /analytics, so it has its own swap point
+  // (patterns/post-analytics-swap.tsx)
+  postAnalyticsOverview?: React.LazyExoticComponent<React.FC>;
+  // Its version of the post analytics header, on every post analytics tab
+  // (posts/analytics/components/post-analytics-header.tsx picks it)
+  postAnalyticsHeader?: React.LazyExoticComponent<
+    React.FC<{ currentTab?: string; children?: React.ReactNode }>
+  >;
   // The exploration this one builds on: it reuses that one's screens and its
   // screen-wide CSS applies here too (data-shaping-family), so a variant
   // only adds what's different
@@ -50,10 +60,26 @@ export const EXPLORATIONS: Exploration[] = [
   {
     id: 'exploration-3',
     label: 'Exploration 3',
-    description: 'Exploration 1 with Recent posts as an editorial 50/50 on Overview.',
+    description:
+      'Exploration 1 with Recent posts as an editorial 50/50 on Overview, and post analytics laid out like member detail.',
     screens: {
       ...exploration1.screens,
       '/analytics': lazy(() => import('./exploration-3/overview')),
+    },
+    postAnalyticsOverview: lazy(() => import('./exploration-3/post-analytics/overview')),
+    postAnalyticsHeader: lazy(() => import('./exploration-3/post-analytics/header')),
+    extends: 'exploration-1',
+  },
+  {
+    // Starts as a copy of Exploration 2, which stays as the concept's
+    // starting point; this is the one to build on
+    id: 'exploration-4',
+    label: 'Exploration 4',
+    description:
+      'Exploration 2, carried forward: white surfaces over a warm grey page, in member detail’s text styles.',
+    screens: {
+      ...exploration1.screens,
+      '/analytics': lazy(() => import('./exploration-4/overview')),
     },
     extends: 'exploration-1',
   },

@@ -1,0 +1,64 @@
+/* EXPLORATION ONLY (shaping/explorations): Exploration 3, post analytics.
+   The Unique visitors chart in Web traffic's top-chart style
+   (exploration-1/web-traffic.css, and Growth and Newsletters' copy in
+   exploration-1/exploration.css): the plot on the content edge with the
+   y-axis numbers over it, no gridlines, no dates or baseline, and the hover
+   popover in one text style. --plot-start (the chart's 4px margin plus its
+   y-axis) is set by GhAreaChart on [data-chart]. */
+
+[data-shaping-family~='exploration-3'] .post-open-chart {
+  /* The plot on the content edge: pulled left past the y-axis, and out past
+     the chart's 4px right margin */
+  & [data-chart] {
+    width: calc(100% + var(--plot-start, 0px) + 0.4rem);
+    margin-left: calc(var(--plot-start, 0px) * -1);
+    /* 32px of room above the plot for the top value; the dates' strip
+       below is pulled out */
+    padding-top: 3.2rem;
+    margin-bottom: -3rem;
+  }
+
+  & .recharts-surface {
+    overflow: visible;
+  }
+
+  & .recharts-cartesian-grid-horizontal,
+  & .recharts-xAxis .recharts-cartesian-axis-line,
+  & .recharts-xAxis .recharts-cartesian-axis-tick {
+    display: none;
+  }
+
+  /* The y-axis numbers over the plot, 8px in from the content edge, each
+     just above its value */
+  & .recharts-yAxis .recharts-cartesian-axis-tick-value {
+    text-anchor: start;
+    transform: translate(16px, -0.8rem);
+  }
+
+  /* The bottom value ("0") 8px higher than the others, clear of the edge */
+  & .recharts-yAxis .recharts-cartesian-axis-tick:first-child .recharts-cartesian-axis-tick-value {
+    transform: translate(16px, -1.6rem);
+  }
+
+  /* The hover popover in one text style, the date semibold, no colour dot */
+  & .recharts-tooltip-wrapper .rounded-full {
+    display: none;
+  }
+
+  & .recharts-tooltip-wrapper > div,
+  & .recharts-tooltip-wrapper > div * {
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 400;
+  }
+
+  & .recharts-tooltip-wrapper > div > :first-child {
+    font-weight: 600;
+  }
+
+  & .recharts-tooltip-wrapper .text-muted-foreground {
+    font-weight: 500;
+    text-transform: capitalize;
+  }
+}

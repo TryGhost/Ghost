@@ -142,6 +142,9 @@ interface SourcesCardProps {
   onSourceClick?: (source: string) => void;
   // EXPLORATION: rows shown in the list (6 by default); the sheet has them all
   limit?: number;
+  // The list's title ("Sources" on Web traffic; Exploration 3's post
+  // analytics names it for the post)
+  title?: string;
 }
 
 export const SourcesCard: React.FC<SourcesCardProps> = ({
@@ -154,6 +157,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
   isLoading,
   onSourceClick,
   limit = 6,
+  title = 'Sources',
 }) => {
   // Process and group sources data with pre-computed icons and display values
   const processedData = React.useMemo(() => {
@@ -179,8 +183,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
   const [sheetOpen, setSheetOpen] = useState(false);
 
   // Generate description based on mode and range
-  // EXPLORATION: a subtitle under Web traffic's Breakdown
-  const title = 'Sources';
+  // EXPLORATION: a subtitle under Web traffic's Breakdown (title, above)
   const description = `How readers found your ${range ? 'site' : 'post'} ${getPeriodText(range)}`;
 
   return (

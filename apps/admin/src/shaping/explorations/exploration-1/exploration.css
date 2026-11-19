@@ -21,7 +21,7 @@
 /* One caps label style everywhere (type.ts): the metric labels Planned sets
    in 12px mono (Shade's analyticsProtoLabel, on metric cards and KPI tabs)
    are 14px sans regular here instead */
-[data-shaping-family~='exploration-1'] .admin7-design\:font-mono {
+[data-shaping-family~='exploration-1'] .analytics-proto\:font-mono {
   font-family: var(--font-sans);
   font-size: var(--text-md);
   font-weight: 400;
@@ -43,7 +43,7 @@
    text-4xl). Planned sets the 28px with !important, so this sits in the
    same layer, where the more specific selector wins. */
 @layer utilities {
-  [data-shaping-family~='exploration-1'] .admin7-design\:text-3xl\! {
+  [data-shaping-family~='exploration-1'] .analytics-proto\:text-3xl\! {
     font-size: var(--text-4xl) !important;
   }
 }

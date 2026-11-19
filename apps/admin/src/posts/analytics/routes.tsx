@@ -26,7 +26,9 @@ export const lazyPostAnalyticsRoot = async () => {
 };
 
 export const postAnalyticsRouteChildren: RouteObject[] = [
-  { path: '', lazy: lazyComponent(() => import('./overview/overview')) },
+  // SHAPING PROTOTYPE ONLY: was import('./overview/overview'); swaps in an
+  // exploration's Overview (see src/shaping/README.md)
+  { path: '', lazy: lazyComponent(() => import('@/shaping/patterns/post-analytics-swap')) },
   { path: 'web', lazy: lazyComponent(() => import('./web/web')) },
   { path: 'growth', lazy: lazyComponent(() => import('./growth/growth')) },
   {

@@ -3,14 +3,14 @@
    then its content, with no rules between. Scrappy on purpose: a
    release-shaped version would use Card's `plain` variant instead. */
 
-.web-open-layout .rounded-xl.border {
+.web-open-layout .rounded-card.border {
   border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
 }
 
-.web-open-layout .rounded-xl.border > * {
+.web-open-layout .rounded-card.border > * {
   padding-right: 0;
   padding-left: 0;
 }
@@ -18,7 +18,7 @@
 /* Each section's title row, with no rule under it (overrides Top locations'
    own border-b too). 15px down to the first row: 9px here plus the list's
    own 6px top padding. */
-.web-open-layout .rounded-xl.border > :first-child {
+.web-open-layout .rounded-card.border > :first-child {
   margin-bottom: 0;
   border-bottom: 0;
   padding-top: 0;
@@ -28,13 +28,16 @@
 /* Section headings: the title alone. The descriptions only restated it with
    the date range, which the filter above already shows. (Not the
    "Visitors" label, which shares their size and colour.) */
-.web-open-layout .rounded-xl.border > :first-child .text-sm.text-muted-foreground:not(.capitalize) {
+.web-open-layout
+  .rounded-card.border
+  > :first-child
+  .text-sm.text-muted-foreground:not(.capitalize) {
   display: none;
 }
 
 /* Title rows are one control tall, so a section with a filter in its title
    row (Top content) lines up with one without (Top sources) */
-.web-open-layout .rounded-xl.border > :first-child.flex {
+.web-open-layout .rounded-card.border > :first-child.flex {
   min-height: calc(var(--control-height) + 0.9rem);
 }
 
@@ -70,33 +73,33 @@
    thirds (the shared card splits them in half), and "Visitors" ending at
    the third too, over the list's numbers */
 @media (min-width: 1024px) {
-  .web-open-layout .rounded-xl.border:has([data-testid='visitors-card']) .lg\:grid-cols-2 {
+  .web-open-layout .rounded-card.border:has([data-testid='visitors-card']) .lg\:grid-cols-2 {
     grid-template-columns: 1fr 2fr;
   }
 
-  .web-open-layout .rounded-xl.border:has([data-testid='visitors-card']) > :first-child {
+  .web-open-layout .rounded-card.border:has([data-testid='visitors-card']) > :first-child {
     display: grid;
     grid-template-columns: 1fr 2fr;
   }
 
-  .web-open-layout .rounded-xl.border:has([data-testid='visitors-card']) > :first-child > *,
-  .web-open-layout .rounded-xl.border:has([data-testid='visitors-card']) > :first-child::after {
+  .web-open-layout .rounded-card.border:has([data-testid='visitors-card']) > :first-child > *,
+  .web-open-layout .rounded-card.border:has([data-testid='visitors-card']) > :first-child::after {
     grid-area: 1 / 1;
   }
 
-  .web-open-layout .rounded-xl.border:has([data-testid='visitors-card']) > :first-child::after {
+  .web-open-layout .rounded-card.border:has([data-testid='visitors-card']) > :first-child::after {
     justify-self: end;
   }
 }
 
 /* Top locations' title is a column; lay it out as a row like the others */
-.web-open-layout .rounded-xl.border:has([data-testid='visitors-card']) > :first-child {
+.web-open-layout .rounded-card.border:has([data-testid='visitors-card']) > :first-child {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
 }
 
-.web-open-layout .rounded-xl.border:has([data-testid='visitors-card']) > :first-child::after {
+.web-open-layout .rounded-card.border:has([data-testid='visitors-card']) > :first-child::after {
   /* Exploration 1's label style (type.ts) */
   content: 'Visitors';
   color: var(--color-muted-foreground);
@@ -132,14 +135,14 @@
 
 /* No padding below the list: the grey box's own 32px is the only space at
    the bottom */
-.web-open-layout .rounded-xl.border > * {
+.web-open-layout .rounded-card.border > * {
   padding-bottom: 0;
 }
 
 /* Each list's title, a subtitle under the Breakdown section title
    (22px): 17px (Shade text-xl), medium weight like the page title, rather
    than body-size semibold */
-.web-open-layout .rounded-xl.border > :first-child .font-semibold.leading-none {
+.web-open-layout .rounded-card.border > :first-child .font-semibold.leading-none {
   font-size: var(--text-xl);
   font-weight: 500;
   letter-spacing: -0.02em;
@@ -149,14 +152,14 @@
    subsections (its title is fixed in the shared card, so the text is
    swapped here) */
 [data-breakdown]
-  .rounded-xl.border:has([data-testid='visitors-card'])
+  .rounded-card.border:has([data-testid='visitors-card'])
   > :first-child
   .font-semibold.leading-none {
   font-size: 0;
 }
 
 [data-breakdown]
-  .rounded-xl.border:has([data-testid='visitors-card'])
+  .rounded-card.border:has([data-testid='visitors-card'])
   > :first-child
   .font-semibold.leading-none::before {
   content: 'Locations';

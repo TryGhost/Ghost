@@ -2,7 +2,10 @@ import { PageHeader } from '@tryghost/shade/patterns';
 import GiftLinkModal from '@/posts/analytics/modals/gift-link-modal';
 import PostShareModal from '@/shared/analytics/post-share-modal';
 import PostAnalyticsEmailSendingStatus from '@/posts/analytics/email-sending-status/post-analytics-email-sending-status';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+// SHAPING PROTOTYPE ONLY: the exploration header swap at the bottom
+import { EXPLORATIONS } from '@/shaping/explorations';
+import { useView } from '@/shaping/view';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -79,7 +82,7 @@ interface PostAnalyticsHeaderProps {
   children?: React.ReactNode;
 }
 
-const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, children }) => {
+const RealPostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, children }) => {
   // Where list pages show their titles large (admin7Design), the post's title
   // goes large too, a step down as it can run long, under the same space.
   const { largeTitles } = usePageChrome();
@@ -439,6 +442,24 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
         </AlertDialogContent>
       </AlertDialog>
     </>
+  );
+};
+
+// SHAPING PROTOTYPE ONLY: an exploration's version of this header, where it
+// has one, on every post analytics tab (see src/shaping/README.md). While it
+// loads, the real header stands in.
+const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = (props) => {
+  const view = useView();
+  const ExplorationHeader = EXPLORATIONS.find(
+    (exploration) => exploration.id === view,
+  )?.postAnalyticsHeader;
+  if (!ExplorationHeader) {
+    return <RealPostAnalyticsHeader {...props} />;
+  }
+  return (
+    <Suspense fallback={<RealPostAnalyticsHeader {...props} />}>
+      <ExplorationHeader {...props} />
+    </Suspense>
   );
 };
 

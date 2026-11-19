@@ -10,10 +10,18 @@
 
 /* The page: Admin's background token, so everything drawn in it (the
    content area, the sticky Analytics header) turns grey together. Only on
-   Analytics and post analytics screens. */
+   Analytics and post analytics screens.
+
+   Shade declares its tokens again on every Shade scope (the app root and
+   portals, [data-admin7-design]: shade/theme-variables.css), which would
+   override <html>'s, so these go on those scopes as well. */
 html[data-shaping-view='exploration-2']:not(.dark):has(
     :is([data-stats-content], [data-post-analytics])
-  ) {
+  ),
+html[data-shaping-view='exploration-2']:not(.dark):has(
+    :is([data-stats-content], [data-post-analytics])
+  )
+  [data-admin7-design] {
   --exploration-2-page: #f8f8f5;
   --background: var(--exploration-2-page);
   /* The left nav, white: the floating capsule draws itself in Shade's
@@ -63,7 +71,7 @@ html[data-shaping-view='exploration-2']:not(.dark) {
 
   /* Web traffic: the tabbed chart and each list (Exploration 1 strips their
      outlined cards; here they come back as white ones, borderless) */
-  & .web-open-layout .rounded-xl.border,
+  & .web-open-layout .rounded-card.border,
   & .web-open-kpis,
   & :is([data-testid='total-members-card'], [data-testid='newsletters-card']) {
     border-radius: var(--radius-sm);
