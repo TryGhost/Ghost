@@ -42,6 +42,7 @@ import { handleHashtagLinkClick } from '@src/utils/hashtags';
 import { handleProfileClick } from '@src/utils/handle-profile-click';
 import { isPendingActivity } from '../../../utils/pending-activity';
 import { useDebounce } from 'use-debounce';
+import { useHashtagSupportForUser } from '@hooks/use-activity-pub-queries';
 import { useNavigateWithBasePath } from '@src/hooks/use-navigate-with-base-path';
 
 interface IframeWindow extends Window {
@@ -91,6 +92,7 @@ const ArticleBody: React.FC<{
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const navigate = useNavigateWithBasePath();
+  const hashtagsSupported = useHashtagSupportForUser();
   const [isLoading, setIsLoading] = useState(true);
   const [iframeHeight, setIframeHeight] = useState('0px');
   // Tracks which article is currently rendered in the iframe so srcdoc is only
@@ -112,8 +114,10 @@ const ArticleBody: React.FC<{
       : html;
     // Sanitize last so the transformations above can't reintroduce
     // anything unsafe
-    return sanitizeArticleContent(openLinksInNewTab(transformedHtml, { keepHashtagLinks: true }));
-  }, [html, shouldEnforceVideoCardInlinePlayback]);
+    return sanitizeArticleContent(
+      openLinksInNewTab(transformedHtml, { keepHashtagLinks: hashtagsSupported }),
+    );
+  }, [hashtagsSupported, html, shouldEnforceVideoCardInlinePlayback]);
 
   const updateSensitiveMediaVisibility = useCallback(() => {
     const iframe = iframeRef.current;
@@ -479,7 +483,7 @@ const ArticleBody: React.FC<{
   // Open hashtag links in the app rather than inside the iframe
   useEffect(() => {
     const iframe = iframeRef.current;
-    if (!iframe) {
+    if (!iframe || !hashtagsSupported) {
       return;
     }
 
@@ -498,7 +502,7 @@ const ArticleBody: React.FC<{
       iframe.removeEventListener('load', handleLoad);
       iframe.contentDocument?.removeEventListener('click', handleClick);
     };
-  }, [navigate]);
+  }, [hashtagsSupported, navigate]);
 
   // Update parent when loading state changes
   useEffect(() => {

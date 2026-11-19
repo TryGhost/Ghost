@@ -18,6 +18,7 @@ import { SuggestedProfiles } from '../global/suggested-profiles';
 import { getHashtagPath, normalizeHashtag, parseHashtagQuery } from '@src/utils/hashtags';
 import {
   useAccountForUser,
+  useHashtagSupportForUser,
   useSearchForUser,
   useSuggestedProfilesForUser,
   useTopicsForUser,
@@ -82,6 +83,7 @@ const Search: React.FC<SearchProps> = ({ onOpenChange, query, setQuery }) => {
   const currentAccountQuery = useAccountForUser('index', 'me');
   const { data: currentUser } = currentAccountQuery;
 
+  const hashtagsSupported = useHashtagSupportForUser();
   const [displayResults, setDisplayResults] = useState<AccountSearchResult[]>([]);
   const [displayHashtags, setDisplayHashtags] = useState<HashtagSearchResult[]>([]);
   const [lastResultState, setLastResultState] = useState<'results' | 'none' | null>(null);
@@ -110,10 +112,10 @@ const Search: React.FC<SearchProps> = ({ onOpenChange, query, setQuery }) => {
   }, [query, shouldSearch, topicsData?.topics]);
 
   // A query like "#foo" can always be opened as a hashtag, even when the
-  // server didn't return it. It's listed first, followed by the server's
-  // hashtag results.
+  // server didn't return it, unless the service has no hashtag support. It's
+  // listed first, followed by the server's hashtag results.
   const matchingHashtags = useMemo(() => {
-    const typedHashtag = shouldSearch ? parseHashtagQuery(query) : null;
+    const typedHashtag = shouldSearch && hashtagsSupported ? parseHashtagQuery(query) : null;
 
     if (!typedHashtag) {
       return displayHashtags;
@@ -123,7 +125,7 @@ const Search: React.FC<SearchProps> = ({ onOpenChange, query, setQuery }) => {
       { name: typedHashtag },
       ...displayHashtags.filter((hashtag) => normalizeHashtag(hashtag.name) !== typedHashtag),
     ];
-  }, [displayHashtags, query, shouldSearch]);
+  }, [displayHashtags, hashtagsSupported, query, shouldSearch]);
 
   // Merge hashtags, topics and accounts into a single list
   const searchResults: SearchResult[] = useMemo(

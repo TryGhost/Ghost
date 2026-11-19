@@ -101,6 +101,7 @@ const QUERY_KEYS = {
   inbox: ['inbox'],
   discoveryFeed: ['discovery_feed'],
   hashtagFeed: ['hashtag_feed'],
+  hashtagSupport: ['hashtag_support'],
   postsByAccount: ['account_posts'],
   postsLikedByAccount: ['account_liked_posts'],
   notifications: (handle: string) => ['notifications', handle],
@@ -2152,6 +2153,22 @@ export function useHashtagFeedForUser(options: { enabled: boolean; hashtag: stri
   };
 
   return { hashtagFeedQuery, updateHashtagFeedActivity };
+}
+
+// Whether the ActivityPub service supports hashtags. Until that's known,
+// hashtags are treated as unsupported so their links keep working as links
+export function useHashtagSupportForUser(): boolean {
+  const { data } = useQuery({
+    queryKey: QUERY_KEYS.hashtagSupport,
+    staleTime: Infinity,
+    async queryFn() {
+      const siteUrl = await getSiteUrl();
+      const api = createActivityPubAPI('index', siteUrl);
+      return api.supportsHashtags();
+    },
+  });
+
+  return data ?? false;
 }
 
 export function usePostsByAccount(profileHandle: string, options: { enabled: boolean }) {
