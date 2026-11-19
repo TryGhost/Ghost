@@ -380,23 +380,31 @@ const TabsMenuTab = React.forwardRef<HTMLButtonElement, TabsMenuTabProps>(
           {...(tabId === undefined ? {} : { id: tabId })}
           onFocus={(event) => {
             onFocus?.(event);
+            // The menu returns focus from inside itself, or from nothing once it has unmounted.
             const fromMenu =
               menuOpenedRef.current &&
-              !(
-                event.relatedTarget instanceof Element &&
-                event.relatedTarget.getAttribute('role') === 'tab'
-              );
+              (event.relatedTarget === null ||
+                (event.relatedTarget instanceof Element &&
+                  event.relatedTarget.closest('[role="menu"]') !== null));
             menuOpenedRef.current = false;
             // Closing a menu returns focus to its trigger, and a focused tab is selected. When
             // the tab isn't selected by then (the menu was opened by a click and dismissed, or an
             // item selected another tab), focus goes to the selected tab instead, which also
             // keeps the tab list's one Tab stop there.
             if (fromMenu && event.currentTarget.getAttribute('aria-selected') !== 'true') {
-              event.preventDefault();
-              event.currentTarget
+              const selectedTab = event.currentTarget
                 .closest('[role="tablist"]')
-                ?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')
-                ?.focus();
+                ?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
+              if (!selectedTab) {
+                // Nothing to return to: keep focus here without selecting this tab.
+                event.preventDefault();
+              } else {
+                selectedTab.focus();
+                // If the selected tab can't take focus, let this tab be selected instead.
+                if (document.activeElement === selectedTab) {
+                  event.preventDefault();
+                }
+              }
             }
           }}
           onKeyDown={(event) => {

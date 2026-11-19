@@ -151,17 +151,21 @@ describe('Tabs Component', () => {
     const DropdownTabs = ({
       activationMode,
       id,
+      initialValue = 'visitors',
+      keepFocusOnClose,
       label,
       onValueChange,
       orientation,
     }: {
       activationMode?: 'automatic' | 'manual';
       id?: string;
+      initialValue?: string;
+      keepFocusOnClose?: boolean;
       label?: string;
       onValueChange?: (value: string) => void;
       orientation?: 'horizontal' | 'vertical';
     }) => {
-      const [value, setValue] = useState('visitors');
+      const [value, setValue] = useState(initialValue);
       const change = (next: string) => {
         onValueChange?.(next);
         setValue(next);
@@ -180,7 +184,9 @@ describe('Tabs Component', () => {
                 Members
                 <svg aria-hidden="true" />
               </TabsDropdownTrigger>
-              <DropdownMenuContent>
+              <DropdownMenuContent
+                onCloseAutoFocus={keepFocusOnClose ? (event) => event.preventDefault() : undefined}
+              >
                 <DropdownMenuItem onSelect={() => change('members')}>Paid members</DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => change('revenue')}>Revenue</DropdownMenuItem>
               </DropdownMenuContent>
@@ -379,6 +385,57 @@ describe('Tabs Component', () => {
       const tab = screen.getByRole('tab', { name: 'Members' });
       fireEvent.pointerDown(tab, { button: 2 });
       expect(screen.queryByRole('menu')).toBeNull();
+      act(() => tab.focus());
+
+      expect(document.activeElement).toBe(tab);
+      expect(tab.getAttribute('aria-selected')).toBe('true');
+    });
+
+    it('selects the tab when the selected tab cannot take the returning focus', async () => {
+      render(<DropdownTabs initialValue="sources" />);
+
+      // Browsers don't focus a disabled tab; jsdom does, so refuse it here.
+      const sources = screen.getByRole('tab', { name: 'Sources' });
+      vi.spyOn(sources, 'focus').mockImplementation(() => {});
+      const tab = screen.getByRole('tab', { name: 'Members' });
+      clickOpen(tab);
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+
+      await waitFor(() => expect(document.activeElement).toBe(tab));
+      expect(tab.getAttribute('aria-selected')).toBe('true');
+      expect(tab.tabIndex).toBe(0);
+    });
+
+    it('selects the tab on later focus when its menu closed without returning focus', async () => {
+      render(<DropdownTabs keepFocusOnClose />);
+
+      const visitors = screen.getByRole('tab', { name: 'Visitors' });
+      const tab = screen.getByRole('tab', { name: 'Members' });
+      clickOpen(tab);
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+      await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+      expect(document.activeElement).not.toBe(tab);
+
+      // Arrowing in from another tab.
+      expect(await arrow(visitors, 'ArrowRight')).toBe(tab);
+      expect(tab.getAttribute('aria-selected')).toBe('true');
+    });
+
+    it('selects the tab when something else focuses it after its menu closed elsewhere', async () => {
+      render(
+        <>
+          <button type="button">Elsewhere</button>
+          <DropdownTabs keepFocusOnClose />
+        </>,
+      );
+
+      const tab = screen.getByRole('tab', { name: 'Members' });
+      clickOpen(tab);
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+      await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+
+      const elsewhere = screen.getByRole('button', { name: 'Elsewhere' });
+      act(() => elsewhere.focus());
       act(() => tab.focus());
 
       expect(document.activeElement).toBe(tab);
