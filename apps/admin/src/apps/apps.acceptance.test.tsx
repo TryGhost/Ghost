@@ -1551,6 +1551,67 @@ describe('Managing apps', () => {
     expect(new URL(readApi.requests[0].url).searchParams.get('include')).toBe('history');
   });
 
+  it('describes each change to access in its history entry, in the review screen’s words', async () => {
+    fakeDetails(
+      installation({
+        manifest: manifest({
+          access: [
+            { permission_key: 'post:browse', backend: true },
+            { permission_key: 'post:edit', backend: false },
+          ],
+        }),
+        history: [
+          entry('h4', 'changes_approved', '2026-10-04T10:00:00.000Z', {
+            changes: [
+              { kind: 'access', scope: 'post:edit', change: 'added', backend: false },
+              { kind: 'access', scope: 'product:browse', change: 'removed', backend: false },
+            ],
+          }),
+          entry('h3', 'suspended', '2026-10-03T10:00:00.000Z', {
+            changes: [
+              { kind: 'access', scope: 'post:edit', change: 'added', backend: false },
+              { kind: 'access', scope: 'product:browse', change: 'removed', backend: false },
+            ],
+          }),
+          // Replaced by the next update before anyone approved it.
+          entry('h2', 'suspended', '2026-10-02T10:00:00.000Z', {
+            changes: [{ kind: 'access', scope: 'tag:edit', change: 'added', backend: false }],
+          }),
+          {
+            ...installedOn('2026-10-01T10:00:00.000Z'),
+            changes: [{ kind: 'access', scope: 'post:browse', change: 'added', backend: true }],
+          },
+        ],
+      }),
+    );
+
+    await renderAdminApp(DETAILS_ROUTE, { labs });
+
+    await expect
+      .element(appsScreen.historyEntries().nth(0))
+      .toHaveTextContent(
+        /New access\s*Posts and pages\s*Edit, publish and email posts and pages, change who can read them and their authors, and create tags for them\.\s*No longer has\s*Tiers/,
+      );
+    // The approved suspension leaves its changes to the approval, so they show once.
+    await expect
+      .element(appsScreen.historyEntries().nth(1))
+      .toHaveTextContent(/^Updated, needs approval/);
+    await expect.element(appsScreen.historyEntries().nth(1)).not.toHaveTextContent('Asked for');
+    // The replaced one never took effect, so it keeps what it asked for.
+    await expect
+      .element(appsScreen.historyEntries().nth(2))
+      .toHaveTextContent(/^Updated, needs approval.*Asked for\s*Tags\s*Edit tags\./);
+    await expect
+      .element(appsScreen.historyEntries().nth(3))
+      .toHaveTextContent(
+        /New access\s*Posts and pages\s*List, search and read every post and page, drafts included\.\s*New for its backend, at any time/,
+      );
+    // The permissions list the backend's scopes apart, with their warning.
+    await expect
+      .element(appsScreen.backendAccess())
+      .toHaveTextContent('even when nobody has the app open');
+  });
+
   it('shows the app’s name large under the breadcrumb, with its badges and description, in Admin 7', async () => {
     // Admin 7's sidebar shows the site's member count and revenue.
     fakeAdminStats.memberCount();
