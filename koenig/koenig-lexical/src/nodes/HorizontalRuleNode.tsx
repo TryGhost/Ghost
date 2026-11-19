@@ -23,7 +23,7 @@ export class HorizontalRuleNode extends BaseHorizontalRuleNode {
 
     decorate() {
         return (
-            <KoenigCardWrapper className="inline-block" nodeKey={this.getKey()}>
+            <KoenigCardWrapper nodeKey={this.getKey()}>
                 <HorizontalRuleCard />
             </KoenigCardWrapper>
         );
@@ -34,6 +34,6 @@ export function $createHorizontalRuleNode() {
     return new HorizontalRuleNode();
 }
 
-export function $isHorizontalRuleNode(node) {
+export function $isHorizontalRuleNode(node: unknown): node is HorizontalRuleNode {
     return node instanceof HorizontalRuleNode;
 }

@@ -22,15 +22,20 @@ function useQuery() {
     return React.useMemo(() => new URLSearchParams(search), [search]);
 }
 
-function RestrictedContentDemo() {
-    let query = useQuery();
+function RestrictedContentDemo(_props: {paragraphs?: number}) {
+    const query = useQuery();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [sidebarView, setSidebarView] = useState('json');
     const [defaultContent] = useState(undefined);
-    const [editorAPI, setEditorAPI] = useState(null);
-    const titleRef = React.useRef(null);
-    const containerRef = React.useRef(null);
-    const paragraphs = query.get('paragraphs') || 1;
+    const [editorAPI, setEditorAPI] = useState<{
+        editorInstance: unknown;
+        insertParagraphAtBottom: () => void;
+        focusEditor: (options: {position: string}) => void;
+        [key: string]: unknown;
+    } | null>(null);
+    const titleRef = React.useRef<{focus: () => void} | null>(null);
+    const containerRef = React.useRef<HTMLDivElement>(null);
+    const paragraphs = Number(query.get('paragraphs')) || 1;
     const {snippets, createSnippet, deleteSnippet} = useSnippets();
 
     function openSidebar(view = 'json') {
@@ -45,13 +50,14 @@ function RestrictedContentDemo() {
         titleRef.current?.focus();
     }
 
-    function focusEditor(event) {
-        const clickedOnDecorator = (event.target.closest('[data-lexical-decorator]') !== null) || event.target.hasAttribute('data-lexical-decorator');
-        const clickedOnSlashMenu = (event.target.closest('[data-kg-slash-menu]') !== null) || event.target.hasAttribute('data-kg-slash-menu');
+    function focusEditor(event: React.MouseEvent<HTMLDivElement>) {
+        const target = event.target as HTMLElement;
+        const clickedOnDecorator = (target.closest('[data-lexical-decorator]') !== null) || target.hasAttribute('data-lexical-decorator');
+        const clickedOnSlashMenu = (target.closest('[data-kg-slash-menu]') !== null) || target.hasAttribute('data-kg-slash-menu');
 
         if (editorAPI && !clickedOnDecorator && !clickedOnSlashMenu) {
-            let editor = editorAPI.editorInstance;
-            let {bottom} = editor._rootElement.getBoundingClientRect();
+            const editor = editorAPI.editorInstance as {_rootElement: HTMLElement; getEditorState: () => {read: (fn: () => void) => void}};
+            const {bottom} = editor._rootElement.getBoundingClientRect();
 
             // if a mousedown and subsequent mouseup occurs below the editor
             // canvas, focus the editor and put the cursor at the end of the document
@@ -80,7 +86,9 @@ function RestrictedContentDemo() {
                 editorAPI.focusEditor({position: 'bottom'});
 
                 //scroll to the bottom of the container
-                containerRef.current.scrollTop = containerRef.current.scrollHeight;
+                if (containerRef.current) {
+                    containerRef.current.scrollTop = containerRef.current.scrollHeight;
+                }
             }
         }
     }
@@ -91,7 +99,7 @@ function RestrictedContentDemo() {
         >
             <KoenigComposer
                 cardConfig={{...cardConfig, snippets, createSnippet, deleteSnippet}}
-                fileUploader={{useFileUpload, fileTypes}}
+                fileUploader={{useFileUpload: useFileUpload(), fileTypes}}
                 initialEditorState={defaultContent}
             >
                 <div className="relative h-full grow">
@@ -99,7 +107,7 @@ function RestrictedContentDemo() {
                         <div className="mx-auto max-w-[740px] px-6 py-[15vmin] lg:px-0">
                             <KoenigComposableEditor
                                 cursorDidExitAtTop={focusTitle}
-                                registerAPI={setEditorAPI}
+                                registerAPI={setEditorAPI as (api: unknown) => void}
                             >
                                 <RestrictContentPlugin paragraphs={paragraphs} />
                             </KoenigComposableEditor>

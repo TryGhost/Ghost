@@ -32,8 +32,9 @@ import {AtLinkResultsPopup} from '../components/ui/AtLinkResultsPopup';
 import {isInternalUrl} from '../utils/isInternalUrl';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useSearchLinks} from '../hooks/useSearchLinks';
+import type {LexicalNode} from 'lexical';
 
-function $removeAtLink(node, {focus = false} = {}) {
+function $removeAtLink(node: unknown, {focus = false} = {}) {
     if (!$isAtLinkNode(node)) {
 
         console.warn('$removeAtLink called on a non-at-link node', node);
@@ -41,9 +42,12 @@ function $removeAtLink(node, {focus = false} = {}) {
     }
 
     const searchNode = node.getChildAtIndex(1);
+    if (!searchNode) {
+        return;
+    }
 
     const textNode = $createTextNode('@' + searchNode.getTextContent());
-    textNode.setFormat(node.getLinkFormat());
+    textNode.setFormat(node.getLinkFormat() ?? 0);
     node.replace(textNode);
 
     if (focus) {
@@ -53,14 +57,15 @@ function $removeAtLink(node, {focus = false} = {}) {
 
 function noResultOptions() {
     return [{
-        label: 'No results found'
+        label: 'No results found',
+        items: []
     }];
 }
 
 // Manages at-link search nodes and display of the search results panel when appropriate
-export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
+export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}: {searchLinks: (term?: string) => Promise<unknown>; siteUrl?: string}) => {
     const [editor] = useLexicalComposerContext();
-    const [focusedAtLinkNode, setFocusedAtLinkNode] = React.useState(null);
+    const [focusedAtLinkNode, setFocusedAtLinkNode] = React.useState<AtLinkNode | null>(null);
     const [query, setQuery] = React.useState('');
     const searchOptions = React.useMemo(() => ({noResultOptions}), []);
     const {isSearching, listOptions} = useSearchLinks(query, searchLinks, searchOptions);
@@ -74,7 +79,7 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
     React.useEffect(() => {
         const rootElement = editor.getRootElement();
 
-        const handleAtInsert = (event) => {
+        const handleAtInsert = (event: Event & {isComposing?: boolean; inputType?: string; data?: string | null}) => {
             if (event.isComposing) {
                 return;
             }
@@ -99,7 +104,7 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
                         return;
                     }
 
-                    let anchorOffset = anchor.offset;
+                    const anchorOffset = anchor.offset;
                     let textBeforeAnchor = anchorNode.getTextContent().slice(0, anchorOffset);
                     let textAfterAnchor = anchorNode.getTextContent().slice(anchorOffset);
 
@@ -133,13 +138,16 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
                         const selection = $getSelection();
 
                         // store current node's format so it can be re-applied to the eventual link node
+                        if (!$isRangeSelection(selection)) {
+                            return;
+                        }
                         const linkFormat = selection.anchor.getNode().getFormat();
 
                         // delete the '@' character
                         selection.deleteCharacter(true);
 
                         // prep the at-link node
-                        const atLinkNode = $createAtLinkNode();
+                        const atLinkNode = $createAtLinkNode(linkFormat ?? null);
                         atLinkNode.setLinkFormat(linkFormat);
                         const zwnjNode = $createZWNJNode();
                         atLinkNode.append(zwnjNode);
@@ -154,7 +162,7 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
 
                         const searchNode = atLinkNode.getChildAtIndex(1);
                         const rangeSelection = $getSelection();
-                        if ($isRangeSelection(rangeSelection)) {
+                        if ($isRangeSelection(rangeSelection) && searchNode) {
                             rangeSelection.anchor.set(searchNode.getKey(), 0, 'element');
                             rangeSelection.focus.set(searchNode.getKey(), 0, 'element');
                         }
@@ -164,7 +172,7 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
         };
 
         // weirdly the 'input' event doesn't fire for the first character typed in a paragraph
-        const handleAtBeforeInput = (event) => {
+        const handleAtBeforeInput = (event: Event & {inputType?: string; data?: string | null}) => {
             if (event.inputType === 'insertText' && event.data === '@') {
                 editor.update(() => {
                     const selection = $getSelection();
@@ -175,6 +183,9 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
             }
         };
 
+        if (!rootElement) {
+            return;
+        }
         rootElement.addEventListener('input', handleAtInsert);
         rootElement.addEventListener('beforeinput', handleAtBeforeInput);
 
@@ -202,7 +213,7 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
                 // we don't have a normal selection so we don't have a cursor inside
                 // an at-link node, remove all of them
                 if (!$isRangeSelection(selection)) {
-                    atLinkNodes.forEach($removeAtLink);
+                    atLinkNodes.forEach((node: LexicalNode) => $removeAtLink(node));
                     setFocusedAtLinkNode(null);
                     setQuery('');
                     return;
@@ -212,13 +223,13 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
                 // handles cursor movement out of at-link nodes
                 if (selection.isCollapsed()) {
                     const anchorNode = selection.anchor.getNode();
-                    let selectedAtLinkNode;
+                    let selectedAtLinkNode: AtLinkNode | null = null;
 
                     if ($isAtLinkNode(anchorNode)) {
                         selectedAtLinkNode = anchorNode;
                     }
                     if ($isAtLinkNode(anchorNode.getParent())) {
-                        selectedAtLinkNode = anchorNode.getParent();
+                        selectedAtLinkNode = anchorNode.getParent() as AtLinkNode;
                     }
 
                     atLinkNodes.forEach((atLinkNode) => {
@@ -235,14 +246,14 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
                         const searchNode = selectedAtLinkNode.getChildAtIndex(1);
                         const searchNodeText = searchNode?.getTextContent?.();
 
-                        setQuery(searchNodeText);
+                        setQuery(searchNodeText ?? '');
 
                         // normalize selection to be inside the search node when on zwnj
                         // - handles case where text is backspaced to empty
-                        if ($isZWNJNode(selection.focus.getNode()) && window.getSelection().anchorOffset === 0) {
+                        if ($isZWNJNode(selection.focus.getNode()) && window.getSelection()?.anchorOffset === 0) {
                             selectedAtLinkNode.select(1, 1);
                             const rangeSelection = $getSelection();
-                            if ($isRangeSelection(rangeSelection)) {
+                            if ($isRangeSelection(rangeSelection) && searchNode) {
                                 rangeSelection.anchor.set(searchNode.getKey(), 0, 'element');
                                 rangeSelection.focus.set(searchNode.getKey(), 0, 'element');
                             }
@@ -335,21 +346,21 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
             // prevent paste in the search node triggering external paste handlers
             editor.registerCommand(
                 PASTE_COMMAND,
-                (clipboardEvent) => {
+                (clipboardEvent: ClipboardEvent) => {
                     const selection = $getSelection();
 
-                    if (!selection || document.activeElement !== editor.getRootElement()) {
+                    if (!selection || !$isRangeSelection(selection) || document.activeElement !== editor.getRootElement()) {
                         return false;
                     }
 
                     const anchorNode = selection.anchor.getNode();
-                    if ($isRangeSelection(selection) && ($isAtLinkNode(anchorNode) || $isAtLinkSearchNode(anchorNode))) {
+                    if ($isAtLinkNode(anchorNode) || $isAtLinkSearchNode(anchorNode)) {
                         clipboardEvent.preventDefault();
 
-                        const atLinkSearchNode = $isAtLinkSearchNode(anchorNode) ? anchorNode : anchorNode.getChildAtIndex(1);
-                        const text = clipboardEvent.clipboardData.getData('text/plain');
+                        const atLinkSearchNode = $isAtLinkSearchNode(anchorNode) ? anchorNode : (anchorNode as AtLinkNode).getChildAtIndex(1);
+                        const text = clipboardEvent.clipboardData?.getData('text/plain');
 
-                        if (text) {
+                        if (text && atLinkSearchNode && $isAtLinkSearchNode(atLinkSearchNode)) {
                             atLinkSearchNode.setTextContent(atLinkSearchNode.getTextContent() + text);
                             atLinkSearchNode.selectEnd();
                         }
@@ -379,7 +390,7 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
             }
 
             // we only want one search node, remove or replace any non-search nodes
-            atLinkNode.getChildren().forEach((child, index) => {
+            atLinkNode.getChildren().forEach((child: LexicalNode, index: number) => {
                 if (index > 0 && !$isAtLinkSearchNode(child)) {
                     const text = child.getTextContent?.();
 
@@ -394,39 +405,49 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
 
             // consolidate multiple search nodes from previous step into single node
             const searchNode = atLinkNode.getChildAtIndex(1);
+            if (!searchNode) {
+                return;
+            }
             const currentText = searchNode.getTextContent();
             let consolidatedText = currentText;
-            atLinkNode.getChildren().forEach((child, index) => {
+            atLinkNode.getChildren().forEach((child: LexicalNode, index: number) => {
                 if (index > 1) {
                     consolidatedText += child.getTextContent();
                     child.remove();
                 }
             });
-            if (consolidatedText !== currentText) {
+            if (consolidatedText !== currentText && $isAtLinkSearchNode(searchNode)) {
                 searchNode.setTextContent(consolidatedText);
             }
         });
     }, [editor]);
 
     // when a search result is selected, replace the at-link node with a link node
-    const onItemSelect = React.useCallback((item) => {
+    const onItemSelect = React.useCallback((rawItem: unknown) => {
+        const item = rawItem as {value?: string; label?: string; type?: string};
         editor.update(() => {
-            if (!item?.value) {
+            if (!item?.value || !focusedAtLinkNode) {
                 $removeAtLink(focusedAtLinkNode, {focus: true});
                 return;
             }
 
             const parent = focusedAtLinkNode.getParent();
+            if (!parent) {
+                return;
+            }
             // we have to get the children nodes
             const children = parent.getChildren();
 
-            let isTextLink = (children.length !== 1 || !$isAtLinkNode(children[0]));
+            const isTextLink = (children.length !== 1 || !$isAtLinkNode(children[0]));
 
             if (isTextLink) {
-                const linkNode = $createLinkNode(item.value);
-                const textNode = $createTextNode(item.label);
+                const linkNode = $createLinkNode(item.value!);
+                const textNode = $createTextNode(item.label ?? '');
+                // getLinkFormat() is a TextNode format bitmask captured from the
+                // text the at-link was created in, so apply it to the text node
+                // (an element's setFormat expects an alignment string, not a bitmask)
+                textNode.setFormat(focusedAtLinkNode.getLinkFormat() ?? 0);
                 linkNode.append(textNode);
-                linkNode.setFormat(focusedAtLinkNode.getLinkFormat());
 
                 focusedAtLinkNode.replace(linkNode);
                 linkNode.selectEnd();
@@ -445,7 +466,7 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
             if (item.type === 'internal' || item.type === 'default') {
                 trackEvent('Link dropdown: Internal link chosen', {context: 'at-link', fromLatest: item.type === 'default', isBookmark: !isTextLink});
             } else {
-                let linkTarget = isInternalUrl(item.value, siteUrl) ? 'internal' : 'external';
+                const linkTarget = isInternalUrl(item.value ?? '', siteUrl ?? '') ? 'internal' : 'external';
                 trackEvent('Link dropdown: URL entered', {context: 'at-link', target: linkTarget, isBookmark: !isTextLink});
             }
         });
@@ -487,7 +508,7 @@ export const AtLinkPlugin = () => {
         return null;
     }
 
-    return <KoenigAtLinkPlugin searchLinks={cardConfig.searchLinks} siteUrl={cardConfig.siteUrl} />;
+    return <KoenigAtLinkPlugin searchLinks={cardConfig.searchLinks as (term?: string) => Promise<unknown>} siteUrl={cardConfig.siteUrl} />;
 };
 
 export default AtLinkPlugin;

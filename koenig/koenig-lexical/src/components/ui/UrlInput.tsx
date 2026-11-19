@@ -4,7 +4,12 @@ import {COMMAND_PRIORITY_LOW, KEY_ENTER_COMMAND} from 'lexical';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-function UrlInputPlugin({value, onEnter}) {
+interface UrlInputPluginProps {
+    value?: string;
+    onEnter: (event: KeyboardEvent | React.KeyboardEvent) => void;
+}
+
+function UrlInputPlugin({value, onEnter}: UrlInputPluginProps) {
     const [editor] = useLexicalComposerContext();
 
     React.useEffect(
@@ -13,7 +18,9 @@ function UrlInputPlugin({value, onEnter}) {
                 editor.registerCommand(
                     KEY_ENTER_COMMAND,
                     (event) => {
-                        onEnter(event);
+                        if (event) {
+                            onEnter(event);
+                        }
                         return false;
                     },
                     COMMAND_PRIORITY_LOW
@@ -22,13 +29,28 @@ function UrlInputPlugin({value, onEnter}) {
         },
         [editor, onEnter, value]
     );
+
+    return null;
 }
 
-export function UrlInput({dataTestId, value, placeholder, handleUrlChange, handleUrlSubmit, hasError, handlePasteAsLink, handleRetry, handleClose, isLoading}) {
+export interface UrlInputProps {
+    dataTestId?: string;
+    value?: string;
+    placeholder?: string;
+    handleUrlChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleUrlSubmit: (e: KeyboardEvent | React.KeyboardEvent) => void;
+    hasError?: boolean;
+    handlePasteAsLink?: (value?: string) => void;
+    handleRetry?: () => void;
+    handleClose?: () => void;
+    isLoading?: boolean;
+}
+
+export function UrlInput({dataTestId, value, placeholder, handleUrlChange, handleUrlSubmit, hasError, handlePasteAsLink, handleRetry, handleClose, isLoading}: UrlInputProps) {
     React.useEffect(() => {
-        const handleKeyDown = (e) => {
+        const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
-                handleClose();
+                handleClose?.();
             }
         };
         window.addEventListener('keydown', handleKeyDown);
@@ -50,7 +72,7 @@ export function UrlInput({dataTestId, value, placeholder, handleUrlChange, handl
                 <div>
                     <span className="mr-3" data-testid={`${dataTestId}-error-message`}>Oops, that link didn&apos;t work.</span>
                     <button className="mr-3 cursor-pointer" data-testid={`${dataTestId}-error-retry`} type="button"><span className="font-semibold underline" onClick={handleRetry}>Retry</span></button>
-                    <button className="mr-3 cursor-pointer" data-testid={`${dataTestId}-error-pasteAsLink`} type="button"><span className="font-semibold underline" onClick={() => handlePasteAsLink(value)}>Paste URL as link</span></button>
+                    <button className="mr-3 cursor-pointer" data-testid={`${dataTestId}-error-pasteAsLink`} type="button"><span className="font-semibold underline" onClick={() => handlePasteAsLink?.(value)}>Paste URL as link</span></button>
                 </div>
                 <button className="cursor-pointer p-1" data-testid={`${dataTestId}-error-close`} type="button" onClick={handleClose}>
                     <CloseIcon className="size-4 stroke-2 text-grey-400"/>

@@ -11,10 +11,10 @@ describe('native selection boundaries', () => {
         const editor = document.createElement('div');
         editor.setAttribute('data-lexical-editor', 'true');
         editor.innerHTML = '<p><strong>Text</strong></p>';
-        expect(getTopLevelNativeElement(editor.querySelector('strong').firstChild)).toBe(editor.firstChild);
+        expect(getTopLevelNativeElement(editor.querySelector('strong')!.firstChild)).toBe(editor.firstChild);
     });
 
-    it.each([null, {rangeCount: 0}])('does not measure a missing range', (selection) => {
+    it.each([null, {rangeCount: 0} as Selection])('does not measure a missing range', (selection) => {
         expect($isAtTopOfNode(selection)).toBe(false);
     });
 
@@ -23,7 +23,7 @@ describe('native selection boundaries', () => {
             rangeCount: 1,
             anchorNode: document.createTextNode('detached'),
             getRangeAt: () => ({cloneRange: () => ({getClientRects: () => [{top: 0}]})})
-        };
+        } as unknown as Selection;
         expect($isAtTopOfNode(selection)).toBe(false);
     });
 
@@ -34,9 +34,9 @@ describe('native selection boundaries', () => {
         vi.spyOn(editor.firstChild as Element, 'getBoundingClientRect').mockReturnValue({top: 20} as DOMRect);
         const selection = {
             rangeCount: 1,
-            anchorNode: editor.firstChild.firstChild,
+            anchorNode: editor.firstChild!.firstChild,
             getRangeAt: () => ({cloneRange: () => ({getClientRects: () => [{top: 25}]})})
-        };
+        } as unknown as Selection;
         expect($isAtTopOfNode(selection, 10)).toBe(true);
         expect($isAtTopOfNode(selection, 2)).toBe(false);
     });

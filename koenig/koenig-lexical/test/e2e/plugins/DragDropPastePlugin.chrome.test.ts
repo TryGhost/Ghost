@@ -2,12 +2,13 @@ import path from 'path';
 import {assertHTML, createDataTransfer, focusEditor, html, initialize} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
+import type {Page} from '@playwright/test';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Runs in Google Chrome: Playwright's Chromium lacks the H.264 codec needed to read video.mp4
 test.describe('Drag Drop Paste Plugin video', async function () {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();

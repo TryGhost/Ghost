@@ -3,8 +3,10 @@ import {$createCodeBlockNode, CodeBlockNode} from '@tryghost/kg-default-nodes';
 import {$createNodeSelection, $createParagraphNode, $createRangeSelection, $createTextNode, $getRoot, $getSelection, $setSelection, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND, KEY_ARROW_UP_COMMAND, KEY_ENTER_COMMAND, KEY_TAB_COMMAND, createEditor} from 'lexical';
 import {act, cleanup, render} from '@testing-library/react';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import type {BaseSelection, ElementNode, LexicalCommand, LexicalEditor, ParagraphNode} from 'lexical';
+import type {Mock} from 'vitest';
 
-const context = vi.hoisted(() => ({editor: null}));
+const context = vi.hoisted(() => ({editor: null as LexicalEditor | null}));
 vi.mock('@lexical/react/LexicalComposerContext', () => ({useLexicalComposerContext: () => [context.editor]}));
 vi.mock('../../src/context/KoenigSelectedCardContext', () => ({
     useKoenigSelectedCardContext: () => ({
@@ -16,9 +18,9 @@ vi.mock('../../src/context/KoenigSelectedCardContext', () => ({
 }));
 
 describe('KoenigBehaviourPlugin missing selections', () => {
-    let editor;
-    let rootElement;
-    let onError;
+    let editor: LexicalEditor;
+    let rootElement: HTMLDivElement;
+    let onError: Mock;
 
     beforeEach(() => {
         onError = vi.fn();
@@ -38,8 +40,8 @@ describe('KoenigBehaviourPlugin missing selections', () => {
         vi.restoreAllMocks();
     });
 
-    function dispatch(command, selection, payload = new KeyboardEvent('keydown')) {
-        let handled;
+    function dispatch(command: LexicalCommand<unknown>, selection: () => BaseSelection | null, payload: unknown = new KeyboardEvent('keydown')) {
+        let handled: boolean | undefined;
         act(() => {
             editor.update(() => {
                 $getRoot().append($createParagraphNode().append($createTextNode('Text')));
@@ -66,7 +68,7 @@ describe('KoenigBehaviourPlugin missing selections', () => {
     ])('lets Shift+Arrow%s fall through when focus is on the root', (_name, command) => {
         dispatch(command, () => {
             const selection = $createRangeSelection();
-            selection.anchor.set($getRoot().getFirstChild().getKey(), 0, 'element');
+            selection.anchor.set($getRoot().getFirstChildOrThrow().getKey(), 0, 'element');
             selection.focus.set('root', 1, 'element');
             return selection;
         }, new KeyboardEvent('keydown', {shiftKey: true}));
@@ -103,10 +105,10 @@ describe('KoenigBehaviourPlugin missing selections', () => {
     });
 
     it('lets ArrowDown fall through when the native selection has no range', () => {
-        window.getSelection().removeAllRanges();
+        window.getSelection()!.removeAllRanges();
         dispatch(KEY_ARROW_DOWN_COMMAND, () => {
             const selection = $createRangeSelection();
-            const key = $getRoot().getFirstChild().getFirstChild().getKey();
+            const key = $getRoot().getFirstChildOrThrow<ElementNode>().getFirstChildOrThrow().getKey();
             selection.anchor.set(key, 1, 'text');
             selection.focus.set(key, 1, 'text');
             return selection;
@@ -114,15 +116,15 @@ describe('KoenigBehaviourPlugin missing selections', () => {
     });
 
     it('selects the card below an empty paragraph when the native selection has no range', () => {
-        window.getSelection().removeAllRanges();
-        let handled;
+        window.getSelection()!.removeAllRanges();
+        let handled: boolean | undefined;
         act(() => {
             editor.update(() => {
                 const card = $createCodeBlockNode();
                 $getRoot().append($createParagraphNode(), card);
-                $getRoot().getFirstChild().select(0, 0);
+                $getRoot().getFirstChildOrThrow<ParagraphNode>().select(0, 0);
                 handled = editor.dispatchCommand(KEY_ARROW_DOWN_COMMAND, new KeyboardEvent('keydown'));
-                expect($getSelection().getNodes()).toEqual([card]);
+                expect($getSelection()!.getNodes()).toEqual([card]);
             }, {discrete: true});
         });
         expect(onError).not.toHaveBeenCalled();

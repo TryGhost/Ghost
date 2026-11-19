@@ -1,8 +1,9 @@
 import {ctrlOrCmd, focusEditor, initialize, insertCard, selectBackwards} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
 test.describe('Selection Word Count Plugin', async function () {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -46,7 +47,7 @@ test.describe('Selection Word Count Plugin', async function () {
         // Chrome for Testing occasionally drops the programmatic selection;
         // retry until the whitespace-only selection registers and gets counted
         await expect(async () => {
-            if (!(await page.evaluate(() => window.getSelection().isCollapsed))) {
+            if (!(await page.evaluate(() => window.getSelection()!.isCollapsed))) {
                 // a previous attempt selected; collapse back to just before "world"
                 await page.keyboard.press('ArrowRight');
             }

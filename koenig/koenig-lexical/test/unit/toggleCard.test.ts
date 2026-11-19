@@ -1,14 +1,15 @@
 import {$createToggleNode, ToggleNode} from '../../src/nodes/ToggleNode';
-const {createHeadlessEditor} = require('@lexical/headless');
+import {createHeadlessEditor} from '@lexical/headless';
+import type {Klass, LexicalEditor, LexicalNode} from 'lexical';
 
-const editorNodes = [ToggleNode];
+const editorNodes = [ToggleNode] as unknown as Klass<LexicalNode>[];
 
 describe('ToggleNode', function () {
-    let editor;
-    let dataset;
+    let editor: LexicalEditor;
+    let dataset: Record<string, unknown>;
 
-    const editorTest = testFn => function () {
-        let resolve, reject;
+    const editorTest = (testFn: () => void) => function () {
+        let resolve: (value?: unknown) => void, reject: (reason?: unknown) => void;
         const promise = new Promise((resolve_, reject_) => {
             resolve = resolve_;
             reject = reject_;
@@ -36,7 +37,7 @@ describe('ToggleNode', function () {
         };
     });
 
-    describe('Content load and export testing', function () {  
+    describe('Content load and export testing', function () {
         it('handles "normal" content', editorTest(function () {
             const toggleNode = $createToggleNode(dataset);
             const json = toggleNode.exportJSON();

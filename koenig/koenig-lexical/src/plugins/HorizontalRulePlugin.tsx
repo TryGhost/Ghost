@@ -6,7 +6,7 @@ import {
     $isRangeSelection,
     COMMAND_PRIORITY_EDITOR
 } from 'lexical';
-import {getSelectedNode} from '../utils/getSelectedNode.js';
+import {getSelectedNode} from '../utils/getSelectedNode';
 import {useEffect} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -62,7 +62,7 @@ export const HorizontalRulePlugin = () => {
                 }
 
                 const selection = $getSelection();
-                if (!$isRangeSelection(selection) || !selection.type === 'text' || !selection.isCollapsed()) {
+                if (!$isRangeSelection(selection) || !selection.isCollapsed()) {
                     return;
                 }
 
@@ -73,10 +73,13 @@ export const HorizontalRulePlugin = () => {
                 }
 
                 const nativeSelection = window.getSelection();
+                if (!nativeSelection) {
+                    return;
+                }
                 const anchorNode = nativeSelection.anchorNode;
                 const rootElement = editor.getRootElement();
 
-                if (anchorNode?.nodeType !== Node.TEXT_NODE || !rootElement.contains(anchorNode)) {
+                if (anchorNode?.nodeType !== Node.TEXT_NODE || !rootElement?.contains(anchorNode)) {
                     return;
                 }
 

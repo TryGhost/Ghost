@@ -5,19 +5,30 @@ import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {AudioCard} from '../components/ui/cards/AudioCard';
-import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
+import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {audioUploadHandler} from '../utils/audioUploadHandler';
 import {openFileSelection} from '../utils/openFileSelection';
 import {thumbnailUploadHandler} from '../utils/thumbnailUploadHandler';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import type {AudioNode} from './AudioNode';
 
-export function AudioNodeComponent({duration, initialFile, nodeKey, src, thumbnailSrc, title, triggerFileDialog}) {
+interface AudioNodeComponentProps {
+    duration: number;
+    initialFile: File | null;
+    nodeKey: string;
+    src: string;
+    thumbnailSrc: unknown;
+    title: string;
+    triggerFileDialog: boolean;
+}
+
+export function AudioNodeComponent({duration, initialFile, nodeKey, src, thumbnailSrc, title, triggerFileDialog}: AudioNodeComponentProps) {
     const [editor] = useLexicalComposerContext();
     const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
     const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
-    const audioFileInputRef = React.useRef();
-    const thumbnailFileInputRef = React.useRef();
+    const audioFileInputRef = React.useRef<HTMLInputElement>(null);
+    const thumbnailFileInputRef = React.useRef<HTMLInputElement>(null);
     const cardContext = React.useContext(CardContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
@@ -27,51 +38,55 @@ export function AudioNodeComponent({duration, initialFile, nodeKey, src, thumbna
     const thumbnailDragHandler = useFileDragAndDrop({handleDrop: handleThumbnailDrop, disabled: !isEditing});
 
     React.useEffect(() => {
-        const uploadInitialFile = async (file) => {
+        const uploadInitialFile = async (file: File) => {
             if (file && !src && !audioUploader.isLoading) {
                 await audioUploadHandler([file], nodeKey, editor, audioUploader.upload);
             }
         };
 
-        uploadInitialFile(initialFile);
+        uploadInitialFile(initialFile as File);
 
         // We only do this for init
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const onAudioFileChange = async (e) => {
+    const onAudioFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const fls = e.target.files;
-        return await audioUploadHandler(fls, nodeKey, editor, audioUploader.upload);
+        return await audioUploadHandler(Array.from(fls!), nodeKey, editor, audioUploader.upload);
     };
 
-    const onThumbnailFileChange = async (e) => {
+    const onThumbnailFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const fls = e.target.files;
-        return await thumbnailUploadHandler(fls, nodeKey, editor, thumbnailUploader.upload);
+        return await thumbnailUploadHandler(Array.from(fls!), nodeKey, editor, thumbnailUploader.upload as (files: File[], options?: {formData: {url: string}}) => Promise<{url: string}[]>);
     };
 
-    const setTitle = (newTitle) => {
+    const setTitle = (newTitle: string) => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.title = newTitle;
+            const node = $getNodeByKey(nodeKey) as AudioNode | null;
+            if (node) {
+                node.title = newTitle;
+            }
         });
     };
 
     const removeThumbnail = () => {
         editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.thumbnailSrc = '';
+            const node = $getNodeByKey(nodeKey) as AudioNode | null;
+            if (node) {
+                node.thumbnailSrc = '';
+            }
         });
     };
 
-    async function handleAudioDrop(files) {
-        await audioUploadHandler(files, nodeKey, editor, audioUploader.upload);
+    async function handleAudioDrop(files: FileList | File[]) {
+        await audioUploadHandler(Array.from(files), nodeKey, editor, audioUploader.upload);
     }
 
-    async function handleThumbnailDrop(files) {
-        await thumbnailUploadHandler(files, nodeKey, editor, thumbnailUploader.upload);
+    async function handleThumbnailDrop(files: FileList | File[]) {
+        await thumbnailUploadHandler(Array.from(files), nodeKey, editor, thumbnailUploader.upload as (files: File[], options?: {formData: {url: string}}) => Promise<{url: string}[]>);
     }
 
-    const handleToolbarEdit = (event) => {
+    const handleToolbarEdit = (event: React.MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
         setEditing(true);
@@ -91,7 +106,9 @@ export function AudioNodeComponent({duration, initialFile, nodeKey, src, thumbna
             // clear the property on the node so we don't accidentally trigger anything with a re-render
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
-                node.triggerFileDialog = false;
+                if (node) {
+                    (node as AudioNode).triggerFileDialog = false;
+                }
             });
         });
 
@@ -109,13 +126,12 @@ export function AudioNodeComponent({duration, initialFile, nodeKey, src, thumbna
                 audioUploader={audioUploader}
                 duration={duration}
                 isEditing={cardContext.isEditing}
-                nodeKey={nodeKey}
                 removeThumbnail={removeThumbnail}
                 src={src}
                 thumbnailDragHandler={thumbnailDragHandler}
                 thumbnailFileInputRef={thumbnailFileInputRef}
                 thumbnailMimeTypes={fileUploader.fileTypes.image?.mimeTypes}
-                thumbnailSrc={thumbnailSrc}
+                thumbnailSrc={thumbnailSrc as string | undefined}
                 thumbnailUploader={thumbnailUploader}
                 title={title}
                 updateTitle={setTitle}
@@ -131,7 +147,7 @@ export function AudioNodeComponent({duration, initialFile, nodeKey, src, thumbna
 
             <ActionToolbar
                 data-kg-card-toolbar="audio"
-                isVisible={src && isSelected && !isEditing && !showSnippetToolbar}
+                isVisible={!!src && isSelected && !isEditing && !showSnippetToolbar}
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />

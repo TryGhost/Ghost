@@ -10,7 +10,7 @@ const {countWords} = utils;
 
 // Reports the selection's word count: an integer (0 allowed) while a
 // non-collapsed range selection exists, null otherwise.
-export const SelectionWordCountPlugin = ({onChange} = {}) => {
+export const SelectionWordCountPlugin = ({onChange}: {onChange?: (count: number | null) => void} = {}) => {
     const [editor] = useLexicalComposerContext();
     const {onSelectionWordCountChangeRef, selectionWordCountsRef, lastEmittedSelectionWordCountRef} = React.useContext(KoenigComposerContext);
 
@@ -33,7 +33,7 @@ export const SelectionWordCountPlugin = ({onChange} = {}) => {
         const counts = selectionWordCountsRef.current;
 
         const emitCombined = () => {
-            let combined = null;
+            let combined: number | null = null;
 
             for (const count of counts.values()) {
                 if (count !== null) {
@@ -104,6 +104,8 @@ export const SelectionWordCountPlugin = ({onChange} = {}) => {
             }
         };
     }, [editor, onChange, onSelectionWordCountChangeRef, selectionWordCountsRef, lastEmittedSelectionWordCountRef]);
+
+    return null;
 };
 
 export default SelectionWordCountPlugin;

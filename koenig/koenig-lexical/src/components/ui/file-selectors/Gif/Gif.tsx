@@ -1,6 +1,28 @@
 import {useEffect, useRef} from 'react';
-export function Gif({gif, onClick, highlightedGif = {}}) {
-    const gifRef = useRef(null);
+
+export interface GifMediaFormat {
+    url: string;
+    dims: [number, number];
+    content_description?: string;
+}
+
+export interface GifData {
+    id: string;
+    index: number;
+    media_formats: {
+        tinygif: GifMediaFormat;
+        [key: string]: GifMediaFormat;
+    };
+}
+
+interface GifProps<T extends GifData = GifData> {
+    gif: T;
+    onClick: (gif: T) => void;
+    highlightedGif?: {id?: string};
+}
+
+export function Gif<T extends GifData = GifData>({gif, onClick, highlightedGif = {}}: GifProps<T>) {
+    const gifRef = useRef<HTMLButtonElement>(null);
     const media = gif.media_formats.tinygif;
 
     useEffect(() => {

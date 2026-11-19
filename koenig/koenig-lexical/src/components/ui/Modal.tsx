@@ -1,11 +1,12 @@
 import CloseIcon from '../../assets/icons/kg-close.svg?react';
 import Portal from './Portal';
-import PropTypes from 'prop-types';
 import React from 'react';
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-function shortcutKey(event) {
+type ModalKeyboardEvent = KeyboardEvent | React.KeyboardEvent;
+
+function shortcutKey(event: ModalKeyboardEvent): string | null {
     if (!event.metaKey && !event.ctrlKey) {
         return null;
     }
@@ -17,8 +18,8 @@ function shortcutKey(event) {
     return event.code?.startsWith('Key') ? event.code.slice(3).toLowerCase() : null;
 }
 
-function tabWithin(event, panel) {
-    const focusable = [...panel.querySelectorAll(FOCUSABLE)].filter(element => element.getClientRects().length > 0);
+function tabWithin(event: ModalKeyboardEvent, panel: HTMLElement) {
+    const focusable = [...panel.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(element => element.getClientRects().length > 0);
     if (!focusable.length) {
         event.preventDefault();
         return;
@@ -36,7 +37,7 @@ function tabWithin(event, panel) {
     }
 }
 
-function controlByKeys(event, panel, onClose) {
+function controlByKeys(event: ModalKeyboardEvent, panel: HTMLElement | null, onClose: () => void) {
     // Admin saves on Cmd/Ctrl+S; its other shortcuts (search, preview, publish) would open over the dialog
     if (shortcutKey(event) === 's') {
         return;
@@ -50,13 +51,20 @@ function controlByKeys(event, panel, onClose) {
         event.preventDefault();
         onClose();
     }
-    if (event.key === 'Tab') {
+    if (event.key === 'Tab' && panel) {
         tabWithin(event, panel);
     }
 }
 
-export function Modal({isOpen, onClose, labelledBy, children}) {
-    const panelRef = React.useRef(null);
+export interface ModalProps {
+    isOpen?: boolean;
+    onClose: () => void;
+    labelledBy?: string;
+    children?: React.ReactNode;
+}
+
+export function Modal({isOpen, onClose, labelledBy, children}: ModalProps) {
+    const panelRef = React.useRef<HTMLDivElement>(null);
     const onCloseRef = React.useRef(onClose);
 
     React.useLayoutEffect(() => {
@@ -74,7 +82,7 @@ export function Modal({isOpen, onClose, labelledBy, children}) {
         }
 
         // Focus drops to the page when a focused control is disabled or removed; its keys are still the dialog's
-        const onStrayKey = (event) => {
+        const onStrayKey = (event: KeyboardEvent) => {
             if (event.target === document.body) {
                 controlByKeys(event, panel, () => onCloseRef.current?.());
             }
@@ -93,7 +101,7 @@ export function Modal({isOpen, onClose, labelledBy, children}) {
         };
     }, [isOpen]);
 
-    const refuseDrop = (event) => {
+    const refuseDrop = (event: React.DragEvent) => {
         event.preventDefault();
         event.stopPropagation();
         if (event.dataTransfer) {
@@ -127,10 +135,3 @@ export function Modal({isOpen, onClose, labelledBy, children}) {
         </Portal>
     );
 }
-
-Modal.propTypes = {
-    isOpen: PropTypes.bool,
-    onClose: PropTypes.func,
-    labelledBy: PropTypes.string,
-    children: PropTypes.node
-};

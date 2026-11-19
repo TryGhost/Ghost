@@ -22,10 +22,10 @@ interface KoenigCardWrapperProps {
 const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, children}: KoenigCardWrapperProps) => {
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const [editor] = useLexicalComposerContext();
-    const [cardType, setCardType] = React.useState(null);
-    const [captionHasFocus, setCaptionHasFocus] = React.useState(null);
+    const [cardType, setCardType] = React.useState<string | null>(null);
+    const [captionHasFocus, setCaptionHasFocus] = React.useState<boolean | null>(null);
     const [cardWidth, setCardWidth] = React.useState<CardWidth>(width || 'regular');
-    const containerRef = React.useRef(null);
+    const containerRef = React.useRef<HTMLDivElement | null>(null);
     const skipClick = React.useRef(false);
 
     const {selectedCardKey, isEditingCard, isDragging} = useKoenigSelectedCardContext();
@@ -33,7 +33,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     const isSelected = selectedCardKey === nodeKey;
     const isEditing = isSelected && isEditingCard;
 
-    const handleVisibilityToggle = React.useCallback((event) => {
+    const handleVisibilityToggle = React.useCallback((event: React.MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
         editor.dispatchCommand(SHOW_CARD_VISIBILITY_SETTINGS_COMMAND, {cardKey: nodeKey});
@@ -42,7 +42,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     React.useLayoutEffect(() => {
         editor.getEditorState().read(() => {
             const cardNode = $getNodeByKey(nodeKey);
-            setCardType(cardNode.getType());
+            setCardType(cardNode?.getType() ?? null);
         });
 
         // We only do this for init
@@ -57,11 +57,12 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
             editor.registerCommand(
                 CLICK_COMMAND,
                 (event) => {
-                    if (!skipClick.current && containerRef.current.contains(event.target)) {
+                    const target = event.target as HTMLElement | null;
+                    if (!skipClick.current && containerRef.current?.contains(target)) {
                         const cardNode = $getNodeByKey(nodeKey);
                         const clickedDifferentEditor = !cardNode;
-                        const clickedToolbar = event.target.closest('[data-kg-allow-clickthrough="false"]');
-                        const clickedSettingsPanel = event.target.closest('[data-kg-settings-panel]');
+                        const clickedToolbar = target?.closest('[data-kg-allow-clickthrough="false"]');
+                        const clickedSettingsPanel = target?.closest('[data-kg-settings-panel]');
 
                         if (isSelected && ($isKoenigCard(cardNode) && cardNode.hasEditMode() && !isEditing && !clickedToolbar && !clickedSettingsPanel)) {
                             editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: !clickedDifferentEditor});
@@ -71,7 +72,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
 
                         if (clickedDifferentEditor) {
                             // click is in a different editor
-                            return;
+                            return false;
                         }
 
                         return true;
@@ -107,7 +108,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
         }
     }, [cardWidth, containerRef, width]);
 
-    const setEditing = (shouldEdit) => {
+    const setEditing = (shouldEdit: boolean) => {
         // convert nodeKey to int
         if (shouldEdit) {
             editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey});
@@ -119,7 +120,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     React.useEffect(() => {
         const container = containerRef.current;
 
-        function handleMousedown(event) {
+        function handleMousedown(event: MouseEvent) {
             if (!isSelected && !isEditing) {
                 editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey: nodeKey});
 
@@ -130,11 +131,12 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                 // can cause an underlying cursor position change but inputs and
                 // textareas are different and we want the focus to move to them
                 // immediately when clicked
-                const targetTagName = event.target.tagName;
+                const target = event.target as HTMLElement | null;
+                const targetTagName = target?.tagName;
                 const allowedTagNames = ['INPUT', 'TEXTAREA'];
-                const allowClickthrough = !!event.target.closest('[data-kg-allow-clickthrough]');
+                const allowClickthrough = !!target?.closest('[data-kg-allow-clickthrough]');
 
-                if (!allowedTagNames.includes(targetTagName) && !allowClickthrough) {
+                if (!allowedTagNames.includes(targetTagName || '') && !allowClickthrough) {
                     event.preventDefault();
                 }
             }

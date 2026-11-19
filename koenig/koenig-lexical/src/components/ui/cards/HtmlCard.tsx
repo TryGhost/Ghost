@@ -1,9 +1,15 @@
 import '@tryghost/kg-simplemde/dist/simplemde.min.css';
 import HtmlEditor from './HtmlCard/HtmlEditor';
-import PropTypes from 'prop-types';
 import {sanitizeHtml} from '../../../utils/sanitize-html';
 
-export function HtmlCard({html, updateHtml, isEditing, darkMode}) {
+interface HtmlCardProps {
+    html?: string;
+    updateHtml?: (html: string) => void;
+    isEditing?: boolean;
+    darkMode?: boolean;
+}
+
+export function HtmlCard({html, updateHtml, isEditing, darkMode}: HtmlCardProps) {
     return (
         <>
             {isEditing
@@ -25,19 +31,8 @@ export function HtmlCard({html, updateHtml, isEditing, darkMode}) {
     );
 }
 
-function HtmlDisplay({html}) {
-    const sanitizedHtml = sanitizeHtml(html, {replaceJS: true});
+function HtmlDisplay({html}: {html?: string}) {
+    const sanitizedHtml = sanitizeHtml(html || '', {replaceJS: true});
 
     return <div dangerouslySetInnerHTML={{__html: sanitizedHtml}} className="min-h-[3.5vh] whitespace-normal"></div>;
 }
-
-HtmlDisplay.propTypes = {
-    html: PropTypes.string
-};
-
-HtmlCard.propTypes = {
-    html: PropTypes.string,
-    updateHtml: PropTypes.func,
-    isEditing: PropTypes.bool,
-    darkMode: PropTypes.bool
-};

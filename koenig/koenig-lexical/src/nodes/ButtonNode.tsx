@@ -1,10 +1,10 @@
 import ButtonCardIcon from '../assets/icons/kg-card-type-button.svg?react';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
-import {ButtonNode as BaseButtonNode} from '@tryghost/kg-default-nodes';
+import {ButtonNode as BaseButtonNode, type ButtonData} from '@tryghost/kg-default-nodes';
 import {ButtonNodeComponent} from './ButtonNodeComponent';
 import {createCommand} from 'lexical';
 
-export const INSERT_BUTTON_COMMAND = createCommand();
+export const INSERT_BUTTON_COMMAND = createCommand<ButtonData>();
 
 export class ButtonNode extends BaseButtonNode {
     static kgMenu = {
@@ -42,10 +42,10 @@ export class ButtonNode extends BaseButtonNode {
     }
 }
 
-export function $createButtonNode(dataset) {
+export function $createButtonNode(dataset: ButtonData) {
     return new ButtonNode(dataset);
 }
 
-export function $isButtonNode(node) {
+export function $isButtonNode(node: unknown): node is ButtonNode {
     return node instanceof ButtonNode;
 }

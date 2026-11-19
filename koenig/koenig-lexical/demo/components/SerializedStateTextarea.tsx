@@ -6,7 +6,7 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 const Highlight = ReactHighlight.default || ReactHighlight;
 
-const SerializedStateTextarea = ({isOpen}) => {
+const SerializedStateTextarea = ({isOpen}: {isOpen: boolean}) => {
     const [editor] = useLexicalComposerContext();
 
     const renderEditorState = () => JSON.stringify(editor.getEditorState().toJSON(), null, 2);

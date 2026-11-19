@@ -1,22 +1,27 @@
 import KoenigComposerContext from '../../context/KoenigComposerContext';
-import PropTypes from 'prop-types';
 import React from 'react';
 import trackEvent from '../../utils/analytics';
 import {Input} from './Input';
 import {InputListGroup, InputListLoadingItem} from './InputList';
-import {KeyboardSelectionWithGroups} from './KeyboardSelectionWithGroups';
+import {KeyboardSelectionWithGroups, type GroupData} from './KeyboardSelectionWithGroups';
 import {LinkInputSearchItem} from './LinkInputSearchItem';
 import {useSearchLinks} from '../../hooks/useSearchLinks';
 
-export function LinkInputWithSearch({href, update, cancel}) {
+export interface LinkInputWithSearchProps {
+    href?: string;
+    update: (href: string, type?: string) => void;
+    cancel: () => void;
+}
+
+export function LinkInputWithSearch({href, update, cancel}: LinkInputWithSearchProps) {
     const {cardConfig: {searchLinks}} = React.useContext(KoenigComposerContext);
 
     // store the href/query in state so we can update it without affecting the saved editor value
     const [_href, setHref] = React.useState(href);
-    const {isSearching, listOptions} = useSearchLinks(_href, searchLinks);
+    const {isSearching, listOptions} = useSearchLinks(_href || '', searchLinks as (term?: string) => Promise<unknown>);
 
     // add refs for input and container
-    const containerRef = React.useRef(null);
+    const containerRef = React.useRef<HTMLDivElement>(null);
 
     const testId = 'link-input';
 
@@ -32,13 +37,13 @@ export function LinkInputWithSearch({href, update, cancel}) {
 
     // close link input when clicking outside or pressing escape
     React.useEffect(() => {
-        const closeOnClickOutside = (event) => {
-            if (containerRef.current && !containerRef.current.contains(event.target)) {
+        const closeOnClickOutside = (event: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
                 cancel();
             }
         };
 
-        const onEscape = (event) => {
+        const onEscape = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 cancel();
             }
@@ -53,11 +58,14 @@ export function LinkInputWithSearch({href, update, cancel}) {
         };
     }, [cancel]);
 
-    const onItemSelected = (item) => {
+    const onItemSelected = (item: {value?: string | null; type?: string}) => {
+        if (!item.value) {
+            return;
+        }
         update(item.value, item.type);
     };
 
-    const getItem = (item, selected, onMouseOver, scrollIntoView) => {
+    const getItem = (item: {value: string | null; label: string; [key: string]: unknown}, selected: boolean, onMouseOver: () => void, scrollIntoView: boolean) => {
         return (
             <LinkInputSearchItem
                 key={item.value}
@@ -66,13 +74,13 @@ export function LinkInputWithSearch({href, update, cancel}) {
                 item={item}
                 scrollIntoView={scrollIntoView}
                 selected={selected}
-                onClick={onItemSelected}
+                onClick={selectedItem => onItemSelected(selectedItem)}
                 onMouseOver={onMouseOver}
             />
         );
     };
 
-    const getGroup = (group, {showSpinner} = {}) => {
+    const getGroup = (group: GroupData, {showSpinner}: {showSpinner?: boolean} = {}) => {
         return (
             <InputListGroup dataTestId={testId} group={group} showSpinner={showSpinner} />
         );
@@ -90,16 +98,16 @@ export function LinkInputWithSearch({href, update, cancel}) {
                 placeholder="Search or enter URL to link"
                 value={_href}
                 data-kg-link-input
-                onChange={(e) => {
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     // update local value to allow searching
                     setHref(e.target.value);
                 }}
-                onKeyDown={(e) => {
+                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                     if (e.key === 'Enter') {
                         // prevent Enter from triggering in the editor and removing text
                         // update the link value in the editor
                         e.preventDefault();
-                        update(_href);
+                        update(_href || '');
                         return;
                     }
                 }}
@@ -121,7 +129,3 @@ export function LinkInputWithSearch({href, update, cancel}) {
         </div>
     );
 }
-
-LinkInputWithSearch.propTypes = {
-    href: PropTypes.string
-};

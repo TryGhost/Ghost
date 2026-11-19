@@ -1,14 +1,15 @@
 import {$createHeaderNode, HeaderNode} from '../../src/nodes/HeaderNode';
-const {createHeadlessEditor} = require('@lexical/headless');
+import {createHeadlessEditor} from '@lexical/headless';
+import type {Klass, LexicalEditor, LexicalNode} from 'lexical';
 
-const editorNodes = [HeaderNode];
+const editorNodes = [HeaderNode] as unknown as Klass<LexicalNode>[];
 
 describe('HeaderNode v2', function () {
-    let editor;
-    let dataset;
+    let editor: LexicalEditor;
+    let dataset: Record<string, unknown>;
 
-    const editorTest = testFn => function () {
-        let resolve, reject;
+    const editorTest = (testFn: () => void) => function () {
+        let resolve: (value?: unknown) => void, reject: (reason?: unknown) => void;
         const promise = new Promise((resolve_, reject_) => {
             resolve = resolve_;
             reject = reject_;
@@ -54,7 +55,7 @@ describe('HeaderNode v2', function () {
         };
     });
 
-    describe('Content load and export testing', function () {     
+    describe('Content load and export testing', function () {
         it('handles titles with extra br', editorTest(function () {
             dataset.header = '<span>Product title!</span> <br><span>Hello part 2</span>';
             const headerNode = $createHeaderNode(dataset);

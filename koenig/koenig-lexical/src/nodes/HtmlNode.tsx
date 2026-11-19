@@ -1,14 +1,16 @@
 import HtmlCardIcon from '../assets/icons/kg-card-type-html.svg?react';
 import HtmlIndicatorIcon from '../assets/icons/kg-indicator-html.svg?react';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
-import {HtmlNode as BaseHtmlNode} from '@tryghost/kg-default-nodes';
+import {HtmlNode as BaseHtmlNode, type HtmlData} from '@tryghost/kg-default-nodes';
 import {HtmlNodeComponent} from './HtmlNodeComponent';
 import {createCommand} from 'lexical';
+import type {CardMenuItem} from '../utils/buildCardMenu';
+import type {LexicalCommand} from 'lexical';
 
-export const INSERT_HTML_COMMAND = createCommand();
+export const INSERT_HTML_COMMAND: LexicalCommand<HtmlData> = createCommand();
 
 export class HtmlNode extends BaseHtmlNode {
-    static kgMenu = {
+    static kgMenu: CardMenuItem = {
         label: 'HTML',
         desc: 'Insert a HTML editor card',
         Icon: HtmlCardIcon,
@@ -22,7 +24,7 @@ export class HtmlNode extends BaseHtmlNode {
         return HtmlCardIcon;
     }
 
-    constructor(dataset = {}, key) {
+    constructor(dataset: HtmlData = {}, key?: string) {
         super(dataset, key);
     }
 
@@ -30,24 +32,22 @@ export class HtmlNode extends BaseHtmlNode {
         return (
             <KoenigCardWrapper
                 IndicatorIcon={HtmlIndicatorIcon}
-                isVisibilityActive={this.getIsVisibilityActive()}
                 nodeKey={this.getKey()}
                 wrapperStyle="wide"
             >
                 <HtmlNodeComponent
-                    html={this.__html}
+                    html={this.html}
                     nodeKey={this.getKey()}
-                    visibility={this.__visibility}
                 />
             </KoenigCardWrapper>
         );
     }
 }
 
-export function $createHtmlNode(dataset) {
+export function $createHtmlNode(dataset: HtmlData) {
     return new HtmlNode(dataset);
 }
 
-export function $isHtmlNode(node) {
+export function $isHtmlNode(node: unknown): node is HtmlNode {
     return node instanceof HtmlNode;
 }

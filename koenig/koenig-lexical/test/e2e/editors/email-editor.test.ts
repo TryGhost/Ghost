@@ -2,6 +2,7 @@ import path from 'path';
 import {assertHTML, focusEditor, getEditorState, html, initialize, insertCard, pasteText, selectBackwards} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
+import type {Page} from '@playwright/test';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,7 +43,7 @@ const smokeTestInsertions = [
     {shortcut: 'email-cta', menuItem: 'Email call to action', selector: '[data-kg-card="email-cta"]'}
 ];
 
-async function insertCardFromMenu(page, {shortcut, menuItem, selector}) {
+async function insertCardFromMenu(page: Page, {shortcut, menuItem, selector}: {shortcut: string; menuItem: string; selector: string}) {
     await focusEditor(page);
     await page.keyboard.type(`/${shortcut}`);
     await expect(page.locator(`[data-kg-card-menu-item="${menuItem}" i]`)).toBeVisible();
@@ -51,7 +52,7 @@ async function insertCardFromMenu(page, {shortcut, menuItem, selector}) {
 }
 
 test.describe('Koenig Editor with email template nodes', async function () {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -223,10 +224,10 @@ test.describe('Koenig Editor with email template nodes', async function () {
 
     test.describe('Serialization and deserialization', function () {
         test('restores mixed rich text and cards in a fresh email editor', async function () {
-            const text = (value, format = 0) => ({
+            const text = (value: string, format = 0) => ({
                 type: 'extended-text', version: 1, text: value, format, detail: 0, mode: 'normal', style: ''
             });
-            const element = (type, children, properties = {}) => ({
+            const element = (type: string, children: object[], properties: Record<string, unknown> = {}) => ({
                 type, version: 1, children, direction: 'ltr', format: '', indent: 0, ...properties
             });
             const children = [

@@ -1,8 +1,9 @@
 import {assertHTML, focusEditor, html, initialize, selectBackwards} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
 test.describe('Koening Editor with basic nodes', async function () {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();

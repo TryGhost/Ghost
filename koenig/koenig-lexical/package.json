@@ -16,8 +16,12 @@
     "dist/"
   ],
   "main": "./dist/koenig-lexical.js",
+  "types": "./dist/types/index.d.ts",
   "exports": {
-    ".": "./dist/koenig-lexical.js",
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/koenig-lexical.js"
+    },
     "./style.css": "./dist/style.css"
   },
   "scripts": {
@@ -26,12 +30,13 @@
     "dev:multiplayer": "concurrently \"vite\" \"pnpm multiplayer\"",
     "dev:test": "node test/test-server.ts",
     "multiplayer": "HOST=localhost PORT=1234 npx y-websocket-server",
-    "build": "vite build",
+    "build": "vite build && pnpm build:types",
+    "build:types": "tsc -p tsconfig.types.json",
     "build:demo": "vite build --config vite.config.demo.ts",
     "preview": "vite preview",
-    "pretest": "VITE_TEST=true pnpm build --config vite.config.demo.ts && pnpm build",
-    "test": "pnpm test:unit && pnpm test:acceptance",
-    "test:unit": "pnpm typecheck && vitest run",
+    "pretest": "VITE_TEST=true pnpm build:demo && pnpm build",
+    "test": "pnpm typecheck && pnpm test:unit && pnpm test:acceptance",
+    "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "test:acceptance": "NODE_ENV=test PLAYWRIGHT_FORCE_ASYNC_LOADER=1 NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' VITE_TEST=true playwright test",
     "test:acceptance:headed": "PLAYWRIGHT_HEADED=true pnpm test:acceptance",
@@ -44,7 +49,7 @@
     "lint": "pnpm run '/^lint:/'",
     "lint:css": "stylelint \"src/**/*.css\"",
     "lint:js": "eslint --cache demo src test",
-    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
     "storybook": "storybook dev -p 6006 -h 127.0.0.1",
     "build-storybook": "storybook build"
   },
@@ -90,6 +95,8 @@
     "@tryghost/kg-markdown-html-renderer": "workspace:~",
     "@tryghost/kg-simplemde": "workspace:~",
     "@tryghost/kg-unsplash-selector": "workspace:~",
+    "@types/jsdom": "catalog:",
+    "@types/lodash": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@typescript/native": "catalog:",
@@ -107,6 +114,7 @@
     "eslint-plugin-ghost": "catalog:",
     "eslint-plugin-react": "catalog:",
     "eslint-plugin-react-hooks": "catalog:",
+    "eslint-plugin-react-refresh": "catalog:",
     "eslint-plugin-storybook": "catalog:",
     "eslint-plugin-tailwindcss": "catalog:tailwind3",
     "eventemitter3": "5.0.4",

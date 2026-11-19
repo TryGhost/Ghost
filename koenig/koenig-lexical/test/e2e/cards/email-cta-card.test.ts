@@ -1,7 +1,8 @@
 import {assertHTML, createSnippet, focusEditor, html, initialize, isMac} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
-async function insertEmailCard(page) {
+async function insertEmailCard(page: Page) {
     await page.keyboard.type('/email-cta');
     await page.waitForSelector('[data-kg-card-menu-item="Email call to action"]');
     await page.click('[data-kg-card-menu-item="Email call to action"]');
@@ -10,7 +11,7 @@ async function insertEmailCard(page) {
 
 test.describe('Email card', async () => {
     const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();

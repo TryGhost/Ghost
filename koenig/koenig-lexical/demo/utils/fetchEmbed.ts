@@ -1,26 +1,25 @@
-export async function fetchEmbed(url, {type}) {
+export async function fetchEmbed(url: string, {type}: {type?: string} = {}) {
     console.log('fetchEmbed', {url, type});
-    let urlObject = new URL(url);
+    const urlObject = new URL(url);
     if (!urlObject) {
         throw new Error('No URL specified.');
     }
     await delay(process.env.NODE_ENV === 'test' ? 50 : 1500);
     // let html = await (await fetch(url)).text();
-    try {
-        if (type === 'bookmark') {
-            let returnData = {
-                url: 'https://www.ghost.org/',
-                metadata: {
-                    icon: 'https://www.ghost.org/favicon.ico',
-                    title: 'Ghost: The Creator Economy Platform',
-                    description: 'The former of the two songs addresses the issue of negative rumors in a relationship, while the latter, with a more upbeat pulse, is a classic club track; the single is highlighted by a hyped bridge.',
-                    publisher: 'Ghost - The Professional Publishing Platform',
-                    author: 'Author McAuthory',
-                    thumbnail: 'https://ghost.org/images/meta/ghost.png'
-                }
-            };
-            return returnData;
-        } else {
+    if (type === 'bookmark') {
+        const returnData = {
+            url: 'https://www.ghost.org/',
+            metadata: {
+                icon: 'https://www.ghost.org/favicon.ico',
+                title: 'Ghost: The Creator Economy Platform',
+                description: 'The former of the two songs addresses the issue of negative rumors in a relationship, while the latter, with a more upbeat pulse, is a classic club track; the single is highlighted by a hyped bridge.',
+                publisher: 'Ghost - The Professional Publishing Platform',
+                author: 'Author McAuthory',
+                thumbnail: 'https://ghost.org/images/meta/ghost.png'
+            }
+        };
+        return returnData;
+    } else {
             // let returnData = {
             //     url: 'https://twitter.com/Ghost/status/1630581157568839683',
             //     author_name: 'Ghost',
@@ -291,29 +290,26 @@ export async function fetchEmbed(url, {type}) {
             //         }
             //     }
             // };
-            let returnData = {
-                html: '<iframe width="200" height="113" src="https://www.youtube.com/embed/b52pBaObiY0?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" title="BOM at the Historic Rally Festival 2021" style="width: 100%; height: 418.1px; max-width: 100%;"></iframe>',
-                author_url: 'https://www.youtube.com/user/gorillaz',
-                provider_name: 'YouTube',
-                title: 'Gorillaz - Humility (Official Video)',
-                provider_url: 'https://www.youtube.com/',
-                author_name: 'Gorillaz',
-                version: '1.0',
-                thumbnail_url: 'https://i.ytimg.com/vi/E5yFcdPAGv0/hqdefault.jpg',
-                type: 'video'
-            };
-            // for tests, should convert url to link
-            if (url === 'https://ghost.org/should-convert-to-link') {
-                throw new Error();
-            }
-            return returnData;
+        const returnData = {
+            html: '<iframe width="200" height="113" src="https://www.youtube.com/embed/b52pBaObiY0?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" title="BOM at the Historic Rally Festival 2021" style="width: 100%; height: 418.1px; max-width: 100%;"></iframe>',
+            author_url: 'https://www.youtube.com/user/gorillaz',
+            provider_name: 'YouTube',
+            title: 'Gorillaz - Humility (Official Video)',
+            provider_url: 'https://www.youtube.com/',
+            author_name: 'Gorillaz',
+            version: '1.0',
+            thumbnail_url: 'https://i.ytimg.com/vi/E5yFcdPAGv0/hqdefault.jpg',
+            type: 'video'
+        };
+        // for tests, should convert url to link
+        if (url === 'https://ghost.org/should-convert-to-link') {
+            throw new Error();
         }
-    } catch (e) {
-        // console.log(e);
+        return returnData;
     }
 }
 
-function delay(time) {
+function delay(time: number) {
     return new Promise((resolve) => {
         setTimeout(resolve, time);
     });

@@ -17,7 +17,7 @@ export const AudioPlugin = () => {
         return mergeRegister(
             editor.registerCommand(
                 INSERT_AUDIO_COMMAND,
-                async (dataset) => {
+                (dataset) => {
                     const cardNode = $createAudioNode(dataset);
                     editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode});
 
@@ -27,7 +27,7 @@ export const AudioPlugin = () => {
             ),
             editor.registerCommand(
                 INSERT_MEDIA_COMMAND,
-                async (dataset) => {
+                (dataset) => {
                     if (dataset.type === 'audio') {
                         editor.dispatchCommand(INSERT_AUDIO_COMMAND, {initialFile: dataset.file});
                         return true;

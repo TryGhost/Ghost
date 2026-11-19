@@ -1,8 +1,9 @@
-import {assertHTML, focusEditor, html, initialize, isMac, pasteText} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, isMac, pasteHtml} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
 test.describe('Html Output Plugin', async function () {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -45,7 +46,7 @@ test.describe('Html Output Plugin', async function () {
         `);
 
         // paste link
-        await pasteText(page, '<a href="https://ghost.org/changelog/markdown/">ghost.org/changelog/markdown/</a>', 'text/html');
+        await pasteHtml(page, '<a href="https://ghost.org/changelog/markdown/">ghost.org/changelog/markdown/</a>');
 
         // check that link pasted successfully
         await assertHTML(page, html`

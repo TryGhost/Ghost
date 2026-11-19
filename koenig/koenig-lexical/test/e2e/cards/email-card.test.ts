@@ -1,17 +1,18 @@
 import {assertHTML, createSnippet, ctrlOrCmd, focusEditor, html, initialize} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
+import type {Page} from '@playwright/test';
 
-async function insertEmailCard(page) {
+async function insertEmailCard(page: Page) {
     await focusEditor(page);
-    
+
     await page.keyboard.type('/email');
-    
+
     try {
         await Promise.race([
             page.waitForSelector('[data-kg-cardmenu]', {timeout: 5000}),
             page.waitForSelector('[data-kg-card-menu-item="Email content"]', {timeout: 5000})
         ]);
-    } catch (e) {
+    } catch {
         await page.keyboard.press('Escape');
         await page.keyboard.type('/email');
         await page.waitForSelector('[data-kg-cardmenu]', {timeout: 5000});
@@ -23,7 +24,7 @@ async function insertEmailCard(page) {
 }
 
 test.describe('Email card', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();

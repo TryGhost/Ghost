@@ -2,12 +2,13 @@ import path from 'path';
 import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, insertCard, selectBackwards} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
+import type {Page} from '@playwright/test';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 test.describe('Floating format toolbar', async () => {
-    let page;
+    let page: Page;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -74,10 +75,10 @@ test.describe('Floating format toolbar', async () => {
     test.describe('positioning', function () {
         const TEXT = 'one two three four five six seven eight nine ten eleven twelve';
 
-        async function getTextRect(text) {
+        async function getTextRect(text: string) {
             return page.evaluate((searchText) => {
-                const textNode = document.querySelector('.koenig-lexical [data-lexical-text]').firstChild;
-                const start = textNode.textContent.indexOf(searchText);
+                const textNode = document.querySelector('.koenig-lexical [data-lexical-text]')!.firstChild!;
+                const start = textNode.textContent!.indexOf(searchText);
                 const range = document.createRange();
                 range.setStart(textNode, start);
                 range.setEnd(textNode, start + searchText.length);
@@ -90,8 +91,8 @@ test.describe('Floating format toolbar', async () => {
             await expect(page.locator('[data-kg-floating-toolbar]')).toHaveCSS('opacity', '1');
 
             const {selectionCenter, toolbarCenter} = await page.evaluate(() => {
-                const selectionRect = window.getSelection().getRangeAt(0).getBoundingClientRect();
-                const toolbarRect = document.querySelector('[data-kg-floating-toolbar]').getBoundingClientRect();
+                const selectionRect = window.getSelection()!.getRangeAt(0).getBoundingClientRect();
+                const toolbarRect = document.querySelector('[data-kg-floating-toolbar]')!.getBoundingClientRect();
                 return {
                     selectionCenter: selectionRect.left + selectionRect.width / 2,
                     toolbarCenter: toolbarRect.left + toolbarRect.width / 2
