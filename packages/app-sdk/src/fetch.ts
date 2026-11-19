@@ -29,8 +29,10 @@ function isJsonBody(value: unknown): value is JsonBody {
   if (prototype === Object.prototype || prototype === null) {
     return true;
   }
-  // Another realm's Object.prototype has its own identity, but still has no parent and
-  // owns the native Object constructor. Class and host prototypes do not meet both rules.
+  // ghost.fetch accepts plain objects even when an app's same-origin child iframe
+  // created them. Each iframe has its own Object.prototype, so identity alone would
+  // reject valid request data. Recognize that prototype by its null parent and its
+  // own native Object constructor.
   try {
     const constructor: unknown = Object.getOwnPropertyDescriptor(prototype, 'constructor')?.value;
     return (
@@ -39,7 +41,8 @@ function isJsonBody(value: unknown): value is JsonBody {
       Function.prototype.toString.call(constructor) === Function.prototype.toString.call(Object)
     );
   } catch {
-    // A Proxy may refuse inspection. Keep the refusal in the invalid_argument error path.
+    // A Proxy may refuse inspection. Reject the body with invalid_argument instead of
+    // leaking the Proxy's error to the caller.
     return false;
   }
 }

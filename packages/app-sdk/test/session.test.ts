@@ -213,7 +213,7 @@ describe('fetch', () => {
     expect(host.fetch).toHaveBeenCalledWith(expect.objectContaining({ body: '{"a":1}' }));
   });
 
-  it('sends a plain object created in a same-origin child frame as JSON', async () => {
+  it('sends request data created in a same-origin child iframe as JSON', async () => {
     const { ghost, host } = await started();
     const iframe = document.createElement('iframe');
     document.body.append(iframe);
@@ -237,7 +237,7 @@ describe('fetch', () => {
   });
 
   it.each(['constructor descriptor', 'prototype parent', 'revoked prototype'])(
-    'refuses a body with an unreadable %s without asking Admin',
+    'rejects with invalid_argument when the body has an unreadable %s',
     async (unreadable) => {
       const { ghost, host } = await started();
       const failure = new Error('Cannot inspect this prototype');
