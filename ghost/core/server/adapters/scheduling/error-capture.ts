@@ -53,7 +53,7 @@ function report(err: unknown, operation: 'schedule' | 'unschedule', job: Schedul
  * reported by Ghost rather than by each adapter. Should work the same
  * otherwise.
  */
-export class ErrorCapturingSchedulingAdapter implements SchedulingAdapter {
+class ErrorCapturingSchedulingAdapter implements SchedulingAdapter {
   readonly #adapter: SchedulingAdapter;
 
   constructor(adapter: SchedulingAdapter) {
