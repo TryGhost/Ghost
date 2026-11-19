@@ -148,9 +148,6 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
             return;
           }
           ({ memberIds } = event);
-          if (memberIds.length === 0) {
-            return;
-          }
           findFirstActionOptions = { eventName, labelId: event.labelId };
           break;
         default: {
@@ -159,6 +156,10 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
             message: `Unexpected automation event: ${_exhaustive}`,
           });
         }
+      }
+
+      if (memberIds.length === 0) {
+        return;
       }
 
       const didEnroll = await repository.withTransaction(async (trx) => {
