@@ -5,7 +5,7 @@ const tpl = require('@tryghost/tpl');
 const {
   ANNOUNCEMENT_BACKGROUND_VALUES,
   ANNOUNCEMENT_VISIBILITY_VALUES,
-} = require('../../../../../../shared/announcement.values');
+} = require('../../../../../data/schema/default-settings/announcement.values');
 
 const messages = {
   invalidEmailReceived: 'Please send a valid email',
