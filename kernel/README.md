@@ -14,6 +14,29 @@ must not import from the Ghost package, including `shared`.
 Helpers specific to a feature stay with that feature. Shared use alone does not
 make a helper part of the kernel.
 
+## No state, no reads
+
+A kernel module holds no state, reads no files, environment or time, runs
+nothing when it is imported and exports no instances. That is what lets any
+code import it. The kernel's [ESLint configuration](eslint.config.mjs) checks
+what a linter can:
+
+- The top level of a file holds imports, types, functions, classes and `const`
+  literals only: no `let`, no object, call or `new` at the top level, no
+  default-exported value, no static class members.
+- No Node built-in module is imported, no `require()` or `import()` is called,
+  and `process`, `globalThis`, `__dirname` and `fetch` are not used.
+- `@tryghost/logging` and `knex` are imported for their types only.
+- `Date.now()`, `new Date()` without an argument and `Temporal.Now` are not
+  used. A function that needs the time takes it as an argument.
+
+It cannot check the rest, which is for review:
+
+- A read made by a dependency, or through an alias (`const D = Date`).
+- The host's timezone and locale, which `Intl` reads when none is passed.
+- `Math.random()` and other sources of values that differ between calls.
+- State written onto something imported, or onto a function's own properties.
+
 ## Foundation types
 
 Code that needs configuration, a logger, the database, the event bus or the
