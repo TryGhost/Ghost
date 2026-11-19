@@ -1,8 +1,15 @@
 import { type Dispatch, type SetStateAction, useEffect, useState } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { dragByPointer, renderInApp } from '@test-utils/acceptance';
-import { SortableList } from '@tryghost/shade/components';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  Input,
+  SortableList,
+} from '@tryghost/shade/components';
 
 // dnd-kit works out keyboard moves from the rows' layout, so these run in Admin's browser
 // harness, where rows have real sizes.
@@ -71,6 +78,33 @@ function List({
         })
       }
     />
+  );
+}
+
+/** The list in an open Shade dialog, with a field that holds what's typed into it. */
+function ListInDialog({
+  control,
+  onOpenChange,
+}: {
+  control?: (setRows: Dispatch<SetStateAction<Row[]>>) => void;
+  onOpenChange?: (open: boolean) => void;
+}) {
+  const [open, setOpen] = useState(true);
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        onOpenChange?.(next);
+        setOpen(next);
+      }}
+    >
+      <DialogContent>
+        <DialogTitle>Newsletters</DialogTitle>
+        <DialogDescription>Put the newsletters in order.</DialogDescription>
+        <Input aria-label="Note" />
+        <List control={control} initial={evenRows} />
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -304,6 +338,60 @@ describe('SortableList keyboard reordering', () => {
     await userEvent.keyboard('{Escape}');
     await announced('Moving cancelled. Deep Dives stays at position 2 of 3.');
     await expect.poll(order).toEqual(['The Weekly', 'Deep Dives', 'Digest']);
+  });
+
+  describe('in a dialog', () => {
+    const dialog = () => page.getByRole('dialog', { name: 'Newsletters' });
+
+    it('cancels a move on Escape and keeps the dialog open, then closes it on the next Escape', async () => {
+      const onOpenChange = vi.fn();
+      await renderInApp(<ListInDialog onOpenChange={onOpenChange} />);
+      await dialog().getByLabelText('Note').fill('Draft note');
+
+      await pickUp('Deep Dives');
+      await userEvent.keyboard('{ArrowDown}');
+      await announced('Deep Dives moved to position 3 of 3.');
+      await userEvent.keyboard('{Escape}');
+      await announced('Moving cancelled. Deep Dives stays at position 2 of 3.');
+
+      // The dialog asks to close as Escape reaches it, before anything is announced.
+      expect(onOpenChange).not.toHaveBeenCalled();
+      await expect.poll(order).toEqual(['The Weekly', 'Deep Dives', 'Digest']);
+      await expect.element(dialog().getByLabelText('Note')).toHaveValue('Draft note');
+
+      await userEvent.keyboard('{Escape}');
+      await expect.poll(() => onOpenChange.mock.calls).toEqual([[false]]);
+      await expect.element(dialog()).not.toBeInTheDocument();
+    });
+
+    it('lets Escape close the dialog once a move is dropped', async () => {
+      await renderInApp(<ListInDialog />);
+
+      await move('The Weekly', ['ArrowDown'], [2]);
+      await expect.poll(order).toEqual(['Deep Dives', 'The Weekly', 'Digest']);
+
+      await userEvent.keyboard('{Escape}');
+      await expect.element(dialog()).not.toBeInTheDocument();
+    });
+
+    it('lets Escape close the dialog once the list has gone mid-move', async () => {
+      let setRows: Dispatch<SetStateAction<Row[]>> | undefined;
+      await renderInApp(
+        <ListInDialog
+          control={(set) => {
+            setRows = set;
+          }}
+        />,
+      );
+
+      await pickUp('Digest');
+      // With no rows left, the list renders nothing, and the move goes with it.
+      setRows?.([]);
+      await expect.poll(order).toEqual([]);
+
+      await userEvent.keyboard('{Escape}');
+      await expect.element(dialog()).not.toBeInTheDocument();
+    });
   });
 
   it('tells screen readers how to move a row with the arrow keys', async () => {
