@@ -12,6 +12,13 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from './command';
+import { Button } from './button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './dropdown-menu';
 import {
   Calculator,
   Calendar,
@@ -313,6 +320,49 @@ export const AsDialog: Story = {
                 <Settings className="mr-2 size-4" />
                 <span>Settings</span>
                 <CommandShortcut>⌘S</CommandShortcut>
+              </CommandItem>
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
+      </>
+    );
+  },
+};
+
+export const OpenedFromMenu: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A palette opened from a menu item. When it closes, the focus goes back to the menu trigger.',
+      },
+    },
+  },
+  render: () => {
+    const [open, setOpen] = React.useState(false);
+
+    return (
+      <>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">More actions</Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onSelect={() => setOpen(true)}>Search…</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <CommandDialog open={open} onOpenChange={setOpen}>
+          <CommandInput placeholder="Type a command or search..." />
+          <CommandList>
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup heading="Suggestions">
+              <CommandItem>
+                <Calendar className="mr-2 size-4" />
+                <span>Calendar</span>
+              </CommandItem>
+              <CommandItem>
+                <Calculator className="mr-2 size-4" />
+                <span>Calculator</span>
               </CommandItem>
             </CommandGroup>
           </CommandList>

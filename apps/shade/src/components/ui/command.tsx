@@ -2,7 +2,12 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  type DialogContentProps,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { type DialogProps } from '@radix-ui/react-dialog';
 import { Command as CommandPrimitive } from 'cmdk';
 import { Check, LucideIcon, Search } from 'lucide-react';
@@ -19,13 +24,71 @@ function Command({ className, ...props }: React.ComponentProps<typeof CommandPri
   );
 }
 
-type CommandDialogProps = DialogProps & { className?: string };
+type CommandDialogProps = Pick<DialogProps, 'open' | 'defaultOpen' | 'onOpenChange' | 'modal'> &
+  Omit<DialogContentProps, 'title'> & {
+    /** The dialog's name for screen readers. It isn't shown. */
+    title?: string;
+  };
 
-const CommandDialog = ({ children, className, ...props }: CommandDialogProps) => {
+// Where the focus goes back to when a CommandDialog closes: the element that had it when the dialog
+// opened. A menu item unmounts with its menu, so for an item it's the button that opened the menu,
+// which labels the menu. A submenu is labelled by an item of its parent menu, so this walks up.
+function returnFocusTarget(element: Element | null): HTMLElement | null {
+  let target = element;
+  for (let depth = 0; depth < 5 && target; depth++) {
+    const menuButtonId = target.closest('[role="menu"]')?.getAttribute('aria-labelledby');
+    const menuButton = menuButtonId ? target.ownerDocument.getElementById(menuButtonId) : null;
+    if (!menuButton || menuButton === target) {
+      break;
+    }
+    target = menuButton;
+  }
+  return target instanceof HTMLElement && target !== target.ownerDocument.body ? target : null;
+}
+
+const CommandDialog = ({
+  children,
+  className,
+  title = 'Command palette',
+  open,
+  defaultOpen,
+  onOpenChange,
+  modal,
+  onOpenAutoFocus,
+  onCloseAutoFocus,
+  ...props
+}: CommandDialogProps) => {
+  // There's never a DialogTrigger, so Radix would leave the focus on the page body.
+  const returnFocusRef = React.useRef<HTMLElement | null>(null);
+
   return (
-    <Dialog {...props}>
-      <DialogContent className={cn('overflow-hidden p-0 shadow-lg', className)}>
-        <DialogTitle className="hidden" />
+    <Dialog defaultOpen={defaultOpen} modal={modal} open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        // The palette has no description. Radix would point at one that isn't there.
+        aria-describedby={undefined}
+        className={cn('overflow-hidden p-0 shadow-lg', className)}
+        onCloseAutoFocus={(event) => {
+          onCloseAutoFocus?.(event);
+          if (event.defaultPrevented) {
+            return;
+          }
+          event.preventDefault();
+          const target = returnFocusRef.current;
+          returnFocusRef.current = null;
+          // Leave the focus alone if something else has taken it, or the element is gone.
+          const focusLost = !document.activeElement || document.activeElement === document.body;
+          if (focusLost && target?.isConnected) {
+            target.focus();
+          }
+        }}
+        onOpenAutoFocus={(event) => {
+          // This runs before the dialog moves the focus inside.
+          returnFocusRef.current = returnFocusTarget(document.activeElement);
+          onOpenAutoFocus?.(event);
+        }}
+        {...props}
+      >
+        <DialogTitle className="sr-only">{title}</DialogTitle>
         <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:size-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:size-5">
           {children}
         </Command>
