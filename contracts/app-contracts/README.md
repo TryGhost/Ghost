@@ -200,10 +200,13 @@ field added to the manifest later until it is listed as silent. That includes
 ```ts
 compareManifests(approved, next);
 // {
-//   changes: [{ path: 'surfaces[0].url', requiresApproval: true }],
+//   changes: [{ kind: 'field', path: 'surfaces[0].url', requires_approval: true }],
 //   requiresApproval: true,
 // }
 ```
+
+Each change has a `kind`, which is `field`, and its path. Ghost serves changes
+in this shape: `ManifestChangeSchema`, from `/manifest`, reads one back.
 
 ## Identity
 

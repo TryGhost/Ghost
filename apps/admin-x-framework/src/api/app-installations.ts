@@ -1,4 +1,4 @@
-import type { AppManifest } from '@tryghost/app-contracts';
+import type { AppManifest, ManifestChange } from '@tryghost/app-contracts';
 import { createMutation, createQuery, createQueryWithId } from '../utils/api/hooks';
 
 export type { AppManifest } from '@tryghost/app-contracts';
@@ -38,13 +38,6 @@ export interface AppInstallationHistoryEntry {
   moved_to?: string;
 }
 
-/** One field that differs from what was approved before. */
-export interface AppManifestChange {
-  /** A path in the manifest, such as `surfaces[0].url`, or `manifest_url` when the app moved. */
-  path: string;
-  requires_approval: boolean;
-}
-
 /** What a publisher reviews before installing an app, or before approving changes to one. */
 export interface AppInstallationPreview {
   manifest_url: string;
@@ -69,7 +62,11 @@ export interface AppInstallationPreview {
     manifest_url: string;
     manifest: AppManifest;
     icon_data_url: string | null;
-    changes: AppManifestChange[];
+    /**
+     * The fields that differ, by path, such as `surfaces[0].url`, or `manifest_url` when the
+     * app moved.
+     */
+    changes: ManifestChange[];
   } | null;
 }
 
