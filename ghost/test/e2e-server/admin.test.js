@@ -42,6 +42,7 @@ describe('Admin Routing', function () {
       await request
         .get('/ghost/assets/admin.js')
         .expect('Cache-Control', testUtils.cacheRules.yearImmutable)
+        .expect('Access-Control-Allow-Origin', '*')
         .expect(200)
         .expect(assertCorrectHeaders);
     });

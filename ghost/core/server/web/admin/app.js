@@ -34,6 +34,11 @@ module.exports = function setupAdminApp() {
       maxAge: config.get('caching:admin:maxAge') * 1000,
       immutable: true,
       fallthrough: false,
+      // Public and immutable. Among them are the public apps' bundles, when Ghost serves them
+      // itself (the e2e image does): a site page loads those with `crossorigin`.
+      setHeaders(res) {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+      },
     }),
   );
 

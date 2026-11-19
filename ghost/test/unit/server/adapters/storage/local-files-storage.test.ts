@@ -124,8 +124,13 @@ describe('Local Files Storage', function () {
         const otherJs = await writeFile('other.js', 'alert(1)');
         const otherCss = await writeFile('other.css', 'body {}');
 
-        await request(app).get(otherJs).expect(200).expect('Content-Type', 'text/plain');
-        await request(app).get(otherCss).expect(200).expect('Content-Type', 'text/plain');
+        const js = await request(app).get(otherJs).expect(200).expect('Content-Type', 'text/plain');
+        const css = await request(app)
+          .get(otherCss)
+          .expect(200)
+          .expect('Content-Type', 'text/plain');
+        assert(!('access-control-allow-origin' in js.headers));
+        assert(!('access-control-allow-origin' in css.headers));
       });
 
       it('keeps files inert when Pintura is loaded from another host', async function () {
@@ -261,7 +266,8 @@ describe('Local Files Storage', function () {
             .get(jsPath)
             .expect(200)
             .expect('Content-Type', /^text\/javascript/)
-            .expect('X-Content-Type-Options', 'nosniff');
+            .expect('X-Content-Type-Options', 'nosniff')
+            .expect('Access-Control-Allow-Origin', '*');
         });
       }
 
