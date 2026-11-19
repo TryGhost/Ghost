@@ -16,15 +16,42 @@ export type SubscriptionEventType =
   | 'customer.subscription.deleted';
 
 /**
+ * Why the webhook ignores a verified event:
+ *
+ * - `unhandled_type`: Ghost has no command for the event's type.
+ * - `listed_customer`: the event's customer is in the `stripeWebhookCustomerIgnoreList` config.
+ * - `payment_failed`: the asynchronous payment for a Checkout session failed.
+ * - `gift_not_paid`: a gift checkout completed, but Stripe hasn't received the payment yet. Ghost
+ *   completes the gift when the `checkout.session.async_payment_succeeded` event arrives.
+ * - `not_a_gift`: a delayed payment arrived for a Checkout session that isn't a gift. Only gifts
+ *   wait for their payment: Ghost records a donation, or starts a subscription, when the checkout
+ *   completes.
+ * - `not_a_ghost_checkout`: a Checkout session Ghost didn't create, such as a Stripe Payment Link
+ *   sale, which is neither a subscription, a card update, a gift nor a donation.
+ * - `conflicting_checkout_markers`: a Checkout session marked as both a gift and a donation.
+ */
+export type IgnoreReason =
+  | 'unhandled_type'
+  | 'listed_customer'
+  | 'payment_failed'
+  | 'gift_not_paid'
+  | 'not_a_gift'
+  | 'not_a_ghost_checkout'
+  | 'conflicting_checkout_markers';
+
+/**
  * The data for each webhook event kind. Each kind has exactly one command that handles it (see
- * `WebhookController`). A Stripe event type that Ghost has no command for is `unhandled`.
+ * `WebhookController`). An event Ghost doesn't act on is `ignored`, with the reason.
  */
 export interface WebhookEvents {
-  checkout_session: { type: CheckoutSessionEventType; session: StripeObject };
+  subscription_checkout: { session: StripeObject };
+  card_update_checkout: { session: StripeObject };
+  gift_checkout: { session: StripeObject };
+  donation_checkout: { session: StripeObject };
   subscription: { type: SubscriptionEventType; subscription: StripeObject };
   invoice: { invoice: StripeObject };
   refund: { charge: StripeObject };
-  unhandled: { type: string };
+  ignored: { reason: IgnoreReason };
 }
 
 export type WebhookEventKind = keyof WebhookEvents;
@@ -53,27 +80,81 @@ const WithObject = z
   .object({ data: z.object({ object: z.record(z.string(), z.unknown()) }).loose() })
   .loose();
 
+const isTrue = (value: unknown) => value === true || value === 'true';
+
+/**
+ * What decides which kind of checkout a Checkout session is: its mode, whether it's paid, and the
+ * markers Ghost puts in the metadata of the gift and donation sessions it creates. A gift is
+ * marked by `ghost_gift_id`, or by `ghost_gift` on older gift sessions, and a donation by
+ * `ghost_donation`. A session that has a `ghost_donation` key and a gift marker is
+ * marked as both, whatever the key's value.
+ */
+const CheckoutSession = z
+  .object({
+    mode: z.string().nullish(),
+    payment_status: z.string().nullish(),
+    metadata: z.record(z.string(), z.unknown()).nullish(),
+  })
+  .loose()
+  .transform(({ mode, payment_status: paymentStatus, metadata }) => {
+    const markers = metadata ?? {};
+    const gift = Object.hasOwn(markers, 'ghost_gift_id') || isTrue(markers.ghost_gift);
+    return {
+      mode,
+      paid: paymentStatus === 'paid',
+      gift,
+      donation: isTrue(markers.ghost_donation),
+      conflicting: gift && Object.hasOwn(markers, 'ghost_donation'),
+    };
+  });
+
+const ignored = (reason: IgnoreReason): WebhookEvent => ({ kind: 'ignored', reason });
+
+/**
+ * The webhook event for a Checkout session event. A completed session in `setup` mode saves a
+ * member's new card, and one in `subscription` mode is a paid signup or upgrade. A session in
+ * `payment` mode is a gift or a donation, by its markers. A gift paid with a method that settles
+ * later completes on `checkout.session.async_payment_succeeded`, so only a paid gift is completed.
+ */
+function checkoutEvent(type: CheckoutSessionEventType, session: StripeObject): WebhookEvent {
+  if (type === 'checkout.session.async_payment_failed') {
+    return ignored('payment_failed');
+  }
+  const { mode, paid, gift, donation, conflicting } = CheckoutSession.parse(session);
+  if (type === 'checkout.session.async_payment_succeeded') {
+    if (mode !== 'payment' || !gift) {
+      return ignored('not_a_gift');
+    }
+  } else {
+    if (mode === 'setup') {
+      return { kind: 'card_update_checkout', session };
+    }
+    if (mode === 'subscription') {
+      return { kind: 'subscription_checkout', session };
+    }
+    if (mode !== 'payment' || !(gift || donation)) {
+      return ignored('not_a_ghost_checkout');
+    }
+  }
+  if (conflicting) {
+    return ignored('conflicting_checkout_markers');
+  }
+  if (gift) {
+    return paid ? { kind: 'gift_checkout', session } : ignored('gift_not_paid');
+  }
+  return { kind: 'donation_checkout', session };
+}
+
 /** Builds the webhook event for each Stripe event type Ghost handles, from its `data.object`. */
 const KINDS = new Map<string, (object: StripeObject) => WebhookEvent>([
-  [
-    'checkout.session.completed',
-    (session) => ({ kind: 'checkout_session', type: 'checkout.session.completed', session }),
-  ],
+  ['checkout.session.completed', (session) => checkoutEvent('checkout.session.completed', session)],
   [
     'checkout.session.async_payment_succeeded',
-    (session) => ({
-      kind: 'checkout_session',
-      type: 'checkout.session.async_payment_succeeded',
-      session,
-    }),
+    (session) => checkoutEvent('checkout.session.async_payment_succeeded', session),
   ],
   [
     'checkout.session.async_payment_failed',
-    (session) => ({
-      kind: 'checkout_session',
-      type: 'checkout.session.async_payment_failed',
-      session,
-    }),
+    (session) => checkoutEvent('checkout.session.async_payment_failed', session),
   ],
   [
     'customer.subscription.created',
@@ -114,5 +195,5 @@ export function readEnvelope(verified: unknown): StripeEventEnvelope {
  */
 export function toWebhookEvent(type: string, verified: unknown): WebhookEvent {
   const build = KINDS.get(type);
-  return build ? build(WithObject.parse(verified).data.object) : { kind: 'unhandled', type };
+  return build ? build(WithObject.parse(verified).data.object) : ignored('unhandled_type');
 }

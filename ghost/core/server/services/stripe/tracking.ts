@@ -12,7 +12,7 @@ import {
   type Refusal,
 } from './checkout-session-params';
 import { classifyFailure } from './webhook/failures';
-import type { WebhookEventKind } from './webhook/webhook-event';
+import type { IgnoreReason, WebhookEventKind } from './webhook/webhook-event';
 
 // The spans and counts that record how buyers' Stripe Checkouts go, and how Ghost handles what
 // Stripe sends it. Their names and attributes are defined here, in one place, because the Stripe
@@ -138,13 +138,6 @@ interface WebhookAttempt {
   /** Called with the event's kind once Ghost has parsed it. The kind selects the command. */
   matching(kind: WebhookEventKind): void;
 }
-
-/**
- * Why the webhook ignored a verified event: `listed_customer` when its customer is in the
- * `stripeWebhookCustomerIgnoreList` config, or `unhandled_type` when Ghost has no command for its
- * type.
- */
-export type IgnoreReason = 'listed_customer' | 'unhandled_type';
 
 /** What the webhook did with a verified event. */
 export type WebhookOutcome = { result: 'handled' } | { result: 'ignored'; reason: IgnoreReason };
