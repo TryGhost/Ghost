@@ -27,7 +27,7 @@ function isInlineFeature(value: unknown): value is { adapter: string; [key: stri
  * feature-specific selection (`type:feature`).
  */
 export function resolveAdapterOptions(name: string, config: AdapterConfig): ResolvedAdapterOptions {
-  const [type, feature] = name.split(':');
+  const [type, feature] = name.split(':') as [string, string | undefined];
   const settings = config[type];
 
   const featureAdapter = feature ? settings?.[feature] : undefined;

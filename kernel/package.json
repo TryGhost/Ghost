@@ -2,7 +2,7 @@
   "name": "@tryghost/kernel",
   "version": "private",
   "private": true,
-  "description": "Application-independent framework primitives for Ghost: defineService, date helpers, the adapter manager and the foundation types. Importable anywhere; holds no state.",
+  "description": "Application-independent framework primitives for Ghost: defineService, date helpers, adapter types and the foundation types. Importable anywhere; holds no state.",
   "license": "MIT",
   "author": "Ghost Foundation",
   "repository": {

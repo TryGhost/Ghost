@@ -62,6 +62,17 @@ for the pattern to copy:
   [test](../test/unit/bootstrap/steps.test.ts) checks that each step `boot.js`
   exports is listed exactly once.
 
+## Adapters
+
+[`adapters.ts`](adapters.ts) is Ghost's values for the foundry's adapter
+manager: the base class of each adapter type, and where adapters are looked
+up. The application definition hands them over with the loader and a function
+that reads adapter configuration; the foundry builds the manager and validates
+the configured adapters during start. How Ghost's config becomes adapter
+configuration still knows about products (import storage, redirects, route
+settings), so it stays in
+[`core/server/services/adapter-manager/config.ts`](../core/server/services/adapter-manager/config.ts).
+
 ## The services list
 
 [`services.ts`](services.ts) is what the services step starts: one ordered

@@ -34,6 +34,7 @@ const probe = `
       connection: require('./core/server/data/db/connection') === foundation.database.knex,
       events: seen === probe,
       clock: clockReadThroughLegacyPath,
+      adapters: require('./core/server/services/adapter-manager').default === application.adapters,
     }));
     await foundation.database.knex.destroy();
   });
@@ -57,6 +58,7 @@ describe('Ghost application', function () {
       connection: true,
       events: true,
       clock: true,
+      adapters: true,
     });
   }, 60_000);
 

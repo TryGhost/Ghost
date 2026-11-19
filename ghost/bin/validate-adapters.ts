@@ -17,12 +17,11 @@ import {
   collectLoadedFiles,
   formatDuplicateReport,
 } from './lib/duplicate-deps';
-import { adapterPaths } from '../core/server/services/adapter-manager/adapter-paths';
-import {
-  baseClasses,
-  baseClassPackages,
-} from '../core/server/services/adapter-manager/base-classes';
-import { loadAdapterClass } from '@tryghost/kernel/adapter-manager';
+import { baseClasses, baseClassPackages, buildAdapterPaths } from '../bootstrap/adapters';
+import config from '../core/shared/config';
+import { loadAdapterClass } from '@tryghost/foundry/adapter-manager';
+
+const adapterPaths = buildAdapterPaths(config);
 
 type AdapterType = keyof typeof baseClasses;
 

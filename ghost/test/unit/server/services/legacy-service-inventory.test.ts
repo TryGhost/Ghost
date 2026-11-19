@@ -106,9 +106,9 @@ const inventorySchema = z
   })
   .strict();
 
-// The kernel package sits beside the ghost package, so evidence in it is
-// written as ../kernel/....
-const kernelRoot = path.resolve(coreRoot, '../kernel');
+// The framework packages sit beside the ghost package, so evidence in them is
+// written as ../kernel/... or ../foundry/....
+const frameworkRoots = ['../kernel', '../foundry'].map((root) => path.resolve(coreRoot, root));
 
 function assertFileWithin(root: string, relativePath: string) {
   const resolved = path.resolve(root, relativePath);
@@ -117,8 +117,8 @@ function assertFileWithin(root: string, relativePath: string) {
     return !relative.startsWith('..') && relative !== '';
   };
   assert.ok(
-    !path.isAbsolute(relativePath) && (within(root) || within(kernelRoot)),
-    `Evidence must be inside ${root} or the kernel package: ${relativePath}`,
+    !path.isAbsolute(relativePath) && (within(root) || frameworkRoots.some(within)),
+    `Evidence must be inside ${root} or a framework package: ${relativePath}`,
   );
   assert.ok(statSync(resolved).isFile(), `Expected a file: ${relativePath}`);
 }

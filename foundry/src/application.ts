@@ -1,10 +1,12 @@
 import { IncorrectUsageError } from '@tryghost/errors';
+import type { AdapterManagerOptions, BaseClassMap } from '@tryghost/kernel/adapter-manager';
 import type { Clock } from '@tryghost/kernel/clock';
 import type { Config } from '@tryghost/kernel/config';
 import type { Database } from '@tryghost/kernel/database';
 import type { EventBus } from '@tryghost/kernel/events';
 import type { Foundation } from '@tryghost/kernel/foundation';
 import type { Logger } from '@tryghost/kernel/logging';
+import { AdapterManager } from './adapter-manager';
 import { createClock } from './clock';
 
 /**
@@ -90,7 +92,10 @@ interface ModuleStep<StartRun> extends Slots<StartRun> {
 export interface Steps<StartRun> {
   /** 1. The framework builds config, logging, the database handle, the event bus and the clock. */
   readonly foundation?: Pick<Slots<StartRun>, 'after'>;
-  /** 2. The database is made ready: initialised or migrated. */
+  /**
+   * 2. The database is made ready: initialised or migrated. When the step has
+   * finished, the framework validates the configured adapters.
+   */
   readonly database?: RunStep<StartRun>;
   /**
    * 3. The shared modules, in the order listed. Each is handed the foundation
@@ -120,7 +125,12 @@ export interface Steps<StartRun> {
  * config, logging, database, events. The clock is built last and needs
  * nothing from the application.
  */
-export interface ApplicationDefinition<AppConfig extends Config, Options = void, State = object> {
+export interface ApplicationDefinition<
+  AppConfig extends Config,
+  Options = void,
+  State = object,
+  BaseClasses extends BaseClassMap = BaseClassMap,
+> {
   readonly name: string;
   /** Loads the application's config from its own values. */
   readonly config: () => AppConfig;
@@ -133,17 +143,39 @@ export interface ApplicationDefinition<AppConfig extends Config, Options = void,
   }) => Database | undefined;
   /** Builds the event bus. */
   readonly events: (foundation: { readonly logging: Logger }) => EventBus;
+  /**
+   * The application's values for the adapter manager: which adapter types
+   * exist, where adapters are looked up, how one is loaded and how to read
+   * their configuration. The framework builds the manager from them once, the
+   * first time it is needed, and validates the configured adapters during
+   * `start()`. Without it the application has no adapters.
+   */
+  readonly adapters?: (foundation: {
+    readonly config: AppConfig;
+  }) => AdapterManagerOptions<BaseClasses>;
   /** What runs in each step of `start()`. Without it, `start()` only builds the foundation. */
   readonly steps?: Steps<Run<AppConfig, Options, State>>;
 }
 
-export interface Application<AppConfig extends Config, Options = void, State = object> {
+export interface Application<
+  AppConfig extends Config,
+  Options = void,
+  State = object,
+  BaseClasses extends BaseClassMap = BaseClassMap,
+> {
   readonly name: string;
   /**
    * The instances every part of the application is handed. Each is built the
    * first time it is read and kept for the life of the process.
    */
   readonly foundation: Foundation<AppConfig>;
+  /**
+   * The adapter manager, built the first time it is read and kept for the
+   * life of the process. It is not part of the foundation and is not handed
+   * out: the framework runs it. It is readable for the code that still looks
+   * adapters up by importing a manager.
+   */
+  readonly adapters: AdapterManager<BaseClasses>;
   /** Builds every foundation instance now, in order. Boot calls this first. */
   startFoundation(): Foundation<AppConfig>;
   /** Which foundation instances have been built so far, in the order they were. */
@@ -151,8 +183,9 @@ export interface Application<AppConfig extends Config, Options = void, State = o
   /** What the definition put in each step, for reading. Nothing is loaded by reading it. */
   readonly steps: Steps<Run<AppConfig, Options, State>>;
   /**
-   * Runs the start sequence: foundation, database, shared, services, jobs,
-   * ready, then the background work without waiting for it. Rejects with the
+   * Runs the start sequence: foundation, database, adapter validation,
+   * shared, services, jobs, ready, then the background work without waiting
+   * for it. Rejects with the
    * error of the first step that fails; later steps do not run.
    *
    * It may be called again. A start that follows one nobody stopped stops it
@@ -182,9 +215,14 @@ function once<Value>(build: () => Value): () => Value {
  *
  * Call it once, from the application's bootstrap, and keep the result there.
  */
-export function createApplication<AppConfig extends Config, Options = void, State = object>(
-  definition: ApplicationDefinition<AppConfig, Options, State>,
-): Application<AppConfig, Options, State> {
+export function createApplication<
+  AppConfig extends Config,
+  Options = void,
+  State = object,
+  BaseClasses extends BaseClassMap = BaseClassMap,
+>(
+  definition: ApplicationDefinition<AppConfig, Options, State, BaseClasses>,
+): Application<AppConfig, Options, State, BaseClasses> {
   type StartRun = Run<AppConfig, Options, State>;
   const order: string[] = [];
   const tracked = <Value>(name: string, build: () => Value) =>
@@ -201,6 +239,16 @@ export function createApplication<AppConfig extends Config, Options = void, Stat
   );
   const events = tracked('events', () => definition.events({ logging: logging() }));
   const clock = tracked<Clock>('clock', createClock);
+
+  // Not a foundation instance, so not in `built()`.
+  const adapters = once(() => {
+    if (!definition.adapters) {
+      throw new IncorrectUsageError({
+        message: `${definition.name} defines no adapters.`,
+      });
+    }
+    return new AdapterManager(definition.adapters({ config: config() }));
+  });
 
   const foundation: Foundation<AppConfig> = {
     get config() {
@@ -318,6 +366,9 @@ export function createApplication<AppConfig extends Config, Options = void, Stat
   return {
     name: definition.name,
     foundation,
+    get adapters() {
+      return adapters();
+    },
     startFoundation,
     built: () => [...order],
     steps: definition.steps ?? {},
@@ -340,6 +391,10 @@ export function createApplication<AppConfig extends Config, Options = void, Stat
       startFoundation();
       await runSlots(steps.foundation?.after, run);
       await runStep(steps.database, run);
+      // A misconfigured adapter fails the start here, not on its first use.
+      if (definition.adapters) {
+        adapters().init();
+      }
       await runModules(steps.shared, run, { give: true });
       await runModules(steps.services, run);
       await runStep(steps.jobs, run);

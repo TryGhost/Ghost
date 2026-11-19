@@ -2,12 +2,12 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { AdapterManager } from '@tryghost/kernel/adapter-manager';
-import { buildAdapterPaths } from '../../../../../core/server/services/adapter-manager/adapter-paths';
-import { normalizeAdapterConfig } from '../../../../../core/server/services/adapter-manager/config';
-import { createConfig } from '../../../../../core/shared/config/validated';
-import { configSources } from '../../../../utils/config-sources';
-import type { ConfigInstance } from '../../../../../core/shared/config/loader';
+import { AdapterManager } from '@tryghost/foundry/adapter-manager';
+import { buildAdapterPaths } from '../../../bootstrap/adapters';
+import { normalizeAdapterConfig } from '../../../core/server/services/adapter-manager/config';
+import { createConfig } from '../../../core/shared/config/validated';
+import { configSources } from '../../utils/config-sources';
+import type { ConfigInstance } from '../../../core/shared/config/loader';
 import type { Adapter } from '@tryghost/kernel/adapter-manager';
 
 class BaseStorageAdapter implements Adapter {

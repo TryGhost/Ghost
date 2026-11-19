@@ -2,7 +2,7 @@
   "name": "@tryghost/foundry",
   "version": "private",
   "private": true,
-  "description": "Builds what exists once per process (config, logging, the database handle, the event bus) for an application. Only an application's bootstrap imports it.",
+  "description": "Builds what exists once per process (config, logging, the database handle, the event bus, the clock, the adapter manager) for an application. Only an application's bootstrap imports it.",
   "license": "MIT",
   "author": "Ghost Foundation",
   "repository": {
@@ -14,6 +14,11 @@
     "build"
   ],
   "exports": {
+    "./adapter-manager": {
+      "source": "./src/adapter-manager/index.ts",
+      "types": "./build/adapter-manager/index.d.ts",
+      "default": "./build/adapter-manager/index.js"
+    },
     "./*": {
       "source": "./src/*.ts",
       "types": "./build/*.d.ts",

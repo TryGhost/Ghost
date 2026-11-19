@@ -24,7 +24,12 @@ import { legacySteps, type BootOptions, type BootState } from './transition/lega
  * Importing this file builds nothing. Reading `application.foundation.config`
  * loads config; reading `.logging` or `.database` builds those.
  */
-const application: Application<GhostConfig, BootOptions, BootState> = createApplication({
+const application: Application<
+  GhostConfig,
+  BootOptions,
+  BootState,
+  typeof import('./adapters').baseClasses
+> = createApplication({
   name: 'Ghost',
 
   // Transitional: Ghost's own loader. Only where config is belongs here; the
@@ -50,6 +55,23 @@ const application: Application<GhostConfig, BootOptions, BootState> = createAppl
 
   // The published event bus is one static emitter. See ./transition/legacy-events.ts.
   events: () => legacyEventBus(),
+
+  // Which adapter types Ghost has and where its adapters are: see ./adapters.ts.
+  // Loaded here, not at the top, so that the base classes load when the
+  // adapter manager is first needed and not before the HTTP server listens.
+  adapters: ({ config }) => {
+    const { baseClasses, buildAdapterPaths }: typeof import('./adapters') = require('./adapters');
+    const {
+      normalizeAdapterConfig,
+    }: typeof import('../core/server/services/adapter-manager/config') = require('../core/server/services/adapter-manager/config');
+    return {
+      baseClasses,
+      pathsToAdapters: buildAdapterPaths(config),
+      loadAdapterFromPath: require,
+      // Read on every lookup, so a change to config at runtime is seen.
+      getConfig: () => normalizeAdapterConfig(config),
+    };
+  },
 
   // What goes in each step of the start sequence. The framework owns the order
   // of the steps and runs every entry without knowing what it is. An entry

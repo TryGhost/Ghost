@@ -16,7 +16,6 @@ function createCoreHarness() {
   // services list up to Stripe checkout config.
   const sequence = loadBootSequence(
     {
-      './server/services/adapter-manager': { default: { init() {} } },
       './server/lib/image/image-decoders': { restrictImageDecoders() {} },
       './server/lib/image/image-content': {
         IMAGE_UPLOAD_TYPES: [],

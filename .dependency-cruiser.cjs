@@ -381,11 +381,6 @@ const serviceDependencyDecisions = {
   // Each names the file, its dependencies and the refactor.
   deferred: [
     {
-      from: '^ghost/core/server/services/adapter-manager/base-classes\\.ts$',
-      to: '^packages/adapters/[^/]+-base/',
-      until: "PLA-541 moves Ghost's adapter registry into boot",
-    },
-    {
       from: '^ghost/core/server/services/jobs-service/register-job-handlers\\.ts$',
       to: '-job\\.(ts|js)$',
       until: 'PLA-543 moves job handler registration into boot',
@@ -514,7 +509,7 @@ module.exports = {
     {
       name: 'bootstrap-only-from-boot',
       comment:
-        'ghost/bootstrap holds the application and its foundation instances. Boot starts it; the legacy modules listed here return its config, database handle and clock to code that still imports them. Everything else is handed what it needs.',
+        'ghost/bootstrap holds the application and its foundation instances. Boot starts it; the legacy modules listed here return its config, database handle, clock and adapter manager to code that still imports them. Everything else is handed what it needs.',
       severity: 'error',
       from: {
         pathNot: [
@@ -523,6 +518,7 @@ module.exports = {
           '^ghost/core/shared/config/index\\.ts$', // Legacy path to the foundation's config.
           '^ghost/core/server/data/db/connection\\.ts$', // Legacy path to the foundation's database handle.
           '^ghost/core/shared/clock\\.ts$', // Legacy path to the foundation's clock.
+          '^ghost/core/server/services/adapter-manager/index\\.ts$', // Legacy path to the adapter manager the foundry builds and runs.
         ],
       },
       to: { path: '^ghost/bootstrap/' },
@@ -538,6 +534,7 @@ module.exports = {
         pathNot: [
           '^ghost/core/shared/config/loader\\.ts$', // Where Ghost's config is, until loading moves to the foundry.
           '^ghost/core/server/data/db/configure-knex\\.ts$', // Ghost's database options.
+          '^ghost/core/server/services/adapter-manager/config\\.ts$', // How Ghost's config becomes adapter configuration.
           '^ghost/core/server/services/[^/]+/index\\.ts$', // Service roots the services list names.
           '^ghost/core/server/auth/index\\.ts$', // Better Auth's root, named by the services list.
         ],

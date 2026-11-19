@@ -1,43 +1,16 @@
 import errors from '@tryghost/errors';
-import { loadAdapterClass } from './loader';
-import { getConfiguredFeatures, resolveAdapterOptions } from './options';
+import { getConfiguredFeatures, resolveAdapterOptions } from '@tryghost/kernel/adapter-manager';
 import type {
   Adapter,
   AdapterConfig,
   AdapterConstructor,
+  AdapterManagerOptions,
   AdapterName,
+  BaseClassMap,
+  RegistryOf,
   ResolvedAdapter,
-} from './types';
-
-/**
- * A map from an adapter type name (e.g. "storage") to the base class every
- * adapter of that type must extend.
- */
-export type BaseClassMap = Record<string, AdapterConstructor>;
-
-/**
- * The type-only registry derived from a `BaseClassMap`: each adapter type name
- * mapped to the instance type of its base class. Read back by `getAdapter` to
- * return a precisely-typed instance.
- */
-export type RegistryOf<BaseClasses extends BaseClassMap> = {
-  [Type in keyof BaseClasses]: InstanceType<BaseClasses[Type]>;
-};
-
-export interface AdapterManagerOptions<BaseClasses extends BaseClassMap = BaseClassMap> {
-  /** The paths to check, e.g. ['content/adapters', 'core/server/adapters'] */
-  pathsToAdapters: string[];
-  /** A function to load adapters, e.g. global.require */
-  loadAdapterFromPath: (path: string) => unknown;
-  /** The base classes keyed by adapter type name, e.g. {storage: GhostStorageBase} */
-  baseClasses: BaseClasses;
-  /**
-   * Returns the current adapter configuration, keyed by adapter type. Called on
-   * every lookup and validation rather than once at construction, so the
-   * application decides whether runtime configuration changes are reflected.
-   */
-  getConfig: () => AdapterConfig;
-}
+} from '@tryghost/kernel/adapter-manager';
+import { loadAdapterClass } from './loader';
 
 /**
  * AdapterManager loads, validates and caches adapter instances by type.
@@ -128,7 +101,8 @@ export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
     }
 
     const { Adapter, adapterConfig, adapterType, adapterClassName } = this.loadAdapter(name);
-    const adapterCache = this.instanceCache[adapterType];
+    // The casts below hold because loadAdapter has checked the type is registered.
+    const adapterCache = this.instanceCache[adapterType] as Record<string, Adapter>;
 
     // @NOTE: example cache key value 'email:newsletters:custom-newsletter-adapter'
     const adapterCacheKey = `${name}:${adapterClassName}`;
@@ -141,7 +115,7 @@ export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
     const AdapterClass = Adapter as new (config?: object) => Adapter;
     const adapter = new AdapterClass(adapterConfig);
 
-    const BaseClass = this.baseClasses[adapterType];
+    const BaseClass = this.baseClasses[adapterType] as AdapterConstructor;
     if (!(adapter instanceof BaseClass)) {
       if (Object.getPrototypeOf(Adapter).name !== BaseClass.name) {
         throw new errors.IncorrectUsageError({
@@ -186,7 +160,8 @@ export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
     // overrides) are reflected, matching the original JS implementation.
     const { adapterClassName, adapterConfig } = resolveAdapterOptions(name, this.getConfig());
 
-    const [adapterType] = name.split(':');
+    // split always returns at least one part.
+    const adapterType = name.split(':')[0] as string;
 
     if (!this.baseClasses[adapterType]) {
       throw new errors.NotFoundError({
@@ -242,7 +217,7 @@ export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
       if (!adapterClassName) {
         continue;
       }
-      const [adapterType] = name.split(':');
+      const adapterType = name.split(':')[0] as string;
       const key = `${adapterType}:${adapterClassName}:${JSON.stringify(adapterConfig ?? {})}`;
       if (!distinct.has(key)) {
         distinct.set(key, name);

@@ -211,7 +211,7 @@ services:
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
       sources:
         - core/server/services/adapter-manager/index.ts
-        - ../kernel/src/adapter-manager/adapter-manager.ts
+        - ../foundry/src/adapter-manager/adapter-manager.ts
         - core/server/lib/image/index.js
         - core/server/services/post-scheduling/index.ts
         - core/boot.js
@@ -229,10 +229,9 @@ services:
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
           - core/server/services/adapter-manager/index.ts
-          - ../kernel/src/adapter-manager/adapter-manager.ts
-          - core/server/services/adapter-manager/adapter-paths.ts
-          - core/server/services/adapter-manager/base-classes.ts
-          - ../kernel/src/adapter-manager/loader.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
+          - bootstrap/adapters.ts
+          - ../foundry/src/adapter-manager/loader.ts
           - ../kernel/src/adapter-manager/options.ts
           - core/server/services/adapter-manager/config.ts
           - bin/validate-adapters.ts
@@ -242,15 +241,14 @@ services:
       - adapter-manager/index.ts
     notes: >-
       Split in progress. The reusable loading, validation and instance-management machinery
-      now lives in ../kernel/src/adapter-manager and takes its configuration through an
-      explicit getConfig callback, so it imports nothing from the application. This
-      directory holds only Ghost's composition: the base-class registry, search paths, the
-      legacy scheduling/storage normalization, import-storage isolation and content-path
-      defaults, and the configured instance, with live resolution on each lookup. The
-      remaining relocation is of that composition into boot. The dependency audit still
-      counts the registry and path files as implementation because the service rule treats
-      every non-root file as one; a composition-only directory has no implementation to
-      isolate, which a boot home would resolve. Reassess initialization after that move
+      now lives in ../foundry/src/adapter-manager, with its types and option resolution in
+      ../kernel/src/adapter-manager, and takes its configuration through an explicit
+      getConfig callback, so it imports nothing from the application. Ghost's base-class
+      registry and search paths are in bootstrap/adapters.ts; the application definition
+      hands them to the foundry, which builds the manager once and validates the configured
+      adapters during start. This directory holds the legacy scheduling/storage
+      normalization, import-storage isolation and content-path defaults, and a root that
+      returns the application's manager to code that imports it. Reassess initialization
       rather than migrating this root in place. Preserve boot validation, lazy adapter
       construction, lookup precedence, live configuration resolution and cached identity.
       Consumers retain adapters outside the manager; disposal and replacement must account
@@ -265,7 +263,7 @@ services:
           CLI. There is no manager shutdown or disposal API.
         sources:
           - core/server/services/adapter-manager/index.ts
-          - ../kernel/src/adapter-manager/adapter-manager.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
           - ../kernel/src/adapter-manager/types.ts
           - bin/validate-adapters.ts
         tests:
@@ -283,16 +281,15 @@ services:
           or configured adapters.
         sources:
           - core/server/services/adapter-manager/index.ts
-          - ../kernel/src/adapter-manager/adapter-manager.ts
-          - core/server/services/adapter-manager/adapter-paths.ts
-          - core/server/services/adapter-manager/base-classes.ts
-          - ../kernel/src/adapter-manager/loader.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
+          - bootstrap/adapters.ts
+          - ../foundry/src/adapter-manager/loader.ts
           - core/server/services/adapter-manager/config.ts
           - bin/validate-adapters.ts
         tests:
-          - test/unit/kernel/adapter-manager/adapter-manager.test.ts
-          - test/unit/server/services/adapter-manager/base-classes.test.ts
-          - test/unit/server/services/adapter-manager/adapter-paths.test.ts
+          - test/unit/foundry/adapter-manager/adapter-manager.test.ts
+          - test/unit/bootstrap/adapters.test.ts
+          - test/unit/bootstrap/adapter-paths.test.ts
       consumers:
         summary: >-
           Boot validates adapters and starts scheduling. Services retain image/settings/public
@@ -348,13 +345,13 @@ services:
           guard and import-time consumers can construct adapters independently of validation.
         sources:
           - core/boot.js
-          - ../kernel/src/adapter-manager/adapter-manager.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
           - ../kernel/src/adapter-manager/options.ts
           - core/server/services/post-scheduling/index.ts
           - core/server/api/endpoints/authentication.ts
           - core/server/lib/image/index.js
         tests:
-          - test/unit/kernel/adapter-manager/adapter-manager.test.ts
+          - test/unit/foundry/adapter-manager/adapter-manager.test.ts
           - test/unit/server/services/adapter-manager/route-settings-wiring.test.ts
       lifetime:
         summary: >-
@@ -366,13 +363,13 @@ services:
           Conditional S3 route-store integration tests clear the cache before rereading settings;
           they do not establish replacement of retained consumers or cleanup.
         sources:
-          - ../kernel/src/adapter-manager/adapter-manager.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
           - core/server/lib/image/index.js
           - core/server/services/jobs-service/index.ts
           - core/server/adapters/lib/redis/redis-store-factory.ts
           - core/server/ghost-server.ts
         tests:
-          - test/unit/kernel/adapter-manager/adapter-manager.test.ts
+          - test/unit/foundry/adapter-manager/adapter-manager.test.ts
           - test/integration/adapters/route-settings/adapter-manager-wiring.test.ts
           - test/unit/server/adapters/lib/redis/redis-store-factory.test.ts
       configuration:
@@ -386,16 +383,16 @@ services:
           config mutation; they establish neither production hot reload nor changed options
           reaching an already retained adapter.
         sources:
-          - ../kernel/src/adapter-manager/adapter-manager.ts
-          - core/server/services/adapter-manager/adapter-paths.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
+          - bootstrap/adapters.ts
           - ../kernel/src/adapter-manager/options.ts
           - core/server/services/adapter-manager/config.ts
           - core/shared/config/defaults.json
         tests:
-          - test/unit/kernel/adapter-manager/adapter-manager.test.ts
+          - test/unit/foundry/adapter-manager/adapter-manager.test.ts
           - test/unit/kernel/adapter-manager/options.test.ts
           - test/unit/server/services/adapter-manager/config.test.ts
-          - test/unit/server/services/adapter-manager/adapter-paths.test.ts
+          - test/unit/bootstrap/adapter-paths.test.ts
           - test/integration/adapters/storage/imports-storage-config.test.ts
       resources:
         summary: >-
@@ -407,7 +404,7 @@ services:
           owns backend shutdown through GhostServer cleanup. clearCache invokes none of these
           owners and cannot drain active consumers or release custom-adapter resources.
         sources:
-          - ../kernel/src/adapter-manager/adapter-manager.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
           - ../kernel/src/adapter-manager/types.ts
           - core/server/adapters/cache/MemoryCache.js
           - core/server/adapters/cache/AdapterCacheMemoryTTL.js
@@ -435,13 +432,13 @@ services:
           Static validation is synchronous and not awaited. No failed-init guard, rollback or
           manager retry exists; later calls retry uncached work using current config.
         sources:
-          - ../kernel/src/adapter-manager/adapter-manager.ts
-          - ../kernel/src/adapter-manager/loader.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
+          - ../foundry/src/adapter-manager/loader.ts
           - core/server/services/adapter-manager/config.ts
           - ../kernel/src/adapter-manager/types.ts
         tests:
-          - test/unit/kernel/adapter-manager/adapter-manager.test.ts
-          - test/unit/server/services/adapter-manager/adapter-paths.test.ts
+          - test/unit/foundry/adapter-manager/adapter-manager.test.ts
+          - test/unit/bootstrap/adapter-paths.test.ts
           - test/unit/server/services/adapter-manager/route-settings-wiring.test.ts
     unverified: []
     blockers:
@@ -1121,7 +1118,7 @@ services:
           - core/server/services/custom-redirects/index.js
           - core/server/services/custom-redirects/redirects-service.ts
           - core/server/services/adapter-manager/index.ts
-          - ../kernel/src/adapter-manager/adapter-manager.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
           - core/boot.js
         tests: []
       consumers:
@@ -1200,7 +1197,7 @@ services:
           - core/server/web/shared/dynamic-redirect-manager.js
           - core/shared/url-utils.ts
           - core/shared/config/validated.ts
-          - ../kernel/src/adapter-manager/adapter-manager.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
           - core/server/adapters/redirects/FileStore.ts
           - core/server/adapters/redirects/S3RedirectsStore.ts
         tests:
@@ -5327,7 +5324,7 @@ services:
         sources:
           - core/server/services/oembed/service.js
           - core/server/services/oembed/oembed-service.js
-          - ../kernel/src/adapter-manager/adapter-manager.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
           - core/server/adapters/storage/LocalImagesStorage.ts
           - core/server/adapters/storage/S3Storage.ts
           - core/server/lib/request-external.js
@@ -5400,7 +5397,7 @@ services:
         sources:
           - core/server/services/oembed/oembed-service.js
           - core/server/services/oembed/service.js
-          - ../kernel/src/adapter-manager/adapter-manager.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
           - core/server/services/mentions/webmention-metadata.js
           - core/server/services/recommendations/service/recommendation-metadata-service.ts
         tests:
@@ -5457,7 +5454,7 @@ services:
           - core/server/lib/request-external.js
           - core/server/adapters/storage/LocalStorageBase.ts
           - core/server/adapters/storage/S3Storage.ts
-          - ../kernel/src/adapter-manager/adapter-manager.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
           - core/boot.js
           - package.json
         tests:
@@ -5876,7 +5873,7 @@ services:
         sources:
           - core/server/services/post-scheduling/index.ts
           - core/server/services/post-scheduling/post-scheduling.ts
-          - ../kernel/src/adapter-manager/adapter-manager.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
           - core/server/adapters/scheduling/error-capture.ts
           - core/server/api/endpoints/authentication.ts
           - core/boot.js
@@ -5941,7 +5938,7 @@ services:
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/server/adapters/scheduling/scheduling-default.ts
           - core/server/adapters/scheduling/error-capture.ts
-          - ../kernel/src/adapter-manager/adapter-manager.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
         tests:
           - test/unit/server/services/post-scheduling/post-scheduling.test.js
       configuration:
@@ -5984,7 +5981,7 @@ services:
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/server/adapters/scheduling/error-capture.ts
           - core/server/adapters/scheduling/scheduling-default.ts
-          - ../kernel/src/adapter-manager/adapter-manager.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
           - core/server/lib/common/events.js
           - core/boot.js
           - core/server/ghost-server.ts
@@ -6623,8 +6620,8 @@ services:
         sources:
           - core/server/services/route-settings/index.js
           - core/server/services/route-settings/dynamic-routing-service.js
-          - ../kernel/src/adapter-manager/adapter-manager.ts
-          - core/server/services/adapter-manager/base-classes.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
+          - bootstrap/adapters.ts
           - core/server/adapters/route-settings/FileStore.ts
           - core/server/adapters/route-settings/S3RouteSettingsStore.ts
         tests:
@@ -6731,7 +6728,7 @@ services:
           - core/server/services/route-settings/index.js
           - core/server/services/route-settings/route-settings-parser.ts
           - core/server/services/adapter-manager/config.ts
-          - ../kernel/src/adapter-manager/adapter-manager.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
           - core/server/adapters/route-settings/FileStore.ts
           - core/server/adapters/route-settings/S3RouteSettingsStore.ts
           - core/shared/config/defaults.json
@@ -6759,7 +6756,7 @@ services:
           They do not prove transport release, collision safety or drain on shutdown.
         sources:
           - core/server/services/route-settings/dynamic-routing-service.js
-          - ../kernel/src/adapter-manager/adapter-manager.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
           - core/server/adapters/route-settings/FileStore.ts
           - core/server/adapters/route-settings/S3RouteSettingsStore.ts
           - core/server/adapters/route-settings/utils.ts
@@ -7751,7 +7748,7 @@ services:
           - core/frontend/services/theme-engine/engine.js
           - core/frontend/services/theme-engine/i18n/index.js
           - core/frontend/services/theme-engine/i18next/index.js
-          - ../kernel/src/adapter-manager/adapter-manager.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
         tests:
           - test/unit/server/services/themes/loader.test.js
           - test/unit/server/services/themes/storage.test.ts
@@ -7836,7 +7833,7 @@ services:
           - core/server/services/themes/list.js
           - core/server/services/themes/validate.js
           - core/server/services/themes/storage.js
-          - ../kernel/src/adapter-manager/adapter-manager.ts
+          - ../foundry/src/adapter-manager/adapter-manager.ts
           - core/server/adapters/cache/MemoryCache.js
           - core/frontend/services/theme-engine/active.js
         tests:

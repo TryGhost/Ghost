@@ -395,4 +395,86 @@ describe('application.start: what a shared module is given', function () {
 
     assert.equal(given.posts, undefined);
   });
+
+  describe('adapters', function () {
+    class Base {
+      requiredFns = ['send'];
+    }
+    class Good extends Base {
+      send() {}
+    }
+
+    function withAdapters(calls: string[], active: string) {
+      return createApplication({
+        name: 'Example',
+        config: () => ({ get: () => undefined }),
+        logging: () => ({ error() {} }) as unknown as Logger,
+        database: () => undefined,
+        events: () => ({ subscribe() {}, dispatch() {} }),
+        adapters: ({ config }) => {
+          calls.push(typeof config.get === 'function' ? 'adapters' : 'adapters without config');
+          return {
+            baseClasses: { mail: Base },
+            pathsToAdapters: ['/adapters'],
+            loadAdapterFromPath: (path: string) => {
+              calls.push(`load ${path}`);
+              if (!path.endsWith('Good')) {
+                throw Object.assign(new Error(`Cannot find module '${path}'`), {
+                  code: 'MODULE_NOT_FOUND',
+                });
+              }
+              return Good;
+            },
+            getConfig: () => ({ mail: { active } }),
+          };
+        },
+        steps: {
+          database: { run: () => void calls.push('database') },
+          shared: { before: [slot(calls, 'before shared')], modules: [] },
+        },
+      });
+    }
+
+    it('builds the manager once, and only when it is first needed', function () {
+      const calls: string[] = [];
+      const application = withAdapters(calls, 'Good');
+
+      assert.deepEqual(calls, []);
+      const adapters = application.adapters;
+      assert.equal(application.adapters, adapters);
+      assert.deepEqual(calls, ['adapters']);
+      assert.ok(adapters.getAdapter('mail') instanceof Good);
+      // Not a foundation instance.
+      assert.deepEqual(application.built(), ['config']);
+    });
+
+    it('validates the configured adapters after the database step and before shared', async function () {
+      const calls: string[] = [];
+      const application = withAdapters(calls, 'Good');
+
+      await application.start();
+
+      assert.deepEqual(calls, [
+        'database',
+        'adapters',
+        'load /adapters/mail/Good',
+        'before shared',
+      ]);
+    });
+
+    it('fails the start on an adapter that cannot be loaded, before anything shared starts', async function () {
+      const calls: string[] = [];
+      const application = withAdapters(calls, 'Missing');
+
+      await assert.rejects(application.start(), /Invalid adapter configuration/);
+      assert.ok(!calls.includes('before shared'));
+    });
+
+    it('has no manager when the application defines no adapters', async function () {
+      const application = define({});
+
+      await application.start({ frontend: true });
+      assert.throws(() => application.adapters, /Example defines no adapters/);
+    });
+  });
 });

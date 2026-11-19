@@ -11,12 +11,13 @@ It is the `@tryghost/foundry` workspace package, outside the `ghost` package:
 import { createApplication } from '@tryghost/foundry/application';
 ```
 
-| File                                   | What it builds                                                                                                                                      |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`logging.ts`](src/logging.ts)         | `createLogger(options)`: a logger from options, reading no options file                                                                             |
-| [`database.ts`](src/database.ts)       | `createDatabase(options)`: the database handle from Knex options                                                                                    |
-| [`clock.ts`](src/clock.ts)             | `createClock()`: the clock, which reads the system time                                                                                             |
-| [`application.ts`](src/application.ts) | `createApplication(definition)`: builds config, the logger, the database handle, the event bus and the clock once each, in that order, on first use |
+| File                                               | What it builds                                                                                                                                      |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`logging.ts`](src/logging.ts)                     | `createLogger(options)`: a logger from options, reading no options file                                                                             |
+| [`database.ts`](src/database.ts)                   | `createDatabase(options)`: the database handle from Knex options                                                                                    |
+| [`clock.ts`](src/clock.ts)                         | `createClock()`: the clock, which reads the system time                                                                                             |
+| [`adapter-manager/`](src/adapter-manager/index.ts) | `AdapterManager`: loads, validates and caches adapters. See [Adapter manager](#adapter-manager)                                                     |
+| [`application.ts`](src/application.ts)             | `createApplication(definition)`: builds config, the logger, the database handle, the event bus and the clock once each, in that order, on first use |
 
 `createApplication` also returns `start()` and `stop()`: see
 [the start sequence](#the-start-sequence).
@@ -71,6 +72,46 @@ the application's definition supplies what goes in each one, under `steps`.
 
 The foundry installs no signal handlers and never exits the process. The
 application decides when to call `stop()`.
+
+## Adapter manager
+
+[`adapter-manager/`](src/adapter-manager/index.ts) loads, validates and caches
+adapter instances by type. It knows nothing about which adapters exist, where
+they are installed or how they are configured: an application's definition supplies, under `adapters`, its base-class registry,
+search paths, module loader and a `getConfig` callback returning the
+[adapter configuration](../kernel/src/adapter-manager/types.ts) keyed by type.
+`createApplication` builds one `AdapterManager` from them the first time it is
+needed, and `start()` calls its `init()` when the database step has finished.
+The manager is not part of the foundation and is not handed out.
+
+Ghost's registry and search paths are in
+[`ghost/bootstrap/adapters.ts`](../ghost/bootstrap/adapters.ts).
+`bin/validate-adapters.ts` shares the same loader and registry so a build-time
+check resolves adapters exactly as the server does.
+
+### Contract
+
+- **Construction** registers base classes only. It reads no configuration and
+  loads nothing.
+- **`init()`** validates every configured adapter up front: it resolves each
+  configured type and feature to a distinct class and options, loads the class,
+  calls its optional static `validate`, and aggregates all failures into one
+  error. It constructs no instances and does not touch cached ones. `start()`
+  calls it before the shared step; it is safe to call again.
+- **`getAdapter(name)`** resolves `name` (`type` or `type:feature`) through
+  `getConfig()` on every call, loads the class, and constructs and validates the
+  instance on first use. Instances are cached by requested name and class, so a
+  changed option reaches a new instance only after `clearCache()`, while
+  switching the active class and back returns the earlier instance. A cached
+  lookup still resolves and loads, so a class that can no longer be loaded
+  throws even for a cached name. There is no readiness guard: lookups before
+  `init()` work and are not validated up front.
+- **`clearCache()`** drops the manager's references so the next lookup
+  constructs afresh. It is not disposal: adapters own their resources, and
+  consumers that retained an instance keep it.
+
+[`loadAdapterClass`](src/adapter-manager/loader.ts) is exported for callers
+that need resolution without a manager, such as the validation CLI.
 
 ## Who may import it
 

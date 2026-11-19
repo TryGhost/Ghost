@@ -3,12 +3,12 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import sinon from 'sinon';
-import {
-  AdapterManager,
-  type AdapterManagerOptions,
-  resolveAdapterEntryPoint,
+import { AdapterManager, resolveAdapterEntryPoint } from '@tryghost/foundry/adapter-manager';
+import type {
+  Adapter,
+  AdapterConfig,
+  AdapterManagerOptions,
 } from '@tryghost/kernel/adapter-manager';
-import type { Adapter, AdapterConfig } from '@tryghost/kernel/adapter-manager';
 
 class BaseMailAdapter implements Adapter {
   readonly requiredFns: string[];

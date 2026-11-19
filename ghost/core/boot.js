@@ -95,13 +95,6 @@ async function initDatabase({ config }) {
 async function initFoundationChecks({ config }) {
   debug('Begin: initFoundationChecks');
 
-  // Validate configured adapters up-front so misconfiguration fails at boot
-  // rather than on first lazy use (e.g. first image upload or scheduled job)
-  debug('Begin: adapters');
-  const adapterManager = require('./server/services/adapter-manager').default;
-  adapterManager.init();
-  debug('End: adapters');
-
   // Limit image processing to the configured image formats before anything
   // can process an image
   debug('Begin: image upload config');
