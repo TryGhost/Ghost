@@ -33,7 +33,7 @@ export function EditingLockPrototypeListAvatar({
 }) {
   const message = viewing ? OPEN_MESSAGE : EDITING_MESSAGE;
   return (
-    <Tooltip>
+    <Tooltip delayDuration={viewing ? 0 : undefined}>
       <TooltipTrigger asChild>
         <span
           aria-label={message}
