@@ -794,7 +794,7 @@ describe('JobsService', function () {
       });
       assert.equal(
         message,
-        '[Jobs Outbox] Dropped 1 submitted rows whose job types recover on their own',
+        '[Jobs Outbox] Dropped 1 submitted rows whose job types are not replayed after a restart',
       );
     });
 
