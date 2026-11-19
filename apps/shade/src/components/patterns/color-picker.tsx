@@ -221,6 +221,12 @@ const useColorPicker = () => {
 export type ColorPickerProps = Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> & {
   value?: Parameters<typeof Color>[0];
   defaultValue?: Parameters<typeof Color>[0];
+  /**
+   * Called with the new colour as upper-case `#RRGGBB` when someone changes it in the picker,
+   * never on mount or when `value` changes. It's called from the input event, so it can run
+   * more than once before your component re-renders: compare with the last colour you stored,
+   * not with `value`.
+   */
   onChange?: (value: string) => void;
 };
 
@@ -526,9 +532,12 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
         // Invalid color, ignore
         return;
       }
-      // Another spelling of the colour shown, such as lower case, parses to slightly
-      // different channels; it isn't a change.
-      setColor((current) => (toColor(current).hexa() === toColor(next).hexa() ? {} : next));
+      // Another spelling of the hex shown, such as lower case, parses to slightly different
+      // channels; it isn't a change. Other formats, such as hsl(), can carry a hue a hex can't.
+      const isHex = value.trim().startsWith('#');
+      setColor((current) =>
+        isHex && toColor(current).hexa() === toColor(next).hexa() ? {} : next,
+      );
     } else if ((mode === 'rgb' || mode === 'hsl') && index !== undefined) {
       // Built from the latest colour, which may be newer than this render's. The color
       // library clamps out-of-range channels, so this can't throw.

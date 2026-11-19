@@ -430,6 +430,51 @@ describe('ColorPicker Component', () => {
       expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('100');
     });
 
+    it('keeps its hue through a drag across black when the parent echoes every report', () => {
+      const handleChange = vi.fn();
+      function Controlled() {
+        const [value, setValue] = useState('#0000ff');
+        return (
+          <ColorPickerRoot
+            value={value}
+            onChange={(hex) => {
+              handleChange(hex);
+              setValue(hex);
+            }}
+          >
+            <ColorPickerSelection data-testid="gradient" />
+            <ColorPickerHue />
+          </ColorPickerRoot>
+        );
+      }
+      render(<Controlled />);
+      const gradient = mockGradientRect();
+
+      fireEvent.pointerDown(gradient, { clientX: 100, clientY: 100, pointerId: 1 });
+      fireEvent.pointerMove(gradient, { clientX: 100, clientY: 200, pointerId: 1 });
+      fireEvent.pointerMove(gradient, { clientX: 100, clientY: 100, pointerId: 1 });
+
+      // Back from black, the colour is still blue, not the red a hex of black would give.
+      expect(handleChange.mock.calls.at(-1)).toEqual(['#30308F']);
+      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('240');
+    });
+
+    it('applies an hsl() colour typed into the hex input, even with the same hex', () => {
+      const handleChange = vi.fn();
+      render(
+        <ColorPickerRoot value="hsl(240, 100%, 0%)" onChange={handleChange}>
+          <ColorPickerHue />
+          <ColorPickerFormat />
+        </ColorPickerRoot>,
+      );
+
+      fireEvent.change(screen.getByLabelText('Hex color'), {
+        target: { value: 'hsl(120, 100%, 0%)' },
+      });
+
+      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('120');
+    });
+
     it('is not called when the hex is retyped in another case', () => {
       const handleChange = vi.fn();
       render(
