@@ -33,10 +33,10 @@ export type KnexAdapterOptions = {
 
 type Row = Record<string, unknown>;
 type QB = Knex.QueryBuilder;
+type JoinedColumn = { joinModel: string; column: string; resultAlias: string };
 
 const PRIMARY = 'primary';
 const joinAlias = (model: string) => `join_${model}`;
-const joinColumnAlias = (model: string, column: string) => `_joined_${model}_${column}`;
 
 // MySQL LIKE treats % and _ as wildcards and \ as the escape character
 const escapeLike = (value: string) => value.replace(/[\\%_]/g, (c) => `\\${c}`);
@@ -215,8 +215,24 @@ function createCustomAdapter(
         return { query: inner, joined: [], hiddenColumns };
       }
 
-      const query = db.from(inner.as(PRIMARY)).select(`${PRIMARY}.*`);
-      const joined: { joinModel: string; column: string }[] = [];
+      // Project schema and hidden grouping/sort columns so unmapped physical
+      // columns cannot occupy the joined-column namespace. This includes virtuals.
+      const primaryColumns = new Set(
+        selectedColumns?.length
+          ? [...selectedColumns, ...hiddenColumns]
+          : [
+              fieldColumn(modelKey, 'id'),
+              ...Object.keys(schema[modelKey]?.fields ?? {}).map((field) =>
+                fieldColumn(modelKey, field),
+              ),
+            ],
+      );
+      const query = db
+        .from(inner.as(PRIMARY))
+        .select([...primaryColumns].map((column) => db.ref(`${PRIMARY}.${column}`).as(column)));
+      const joined: JoinedColumn[] = [];
+      const usedAliases = new Set(primaryColumns);
+      let nextAlias = 0;
 
       for (const [joinModel, config] of Object.entries(join)) {
         const joinKey = config.modelKey ?? getDefaultModelName(joinModel);
@@ -233,13 +249,15 @@ function createCustomAdapter(
           ...Object.entries(fields).map(([field, attr]) => attr.fieldName ?? field),
         ];
         for (const column of new Set(columns)) {
-          query.select(
-            db.raw('? as ??', [
-              columnRef(joinModel, alias, column),
-              joinColumnAlias(joinModel, column),
-            ]),
-          );
-          joined.push({ joinModel, column });
+          // The counter ensures uniqueness; the table/column suffix keeps SQL readable.
+          let resultAlias: string;
+          do {
+            resultAlias = `_j${nextAlias}_${joinModel}_${column}`;
+            nextAlias += 1;
+          } while (usedAliases.has(resultAlias));
+          usedAliases.add(resultAlias);
+          query.select(db.raw('? as ??', [columnRef(joinModel, alias, column), resultAlias]));
+          joined.push({ joinModel, column, resultAlias });
         }
       }
       return { query, joined, hiddenColumns };
@@ -249,7 +267,7 @@ function createCustomAdapter(
       rows: Row[],
       modelKey: string,
       join: JoinConfig,
-      joined: { joinModel: string; column: string }[],
+      joined: JoinedColumn[],
       hiddenColumns: string[],
     ) => {
       const idColumn = fieldColumn(modelKey, 'id');
@@ -258,10 +276,9 @@ function createCustomAdapter(
       for (const row of rows) {
         const base: Row = { ...row };
         const related: Record<string, Row> = {};
-        for (const { joinModel, column } of joined) {
-          const key = joinColumnAlias(joinModel, column);
-          (related[joinModel] ??= {})[column] = row[key];
-          delete base[key];
+        for (const { joinModel, column, resultAlias } of joined) {
+          (related[joinModel] ??= {})[column] = row[resultAlias];
+          delete base[resultAlias];
         }
 
         const id = base[idColumn];
