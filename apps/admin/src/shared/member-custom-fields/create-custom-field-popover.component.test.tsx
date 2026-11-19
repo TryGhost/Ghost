@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { useRef } from 'react';
 
 import { renderInApp } from '@test-utils/acceptance';
@@ -72,5 +72,37 @@ describe('CreateCustomFieldPopover', () => {
 
     await expect.poll(() => onSubmit.mock.calls.length).toBe(1);
     expect(onSubmit.mock.calls[0][0]).toMatchObject({ access });
+  });
+
+  it('cancels a keyboard move of an option on Escape, and stays open with its options', async () => {
+    await renderInApp(<Harness onSubmit={() => {}} />);
+
+    await form().getByLabelText('Type').click();
+    await page.getByRole('option', { name: /List/ }).click();
+    for (const option of ['Dog', 'Cat', 'Fish']) {
+      await form().getByLabelText('New option').fill(option);
+      await userEvent.keyboard('{Enter}');
+    }
+    const options = () =>
+      form()
+        .getByLabelText(/^Option \d+$/)
+        .elements()
+        .map((input) => (input as HTMLInputElement).value);
+    await expect.poll(options).toEqual(['Dog', 'Cat', 'Fish']);
+    const announcements = () =>
+      [...document.querySelectorAll('[role="status"][aria-live="assertive"]')].map(
+        (region) => region.textContent,
+      );
+
+    (form().getByLabelText('Reorder Cat').element() as HTMLElement).focus();
+    await userEvent.keyboard(' ');
+    await expect.poll(announcements).toContain('Picked up Cat, position 2 of 3.');
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.poll(announcements).toContain('Cat moved to position 3 of 3.');
+    await userEvent.keyboard('{Escape}');
+    await expect.poll(announcements).toContain('Moving cancelled. Cat stays at position 2 of 3.');
+
+    await expect.poll(options).toEqual(['Dog', 'Cat', 'Fish']);
+    await expect.element(form()).toBeVisible();
   });
 });

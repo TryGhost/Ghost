@@ -7,6 +7,7 @@ import {
   type DraggableSyntheticListeners,
   type KeyboardCoordinateGetter,
   KeyboardSensor,
+  type KeyboardSensorProps,
   PointerSensor,
   type ScreenReaderInstructions,
   type UniqueIdentifier,
@@ -20,7 +21,7 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { CSS, isKeyboardEvent } from '@dnd-kit/utilities';
+import { CSS, getWindow, isKeyboardEvent } from '@dnd-kit/utilities';
 import { Menu } from 'lucide-react';
 import {
   type CSSProperties,
@@ -28,6 +29,7 @@ import {
   Fragment,
   type HTMLAttributes,
   type ReactNode,
+  useEffect,
   useRef,
   useState,
 } from 'react';
@@ -197,7 +199,62 @@ const createKeyboardMoves = () => {
       : [{ id: args.active.id }];
   };
 
+  // Stops the running keyboard drag's Escape listener.
+  let stopListening: (() => void) | null = null;
+
+  /**
+   * dnd-kit's keyboard sensor, with Escape taken ahead of the dialog, sheet or popover the list is
+   * in. Those close on Escape from a capture listener on the document, before dnd-kit's own
+   * listener sees it, and some keep it from reaching dnd-kit at all. This listens on the window in
+   * the capture phase, which runs first, and cancels the drag itself.
+   */
+  class Sensor extends KeyboardSensor {
+    constructor(props: KeyboardSensorProps) {
+      const ended = { stop: () => {} };
+      super({
+        ...props,
+        onEnd: () => {
+          ended.stop();
+          props.onEnd();
+        },
+        onCancel: () => {
+          ended.stop();
+          props.onCancel();
+        },
+      });
+      // Private in dnd-kit's types, but it's what dnd-kit's own Escape calls: it stops the sensor
+      // listening and cancels the drag. Without it, Escape is left to dnd-kit and the layers.
+      const { handleCancel } = this as unknown as { handleCancel?: unknown };
+      if (typeof handleCancel !== 'function') {
+        return;
+      }
+      const view = getWindow(props.event.target);
+      const onKeyDown = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') {
+          event.stopPropagation();
+          (handleCancel as (event: Event) => void)(event);
+        }
+      };
+      // Starts listening just after dnd-kit's own listener, which it adds on a timeout. An Escape
+      // before then would cancel the drag before that listener exists, and leave it listening.
+      const listening = setTimeout(() => view.addEventListener('keydown', onKeyDown, true));
+      const stop = () => {
+        clearTimeout(listening);
+        view.removeEventListener('keydown', onKeyDown, true);
+        if (stopListening === stop) {
+          stopListening = null;
+        }
+      };
+      ended.stop = stop;
+      stopListening?.();
+      stopListening = stop;
+    }
+  }
+
   return {
+    Sensor,
+    /** Stops listening for Escape, for a list whose drag ends without the sensor seeing it. */
+    stopEscape: () => stopListening?.(),
     // One options object, so the sensors and handle listeners stay the same across renders.
     // Scrolls instantly, so a key pressed mid-scroll can't leave the lifted item off its slot.
     keyboardSensorOptions: { coordinateGetter, scrollBehavior: 'auto' as const },
@@ -264,8 +321,11 @@ export const SortableList = <Item extends { id: string }>({
   // dnd-kit's default keyboard sensor moves 25px per press; this one moves to the next item.
   const sensors = useSensors(
     useSensor(PointerSensor),
-    useSensor(KeyboardSensor, keyboardMoves.keyboardSensorOptions),
+    useSensor(keyboardMoves.Sensor, keyboardMoves.keyboardSensorOptions),
   );
+  // A drag ends with its DndContext, which goes when the list unmounts or empties.
+  const isEmpty = !items.length;
+  useEffect(() => keyboardMoves.stopEscape, [keyboardMoves, isEmpty]);
 
   const handleLabel = (item: Item) => {
     const name = getItemLabel?.(item).trim();
