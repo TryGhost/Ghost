@@ -1,8 +1,7 @@
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
 import config from '../../../shared/config';
-// @ts-expect-error This module lacks type definitions.
-import commands from './commands';
+import * as commands from './commands';
 import schema from './schema';
 
 /**

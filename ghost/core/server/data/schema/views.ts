@@ -40,8 +40,8 @@
 // members_current_subscription lookup), so the ordering here is the single
 // source of truth for both filtering and display — see the
 // `current_subscription` reads in apps/admin/src/members/member-query-params.ts.
-module.exports = {
-  members_resolved_subscription: `
+// eslint-disable-next-line camelcase -- the export name is the database view's name
+export const members_resolved_subscription = `
         SELECT member_id, subscription_id
         FROM (
             SELECT
@@ -59,5 +59,4 @@ module.exports = {
             WHERE mscs.status NOT IN ('incomplete', 'incomplete_expired')
         ) ranked
         WHERE rn = 1
-    `,
-};
+    `;
