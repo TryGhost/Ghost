@@ -126,7 +126,7 @@ export const AUTOMATION_STEP_TERMINAL_STATUSES = [
   'finished',
   'member changed status',
   'member changed tier',
-  'member lost label',
+  'member label removed',
   'member unsubscribed',
 ] as const;
 
