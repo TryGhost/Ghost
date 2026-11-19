@@ -1,12 +1,19 @@
-const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:users');
-const tpl = require('@tryghost/tpl');
+import type { Frame } from '@tryghost/api-framework';
+import debugFactory from '@tryghost/debug';
+import tpl from '@tryghost/tpl';
+
+const debug = debugFactory('api:endpoints:utils:serializers:output:users');
+
+type JsonModel = {
+  toJSON(options: unknown): unknown;
+};
 
 const messages = {
   pwdChangedSuccessfully: 'Password changed successfully.',
 };
 
 module.exports = {
-  changePassword(models, apiConfig, frame) {
+  changePassword(models: unknown, apiConfig: unknown, frame: Frame) {
     debug('changePassword');
 
     frame.response = {
@@ -14,7 +21,7 @@ module.exports = {
     };
   },
 
-  transferOwnership(models, apiConfig, frame) {
+  transferOwnership(models: JsonModel[], apiConfig: unknown, frame: Frame) {
     debug('transferOwnership');
 
     frame.response = {
@@ -22,7 +29,7 @@ module.exports = {
     };
   },
 
-  readStaffToken(model, apiConfig, frame) {
+  readStaffToken(model: JsonModel, apiConfig: unknown, frame: Frame) {
     debug('readStaffToken');
 
     frame.response = {
@@ -30,7 +37,7 @@ module.exports = {
     };
   },
 
-  regenerateStaffToken(model, apiConfig, frame) {
+  regenerateStaffToken(model: JsonModel, apiConfig: unknown, frame: Frame) {
     debug('regenerateStaffToken');
 
     frame.response = {
