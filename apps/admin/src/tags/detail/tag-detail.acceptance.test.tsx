@@ -207,11 +207,9 @@ describe('Tag detail', () => {
       facebookTitle.element().compareDocumentPosition(facebookPreview.element()) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-    const facebookLogo = tagDetailScreen
-      .facebookPreview()
-      .element()
-      .querySelector(':scope > div > svg');
-    expect(facebookLogo?.getAttribute('aria-hidden')).toBe('true');
+    await expect
+      .element(tagDetailScreen.facebookPreview().getByRole('img'))
+      .not.toBeInTheDocument();
 
     const codeInjectionCard = tagDetailScreen.codeInjectionCard();
     const codeInjectionTrigger = tagDetailScreen.codeInjectionTrigger();

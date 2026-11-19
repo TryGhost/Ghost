@@ -18,6 +18,7 @@ describe('Logos', () => {
     expect(svg?.hasAttribute('role')).toBe(false);
     expect(svg?.querySelector('title, desc')).toBeNull();
     expect(svg?.hasAttribute('alt')).toBe(false);
+    expect(container.querySelector('[id]')).toBeNull();
   });
 
   it.each(Object.entries(logos))(
