@@ -1,4 +1,5 @@
 const errors = require('@tryghost/errors');
+const { FAILURE_CODES } = require('../../webhook/failures');
 const _ = require('lodash');
 
 /**
@@ -28,6 +29,7 @@ module.exports = class SubscriptionEventService {
     const subscriptionPriceData = _.get(subscription, 'items.data');
     if (!subscriptionPriceData || subscriptionPriceData.length !== 1) {
       throw new errors.BadRequestError({
+        code: FAILURE_CODES.unsupportedSubscription,
         message: 'Subscription should have exactly 1 price item',
       });
     }

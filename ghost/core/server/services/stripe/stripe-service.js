@@ -1,7 +1,7 @@
 const WebhookManager = require('./webhook-manager');
 const { BillingPortalManager } = require('./billing-portal-manager');
 const StripeAPI = require('./stripe-api');
-const WebhookController = require('./webhook-controller');
+const { WebhookController } = require('./webhook-controller');
 const DomainEvents = require('@tryghost/domain-events');
 const { StripeLiveEnabledEvent, StripeLiveDisabledEvent } = require('./events');
 const SubscriptionEventService = require('./services/webhook/subscription-event-service');
@@ -151,6 +151,7 @@ module.exports = class StripeService {
     });
 
     const webhookController = new WebhookController({
+      apiVersion: StripeAPI.API_VERSION,
       webhookManager,
       subscriptionEventService,
       invoiceEventService,
@@ -164,6 +165,7 @@ module.exports = class StripeService {
     this.api = api;
     this.webhookManager = webhookManager;
     this.webhookController = webhookController;
+    this.checkoutSessionEventService = checkoutSessionEventService;
     this.billingPortalManager = billingPortalManager;
     /** @private */
     this.ephemeralWebhook = false;
