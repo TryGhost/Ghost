@@ -160,7 +160,7 @@ const FieldList: React.FC<{
       {isSortable ? (
         <SortableList
           container={(props) => <SortableFieldRow {...props} />}
-          getDragHandleLabel={(field) => `Reorder ${field.name}`}
+          getItemLabel={(field) => field.name}
           items={withRowIds(visibleFields)}
           renderItem={(field) => <FieldRow field={field} openModal={openModal} />}
           wrapper={ActionList}

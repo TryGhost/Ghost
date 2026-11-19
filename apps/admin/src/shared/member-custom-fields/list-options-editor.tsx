@@ -260,7 +260,7 @@ export function ListOptionsEditor({
       <Stack gap="sm">
         <div>
           <SortableList
-            getDragHandleLabel={({ option, index }) => `Reorder ${optionName(option, index)}`}
+            getItemLabel={({ option, index }) => optionName(option, index)}
             items={rows}
             itemSeparator={false}
             renderItem={({ option, index }) => {
