@@ -3,7 +3,10 @@ import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
 import { loadBootFunction } from './harness';
 
-function createBackgroundHarness(environment = 'production') {
+function createBackgroundHarness(
+  environment = 'production',
+  { keepsJobsUntilSettled = false } = {},
+) {
   const emailAnalyticsJobs = {
     scheduleRecurringNewslettersJob: sinon.stub().resolves(),
     scheduleRecurringAutomationsJob: sinon.stub().resolves(),
@@ -19,7 +22,7 @@ function createBackgroundHarness(environment = 'production') {
   const milestones = { initAndRun: sinon.stub() };
   const signingKeys = { extras: { scheduleCheckJob: sinon.stub().resolves() } };
   const authCleanup = { scheduleClearExpiredJob: sinon.stub().resolves() };
-  const jobsInstance = {};
+  const jobsInstance = { keepsJobsUntilSettled: () => keepsJobsUntilSettled };
   const initBackgroundServices = loadBootFunction(
     'initBackgroundServices',
     {
@@ -106,6 +109,14 @@ for (const environment of ['development', 'production']) {
     );
   });
 }
+
+it('leaves interrupted newsletter sends to the jobs outbox when it keeps jobs until they settle', async function () {
+  const boot = createBackgroundHarness('production', { keepsJobsUntilSettled: true });
+  await boot.init();
+
+  sinon.assert.notCalled(boot.recovery);
+  sinon.assert.calledOnce(boot.giftRecovery);
+});
 
 it('keeps starting background services when email analytics scheduling fails', async function () {
   const boot = createBackgroundHarness();

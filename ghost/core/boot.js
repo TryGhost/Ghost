@@ -580,22 +580,26 @@ async function initBackgroundServices({ config }) {
     return;
   }
 
+  const jobsService = require('./server/services/jobs-service').getInstance();
+
   // Resume any newsletter sends interrupted by a prior container shutdown.
   // Runs before activitypub.init so an activitypub failure can't disable recovery.
-  try {
-    const emailService = require('./server/services/email-service');
-    await emailService.service.resumeInterruptedSends();
-  } catch (err) {
-    const logging = require('@tryghost/logging');
-    logging.error(err);
+  // An outbox that keeps jobs until they settle hands interrupted sends over
+  // again itself, and this scan can't tell whether another process owns a send.
+  if (!jobsService.keepsJobsUntilSettled()) {
+    try {
+      const emailService = require('./server/services/email-service');
+      await emailService.service.resumeInterruptedSends();
+    } catch (err) {
+      const logging = require('@tryghost/logging');
+      logging.error(err);
+    }
   }
 
   // Retry gift deliveries interrupted by a prior shutdown. Not awaited: recovery
   // sends sequentially and must not hold up the remaining background services.
   const giftService = require('./server/services/gifts');
   giftService.recoverPendingDeliveries();
-
-  const jobsService = require('./server/services/jobs-service').getInstance();
 
   // Runs before activitypub.init for the same reason as the send recovery
   // above: gifts would otherwise go uncleaned for the life of the process
