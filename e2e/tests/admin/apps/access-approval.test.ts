@@ -55,6 +55,17 @@ test.describe('Ghost Admin - App access approval', () => {
     await expect(appPage.frame).toBeVisible();
     const installationId = appPage.installationId();
 
+    // The app reaches only what it was approved for.
+    await appPage.app.callAdminApi('/posts/');
+    await expect(appPage.app.result).toHaveText(/^200 \{"posts":/);
+    // Not how its posts performed, which Ghost includes by default but needs post:read_stats. A
+    // post's email is an object, or null, unlike an author's.
+    await expect(appPage.app.result).not.toHaveText(/"email":(null|\{)|"count":\{/);
+    await appPage.app.callAdminApi('/tags/');
+    await expect(appPage.app.result).toHaveText(
+      "blocked: This app wasn't approved for tag:browse, which GET /tags/ needs",
+    );
+
     expect(await storedInstallation(page.request, installationId)).toMatchObject({
       status: 'active',
       manifest: { access: [{ permission_key: 'post:browse', backend: true }] },

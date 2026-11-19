@@ -144,7 +144,8 @@ export class FixtureApp extends FakeServer {
       accent_color: '#15171a',
       icon: { name: 'blocks' },
       surfaces: [{ type: 'admin_page', url: 'app.html' }],
-      access: {},
+      // Listing posts, which the page's button calls by default.
+      access: { post: { scopes: [{ permission_key: 'post:browse' }] } },
     };
   }
 

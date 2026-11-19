@@ -3,6 +3,7 @@ import { page, userEvent } from 'vitest/browser';
 import type {
   AppInstallation,
   AppInstallationHistoryEntry,
+  AppManifest,
 } from '@tryghost/admin-x-framework/api/app-installations';
 import {
   type AppFrameResult,
@@ -1246,9 +1247,27 @@ describe('Managing apps', () => {
   });
 
   describe('the Admin API, on the app’s behalf', () => {
+    /** An installation approved to work with posts and pages and add tags, as these calls need. */
+    const postsApp = () =>
+      installation({
+        manifest: manifest({
+          access: (
+            [
+              'post:browse',
+              'post:read',
+              'post:add',
+              'post:edit',
+              'post:destroy',
+              'tag:add',
+            ] as const
+          ).map((key): AppManifest['access'][number] => ({ permission_key: key, backend: false })),
+        }),
+      });
+
     it('sends an app’s request with Admin’s headers and the app’s own, and returns the response', async () => {
-      await fakeAppPage(installation());
-      const postsApi = fakeAdminEndpoint('GET', '/posts/?limit=5', {
+      await fakeAppPage(postsApp());
+      // The app named no include, so Admin names the ones it may have.
+      const postsApi = fakeAdminEndpoint('GET', '/posts/?limit=5&include=authors', {
         posts: [{ id: 'post-1', title: 'Episode 1' }],
       });
       await renderAdminApp(APP_ROUTE, { labs });
@@ -1272,9 +1291,9 @@ describe('Managing apps', () => {
     it('refuses a request that sets a header only Admin sets, without sending it', async () => {
       // Uses a page without the SDK, which refuses these itself, because Admin can't rely on the
       // SDK.
-      await fakeAppPage(installation(), { kind: 'raw' });
+      await fakeAppPage(postsApp(), { kind: 'raw' });
       // Faked so that a request that got through is recorded, rather than failing as unhandled.
-      const postsApi = fakeAdminEndpoint('GET', '/posts/', { posts: [] });
+      const postsApi = fakeAdminEndpoint('GET', '/posts/?include=authors', { posts: [] });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
@@ -1309,7 +1328,7 @@ describe('Managing apps', () => {
     });
 
     it('sends a write with its body, labelled as JSON', async () => {
-      await fakeAppPage(installation());
+      await fakeAppPage(postsApp());
       const tagsApi = fakeAdminEndpoint('POST', '/tags/', ({ body }) => body, { status: 201 });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
@@ -1326,8 +1345,10 @@ describe('Managing apps', () => {
     });
 
     it('sends a write with cards in its content as it is', async () => {
-      await fakeAppPage(installation());
-      const postsApi = fakeAdminEndpoint('POST', '/posts/', ({ body }) => body, { status: 201 });
+      await fakeAppPage(postsApp());
+      const postsApi = fakeAdminEndpoint('POST', '/posts/?include=authors', ({ body }) => body, {
+        status: 201,
+      });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
@@ -1353,11 +1374,11 @@ describe('Managing apps', () => {
 
     // An app's request can be refused as unauthorized while the staff session still works.
     it('stays with the app when its request is unauthorized while the session works', async () => {
-      await fakeAppPage(installation());
-      const path = '/tags/';
+      await fakeAppPage(postsApp());
+      const path = '/posts/';
       fakeAdminEndpoint(
         'GET',
-        path,
+        `${path}?include=authors`,
         { errors: [{ type: 'UnauthorizedError', message: 'Invalid token' }] },
         { status: 401 },
       );
@@ -1374,10 +1395,12 @@ describe('Managing apps', () => {
     });
 
     it('refuses what the allowlist doesn’t allow without sending it', async () => {
-      await fakeAppPage(installation());
+      await fakeAppPage(postsApp());
       // Faked so that a request that got through is recorded, rather than failing as unhandled.
       const tokenApi = fakeAdminEndpoint('GET', /^\/users\/.*\/token\//i, { apiKey: {} });
-      const postsApi = fakeAdminEndpoint('POST', '/posts/', ({ body }) => body, { status: 201 });
+      const postsApi = fakeAdminEndpoint('POST', '/posts/?include=authors', ({ body }) => body, {
+        status: 201,
+      });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
@@ -1386,6 +1409,8 @@ describe('Managing apps', () => {
         '/USERS/6500000000000000000000c3/Token',
         '/apps/installations/',
         '/members/',
+        // Not among the scopes the installation was approved for.
+        '/tiers/',
         // Core's rewrite for its old versioned addresses would send both of these to /db/.
         '/v4/db/?x=ghost/api/v4/admin/',
         '/dbv4//?x=ghost/api/v4/admin/',
@@ -1450,11 +1475,11 @@ describe('Managing apps', () => {
     });
 
     it('refuses a path the Admin API only redirects, and says its paths end in /', async () => {
-      await fakeAppPage(installation());
+      await fakeAppPage(postsApp());
       // As Ghost responds to a path without its trailing `/`.
       const postsApi = fakeAdminEndpoint(
         'GET',
-        '/posts',
+        '/posts?include=authors',
         () => new Response(null, { status: 301, headers: { location: '/ghost/api/admin/posts/' } }),
       );
       await renderAdminApp(APP_ROUTE, { labs });
@@ -1469,7 +1494,7 @@ describe('Managing apps', () => {
     it('refuses a path that would leave the Admin API, without sending it', async () => {
       // Uses a page without the SDK, which refuses a URL itself, because Admin can't rely on the
       // SDK.
-      await fakeAppPage(installation(), { kind: 'raw' });
+      await fakeAppPage(postsApp(), { kind: 'raw' });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
