@@ -263,38 +263,102 @@ describe('Tabs Component', () => {
       expect(screen.getByRole('menu', { name: 'Members metric' })).toBeTruthy();
     });
 
+    // In browsers, the menu cancels the pointerdown that opens it, so no mousedown follows.
+    const clickOpen = (tab: HTMLElement) => {
+      fireEvent.pointerDown(tab, { button: 0, ctrlKey: false });
+      expect(screen.getByRole('menu')).toBeTruthy();
+    };
+
     it('opens the menu on click without selecting the tab', () => {
       const handleValueChange = vi.fn();
       render(<DropdownTabs onValueChange={handleValueChange} />);
 
       const tab = screen.getByRole('tab', { name: 'Members' });
-      fireEvent.pointerDown(tab, { button: 0, ctrlKey: false });
-      fireEvent.mouseDown(tab, { button: 0 });
+      clickOpen(tab);
 
-      expect(screen.getByRole('menu')).toBeTruthy();
       expect(handleValueChange).not.toHaveBeenCalled();
       expect(tab.getAttribute('aria-selected')).toBe('false');
     });
 
-    it('selects the tab that a dismissed menu returns focus to, keeping one Tab stop', async () => {
-      render(<DropdownTabs />);
+    it('returns focus to the selected tab when a menu opened by a click is dismissed', async () => {
+      const handleValueChange = vi.fn();
+      render(<DropdownTabs onValueChange={handleValueChange} />);
 
-      const visitors = screen.getByRole('tab', { name: 'Visitors' });
-      const revenue = screen.getByRole('tab', { name: 'Revenue' });
-      // Leave the list's Tab stop on a tab after the dropdown tab.
-      await arrow(screen.getByRole('tab', { name: 'Members' }), 'ArrowRight');
-      expect(document.activeElement).toBe(revenue);
+      // Select a tab after the dropdown tab, so its Tab stop is the one to keep.
+      const revenue = await arrow(screen.getByRole('tab', { name: 'Members' }), 'ArrowRight');
+      expect(revenue).toBe(screen.getByRole('tab', { name: 'Revenue' }));
+      handleValueChange.mockClear();
 
       const tab = screen.getByRole('tab', { name: 'Members' });
-      fireEvent.pointerDown(tab, { button: 0, ctrlKey: false });
+      clickOpen(tab);
       fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+      await waitFor(() => expect(document.activeElement).toBe(revenue));
+
+      expect(handleValueChange).not.toHaveBeenCalled();
+      expect(tab.getAttribute('aria-selected')).toBe('false');
+      expect(revenue?.getAttribute('aria-selected')).toBe('true');
+      expect((revenue as HTMLElement).tabIndex).toBe(0);
+      expect(tab.tabIndex).toBe(-1);
+    });
+
+    it('keeps focus on the tab when a menu item opened by a click selects it', async () => {
+      render(<DropdownTabs />);
+
+      const tab = screen.getByRole('tab', { name: 'Members' });
+      clickOpen(tab);
+      fireEvent.click(screen.getByRole('menuitem', { name: 'Paid members' }));
       await waitFor(() => expect(document.activeElement).toBe(tab));
 
-      // A focused tab is selected, as in any automatic tab list, and is the list's one Tab stop.
       expect(tab.getAttribute('aria-selected')).toBe('true');
       expect(tab.tabIndex).toBe(0);
-      expect(revenue.tabIndex).toBe(-1);
-      expect(visitors.tabIndex).toBe(-1);
+    });
+
+    it('returns focus to the tab when a menu opened from it by keyboard is dismissed', async () => {
+      render(<DropdownTabs />);
+
+      const tab = await arrow(screen.getByRole('tab', { name: 'Visitors' }), 'ArrowRight');
+      fireEvent.keyDown(tab as HTMLElement, { key: 'Enter' });
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+
+      await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+      expect(document.activeElement).toBe(tab);
+      expect(tab?.getAttribute('aria-selected')).toBe('true');
+    });
+
+    it('returns focus to the tab in a manual tab list, without selecting it', async () => {
+      render(<DropdownTabs activationMode="manual" />);
+
+      const tab = screen.getByRole('tab', { name: 'Members' });
+      clickOpen(tab);
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+
+      await waitFor(() => expect(document.activeElement).toBe(tab));
+      expect(tab.getAttribute('aria-selected')).toBe('false');
+    });
+
+    it('runs a consumer key handler first, which can keep the menu shut', () => {
+      const handleKeyDown = vi.fn((event: { preventDefault: () => void }) =>
+        event.preventDefault(),
+      );
+      render(
+        <Tabs defaultValue="members">
+          <TabsList>
+            <DropdownMenu>
+              <TabsDropdownTrigger value="members" onKeyDown={handleKeyDown}>
+                Members
+              </TabsDropdownTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem>Paid members</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </TabsList>
+        </Tabs>,
+      );
+
+      fireEvent.keyDown(screen.getByRole('tab', { name: 'Members' }), { key: 'Enter' });
+
+      expect(handleKeyDown).toHaveBeenCalledTimes(1);
+      expect(screen.queryByRole('menu')).toBeNull();
     });
 
     it('is reached by arrow keys and selected like any other tab', async () => {
