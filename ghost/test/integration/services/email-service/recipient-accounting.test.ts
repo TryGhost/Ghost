@@ -607,7 +607,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     assert.equal(details.batch_error.reason, 'provider_payload_count');
   });
 
-  it('reports persisted verification failures during shutdown with unstarted batches', async function () {
+  it('fails the email on persisted verification failures during shutdown with unstarted batches', async function () {
     const batches = await service.createBatches(data);
     sender.send.onFirstCall().callsFake(async () => {
       service.onPreStop();
@@ -623,8 +623,8 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     assert.equal(reported.length, 1);
     assert.equal(JSON.parse(reported[0].args[0].errorDetails).reason, 'batch_verification_failed');
     await email.refresh();
-    assert.equal(email.get('status'), 'pending');
-    assert.equal(email.get('error'), null);
+    assert.equal(email.get('status'), 'failed');
+    assert.equal(email.get('error'), reported[0].args[0].message);
     assert.ok((await service.getBatches(email)).some((batch) => batch.get('status') === 'pending'));
   });
 
@@ -1490,13 +1490,8 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       assert.equal(error.retryable, false);
       assert.equal(verificationDetails(error).reason, 'provider_payload_count');
       await email.refresh();
-      assert.equal(email.get('status'), shutdown ? 'pending' : 'failed');
-      assert.equal(email.get('error'), shutdown ? null : error.message);
-      if (shutdown) {
-        assert.ok(
-          (await service.getBatches(email)).some((batch) => batch.get('status') === 'pending'),
-        );
-      }
+      assert.equal(email.get('status'), 'failed');
+      assert.equal(email.get('error'), error.message);
       const alerts = logging.error
         .getCalls()
         .filter(

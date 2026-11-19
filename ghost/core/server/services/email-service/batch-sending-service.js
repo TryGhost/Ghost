@@ -340,11 +340,11 @@ class BatchSendingService {
     } catch (e) {
       // Any failure while shutting down counts as interrupted, not failed:
       // collapsed budgets surface transient errors as hard failures, and `failed`
-      // drops the email out of the boot resume scan.
-      if ((e && e.code === SHUTDOWN_CODE) || this.#shuttingDown) {
-        if (e?.retryable === false) {
-          this.#sentry?.captureException(e);
-        }
+      // drops the email out of the boot resume scan. An integrity failure
+      // (retryable: false) comes from persisted data rather than the shortened
+      // budget, so it still fails the email for an operator to check.
+      const stoppedByShutdown = (e && e.code === SHUTDOWN_CODE) || this.#shuttingDown;
+      if (stoppedByShutdown && e?.retryable !== false) {
         await this.#releaseInterruptedEmail(email.id);
         return 'interrupted';
       }
