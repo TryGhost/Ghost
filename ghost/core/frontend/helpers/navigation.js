@@ -119,7 +119,7 @@ module.exports = function navigation(options) {
 
   if (
     navigationData.filter(function (e) {
-      return _.isUndefined(e.url) || (_.isUndefined(e.label) && _.isUndefined(e.icon));
+      return e.url === undefined || (e.label === undefined && e.icon === undefined);
     }).length > 0
   ) {
     throw new errors.IncorrectUsageError({
@@ -131,9 +131,9 @@ module.exports = function navigation(options) {
   if (
     navigationData.filter(function (e) {
       return (
-        (!_.isUndefined(e.label) && !_.isNull(e.label) && !_.isString(e.label)) ||
-        _.isNull(e.url) ||
-        !_.isString(e.url)
+        (e.label !== undefined && e.label !== null && typeof e.label !== 'string') ||
+        e.url === null ||
+        typeof e.url !== 'string'
       );
     }).length > 0
   ) {
@@ -157,9 +157,9 @@ module.exports = function navigation(options) {
     .filter((item) => (navigationIconsEnabled ? isNavigationItemVisible(item, member) : true))
     .map(function (e) {
       const out = {};
-      const icon = navigationIconsEnabled && _.isString(e.icon) ? e.icon : null;
+      const icon = navigationIconsEnabled && typeof e.icon === 'string' ? e.icon : null;
       const iconName = getNavigationIconName(icon);
-      const hasLabel = _.isString(e.label) && e.label.trim().length > 0;
+      const hasLabel = typeof e.label === 'string' && e.label.trim().length > 0;
 
       out.current = isCurrentNavigationUrl(e.url, currentUrl);
       out.icon = icon || null;

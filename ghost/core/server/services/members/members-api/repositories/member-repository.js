@@ -1599,7 +1599,7 @@ module.exports = class MemberRepository {
       { ...options, forUpdate: true },
     );
 
-    const subscriptionPriceData = _.get(stripeSubscriptionData, 'items.data[0].price');
+    const subscriptionPriceData = stripeSubscriptionData.items?.data?.[0]?.price;
     let ghostProduct;
     try {
       ghostProduct = await this._productRepository.get(
@@ -1652,7 +1652,7 @@ module.exports = class MemberRepository {
 
     if (stripeCouponId && !offerId && ghostProduct) {
       const coupon = stripeSubscriptionData.discount.coupon;
-      const cadence = _.get(subscriptionPriceData, 'recurring.interval');
+      const cadence = subscriptionPriceData?.recurring?.interval;
       const tier = { id: ghostProduct.get('id'), name: ghostProduct.get('name') };
 
       try {
@@ -1703,8 +1703,7 @@ module.exports = class MemberRepository {
       // turned out to be much bigger problem.
       // Ideally, would need nickname field to be nullable on the DB level
       // condition can be simplified once this is done
-      plan_nickname:
-        subscriptionPriceData.nickname || _.get(subscriptionPriceData, 'recurring.interval'),
+      plan_nickname: subscriptionPriceData.nickname || subscriptionPriceData.recurring?.interval,
       plan_interval: _.get(subscriptionPriceData, 'recurring.interval', ''),
       plan_amount: subscriptionPriceData.unit_amount,
       plan_currency: subscriptionPriceData.currency,

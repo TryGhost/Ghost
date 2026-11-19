@@ -149,7 +149,7 @@ module.exports.enabledHelper = function enabledHelper(options, callback) {
 
   const { SafeString } = require('express-hbs');
   const errString = new SafeString(
-    `<script>console.error("${_.values(errDetails).join(' ')}");</script>`,
+    `<script>console.error("${Object.values(errDetails).join(' ')}");</script>`,
   );
 
   return errString;
