@@ -62,7 +62,8 @@ export function describeWebhookError(error: unknown): string {
  * Builds the request options for a signed host webhook delivery. When no
  * secret is configured the payload is sent unsigned (the receiver decides
  * whether to accept that). got never retries a POST, so each delivery is
- * sent once.
+ * sent once. It may retry the GET that follows a 303 redirect, which doesn't
+ * resend the delivery.
  */
 export function buildSignedWebhookRequest({
   payload,

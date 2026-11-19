@@ -220,6 +220,30 @@ describe('ExportRequestsService', function () {
     }
   });
 
+  it('does not resend the request when a redirect leads to a failure', async function () {
+    // got may retry the GET that follows a 303, but never the POST itself.
+    const generator = nock('https://export-generator.example.com')
+      .post('/api/generate/')
+      .reply(303, '', { location: '/api/generate/status/' })
+      .get('/api/generate/status/')
+      .times(3)
+      .reply(503, '', { 'retry-after': '0' })
+      .post('/api/generate/')
+      .reply(202);
+    const service = createService({ request: ghostRequest });
+    const environment = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    try {
+      await assert.rejects(service.requestExport({ components: allComponents, requestedByUserId }));
+      // The 202 that a second POST would have taken is still waiting.
+      const pendingPosts = generator.pendingMocks().filter((mock) => mock.startsWith('POST'));
+      assert.equal(pendingPosts.length, 1);
+    } finally {
+      process.env.NODE_ENV = environment;
+      nock.cleanAll();
+    }
+  });
+
   it('computes the documented HMAC for a known secret, timestamp and body', async function () {
     // Pins the exact wire contract the receiving host verifies:
     // base64(HMAC-SHA256(secret, `${timestamp}:${rawBody}`))
