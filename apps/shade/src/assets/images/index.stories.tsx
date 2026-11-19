@@ -10,7 +10,8 @@ const meta = {
   parameters: {
     docs: {
       description: {
-        component: 'Brand logos exported by Shade, sized with standard SVG dimensions.',
+        component:
+          'Brand logos exported by Shade, sized with standard SVG dimensions. Logos are hidden from screen readers by default, so a logo beside a label adds nothing to its name. When a logo stands on its own, name it with `title`, `aria-label` or `aria-labelledby`.',
       },
     },
   },
@@ -39,7 +40,7 @@ export const Sizes: Story = {
           <Inline align="end" gap="2xl" wrap>
             {[16, 24, 48, 96].map((size) => (
               <Stack key={size} align="center" gap="sm">
-                <Logo aria-label={name} height={size} role="img" width={size} />
+                <Logo height={size} title={name} width={size} />
                 <Text size="sm" tone="secondary">
                   {formatNumber(size)}px
                 </Text>
