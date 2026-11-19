@@ -242,8 +242,8 @@ describe('Installing an app', () => {
           manifest: renamed,
           digest: 'digest-2',
           installation: existing([
-            { path: 'description', requires_approval: false },
-            { path: 'name', requires_approval: true },
+            { kind: 'field', path: 'description', requires_approval: false },
+            { kind: 'field', path: 'name', requires_approval: true },
           ]),
         }),
       ),
@@ -284,8 +284,8 @@ describe('Installing an app', () => {
           digest: 'digest-2',
           trusted_origins: ['https://audio.example.org'],
           installation: existing([
-            { path: 'manifest_url', requires_approval: true },
-            { path: 'surfaces[0].url', requires_approval: true },
+            { kind: 'field', path: 'manifest_url', requires_approval: true },
+            { kind: 'field', path: 'surfaces[0].url', requires_approval: true },
           ]),
         }),
       ),
@@ -432,7 +432,7 @@ describe('Installing an app', () => {
         previews === 1
           ? preview()
           : preview({
-              installation: existing([{ path: 'name', requires_approval: true }]),
+              installation: existing([{ kind: 'field', path: 'name', requires_approval: true }]),
               manifest: manifest({ name: 'Podcasts' }),
             }),
       );
@@ -456,7 +456,7 @@ describe('Installing an app', () => {
         preview({
           manifest: manifest({ name: 'Podcasts' }),
           digest: 'digest-2',
-          installation: existing([{ path: 'name', requires_approval: true }]),
+          installation: existing([{ kind: 'field', path: 'name', requires_approval: true }]),
         }),
       ),
     );
@@ -466,9 +466,9 @@ describe('Installing an app', () => {
       digest: 'digest-2',
       installation: {
         ...existing([
-          { path: 'manifest_url', requires_approval: true },
-          { path: 'name', requires_approval: true },
-          { path: 'surfaces[0].url', requires_approval: true },
+          { kind: 'field', path: 'manifest_url', requires_approval: true },
+          { kind: 'field', path: 'name', requires_approval: true },
+          { kind: 'field', path: 'surfaces[0].url', requires_approval: true },
         ]),
         revision: 1,
         manifest_url: 'https://new.example.com/ghost-app.json',
@@ -502,7 +502,7 @@ describe('Installing an app', () => {
         preview({
           manifest: manifest({ name: 'Podcasts' }),
           digest: 'digest-2',
-          installation: existing([{ path: 'name', requires_approval: true }]),
+          installation: existing([{ kind: 'field', path: 'name', requires_approval: true }]),
         }),
       );
     });
@@ -524,7 +524,9 @@ describe('Installing an app', () => {
       previews += 1;
       return previewResponse(
         previews === 1
-          ? preview({ installation: existing([{ path: 'name', requires_approval: true }]) })
+          ? preview({
+              installation: existing([{ kind: 'field', path: 'name', requires_approval: true }]),
+            })
           : preview(),
       );
     });
@@ -546,7 +548,7 @@ describe('Installing an app', () => {
         preview({
           manifest: manifest({ name: 'Podcasts' }),
           digest: 'digest-2',
-          installation: existing([{ path: 'name', requires_approval: true }]),
+          installation: existing([{ kind: 'field', path: 'name', requires_approval: true }]),
         }),
       ),
     );
