@@ -6,6 +6,7 @@ import { fromDatabaseDate } from '../../../../core/server/lib/db-types/date';
 import type {
   ActionToInsert,
   EdgeRow,
+  EmailRecipientToInsert,
   RunStepToInsert,
 } from '../../../../core/server/services/automations/automations-repository-2';
 import { createDatabaseAutomationsRepository2 } from '../../../../core/server/services/automations/database-automations-repository-2';
@@ -858,6 +859,30 @@ describe('database automations repository', function () {
     });
   });
 
+  alphabeticalDescribe('incrementEmailSentCount', function () {
+    const fixture = useEmailClickFixture();
+    const { repository } = fixture;
+
+    it.each([null, 0, 5])(
+      'increments a count initially set to %s and leaves other revisions unchanged',
+      async function (count) {
+        await knex('automation_action_revisions')
+          .where('id', fixture.revisionIds[0])
+          .update({ email_sent_count: count });
+
+        await repository.incrementEmailSentCount(knex, fixture.revisionIds[0]);
+
+        const rows = await knex('automation_action_revisions')
+          .whereIn('id', fixture.revisionIds)
+          .select('id', 'email_sent_count');
+        expect(rows.find((row) => row.id === fixture.revisionIds[0])?.email_sent_count).toBe(
+          (count ?? 0) + 1,
+        );
+        expect(rows.find((row) => row.id === fixture.revisionIds[1])?.email_sent_count).toBeNull();
+      },
+    );
+  });
+
   alphabeticalDescribe('insertActions', function () {
     let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
     let automationId: string;
@@ -912,6 +937,91 @@ describe('database automations repository', function () {
       await repository.insertActions(knex, []);
 
       await expect(findActions()).resolves.toEqual([action]);
+    });
+  });
+
+  alphabeticalDescribe('insertEmailRecipient', function () {
+    const fixture = useEmailClickFixture();
+    const { repository } = fixture;
+
+    const createRecipientToInsert = (): EmailRecipientToInsert => ({
+      id: ObjectId().toHexString(),
+      created_at: createdAt,
+      updated_at: updatedAt,
+      member_id: fixture.memberId,
+      member_uuid: '00000000-0000-4000-8000-000000000001',
+      member_email: 'member@example.com',
+      member_name: 'Test Member',
+      automation_action_revision_id: fixture.revisionIds[0],
+      automation_run_step_id: fixture.stepId,
+      mailgun_message_id: 'mailgun-message-id',
+      track_clicks: true,
+      track_opens: true,
+    });
+
+    const findRecipient = async (id: string) => {
+      const row = await knex('automated_email_recipients').where({ id }).first();
+      return (
+        row && {
+          ...row,
+          created_at: fromDatabaseDate(row.created_at),
+          updated_at: fromDatabaseDate(row.updated_at),
+        }
+      );
+    };
+
+    it('inserts a recipient with its tracking settings and timestamps', async function () {
+      const recipient = createRecipientToInsert();
+
+      await repository.insertEmailRecipient(knex, recipient);
+
+      expect(await findRecipient(recipient.id)).toEqual({
+        ...recipient,
+        automated_email_id: null,
+        delivered_at: null,
+        opened_at: null,
+        clicked_at: null,
+        track_clicks: 1,
+        track_opens: 1,
+      });
+    });
+
+    it('inserts a recipient without a Mailgun message ID or member name', async function () {
+      const { mailgun_message_id: _mailgunMessageId, ...recipient } = {
+        ...createRecipientToInsert(),
+        member_name: null,
+        track_clicks: false,
+        track_opens: false,
+      };
+
+      await repository.insertEmailRecipient(knex, recipient);
+
+      expect(await findRecipient(recipient.id)).toMatchObject({
+        mailgun_message_id: null,
+        member_name: null,
+        track_clicks: 0,
+        track_opens: 0,
+      });
+    });
+
+    it('rolls back the sent count with a failed insert in the same transaction', async function () {
+      const recipient = {
+        ...createRecipientToInsert(),
+        automation_run_step_id: ObjectId().toHexString(),
+      };
+
+      await expect(
+        repository.withTransaction(async (trx) => {
+          await repository.incrementEmailSentCount(trx, fixture.revisionIds[0]);
+          await repository.insertEmailRecipient(trx, recipient);
+        }),
+      ).rejects.toThrow(/foreign key/i);
+
+      expect(
+        (await knex('automation_action_revisions').where('id', fixture.revisionIds[0]).first())
+          .email_sent_count,
+      ).toBeNull();
+      expect(await findRecipient(recipient.id)).toBeUndefined();
     });
   });
 

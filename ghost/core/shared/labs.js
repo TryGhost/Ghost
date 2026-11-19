@@ -54,6 +54,7 @@ const PRIVATE_FEATURES = [
   'importMemberTier',
   'csvContentImporter',
   'admin7Design',
+  'admin7Mobile',
   'admin7CustomizeFromViewSite',
   'emailUniqueid',
   'themeTranslation',
@@ -65,6 +66,7 @@ const PRIVATE_FEATURES = [
   'inAppSupport',
   'editorPresencePolling',
   'editorPresence',
+  'commentsAnalytics',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

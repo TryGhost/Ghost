@@ -55,6 +55,10 @@ type PageHeaderActionProps = ButtonProps & {
   label: string;
   iconOnly?: boolean;
   primary?: boolean;
+  /**
+   * A key the screen binds for this action. It shows in the tooltip and sets
+   * `aria-keyshortcuts`, so pass it only when the screen handles the key.
+   */
   shortcut?: string;
   /** Show an explanation for a changing value; static labels need no tooltip. */
   tooltip?: boolean;
@@ -150,11 +154,18 @@ PageHeaderSelectTrigger.displayName = 'PageHeaderSelectTrigger';
 // Title-block primitives
 // ---------------------------------------------------------------------------
 
+// Crumbs truncate rather than wrapping under the title or running under the
+// actions. They render as blocks, since a flex link can't show an ellipsis.
+// Earlier crumbs keep their width up to a cap, so a long one can't crowd out
+// the current page, which shrinks to fit the rest.
+const breadcrumbFitClassName =
+  'min-w-0 [&_nav]:min-w-0 [&_ol]:flex-nowrap [&_li]:shrink-0 [&_li>*]:block [&_li>*]:truncate [&_li:not(:last-child)>*]:max-w-40 [&_li:last-child]:min-w-0 [&_li:last-child]:shrink';
+
 function PageHeaderBreadcrumb({ className, children }: PropsWithChildrenAndClassName) {
   return (
     <Inline
       align="center"
-      className={cn('pt-1 text-sm text-muted-foreground', className)}
+      className={cn('pt-1 text-sm text-muted-foreground', breadcrumbFitClassName, className)}
       data-page-header="breadcrumb"
       gap="sm"
     >

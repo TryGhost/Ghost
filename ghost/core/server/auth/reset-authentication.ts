@@ -11,7 +11,7 @@ interface ResetAuthenticationArgs {
   models?: any;
   internalKeys?: InternalKeys;
   deleteAllSessions?: () => Promise<void>;
-  /** Better Auth's sessions, under its engine; legacy rows go either way */
+  /** Deletes Better Auth's sessions, under either engine; legacy rows go either way */
   revokeAllSessions?: () => Promise<void>;
 }
 

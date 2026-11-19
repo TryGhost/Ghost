@@ -56,6 +56,10 @@ describe.skipIf(isSQLite)('Session revocation under auth:engine better-auth', fu
   const cookieOf = (response: request.Response) =>
     [response.headers['set-cookie']].flat().map((c: string) => c.split(';')[0]);
 
+  // A verified session can also set ghost-admin-device
+  const sessionCookieOf = (response: request.Response) =>
+    cookieOf(response).filter((c) => c.startsWith('ghost-admin-api-session='));
+
   const legacySignIn = async (userId: string) =>
     cookieOf(
       await request(legacyApp)
@@ -111,7 +115,6 @@ describe.skipIf(isSQLite)('Session revocation under auth:engine better-auth', fu
     sandbox.stub(sentry, 'captureException');
     sandbox.stub(sentry, 'captureMessage');
     configUtils.set('auth:engine', 'better-auth');
-    configUtils.set('createInDevelopmentTables', true);
     configUtils.set('url', `${adminOrigin}/`);
 
     app = await startGhost({ backend: true, frontend: false, server: false });
@@ -153,11 +156,13 @@ describe.skipIf(isSQLite)('Session revocation under auth:engine better-auth', fu
     const legacy = await preCutoverCookie(owner.id);
     const current = await signIn(owner);
     const other = await signIn(owner);
+    // So the new session is verified only by carrying it over, not by default
+    configUtils.set('security:staffDeviceVerification', true);
 
     const response = await changePassword(current, owner.id, owner.password)
       .set('User-Agent', 'Change Browser/1.0')
       .expect(200);
-    const replaced = cookieOf(response);
+    const replaced = sessionCookieOf(response);
 
     assert.equal(replaced.length, 1);
     assert.match(replaced[0], /^ghost-admin-api-session=./);
@@ -173,6 +178,37 @@ describe.skipIf(isSQLite)('Session revocation under auth:engine better-auth', fu
 
     assert.equal((await legacySessions(owner.id)).length, 0);
     await legacyMe(legacy).expect(403);
+  });
+
+  it('the native /change-password signs out other sessions whatever the client asks', async function () {
+    const legacy = await preCutoverCookie(owner.id);
+    const othersLegacy = await preCutoverCookie(admin.id);
+    const current = await signIn(owner);
+    const other = await signIn(owner);
+    // So the rotated session is verified only by carrying it over, not by default
+    configUtils.set('security:staffDeviceVerification', true);
+
+    const response = await adminApi('post', 'auth/change-password', current)
+      .send({
+        currentPassword: owner.password,
+        newPassword: 'Sl1m3rson99-rotated!',
+        revokeOtherSessions: false,
+      })
+      .expect(200);
+    const replaced = sessionCookieOf(response);
+
+    assert.equal(replaced.length, 1);
+    assert.equal((await me(replaced).expect(200)).body.users[0].id, owner.id);
+    await me(current).expect(403);
+    await me(other).expect(403);
+    const [session] = await sessions(owner.id);
+    assert.equal(Boolean(session.verified), true);
+    assert.equal(session.origin, adminOrigin);
+    assert.equal((await sessions(owner.id)).length, 1);
+
+    assert.equal((await legacySessions(owner.id)).length, 0);
+    await legacyMe(legacy).expect(403);
+    await legacyMe(othersLegacy).expect(200);
   });
 
   it("changing another user's password signs them out everywhere", async function () {
@@ -256,6 +292,40 @@ describe.skipIf(isSQLite)('Session revocation under auth:engine better-auth', fu
     // A rollback that also reinstates the user still finds no session
     await db.knex('users').where({ id: editor.id }).update({ status: 'active' });
     await legacyMe(legacy).expect(403);
+  });
+
+  it("a session that outlives its user's suspension is revoked on its next native request", async function () {
+    const editorCookie = await signIn(editor);
+    // The creation/revocation race: suspended without revoking the session
+    await db.knex('users').where({ id: editor.id }).update({ status: 'inactive' });
+
+    await adminApi('post', 'auth/change-password', editorCookie)
+      .send({ currentPassword: editor.password, newPassword: 'Sl1m3rson99-hijack!' })
+      .expect(401);
+    assert.equal((await sessions(editor.id)).length, 0);
+
+    await me(editorCookie).expect(403);
+
+    await db.knex('users').where({ id: editor.id }).update({ status: 'active' });
+    await me(editorCookie).expect(403);
+  });
+
+  it("an unverified session that outlives its user's suspension gets no device code", async function () {
+    // Not a first login, which would skip the device check
+    await db.knex('users').where({ id: editor.id }).update({ last_seen: new Date() });
+    configUtils.set('security:staffDeviceVerification', true);
+    const unverified = cookieOf(
+      await adminApi('post', 'session/')
+        .send({ username: editor.email, password: editor.password })
+        .expect(403),
+    );
+    // The sign-in's own code
+    mockManager.assert.sentEmailCount(1);
+    await db.knex('users').where({ id: editor.id }).update({ status: 'inactive' });
+
+    await adminApi('post', 'session/verify/', unverified).expect(400);
+    mockManager.assert.sentEmailCount(1);
+    assert.equal((await sessions(editor.id)).length, 0);
   });
 
   it('deleting a user signs them out everywhere', async function () {

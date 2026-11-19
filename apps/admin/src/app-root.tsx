@@ -39,11 +39,13 @@ const routeErrorElement = <RouteError />;
 function ThemedAdminApp() {
   const { resolvedTheme } = useThemeContext();
   const admin7Design = useFeatureFlag('admin7Design');
+  const admin7Mobile = useFeatureFlag('admin7Mobile');
   useMountedBodyClass();
 
   return (
     <ShadeApp
       admin7Design={admin7Design}
+      admin7Mobile={admin7Mobile}
       className="shade-admin"
       darkMode={resolvedTheme === 'dark'}
       data-react-admin-mounted

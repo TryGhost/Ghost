@@ -77,6 +77,7 @@ const tokenPermissionCheck = function tokenPermissionCheck(req, res, next) {
     media: ['POST'],
     db: ['GET', 'POST'],
     settings: ['GET'],
+    segments: ['GET'],
     comments: ['GET', 'POST', 'PUT'],
     oembed: ['GET'],
     'search-index': ['GET'],

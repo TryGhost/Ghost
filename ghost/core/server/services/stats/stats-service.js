@@ -4,6 +4,7 @@ const SubscriptionStatsService = require('./subscription-stats-service');
 const ReferrersStatsService = require('./referrers-stats-service');
 const PostsStatsService = require('./posts-stats-service');
 const ContentStatsService = require('./content-stats-service');
+const { CommentsAnalyticsService } = require('./comments-analytics');
 class StatsService {
   /**
    * @param {object} deps
@@ -13,6 +14,7 @@ class StatsService {
    * @param {ReferrersStatsService} deps.referrers
    * @param {PostsStatsService} deps.posts
    * @param {ContentStatsService} deps.content
+   * @param {import('./comments-analytics').CommentsAnalyticsService} deps.comments
    **/
   constructor(deps) {
     this.mrr = deps.mrr;
@@ -21,6 +23,28 @@ class StatsService {
     this.referrers = deps.referrers;
     this.posts = deps.posts;
     this.content = deps.content;
+    this.comments = deps.comments;
+  }
+
+  /**
+   * @param {unknown} options
+   */
+  async getCommentsOverview(options) {
+    return this.comments.getOverview(options);
+  }
+
+  /**
+   * @param {unknown} options
+   */
+  async getCommentsTopPosts(options) {
+    return this.comments.getTopPosts(options);
+  }
+
+  /**
+   * @param {unknown} options
+   */
+  async getCommentsTopCommenters(options) {
+    return this.comments.getTopCommenters(options);
   }
 
   async getMRRHistory(options = {}) {
@@ -255,6 +279,7 @@ class StatsService {
       referrers: new ReferrersStatsService(deps),
       posts: new PostsStatsService(deps),
       content: new ContentStatsService(deps),
+      comments: new CommentsAnalyticsService(deps),
     });
   }
 }

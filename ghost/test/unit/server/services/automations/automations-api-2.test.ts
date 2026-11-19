@@ -1,4 +1,3 @@
-import errors from '@tryghost/errors';
 import ObjectId from 'bson-objectid';
 import { noop } from 'lodash';
 import { createAutomationsApi2 } from '../../../../../core/server/services/automations/automations-api-2';
@@ -120,29 +119,6 @@ describe('automations API', function () {
 
     afterEach(function () {
       vi.useRealTimers();
-    });
-
-    it('fails if called with an unexpected `eventName`', async function () {
-      const withTransaction = vi.fn();
-      const api = createApi({ repository: { ...repository, withTransaction } });
-
-      const eventNames = [undefined, 'invalid', 'membership_ended', 'membership_did_start'];
-      await Promise.all(
-        eventNames.map(async (eventName) => {
-          await expect(() =>
-            api.notify({
-              ...event,
-              eventName: eventName as any,
-              memberId: 'abc',
-              memberStatus: 'free',
-              memberTierIds: [],
-            }),
-          ).rejects.toThrow(errors.IncorrectUsageError);
-        }),
-      );
-
-      expect(withTransaction).not.toHaveBeenCalled();
-      expect(domainEvents.dispatch).not.toHaveBeenCalled();
     });
 
     it('does nothing if the labs flag is disabled', async function () {
@@ -614,6 +590,112 @@ describe('automations API', function () {
       await expect(api.notify(event)).rejects.toBe(failure);
 
       expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+  });
+
+  alphabeticalDescribe('recordEmailSent', function () {
+    const now = new Date('2026-01-02T03:04:05Z');
+    const options = {
+      automationActionRevisionId: 'revision-id',
+      automationRunStepId: 'step-id',
+      mailgunMessageId: 'mailgun-message-id',
+      memberEmail: 'member@example.com',
+      memberId: 'member-id',
+      memberName: 'Test Member',
+      memberUuid: '00000000-0000-4000-8000-000000000001',
+      trackClicks: true,
+      trackOpens: false,
+    };
+
+    let repository: ReturnType<typeof createTestAutomationsRepository2>;
+    let calls: string[];
+
+    beforeEach(function () {
+      vi.useFakeTimers();
+      vi.setSystemTime(now);
+      calls = [];
+      repository = createTestAutomationsRepository2({
+        incrementEmailSentCount: vi.fn<Repository['incrementEmailSentCount']>(() => {
+          calls.push('incrementEmailSentCount');
+        }),
+        insertEmailRecipient: vi.fn<Repository['insertEmailRecipient']>(() => {
+          calls.push('insertEmailRecipient');
+        }),
+        withTransaction: async (fn) => {
+          calls.push('begin');
+          const result = await createTestAutomationsRepository2().withTransaction(fn);
+          calls.push('commit');
+          return result;
+        },
+      });
+    });
+
+    afterEach(function () {
+      vi.useRealTimers();
+    });
+
+    it('counts the send before recording its recipient in one transaction', async function () {
+      await createApi({ repository }).recordEmailSent(options);
+
+      expect(calls).toEqual(['begin', 'incrementEmailSentCount', 'insertEmailRecipient', 'commit']);
+      const [connection, revisionId] = vi.mocked(repository.incrementEmailSentCount).mock.calls[0];
+      expect(revisionId).toBe('revision-id');
+      const [insertConnection, recipient] = vi.mocked(repository.insertEmailRecipient).mock
+        .calls[0];
+      expect(insertConnection).toBe(connection);
+      expect(recipient).toEqual({
+        id: expect.any(String),
+        created_at: now,
+        updated_at: now,
+        member_id: 'member-id',
+        member_uuid: '00000000-0000-4000-8000-000000000001',
+        member_email: 'member@example.com',
+        member_name: 'Test Member',
+        automation_action_revision_id: 'revision-id',
+        automation_run_step_id: 'step-id',
+        mailgun_message_id: 'mailgun-message-id',
+        track_clicks: true,
+        track_opens: false,
+      });
+      expect(ObjectId.isValid(recipient.id)).toBe(true);
+    });
+
+    it('waits for the sent count update before inserting the recipient', async function () {
+      const count = Promise.withResolvers<void>();
+      const countStarted = Promise.withResolvers<void>();
+      vi.mocked(repository.incrementEmailSentCount).mockImplementation(() => {
+        countStarted.resolve();
+        return count.promise;
+      });
+
+      const pending = createApi({ repository }).recordEmailSent(options);
+      try {
+        await countStarted.promise;
+        await vi.advanceTimersByTimeAsync(0);
+        expect(repository.insertEmailRecipient).not.toHaveBeenCalled();
+      } finally {
+        count.resolve();
+      }
+      await pending;
+      expect(repository.insertEmailRecipient).toHaveBeenCalledOnce();
+    });
+
+    it('records recipients without a Mailgun message ID or member name', async function () {
+      const { mailgunMessageId: _mailgunMessageId, ...withoutMailgunId } = options;
+
+      await createApi({ repository }).recordEmailSent({ ...withoutMailgunId, memberName: null });
+
+      const recipient = vi.mocked(repository.insertEmailRecipient).mock.calls[0][1];
+      expect(recipient).not.toHaveProperty('mailgun_message_id');
+      expect(recipient.member_name).toBeNull();
+    });
+
+    it('rejects when the recipient cannot be recorded', async function () {
+      const failure = new Error('Could not record recipient');
+      vi.mocked(repository.insertEmailRecipient).mockRejectedValue(failure);
+
+      await expect(createApi({ repository }).recordEmailSent(options)).rejects.toBe(failure);
+      expect(calls).not.toContain('commit');
     });
   });
 

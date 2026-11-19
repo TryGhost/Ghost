@@ -33,10 +33,20 @@ behaviour changes. These are follow-up changes, separate from relocation.
 
 [`permissions/`](permissions/) holds `canThis`, `parseContext` and the role
 grants in `permissions-data.ts`. Grants are code, built into a frozen action map
-at import; there is no boot initializer. `canThis` reloads the user or API key
-for every check, and only `active` users pass.
+at import; there is no boot initializer. Authentication loads the user's roles,
+or an admin key's role, onto the principal, and `canThis` reads them from there
+without reloading. A context naming a user or key must carry the principal for
+it: `canThis` refuses one without it, so an in-process caller acting as a user
+builds a principal, as setup does with its `setup` method.
+
+[`policy/`](policy/) decides access from the principal. `capabilities` gives
+the `object_type:action` keys its roles grant and the keys its token or app
+scopes allow, and `authorize` checks one, then any row rule in
+`policy/rules/`, throwing when it is refused. `canThis` refuses a key the
+scopes lack, then passes the grant to the model `permissible` hooks as flags
+until each hook becomes a row rule.
 
 The [previous inventory audit](https://github.com/TryGhost/Ghost/tree/2700a443fe1ff989630efbdb5e8355f066959bbf/ghost/core/server/services/legacy-service-inventory.yaml#L5789)
-records its contracts and open coverage gaps. Injecting models into the
-providers and `canThis` still needs to keep `User.permissible`'s deferred
+records its contracts and open coverage gaps. Injecting models into
+`canThis` still needs to keep `User.permissible`'s deferred
 `require()` of this module, which avoids a model import cycle.

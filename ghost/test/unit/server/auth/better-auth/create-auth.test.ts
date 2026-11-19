@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import type { Knex } from 'knex';
 import {
-  assertDatabaseSupported,
   createAuth,
   type CreateAuthDeps,
 } from '../../../../../core/server/auth/better-auth/create-auth';
@@ -98,9 +97,9 @@ describe('createAuth', function () {
     assert.deepEqual(new Set(context.trustedOrigins), new Set(['https://admin.example.com']));
   });
 
-  it('prefixes the session cookie with __Secure- only on HTTPS', async function () {
+  it('marks the session cookie Secure only on HTTPS, without the __Secure- prefix', async function () {
     const secure = (await createAuth(deps()).$context).authCookies.sessionToken;
-    assert.equal(secure.name, '__Secure-ghost-admin-api-session');
+    assert.equal(secure.name, 'ghost-admin-api-session');
     assert.equal(secure.attributes.path, '/ghost');
     assert.equal(secure.attributes.sameSite, 'none');
     assert.equal(secure.attributes.secure, true);
@@ -119,7 +118,7 @@ describe('createAuth', function () {
         deps({ siteUrl: 'http://example.com/', adminUrl: 'https://admin.example.com/' }),
       ).$context
     ).authCookies.sessionToken;
-    assert.equal(httpsAdmin.name, '__Secure-ghost-admin-api-session');
+    assert.equal(httpsAdmin.name, 'ghost-admin-api-session');
     assert.equal(httpsAdmin.attributes.secure, true);
     assert.equal(httpsAdmin.attributes.sameSite, 'none');
 
@@ -215,27 +214,5 @@ describe('createAuth', function () {
   it('generates ObjectIds', async function () {
     const context = await createAuth(deps()).$context;
     assert.match(context.generateId({ model: 'session' }) as string, /^[0-9a-f]{24}$/);
-  });
-});
-
-describe('assertDatabaseSupported', function () {
-  it('accepts MySQL with auth:betterAuthDev', function () {
-    assertDatabaseSupported({ client: 'mysql2', usesBetterAuth: true });
-  });
-
-  for (const client of ['sqlite3', 'better-sqlite3']) {
-    it(`refuses ${client}`, function () {
-      assert.throws(() => assertDatabaseSupported({ client, usesBetterAuth: true }), {
-        name: 'IncorrectUsageError',
-        message: 'auth:engine better-auth requires MySQL; SQLite is not supported.',
-      });
-    });
-  }
-
-  it('refuses a database without auth:betterAuthDev', function () {
-    assert.throws(() => assertDatabaseSupported({ client: 'mysql2', usesBetterAuth: false }), {
-      name: 'IncorrectUsageError',
-      message: /requires auth:betterAuthDev/,
-    });
   });
 });

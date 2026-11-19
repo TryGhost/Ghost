@@ -6,6 +6,7 @@ import moment from 'moment';
 import validator from '@tryghost/validator';
 import { z } from 'zod';
 import config from '../../shared/config';
+import { userView, type Principal, type User } from './principal';
 
 const models = require('../models');
 const mail = require('../lib/mail');
@@ -35,14 +36,18 @@ export const updateSetupDetailsSchema = setupDetailsSchema
 export type SetupUserData = z.infer<typeof setupDetailsSchema> & { status: string };
 type UpdateSetupUserData = z.infer<typeof updateSetupDetailsSchema> & { status: string };
 
-interface SetupUser {
-  id: string;
+interface SetupUser extends User {
+  get(attribute: 'email'): string;
   get(attribute: string): unknown;
 }
+
+type OwnerPrincipal = Extract<Principal, { kind: 'user' }>;
 
 export interface SetupData<UserData = SetupUserData> {
   user: SetupUser;
   userData: UserData;
+  /** Setup's API calls act as the Owner it set up */
+  principal: OwnerPrincipal;
 }
 
 type Context = { context: Record<string, unknown> };
@@ -79,6 +84,7 @@ const messages = {
   yourNewGhostBlog: 'Your New Ghost Site',
   unableToSendWelcomeEmail: 'Unable to send welcome email, your site will continue to function.',
   failedThemeInstall: "Theme {themeName} didn't install because of the error: {error}",
+  failedSamplePostUpdate: "Sample post {slug} wasn't updated during setup.",
 };
 
 const postSetupFixtures = {
@@ -127,7 +133,8 @@ export async function setupUser<UserData extends UpdateSetupUserData>(
 ): Promise<SetupData<UserData>> {
   const context = { context: { internal: true } };
 
-  const owner = await models.User.findOne({ role: 'Owner', status: 'all' });
+  // Looking up by role loads the roles too
+  const owner: User | null = await models.User.findOne({ role: 'Owner', status: 'all' });
 
   if (!owner) {
     throw new errors.InternalServerError({
@@ -137,17 +144,32 @@ export async function setupUser<UserData extends UpdateSetupUserData>(
 
   const user: SetupUser = await models.User.setup(userData, _.extend({ id: owner.id }, context));
 
+  // The edited user is the response, so its roles come from the lookup rather than a load onto it
+  const principal: OwnerPrincipal = {
+    kind: 'user',
+    method: 'setup',
+    user: userView({ id: user.id, get: (key) => user.get(key), relations: owner.relations }),
+  };
+
   return {
     user: user,
     userData: userData,
+    principal,
   };
 }
 
+/** The context for setup's API calls, acting as the Owner it just set up */
+function asOwner(principal: OwnerPrincipal) {
+  return { context: { user: principal.user.id, principal } };
+}
+
 export async function doSettings(
-  data: SetupData<Pick<Partial<SetupUserData>, 'blogTitle' | 'description' | 'accentColor'>>,
+  data: SetupData<
+    Pick<UpdateSetupUserData, 'blogTitle'> &
+      Pick<Partial<SetupUserData>, 'description' | 'accentColor'>
+  >,
   settingsAPI: SettingsAPI,
 ) {
-  const context = { context: { user: data.user.id } };
   const user = data.user;
   const blogTitle = data.userData.blogTitle;
   const description = data.userData.description;
@@ -168,20 +190,20 @@ export async function doSettings(
     });
   }
 
-  await settingsAPI.edit({ settings: userSettings }, context);
+  await settingsAPI.edit({ settings: userSettings }, asOwner(data.principal));
 
   return user;
 }
 
 // Update names for default product and newsletter to site title.
 async function doTiersAndNewsletter<
-  Data extends { user: Pick<SetupUser, 'id'>; userData: Pick<SetupUserData, 'blogTitle'> },
+  Data extends { principal: OwnerPrincipal; userData: Pick<SetupUserData, 'blogTitle'> },
 >(
   data: Data,
   api: { tiers: BrowseEditAPI<'tiers'>; newsletters: BrowseEditAPI<'newsletters'> },
 ): Promise<Data> {
   const { tiers: tiersAPI, newsletters: newslettersAPI } = api;
-  const context = { context: { user: data.user.id } };
+  const context = asOwner(data.principal);
   const blogTitle = data.userData.blogTitle;
 
   try {
@@ -228,18 +250,34 @@ async function doTiersAndNewsletter<
 export async function doFixtures(data: SetupData) {
   const date = moment().format('MMMM YYYY');
 
-  _.each(postSetupFixtures, async (mobiledoc, key) => {
-    // Using very simple find and replace because we control the fixtures
-    mobiledoc = mobiledoc.replace(/{{site.title}}/g, data.userData.blogTitle);
-    mobiledoc = mobiledoc.replace(/{{author.name}}/g, data.userData.name);
-    mobiledoc = mobiledoc.replace(/{{date}}/, date);
+  const values: Record<string, string> = {
+    'site.title': data.userData.blogTitle,
+    'author.name': data.userData.name,
+    date,
+  };
 
-    const post = await models.Post.findOne({ slug: key });
+  for (const [slug, fixture] of Object.entries(postSetupFixtures)) {
+    // One pass over the fixture, so values can't introduce tokens; escaped to stay valid JSON
+    const mobiledoc = fixture.replace(/{{(site\.title|author\.name|date)}}/g, (__, token: string) =>
+      JSON.stringify(values[token]).slice(1, -1),
+    );
 
-    if (post) {
-      await models.Post.edit({ mobiledoc }, { id: post.id });
+    // A sample post that keeps its placeholders shouldn't fail setup
+    try {
+      const post = await models.Post.findOne({ slug });
+
+      if (post) {
+        await models.Post.edit({ mobiledoc }, { id: post.id });
+      }
+    } catch (error) {
+      logging.warn(
+        new errors.InternalServerError({
+          err: error instanceof Error ? error : String(error),
+          message: tpl(messages.failedSamplePostUpdate, { slug }),
+        }),
+      );
     }
-  });
+  }
 
   return data;
 }

@@ -9,6 +9,7 @@ describe('Permissions', function () {
         user: null,
         api_key: null,
         member: null,
+        principal: null,
         public: true,
         integration: null,
       });
@@ -17,6 +18,7 @@ describe('Permissions', function () {
         user: null,
         api_key: null,
         member: null,
+        principal: null,
         public: true,
         integration: null,
       });
@@ -28,6 +30,7 @@ describe('Permissions', function () {
         user: null,
         api_key: null,
         member: null,
+        principal: null,
         public: true,
         integration: null,
       });
@@ -36,6 +39,7 @@ describe('Permissions', function () {
         user: null,
         api_key: null,
         member: null,
+        principal: null,
         public: true,
         integration: null,
       });
@@ -47,6 +51,7 @@ describe('Permissions', function () {
         user: 1,
         api_key: null,
         member: null,
+        principal: null,
         public: false,
         integration: null,
       });
@@ -69,6 +74,7 @@ describe('Permissions', function () {
             type: 'content',
           },
           member: null,
+          principal: null,
           public: true,
           integration: { id: 2 },
         },
@@ -92,6 +98,7 @@ describe('Permissions', function () {
             type: 'admin',
           },
           member: null,
+          principal: null,
           public: false,
           integration: { id: 3 },
         },
@@ -116,6 +123,7 @@ describe('Permissions', function () {
             type: 'admin',
           },
           member: null,
+          principal: null,
           public: false,
           integration: { id: 3 },
         },
@@ -128,6 +136,7 @@ describe('Permissions', function () {
         user: null,
         api_key: null,
         member: null,
+        principal: null,
         public: false,
         integration: null,
       });
@@ -137,8 +146,116 @@ describe('Permissions', function () {
         user: null,
         api_key: null,
         member: null,
+        principal: null,
         public: false,
         integration: null,
+      });
+    });
+
+    describe('with a principal', function () {
+      const contentKey = { id: 1, type: 'content' };
+      const adminKey = { id: 1, type: 'admin' };
+      const user = { id: '1', email: 'owner@example.com', name: 'Owner', status: 'active' };
+
+      it('keeps a user principal private, whole', function () {
+        const principal = { kind: 'user', method: 'session', user, scopes: ['post:browse'] };
+        const parsed = parseContext({ user: '1', principal });
+
+        assert.equal(parsed.principal, principal);
+        assert.equal(parsed.public, false);
+      });
+
+      it('never treats a user principal with no user as public', function () {
+        const parsed = parseContext({ principal: { kind: 'user', method: 'staff_token', user } });
+
+        assert.equal(parsed.user, null);
+        assert.equal(parsed.public, false);
+      });
+
+      it('keeps an admin key integration private', function () {
+        const parsed = parseContext({
+          api_key: adminKey,
+          principal: { kind: 'integration', method: 'admin_api_key' },
+        });
+
+        assert.equal(parsed.principal?.kind, 'integration');
+        assert.equal(parsed.public, false);
+      });
+
+      it('never treats an integration with no key as public', function () {
+        const parsed = parseContext({
+          principal: { kind: 'integration', method: 'admin_api_key' },
+        });
+
+        assert.equal(parsed.public, false);
+      });
+
+      it('keeps a content key public', function () {
+        const principal = { kind: 'integration', method: 'content_api_key' };
+        const parsed = parseContext({ api_key: contentKey, principal });
+
+        assert.equal(parsed.principal, principal);
+        assert.equal(parsed.public, true);
+      });
+
+      it('keeps an anonymous principal public', function () {
+        const parsed = parseContext({ principal: { kind: 'anonymous' } });
+
+        assert.deepEqual(parsed.principal, { kind: 'anonymous' });
+        assert.equal(parsed.public, true);
+      });
+
+      it('never treats an internal principal as public', function () {
+        const parsed = parseContext({ principal: { kind: 'internal' } });
+
+        assert.equal(parsed.public, false);
+      });
+
+      it('decides public from the principal, not a content key beside it', function () {
+        const parsed = parseContext({
+          api_key: contentKey,
+          principal: { kind: 'user', method: 'staff_token', user },
+        });
+
+        assert.equal(parsed.public, false);
+      });
+
+      it('never treats an app as public, with or without a user', function () {
+        const app = { id: 'installation' };
+        const withUser = parseContext({
+          user: '1',
+          principal: {
+            kind: 'app',
+            method: 'oauth_authorization_code',
+            app,
+            actingFor: user,
+            scopes: [],
+          },
+        });
+        const withoutUser = parseContext({
+          principal: {
+            kind: 'app',
+            method: 'oauth_client_credentials',
+            app,
+            actingFor: null,
+            scopes: [],
+          },
+        });
+
+        assert.equal(withUser.user, '1');
+        assert.equal(withUser.public, false);
+        assert.equal(withoutUser.user, null);
+        assert.equal(withoutUser.public, false);
+        assert.equal(withoutUser.principal?.kind, 'app');
+      });
+
+      it('gives the same result when parsed twice, as canThis does', function () {
+        const once = parseContext({
+          api_key: contentKey,
+          principal: { kind: 'integration', method: 'content_api_key', scopes: ['post:read'] },
+        });
+
+        assert.deepEqual(parseContext(once), once);
       });
     });
   });

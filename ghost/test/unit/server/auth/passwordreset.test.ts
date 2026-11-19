@@ -6,7 +6,6 @@ import passwordreset from '../../../../core/server/auth/passwordreset';
 import models from '../../../../core/server/models';
 // @ts-expect-error This module lacks type definitions.
 import ghostBookshelf from '../../../../core/server/models/base';
-import configUtils from '../../../utils/config-utils';
 
 type TestUser = {
   get(key: 'password'): string;
@@ -26,16 +25,16 @@ describe('Password reset token compatibility', function () {
     read: sinon.SinonStub<[object], Promise<{ settings: { value: string }[] }>>;
   };
   let replacementHash: string;
+  let credentialHash: string;
   let changePassword: sinon.SinonStub;
 
   beforeEach(async function () {
-    // Passwords in users.password; the credential row path has e2e tests
-    configUtils.set('auth:betterAuthDev', false);
     replacementHash = await security.password.hash('replacement-test-only');
     user = new models.User({
       id: '000000000000000000000001',
       email,
-      password: passwordHash,
+      // The credential row holds the hash, as after the backfill
+      password: '!',
       status: 'active',
     });
     settingsAPI = {
@@ -45,19 +44,33 @@ describe('Password reset token compatibility', function () {
     };
     sinon.stub(models.User, 'getByEmail').resolves(user);
     sinon.stub(models.User.prototype, 'fetch').resolves(user);
+    credentialHash = passwordHash;
+    // A Knex stand-in for the credential row
+    const credentialRow = () => {
+      const query = {
+        where: () => query,
+        first: () => query,
+        forUpdate: () => query,
+        then: (resolve: (row: { password: string }) => unknown) =>
+          resolve({ password: credentialHash }),
+      };
+      return query;
+    };
+    sinon.stub(ghostBookshelf, 'knex').value(credentialRow);
     sinon
       .stub(ghostBookshelf, 'transaction')
-      .callsFake(async (callback: (transaction: object) => Promise<unknown>) => callback({}));
+      .callsFake(async (callback: (transaction: object) => Promise<unknown>) =>
+        callback(credentialRow),
+      );
     changePassword = sinon.stub(models.User, 'changePassword').callsFake(async () => {
-      user.set('password', replacementHash);
+      credentialHash = replacementHash;
       return user;
     });
     sinon.stub(user, 'save').resolves(user);
   });
 
-  afterEach(async function () {
+  afterEach(function () {
     sinon.restore();
-    await configUtils.restore();
   });
 
   it('generates a reset token with the published security API', async function () {
@@ -90,14 +103,14 @@ describe('Password reset token compatibility', function () {
       security.tokens.resetToken.compare({
         token: legacyToken,
         dbHash,
-        passwordHash: user.get('password'),
+        passwordHash: credentialHash,
       }),
       { correct: false, reason: 'invalid' },
     );
   });
 
   it('rejects a token through Ghost if the stored password hash has changed', async function () {
-    user.set('password', replacementHash);
+    credentialHash = replacementHash;
     const options = {
       data: { password_reset: [{ token: legacyToken, newPassword: 'replacement-test-only' }] },
     };

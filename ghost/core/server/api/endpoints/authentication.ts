@@ -1,27 +1,52 @@
-const { defineMethod, resourceBody } = require('@tryghost/api-framework');
+import { defineMethod, resourceBody, type Frame } from '@tryghost/api-framework';
+import * as errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
+import tpl from '@tryghost/tpl';
+import auth from '../../auth';
+import adapterManager from '../../services/adapter-manager';
+import invites from '../../services/invites';
+import usersService from '../../services/users';
+import type { Req as SessionRequest } from '../../auth/session/session-service';
+import type { SpamPrevention } from '../../web/shared/middleware/api/spam-prevention';
+
 const api = require('./index');
-const config = require('../../../shared/config');
-const tpl = require('@tryghost/tpl');
-const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
-const web = require('../../web');
 const models = require('../../models');
-const auth = require('../../auth');
-const invites = require('../../services/invites').default;
-const usersService = require('../../services/users').default;
-const adapterManager = require('../../services/adapter-manager').default;
+const spamPrevention: SpamPrevention = require('../../web/shared/middleware/api/spam-prevention');
 
 const schedulerAdapter = adapterManager.getAdapter('scheduling');
 
 // Chosen once at load, as in auth/authenticate.ts
 const isBetterAuth = auth.isBetterAuth;
 
-async function destroyRequestSession(req) {
+type GenerateResetTokenFrame = Frame<{ data: { password_reset: [{ email: string }] } }>;
+
+type ResetPasswordFrame = Frame<{
+  data: Parameters<typeof auth.passwordreset.extractTokenParts>[0]['data'];
+  options: { ip?: string; userAgent?: string };
+}>;
+
+type AcceptInvitationFrame = Frame<{
+  data: Parameters<typeof invites.service.accept>[0];
+}>;
+
+type IsInvitationFrame = Frame<{ data: { email: string } }>;
+
+type RequestSession = {
+  req: SessionRequest & { session?: { destroy(callback: (err?: unknown) => void): void } };
+};
+
+// The Express session the legacy engine attaches to the request
+function requestSession(frame: Frame): RequestSession | undefined {
+  return frame.original.session as RequestSession | undefined;
+}
+
+async function destroyRequestSession(req?: RequestSession['req']) {
   if (!req || !req.session) {
     return;
   }
-  await new Promise((resolve, reject) => {
-    req.session.destroy((err) => (err ? reject(err) : resolve()));
+  const session = req.session;
+  await new Promise<void>((resolve, reject) => {
+    session.destroy((err) => (err ? reject(err) : resolve()));
   });
 }
 
@@ -29,7 +54,6 @@ const messages = {
   notTheBlogOwner: 'You are not the site owner.',
 };
 
-/** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
   docName: 'authentication',
 
@@ -42,42 +66,22 @@ const controller = {
     schema: {
       body: resourceBody('setup', auth.setup.setupDetailsSchema),
     },
-    query(frame) {
-      return Promise.resolve()
-        .then(() => {
-          return auth.setup.assertSetupCompleted(false)();
-        })
-        .then(() => {
-          const setupDetails = { ...frame.validated.body, status: 'active' };
+    async query(frame) {
+      await auth.setup.assertSetupCompleted(false)();
 
-          return auth.setup.setupUser(setupDetails);
-        })
-        .then((data) => {
-          try {
-            return auth.setup.doFixtures(data);
-          } catch (e) {
-            return data;
-          }
-        })
-        .then((data) => {
-          try {
-            return auth.setup.doProductAndNewsletter(data, api);
-          } catch (e) {
-            return data;
-          }
-        })
-        .then((data) => {
-          return auth.setup.installTheme(data, api);
-        })
-        .then((data) => {
-          return auth.setup.doSettings(data, api.settings);
-        })
-        .then((user) => {
-          auth.setup.sendWelcomeEmail(user.get('email'), api.mail).catch((err) => {
-            logging.error(err);
-          });
-          return user;
-        });
+      const setupDetails = { ...frame.validated.body, status: 'active' };
+      let data = await auth.setup.setupUser(setupDetails);
+
+      data = await auth.setup.doFixtures(data);
+      data = await auth.setup.doProductAndNewsletter(data, api);
+      data = await auth.setup.installTheme(data, api);
+      const user = await auth.setup.doSettings(data, api.settings);
+
+      auth.setup.sendWelcomeEmail(user.get('email'), api.mail).catch((err) => {
+        logging.error(err);
+      });
+
+      return user;
     },
   }),
 
@@ -87,7 +91,7 @@ const controller = {
     },
     permissions: async (frame) => {
       const owner = await models.User.findOne({ role: 'Owner', status: 'all' });
-      if (owner.id !== frame.options.context.user) {
+      if (owner.id !== frame.options.context?.user) {
         throw new errors.NoPermissionError({ message: tpl(messages.notTheBlogOwner) });
       }
     },
@@ -121,9 +125,6 @@ const controller = {
 
       return {
         status: false,
-        title: config.title,
-        name: config.user_name,
-        email: config.user_email,
       };
     },
   },
@@ -137,7 +138,7 @@ const controller = {
     },
     permissions: true,
     options: ['email'],
-    async query(frame) {
+    async query(frame: GenerateResetTokenFrame) {
       await auth.setup.assertSetupCompleted(true)();
       const token = await auth.passwordreset.generateToken(
         frame.data.password_reset[0].email,
@@ -160,7 +161,7 @@ const controller = {
     },
     permissions: false,
     options: ['ip', 'userAgent'],
-    async query(frame) {
+    async query(frame: ResetPasswordFrame) {
       await auth.setup.assertSetupCompleted(true)();
       const { options, tokenParts } = await auth.passwordreset.extractTokenParts(frame);
       const internalOptions = Object.assign(options, { context: { internal: true } });
@@ -183,7 +184,8 @@ const controller = {
           }),
         );
       } else {
-        if (!frame.original.session) {
+        const session = requestSession(frame);
+        if (!session) {
           throw new errors.InternalServerError({
             message: 'Could not initialize an admin session during password reset.',
           });
@@ -193,17 +195,17 @@ const controller = {
         // any stolen or cloned copy of the pre-reset cookie is rejected
         // on its next request.
         await auth.session.sessionService.rotateAndAssignVerifiedUserToSession({
-          req: frame.original.session.req,
+          req: session.req,
           user: doResetParams.user,
           ip: frame.options.ip,
         });
       }
 
       // userLogin counts per IP, so clear this IP's failed sign-ins
-      web.shared.middleware.api.spamPrevention
+      spamPrevention
         .userLogin()
         .reset({ ip: frame.options.ip })
-        .catch((err) => logging.error(err));
+        .catch((err: unknown) => logging.error(err));
       return {};
     },
   },
@@ -216,7 +218,7 @@ const controller = {
       docName: 'invitations',
     },
     permissions: false,
-    async query(frame) {
+    async query(frame: AcceptInvitationFrame) {
       await auth.setup.assertSetupCompleted(true)();
       return invites.service.accept(frame.data);
     },
@@ -231,7 +233,7 @@ const controller = {
       docName: 'invitations',
     },
     permissions: false,
-    async query(frame) {
+    async query(frame: IsInvitationFrame) {
       await auth.setup.assertSetupCompleted(true)();
       const email = frame.data.email;
       return models.Invite.findOne({ email, status: 'sent' }, frame.options);
@@ -244,23 +246,26 @@ const controller = {
       cacheInvalidate: false,
     },
     permissions: true,
-    async query(frame) {
+    async query(frame: Frame) {
       const result = await auth.resetAuthentication({
         schedulerAdapter,
         userService: usersService.service,
         options: frame.options,
-        revokeAllSessions: isBetterAuth ? () => auth.staffSessions.revokeAllSessions() : undefined,
+        // Under legacy too, so a later switch to better-auth can't revive them
+        revokeAllSessions: isBetterAuth
+          ? () => auth.staffSessions.revokeAllSessions()
+          : () => models.Base.knex('user_sessions').del(),
       });
 
       // Express-session would otherwise re-save the current request's
       // session on the response, resurrecting the row deleteAllSessions
       // just wiped. Destroying the request session prevents the re-save
       // and emits a Set-Cookie that expires the cookie on the client.
-      await destroyRequestSession(frame.original.session && frame.original.session.req);
+      await destroyRequestSession(requestSession(frame)?.req);
 
       return result;
     },
   },
 };
 
-module.exports = controller;
+export default controller;

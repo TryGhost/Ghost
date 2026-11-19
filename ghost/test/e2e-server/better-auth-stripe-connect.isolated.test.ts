@@ -86,7 +86,6 @@ describe.skipIf(isSQLite)('Stripe Connect under auth:engine better-auth', functi
     sandbox.stub(sentry, 'captureException');
     sandbox.stub(sentry, 'captureMessage');
     configUtils.set('auth:engine', 'better-auth');
-    configUtils.set('createInDevelopmentTables', true);
     configUtils.set('url', `${adminOrigin}/`);
 
     app = await startGhost({ backend: true, frontend: false, server: false });

@@ -22,7 +22,7 @@ module.exports = function setupApiApp() {
   // Admin API shouldn't be cached
   apiApp.use(shared.middleware.cacheControl('private'));
 
-  // Before body parsing: Better Auth reads the request stream itself
+  // Before body parsing: Better Auth's routes read the body with their own limit
   if (auth.isBetterAuth) {
     const { betterAuthRouter } = require('./better-auth');
     apiApp.use(betterAuthRouter(auth.betterAuth.service));

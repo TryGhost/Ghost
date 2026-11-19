@@ -7,6 +7,8 @@ import { AutoFillingMap } from '../../lib/auto-filling-map';
 import type {
   AutomationsRepository2,
   AutomatedEmailRecipientTrackingData,
+  EmailRecipientToInsert,
+  RecordEmailSentOptions,
   RunStepToInsert,
   RunToInsert,
   TrackEmailClickedOptions,
@@ -78,18 +80,6 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
     ): Promise<void> => {
       const { eventName } = event;
 
-      // TypeScript makes this impossible in theory, but in practice there are
-      // untyped callers (and TypeScript doesn't have a sound type system
-      // anyway). This check is defense-in-depth.
-      switch (eventName) {
-        case 'membership_started':
-        case 'paid_subscription_changed':
-        case 'label_added':
-          break;
-        default:
-          throw new errors.IncorrectUsageError({ message: 'Unsupported automation event.' });
-      }
-
       if (!labs.isSet('automations')) {
         return;
       }
@@ -146,9 +136,6 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
             return;
           }
           ({ memberIds } = event);
-          if (memberIds.length === 0) {
-            return;
-          }
           findFirstActionOptions = { eventName, labelId: event.labelId };
           break;
         default: {
@@ -157,6 +144,10 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
             message: `Unexpected automation event: ${_exhaustive}`,
           });
         }
+      }
+
+      if (memberIds.length === 0) {
+        return;
       }
 
       const didEnroll = await repository.withTransaction(async (trx) => {
@@ -224,6 +215,43 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
       if (didEnroll) {
         requestPoll();
       }
+    },
+
+    recordEmailSent: async ({
+      automationActionRevisionId,
+      automationRunStepId,
+      mailgunMessageId,
+      memberEmail,
+      memberId,
+      memberName,
+      memberUuid,
+      trackClicks,
+      trackOpens,
+    }: RecordEmailSentOptions): Promise<void> => {
+      const now = new Date();
+      const recipient: EmailRecipientToInsert = {
+        id: ObjectId().toHexString(),
+        created_at: now,
+        updated_at: now,
+        member_id: memberId,
+        member_uuid: memberUuid,
+        member_email: memberEmail,
+        member_name: memberName,
+        automation_action_revision_id: automationActionRevisionId,
+        automation_run_step_id: automationRunStepId,
+        ...(mailgunMessageId ? { mailgun_message_id: mailgunMessageId } : {}),
+        track_clicks: trackClicks,
+        track_opens: trackOpens,
+      };
+
+      await repository.withTransaction(async (trx) => {
+        // Lock the revision (via this update) before the recipient insert,
+        // whose foreign key would otherwise take a shared lock on it first.
+        // Click and open tracking also lock revisions before recipients, so
+        // a consistent order avoids deadlocks between them.
+        await repository.incrementEmailSentCount(trx, automationActionRevisionId);
+        await repository.insertEmailRecipient(trx, recipient);
+      });
     },
 
     requestPoll,
