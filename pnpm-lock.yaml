@@ -353,9 +353,6 @@ catalogs:
     '@tryghost/debug':
       specifier: 2.3.23
       version: 2.3.23
-    '@tryghost/domain-events':
-      specifier: 3.4.1
-      version: 3.4.1
     '@tryghost/helpers':
       specifier: 1.1.110
       version: 1.1.110
@@ -2269,8 +2266,8 @@ importers:
         specifier: 'catalog:'
         version: 2.3.23(supports-color@10.2.2)
       '@tryghost/domain-events':
-        specifier: 'catalog:'
-        version: 3.4.1(supports-color@10.2.2)
+        specifier: workspace:*
+        version: link:../packages/domain-events
       '@tryghost/errors':
         specifier: 3.4.8
         version: 3.4.8
@@ -4161,6 +4158,34 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.12(@opentelemetry/api@1.9.1)(@types/node@22.20.5)(@vitest/browser-playwright@4.1.12)(@vitest/coverage-v8@4.1.12)(@vitest/ui@4.1.12)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.5)(@typescript/typescript6@6.0.2))(vite@8.1.6(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
+
+  packages/domain-events:
+    dependencies:
+      '@tryghost/logging':
+        specifier: 6.0.7
+        version: 6.0.7(supports-color@10.2.2)
+    devDependencies:
+      '@internal/cfg-eslint':
+        specifier: workspace:*
+        version: link:../../tools/configs/eslint
+      '@internal/cfg-vitest':
+        specifier: workspace:*
+        version: link:../../tools/configs/vitest
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.5
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 4.1.12(@vitest/browser@4.1.12)(vitest@4.1.12)
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
+      sinon:
+        specifier: 'catalog:'
+        version: 22.1.0
       vitest:
         specifier: 'catalog:'
         version: 4.1.12(@opentelemetry/api@1.9.1)(@types/node@22.20.5)(@vitest/browser-playwright@4.1.12)(@vitest/coverage-v8@4.1.12)(@vitest/ui@4.1.12)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.5)(@typescript/typescript6@6.0.2))(vite@8.1.6(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
@@ -8856,9 +8881,6 @@ packages:
 
   '@tryghost/debug@2.3.23':
     resolution: {integrity: sha512-/fYNYoSUpX8iTr4i2VmJljfehqkljLYbLN5kU5EenvwHue6SHOycGel1r7GsdKKEuDTB2Ckk8/ji+D6D06A6Ng==}
-
-  '@tryghost/domain-events@3.4.1':
-    resolution: {integrity: sha512-AQLNI2It/9xABIuNG895RXv7iSuDjlNEEIs6aySlZ5gDDtK0ITF5rOk2BtUr7T9x2c3DToc4Mf7C53x/ZGGtog==}
 
   '@tryghost/elasticsearch@6.1.0':
     resolution: {integrity: sha512-PvrcF36srNRUXAo7zvjMepMWGNp8RngdvKAly+yfpZZaFRADUcUBvMRc3CfaMQ2h0OozwyQlupK5xe+HvnwJpA==}
@@ -20776,12 +20798,6 @@ snapshots:
     dependencies:
       '@tryghost/root-utils': 2.4.0
       debug: 4.4.3(supports-color@10.2.2)
-    transitivePeerDependencies:
-      - supports-color
-
-  '@tryghost/domain-events@3.4.1(supports-color@10.2.2)':
-    dependencies:
-      '@tryghost/logging': 6.0.7(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
 

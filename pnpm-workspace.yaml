@@ -98,7 +98,6 @@ catalog:
   '@tryghost/color-utils': 0.2.24
   '@tryghost/custom-fonts': 1.0.15
   '@tryghost/debug': 2.3.23
-  '@tryghost/domain-events': 3.4.1
   '@tryghost/errors': 3.4.8
   '@tryghost/helpers': 1.1.110
   '@tryghost/logging': 6.0.7
