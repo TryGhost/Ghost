@@ -167,16 +167,18 @@ function renderTabsTriggerLabel(children: React.ReactNode, asChild = false): Rea
       // Keep boundary spaces in the inline flow between nested label elements.
       const leadingSpace = typeof child === 'string' ? child.match(/^\s*/)?.[0] : undefined;
       const trailingSpace = typeof child === 'string' ? child.match(/\s*$/)?.[0] : undefined;
+      // The sizing copy is generated content with empty alt text, not a text node. Under an
+      // aria-hidden ancestor (a modal menu or dialog hides the page), names computed through
+      // aria-labelledby include hidden text, and a text copy would double the label.
       return (
         <>
           {leadingSpace}
           <span className="inline-grid">
             <span
               aria-hidden="true"
-              className="pointer-events-none invisible col-start-1 row-start-1 font-semibold select-none"
-            >
-              {label}
-            </span>
+              className="pointer-events-none invisible col-start-1 row-start-1 font-semibold select-none before:content-[attr(data-label)_/_'']"
+              data-label={label}
+            />
             <span className="col-start-1 row-start-1">{label}</span>
           </span>
           {trailingSpace}
@@ -324,20 +326,71 @@ interface TabsDropdownTriggerProps extends Omit<
   children: React.ReactNode;
 }
 
+interface TabsMenuTabProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger> {
+  wrapperClassName?: string;
+  'data-state'?: string;
+}
+
+// DropdownMenuTrigger hands its slot the menu button's id, aria-controls and data-state, which
+// would replace the tab's own. The tab keeps them, and the wrapper takes the menu's id so the
+// menu (aria-labelledby that id) is named after the tab.
+const TabsMenuTab = React.forwardRef<HTMLButtonElement, TabsMenuTabProps>(
+  (
+    {
+      id: menuTriggerId,
+      'aria-controls': _menuContentId,
+      'data-state': _menuState,
+      wrapperClassName,
+      onFocus,
+      ...props
+    },
+    ref,
+  ) => {
+    const menuOpen = props['aria-expanded'] === true;
+    const menuWasOpenRef = React.useRef(false);
+    React.useEffect(() => {
+      if (menuOpen) {
+        menuWasOpenRef.current = true;
+      }
+    }, [menuOpen]);
+
+    return (
+      <div className={wrapperClassName} id={menuTriggerId}>
+        <TabsPrimitive.Trigger
+          ref={ref}
+          onFocus={(event) => {
+            onFocus?.(event);
+            const returningFromMenu =
+              menuWasOpenRef.current &&
+              !(
+                event.relatedTarget instanceof Element &&
+                event.relatedTarget.getAttribute('role') === 'tab'
+              );
+            menuWasOpenRef.current = false;
+            // Closing the menu returns focus here. Radix would select a focused tab, so a
+            // dismissed menu would switch tabs; only the menu's items should do that. Arrowing
+            // in from another tab still selects it.
+            if (returningFromMenu && event.currentTarget.getAttribute('aria-selected') !== 'true') {
+              event.preventDefault();
+            }
+          }}
+          {...props}
+        />
+      </div>
+    );
+  },
+);
+TabsMenuTab.displayName = 'TabsMenuTab';
+
+// The tab itself opens the menu, so it stays one control and one stop in the tab list's
+// arrow-key order. A click opens the menu without selecting the tab; choosing an item does.
 const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTriggerProps>(
-  ({ children, className, ...props }, ref) => {
+  ({ children, className, disabled, onMouseDown, ...props }, ref) => {
     const { variant, controlShape } = React.useContext(TabsContext);
     const { admin7Design } = useShade();
     return (
-      <div
-        className={cn(
-          'relative rounded-control hover:bg-tab-hover',
-          (variant === 'button' || variant === 'button-sm') &&
-            controlShape === 'pill' &&
-            'rounded-full',
-        )}
-      >
-        <TabsPrimitive.Trigger
+      <DropdownMenuTrigger disabled={disabled} asChild>
+        <TabsMenuTab
           ref={ref}
           className={cn(
             tabsTriggerVariants({ variant, controlShape, admin7Design }),
@@ -346,22 +399,28 @@ const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTrig
                 admin7Design,
                 size: variant === 'button-sm' ? 'compact' : 'default',
               }),
+            'cursor-pointer',
             className,
           )}
+          disabled={disabled}
+          wrapperClassName={cn(
+            'relative rounded-control hover:bg-tab-hover',
+            (variant === 'button' || variant === 'button-sm') &&
+              controlShape === 'pill' &&
+              'rounded-full',
+          )}
+          onMouseDown={(event) => {
+            onMouseDown?.(event);
+            // Radix Tabs selects on mousedown; leave that to the menu's items.
+            event.preventDefault();
+          }}
           {...props}
         >
           <div className="flex items-center gap-2">
             {admin7Design && variant === 'underline' ? renderTabsTriggerLabel(children) : children}
           </div>
-        </TabsPrimitive.Trigger>
-        <DropdownMenuTrigger
-          className="absolute inset-0 size-full cursor-pointer"
-          onClick={(e) => {
-            // Stop propagation to prevent tab change
-            e.preventDefault();
-          }}
-        />
-      </div>
+        </TabsMenuTab>
+      </DropdownMenuTrigger>
     );
   },
 );

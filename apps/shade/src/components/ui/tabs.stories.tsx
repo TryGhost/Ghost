@@ -1,5 +1,20 @@
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount } from './tabs';
+import { ChevronDown } from 'lucide-react';
+import {
+  Tabs,
+  TabsContent,
+  TabsDropdownTrigger,
+  TabsList,
+  TabsTrigger,
+  TabsTriggerCount,
+} from './tabs';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from './dropdown-menu';
 import ShadeApp from '@/shade-app';
 
 const meta = {
@@ -262,6 +277,72 @@ export const CountBackgrounds: Story = {
       description: {
         story:
           'Count pills retain a distinct semantic background across common tab variants and selection states.',
+      },
+    },
+  },
+};
+
+const MEMBER_METRICS = { free: 'Free members', paid: 'Paid members' } as const;
+
+const DropdownTabs = ({ variant }: { variant: 'button' | 'underline' }) => {
+  const [tab, setTab] = useState('visitors');
+  const [metric, setMetric] = useState<keyof typeof MEMBER_METRICS>('free');
+  return (
+    <Tabs value={tab} variant={variant} onValueChange={setTab}>
+      <TabsList>
+        <TabsTrigger value="visitors">Visitors</TabsTrigger>
+        <DropdownMenu>
+          <TabsDropdownTrigger value="members">
+            {tab === 'members' ? MEMBER_METRICS[metric] : 'Members'}
+            <ChevronDown />
+          </TabsDropdownTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuRadioGroup
+              value={metric}
+              onValueChange={(value) => {
+                setMetric(value as keyof typeof MEMBER_METRICS);
+                setTab('members');
+              }}
+            >
+              <DropdownMenuRadioItem value="free">Free members</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="paid">Paid members</DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <TabsTrigger value="revenue">Revenue</TabsTrigger>
+        <DropdownMenu>
+          <TabsDropdownTrigger value="sources" disabled>
+            Sources
+            <ChevronDown />
+          </TabsDropdownTrigger>
+          <DropdownMenuContent />
+        </DropdownMenu>
+      </TabsList>
+      <TabsContent className="p-4" value="visitors">
+        Ranked by visitors
+      </TabsContent>
+      <TabsContent className="p-4" value="members">
+        Ranked by {MEMBER_METRICS[metric].toLowerCase()}
+      </TabsContent>
+      <TabsContent className="p-4" value="revenue">
+        Ranked by revenue
+      </TabsContent>
+    </Tabs>
+  );
+};
+
+export const WithDropdown: Story = {
+  render: () => (
+    <div className="flex flex-col gap-6">
+      <DropdownTabs variant="button" />
+      <DropdownTabs variant="underline" />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Wrap TabsDropdownTrigger in a DropdownMenu when a tab picks between related views. The tab opens the menu, choosing an item selects the tab, and arrow keys reach it like any other tab.',
       },
     },
   },
