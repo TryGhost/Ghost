@@ -1,8 +1,9 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { fireEvent, screen } from '@testing-library/react';
-import { useState } from 'react';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, screen } from '@testing-library/react';
+import { StrictMode, useState } from 'react';
 import ColorPicker, {
   ColorPickerAlpha,
+  ColorPickerEyeDropper,
   ColorPickerFormat,
   ColorPickerHue,
   ColorPickerRoot,
@@ -290,6 +291,36 @@ describe('ColorPicker Component', () => {
       expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('240');
     });
 
+    it('is called when a gradient click turns a transparent colour opaque', () => {
+      // Admin shows a transparent setting as #00000000; clicking black must still report it.
+      const handleChange = vi.fn();
+      render(
+        <ColorPickerRoot defaultValue="#00000000" onChange={handleChange}>
+          <ColorPickerSelection data-testid="gradient" />
+        </ColorPickerRoot>,
+      );
+
+      fireEvent.pointerDown(mockGradientRect(), { clientX: 200, clientY: 200 });
+
+      expect(handleChange).toHaveBeenCalledTimes(1);
+      expect(handleChange).toHaveBeenCalledWith('#000000');
+    });
+
+    it('is not called on mount and is called once per change in StrictMode', () => {
+      const handleChange = vi.fn();
+      render(
+        <StrictMode>
+          <Parent value="#ff0000" onChange={handleChange} />
+        </StrictMode>,
+      );
+
+      expect(handleChange).not.toHaveBeenCalled();
+
+      fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
+
+      expect(handleChange).toHaveBeenCalledTimes(1);
+    });
+
     it('settles when the parent stores the colour in a new object on every change', () => {
       const handleChange = vi.fn();
       function DraftForm() {
@@ -317,6 +348,67 @@ describe('ColorPicker Component', () => {
       fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
 
       expect(handleChange).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('eye dropper', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    // An EyeDropper whose pick resolves when the test says so.
+    function mockEyeDropper() {
+      let resolvePick: (result: { sRGBHex: string }) => void = () => {};
+      vi.stubGlobal(
+        'EyeDropper',
+        class {
+          open() {
+            return new Promise((resolve) => {
+              resolvePick = resolve;
+            });
+          }
+        },
+      );
+      return { pick: (sRGBHex: string) => act(async () => resolvePick({ sRGBHex })) };
+    }
+
+    function renderEyeDropper(onChange: (hex: string) => void) {
+      return render(
+        <ColorPickerRoot value="#ff0000" onChange={(hex) => onChange(hex)}>
+          <ColorPickerEyeDropper />
+        </ColorPickerRoot>,
+      );
+    }
+
+    it('reports a pick to the latest onChange', async () => {
+      const { pick } = mockEyeDropper();
+      const first = vi.fn();
+      const latest = vi.fn();
+      const { rerender } = renderEyeDropper(first);
+
+      fireEvent.click(screen.getByRole('button'));
+      rerender(
+        <ColorPickerRoot value="#ff0000" onChange={(hex) => latest(hex)}>
+          <ColorPickerEyeDropper />
+        </ColorPickerRoot>,
+      );
+      await pick('#0000ff');
+
+      expect(first).not.toHaveBeenCalled();
+      expect(latest).toHaveBeenCalledTimes(1);
+      expect(latest).toHaveBeenCalledWith('#0000FF');
+    });
+
+    it('does not report a pick that resolves after the picker unmounts', async () => {
+      const { pick } = mockEyeDropper();
+      const handleChange = vi.fn();
+      const { unmount } = renderEyeDropper(handleChange);
+
+      fireEvent.click(screen.getByRole('button'));
+      unmount();
+      await pick('#0000ff');
+
+      expect(handleChange).not.toHaveBeenCalled();
     });
   });
 });

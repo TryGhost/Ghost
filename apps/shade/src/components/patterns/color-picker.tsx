@@ -170,8 +170,16 @@ const toHsla = (input: Parameters<typeof Color>[0]): HslaColor => {
 const toColor = ({ hue, saturation, lightness, alpha }: HslaColor) =>
   Color.hsl(hue, saturation, lightness).alpha(alpha / 100);
 
-// hex() drops alpha, so compare with hexa() to notice an alpha-only change.
+// hex() drops alpha, so compare with hexa() to tell colours apart.
 const isSameColor = (a: HslaColor, b: HslaColor) => toColor(a).hexa() === toColor(b).hexa();
+
+// A control can change a channel without changing the colour, e.g. saturation on black. That
+// still counts: a caller that showed transparent as #00000000 needs to hear about #000000.
+const isSameHsla = (a: HslaColor, b: HslaColor) =>
+  a.hue === b.hue &&
+  a.saturation === b.saturation &&
+  a.lightness === b.lightness &&
+  a.alpha === b.alpha;
 
 interface ColorPickerContextValue extends HslaColor {
   mode: string;
@@ -235,7 +243,7 @@ export const ColorPickerRoot = ({
     colorRef.current = next;
     setColorState(next);
 
-    if (!isSameColor(next, previous)) {
+    if (!isSameHsla(next, previous)) {
       onChangeRef.current?.(toColor(next).hex());
     }
   }, []);
@@ -383,6 +391,10 @@ export type ColorPickerEyeDropperProps = ComponentProps<typeof Button>;
 
 export const ColorPickerEyeDropper = ({ className, ...props }: ColorPickerEyeDropperProps) => {
   const { setColor } = useColorPicker();
+  const pendingPick = useRef<AbortController | null>(null);
+
+  // A pick still open when the picker goes away must not report a colour.
+  useEffect(() => () => pendingPick.current?.abort(), []);
 
   // Check if EyeDropper API is supported
   const isSupported = typeof window !== 'undefined' && 'EyeDropper' in window;
@@ -391,16 +403,25 @@ export const ColorPickerEyeDropper = ({ className, ...props }: ColorPickerEyeDro
   }
 
   const handleEyeDropper = async () => {
+    pendingPick.current?.abort();
+    const controller = new AbortController();
+    pendingPick.current = controller;
+
     try {
       // @ts-expect-error - EyeDropper API is experimental
       const eyeDropper = new EyeDropper();
-      const result = await eyeDropper.open();
+      const result = await eyeDropper.open({ signal: controller.signal });
+      if (controller.signal.aborted) {
+        return;
+      }
       const [hue, saturation, lightness] = Color(result.sRGBHex).hsl().array();
 
       setColor({ hue, saturation, lightness, alpha: 100 });
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('EyeDropper failed:', error);
+      if (!controller.signal.aborted) {
+        // eslint-disable-next-line no-console
+        console.error('EyeDropper failed:', error);
+      }
     }
   };
 
