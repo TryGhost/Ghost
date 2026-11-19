@@ -87,6 +87,8 @@ describe('Comments stats API', function () {
   it('returns totals, the previous period and a zero-filled series', async function () {
     const { body } = await agent.get(`stats/comments${range}`).expectStatus(200);
 
+    assert.deepEqual(body.meta, { filters: true });
+
     assert.deepEqual(body.stats, [
       {
         totals: { comments: 4, commenters: 2, reported: 1 },
@@ -136,11 +138,49 @@ describe('Comments stats API', function () {
     ]);
   });
 
+  it('shares comment filters across overview and rankings and advertises support', async function () {
+    const filter = encodeURIComponent(`post_id:'${postIds[0]}' + status:hidden + count.reports:0`);
+    const { body: overview } = await agent
+      .get(`stats/comments${range}&filter=${filter}`)
+      .expectStatus(200);
+    assert.deepEqual(overview.meta, { filters: true });
+    assert.deepEqual(overview.stats[0].totals, { comments: 1, commenters: 1, reported: 0 });
+    assert.deepEqual(overview.stats[0].previous_totals, {
+      comments: 0,
+      commenters: 0,
+      reported: 0,
+    });
+    assert.deepEqual(
+      overview.stats[0].series.map(({ comments }: { comments: number }) => comments),
+      [1, 0, 0],
+    );
+
+    const { body: posts } = await agent
+      .get(`stats/comments/top-posts${range}&filter=${filter}`)
+      .expectStatus(200);
+    assert.deepEqual(posts.meta, { filters: true });
+    assert.equal(posts.stats.length, 1);
+    assert.equal(posts.stats[0].post_id, postIds[0]);
+    assert.equal(posts.stats[0].comments, 1);
+
+    const { body: commenters } = await agent
+      .get(`stats/comments/top-commenters${range}&filter=${filter}`)
+      .expectStatus(200);
+    assert.deepEqual(commenters.meta, { filters: true });
+    assert.deepEqual(commenters.stats, [
+      { member_id: members[1].id, name: members[1].name, comments: 1 },
+    ]);
+  });
+
   const paths = ['stats/comments', 'stats/comments/top-posts', 'stats/comments/top-commenters'];
 
   for (const path of paths) {
     it(`rejects ${path} without a date range`, async function () {
       await agent.get(`${path}?timezone=UTC`).expectStatus(422);
+    });
+
+    it(`rejects unsupported filter fields on ${path}`, async function () {
+      await agent.get(`${path}${range}&filter=members.email:secret`).expectStatus(422);
     });
   }
 

@@ -241,6 +241,7 @@ export type CommentsOverviewStats = {
 
 export type CommentsOverviewResponseType = {
   stats: CommentsOverviewStats[];
+  meta?: { filters?: boolean };
 };
 
 export type CommentsTopPostItem = {
@@ -251,6 +252,7 @@ export type CommentsTopPostItem = {
 
 export type CommentsTopPostsResponseType = {
   stats: CommentsTopPostItem[];
+  meta?: { filters?: boolean };
 };
 
 export type CommentsTopCommenterItem = {
@@ -261,7 +263,14 @@ export type CommentsTopCommenterItem = {
 
 export type CommentsTopCommentersResponseType = {
   stats: CommentsTopCommenterItem[];
+  meta?: { filters?: boolean };
 };
+
+export const commentsStatsDataTypes = [
+  'CommentsOverviewResponseType',
+  'CommentsTopPostsResponseType',
+  'CommentsTopCommentersResponseType',
+];
 
 const dataType = 'TopContentResponseType';
 const memberCountHistoryDataType = 'MemberCountHistoryResponseType';

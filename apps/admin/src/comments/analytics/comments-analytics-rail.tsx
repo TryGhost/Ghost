@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { Box } from '@tryghost/shade/primitives';
 
 function getScrollParent(element: HTMLElement): HTMLElement {
   for (let parent = element.parentElement; parent; parent = parent.parentElement) {
@@ -20,14 +21,23 @@ function useStickyRail() {
       return;
     }
     const scroller = getScrollParent(rail);
+    const header = rail
+      .closest('[data-list-page="list-page"]')
+      ?.querySelector<HTMLElement>('[data-list-page="header"]');
     const scrollTarget = scroller === document.documentElement ? window : scroller;
-    let top = 0;
+    let maxTop = header?.offsetHeight ?? 0;
+    let top = maxTop;
     let lastScroll = scroller.scrollTop;
 
     const update = () => {
-      const minTop = Math.min(0, scroller.clientHeight - rail.offsetHeight);
+      const nextMaxTop = header?.offsetHeight ?? 0;
+      if (top === maxTop) {
+        top = nextMaxTop;
+      }
+      maxTop = nextMaxTop;
+      const minTop = Math.min(maxTop, scroller.clientHeight - rail.offsetHeight);
       const scroll = scroller.scrollTop;
-      top = Math.min(0, Math.max(minTop, top - (scroll - lastScroll)));
+      top = Math.min(maxTop, Math.max(minTop, top - (scroll - lastScroll)));
       lastScroll = scroll;
       rail.style.top = `${top}px`;
     };
@@ -36,6 +46,9 @@ function useStickyRail() {
     const observer = new ResizeObserver(update);
     observer.observe(rail);
     observer.observe(scroller);
+    if (header) {
+      observer.observe(header);
+    }
     update();
 
     return () => {
@@ -51,10 +64,10 @@ const CommentsAnalyticsRail: React.FC<{ children: React.ReactNode }> = ({ childr
   const ref = useStickyRail();
 
   return (
-    <aside className="w-[400px] shrink-0 border-l border-border">
-      <div ref={ref} className="sticky top-0 p-6">
+    <aside className="w-[400px] shrink-0 border-l border-border-default">
+      <Box ref={ref} className="sticky top-0" paddingX="xl" paddingY="sm">
         {children}
-      </div>
+      </Box>
     </aside>
   );
 };

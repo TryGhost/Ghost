@@ -1,8 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   getCommentsStatsSearchParams,
+  getCommentsListFilter,
   getComparisonText,
   getTrend,
+  parseCommentsCustomRange,
   parseRangeParam,
   parseTabParam,
 } from './comments-analytics-helpers';
@@ -44,10 +46,49 @@ describe('comments analytics helpers', () => {
 
   it('falls back to the defaults for unknown params', () => {
     expect(parseRangeParam('90')).toBe(90);
-    expect(parseRangeParam('42')).toBe(30);
-    expect(parseRangeParam(null)).toBe(30);
+    expect(parseRangeParam('42')).toBe(1000);
+    expect(parseRangeParam(null)).toBe(1000);
+    expect(parseRangeParam('custom')).toBe(-2);
     expect(parseTabParam('reported')).toBe('reported');
     expect(parseTabParam('nope')).toBe('comments');
+  });
+
+  it('uses the same calendar dates for custom stats and list filters across DST', () => {
+    const custom = { from: '2026-03-08', to: '2026-03-08' };
+    expect(getCommentsStatsSearchParams(-2, 'America/New_York', custom)).toEqual({
+      date_from: custom.from,
+      date_to: custom.to,
+      timezone: 'America/New_York',
+    });
+    expect(getCommentsListFilter(-2, 'America/New_York', 'status:hidden', custom)).toBe(
+      "(status:hidden)+created_at:>='2026-03-08T05:00:00.000Z'+created_at:<'2026-03-09T04:00:00.000Z'",
+    );
+  });
+
+  it('groups an existing OR filter before adding date bounds', () => {
+    expect(getCommentsListFilter(1, 'UTC', 'status:hidden,status:published')).toBe(
+      "(status:hidden,status:published)+created_at:>='2026-11-17T00:00:00.000Z'+created_at:<'2026-11-18T00:00:00.000Z'",
+    );
+  });
+
+  it('matches the server All time horizon and excludes future comments', () => {
+    expect(getCommentsListFilter(1000, 'UTC')).toBe(
+      "created_at:>='2016-11-10T00:00:00.000Z'+created_at:<'2026-11-18T00:00:00.000Z'",
+    );
+  });
+
+  it('validates custom date links before querying', () => {
+    expect(parseCommentsCustomRange('2026-01-01', '2026-11-16', 'UTC')).toEqual({
+      from: '2026-01-01',
+      to: '2026-11-16',
+    });
+    expect(parseCommentsCustomRange(null, '2026-11-16', 'UTC')).toBeUndefined();
+    expect(parseCommentsCustomRange('2026-02-30', '2026-03-01', 'UTC')).toBeUndefined();
+    expect(parseCommentsCustomRange('2026-03-02', '2026-03-01', 'UTC')).toBeUndefined();
+    expect(
+      parseCommentsCustomRange('2026-01-01', '2026-11-17', 'America/New_York'),
+    ).toBeUndefined();
+    expect(parseCommentsCustomRange('2010-01-01', '2026-11-16', 'UTC')).toBeUndefined();
   });
 
   it('compares against the previous period', () => {

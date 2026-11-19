@@ -16,6 +16,7 @@ interface UseCommentFilterFieldsOptions {
   postValueSource: ValueSource<string>;
   memberValueSource: ValueSource<string>;
   siteTimezone?: string;
+  includeDateFilter?: boolean;
 }
 
 const COMMENT_FIELD_ORDER = ['author', 'post', 'body', 'status', 'reported', 'created_at'] as const;
@@ -29,6 +30,7 @@ export function useCommentFilterFields({
   postValueSource,
   memberValueSource,
   siteTimezone = 'UTC',
+  includeDateFilter = true,
 }: UseCommentFilterFieldsOptions): FilterFieldConfig[] {
   return useMemo(() => {
     const today = getTodayInTimezone(siteTimezone);
@@ -52,9 +54,10 @@ export function useCommentFilterFields({
         operators: createOperatorOptions(field.operators, { labels: COMMENT_OPERATOR_LABELS }),
         ...('options' in field && field.options ? { options: field.options } : {}),
         ...dateConfig,
+        ...(key === 'created_at' && !includeDateFilter ? { readOnly: true } : {}),
         ...(key === 'author' ? { valueSource: memberValueSource } : {}),
         ...(key === 'post' ? { valueSource: postValueSource } : {}),
       };
     });
-  }, [memberValueSource, postValueSource, siteTimezone]);
+  }, [includeDateFilter, memberValueSource, postValueSource, siteTimezone]);
 }

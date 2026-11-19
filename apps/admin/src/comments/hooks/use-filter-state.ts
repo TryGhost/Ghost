@@ -58,9 +58,9 @@ export function shouldDelayCommentDateFilterHydration(
 
 export function useFilterState(timezone: string): UseFilterStateReturn {
   const [searchParams, setSearchParams] = useSearchParams();
-  const lastWrittenQueryRef = useRef<string | null>(null);
   const filterParam = useMemo(() => searchParams.get('filter') ?? undefined, [searchParams]);
   const currentQuery = useMemo(() => searchParams.toString(), [searchParams]);
+  const lastWrittenQueryRef = useRef(currentQuery);
 
   const parsedFilters = useMemo(() => {
     if (filterParam !== undefined) {
@@ -79,11 +79,8 @@ export function useFilterState(timezone: string): UseFilterStateReturn {
     if (currentQuery !== lastWrittenQueryRef.current) {
       setDraftFilters(parsedFilters);
       lastWrittenQueryRef.current = currentQuery;
-    }
-  }, [currentQuery, parsedFilters]);
-
-  useEffect(() => {
-    if (lastWrittenQueryRef.current !== null && currentQuery !== lastWrittenQueryRef.current) {
+      // Date controls and browser navigation can update the URL externally.
+      // Hydrate that state before canonicalizing, or stale draft filters win.
       return;
     }
 
@@ -94,7 +91,7 @@ export function useFilterState(timezone: string): UseFilterStateReturn {
       lastWrittenQueryRef.current = nextQuery;
       setSearchParams(nextParams, { replace: true });
     }
-  }, [currentQuery, filters, searchParams, setSearchParams, timezone]);
+  }, [currentQuery, filters, parsedFilters, searchParams, setSearchParams, timezone]);
 
   const setFilters = useCallback(
     (action: SetFiltersAction, options: SetFiltersOptions = {}) => {
