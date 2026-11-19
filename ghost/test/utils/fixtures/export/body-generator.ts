@@ -1,4 +1,4 @@
-const _ = require('lodash');
+import _ from 'lodash';
 
 const exportedBodyV2 = () => {
     return _.clone({
@@ -199,9 +199,11 @@ const exportedBodyLatest = () => {
     });
 };
 
-module.exports.exportedBodyLatest = exportedBodyLatest;
-module.exports.exportedBodyV5 = exportedBodyV5;
-module.exports.exportedBodyV4 = exportedBodyV4;
-module.exports.exportedBodyV2 = exportedBodyV2;
-module.exports.exportedBodyV1 = exportedBodyV1;
-module.exports.exportedBodyLegacy = exportedBodyLegacy;
+export {
+    exportedBodyLatest,
+    exportedBodyV5,
+    exportedBodyV4,
+    exportedBodyV2,
+    exportedBodyV1,
+    exportedBodyLegacy
+};
