@@ -12,6 +12,7 @@ import {
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeAdminStats,
   fakeEditorChrome,
   fakeFrameOrigin,
   fakeTags,
@@ -577,6 +578,13 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.unavailable()).toHaveTextContent('APP_IDENTITY_MISMATCH');
     await expect.element(appsScreen.frame()).not.toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: 'Uninstall' })).not.toBeInTheDocument();
+    // The developer's link may be on the very origin Ghost couldn't confirm.
+    await expect
+      .element(appsScreen.unavailable().getByRole('link', { name: 'Back to Apps' }))
+      .toBeVisible();
+    await expect
+      .element(appsScreen.unavailable().getByRole('link', { name: 'Contact support' }))
+      .not.toBeInTheDocument();
 
     sessionsApi.set(installation());
     await page.getByRole('button', { name: 'Try again' }).click();
@@ -604,6 +612,210 @@ describe('Managing apps', () => {
 
     await expect.element(appsScreen.row('Podcast')).toBeVisible();
     await expect.element(appsScreen.row('Podcast')).not.toHaveTextContent('Development');
+  });
+
+  describe('app page footer', () => {
+    /** The space between the nav and the footer, and how far the space after it differs. */
+    const footerSpace = (nav: Element) => {
+      const [n, f] = [
+        nav.getBoundingClientRect(),
+        appsScreen.footer().element().getBoundingClientRect(),
+      ];
+      const start = f.left - n.right;
+      return { start, skew: Math.round(start - (window.innerWidth - f.right)) };
+    };
+
+    it('names the app and links its developer for support, under every app', async () => {
+      await fakeAppPage(installation());
+
+      await renderAdminApp(APP_ROUTE, { labs });
+
+      await expect.element(appsScreen.frame()).toBeVisible();
+      await expect.element(appsScreen.footer()).toHaveTextContent('Podcast by Example Audio');
+      await expect.element(appsScreen.footer()).not.toHaveTextContent('Contact support');
+      const developer = appsScreen.footer().getByRole('link', { name: 'Example Audio' });
+      await expect.element(developer).toHaveAttribute('href', 'https://example.com/');
+      await expect.element(developer).toHaveAttribute('target', '_blank');
+      await expect.element(appsScreen.footerDevelopmentBadge()).not.toBeInTheDocument();
+      await expect.element(appsScreen.footer()).not.toHaveAttribute('data-development');
+    });
+
+    it('marks a development build in its footer, below the frame', async () => {
+      const development = installation({ manifest: manifest({ development: true }) });
+      await fakeAppPage(development);
+
+      await renderAdminApp(APP_ROUTE, { labs });
+
+      await expect.element(appsScreen.frame()).toBeVisible();
+      await expect.element(appsScreen.footerDevelopmentBadge()).toHaveTextContent('Development');
+      await expect.element(appsScreen.footer()).toHaveAttribute('data-development');
+      const frame = appsScreen.frame().element().getBoundingClientRect();
+      const footer = appsScreen.footer().element().getBoundingClientRect();
+      expect(frame.bottom).toBeLessThanOrEqual(footer.top);
+    });
+
+    it('keeps the footer beside the default nav, with the same space at both ends', async () => {
+      await fakeAppPage(installation());
+
+      await renderAdminApp(APP_ROUTE, { labs });
+
+      await expect.element(appsScreen.frame()).toBeVisible();
+      const nav = document.querySelector('[data-sidebar=sidebar]')!;
+      await expect.poll(() => footerSpace(nav).skew).toBe(0);
+      expect(footerSpace(nav).start).toBeGreaterThan(0);
+    });
+
+    it('keeps the footer under the frame beside Admin 7’s unpinned nav', async () => {
+      allowUnhandledRequests();
+      await fakeAppPage(installation());
+      const me = currentUserResponse();
+      me.users[0].accessibility = JSON.stringify({
+        navigation: {
+          expanded: { posts: true, members: true },
+          menu: { visible: true, mode: 'compact' },
+        },
+      });
+
+      await renderAdminApp(APP_ROUTE, {
+        labs: { ...labs, admin7Design: true },
+        boot: { browseMe: { response: me } },
+      });
+
+      await expect.element(appsScreen.frame()).toBeVisible();
+      // Admin pads the page evenly beside the unpinned nav, so the footer runs as wide as the frame.
+      const frame = appsScreen.frame().element();
+      const footer = appsScreen.footer().element();
+      await expect
+        .poll(() => {
+          const [f, a] = [footer.getBoundingClientRect(), frame.getBoundingClientRect()];
+          return [Math.round(f.left - a.left), Math.round(f.right - a.right)];
+        })
+        .toEqual([0, 0]);
+    });
+
+    it('keeps the footer beside Admin 7’s pinned nav, with the same space at both ends', async () => {
+      // The Admin 7 sidebar owns its request graph (member stats); this is about the footer.
+      allowUnhandledRequests();
+      await fakeAppPage(installation());
+
+      await renderAdminApp(APP_ROUTE, { labs: { ...labs, admin7Design: true } });
+
+      await expect.element(appsScreen.frame()).toBeVisible();
+      await expect
+        .poll(() => document.querySelector('[data-slot=floating-sidebar]'))
+        .not.toBeNull();
+      const nav = document.querySelector('[data-slot=floating-sidebar]')!;
+      await expect.poll(() => footerSpace(nav).skew).toBe(0);
+      expect(footerSpace(nav).start).toBeGreaterThan(0);
+    });
+
+    it('opens an email to the developer when their link is an email address', async () => {
+      const emailed = installation({
+        manifest: manifest({
+          author: { name: 'Example Audio', url: 'mailto:support@example.com' },
+        }),
+      });
+      await fakeAppPage(emailed);
+
+      await renderAdminApp(APP_ROUTE, { labs });
+
+      const developer = appsScreen.footer().getByRole('link', { name: 'Example Audio' });
+      await expect.element(developer).toHaveAttribute('href', 'mailto:support@example.com');
+      await expect.element(developer).not.toHaveAttribute('target');
+    });
+
+    it('offers support in place of the footer when the app isn’t responding', async () => {
+      await withReadyTimeout(300, async () => {
+        const emailed = installation({
+          manifest: manifest({
+            author: { name: 'Example Audio', url: 'mailto:support@example.com' },
+          }),
+        });
+        await fakeAppPage(emailed);
+        await failAppFrame();
+
+        await renderAdminApp(APP_ROUTE, { labs });
+
+        await expect.element(appsScreen.notResponding()).toBeVisible();
+        const support = appsScreen.notResponding().getByRole('link', { name: 'Contact support' });
+        await expect.element(support).toHaveAttribute('href', 'mailto:support@example.com');
+        await expect.element(support).not.toHaveAttribute('target');
+        await expect
+          .element(appsScreen.notResponding().getByRole('link', { name: 'Back to Apps' }))
+          .not.toBeInTheDocument();
+        await expect.element(appsScreen.footer()).not.toBeInTheDocument();
+      });
+    });
+
+    it('keeps the footer when the app needs approval', async () => {
+      const suspended = installation({ status: 'suspended' });
+      await fakeAppPage(suspended);
+      fakeReview();
+
+      await renderAdminApp(APP_ROUTE, { labs });
+
+      await expect.element(appsScreen.needsApproval()).toBeInTheDocument();
+      await expect.element(appsScreen.footer()).toHaveTextContent('Podcast by Example Audio');
+      // Content taller than the page scrolls above the footer, which stays in view.
+      await page.viewport(1280, 360);
+      try {
+        await expect
+          .poll(() => appsScreen.footer().element().getBoundingClientRect().bottom)
+          .toBeLessThanOrEqual(window.innerHeight);
+        expect(appsScreen.content().element().getBoundingClientRect().bottom).toBeLessThanOrEqual(
+          appsScreen.footer().element().getBoundingClientRect().top,
+        );
+      } finally {
+        await page.viewport(1280, 800);
+      }
+    });
+
+    it('offers support in place of the footer when Ghost can’t use the app’s manifest', async () => {
+      fakeInstallations([installation()]);
+      fakeSessionStart(
+        'installation-1',
+        apiError(409, 'Could not load the app’s manifest.', 'APP_MANIFEST_UNREACHABLE'),
+      );
+
+      await renderAdminApp(APP_ROUTE, { labs });
+
+      const support = appsScreen.unavailable().getByRole('link', { name: 'Contact support' });
+      await expect.element(support).toHaveAttribute('href', 'https://example.com/');
+      await expect.element(support).toHaveAttribute('target', '_blank');
+      await expect
+        .element(appsScreen.unavailable().getByRole('link', { name: 'Back to Apps' }))
+        .not.toBeInTheDocument();
+      await expect.element(appsScreen.footer()).not.toBeInTheDocument();
+    });
+
+    it('sends the publisher back to Apps when it can’t tell which app is unavailable', async () => {
+      fakeInstallations([]);
+      fakeSessionStart(
+        'installation-1',
+        apiError(409, 'Could not load the app’s manifest.', 'APP_MANIFEST_UNREACHABLE'),
+      );
+
+      await renderAdminApp(APP_ROUTE, { labs });
+
+      await expect
+        .element(appsScreen.unavailable().getByRole('link', { name: 'Back to Apps' }))
+        .toBeVisible();
+      await expect
+        .element(appsScreen.unavailable().getByRole('link', { name: 'Contact support' }))
+        .not.toBeInTheDocument();
+    });
+
+    it('has no footer when there’s no app to name', async () => {
+      fakeSessionStart(
+        'installation-1',
+        apiError(404, 'This app is not installed.', 'APP_NOT_INSTALLED'),
+      );
+
+      await renderAdminApp(APP_ROUTE, { labs });
+
+      await expect.element(appsScreen.notInstalled()).toBeVisible();
+      await expect.element(appsScreen.footer()).not.toBeInTheDocument();
+    });
   });
 
   it('says an app page address that isn’t an app’s doesn’t exist, rather than offering a retry', async () => {
@@ -1321,9 +1533,13 @@ describe('Managing apps', () => {
       .toHaveTextContent(/Made by\s*Example Audio\s*Unverified developer/);
     await expect.element(appsScreen.unverifiedDeveloperBadge()).toBeVisible();
     await expect
-      .element(appsScreen.capabilities().last())
-      .toHaveTextContent('Read and write data to podcast.example.net');
+      .element(details)
+      .toHaveTextContent(
+        /Surface\s*A dedicated page in Admin\s*Data accessed by\s*podcast\.example\.net/,
+      );
     await expect.element(details).toHaveTextContent('by Jamie Larson');
+    // The sections sit one level under the app's name
+    await expect.element(page.getByRole('heading', { name: 'History', level: 2 })).toBeVisible();
     await expect(appsScreen.historyEntries()).toHaveCount(3);
     await expect
       .element(appsScreen.historyEntries().nth(0))
@@ -1333,6 +1549,91 @@ describe('Managing apps', () => {
       .element(appsScreen.historyEntries().nth(2))
       .toHaveTextContent('Installed by Jamie Larson');
     expect(new URL(readApi.requests[0].url).searchParams.get('include')).toBe('history');
+  });
+
+  it('shows the app’s name large under the breadcrumb, with its badges and description, in Admin 7', async () => {
+    // Admin 7's sidebar shows the site's member count and revenue.
+    fakeAdminStats.memberCount();
+    fakeAdminStats.mrr();
+    fakeDetails(
+      installation({
+        manifest: manifest({ development: true }),
+        history: [installedOn('2026-10-01T10:00:00.000Z')],
+      }),
+    );
+
+    await renderAdminApp(DETAILS_ROUTE, { labs: { ...labs, admin7Design: true } });
+
+    await expect.element(appsScreen.detailsTitle()).toHaveTextContent('Podcast');
+    await expect.element(appsScreen.details()).toHaveTextContent('Development');
+    await expect
+      .element(appsScreen.details())
+      .toHaveTextContent('Publish episodes and embed players.');
+    await expect.element(appsScreen.details()).toHaveTextContent(/Made by\s*Example Audio/);
+    await expect.element(page.getByRole('heading', { name: 'Permissions' })).toBeVisible();
+    await expect.element(appsScreen.openLink()).toBeVisible();
+  });
+
+  it('shows that an app’s details are loading', async () => {
+    let respond: ((response: Response) => void) | undefined;
+    fakeAdminEndpoint(
+      'GET',
+      readPath('installation-1'),
+      () =>
+        new Promise<Response>((resolve) => {
+          respond = resolve;
+        }),
+    );
+
+    await renderAdminApp(DETAILS_ROUTE, { labs });
+
+    await expect.element(page.getByTestId('app-details-loading')).toBeVisible();
+    // The page can show it's loading before the request reaches the fake, so the fake has to
+    // be holding it before it can answer.
+    await expect.poll(() => respond).toBeDefined();
+    respond?.(Response.json({ app_installations: [installation()] }));
+    await expect.element(appsScreen.details()).toHaveTextContent('Permissions');
+    await expect.element(page.getByTestId('app-details-loading')).not.toBeInTheDocument();
+  });
+
+  it('reads the app’s name before its sections on a narrow screen in Admin 7', async () => {
+    fakeAdminStats.memberCount();
+    fakeAdminStats.mrr();
+    fakeDetails(installation({ history: [installedOn('2026-10-01T10:00:00.000Z')] }));
+
+    // Below the frame's breakpoint the name moves from the header into the sidebar, which
+    // shows above the sections.
+    await page.viewport(375, 720);
+    try {
+      await renderAdminApp(DETAILS_ROUTE, { labs: { ...labs, admin7Design: true } });
+
+      const name = page.getByRole('heading', { name: 'Podcast', level: 1 });
+      const permissions = page.getByRole('heading', { name: 'Permissions', level: 2 });
+      await expect.element(name).toBeVisible();
+      await expect.element(permissions).toBeVisible();
+      expect(
+        name.element().compareDocumentPosition(permissions.element()) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    } finally {
+      await page.viewport(1280, 800);
+    }
+  });
+
+  it('opens an email to the developer from an app’s details when their link is an email address', async () => {
+    fakeDetails(
+      installation({
+        manifest: manifest({
+          author: { name: 'Example Audio', url: 'mailto:support@example.com' },
+        }),
+      }),
+    );
+
+    await renderAdminApp(DETAILS_ROUTE, { labs });
+
+    const developer = appsScreen.details().getByRole('link', { name: 'Example Audio' });
+    await expect.element(developer).toHaveAttribute('href', 'mailto:support@example.com');
+    await expect.element(developer).not.toHaveAttribute('target');
   });
 
   // The icon URL isn't faked, so a request to it would fail the test.
@@ -1482,7 +1783,8 @@ describe('Managing apps', () => {
     });
 
     await renderAdminApp(DETAILS_ROUTE, { labs });
-    await appsScreen.uninstallButton().click();
+    await appsScreen.detailsActions().click();
+    await appsScreen.menuItem('Uninstall').click();
     await appsScreen.uninstallDialog().getByRole('button', { name: 'Uninstall' }).click();
 
     await expect.poll(currentRoute).toBe('/apps');
@@ -1558,6 +1860,7 @@ describe('Managing apps', () => {
     await expect
       .element(appsScreen.historyEntries().first())
       .toHaveTextContent('Updated, needs approval');
+    await expect.element(appsScreen.openLink()).not.toBeInTheDocument();
     await appsScreen.reviewChangesLink().click();
 
     await expect
@@ -1599,7 +1902,11 @@ describe('Managing apps', () => {
     await expect
       .element(appsScreen.historyEntries().first())
       .toHaveTextContent('Uninstalled by Jamie Larson');
-    await expect.element(appsScreen.uninstallButton()).not.toBeInTheDocument();
+    await expect
+      .element(page.getByTestId('app-fact').filter({ hasText: 'Uninstalled' }))
+      .toHaveTextContent('by Jamie Larson');
+    await expect.element(appsScreen.detailsActions()).not.toBeInTheDocument();
+    await expect.element(appsScreen.openLink()).not.toBeInTheDocument();
   });
 
   it('says when an app doesn’t exist', async () => {

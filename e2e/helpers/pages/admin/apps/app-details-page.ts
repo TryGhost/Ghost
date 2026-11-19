@@ -2,21 +2,24 @@ import * as sel from '@tryghost/test-data/selectors/apps';
 import { AdminPage } from '@/admin-pages';
 import { Locator, Page } from '@playwright/test';
 
-/** An installation's details: what it runs, its history, and Uninstall. */
+/** An installation's details: what it runs, its history, and Uninstall in its actions menu. */
 export class AppDetailsPage extends AdminPage {
   readonly details: Locator;
   readonly historyEntries: Locator;
-  readonly uninstallButton: Locator;
+  readonly actionsButton: Locator;
+  readonly uninstallMenuItem: Locator;
   readonly uninstallDialog: Locator;
 
   constructor(page: Page) {
     super(page);
     this.details = page.getByTestId(sel.appDetails);
     this.historyEntries = page.getByTestId(sel.appHistoryEntry);
-    this.uninstallButton = this.details.getByRole('button', {
-      name: sel.uninstallButton,
+    this.actionsButton = this.details.getByRole('button', {
+      name: sel.detailsActionsButton,
       exact: true,
     });
+    // The menu renders in a portal, outside the details.
+    this.uninstallMenuItem = page.getByRole('menuitem', { name: sel.uninstallButton, exact: true });
     this.uninstallDialog = page.getByTestId(sel.appUninstallDialog);
   }
 
@@ -26,7 +29,7 @@ export class AppDetailsPage extends AdminPage {
 
   /** A history entry's title, with who made the change if anyone did, but not its date. */
   historyTitle(index: number): Locator {
-    return this.historyEntries.nth(index).locator(':scope > span').first();
+    return this.historyEntries.nth(index).locator('span').first();
   }
 
   /** The text shown under the app's name. */
@@ -35,7 +38,8 @@ export class AppDetailsPage extends AdminPage {
   }
 
   async uninstall(): Promise<void> {
-    await this.uninstallButton.click();
+    await this.actionsButton.click();
+    await this.uninstallMenuItem.click();
     await this.uninstallDialog
       .getByRole('button', { name: sel.uninstallButton, exact: true })
       .click();

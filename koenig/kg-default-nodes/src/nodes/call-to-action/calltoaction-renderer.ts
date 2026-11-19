@@ -1,5 +1,7 @@
 import {renderEmailButton} from '../../utils/render-helpers/email-button.js';
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
+import {escapeHtml} from '../../utils/escape-html.js';
+import {sanitizeColor} from '../../utils/sanitize-color.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
 import {renderWithVisibility, type Visibility} from '../../utils/visibility.js';
 import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions.js';
@@ -45,7 +47,7 @@ const wrapWithLink = (dataset: CTADataset, content: string) => {
         return content;
     }
 
-    return `<a href="${dataset.buttonUrl}">${content}</a>`;
+    return `<a href="${escapeHtml(dataset.buttonUrl)}">${content}</a>`;
 };
 
 function ctaCardTemplate(dataset: CTADataset) {
@@ -55,11 +57,11 @@ function ctaCardTemplate(dataset: CTADataset) {
     }
     const buttonAccent = dataset.buttonColor === 'accent' ? 'kg-style-accent' : '';
     const buttonStyle = dataset.buttonColor === 'accent'
-        ? `style="color: ${dataset.buttonTextColor};"`
-        : `style="background-color: ${dataset.buttonColor}; color: ${dataset.buttonTextColor};"`;
+        ? `style="color: ${sanitizeColor(dataset.buttonTextColor)};"`
+        : `style="background-color: ${dataset.buttonColor}; color: ${sanitizeColor(dataset.buttonTextColor)};"`;
 
     return `
-        <div class="kg-card kg-cta-card kg-cta-bg-${dataset.backgroundColor} kg-cta-${dataset.layout} ${dataset.showDividers ? '' : 'kg-cta-no-dividers'} ${dataset.imageUrl ? 'kg-cta-has-img' : ''} ${dataset.linkColor === 'accent' ? 'kg-cta-link-accent' : ''} ${dataset.alignment === 'center' ? 'kg-cta-centered' : ''}" data-layout="${dataset.layout}">
+        <div class="kg-card kg-cta-card kg-cta-bg-${dataset.backgroundColor} kg-cta-${escapeHtml(dataset.layout)} ${dataset.showDividers ? '' : 'kg-cta-no-dividers'} ${dataset.imageUrl ? 'kg-cta-has-img' : ''} ${dataset.linkColor === 'accent' ? 'kg-cta-link-accent' : ''} ${dataset.alignment === 'center' ? 'kg-cta-centered' : ''}" data-layout="${escapeHtml(dataset.layout)}">
             ${dataset.hasSponsorLabel ? `
                 <div class="kg-cta-sponsor-label-wrapper">
                     <div class="kg-cta-sponsor-label">
@@ -70,7 +72,7 @@ function ctaCardTemplate(dataset: CTADataset) {
             <div class="kg-cta-content">
                 ${dataset.imageUrl ? `
                     <div class="kg-cta-image-container">
-                        ${wrapWithLink(dataset, `<img src="${dataset.imageUrl}" alt="CTA Image" ${dataset?.imageWidth && dataset.imageHeight ? `data-image-dimensions="${dataset.imageWidth}x${dataset.imageHeight}"` : '' }>`)}
+                        ${wrapWithLink(dataset, `<img src="${escapeHtml(dataset.imageUrl)}" alt="CTA Image" ${dataset?.imageWidth && dataset.imageHeight ? `data-image-dimensions="${escapeHtml(`${dataset.imageWidth}x${dataset.imageHeight}`)}"` : '' }>`)}
                     </div>
                 ` : ''}
                 ${dataset.textValue || dataset.showButton ? `
@@ -81,8 +83,8 @@ function ctaCardTemplate(dataset: CTADataset) {
                         </div>
                     ` : ''}
                     ${showButton(dataset) ? `
-                        <a href="${dataset.buttonUrl}" class="kg-cta-button ${buttonAccent}" ${buttonStyle}>
-                            ${dataset.buttonText}
+                        <a href="${escapeHtml(dataset.buttonUrl)}" class="kg-cta-button ${buttonAccent}" ${buttonStyle}>
+                            ${escapeHtml(dataset.buttonText)}
                         </a>
                         ` : ''}
                     </div>
@@ -141,7 +143,7 @@ function emailCTATemplate(dataset: CTADataset, options: CTARenderOptions = {}) {
                             <tr>
                                 ${dataset.imageUrl ? `
                                     <td class="kg-cta-image-container" width="64">
-                                        ${wrapWithLink(dataset, `<img src="${dataset.imageUrl}" alt="CTA Image" class="kg-cta-image" width="64" height="64">`)}
+                                        ${wrapWithLink(dataset, `<img src="${escapeHtml(dataset.imageUrl)}" alt="CTA Image" class="kg-cta-image" width="64" height="64">`)}
                                     </td>
                                 ` : ''}
                                 <td class="kg-cta-content-inner">
@@ -179,7 +181,7 @@ function emailCTATemplate(dataset: CTADataset, options: CTARenderOptions = {}) {
                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                         <tr>
                                             <td>
-                                                ${wrapWithLink(dataset, `<img src="${dataset.imageUrl}" alt="CTA Image" class="kg-cta-image" ${imageDimensions ? `width="${imageDimensions.width}"` : ''} ${imageDimensions ? `height="${imageDimensions.height}"` : ''}>`)}
+                                                ${wrapWithLink(dataset, `<img src="${escapeHtml(dataset.imageUrl)}" alt="CTA Image" class="kg-cta-image" ${imageDimensions ? `width="${escapeHtml(String(imageDimensions.width))}"` : ''} ${imageDimensions ? `height="${escapeHtml(String(imageDimensions.height))}"` : ''}>`)}
                                             </td>
                                         </tr>
                                     </table>
@@ -193,7 +195,7 @@ function emailCTATemplate(dataset: CTADataset, options: CTARenderOptions = {}) {
                         </tr>
                         ${showButton(dataset) ? `
                             <tr>
-                                <td class="kg-cta-button-container" align="${dataset.alignment}">
+                                <td class="kg-cta-button-container" align="${escapeHtml(dataset.alignment)}">
                                     ${buttonHtml}
                                 </td>
                             </tr>
@@ -205,7 +207,7 @@ function emailCTATemplate(dataset: CTADataset, options: CTARenderOptions = {}) {
     };
 
     return `
-        <table class="kg-card kg-cta-card kg-cta-bg-${dataset.backgroundColor} ${dataset.showDividers ? '' : 'kg-cta-no-dividers'} kg-cta-${dataset.layout} ${dataset.hasSponsorLabel ? '' : 'kg-cta-no-label'} ${dataset.textValue ? '' : 'kg-cta-no-text'} ${dataset.imageUrl ? 'kg-cta-has-img' : ''} ${dataset.linkColor === 'accent' ? 'kg-cta-link-accent' : ''} ${dataset.alignment === 'center' ? 'kg-cta-centered' : ''}" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <table class="kg-card kg-cta-card kg-cta-bg-${dataset.backgroundColor} ${dataset.showDividers ? '' : 'kg-cta-no-dividers'} kg-cta-${escapeHtml(dataset.layout)} ${dataset.hasSponsorLabel ? '' : 'kg-cta-no-label'} ${dataset.textValue ? '' : 'kg-cta-no-text'} ${dataset.imageUrl ? 'kg-cta-has-img' : ''} ${dataset.linkColor === 'accent' ? 'kg-cta-link-accent' : ''} ${dataset.alignment === 'center' ? 'kg-cta-centered' : ''}" border="0" cellpadding="0" cellspacing="0" width="100%">
             ${dataset.hasSponsorLabel ? `
                 <tr>
                     <td>

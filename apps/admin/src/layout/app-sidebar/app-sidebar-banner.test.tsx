@@ -9,13 +9,19 @@ const mockUseSidebarBannerState = vi.fn<() => SidebarBannerState>(() => ({
   banner: null,
   hasBanner: false,
 }));
+const mockUseFeatureFlag = vi.fn(() => false);
+
+vi.mock('@tryghost/admin-x-framework/hooks', () => ({
+  useFeatureFlag: () => mockUseFeatureFlag(),
+}));
 
 vi.mock('./hooks/use-sidebar-banner-state', () => ({
   useSidebarBannerState: () => mockUseSidebarBannerState(),
 }));
 
-describe('AppSidebarBanner', () => {
+describe.each([false, true])('AppSidebarBanner (admin7Design=%s)', (admin7Design) => {
   beforeEach(() => {
+    mockUseFeatureFlag.mockReturnValue(admin7Design);
     mockUseSidebarBannerState.mockReturnValue({
       bannerType: null,
       banner: null,

@@ -224,6 +224,45 @@ export type SubscriptionStatsResponseType = {
 
 // Requests
 
+export type CommentsStatsTotals = {
+  comments: number;
+  commenters: number;
+  reported: number;
+};
+
+export type CommentsStatsInterval = 'day' | 'week' | 'month';
+
+export type CommentsOverviewStats = {
+  totals: CommentsStatsTotals;
+  previous_totals: CommentsStatsTotals;
+  interval: CommentsStatsInterval;
+  series: (CommentsStatsTotals & { date: string })[];
+};
+
+export type CommentsOverviewResponseType = {
+  stats: CommentsOverviewStats[];
+};
+
+export type CommentsTopPostItem = {
+  post_id: string;
+  title: string;
+  comments: number;
+};
+
+export type CommentsTopPostsResponseType = {
+  stats: CommentsTopPostItem[];
+};
+
+export type CommentsTopCommenterItem = {
+  member_id: string;
+  name: string | null;
+  comments: number;
+};
+
+export type CommentsTopCommentersResponseType = {
+  stats: CommentsTopCommenterItem[];
+};
+
 const dataType = 'TopContentResponseType';
 const memberCountHistoryDataType = 'MemberCountHistoryResponseType';
 const topPostsStatsDataType = 'TopPostsStatsResponseType';
@@ -389,3 +428,18 @@ export const usePostMemberCounts = (postIds: string[], { enabled = true } = {}) 
     },
   });
 };
+
+export const useCommentsOverview = createQuery<CommentsOverviewResponseType>({
+  dataType: 'CommentsOverviewResponseType',
+  path: '/stats/comments/',
+});
+
+export const useCommentsTopPosts = createQuery<CommentsTopPostsResponseType>({
+  dataType: 'CommentsTopPostsResponseType',
+  path: '/stats/comments/top-posts/',
+});
+
+export const useCommentsTopCommenters = createQuery<CommentsTopCommentersResponseType>({
+  dataType: 'CommentsTopCommentersResponseType',
+  path: '/stats/comments/top-commenters/',
+});

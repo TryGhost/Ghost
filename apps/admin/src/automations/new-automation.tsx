@@ -21,6 +21,17 @@ import { ScreenEntranceContext } from '@/layout/screen-transition';
 
 type PickedTrigger = AutomationTriggerRule['trigger_type'];
 
+function getInitialTriggerRules(triggerType: PickedTrigger): AutomationTriggerRule[] {
+  switch (triggerType) {
+    case 'paid_subscription_changed':
+      return buildTriggerRules({ triggerType, selection: { from: [], to: [] } });
+    case 'label_added':
+      return [];
+    default:
+      return buildTriggerRules({ triggerType });
+  }
+}
+
 const TRIGGER_OPTIONS = [
   [
     'free_signup',
@@ -36,7 +47,6 @@ const TRIGGER_OPTIONS = [
   ],
 ] as const;
 
-// Remains behind Labs while lifecycle enrollment and execution are being completed.
 const SUBSCRIPTION_CHANGED_OPTION = [
   'paid_subscription_changed',
   LucideIcon.ArrowRightLeft,
@@ -44,22 +54,32 @@ const SUBSCRIPTION_CHANGED_OPTION = [
   "When a member's paid subscription moves to another tier or ends",
 ] as const;
 
+const LABEL_ADDED_OPTION = [
+  'label_added',
+  LucideIcon.Tag,
+  'Label added',
+  'When a label is added to a member',
+] as const;
+
 const TriggerPicker: React.FC<{
   automation: AutomationDetail;
+  labelTriggerEnabled: boolean;
   stripeEnabled: boolean;
   // `cardTop`: where the card sits, so the editor can open with the trigger in the same place.
   onPick: (trigger: PickedTrigger, cardTop: number) => void;
-}> = ({ automation, stripeEnabled, onPick }) => {
+}> = ({ automation, labelTriggerEnabled, stripeEnabled, onPick }) => {
   const { dialogProps } = useUnsavedChangesGuard({ when: true });
-  const lifecycleTriggers = useFeatureFlag('automationsLifecycleTriggers');
-  const options: Array<(typeof TRIGGER_OPTIONS)[number] | typeof SUBSCRIPTION_CHANGED_OPTION> = [
-    TRIGGER_OPTIONS[0],
-  ];
+  const options: Array<
+    | (typeof TRIGGER_OPTIONS)[number]
+    | typeof SUBSCRIPTION_CHANGED_OPTION
+    | typeof LABEL_ADDED_OPTION
+  > = [TRIGGER_OPTIONS[0]];
   if (stripeEnabled) {
     options.push(TRIGGER_OPTIONS[1]);
-    if (lifecycleTriggers) {
-      options.push(SUBSCRIPTION_CHANGED_OPTION);
-    }
+    options.push(SUBSCRIPTION_CHANGED_OPTION);
+  }
+  if (labelTriggerEnabled) {
+    options.push(LABEL_ADDED_OPTION);
   }
   const cardRef = React.useRef<HTMLDivElement>(null);
   return (
@@ -182,17 +202,14 @@ const NewAutomationSession: React.FC<
     return (
       <TriggerPicker
         automation={initialAutomation}
+        labelTriggerEnabled={isLeadMagnetsEnabled}
         stripeEnabled={stripeEnabled}
         onPick={(trigger, cardTop) => {
           setTriggerTop(cardTop);
           setTriggerType(trigger);
           setInitialAutomation({
             ...initialAutomation,
-            trigger_rules: buildTriggerRules(
-              trigger === 'paid_subscription_changed'
-                ? { triggerType: trigger, selection: { from: [], to: [] } }
-                : { triggerType: trigger },
-            ),
+            trigger_rules: getInitialTriggerRules(trigger),
           });
         }}
       />

@@ -7,6 +7,7 @@ import {
   type Migration,
   type MigrationFunction,
 } from './migrations';
+import type { ColumnDefinition, ColumnMigrationOptions } from '../../schema/types';
 
 const DatabaseInfo = require('@tryghost/database-info');
 const { commands } = require('../../schema');
@@ -54,8 +55,8 @@ function createNullableMigration(up: MigrationFunction, down: MigrationFunction)
 export function createAddColumnMigration(
   table: string,
   column: string,
-  columnDefinition: Record<string, unknown>,
-  options: Record<string, unknown> = {},
+  columnDefinition: ColumnDefinition,
+  options: ColumnMigrationOptions = {},
 ): Migration {
   return createNonTransactionalMigration(
     // up
@@ -84,8 +85,8 @@ export function createAddColumnMigration(
 export function createDropColumnMigration(
   table: string,
   column: string,
-  columnDefinition: Record<string, unknown>,
-  options: Record<string, unknown> = {},
+  columnDefinition: ColumnDefinition,
+  options: ColumnMigrationOptions = {},
 ): Migration {
   return createNonTransactionalMigration(
     // up

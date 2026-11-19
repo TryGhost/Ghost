@@ -1,4 +1,5 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
+import {escapeHtml} from '../../utils/escape-html.js';
 import type {ExportDOMOptions, ExportDOMOutput} from '../../export-dom.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
 
@@ -182,7 +183,7 @@ function frontendTemplate(node: AudioNodeData, document: Document, thumbnailCls:
 }
 
 function emailTemplate(node: AudioNodeData, document: Document, options: AudioRenderOptions, thumbnailCls: string, emptyThumbnailCls: string) {
-    const postUrl = options.postUrl || node.src;
+    const postUrl = escapeHtml(options.postUrl || node.src);
     const html = (`
         <table cellspacing="0" cellpadding="0" border="0" class="kg-audio-card">
                 <tr>
@@ -192,7 +193,7 @@ function emailTemplate(node: AudioNodeData, document: Document, options: AudioRe
                                 <td width="60">
                                     <a href="${postUrl}" style="display: block; width: 60px; height: 60px; padding-top: 4px; padding-right: 16px; padding-bottom: 4px; padding-left: 4px; border-radius: 2px;">
                                         ${node.thumbnailSrc ? `
-                                        <img src="${node.thumbnailSrc}" class="${thumbnailCls}" style="width: 60px; height: 60px; object-fit: cover; border: 0; border-radius: 2px;">
+                                        <img src="${escapeHtml(node.thumbnailSrc)}" class="${thumbnailCls}" style="width: 60px; height: 60px; object-fit: cover; border: 0; border-radius: 2px;">
                                         ` : `
                                         <img src="https://static.ghost.org/v4.0.0/images/audio-file-icon.png" class="${emptyThumbnailCls}" style="width: 24px; height: 24px; padding: 18px; border-radius: 2px;">
                                         `}
@@ -203,7 +204,7 @@ function emailTemplate(node: AudioNodeData, document: Document, options: AudioRe
                                     <table cellspacing="0" cellpadding="0" border="0" width="100%">
                                         <tr>
                                             <td>
-                                                <a href="${postUrl}" class="kg-audio-title">${node.title}</a>
+                                                <a href="${postUrl}" class="kg-audio-title">${escapeHtml(node.title)}</a>
                                             </td>
                                         </tr>
                                         <tr>

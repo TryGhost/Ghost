@@ -72,7 +72,10 @@ const Content = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogContent
     ref={ref}
-    className={cn('max-h-[calc(100vh-16vmin)] max-w-[540px] overflow-y-auto p-8', className)}
+    className={cn(
+      'max-h-[calc(100vh-16vmin)] max-w-[540px] grid-cols-[minmax(0,1fr)] overflow-y-auto p-8',
+      className,
+    )}
     {...props}
   />
 ));
@@ -350,7 +353,7 @@ function CopyURLBox({ children, className, copyURL, ...props }: CopyURLBoxProps)
       className={cn('flex items-center gap-2 rounded-md border bg-muted p-2', className)}
       {...props}
     >
-      <span className="min-w-0 flex-1 truncate px-2 text-sm">{copyURL}</span>
+      <span className="min-w-0 flex-1 truncate px-2 text-(length:--text-field)">{copyURL}</span>
       {children}
     </div>
   );

@@ -13,6 +13,7 @@ const {
 type FactoryName =
   | 'upgradeBlock'
   | 'upgradeApiBlock'
+  | 'presenceBlock'
   | 'staffInviteBlock'
   | 'memberEmailUpdateBlock'
   | 'globalBlock'
@@ -42,6 +43,7 @@ const factories: Array<{
 }> = [
   { name: 'upgradeBlock', configKey: 'upgrade_block', ignoreIP: true },
   { name: 'upgradeApiBlock', configKey: 'upgrade_api_block' },
+  { name: 'presenceBlock', configKey: 'presence_block', ignoreIP: true, isMemoryBacked: true },
   { name: 'staffInviteBlock', configKey: 'staff_invite_block', ignoreIP: true },
   { name: 'memberEmailUpdateBlock', configKey: 'member_email_update', ignoreIP: true },
   { name: 'globalBlock', configKey: 'global_block' },

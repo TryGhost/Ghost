@@ -30,6 +30,25 @@ Mailgun API, which personalizes each recipient's message and forwards it to
 [Mailpit](http://localhost:8025). Transactional email continues to use Mailpit
 over SMTP. No Mailgun credentials or local configuration files are needed.
 
+The fake server also simulates what recipients do, so newsletter analytics
+fill in. Each recipient gets a `delivered` event, and some open the email
+within five minutes and click its tracked links. Ghost picks the events up when
+its email analytics job next polls the fake events API. Change the behaviour
+while it runs, for example to bounce 5% of recipients or make the API slow:
+
+```bash
+curl -X PATCH http://127.0.0.1:4010/__fake/config \
+  -H 'Content-Type: application/json' \
+  -d '{"failedRate": 0.05, "minResponseDelayMs": 200, "maxResponseDelayMs": 2000}'
+```
+
+`GET /__fake/config` lists every setting, and `POST /__fake/reset` clears
+stored messages, events and pending clicks. Settings return to the
+`FAKE_MAILGUN_*` values in
+[`compose.dev.fake-mailgun.yaml`](../../compose.dev.fake-mailgun.yaml) when the
+container restarts. Failed events disable email for those members, as a real
+bounce would.
+
 The fake server listens on `127.0.0.1:4010`, and Ghost starts once Mailpit and
 fake Mailgun are healthy. Press `Ctrl+C` to stop Ghost; fake Mailgun keeps
 running with the other Docker services until `pnpm dev:down --all`. Run one
@@ -70,7 +89,10 @@ test.use({mailgunEnabled: true});
 ```
 
 The fake service records Mailgun requests and forwards rendered messages to
-Mailpit, where tests can inspect them with the existing email fixture. See the
+Mailpit, where tests can inspect them with the existing email fixture. It
+records a `delivered` event per recipient and simulates nothing else unless a
+test asks: `mailgun.configure()` turns on opens, clicks, bounces or failures,
+and `mailgun.addEvent()` records a specific event such as a complaint. See the
 [E2E workspace README](../../e2e/README.md) and the
 [publishing test](../../e2e/tests/admin/posts/publishing.test.ts) for
 the current fixtures and an example.

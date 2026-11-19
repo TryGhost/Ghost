@@ -4,7 +4,6 @@ import ObjectId from 'bson-objectid';
 import Knex, { type Knex as KnexInstance } from 'knex';
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-// @ts-expect-error database-info has no TypeScript declarations
 import DatabaseInfo from '@tryghost/database-info';
 import * as db from '../../../../../core/server/data/db';
 import * as utils from '../../../../../core/server/data/migrations/utils';

@@ -122,6 +122,9 @@ export const BASE_GHOST_ENV = [
   // Ghost runs in a container, where localhost is the container itself, so it fetches localhost
   // app manifests (the fixture app's) from the host, as compose.dev.yaml sets up.
   'apps__localhostAlias=host.docker.internal',
+
+  // GHOST_E2E_AUTH_ENGINE=better-auth runs the suite on the Better Auth engine
+  ...(process.env.GHOST_E2E_AUTH_ENGINE === 'better-auth' ? ['auth__engine=better-auth'] : []),
 ] as const;
 
 /**

@@ -42,6 +42,33 @@ export type AutomatedEmailRecipientTrackingData = {
   automationActionRevisionId: string;
 };
 
+export type RecordEmailSentOptions = Readonly<{
+  automationActionRevisionId: string;
+  automationRunStepId: string;
+  mailgunMessageId?: string;
+  memberEmail: string;
+  memberId: string;
+  memberName: string | null;
+  memberUuid: string;
+  trackClicks: boolean;
+  trackOpens: boolean;
+}>;
+
+export type EmailRecipientToInsert = {
+  id: string;
+  created_at: Date;
+  updated_at: Date;
+  member_id: string;
+  member_uuid: string;
+  member_email: string;
+  member_name: string | null;
+  automation_action_revision_id: string;
+  automation_run_step_id: string;
+  mailgun_message_id?: string;
+  track_clicks: boolean;
+  track_opens: boolean;
+};
+
 export type TrackEmailClickedOptions = ReadonlyDeep<{
   automationActionRevisionId: string;
   automationRunStepId: string;
@@ -71,6 +98,19 @@ type NextActionRevisionRow = {
 export type AutomationsRepository2<Connection> = {
   /** Delete all trigger rules for an automation. */
   deleteTriggerRules: (connection: Connection, automationId: string) => Promisable<void>;
+
+  /** Fetch some member data and lock them for the rest of the connection. */
+  fetchAndLockMembers: (
+    connection: Connection,
+    memberIds: Iterable<string>,
+  ) => Promisable<Array<{ id: string; email: string }>>;
+
+  /** Find enrollments for some members in some automations. */
+  findAutomationMemberEnrollments: (
+    connection: Connection,
+    automationIds: ReadonlyArray<string>,
+    memberIds: ReadonlyArray<string>,
+  ) => Promisable<Array<{ automation_id: string; member_id: string }>>;
 
   /** Find (and lock) a recipient with click tracking enabled. */
   findEmailRecipientForClick: (
@@ -103,13 +143,6 @@ export type AutomationsRepository2<Connection> = {
   /** Get the count of all automations. */
   getNumberOfAutomations: (connection: Connection) => Promisable<number>;
 
-  /** Has this member ever entered this automation? */
-  hasMemberEnteredAutomation: (
-    connection: Connection,
-    automationId: string,
-    memberId: string,
-  ) => Promisable<boolean>;
-
   /** Increment the number of recipients that clicked this revision. */
   incrementEmailClickedCount: (connection: Connection, revisionId: string) => Promisable<void>;
 
@@ -120,10 +153,19 @@ export type AutomationsRepository2<Connection> = {
     count: number,
   ) => Promisable<void>;
 
+  /** Increment the number of emails sent for this revision. */
+  incrementEmailSentCount: (connection: Connection, revisionId: string) => Promisable<void>;
+
   /** Insert automation actions. */
   insertActions: (
     connection: Connection,
     toInsert: ReadonlyArray<ActionToInsert>,
+  ) => Promisable<void>;
+
+  /** Insert an automated email recipient. */
+  insertEmailRecipient: (
+    connection: Connection,
+    toInsert: Readonly<EmailRecipientToInsert>,
   ) => Promisable<void>;
 
   /** Insert automation run steps. Typically coupled with the insertion of an equal number of runs. */
@@ -152,12 +194,6 @@ export type AutomationsRepository2<Connection> = {
    * foreign-key lock deadlocks.
    */
   lockActionRevisions: (connection: Connection, revisionIds: Iterable<string>) => Promisable<void>;
-
-  /**
-   * Lock a member for the lifetime of this transaction. Useful to make sure a
-   * member doesn't change during an operation.
-   */
-  lockMember: (connection: Connection, memberId: string) => Promisable<void>;
 
   /** Lock recipients whose first open has not yet been recorded. */
   lockNotYetOpenedEmailRecipients: (

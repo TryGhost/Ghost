@@ -9,7 +9,7 @@ export type MethodSchemas =
 
 type ParsedChannel<Schema> = Schema extends z.ZodType ? z.output<Schema> : undefined;
 
-/** Parsed request channels, independent of the mutable serialization frame. */
+/** Parsed request channels, exposed separately from the mutable working frame. */
 export type ValidatedRequest<Schemas extends MethodSchemas> = {
   readonly [
     Channel in keyof Schemas as Channel extends 'options' | 'body' ? Channel : never
@@ -18,7 +18,7 @@ export type ValidatedRequest<Schemas extends MethodSchemas> = {
 
 /** The callback frame once the declared request schemas have been parsed. */
 export type ValidatedFrame<Schemas extends MethodSchemas> = Frame<{
-  data: Dictionary;
+  data: never;
   options: Dictionary;
 }> & {
   readonly validated: ValidatedRequest<Schemas>;
@@ -29,7 +29,7 @@ type SchemaMethodBase<Schemas extends MethodSchemas> = ControllerMethod<Validate
 /** Definition contract for a method with schema-derived callback types. */
 export type SchemaControllerMethod<Schemas extends MethodSchemas> = Omit<
   SchemaMethodBase<Schemas>,
-  'permissions' | 'query' | 'validation'
+  'schema' | 'permissions' | 'query' | 'validation'
 > &
   Required<Pick<SchemaMethodBase<Schemas>, 'permissions' | 'query'>> & {
     schema: Schemas;
@@ -44,8 +44,7 @@ export type InferMethodFrame<Method extends { schema: MethodSchemas }> = Validat
 /**
  * Defines a method without cloning schemas or wrapping callbacks.
  *
- * This is a definition API only. The legacy pipeline cannot execute these
- * callbacks until runtime parsing provides the validated request channels.
+ * The pipeline parses the declared schemas before invoking these callbacks.
  */
 export function defineMethod<const Schemas extends MethodSchemas>(
   method: SchemaControllerMethod<Schemas> & {

@@ -9,11 +9,7 @@ import {
   type SiteExporterDeps,
 } from '../../../../../core/server/data/exporter/site-exporter';
 import { SYNC_EXPORT_COMPONENTS } from '../../../../../core/server/data/exporter/export-components';
-
-// @tryghost/zip ships no types; only `extract` is used here
-const { extract } = require('@tryghost/zip') as {
-  extract(zipPath: string, destination: string): Promise<unknown>;
-};
+import { extract } from '@tryghost/zip';
 
 /** Consumes the archive into a Buffer, resolving on end and rejecting on error. */
 function collectArchive(archive: NodeJS.ReadableStream): Promise<Buffer> {

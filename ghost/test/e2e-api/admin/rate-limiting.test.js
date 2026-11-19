@@ -89,8 +89,11 @@ describe('Sessions API', function () {
       configUtils.set('spam:user_login:freeRetries', 100);
       await resetRateLimits();
 
+      // Better Auth answers an unknown email like a wrong password (422), so sign-in can't enumerate staff
+      const unknownUserStatus = configUtils.config.get('auth:engine') === 'better-auth' ? 422 : 404;
+
       for (const path of ['session', 'session/', 'SESSION', 'Session/']) {
-        assert.equal((await login(path)).status, 404);
+        assert.equal((await login(path)).status, unknownUserStatus);
       }
 
       assert.equal((await login('session')).status, 429);

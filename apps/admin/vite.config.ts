@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import { createServer, type AddressInfo } from 'node:net';
+import { testWorkerCount } from '@internal/cfg-test-workers';
 import { configDefaults, defineConfig } from 'vitest/config';
 import type { PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -159,6 +160,10 @@ export default defineConfig(({ command, mode }) => ({
     // VM contexts accumulate memory until a worker recycles; 1GB keeps peak
     // RSS ~5GB at 4 workers without slowing the run
     vmMemoryLimit: '1GB',
+    // VM pools run without isolation, and Vitest gives a lone non-isolated
+    // worker every file in one jsdom, so files leak into each other. With two
+    // or more workers each file gets its own
+    maxWorkers: Math.max(2, testWorkerCount({ memoryPerWorkerGB: 1.3 })),
     globals: true,
     setupFiles: ['./test-utils/setup.ts'],
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'test-utils/**/*.test.ts', 'vite-*.test.ts'],

@@ -1,7 +1,6 @@
 import type { SchedulerAdapter } from '@tryghost/adapter-base-scheduling';
 import assert from 'node:assert/strict';
 import type { InternalKeys } from '../internal-keys';
-// @ts-expect-error @tryghost/domain-events currently lacks type declarations.
 import type DomainEvents from '@tryghost/domain-events';
 import { setImmediate as flushEventLoop } from 'node:timers/promises';
 import { oneAtATime } from '../../../shared/one-at-a-time';
@@ -12,6 +11,7 @@ import * as automationsApi from './automations-api';
 import { poll } from './poll';
 import { getSchedulerPollTime } from './scheduler-poll-time';
 import logging from '@tryghost/logging';
+import { LabelAddedToMembersEvent } from '../../../shared/events/label-added-to-members-event';
 // @ts-expect-error This module currently lacks type definitions.
 import emailAnalyticsJobs from '../email-analytics/jobs';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
@@ -72,8 +72,9 @@ export class AutomationsService {
 
       soonestTimer.scheduleAt(date);
 
+      const schedulerPollTime = getSchedulerPollTime(date, siteIdentifier);
+
       try {
-        const schedulerPollTime = getSchedulerPollTime(date, siteIdentifier);
         const key = await internalKeys.get('ghost-scheduler');
         await schedulerAdapter.schedule(
           buildSignedJob({
@@ -119,9 +120,13 @@ export class AutomationsService {
       ),
     );
 
+    domainEvents.subscribe(LabelAddedToMembersEvent, (event: LabelAddedToMembersEvent) =>
+      automationsApi.notify({ eventName: 'label_added', ...event.data }),
+    );
+
     schedulerAdapter.register(this);
 
-    enqueuePollAt(new Date());
+    enqueuePollNow();
 
     this.#enqueuePollAt = enqueuePollAt;
   }

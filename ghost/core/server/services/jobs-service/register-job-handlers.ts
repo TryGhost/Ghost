@@ -9,7 +9,7 @@ import CleanTokensJob from '../members/jobs/clean-tokens-job';
 import CleanExpiredCompedJob from '../members/jobs/clean-expired-comped-job';
 import CleanGiftsJob from '../gifts/jobs/clean-gifts-job';
 import SendGiftRemindersJob from '../gifts/jobs/send-gift-reminders-job';
-import ExternalMediaInliner from '../media-inliner/external-media-inliner';
+import type ExternalMediaInliner from '../media-inliner/external-media-inliner';
 import ExternalMediaInlinerJob from '../media-inliner/external-media-inliner-job';
 import ContentCSVImportJob from '../content-import/jobs/content-csv-import-job';
 import ContentImportJob from '../../data/importer/jobs/content-import-job';
@@ -24,6 +24,7 @@ import type EmailService from '../email-service/email-service';
 import SendEmailJob from '../email-service/jobs/send-email-job';
 import CheckSigningKeysJob from '../signing-keys/check-signing-keys-job';
 import type { SigningKeyService } from '../signing-keys/signing-key-service';
+import ClearExpiredAuthRowsJob from '../../auth/better-auth/clear-expired-auth-rows-job';
 
 // Webmention processing fetches external pages and is triggered by
 // unauthenticated requests, so webmention jobs run in their own lane where a
@@ -41,7 +42,7 @@ const EMAIL_QUEUE: JobHandlingOptions = { queue: 'email', concurrency: 2 };
 interface RegisterJobHandlersDependencies {
   jobsService: JobsService;
   gifts: Pick<EmailAnalyticsServiceWrapper, 'startFetch'>;
-  automations: Pick<EmailAnalyticsServiceWrapper, 'startFetch'>;
+  automationAnalytics: Pick<EmailAnalyticsServiceWrapper, 'startFetch'>;
   newsletters: Pick<EmailAnalyticsServiceWrapper, 'startFetch'>;
   memberJobs: {
     cleanTokens(): Promise<number>;
@@ -66,12 +67,15 @@ interface RegisterJobHandlersDependencies {
   };
   updateCheck: (options: { rethrowErrors: boolean }) => Promise<void>;
   signingKeys: Pick<SigningKeyService, 'check'>;
+  authCleanup: {
+    clearExpired(): Promise<void>;
+  };
 }
 
 export default function registerJobHandlers({
   jobsService,
   gifts,
-  automations,
+  automationAnalytics,
   newsletters,
   memberJobs,
   giftService,
@@ -85,6 +89,7 @@ export default function registerJobHandlers({
   contentImport,
   updateCheck,
   signingKeys,
+  authCleanup,
 }: RegisterJobHandlersDependencies): void {
   // Each email analytics pipeline fetches on its own five-minute tick and the
   // wrapper skips a tick while its previous fetch is still running. The second
@@ -92,7 +97,7 @@ export default function registerJobHandlers({
   // instead of queueing behind the running fetch and firing late.
   for (const [JobClass, pipeline] of [
     [EmailAnalyticsFetchLatestJob, newsletters],
-    [EmailAnalyticsAutomationFetchLatestJob, automations],
+    [EmailAnalyticsAutomationFetchLatestJob, automationAnalytics],
     [EmailAnalyticsGiftFetchLatestJob, gifts],
   ] as const) {
     jobsService.handle(JobClass, () => pipeline.startFetch(), {
@@ -141,6 +146,10 @@ export default function registerJobHandlers({
     await signingKeys.check();
   });
 
+  jobsService.handle(ClearExpiredAuthRowsJob, async () => {
+    await authCleanup.clearExpired();
+  });
+
   jobsService.handle(
     ProcessWebmentionJob,
     async (job) => {
@@ -159,9 +168,7 @@ export default function registerJobHandlers({
 
   jobsService.handle(
     SendEmailJob,
-    async (job) => {
-      await emailService.handleSendEmailJob(job);
-    },
+    async (job) => emailService.handleSendEmailJob(job),
     EMAIL_QUEUE,
   );
 

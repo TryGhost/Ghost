@@ -69,8 +69,8 @@ function partitionByReplay(
   return outcome;
 }
 
-// MySQL rounds a fractional DATETIME on insert, which can round available_at up
-// and leave a freshly inserted row briefly ineligible.
+// MySQL rounds a fractional DATETIME, which can round available_at up and leave
+// a freshly inserted row, or one due for a retry, briefly ineligible.
 function floorToSecond(date: Date): Date {
   return new Date(Math.floor(date.getTime() / 1000) * 1000);
 }
@@ -138,16 +138,18 @@ export class JobsOutbox {
       } catch (error) {
         await trx(TABLE)
           .where('id', id)
-          .update({ available_at: new Date(Date.now() + retryDelayMs) });
+          .update({ available_at: floorToSecond(new Date(Date.now() + retryDelayMs)) });
         return { status: 'failed', id, error };
       }
 
       // If the process dies before this commits, the claim rolls back and the
       // row is handed over again, so the job can run twice either way.
       const handedOff = trx(TABLE).where('id', id);
-      // A kept row stays, marked submitted, until its job settles
+      // A kept row stays, marked submitted, until its job settles. submitted_at
+      // is a lease on the database clock, so containers on different servers
+      // agree on when it has gone stale.
       await (this.#keepUntilSettled
-        ? handedOff.update({ submitted_at: new Date() })
+        ? handedOff.update({ submitted_at: trx.raw('UTC_TIMESTAMP()') })
         : handedOff.delete());
       return { status: 'delivered', id, type, createdAt };
     });
@@ -157,26 +159,44 @@ export class JobsOutbox {
     await this.#knex(TABLE).where('id', id).delete();
   }
 
-  // A job type that is not replayed has its own recovery, so its rows are
-  // deleted rather than handed over again.
+  // Keeps the rows of jobs a live process still holds from going stale
+  async renew(ids: string[]): Promise<void> {
+    if (ids.length === 0) {
+      return;
+    }
+    await this.#knex(TABLE)
+      .whereIn('id', ids)
+      .whereNotNull('submitted_at')
+      .update({ submitted_at: this.#knex.raw('UTC_TIMESTAMP()') });
+  }
+
+  // Hands over again rows no process has renewed within staleAfterMs. A job
+  // type that is not replayed has its own recovery, so its rows are deleted
+  // rather than handed over again.
   async releaseSubmitted({
     replays,
+    staleAfterMs,
   }: {
     replays: (type: string) => boolean;
+    staleAfterMs: number;
   }): Promise<ReleaseOutcome> {
-    const rows = z
-      .array(SubmittedRow)
-      .parse(await this.#knex(TABLE).select('id', 'envelope').whereNotNull('submitted_at'));
+    // Every statement re-checks staleness, so a renewal that lands between
+    // the read and the write keeps its row.
+    const stale = () =>
+      this.#knex(TABLE)
+        .whereNotNull('submitted_at')
+        .whereRaw('submitted_at < UTC_TIMESTAMP() - INTERVAL ? MICROSECOND', [staleAfterMs * 1000]);
+    const rows = z.array(SubmittedRow).parse(await stale().select('id', 'envelope'));
     const outcome = partitionByReplay(
       rows.map(({ id, envelope }) => ({ id, type: typeOf(envelope) })),
       replays,
     );
     const ids = (list: ReleasedRow[]) => list.map(({ id }) => id);
     if (outcome.released.length > 0) {
-      await this.#knex(TABLE).whereIn('id', ids(outcome.released)).update({ submitted_at: null });
+      await stale().whereIn('id', ids(outcome.released)).update({ submitted_at: null });
     }
     if (outcome.dropped.length > 0) {
-      await this.#knex(TABLE).whereIn('id', ids(outcome.dropped)).delete();
+      await stale().whereIn('id', ids(outcome.dropped)).delete();
     }
     return outcome;
   }

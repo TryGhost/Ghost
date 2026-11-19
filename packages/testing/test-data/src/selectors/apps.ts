@@ -22,6 +22,8 @@ export const appDetails = 'app-details';
 export const appUnverifiedDeveloperBadge = 'app-unverified-developer-badge';
 export const appPage = 'app-page';
 export const appFrame = 'app-frame';
+export const appFooter = 'app-footer';
+export const appContent = 'app-content';
 export const appNotResponding = 'app-not-responding';
 export const appUnavailable = 'app-unavailable';
 export const appNotInstalled = 'app-not-installed';
@@ -45,6 +47,9 @@ export const uninstallButton = 'Uninstall';
 export const reviewChangesLink = 'Review changes';
 export const openLink = 'Open';
 export const detailsMenuItem = 'Details';
+// The menu on an app's details, which holds pinning and Uninstall.
+export const detailsActionsButton = 'App actions';
+export const appDataAccessedBy = 'app-data-accessed-by';
 // Admin's shared not-found page, which Apps routes show while the Labs flag is off.
 export const notFoundHeading = 'Page not found';
 

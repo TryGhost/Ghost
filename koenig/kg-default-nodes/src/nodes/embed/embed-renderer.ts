@@ -1,4 +1,6 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
+import {cssUrl} from '../../utils/css-url.js';
+import {escapeHtml} from '../../utils/escape-html.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
 import twitterRenderer from './types/twitter.js';
@@ -52,10 +54,12 @@ function renderTemplate(node: EmbedNodeData, document: Document, options: Render
         const thumbnailAspectRatio = thumbnailWidth / thumbnailHeight;
         const spacerWidth = Math.round(emailTemplateMaxWidth / 4);
         const spacerHeight = Math.round(emailTemplateMaxWidth / thumbnailAspectRatio);
+        const href = escapeHtml(url);
+        const thumbnailUrl = escapeHtml(metadata.thumbnail_url);
         const html = `
             <!--[if !mso !vml]-->
-            <a class="kg-video-preview" href="${url}" aria-label="Play video" style="mso-hide: all">
-                <table cellpadding="0" cellspacing="0" border="0" width="100%" background="${metadata.thumbnail_url}" role="presentation" style="background: url('${metadata.thumbnail_url}') left top / cover; mso-hide: all">
+            <a class="kg-video-preview" href="${href}" aria-label="Play video" style="mso-hide: all">
+                <table cellpadding="0" cellspacing="0" border="0" width="100%" background="${thumbnailUrl}" role="presentation" style="background: ${cssUrl(metadata.thumbnail_url)} left top / cover; mso-hide: all">
                     <tr style="mso-hide: all">
                         <td width="25%" style="visibility: hidden; mso-hide: all">
                             <img src="https://img.spacergif.org/v1/${spacerWidth}x${spacerHeight}/0a/spacer.png" alt="" width="100%" border="0" style="display:block; height: auto; opacity: 0; visibility: hidden; mso-hide: all;">
@@ -70,8 +74,8 @@ function renderTemplate(node: EmbedNodeData, document: Document, options: Render
             <!--[endif]-->
 
             <!--[if vml]>
-            <v:group xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" coordsize="${emailTemplateMaxWidth},${spacerHeight}" coordorigin="0,0" href="${url}" style="width:${emailTemplateMaxWidth}px;height:${spacerHeight}px;">
-                <v:rect fill="t" stroked="f" style="position:absolute;width:${emailTemplateMaxWidth};height:${spacerHeight};"><v:fill src="${metadata.thumbnail_url}" type="frame"/></v:rect>
+            <v:group xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" coordsize="${emailTemplateMaxWidth},${spacerHeight}" coordorigin="0,0" href="${href}" style="width:${emailTemplateMaxWidth}px;height:${spacerHeight}px;">
+                <v:rect fill="t" stroked="f" style="position:absolute;width:${emailTemplateMaxWidth};height:${spacerHeight};"><v:fill src="${thumbnailUrl}" type="frame"/></v:rect>
                 <v:oval fill="t" strokecolor="white" strokeweight="4px" style="position:absolute;left:${Math.round((emailTemplateMaxWidth / 2) - 39)};top:${Math.round((spacerHeight / 2) - 39)};width:78;height:78"><v:fill color="black" opacity="30%" /></v:oval>
                 <v:shape coordsize="24,32" path="m,l,32,24,16,xe" fillcolor="white" stroked="f" style="position:absolute;left:${Math.round((emailTemplateMaxWidth / 2) - 11)};top:${Math.round((spacerHeight / 2) - 17)};width:30;height:34;" />
             </v:group>

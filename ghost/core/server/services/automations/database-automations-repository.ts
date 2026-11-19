@@ -376,6 +376,8 @@ export function createDatabaseAutomationsRepository({
           }
         }
 
+        await validateTriggerLabels(trx, data.trigger_rules);
+
         const now = new Date();
         const automation: AutomationRow = {
           id: ObjectId().toHexString(),
@@ -450,6 +452,8 @@ export function createDatabaseAutomationsRepository({
           }
         }
 
+        await validateTriggerLabels(trx, triggerRules);
+
         const updatedAutomation = await updateAutomation(trx, {
           ...automation,
           name: data.name ?? automation.name,
@@ -523,32 +527,6 @@ export function createDatabaseAutomationsRepository({
 
     async retryStep(step: AutomationStepToRun, retryAt: Date): Promise<boolean> {
       return await knex.transaction((trx) => retryStep(repository2, trx, step, retryAt));
-    },
-
-    async recordEmailSent(options): Promise<void> {
-      await knex.transaction(async (trx) => {
-        await trx('automation_action_revisions')
-          .where('id', options.automationActionRevisionId)
-          .update({
-            email_sent_count: trx.raw('COALESCE(??, 0) + ?', ['email_sent_count', 1]),
-          });
-
-        const now = toDatabaseDate(new Date());
-        await trx('automated_email_recipients').insert({
-          id: ObjectId().toHexString(),
-          member_id: options.memberId,
-          member_uuid: options.memberUuid,
-          member_email: options.memberEmail,
-          member_name: options.memberName,
-          automation_action_revision_id: options.automationActionRevisionId,
-          automation_run_step_id: options.automationRunStepId,
-          ...(options.mailgunMessageId ? { mailgun_message_id: options.mailgunMessageId } : {}),
-          track_clicks: options.trackClicks,
-          track_opens: options.trackOpens,
-          created_at: now,
-          updated_at: now,
-        });
-      });
     },
 
     async getAutomatedEmailRecipientsByMailgunIds(mailgunMessageIds) {
@@ -979,7 +957,16 @@ async function getRulesByAutomation(
   }
 
   const rules = await trx('automation_trigger_rules')
-    .select('id', 'automation_id', 'created_at', 'trigger_type', 'scope', 'product_id', 'direction')
+    .select(
+      'id',
+      'automation_id',
+      'created_at',
+      'trigger_type',
+      'scope',
+      'product_id',
+      'direction',
+      'label_id',
+    )
     .whereIn('automation_id', automationIds);
   for (const rule of rules) {
     result.get(rule.automation_id).push(automationTriggerRuleSchema.parse(rule));
@@ -1643,7 +1630,7 @@ async function buildAutomation(
   const edgeRows = await repository2.loadEdgeRows(trx, automation.id);
   const rules = (
     await trx('automation_trigger_rules')
-      .select('trigger_type', 'scope', 'product_id', 'direction')
+      .select('trigger_type', 'scope', 'product_id', 'direction', 'label_id')
       .where('automation_id', automation.id)
       .orderBy(['product_id', 'direction'])
   ).map((rule) => automationTriggerRuleDefinitionSchema.parse(rule));
@@ -1799,4 +1786,22 @@ function buildPagination(total: number) {
     prev: null,
     next: null,
   };
+}
+
+async function validateTriggerLabels(
+  trx: Knex.Transaction,
+  rules: readonly AutomationTriggerRuleDefinition[],
+): Promise<void> {
+  for (const rule of rules) {
+    if (rule.trigger_type !== 'label_added') {
+      continue;
+    }
+    const label = await trx('labels').select('id').where('id', rule.label_id).forUpdate().first();
+    if (!label) {
+      throw new errors.ValidationError({
+        message: 'Trigger label must exist.',
+        property: 'trigger_rules',
+      });
+    }
+  }
 }

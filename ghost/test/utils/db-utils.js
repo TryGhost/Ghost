@@ -3,7 +3,7 @@ const debug = require('@tryghost/debug')('test:dbUtils');
 // Utility Packages
 const path = require('path');
 const KnexMigrator = require('knex-migrator');
-// Resolve MigratorConfig.js from the package root explicitly rather than via
+// Resolve MigratorConfig from the package root explicitly rather than via
 // process.cwd(): the unified `pnpm test:watch` runs from the repo root, and
 // worker threads cannot chdir. From ghost this is the same path, so it
 // is a no-op for the standalone mocha/vitest runs.

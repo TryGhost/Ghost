@@ -1400,6 +1400,25 @@ describe('{{ghost_head}} helper', function () {
       sinon.assert.callCount(generateSpy, 34);
     });
 
+    it.each(['#FF1A75', '#abc', '#15171a80'])(
+      'emits hex accent color %s without parsing',
+      async function (accentColor) {
+        const parseSpy = sinon.spy(cssParser, 'parse');
+        const rendered = (
+          await ghost_head({
+            hash: { exclude: 'card_assets,comment_counts' },
+            ...testUtils.createHbsResponse({
+              templateOptions: { site: { accent_color: accentColor } },
+              locals: { relativeUrl: '/', context: ['home', 'index'], safeVersion: '4.3' },
+            }),
+          })
+        ).toString();
+
+        assert.ok(rendered.includes(`<style>:root {--ghost-accent-color:${accentColor};}</style>`));
+        sinon.assert.notCalled(parseSpy);
+      },
+    );
+
     it('emits a style tag for a valid non-hex colour value', async function () {
       const templateOptions = {
         site: {

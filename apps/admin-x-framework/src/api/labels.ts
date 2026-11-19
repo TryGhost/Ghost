@@ -1,24 +1,64 @@
 import { InfiniteData } from '@tanstack/react-query';
-import { Meta, createInfiniteQuery, createMutation } from '../utils/api/hooks';
+import { createInfiniteQuery, createMutation, createQueryWithId } from '../utils/api/hooks';
 import { apiUrl, useFetchApi } from '../utils/api/fetch-api';
 import { escapeNqlString } from '@tryghost/nql-string';
 import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { z } from 'zod';
 
-export type Label = {
-  id: string;
-  name: string;
-  slug: string;
-  created_at: string;
-  updated_at: string;
-};
+const LabelSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  slug: z.string(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
 
-export interface LabelsResponseType {
-  meta?: Meta;
-  labels: Label[];
-}
+const LabelsResponseSchema = z.object({
+  labels: z.array(LabelSchema),
+  meta: z
+    .object({
+      capabilities: z.object({ dislikes: z.boolean().optional() }).optional(),
+      pagination: z.object({
+        page: z.number(),
+        limit: z.union([z.number(), z.literal('all')]),
+        pages: z.number(),
+        total: z.number(),
+        next: z.number().nullable(),
+        prev: z.number().nullable(),
+      }),
+    })
+    .optional(),
+});
+
+export type Label = z.infer<typeof LabelSchema>;
+export type LabelsResponseType = z.infer<typeof LabelsResponseSchema>;
+
+const ReadLabelResponseSchema = LabelsResponseSchema.extend({
+  labels: z.array(LabelSchema).length(1),
+});
 
 const dataType = 'LabelsResponseType';
+
+export const useReadLabel = createQueryWithId<LabelsResponseType>({
+  dataType,
+  path: (id) => `/labels/${id}/`,
+  parseResponse: (data) => ReadLabelResponseSchema.parse(data),
+});
+
+export const useCacheLabel = () => {
+  const queryClient = useQueryClient();
+  return useCallback(
+    (label: Label) => {
+      const data = ReadLabelResponseSchema.parse({ labels: [label] });
+      queryClient.setQueryData<LabelsResponseType>(
+        [dataType, apiUrl(`/labels/${label.id}/`)],
+        data,
+      );
+    },
+    [queryClient],
+  );
+};
 
 export const useBrowseLabelsInfinite = createInfiniteQuery<LabelsResponseType & { isEnd: boolean }>(
   {

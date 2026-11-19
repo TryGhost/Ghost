@@ -14,12 +14,6 @@ type Feature = {
 
 const features: Feature[] = [
   {
-    title: 'Phone custom fields',
-    description:
-      'Offers Phone as a type of custom field while it is being built. A field made while this is on keeps working if it is turned off.',
-    flag: 'customFieldTypePhone',
-  },
-  {
     title: 'Automations',
     description:
       'Toggle the automations beta. Unexpected problems can occur if you turn this off after previously turning it on.',
@@ -85,12 +79,6 @@ const features: Feature[] = [
     flag: 'getHelperDeduplication',
   },
   {
-    title: 'Stripe checkout collection',
-    description:
-      'Let admins turn on shipping address and phone number collection for a tier, asked by Stripe checkout and stored against the member',
-    flag: 'stripeCheckoutCollection',
-  },
-  {
     title: 'Paywall improvements',
     description: 'Enables paywall usability, discoverability and email customization improvements',
     flag: 'paywallImprovements',
@@ -112,6 +100,23 @@ const features: Feature[] = [
     description:
       'Open Help in a sidebar inside Admin instead of a new tab. Needs a host script that provides the support app.',
     flag: 'inAppSupport',
+  },
+  {
+    title: 'Editor presence polling',
+    description:
+      'Record which staff have a post open in the editor and poll for it. Shows nothing yet.',
+    flag: 'editorPresencePolling',
+  },
+  {
+    title: 'Editor presence indicators',
+    description:
+      'Show who else has a post or page open, in the editor header and on list rows. Needs editor presence polling.',
+    flag: 'editorPresence',
+  },
+  {
+    title: 'Comments analytics',
+    description: 'Show comment volume, top posts and top commenters beside the comments list.',
+    flag: 'commentsAnalytics',
   },
 ];
 

@@ -114,7 +114,7 @@ export default tseslint.config(
   // TypeScript files
   // ============================================================
   {
-    files: ['core/**/*.ts', '*.ts'],
+    files: ['core/**/*.ts', '*.{ts,mts}'],
     extends: [...tseslint.configs.recommended],
     languageOptions: {
       ecmaVersion: 2022,
@@ -154,7 +154,7 @@ export default tseslint.config(
   // TypeScript override block: must come AFTER tseslint extends to win.
   // ============================================================
   {
-    files: ['core/**/*.ts', '*.ts'],
+    files: ['core/**/*.ts', '*.{ts,mts}'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       ...tsLegacyRelaxations,
@@ -172,10 +172,10 @@ export default tseslint.config(
     },
   },
   // ============================================================
-  // schema.js: no created_by/updated_by columns
+  // schema.ts: no created_by/updated_by columns
   // ============================================================
   {
-    files: ['core/server/data/schema/schema.js'],
+    files: ['core/server/data/schema/schema.ts'],
     rules: {
       'no-restricted-syntax': [
         'error',

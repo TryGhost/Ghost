@@ -1,13 +1,5 @@
-// The full metadata, so a valid number is one a country has given out rather than one of the right
-// length, as the default metadata would have it.
-import {
-  getExampleNumber,
-  isSupportedCountry,
-  parsePhoneNumberFromString,
-  validatePhoneNumberLength,
-  type CountryCode,
-} from 'libphonenumber-js/max';
-import examples from 'libphonenumber-js/mobile/examples';
+import type { CountryCode } from 'libphonenumber-js/max';
+import { phoneLib } from '#phone-lib';
 import { z } from 'zod';
 import { KeySchema, NamespaceSchema } from './identity.js';
 import { readCallingCode } from './phone.js';
@@ -499,6 +491,7 @@ function countryWrittenFor(written: string, placed: CountryCode | undefined) {
  * rejected, as a `PhoneRefusal`.
  */
 function readPhone(text: string, country?: string): { number: string } | { refused: PhoneRefusal } {
+  const { isSupportedCountry, parsePhoneNumberFromString, validatePhoneNumberLength } = phoneLib();
   const defaultCountry = country !== undefined && isSupportedCountry(country) ? country : undefined;
   // A country's own way of dialling abroad is read with the country. After that, a number written
   // after the 00 most countries dial abroad with gives its code as surely as one after a +.
@@ -592,8 +585,10 @@ const ANY_EXAMPLE = '+44 20 7946 0000';
  * has one for every country it supports. The UK example is the fallback when the country is
  * unknown, or if the library ever lacks one for a country.
  */
-const exampleOf = (country: CountryCode | undefined): string =>
-  (country && getExampleNumber(country, examples)?.formatInternational()) ?? ANY_EXAMPLE;
+const exampleOf = (country: CountryCode | undefined): string => {
+  const { getExampleNumber, examples } = phoneLib();
+  return (country && getExampleNumber(country, examples)?.formatInternational()) ?? ANY_EXAMPLE;
+};
 
 /**
  * The error message for each reason `readPhone` rejects a phone number. A number invalid for its

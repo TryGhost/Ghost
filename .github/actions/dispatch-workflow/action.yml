@@ -64,4 +64,17 @@ runs:
           echo "run-url=$RUN_URL"
         } >> "$GITHUB_OUTPUT"
 
+        # The dispatch API returns the run ID before the run can be read, so
+        # an immediate watch can fail with a 404. Wait until it is readable.
+        for attempt in $(seq 1 12); do
+          if gh api "repos/$REPO/actions/runs/$RUN_ID" --silent; then
+            break
+          fi
+          if [ "$attempt" -eq 12 ]; then
+            echo "::error::Workflow run $RUN_ID in $REPO was still not readable after 12 attempts"
+            exit 1
+          fi
+          sleep 5
+        done
+
         gh run watch "$RUN_ID" --repo "$REPO" --exit-status

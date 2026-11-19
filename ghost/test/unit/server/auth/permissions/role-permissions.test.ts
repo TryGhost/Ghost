@@ -1,0 +1,145 @@
+import assert from 'node:assert/strict';
+import * as rolePermissions from '../../../../../core/server/auth/permissions/role-permissions';
+import {
+  permissions as permissionData,
+  rolePermissions as roleData,
+} from '../../../../../core/server/auth/permissions/permissions-data';
+
+type Permission = { action_type: string; object_type: string };
+type RoleValues = Record<string, 'all' | readonly string[]>;
+
+const roleValues = roleData as Record<string, RoleValues>;
+
+const toKeys = (permissions: Permission[]) =>
+  permissions.map((perm) => `${perm.action_type}:${perm.object_type}`).sort();
+
+const actionsFor = (permissions: Permission[], objectType: string) =>
+  permissions
+    .filter((perm) => perm.object_type === objectType)
+    .map((perm) => perm.action_type)
+    .sort();
+
+describe('Permissions', function () {
+  describe('rolePermissions', function () {
+    describe('actionsMap', function () {
+      it('maps every action to the object types it exists for', function () {
+        const expected: Record<string, string[]> = {};
+
+        for (const [objectType, actions] of Object.entries(permissionData)) {
+          for (const action of actions) {
+            (expected[action] ??= []).push(objectType);
+          }
+        }
+
+        assert.deepEqual(rolePermissions.actionsMap, expected);
+      });
+
+      it('is frozen', function () {
+        assert(Object.isFrozen(rolePermissions.actionsMap));
+
+        for (const objectTypes of Object.values(rolePermissions.actionsMap)) {
+          assert(Object.isFrozen(objectTypes));
+        }
+      });
+    });
+
+    describe('roleNames', function () {
+      it('returns every role in the data file, which excludes Owner', function () {
+        const names = rolePermissions.roleNames();
+
+        assert.deepEqual([...names].sort(), Object.keys(roleData).sort());
+        assert(!names.includes('Owner'));
+        assert(names.includes('Administrator'));
+      });
+    });
+
+    describe('forRoles', function () {
+      it('expands "all" to every action for the object type', function () {
+        assert.equal(roleValues.Administrator.db, 'all');
+
+        const result = rolePermissions.forRoles(['Administrator']);
+
+        assert.deepEqual(actionsFor(result, 'db'), [...permissionData.db].sort());
+      });
+
+      it('expands a list to exactly those actions', function () {
+        const expected = roleValues.Contributor.post;
+        assert(Array.isArray(expected));
+        assert(expected.length < permissionData.post.length);
+
+        const result = rolePermissions.forRoles(['Contributor']);
+
+        assert.deepEqual(actionsFor(result, 'post'), [...expected].sort());
+      });
+
+      it('grants nothing for an object type the role does not list', function () {
+        assert.equal(roleValues.Contributor.db, undefined);
+
+        const result = rolePermissions.forRoles(['Contributor']);
+
+        assert.deepEqual(actionsFor(result, 'db'), []);
+      });
+
+      it('does not grant publish:post to Contributor', function () {
+        assert(!toKeys(rolePermissions.forRoles(['Contributor'])).includes('publish:post'));
+        assert(toKeys(rolePermissions.forRoles(['Editor'])).includes('publish:post'));
+      });
+
+      it('returns an empty array for an unknown role', function () {
+        assert.deepEqual(rolePermissions.forRoles(['Not A Role']), []);
+      });
+
+      it('returns an empty array for Owner', function () {
+        assert.equal(roleValues.Owner, undefined);
+        assert.deepEqual(rolePermissions.forRoles(['Owner']), []);
+      });
+
+      it('returns an empty array for no roles', function () {
+        assert.deepEqual(rolePermissions.forRoles([]), []);
+      });
+
+      it('returns frozen permissions, so one caller cannot change them for another', function () {
+        const [perm] = rolePermissions.forRoles(['Contributor']);
+
+        assert.throws(() => {
+          (perm as { action_type: string }).action_type = 'changed';
+        }, TypeError);
+        assert.notEqual(rolePermissions.forRoles(['Contributor'])[0].action_type, 'changed');
+        assert(rolePermissions.forRoles(['Administrator']).every(Object.isFrozen));
+      });
+
+      it('unions permissions across roles without duplicates', function () {
+        const editor = toKeys(rolePermissions.forRoles(['Editor']));
+        const author = toKeys(rolePermissions.forRoles(['Author']));
+        const combined = toKeys(rolePermissions.forRoles(['Editor', 'Author']));
+
+        assert.deepEqual(combined, [...new Set([...editor, ...author])].sort());
+        assert.equal(new Set(combined).size, combined.length);
+        assert(author.some((key) => editor.includes(key)));
+      });
+    });
+
+    describe('data file', function () {
+      it('only grants actions that exist for the object type', function () {
+        for (const [roleName, objects] of Object.entries(roleValues)) {
+          for (const [objectType, value] of Object.entries(objects)) {
+            const actions = (permissionData as Record<string, readonly string[]>)[objectType];
+
+            assert(actions, `${roleName}: unknown object type ${objectType}`);
+
+            if (value !== 'all') {
+              assert(value.length > 0, `${roleName}.${objectType} grants nothing`);
+
+              for (const action of value) {
+                assert(
+                  actions.includes(action),
+                  `${roleName}: ${action}:${objectType} does not exist`,
+                );
+              }
+            }
+          }
+        }
+      });
+    });
+  });
+});

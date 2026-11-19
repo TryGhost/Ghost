@@ -28,7 +28,7 @@ explains why.
    [`RECORD_FORMS`](../../../../apps/portal/src/components/common/member-custom-fields.tsx).
    Portal's labels are translated like any other string.
 5. Add its id to the `type` column's list in Ghost's
-   [`schema.js`](../../../../ghost/core/server/data/schema/schema.js), which can't import this
+   [`schema.ts`](../../../../ghost/core/server/data/schema/schema.ts), which doesn't import this
    package. A unit test fails until you do.
 6. Add a field of it, with values a member could hold, to `FIELD_FIXTURES` in
    [`test/fixtures/fields.ts`](../../test/fixtures/fields.ts).

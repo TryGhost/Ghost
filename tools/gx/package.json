@@ -53,7 +53,7 @@
       ],
       "developmentTablesCommand": [
         "{workspaceRoot}/ghost/core/server/data/schema/in-development.ts",
-        "{workspaceRoot}/ghost/core/server/data/schema/schema.js",
+        "{workspaceRoot}/ghost/core/server/data/schema/schema.ts",
         "{workspaceRoot}/ghost/tsconfig.json",
         "{workspaceRoot}/ghost/types/**/*.d.ts"
       ],
@@ -108,8 +108,10 @@
         "inputs": [
           "default",
           "^default",
-          "developmentTablesCommand",
-          "dataCommands",
+          {
+            "input": "default",
+            "projects": "ghost"
+          },
           {
             "runtime": "node -v"
           }
