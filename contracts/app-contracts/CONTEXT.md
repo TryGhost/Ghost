@@ -105,6 +105,31 @@ for that surface: Admin ignores a hello from any other origin and addresses the
 connect only to this one. The manifest lists no other origins.
 _Avoid_: allowed origin, app origin
 
+### Access
+
+**Scope**:
+A named permission an app can be given, such as `post:edit`: the resource, then
+the action, as Platform names the permission in Core. Every scope is defined
+once, in the scope registry. There are no member scopes, and pages come under
+the `post:*` scopes.
+_Avoid_: permission, grant, capability
+
+**Permission key**:
+A permission written `object_type:action`, such as `post:edit`, as Platform
+names it in Core. Each scope in the registry is one, and a manifest names a
+scope by its `permission_key`.
+_Avoid_: scope name, key, permission name, permission string
+
+**Resource**:
+The kind of object a scope acts on: Platform's object type, exactly, such as
+`post` or `slug`. Admin's access list shows one line per resource.
+_Avoid_: object, entity
+
+**Scope registry**:
+The one list of scopes, with each scope's resource and the words Admin's access
+list uses for it. Admin's access list and the allowlist both read it.
+_Avoid_: permission list, scope list
+
 ### Changes
 
 **Change**:
@@ -188,11 +213,12 @@ permissions, and takes an Admin API path, never a URL.
 _Avoid_: proxy, API access, app token
 
 **Allowlist**:
-The Admin API routes the fetch escape hatch allows, by method, grouped under
-the scope names Permissions and auth will use (`posts:read`, `posts:write`),
-in `ADMIN_API_ALLOWLIST`. Everything else is refused. Writes of posts, pages
-and tags are also checked so they can't send email, set code injection or
-write mobiledoc. It stands in for apps' own token, which takes the scopes over.
+The Admin API routes the fetch escape hatch allows, by method, grouped by
+resource and then under the scope registry's names (`post:browse`,
+`post:edit`), in `ADMIN_API_ALLOWLIST`; the site's public details need no
+scope. Everything else is refused. Writes of posts, pages and tags are also
+checked so they can't send email, set code injection or write mobiledoc. It
+stands in for apps' own token, which takes the scopes over.
 _Avoid_: permissions, blocklist, denylist
 
 **Feature name**:

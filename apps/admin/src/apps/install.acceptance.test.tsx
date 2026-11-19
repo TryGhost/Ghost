@@ -120,12 +120,17 @@ describe('Installing an app', () => {
     await expect
       .element(appsScreen.accessIndicator())
       .toHaveTextContent('The app acts as whoever opens it, within their role.');
+    // One line per resource in the scope registry, in Ghost's words.
     await expect(appsScreen.accessItems()).toHaveCount(6);
-    // Where the app's data goes closes the box, but isn't one of the permissions
-    await expect(appsScreen.accessIndicator().getByRole('listitem')).toHaveCount(6);
     await expect
       .element(appsScreen.accessItems().first())
-      .toHaveTextContent('View, create, edit, publish and delete posts and pages');
+      .toHaveTextContent(
+        'Posts and pagesList, search and read every post and page, drafts included.Read any post or page.',
+      );
+    // Where the app's data goes closes the box, but isn't one of the permissions.
+    await expect(
+      appsScreen.accessIndicator().getByRole('listitem').filter({ hasText: 'Data accessed by' }),
+    ).toHaveCount(0);
     // What the app does: where it appears, and, with its permissions, where what it reads goes.
     await expect(appsScreen.capabilities()).toHaveCount(1);
     await expect
