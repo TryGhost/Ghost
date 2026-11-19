@@ -3,6 +3,7 @@ const { assertExists } = require('../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const jwt = require('jsonwebtoken');
 const sinon = require('sinon');
+const auth = require('../../../../../core/server/auth');
 const apiKeyAuth = require('../../../../../core/server/auth/api-key').default;
 const { ApiKey } = require('../../../../../core/server/models/api-key');
 
@@ -135,6 +136,33 @@ describe('Admin API Key Auth', function () {
       assert.equal(err instanceof errors.UnauthorizedError, true);
       assert.equal(err.code, 'INVALID_JWT');
       assert.equal(req.api_key, undefined);
+      resolve();
+    });
+    return promise;
+  });
+
+  it('passes a Bearer token through to the principal step under better-auth', function () {
+    // Unit tests run on SQLite, where config falls back to legacy
+    sinon.stub(auth, 'isBetterAuth').get(() => true);
+    const { promise, resolve } = Promise.withResolvers();
+    const req = { headers: { authorization: 'Bearer ghost_pat_abc' } };
+
+    apiKeyAuth.admin.authenticate(req, {}, function next(err) {
+      assert.equal(err, undefined);
+      assert.equal(req.api_key, null);
+      sinon.assert.notCalled(apiKeyStub);
+      resolve();
+    });
+    return promise;
+  });
+
+  it('rejects a Bearer token under legacy', function () {
+    const { promise, resolve } = Promise.withResolvers();
+    const req = { headers: { authorization: 'Bearer ghost_pat_abc' } };
+
+    apiKeyAuth.admin.authenticate(req, {}, function next(err) {
+      assert.equal(err instanceof errors.UnauthorizedError, true);
+      assert.equal(err.code, 'INVALID_AUTH_HEADER');
       resolve();
     });
     return promise;

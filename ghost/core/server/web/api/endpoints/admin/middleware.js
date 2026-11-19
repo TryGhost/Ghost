@@ -7,7 +7,28 @@ const apiMw = require('../../middleware');
 const messages = {
   apiTokenBlocked: 'API tokens do not have permission to access this endpoint',
   staffTokenBlocked: 'Staff tokens are not allowed to access this endpoint',
+  personalAccessTokenBlocked: 'Personal access tokens are not allowed to access this endpoint',
 };
+
+/**
+ * Endpoints no user token may reach, staff token or Personal Access Token.
+ * Express matches routes case-insensitively but req.path preserves the
+ * original case, so it is lowercased; both slash forms route.
+ * @param {import('express').Request} req
+ */
+function isBlockedForUserTokens(req) {
+  const path = req.path.toLowerCase();
+  const isDeleteAllContent = req.method === 'DELETE' && (path === '/db/' || path === '/db');
+  const isTransferOwnership =
+    req.method === 'PUT' && (path === '/users/owner/' || path === '/users/owner');
+  const isResetAuthentication =
+    req.method === 'POST' &&
+    (path === '/authentication/reset/' || path === '/authentication/reset');
+  return isDeleteAllContent || isTransferOwnership || isResetAuthentication;
+}
+
+// A Personal Access Token expires; a staff token read or made with one would not
+const STAFF_TOKEN_PATH = /^\/users\/[^/]+\/token\/?$/;
 
 /**
  * @param {import('express').Request} req
@@ -15,6 +36,18 @@ const messages = {
  * @param {import('express').NextFunction} next
  */
 const tokenPermissionCheck = function tokenPermissionCheck(req, res, next) {
+  // CASE: Personal Access Token, the staff token blocklist plus staff tokens themselves
+  if (req.auth?.kind === 'user' && req.auth.method === 'bearer_token') {
+    if (isBlockedForUserTokens(req) || STAFF_TOKEN_PATH.test(req.path.toLowerCase())) {
+      return next(
+        new errors.NoPermissionError({
+          message: tpl(messages.personalAccessTokenBlocked),
+        }),
+      );
+    }
+    return next();
+  }
+
   // CASE: user is logged in with user auth, skip to permission system
   if (!req.api_key) {
     return next();
@@ -23,19 +56,7 @@ const tokenPermissionCheck = function tokenPermissionCheck(req, res, next) {
   // CASE: user is requesting with staff token, check blocklist, else skip to permission system
   // Staff tokens have a user_id associated with them, integration tokens don't
   if (req.api_key?.get('user_id')) {
-    // Express matches routes case-insensitively but req.path preserves the
-    // original case. Normalise before comparing so a mixed-case URL can't
-    // slip past the blocklist while still routing to the lowercase handler.
-    // Match both with and without trailing slash since Express routes accept both
-    const path = req.path.toLowerCase();
-    const isDeleteAllContent = req.method === 'DELETE' && (path === '/db/' || path === '/db');
-    const isTransferOwnership =
-      req.method === 'PUT' && (path === '/users/owner/' || path === '/users/owner');
-    const isResetAuthentication =
-      req.method === 'POST' &&
-      (path === '/authentication/reset/' || path === '/authentication/reset');
-
-    if (isDeleteAllContent || isTransferOwnership || isResetAuthentication) {
+    if (isBlockedForUserTokens(req)) {
       return next(
         new errors.NoPermissionError({
           message: tpl(messages.staffTokenBlocked),

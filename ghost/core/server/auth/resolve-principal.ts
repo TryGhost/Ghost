@@ -14,6 +14,7 @@ import {
   type SessionView,
   type User,
 } from './principal';
+import { bearerToken, type AuthenticateBearer } from './bearer';
 
 export interface ResolvePrincipalDeps {
   /** Better Auth's session for these headers, or null */
@@ -23,6 +24,7 @@ export interface ResolvePrincipalDeps {
   getAdminOrigin(): string;
   /** An active staff user by id, or null */
   findActiveUser(id: string): Promise<User | null>;
+  authenticateBearer: AuthenticateBearer;
 }
 
 type ApiKeyRequest = Request & AuthenticatedRequest;
@@ -172,9 +174,10 @@ export function createPrincipalResolver(deps: ResolvePrincipalDeps) {
   }
 
   /**
-   * Runs after `api-key/admin.ts`: a verified key wins. The cookie is read
-   * only when no Authorization header was sent, so a token that failed
-   * verification never falls back to the staff session.
+   * Runs after `api-key/admin.ts`: a verified key wins, then a Bearer token,
+   * which that middleware passes through. The cookie is read only when no
+   * Authorization header was sent, so a token that failed verification never
+   * falls back to the staff session.
    */
   const adminApi: RequestHandler = async function resolveAdminPrincipal(
     req: Request,
@@ -185,6 +188,13 @@ export function createPrincipalResolver(deps: ResolvePrincipalDeps) {
       const keyed = req as ApiKeyRequest;
       if (keyed.api_key) {
         applyKeyPrincipal(keyed, keyed.api_key, 'admin_api_key');
+        return next();
+      }
+
+      const token = bearerToken(req.headers?.authorization);
+      if (token !== null) {
+        const { principal, user } = await deps.authenticateBearer(token);
+        applyPrincipal(keyed, principal, { user });
         return next();
       }
 

@@ -5,6 +5,8 @@ import {
   legacyAdminApi,
   unlessKeyed,
 } from './resolve-principal';
+import { createBearerAuthenticator } from './bearer';
+import type { User } from './principal';
 import session from './session';
 import apiKeyAuth from './api-key';
 import * as members from './members';
@@ -41,6 +43,21 @@ function createBetterAuth(): Authenticate {
   const { fromNodeHeaders } = require('better-auth/node');
   const betterAuth = require('./better-auth').default;
   const models = require('../models');
+  const findActiveUser = (id: string): Promise<User | null> =>
+    models.User.findOne({ id, status: 'active' }, { withRelated: ['roles'] });
+
+  // Personal Access Tokens, only under better-auth and only where api_tokens exists
+  const authenticateBearer = createBearerAuthenticator({
+    getVerifyApiKey() {
+      if (!require('./index').apiTokensAvailable) {
+        return null;
+      }
+      // Read per call: this module can load before boot builds the instance
+      const api = betterAuth.service.api;
+      return (body) => api.verifyApiKey({ body });
+    },
+    findActiveUser,
+  });
   const urlUtils = require('../../shared/url-utils').default;
 
   const resolver = createPrincipalResolver({
@@ -50,9 +67,8 @@ function createBetterAuth(): Authenticate {
     },
     getOriginOfRequest: session.getOriginOfRequest,
     getAdminOrigin: () => urlUtils.getAdminOrigin(),
-    findActiveUser(id) {
-      return models.User.findOne({ id, status: 'active' }, { withRelated: ['roles'] });
-    },
+    findActiveUser,
+    authenticateBearer,
   });
 
   return {

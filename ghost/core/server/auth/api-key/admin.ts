@@ -7,6 +7,7 @@ import _ from 'lodash';
 import { limitService } from '../../services/limits';
 import { legacyApiPathMatch } from '../../web/api/middleware/api-version-compatibility';
 import type { ApiKey, AuthenticatedRequest, Integration, User } from '../principal';
+import { bearerToken } from '../bearer';
 
 const models = require('../../models');
 
@@ -68,6 +69,13 @@ export const authenticate = function apiKeyAdminAuth(
     req.api_key = null;
     return next();
   }
+  // Under better-auth, resolvePrincipal verifies Bearer tokens (bearer.ts);
+  // legacy rejects them below
+  if (require('../index').isBetterAuth && bearerToken(req.headers.authorization) !== null) {
+    req.api_key = null;
+    return next();
+  }
+
   const token = _extractTokenFromHeader(req.headers.authorization);
 
   if (!token) {

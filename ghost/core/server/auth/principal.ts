@@ -69,6 +69,11 @@ export interface SessionView {
   readonly origin: string | null;
 }
 
+/** A Personal Access Token; never its key. */
+export interface ApiTokenView {
+  readonly id: string;
+}
+
 export interface IntegrationView {
   readonly id: string;
   readonly type: string;
@@ -159,6 +164,8 @@ export type Principal =
       user: UserView;
       session?: SessionView;
       apiKey?: ApiKeyView;
+      /** Set for `bearer_token` */
+      apiToken?: ApiTokenView;
       scopes?: Scopes;
     }
   | {

@@ -16,12 +16,13 @@ const createApiKey = (userId) => {
   };
 };
 
-const createApp = ({ apiKey = null, user = null } = {}) => {
+const createApp = ({ apiKey = null, user = null, auth = undefined } = {}) => {
   const app = express();
 
   app.use((req, res, next) => {
     req.api_key = apiKey;
     req.user = user;
+    req.auth = auth;
     next();
   });
 
@@ -57,6 +58,36 @@ describe('Admin API Middleware', function () {
           .get('/posts')
           .expect(200)
           .expect({ ok: true });
+      });
+    });
+
+    describe('Personal Access Token Authentication', function () {
+      const app = createApp({
+        user: { id: 'abcd1234' },
+        auth: { kind: 'user', method: 'bearer_token', user: { id: 'abcd1234' } },
+      });
+      const blocked = {
+        error: {
+          message: 'Personal access tokens are not allowed to access this endpoint',
+          statusCode: 403,
+        },
+      };
+
+      it('allows regular endpoints, through to the permission system', async function () {
+        await request(app).get('/posts/').expect(200).expect({ ok: true });
+        await request(app).put('/users/abcd1234/').expect(200).expect({ ok: true });
+      });
+
+      it('blocks what staff tokens cannot reach', async function () {
+        await request(app).delete('/db/').expect(403).expect(blocked);
+        await request(app).delete('/DB').expect(403).expect(blocked);
+        await request(app).put('/users/owner/').expect(403).expect(blocked);
+        await request(app).post('/authentication/reset').expect(403).expect(blocked);
+      });
+
+      it('blocks reading or making a staff token', async function () {
+        await request(app).get('/users/abcd1234/token/').expect(403).expect(blocked);
+        await request(app).put('/users/abcd1234/Token').expect(403).expect(blocked);
       });
     });
 

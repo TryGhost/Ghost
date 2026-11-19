@@ -53,6 +53,7 @@ export default defineService('Better Auth', async (): Promise<GhostAuth> => {
         'https://static.ghost.org/v4.0.0/images/ghost-orb-1.png',
       getSiteUrl: () => urlUtils.urlFor('home', true),
     }),
+    apiTokens: require('..').apiTokensAvailable,
     getRequestOrigin: (headers) =>
       require('../session').default.getOriginOfRequest({ headers: Object.fromEntries(headers) }),
   });

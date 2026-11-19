@@ -47,6 +47,7 @@ allowBuilds:
   protobufjs: false
 
 catalog:
+  '@better-auth/api-key': 1.7.22
   '@better-auth/core': 1.7.22
   '@better-auth/test-utils': 1.7.22
   '@codemirror/autocomplete': 6.20.4

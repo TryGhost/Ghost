@@ -25,6 +25,7 @@ describe('Exporter', function () {
     const tables = [
       'actions',
       'api_keys',
+      'api_tokens',
       'app_installation_manifests',
       'app_installations',
       'automation_action_edges',
@@ -153,6 +154,7 @@ describe('Exporter', function () {
       'user_accounts',
       'user_sessions',
       'user_two_factors',
+      'api_tokens',
       'verifications',
       'mobiledoc_revisions',
       'post_revisions',

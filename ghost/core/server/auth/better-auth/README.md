@@ -42,8 +42,8 @@ then runs `resolvePrincipal` (`auth/resolve-principal.ts`), which sets
 Better Auth's session, pins it to the admin origin and to the session's own
 `origin`, and treats an unverified session, or one with no `origin`, as
 anonymous. A request that sends an `Authorization` header never falls back to
-the cookie. Legacy session cookies are not read. `Bearer` is still rejected
-until Phase 4.
+the cookie. Legacy session cookies are not read. `Bearer` tokens are described
+under [Personal Access Tokens](#personal-access-tokens).
 
 - `create-auth.ts`: `createAuth()` builds the instance with Ghost's options
   (plan §3.1) from injected dependencies.
@@ -100,6 +100,8 @@ until Phase 4.
   skips it: it deletes the session itself.
 - `plugins/device-verification.ts`: `ghostDeviceVerification`, email-code
   verification of new devices, described below.
+- `plugins/api-tokens.ts`: `ghostApiTokens`, Better Auth's `apiKey` plugin
+  configured for Personal Access Tokens, described below.
 - The plugin emails codes through `auth/emails/sign-in-code.ts`, which the
   legacy session service also uses: the legacy template and subject, and the
   device details, with injectable geolocation.
@@ -311,6 +313,61 @@ The API controllers pass the request's IP (`frame.options.ip`) and user agent
 (`frame.options.userAgent`) to `createVerifiedSession`, which Better Auth
 can't see on a server-side call, so those sessions record them as sign-in does.
 
+## Personal Access Tokens
+
+`Authorization: Bearer <token>` on the Admin API under `better-auth` (plan
+§3.4, Phase 4). Under `legacy` a Bearer header is still rejected with
+`INVALID_AUTH_HEADER`: tokens ship on Better Auth, so `legacy` boot never loads
+it. `bearer.ts` routes a token by prefix and is the only place that does:
+
+- `ghost_pat_` goes to `auth.api.verifyApiKey` with the `pat` configuration,
+  and becomes `{kind: 'user', method: 'bearer_token', user, apiToken: {id}}`
+  for the token's user, who must be active, with that user's role.
+- Any other prefix, an empty token, and a session token (which has no prefix)
+  are `401 INVALID_BEARER_TOKEN`, without a lookup. App tokens (Phase 4b) add
+  a prefix there.
+- An expired token is `401 BEARER_TOKEN_EXPIRED`; Better Auth deletes its row.
+  A disabled or deleted token, or one whose user isn't active, is
+  `401 INVALID_BEARER_TOKEN`. Past its per-key limit a token is
+  `429 BEARER_TOKEN_RATE_LIMITED`.
+- A Bearer request never falls back to the session cookie.
+- A Personal Access Token gets the staff token blocklist (deleting all
+  content, transferring ownership, the authentication reset) in
+  `web/api/endpoints/admin/middleware.js`, and cannot read or regenerate a
+  staff token (`/users/:id/token`), which would outlive its expiry. Decided:
+  this stays after scopes land (PLA-639), whatever a token's scopes allow.
+
+Under `better-auth`, `api-key/admin.ts` passes a `Bearer` header through and
+`resolvePrincipal` verifies it. The `Ghost` scheme is unchanged.
+
+`ghostApiTokens` (`plugins/api-tokens.ts`) is `apiKey` with one configuration:
+
+- Keys are `ghost_pat_` and 64 random letters, stored as a SHA-256 hash in
+  `api_tokens`. `start` keeps the prefix and four characters.
+- Every token expires: 90 days by default, at most 365.
+- A per-key rate limit of 600 requests a minute, counted on the token's row.
+- `enableSessionForAPIKeys` is off, so a token is never a Better Auth session
+  and never reaches Better Auth's session-protected endpoints. There is no
+  `bearer` plugin (plan §10).
+- The plugin's HTTP routes (`/api-key/create`, `/get`, `/update`, `/delete`,
+  `/list`) are disabled. Tokens are created server-side with
+  `auth.api.createApiKey({body: {userId, configId: 'pat'}})` until Ghost has an
+  endpoint and UI for them.
+
+The plugin logs every refused key as an error; `create-auth.ts` lowers that
+message to debug, since the API's 401 is logged already.
+
+`api_tokens` is an in-development table, so tokens work only where it exists:
+development and testing under `better-auth` (`auth.apiTokensAvailable`).
+Elsewhere the plugin isn't added and every Bearer token is refused.
+
+Revoking a token is deleting its row (or setting `enabled` false):
+verification reads the row on every request, so nothing is cached. Revocation
+on security events is PLA-640. Events under `legacy` must delete the rows too,
+as they delete `user_sessions` rows, so switching back to `better-auth` can't
+revive a token. Until then a suspended user's tokens stop working because the
+user must be active. Scopes are PLA-639.
+
 ## SSO adapter
 
 Ghost(Pro) support access implements the `@tryghost/adapter-base-sso`
@@ -332,6 +389,11 @@ the in-development copies, the 6.79 migrations replace them and backfill from
 changed there, so reset the database (`pnpm reset:db`).
 
 `verifications.attempts` counts wrong device verification codes.
+
+`api_tokens`, the `apiKey` plugin's model, is an in-development table (see
+[Personal Access Tokens](#personal-access-tokens)). It stores only key hashes,
+and is left out of exports by default. `reference_id` has no foreign key,
+since site tokens may not reference a user.
 
 `user_two_factors`, the `twoFactor` plugin's model, is still an in-development
 table, ahead of the plugin (plan §5). It holds TOTP secrets and backup codes, so

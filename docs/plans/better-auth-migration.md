@@ -658,7 +658,7 @@ Existing tests (§7) must pass unchanged under every engine setting.
 | `GET/PUT /users/:id/token`, integration key refresh   | unchanged                                                                                                                                                                                          | `getOrCreateStaffToken`, `rotateSecret`                                                      |
 | `GET /users/me/`                                      | `200`, or 403 `Authorization failed`                                                                                                                                                               | unchanged; Admin's session probe                                                             |
 | `Authorization: Ghost <JWT>`                          | `INVALID_AUTH_HEADER`, `INVALID_JWT`, `MISSING_ADMIN_API_KID`, `UNKNOWN_ADMIN_API_KEY`, `INVALID_API_KEY_TYPE`                                                                                     | through 7.x, removed in 8.0                                                                  |
-| `Authorization: Bearer <token>`                       | rejected                                                                                                                                                                                           | Phase 4: 401 `INVALID_BEARER_TOKEN`, 403 on scope violations                                 |
+| `Authorization: Bearer <token>`                       | rejected                                                                                                                                                                                           | Phase 4, `better-auth` only: 401 `INVALID_BEARER_TOKEN`, 403 on scope violations             |
 | Content API `?key=`                                   | `UNKNOWN_CONTENT_API_KEY`, `INVALID_API_KEY_TYPE`, `INVALID_REQUEST`                                                                                                                               | unchanged                                                                                    |
 | `GET /ghost/auth-frame`                               | served when the cookie header contains `ghost-admin-api-session`                                                                                                                                   | cookie name kept                                                                             |
 
@@ -841,15 +841,18 @@ Exit: identical client experience for new-device verification and
    per-key rate limit, scopes from `auth/policy/scopes.ts`. No `bearer`
    plugin (§10). Agree the scope vocabulary with Berlin before their project
    starts on 7 December.
-2. `resolvePrincipal` (and `api-key/admin.js` under `legacy`) passes `Bearer`
-   to `verifyApiKey` instead of returning `INVALID_AUTH_HEADER`;
+2. `resolvePrincipal` passes `Bearer` to `verifyApiKey` instead of returning
+   `INVALID_AUTH_HEADER`. Tokens are `better-auth` only: under `legacy`,
+   `Bearer` keeps `INVALID_AUTH_HEADER` and boot never loads Better Auth.
    `auth/policy/` gains `capabilities` and `authorize` (§3.6), which
    `canThis` uses for its grant flags; scopes and finer scopes are enforced
    there, and includes/relations are checked against the same scopes (§3.3).
    A spike before this phase maps where the API resolves includes and
    relation filters, since that check runs in the API layer rather than in
    auth.
-3. Reset revokes all tokens; suspension and deletion revoke the user's.
+3. Reset revokes all tokens; suspension and deletion revoke the user's. The
+   same events under `legacy` delete the rows too, so switching back to
+   `better-auth` can't revive a token.
 4. Tests: success, missing scope, expired, revoked, role ceiling, audit
    attribution; `key-authentication.test.js` unchanged.
 
@@ -1109,6 +1112,10 @@ Decided:
   Phase 2 wherever it exists, and the migration that graduates it copies
   `users.password`. No dual write (§4.5).
 - `/update-session` is disabled.
+- Personal Access Tokens are `better-auth` only; `legacy` keeps rejecting
+  `Bearer` and never loads Better Auth. A token gets the staff token
+  blocklist and cannot read or regenerate a staff token, whatever its scopes
+  allow (Phase 4).
 
 Open:
 

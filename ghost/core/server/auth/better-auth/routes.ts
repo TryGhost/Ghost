@@ -24,6 +24,12 @@ export const ROUTES = {
   // ghostDeviceVerification plugin
   deviceVerificationSend: '/device-verification/send',
   deviceVerificationVerify: '/device-verification/verify',
+  // apiKey plugin; verification is server-only
+  apiKeyCreate: '/api-key/create',
+  apiKeyGet: '/api-key/get',
+  apiKeyUpdate: '/api-key/update',
+  apiKeyDelete: '/api-key/delete',
+  apiKeyList: '/api-key/list',
 } as const;
 
 /** ghostDeviceVerification's paths, which an unverified session may use */

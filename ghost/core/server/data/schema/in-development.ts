@@ -21,7 +21,7 @@ import schema from './schema';
  * Code that reads or writes these tables must stay dormant wherever the tables
  * are not created.
  */
-export const IN_DEVELOPMENT_TABLES: string[] = ['user_two_factors'];
+export const IN_DEVELOPMENT_TABLES: string[] = ['user_two_factors', 'api_tokens'];
 
 export function isInDevelopmentTable(tableName: string): boolean {
   return IN_DEVELOPMENT_TABLES.includes(tableName);
