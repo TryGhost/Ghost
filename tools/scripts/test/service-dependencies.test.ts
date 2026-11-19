@@ -467,6 +467,28 @@ it('allows same-service code, explicit types, approved libraries and root wiring
   assert.equal(f.run('err').status, 0);
 });
 
+it('allows the legacy clock path and the kernel clock under source and built resolution', (t) => {
+  const f = fixture(t, {
+    [`${alpha}/index.ts`]: 'export {};',
+    [`${alpha}/implementation.ts`]:
+      "import '../../../shared/clock'; import '@tryghost/kernel/clock';",
+    'ghost/core/shared/clock.ts': 'export const getUnixTime = () => 0;',
+    'kernel/src/clock.ts': 'export const toUnixTime = () => 0;',
+    'kernel/build/clock.js': 'exports.toUnixTime = () => 0;',
+  });
+  const source = f.graph();
+  assert.deepEqual(violations(source), []);
+  assert.ok(edges(source).some(([, , to]) => to === 'ghost/core/shared/clock.ts'));
+  const result = f.run('json', services, [], {
+    ...process.env,
+    GHOST_DEPENDENCY_RESOLUTION: 'built',
+  });
+  assert.equal(result.status, 0, result.stderr);
+  const built: ICruiseResult = JSON.parse(result.stdout);
+  assert.deepEqual(violations(built), []);
+  assert.ok(edges(built).some(([, , to]) => to === 'kernel/build/clock.js'));
+});
+
 it('sees type-only imports and leaves them out of the runtime dependency rules', (t) => {
   const imports = {
     'declaration.ts':
