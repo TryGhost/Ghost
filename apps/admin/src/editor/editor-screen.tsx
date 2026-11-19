@@ -14,6 +14,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { AdminLink } from '@/shared/admin-link';
 import { usePresence } from '@/shared/presence/use-presence';
 import { PresenceAvatars } from '@/shared/presence/presence-avatars';
+import { useEditingLockPrototype } from '@/shared/presence/editing-lock-prototype';
+import { EditingLockPrototypeEditorAvatar } from '@/shared/presence/editing-lock-prototype-avatar';
 import { getPostListReturnUrl } from '@/posts/api';
 import { reloadAdmin } from '@/auth/api';
 import { NotFound } from '@/shared/not-found';
@@ -198,6 +200,10 @@ function EditorContent({
     : undefined;
   const presence = usePresence(presenceResource ? [presenceResource] : [], presenceResource);
   const showPresence = useFeatureFlag('editorPresence');
+  const editingLock = useEditingLockPrototype(
+    postType === 'post' ? session.persistedId : undefined,
+  );
+  const isLocked = editingLock.locked;
   const [tkCount, setTkCount] = useState(0);
   const chromeEntrance = useScreenEntrance();
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
@@ -206,11 +212,11 @@ function EditorContent({
   const refusedEntry = useRefusedEntry();
   const changeOpenFlow = useCallback(
     (flow: OpenFlow) => {
-      if (flow === 'none' || !refusedEntry.hold()) {
+      if (flow === 'none' || (!isLocked && !refusedEntry.hold())) {
         setOpenFlow(flow);
       }
     },
-    [refusedEntry],
+    [isLocked, refusedEntry],
   );
   const openPublishFlow = useCallback(() => changeOpenFlow('publish'), [changeOpenFlow]);
   const openUpdateFlow = useCallback(() => changeOpenFlow('update'), [changeOpenFlow]);
@@ -256,8 +262,8 @@ function EditorContent({
     statusRecord.emailStatus === 'failed';
   // The panel opens as the writer last left it; restored open, it is in place from the first paint.
   const settingsMemory = useSettingsOpen();
-  const [settingsOpen, setSettingsOpen] = useState(settingsMemory.openAtStart);
-  const [settingsPresent, setSettingsPresent] = useState(settingsMemory.openAtStart);
+  const [settingsOpen, setSettingsOpen] = useState(!isLocked && settingsMemory.openAtStart);
+  const [settingsPresent, setSettingsPresent] = useState(!isLocked && settingsMemory.openAtStart);
   const [settingsReveal, setSettingsReveal] = useState<SettingsFieldReveal | null>(null);
   // From a toggle until everything moving with the panel has arrived. Meanwhile
   // the editor sizes Koenig's breakout cards from the moving layout.
@@ -340,6 +346,9 @@ function EditorContent({
   }, []);
   const { toggled: settingsToggled } = settingsMemory;
   const flipSettings = useCallback(() => {
+    if (isLocked) {
+      return;
+    }
     if (settingsOpen && refusedEntry.hold()) {
       return;
     }
@@ -350,7 +359,7 @@ function EditorContent({
     // Only the writer's own toggle is remembered, never a reveal's open.
     settingsToggled(!settingsOpen);
     setSettingsOpen((open) => !open);
-  }, [refusedEntry, settingsOpen, settingsToggled]);
+  }, [isLocked, refusedEntry, settingsOpen, settingsToggled]);
   const toggleSettings = useCallback(() => {
     settingsToggleRef.current?.focus();
     flipSettings();
@@ -368,7 +377,7 @@ function EditorContent({
       }
       flipSettings();
     }, [flipSettings, settingsOpen]),
-    openFlow === 'none',
+    openFlow === 'none' && !isLocked,
   );
   const postEditorRef = useRef<PostEditorHandle>(null);
   // Below the small breakpoint the header's controls sit in the editor's bottom bar.
@@ -405,7 +414,8 @@ function EditorContent({
   // The chrome stays while the settings panel is out, or the status line reports
   // a failed save or a failed newsletter.
   const writingFocus = useWritingFocus({
-    blocked: settingsOpen || settingsMoving || session.state.kind === 'error' || didEmailFail,
+    blocked:
+      isLocked || settingsOpen || settingsMoving || session.state.kind === 'error' || didEmailFail,
     writingAreaRef,
   });
   const leaveGuard = useEditorLeaveGuard(session, postType);
@@ -430,6 +440,7 @@ function EditorContent({
           : 'bg-background/80 backdrop-blur-sm'
       }
       data-testid={settingsMenuToggle}
+      disabled={isLocked}
       label="Settings"
       tooltip={false}
       iconOnly
@@ -488,23 +499,38 @@ function EditorContent({
             {/* The back link stays while the writer types, so the way out is always in view. */}
             <EditorHeader editorReturn={editorReturn} postType={postType} onBack={holdBack}>
               {editorReturn?.kind !== 'analytics' ||
+              isLocked ||
               didEmailFail ||
               session.state.kind === 'error' ? (
-                <Box className="min-w-0" data-writing-focus={writingFocus}>
+                <Inline
+                  align="start"
+                  className="min-w-0"
+                  data-writing-focus={writingFocus}
+                  gap="sm"
+                >
+                  {isLocked && (
+                    <LucideIcon.LockKeyhole
+                      aria-label="Editing locked"
+                      className="mt-2.5 size-3.5 shrink-0 text-muted-foreground"
+                      role="img"
+                    />
+                  )}
                   <EditorStatus
                     isDirty={session.isDirty()}
                     pendingSave={session.pendingSave}
                     record={statusRecord}
                     state={session.state}
-                    onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
-                    onOpenUpdateFlow={canPublish ? openUpdateFlow : undefined}
+                    onOpenPublishFlow={offersEmailRetry && !isLocked ? openPublishFlow : undefined}
+                    onOpenUpdateFlow={canPublish && !isLocked ? openUpdateFlow : undefined}
                     onRetrySave={session.retrySave}
                   />
-                </Box>
+                </Inline>
               ) : null}
               <Box className="col-start-3 ml-auto" data-writing-focus={writingFocus}>
                 <PageHeader.ActionGroup className="gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
-                  {showPresence ? (
+                  {editingLock.isDemoPost && session.persistedId ? (
+                    <EditingLockPrototypeEditorAvatar postId={session.persistedId} />
+                  ) : showPresence ? (
                     <PresenceAvatars active={presence.active} resourceType={postType} />
                   ) : null}
                   <EditorHeaderActions
@@ -514,6 +540,7 @@ function EditorContent({
                     openFlow={openFlow}
                     post={publishPost}
                     postType={postType}
+                    readOnly={isLocked}
                     revealInvalidField={revealInvalidField}
                     session={session}
                     siteUrl={cardConfig.siteUrl}
@@ -543,6 +570,7 @@ function EditorContent({
                 font={editorFont.font}
                 handleRef={postEditorRef}
                 postType={postType}
+                readOnly={isLocked}
                 settingsMoving={settingsMoving}
                 showExcerpt={showExcerpt}
                 titleAndFeatureImageHidden={

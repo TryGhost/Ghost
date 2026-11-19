@@ -55,6 +55,8 @@ export interface PostEditorProps {
   cardConfig: PostCardConfig;
   showExcerpt: boolean;
   autofocusTitle?: boolean;
+  /** Prototype lock: disables the writing surface, leaving the footer's actions available. */
+  readOnly?: boolean;
   onTitleChange: (title: string) => void;
   onTitleBlur?: () => void;
   onExcerptChange: (excerpt: string) => void;
@@ -193,6 +195,7 @@ export function PostEditor({
   cardConfig,
   showExcerpt,
   autofocusTitle = false,
+  readOnly = false,
   onTitleChange,
   onTitleBlur,
   onExcerptChange,
@@ -227,6 +230,12 @@ export function PostEditor({
 
   useAutosize(titleRef, title, font);
   useAutosize(excerptRef, excerpt, font);
+
+  // Inert blocks all of Koenig's nested cards as well as the title and image
+  // controls. Keep it on the writing area so Preview in the footer still works.
+  useLayoutEffect(() => {
+    writingAreaRef.current?.toggleAttribute('inert', readOnly);
+  }, [readOnly]);
 
   // Koenig's breakout cards are sized in viewport units less
   // `--kg-breakout-adjustment`, the width beside the writing area. The settings
@@ -446,7 +455,10 @@ export function PostEditor({
           className={cn(
             'min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] [--kg-breakout-adjustment:var(--editor-breakout-inset,0px)] max-[500px]:px-8 lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))] lg:[--kg-breakout-adjustment:calc(var(--editor-breakout-inset,0px)+(var(--editor-settings-width,0px)+var(--spacing)*3)*var(--editor-settings-progress,0))]',
             chromeEntrance && 'screen-enter-rise',
+            'transition-opacity duration-200 motion-reduce:transition-none',
+            readOnly && 'opacity-50',
           )}
+          data-editing-locked={readOnly || undefined}
           gap="none"
           onDragOver={(event) => event.preventDefault()}
           onDrop={onPaneDrop}

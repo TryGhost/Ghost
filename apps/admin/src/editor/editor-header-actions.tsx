@@ -183,6 +183,8 @@ export interface EditorHeaderActionsProps {
   revealInvalidField: () => InvalidField | null;
   /** The editor's bottom bar, which holds the controls below the small breakpoint. */
   bottomBar: HTMLElement | null;
+  /** Prototype lock: preview stays available, every write stays unavailable. */
+  readOnly?: boolean;
 }
 
 /**
@@ -201,6 +203,7 @@ export function EditorHeaderActions({
   offersEmailRetry,
   revealInvalidField,
   bottomBar: bottomBarSlot,
+  readOnly = false,
 }: EditorHeaderActionsProps) {
   const bottomBar = useSmallScreen() ? bottomBarSlot : null;
   const { persistedId } = session;
@@ -209,7 +212,11 @@ export function EditorHeaderActions({
   const feedback = useSaveFeedback({ session, displayName: postType, siteUrl });
   const contributorSave = useSaveButtonPhase(feedback.save, session.contentKey);
 
-  useSaveShortcut(() => void feedback.save());
+  useSaveShortcut(() => {
+    if (!readOnly) {
+      void feedback.save();
+    }
+  });
 
   // Core 301-redirects a published or sent post away from /p/:uuid/ and drops the
   // audience query, so a preview is offered only while the post is a draft.
@@ -234,10 +241,10 @@ export function EditorHeaderActions({
   }, [isDraft, revealInvalidField, session]);
 
   const openPreview = useCallback(() => {
-    if (!refuseInvalid()) {
+    if (readOnly || !refuseInvalid()) {
       setPreviewOpen(true);
     }
-  }, [refuseInvalid]);
+  }, [readOnly, refuseInvalid]);
 
   usePreviewShortcut(
     useCallback(() => {
@@ -253,11 +260,11 @@ export function EditorHeaderActions({
 
   // A dirty draft is saved before previewing; every other post is left as it is.
   const saveBeforePreview = useCallback(async () => {
-    if (session.publishTime.status !== 'draft' || !session.isDirty()) {
+    if (readOnly || session.publishTime.status !== 'draft' || !session.isDirty()) {
       return;
     }
     await requireSaved(session.saveExplicit());
-  }, [session]);
+  }, [readOnly, session]);
 
   const isSaving =
     session.state.kind === 'preparing' ||
@@ -271,15 +278,17 @@ export function EditorHeaderActions({
   }
 
   const preview: HeaderPreviewProps = {
-    subjectEditor: {
-      value: session.settings.email_subject,
-      fallback: session.title,
-      hasUnsavedChanges: session.isDirty(),
-      isSaving,
-      saveError: stateSaveError(session.state),
-      onChange: (value) => session.stageSettings({ email_subject: value }),
-      onCommit: session.commitSettings,
-    },
+    subjectEditor: readOnly
+      ? undefined
+      : {
+          value: session.settings.email_subject,
+          fallback: session.title,
+          hasUnsavedChanges: session.isDirty(),
+          isSaving,
+          saveError: stateSaveError(session.state),
+          onChange: (value) => session.stageSettings({ email_subject: value }),
+          onCommit: session.commitSettings,
+        },
     isPost: postType === 'post',
     post,
     newsletterSlug: post.newsletter ?? undefined,
@@ -313,7 +322,7 @@ export function EditorHeaderActions({
                 kind: 'action',
                 id: 'save',
                 label: SAVE_LABELS[contributorSave.phase],
-                disabled: isSaving,
+                disabled: readOnly || isSaving,
                 plain: true,
                 onSelect: () => void contributorSave.run(),
               },
@@ -332,6 +341,7 @@ export function EditorHeaderActions({
           post={post}
           preview={preview}
           previewItem={previewItem}
+          readOnly={readOnly}
           refuseInvalid={refuseInvalid}
           revealInvalidField={revealInvalidField}
           session={session}
@@ -352,6 +362,7 @@ interface PublishActionsProps {
   tkCount: number;
   isDraft: boolean;
   isSaving: boolean;
+  readOnly: boolean;
   offersEmailRetry: boolean;
   openFlow: OpenFlow;
   preview: HeaderPreviewProps;
@@ -376,6 +387,7 @@ function PublishActions({
   tkCount,
   isDraft,
   isSaving,
+  readOnly,
   offersEmailRetry,
   openFlow,
   preview,
@@ -440,17 +452,17 @@ function PublishActions({
   }, [onOpenFlow]);
   const { onOpenChange: setPreviewOpen } = preview;
   const openPublishFlow = useCallback(() => {
-    if (refuseInvalid()) {
+    if (readOnly || refuseInvalid()) {
       return;
     }
     setOpenedFromPreview(false);
     onOpenFlow('publish');
-  }, [onOpenFlow, refuseInvalid]);
+  }, [onOpenFlow, readOnly, refuseInvalid]);
   const openUpdateFlow = useCallback(() => {
-    if (!refuseInvalid()) {
+    if (!readOnly && !refuseInvalid()) {
       onOpenFlow('update');
     }
-  }, [onOpenFlow, refuseInvalid]);
+  }, [onOpenFlow, readOnly, refuseInvalid]);
   // The field and the status line are behind the preview, so a refusal from its
   // Publish waits for it to close and takes the focus it would hand back.
   const refuseOnPreviewClose = useRef(false);
@@ -475,6 +487,9 @@ function PublishActions({
     [closeFlow, setPreviewOpen],
   );
   const publishFromPreview = useCallback(() => {
+    if (readOnly) {
+      return;
+    }
     const invalid = session.invalidField();
     // The subject is edited in the preview, which names its rule beside it, so the
     // preview stays open; any other field is behind it and is refused once it closes.
@@ -489,7 +504,7 @@ function PublishActions({
     setOpenedFromPreview(true);
     setPreviewOpen(false);
     onOpenFlow('publish');
-  }, [onOpenFlow, session, setPreviewOpen]);
+  }, [onOpenFlow, readOnly, session, setPreviewOpen]);
 
   // The chord stays off while the preview is open: the preview's own Publish
   // button is the only way into the flow from there.
@@ -559,7 +574,7 @@ function PublishActions({
           kind: 'action',
           id: 'publish',
           label: 'Publish',
-          disabled: !inputs.isReady,
+          disabled: readOnly || !inputs.isReady,
           emphasis: true,
           shortcut: publishShortcutLabel(),
           onSelect: openPublishFlow,
@@ -575,7 +590,7 @@ function PublishActions({
                 label: unpublishLabel,
                 // The update flow is built from the publish inputs; a click before
                 // they load would open it unasked once they do.
-                disabled: !inputs.isReady,
+                disabled: readOnly || !inputs.isReady,
                 onSelect: openUpdateFlow,
               } satisfies HeaderItem,
             ]
@@ -584,7 +599,7 @@ function PublishActions({
           kind: 'action',
           id: 'update',
           label: UPDATE_LABELS[update.phase],
-          disabled: !session.isDirty() || isSaving,
+          disabled: readOnly || !session.isDirty() || isSaving,
           emphasis: true,
           onSelect: () => {
             // The save refuses an invalid field itself, naming it in the status
@@ -603,7 +618,7 @@ function PublishActions({
           {...preview}
           animate={openFlow !== 'publish'}
           fallbackNewsletterSlug={flowNewsletterSlug ?? draftNewsletter.slug}
-          publishDisabled={!inputs.isReady}
+          publishDisabled={readOnly || !inputs.isReady}
           onCloseAutoFocus={previewCloseAutoFocus}
           onNewsletterPick={draftNewsletter.remember}
           onOpenChange={changePreviewOpen}

@@ -10,6 +10,8 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
 import { PresenceAvatars } from '@/shared/presence/presence-avatars';
+import { useEditingLockPrototype } from '@/shared/presence/editing-lock-prototype';
+import { EditingLockPrototypeListAvatar } from '@/shared/presence/editing-lock-prototype-avatar';
 import type { ActivePresence } from '@/shared/presence/presence-api';
 import { AdminLink } from '@/shared/admin-link';
 import { FadingText } from '@/shared/fading-text';
@@ -172,6 +174,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
     ref,
   ) {
     const [isHovered, setIsHovered] = useState(false);
+    const editingLock = useEditingLockPrototype(resource === 'posts' ? post.id : undefined);
 
     const metaParts = getPostMetaParts(post, { timezone });
     const dateTooltip = getPostDateTooltip(post, { timezone });
@@ -313,7 +316,9 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
               </Stack>
             </RowLink>
           </RowPrimaryAction>
-          {presenceActive && presenceActive.length > 0 ? (
+          {editingLock.locked ? (
+            <EditingLockPrototypeListAvatar className="relative z-10" />
+          ) : !editingLock.isDemoPost && presenceActive && presenceActive.length > 0 ? (
             <PresenceAvatars
               active={presenceActive}
               // Under 360px the title has no room left to give.
@@ -348,7 +353,8 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                   'ms-8',
                   // Below 1200px the metrics are hidden, so with avatars beside it the
                   // action needs no extra separation and the title keeps the room.
-                  presenceActive && presenceActive.length > 0 && 'max-[1200px]:ms-2',
+                  (editingLock.locked || (presenceActive && presenceActive.length > 0)) &&
+                    'max-[1200px]:ms-2',
                   'text-muted-foreground hover:bg-background hover:text-foreground',
                   isHovered && 'bg-background',
                 )}
