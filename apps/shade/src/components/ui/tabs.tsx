@@ -337,6 +337,8 @@ interface TabsDropdownTriggerProps extends Omit<
   children: React.ReactNode;
 }
 
+const MENU_FOCUS_RETURN_MS = 1000;
+
 interface TabsMenuTabProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger> {
   'data-state'?: string;
   onTabKeyDown?: React.KeyboardEventHandler<HTMLButtonElement>;
@@ -367,9 +369,19 @@ const TabsMenuTab = React.forwardRef<HTMLButtonElement, TabsMenuTabProps>(
     // Set once the menu opens, so the focus it returns on closing can be told apart.
     const menuOpenedRef = React.useRef(false);
     React.useEffect(() => {
-      if (menuOpen && activationMode === 'automatic') {
-        menuOpenedRef.current = true;
+      if (menuOpen) {
+        menuOpenedRef.current = activationMode === 'automatic';
+        return;
       }
+      if (!menuOpenedRef.current) {
+        return;
+      }
+      // Radix returns focus once the menu's closing animation ends. A menu that hasn't by now
+      // closed without returning it (a right-click outside, or a cancelled onCloseAutoFocus).
+      const timeout = window.setTimeout(() => {
+        menuOpenedRef.current = false;
+      }, MENU_FOCUS_RETURN_MS);
+      return () => window.clearTimeout(timeout);
     }, [menuOpen, activationMode]);
 
     return (
@@ -444,7 +456,8 @@ const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTrig
                 admin7Design,
                 size: variant === 'button-sm' ? 'compact' : 'default',
               }),
-            'cursor-pointer',
+            // Fill the wrapper, which carries the hover background, in a stretched tab list.
+            'w-full cursor-pointer',
             className,
           )}
           disabled={disabled}

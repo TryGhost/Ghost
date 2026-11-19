@@ -272,7 +272,8 @@ describe('Tabs Component', () => {
 
     // In browsers, the menu cancels the pointerdown that opens it, so no mousedown follows.
     const clickOpen = (tab: HTMLElement) => {
-      fireEvent.pointerDown(tab, { button: 0, ctrlKey: false });
+      // A cancelled pointerdown is what stops browsers firing the mousedown that selects a tab.
+      expect(fireEvent.pointerDown(tab, { button: 0, ctrlKey: false })).toBe(false);
       expect(screen.getByRole('menu')).toBeTruthy();
     };
 
@@ -438,6 +439,27 @@ describe('Tabs Component', () => {
       act(() => elsewhere.focus());
       act(() => tab.focus());
 
+      expect(document.activeElement).toBe(tab);
+      expect(tab.getAttribute('aria-selected')).toBe('true');
+    });
+
+    it('selects the tab when focused from nowhere after its menu closed without returning focus', async () => {
+      render(<DropdownTabs keepFocusOnClose />);
+
+      const tab = screen.getByRole('tab', { name: 'Members' });
+      clickOpen(tab);
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+      await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+      act(() => (document.activeElement as HTMLElement | null)?.blur());
+      // Past the time the menu has to return focus.
+      await act(
+        () =>
+          new Promise((resolve) => {
+            setTimeout(resolve, 1100);
+          }),
+      );
+
+      act(() => tab.focus());
       expect(document.activeElement).toBe(tab);
       expect(tab.getAttribute('aria-selected')).toBe('true');
     });

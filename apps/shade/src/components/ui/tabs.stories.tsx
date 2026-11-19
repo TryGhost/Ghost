@@ -284,12 +284,18 @@ export const CountBackgrounds: Story = {
 
 const MEMBER_METRICS = { free: 'Free members', paid: 'Paid members' } as const;
 
-const DropdownTabs = ({ variant }: { variant: 'button' | 'underline' }) => {
+const DropdownTabs = ({
+  orientation,
+  variant,
+}: {
+  orientation?: 'horizontal' | 'vertical';
+  variant: 'button' | 'underline';
+}) => {
   const [tab, setTab] = useState('visitors');
   const [metric, setMetric] = useState<keyof typeof MEMBER_METRICS>('free');
   return (
-    <Tabs value={tab} variant={variant} onValueChange={setTab}>
-      <TabsList>
+    <Tabs orientation={orientation} value={tab} variant={variant} onValueChange={setTab}>
+      <TabsList className={orientation === 'vertical' ? 'w-48 flex-col items-stretch' : undefined}>
         <TabsTrigger value="visitors">Visitors</TabsTrigger>
         <DropdownMenu>
           <TabsDropdownTrigger value="members">
@@ -336,13 +342,14 @@ export const WithDropdown: Story = {
     <div className="flex flex-col gap-6">
       <DropdownTabs variant="button" />
       <DropdownTabs variant="underline" />
+      <DropdownTabs orientation="vertical" variant="button" />
     </div>
   ),
   parameters: {
     docs: {
       description: {
         story:
-          'Wrap TabsDropdownTrigger in a DropdownMenu when a tab picks between related views. The tab opens the menu, choosing an item selects the tab, and arrow keys reach it like any other tab.',
+          'Wrap TabsDropdownTrigger in a DropdownMenu when a tab picks between related views. The tab opens the menu, choosing an item selects the tab, and arrow keys reach it like any other tab. In a vertical list, ArrowDown moves on; Enter or Space opens the menu.',
       },
     },
   },
