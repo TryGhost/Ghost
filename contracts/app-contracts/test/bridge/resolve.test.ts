@@ -46,10 +46,10 @@ describe('checking an Admin API request', () => {
     expect(root.href).toBe('https://site.example/ghost/api/admin/');
   });
 
-  it('names the path within the API, as the allowlist read it, and the scope that allows it', () => {
+  it('names the path within the API, as the allowlist read it, and the group that allows it', () => {
     const result = check('/posts/?limit=5');
     expect(result).toMatchObject({ pathname: '/posts/' });
-    expect(result.problem === undefined && result.scope.name).toBe('posts:read');
+    expect(result.problem === undefined && result.group.scope).toBe('post:browse');
     expect(check('/')).toMatchObject({ pathname: '/' });
   });
 
@@ -185,7 +185,7 @@ describe('checking an Admin API request', () => {
     expect(check('/posts/slug/v4/').problem).toBeUndefined();
   });
 
-  it('allows only the query parameters a write scope lists, by exact name', () => {
+  it('allows only the query parameters a write group lists, by exact name', () => {
     const id = '5ddc9141c35e7700383b2937';
     for (const [method, path, parameter] of [
       ['PUT', `/posts/${id}/?newsletter=weekly`, 'newsletter'],
