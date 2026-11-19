@@ -507,6 +507,82 @@ describe('EditorPresenceService lease', function () {
     );
   });
 
+  describe('watch', function () {
+    const watch = (tab: string) => ({ editing, tab, lease: 'watch' as const });
+
+    it('finds nobody holding a document that tabs only watch', async function () {
+      const { service, store, advance } = build({ leaseWindowMs: LEASE_WINDOW });
+      const first = await service.poll(USER_1, watch(TAB_1));
+      advance(1_000);
+      const second = await service.poll(USER_2, watch(TAB_2));
+      assert.equal(first.lease, null);
+      assert.equal(second.lease, null);
+      assert.deepEqual(await store.claims(), []);
+      // Watching is still being present.
+      assert.deepEqual(
+        second.active.map((entry) => entry.userId),
+        [USER_1],
+      );
+    });
+
+    it('tells a watching tab who holds the document, without queueing it', async function () {
+      const { service, store, advance } = build({ leaseWindowMs: LEASE_WINDOW });
+      await service.poll(USER_1, hold(TAB_1));
+      advance(1_000);
+      const watching = await service.poll(USER_2, watch(TAB_2));
+      assert.deepEqual(watching.lease, { userId: USER_1, mine: false });
+      assert.equal((await store.claims()).length, 1);
+    });
+
+    it('hands nobody the lease when the holder leaves, until a tab asks to hold', async function () {
+      const { service, advance } = build({ leaseWindowMs: LEASE_WINDOW });
+      await service.poll(USER_1, hold(TAB_1));
+      advance(1_000);
+      await service.poll(USER_2, watch(TAB_2));
+      await service.leave(USER_1, { resource: editing, tab: TAB_1 });
+      advance(1_000);
+      assert.equal((await service.poll(USER_2, watch(TAB_2))).lease, null);
+      assert.deepEqual((await service.poll(USER_2, hold(TAB_2))).lease, {
+        userId: USER_2,
+        mine: true,
+      });
+    });
+
+    it('gives a place up when its tab goes back to watching', async function () {
+      const { service, store, advance } = build({ leaseWindowMs: LEASE_WINDOW });
+      await service.poll(USER_1, hold(TAB_1));
+      advance(1_000);
+      await service.poll(USER_2, hold(TAB_2));
+      advance(1_000);
+      const back = await service.poll(USER_2, watch(TAB_2));
+      assert.deepEqual(back.lease, { userId: USER_1, mine: false });
+      assert.equal((await store.claims()).length, 1);
+
+      // So it is not next in line once the holder has gone.
+      await service.leave(USER_1, { resource: editing, tab: TAB_1 });
+      advance(1_000);
+      assert.equal((await service.poll(USER_2, watch(TAB_2))).lease, null);
+    });
+
+    it('gives the lease to the first of two tabs that ask at nearly the same time', async function () {
+      const { service, advance } = build({ leaseWindowMs: LEASE_WINDOW });
+      await service.poll(USER_1, watch(TAB_1));
+      await service.poll(USER_2, watch(TAB_2));
+      advance(5_000);
+      const winner = await service.poll(USER_2, hold(TAB_2));
+      advance(1);
+      const loser = await service.poll(USER_1, hold(TAB_1));
+      assert.deepEqual(winner.lease, { userId: USER_2, mine: true });
+      assert.deepEqual(loser.lease, { userId: USER_2, mine: false });
+    });
+
+    it('records the mode a poll asked in', async function () {
+      const { service, recorded } = build({ leaseWindowMs: LEASE_WINDOW });
+      await service.poll(USER_1, watch(TAB_1));
+      assert.equal(recorded[0].value.lease, 'watch');
+    });
+  });
+
   it('rejects a lease with no document being edited', async function () {
     const { service } = build();
     await assert.rejects(

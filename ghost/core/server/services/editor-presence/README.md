@@ -110,13 +110,16 @@ the server time:
 ```
 
 `lease` is optional and needs `editing`. `"hold"` queues the caller's tab for
-that document, or keeps its place, and `"take"` moves it to the front. The
+that document, or keeps its place, and `"take"` moves it to the front.
+`"watch"` asks who holds the document without queueing: it gives up any place
+the caller's tab held, so a tab that only reads is never handed the lease. The
 response then carries `lease`: the user whose tab holds the document, and
-whether that tab is the caller's. `mine` is false for the caller's other tabs,
-so a client can tell "open in another of your tabs" from "held by someone
-else" by comparing `userId` with its own. A request without `lease` neither
-queues nor receives one, so clients that do not ask are unaffected and are
-never treated as holders.
+whether that tab is the caller's, or `null` when a watching tab finds that
+nobody holds it. `mine` is false for the caller's other tabs, so a client can
+tell "open in another of your tabs" from "held by someone else" by comparing
+`userId` with its own. A request without `lease` neither queues nor receives
+one, so clients that do not ask are unaffected and are never treated as
+holders.
 
 `POST /ghost/api/admin/presence/leave/` with `{ "presence": [{ "resource": { "id": "…", "type": "post" }, "tab": "…" }] }`
 removes the caller's member for that tab immediately, together with its place
@@ -167,7 +170,7 @@ saving never depend on presence, and clients treat 503 as a signal to back off.
 
 `presence-poll` and `presence-leave` carry `feature: presence`, the store kind,
 duration and outcome; a poll also says which lease it asked for (`hold`,
-`take` or `none`).
+`take`, `watch` or `none`).
 `presence-degraded` records each store failure with the operation (`touch`,
 `read`, `remove`, `claim`, `claims`, `release`) and a reason: `noperm`, `offline` (disconnected with the
 offline queue off), `timeout`, a socket error code, the first word of a Redis

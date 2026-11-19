@@ -33,6 +33,18 @@ Object {
 }
 `;
 
+exports[`Presence API lets a tab watch a document without holding it 1: [body] 1`] = `
+Object {
+  "presence": Array [
+    Object {
+      "active": Array [],
+      "lease": null,
+      "serverTime": Any<Number>,
+    },
+  ],
+}
+`;
+
 exports[`Presence API records the caller and reports nobody else 1: [body] 1`] = `
 Object {
   "presence": Array [
