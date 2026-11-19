@@ -244,8 +244,13 @@ export function EditingLockPrototypeAvatars({
 }) {
   const { editorId, present } = useEditingLockPrototype(postId);
   const { data: currentUser } = useCurrentUser();
+  if (present.length === 0) {
+    return null;
+  }
   const people: PrototypePerson[] = [
-    { id: 'you', name: currentUser?.name ?? 'You', image: currentUser?.profile_image },
+    ...(surface === 'editor'
+      ? [{ id: 'you', name: currentUser?.name ?? 'You', image: currentUser?.profile_image }]
+      : []),
     ...PROTOTYPE_STAFF.filter((person) => present.includes(person.id)),
   ];
   const ordered = [
@@ -263,7 +268,8 @@ export function EditingLockPrototypeAvatars({
       {ordered.map((person, index) => (
         <Box
           key={person.id}
-          className={cn('relative', index > 0 && '-ml-2')}
+          className={cn('relative size-7 bg-background', index > 0 && '-ml-2')}
+          radius="full"
           style={{ zIndex: ordered.length - index }}
         >
           {surface === 'editor' && person.id !== 'you' ? (

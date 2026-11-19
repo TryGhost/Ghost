@@ -357,7 +357,8 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                   'ms-8',
                   // Below 1200px the metrics are hidden, so with avatars beside it the
                   // action needs no extra separation and the title keeps the room.
-                  (editingLock.isDemoPost || (presenceActive && presenceActive.length > 0)) &&
+                  ((editingLock.isDemoPost && editingLock.present.length > 0) ||
+                    (presenceActive && presenceActive.length > 0)) &&
                     'max-[1200px]:ms-2',
                   'text-muted-foreground hover:bg-background hover:text-foreground',
                   isHovered && 'bg-background',
