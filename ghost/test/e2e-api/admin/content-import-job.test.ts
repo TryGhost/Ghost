@@ -110,6 +110,8 @@ describe('Site content import delivery', function () {
           job.uploadKey,
           /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
         );
+        // The upload is removed after the email is sent
+        await execute.firstCall.returnValue;
         sinon.assert.calledOnceWithExactly(remove, job.uploadKey);
         await assert.rejects(storage.readStream({ path: job.uploadKey }));
         const post = await models.Post.findOne(

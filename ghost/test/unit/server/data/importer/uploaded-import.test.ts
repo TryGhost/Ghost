@@ -65,7 +65,7 @@ describe('Uploaded site imports', function () {
             type === 'admin' ? 'https://example.com/ghost/' : 'https://example.com/',
           ),
       },
-      logging: { info: sinon.stub(), error: sinon.stub() },
+      logging: { info: sinon.stub(), warn: sinon.stub(), error: sinon.stub() },
     };
     return { manager: new ImportManager(deps), deps };
   }
@@ -340,7 +340,7 @@ describe('Uploaded site imports', function () {
     await first.manager.executeImport(queuedJob(first));
     assert.deepEqual(await fs.readdir(storage.storagePath), []);
   });
-  for (const stage of ['missing object', 'read', 'write', 'extraction', 'parsing', 'import']) {
+  for (const stage of ['read', 'write', 'extraction', 'parsing', 'import']) {
     it(`reports ${stage} failure once and cleans downloaded, extracted and stored files`, async function () {
       const first = subject();
       const { manager, deps } = first;
@@ -351,9 +351,6 @@ describe('Uploaded site imports', function () {
       const local = sinon.spy(fs, 'mkdtemp');
       const extract = sinon.spy(manager, 'extractZip');
       const failure = new Error(`${stage} failed`);
-      if (stage === 'missing object') {
-        await storage.delete(job.uploadKey);
-      }
       if (stage === 'read') {
         const read = storage.readStream.bind(storage);
         sinon.stub(storage, 'readStream').callsFake(async (options) => {
@@ -437,6 +434,70 @@ describe('Uploaded site imports', function () {
       }
     });
   }
+  it('reports an upload that cannot be opened and still removes it', async function () {
+    const first = subject();
+    const { manager, deps } = first;
+    await manager.importFromFile(await archive({ 'data.json': json }), {
+      user: { email: 'owner@example.com' },
+    });
+    const job = queuedJob(first);
+    sinon.stub(storage, 'readStream').rejects(new Error('EACCES: permission denied'));
+
+    assert.equal(await manager.executeImport(job), undefined);
+
+    sinon.assert.calledOnceWithMatch(deps.mailer.send, {
+      subject: 'Your content import was unsuccessful',
+    });
+    assert.deepEqual(await fs.readdir(storage.storagePath), []);
+  });
+
+  it('sends no second email when the job runs again after it finished', async function () {
+    const first = subject();
+    const { manager, deps } = first;
+    await manager.importFromFile(await archive({ 'data.json': json }), {
+      user: { email: 'owner@example.com' },
+    });
+    const job = queuedJob(first);
+    const imported = sinon.stub(manager, 'doImport').resolves({});
+    await manager.executeImport(job);
+
+    assert.equal(await manager.executeImport(job), undefined);
+
+    sinon.assert.calledOnce(imported);
+    sinon.assert.calledOnceWithMatch(deps.mailer.send, {
+      subject: 'Your content import has finished',
+    });
+  });
+
+  it('imports again when the job runs again after stopping while sending the email', async function () {
+    const first = subject();
+    const { manager, deps } = first;
+    await manager.importFromFile(await archive({ 'data.json': json }), {
+      user: { email: 'owner@example.com' },
+    });
+    const job = queuedJob(first);
+    sinon.stub(manager, 'doImport').resolves({});
+    let reachedEmail!: () => void;
+    const emailReached = new Promise<void>((resolve) => {
+      reachedEmail = resolve;
+    });
+    // The first send never settles, as when the process stops part way through it.
+    deps.mailer.send.onFirstCall().callsFake(() => {
+      reachedEmail();
+      return new Promise(() => {});
+    });
+    void manager.executeImport(job);
+    await emailReached;
+
+    assert.deepEqual(await manager.executeImport(job), {});
+
+    sinon.assert.calledTwice(deps.mailer.send);
+    sinon.assert.calledWithMatch(deps.mailer.send.secondCall, {
+      subject: 'Your content import has finished',
+    });
+    assert.deepEqual(await fs.readdir(storage.storagePath), []);
+  });
+
   it('rejects email failure without retrying, after deleting the upload and local files', async function () {
     const first = subject();
     const { manager, deps } = first;

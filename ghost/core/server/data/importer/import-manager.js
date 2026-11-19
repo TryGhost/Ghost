@@ -479,26 +479,22 @@ class ImportManager {
   }
 
   /**
-   * Read a stored upload back and load it, as the file it was uploaded as. The stored upload
-   * and the local copy of it are removed once it is loaded, or has failed to load, so nothing
-   * of it outlives this call but the extracted directory a loaded archive owns.
-   * @param {string} uploadKey
+   * Load a stored upload as the file it was uploaded as. The local copy of it is removed once
+   * it is loaded, or has failed to load, so nothing of it outlives this call but the extracted
+   * directory a loaded archive owns.
+   * @param {Promise<import('node:stream').Readable>} upload the stored upload, as it is opened
    * @param {string} fileName the name the file was uploaded with, which decides how it is read
    * @returns {Promise<LoadedImport>}
    */
-  async loadStoredUpload(uploadKey, fileName) {
+  async loadStoredUpload(upload, fileName) {
     let downloadDirectory;
     try {
       downloadDirectory = await fs.mkdtemp(path.join(os.tmpdir(), 'site-content-import-'));
       const downloadPath = path.join(downloadDirectory, 'upload');
-      await pipeline(
-        await this.importsStorage.readStream({ path: uploadKey }),
-        fs.createWriteStream(downloadPath),
-      );
+      await pipeline(await upload, fs.createWriteStream(downloadPath));
       return await this.loadFile({ name: fileName, path: downloadPath });
     } finally {
       await this.cleanUp(downloadDirectory);
-      await this.cleanUpUpload(uploadKey);
     }
   }
 
@@ -529,11 +525,25 @@ class ImportManager {
       returnImportedData: job.returnImportedData,
       importPersistUser: job.importPersistUser,
     };
+    const upload = this.importsStorage.readStream({ path: job.uploadKey });
+    const missing = await upload.then(
+      () => false,
+      (err) => err instanceof errors.NotFoundError,
+    );
+    if (missing) {
+      // The upload is only removed once the user has been emailed, so a job that runs
+      // again after that has nothing left to do.
+      this.logging.warn(
+        { system: { event: 'site_content_import.already_finished' } },
+        '[Background Job] site-content-import skipped: its upload was already removed',
+      );
+      return undefined;
+    }
     const startedAt = Date.now();
     this.logging.info('[Background Job] site-content-import started');
     try {
       const result = await this.processImport(
-        () => this.loadStoredUpload(job.uploadKey, job.fileName),
+        () => this.loadStoredUpload(upload, job.fileName),
         importOptions,
       );
       // processImport swallows import failures and resolves undefined,
@@ -562,6 +572,14 @@ class ImportManager {
         `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
       );
       throw err;
+    } finally {
+      // Closes the upload if the import stopped before reading it
+      await upload.then(
+        (stream) => stream.destroy(),
+        () => {},
+      );
+      // After the email, so a job cut short before it was sent still finds its upload
+      await this.cleanUpUpload(job.uploadKey);
     }
   }
 

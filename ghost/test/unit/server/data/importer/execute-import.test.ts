@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'fs-extra';
 import os from 'node:os';
 import path from 'node:path';
+import { Readable } from 'node:stream';
 import sinon from 'sinon';
 import { afterEach, describe, it } from 'vitest';
 
@@ -21,7 +22,11 @@ function subject(env = 'production') {
           type === 'admin' ? 'https://example.com/ghost/' : 'https://example.com/',
         ),
     },
-    logging: { info: sinon.stub(), error: sinon.stub() },
+    importsStorage: {
+      readStream: sinon.stub().callsFake(async () => Readable.from([])),
+      delete: sinon.stub().resolves(),
+    },
+    logging: { info: sinon.stub(), warn: sinon.stub(), error: sinon.stub() },
   };
   return { manager: new ImportManager(deps), deps };
 }
