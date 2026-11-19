@@ -1,3 +1,4 @@
+import type { AppFailureCode } from '@tryghost/app-contracts';
 import errors from '@tryghost/errors';
 import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
@@ -23,7 +24,6 @@ const MANIFESTS = 'app_installation_manifests';
 
 const HistoryManifestRow = DbAppInstallationManifest.pick({
   id: true,
-  manifest_url: true,
   source: true,
   requires_approval: true,
   created_at: true,
@@ -31,7 +31,9 @@ const HistoryManifestRow = DbAppInstallationManifest.pick({
 
 const ManifestContentRow = DbAppInstallationManifest.pick({ id: true, manifest: true });
 
-const ManifestDigestRow = DbAppInstallationManifest.pick({ digest: true });
+const DigestAndIconRow = DbAppInstallationManifest.pick({ digest: true, icon_data_url: true });
+
+const BackendKeyRow = DbAppInstallationManifest.pick({ backend_key_thumbprint: true });
 
 const HistoryActionRow = z
   .object({
@@ -64,6 +66,26 @@ export type WriteOutcome<T> =
   | { status: 'uninstalled' }
   | { status: 'changed' };
 
+/**
+ * Runs `run` again when the database picks it as a deadlock's victim, up to three times in
+ * all. MySQL rolls back the victim's whole transaction, so `run` must open the transaction
+ * itself, to redo all of it.
+ */
+export async function retryOnDeadlock<T>(run: () => Promise<T>): Promise<T> {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await run();
+    } catch (err) {
+      const deadlocked =
+        typeof err === 'object' && err !== null && 'code' in err && err.code === 'ER_LOCK_DEADLOCK';
+      if (deadlocked && attempt < 2) {
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
 function isUniqueViolation(err: unknown): boolean {
   const code = (err as { code?: unknown } | null)?.code;
   return (
@@ -76,6 +98,7 @@ export interface AddedRow {
   loaded: LoadedManifest;
   source: z.infer<typeof AppInstallationManifestSource>;
   requiresApproval: boolean;
+  iconDataUrl: string | null;
 }
 
 /** Every write to an installation moves its revision on, which ends its app sessions. */
@@ -97,7 +120,7 @@ class LockedInstallation {
   }
 
   /** Adds a manifest row for the installation, and returns its ID. */
-  async addManifest({ loaded, source, requiresApproval }: AddedRow): Promise<string> {
+  async addManifest({ loaded, source, requiresApproval, iconDataUrl }: AddedRow): Promise<string> {
     const id = new ObjectId().toHexString();
     await this.trx(MANIFESTS).insert({
       id,
@@ -105,6 +128,8 @@ class LockedInstallation {
       manifest_url: loaded.manifestUrl,
       manifest: loaded.serialised,
       digest: loaded.digest,
+      backend_key_thumbprint: loaded.backendKeyThumbprint,
+      icon_data_url: iconDataUrl,
       source,
       requires_approval: requiresApproval,
       created_at: toDatabaseDate(new Date()),
@@ -142,6 +167,14 @@ class LockedInstallation {
  * The installations and their manifest rows. Manifest rows are only ever added, never
  * changed, and every write to an installation moves its revision on.
  */
+/** The app has a current installation, so it can't be installed again. */
+export function alreadyInstalled(appId: string) {
+  return new errors.ConflictError({
+    message: `The app ${appId} is already installed.`,
+    code: 'APP_ALREADY_INSTALLED' satisfies AppFailureCode,
+  });
+}
+
 export class AppInstallationsRepository {
   private knex: Knex;
 
@@ -160,8 +193,8 @@ export class AppInstallationsRepository {
   }
 
   /** An installation by ID, uninstalled or not. */
-  async find(id: string): Promise<Installation | undefined> {
-    const row = await this.withApprovedManifest()
+  async find(id: string, executor: Knex = this.knex): Promise<Installation | undefined> {
+    const row = await this.withApprovedManifest(executor)
       .where('installation.id', id)
       .first<z.input<typeof InstallationRow> | undefined>(INSTALLATION_COLUMNS);
     return row ? z.decode(InstallationRow, row) : undefined;
@@ -175,15 +208,56 @@ export class AppInstallationsRepository {
     return row ? z.decode(InstallationRow, row) : undefined;
   }
 
+  /** Whether the app has a current installation. Reads no manifest, so nothing can fail to decode. */
+  async isInstalled(appId: string): Promise<boolean> {
+    return Boolean(await this.knex(INSTALLATIONS).where('current_app_id', appId).first('id'));
+  }
+
   /**
-   * A manifest row's digest, by ID. The manifest itself isn't read, so a row stored under an
-   * older contract, which may no longer decode, can still be compared against.
+   * Reads only the digest and icon copy, skipping the manifest: a row stored under an older
+   * contract may no longer decode, but we still compare against it.
    */
-  async findDigest(id: string): Promise<string | undefined> {
+  async findDigestAndIcon(id: string): Promise<z.output<typeof DigestAndIconRow> | undefined> {
     const row = await this.knex(MANIFESTS)
       .where({ id })
-      .first<z.input<typeof ManifestDigestRow> | undefined>('digest');
-    return row ? z.decode(ManifestDigestRow, row).digest : undefined;
+      .first<z.input<typeof DigestAndIconRow> | undefined>('digest', 'icon_data_url');
+    return row ? z.decode(DigestAndIconRow, row) : undefined;
+  }
+
+  /**
+   * The backend keys replaced for an app signed with this identity key: every key named by
+   * a manifest row of any of its installations, ended ones included, other than the current
+   * key. Rows are only added for verified manifests, pending ones included, so a key is
+   * retired as soon as a verified manifest names a newer one, and uninstalling and
+   * installing again doesn't bring it back.
+   *
+   * The current key is the one the newest installation's pending manifest names, or else its
+   * approved manifest's. Every added row becomes one of those straight away, so rows aren't
+   * ordered by `created_at`, which comes from each instance's clock and is only to the
+   * second. Only installations are, and those are an uninstall and an install apart.
+   */
+  async retiredBackendKeysOf(appId: string, identityKeyThumbprint: string): Promise<Set<string>> {
+    const rows = () =>
+      this.knex(`${MANIFESTS} as manifest`)
+        .join(`${INSTALLATIONS} as installation`, 'installation.id', 'manifest.installation_id')
+        .where({
+          'installation.app_id': appId,
+          'installation.identity_key_thumbprint': identityKeyThumbprint,
+        });
+    const current = rows()
+      .whereRaw('?? = coalesce(??, ??)', [
+        'manifest.id',
+        'installation.pending_manifest_id',
+        'installation.manifest_id',
+      ])
+      .orderBy('installation.created_at', 'desc')
+      .orderBy('installation.id', 'desc')
+      .limit(1)
+      .select('manifest.backend_key_thumbprint');
+    const retired = await rows()
+      .whereNot('manifest.backend_key_thumbprint', current)
+      .distinct<z.input<typeof BackendKeyRow>[]>('manifest.backend_key_thumbprint');
+    return new Set(retired.map((row) => z.decode(BackendKeyRow, row).backend_key_thumbprint));
   }
 
   /** An installation's manifest rows and staff actions, oldest first. */
@@ -196,7 +270,6 @@ export class AppInstallationsRepository {
       .orderBy('id', 'asc')
       .select<z.input<typeof HistoryManifestRow>[]>(
         'id',
-        'manifest_url',
         'source',
         'requires_approval',
         'created_at',
@@ -247,9 +320,14 @@ export class AppInstallationsRepository {
    * Every install creates a new installation with a new ID, reinstalls included; an
    * uninstalled installation is never reused. The unique `current_app_id` column blocks a
    * second installation of the same app, so when two installs race, one succeeds and the
-   * other gets `APP_ALREADY_INSTALLED`.
+   * other gets `APP_ALREADY_INSTALLED`. Concurrent inserts can deadlock over that column, so
+   * the caller runs the transaction with `retryOnDeadlock`.
    */
-  async insert(loaded: LoadedManifest): Promise<Installation> {
+  async insert(
+    loaded: LoadedManifest,
+    iconDataUrl: string | null,
+    { transacting }: { transacting: Knex.Transaction },
+  ): Promise<Installation> {
     const { manifest } = loaded;
     const id = new ObjectId().toHexString();
     const manifestId = new ObjectId().toHexString();
@@ -259,102 +337,92 @@ export class AppInstallationsRepository {
     const written: z.input<typeof InstallationRow> = {
       id,
       app_id: manifest.id,
+      identity_key_thumbprint: loaded.identityKeyThumbprint,
       status: 'active',
       manifest_id: manifestId,
       pending_manifest_id: null,
       revision: 0,
       manifest_url: loaded.manifestUrl,
       manifest: loaded.serialised,
+      icon_data_url: iconDataUrl,
       created_at: now,
       updated_at: now,
     };
-    for (let attempt = 0; ; attempt += 1) {
-      try {
-        await this.knex.transaction(async (trx) => {
-          await trx(INSTALLATIONS).insert({
-            id,
-            app_id: written.app_id,
-            current_app_id: written.app_id,
-            status: written.status,
-            manifest_id: written.manifest_id,
-            created_at: now,
-            updated_at: now,
-          });
-          await trx(MANIFESTS).insert({
-            id: manifestId,
-            installation_id: id,
-            manifest_url: written.manifest_url,
-            manifest: loaded.serialised,
-            digest: loaded.digest,
-            source: 'install',
-            requires_approval: false,
-            created_at: now,
-          });
-        });
-        break;
-      } catch (err) {
-        // Duplicate inserts can deadlock when several confirmations compete for
-        // the unique current_app_id. MySQL rolls back the victim's transaction;
-        // retry the whole write so it either commits or sees the winning install.
-        if ((err as { code?: unknown } | null)?.code === 'ER_LOCK_DEADLOCK' && attempt < 2) {
-          continue;
-        }
-        if (isUniqueViolation(err)) {
-          throw new errors.ConflictError({
-            message: `The app ${manifest.id} is already installed.`,
-            code: 'APP_ALREADY_INSTALLED',
-          });
-        }
-        throw err;
-      }
+    try {
+      await transacting(INSTALLATIONS).insert({
+        id,
+        app_id: written.app_id,
+        current_app_id: written.app_id,
+        identity_key_thumbprint: written.identity_key_thumbprint,
+        status: written.status,
+        manifest_id: written.manifest_id,
+        created_at: now,
+        updated_at: now,
+      });
+    } catch (err) {
+      throw isUniqueViolation(err) ? alreadyInstalled(manifest.id) : err;
     }
+    await transacting(MANIFESTS).insert({
+      id: manifestId,
+      installation_id: id,
+      manifest_url: written.manifest_url,
+      manifest: loaded.serialised,
+      digest: loaded.digest,
+      backend_key_thumbprint: loaded.backendKeyThumbprint,
+      icon_data_url: iconDataUrl,
+      source: 'install',
+      requires_approval: false,
+      created_at: now,
+    });
     return z.decode(InstallationRow, written);
   }
 
   /**
    * Locks the installation and runs `write` on it, unless it has been uninstalled or changed
    * since `installation` was read. Every write moves the revision on, so a different revision
-   * means it changed.
+   * means it changed. The lock is held until the caller's transaction ends.
    */
-  whileUnchanged<T>(
+  async whileUnchanged<T>(
     installation: Installation,
     write: (locked: LockedInstallation) => Promise<T>,
+    { transacting }: { transacting: Knex.Transaction },
   ): Promise<WriteOutcome<T>> {
-    return this.knex.transaction(async (trx): Promise<WriteOutcome<T>> => {
-      const row = await trx(INSTALLATIONS)
-        .where({ id: installation.id })
-        .forUpdate()
-        .first<z.input<typeof LockedRow> | undefined>('status', 'revision');
-      const locked = row ? z.decode(LockedRow, row) : undefined;
-      if (!locked || locked.status === 'uninstalled') {
-        return { status: 'uninstalled' };
-      }
-      if (locked.revision !== installation.revision) {
-        return { status: 'changed' };
-      }
-      return {
-        status: 'written',
-        value: await write(new LockedInstallation(trx, installation.id)),
-      };
-    });
+    const row = await transacting(INSTALLATIONS)
+      .where({ id: installation.id })
+      .forUpdate()
+      .first<z.input<typeof LockedRow> | undefined>('status', 'revision');
+    const locked = row ? z.decode(LockedRow, row) : undefined;
+    if (!locked || locked.status === 'uninstalled') {
+      return { status: 'uninstalled' };
+    }
+    if (locked.revision !== installation.revision) {
+      return { status: 'changed' };
+    }
+    return {
+      status: 'written',
+      value: await write(new LockedInstallation(transacting, installation.id)),
+    };
   }
 
   /** Returns false if it was already uninstalled. */
-  async uninstall(id: string): Promise<boolean> {
-    const ended = await this.knex(INSTALLATIONS)
+  async uninstall(
+    id: string,
+    { transacting }: { transacting: Knex.Transaction },
+  ): Promise<boolean> {
+    const ended = await transacting(INSTALLATIONS)
       .where({ id })
       .whereNot('status', 'uninstalled')
       .update({
         // In the same update as `status`, so the two always agree.
         current_app_id: null,
         status: 'uninstalled',
-        ...nextRevision(this.knex),
+        ...nextRevision(transacting),
       });
     return ended > 0;
   }
 
-  private withApprovedManifest() {
-    return this.knex(`${INSTALLATIONS} as installation`).join(
+  private withApprovedManifest(executor: Knex = this.knex) {
+    return executor(`${INSTALLATIONS} as installation`).join(
       `${MANIFESTS} as approved`,
       'approved.id',
       'installation.manifest_id',

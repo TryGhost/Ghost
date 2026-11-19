@@ -180,7 +180,9 @@ describe('Job: Send gift reminders', function () {
 
     const failed = await waitFor(() => {
       return loggingErrorSpy.getCalls().some((call) => {
-        return String(call.args[1]).startsWith('[Background Job] send-gift-reminders failed after');
+        return String(call.args.at(-1)).startsWith(
+          '[Background Job] send-gift-reminders failed after',
+        );
       });
     });
     assert.ok(failed, 'the jobs service logs the failed run');

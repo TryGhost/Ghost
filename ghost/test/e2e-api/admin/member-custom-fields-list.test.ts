@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import { z } from 'zod';
 
-const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
+const {
+  agentProvider,
+  fixtureManager,
+  mockManager,
+  configUtils,
+  hostLimits,
+} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 
 // A list field offers options its publisher chose and takes one or several of them. Its options and
@@ -12,6 +18,7 @@ describe('List custom fields', function () {
     put: (_url: string) => any;
     post: (_url: string) => any;
     loginAsOwner: () => Promise<void>;
+    loginAsEditor: () => Promise<void>;
   };
 
   const ANIMALS = { options: ['Dog', 'Cat'], multiple: true };
@@ -61,10 +68,6 @@ describe('List custom fields', function () {
     await agent.loginAsOwner();
   });
 
-  beforeEach(function () {
-    mockManager.mockLabsEnabled('membersCustomFields');
-  });
-
   afterEach(async function () {
     mockManager.restore();
     await models.Base.knex('members_metafield_values').del();
@@ -106,7 +109,16 @@ describe('List custom fields', function () {
         'Give the list at least 2 options.',
         'settings.options',
       ],
-      [{ options: ['Dog', 'Dog '], multiple: true }, 'Give each option once.', 'settings.options'],
+      [
+        { options: ['Dog', 'Dog '], multiple: true },
+        'This option already exists.',
+        'settings.options.1',
+      ],
+      [
+        { options: ['Dog', 'dog'], multiple: true },
+        'This option already exists.',
+        'settings.options.1',
+      ],
       [
         { options: ['Dog', ''], multiple: true },
         'Enter text for each option.',
@@ -157,6 +169,13 @@ describe('List custom fields', function () {
       });
 
       assert.deepEqual(edited.settings, { options: ['Cat', 'Dog', 'Fish'], multiple: false });
+
+      // Read back in the order the edit gave, not the order the options were first saved in.
+      const { body } = await agent.get(`members/metafields/custom/${field.key}/`).expectStatus(200);
+      assert.deepEqual(body.members_metafields[0].settings, {
+        options: ['Cat', 'Dog', 'Fish'],
+        multiple: false,
+      });
     });
 
     it('refuses an edit whose settings are wrong, changing nothing it asked for', async function () {
@@ -298,17 +317,28 @@ describe('List custom fields', function () {
       });
     }
 
-    for (const cleared of [[], null]) {
-      it(`clears the field when a write picks ${JSON.stringify(cleared)}`, async function () {
-        const field = await createList(ANIMALS);
-        const memberId = await createMember();
-        await setValues(memberId, { [field.key]: ['Dog'] });
+    it('clears the field when a write gives null', async function () {
+      const field = await createList(ANIMALS);
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: ['Dog'] });
 
-        await setValues(memberId, { [field.key]: cleared });
+      await setValues(memberId, { [field.key]: null });
 
-        assert.deepEqual(await readValues(memberId), {});
-      });
-    }
+      assert.deepEqual(await readValues(memberId), {});
+    });
+
+    // A value is never empty, so a list picking nothing is refused rather than a second way to
+    // clear.
+    it('refuses a write that picks nothing', async function () {
+      const field = await createList(ANIMALS);
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: ['Dog'] });
+
+      const error = await setValues(memberId, { [field.key]: [] }, 422);
+
+      assert.equal(error.context, 'Choose at least one option, or send null to clear it.');
+      assert.deepEqual(await readValues(memberId), { [field.key]: ['Dog'] });
+    });
   });
 
   describe('When the options change', function () {
@@ -357,6 +387,140 @@ describe('List custom fields', function () {
 
       await setValues(memberId, { [field.key]: ['Cat'] });
       assert.deepEqual(await readValues(memberId), { [field.key]: ['Cat'] });
+    });
+  });
+
+  // Ghost checks a list's settings every time it writes them, so settings Ghost can't read were
+  // damaged outside Ghost, or by a later release that reads settings differently. The field keeps
+  // working with a new list's default settings until the next write of its settings replaces them.
+  describe("Settings Ghost can't read", function () {
+    const NEW_LIST = { options: [], multiple: false };
+    const damage = (key: string, change: Record<string, unknown>) =>
+      models.Base.knex('members_metafields').where({ namespace: 'custom', key }).update(change);
+    const listedKeys = async () => {
+      const { body } = await agent.get('members/metafields/custom/').expectStatus(200);
+      return body.members_metafields.map((field: { key: string }) => field.key);
+    };
+
+    it("reads the field with a new list's settings, and keeps what members hold", async function () {
+      const field = await createList(ANIMALS);
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: ['Dog', 'Cat'] });
+      await damage(field.key, { settings: 'not json' });
+
+      const { body } = await agent.get(`members/metafields/custom/${field.key}/`).expectStatus(200);
+      assert.deepEqual(body.members_metafields[0].settings, NEW_LIST);
+      assert.deepEqual(await listedKeys(), [field.key]);
+      // Both answers are kept. A list's answers come back in the order of the list's options, and
+      // a list read with its defaults has no options, so the test doesn't check the order.
+      const { [field.key]: held } = await readValues(memberId);
+      assert.deepEqual([...held].sort(), ['Cat', 'Dog']);
+    });
+
+    it('takes the settings the next edit writes', async function () {
+      const field = await createList(ANIMALS);
+      await damage(field.key, { settings: JSON.stringify({ options: 'Dog' }) });
+
+      assert.deepEqual((await editSettings(field.key, ANIMALS)).settings, ANIMALS);
+      const { body } = await agent.get(`members/metafields/custom/${field.key}/`).expectStatus(200);
+      assert.deepEqual(body.members_metafields[0].settings, ANIMALS);
+    });
+
+    it('leaves out a field of a type this release does not know, and lists the others', async function () {
+      const retired = await createList(ANIMALS);
+      const kept = await createList(ANIMALS, 'Favourite foods');
+      await damage(retired.key, { type: 'retired_type' });
+
+      assert.deepEqual(await listedKeys(), [kept.key]);
+      await agent.get(`members/metafields/custom/${retired.key}/`).expectStatus(404);
+    });
+  });
+
+  describe('Values members hold', function () {
+    const heldValues = async (key: string) => {
+      const { body } = await agent
+        .get(`members/metafields/custom/${key}/values/`)
+        .expectStatus(200);
+      return body.values.map(({ value }: { value: string }) => value);
+    };
+
+    it('names each option members hold once, sorted by text, including ones the field no longer offers', async function () {
+      const field = await createList({ options: ['Dolphin', 'Dog', 'Cat'], multiple: true });
+      await setValues(await createMember(), { [field.key]: ['Dolphin', 'Dog'] });
+      await setValues(await createMember(), { [field.key]: ['Dog'] });
+      await setValues(await createMember(), { [field.key]: ['Cat'] });
+      await editSettings(field.key, ANIMALS);
+
+      assert.deepEqual(await heldValues(field.key), ['Cat', 'Dog', 'Dolphin']);
+    });
+
+    it('names none for a list nobody has answered', async function () {
+      const field = await createList(ANIMALS);
+      assert.deepEqual(await heldValues(field.key), []);
+    });
+
+    it('refuses a field that is not a list, and one that does not exist', async function () {
+      const { body } = await agent
+        .post('members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Company', type: 'short_text' }] })
+        .expectStatus(201);
+
+      await agent
+        .get(`members/metafields/custom/${body.members_metafields[0].key}/values/`)
+        .expectStatus(422);
+      await agent.get('members/metafields/custom/nothing_here/values/').expectStatus(404);
+    });
+
+    it('is not shown to a role that cannot browse members', async function () {
+      const field = await createList(ANIMALS);
+      await agent.loginAsEditor();
+      try {
+        await agent.get(`members/metafields/custom/${field.key}/values/`).expectStatus(403);
+      } finally {
+        await agent.loginAsOwner();
+      }
+    });
+
+    // A site that defined fields with the flag on can still filter by them with it off.
+    it('is read while the flag is off', async function () {
+      const field = await createList(ANIMALS);
+      await setValues(await createMember(), { [field.key]: ['Cat'] });
+      configUtils.set('labs', { membersCustomFields: false });
+
+      try {
+        assert.deepEqual(await heldValues(field.key), ['Cat']);
+      } finally {
+        await configUtils.restore();
+      }
+    });
+
+    it('is not found for an archived field, or for any field while the host switches custom fields off', async function () {
+      const archived = await createList(ANIMALS);
+      await setValues(await createMember(), { [archived.key]: ['Cat'] });
+      await agent
+        .put(`members/metafields/custom/${archived.key}/`)
+        .body({ members_metafields: [{ status: 'archived' }] })
+        .expectStatus(200);
+      await agent.get(`members/metafields/custom/${archived.key}/values/`).expectStatus(404);
+
+      const active = await createList(ANIMALS, 'Favourite foods');
+      await setValues(await createMember(), { [active.key]: ['Dog'] });
+      await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+      try {
+        await agent.get(`members/metafields/custom/${active.key}/values/`).expectStatus(404);
+      } finally {
+        await hostLimits.restoreHostLimits();
+      }
+    });
+
+    it("reads what members hold of a list whose settings Ghost can't read", async function () {
+      const field = await createList(ANIMALS);
+      await setValues(await createMember(), { [field.key]: ['Cat'] });
+      await models.Base.knex('members_metafields')
+        .where({ namespace: 'custom', key: field.key })
+        .update({ settings: 'not json' });
+
+      assert.deepEqual(await heldValues(field.key), ['Cat']);
     });
   });
 });

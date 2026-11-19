@@ -1,10 +1,14 @@
 import type { ReadonlyDeep } from 'type-fest';
 import _ from 'lodash';
-import { z } from 'zod';
 import { bindAll as bindUrlHelpers, type BoundHelpers } from '@tryghost/config-url-helpers';
 import { bindAll as bindHelpers, type ConfigHelpers } from './helpers';
 import { guardReadOnly, shouldGuard } from './guard';
+import { z } from 'zod';
+import { lenient, parseLeniently } from './lenient';
+import { reportInvalid } from './report';
 import { configSchema, type ConfigAt, type ConfigPath, type ValidatedConfig } from './schema';
+
+const lenientConfigSchema = lenient(configSchema);
 
 /**
  * Recursively freeze a plain-data tree in place. Only safe on a structure
@@ -37,10 +41,11 @@ export function deepFreeze<T>(value: T): T {
  * `GHOST_CONFIG_SCHEMA_STRICT` overrides in either direction, which is how a
  * production deploy opts in once it trusts the schema.
  *
- * @TODO: removing this flag retires checkUrlProtocol() in ./utils.ts with it,
- * and makes every required key a hard boot failure everywhere - which is only
- * safe once the schema is known to match what Ghost(Pro) and self-hosters
- * actually supply.
+ * Keys marked `.meta({fatal: true})` fail boot in every environment regardless.
+ *
+ * @TODO: removing this flag makes every required key a hard boot failure
+ * everywhere - which is only safe once the schema is known to match what
+ * Ghost(Pro) and self-hosters actually supply.
  *
  * `startsWith('test')` matches `isTestEnv()` in ./helpers.ts, covering `testing`
  * and `testing-mysql`.
@@ -74,26 +79,33 @@ function readOnly(tree: Record<string, unknown>): ValidatedConfig {
  * frozen out from under its other owner.
  */
 export function validateConfig(tree: Record<string, unknown>): ValidatedConfig {
-  const result = configSchema.safeParse(tree);
+  const env = String(tree.env);
 
-  if (result.success) {
+  if (isStrict(env)) {
+    const result = configSchema.safeParse(tree);
+    if (!result.success) {
+      reportInvalid(result.error.issues, { strict: true, env });
+    }
     return readOnly(result.data as Record<string, unknown>);
   }
 
-  const report = z.prettifyError(result.error);
-
-  if (isStrict(String(tree.env))) {
-    // new Error is allowed here, as we do not want config to depend on @tryghost/error
-    // oxlint-disable-next-line ghost/ghost-custom/no-native-error
-    throw new Error(`Ghost config failed validation:\n${report}`);
+  // A bad key falls back to its raw value; everything else, transforms
+  // included, still parses. Only a `fatal` key fails the whole tree.
+  let parsed: ReturnType<typeof parseLeniently<typeof configSchema>>;
+  try {
+    parsed = parseLeniently(lenientConfigSchema, tree);
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      reportInvalid(err.issues, { strict: true, env });
+    }
+    throw err;
   }
 
-  // eslint-disable-next-line no-console
-  console.error(
-    `Ghost config failed validation (not enforced in the ${tree.env} environment):\n${report}`,
-  );
+  if (parsed.issues.length) {
+    reportInvalid(parsed.issues, { strict: false, env });
+  }
 
-  return readOnly(tree);
+  return readOnly(parsed.data as Record<string, unknown>);
 }
 
 /**

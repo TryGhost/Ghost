@@ -1,35 +1,45 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
+import { configure } from '../../core/server/data/db/configure-knex';
 
 const config = require('../../core/shared/config');
-const migratorConfig = require('../../MigratorConfig.js');
+const { loadConfig } = require('knex-migrator/lib/utils');
+
+const ghostRoot = path.join(__dirname, '../..');
+// Resolved the way knex-migrator finds it, so this also covers unwrapping the default export.
+const migratorConfig = loadConfig({ knexMigratorFilePath: ghostRoot });
 
 describe('MigratorConfig', function () {
-  it('loads in a bare Node process', function () {
-    assert.doesNotThrow(() => {
-      execFileSync(process.execPath, ['-e', "require('./MigratorConfig.js')"], {
-        cwd: path.join(__dirname, '../..'),
-        stdio: 'pipe',
-      });
-    });
+  it('loads the way the knex-migrator scripts run it', function () {
+    // The root scripts preload tsx with the source condition.
+    const output = execFileSync(
+      process.execPath,
+      [
+        '--conditions=source',
+        '--import=tsx',
+        '-e',
+        "const c = require('knex-migrator/lib/utils').loadConfig({knexMigratorFilePath: '.'}); console.log(JSON.stringify(Object.keys(c)))",
+      ],
+      { cwd: ghostRoot, stdio: 'pipe', encoding: 'utf8' },
+    );
+
+    assert.deepEqual(JSON.parse(output.trim().split('\n').at(-1)!), [
+      'currentVersion',
+      'database',
+      'migrationPath',
+    ]);
   });
 
-  it('hands knex-migrator a mutable copy of the database config', function () {
-    // knex-migrator's connect() assembles its knex options by mutating what it
-    // is given - connection.timezone, charset and decimalNumbers, and a delete
-    // of connection.filename. Config is read-only, so it has to get a copy, or
-    // those writes are dropped and its connection loses them.
-    assert.notEqual(migratorConfig.database, config.get('database'));
-    assert.deepEqual(migratorConfig.database, config.get('database'));
+  it('hands knex-migrator the knex config Ghost connects with', function () {
+    // pool holds per-call afterCreate closures, so compare everything else
+    const { pool: _migratorPool, ...migratorDatabase } = migratorConfig.database;
+    const { pool: _ghostPool, ...ghostDatabase } = configure(config.get('database')) as Record<
+      string,
+      unknown
+    >;
 
-    assert.ok(!Object.isFrozen(migratorConfig.database));
-    assert.ok(!Object.isFrozen(migratorConfig.database.connection));
-
-    migratorConfig.database.connection.timezone = 'Z';
-
-    assert.equal(migratorConfig.database.connection.timezone, 'Z');
-    assert.equal(config.get('database:connection:timezone'), undefined);
+    assert.deepEqual(migratorDatabase, ghostDatabase);
   });
 
   it('still exposes the migration path', function () {

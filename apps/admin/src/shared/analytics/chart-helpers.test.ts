@@ -43,9 +43,9 @@ describe('chart-helpers', () => {
     it('returns correct text for known ranges', () => {
       const ranges = [
         { value: 7, expected: 'in the last 7 days' },
-        { value: 31, expected: 'in the last 30 days' },
-        { value: 91, expected: 'in the last 90 days' },
-        { value: 372, expected: 'in the last 12 months' },
+        { value: 30, expected: 'in the last 30 days' },
+        { value: 90, expected: 'in the last 90 days' },
+        { value: 365, expected: 'in the last 12 months' },
         { value: -1, expected: 'year to date' },
         { value: 1000, expected: '(all time)' },
       ];
@@ -185,12 +185,12 @@ describe('chart-helpers', () => {
   describe('getAggregationStrategy', () => {
     it('applies the daily/weekly/monthly thresholds to fixed ranges', () => {
       expect(getAggregationStrategy(7)).toBe('none');
-      expect(getAggregationStrategy(31)).toBe('none');
-      expect(getAggregationStrategy(90)).toBe('none');
-      expect(getAggregationStrategy(91)).toBe('weekly');
+      expect(getAggregationStrategy(30)).toBe('none');
+      expect(getAggregationStrategy(89)).toBe('none');
+      expect(getAggregationStrategy(90)).toBe('weekly');
       expect(getAggregationStrategy(270)).toBe('weekly');
       expect(getAggregationStrategy(271)).toBe('monthly');
-      expect(getAggregationStrategy(372)).toBe('monthly');
+      expect(getAggregationStrategy(365)).toBe('monthly');
     });
 
     it('honors an override strategy', () => {
@@ -436,20 +436,20 @@ describe('chart-helpers', () => {
     });
 
     it('maps weekly bucketing into the "Week of" display band', () => {
-      expect(getEffectiveChartRange(180, createDateRange(180))).toBe(91);
+      expect(getEffectiveChartRange(180, createDateRange(180))).toBe(90);
     });
 
     it('maps monthly bucketing into the "MMM YYYY" display band', () => {
-      expect(getEffectiveChartRange(300, createDateRange(300))).toBe(366);
-      expect(getEffectiveChartRange(372, createDateRange(372))).toBe(366);
+      expect(getEffectiveChartRange(300, createDateRange(300))).toBe(365);
+      expect(getEffectiveChartRange(365, createDateRange(365))).toBe(365);
     });
 
     it('follows an override strategy', () => {
       expect(getEffectiveChartRange(31, createDateRange(31), { overrideStrategy: 'monthly' })).toBe(
-        366,
+        365,
       );
       expect(getEffectiveChartRange(31, createDateRange(31), { overrideStrategy: 'weekly' })).toBe(
-        91,
+        90,
       );
     });
 

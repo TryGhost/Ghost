@@ -162,10 +162,15 @@ describe('Themes', function () {
       path: '/path/to/theme',
     };
 
-    beforeAll(function () {
-      list.init();
+    // A fresh gscan cache per test, so each one decides whether a result is cached
+    beforeEach(function () {
+      adapterStub = sinon.stub(adapterManager, 'getAdapter').returns(new InMemoryCache());
       list.set(testTheme.name, testTheme);
       validate.init();
+    });
+
+    afterEach(function () {
+      list.del(testTheme.name);
     });
 
     it('Does an initial check if not cached yet', async function () {
@@ -179,6 +184,12 @@ describe('Themes', function () {
     });
 
     it('Reuses same result if called again', async function () {
+      checkStub.resolves({});
+      formatStub.returns({ results: { error: [{ hello: 'world' }] } });
+      await validate.getThemeErrors(testTheme.name);
+      checkStub.resetHistory();
+      formatStub.resetHistory();
+
       const checkedTheme = await validate.getThemeErrors(testTheme.name);
       sinon.assert.notCalled(checkStub);
       sinon.assert.notCalled(formatStub);
@@ -194,7 +205,7 @@ describe('Themes', function () {
 
     it('Silently fails when cache adapter throws', async function () {
       loggingStub = sinon.stub(logging, 'error');
-      sinon.stub(adapterManager, 'getAdapter').returns({
+      adapterStub.returns({
         get: () => {
           throw new Error('test');
         },

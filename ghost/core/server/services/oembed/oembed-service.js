@@ -101,6 +101,71 @@ const getYouTubeMaxResThumbnailUrl = (thumbnailUrl) => {
   return url.href;
 };
 
+const YOUTUBE_HQ_THUMBNAIL_WIDTH = 480;
+const YOUTUBE_HQ_THUMBNAIL_HEIGHT = 360;
+const YOUTUBE_VIDEO_ID_REGEX = /^[a-zA-Z0-9_-]{11}$/;
+
+/**
+ * Reads the video ID from a YouTube watch, live, shorts or youtu.be URL.
+ * Playlist URLs and other YouTube pages that don't name one video return
+ * undefined.
+ *
+ * @param {string} youtubeUrl
+ * @returns {string|undefined}
+ */
+const getYouTubeVideoId = (youtubeUrl) => {
+  if (!URL.canParse(youtubeUrl)) {
+    return;
+  }
+
+  const { hostname, pathname, searchParams } = new URL(youtubeUrl);
+  let videoId;
+
+  if (hostname === 'youtu.be') {
+    videoId = pathname.split('/')[1];
+  } else if (hostname === 'youtube.com' || hostname.endsWith('.youtube.com')) {
+    videoId =
+      pathname === '/watch'
+        ? searchParams.get('v')
+        : /^\/(?:live|shorts)\/([^/]+)/.exec(pathname)?.[1];
+  }
+
+  return videoId && YOUTUBE_VIDEO_ID_REGEX.test(videoId) ? videoId : undefined;
+};
+
+/**
+ * YouTube's oEmbed response for a livestream that hasn't started yet has no
+ * thumbnail. Without one, the email renderer can't build its linked
+ * play-button preview and sends the iframe instead, which email clients don't
+ * display. The video's thumbnail still exists at YouTube's fixed image URL, so
+ * a missing thumbnail is filled in from the video ID. YouTube rejects oEmbed
+ * requests for videos that don't exist, so the ID always names a real video.
+ *
+ * Bookmark enrichment doesn't use this: its thumbnail replaces the page's own
+ * image, which for an upcoming livestream is already the full-size artwork.
+ *
+ * @param {string} youtubeUrl
+ * @param {import('./oembed-schema').OembedData} oembed
+ * @returns {import('./oembed-schema').OembedData}
+ */
+const withYouTubeThumbnail = (youtubeUrl, oembed) => {
+  if (oembed.thumbnail_url) {
+    return oembed;
+  }
+
+  const videoId = getYouTubeVideoId(youtubeUrl);
+  if (!videoId) {
+    return oembed;
+  }
+
+  return {
+    ...oembed,
+    thumbnail_url: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+    thumbnail_width: YOUTUBE_HQ_THUMBNAIL_WIDTH,
+    thumbnail_height: YOUTUBE_HQ_THUMBNAIL_HEIGHT,
+  };
+};
+
 /**
  * @param {string} url
  * @returns {{url: string, provider: boolean}}
@@ -223,6 +288,16 @@ class OEmbedService {
         context: err.message,
       });
     }
+  }
+
+  /**
+   * Fetches an embed from an allowlisted provider, filling in a YouTube
+   * thumbnail the provider left out
+   *
+   * @param {string} url
+   */
+  async #knownProviderEmbed(url) {
+    return withYouTubeThumbnail(url, await this.knownProvider(url));
   }
 
   /**
@@ -821,7 +896,7 @@ class OEmbedService {
         // check against known oembed list
         const { url: providerUrl, provider } = findUrlWithProvider(url);
         if (provider) {
-          return this.knownProvider(providerUrl);
+          return this.#knownProviderEmbed(providerUrl);
         }
       }
 
@@ -894,7 +969,7 @@ class OEmbedService {
       if (pageUrl !== url) {
         const { url: providerUrl, provider } = findUrlWithProvider(pageUrl);
         if (provider) {
-          return this.knownProvider(providerUrl);
+          return this.#knownProviderEmbed(providerUrl);
         }
       }
 

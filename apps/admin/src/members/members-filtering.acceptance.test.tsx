@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import {
   currentRoute,
@@ -104,7 +104,7 @@ describe('Members list', () => {
     const membersApi = fakeMembers(({ filter }) =>
       filter ? [member({ name: 'Acme Member' })] : [member({ name: 'Acme Member' }), member()],
     );
-    await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+    await renderAdminApp('/members');
 
     await expect(membersScreen.memberRows()).toHaveCount(2);
 
@@ -129,6 +129,262 @@ describe('Members list', () => {
     expect(fieldsApi.requests.map((request) => request.filter)).toEqual(
       fieldsApi.requests.map(() => 'status:[active,archived]'),
     );
+  });
+
+  // A phone field keeps every number in E.164, so what staff type is compared in that form: a
+  // whole number as E.164, read in their own country unless it gives its code, and part of one
+  // without its spaces, brackets and dashes.
+  it('finds a phone number however it is written', async () => {
+    fakeMemberCustomFields([
+      {
+        namespace: CUSTOM_NAMESPACE,
+        key: KeySchema.parse('mobile'),
+        name: 'Mobile',
+        type: 'phone',
+        status: 'active',
+        access: { member: 'none' },
+        created_at: '2026-08-05T00:00:00.000Z',
+        updated_at: null,
+      },
+    ]);
+    const membersApi = fakeMembers([member()]);
+    await renderAdminApp('/members');
+
+    await membersScreen.openFilterField('Mobile');
+    const valueInput = page.getByRole('textbox', { name: 'Mobile value' });
+    await valueInput.fill('7946 0000');
+    await expect(membersApi).toHaveSentFilter(
+      "(metafields.identity:'custom.mobile'+metafields.value:~'79460000')",
+    );
+
+    await page.getByRole('button', { name: 'Mobile operator' }).click();
+    await membersScreen.menuItem(/^is$/).click();
+    await valueInput.fill('+44 (0)20 7946-0000');
+    await expect(membersApi).toHaveSentFilter(
+      "(metafields.identity:'custom.mobile'+metafields.value:'+442079460000')",
+    );
+  });
+
+  it('filters a list field by the options picked, the way labels are', async () => {
+    fakeMemberCustomFields([
+      {
+        namespace: CUSTOM_NAMESPACE,
+        key: KeySchema.parse('favourite_animals'),
+        name: 'Favourite animals',
+        type: 'list',
+        settings: { options: ['Dog', 'Cat'], multiple: true },
+        status: 'active',
+        access: { member: 'none' },
+        created_at: '2026-08-05T00:00:00.000Z',
+        updated_at: null,
+      },
+    ]);
+    fakeAdminEndpoint('GET', '/members/metafields/custom/favourite_animals/values/', {
+      values: [],
+    });
+    const membersApi = fakeMembers(({ filter }) =>
+      filter ? [member({ name: 'Dog Lover' })] : [member({ name: 'Dog Lover' }), member()],
+    );
+    await renderAdminApp('/members');
+
+    await membersScreen.addMultiselectFilter('Favourite animals', ['Dog']);
+
+    await expect(membersApi).toHaveSentFilter(
+      "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dog'])",
+    );
+    await expect(membersScreen.memberRows()).toHaveCount(1);
+  });
+
+  // Whether a member answered a list at all takes no options, so the filter shows none for it.
+  it('filters a list field by whether a member answered it, with no options to pick', async () => {
+    fakeMemberCustomFields([
+      {
+        namespace: CUSTOM_NAMESPACE,
+        key: KeySchema.parse('favourite_animals'),
+        name: 'Favourite animals',
+        type: 'list',
+        settings: { options: ['Dog', 'Cat'], multiple: true },
+        status: 'active',
+        access: { member: 'none' },
+        created_at: '2026-08-05T00:00:00.000Z',
+        updated_at: null,
+      },
+    ]);
+    fakeAdminEndpoint('GET', '/members/metafields/custom/favourite_animals/values/', {
+      values: [],
+    });
+    const membersApi = fakeMembers(({ filter }) =>
+      filter ? [member({ name: 'Unanswered' })] : [member({ name: 'Unanswered' }), member()],
+    );
+    await renderAdminApp('/members');
+
+    await membersScreen.addMultiselectFilter('Favourite animals', ['Dog']);
+    await userEvent.keyboard('{Escape}');
+    await page.getByRole('button', { name: 'is any of', exact: true }).click();
+    await membersScreen.menuItem('is not set').click();
+
+    await expect(membersApi).toHaveSentFilter("metafields.identity:-'custom.favourite_animals'");
+    await expect
+      .element(page.getByRole('button', { name: 'Dog', exact: true }))
+      .not.toBeInTheDocument();
+    await expect(membersScreen.memberRows()).toHaveCount(1);
+  });
+
+  it("offers a list field's own options when what members hold can't be read", async () => {
+    fakeMemberCustomFields([
+      {
+        namespace: CUSTOM_NAMESPACE,
+        key: KeySchema.parse('favourite_animals'),
+        name: 'Favourite animals',
+        type: 'list',
+        settings: { options: ['Dog', 'Cat'], multiple: true },
+        status: 'active',
+        access: { member: 'none' },
+        created_at: '2026-08-05T00:00:00.000Z',
+        updated_at: null,
+      },
+    ]);
+    fakeAdminEndpoint(
+      'GET',
+      '/members/metafields/custom/favourite_animals/values/',
+      { errors: [{ message: 'Resource not found' }] },
+      { status: 404 },
+    );
+    fakeMembers([member()]);
+    await renderAdminApp('/members');
+
+    await membersScreen.openFilterField('Favourite animals');
+
+    await expect.element(membersScreen.multiselectOption('Dog')).toBeVisible();
+    await expect.element(membersScreen.multiselectOption('Cat')).toBeVisible();
+  });
+
+  it('keeps a saved filter naming an option neither offered nor held', async () => {
+    fakeMemberCustomFields([
+      {
+        namespace: CUSTOM_NAMESPACE,
+        key: KeySchema.parse('favourite_animals'),
+        name: 'Favourite animals',
+        type: 'list',
+        settings: { options: ['Dog', 'Cat'], multiple: true },
+        status: 'active',
+        access: { member: 'none' },
+        created_at: '2026-08-05T00:00:00.000Z',
+        updated_at: null,
+      },
+    ]);
+    fakeAdminEndpoint('GET', '/members/metafields/custom/favourite_animals/values/', {
+      values: [],
+    });
+    const membersApi = fakeMembers([]);
+    const saved = "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dolphin'])";
+    await renderAdminApp(`/members?filter=${encodeURIComponent(saved)}`);
+
+    await membersScreen.openMultiselectValue('Dolphin');
+    await expect.element(membersScreen.multiselectOption('Dolphin')).toBeVisible();
+    await expect(membersApi).toHaveSentFilter(saved);
+  });
+
+  it('filters a list field by an option members still hold after it was removed', async () => {
+    fakeMemberCustomFields([
+      {
+        namespace: CUSTOM_NAMESPACE,
+        key: KeySchema.parse('favourite_animals'),
+        name: 'Favourite animals',
+        type: 'list',
+        settings: { options: ['Dog', 'Cat'], multiple: true },
+        status: 'active',
+        access: { member: 'none' },
+        created_at: '2026-08-05T00:00:00.000Z',
+        updated_at: null,
+      },
+    ]);
+    fakeAdminEndpoint('GET', '/members/metafields/custom/favourite_animals/values/', {
+      values: [{ value: 'Dog' }, { value: 'Dolphin' }],
+    });
+    const membersApi = fakeMembers(({ filter }) =>
+      filter ? [member({ name: 'Dolphin Fan' })] : [member({ name: 'Dolphin Fan' }), member()],
+    );
+    await renderAdminApp('/members');
+
+    await membersScreen.addMultiselectFilter('Favourite animals', ['Dolphin']);
+
+    await expect(membersApi).toHaveSentFilter(
+      "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dolphin'])",
+    );
+    await expect(membersScreen.memberRows()).toHaveCount(1);
+  });
+
+  describe('a list field filtered by every option chosen', () => {
+    const animals = {
+      namespace: CUSTOM_NAMESPACE,
+      key: KeySchema.parse('favourite_animals'),
+      name: 'Favourite animals',
+      type: 'list' as const,
+      settings: { options: ['Dog', 'Cat'], multiple: true },
+      status: 'active' as const,
+      access: { member: 'none' as const },
+      created_at: '2026-08-05T00:00:00.000Z',
+      updated_at: null,
+    };
+    const BOTH = "(metafields.identity:'custom.favourite_animals'+metafields.value:['Cat'+'Dog'])";
+
+    it('finds members holding all of the options chosen', async () => {
+      fakeMemberCustomFields([animals]);
+      fakeAdminEndpoint('GET', '/members/metafields/custom/favourite_animals/values/', {
+        values: [],
+      });
+      const membersApi = fakeMembers(({ filter }) =>
+        filter ? [member({ name: 'Both' })] : [member({ name: 'Both' }), member()],
+      );
+      await renderAdminApp('/members');
+
+      await membersScreen.addMultiselectFilter('Favourite animals', ['Dog', 'Cat']);
+      await userEvent.keyboard('{Escape}');
+      await page.getByRole('button', { name: 'is any of', exact: true }).click();
+      await membersScreen.menuItem('is all of').click();
+
+      await expect(membersApi).toHaveSentFilter(BOTH);
+      await expect(membersScreen.memberRows()).toHaveCount(1);
+    });
+
+    // Members keep every option they held when a field changes from taking several answers to
+    // one, so "is all of" can still match.
+    it('offers "is all of" on a list that takes one option', async () => {
+      fakeMemberCustomFields([{ ...animals, settings: { ...animals.settings, multiple: false } }]);
+      fakeAdminEndpoint('GET', '/members/metafields/custom/favourite_animals/values/', {
+        values: [],
+      });
+      fakeMembers([member()]);
+      await renderAdminApp('/members');
+
+      await membersScreen.addMultiselectFilter('Favourite animals', ['Dog']);
+      await userEvent.keyboard('{Escape}');
+      await page.getByRole('button', { name: 'is any of', exact: true }).click();
+
+      await expect.element(membersScreen.menuItem('is all of')).toBeVisible();
+    });
+
+    it('reads a saved filter for all of the options back as one', async () => {
+      fakeMemberCustomFields([animals]);
+      fakeAdminEndpoint('GET', '/members/metafields/custom/favourite_animals/values/', {
+        values: [],
+      });
+      const membersApi = fakeMembers([member({ name: 'Both' })]);
+      const typed =
+        "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dog'+'Cat'])";
+      await renderAdminApp(`/members?filter=${encodeURIComponent(typed)}`);
+
+      await expect
+        .element(page.getByRole('button', { name: 'is all of', exact: true }))
+        .toBeVisible();
+      await expect
+        .element(page.getByRole('button', { name: '2 selected', exact: true }))
+        .toBeVisible();
+      // The saved filter names Dog first. Admin writes the filter again from the options it read
+      // back, sorted, so a filter naming Cat first shows both options were read.
+      await expect(membersApi).toHaveSentFilter(BOTH);
+    });
   });
 
   // The deploy-compatibility rule in apps/admin/README.md: an Admin deployed ahead of a

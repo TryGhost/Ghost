@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { z } from 'zod';
+import { FIELDS_IN_DEVELOPMENT } from '@tryghost/metafield-types/test/fixtures';
 
 const {
   agentProvider,
@@ -9,8 +10,11 @@ const {
   dbUtils,
   hostLimits,
 } = require('../../utils/e2e-framework');
+const DatabaseInfo = require('@tryghost/database-info');
+const { knex } = require('../../../core/server/data/db');
 const models = require('../../../core/server/models');
 const events = require('../../../core/server/lib/common/events');
+const settingsService = require('../../../core/server/services/settings/settings-service');
 
 describe('Member Custom Fields Admin API', function () {
   let agent: {
@@ -26,7 +30,7 @@ describe('Member Custom Fields Admin API', function () {
 
   // The key is minted server-side from the name, so callers pass just a name
   // (and optionally a type) and read the derived key off the result.
-  async function createField(field: { name: string; type?: string }) {
+  async function createField(field: { name: string; type?: string; settings?: unknown }) {
     const { body } = await agent
       .post('members/metafields/custom/')
       .body({ members_metafields: [{ type: 'short_text', ...field }] })
@@ -72,10 +76,6 @@ describe('Member Custom Fields Admin API', function () {
     agent = await agentProvider.getAdminAPIAgent();
     await fixtureManager.init('users');
     await agent.loginAsOwner();
-  });
-
-  beforeEach(function () {
-    mockManager.mockLabsEnabled('membersCustomFields');
   });
 
   afterEach(async function () {
@@ -249,9 +249,37 @@ describe('Member Custom Fields Admin API', function () {
     it('rejects an unsupported type', async function () {
       await agent
         .post('members/metafields/custom/')
-        .body({ members_metafields: [{ name: 'Topic', type: 'boolean' }] })
+        .body({ members_metafields: [{ name: 'Topic', type: 'not_a_type' }] })
         .expectStatus(422);
     });
+
+    // A type still in development can be created only where its Labs flag is on, whoever asks.
+    it.each(FIELDS_IN_DEVELOPMENT)(
+      'refuses a $field.type field while $flag is off',
+      async function ({ field, flag }) {
+        mockManager.mockLabsDisabled(flag);
+
+        const { body } = await agent
+          .post('members/metafields/custom/')
+          .body({ members_metafields: [{ name: 'In development', ...field }] })
+          .expectStatus(422);
+
+        assert.equal(body.errors[0].property, 'type');
+        const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body;
+        assert.deepEqual(list.members_metafields, []);
+      },
+    );
+
+    it.each(FIELDS_IN_DEVELOPMENT)(
+      'creates a $field.type field once $flag is on',
+      async function ({ field, flag }) {
+        mockManager.mockLabsEnabled(flag);
+
+        const created = await createField({ name: 'In development', ...field });
+
+        assert.equal(created.type, field.type);
+      },
+    );
 
     it('rejects a create with no root key', async function () {
       // The framework rejects an empty/malformed body before the query runs,
@@ -738,7 +766,7 @@ describe('Member Custom Fields Admin API', function () {
         .body({
           members_metafields: [
             { name: 'Company', type: 'short_text' },
-            { name: 'Role', type: 'boolean' },
+            { name: 'Role', type: 'not_a_type' },
           ],
         })
         .expectStatus(422);
@@ -770,7 +798,7 @@ describe('Member Custom Fields Admin API', function () {
           members_metafields: [
             { name: 'Company', type: 'short_text' },
             { name: 'Role', type: 'short_text' },
-            { name: 'Bio', type: 'boolean' },
+            { name: 'Bio', type: 'not_a_type' },
           ],
         })
         .expectStatus(422);
@@ -785,7 +813,7 @@ describe('Member Custom Fields Admin API', function () {
     it('does not point at an item when only one definition was sent', async function () {
       const { body } = await agent
         .post('members/metafields/custom/')
-        .body({ members_metafields: [{ name: 'Bio', type: 'boolean' }] })
+        .body({ members_metafields: [{ name: 'Bio', type: 'not_a_type' }] })
         .expectStatus(422);
 
       assert.equal(body.errors[0].property, 'type');
@@ -1468,19 +1496,35 @@ describe('Member Custom Fields Admin API', function () {
       assert.deepEqual(await readValues(memberId), { [company.key]: 'Ghost' });
     });
 
-    it('clears a text value with an empty string', async function () {
+    // A value is never empty, so there is one way to hold nothing: `null` clears, for every type.
+    it('refuses an empty string for a text field, which clears with null', async function () {
       const field = await createField({ name: 'Favourite topic' });
       const memberId = await createMember();
       await setValues(memberId, { [field.key]: 'Ghosts' });
 
-      await setValues(memberId, { [field.key]: '' });
+      const body = await setValues(memberId, { [field.key]: '' }, 422);
+      assert.equal(body.errors[0].context, 'Enter a value, or send null to clear it.');
+      assert.deepEqual(await readValues(memberId), { [field.key]: 'Ghosts' });
 
+      await setValues(memberId, { [field.key]: null });
       assert.deepEqual(await readValues(memberId), {});
     });
 
+    it('keeps a phone number in one international form, however it was written', async function () {
+      // E.164 whatever the separators, and a national (0) after the country code isn't part of
+      // the number, so one number is one value for filters and integrations to rely on.
+      const field = await createField({ name: 'Mobile', type: 'phone' });
+      const memberId = await createMember();
+
+      await setValues(memberId, { [field.key]: '+44 (0)20 7946-0000' });
+      assert.deepEqual(await readValues(memberId), { [field.key]: '+442079460000' });
+
+      await setValues(memberId, { [field.key]: '+1 (415) 555 0100' });
+      assert.deepEqual(await readValues(memberId), { [field.key]: '+14155550100' });
+    });
+
     it('rejects an empty string for a non-text field rather than clearing it', async function () {
-      // '' clears a text field (an emptied input), but for a non-text type
-      // it isn't a clear — it's an invalid value, and nothing is coerced.
+      // '' is no value of any type, so it's an invalid value, and nothing is coerced.
       const field = await createField({ name: 'Home address', type: 'address' });
       const memberId = await createMember();
 
@@ -1526,6 +1570,50 @@ describe('Member Custom Fields Admin API', function () {
         assert.equal(await reasonFor({ [field.key]: { country: 'IRL' } }, memberId), expected);
         assert.equal(await reasonFor({ [field.key]: { country: '12' } }, memberId), expected);
         assert.equal(await reasonFor({ [field.key]: { country: 'D' } }, memberId), expected);
+      });
+
+      it('asks for the country code a phone number was written without', async function () {
+        // Without it there is no telling which country's number it is.
+        const field = await createField({ name: 'Mobile', type: 'phone' });
+        const memberId = await createMember();
+
+        assert.equal(
+          await reasonFor({ [field.key]: '020 7946 0000' }, memberId),
+          'Enter the phone number with its country code, starting with +, like +44 20 7946 0000.',
+        );
+      });
+
+      it('rejects an invalid phone number with an example from its own country', async function () {
+        // A British example is no help to someone writing a Brazilian number.
+        const field = await createField({ name: 'Mobile', type: 'phone' });
+        const memberId = await createMember();
+
+        assert.equal(
+          await reasonFor({ [field.key]: '+44 20 7946 000' }, memberId),
+          'Enter a valid phone number, like +44 7400 123456.',
+        );
+        assert.equal(
+          await reasonFor({ [field.key]: '+55 11 9612' }, memberId),
+          'This phone number is too short. Enter one like +55 11 96123 4567.',
+        );
+        assert.equal(
+          await reasonFor({ [field.key]: '+55 11 96123 45678 99' }, memberId),
+          'This phone number is too long. Enter one like +55 11 96123 4567.',
+        );
+        assert.equal(
+          await reasonFor({ [field.key]: '+999 1234567' }, memberId),
+          'Enter a phone number with a valid country code, like +44 20 7946 0000.',
+        );
+      });
+
+      it('refuses a phone number with an extension rather than dropping it', async function () {
+        const field = await createField({ name: 'Office', type: 'phone' });
+        const memberId = await createMember();
+
+        assert.equal(
+          await reasonFor({ [field.key]: '+1 415 555 0100 ext. 12' }, memberId),
+          'Enter the phone number without an extension.',
+        );
       });
 
       it('asks for a part when an address names none', async function () {
@@ -2022,16 +2110,16 @@ describe('Member Custom Fields Admin API', function () {
       });
     });
 
-    it('clears the part a request names as empty', async function () {
+    it('clears the part a request names as null', async function () {
       const field = await createField({ name: 'Home address', type: 'address' });
       const memberId = await createMember();
 
       await setValues(memberId, {
         [field.key]: { line1: '62 Ghost Lane', city: 'Dublin', country: 'IE' },
       });
-      await setValues(memberId, { [field.key]: { city: '' } });
+      await setValues(memberId, { [field.key]: { city: null } });
 
-      // Emptying is said out loud, because absence already means "no change".
+      // Clearing is said out loud, because absence already means "no change".
       assert.deepEqual(await readValues(memberId), {
         [field.key]: { line1: '62 Ghost Lane', country: 'IE' },
       });
@@ -2044,11 +2132,11 @@ describe('Member Custom Fields Admin API', function () {
       await setValues(memberId, {
         [field.key]: { line1: '62 Ghost Lane', city: 'Dublin', country: 'IE' },
       });
-      await setValues(memberId, { [field.key]: { country: '' } });
+      await setValues(memberId, { [field.key]: { country: null } });
 
       // Every part clears the same way. A country's rule is a pattern that nothing
-      // empty can match, so a rule per part would make this the one part a member
-      // could be given but never rid of.
+      // empty can match, so a clear per part's rule would make this the one part a
+      // member could be given but never rid of.
       assert.deepEqual(await readValues(memberId), {
         [field.key]: { line1: '62 Ghost Lane', city: 'Dublin' },
       });
@@ -2065,16 +2153,16 @@ describe('Member Custom Fields Admin API', function () {
       });
     });
 
-    it('drops a part sent as an empty string rather than storing it as one', async function () {
+    it('refuses a part sent as an empty string rather than storing it as one', async function () {
       const field = await createField({ name: 'Home address', type: 'address' });
       const memberId = await createMember();
 
-      // A part with nothing in it gets no row, so it reads back absent rather than
-      // present-and-empty. That is the whole point of a row per part: there is no
-      // place to record "this part is empty" separately from "this part is unset".
-      await setValues(memberId, { [field.key]: { line1: '62 Ghost Lane', city: '' } });
+      // There is no place to record "this part is empty" separately from "this part is unset":
+      // a part holding nothing has no row. So an empty part is refused rather than read as one
+      // of the two.
+      await setValues(memberId, { [field.key]: { line1: '62 Ghost Lane', city: '' } }, 422);
 
-      assert.deepEqual(await readValues(memberId), { [field.key]: { line1: '62 Ghost Lane' } });
+      assert.deepEqual(await readValues(memberId), {});
     });
 
     it('rejects an address with nothing in it', async function () {
@@ -2362,6 +2450,103 @@ describe('Member Custom Fields Admin API', function () {
     });
   });
 
+  // Saving custom field values must lock only the rows it changes, or two members created at
+  // once each wait for the other's lock until MySQL cancels one of the requests. These tests
+  // create members rather than edit them, because editing two members who get the same
+  // newsletter makes the second edit wait for the first, so their saves never overlap.
+  describe.runIf(DatabaseInfo.isMySQL(knex))('Two members created at once', function () {
+    // How many transactions are waiting for a lock on members_metafield_values.
+    async function savesWaitingToWriteValues(): Promise<number> {
+      const [rows] = await models.Base.knex.raw(`
+        SELECT COUNT(DISTINCT waits.REQUESTING_ENGINE_TRANSACTION_ID) AS waiting
+        FROM performance_schema.data_lock_waits AS waits
+        JOIN performance_schema.data_locks AS requested
+          ON requested.ENGINE_LOCK_ID = waits.REQUESTING_ENGINE_LOCK_ID
+        WHERE requested.OBJECT_SCHEMA = DATABASE()
+          AND requested.OBJECT_NAME = 'members_metafield_values'
+      `);
+      return Number(rows[0].waiting);
+    }
+
+    // Sends both creates while a transaction holds a lock on the whole members_metafield_values
+    // table, so neither create can write a value yet. Once both creates are waiting on that
+    // lock, or one has already answered, the lock is released and both write their values at
+    // the same time, which is when a deadlock can happen. The table is empty at the start of
+    // each test, so a locking read of every row blocks every insert into the table.
+    async function createBothAtOnce(
+      values: [Record<string, unknown>, Record<string, unknown>],
+    ): Promise<Array<Record<string, unknown>>> {
+      const gate = await models.Base.knex.transaction();
+      let created: Array<{ statusCode: number; body: { members: Array<{ id: string }> } }>;
+      let creates: Array<Promise<(typeof created)[number]>> = [];
+      try {
+        await gate('members_metafield_values').forUpdate();
+        let answered = 0;
+        creates = values.map((custom) => {
+          memberCounter += 1;
+          return agent
+            .post('members/')
+            .body({
+              members: [
+                { email: `custom-fields-${memberCounter}@example.com`, metafields: { custom } },
+              ],
+            })
+            .then((response: (typeof created)[number]) => {
+              answered += 1;
+              return response;
+            });
+        });
+        await vi.waitFor(
+          async () => assert.equal((await savesWaitingToWriteValues()) + answered, 2),
+          { timeout: 5000 },
+        );
+        await gate.commit();
+        created = await Promise.all(creates);
+      } finally {
+        if (!gate.isCompleted()) {
+          await gate.rollback();
+        }
+        // Waited for however the test ends, so no create is still writing when the next test
+        // starts.
+        await Promise.allSettled(creates);
+      }
+
+      assert.deepEqual(
+        created.map(({ statusCode }) => statusCode),
+        [201, 201],
+        'one of the creates failed',
+      );
+      return Promise.all(created.map(({ body }) => readValues(body.members[0].id)));
+    }
+
+    it('keeps both lists', async function () {
+      const animals = await createField({
+        name: 'Favourite animals',
+        type: 'list',
+        settings: { options: ['Dog', 'Cat'], multiple: true },
+      });
+
+      const saved = await createBothAtOnce([
+        { [animals.key]: ['Dog'] },
+        { [animals.key]: ['Cat'] },
+      ]);
+
+      assert.deepEqual(saved, [{ [animals.key]: ['Dog'] }, { [animals.key]: ['Cat'] }]);
+    });
+
+    it('keeps both when each clears a field and fills another', async function () {
+      const topic = await createField({ name: 'Favourite topic' });
+      const company = await createField({ name: 'Company' });
+
+      const saved = await createBothAtOnce([
+        { [topic.key]: null, [company.key]: 'Ghost' },
+        { [topic.key]: null, [company.key]: 'Acme' },
+      ]);
+
+      assert.deepEqual(saved, [{ [company.key]: 'Ghost' }, { [company.key]: 'Acme' }]);
+    });
+  });
+
   describe('Values on a site that defines no fields', function () {
     it('omits metafields from the member payload entirely', async function () {
       const memberId = await createMember();
@@ -2450,8 +2635,8 @@ describe('Member Custom Fields Admin API', function () {
     });
 
     // `resource_id` holds 24 characters and a key derived from a publisher-chosen
-    // name can be far longer, so only the row id fits every field. The action
-    // write is best-effort, so a row that does not fit is dropped without error.
+    // name can be far longer, so only the row id fits every field. The action is
+    // written in the add's transaction, so a row that did not fit would fail the add.
     it('records an action for a field whose key is longer than resource_id allows', async function () {
       const field = await createField({ name: 'Favourite ice cream flavour' });
       assert.ok(
@@ -2720,7 +2905,7 @@ describe('Member Custom Fields Admin API', function () {
     // Switching back to a session means logging in again, and this file already logs in
     // close to the limit on login attempts, so clear the count before the later blocks do.
     afterAll(async function () {
-      await dbUtils.truncate('brute');
+      await dbUtils.truncate('rate_limits');
       await agent.loginAsOwner();
     });
 
@@ -2791,23 +2976,57 @@ describe('Member Custom Fields Admin API', function () {
     });
   });
 
-  // The flag governs whether a publisher can set custom fields up, not whether the rest of
-  // Ghost may ask what they are. Admin reads this list to draw screens it renders either
-  // way, and a site that has never enabled the flag has no fields, so the honest answer is
-  // an empty list. Every route that changes something stays behind the flag.
-  describe('Flag disabled', function () {
-    beforeEach(function () {
-      mockManager.restore();
-      mockManager.mockLabsDisabled('membersCustomFields');
+  // Custom fields are released, so a site has them whatever its own Labs setting says. That
+  // includes a site that turned them off in Labs while they were private. Ghost no longer
+  // saves a released flag into the setting, so the row is written as that site left it.
+  describe('Released', function () {
+    let storedLabs: string;
+
+    async function storeLabs(value: string) {
+      await models.Base.knex('settings').where({ key: 'labs' }).update({ value });
+      await settingsService.init();
+    }
+
+    beforeEach(async function () {
+      storedLabs = (await models.Settings.findOne({ key: 'labs' })).get('value');
+      await storeLabs(JSON.stringify({ ...JSON.parse(storedLabs), membersCustomFields: false }));
     });
 
-    it('serves the definitions endpoint, with nothing on it', async function () {
-      const { body } = await agent.get('members/metafields/custom/').expectStatus(200);
-      assert.deepEqual(body.members_metafields, []);
+    afterEach(async function () {
+      await storeLabs(storedLabs);
     });
 
-    it('404s a read of a field that does not exist, rather than hiding the route', async function () {
-      await agent.get('members/metafields/custom/company/').expectStatus(404);
+    it('lets a site that turned custom fields off in Labs before release define one', async function () {
+      const created = await createField({ name: 'Company' });
+      assert.equal(created.key, 'company');
+    });
+  });
+
+  // A released flag can still be switched off, from config or remote flags, and the site
+  // then behaves as it did before release. The flag governs whether a publisher can set
+  // custom fields up, not whether the rest of Ghost may ask what they are: Admin reads this
+  // list to draw screens it renders either way. Every route that changes something stays
+  // behind the flag.
+  describe('Flag switched off', function () {
+    beforeEach(async function () {
+      await createField({ name: 'Company' });
+      configUtils.set('labs', { membersCustomFields: false });
+    });
+
+    afterEach(async function () {
+      await configUtils.restore();
+    });
+
+    it('still lists and reads the fields the site has', async function () {
+      const { body: list } = await agent.get('members/metafields/custom/').expectStatus(200);
+      assert.deepEqual(
+        list.members_metafields.map((field: { key: string }) => field.key),
+        ['company'],
+      );
+      const { body: read } = await agent
+        .get('members/metafields/custom/company/')
+        .expectStatus(200);
+      assert.equal(read.members_metafields[0].key, 'company');
     });
 
     it('404s the create endpoint', async function () {

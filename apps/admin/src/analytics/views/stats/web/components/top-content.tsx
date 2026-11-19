@@ -225,7 +225,7 @@ const TopContent: React.FC<TopContentProps> = ({
               <TabsTrigger value={CONTENT_TYPES.PAGES}>Pages</TabsTrigger>
             </TabsList>
           </Tabs>
-          <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+          <div className="column-label text-xs font-medium tracking-wide text-muted-foreground uppercase">
             Visitors
           </div>
         </div>

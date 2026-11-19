@@ -21,12 +21,13 @@ export class IdentityTokenService {
       claims.role = role;
     }
 
-    const { privateKey, kid } = await this.signingKeys.getSigningKey();
+    const { privateKey, kid, legacy } = await this.signingKeys.getSigningKey();
 
     const token = sign(claims, privateKey, {
       issuer: this.issuer,
       expiresIn: '5m',
       algorithm: 'RS256',
+      allowInsecureKeySizes: legacy,
       keyid: kid,
     });
 

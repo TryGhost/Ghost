@@ -139,6 +139,10 @@ export const useInstallTheme = createMutation<ThemesInstallResponseType, string>
     dataType,
     update: replaceThemesByName,
   },
+  // overwriting the active theme re-syncs its custom settings
+  invalidateQueries: {
+    dataType: customThemeSettingsDataType,
+  },
 });
 
 export const useUploadTheme = createMutation<
@@ -157,6 +161,10 @@ export const useUploadTheme = createMutation<
   updateQueries: {
     dataType,
     update: replaceThemesByName,
+  },
+  // overwriting the active theme re-syncs its custom settings
+  invalidateQueries: {
+    dataType: customThemeSettingsDataType,
   },
 });
 

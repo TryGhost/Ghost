@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {assertPrettifiesTo, callRenderer, html} from '../test-utils/index.js';
+import {assertPrettifiesTo, callRenderer, createDocument, html} from '../test-utils/index.js';
 
 describe('renderers/embed-renderer', function () {
     function getTestData(overrides = {}) {
@@ -132,7 +132,7 @@ describe('renderers/embed-renderer', function () {
             await assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-embed-card">
                     <!--[if !mso !vml]-->
-                    <a class="kg-video-preview" href="undefined" aria-label="Play video" style="mso-hide: all">
+                    <a class="kg-video-preview" href="" aria-label="Play video" style="mso-hide: all">
                         <table
                             cellpadding="0"
                             cellspacing="0"
@@ -181,7 +181,7 @@ describe('renderers/embed-renderer', function () {
                             xmlns:w="urn:schemas-microsoft-com:office:word"
                             coordsize="600,450"
                             coordorigin="0,0"
-                            href="undefined"
+                            href=""
                             style="width: 600px; height: 450px"
                         >
                             <v:rect
@@ -240,6 +240,23 @@ describe('renderers/embed-renderer', function () {
             assert.ok(!result.html.includes('Infinity'));
         });
 
+        it('renders video preview URLs containing special characters', function () {
+            const badUrl = 'https://example.org/a"b>c?x=1&y=<2>';
+            const badThumbnail = 'https://example.org/it\'s "a" thumbnail.jpg';
+            const data = getTestData({url: badUrl});
+            data.metadata.thumbnail_url = badThumbnail;
+
+            const result = renderForEmail(data);
+            const doc = createDocument(result.html);
+            const table = doc.querySelector('.kg-video-preview table');
+
+            assert.equal(doc.querySelector('.kg-video-preview')?.getAttribute('href'), badUrl);
+            assert.equal(table?.getAttribute('background'), badThumbnail);
+            assert.equal(table?.getAttribute('style'), 'background: url(\'https://example.org/it%27s%20%22a%22%20thumbnail.jpg\') left top / cover; mso-hide: all');
+            assert.ok(result.html.includes('href="https://example.org/a&quot;b&gt;c?x=1&amp;y=&lt;2&gt;" style="width:600px;'));
+            assert.ok(result.html.includes('<v:fill src="https://example.org/it&#039;s &quot;a&quot; thumbnail.jpg" type="frame"/>'));
+        });
+
         it('renders a twitter card with tweet_data', function () {
             const tweetData = {
                 id: '1630581157568839683',
@@ -292,6 +309,39 @@ describe('renderers/embed-renderer', function () {
 
             assert.ok(result.html.includes('<table cellspacing="0" cellpadding="0" border="0" class="kg-twitter-card">'));
             assert.ok(result.html.includes(`<a href="https://twitter.com/twitter/status/${tweetData.id}"`));
+        });
+
+        it('renders tweet values containing special characters', function () {
+            const bad = '"Tom" <& Jerry>';
+            const badName = 'Dr. <Who> & "Co"';
+            const badUsername = 'who<&>"';
+            const badUrl = 'https://example.org/a"b>c?x=1&y=<2>';
+            const text = `Hello ${bad} &amp; @someone`;
+            const data = getTwitterTestData();
+            (data.metadata as Record<string, unknown>).tweet_data = {
+                id: '1395670367216619520',
+                author_id: '1',
+                text,
+                users: [{id: '1', name: badName, username: badUsername, profile_image_url: badUrl}],
+                entities: {mentions: [{start: text.indexOf('@someone'), end: text.indexOf('@someone') + 7, username: 'someone'}]},
+                attachments: {media_keys: ['1']},
+                includes: {media: [{url: badUrl}]}
+            };
+
+            const result = renderForEmail(data);
+            const doc = createDocument(result.html);
+            const images = Array.from(doc.querySelectorAll('img')).map(img => img.getAttribute('src'));
+
+            // Text Twitter sent already encoded shows as it would on Twitter
+            assert.ok(doc.body.textContent?.includes(`Hello ${bad} & @someone`));
+            assert.ok(doc.body.textContent?.includes(badName));
+            assert.ok(doc.body.textContent?.includes(`@${badUsername}`));
+            assert.equal(images.filter(src => src === badUrl).length, 2);
+            assert.ok(Array.from(doc.querySelectorAll('span')).some(span => span.textContent === '@someone'));
+
+            const links = Array.from(doc.querySelectorAll('a')).map(link => link.getAttribute('href'));
+            assert.ok(links.length > 3);
+            assert.deepEqual(new Set(links), new Set(['https://twitter.com/twitter/status/1395670367216619520']));
         });
 
         it('falls back to the original embed html when tweet_data.id is missing', function () {

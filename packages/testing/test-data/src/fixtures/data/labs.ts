@@ -7,6 +7,9 @@
  */
 export const labsDefaults: Record<string, boolean> = {
   selfServeArchives: true,
+  membersCustomFields: true,
+  stripeCheckoutCollection: true,
+  customFieldTypePhone: true,
   superEditors: false,
   editorExcerpt: false,
   additionalPaymentMethods: false,

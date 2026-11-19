@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import { settleRequests } from '@test-utils/acceptance/worker';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
@@ -10,10 +10,12 @@ import {
   setup,
   respond,
   canvas,
+  editingCanvas,
   select,
   open,
   close,
 } from './run-history.test-utils';
+import { editEmailSubject, fakeEmailEditorData } from './email-editor.test-utils';
 
 describe('Upcoming steps in active run history', () => {
   const activeHistory = (id = 'a', name = 'Alex') => {
@@ -49,12 +51,21 @@ describe('Upcoming steps in active run history', () => {
     ],
   });
 
+  // The email card starts below the canvas's visible area, and Playwright's scroll into view
+  // doesn't reliably reach it there. Scroll the canvas down to it, as a user would.
+  const scrollToEmail = () => userEvent.wheel(editingCanvas(), { delta: { y: 1000 } });
+
   it('shows the saved downstream path while preserving the unsaved draft', async () => {
     setup();
     const request = fakeAdminEndpoint('GET', '/automations/first/', { automations: [savedPlan()] });
     respond(activeHistory());
+    fakeEmailEditorData();
     await renderAdminApp('/automations/first', flags);
-    await page.getByRole('textbox', { name: 'Subject line' }).fill('Unsaved future subject');
+    await scrollToEmail();
+    await editEmailSubject(
+      page.getByRole('article', { name: /^Send email/ }),
+      'Unsaved future subject',
+    );
     await open();
     expect(request.requests).toHaveLength(1);
     await select();
@@ -93,8 +104,8 @@ describe('Upcoming steps in active run history', () => {
     expect(request.requests).toHaveLength(2);
     await close();
     await expect
-      .element(page.getByRole('textbox', { name: 'Subject line' }))
-      .toHaveValue('Unsaved future subject');
+      .element(page.getByRole('article', { name: 'Send email: Unsaved future subject' }))
+      .toBeVisible();
   });
 
   it('retries history and its saved path together, showing loading until both settle', async () => {
@@ -159,10 +170,15 @@ describe('Upcoming steps in active run history', () => {
     setup();
     fakeAdminEndpoint('GET', '/automations/first/', { automations: [savedPlan()] });
     const historyRequest = respond(activeHistory());
+    fakeEmailEditorData();
     await renderAdminApp('/automations/first', flags);
-    const subject = page.getByRole('textbox', { name: 'Subject line' });
-    await subject.fill('Unsaved future subject');
-    const originalInput = subject.element();
+    await scrollToEmail();
+    await editEmailSubject(
+      page.getByRole('article', { name: /^Send email/ }),
+      'Unsaved future subject',
+    );
+    const card = page.getByRole('article', { name: 'Send email: Unsaved future subject' });
+    const originalCard = card.element();
     fakeAdminEndpoint('GET', '/automations/first/', {
       automations: [savedPlan({ lexical: '{' })],
     });
@@ -171,7 +187,7 @@ describe('Upcoming steps in active run history', () => {
     await expect
       .element(canvas().getByRole('alert'))
       .toHaveTextContent('Could not load run history');
-    expect(originalInput.isConnected).toBe(true);
+    expect(originalCard.isConnected).toBe(true);
     await expect(canvas().getByRole('button')).toHaveCount(1);
     await expect.element(canvas().getByRole('button', { name: 'Retry' })).toBeVisible();
 
@@ -183,8 +199,7 @@ describe('Upcoming steps in active run history', () => {
     expect(historyRequest.requests).toHaveLength(2);
     expect(planRequest.requests).toHaveLength(1);
     await close();
-    expect(subject.element()).toBe(originalInput);
-    await expect.element(subject).toHaveValue('Unsaved future subject');
+    expect(card.element()).toBe(originalCard);
   });
 
   it('ignores a late plan from an earlier selection, including A to B to A', async () => {

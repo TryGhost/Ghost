@@ -8,6 +8,7 @@ import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {VideoCard} from '../components/ui/cards/VideoCard';
+import {VideoThumbnailPicker} from '../components/ui/VideoThumbnailPicker';
 import {getImageDimensions} from '../utils/getImageDimensions';
 import {isCardWidth} from '@tryghost/kg-default-nodes';
 import {openFileSelection} from '../utils/openFileSelection';
@@ -15,6 +16,9 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function VideoNodeComponent({
     nodeKey,
+    src,
+    width,
+    height,
     thumbnail,
     customThumbnail,
     captionEditor,
@@ -38,6 +42,7 @@ export function VideoNodeComponent({
     const thumbnailDragHandler = useFileDragAndDrop({handleDrop: handleThumbnailDrop});
     const [metadataExtractionErrors, setMetadataExtractionErrors] = useState([]);
     const [showSnippetToolbar, setShowSnippetToolbar] = useState(false);
+    const [isPickingThumbnail, setPickingThumbnail] = useState(false);
 
     const videoMimeTypes = fileUploader.fileTypes.video?.mimeTypes || ['video/*'];
 
@@ -119,20 +124,31 @@ export function VideoNodeComponent({
     const handleCustomThumbnailChange = async (files) => {
         const customThumbnailUploadResult = await customThumbnailUploader.upload(files);
         const imageUrl = customThumbnailUploadResult?.[0]?.url;
+        if (!imageUrl) {
+            return;
+        }
         const {width, height} = await getImageDimensions(imageUrl);
 
-        if (imageUrl) {
-            editor.update(() => {
-                const node = $getNodeByKey(nodeKey);
-                node.customThumbnailSrc = imageUrl;
-                node.thumbnailWidth = width;
-                node.thumbnailHeight = height;
-            });
-        }
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.customThumbnailSrc = imageUrl;
+            node.thumbnailWidth = width;
+            node.thumbnailHeight = height;
+        });
     };
 
     const onCustomThumbnailChange = async (e) => {
         await handleCustomThumbnailChange(e.target.files);
+    };
+
+    const onThumbnailFrameSelect = async (frame) => {
+        setPickingThumbnail(false);
+        await handleCustomThumbnailChange([new File([frame], 'video-thumbnail.jpg', {type: 'image/jpeg'})]);
+    };
+
+    const onThumbnailImageUpload = async (files) => {
+        setPickingThumbnail(false);
+        await handleCustomThumbnailChange(files);
     };
 
     async function handleVideoDrop(files) {
@@ -225,8 +241,20 @@ export function VideoNodeComponent({
                 onCardWidthChange={onCardWidthChange}
                 onCustomThumbnailChange={onCustomThumbnailChange}
                 onLoopChange={onLoopChange}
+                onPickCustomThumbnail={() => setPickingThumbnail(true)}
                 onRemoveCustomThumbnail={onRemoveCustomThumbnail}
                 onVideoFileChange={onVideoFileChange}
+            />
+            <VideoThumbnailPicker
+                isOpen={isPickingThumbnail}
+                mimeTypes={fileUploader.fileTypes.image.mimeTypes}
+                thumbnail={thumbnail}
+                videoHeight={height}
+                videoSrc={src}
+                videoWidth={width}
+                onClose={() => setPickingThumbnail(false)}
+                onSelectFrame={onThumbnailFrameSelect}
+                onUploadImage={onThumbnailImageUpload}
             />
             <ActionToolbar
                 data-kg-card-toolbar="video"

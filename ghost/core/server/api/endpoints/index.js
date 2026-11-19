@@ -200,6 +200,10 @@ module.exports = {
     return apiFramework.pipeline(require('./slack'), localUtils);
   },
 
+  get presence() {
+    return apiFramework.pipeline(require('./presence'), localUtils);
+  },
+
   get config() {
     return apiFramework.pipeline(require('./config'), localUtils);
   },
@@ -366,10 +370,6 @@ module.exports = {
 
   get gifts() {
     return apiFramework.pipeline(require('./gifts'), localUtils);
-  },
-
-  get supportRequests() {
-    return apiFramework.pipeline(require('./support-requests'), localUtils);
   },
 
   get recommendationsPublic() {

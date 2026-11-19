@@ -66,10 +66,6 @@ describe('Members filtering by custom fields', function () {
     await agent.loginAsOwner();
   });
 
-  beforeEach(function () {
-    mockManager.mockLabsEnabled('membersCustomFields');
-  });
-
   afterEach(async function () {
     mockManager.restore();
     await models.Base.knex('members_metafield_values').del();
@@ -205,6 +201,15 @@ describe('Members filtering by custom fields', function () {
     });
 
     it('finds members holding every one of several options (is all of)', async function () {
+      const [, both] = await animalLovers(['Dog'], ['Cat', 'Dog'], ['Cat']);
+
+      const matched = await browse(
+        "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dog'+'Cat'])",
+      );
+      assert.deepEqual(matched, [both.email]);
+    });
+
+    it('finds members holding every one of several options, one filter for each', async function () {
       const [, both] = await animalLovers(['Dog'], ['Cat', 'Dog'], ['Cat']);
 
       const matched = await browse(

@@ -21,9 +21,7 @@ import {
 } from '@tryghost/admin-x-framework';
 import {
   type AppInstallation,
-  type AppInstallationsResponseType,
   type AppSession,
-  appInstallationPath,
   useBrowseAppInstallations,
   useReadAppInstallation,
   useStartAppSession,
@@ -33,18 +31,26 @@ import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/
 import { type SiteData, useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import type { User } from '@tryghost/admin-x-framework/api/users';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
-import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
+import { editorReturnState } from '@/editor/api';
 import { usePageTitle } from '@/hooks/use-document-title';
 import { useThemeContext } from '@/providers/theme-context';
+import { WithAppFooter } from './components/app-footer';
 import { AppsGate } from './components/apps-gate';
 import { InstallDialog, type InstallDone } from './components/install-dialog/install-dialog';
 import { createAppFrameSession } from './lib/app-frame-session';
-import { appEntryPath, appPathFromLocation, appPathRoute, isAppLocation } from './lib/app-path';
+import {
+  appEntryPath,
+  appFrameUrl,
+  appPathFromLocation,
+  appPathRoute,
+  isAppLocation,
+} from './lib/app-path';
 import { createAdminApiFetch } from './lib/bridge-fetch';
 import { placeRoute } from './lib/bridge-places';
-import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostOrigin } from './lib/frame';
-import { isAppUnavailable, isInstallationNotFound, isSessionsRouteMissing } from './lib/not-found';
+import { supportLink } from './lib/developer';
+import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostHost } from './lib/frame';
+import { isInstallationNotFound, sessionFailureOf, type SessionFailure } from './lib/not-found';
 import { reportAppsError } from './lib/report-error';
 import { appRoute } from './lib/routes';
 import { appPageUrl, servedFrom } from './lib/served-from';
@@ -58,6 +64,22 @@ const Centered: React.FC<{ children: React.ReactNode; testId?: string }> = ({
   </div>
 );
 
+/** How a publisher reaches the developer from a screen where the app couldn't open. */
+const ContactSupport: React.FC<{ manifest: AppInstallation['manifest'] }> = ({ manifest }) => {
+  const support = supportLink(manifest);
+  return (
+    <Button variant="outline" asChild>
+      <a
+        href={support.href}
+        rel="noopener noreferrer"
+        target={support.opensPage ? '_blank' : undefined}
+      >
+        Contact support
+      </a>
+    </Button>
+  );
+};
+
 const NotResponding: React.FC<{
   installation: AppInstallation;
   startedAt: Date;
@@ -68,9 +90,7 @@ const NotResponding: React.FC<{
       <EmptyIndicator
         actions={
           <>
-            <Button variant="outline" asChild>
-              <Link to="/apps">Back to Apps</Link>
-            </Button>
+            <ContactSupport manifest={installation.manifest} />
             <Button onClick={onRetry}>Try again</Button>
           </>
         }
@@ -89,26 +109,60 @@ const NotResponding: React.FC<{
 /**
  * Shown when Ghost couldn't use the app's manifest as the session started. The session's response
  * has no installation, so the app's name comes from the list the sidebar reads.
+ *
+ * There's no Uninstall here. When Ghost couldn't confirm the app, uninstalling it and installing
+ * it again from a link is the one way another developer's key gets pinned, so the screen sends the
+ * publisher to the developer instead. Uninstall stays on the app's details page.
+ *
+ * Nor is there a Contact support link then. The developer's link often lives on the app's own
+ * origin, which is the one Ghost couldn't confirm, so the screen offers Back to Apps.
  */
-const Unavailable: React.FC<{ installationId: string; onRetry: () => void }> = ({
-  installationId,
-  onRetry,
-}) => {
-  const { data } = useBrowseAppInstallations({ defaultErrorHandler: false });
+const Unavailable: React.FC<{
+  installationId: string;
+  failure: SessionFailure;
+  onRetry: () => void;
+}> = ({ installationId, failure, onRetry }) => {
+  const { data, isLoading } = useBrowseAppInstallations({ defaultErrorHandler: false });
   const installation = data?.app_installations.find(({ id }) => id === installationId);
+  const name = installation?.manifest.name ?? 'This app';
+  const offersSupport = !failure.unconfirmed;
+  const at = installation ? ` at ${servedFrom(installation.manifest)}` : '';
+  const explanation = failure.unconfirmed
+    ? `Ghost couldn’t confirm the app${at} is the one you installed. Contact its developer, and don’t install it again from a link until they’ve fixed it. Your site isn’t affected.`
+    : `Ghost couldn’t load the app${at}. It might be down or misconfigured. Your site isn’t affected.`;
   return (
     <Centered testId="app-unavailable">
       <EmptyIndicator
         actions={
           <>
-            <Button variant="outline" asChild>
-              <Link to="/apps">Back to Apps</Link>
-            </Button>
+            {/* Held in place until the list arrives, so no button changes or moves under the cursor. */}
+            {offersSupport && isLoading ? (
+              <Button className="invisible" tabIndex={-1} variant="outline" aria-hidden>
+                Contact support
+              </Button>
+            ) : offersSupport && installation ? (
+              <ContactSupport manifest={installation.manifest} />
+            ) : (
+              <Button variant="outline" asChild>
+                <Link to="/apps">Back to Apps</Link>
+              </Button>
+            )}
             <Button onClick={onRetry}>Try again</Button>
           </>
         }
-        description={`Ghost couldn’t confirm the app’s details${installation ? ` at ${servedFrom(installation.manifest)}` : ''}. It might be down, or no longer serve the app you installed. Your site isn’t affected.`}
-        title={`${installation?.manifest.name ?? 'This app'} isn’t available`}
+        description={
+          <>
+            {explanation}
+            <span className="mt-2 block font-mono text-xs" data-testid="app-failure-code">
+              {failure.code}
+            </span>
+          </>
+        }
+        title={
+          failure.unconfirmed
+            ? `Ghost couldn’t confirm this is ${installation?.manifest.name ?? 'the app you installed'}`
+            : `${name} isn’t available right now`
+        }
       >
         <LucideIcon.TriangleAlert />
       </EmptyIndicator>
@@ -140,15 +194,11 @@ const SESSION_END_SEARCH_PARAMS: Record<string, string> = {};
  *
  * This only sees changes this tab reads. Changes made in another tab, or by another staff user, are
  * left to the app token that comes with Permissions and auth.
- *
- * Ghost versions from before app sessions don't give installations a revision, so there's nothing
- * to compare, and nothing is read.
  */
 function useSessionEnd(session: AppSession, onEnded: () => void) {
   const [since] = useState(() => Date.now());
   const started = session.installation.revision;
   const { data, dataUpdatedAt, isFetching } = useReadAppInstallation(session.installation.id, {
-    enabled: started !== undefined,
     defaultErrorHandler: false,
     // Without the history the details page shows; this one has no use for it.
     searchParams: SESSION_END_SEARCH_PARAMS,
@@ -164,13 +214,7 @@ function useSessionEnd(session: AppSession, onEnded: () => void) {
   });
   const revision = data?.app_installations[0]?.revision;
   useEffect(() => {
-    if (
-      !isFetching &&
-      dataUpdatedAt >= since &&
-      started !== undefined &&
-      revision !== undefined &&
-      revision > started
-    ) {
+    if (!isFetching && dataUpdatedAt >= since && revision !== undefined && revision > started) {
       onEnded();
     }
   }, [dataUpdatedAt, isFetching, onEnded, revision, started, since]);
@@ -213,7 +257,7 @@ const AppFrame: React.FC<{
     site: { url: site.url, title: site.title, timezone, locale: site.locale },
     user: { id: user.id, role: user.roles[0]?.name ?? '' },
     theme,
-    session: { revision: installation.revision ?? 0 },
+    session: { revision: installation.revision },
     path,
   };
   // Read when the page connects, so the app starts with Admin's context at that moment.
@@ -248,7 +292,11 @@ const AppFrame: React.FC<{
       fetchAdminApi: createAdminApiFetch({ apiRoot: new URL(apiUrl('/')), ghostVersion }),
       navigate: (next, { replace, move: appMove }) =>
         navigateForApp(appPathRoute(id, next, entryPath), { replace, state: { appMove } }),
-      open: (place) => navigateForApp(placeRoute(place)),
+      // Wherever the app opens, Admin records the way back to it. The app can't set this.
+      open: (place, appPath) =>
+        navigateForApp(placeRoute(place), {
+          state: editorReturnState(appPathRoute(id, appPath, entryPath)),
+        }),
     }),
   );
   const { status, title, attempt, startedAt } = useSyncExternalStore(
@@ -258,9 +306,9 @@ const AppFrame: React.FC<{
   // Each load of the frame opens the app's page at the app's current route, so a reload of Admin,
   // or coming back to the app, shows the page the publisher was on, also in a multi-page app. The
   // address is fixed for the life of the frame: changing it would reload the page.
-  const [frameSource, setFrameSource] = useState(() => ({ attempt, src: new URL(path, url).href }));
+  const [frameSource, setFrameSource] = useState(() => ({ attempt, src: appFrameUrl(url, path) }));
   if (frameSource.attempt !== attempt) {
-    setFrameSource({ attempt, src: new URL(path, url).href });
+    setFrameSource({ attempt, src: appFrameUrl(url, path) });
   }
 
   useAppTitle(manifest.name, title);
@@ -283,34 +331,36 @@ const AppFrame: React.FC<{
   }
 
   return (
-    <div className="relative size-full">
-      {status === 'loading' && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <LoadingIndicator size="lg" />
-        </div>
-      )}
-      <iframe
-        key={attempt}
-        ref={frameSession.attach}
-        allow={APP_FRAME_ALLOW}
-        aria-hidden={status !== 'ready'}
-        // Hidden, not transparent: a frame that's still loading mustn't take focus or clicks.
-        // A block, with no border: inline, the frame would sit on the text baseline and
-        // leave a gap under itself for the page to scroll.
-        className={cn('block size-full border-0', status !== 'ready' && 'invisible')}
-        data-testid="app-frame"
-        referrerPolicy="strict-origin-when-cross-origin"
-        sandbox={APP_FRAME_SANDBOX}
-        src={frameSource.src}
-        title={manifest.name}
-      />
-    </div>
+    <WithAppFooter app={installation}>
+      <div className="relative size-full">
+        {status === 'loading' && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <LoadingIndicator size="lg" />
+          </div>
+        )}
+        <iframe
+          key={attempt}
+          ref={frameSession.attach}
+          allow={APP_FRAME_ALLOW}
+          aria-hidden={status !== 'ready'}
+          // Hidden, not transparent: a frame that's still loading mustn't take focus or clicks.
+          // A block, with no border: inline, the frame would sit on the text baseline and
+          // leave a gap under itself for the page to scroll.
+          className={cn('block size-full border-0', status !== 'ready' && 'invisible')}
+          data-testid="app-frame"
+          referrerPolicy="strict-origin-when-cross-origin"
+          sandbox={APP_FRAME_SANDBOX}
+          src={frameSource.src}
+          title={manifest.name}
+        />
+      </div>
+    </WithAppFooter>
   );
 };
 
 /**
- * The page of an app that shouldn't be framed: it's on Ghost's own address, so it would
- * be Ghost, not the app. Nothing of it loads.
+ * The page of an app that shouldn't be framed: it's on Ghost's own host, so it would be
+ * Ghost, or be sent Ghost's cookies. Nothing of it loads.
  */
 const NotFramed: React.FC<{ installation: AppInstallation }> = ({ installation }) => (
   <Centered testId="app-not-framed">
@@ -320,7 +370,7 @@ const NotFramed: React.FC<{ installation: AppInstallation }> = ({ installation }
           <Link to="/apps">Back to Apps</Link>
         </Button>
       }
-      description="Its page is at the same address as Ghost, which Admin doesn’t show. Reinstall the app from its own address."
+      description="Its page is on the same host as Ghost, which Admin doesn’t show, even on another port. Reinstall the app from its own host."
       title={`${installation.manifest.name} can’t open here`}
     >
       <LucideIcon.ShieldOff />
@@ -330,11 +380,11 @@ const NotFramed: React.FC<{ installation: AppInstallation }> = ({ installation }
 
 /**
  * An active app loads in its frame, once its page is known to be somewhere other than
- * Ghost: Admin's own address, or the site's, which Admin may be served from too. Nothing
+ * Ghost: Admin's own host, or the site's, which Admin may be served from too. Nothing
  * is framed until the site's address is known, so the check can't be skipped by timing,
  * or by the site's address failing to load. Nothing is framed before the staff user is known
- * either, so the app never starts without knowing who is using it. The origin check applies
- * to the URL the frame starts from; `isGhostOrigin` describes what it doesn't cover.
+ * either, so the app never starts without knowing who is using it. The host check applies
+ * to the URL the frame starts from; `isGhostHost` describes what it doesn't cover.
  */
 const ActiveApp: React.FC<{ session: AppSession; onEnded: () => void }> = ({
   session,
@@ -370,23 +420,29 @@ const ActiveApp: React.FC<{ session: AppSession; onEnded: () => void }> = ({
       };
     }
     return (
-      <Centered>
-        {failure ? (
-          <Stack align="center" gap="md">
-            <Text tone="secondary">{failure.message}</Text>
-            <Button variant="outline" onClick={() => void failure.retry()}>
-              Retry
-            </Button>
-          </Stack>
-        ) : (
-          <LoadingIndicator size="md" />
-        )}
-      </Centered>
+      <WithAppFooter app={installation}>
+        <Centered>
+          {failure ? (
+            <Stack align="center" gap="md">
+              <Text tone="secondary">{failure.message}</Text>
+              <Button variant="outline" onClick={() => void failure.retry()}>
+                Retry
+              </Button>
+            </Stack>
+          ) : (
+            <LoadingIndicator size="md" />
+          )}
+        </Centered>
+      </WithAppFooter>
     );
   }
   const ghostUrls = [window.location.href, site.data.site.url];
-  if (isGhostOrigin(appPageUrl(installation.manifest), ghostUrls)) {
-    return <NotFramed installation={installation} />;
+  if (isGhostHost(appPageUrl(installation.manifest), ghostUrls)) {
+    return (
+      <WithAppFooter app={installation}>
+        <NotFramed installation={installation} />
+      </WithAppFooter>
+    );
   }
   const { settings: values } = settings.data;
   const surfaceOrigin = new URL(appPageUrl(installation.manifest)).origin;
@@ -468,8 +524,7 @@ const NotInstalled: React.FC = () => (
 /**
  * Starts a session of the app when the page opens, and again on `restart`. Ghost first re-checks
  * the app's manifest, and only its response decides what the page shows. No part of the app loads
- * before then. Ghost versions from before app sessions can't re-check, so a plain read of the
- * installation decides instead.
+ * before then.
  */
 function useAppSession(installationId: string): {
   settled: boolean;
@@ -478,7 +533,6 @@ function useAppSession(installationId: string): {
   /** Ends this session and starts a new one, for example after approving changes. */
   restart: () => void;
 } {
-  const fetchApi = useFetchApi();
   const { mutateAsync: start } = useStartAppSession();
   const [generation, setGeneration] = useState(0);
 
@@ -487,27 +541,8 @@ function useAppSession(installationId: string): {
   const { data, error, isPending } = useQuery({
     queryKey: ['app-session', installationId, generation],
     // `null` when there's nothing to open, because a query can't return `undefined`.
-    queryFn: async (): Promise<AppSession | null> => {
-      try {
-        return (await start(installationId)).app_sessions[0] ?? null;
-      } catch (startError) {
-        if (!isSessionsRouteMissing(startError)) {
-          throw startError;
-        }
-      }
-
-      // Admin and Core deploy independently, so this Admin may be talking to a Core from before app
-      // sessions, which has no route for them. The app then opens as it did before sessions: from a
-      // plain read of the installation, without a re-check, and pinned to the revision that read
-      // returned.
-      const read = await fetchApi<AppInstallationsResponseType>(
-        apiUrl(appInstallationPath(installationId)),
-      );
-      const installation = read.app_installations[0];
-      // That Core's installations may not have a revision either. The app then gets revision 0,
-      // which never changes.
-      return installation ? { installation } : null;
-    },
+    queryFn: async (): Promise<AppSession | null> =>
+      (await start(installationId)).app_sessions[0] ?? null,
     staleTime: Infinity,
     gcTime: 0,
     retry: false,
@@ -528,12 +563,13 @@ export const AppPage: React.FC = () => {
   const { settled, session, error, restart } = useAppSession(installationId);
   const installation = session?.installation;
   const notFound = isInstallationNotFound(error);
-  const unavailable = isAppUnavailable(error);
+  const failure = sessionFailureOf(error);
+  const appFailed = failure !== undefined;
   useEffect(() => {
-    if (error && !notFound && !unavailable) {
+    if (error && !notFound && !appFailed) {
       reportAppsError(error);
     }
-  }, [error, notFound, unavailable]);
+  }, [error, notFound, appFailed]);
 
   let body: React.ReactNode;
   if (!settled) {
@@ -545,9 +581,13 @@ export const AppPage: React.FC = () => {
   } else if (session && installation?.status === 'active') {
     body = <ActiveApp session={session} onEnded={restart} />;
   } else if (installation?.status === 'suspended') {
-    body = <NeedsApproval installation={installation} onApproved={restart} />;
-  } else if (unavailable) {
-    body = <Unavailable installationId={installationId} onRetry={restart} />;
+    body = (
+      <WithAppFooter app={installation}>
+        <NeedsApproval installation={installation} onApproved={restart} />
+      </WithAppFooter>
+    );
+  } else if (failure) {
+    body = <Unavailable failure={failure} installationId={installationId} onRetry={restart} />;
   } else if (error && !notFound) {
     body = (
       <Centered>
@@ -564,9 +604,9 @@ export const AppPage: React.FC = () => {
     body = <NotInstalled />;
   }
 
-  // Ghost keeps only the nav; the rest is the app's, edge to edge. Like Admin's own screens,
-  // the app brings its page gutter (Shade's page templates do), so it can bleed a sticky
-  // header or a scrolling row to the edge.
+  // Ghost keeps the nav and the footer; the rest is the app's, edge to edge. Only the frame
+  // scrolls, so the footer stays in view. Like Admin's own screens, the app brings its page gutter
+  // (Shade's page templates do), so it can bleed a sticky header or a scrolling row to the edge.
   return (
     <div className="size-full" data-testid="app-page">
       {body}

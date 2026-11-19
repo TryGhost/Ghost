@@ -3,8 +3,6 @@ import type { Promisable, ReadonlyDeep } from 'type-fest';
 import type { z } from 'zod';
 import { addAutomationDataSchema } from './automations-schemas';
 
-export type AutomationTriggerTierScope = 'free' | 'all_paid' | 'selected_paid';
-
 export type AddAutomationData = z.infer<typeof addAutomationDataSchema>;
 
 export type ActionToInsert = {
@@ -38,6 +36,24 @@ export type RunToInsert = {
   member_email: string;
 };
 
+export type AutomatedEmailRecipientTrackingData = {
+  deliveredAt?: Date;
+  openedAt?: Date;
+  automationActionRevisionId: string;
+};
+
+export type TrackEmailClickedOptions = ReadonlyDeep<{
+  automationActionRevisionId: string;
+  automationRunStepId: string;
+  memberId: string;
+  clickedAt: Date;
+}>;
+
+type EmailRecipientClickRow = {
+  id: string;
+  clicked_at: Date | null;
+};
+
 type NextActionRevisionRow = {
   automation_id: string;
   action_id: string;
@@ -56,20 +72,43 @@ export type AutomationsRepository2<Connection> = {
   /** Delete all trigger rules for an automation. */
   deleteTriggerRules: (connection: Connection, automationId: string) => Promisable<void>;
 
+  /** Fetch some member data and lock them for the rest of the connection. */
+  fetchAndLockMembers: (
+    connection: Connection,
+    memberIds: Iterable<string>,
+  ) => Promisable<Array<{ id: string; email: string }>>;
+
+  /** Find enrollments for some members in some automations. */
+  findAutomationMemberEnrollments: (
+    connection: Connection,
+    automationIds: ReadonlyArray<string>,
+    memberIds: ReadonlyArray<string>,
+  ) => Promisable<Array<{ automation_id: string; member_id: string }>>;
+
+  /** Find (and lock) a recipient with click tracking enabled. */
+  findEmailRecipientForClick: (
+    connection: Connection,
+    options: Omit<TrackEmailClickedOptions, 'clickedAt'>,
+  ) => Promisable<undefined | EmailRecipientClickRow>;
+
   /** Find the first action revision for all automations that match these trigger criteria. */
   findFirstActionRevisions: (
     connection: Connection,
     options: ReadonlyDeep<
       | {
-          event: 'membership_started';
+          eventName: 'membership_started';
           memberStatus: 'free' | 'paid';
           memberTierIds: string[];
         }
       | {
-          event: 'paid_subscription_changed';
+          eventName: 'paid_subscription_changed';
           memberStatus: 'free' | 'paid';
           memberTierIds: string[];
           previousMemberTierIds: string[];
+        }
+      | {
+          eventName: 'label_added';
+          labelId: string;
         }
     >,
   ) => Promisable<NextActionRevisionRow[]>;
@@ -77,12 +116,15 @@ export type AutomationsRepository2<Connection> = {
   /** Get the count of all automations. */
   getNumberOfAutomations: (connection: Connection) => Promisable<number>;
 
-  /** Has this member ever entered this automation? */
-  hasMemberEnteredAutomation: (
+  /** Increment the number of recipients that clicked this revision. */
+  incrementEmailClickedCount: (connection: Connection, revisionId: string) => Promisable<void>;
+
+  /** Increment the number of recipients that opened this revision. */
+  incrementEmailOpenedCount: (
     connection: Connection,
-    automationId: string,
-    memberId: string,
-  ) => Promisable<boolean>;
+    actionRevisionId: string,
+    count: number,
+  ) => Promisable<void>;
 
   /** Insert automation actions. */
   insertActions: (
@@ -105,12 +147,6 @@ export type AutomationsRepository2<Connection> = {
     toInsert: ReadonlyArray<AutomationTriggerRule>,
   ) => Promisable<void>;
 
-  /** Is this run's automation active? */
-  isAutomationActiveForRun: (
-    connection: Connection,
-    automationRunId: string,
-  ) => Promisable<boolean>;
-
   /** Is this step's automation active? */
   isAutomationActiveForRunStep: (connection: Connection, runStepId: string) => Promisable<boolean>;
 
@@ -118,10 +154,33 @@ export type AutomationsRepository2<Connection> = {
   loadEdgeRows: (connection: Connection, automationId: string) => Promisable<EdgeRow[]>;
 
   /**
-   * Lock a member for the lifetime of this transaction. Useful to make sure a
-   * member doesn't change during an operation.
+   * Lock revisions for the lifetime of this transaction. Useful to avoid
+   * foreign-key lock deadlocks.
    */
-  lockMember: (connection: Connection, memberId: string) => Promisable<void>;
+  lockActionRevisions: (connection: Connection, revisionIds: Iterable<string>) => Promisable<void>;
+
+  /** Lock recipients whose first open has not yet been recorded. */
+  lockNotYetOpenedEmailRecipients: (
+    connection: Connection,
+    automatedEmailRecipientIds: readonly string[],
+  ) => Promisable<Set<string>>;
+
+  /**
+   * Set the email's "clicked" timestamp. Returns whether a recipient was
+   * updated.
+   */
+  setEmailRecipientClickedAt: (
+    connection: Connection,
+    recipientId: string,
+    clickedAt: Readonly<Date>,
+  ) => Promisable<boolean>;
+
+  /** Preserve the earliest delivery and open timestamps for a recipient. */
+  setEmailRecipientDeliveredAndOpenedAt: (
+    connection: Connection,
+    automatedEmailRecipientId: string,
+    events: ReadonlyDeep<Pick<AutomatedEmailRecipientTrackingData, 'deliveredAt' | 'openedAt'>>,
+  ) => Promisable<void>;
 
   /** Run a function within a repository connection. */
   withConnection: <ReturnT>(fn: (connection: Connection) => ReturnT) => ReturnT;

@@ -313,6 +313,7 @@ export const Surface: Story = {
         { name: 'glass', cssVar: '--surface-glass' },
         { name: 'filter-bar', cssVar: '--filter-bar-background' },
         { name: 'control-readonly', cssVar: '--control-readonly-surface' },
+        { name: 'field', cssVar: '--field-surface' },
       ]}
       title="Surface"
     />
@@ -382,6 +383,7 @@ export const Border: Story = {
       swatches={[
         { name: 'default', cssVar: '--border-default' },
         { name: 'control-border', cssVar: '--control-border' },
+        { name: 'field-border', cssVar: '--field-border' },
         { name: 'strong', cssVar: '--border-strong' },
         { name: 'glass', cssVar: '--border-glass' },
         { name: 'focus-ring', cssVar: '--focus-ring' },
@@ -406,8 +408,24 @@ export const State: Story = {
       swatches={[
         { name: 'info', cssVar: '--state-info' },
         { name: 'success', cssVar: '--state-success' },
+        { name: 'character count', cssVar: '--character-count' },
         { name: 'warning', cssVar: '--state-warning' },
+        { name: 'warning surface', cssVar: '--state-warning-surface' },
+        { name: 'warning border', cssVar: '--state-warning-border' },
+        { name: 'warning fill', cssVar: '--state-warning-fill' },
         { name: 'danger', cssVar: '--state-danger' },
+        { name: 'event email surface', cssVar: '--event-email-surface' },
+        { name: 'event email icon', cssVar: '--event-email-icon' },
+        { name: 'event gain surface', cssVar: '--event-gain-surface' },
+        { name: 'event gain icon', cssVar: '--event-gain-icon' },
+        { name: 'event loss surface', cssVar: '--event-loss-surface' },
+        { name: 'event loss icon', cssVar: '--event-loss-icon' },
+        { name: 'event warning surface', cssVar: '--event-warning-surface' },
+        { name: 'event warning icon', cssVar: '--event-warning-icon' },
+        { name: 'event engagement surface', cssVar: '--event-engagement-surface' },
+        { name: 'event engagement icon', cssVar: '--event-engagement-icon' },
+        { name: 'event gift surface', cssVar: '--event-gift-surface' },
+        { name: 'event gift icon', cssVar: '--event-gift-icon' },
       ]}
       title="State"
     />

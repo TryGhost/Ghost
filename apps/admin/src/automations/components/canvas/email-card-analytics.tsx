@@ -62,7 +62,7 @@ export const EmailCardCollapse: React.FC<{ open: boolean; children: React.ReactN
     <div
       ref={ref}
       className={cn(
-        'grid transition-[grid-template-rows,opacity]',
+        'grid grid-cols-1 transition-[grid-template-rows,opacity]',
         EMAIL_CARD_EASE,
         open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0',
       )}

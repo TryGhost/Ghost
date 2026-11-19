@@ -58,4 +58,19 @@ m+HAlDNOZe7ryiuK7dj04wY2qoO/kCsxO9bR1M8LGRWFIHd4e8ExGWn5Qxk0/9X+
     assert.equal(claims.iss, 'issuer.com');
     assert.equal(decode(token, { complete: true })?.header.kid, kid);
   });
+
+  // @TODO: Ghost 7.0 - remove with legacy key support
+  it('Can create JWTs with a legacy 1024-bit key', async function () {
+    const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+      modulusLength: 1024,
+      publicKeyEncoding: { type: 'pkcs1', format: 'pem' },
+      privateKeyEncoding: { type: 'pkcs1', format: 'pem' },
+    });
+    const service = new IdentityTokenService(staticSigningKeys(privateKey), 'issuer.com');
+
+    const token = await service.getTokenForUser('egg@ghost.org');
+
+    const claims = verify(token, publicKey, { algorithms: ['RS256'] });
+    assert.equal(typeof claims === 'string' ? null : claims.sub, 'egg@ghost.org');
+  });
 });

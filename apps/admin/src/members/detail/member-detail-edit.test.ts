@@ -2,9 +2,10 @@ import {
   NOTE_MAX_LENGTH,
   buildCustomFieldSavePayload,
   buildMemberFieldEditPayload,
+  customFieldSave,
+  editorFor,
   getCustomFieldValidationErrors,
   getDefaultNewsletterIdsForNewMember,
-  getEditableCustomFieldValues,
   getEmailErrorMessage,
   getMemberEditableSlice,
   getMemberSuppressionInfo,
@@ -14,9 +15,20 @@ import {
   parseCustomFieldServerErrors,
   resolveSlugsToLabels,
   toggleMemberNewsletter,
+  type CustomFieldEditor,
 } from './member-detail-edit';
-import { memberCustomFieldValueSchema } from '@tryghost/admin-x-framework/api/member-custom-fields';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
+import type { FieldOfShape, FieldShape } from '@tryghost/metafield-types/structure';
+import {
+  SHAPES,
+  accept,
+  heldValue,
+  shaped,
+  type ShapedField,
+  type TypedSettings,
+} from '@tryghost/metafield-types';
+import { ALL_FIELD_FIXTURES, type AnyFieldFixture } from '@tryghost/metafield-types/test/fixtures';
+import type { ShapeText } from '@tryghost/metafield-types/shapes';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 
@@ -129,126 +141,6 @@ describe('buildMemberFieldEditPayload', () => {
   it('never carries metafields — those save individually, not through the page', () => {
     const payload = buildMemberFieldEditPayload('mem_1', { ...baseline, name: 'Ada B' }, baseline);
     expect(payload.metafields).toBeUndefined();
-  });
-});
-
-describe('getEditableCustomFieldValues', () => {
-  it('keeps string values trimmed and drops empty/null ones', () => {
-    expect(
-      getEditableCustomFieldValues(
-        {
-          custom: {
-            job_title: ' Editor ',
-            cleared: null,
-            blank: '',
-            spaces: '   ',
-          },
-        },
-        [jobTitle, ...['cleared', 'blank', 'spaces'].map((key) => customField(key, 'short_text'))],
-      ),
-    ).toEqual({ 'custom.job_title': 'Editor' });
-  });
-
-  it('normalizes address values: trims parts, drops empty and unknown ones', () => {
-    expect(
-      getEditableCustomFieldValues(
-        {
-          custom: {
-            home_address: {
-              line1: ' 1 Main St ',
-              line2: '',
-              city: 'Berlin',
-              state: '   ',
-              postal_code: '10115',
-              country: 'DE',
-              not_a_part: 'ignored',
-            },
-          },
-        },
-        [homeAddress],
-      ),
-    ).toEqual({
-      'custom.home_address': {
-        line1: '1 Main St',
-        city: 'Berlin',
-        postal_code: '10115',
-        country: 'DE',
-      },
-    });
-  });
-
-  it('collapses an all-empty address to an absent key, like an empty string', () => {
-    expect(
-      getEditableCustomFieldValues(
-        { custom: { home_address: { line1: '', city: '  ', postal_code: null } } },
-        [homeAddress],
-      ),
-    ).toEqual({});
-  });
-});
-
-describe('buildCustomFieldSavePayload', () => {
-  it('sends only this field as a merge patch, trimmed', () => {
-    expect(buildCustomFieldSavePayload('mem_1', jobTitle, ' Publisher ')).toEqual({
-      id: 'mem_1',
-      metafields: { custom: { job_title: 'Publisher' } },
-    });
-  });
-
-  it('sends null to clear an emptied value', () => {
-    expect(buildCustomFieldSavePayload('mem_1', jobTitle, '  ')).toEqual({
-      id: 'mem_1',
-      metafields: { custom: { job_title: null } },
-    });
-  });
-
-  it('names every part the editor showed, so an emptied one is cleared rather than kept', () => {
-    // A write touches the parts it names. Leaving `line2` out would read as "no
-    // change" and the stored one would survive the person deleting it.
-    expect(
-      buildCustomFieldSavePayload('mem_1', homeAddress, {
-        line1: ' 1 Main St ',
-        line2: '',
-        city: 'Berlin',
-        postal_code: '10115',
-        country: 'DE',
-      }),
-    ).toEqual({
-      id: 'mem_1',
-      metafields: {
-        custom: {
-          home_address: {
-            line1: '1 Main St',
-            line2: '',
-            city: 'Berlin',
-            postal_code: '10115',
-            country: 'DE',
-          },
-        },
-      },
-    });
-  });
-
-  it('sends an address emptied of everything as a cleared field', () => {
-    // Every part empty is not an address of empties, it is no address — which the
-    // field-level null already says.
-    expect(buildCustomFieldSavePayload('mem_1', homeAddress, { line1: '', city: '  ' })).toEqual({
-      id: 'mem_1',
-      metafields: { custom: { home_address: null } },
-    });
-  });
-});
-
-describe('a value of another shape than its field', () => {
-  // No control produces a value of another shape than its field's, but if one ever reaches a save
-  // it must not be read as clearing the field, which would delete what the member holds.
-  it('is checked and sent as it is, rather than saved as a clear', () => {
-    expect(
-      getCustomFieldValidationErrors({ home_address: '1 Main St' }, [homeAddress]),
-    ).not.toEqual({});
-    expect(buildCustomFieldSavePayload('mem_1', homeAddress, '1 Main St').metafields).toEqual({
-      custom: { home_address: '1 Main St' },
-    });
   });
 });
 
@@ -453,28 +345,177 @@ describe('isDraftInSyncWithServer', () => {
   });
 });
 
+/**
+ * The editor opened on what the member holds, with its inputs then given `text`, which has to be
+ * of the field's shape.
+ */
+function typed(
+  field: MemberCustomField,
+  held: unknown,
+  text: ShapeText[FieldShape],
+): CustomFieldEditor {
+  const editor = editorFor(field, held);
+  switch (editor.shape) {
+    case 'scalar':
+      if (typeof text !== 'string') {
+        throw new Error('a scalar field takes text');
+      }
+      return { ...editor, text };
+    case 'set':
+      if (!Array.isArray(text)) {
+        throw new Error('a set field takes a list');
+      }
+      return { ...editor, text };
+    case 'record':
+      if (typeof text === 'string' || Array.isArray(text)) {
+        throw new Error('a record field takes parts');
+      }
+      return { ...editor, text };
+  }
+}
+
+/** What a write does to what a field holds, as the members API accepts and applies it. */
+function applied<S extends FieldShape>(
+  of: ShapedField<TypedSettings, S>,
+  held: unknown,
+  write: unknown,
+): unknown {
+  const acceptance = accept(of, write);
+  if (!acceptance.success) {
+    throw new Error(`the site would refuse ${JSON.stringify(write)}`);
+  }
+  return SHAPES[of.shape].apply(heldValue(of, held), acceptance.accepted.value);
+}
+
+/** The editor for `field` as it opens on what the member holds. */
+const opened = (field: MemberCustomField, held: unknown) => ({
+  held,
+  editor: editorFor(field, held),
+});
+
+/** What saving that editor sends for the member's custom fields, or undefined when it sends nothing. */
+function saved(field: MemberCustomField, held: unknown, text: ShapeText[FieldShape]) {
+  const save = customFieldSave(typed(field, held, text), opened(field, held));
+  return save === undefined ? undefined : buildCustomFieldSavePayload('mem_1', save).metafields;
+}
+
+/** The messages the editor shows for what saving it would send. */
+function errorsOf(field: MemberCustomField, held: unknown, text: ShapeText[FieldShape]) {
+  return getCustomFieldValidationErrors(
+    customFieldSave(typed(field, held, text), opened(field, held)),
+  );
+}
+
+describe('a custom field editor', () => {
+  it('opens on what the member holds, as text, or blank', () => {
+    expect(editorFor(jobTitle, 'Editor').text).toBe('Editor');
+    expect(editorFor(jobTitle, undefined).text).toBe('');
+    expect(editorFor(homeAddress, undefined).text).toEqual({});
+  });
+
+  it('opens on only the parts the type declares', () => {
+    expect(
+      editorFor(homeAddress, { line1: '1 Main St', city: 'Berlin', not_a_part: 'ignored' }).text,
+    ).toEqual({ line1: '1 Main St', city: 'Berlin' });
+  });
+
+  // Each input is handed text of its own field's shape, so no other can reach a save.
+  it('holds only text of its own shape', () => {
+    type RecordField = FieldOfShape<'record', MemberCustomField>;
+    expectTypeOf<{
+      shape: 'record';
+      field: RecordField;
+      text: string;
+    }>().not.toExtend<CustomFieldEditor>();
+    expectTypeOf<{
+      shape: 'record';
+      field: RecordField;
+      text: ShapeText['record'];
+    }>().toExtend<CustomFieldEditor>();
+  });
+});
+
+describe('saving a custom field', () => {
+  const held = { line1: '1 Main St', line2: 'Flat 2', city: 'Berlin', country: 'DE' };
+
+  it('sends only this field, as what its input reads as', () => {
+    expect(saved(jobTitle, undefined, ' Publisher ')).toEqual({
+      custom: { job_title: 'Publisher' },
+    });
+  });
+
+  it('sends nothing when the inputs show what the member holds', () => {
+    expect(saved(jobTitle, 'Editor', ' Editor ')).toBeUndefined();
+    expect(saved(homeAddress, held, { ...held, line1: ' 1 Main St ' })).toBeUndefined();
+  });
+
+  it('clears an emptied value with null', () => {
+    expect(saved(jobTitle, 'Editor', '  ')).toEqual({ custom: { job_title: null } });
+  });
+
+  // An untouched editor writes nothing, so an answer to an option the field no longer offers
+  // survives a save that changed nothing. One that opened empty on such answers clears them, and
+  // one that was touched writes what it shows, which drops them.
+  it('saves nothing untouched, unless it opened empty on answers it can’t show', () => {
+    const animals: MemberCustomField = {
+      ...customField('animals', 'short_text'),
+      type: 'list',
+      settings: { options: ['Dog', 'Cat', 'Fish'], multiple: true },
+    };
+    expect(saved(animals, ['Fish', 'Dolphin'], ['Fish'])).toBeUndefined();
+    expect(saved(animals, ['Dolphin'], [])).toEqual({ custom: { animals: null } });
+    expect(saved(animals, ['Fish', 'Dolphin'], ['Dog', 'Fish'])).toEqual({
+      custom: { animals: ['Dog', 'Fish'] },
+    });
+    // Removing the one answer it shows clears the field, hidden answers and all.
+    expect(saved(animals, ['Fish', 'Dolphin'], [])).toEqual({ custom: { animals: null } });
+
+    // A field that went from several answers to one shows none of several held, so the editor
+    // opens empty on them and an untouched save clears them.
+    const oneAnimal: MemberCustomField = {
+      ...animals,
+      settings: { options: ['Dog', 'Cat', 'Fish'], multiple: false },
+    };
+    expect(saved(oneAnimal, ['Dog', 'Cat'], [])).toEqual({ custom: { animals: null } });
+    expect(saved(oneAnimal, ['Dog'], ['Dog'])).toBeUndefined();
+  });
+
+  // A write touches only the parts it names, so a part left out is left alone. An emptied part
+  // is named as null, or the stored one would survive the person deleting it.
+  it('names only the parts that changed, an emptied one as null', () => {
+    expect(saved(homeAddress, held, { ...held, line2: '', city: 'Munich' })).toEqual({
+      custom: { home_address: { line2: null, city: 'Munich' } },
+    });
+  });
+
+  // Clearing the whole field would also clear a part someone else set in the meantime.
+  it('clears an address emptied of everything part by part', () => {
+    expect(
+      saved(homeAddress, { line1: '1 Main St', city: 'Berlin' }, { line1: '', city: ' ' }),
+    ).toEqual({
+      custom: { home_address: { line1: null, city: null } },
+    });
+  });
+});
+
 describe('getCustomFieldValidationErrors', () => {
-  const fields = [jobTitle, homeAddress];
   const validAddress = { line1: '1 Main St', city: 'Berlin', postal_code: '10115', country: 'DE' };
 
   it('returns no errors for valid values', () => {
-    expect(
-      getCustomFieldValidationErrors({ job_title: 'Editor', home_address: validAddress }, fields),
-    ).toEqual({});
+    expect(errorsOf(jobTitle, undefined, 'Editor')).toEqual({});
+    expect(errorsOf(homeAddress, undefined, validAddress)).toEqual({});
   });
 
-  it('returns no errors for empty or cleared values — fields are optional', () => {
-    expect(getCustomFieldValidationErrors({ job_title: '', home_address: {} }, fields)).toEqual({});
+  it('returns no errors for a clear, or for nothing to save — fields are optional', () => {
+    expect(errorsOf(jobTitle, 'Editor', '')).toEqual({});
+    expect(errorsOf(homeAddress, undefined, { line1: '  ', city: '  ' })).toEqual({});
   });
 
   it('accepts a partial address — no part is required', () => {
-    // The stored shape is fixed, but which parts of it exist is a per-country
-    // question, so an address without a city or postal code is valid rather
-    // than incomplete.
-    expect(
-      getCustomFieldValidationErrors({ home_address: { line1: '1 Main St' } }, fields),
-    ).toEqual({});
-    expect(getCustomFieldValidationErrors({ home_address: { country: 'HK' } }, fields)).toEqual({});
+    // Which parts of an address exist is a per-country question, so an address without a city
+    // or postal code is valid rather than incomplete.
+    expect(errorsOf(homeAddress, undefined, { line1: '1 Main St' })).toEqual({});
+    expect(errorsOf(homeAddress, undefined, { country: 'HK' })).toEqual({});
   });
 
   it('explains a malformed country code in words a person can act on, however it was wrong', () => {
@@ -483,91 +524,38 @@ describe('getCustomFieldValidationErrors', () => {
     const message = 'Enter a 2-letter country code, like US.';
 
     for (const country of ['DEU', '12', 'D']) {
-      expect(
-        getCustomFieldValidationErrors({ home_address: { ...validAddress, country } }, fields),
-      ).toEqual({ 'custom.home_address.country': message });
+      expect(errorsOf(homeAddress, undefined, { ...validAddress, country })).toEqual({
+        'custom.home_address.country': message,
+      });
     }
   });
 
   it('reports every part that is wrong, not just the first', () => {
     // The server stops at the first issue because it only needs to refuse the write.
     // The screen is placing a message under each input, so it needs all of them.
-    const errors = getCustomFieldValidationErrors(
-      { job_title: 'x'.repeat(256), home_address: { country: 'DEU', line1: 'x'.repeat(256) } },
-      fields,
-    );
-
-    expect(errors).toEqual({
-      'custom.job_title': 'Use 255 characters or fewer.',
+    expect(errorsOf(homeAddress, undefined, { country: 'DEU', line1: 'x'.repeat(256) })).toEqual({
       'custom.home_address.country': 'Enter a 2-letter country code, like US.',
       'custom.home_address.line1': 'Use 255 characters or fewer.',
     });
   });
 
   it('reports an over-long short_text value with the limit a person can act on', () => {
-    const errors = getCustomFieldValidationErrors({ job_title: 'x'.repeat(256) }, fields);
-    expect(errors).toEqual({ 'custom.job_title': 'Use 255 characters or fewer.' });
-  });
-
-  it('reports an over-long address part with the limit a person can act on', () => {
-    const errors = getCustomFieldValidationErrors(
-      { home_address: { ...validAddress, line1: 'x'.repeat(256) } },
-      fields,
-    );
-    expect(errors).toEqual({ 'custom.home_address.line1': 'Use 255 characters or fewer.' });
-  });
-
-  it('raises nothing for an address of nothing but whitespace, which reads as cleared', () => {
-    const whitespaceOnly = { line1: '  ', city: '  ' };
-
-    // The schema trims each part, so this names two parts as empty — a valid request
-    // to clear them, not a malformed address.
-    expect(memberCustomFieldValueSchema(homeAddress).safeParse(whitespaceOnly).success).toBe(true);
-    expect(getCustomFieldValidationErrors({ home_address: whitespaceOnly }, fields)).toEqual({});
-
-    // And with nothing left in it, the save clears the field outright.
-    expect(buildCustomFieldSavePayload('m1', homeAddress, whitespaceOnly).metafields).toEqual({
-      custom: { home_address: null },
+    expect(errorsOf(jobTitle, undefined, 'x'.repeat(256))).toEqual({
+      'custom.job_title': 'Use 255 characters or fewer.',
     });
   });
 
   it('lets a part with a format be emptied, not just one with a bound', () => {
-    // Emptying the country box is the one way a person removes a country while
-    // keeping the address. Its rule is a pattern rather than a length, so unless the
-    // catalog treats empty as a clear the save is refused and the box cannot be
-    // emptied at all.
-    const clearedCountry = {
-      line1: '62 Ghost Lane',
-      line2: '',
-      city: 'Dublin',
-      state: '',
-      postal_code: '',
-      country: '',
-    };
+    // Emptying the country box is the one way a person removes a country while keeping the
+    // address. Its rule is a pattern rather than a length, so unless a part clears the same way
+    // whatever its rule, the save is refused and the box cannot be emptied at all.
+    const withCountry = { line1: '62 Ghost Lane', city: 'Dublin', country: 'IE' };
+    const emptied = { ...withCountry, country: '' };
 
-    expect(getCustomFieldValidationErrors({ home_address: clearedCountry }, fields)).toEqual({});
-    expect(buildCustomFieldSavePayload('m1', homeAddress, clearedCountry).metafields).toEqual({
-      custom: { home_address: clearedCountry },
+    expect(errorsOf(homeAddress, withCountry, emptied)).toEqual({});
+    expect(saved(homeAddress, withCountry, emptied)).toEqual({
+      custom: { home_address: { country: null } },
     });
-  });
-
-  it('checks the value the save sends, not the one the screen shows', () => {
-    // The two differ on emptied parts: the save names them so they clear, the display
-    // form drops them. Validating the display form would pass a payload the server
-    // then rejects, which is exactly how an unclearable country went unnoticed.
-    const emptiedParts = { line1: '62 Ghost Lane', country: '' };
-
-    expect(
-      getEditableCustomFieldValues({ custom: { home_address: emptiedParts } }, [homeAddress])[
-        'custom.home_address'
-      ],
-    ).toEqual({
-      line1: '62 Ghost Lane',
-    });
-    expect(buildCustomFieldSavePayload('m1', homeAddress, emptiedParts).metafields).toEqual({
-      custom: { home_address: emptiedParts },
-    });
-    expect(getCustomFieldValidationErrors({ home_address: emptiedParts }, fields)).toEqual({});
   });
 });
 
@@ -632,5 +620,44 @@ describe('resolveSlugsToLabels', () => {
     expect(resolveSlugsToLabels(['mystery'], known)).toEqual([
       { name: 'mystery', slug: 'mystery' },
     ]);
+  });
+});
+
+// Every field type, over the fixtures it declares: the editor opens on what a member holds, and
+// saving it sends the write that turns that into what its inputs show.
+describe.each(
+  ALL_FIELD_FIXTURES.map((fixture): [string, AnyFieldFixture] => [fixture.field.type, fixture]),
+)('the editor for a %s field', (_type, { field, values }) => {
+  const editing: MemberCustomField = {
+    namespace: CUSTOM_NAMESPACE,
+    key: KeySchema.parse('sampled'),
+    name: 'Sample',
+    status: 'active',
+    access: { member: 'none' },
+    created_at: '2026-07-14T00:00:00.000Z',
+    updated_at: null,
+    ...field,
+  };
+
+  it('sends nothing when saved untouched', () => {
+    for (const value of values) {
+      expect(customFieldSave(editorFor(editing, value), opened(editing, value))).toBeUndefined();
+    }
+  });
+
+  it('sends a write the field accepts that turns what is held into what it shows', () => {
+    const of = shaped(editing);
+    for (const was of [undefined, ...values]) {
+      for (const next of values) {
+        const save = customFieldSave(
+          typed(editing, was, editorFor(editing, next).text),
+          opened(editing, was),
+        );
+        expect(getCustomFieldValidationErrors(save)).toEqual({});
+        const after =
+          save === undefined ? was : save.write === null ? undefined : applied(of, was, save.write);
+        expect(after, JSON.stringify({ was, next, write: save?.write })).toEqual(next);
+      }
+    }
   });
 });

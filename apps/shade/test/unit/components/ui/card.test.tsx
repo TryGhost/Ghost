@@ -19,7 +19,7 @@ describe('Card Components', () => {
     expect(card, 'Card should be rendered').toBeTruthy();
     expect(card.textContent, 'Card should render its content').toBe('Card Content');
     expect(card.className, 'Should have outline variant styling').toContain(
-      'rounded-xl border border-border-default',
+      'rounded-card border border-border-default',
     );
   });
 
@@ -33,7 +33,7 @@ describe('Card Components', () => {
 
     expect(card, 'Card should be rendered').toBeTruthy();
     expect(card.className, 'Should not have outline variant styling').not.toContain(
-      'rounded-xl border',
+      'rounded-card border',
     );
   });
 
@@ -68,6 +68,22 @@ describe('Card Components', () => {
     expect(header, 'CardHeader should be rendered').toBeTruthy();
     expect(header.textContent, 'CardHeader should render its content').toBe('Header Content');
     expect(header.className, 'Header should have appropriate padding').toContain('p-6');
+  });
+
+  it('renders Card with ruled variant', () => {
+    render(
+      <Card data-testid="card" variant="ruled">
+        <CardContent data-testid="content">Content</CardContent>
+      </Card>,
+    );
+
+    const card = screen.getByTestId('card');
+    expect(card.className, 'Should have a top rule').toContain('border-t');
+    expect(card.className, 'Should not have an outline').not.toContain('rounded-card');
+    expect(card.className.split(' '), 'Should not have an all-sides border').not.toContain(
+      'border',
+    );
+    expect(screen.getByTestId('content').className, 'Should have no side padding').toBe('pt-5');
   });
 
   it('renders CardHeader with plain variant styling', () => {

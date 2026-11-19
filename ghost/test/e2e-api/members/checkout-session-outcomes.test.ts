@@ -2,10 +2,12 @@ import assert from 'node:assert/strict';
 import { z } from 'zod';
 import type * as Framework from '../../utils/e2e-framework';
 
-// Required rather than imported, so the test shares the module instances Ghost boots with, and
-// the mock manager's restore undoes its stubs.
+// Loaded with `require` rather than `import`, because under Vitest an `import` of a CommonJS
+// module gets a separate copy of it. With `require`, the test shares the module instances Ghost
+// boots with, so the mock manager's stubs reach Ghost and its `restore` removes them.
 const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
+const stripeService = require('../../../core/server/services/stripe');
 const logging = require('@tryghost/logging');
 const sinon = require('sinon');
 
@@ -36,13 +38,15 @@ describe('Checkout session outcomes', function () {
       .expectStatus(200);
   }
 
-  // A tax ID needs no custom field, so it's the collected part that takes no setting up.
-  async function offerTaxId() {
-    mockManager.mockLabsEnabled('stripeCheckoutCollection');
-    mockManager.mockLabsDisabled('stripeAutomaticTax');
+  // The phone number saves into one custom field, so it's the simplest part to set up.
+  async function askForPhone() {
+    await adminAgent
+      .post('/members/metafields/custom/')
+      .body({ members_metafields: [{ name: 'Contact phone', type: 'phone' }] })
+      .expectStatus(201);
     await adminAgent
       .put('/stripe/checkout/config/')
-      .body({ checkout_config: [{ tax_number: { collect: true } }] })
+      .body({ checkout_config: [{ phone: { collect: true, custom_field_key: 'contact_phone' } }] })
       .expectStatus(200);
   }
 
@@ -54,6 +58,7 @@ describe('Checkout session outcomes', function () {
   }
 
   const sessions = () => metrics.tracked('stripe_checkout.session');
+  const checkouts = () => metrics.tracked('stripe_checkout.start');
 
   beforeAll(async function () {
     const agents = await agentProvider.getAgentsForMembers();
@@ -68,14 +73,138 @@ describe('Checkout session outcomes', function () {
 
   beforeEach(function () {
     mockManager.mockStripe();
-    mockManager.mockLabsEnabled('stripeCheckoutDesign');
     metrics = mockManager.mockMetrics();
   });
 
   afterEach(async function () {
     mockManager.restore();
-    await models.Base.knex('stripe_checkout_config_tiers').del();
     await models.Base.knex('stripe_checkout_config').del();
+    await models.Base.knex('members_metafield_bindings').del();
+    await models.Base.knex('tier_requirement_tiers').del();
+    await models.Base.knex('tier_requirements').del();
+    await models.Base.knex('members_metafields').del();
+  });
+
+  it('records each checkout a buyer starts, beside its session', async function () {
+    await startCheckout();
+
+    expect(checkouts()).toMatchObject([
+      { event: { outcome: 'success' }, labels: { type: 'subscription' } },
+    ]);
+    assert.equal(sessions().length, 1);
+  });
+
+  it('records the kind of each checkout a buyer starts', async function () {
+    for (const body of [
+      { type: 'donation', customerEmail: 'donor@example.com', metadata: {} },
+      {
+        type: 'gift',
+        tierId: paidTierId,
+        cadence: 'month',
+        customerEmail: 'gift-buyer@example.com',
+        metadata: {},
+      },
+    ]) {
+      await membersAgent.post('/api/create-stripe-checkout-session/').body(body).expectStatus(200);
+    }
+
+    expect(checkouts()).toMatchObject([
+      { event: { outcome: 'success' }, labels: { type: 'donation' } },
+      { event: { outcome: 'success' }, labels: { type: 'gift' } },
+    ]);
+  });
+
+  it('records who the buyer of each checkout is to the site', async function () {
+    const membersService = require('../../../core/server/services/members');
+    const member = await models.Member.findOne({ email: 'member1@test.com' });
+    const identity = await membersService.api.getMemberIdentityToken(member.get('transient_id'));
+    for (const buyer of [{}, { identity }, { customerEmail: 'member1@test.com' }]) {
+      await membersAgent
+        .post('/api/create-stripe-checkout-session/')
+        .body({ tierId: paidTierId, cadence: 'month', ...buyer })
+        .expectStatus(200);
+    }
+
+    expect(checkouts()).toMatchObject([
+      { event: { outcome: 'success' }, labels: { member: 'new' } },
+      { event: { outcome: 'success' }, labels: { member: 'signed_in' } },
+      { event: { outcome: 'success' }, labels: { member: 'unverified' } },
+    ]);
+  });
+
+  it('records each checkout event by the kind of checkout it completes, and none when it completes nothing', async function () {
+    mockManager.mockMail();
+    const payment = (metadata: Record<string, unknown>, paymentStatus = 'paid') => ({
+      mode: 'payment',
+      payment_status: paymentStatus,
+      amount_total: 500,
+      currency: 'usd',
+      customer: null,
+      customer_details: { name: 'A reader', email: 'reader@example.com' },
+      metadata,
+    });
+
+    await stripeMocker.sendWebhook({
+      type: 'checkout.session.completed',
+      data: { object: payment({ ghost_donation: true }) },
+    });
+    // A gift paid with a method that settles later completes once Stripe says it has
+    await stripeMocker.sendWebhook({
+      type: 'checkout.session.completed',
+      data: { object: payment({ ghost_gift: true }, 'unpaid') },
+    });
+    await stripeMocker.sendWebhook({
+      type: 'checkout.session.async_payment_failed',
+      data: { object: payment({ ghost_gift: true }, 'unpaid') },
+    });
+
+    assert.deepEqual(
+      metrics.tracked('stripe_checkout.complete').map(({ labels }) => labels),
+      [
+        { type: 'donation', shipping: 'none', phone: 'none' },
+        { shipping: 'none', phone: 'none' },
+        { shipping: 'none', phone: 'none' },
+      ],
+    );
+  });
+
+  it('records a checkout Ghost refused under its refusal, with no session', async function () {
+    await membersAgent
+      .post('/api/create-stripe-checkout-session/')
+      .body({ tierId: '0123456789abcdef01234567', cadence: 'month' })
+      .expectStatus(400);
+
+    expect(checkouts()).toMatchObject([
+      {
+        event: { outcome: 'failure' },
+        error: { type: 'BadRequestError' },
+        labels: { type: 'subscription' },
+      },
+    ]);
+    assert.deepEqual(sessions(), []);
+  });
+
+  it('records a checkout Ghost refused for a kind it doesn’t offer, with no kind', async function () {
+    await membersAgent
+      .post('/api/create-stripe-checkout-session/')
+      .body({ type: 'layaway', tierId: paidTierId, cadence: 'month' })
+      .expectStatus(400);
+
+    expect(checkouts()).toEqual([
+      expect.objectContaining({ error: { type: 'BadRequestError' }, labels: {} }),
+    ]);
+    assert.deepEqual(sessions(), []);
+  });
+
+  it('records a checkout Stripe failed under Stripe’s error, as its session does', async function () {
+    stripeMocker.checkoutSessionError = { type: 'api_error', message: 'Stripe is down' };
+    await startCheckout(400);
+
+    for (const outcomes of [checkouts(), sessions()]) {
+      expect(outcomes).toMatchObject([
+        { event: { outcome: 'failure' }, error: { type: 'StripeAPIError' } },
+      ]);
+    }
   });
 
   it('records a session created without a design', async function () {
@@ -107,50 +236,49 @@ describe('Checkout session outcomes', function () {
   });
 
   it('records each part of the checkout a session was sent with', async function () {
-    await offerTaxId();
+    await askForPhone();
     await startCheckout();
 
     expect(sessions()).toMatchObject([
       {
         event: { outcome: 'success' },
-        labels: { design: 'none', shipping: 'none', phone: 'none', tax_number: 'applied' },
+        labels: { design: 'none', shipping: 'none', phone: 'applied' },
       },
     ]);
   });
 
   it('records a collected part Stripe refused by name, as the session went ahead without it', async function () {
-    await offerTaxId();
+    await askForPhone();
     stripeMocker.checkoutParamRefusal = {
-      param: 'tax_id_collection',
+      param: 'phone_number_collection',
       error: {
         type: 'invalid_request_error',
-        param: 'tax_id_collection[enabled]',
-        message: 'Tax ID collection is not available.',
+        param: 'phone_number_collection[enabled]',
+        message: 'Phone number collection is not available.',
       },
     };
     await startCheckout();
 
-    assert.equal(stripeMocker.checkoutSessions.at(-1).tax_id_collection, undefined);
+    assert.equal(stripeMocker.checkoutSessions.at(-1).phone_number_collection, undefined);
     expect(sessions()).toMatchObject([
-      { event: { outcome: 'success' }, labels: { tax_number: 'refused' } },
+      { event: { outcome: 'success' }, labels: { phone: 'refused' } },
     ]);
   });
 
-  // Stripe refuses some sessions without naming a parameter, so any part could be why.
   it('records every part as dropped when Stripe refused the session without naming why, and it went ahead without them', async function () {
     await setDesign();
-    await offerTaxId();
+    await askForPhone();
     stripeMocker.checkoutParamRefusal = {
-      param: 'tax_id_collection',
-      error: { type: 'invalid_request_error', message: 'Tax ID collection needs more.' },
+      param: 'phone_number_collection',
+      error: { type: 'invalid_request_error', message: 'Phone number collection needs more.' },
     };
     await startCheckout();
 
     const session = stripeMocker.checkoutSessions.at(-1);
-    assert.equal(session.tax_id_collection, undefined);
+    assert.equal(session.phone_number_collection, undefined);
     assert.equal(session.branding_settings, undefined);
     expect(sessions()).toMatchObject([
-      { event: { outcome: 'success' }, labels: { design: 'dropped', tax_number: 'dropped' } },
+      { event: { outcome: 'success' }, labels: { design: 'dropped', phone: 'dropped' } },
     ]);
   });
 
@@ -186,13 +314,15 @@ describe('Checkout session outcomes', function () {
     );
   });
 
-  it('logs a failed session’s exception once, with Stripe’s message as the line and the span’s ids', async function () {
+  it('logs a failed session’s exception once for each span it fails, with Stripe’s message as the line and that span’s ids', async function () {
     const reason = 'Your account cannot currently make live charges.';
     const errors = sinon.stub(logging, 'error');
     stripeMocker.checkoutSessionError = { type: 'invalid_request_error', message: reason };
     await startCheckout(400);
 
-    // A line carries the reason as its own error, or as the error in its fields.
+    // `logging.error` is called either with the error itself or with an object of fields that
+    // holds the error under `err`. Matching both finds every line logged about Stripe's refusal,
+    // so the assertion below also shows that no other code logs the refusal.
     const CarriesReason = z.union([
       z.object({ message: z.literal(reason) }),
       z.object({ err: z.object({ message: z.literal(reason) }) }),
@@ -201,7 +331,9 @@ describe('Checkout session outcomes', function () {
       ([first]: unknown[]) => CarriesReason.safeParse(first).success,
     );
     const [session] = sessions();
-    // No message of its own, so Ghost's logger makes the error's message the line.
+    const [checkout] = checkouts();
+    // The tracer logs each exception without a message, so Ghost's logger uses the error's
+    // message, here Stripe's reason, as the line's message.
     expect(lines).toMatchObject([
       [
         {
@@ -210,6 +342,14 @@ describe('Checkout session outcomes', function () {
           span: session.span,
           error: { type: 'StripeInvalidRequestError' },
           labels: { design: 'none' },
+        },
+      ],
+      [
+        {
+          event: { name: 'stripe_checkout.start.exception' },
+          trace: checkout.trace,
+          span: checkout.span,
+          error: { type: 'StripeInvalidRequestError' },
         },
       ],
     ]);
@@ -229,5 +369,30 @@ describe('Checkout session outcomes', function () {
 
     assert.equal(stripeMocker.checkoutSessions.length, 1);
     assert.deepEqual(sessions(), []);
+  });
+
+  describe('on a site not connected to Stripe', function () {
+    beforeEach(async function () {
+      await mockManager.disableStripe();
+    });
+
+    afterEach(async function () {
+      await stripeService.init();
+    });
+
+    it('answers a checkout that failed before reaching Stripe as a server error, recording and logging it under the error that stopped it', async function () {
+      const errors = sinon.stub(logging, 'error');
+      await startCheckout(500);
+
+      expect(checkouts()).toMatchObject([
+        { event: { outcome: 'failure' }, error: { type: 'TypeError' } },
+      ]);
+      assert.deepEqual(sessions(), []);
+      const Exception = z.object({
+        event: z.object({ name: z.literal('stripe_checkout.start.exception') }),
+      });
+      const lines = errors.args.filter(([first]: unknown[]) => Exception.safeParse(first).success);
+      expect(lines).toMatchObject([[{ error: { type: 'TypeError' } }]]);
+    });
   });
 });

@@ -5,7 +5,7 @@ import { DbBoolean } from '../../lib/db-types/boolean';
 import { DbDate } from '../../lib/db-types/date';
 import { DbJson } from '../../lib/db-types/json';
 
-// Mirrors schema.js's `isIn` on the column, which is static config and cannot import this.
+// Mirrors schema.ts's `isIn` on the column, which stays static config and does not import this.
 export const AppInstallationStatus = z.enum(['active', 'suspended', 'uninstalled']);
 export type AppInstallationStatus = z.infer<typeof AppInstallationStatus>;
 
@@ -14,6 +14,7 @@ export const DbAppInstallation = z.object({
   id: z.string(),
   app_id: z.string(),
   current_app_id: z.string().nullable(),
+  identity_key_thumbprint: z.string(),
   status: AppInstallationStatus,
   manifest_id: z.string(),
   pending_manifest_id: z.string().nullable(),
@@ -26,7 +27,7 @@ export const StoredManifest = DbJson(AppManifestSchema, {
   message: 'The stored manifest is not JSON.',
 });
 
-// Mirrors schema.js's `isIn` on the column, which is static config and cannot import this.
+// Mirrors schema.ts's `isIn` on the column, which stays static config and does not import this.
 export const AppInstallationManifestSource = z.enum(['install', 'approval', 'update', 'resume']);
 
 /** A manifest an installation has run or been asked to approve, as the table holds it. */
@@ -36,6 +37,8 @@ export const DbAppInstallationManifest = z.object({
   manifest_url: z.string(),
   manifest: StoredManifest,
   digest: z.string(),
+  backend_key_thumbprint: z.string(),
+  icon_data_url: z.string().nullable(),
   source: AppInstallationManifestSource,
   requires_approval: DbBoolean,
   created_at: DbDate,

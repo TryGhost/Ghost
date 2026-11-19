@@ -1,5 +1,4 @@
 import type { AutomationTriggerRuleDefinition } from '../../../core/server/services/automations/trigger-rules';
-import { buildTriggerRuleRows } from '../../../core/server/services/automations/trigger-rules';
 import { createRequire } from 'node:module';
 import got, { type ExtendOptions, type Got } from 'got';
 import logging from '@tryghost/logging';
@@ -11,7 +10,6 @@ import nock from 'nock';
 import TinybirdServiceWrapper from '../../../core/server/services/tinybird';
 import settingsCache from '../../../core/shared/settings-cache';
 import configUtils from '../../utils/config-utils';
-// @ts-expect-error Module has no type declarations.
 import domainEvents from '@tryghost/domain-events';
 import ObjectId from 'bson-objectid';
 // @ts-expect-error Module has no type declarations.
@@ -57,8 +55,6 @@ type Automation = {
   status: string;
   description: string | null;
   trigger_rules: AutomationTriggerRuleDefinition[];
-  trigger_tier_scope: string;
-  trigger_tier_ids: string[];
   edges: { source_action_id: string; target_action_id: string }[];
   actions: AutomationAction[];
   stats: {
@@ -204,6 +200,7 @@ describe('Automations API', function () {
   });
 
   beforeEach(async function () {
+    mockManager.mockLabsEnabled('automationsLeadMagnets');
     await setupAutomationsFixture();
   });
 
@@ -226,9 +223,16 @@ describe('Automations API', function () {
       ],
     };
     const tierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
+    const labelIds = [ObjectId().toHexString(), ObjectId().toHexString()];
+    const labelRules = (label_id: string) => [
+      { trigger_type: 'label_added', label_id, scope: null, product_id: null, direction: null },
+    ];
 
     beforeEach(async function () {
       mockManager.mockLabsEnabled('automations');
+      await models.Base.knex('labels').insert(
+        labelIds.map((id) => ({ id, name: id, slug: id, created_at: new Date() })),
+      );
       await models.Base.knex('products').insert(
         tierIds.map((id) => ({
           id,
@@ -257,6 +261,7 @@ describe('Automations API', function () {
       await models.Base.knex('automation_actions').whereIn('id', actionIds).delete();
       await models.Base.knex('automations').whereNull('slug').delete();
       await models.Base.knex('products').whereIn('id', tierIds).delete();
+      await models.Base.knex('labels').whereIn('id', labelIds).delete();
     });
 
     for (const role of ['Owner', 'Admin'] satisfies ('Owner' | 'Admin')[]) {
@@ -274,8 +279,6 @@ describe('Automations API', function () {
         assert.equal(created.status, payload.status);
         assert.equal(created.slug, null);
         assert.deepEqual(created.trigger_rules, payload.trigger_rules);
-        assert.equal(created.trigger_tier_scope, 'free');
-        assert.deepEqual(created.trigger_tier_ids, null);
         assert.deepEqual(
           created.actions,
           payload.actions.map((action) =>
@@ -300,13 +303,10 @@ describe('Automations API', function () {
       });
     }
 
-    for (const { trigger_rules, expectedLegacyTriggerTierScope, expectedLegacyTriggerTierIds } of [
+    for (const { name, trigger_rules } of [
+      { name: 'free signup', trigger_rules: payload.trigger_rules },
       {
-        trigger_rules: payload.trigger_rules,
-        expectedLegacyTriggerTierScope: 'free',
-        expectedLegacyTriggerTierIds: null,
-      },
-      {
+        name: 'any paid tier',
         trigger_rules: [
           {
             trigger_type: 'paid_subscription_started',
@@ -315,43 +315,31 @@ describe('Automations API', function () {
             direction: null,
           },
         ],
-        expectedLegacyTriggerTierScope: 'all_paid',
-        expectedLegacyTriggerTierIds: null,
       },
       {
+        name: 'specific paid tier',
         trigger_rules: tierIds.map((productId) => ({
           trigger_type: 'paid_subscription_started',
           scope: 'specific_paid_tier',
           product_id: productId,
           direction: null,
         })),
-        expectedLegacyTriggerTierScope: 'selected_paid',
-        expectedLegacyTriggerTierIds: tierIds,
       },
     ]) {
-      it(`adds, edits, and reads explicit ${expectedLegacyTriggerTierScope} rules with legacy fields ignored`, async function () {
-        const request = {
-          ...payload,
-          trigger_rules,
-          trigger_tier_scope: 'invalid',
-          trigger_tier_ids: false,
-        };
+      it(`adds, edits, and reads ${name} rules`, async function () {
+        const request = { ...payload, trigger_rules };
         const { body } = await agent
           .post('automations')
           .body({ automations: [request] })
           .expectStatus(201);
         const created = body.automations[0];
         assert.deepEqual(created.trigger_rules, trigger_rules);
-        assert.equal(created.trigger_tier_scope, expectedLegacyTriggerTierScope);
-        assert.deepEqual(created.trigger_tier_ids, expectedLegacyTriggerTierIds);
 
         const { body: edited } = await agent
           .put(`automations/${created.id}`)
           .body({ automations: [{ ...request, name: 'Edited rules' }] })
           .expectStatus(200);
         assert.deepEqual(edited.automations[0].trigger_rules, trigger_rules);
-        assert.equal(edited.automations[0].trigger_tier_scope, expectedLegacyTriggerTierScope);
-        assert.deepEqual(edited.automations[0].trigger_tier_ids, expectedLegacyTriggerTierIds);
         const { body: read } = await agent.get(`automations/${created.id}`).expectStatus(200);
         assert.deepEqual(read.automations[0], edited.automations[0]);
       });
@@ -392,8 +380,6 @@ describe('Automations API', function () {
           direction: null,
         },
       ]);
-      assert.equal(body.automations[0].trigger_tier_scope, 'all_paid');
-      assert.deepEqual(body.automations[0].trigger_tier_ids, null);
     });
 
     it('stores "selected paid tiers" automations', async function () {
@@ -425,7 +411,6 @@ describe('Automations API', function () {
           direction: null,
         })),
       );
-      assert.deepEqual([...created.trigger_tier_ids].sort(), [...tierIds].sort());
       assert.deepEqual(
         (
           await models.Base.knex('automation_trigger_rules')
@@ -434,6 +419,50 @@ describe('Automations API', function () {
         ).sort(),
         [...tierIds].sort(),
       );
+    });
+
+    it('adds, replaces, preserves, and reads label rules', async function () {
+      const { body } = await agent
+        .post('automations')
+        .body({
+          automations: [{ ...payload, trigger_rules: labelRules(labelIds[0]) }],
+        })
+        .expectStatus(201);
+      const created = body.automations[0];
+      assert.deepEqual(created.trigger_rules, labelRules(labelIds[0]));
+
+      const { body: edited } = await agent
+        .put(`automations/${created.id}`)
+        .body({
+          automations: [{ ...payload, trigger_rules: labelRules(labelIds[1]) }],
+        })
+        .expectStatus(200);
+      assert.deepEqual(edited.automations[0].trigger_rules, labelRules(labelIds[1]));
+      const savedRules = await models.Base.knex('automation_trigger_rules').where(
+        'automation_id',
+        created.id,
+      );
+      assert.equal(savedRules.length, 1);
+      assert.equal(savedRules[0].label_id, labelIds[1]);
+
+      const { trigger_rules: _rules, ...withoutRules } = payload;
+      const { body: preserved } = await agent
+        .put(`automations/${created.id}`)
+        .body({
+          automations: [withoutRules],
+        })
+        .expectStatus(200);
+      assert.deepEqual(preserved.automations[0].trigger_rules, labelRules(labelIds[1]));
+      const { body: read } = await agent.get(`automations/${created.id}`).expectStatus(200);
+      assert.deepEqual(read.automations[0], preserved.automations[0]);
+
+      const { body: replaced } = await agent
+        .put(`automations/${created.id}`)
+        .body({
+          automations: [payload],
+        })
+        .expectStatus(200);
+      assert.deepEqual(replaced.automations[0].trigger_rules, payload.trigger_rules);
     });
 
     it('trims name and description before saving', async function () {
@@ -455,52 +484,6 @@ describe('Automations API', function () {
       assert.equal(created.description, payload.description);
       const { body: read } = await agent.get(`automations/${created.id}`).expectStatus(200);
       assert.deepEqual(read.automations[0], created);
-    });
-
-    // Support for legacy payloads will be removed soon. See NY-1746.
-    it('supports legacy payloads when adding and editing automations', async function () {
-      const { trigger_rules: _rules, ...legacyPayload } = payload;
-      const { body } = await agent
-        .post('automations')
-        .body({
-          automations: [
-            {
-              ...legacyPayload,
-              trigger_tier_scope: 'selected_paid',
-              trigger_tier_ids: tierIds,
-            },
-          ],
-        })
-        .expectStatus(201);
-      const created = body.automations[0];
-      assert.deepEqual(
-        created.trigger_rules,
-        tierIds.map((productId) => ({
-          trigger_type: 'paid_subscription_started',
-          scope: 'specific_paid_tier',
-          product_id: productId,
-          direction: null,
-        })),
-      );
-      assert.equal(created.trigger_tier_scope, 'selected_paid');
-      assert.deepEqual(created.trigger_tier_ids, tierIds);
-      const { body: edited } = await agent
-        .put(`automations/${created.id}`)
-        .body({
-          automations: [
-            {
-              ...legacyPayload,
-              trigger_tier_scope: 'free',
-              trigger_tier_ids: null,
-            },
-          ],
-        })
-        .expectStatus(200);
-      assert.deepEqual(edited.automations[0].trigger_rules, payload.trigger_rules);
-      assert.equal(edited.automations[0].trigger_tier_scope, 'free');
-      assert.equal(edited.automations[0].trigger_tier_ids, null);
-      const { body: read } = await agent.get(`automations/${created.id}`).expectStatus(200);
-      assert.deepEqual(read.automations[0], edited.automations[0]);
     });
 
     it.each([{ trigger_rules: undefined }, { trigger_rules: null }])(
@@ -643,6 +626,58 @@ describe('Automations API', function () {
         await models.Base.knex('automations').where({ name: payload.name }).first(),
         undefined,
       );
+    });
+
+    it('rejects missing labels atomically on add and edit', async function () {
+      const invalid = { ...payload, trigger_rules: labelRules(ObjectId().toHexString()) };
+      const { body: rejectedAdd } = await agent
+        .post('automations')
+        .body({ automations: [invalid] })
+        .expectStatus(422);
+      assert.equal(rejectedAdd.errors[0].property, 'trigger_rules');
+      assert.equal(
+        await models.Base.knex('automations').where('name', payload.name).first(),
+        undefined,
+      );
+
+      const { body } = await agent
+        .post('automations')
+        .body({ automations: [payload] })
+        .expectStatus(201);
+      const created = body.automations[0];
+      const { body: rejectedEdit } = await agent
+        .put(`automations/${created.id}`)
+        .body({ automations: [{ ...invalid, name: 'Rejected edit' }] })
+        .expectStatus(422);
+      assert.equal(rejectedEdit.errors[0].property, 'trigger_rules');
+      const { body: read } = await agent.get(`automations/${created.id}`).expectStatus(200);
+      assert.deepEqual(read.automations[0], created);
+    });
+
+    it('rejects "label added" triggers when automationsLeadMagnets is disabled', async function () {
+      const request = { ...payload, trigger_rules: labelRules(labelIds[0]) };
+      const { body } = await agent
+        .post('automations')
+        .body({ automations: [request] })
+        .expectStatus(201);
+
+      mockManager.mockLabsDisabled('automationsLeadMagnets');
+      for (const response of [
+        await agent
+          .post('automations')
+          .body({ automations: [request] })
+          .expectStatus(422),
+        await agent
+          .put(`automations/${body.automations[0].id}`)
+          .body({ automations: [request] })
+          .expectStatus(422),
+      ]) {
+        assert.equal(response.body.errors[0].property, 'trigger_rules');
+        assert.equal(
+          response.body.errors[0].context,
+          'Label added triggers require automationsLeadMagnets to be enabled.',
+        );
+      }
     });
 
     it('returns 404 when automations is disabled', async function () {
@@ -1400,14 +1435,17 @@ describe('Automations API', function () {
       await models.Base.knex('automation_trigger_rules')
         .where('automation_id', automationId)
         .delete();
-      await models.Base.knex('automation_trigger_rules').insert(
-        buildTriggerRuleRows({
-          automationId,
-          scope: 'selected_paid',
-          tierIds: [tierId],
-          createdAt: new Date(),
-        }),
-      );
+      await models.Base.knex('automation_trigger_rules').insert([
+        {
+          id: ObjectId().toHexString(),
+          automation_id: automationId,
+          created_at: new Date(),
+          trigger_type: 'paid_subscription_started',
+          scope: 'specific_paid_tier',
+          product_id: tierId,
+          direction: null,
+        },
+      ]);
       const waitActionId = ObjectId().toHexString();
       const emailActionId = ObjectId().toHexString();
       const { body: beforeBody } = await agent.get(`automations/${automationId}`).expectStatus(200);
@@ -1469,8 +1507,6 @@ describe('Automations API', function () {
           direction: null,
         },
       ]);
-      assert.equal(automation.trigger_tier_scope, 'selected_paid');
-      assert.deepEqual(automation.trigger_tier_ids, [tierId]);
       assert.equal(automation.actions.length, 2);
       assert.equal(automation.edges.length, 1);
       assert.equal(automation.actions[0].id, waitActionId);
@@ -1498,14 +1534,17 @@ describe('Automations API', function () {
       };
       await models.Base.knex('automations').where({ id }).update(original);
       await models.Base.knex('automation_trigger_rules').where('automation_id', id).delete();
-      await models.Base.knex('automation_trigger_rules').insert(
-        buildTriggerRuleRows({
-          automationId: id,
-          scope: 'selected_paid',
-          tierIds: [tierId],
-          createdAt: new Date(),
-        }),
-      );
+      await models.Base.knex('automation_trigger_rules').insert([
+        {
+          id: ObjectId().toHexString(),
+          automation_id: id,
+          created_at: new Date(),
+          trigger_type: 'paid_subscription_started',
+          scope: 'specific_paid_tier',
+          product_id: tierId,
+          direction: null,
+        },
+      ]);
 
       const { body: edited } = await agent
         .put(`automations/${id}`)
@@ -1524,8 +1563,6 @@ describe('Automations API', function () {
           direction: null,
         },
       ]);
-      assert.equal(edited.automations[0].trigger_tier_scope, 'selected_paid');
-      assert.deepEqual(edited.automations[0].trigger_tier_ids, [tierId]);
     });
 
     it('allows an automation with a single action and no edges', async function () {

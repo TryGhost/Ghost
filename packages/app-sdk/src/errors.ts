@@ -3,21 +3,24 @@ import { HOST_ERROR_CODES, decodeBridgeError, type BridgeErrorCode } from '@tryg
 /**
  * Why an SDK call failed:
  *
- * - `not_framed`: the page is not framed in Admin, so there is nothing to connect to.
- * - `not_connected`: Admin did not start the app in time.
- * - `duplicate_sdk`: another copy of the SDK in the page has already connected, or tried to.
- * - `invalid_context`: Admin started the app with a context this SDK cannot read.
- * - `session_ended`: this document has left the app session, or the session has ended.
- * - `invalid_argument`: the app passed something that cannot be sent.
- * - `invalid_path`: a path that is not an Admin API path, or not a route within the app; or
+ * - `not_framed`: The page isn't framed in Admin, so there's nothing to connect to.
+ * - `not_connected`: Admin didn't start the app in time.
+ * - `duplicate_sdk`: Another copy of the SDK in the page has already connected, or tried to,
+ *   because the page loads the SDK more than once. Load a single copy for the whole page.
+ * - `invalid_context`: Admin started the app with a context this SDK can't read. Updating the
+ *   SDK usually fixes it.
+ * - `session_ended`: This document has left the app session, usually because the page reloaded
+ *   or navigated away, or the session has ended. Every call fails after that.
+ * - `invalid_argument`: The app passed something that can't be sent.
+ * - `invalid_path`: A path that isn't an Admin API path or a route within the app, or
  *   one the Admin API only redirects, such as a path without its trailing `/`.
- * - `unsupported`: this site's version of Ghost doesn't have the call the app made yet. The
+ * - `unsupported`: This site's version of Ghost doesn't have the call the app made yet. The
  *   SDK knows this from the calls Admin listed when it connected.
  * - `blocked`: Admin refused by policy, such as a request the allowlist doesn't allow.
- * - `network_error`: Admin could not reach its own API.
- * - `rejected`: Admin refused for any other reason; the message says why.
+ * - `network_error`: Admin couldn't reach its own API.
+ * - `rejected`: Admin refused for another reason. The message says why.
  *
- * `not_framed`, `not_connected`, `duplicate_sdk` and `unsupported` are the SDK's own codes; the
+ * `not_framed`, `not_connected`, `duplicate_sdk` and `unsupported` are the SDK's own codes. The
  * rest are bridge codes, which cross the channel.
  */
 export type GhostAppErrorCode =

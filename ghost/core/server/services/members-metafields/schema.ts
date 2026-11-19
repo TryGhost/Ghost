@@ -5,7 +5,7 @@ import {
   FieldStatusSchema,
   FieldTypeSchema,
   MetafieldChangeEventFieldSchema,
-  SetSettingsShape,
+  SHAPE_SETTINGS,
   withTypedSettings,
   type FieldStatus,
   type MetafieldChangeEntry,
@@ -15,9 +15,10 @@ import {
 import { DbDate } from '../../lib/db-types/date';
 import { DbJson } from '../../lib/db-types/json';
 import { MemberAccessSchema } from './access';
+import type { ValueColumn, ValueColumns } from './storage';
 import { KeySchema, NamespaceSchema } from '@tryghost/metafield-types/identity';
 
-// schema.js lists the same statuses in its `isIn`, because static schema config can't import this.
+// schema.ts lists the same statuses in its `isIn`, because the schema stays static config and does not import this.
 // Re-exported so the service reads every column's vocabulary from this module.
 export { FIELD_STATUS, FieldStatusSchema, type FieldStatus };
 
@@ -51,11 +52,35 @@ const NoStoredSettings = z.codec(z.null().default(null), z.undefined(), {
 export const STORED_SETTINGS = {
   scalar: NoStoredSettings,
   record: NoStoredSettings,
-  set: DbJson(SetSettingsShape, { message: 'The stored settings are not JSON.' }),
+  set: DbJson(SHAPE_SETTINGS.set.read, { message: 'The stored settings are not JSON.' }),
 };
 
+/**
+ * `STORED_SETTINGS`, except that settings which can't be read, such as settings that aren't JSON,
+ * are read as the shape's default settings. A field whose settings were damaged is then read the
+ * way a new field of its type starts, and the next write of its settings replaces them. Only for
+ * reading: a write encodes through `STORED_SETTINGS`, so it never stores defaults it wasn't given.
+ */
+const STORED_SETTINGS_OR_DEFAULTS = {
+  scalar: NoStoredSettings.catch(SHAPE_SETTINGS.scalar.defaults),
+  record: NoStoredSettings.catch(SHAPE_SETTINGS.record.defaults),
+  // A copy for each read, so a reader that changes the settings it was given can't change the
+  // defaults every other read starts from.
+  set: STORED_SETTINGS.set.catch(() => structuredClone(SHAPE_SETTINGS.set.defaults)),
+};
+
+/**
+ * A stored field with `base`'s columns, its type and its settings, read two ways: as stored, and
+ * with its shape's default settings when the stored ones can't be read. `readStoredField` decides
+ * between them.
+ */
+export const storedField = <Base extends z.ZodRawShape>(base: Base) => ({
+  asStored: withTypedSettings(base, STORED_SETTINGS),
+  withDefaults: withTypedSettings(base, STORED_SETTINGS_OR_DEFAULTS),
+});
+
 /** A definition as the table holds it, its settings read by the shape its type declares. */
-export const DbMetafield = withTypedSettings(DB_METAFIELD_COLUMNS, STORED_SETTINGS);
+export const DbMetafield = storedField(DB_METAFIELD_COLUMNS);
 
 /** A field's type and settings alone, as the table holds them. */
 export const DbTypedSettings = withTypedSettings({}, STORED_SETTINGS) satisfies z.ZodType<
@@ -67,7 +92,7 @@ export const DbTypedSettings = withTypedSettings({}, STORED_SETTINGS) satisfies 
 type MetafieldRank = { sort_order: number };
 
 // As the table holds it, so a set's `settings` are the JSON text.
-export type MetafieldRow = z.input<typeof DbMetafield> & MetafieldRank;
+export type MetafieldRow = z.input<typeof DbMetafield.asStored> & MetafieldRank;
 
 /**
  * How a value arrived, not who caused it: who edited a member's fields is already an
@@ -87,6 +112,14 @@ export const WrittenBy = z.discriminatedUnion('type', [
 ]);
 export type WrittenBy = z.infer<typeof WrittenBy>;
 
+/**
+ * Each column a value is kept in, as the database holds it. Keyed by storage's columns, so a kind of
+ * value storage adds fails to compile here until its column is read.
+ */
+const VALUE_COLUMN_SCHEMAS = {
+  value_text: z.string(),
+} satisfies { readonly [C in ValueColumn]: z.ZodType<ValueColumns[C]> };
+
 // One part of a member's value. What a `path` means is storage.ts's business, so the row
 // carries it as a plain string.
 export const DbMetafieldValue = z.object({
@@ -94,7 +127,7 @@ export const DbMetafieldValue = z.object({
   metafield_key: z.string(),
   member_id: z.string(),
   path: z.string(),
-  value_text: z.string(),
+  ...VALUE_COLUMN_SCHEMAS,
   // Plain columns rather than the `WrittenBy` union: the rule holds at the write
   // boundary, so one malformed row cannot throw away a member's whole profile on read.
   written_by_type: z.string(),
@@ -115,7 +148,7 @@ export const DbStoredValueRow = z.object({
   key: KeySchema,
   type: FieldTypeSchema,
   path: z.string(),
-  value_text: z.string(),
+  ...VALUE_COLUMN_SCHEMAS,
 });
 
 export const DbMetafieldBinding = z.object({
@@ -131,10 +164,18 @@ type MetafieldBindingRow = z.infer<typeof DbMetafieldBinding>;
 
 /** A binding joined to the field it points at, which is how a collected value is routed. */
 export const DbBoundField = z.object({
+  port: z.string(),
   binding_id: z.string(),
   namespace: NamespaceSchema,
   key: KeySchema,
   type: FieldTypeSchema,
+});
+
+/** A binding joined to the field it points at, by that field's identity. */
+export const DbNamedBinding = z.object({
+  port: z.string(),
+  namespace: NamespaceSchema,
+  key: KeySchema,
 });
 
 /**
@@ -142,10 +183,9 @@ export const DbBoundField = z.object({
  * where `WrittenBy` is who answers for it.
  *
  * Mostly the writer settles it: an integration writes through the Admin API, an import
- * from a file and a binding at checkout. Staff and members are the exceptions: a member of
- * staff writes in Admin or, with a staff token, through the Admin API, and a member writes
- * from their account or at checkout. That is why the two are kept apart rather than one
- * derived from the other.
+ * from a file, a binding at checkout and a member in Portal. Staff are the exception: a member
+ * of staff writes in Admin or, with a staff token, through the Admin API. That is why the two
+ * are kept apart rather than one derived from the other.
  */
 type WriterOf<T extends WrittenBy['type']> = Extract<WrittenBy, { type: T }>;
 
@@ -159,10 +199,7 @@ export type WriteOrigin =
   | { writtenBy: WriterOf<'integration'>; source: Extract<MetafieldChangeSource, 'admin_api'> }
   | { writtenBy: WriterOf<'import'>; source: Extract<MetafieldChangeSource, 'import'> }
   | { writtenBy: WriterOf<'binding'>; source: Extract<MetafieldChangeSource, 'checkout'> }
-  | {
-      writtenBy: WriterOf<'member'>;
-      source: Extract<MetafieldChangeSource, 'portal' | 'checkout'>;
-    };
+  | { writtenBy: WriterOf<'member'>; source: Extract<MetafieldChangeSource, 'portal'> };
 
 /**
  * Where a write of one member's values was made, by anyone but an import, which stores each
@@ -221,7 +258,7 @@ declare module 'knex/types/tables' {
       MetafieldRow,
       // `status` is DB-defaulted and only set via update, so it's absent here. The
       // rank is required: letting it default would land a new field at the top.
-      Omit<z.input<typeof DbMetafield>, 'updated_at' | 'status'> & MetafieldRank,
+      Omit<z.input<typeof DbMetafield.asStored>, 'updated_at' | 'status'> & MetafieldRank,
       Partial<MetafieldRow>
     >;
     members_metafield_values: Knex.CompositeTableType<

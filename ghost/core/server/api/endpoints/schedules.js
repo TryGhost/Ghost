@@ -1,5 +1,5 @@
 const postScheduling = require('../../services/posts/post-scheduling');
-const permissions = require('../../services/permissions');
+const permissions = require('../../auth/permissions');
 const errors = require('@tryghost/errors');
 
 function setCacheInvalidateHeader(frame, cacheInvalidation) {

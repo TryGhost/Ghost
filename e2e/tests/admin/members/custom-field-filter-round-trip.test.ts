@@ -11,14 +11,10 @@ import { usePerTestIsolation } from '@/helpers/playwright/isolation';
  * test — a saved segment is only its NQL string, so reopening it and seeing the
  * filter restored (and the same members matched) proves the compound grammar
  * parses back to exactly what produced it.
- *
- * The membersCustomFields flag is what lets the test define a field in Settings.
  */
 usePerTestIsolation();
 
 test.describe('Ghost Admin - Filter members by custom fields', () => {
-  test.use({ labs: { membersCustomFields: true } });
-
   test('a custom field filter can be built, saved as a segment, and reopened intact', async ({
     page,
   }) => {

@@ -117,6 +117,8 @@ const typeSpecificValidators: Record<
 
     return true;
   },
+
+  label_added: (_firstRule, rules) => rules.length === 1,
 };
 
 export const areTriggerRulesValid = (

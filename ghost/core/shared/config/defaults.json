@@ -9,6 +9,10 @@
     "redirects": true,
     "sessionMaxAgeMs": 15552000000
   },
+  "auth": {
+    "engine": "legacy",
+    "betterAuthDev": false
+  },
   "externalRequest": {
     "keepAlive": true,
     "keepAliveMsecs": 60000,
@@ -128,7 +132,19 @@
       "lifetime": 3600,
       "freeRetries": 4
     },
+    "user_verification_challenge": {
+      "minWait": 300000,
+      "maxWait": 300000,
+      "lifetime": 300,
+      "freeRetries": 4
+    },
     "send_verification_code": {
+      "minWait": 3600000,
+      "maxWait": 3600000,
+      "lifetime": 3600,
+      "freeRetries": 4
+    },
+    "send_verification_code_user": {
       "minWait": 3600000,
       "maxWait": 3600000,
       "lifetime": 3600,
@@ -200,15 +216,21 @@
       "maxWait": 60000,
       "lifetime": 60
     },
+    "member_email_update": {
+      "freeRetries": 4,
+      "minWait": 3600000,
+      "maxWait": 3600000,
+      "lifetime": 3600
+    },
+    "presence_block": {
+      "freeRetries": 11,
+      "minWait": 10000,
+      "maxWait": 10000,
+      "lifetime": 10
+    },
     "email_preview_block": {
       "minWait": 360000,
       "maxWait": 360000,
-      "lifetime": 3600,
-      "freeRetries": 10
-    },
-    "support_request_block": {
-      "minWait": 3600000,
-      "maxWait": 3600000,
       "lifetime": 3600,
       "freeRetries": 10
     },

@@ -33,7 +33,7 @@ privateRouter
   .post(
     bodyParser.urlencoded({ extended: true }),
     middleware.redirectPrivateToHomeIfLoggedIn,
-    web.shared.middleware.brute.privateBlog,
+    web.shared.middleware.rateLimiting.privateBlog,
     middleware.doLoginToPrivateSite,
     _renderer,
   );

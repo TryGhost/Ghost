@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../utils/assertions');
 const _ = require('lodash');
 
-const schema = require('../../../../../core/server/data/schema/schema');
+const schema = require('../../../../../core/server/data/schema/schema').default;
 const { foreignKeysOf } = require('../../../../../core/server/data/schema/lib/foreign-keys');
 const { patternChecksOf } = require('../../../../../core/server/data/schema/lib/column-patterns');
 
@@ -10,7 +10,7 @@ const VALID_KEYS = {
   bigInteger: ['nullable'],
   binary: ['maxlength', 'nullable', 'index'],
   boolean: ['nullable', 'defaultTo'],
-  dateTime: ['nullable', 'index'],
+  dateTime: ['nullable', 'index', 'precision'],
   integer: ['nullable', 'unsigned', 'defaultTo', 'index'],
   string: [
     'maxlength',

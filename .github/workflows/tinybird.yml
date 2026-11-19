@@ -64,7 +64,11 @@ jobs:
         working-directory: ghost/core/server/data/tinybird
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest@sha256:d3ad055060f9c778f17d6cbf5a262299de48cc94dffbb176c4bebe6865351623
+        image: tinybirdco/tinybird-local:latest@sha256:17bf5d10c191e246dfe7daad775b83bae04a36113336a02761ba9f1cd57a9752
+        env:
+          TB_LOCAL_CSV_WORKERS: '1'
+          TB_LOCAL_MCP: 'false'
+          TB_LOCAL_KAFKA: 'false'
         ports:
           - 7181:7181
     outputs:

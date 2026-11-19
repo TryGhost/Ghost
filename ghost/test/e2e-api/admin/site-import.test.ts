@@ -139,4 +139,46 @@ describe('Site content import', function () {
     const post = await findPost(slug);
     assert.match(post.get('feature_image'), new RegExp(`${slug}.*\\.png$`));
   });
+
+  it('imports a Ghost(Pro) self-serve site export zip', async function () {
+    const slug = `site-export-${crypto.randomUUID()}`;
+    const imageBytes = await fs.readFile(
+      path.join(__dirname, '../../utils/fixtures/images/ghost-logo.png'),
+    );
+    // `/db/backup` output, beside the unzipped themes and settings the archive carries
+    const content = JSON.stringify({
+      meta: { version: '6.76.0' },
+      data: {
+        posts: [
+          {
+            title: 'From a site export',
+            slug,
+            status: 'draft',
+            feature_image: `/content/images/2026/11/${slug}.png`,
+          },
+        ],
+      },
+    });
+    await importFile(
+      await archive('site-export.zip', {
+        'content/themes/source/package.json': JSON.stringify({ name: 'source', version: '1.0.0' }),
+        'content/themes/source/locales/en.json': JSON.stringify({ Hi: 'Hi', Bye: 'Bye' }),
+        'content/themes/source/assets/logo.png': imageBytes,
+        'content/data/redirects.json': JSON.stringify([
+          { from: '/a/', to: '/b/' },
+          { from: '/c/', to: '/d/' },
+        ]),
+        'content/settings/routes.yaml': 'routes: {}\n',
+        [`content/images/2026/11/${slug}.png`]: imageBytes,
+        'metadata.json': JSON.stringify({ exportId: 'abc', siteId: '1' }),
+        'members.csv': 'email,name\nmember@example.com,Member\n',
+        'post-analytics.csv': 'post_id,sends\n1,2\n',
+        'export.json': content,
+      }),
+    );
+
+    const post = await findPost(slug);
+    assert.equal(post.get('title'), 'From a site export');
+    assert.match(post.get('feature_image'), new RegExp(`/2026/11/${slug}.*\\.png$`));
+  });
 });

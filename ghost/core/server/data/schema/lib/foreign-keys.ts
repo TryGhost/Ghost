@@ -28,15 +28,18 @@ const ColumnSpec = z.object({
     .string()
     .regex(/^[^.]+\.[^.]+$/, { error: "A column's `references` is written as `table.column`." })
     .transform((reference) => {
-      const [table, column] = reference.split('.');
-      return { table, columns: [column] };
+      const dot = reference.indexOf('.');
+      return { table: reference.slice(0, dot), columns: [reference.slice(dot + 1)] };
     })
     .optional(),
   constraintName: z.string().optional(),
 });
 
+/** A column's own foreign key, as schema.ts declares it. */
+export type ForeignKeyColumn = z.input<typeof ColumnSpec>;
+
 /**
- * One foreign key constraint as the database holds it, whether schema.js declares it on a
+ * One foreign key constraint as the database holds it, whether schema.ts declares it on a
  * column or on its table. `NO ACTION` is what the database does when none is declared.
  */
 export type ForeignKey = {
@@ -60,7 +63,7 @@ export function onDeleteOf(spec: z.infer<typeof DeleteRuleSpec>): DeleteRule | u
 }
 
 /**
- * Every foreign key a table declares in schema.js, as `@@FOREIGN_KEYS@@` entries, with each
+ * Every foreign key a table declares in schema.ts, as `@@FOREIGN_KEYS@@` entries, with each
  * column's `references` expanded into one. Throws on a declaration it cannot read,
  * including a key `@@FOREIGN_KEYS@@` does not know.
  */
@@ -78,7 +81,7 @@ export function foreignKeySpecsOf(tableSpec: Record<string, unknown>): ForeignKe
 }
 
 /**
- * Every foreign key on a table declared in schema.js, named as knex names one it is not
+ * Every foreign key on a table declared in schema.ts, named as knex names one it is not
  * given a name for.
  */
 export function foreignKeysOf(tableName: string, tableSpec: Record<string, unknown>): ForeignKey[] {

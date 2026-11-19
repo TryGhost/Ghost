@@ -2,6 +2,10 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { Sparkles, Info, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
 import { Banner } from './banner';
+import { Box } from '@/components/primitives/box';
+import { Stack } from '@/components/primitives/stack';
+import { Text } from '@/components/primitives/text';
+import { Button } from './button';
 
 const meta = {
   title: 'Components / Banner',
@@ -34,13 +38,24 @@ const meta = {
   argTypes: {
     variant: {
       control: { type: 'select' },
-      options: ['default', 'gradient', 'info', 'success', 'warning', 'destructive'],
+      options: [
+        'default',
+        'gradient',
+        'gradient-inline',
+        'info',
+        'success',
+        'warning',
+        'destructive',
+      ],
     },
     size: {
       control: { type: 'select' },
       options: ['sm', 'md', 'lg'],
     },
     dismissible: {
+      control: { type: 'boolean' },
+    },
+    scroll: {
       control: { type: 'boolean' },
     },
     role: {
@@ -80,6 +95,57 @@ export const Gradient: Story = {
         <div className="mt-1 text-[13px]">Check out our latest updates</div>
       </div>
     ),
+  },
+};
+
+function ScrollableGradientExample() {
+  const [visible, setVisible] = useState(true);
+  return (
+    <Box padding="2xl">
+      {visible ? (
+        <Banner
+          className="h-44 w-72"
+          variant="gradient"
+          dismissible
+          scroll
+          onDismiss={() => setVisible(false)}
+        >
+          <Stack className="pr-8" gap="sm">
+            <Text weight="semibold">A longer announcement</Text>
+            <Text size="sm">
+              The content scrolls inside this bounded card. Its glow remains outside the scroll
+              boundary, and the dismiss button stays available.
+            </Text>
+            <Text size="sm">
+              Use the keyboard or pointer to read the rest of an announcement without clipping the
+              card&apos;s outer shadow.
+            </Text>
+            <a
+              className="underline focus-visible:outline-2 focus-visible:outline-focus-ring"
+              href="#details"
+            >
+              Read the details
+            </a>
+          </Stack>
+        </Banner>
+      ) : (
+        <Button variant="outline" onClick={() => setVisible(true)}>
+          Show announcement
+        </Button>
+      )}
+    </Box>
+  );
+}
+
+export const ScrollableGradient: Story = {
+  render: () => <ScrollableGradientExample />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Constrain the card and enable scroll for tall content; keep surrounding containers unclipped so the glow can paint beyond the card.',
+      },
+    },
   },
 };
 
@@ -287,7 +353,13 @@ export const AllVariants: Story = {
           <span className="text-yellow">
             <Sparkles className="size-4" />
           </span>
-          <strong>Gradient</strong> - Cyan/purple gradient shadow with hover animation
+          <strong>Gradient</strong> - Two-colour gradient shadow with hover animation
+        </div>
+      </Banner>
+      <Banner variant="gradient-inline">
+        <div className="text-sm">
+          <strong>Gradient inline</strong> - Tighter glow with hover animation, for use among other
+          content
         </div>
       </Banner>
       <Banner variant="info">

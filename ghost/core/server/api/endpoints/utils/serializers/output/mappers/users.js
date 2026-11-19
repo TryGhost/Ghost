@@ -1,6 +1,6 @@
 const clean = require('../utils/clean');
 const url = require('../utils/url');
-const rolePermissions = require('../../../../../../services/permissions/role-permissions');
+const rolePermissions = require('../../../../../../auth/permissions/role-permissions');
 
 const toPermissionJSON = (perm) => ({
   action_type: perm.action_type,

@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { buildMatrix, cdnPathsFor } from '../release/build-publish-matrix.ts';
+import { buildMatrix, cdnAlias } from '../release/build-publish-matrix.ts';
 import { CDN_PACKAGES, CONTINUOUS_PACKAGES, normalizeManifest } from '../lib/publish-manifest.ts';
 
 const DEFAULTS: Record<string, Record<string, string>> = JSON.parse(
@@ -60,80 +60,81 @@ describe('buildMatrix', () => {
     });
   });
 
-  it('flattens cdn_paths to a newline-delimited string for the purge step', () => {
-    const [portal] = buildMatrix(['@tryghost/portal']);
-    assert.strictEqual(
-      portal?.cdn_paths,
-      'https://cdn.jsdelivr.net/ghost/portal@~CURRENT_MINOR/umd/portal.min.js',
+  it('marks the packages Ghost serves from a CDN, so the publish job records their releases', () => {
+    const cdn = Object.fromEntries(
+      buildMatrix(['@tryghost/portal', '@tryghost/comments-ui', '@tryghost/shade']).map((entry) => [
+        entry.package_name,
+        entry.cdn,
+      ]),
     );
-  });
-
-  it('includes every asset for a multi-asset app, not just the bundle', () => {
-    // sodo-search ships a stylesheet alongside its JS. This is the case the
-    // old hand-maintained cdnPaths list had to remember and derivation gets
-    // for free.
-    const [sodoSearch] = buildMatrix(['@tryghost/sodo-search']);
-    assert.deepStrictEqual(sodoSearch?.cdn_paths.split('\n'), [
-      'https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/sodo-search.min.js',
-      'https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/main.css',
-    ]);
+    assert.deepStrictEqual(cdn, {
+      '@tryghost/portal': 'portal',
+      '@tryghost/comments-ui': 'comments',
+      '@tryghost/shade': '',
+    });
   });
 });
 
-describe('cdnPathsFor', () => {
-  it('substitutes the defaults.json version placeholder', () => {
+describe('cdnAlias', () => {
+  const pkg = normalizeManifest([
+    { name: '@tryghost/x', path: 'apps/x', versioning: 'patch', cdn: 'x' },
+  ])[0]!;
+
+  it("puts the line defaults.json pins into the package's URLs", () => {
     assert.deepStrictEqual(
-      cdnPathsFor({
-        url: 'https://cdn.jsdelivr.net/ghost/x@~{version}/umd/x.min.js',
-        version: '1.2',
+      cdnAlias(pkg, {
+        x: { url: 'https://cdn.jsdelivr.net/ghost/x@~{version}/umd/x.min.js', version: '1.2' },
       }),
-      ['https://cdn.jsdelivr.net/ghost/x@~CURRENT_MINOR/umd/x.min.js'],
+      {
+        cdn: 'x',
+        package: '@tryghost/x',
+        line: '1.2',
+        urls: ['https://cdn.jsdelivr.net/ghost/x@~1.2/umd/x.min.js'],
+      },
     );
   });
 
   it('picks up every URL field, so a newly added asset is purged automatically', () => {
-    const paths = cdnPathsFor({
-      url: 'https://cdn.jsdelivr.net/ghost/x@~{version}/umd/x.min.js',
-      styles: 'https://cdn.jsdelivr.net/ghost/x@~{version}/umd/main.css',
-      somethingNew: 'https://cdn.jsdelivr.net/ghost/x@~{version}/umd/extra.js',
-      version: '1.2',
+    const alias = cdnAlias(pkg, {
+      x: {
+        url: 'https://cdn.jsdelivr.net/ghost/x@~{version}/umd/x.min.js',
+        styles: 'https://cdn.jsdelivr.net/ghost/x@~{version}/umd/main.css',
+        somethingNew: 'https://cdn.jsdelivr.net/ghost/x@~{version}/umd/extra.js',
+        version: '1.2',
+      },
     });
-    assert.strictEqual(paths.length, 3);
-    assert.ok(paths.every((p) => p.includes('CURRENT_MINOR')));
+    assert.deepStrictEqual(alias.urls, [
+      'https://cdn.jsdelivr.net/ghost/x@~1.2/umd/x.min.js',
+      'https://cdn.jsdelivr.net/ghost/x@~1.2/umd/main.css',
+      'https://cdn.jsdelivr.net/ghost/x@~1.2/umd/extra.js',
+    ]);
   });
 
-  it('never treats the version field itself as a URL', () => {
-    assert.deepStrictEqual(cdnPathsFor({ version: '1.2' }), []);
+  it('refuses a package with no URL to purge, or no defaults.json entry', () => {
+    assert.throws(() => cdnAlias(pkg, { x: { version: '1.2' } }), /has no CDN URLs to purge/);
+    assert.throws(() => cdnAlias(pkg, {}), /which defaults.json does not define/);
   });
 });
 
 describe('publish-manifest.json <-> defaults.json contract', () => {
-  it('every CDN package resolves to a defaults.json entry', () => {
+  it('every CDN package has an alias to purge: exactly the URLs core serves, in the line it pins', () => {
     for (const pkg of CDN_PACKAGES) {
-      assert.ok(
-        DEFAULTS[pkg.cdn!],
-        `${pkg.name} has cdn key "${pkg.cdn}" with no defaults.json entry`,
-      );
-    }
-  });
-
-  it('every CDN package yields at least one URL to purge', () => {
-    for (const pkg of CDN_PACKAGES) {
-      assert.ok(
-        cdnPathsFor(DEFAULTS[pkg.cdn!]!).length > 0,
-        `${pkg.name} would publish with an empty purge list`,
-      );
-    }
-  });
-
-  it('purges exactly the URLs core serves, with only the version differing', () => {
-    for (const entry of buildMatrix(CDN_PACKAGES.map((pkg) => pkg.name))) {
-      const pkg = CDN_PACKAGES.find((p) => p.name === entry.package_name)!;
-      const served = Object.values(DEFAULTS[pkg.cdn!]!)
+      const entry = DEFAULTS[pkg.cdn!]!;
+      const served = Object.values(entry)
         .filter((v) => v.startsWith('https://'))
-        .map((v) => v.replaceAll('{version}', 'CURRENT_MINOR'));
-      assert.deepStrictEqual(entry.cdn_paths.split('\n'), served, entry.package_name);
+        .map((v) => v.replaceAll('{version}', entry.version!));
+      assert.ok(served.length > 0, `${pkg.name} would publish with an empty purge list`);
+      assert.deepStrictEqual(cdnAlias(pkg, DEFAULTS).urls, served, pkg.name);
     }
+  });
+
+  it('includes every asset for a multi-asset app, not just the bundle', () => {
+    // sodo-search ships a stylesheet alongside its JS.
+    const sodoSearch = CDN_PACKAGES.find((pkg) => pkg.name === '@tryghost/sodo-search')!;
+    assert.deepStrictEqual(
+      cdnAlias(sodoSearch, DEFAULTS).urls.map((url) => url.split('/umd/')[1]),
+      ['sodo-search.min.js', 'main.css'],
+    );
   });
 });
 

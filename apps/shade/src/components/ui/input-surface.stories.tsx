@@ -14,7 +14,7 @@ const meta: Meta = {
     docs: {
       description: {
         component:
-          "Shared visual recipe for input-like surfaces. The same border, background, radius, focus ring, and invalid state used by every form control in Shade. Use `inputSurface('self')` when applying directly to a focusable element (`<input>`, `<textarea>`, `<button>`). Use `inputSurface('within')` when applying to a wrapper that contains a focusable child — the focus and invalid styles are derived from the descendant via `:has()` selectors. For unusual cases that need a custom focus scope (e.g. only one specific control should trigger the surface focus ring), compose `inputSurfaceClasses` atoms manually. Live consumers: `Components / Input`, `Components / Textarea`, `Components / InputGroup`, `Components / Select`.",
+          "Shared visual recipe for input-like surfaces. The same border, background, radius, focus ring, and invalid state used by every form control in Shade. Fields have flat surfaces in both flag states, with a stronger outline when `admin7Design` is on. Use `inputSurface('self')` when applying directly to a focusable element (`<input>`, `<textarea>`, `<button>`). Use `inputSurface('within')` when applying to a wrapper that contains a focusable child — the focus and invalid styles are derived from the descendant via `:has()` selectors. For unusual cases that need a custom focus scope (e.g. only one specific control should trigger the surface focus ring), compose `inputSurfaceClasses` atoms manually. Live consumers: `Components / Input`, `Components / Textarea`, `Components / InputGroup`, `Components / Select`.",
       },
     },
   },

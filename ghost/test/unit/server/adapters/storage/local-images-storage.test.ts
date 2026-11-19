@@ -1,9 +1,14 @@
 import assert from 'node:assert/strict';
+import fsPromises from 'node:fs/promises';
+import { setImmediate } from 'node:timers/promises';
 import errors from '@tryghost/errors';
 import sinon from 'sinon';
 import fs from 'fs-extra';
 import moment from 'moment';
+import os from 'node:os';
 import path from 'path';
+import express from 'express';
+import request from 'supertest';
 import type { StorageFile } from 'ghost-storage-base';
 import type LocalImagesStorageClass from '../../../../../core/server/adapters/storage/LocalImagesStorage';
 
@@ -209,6 +214,392 @@ describe('Local Images Storage', function () {
         name: 'test-1.1.1.jpeg',
       } as StorageFile);
       assertExists(url.match(/test-1.1.1.jpeg/));
+    });
+  });
+
+  describe('serving content types', function () {
+    // The adapter reads real files here, so these get a directory of their own
+    let serveDir: string;
+    let store: LocalImagesStorageClass;
+
+    const fixture = (name: string) =>
+      fs.readFileSync(path.join(__dirname, '../../../../utils/fixtures/images', name));
+
+    const writeImage = (relativePath: string, fixtureName: string) =>
+      fs.outputFileSync(path.join(serveDir, relativePath), fixture(fixtureName));
+
+    beforeEach(function () {
+      sinon.restore();
+      serveDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-images-'));
+      sinon.stub(configUtils.config, 'getContentPath').returns(serveDir);
+      store = new LocalImagesStorage();
+    });
+
+    afterEach(function () {
+      fs.removeSync(serveDir);
+    });
+
+    it('takes the type from the contents, not from the name', async function () {
+      // A name is chosen by whoever uploads, so a .png can hold a JPEG
+      writeImage('2024/06/photo.png', 'ghosticon.jpg');
+
+      assert.equal(await store._getServeContentType('/2024/06/photo.png'), 'image/jpeg');
+    });
+
+    it('reads the other renderable image formats', async function () {
+      writeImage('2024/06/a.jpg', 'ghost-logo.png');
+      writeImage('2024/06/b.jpg', 'loadingcat.gif');
+      writeImage('2024/06/c.jpg', 'ghosticon.webp');
+
+      assert.equal(await store._getServeContentType('/2024/06/a.jpg'), 'image/png');
+      assert.equal(await store._getServeContentType('/2024/06/b.jpg'), 'image/gif');
+      assert.equal(await store._getServeContentType('/2024/06/c.jpg'), 'image/webp');
+    });
+
+    it('claims nothing for an SVG, whose bytes say nothing', async function () {
+      // SVG is text, so express.static types it from the extension and sends
+      // image/svg+xml. The end-to-end assertion lives in images.test.js
+      writeImage('2024/06/logo.svg', 'ghost-logo.svg');
+
+      assert.equal(await store._getServeContentType('/2024/06/logo.svg'), undefined);
+    });
+
+    it('decodes the request path', async function () {
+      writeImage('2024/06/a photo.png', 'ghosticon.jpg');
+
+      assert.equal(await store._getServeContentType('/2024/06/a%20photo.png'), 'image/jpeg');
+    });
+
+    it('serves the new type after a file is replaced', async function () {
+      writeImage('2024/06/photo.png', 'ghosticon.jpg');
+      assert.equal(await store._getServeContentType('/2024/06/photo.png'), 'image/jpeg');
+
+      // The cache key has to move with the contents, or the old type sticks
+      writeImage('2024/06/photo.png', 'loadingcat.gif');
+      const later = new Date(Date.now() + 5000);
+      fs.utimesSync(path.join(serveDir, '2024/06/photo.png'), later, later);
+
+      assert.equal(await store._getServeContentType('/2024/06/photo.png'), 'image/gif');
+    });
+
+    it('keeps serving an uploaded favicon as an image', async function () {
+      // .ico is an allowed image upload and is not on the renderable list, so
+      // it must not fall through to a download
+      writeImage('2024/06/favicon.ico', 'favicon.ico');
+
+      assert.equal(await store._getServeContentType('/2024/06/favicon.ico'), 'image/x-icon');
+    });
+
+    it('claims nothing for a compressed SVG either', async function () {
+      // A .svgz is a gzip wrapper, which identifies itself but says nothing
+      // about the image inside, so detection has to stay out of the way and
+      // let express.static type it from the extension
+      fs.outputFileSync(
+        path.join(serveDir, '2024/06/logo.svgz'),
+        require('node:zlib').gzipSync(fixture('ghost-logo.svg')),
+      );
+
+      assert.equal(await store._getServeContentType('/2024/06/logo.svgz'), undefined);
+    });
+
+    describe('HTTP responses', function () {
+      let app: express.Express;
+
+      beforeEach(function () {
+        app = express();
+        app.use('/content/images', store.serve());
+      });
+
+      it('shares detection between concurrent requests for the same file', async function () {
+        writeImage('photo.png', 'ghosticon.jpg');
+        const stats = fs.statSync(path.join(serveDir, 'photo.png'));
+        let releaseLookup!: () => void;
+        const lookupGate = new Promise<void>((resolve) => {
+          releaseLookup = resolve;
+        });
+        let allRequestsReady!: () => void;
+        const requestsReady = new Promise<void>((resolve) => {
+          allRequestsReady = resolve;
+        });
+        let lookupStarted!: () => void;
+        const lookupReady = new Promise<void>((resolve) => {
+          lookupStarted = resolve;
+        });
+        let statCount = 0;
+        sinon.stub(fsPromises, 'stat').callsFake(async () => {
+          statCount += 1;
+          if (statCount === 3) {
+            allRequestsReady();
+          }
+          return stats;
+        });
+        const originalOpen = fsPromises.open;
+        const openStub = sinon.stub(fsPromises, 'open').callsFake(async (file, flags, mode) => {
+          lookupStarted();
+          await lookupGate;
+          return originalOpen(file, flags, mode);
+        });
+        const responses = Promise.all(
+          Array.from({ length: 3 }, () =>
+            request(app)
+              .get('/content/images/photo.png')
+              .expect(200)
+              .expect('Content-Type', 'image/jpeg')
+              .then((response) => response),
+          ),
+        );
+
+        try {
+          await Promise.all([requestsReady, lookupReady]);
+          // Let all stat continuations reach detection while the file open is held.
+          await setImmediate();
+          sinon.assert.calledOnce(openStub);
+        } finally {
+          releaseLookup();
+          await responses;
+        }
+
+        await request(app).get('/content/images/photo.png').expect(200);
+        sinon.assert.calledOnce(openStub);
+      });
+
+      it('serves mismatched image names with the detected type and original bytes', async function () {
+        writeImage('2024/06/photo.png', 'ghosticon.jpg');
+
+        const response = await request(app)
+          .get('/content/images/2024/06/photo.png')
+          .expect(200)
+          .expect('Content-Type', 'image/jpeg')
+          .expect('X-Content-Type-Options', 'nosniff');
+
+        assert.deepEqual(response.body, fixture('ghosticon.jpg'));
+      });
+
+      it('keeps SVGs renderable after caching an inconclusive lookup', async function () {
+        writeImage('2024/06/logo.svg', 'ghost-logo.svg');
+
+        for (let i = 0; i < 2; i++) {
+          await request(app)
+            .get('/content/images/2024/06/logo.svg')
+            .expect(200)
+            .expect('Content-Type', 'image/svg+xml')
+            .expect('X-Content-Type-Options', 'nosniff');
+        }
+      });
+
+      it('serves markup as inert text', async function () {
+        const markup = '<h1>Example</h1>';
+        fs.outputFileSync(path.join(serveDir, 'page.html'), markup);
+
+        await request(app)
+          .get('/content/images/page.html')
+          .expect(200, markup)
+          .expect('Content-Type', 'text/plain')
+          .expect('X-Content-Type-Options', 'nosniff');
+      });
+
+      it('preserves the detected type and requested bytes in range responses', async function () {
+        writeImage('photo.png', 'ghosticon.jpg');
+        const contents = fixture('ghosticon.jpg');
+
+        const response = await request(app)
+          .get('/content/images/photo.png')
+          .set('Range', 'bytes=0-10')
+          .expect(206)
+          .expect('Content-Type', 'image/jpeg')
+          .expect('Content-Range', `bytes 0-10/${contents.length}`)
+          .expect('X-Content-Type-Options', 'nosniff');
+
+        assert.deepEqual(response.body, contents.subarray(0, 11));
+      });
+
+      it('returns a bodyless 304 for an unchanged image', async function () {
+        writeImage('photo.png', 'ghosticon.jpg');
+        const first = await request(app).get('/content/images/photo.png').expect(200);
+        assert.ok(first.headers.etag);
+
+        const response = await request(app)
+          .get('/content/images/photo.png')
+          .set('If-None-Match', first.headers.etag)
+          .expect(304)
+          .expect('X-Content-Type-Options', 'nosniff');
+
+        assert.equal(response.text, '');
+        assert.equal(response.headers['content-type'], undefined);
+      });
+    });
+
+    describe('caching', function () {
+      // The cache key is path, mtime and size, so contents swapped for a same
+      // sized payload under the same timestamp look unchanged. That is what
+      // makes a cache hit observable: a fresh read would report the new type.
+      // A filesystem timestamp can carry sub-millisecond precision that
+      // utimes cannot restore, so both writes are pinned to the same whole
+      // millisecond instead of trying to put the original one back
+      const PINNED_TIME = new Date('2026-01-01T00:00:00.000Z');
+
+      const writePinned = (relativePath: string, contents: Buffer) => {
+        const filePath = path.join(serveDir, relativePath);
+        fs.outputFileSync(filePath, contents);
+        fs.utimesSync(filePath, PINNED_TIME, PINNED_TIME);
+      };
+
+      const swapKeepingStat = (relativePath: string, contents: Buffer) => {
+        const filePath = path.join(serveDir, relativePath);
+        const before = fs.statSync(filePath);
+
+        assert.equal(
+          contents.length,
+          before.size,
+          'test payload must match the original size for the stat to look unchanged',
+        );
+
+        writePinned(relativePath, contents);
+
+        const after = fs.statSync(filePath);
+        assert.equal(after.mtimeMs, before.mtimeMs, 'swap must leave the timestamp untouched');
+        assert.equal(after.size, before.size, 'swap must leave the size untouched');
+      };
+
+      // Detected from the magic bytes alone, padded to whatever size is needed
+      const gifOfSize = (size: number) =>
+        Buffer.concat([Buffer.from('GIF89a'), Buffer.alloc(size - 6)]);
+
+      it('caches an inconclusive result until the file changes', async function () {
+        const relativePath = '2024/06/cached.svg';
+        const svg = fixture('ghost-logo.svg');
+        writePinned(relativePath, svg);
+        assert.equal(await store._getServeContentType(`/${relativePath}`), undefined);
+
+        swapKeepingStat(relativePath, gifOfSize(svg.length));
+        assert.equal(await store._getServeContentType(`/${relativePath}`), undefined);
+
+        const changedTime = new Date(PINNED_TIME.getTime() + 1000);
+        fs.utimesSync(path.join(serveDir, relativePath), changedTime, changedTime);
+        assert.equal(await store._getServeContentType(`/${relativePath}`), 'image/gif');
+      });
+
+      it('does not read the file again while it looks unchanged', async function () {
+        writePinned('2024/06/cached.png', fixture('ghosticon.jpg'));
+        assert.equal(await store._getServeContentType('/2024/06/cached.png'), 'image/jpeg');
+
+        swapKeepingStat('2024/06/cached.png', gifOfSize(fixture('ghosticon.jpg').length));
+
+        // Still the cached answer, because nothing about the file's stat moved
+        assert.equal(await store._getServeContentType('/2024/06/cached.png'), 'image/jpeg');
+      });
+
+      it('reads the file again once the entry has been evicted', async function () {
+        writePinned('2024/06/evicted.png', fixture('ghosticon.jpg'));
+        assert.equal(await store._getServeContentType('/2024/06/evicted.png'), 'image/jpeg');
+
+        swapKeepingStat('2024/06/evicted.png', gifOfSize(fixture('ghosticon.jpg').length));
+
+        // Push the entry out of a cache bounded at 1000
+        for (let i = 0; i < 1001; i++) {
+          writeImage(`2024/06/evict-filler-${i}.png`, 'ghost-logo.png');
+          await store._getServeContentType(`/2024/06/evict-filler-${i}.png`);
+        }
+
+        // The stale answer is gone, so the contents are read afresh
+        assert.equal(await store._getServeContentType('/2024/06/evicted.png'), 'image/gif');
+      });
+    });
+
+    describe('security', function () {
+      it('does not upgrade disguised contents to an executable type', async function () {
+        // Markup under an image name is served as the image its name claims,
+        // never as something a browser will parse as a document
+        fs.outputFileSync(
+          path.join(serveDir, '2024/06/disguised.png'),
+          '<!DOCTYPE html><script>alert(document.domain)</script>',
+        );
+
+        // Nothing is claimed, so express.static serves it as the image its
+        // name says — never as the markup it holds
+        assert.equal(await store._getServeContentType('/2024/06/disguised.png'), undefined);
+      });
+
+      it('serves markup in the image directory inert', async function () {
+        // Upload validation rejects these extensions, so nothing should put
+        // them here — but the serving layer must not hand out an executable
+        // type if one ever arrives
+        fs.outputFileSync(path.join(serveDir, '2024/06/page.html'), '<script>alert(1)</script>');
+        fs.outputFileSync(path.join(serveDir, '2024/06/app.js'), 'alert(1)');
+        fs.outputFileSync(path.join(serveDir, '2024/06/styles.css'), 'body{color:red}');
+
+        assert.equal(await store._getServeContentType('/2024/06/page.html'), 'text/plain');
+        assert.equal(await store._getServeContentType('/2024/06/app.js'), 'text/plain');
+        assert.equal(await store._getServeContentType('/2024/06/styles.css'), 'text/plain');
+      });
+
+      it('leaves a harmless name alone', async function () {
+        // Only names a browser would execute are forced. Ghost ships
+        // content/images/README.md, which stays readable
+        fs.outputFileSync(path.join(serveDir, 'README.md'), '# Images');
+        fs.outputFileSync(path.join(serveDir, '2024/06/thing.randomjunk'), 'whatever');
+
+        assert.equal(await store._getServeContentType('/README.md'), undefined);
+        assert.equal(await store._getServeContentType('/2024/06/thing.randomjunk'), undefined);
+      });
+
+      it('serves an image with a script appended as that image', async function () {
+        fs.outputFileSync(
+          path.join(serveDir, '2024/06/polyglot.gif'),
+          Buffer.concat([
+            fixture('loadingcat.gif'),
+            Buffer.from('<script>alert(document.domain)</script>'),
+          ]),
+        );
+
+        assert.equal(await store._getServeContentType('/2024/06/polyglot.gif'), 'image/gif');
+      });
+
+      it('rejects an encoded path that escapes the image directory', async function () {
+        assert.equal(await store._getServeContentType('/%2e%2e%2f%2e%2e%2fetc/passwd'), undefined);
+      });
+
+      it('rejects an absolute path', async function () {
+        assert.equal(await store._getServeContentType('//etc/passwd'), undefined);
+      });
+
+      it('rejects a path with a null byte', async function () {
+        assert.equal(await store._getServeContentType('/2024/06/photo.png%00.html'), undefined);
+      });
+
+      it('survives a malformed percent escape', async function () {
+        // decodeURIComponent throws on this, and serving must continue
+        assert.equal(await store._getServeContentType('/2024/06/%E0%A4%A'), undefined);
+      });
+
+      it('claims nothing for a symlink to a text file outside the directory', async function () {
+        const outsideDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-images-outside-'));
+        try {
+          const target = path.join(outsideDir, 'notes.txt');
+          fs.outputFileSync(target, 'plain text');
+          const linkPath = path.join(serveDir, '2024/06/link.png');
+          fs.ensureDirSync(path.dirname(linkPath));
+          fs.symlinkSync(target, linkPath);
+
+          assert.equal(await store._getServeContentType('/2024/06/link.png'), undefined);
+        } finally {
+          fs.removeSync(outsideDir);
+        }
+      });
+    });
+
+    it('ignores a path that escapes the image directory', async function () {
+      assert.equal(await store._getServeContentType('/../../../etc/passwd'), undefined);
+    });
+
+    it('ignores a directory', async function () {
+      writeImage('2024/06/photo.png', 'ghosticon.jpg');
+
+      assert.equal(await store._getServeContentType('/2024/06'), undefined);
+    });
+
+    it('ignores a file that is not there', async function () {
+      assert.equal(await store._getServeContentType('/2024/06/missing.jpg'), undefined);
     });
   });
 

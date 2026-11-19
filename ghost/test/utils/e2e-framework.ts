@@ -13,7 +13,6 @@
 //
 // The output state checker is responsible for checking the response from the app after performing a request.
 import debugFactory from '@tryghost/debug';
-// @ts-expect-error This module lacks type definitions.
 import * as expressTest from '@tryghost/express-test';
 import * as fs from 'fs-extra';
 import * as path from 'node:path';
@@ -45,12 +44,14 @@ import supertest from 'supertest';
 // @ts-expect-error This module lacks type definitions.
 import { stopGhost } from './e2e-utils';
 import adapterManager from '../../core/server/services/adapter-manager';
-// @ts-expect-error This module lacks type definitions.
 import DomainEvents from '@tryghost/domain-events';
 import * as hostLimits from './host-limits-utils';
-import { resetJobsBackend } from './jobs-backend-utils';
 // @ts-expect-error This module lacks type definitions.
 import urlUtils from './url-utils';
+
+// require, not import: when a test imports this file, an import here would
+// get vitest's own copy of the module, not the jobs service Ghost's boot set up
+const jobsService = require('../../core/server/services/jobs-service');
 
 const debug = debugFactory('test');
 const { any, stringMatching } = expressTest.snapshot;
@@ -67,7 +68,7 @@ let totalBoots = 0;
  * @returns {Promise<Express.Application>} ghost
  */
 const startGhost = async (options = {}) => {
-  await resetJobsBackend();
+  await jobsService.shutdown();
   await DomainEvents.allSettled();
 
   /**
@@ -194,12 +195,13 @@ const getFixture = (type: string, index = 0) => {
 };
 
 /**
- * Reset rate limit instances (not the brute table)
+ * Reset rate limit instances and clear their counters. Limiter names are stable,
+ * so rebuilding the instances alone keeps the old counts.
  */
-const resetRateLimits = () => {
-  // Reset rate limiting instances
+const resetRateLimits = async () => {
   const { spamPrevention } = require('../../core/server/web/shared/middleware/api');
   spamPrevention.reset();
+  await db.truncate('rate_limits');
 };
 
 /**
@@ -229,7 +231,7 @@ const resetData = async () => {
   await db.reset({ truncate: true });
 
   // Reset rate limiting instances (resetting the table is not enough!)
-  resetRateLimits();
+  await resetRateLimits();
 
   resetImageSizeCache();
 };
@@ -380,11 +382,12 @@ const getGhostAPIAgent = async () => {
 
 /**
  *
- * @returns {Promise<{adminAgent: InstanceType<AdminAPITestAgent>, membersAgent: InstanceType<MembersAPITestAgent>}>} agents
+ * @returns {Promise<{adminAgent: InstanceType<AdminAPITestAgent>, membersAgent: InstanceType<MembersAPITestAgent>, contentAPIAgent: InstanceType<ContentAPITestAgent>}>} agents
  */
 const getAgentsForMembers = async () => {
   let membersAgent;
   let adminAgent;
+  let contentAPIAgent;
 
   const bootOptions = {
     frontend: true,
@@ -402,6 +405,10 @@ const getAgentsForMembers = async () => {
       apiURL: '/ghost/api/admin/',
       originURL,
     });
+    contentAPIAgent = new ContentAPITestAgent(app, {
+      apiURL: '/ghost/api/content/',
+      originURL,
+    });
   } catch (error) {
     if (error instanceof Error) {
       error.message = `Unable to create test agent. ${error.message}`;
@@ -412,6 +419,7 @@ const getAgentsForMembers = async () => {
   return {
     adminAgent,
     membersAgent,
+    contentAPIAgent,
   };
 };
 

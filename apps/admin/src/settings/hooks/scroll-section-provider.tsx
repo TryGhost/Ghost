@@ -188,7 +188,7 @@ export const ScrollSectionProvider: React.FC<{
 
   const [hasUpdatedNavigatedSection, setHasUpdatedNavigatedSection] = useState(false);
   const [scrolledToBottom, setScrolledToBottom] = useState(false);
-  const [doneInitialScroll, setDoneInitialScroll] = useState(false);
+  const doneInitialScroll = useRef(false);
   const [, setDoneSidebarScroll] = useState(false);
 
   const setNavigatedSection = useCallback((value: string) => {
@@ -223,6 +223,25 @@ export const ScrollSectionProvider: React.FC<{
     intersectionObserver.current = observer;
   }, [scrollMargin]);
 
+  const queryClient = useQueryClient();
+  const releaseHold = useRef<() => void>();
+  const holdSection = useRef<string>();
+  const jumpTo = useCallback(
+    (id: string) => {
+      releaseHold.current?.();
+      const element = sectionElements.current[id];
+      if (element) {
+        holdSection.current = id;
+        releaseHold.current = holdSectionInView(
+          element,
+          scrollMargin,
+          () => queryClient.isFetching() > 0,
+        );
+      }
+    },
+    [queryClient, scrollMargin],
+  );
+
   const updateSection = useCallback(
     (id: string, element: HTMLDivElement) => {
       if (sectionElements.current[id] === element) {
@@ -236,12 +255,13 @@ export const ScrollSectionProvider: React.FC<{
       sectionElements.current[id] = element;
       intersectionObserver.current?.observe(element);
 
-      if (!doneInitialScroll && id === navigatedSection) {
-        scrollToSection(element, false, scrollMargin);
-        setDoneInitialScroll(true);
+      // A deep link's section mounts after the URL sync on a fresh load
+      if (!doneInitialScroll.current && id === navigatedSection) {
+        doneInitialScroll.current = true;
+        jumpTo(id);
       }
     },
-    [intersectionObserver, navigatedSection, doneInitialScroll, scrollMargin],
+    [navigatedSection, jumpTo],
   );
 
   const updateNav = useCallback((id: string, element: HTMLLIElement) => {
@@ -250,28 +270,12 @@ export const ScrollSectionProvider: React.FC<{
 
   const scrollTo = useCallback(
     (id: string) => {
+      releaseHold.current?.();
       if (sectionElements.current[id]) {
         scrollToSection(sectionElements.current[id], true, scrollMargin);
       }
     },
     [scrollMargin],
-  );
-
-  const queryClient = useQueryClient();
-  const releaseHold = useRef<() => void>();
-  const jumpTo = useCallback(
-    (id: string) => {
-      releaseHold.current?.();
-      const element = sectionElements.current[id];
-      if (element) {
-        releaseHold.current = holdSectionInView(
-          element,
-          scrollMargin,
-          () => queryClient.isFetching() > 0,
-        );
-      }
-    },
-    [queryClient, scrollMargin],
   );
 
   useEffect(() => () => releaseHold.current?.(), []);
@@ -320,14 +324,22 @@ export const ScrollSectionProvider: React.FC<{
       return;
     }
 
+    // Back/Forward fires none of the hold's release events. A section that
+    // mounted in this same commit has already started its own hold.
+    if (holdSection.current !== navigatedSection) {
+      releaseHold.current?.();
+    }
+
     if (navigatedSection && sectionElements.current[navigatedSection]) {
-      setDoneInitialScroll((done) => {
-        scrollToSection(sectionElements.current[navigatedSection], done, scrollMargin);
-        return true;
-      });
-    } else {
+      if (doneInitialScroll.current) {
+        scrollToSection(sectionElements.current[navigatedSection], true, scrollMargin);
+      } else {
+        doneInitialScroll.current = true;
+        jumpTo(navigatedSection);
+      }
+    } else if (!navigatedSection) {
       // No navigated section means opening settings without a path
-      setDoneInitialScroll(true);
+      doneInitialScroll.current = true;
     }
 
     // Wait for the initial scroll so that the intersecting sections are correct
@@ -338,7 +350,13 @@ export const ScrollSectionProvider: React.FC<{
       intersectionObserver.current?.disconnect();
       intersectionObserver.current = null;
     };
-  }, [hasUpdatedNavigatedSection, navigatedSection, setupIntersectionObserver]);
+  }, [
+    hasUpdatedNavigatedSection,
+    navigatedSection,
+    setupIntersectionObserver,
+    jumpTo,
+    scrollMargin,
+  ]);
 
   useEffect(() => {
     if (hasUpdatedNavigatedSection && currentSection && navElements.current[currentSection]) {

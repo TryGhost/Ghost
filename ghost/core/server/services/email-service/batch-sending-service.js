@@ -236,8 +236,21 @@ class BatchSendingService {
   /**
    * Sends an email after refetching it and acquiring its status lock.
    * @param {{emailId: string}} data Identifier of the email to refetch and lock.
+   * @returns {Promise<void | 'interrupted'>} 'interrupted' when shutdown stopped the send
    */
-  async emailJob({ emailId }) {
+  async emailJob(data) {
+    // Tracked at the job boundary so onShutdown waits for the terminal status write,
+    // not just the send.
+    const work = this.#emailJobInner(data);
+    this.#inFlight.add(work);
+    try {
+      return await work;
+    } finally {
+      this.#inFlight.delete(work);
+    }
+  }
+
+  async #emailJobInner({ emailId }) {
     logging.info(`[Background Job] batch-sending-service-job started for email ${emailId}`);
 
     const startTime = Date.now();
@@ -316,7 +329,7 @@ class BatchSendingService {
         logging.info(
           `[Background Job] batch-sending-service-job send stopped because the container is shutting down — leaving email ${email.id} status=submitting so it can resume on next boot`,
         );
-        return;
+        return 'interrupted';
       }
       const ghostError = new errors.EmailError({
         err: e,
@@ -355,24 +368,6 @@ class BatchSendingService {
    * @throws {errors.EmailError} If one of the batches fails
    */
   async sendEmail(email) {
-    // Track the whole operation (batch creation + sending) so onShutdown awaits it
-    // before ghost-server schedules process.exit. Covers both creating batches and the
-    // Mailgun POST + EmailBatch status write, so neither is killed mid-flight.
-    const work = this.#sendEmailInner(email);
-    this.#inFlight.add(work);
-    try {
-      return await work;
-    } finally {
-      this.#inFlight.delete(work);
-    }
-  }
-
-  /**
-   * @private
-   * @param {Email} email
-   * @throws {errors.EmailError} If one of the batches fails
-   */
-  async #sendEmailInner(email) {
     logging.info(`Sending email ${email.id}`);
 
     // Load required relations

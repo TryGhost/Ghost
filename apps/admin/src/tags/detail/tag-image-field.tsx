@@ -14,6 +14,7 @@ import { Stack } from '@tryghost/shade/primitives';
 import { createPortal } from 'react-dom';
 import { getImageUrl, useUploadImage } from '@tryghost/admin-x-framework/api/images';
 import { useFramework } from '@tryghost/admin-x-framework';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { usePinturaEditor } from '@/hooks/use-pintura-editor';
 import BrandIcon from '@/shared/brand-icon/brand-icon';
 import {
@@ -52,6 +53,7 @@ const TagImageField: React.FC<TagImageFieldProps> = ({
   onBusyChange,
   onUploadPendingChange,
 }) => {
+  const admin7Design = useFeatureFlag('admin7Design');
   const { mutateAsync: uploadImage, isPending } = useUploadImage();
   const { unsplashConfig } = useFramework();
   const editor = usePinturaEditor({ disabled });
@@ -118,7 +120,7 @@ const TagImageField: React.FC<TagImageFieldProps> = ({
   return (
     <Stack gap="sm">
       <Label htmlFor={id}>{label}</Label>
-      <ImageUpload className="h-40">
+      <ImageUpload className="h-40 in-data-[admin7-design=true]:bg-field-surface">
         {value ? (
           <ImageUploadPreview>
             <ImageUploadImage alt="" src={value} />
@@ -145,10 +147,15 @@ const TagImageField: React.FC<TagImageFieldProps> = ({
           <>
             <ImageUploadDropzone
               accept={ACCEPTED_IMAGE_TYPES}
-              className="group/dropzone transition-colors hover:bg-interactive-hover"
+              className={
+                admin7Design
+                  ? undefined
+                  : 'group/dropzone transition-colors hover:bg-interactive-hover'
+              }
               disabled={fieldDisabled}
               inputAriaLabel={uploadText}
               inputId={id}
+              variant={admin7Design ? 'default' : 'filled'}
               onDropAccepted={(files) => {
                 if (files[0]) {
                   void handleUpload(files[0]);
@@ -162,9 +169,19 @@ const TagImageField: React.FC<TagImageFieldProps> = ({
                 <Stack align="center" gap="sm">
                   <LucideIcon.Upload
                     aria-hidden="true"
-                    className="size-6 stroke-[1.5px] text-muted-foreground transition-colors group-hover/dropzone:text-foreground"
+                    className={
+                      admin7Design
+                        ? 'size-6'
+                        : 'size-6 stroke-[1.5px] text-muted-foreground transition-colors group-hover/dropzone:text-foreground'
+                    }
                   />
-                  <span className="text-sm text-muted-foreground transition-colors group-hover/dropzone:text-foreground">
+                  <span
+                    className={
+                      admin7Design
+                        ? 'text-sm'
+                        : 'text-sm text-muted-foreground transition-colors group-hover/dropzone:text-foreground'
+                    }
+                  >
                     {uploadText}
                   </span>
                 </Stack>
@@ -174,7 +191,9 @@ const TagImageField: React.FC<TagImageFieldProps> = ({
               <ImageUploadActions className="top-1 right-1 opacity-100">
                 <Button
                   aria-label={`Select ${label.toLowerCase()} from Unsplash`}
-                  className="group/unsplash hover:bg-button-hover"
+                  className={
+                    admin7Design ? 'hover:bg-button-hover' : 'group/unsplash hover:bg-button-hover'
+                  }
                   disabled={fieldDisabled}
                   size="icon"
                   type="button"
@@ -182,7 +201,11 @@ const TagImageField: React.FC<TagImageFieldProps> = ({
                   onClick={() => setShowUnsplash(true)}
                 >
                   <BrandIcon
-                    className="size-4 text-muted-foreground transition-colors group-hover/unsplash:text-foreground"
+                    className={
+                      admin7Design
+                        ? 'size-4 text-foreground'
+                        : 'size-4 text-muted-foreground transition-colors group-hover/unsplash:text-foreground'
+                    }
                     name="unsplash"
                   />
                 </Button>

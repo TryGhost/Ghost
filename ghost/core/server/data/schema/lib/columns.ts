@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /**
- * A table's columns as schema.js declares them, each read through `column`, without the `@@`
+ * A table's columns as schema.ts declares them, each read through `column`, without the `@@`
  * entries that describe the table rather than a column. Throws on a column `column` cannot
  * read, naming it.
  */

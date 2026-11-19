@@ -4,14 +4,26 @@ import path from 'node:path';
 import sinon from 'sinon';
 import errors from '@tryghost/errors';
 import type { ExternalMediaImportResult } from '../../../../../core/server/services/media-inliner/types';
+import type { OriginSchemes } from '../../../../../core/server/services/media-inliner/origin-schemes';
 import { createLoggingFake } from '../../../../utils/logging-utils';
 
 const request = require('../../../../../core/server/lib/request-external');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
+// Every download in a run carries that run's record of origin schemes
+const runOptions = sinon.match({
+  originSchemes: sinon.match.has('get').and(sinon.match.has('set')),
+});
+
 const ExternalMediaInliner = require('../../../../../core/server/services/media-inliner/external-media-inliner');
+const ExternalMediaInlinerJob =
+  require('../../../../../core/server/services/media-inliner/external-media-inliner-job').default;
 
 type Inliner = {
-  importUrl(sourceUrl: string): Promise<ExternalMediaImportResult>;
+  startInlining(domains?: string[]): Promise<void>;
+  importUrl(
+    sourceUrl: string,
+    options?: { originSchemes?: OriginSchemes },
+  ): Promise<ExternalMediaImportResult>;
   inline(domains: string[]): Promise<void>;
   inlineContent(content: string, domains: string[]): Promise<string>;
   inlineFields(
@@ -25,7 +37,10 @@ type Inliner = {
     fields: string[],
     domains: string[],
   ): Promise<void>;
-  getRemoteMedia(sourceUrl: string): Promise<object | null>;
+  getRemoteMedia(
+    sourceUrl: string,
+    options?: { originSchemes?: OriginSchemes },
+  ): Promise<object | null>;
   extractFileDataFromResponse(
     sourceUrl: string,
     response: object,
@@ -96,6 +111,39 @@ describe('ExternalMediaInliner seams', function () {
     sinon.restore();
   });
 
+  describe('startInlining', function () {
+    it('dispatches a job for the requested domains', async function () {
+      const dispatchJob = sinon.stub().resolves();
+
+      await create({ dispatchJob }).startInlining(['https://example.com']);
+
+      sinon.assert.calledOnceWithExactly(
+        logging.info,
+        '[Background Job] external-media-inliner queued',
+      );
+      sinon.assert.calledOnce(dispatchJob);
+      const job = dispatchJob.firstCall.firstArg;
+      assert.ok(job instanceof ExternalMediaInlinerJob);
+      assert.deepEqual(job.domains, ['https://example.com']);
+    });
+
+    it('dispatches the default domains when domains are missing or empty', async function () {
+      const dispatchJob = sinon.stub().resolves();
+      const inliner = create({ dispatchJob });
+
+      await inliner.startInlining(undefined);
+      await inliner.startInlining([]);
+
+      assert.deepEqual(
+        dispatchJob.args.map(([job]) => job.domains),
+        [
+          ['https://s3.amazonaws.com/revue', 'https://substackcdn.com'],
+          ['https://s3.amazonaws.com/revue', 'https://substackcdn.com'],
+        ],
+      );
+    });
+  });
+
   describe('matching', function () {
     const domain = 'https?://i[0-9]{1}.wp.com';
     const src = 'http://i2.wp.com/photo.jpg';
@@ -107,7 +155,7 @@ describe('ExternalMediaInliner seams', function () {
       const content = await inliner.inlineContent(`{"src":"${src}"}`, [domain]);
 
       assert.equal(content, `{"src":"${STORED_URL}"}`);
-      sinon.assert.calledOnceWithExactly(importUrl, src);
+      sinon.assert.calledOnceWithExactly(importUrl, src, runOptions);
 
       importUrl.resetHistory();
       const post = resource('post', { feature_image: src });
@@ -118,7 +166,7 @@ describe('ExternalMediaInliner seams', function () {
       assert.deepEqual(await inliner.inlineFields(post, ['feature_image'], ['http://i2.wp.com']), {
         feature_image: STORED_URL,
       });
-      sinon.assert.calledOnceWithExactly(importUrl, src);
+      sinon.assert.calledOnceWithExactly(importUrl, src, runOptions);
     });
 
     it('downloads every occurrence of a URL in a body independently', async function () {
@@ -134,7 +182,15 @@ describe('ExternalMediaInliner seams', function () {
       // Per-import caching belongs to the content importer's PostMediaInliner,
       // which wraps this class; the inliner itself keeps no cache.
       sinon.assert.calledTwice(getRemoteMedia);
-      assert.deepEqual(getRemoteMedia.args, [[src], [src]]);
+      assert.deepEqual(
+        getRemoteMedia.args.map(([url]) => url),
+        [src, src],
+      );
+      assert.equal(
+        getRemoteMedia.firstCall.args[1]?.originSchemes,
+        getRemoteMedia.secondCall.args[1]?.originSchemes,
+        'both downloads share the run record',
+      );
       sinon.assert.calledTwice(storage.saveRaw);
       assert.equal(
         inlined,

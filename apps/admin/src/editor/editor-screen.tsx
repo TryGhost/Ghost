@@ -12,6 +12,8 @@ import {
 } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { AdminLink } from '@/shared/admin-link';
+import { usePresence } from '@/shared/presence/use-presence';
+import { PresenceAvatars } from '@/shared/presence/presence-avatars';
 import { getPostListReturnUrl } from '@/posts/api';
 import { reloadAdmin } from '@/auth/api';
 import { NotFound } from '@/shared/not-found';
@@ -46,7 +48,7 @@ import {
   withLiveSettings,
 } from './card-config';
 import { EditorHeaderActions, type OpenFlow } from './editor-header-actions';
-import { readEditorReturn } from './editor-return';
+import { type EditorReturn, readEditorReturn } from './editor-return';
 import { EditorLoading } from './editor-loading';
 import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
 import { useScreenEntrance } from '@/layout/screen-transition';
@@ -93,19 +95,22 @@ function EditorLoadError({ message, onRetry }: { message: string; onRetry: () =>
 
 function EditorHeader({
   postType,
-  analyticsReturn,
+  editorReturn,
   children,
   onBack,
 }: {
   postType: PostType;
-  analyticsReturn?: string;
+  editorReturn?: EditorReturn;
   children?: ReactNode;
   onBack?: (event: MouseEvent<HTMLAnchorElement>) => void;
 }) {
   const listLabel = postType === 'page' ? 'Pages' : 'Posts';
   const resource = postType === 'page' ? 'pages' : 'posts';
   const listUrl = getPostListReturnUrl(resource);
-  const backLabel = analyticsReturn ? 'Analytics' : listLabel;
+  let backLabel = listLabel;
+  if (editorReturn) {
+    backLabel = editorReturn.kind === 'analytics' ? 'Analytics' : 'Back';
+  }
 
   return (
     <Grid
@@ -121,8 +126,8 @@ function EditorHeader({
         asChild
         iconOnly
       >
-        {analyticsReturn ? (
-          <AdminLink to={analyticsReturn} onClick={onBack}>
+        {editorReturn ? (
+          <AdminLink to={editorReturn.to} onClick={onBack}>
             <LucideIcon.ArrowLeft />
           </AdminLink>
         ) : (
@@ -188,6 +193,11 @@ function EditorContent({
     siteUrl: cardConfig.siteUrl,
     currentUserId: currentUser?.id,
   });
+  const presenceResource = session.persistedId
+    ? { id: session.persistedId, type: postType }
+    : undefined;
+  const presence = usePresence(presenceResource ? [presenceResource] : [], presenceResource);
+  const showPresence = useFeatureFlag('editorPresence');
   const [tkCount, setTkCount] = useState(0);
   const chromeEntrance = useScreenEntrance();
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
@@ -238,7 +248,7 @@ function EditorContent({
   // The update flow is mounted with the publish controls, which Contributors never get.
   const canPublish = !!currentUser && !isContributorUser(currentUser);
   const location = useLocation();
-  const analyticsReturn = record ? readEditorReturn(location.state) : undefined;
+  const editorReturn = record ? readEditorReturn(location.state) : undefined;
   const statusRecord = statusRecordOf(session.loadedRecord ?? record, createdId);
   const didEmailFail =
     postType === 'post' &&
@@ -476,8 +486,10 @@ function EditorContent({
             )}
           >
             {/* The back link stays while the writer types, so the way out is always in view. */}
-            <EditorHeader analyticsReturn={analyticsReturn} postType={postType} onBack={holdBack}>
-              {!analyticsReturn || didEmailFail || session.state.kind === 'error' ? (
+            <EditorHeader editorReturn={editorReturn} postType={postType} onBack={holdBack}>
+              {editorReturn?.kind !== 'analytics' ||
+              didEmailFail ||
+              session.state.kind === 'error' ? (
                 <Box className="min-w-0" data-writing-focus={writingFocus}>
                   <EditorStatus
                     isDirty={session.isDirty()}
@@ -492,6 +504,9 @@ function EditorContent({
               ) : null}
               <Box className="col-start-3 ml-auto" data-writing-focus={writingFocus}>
                 <PageHeader.ActionGroup className="gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
+                  {showPresence ? (
+                    <PresenceAvatars active={presence.active} resourceType={postType} />
+                  ) : null}
                   <EditorHeaderActions
                     bottomBar={bottomBar}
                     currentUser={currentUser}

@@ -6,6 +6,7 @@ import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { canAccessSettings } from '@tryghost/admin-x-framework/api/users';
 import { NavMenuItem } from './nav-menu-item';
 import { NavGhostProItem } from './nav-ghost-pro';
+import { NavHelpItem } from './nav-help-item';
 import { useSettingsReturnToState } from '@/layout/settings-navigation';
 
 interface NavSettingsProps extends React.ComponentProps<typeof SidebarGroup> {
@@ -32,18 +33,7 @@ function NavSettings({ admin7Design = false, ...props }: NavSettingsProps) {
             </NavMenuItem>
           )}
 
-          {!admin7Design && (
-            <NavMenuItem>
-              <NavMenuItem.Link
-                rel="noopener noreferrer"
-                target="_blank"
-                to="https://ghost.org/help?utm_source=admin&utm_campaign=help"
-              >
-                <LucideIcon.HelpCircle />
-                <NavMenuItem.Label>Help</NavMenuItem.Label>
-              </NavMenuItem.Link>
-            </NavMenuItem>
-          )}
+          {!admin7Design && <NavHelpItem />}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

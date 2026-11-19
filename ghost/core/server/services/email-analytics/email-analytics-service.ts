@@ -300,7 +300,12 @@ export class EmailAnalyticsService {
       return createEmptyResult();
     }
 
-    return await this.#fetchEventsForJob(this.#fetchMissingData, { begin, end, maxEvents });
+    return await this.#fetchEventsForJob(this.#fetchMissingData, {
+      begin,
+      end,
+      maxEvents,
+      skipUnchanged: true,
+    });
   }
 
   /**
@@ -443,6 +448,7 @@ export class EmailAnalyticsService {
    * Start fetching analytics and store the data of the progress inside fetchData
    * @param [options.maxEvents=Infinity] - Maximum number of events to fetch. Not a strict maximum. We stop fetching after we reached the maximum AND received at least one event after begin (not equal) to prevent deadlocks.
    * @param [options.eventTypes] - Array of event types to fetch. If not provided, Mailgun will return all event types.
+   * @param [options.skipUnchanged] - Skip aggregation when the run only replays events that are already stored.
    */
   async #fetchEventsForJob(
     fetchData: FetchData,
@@ -451,11 +457,13 @@ export class EmailAnalyticsService {
       end,
       maxEvents = Infinity,
       eventTypes,
+      skipUnchanged = false,
     }: {
       begin: Date;
       end: Date;
       maxEvents?: number;
       eventTypes?: EmailAnalyticsEvent[];
+      skipUnchanged?: boolean;
     },
   ): Promise<EmailAnalyticsFetchResult> {
     // Start where we left of, or the last stored event in the database, or start 30 minutes ago if we have nothing available
@@ -473,7 +481,8 @@ export class EmailAnalyticsService {
     let memberAggregationTimeMs = 0;
 
     let eventCount = 0;
-    const includeOpenedEvents = eventTypes?.includes('opened') ?? false;
+    // Without eventTypes Mailgun returns every event type, including opens
+    const includeOpenedEvents = eventTypes?.includes('opened') ?? true;
 
     const eventProcessor = this.#createEventProcessor();
 
@@ -490,6 +499,8 @@ export class EmailAnalyticsService {
       const start = Date.now();
       const timings = await eventProcessor.aggregate({
         includeOpenedEvents,
+        // A failed batch may have stored events before returning its counts
+        skipUnchanged: skipUnchanged && !error,
         processingResult,
         isFinal,
       });

@@ -49,26 +49,29 @@ describe('Explore ping during boot', function () {
 
     configUtils.set('sentry:disabled', true);
     configUtils.set('explore:update_url', 'https://explore.example/update');
+    // The root skips pings for local site URLs, including the test default.
+    configUtils.set('url', 'https://publication.example/');
+    configUtils.set('admin:url', configUtils.getServerUrl());
     sandbox.stub(sentry, 'captureException');
     sandbox.stub(sentry, 'captureMessage');
     notify.resetNotifications();
     const ready = sandbox.spy(notify, 'notifyServerReady');
     const serverStart = sandbox.spy(GhostServerClass.prototype, 'start');
     const originalPing = ExplorePingService.prototype.ping;
-    const ping = sandbox
-      .stub(ExplorePingService.prototype, 'ping')
-      .callsFake(function (this: ExploreService) {
-        const sharedSettings = this.settingsCache;
-        this.settingsCache = {
-          get(key: string) {
-            if (['explore_ping', 'explore_ping_growth', 'stripe_connect_livemode'].includes(key)) {
-              return true;
-            }
-            return sharedSettings.get(key);
-          },
-        };
-        return originalPing.call(this);
-      });
+    const ping = sandbox.stub(ExplorePingService.prototype, 'ping').callsFake(function (
+      this: ExploreService,
+    ) {
+      const sharedSettings = this.settingsCache;
+      this.settingsCache = {
+        get(key: string) {
+          if (['explore_ping', 'explore_ping_growth', 'stripe_connect_livemode'].includes(key)) {
+            return true;
+          }
+          return sharedSettings.get(key);
+        },
+      };
+      return originalPing.call(this);
+    });
     const originalInit = explore.init;
     const originalPolicy = config.isProductionOrDevelopment;
     sandbox.stub(config, 'isProductionOrDevelopment').callsFake(() => {

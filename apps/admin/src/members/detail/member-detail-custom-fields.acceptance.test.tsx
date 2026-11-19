@@ -12,6 +12,15 @@ import {
 import { memberDetailScreen } from './member-detail.screen';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
+import {
+  SHAPES,
+  accept,
+  heldValue,
+  shaped,
+  type FieldShape,
+  type ShapedField,
+  type TypedSettings,
+} from '@tryghost/metafield-types';
 import { z } from 'zod';
 
 const SaveBody = z.object({ members: z.tuple([z.record(z.string(), z.unknown())]) });
@@ -56,11 +65,35 @@ const FIELDS: MemberCustomField[] = [
 
 const ADDRESS = { line1: '1 Main St', city: 'Berlin', postal_code: '10115', country: 'DE' };
 
+const MOBILE: MemberCustomField = {
+  namespace: CUSTOM_NAMESPACE,
+  key: KeySchema.parse('mobile'),
+  name: 'Mobile',
+  type: 'phone',
+  status: 'active',
+  access: { member: 'none' },
+  created_at: '2026-07-14T00:00:00.000Z',
+  updated_at: null,
+};
+
+/** What a write the members API accepts does to what the member holds, as the domain says. */
+function applied<S extends FieldShape>(
+  of: ShapedField<TypedSettings, S>,
+  held: unknown,
+  write: unknown,
+): unknown {
+  const acceptance = accept(of, write);
+  if (!acceptance.success) {
+    throw new Error(`the members API would refuse ${JSON.stringify(write)}`);
+  }
+  return SHAPES[of.shape].apply(heldValue(of, held), acceptance.accepted.value);
+}
+
 /**
  * The world the member detail screen reads at mount. Stateful on purpose: the real
  * endpoint treats a PUT as a merge patch, writing only the keys present and deleting a key
- * sent as null, so the refetch a save triggers must return the merged result, not the
- * original.
+ * sent as null, and applies each field's write as the domain says, so the refetch a save
+ * triggers must return the merged result, not the original.
  */
 function fakeMemberDetailWorld(
   m: Member,
@@ -83,10 +116,15 @@ function fakeMemberDetailWorld(
     const patch = MetafieldsPatch.parse(metafields)?.custom ?? {};
     current = { ...current, ...edited };
     for (const [key, value] of Object.entries(patch)) {
-      if (value === null) {
+      const field = fields.find((candidate) => candidate.key === key);
+      if (!field) {
+        throw new Error(`the members API would refuse the unknown field ${key}`);
+      }
+      const after = value === null ? undefined : applied(shaped(field), values[key], value);
+      if (after === undefined) {
         delete values[key];
       } else {
-        values[key] = value;
+        values[key] = after;
       }
     }
     return { members: [{ ...current, metafields: { custom: { ...values } } }] };
@@ -206,6 +244,77 @@ describe('Member detail custom fields', () => {
     expect(editApi.requests).toHaveLength(0);
   });
 
+  it('takes a phone number in a phone input and keeps it in international form', async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    fakeMemberDetailWorld(m, {}, [...FIELDS, MOBILE]);
+    await renderAdminApp(`/members/${m.id}`);
+
+    await memberDetailScreen.editFieldButton('Mobile').click();
+    const input = modal().getByLabelText('Mobile');
+    await expect.element(input).toHaveAttribute('type', 'tel');
+    // Staff type a member's number, so the browser mustn't offer their own.
+    await expect.element(input).toHaveAttribute('autocomplete', 'off');
+    await input.fill('+44 (0)20 7946 0000');
+    await modal().getByRole('button', { name: 'Save', exact: true }).click();
+
+    await expect.element(modal()).not.toBeInTheDocument();
+    await expect.element(memberDetailScreen.fieldValue('+442079460000')).toBeVisible();
+  });
+
+  // A letter is never valid in a phone number, so staff see the error without having to save.
+  it('shows an error while typing an invalid character in a phone number', async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    fakeMemberDetailWorld(m, {}, [...FIELDS, MOBILE]);
+    await renderAdminApp(`/members/${m.id}`);
+    const mistyped = 'Enter the phone number using only digits, spaces and symbols like + - ( ).';
+
+    await memberDetailScreen.editFieldButton('Mobile').click();
+    await modal().getByLabelText('Mobile').fill('+44 20 7946 000o');
+    await expect.element(modal().getByText(mistyped)).toBeVisible();
+
+    await modal().getByLabelText('Mobile').fill('+44 (20) 7946-0000');
+    await expect.element(modal().getByText(mistyped)).not.toBeInTheDocument();
+  });
+
+  // As Portal and Stripe Checkout ask for one: written as it is dialled at home, beside the
+  // country it is from.
+  it("puts the picked country's code in front of a number written as at home", async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    const editApi = fakeMemberDetailWorld(m, {}, [...FIELDS, MOBILE]);
+    await renderAdminApp(`/members/${m.id}`);
+
+    await memberDetailScreen.editFieldButton('Mobile').click();
+    const countryCode = modal().getByRole('combobox', { name: 'Country code' });
+    // Measured before the list opens, as an open list hides the rest of the dialog.
+    const phoneInputWidth = countryCode.element().parentElement?.getBoundingClientRect().width;
+    await countryCode.click();
+    // The list of countries opens as wide as the country and the number together, so a
+    // country's name fits rather than being cut off at the width of its code.
+    const list = page.getByRole('listbox');
+    await expect.element(list).toBeVisible();
+    // Within the list's border.
+    const listWidth = list.element().getBoundingClientRect().width;
+    expect(Math.abs(listWidth - (phoneInputWidth ?? 0))).toBeLessThanOrEqual(2);
+    await page.getByPlaceholder('Search countries...').fill('United Kingdom');
+    await page.getByRole('option', { name: 'United Kingdom (+44)' }).click();
+    await expect
+      .element(modal().getByRole('combobox', { name: 'Country code' }))
+      .toHaveTextContent('+44');
+
+    // One the country has no number like is refused before it's sent.
+    await modal().getByLabelText('Mobile').fill('020 7946 000');
+    await modal().getByRole('button', { name: 'Save', exact: true }).click();
+    await expect
+      .element(modal().getByText('Enter a valid phone number, like +44 7400 123456.'))
+      .toBeVisible();
+    expect(editApi.requests).toHaveLength(0);
+
+    await modal().getByLabelText('Mobile').fill('020 7946 0000');
+    await modal().getByRole('button', { name: 'Save', exact: true }).click();
+    await expect.element(modal()).not.toBeInTheDocument();
+    await expect.element(memberDetailScreen.fieldValue('+442079460000')).toBeVisible();
+  });
+
   it('saves an address that leaves parts the country does not use empty', async () => {
     const m = member({ name: 'Ada Lovelace' });
     const editApi = fakeMemberDetailWorld(m, {});
@@ -255,9 +364,7 @@ describe('Member detail custom fields', () => {
 
     await expect.element(memberDetailScreen.fieldValue('1 Main St, Germany')).toBeVisible();
     const saved = savedMember(editApi.lastRequest?.body);
-    expect(saved.metafields).toEqual({
-      custom: { home_address: { line1: '1 Main St', country: 'DE' } },
-    });
+    expect(saved.metafields).toEqual({ custom: { home_address: { country: 'DE' } } });
   });
 
   it('saves the country picked from the list as its code', async () => {
@@ -299,18 +406,17 @@ describe('Member detail custom fields', () => {
       .toHaveTextContent('Select...');
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
-    // The emptied part is named in the write, since leaving it out would read as
-    // "no change"; the rest of the address stays.
+    // The emptied part is named in the write as null, since leaving it out would read as
+    // "no change"; the parts that didn't change aren't named, and stay.
     await expect.element(memberDetailScreen.fieldValue('1 Main St, Berlin')).toBeVisible();
     const saved = savedMember(editApi.lastRequest?.body);
-    expect(saved.metafields).toEqual({
-      custom: { home_address: { line1: '1 Main St', city: 'Berlin', country: '' } },
-    });
+    expect(saved.metafields).toEqual({ custom: { home_address: { country: null } } });
   });
 
-  it('blocks saving a stored malformed country code with an inline error, then saves once fixed', async () => {
-    // Staff cannot type a code any more, but an import can store one the picker would
-    // never offer. It loads as it is, so it can be seen, and is refused until replaced.
+  it('shows a stored malformed country code as it is, and leaves it alone until replaced', async () => {
+    // Staff pick a country from a list, but an import can store a code the list doesn't offer.
+    // The code loads as it is, so it can be seen, and a save that changes other parts leaves it
+    // alone: the save names only the parts that changed.
     const m = member({ name: 'Ada Lovelace' });
     const editApi = fakeMemberDetailWorld(m, {
       home_address: { line1: '1 Main St', country: 'DEU' },
@@ -324,24 +430,20 @@ describe('Member detail custom fields', () => {
     await modal().getByLabelText('City').fill('Berlin');
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
-    // No request went out; the error says what to do, in plain words.
-    await expect
-      .element(modal().getByText('Enter a 2-letter country code, like US.'))
-      .toBeVisible();
-    await expect
-      .element(modal().getByRole('combobox', { name: 'Country' }))
-      .toHaveAttribute('aria-invalid', 'true');
-    expect(editApi.requests).toHaveLength(0);
+    await expect.element(memberDetailScreen.fieldValue('1 Main St, Berlin, DEU')).toBeVisible();
+    expect(savedMember(editApi.lastRequest?.body).metafields).toEqual({
+      custom: { home_address: { city: 'Berlin' } },
+    });
 
+    await memberDetailScreen.editFieldButton('Home address').click();
     await modal().getByRole('combobox', { name: 'Country' }).click();
     await page.getByPlaceholder('Search countries...').fill('Germ');
     await page.getByRole('option', { name: 'Germany' }).click();
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
     await expect.element(memberDetailScreen.fieldValue('1 Main St, Berlin, Germany')).toBeVisible();
-    const saved = savedMember(editApi.lastRequest?.body);
-    expect(saved.metafields).toEqual({
-      custom: { home_address: { line1: '1 Main St', city: 'Berlin', country: 'DE' } },
+    expect(savedMember(editApi.lastRequest?.body).metafields).toEqual({
+      custom: { home_address: { country: 'DE' } },
     });
   });
 
@@ -430,6 +532,7 @@ describe('Member detail custom fields', () => {
       await memberDetailScreen.editFieldButton('Favourite animals').click();
       await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
+      await expect.element(modal()).not.toBeInTheDocument();
       await expect
         .poll(() => editApi.lastRequest && savedMember(editApi.lastRequest.body).metafields)
         .toEqual({ custom: { favourite_animals: null } });
@@ -467,6 +570,104 @@ describe('Member detail custom fields', () => {
         .poll(() => editApi.lastRequest && savedMember(editApi.lastRequest.body).metafields)
         .toEqual({ custom: { favourite_animals: ['Dog', 'Fish'] } });
     });
+  });
+
+  it('shows long text with its line breaks, up to four lines of it', async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    const about = 'First line\n\nThird line\nFourth line\nFifth line';
+    fakeMemberDetailWorld(m, { job_title: 'Editor', company: about });
+    await renderAdminApp(`/members/${m.id}`);
+
+    const row = memberDetailScreen.editFieldButton('Company');
+    await expect.element(row).toBeVisible();
+    const spans = [...row.element().querySelectorAll('span')];
+    const value = spans.find((span) => span.textContent === about);
+    if (!value) {
+      throw new Error('the long text value is not shown as it is held');
+    }
+    const style = getComputedStyle(value);
+    expect(style.whiteSpace).toBe('pre-line');
+    // Five lines held, four shown: the row opens the editor, which shows all of them.
+    expect(value.getBoundingClientRect().height).toBeCloseTo(4 * parseFloat(style.lineHeight), 0);
+
+    // Short text stays on the line it's written on.
+    const short = [
+      ...memberDetailScreen.editFieldButton('Job title').element().querySelectorAll('span'),
+    ].find((span) => span.textContent === 'Editor');
+    expect(short && getComputedStyle(short).whiteSpace).toBe('normal');
+  });
+
+  it('shows the first five fields, and the rest when asked', async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    const more = ['Nickname', 'Team', 'Pronouns'].map((name): MemberCustomField => ({
+      ...FIELDS[0],
+      key: KeySchema.parse(name.toLowerCase()),
+      name,
+    }));
+    fakeMemberDetailWorld(m, {}, [...FIELDS, ...more]);
+    await renderAdminApp(`/members/${m.id}`);
+
+    const section = memberDetailScreen.customFieldsSection();
+    await expect.element(section.getByRole('button', { name: 'Show all' })).toBeVisible();
+    await expect(section.getByRole('button', { name: /^Edit / })).toHaveCount(5);
+    await expect(section.getByRole('button', { name: 'Edit Pronouns' })).toHaveCount(0);
+
+    await section.getByRole('button', { name: 'Show all' }).click();
+
+    await expect(section.getByRole('button', { name: /^Edit / })).toHaveCount(6);
+    await expect(section.getByRole('button', { name: 'Show all' })).toHaveCount(0);
+    // The button is gone, so focus moves to the first field it revealed.
+    await expect.element(section.getByRole('button', { name: 'Edit Pronouns' })).toHaveFocus();
+  });
+
+  it('starts the next member on the first five fields', async () => {
+    const ada = member({ name: 'Ada Lovelace' });
+    const grace = member({ name: 'Grace Hopper' });
+    const more = ['Nickname', 'Team', 'Pronouns'].map((name): MemberCustomField => ({
+      ...FIELDS[0],
+      key: KeySchema.parse(name.toLowerCase()),
+      name,
+    }));
+    fakeMembers([ada, grace]);
+    for (const m of [ada, grace]) {
+      fakeAdminEndpoint('GET', new RegExp(`^/members/${m.id}/`), {
+        members: [{ ...m, metafields: { custom: {} } }],
+      });
+    }
+    fakeMemberCustomFields([...FIELDS, ...more]);
+    fakeAdminEndpoint('GET', new RegExp('^/members/events/'), {
+      events: [],
+      meta: { pagination: { page: 1, limit: 5, pages: 1, total: 0, next: null, prev: null } },
+    });
+    // Grace's record is cached, so moving back to her keeps the section on screen.
+    await renderAdminApp(`/members/${grace.id}`);
+    const section = memberDetailScreen.customFieldsSection();
+    await expect.element(section.getByRole('button', { name: 'Show all' })).toBeVisible();
+    window.location.hash = `/members/${ada.id}`;
+    await expect.element(page.getByRole('heading', { name: 'Ada Lovelace' })).toBeVisible();
+    await section.getByRole('button', { name: 'Show all' }).click();
+    await expect(section.getByRole('button', { name: /^Edit / })).toHaveCount(6);
+
+    window.location.hash = `/members/${grace.id}`;
+
+    await expect.element(page.getByRole('heading', { name: 'Grace Hopper' })).toBeVisible();
+    await expect(section.getByRole('button', { name: /^Edit / })).toHaveCount(5);
+    await expect.element(section.getByRole('button', { name: 'Show all' })).toBeVisible();
+  });
+
+  it('shows five fields without asking', async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    const more = ['Nickname', 'Team'].map((name): MemberCustomField => ({
+      ...FIELDS[0],
+      key: KeySchema.parse(name.toLowerCase()),
+      name,
+    }));
+    fakeMemberDetailWorld(m, {}, [...FIELDS, ...more]);
+    await renderAdminApp(`/members/${m.id}`);
+
+    const section = memberDetailScreen.customFieldsSection();
+    await expect(section.getByRole('button', { name: /^Edit / })).toHaveCount(5);
+    await expect(section.getByRole('button', { name: 'Show all' })).toHaveCount(0);
   });
 
   it('hides the section when the site has no custom fields defined', async () => {

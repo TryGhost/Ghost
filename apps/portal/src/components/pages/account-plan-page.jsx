@@ -4,6 +4,11 @@ import ActionButton from '../common/action-button';
 import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
 import SignupGiftPromotion from '../common/signup-gift-promotion';
+import TierRequirements, {
+  answeredAll,
+  answersOf,
+  useAskedRequirements,
+} from '../common/tier-requirements';
 import { MultipleProductsPlansSection } from '../common/plans-section';
 import { getDateString } from '../../utils/date-time';
 import {
@@ -159,10 +164,21 @@ const CancelSubscriptionButton = ({ member, onCancelSubscription, action, brandC
   );
 };
 
+/** What a change asks for when it asks nothing, the same on every render. */
+const NO_REQUIREMENTS = [];
+
 // For confirmation flows
 const PlanConfirmationSection = ({ plan, type, onConfirm }) => {
-  const { site, action, member, brandColor } = useContext(AppContext);
+  const { site, action, member, brandColor, fieldErrors } = useContext(AppContext);
   const [reason, setReason] = useState('');
+  const currentActivePlan = getMemberActivePrice({ member });
+  const product = getProductFromPrice({ site, priceId: plan?.id });
+  // What the new tier requires of its members, asked for here as changing tier skips a checkout.
+  // A change of billing period keeps the tier, so asks nothing.
+  const changesTier =
+    product?.id !== getProductFromPrice({ site, priceId: currentActivePlan?.id })?.id;
+  const requirements = (changesTier && product?.requirements) || NO_REQUIREMENTS;
+  const asked = useAskedRequirements(requirements, member?.metafields);
   const subscription = getMemberSubscription({ member });
   const isRunning = [
     'updateSubscription:running',
@@ -171,14 +187,12 @@ const PlanConfirmationSection = ({ plan, type, onConfirm }) => {
   ].includes(action);
   const label = t('Confirm');
   const planStartDate = getDateString(subscription.current_period_end);
-  const currentActivePlan = getMemberActivePrice({ member });
   let planStartingMessage = t('Starting {startDate}', { startDate: planStartDate });
   if (currentActivePlan.id !== plan.id) {
     planStartingMessage = t('Starting today');
   }
   const priceString = formatNumber(plan.price);
   const planStartMessage = `${plan.currency_symbol}${priceString}/${translateCadence(plan.interval)} – ${planStartingMessage}`;
-  const product = getProductFromPrice({ site, priceId: plan?.id });
   const priceLabel = product?.name;
   if (type === 'changePlan') {
     return (
@@ -197,9 +211,15 @@ const PlanConfirmationSection = ({ plan, type, onConfirm }) => {
             </div>
           </section>
         </div>
+        {asked.inputs.length > 0 && (
+          <div className="gh-portal-section mb6">
+            <TierRequirements asked={asked} errors={fieldErrors || {}} />
+          </div>
+        )}
         <ActionButton
           dataTestId={'confirm-action'}
-          onClick={(e) => onConfirm(e, plan)}
+          onClick={(e) => onConfirm(e, { answers: answersOf(asked), asked: asked.inputs })}
+          disabled={!answeredAll(asked)}
           isRunning={isRunning}
           isPrimary={true}
           brandColor={brandColor}
@@ -565,9 +585,13 @@ const PlansContainer = ({
     }
   }
 
-  // Plan confirmation flow for cancel/update flows
+  // Plan confirmation flow for cancel/update flows. Drawn afresh for each plan, as what a member
+  // is asked starts from the plan's tier.
   return (
-    <PlanConfirmationSection {...{ plan: confirmationPlan, type: confirmationType, onConfirm }} />
+    <PlanConfirmationSection
+      key={confirmationPlan?.id}
+      {...{ plan: confirmationPlan, type: confirmationType, onConfirm }}
+    />
   );
 };
 
@@ -703,6 +727,8 @@ export default class AccountPlanPage extends React.Component {
   }
 
   cancelConfirmPage() {
+    // The inputs a refusal was about go with the confirmation.
+    this.context.doAction('clearFieldErrors');
     this.setState({
       showConfirmation: false,
       confirmationPlan: null,
@@ -712,7 +738,8 @@ export default class AccountPlanPage extends React.Component {
     });
   }
 
-  onPlanCheckout(e, priceId) {
+  /** `given` is what the member answered what the new tier requires, and the inputs they were asked in. */
+  onPlanCheckout(e, priceId, given) {
     const { doAction, member } = this.context;
     let { confirmationPlan, selectedPlan } = this.state;
     if (priceId) {
@@ -732,6 +759,8 @@ export default class AccountPlanPage extends React.Component {
           planId: confirmationPlan.id,
           subscriptionId,
           cancelAtPeriodEnd: false,
+          answers: given?.answers,
+          asked: given?.asked,
         });
       }
     } else {
@@ -848,7 +877,7 @@ export default class AccountPlanPage extends React.Component {
     if (confirmationType === 'cancel') {
       return this.onCancelSubscriptionConfirmation(data);
     } else if (['changePlan', 'subscribe'].includes(confirmationType)) {
-      return this.onPlanCheckout();
+      return this.onPlanCheckout(e, null, data);
     }
   }
 

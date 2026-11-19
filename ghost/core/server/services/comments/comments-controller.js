@@ -334,7 +334,11 @@ module.exports = class CommentsController {
       return await this.stats.getAllCounts();
     }
 
-    const ids = frame?.options?.ids.split(',');
+    // `ids` is normally a comma-separated string, but a query like `?ids[0]=1&ids[1]=2`
+    // parses to an array. Handle both so unvalidated input can't reach `.split()` on a
+    // non-string and surface an internal error (with its context) to an anonymous caller.
+    const rawIds = frame.options.ids;
+    const ids = Array.isArray(rawIds) ? rawIds : String(rawIds).split(',');
 
     return await this.stats.getCountsByPost(ids);
   }

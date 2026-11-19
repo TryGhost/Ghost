@@ -6,6 +6,7 @@ import {
   recheckWrite,
 } from '../../../../../core/server/services/app-installations/decide-on-manifest';
 import type { LoadedManifest } from '../../../../../core/server/services/app-installations/load-manifest';
+import { FIXTURE_BACKEND_KEY, FIXTURE_IDENTITY_KEY } from '../../../../utils/app-identity';
 
 const MANIFEST_URL = 'https://podcast.example.com/ghost-app.json';
 
@@ -17,6 +18,10 @@ const approvedManifest: AppManifest = {
   accent_color: '#ff5500',
   icon: { name: 'audio-lines' },
   surfaces: [{ type: 'admin_page', url: 'https://podcast.example.com/admin' }],
+  manifest_url: MANIFEST_URL,
+  identity_key: FIXTURE_IDENTITY_KEY,
+  backend_key: FIXTURE_BACKEND_KEY,
+  development: false,
 };
 
 const current = {
@@ -25,11 +30,18 @@ const current = {
   manifest: approvedManifest,
 };
 
-/** A loaded manifest as the loader returns it, with a digest made from its URL and contents. */
-function loaded(overrides: Partial<AppManifest> = {}, manifestUrl = MANIFEST_URL): LoadedManifest {
+/** A loaded manifest as the loader returns it, with a digest made from its contents. */
+function loaded(overrides: Partial<AppManifest> = {}): LoadedManifest {
   const manifest = { ...approvedManifest, ...overrides };
   const serialised = JSON.stringify(manifest);
-  return { manifestUrl, manifest, serialised, digest: `${manifestUrl}\n${serialised}` };
+  return {
+    manifestUrl: manifest.manifest_url,
+    manifest,
+    serialised,
+    digest: serialised,
+    identityKeyThumbprint: 'identity',
+    backendKeyThumbprint: 'backend',
+  };
 }
 
 const silent = { description: 'Episodes and players.' };
@@ -83,14 +95,25 @@ describe('decideOnManifest', function () {
       );
     });
 
-    it('suspends when the same manifest comes from another URL', function () {
+    it('suspends when the manifest moves to another URL', function () {
       assert.equal(
         decideOnManifest({
           current,
           pending: null,
-          loaded: loaded({}, 'https://podcast.example.com/v2/ghost-app.json'),
+          loaded: loaded({ manifest_url: 'https://podcast.example.com/v2/ghost-app.json' }),
         }).kind,
         'suspend',
+      );
+    });
+
+    it('applies a new backend key silently', function () {
+      assert.equal(
+        decideOnManifest({
+          current,
+          pending: null,
+          loaded: loaded({ backend_key: { ...FIXTURE_BACKEND_KEY, x: FIXTURE_IDENTITY_KEY.x } }),
+        }).kind,
+        'apply',
       );
     });
   });
@@ -124,7 +147,10 @@ describe('decideOnManifest', function () {
         decideOnManifest({
           current,
           pending,
-          loaded: loaded(needsApproval, 'https://podcast.example.com/v2/ghost-app.json'),
+          loaded: loaded({
+            ...needsApproval,
+            manifest_url: 'https://podcast.example.com/v2/ghost-app.json',
+          }),
         }).kind,
         'suspend',
       );

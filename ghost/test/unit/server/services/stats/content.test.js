@@ -2,9 +2,15 @@ const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const ContentStatsService = require('../../../../../core/server/services/stats/content-stats-service');
-const logging = require('@tryghost/logging');
+const { createLoggingFake } = require('../../../../utils/logging-utils');
 
 describe('ContentStatsService', function () {
+  let logging;
+
+  beforeEach(function () {
+    logging = createLoggingFake();
+  });
+
   let service;
   let mockKnex;
   let mockUrlService;

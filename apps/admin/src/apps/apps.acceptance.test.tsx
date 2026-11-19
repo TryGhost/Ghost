@@ -12,8 +12,11 @@ import {
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeAdminStats,
+  fakeEditorChrome,
   fakeFrameOrigin,
   fakeTags,
+  post,
   holdModuleLoads,
   postFrameForm,
   reloadFrame,
@@ -22,18 +25,22 @@ import {
   siteResponse,
   staffRole,
 } from '@test-utils/acceptance';
+import { editorScreen } from '@/editor/editor.screen';
 import { sidebarScreen } from '@/layout/sidebar.screen';
 import { APP_FRAME_SANDBOX, appFrameTimeouts } from './lib/frame';
 import { appsScreen } from './apps.screen';
 import {
   APP_ORIGIN,
   APP_PAGE_URL,
+  ICON_DATA_URL,
+  ICON_URL,
   MANIFEST_URL,
   failAppFrame,
   fakeAppFrame,
   fakeAppPage,
   fakeInstallations,
   fakeSessionStart,
+  imageSources,
   installation,
   labs,
   manifest,
@@ -70,6 +77,7 @@ const fakeReview = () =>
         manifest_url: MANIFEST_URL,
         manifest: manifest({ name: 'Podcasts' }),
         digest: 'digest-2',
+        trusted_origins: [],
         installation: {
           id: 'installation-1',
           status: 'suspended',
@@ -87,27 +95,6 @@ const apiError = (status: number, message: string, code?: string) =>
     status,
     headers: { 'content-type': 'application/json' },
   });
-
-/** What Ghost returns for a request to an Admin API route it doesn't have. */
-const routeNotFound = () =>
-  new Response(
-    JSON.stringify({
-      errors: [
-        {
-          message: 'Resource not found',
-          context: null,
-          type: 'NotFoundError',
-          details: null,
-          property: null,
-          help: null,
-          code: null,
-          id: 'b1e2c3d4-0000-4000-8000-000000000000',
-          ghostErrorCode: null,
-        },
-      ],
-    }),
-    { status: 404, headers: { 'content-type': 'application/json' } },
-  );
 
 /**
  * Sets `appFrameTimeouts.ready` to `ms` while `run` runs, or until `run` calls `restore` to give
@@ -186,6 +173,10 @@ describe('Managing apps', () => {
     const { sessionsApi, readApi } = await fakeAppPage(installation());
 
     await renderAdminApp('/apps', { labs });
+    // The review and the details page mark the developer as unverified; every app is for now,
+    // so the list doesn't repeat it.
+    await expect.element(appsScreen.row('Podcast')).toHaveTextContent('Example Audio');
+    await expect.element(appsScreen.unverifiedDeveloperBadge()).not.toBeInTheDocument();
     await appsScreen.row('Podcast').getByText('Publish episodes and embed players.').click();
 
     await expect.poll(currentRoute).toBe(APP_ROUTE);
@@ -356,6 +347,22 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.frame()).not.toBeInTheDocument();
   });
 
+  it('refuses to frame an app whose page is on another port of Admin’s host', async () => {
+    // An older Ghost accepted this, as it refused only Admin's exact origin. The page would
+    // be sent Admin's session cookie, which ignores the port.
+    const { protocol, hostname, port } = window.location;
+    const otherPort = port === '8443' ? '8444' : '8443';
+    const onAdminHost = manifest({
+      surfaces: [{ type: 'admin_page', url: `${protocol}//${hostname}:${otherPort}/app/` }],
+    });
+    fakeSessionStart('installation-1', installation({ manifest: onAdminHost }));
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(appsScreen.notFramed()).toBeVisible();
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+  });
+
   it('refuses to frame an app whose page is on the site’s address', async () => {
     // Admin isn't necessarily served from the site's address, so that one is read.
     const site = siteResponse();
@@ -427,6 +434,7 @@ describe('Managing apps', () => {
           manifest_url: MANIFEST_URL,
           manifest: manifest(),
           digest: 'digest-2',
+          trusted_origins: [],
           installation: {
             id: 'installation-1',
             status: 'active',
@@ -460,7 +468,12 @@ describe('Managing apps', () => {
     // Uninstalled in another tab in the meantime, so the review offers a fresh install.
     fakeAdminEndpoint('POST', '/apps/installations/preview/', {
       app_installation_previews: [
-        { manifest_url: MANIFEST_URL, manifest: manifest(), digest: 'digest-2' },
+        {
+          manifest_url: MANIFEST_URL,
+          manifest: manifest(),
+          digest: 'digest-2',
+          trusted_origins: [],
+        },
       ],
     });
     const reinstalled = installation({ id: 'installation-2' });
@@ -487,6 +500,7 @@ describe('Managing apps', () => {
           manifest_url: MANIFEST_URL,
           manifest: manifest(),
           digest: 'digest-2',
+          trusted_origins: [],
           installation: {
             id: 'installation-2',
             status: 'active',
@@ -515,24 +529,6 @@ describe('Managing apps', () => {
     expect(reinstalledSessionsApi.requests).toHaveLength(1);
   });
 
-  it('doesn’t load an uninstalled app on a Ghost version without app sessions', async () => {
-    // A current Ghost refuses to start a session of an uninstalled app, as the next spec shows. A
-    // Ghost from before app sessions returns a plain 404 to the session start, and returns the app
-    // to the read.
-    const older = installation({ status: 'uninstalled' });
-    delete older.revision;
-    fakeSessionStart('installation-1', routeNotFound());
-    const readApi = fakeAdminEndpoint('GET', readPath('installation-1'), {
-      app_installations: [older],
-    });
-
-    await renderAdminApp(APP_ROUTE, { labs });
-
-    await expect.element(appsScreen.notInstalled()).toHaveTextContent('This app isn’t installed');
-    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
-    expect(readApi.requests).toHaveLength(1);
-  });
-
   it('says the app isn’t installed when it was uninstalled or never installed', async () => {
     const id = 'abcdefabcdefabcdefabcdef';
     fakeSessionStart(id, apiError(404, 'This app is not installed.', 'APP_NOT_INSTALLED'));
@@ -545,12 +541,17 @@ describe('Managing apps', () => {
   it('says an app is unavailable when Ghost can’t use its manifest, and opens it once it can', async () => {
     fakeInstallations([installation()]);
     const { sessionsApi } = await fakeAppPage(installation());
-    sessionsApi.set(apiError(409, 'This app is unavailable.', 'APP_UNAVAILABLE'));
+    sessionsApi.set(
+      apiError(409, 'Could not load the app’s manifest.', 'APP_MANIFEST_UNREACHABLE'),
+    );
 
     await renderAdminApp(APP_ROUTE, { labs });
 
-    await expect.element(appsScreen.unavailable()).toHaveTextContent('Podcast isn’t available');
+    await expect
+      .element(appsScreen.unavailable())
+      .toHaveTextContent('Podcast isn’t available right now');
     await expect.element(appsScreen.unavailable()).toHaveTextContent('podcast.example.com');
+    await expect.element(appsScreen.unavailable()).toHaveTextContent('APP_MANIFEST_UNREACHABLE');
     await expect.element(appsScreen.frame()).not.toBeInTheDocument();
 
     sessionsApi.set(installation());
@@ -558,6 +559,263 @@ describe('Managing apps', () => {
 
     await expect.element(appsScreen.frame()).toBeVisible();
     expect(sessionsApi.requests).toHaveLength(2);
+  });
+
+  // Uninstalling and installing it again from a link is how another developer's key gets pinned.
+  it('says Ghost couldn’t confirm it’s the app installed, sending the publisher to its developer', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    sessionsApi.set(
+      apiError(409, 'This app doesn’t come from the same developer.', 'APP_IDENTITY_MISMATCH'),
+    );
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect
+      .element(appsScreen.unavailable())
+      .toHaveTextContent('Ghost couldn’t confirm this is Podcast');
+    await expect.element(appsScreen.unavailable()).toHaveTextContent('Contact its developer');
+    await expect.element(appsScreen.unavailable()).toHaveTextContent('APP_IDENTITY_MISMATCH');
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Uninstall' })).not.toBeInTheDocument();
+    // The developer's link may be on the very origin Ghost couldn't confirm.
+    await expect
+      .element(appsScreen.unavailable().getByRole('link', { name: 'Back to Apps' }))
+      .toBeVisible();
+    await expect
+      .element(appsScreen.unavailable().getByRole('link', { name: 'Contact support' }))
+      .not.toBeInTheDocument();
+
+    sessionsApi.set(installation());
+    await page.getByRole('button', { name: 'Try again' }).click();
+
+    await expect.element(appsScreen.frame()).toBeVisible();
+  });
+
+  it('marks a development build in the list and its details, as its signed manifest says', async () => {
+    const development = installation({ manifest: manifest({ development: true }) });
+    fakeInstallations([development]);
+    await fakeAppPage(development);
+
+    await renderAdminApp('/apps', { labs });
+
+    await expect.element(appsScreen.row('Podcast')).toHaveTextContent('Development');
+    await appsScreen.rowActions('Podcast').click();
+    await appsScreen.detailsMenuItem().click();
+    await expect.element(appsScreen.details()).toHaveTextContent('Development');
+  });
+
+  it('doesn’t mark an app that isn’t a development build', async () => {
+    fakeInstallations([installation()]);
+
+    await renderAdminApp('/apps', { labs });
+
+    await expect.element(appsScreen.row('Podcast')).toBeVisible();
+    await expect.element(appsScreen.row('Podcast')).not.toHaveTextContent('Development');
+  });
+
+  describe('app page footer', () => {
+    /** The space between the nav and the footer, and how far the space after it differs. */
+    const footerSpace = (nav: Element) => {
+      const [n, f] = [
+        nav.getBoundingClientRect(),
+        appsScreen.footer().element().getBoundingClientRect(),
+      ];
+      const start = f.left - n.right;
+      return { start, skew: Math.round(start - (window.innerWidth - f.right)) };
+    };
+
+    it('names the app and links its developer for support, under every app', async () => {
+      await fakeAppPage(installation());
+
+      await renderAdminApp(APP_ROUTE, { labs });
+
+      await expect.element(appsScreen.frame()).toBeVisible();
+      await expect.element(appsScreen.footer()).toHaveTextContent('Podcast by Example Audio');
+      await expect.element(appsScreen.footer()).not.toHaveTextContent('Contact support');
+      const developer = appsScreen.footer().getByRole('link', { name: 'Example Audio' });
+      await expect.element(developer).toHaveAttribute('href', 'https://example.com/');
+      await expect.element(developer).toHaveAttribute('target', '_blank');
+      await expect.element(appsScreen.footerDevelopmentBadge()).not.toBeInTheDocument();
+      await expect.element(appsScreen.footer()).not.toHaveAttribute('data-development');
+    });
+
+    it('marks a development build in its footer, below the frame', async () => {
+      const development = installation({ manifest: manifest({ development: true }) });
+      await fakeAppPage(development);
+
+      await renderAdminApp(APP_ROUTE, { labs });
+
+      await expect.element(appsScreen.frame()).toBeVisible();
+      await expect.element(appsScreen.footerDevelopmentBadge()).toHaveTextContent('Development');
+      await expect.element(appsScreen.footer()).toHaveAttribute('data-development');
+      const frame = appsScreen.frame().element().getBoundingClientRect();
+      const footer = appsScreen.footer().element().getBoundingClientRect();
+      expect(frame.bottom).toBeLessThanOrEqual(footer.top);
+    });
+
+    it('keeps the footer beside the default nav, with the same space at both ends', async () => {
+      await fakeAppPage(installation());
+
+      await renderAdminApp(APP_ROUTE, { labs });
+
+      await expect.element(appsScreen.frame()).toBeVisible();
+      const nav = document.querySelector('[data-sidebar=sidebar]')!;
+      await expect.poll(() => footerSpace(nav).skew).toBe(0);
+      expect(footerSpace(nav).start).toBeGreaterThan(0);
+    });
+
+    it('keeps the footer under the frame beside Admin 7’s unpinned nav', async () => {
+      allowUnhandledRequests();
+      await fakeAppPage(installation());
+      const me = currentUserResponse();
+      me.users[0].accessibility = JSON.stringify({
+        navigation: {
+          expanded: { posts: true, members: true },
+          menu: { visible: true, mode: 'compact' },
+        },
+      });
+
+      await renderAdminApp(APP_ROUTE, {
+        labs: { ...labs, admin7Design: true },
+        boot: { browseMe: { response: me } },
+      });
+
+      await expect.element(appsScreen.frame()).toBeVisible();
+      // Admin pads the page evenly beside the unpinned nav, so the footer runs as wide as the frame.
+      const frame = appsScreen.frame().element();
+      const footer = appsScreen.footer().element();
+      await expect
+        .poll(() => {
+          const [f, a] = [footer.getBoundingClientRect(), frame.getBoundingClientRect()];
+          return [Math.round(f.left - a.left), Math.round(f.right - a.right)];
+        })
+        .toEqual([0, 0]);
+    });
+
+    it('keeps the footer beside Admin 7’s pinned nav, with the same space at both ends', async () => {
+      // The Admin 7 sidebar owns its request graph (member stats); this is about the footer.
+      allowUnhandledRequests();
+      await fakeAppPage(installation());
+
+      await renderAdminApp(APP_ROUTE, { labs: { ...labs, admin7Design: true } });
+
+      await expect.element(appsScreen.frame()).toBeVisible();
+      await expect
+        .poll(() => document.querySelector('[data-slot=floating-sidebar]'))
+        .not.toBeNull();
+      const nav = document.querySelector('[data-slot=floating-sidebar]')!;
+      await expect.poll(() => footerSpace(nav).skew).toBe(0);
+      expect(footerSpace(nav).start).toBeGreaterThan(0);
+    });
+
+    it('opens an email to the developer when their link is an email address', async () => {
+      const emailed = installation({
+        manifest: manifest({
+          author: { name: 'Example Audio', url: 'mailto:support@example.com' },
+        }),
+      });
+      await fakeAppPage(emailed);
+
+      await renderAdminApp(APP_ROUTE, { labs });
+
+      const developer = appsScreen.footer().getByRole('link', { name: 'Example Audio' });
+      await expect.element(developer).toHaveAttribute('href', 'mailto:support@example.com');
+      await expect.element(developer).not.toHaveAttribute('target');
+    });
+
+    it('offers support in place of the footer when the app isn’t responding', async () => {
+      await withReadyTimeout(300, async () => {
+        const emailed = installation({
+          manifest: manifest({
+            author: { name: 'Example Audio', url: 'mailto:support@example.com' },
+          }),
+        });
+        await fakeAppPage(emailed);
+        await failAppFrame();
+
+        await renderAdminApp(APP_ROUTE, { labs });
+
+        await expect.element(appsScreen.notResponding()).toBeVisible();
+        const support = appsScreen.notResponding().getByRole('link', { name: 'Contact support' });
+        await expect.element(support).toHaveAttribute('href', 'mailto:support@example.com');
+        await expect.element(support).not.toHaveAttribute('target');
+        await expect
+          .element(appsScreen.notResponding().getByRole('link', { name: 'Back to Apps' }))
+          .not.toBeInTheDocument();
+        await expect.element(appsScreen.footer()).not.toBeInTheDocument();
+      });
+    });
+
+    it('keeps the footer when the app needs approval', async () => {
+      const suspended = installation({ status: 'suspended' });
+      await fakeAppPage(suspended);
+      fakeReview();
+
+      await renderAdminApp(APP_ROUTE, { labs });
+
+      await expect.element(appsScreen.needsApproval()).toBeInTheDocument();
+      await expect.element(appsScreen.footer()).toHaveTextContent('Podcast by Example Audio');
+      // Content taller than the page scrolls above the footer, which stays in view.
+      await page.viewport(1280, 360);
+      try {
+        await expect
+          .poll(() => appsScreen.footer().element().getBoundingClientRect().bottom)
+          .toBeLessThanOrEqual(window.innerHeight);
+        expect(appsScreen.content().element().getBoundingClientRect().bottom).toBeLessThanOrEqual(
+          appsScreen.footer().element().getBoundingClientRect().top,
+        );
+      } finally {
+        await page.viewport(1280, 800);
+      }
+    });
+
+    it('offers support in place of the footer when Ghost can’t use the app’s manifest', async () => {
+      fakeInstallations([installation()]);
+      fakeSessionStart(
+        'installation-1',
+        apiError(409, 'Could not load the app’s manifest.', 'APP_MANIFEST_UNREACHABLE'),
+      );
+
+      await renderAdminApp(APP_ROUTE, { labs });
+
+      const support = appsScreen.unavailable().getByRole('link', { name: 'Contact support' });
+      await expect.element(support).toHaveAttribute('href', 'https://example.com/');
+      await expect.element(support).toHaveAttribute('target', '_blank');
+      await expect
+        .element(appsScreen.unavailable().getByRole('link', { name: 'Back to Apps' }))
+        .not.toBeInTheDocument();
+      await expect.element(appsScreen.footer()).not.toBeInTheDocument();
+    });
+
+    it('sends the publisher back to Apps when it can’t tell which app is unavailable', async () => {
+      fakeInstallations([]);
+      fakeSessionStart(
+        'installation-1',
+        apiError(409, 'Could not load the app’s manifest.', 'APP_MANIFEST_UNREACHABLE'),
+      );
+
+      await renderAdminApp(APP_ROUTE, { labs });
+
+      await expect
+        .element(appsScreen.unavailable().getByRole('link', { name: 'Back to Apps' }))
+        .toBeVisible();
+      await expect
+        .element(appsScreen.unavailable().getByRole('link', { name: 'Contact support' }))
+        .not.toBeInTheDocument();
+    });
+
+    it('has no footer when there’s no app to name', async () => {
+      fakeSessionStart(
+        'installation-1',
+        apiError(404, 'This app is not installed.', 'APP_NOT_INSTALLED'),
+      );
+
+      await renderAdminApp(APP_ROUTE, { labs });
+
+      await expect.element(appsScreen.notInstalled()).toBeVisible();
+      await expect.element(appsScreen.footer()).not.toBeInTheDocument();
+    });
   });
 
   it('says an app page address that isn’t an app’s doesn’t exist, rather than offering a retry', async () => {
@@ -589,28 +847,6 @@ describe('Managing apps', () => {
 
     await expect.element(appsScreen.frame()).toBeVisible();
     expect(sessionsApi.requests).toHaveLength(2);
-  });
-
-  it('opens an app without a re-check on a Ghost version without app sessions', async () => {
-    // Admin and Core deploy independently. A Ghost from before app sessions returns a plain 404
-    // when Admin starts a session, and its installations have no revision.
-    const older = installation();
-    delete older.revision;
-    const { sessionsApi, readApi, set } = await fakeAppPage(installation());
-    set(older);
-    sessionsApi.set(routeNotFound());
-
-    const { queryClient } = await renderAdminApp(APP_ROUTE, { labs });
-
-    await expect.element(appsScreen.frame()).toBeVisible();
-    expect((await appState()).context?.session).toEqual({ revision: 0 });
-    expect(sessionsApi.requests).toHaveLength(1);
-    // The installation is read once to open the app, without a re-check. It isn't read again to
-    // detect the session's end, even when the publisher comes back to the tab, because a missing
-    // revision never changes.
-    window.dispatchEvent(new Event('visibilitychange'));
-    await expect.poll(() => queryClient.isFetching()).toBe(0);
-    expect(readApi.requests).toHaveLength(1);
   });
 
   it('ends the session when the installation’s revision increases, and starts a new one', async () => {
@@ -906,7 +1142,14 @@ describe('Managing apps', () => {
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
-      for (const path of ['//evil.example/', 'https://evil.example/', 'episodes']) {
+      for (const path of [
+        '//evil.example/',
+        'https://evil.example/',
+        'episodes',
+        // Contained as written, but `//evil.example/` once `.` and `..` are resolved.
+        '/.//evil.example/',
+        '/a/..//evil.example/',
+      ]) {
         expect(refusal(await callHostRaw(APP_ORIGIN, 'pathChanged', path, 'push'))).toMatch(
           /^invalid_path: /,
         );
@@ -918,6 +1161,15 @@ describe('Managing apps', () => {
       await callHostRaw(APP_ORIGIN, 'pathChanged', '/../../settings', 'push');
       await expect.poll(currentRoute).toBe(`${APP_ROUTE}/settings`);
     });
+
+    it('opens the app’s entry page from a link whose route would load another site', async () => {
+      await fakeAppPage(installation());
+      await renderAdminApp(`${APP_ROUTE}/.//evil.example/p/1234/`, { labs });
+
+      await expect.element(appsScreen.frame()).toBeVisible();
+      await expect.element(appsScreen.frame()).toHaveAttribute('src', APP_PAGE_URL);
+      expect((await appState()).context?.path).toBe('/admin');
+    });
   });
 
   describe('places the app opens', () => {
@@ -925,29 +1177,35 @@ describe('Managing apps', () => {
     const pageId = '6500000000000000000000a3';
     const memberId = '6500000000000000000000b2';
 
-    it('opens a post in the editor', async () => {
-      // The editor owns its request graph.
-      allowUnhandledRequests();
-      await fakeAppPage(installation());
-      await renderAdminApp(APP_ROUTE, { labs });
-      await expect.element(appsScreen.frame()).toBeVisible();
+    // An ObjectId, as Ghost generates them, which is how the editor recognises an app's route.
+    for (const postType of ['post', 'page'] as const) {
+      it(`opens a ${postType} in the editor, whose back link returns to the app where it was`, async () => {
+        const id = '6a1b2c3d4e5f60718293a4b5';
+        const resource = postType === 'post' ? 'posts' : 'pages';
+        const placeId = postType === 'post' ? postId : pageId;
+        fakeEditorChrome();
+        fakeAdminEndpoint('GET', new RegExp(`^/${resource}/${placeId}/\\?`), {
+          [resource]: [post({ id: placeId })],
+        });
+        await fakeAppPage(installation({ id }));
+        await renderAdminApp(`/apps/${id}`, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
 
-      await callAppFrame(APP_ORIGIN, 'open', { post: { id: postId } });
+        // The app asks straight after moving, before Admin has necessarily caught up.
+        answer(await callAppFrame(APP_ORIGIN, 'navigate', '/episodes/12?tab=notes'));
+        await callAppFrame(
+          APP_ORIGIN,
+          'open',
+          postType === 'post' ? { post: { id: placeId } } : { page: { id: placeId } },
+        );
 
-      await expect.poll(currentRoute).toBe(`/editor/post/${postId}`);
-    });
-
-    it('opens a page in the editor', async () => {
-      // The editor owns its request graph.
-      allowUnhandledRequests();
-      await fakeAppPage(installation());
-      await renderAdminApp(APP_ROUTE, { labs });
-      await expect.element(appsScreen.frame()).toBeVisible();
-
-      await callAppFrame(APP_ORIGIN, 'open', { page: { id: pageId } });
-
-      await expect.poll(currentRoute).toBe(`/editor/page/${pageId}`);
-    });
+        await expect.poll(currentRoute).toBe(`/editor/${postType}/${placeId}`);
+        await editorScreen.appBackLink().click();
+        await expect.poll(currentRoute).toBe(`/apps/${id}/episodes/12?tab=notes`);
+        await expect.element(appsScreen.frame()).toBeVisible();
+        await expect.poll(async () => (await appState()).address).toBe('/episodes/12?tab=notes');
+      });
+    }
 
     it('opens a member', async () => {
       // The member's page owns its request graph.
@@ -1270,11 +1528,18 @@ describe('Managing apps', () => {
     await renderAdminApp(DETAILS_ROUTE, { labs });
 
     const details = appsScreen.details();
-    await expect.element(details).toHaveTextContent('Example Audio');
     await expect
-      .element(appsScreen.capabilities().last())
-      .toHaveTextContent('Read and write data to podcast.example.net');
+      .element(details)
+      .toHaveTextContent(/Made by\s*Example Audio\s*Unverified developer/);
+    await expect.element(appsScreen.unverifiedDeveloperBadge()).toBeVisible();
+    await expect
+      .element(details)
+      .toHaveTextContent(
+        /Surface\s*A dedicated page in Admin\s*Data accessed by\s*podcast\.example\.net/,
+      );
     await expect.element(details).toHaveTextContent('by Jamie Larson');
+    // The sections sit one level under the app's name
+    await expect.element(page.getByRole('heading', { name: 'History', level: 2 })).toBeVisible();
     await expect(appsScreen.historyEntries()).toHaveCount(3);
     await expect
       .element(appsScreen.historyEntries().nth(0))
@@ -1284,6 +1549,188 @@ describe('Managing apps', () => {
       .element(appsScreen.historyEntries().nth(2))
       .toHaveTextContent('Installed by Jamie Larson');
     expect(new URL(readApi.requests[0].url).searchParams.get('include')).toBe('history');
+  });
+
+  it('shows the app’s name large under the breadcrumb, with its badges and description, in Admin 7', async () => {
+    // Admin 7's sidebar shows the site's member count and revenue.
+    fakeAdminStats.memberCount();
+    fakeAdminStats.mrr();
+    fakeDetails(
+      installation({
+        manifest: manifest({ development: true }),
+        history: [installedOn('2026-10-01T10:00:00.000Z')],
+      }),
+    );
+
+    await renderAdminApp(DETAILS_ROUTE, { labs: { ...labs, admin7Design: true } });
+
+    await expect.element(appsScreen.detailsTitle()).toHaveTextContent('Podcast');
+    await expect.element(appsScreen.details()).toHaveTextContent('Development');
+    await expect
+      .element(appsScreen.details())
+      .toHaveTextContent('Publish episodes and embed players.');
+    await expect.element(appsScreen.details()).toHaveTextContent(/Made by\s*Example Audio/);
+    await expect.element(page.getByRole('heading', { name: 'Permissions' })).toBeVisible();
+    await expect.element(appsScreen.openLink()).toBeVisible();
+  });
+
+  it('shows that an app’s details are loading', async () => {
+    let respond: ((response: Response) => void) | undefined;
+    fakeAdminEndpoint(
+      'GET',
+      readPath('installation-1'),
+      () =>
+        new Promise<Response>((resolve) => {
+          respond = resolve;
+        }),
+    );
+
+    await renderAdminApp(DETAILS_ROUTE, { labs });
+
+    await expect.element(page.getByTestId('app-details-loading')).toBeVisible();
+    // The page can show it's loading before the request reaches the fake, so the fake has to
+    // be holding it before it can answer.
+    await expect.poll(() => respond).toBeDefined();
+    respond?.(Response.json({ app_installations: [installation()] }));
+    await expect.element(appsScreen.details()).toHaveTextContent('Permissions');
+    await expect.element(page.getByTestId('app-details-loading')).not.toBeInTheDocument();
+  });
+
+  it('reads the app’s name before its sections on a narrow screen in Admin 7', async () => {
+    fakeAdminStats.memberCount();
+    fakeAdminStats.mrr();
+    fakeDetails(installation({ history: [installedOn('2026-10-01T10:00:00.000Z')] }));
+
+    // Below the frame's breakpoint the name moves from the header into the sidebar, which
+    // shows above the sections.
+    await page.viewport(375, 720);
+    try {
+      await renderAdminApp(DETAILS_ROUTE, { labs: { ...labs, admin7Design: true } });
+
+      const name = page.getByRole('heading', { name: 'Podcast', level: 1 });
+      const permissions = page.getByRole('heading', { name: 'Permissions', level: 2 });
+      await expect.element(name).toBeVisible();
+      await expect.element(permissions).toBeVisible();
+      expect(
+        name.element().compareDocumentPosition(permissions.element()) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    } finally {
+      await page.viewport(1280, 800);
+    }
+  });
+
+  it('opens an email to the developer from an app’s details when their link is an email address', async () => {
+    fakeDetails(
+      installation({
+        manifest: manifest({
+          author: { name: 'Example Audio', url: 'mailto:support@example.com' },
+        }),
+      }),
+    );
+
+    await renderAdminApp(DETAILS_ROUTE, { labs });
+
+    const developer = appsScreen.details().getByRole('link', { name: 'Example Audio' });
+    await expect.element(developer).toHaveAttribute('href', 'mailto:support@example.com');
+    await expect.element(developer).not.toHaveAttribute('target');
+  });
+
+  // The icon URL isn't faked, so a request to it would fail the test.
+  it('draws an app’s own icon from the copy Ghost stored, never from the app', async () => {
+    const withIcon = installation({
+      manifest: manifest({ icon: { url: ICON_URL } }),
+      icon_data_url: ICON_DATA_URL,
+    });
+    fakeInstallations([withIcon]);
+    fakeDetails(withIcon);
+
+    await renderAdminApp('/apps', { labs });
+
+    await expect.element(appsScreen.row('Podcast')).toBeVisible();
+    const row = appsScreen.row('Podcast').element();
+    expect(imageSources(row)).toEqual([ICON_DATA_URL]);
+    // An SVG `<image>` has no naturalWidth, but decode() settles once it has loaded.
+    await (row.querySelector('image') as SVGImageElement & { decode(): Promise<void> }).decode();
+    expect(imageSources(appsScreen.sidebarApps().element())).toEqual([ICON_DATA_URL]);
+
+    await appsScreen.rowActions('Podcast').click();
+    await appsScreen.detailsMenuItem().click();
+
+    await expect.element(appsScreen.details()).toHaveTextContent('Example Audio');
+    expect(imageSources(appsScreen.details().element())).toEqual([ICON_DATA_URL]);
+  });
+
+  it('flattens an app’s own icon to white on its tile and to the nav icons’ colour in the sidebar', async () => {
+    fakeInstallations([
+      installation({
+        manifest: manifest({ icon: { url: ICON_URL } }),
+        icon_data_url: ICON_DATA_URL,
+      }),
+    ]);
+
+    await renderAdminApp('/apps', { labs });
+
+    await expect.element(appsScreen.row('Podcast')).toBeVisible();
+    const tileIcon = appsScreen.row('Podcast').element().querySelector('svg:has(mask)')!;
+    expect(tileIcon.querySelector('rect')!.getAttribute('fill')).toBe('currentColor');
+    expect(tileIcon.parentElement).toHaveClass('text-white');
+
+    const icon = appsScreen
+      .sidebarApps()
+      .element()
+      .querySelector('[data-sidebar=menu-button] > svg:has(mask)')!;
+    expect(icon.querySelector('rect')!.getAttribute('fill')).toBe('currentColor');
+    expect(icon.getBoundingClientRect().width).toBe(16);
+    // A native nav item in the same sidebar, which is neither active nor hovered.
+    const nativeIcon = icon
+      .closest('[data-sidebar=sidebar]')!
+      .querySelector('[data-sidebar=menu-button][data-active=false]:not(:hover) > svg.lucide');
+    expect(nativeIcon).not.toBeNull();
+    expect(getComputedStyle(icon).color).toBe(getComputedStyle(nativeIcon!).color);
+  });
+
+  it('draws the default icon for an app’s own icon without a stored copy', async () => {
+    fakeInstallations([installation({ manifest: manifest({ icon: { url: ICON_URL } }) })]);
+
+    await renderAdminApp('/apps', { labs });
+
+    await expect.element(appsScreen.row('Podcast')).toBeVisible();
+    const row = appsScreen.row('Podcast').element();
+    expect(imageSources(row)).toEqual([]);
+    expect(row.querySelector('svg.lucide-app-window')).not.toBeNull();
+    expect(imageSources(appsScreen.sidebarApps().element())).toEqual([]);
+  });
+
+  it('draws the default icon for a stored copy that doesn’t load', async () => {
+    fakeInstallations([
+      installation({
+        manifest: manifest({ icon: { url: ICON_URL } }),
+        icon_data_url: 'data:image/png;base64,bm90IGEgcG5n',
+      }),
+    ]);
+
+    await renderAdminApp('/apps', { labs });
+
+    await expect.element(appsScreen.row('Podcast')).toBeVisible();
+    const row = appsScreen.row('Podcast').element();
+    await expect.poll(() => row.querySelector('svg.lucide-app-window')).not.toBeNull();
+    expect(imageSources(row)).toEqual([]);
+    const sidebar = appsScreen.sidebarApps().element();
+    await expect.poll(() => sidebar.querySelector('svg.lucide-app-window')).not.toBeNull();
+    expect(imageSources(sidebar)).toEqual([]);
+  });
+
+  it('draws the default icon for a stored copy that isn’t an image data URL', async () => {
+    fakeInstallations([
+      installation({ manifest: manifest({ icon: { url: ICON_URL } }), icon_data_url: ICON_URL }),
+    ]);
+
+    await renderAdminApp('/apps', { labs });
+
+    await expect.element(appsScreen.row('Podcast')).toBeVisible();
+    expect(imageSources(appsScreen.row('Podcast').element())).toEqual([]);
+    expect(imageSources(appsScreen.sidebarApps().element())).toEqual([]);
   });
 
   it('uninstalls an app from the list, after saying integration keys stay', async () => {
@@ -1299,6 +1746,10 @@ describe('Managing apps', () => {
 
     const dialog = appsScreen.uninstallDialog();
     await expect.element(dialog).toHaveTextContent('Uninstall Podcast?');
+    // Ghost can't stop a copy that's already open elsewhere, so it doesn't say it does.
+    await expect
+      .element(dialog)
+      .toHaveTextContent('The app stops opening for everyone. Where it’s already open');
     await expect
       .element(appsScreen.integrationKeyNote())
       .toHaveTextContent('Settings › Integrations');
@@ -1332,7 +1783,8 @@ describe('Managing apps', () => {
     });
 
     await renderAdminApp(DETAILS_ROUTE, { labs });
-    await appsScreen.uninstallButton().click();
+    await appsScreen.detailsActions().click();
+    await appsScreen.menuItem('Uninstall').click();
     await appsScreen.uninstallDialog().getByRole('button', { name: 'Uninstall' }).click();
 
     await expect.poll(currentRoute).toBe('/apps');
@@ -1408,6 +1860,7 @@ describe('Managing apps', () => {
     await expect
       .element(appsScreen.historyEntries().first())
       .toHaveTextContent('Updated, needs approval');
+    await expect.element(appsScreen.openLink()).not.toBeInTheDocument();
     await appsScreen.reviewChangesLink().click();
 
     await expect
@@ -1449,7 +1902,11 @@ describe('Managing apps', () => {
     await expect
       .element(appsScreen.historyEntries().first())
       .toHaveTextContent('Uninstalled by Jamie Larson');
-    await expect.element(appsScreen.uninstallButton()).not.toBeInTheDocument();
+    await expect
+      .element(page.getByTestId('app-fact').filter({ hasText: 'Uninstalled' }))
+      .toHaveTextContent('by Jamie Larson');
+    await expect.element(appsScreen.detailsActions()).not.toBeInTheDocument();
+    await expect.element(appsScreen.openLink()).not.toBeInTheDocument();
   });
 
   it('says when an app doesn’t exist', async () => {

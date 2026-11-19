@@ -288,7 +288,7 @@ describe('LinkClickTrackingService', function () {
       });
       save.rejects(error);
 
-      await assert.rejects(subscriber(event), error);
+      await assert.rejects(subscriber(event), (thrown) => thrown === error);
       sinon.assert.notCalled(trackEmailClicked);
     });
 
@@ -311,7 +311,7 @@ describe('LinkClickTrackingService', function () {
       });
       trackEmailClicked.rejects(error);
 
-      await assert.rejects(subscriber(event), error);
+      await assert.rejects(subscriber(event), (thrown) => thrown === error);
       sinon.assert.calledOnceWithExactly(trackEmailClicked, sinon.match.object, { transacting });
     });
   });

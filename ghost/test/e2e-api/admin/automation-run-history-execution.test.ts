@@ -26,6 +26,7 @@ describe('Automation run history from the execution', function () {
   let agent: Awaited<ReturnType<typeof agentProvider.getAdminAPIAgent>>;
   let clock: sinon.SinonFakeTimers;
   let repository: ReturnType<typeof createDatabaseAutomationsRepository>;
+  let automationsApi2: ReturnType<typeof createAutomationsApi2<Knex | Knex.Transaction>>;
   let member: {
     id: string;
     name: string;
@@ -66,7 +67,7 @@ describe('Automation run history from the execution', function () {
     };
     await db('members').insert(member);
     repository = createDatabaseAutomationsRepository({ knex: db, fakeWaitHoursMultiplier: null });
-    const automationsApi2 = createAutomationsApi2({
+    automationsApi2 = createAutomationsApi2({
       repository: createDatabaseAutomationsRepository2({ knex: db }),
       fakeWaitHoursMultiplier: null,
       labs: { isSet: () => true },
@@ -80,11 +81,10 @@ describe('Automation run history from the execution', function () {
         sendAutomationEmail: sinon.stub().resolves({ id: '<history@example.com>' }),
       },
     };
-    await automationsApi2.trigger({
-      event: 'membership_started',
+    await automationsApi2.notify({
+      eventName: 'membership_started',
       source: 'member' as const,
       memberId: member.id,
-      memberEmail: member.email,
       memberStatus: 'free',
       previousMemberStatus: null,
       memberTierIds: [],
@@ -149,7 +149,7 @@ describe('Automation run history from the execution', function () {
       .where('automation_run_step_id', email.id)
       .first();
     clock.setSystemTime(new Date('2026-09-16T12:00:04Z'));
-    await repository.trackEmailDeliveredAndOpened(
+    await automationsApi2.trackEmailDeliveredAndOpened(
       new Map([
         [
           recipient.id,

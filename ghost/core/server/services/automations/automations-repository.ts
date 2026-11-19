@@ -1,4 +1,3 @@
-import type { Knex } from 'knex';
 import type { ReadonlyDeep } from 'type-fest';
 import type { AddAutomationData, EditAutomationData } from './automations-schemas';
 import type { AutomationTriggerRule, AutomationTriggerRuleDefinition } from './trigger-rules';
@@ -78,17 +77,6 @@ export type AutomationBrowseResult = AutomationSummary & {
   };
 };
 
-// This is deprecated and will be removed soon. See NY-1746.
-export type AutomationTriggerTierData =
-  | {
-      trigger_tier_scope: null | 'free' | 'all_paid';
-      trigger_tier_ids: null;
-    }
-  | {
-      trigger_tier_scope: 'selected_paid';
-      trigger_tier_ids: string[];
-    };
-
 export type Automation = AutomationSummary & {
   actions: AutomationAction[];
   edges: AutomationEdge[];
@@ -99,12 +87,6 @@ export type AutomatedEmailRecipientWithMailgunId = {
   id: string;
   mailgun_message_id: string;
   automation_action_revision_id: string;
-};
-
-export type AutomatedEmailEvents = {
-  deliveredAt?: Date;
-  openedAt?: Date;
-  automationActionRevisionId: string;
 };
 
 export type RecordEmailSentOptions = Readonly<{
@@ -268,25 +250,4 @@ export type AutomationsRepository = {
   getAutomatedEmailRecipientsByMailgunIds(
     mailgunMessageIds: ReadonlyArray<string>,
   ): Promise<AutomatedEmailRecipientWithMailgunId[]>;
-  /**
-   * Track delivery and open events.
-   */
-  trackEmailDeliveredAndOpened(
-    eventsByAutomatedEmailRecipientId: ReadonlyDeep<Map<string, AutomatedEmailEvents>>,
-  ): Promise<void>;
-  /**
-   * Record the first click timestamp for the automated email recipient identified by a run step.
-   *
-   */
-  trackEmailClicked(
-    options: {
-      automationActionRevisionId: string;
-      automationRunStepId: string;
-      memberId: string;
-      clickedAt: Readonly<Date>;
-    },
-    transactionOptions: {
-      transacting: Knex.Transaction;
-    },
-  ): Promise<void>;
 };

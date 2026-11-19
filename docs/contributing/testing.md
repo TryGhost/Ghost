@@ -148,6 +148,34 @@ Compiling Core with `build:tsc` is unnecessary for source tests and leaves
 adjacent JavaScript files that can shadow later TypeScript edits in CommonJS
 imports.
 
+### Unit test order
+
+Ghost Core's unit files share one module registry per worker, so state a file
+leaves behind, such as a stub, a config override, a registered Handlebars helper
+or an initialized service root, is still there for whichever file runs next. A
+test must also not rely on another test in its file having run first. CI runs
+the unit suite in a shuffled order, files and the tests inside them, to catch
+both.
+
+The shuffle uses one seed per CI run, which Vitest prints near the top of the
+unit test output:
+
+```text
+Running tests with seed "19283746501"
+```
+
+To rerun that order locally, pass the same seed. The seed isn't part of Nx's
+cache key, so skip the cache or Nx replays an earlier result:
+
+```bash
+GHOST_UNIT_TEST_SEED=19283746501 pnpm nx run ghost:test:unit --skip-nx-cache
+```
+
+Re-running the CI job keeps the seed, so it fails the same way until the order
+dependency is fixed. Fix it in the test that leaks or relies on state: restore
+what it changes in `afterEach` or `afterAll`, and set up what it needs in its
+own `beforeEach`.
+
 From `ghost/`, `pnpm test:all` runs Ghost Core's unit, integration, server E2E,
 type and lint commands after its prerequisites have been prepared.
 
@@ -173,6 +201,19 @@ those adapters.
 
 If E2E tests fail with `ECONNREFUSED 127.0.0.1:3306`, start the development
 server with `pnpm dev`.
+
+## Limit Parallel Workers
+
+Ghost Core's database-backed suites boot a Ghost per worker, and the Admin
+acceptance and browser E2E suites drive a browser per worker. Each sizes its
+workers as if it had the machine to itself, so tests running in several
+worktrees at once can exhaust memory.
+
+Set `GHOST_TEST_MACHINE_SHARE` in your shell profile to the share of the
+machine one test run may use, such as `0.5` when two worktrees run tests at
+once. Each suite scales its workers to that share by what its workers cost, so
+the suites split the machine instead of each taking all of it.
+`TEST_WORKERS_COUNT` sets an exact worker count instead.
 
 ## Run Browser E2E Tests
 

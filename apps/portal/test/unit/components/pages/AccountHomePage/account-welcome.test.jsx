@@ -18,6 +18,21 @@ const setup = (overrides) => {
 };
 
 describe('AccountWelcome', () => {
+  describe.each([
+    { membersSignupAccess: 'all' },
+    { membersSignupAccess: 'paid' },
+    { membersSignupAccess: 'invite' },
+  ])('free members when signup access is $membersSignupAccess', ({ membersSignupAccess }) => {
+    const member = getMemberData({ status: 'free', paid: false, subscriptions: [] });
+
+    test('can view plans', () => {
+      const site = getSiteData({ membersSignupAccess });
+      const { queryByRole } = setup({ site, member });
+
+      expect(queryByRole('button', { name: 'View plans' })).toBeInTheDocument();
+    });
+  });
+
   test('shows gift expiry message for gift members', () => {
     const products = getProductsData({ numOfProducts: 1 });
     const site = getSiteData({ products, portalProducts: products.map((p) => p.id) });

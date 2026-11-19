@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
+const { passwordHashOf } = require('../../utils/password-hash');
 const db = require('../../../core/server/data/db');
 const dbBackup = require('../../../core/server/data/db/backup');
 const {
@@ -24,7 +25,7 @@ const {
 } = matchers;
 const { cacheInvalidateHeaderNotSet, cacheInvalidateHeaderSetToWildcard } = assertions;
 const localUtils = require('./utils');
-const rolePermissions = require('../../../core/server/services/permissions/role-permissions');
+const rolePermissions = require('../../../core/server/auth/permissions/role-permissions');
 
 const userMatcher = {
   id: anyObjectId,
@@ -263,7 +264,7 @@ describe('User API', function () {
       const user = await models.User.findOne({ id: res.body.users[0].id });
       await models.User.isPasswordCorrect({
         plainPassword: 'mynewfancypasswordwhichisnotallowed',
-        hashedPassword: user.get('password'),
+        hashedPassword: await passwordHashOf(user),
       });
       assert.fail('Password should not have been changed');
     } catch (err) {

@@ -249,25 +249,25 @@ describe('DatePicker', () => {
     const GAP = 6;
 
     const mockLayoutAtFieldTop = (fieldTop: number) => {
-      vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(
-        function (this: Element) {
-          const isField = this.classList.contains('gh-portal-datepicker-field');
-          const top = isField ? fieldTop : 0;
-          const bottom = isField ? fieldTop + FIELD_HEIGHT : 0;
-          return { top, bottom, left: 0, right: 300, width: 300, height: bottom - top } as DOMRect;
-        },
-      );
-      vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(
-        function (this: HTMLElement) {
-          if (this.classList.contains('gh-portal-datepicker-popover')) {
-            // Every rendered row keeps its height even when react-day-picker
-            // hides all of its out-of-bounds filler days.
-            const rows = this.querySelectorAll('.gh-portal-datepicker-grid tbody tr');
-            return POPOVER_CHROME + rows.length * ROW_HEIGHT;
-          }
-          return this.tagName === 'TR' ? ROW_HEIGHT : 0;
-        },
-      );
+      vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+        this: Element,
+      ) {
+        const isField = this.classList.contains('gh-portal-datepicker-field');
+        const top = isField ? fieldTop : 0;
+        const bottom = isField ? fieldTop + FIELD_HEIGHT : 0;
+        return { top, bottom, left: 0, right: 300, width: 300, height: bottom - top } as DOMRect;
+      });
+      vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(function (
+        this: HTMLElement,
+      ) {
+        if (this.classList.contains('gh-portal-datepicker-popover')) {
+          // Every rendered row keeps its height even when react-day-picker
+          // hides all of its out-of-bounds filler days.
+          const rows = this.querySelectorAll('.gh-portal-datepicker-grid tbody tr');
+          return POPOVER_CHROME + rows.length * ROW_HEIGHT;
+        }
+        return this.tagName === 'TR' ? ROW_HEIGHT : 0;
+      });
     };
 
     afterEach(() => {

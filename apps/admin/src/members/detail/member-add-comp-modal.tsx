@@ -10,7 +10,6 @@ import {
   DialogTitle,
   Input,
   Label,
-  LoadingIndicator,
   Select,
   SelectContent,
   SelectItem,
@@ -144,7 +143,7 @@ const MemberAddCompModal: React.FC<MemberAddCompModalProps> = ({ open, onOpenCha
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 in-data-[admin7-design=true]:gap-2">
             <Label htmlFor="comp-tier">Tier</Label>
             <Select value={selectedTierId} onValueChange={setSelectedTierId}>
               <SelectTrigger
@@ -164,7 +163,7 @@ const MemberAddCompModal: React.FC<MemberAddCompModalProps> = ({ open, onOpenCha
             </Select>
           </div>
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 in-data-[admin7-design=true]:gap-2">
             <Label htmlFor="comp-duration">Duration</Label>
             <Select
               value={duration}
@@ -192,7 +191,7 @@ const MemberAddCompModal: React.FC<MemberAddCompModalProps> = ({ open, onOpenCha
           </div>
 
           {duration === 'custom' && (
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5 in-data-[admin7-design=true]:gap-2">
               <Label htmlFor="comp-custom-date">Expires on</Label>
               <Input
                 data-testid="comp-custom-date"
@@ -214,16 +213,10 @@ const MemberAddCompModal: React.FC<MemberAddCompModalProps> = ({ open, onOpenCha
           <Button
             data-testid="comp-add-confirm"
             disabled={!canSubmit}
+            loading={isSubmitting}
             onClick={() => void onSubmit()}
           >
-            {isSubmitting ? (
-              <>
-                <LoadingIndicator size="sm" />
-                <span className="sr-only">Adding</span>
-              </>
-            ) : (
-              'Add subscription'
-            )}
+            Add subscription
           </Button>
         </DialogFooter>
       </DialogContent>

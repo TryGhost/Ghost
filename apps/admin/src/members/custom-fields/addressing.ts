@@ -65,11 +65,21 @@ function identityClause(identity: string): string {
   return `${IDENTITY_ATTRIBUTE}:${escapeNqlString(identity)}`;
 }
 
-// A predicate's values are the part first, then what it holds: one text, or the
-// codes an "is any of" lists. An empty string is no value: a presence pill carries
-// one as its value slot, and switching it to "is any of" must not send `['']`.
-function readValues(values: unknown[]): { part: string; rest: unknown[] } {
-  const [part, ...rest] = values;
+/**
+ * Where a custom field's predicate keeps the part it names. A field with parts, and the entry that
+ * stands for any custom field, carry the part first and then what it holds. A list field is
+ * filtered as a whole, the way labels are, so its predicate holds only the options it names.
+ */
+export type CustomFieldValues = 'part-first' | 'whole-field';
+
+// What a predicate's values name: the part, and then one text or the codes an "is any of" lists.
+// An empty string is no value: a presence pill carries one as its value slot, and switching it to
+// "is any of" must not send `['']`.
+function readValues(
+  values: unknown[],
+  layout: CustomFieldValues,
+): { part: string; rest: unknown[] } {
+  const [part, ...rest] = layout === 'part-first' ? values : ['', ...values];
 
   return {
     part: typeof part === 'string' ? part : '',
@@ -86,13 +96,23 @@ function fieldFromContext(
 
 export function customFieldAddressing(
   bound?: Pick<Identity, 'namespace' | 'key'>,
+  layout: CustomFieldValues = 'part-first',
 ): PresenceAddressing {
+  // What a predicate holds before its values: the part it names, or nothing for a whole field.
+  const leading = (identity: Identity): string[] =>
+    layout === 'part-first' ? [partOf(identity)] : [];
+  // A presence pill with parts keeps an empty value slot beside its part; a whole field's has none.
+  const presenceValues = (identity: Identity): string[] =>
+    layout === 'part-first' ? [partOf(identity), ''] : [];
+  // A whole field names no part, so an identity naming one isn't this field's.
+  const named = (identity: Identity): boolean => layout === 'part-first' || partOf(identity) === '';
+
   return {
     presenceOperators: CUSTOM_FIELD_SET_OPERATORS,
 
     address(predicate, ctx) {
       const field = fieldFromContext(bound, ctx.params);
-      const { part, rest } = readValues(predicate.values);
+      const { part, rest } = readValues(predicate.values, layout);
       const identity = field && identityOf(field, part);
 
       if (!identity) {
@@ -114,7 +134,7 @@ export function customFieldAddressing(
     // negation asks for members with no such value stored.
     addressPresence(predicate, ctx) {
       const field = fieldFromContext(bound, ctx.params);
-      const { part } = readValues(predicate.values);
+      const { part } = readValues(predicate.values, layout);
       const identity = field && identityOf(field, part);
 
       if (!identity) {
@@ -143,7 +163,7 @@ export function customFieldAddressing(
         const identity = parseIdentityValue(node[IDENTITY_ATTRIBUTE]);
 
         if (identity) {
-          if (!ownsIdentity(identity)) {
+          if (!ownsIdentity(identity) || !named(identity)) {
             return null;
           }
 
@@ -152,7 +172,7 @@ export function customFieldAddressing(
             predicate: {
               field: metafieldFieldId(identity),
               operator: 'is-set',
-              values: [partOf(identity), ''],
+              values: presenceValues(identity),
             },
           };
         }
@@ -160,7 +180,7 @@ export function customFieldAddressing(
         const negated = parseIdentityValue(readNegatedString(node[IDENTITY_ATTRIBUTE]));
 
         if (negated) {
-          if (!ownsIdentity(negated)) {
+          if (!ownsIdentity(negated) || !named(negated)) {
             return null;
           }
 
@@ -169,7 +189,7 @@ export function customFieldAddressing(
             predicate: {
               field: metafieldFieldId(negated),
               operator: 'is-not-set',
-              values: [partOf(negated), ''],
+              values: presenceValues(negated),
             },
           };
         }
@@ -196,7 +216,7 @@ export function customFieldAddressing(
         }
       }
 
-      if (!identity || !hasValue || !ownsIdentity(identity)) {
+      if (!identity || !hasValue || !ownsIdentity(identity) || !named(identity)) {
         return null;
       }
 
@@ -209,7 +229,7 @@ export function customFieldAddressing(
       return {
         kind: 'value',
         field: metafieldFieldId(identity),
-        leadingValues: [partOf(identity)],
+        leadingValues: leading(identity),
         comparator,
       };
     },

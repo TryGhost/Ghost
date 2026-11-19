@@ -19,6 +19,7 @@ import {
 import type { StaffRoleName } from '@tryghost/test-data';
 import type { MemberActivityEvent } from '@tryghost/admin-x-framework/api/members';
 import { activityScreen as screen } from './member-activity.screen';
+import { CUSTOM_FIELDS_FLAG } from '@/shared/member-custom-fields/availability';
 
 const EVENTS = /^\/members\/events\//;
 const permittedRoles: StaffRoleName[] = ['Owner', 'Administrator', 'Super Editor'];
@@ -186,10 +187,30 @@ describe('Member activity', () => {
     await expect.poll(excludedTypes).toBeDefined();
     const preview = excludedTypes()!.split(',').sort();
     expect(preview).toContain('comment_event');
-    expect(preview).toContain('metafield_change_event');
 
     await renderAdminApp('/members-activity?member=ada', { boot: settings });
     await expect.poll(() => excludedTypes()?.split(',').sort()).toEqual(preview);
+  });
+
+  // Admin goes live before the servers it talks to, and a server that hasn't released custom
+  // fields reports their flag off.
+  it('offers no custom field changes on a server that has not released them', async () => {
+    world([]);
+    await renderAdminApp('/members-activity', { labs: { [CUSTOM_FIELDS_FLAG]: false } });
+    await expect.element(screen.heading('No member activity yet')).toBeVisible();
+    await screen.filterButton().click();
+
+    await expect.element(screen.eventType('Welcome email received')).toBeVisible();
+    await expect.element(screen.eventType('Custom fields updated')).not.toBeInTheDocument();
+  });
+
+  it('offers custom field changes once custom fields are released', async () => {
+    world([]);
+    await renderAdminApp('/members-activity');
+    await expect.element(screen.heading('No member activity yet')).toBeVisible();
+    await screen.filterButton().click();
+
+    await expect.element(screen.eventType('Custom fields updated')).toBeVisible();
   });
 
   // While the host switches custom fields off every field reads as archived, and changes to
@@ -207,11 +228,10 @@ describe('Member activity', () => {
         ? []
         : [change],
     }));
-    const config = configResponse({ labs: { membersCustomFields: true } });
+    const config = configResponse();
     config.config.hostSettings = { limits: { limitCustomFields: { disabled: true } } };
 
     await renderAdminApp('/members-activity', {
-      labs: { membersCustomFields: true },
       boot: { browseConfig: { response: config } },
     });
 

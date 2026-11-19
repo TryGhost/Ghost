@@ -1,20 +1,19 @@
 import errors from '@tryghost/errors';
+import { ActionLog } from '../../lib/action-log/action-log';
 import { limitService } from '../limits';
 import { MetafieldDefinitionsService } from './definitions-service';
 import { MetafieldValuesService } from './values-service';
 import { MetafieldBindingsService } from './bindings-service';
-import { recordMetafieldAction, type RecordMetafieldAction } from './actions';
 import { resolveMaxDefinitions } from './config';
 import { customFields } from './custom-fields';
 import { createNamespaces, type Namespaces } from './namespaces';
 import { fieldSource, type FieldSource } from './queries';
-import { tracer } from '../../lib/tracing';
+import { meter, tracer } from '../../lib/tracing';
 import { metafieldsTracking } from './tracking';
 
 export type { Metafield } from './models';
 export type { FieldSource } from './queries';
-export type { RequestContext } from './actions';
-export { actingContext, adminWriteOrigin } from './actions';
+export { adminWriteOrigin } from './write-origin';
 export type { BoundField } from './bindings-service';
 export type { MetafieldChangeEvent, WriteOrigin, WrittenBy } from './schema';
 
@@ -55,13 +54,15 @@ export let bindings: MetafieldBindingsService | undefined;
 export function booted(): {
   namespaces: Namespaces;
   definitions: MetafieldDefinitionsService;
+  values: MetafieldValuesService;
+  bindings: MetafieldBindingsService;
 } {
-  if (!namespaces || !definitions) {
+  if (!namespaces || !definitions || !values || !bindings) {
     throw new errors.IncorrectUsageError({
       message: 'Members metafields were used before boot initialised them.',
     });
   }
-  return { namespaces, definitions };
+  return { namespaces, definitions, values, bindings };
 }
 
 export function init(): void {
@@ -72,10 +73,6 @@ export function init(): void {
   }
 
   const { knex } = require('../../data/db');
-  const models = require('../../models');
-
-  const recordAction: RecordMetafieldAction = ({ context, verb, subject, details }) =>
-    recordMetafieldAction({ Action: models.Action, context, verb, subject, details });
 
   // Resolved here, not in the service: reading config is this module's job, and
   // the service is handed a number. A getter rather than a value because the
@@ -90,13 +87,16 @@ export function init(): void {
   namespaces = createNamespaces([customFields({ limitService, getMaxDefinitions })]);
   fields = fieldSource(namespaces);
 
-  const tracking = metafieldsTracking(tracer);
+  const tracking = metafieldsTracking({ tracer, meter });
+  // A field type still in development can be created only where its Labs flag is on.
+  const labs = require('../../../shared/labs');
   definitions = new MetafieldDefinitionsService({
     knex,
     fields,
-    recordAction,
+    actionLog: new ActionLog(),
     namespaces,
     tracking,
+    labs,
   });
   // The values service reads the field definitions itself, so it needs knex, the fields and
   // the ceiling, which also caps how many values one request can carry — no handle on the

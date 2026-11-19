@@ -18,7 +18,7 @@ const ComboboxTrigger = React.forwardRef<
         inputSurface('self'),
         inputSurfaceClasses.disabledFieldSelf,
         // Chevron position matches SelectTrigger.
-        'flex h-(--control-height) w-full min-w-0 items-center justify-between pr-2 pl-3 text-control hover:bg-button-hover',
+        'flex h-(--control-height) w-full min-w-0 items-center justify-between pr-2 pl-3 text-(length:--text-field) hover:bg-button-hover',
         className,
       )}
       role="combobox"

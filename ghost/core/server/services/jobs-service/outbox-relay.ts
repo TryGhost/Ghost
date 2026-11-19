@@ -10,14 +10,14 @@ export interface OutboxRelayTimings {
 }
 
 export interface OutboxRelayOptions extends OutboxRelayTimings {
-  outbox: JobsOutbox;
+  outbox: Pick<JobsOutbox, 'processNext'>;
   backend: Pick<JobsBackendBase, 'enqueue'>;
   logging: JobsLogger;
   sentry?: JobsErrorReporter;
 }
 
 export class OutboxRelay {
-  readonly #outbox: JobsOutbox;
+  readonly #outbox: Pick<JobsOutbox, 'processNext'>;
   readonly #backend: Pick<JobsBackendBase, 'enqueue'>;
   readonly #logging: JobsLogger;
   readonly #sentry?: JobsErrorReporter;
@@ -28,6 +28,7 @@ export class OutboxRelay {
   #running = false;
   #loop?: Promise<void>;
   #wake?: () => void;
+  #woken = false;
 
   constructor({
     outbox,
@@ -55,6 +56,14 @@ export class OutboxRelay {
     this.#loop = this.#run();
   }
 
+  // Drains now instead of at the next poll. A wake-up during a drain makes
+  // the relay drain again, since the drain may have looked before the row
+  // committed.
+  wake(): void {
+    this.#woken = true;
+    this.#wake?.();
+  }
+
   async stop(): Promise<void> {
     this.#running = false;
     this.#wake?.();
@@ -63,16 +72,30 @@ export class OutboxRelay {
   }
 
   async #run(): Promise<void> {
+    // Nothing wakes the relay for a retry, so it sleeps only until the
+    // latest one is due, even across drains started by a wake-up; one drain
+    // then retries every row that failed before it
+    let retryDueAt: number | undefined;
     while (this.#running) {
-      await this.#drain();
+      this.#woken = false;
+      if (retryDueAt !== undefined && Date.now() >= retryDueAt) {
+        retryDueAt = undefined;
+      }
+      if (await this.#drain()) {
+        retryDueAt = Date.now() + this.#retryDelayMs;
+      }
       if (!this.#running) {
         break;
       }
-      await this.#sleep(this.#pollIntervalMs);
+      const untilRetry =
+        retryDueAt === undefined ? this.#pollIntervalMs : Math.max(0, retryDueAt - Date.now());
+      await this.#sleep(Math.min(this.#pollIntervalMs, untilRetry));
     }
   }
 
-  async #drain(): Promise<void> {
+  // Resolves true when a claim or a hand-off failed and needs a retry
+  async #drain(): Promise<boolean> {
+    let failed = false;
     while (this.#running) {
       let outcome: ProcessOutcome;
       try {
@@ -85,13 +108,29 @@ export class OutboxRelay {
           error,
         );
         this.#sentry?.captureException(error);
-        return;
+        return true;
       }
 
       if (outcome.status === 'idle') {
-        return;
+        return failed;
+      }
+      if (outcome.status === 'delivered') {
+        // created_at is stored floored to the second, so this reads up to 1s high
+        const lagMs = Date.now() - outcome.createdAt.getTime();
+        this.#logging.info(
+          {
+            system: {
+              event: 'jobs_outbox.handed_off',
+              dispatch_id: outcome.id,
+              job_type: outcome.type,
+              outbox_lag_ms: lagMs,
+            },
+          },
+          `[Jobs Outbox] Handed off ${outcome.type} (dispatch ${outcome.id}) after ${lagMs}ms`,
+        );
       }
       if (outcome.status === 'failed') {
+        failed = true;
         this.#logging.error(
           `[Jobs Outbox] submission failed for dispatch ${outcome.id}; retrying later`,
           outcome.error,
@@ -99,6 +138,7 @@ export class OutboxRelay {
         this.#sentry?.captureException(outcome.error, { tags: { dispatch_id: outcome.id } });
       }
     }
+    return failed;
   }
 
   #submit(id: string, envelope: DispatchEnvelope): Promise<void> {
@@ -119,6 +159,9 @@ export class OutboxRelay {
   }
 
   #sleep(ms: number): Promise<void> {
+    if (this.#woken) {
+      return Promise.resolve();
+    }
     return new Promise<void>((resolve) => {
       const timer = setTimeout(() => {
         this.#wake = undefined;

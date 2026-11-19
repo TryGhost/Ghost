@@ -99,8 +99,9 @@ const controller = {
       cacheInvalidate: false,
     },
     data: ['id'],
+    // Returns MRR, so it needs the same permission as the mrr endpoint
     permissions: {
-      docName: 'posts',
+      docName: 'members',
       method: 'browse',
     },
     cache: statsCache,
@@ -155,8 +156,9 @@ const controller = {
       cacheInvalidate: false,
     },
     options: ['order', 'limit', 'date_from', 'date_to', 'timezone', 'post_type'],
+    // Returns MRR, so it needs the same permission as the mrr endpoint
     permissions: {
-      docName: 'posts',
+      docName: 'members',
       method: 'browse',
     },
     cache: statsCache,
@@ -332,8 +334,9 @@ const controller = {
         },
       },
     },
+    // Returns MRR, so it needs the same permission as the mrr endpoint
     permissions: {
-      docName: 'posts',
+      docName: 'members',
       method: 'browse',
     },
     cache: statsCache,
@@ -362,8 +365,9 @@ const controller = {
         },
       },
     },
+    // Returns MRR, so it needs the same permission as the mrr endpoint
     permissions: {
-      docName: 'posts',
+      docName: 'members',
       method: 'browse',
     },
     cache: statsCache,
@@ -486,8 +490,9 @@ const controller = {
       cacheInvalidate: false,
     },
     options: ['order', 'limit', 'date_from', 'date_to', 'timezone', 'member_status'],
+    // Returns MRR, so it needs the same permission as the mrr endpoint
     permissions: {
-      docName: 'posts',
+      docName: 'members',
       method: 'browse',
     },
     cache: statsCache,

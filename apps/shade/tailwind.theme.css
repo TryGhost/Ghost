@@ -135,6 +135,10 @@
   --font-serif: Georgia, serif;
   --font-mono: Consolas, Liberation Mono, Menlo, Courier, monospace;
   --font-inherit: inherit;
+  --font-weight-title: 540;
+  --font-weight-settings-heading: 540;
+  --tracking-section-heading: -0.01em;
+  --tracking-settings-heading: -0.01em;
   --tracking-tightest: -0.05em;
   --tracking-tighter: -0.025em;
   --tracking-tight: -0.01em;
@@ -234,6 +238,8 @@
   --radius-full: 9999px;
   --radius-control: var(--radius-md);
   --radius-control-sm: var(--radius-sm);
+  --radius-field: var(--radius-control);
+  --radius-card: var(--radius-xl);
   --radius-menu: var(--radius-md);
   --radius-menu-item: var(--radius-xs);
   --radius-surface: var(--radius-lg);
@@ -322,6 +328,9 @@
   --color-state-success: var(--state-success);
   --color-state-success-foreground: var(--state-success-foreground);
   --color-state-warning: var(--state-warning);
+  --color-state-warning-surface: var(--state-warning-surface);
+  --color-state-warning-border: var(--state-warning-border);
+  --color-state-warning-fill: var(--state-warning-fill);
   --color-state-warning-foreground: var(--state-warning-foreground);
   --color-state-danger: var(--state-danger);
   --color-state-danger-foreground: var(--state-danger-foreground);
@@ -349,6 +358,8 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-tab-hover: var(--tab-hover);
+  --color-tab-inactive: var(--tab-inactive);
+  --color-tab-inactive-hover: var(--tab-inactive-hover);
   --color-tab-active: var(--tab-active);
   --color-button-hover: var(--button-hover);
   --color-button-ghost-hover: var(--button-ghost-hover);
@@ -361,15 +372,40 @@
   --color-badge-warning: var(--badge-warning);
   --color-badge-warning-hover: var(--badge-warning-hover);
   --color-badge-warning-foreground: var(--badge-warning-foreground);
+  --color-badge-purple: var(--badge-purple);
+  --color-badge-purple-foreground: var(--badge-purple-foreground);
   --color-interactive-hover: var(--interactive-hover);
   --color-filter-bar-background: var(--filter-bar-background);
   --color-filter-bar-item-hover: var(--filter-bar-item-hover);
   --color-table-row-hover: var(--table-row-hover);
+  --color-map-surface: var(--map-surface);
+  --color-publish-accent: var(--publish-accent);
+  --color-character-count: var(--character-count);
+  --color-event-email-surface: var(--event-email-surface);
+  --color-event-email-icon: var(--event-email-icon);
+  --color-event-gain-surface: var(--event-gain-surface);
+  --color-event-gain-icon: var(--event-gain-icon);
+  --color-event-loss-surface: var(--event-loss-surface);
+  --color-event-loss-icon: var(--event-loss-icon);
+  --color-event-warning-surface: var(--event-warning-surface);
+  --color-event-warning-icon: var(--event-warning-icon);
+  --color-event-engagement-surface: var(--event-engagement-surface);
+  --color-event-engagement-icon: var(--event-engagement-icon);
+  --color-event-gift-surface: var(--event-gift-surface);
+  --color-event-gift-icon: var(--event-gift-icon);
   --color-table-row-selected: var(--table-row-selected);
   --color-control-surface: var(--control-surface);
   --color-control-readonly-surface: var(--control-readonly-surface);
   --color-control-disabled-surface: var(--control-disabled-surface);
   --color-control-border: var(--control-border);
+  --color-field-surface: var(--field-surface);
+  --color-field-readonly-surface: var(--field-readonly-surface);
+  --color-field-disabled-surface: var(--field-disabled-surface);
+  --color-field-border: var(--field-border);
+  --shadow-field: var(--field-shadow);
+  --color-field-chip-surface: var(--field-chip-surface);
+  --color-field-chip-internal-surface: var(--field-chip-internal-surface);
+  --color-field-chip-internal-border: var(--field-chip-internal-border);
 }
 
 @keyframes toasterIn {

@@ -226,7 +226,9 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                navigate(editorPath, { state: editorReturnState(location) });
+                navigate(editorPath, {
+                  state: editorReturnState(`${location.pathname}${location.search}`),
+                });
               }}
             >
               <LucideIcon.Pen />
@@ -331,7 +333,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                       className={cn(
                         '-ml-px max-w-[920px] indent-0',
                         largeTitles
-                          ? 'text-[length:var(--large-title-size-sm)]! leading-[1.15]! font-medium! tracking-[-0.025em]!'
+                          ? 'text-[length:var(--large-title-size-sm)]! leading-[1.15]! font-title! tracking-[-0.025em]!'
                           : '!text-xl md:leading-[1.2em]',
                       )}
                       data-header="header-title"

@@ -105,18 +105,22 @@ describe('Tiers consumers', function () {
     });
 
     it('read, add and edit through the API published when each request runs', async function () {
+      const asked = { withRequirements: true };
       await assertReadsApiPerCall(
         'read',
-        () => adminTiers.read.query({ data: { id: 'tier-id' } }),
-        ['tier-id'],
+        () => adminTiers.read.query({ data: { id: 'tier-id' }, options: asked }),
+        ['tier-id', asked],
       );
 
       const data = { name: 'Gold' };
-      await assertReadsApiPerCall('add', () => adminTiers.add.query({ data }), [data]);
+      await assertReadsApiPerCall('add', () => adminTiers.add.query({ data, options: asked }), [
+        data,
+        asked,
+      ]);
       await assertReadsApiPerCall(
         'edit',
-        () => adminTiers.edit.query({ options: { id: 'tier-id' }, data }),
-        ['tier-id', data],
+        () => adminTiers.edit.query({ options: { id: 'tier-id', ...asked }, data }),
+        ['tier-id', data, asked],
       );
     });
   });

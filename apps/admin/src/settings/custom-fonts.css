@@ -1,6 +1,8 @@
 /* Site custom-font files for the settings font pickers. Imported from the
    consuming screens so the fetches ship with the settings chunk, not the
-   admin entry CSS. The matching font-* utilities come from src/index.css. */
+   admin entry CSS. The matching font-* utilities come from src/index.css.
+   Inter is left out: Admin bundles it under the same family name, and a second
+   Inter would replace Admin's own UI font with a network fetch. */
 @import url(https://fonts.bunny.net/css?family=cardo:400,700);
 @import url(https://fonts.bunny.net/css?family=manrope:300,500,700);
 @import url(https://fonts.bunny.net/css?family=merriweather:300,700);
@@ -15,7 +17,6 @@
 @import url(https://fonts.bunny.net/css?family=noto-sans:400,700);
 @import url(https://fonts.bunny.net/css?family=poppins:400,700);
 @import url(https://fonts.bunny.net/css?family=fira-sans:400,700);
-@import url(https://fonts.bunny.net/css?family=inter:400,700);
 @import url(https://fonts.bunny.net/css?family=noto-serif:400,700);
 @import url(https://fonts.bunny.net/css?family=lora:400,700);
 @import url(https://fonts.bunny.net/css?family=ibm-plex-serif:400,700);

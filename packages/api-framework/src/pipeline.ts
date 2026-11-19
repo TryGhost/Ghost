@@ -4,6 +4,8 @@ import promiseUtils from '@tryghost/promise';
 import _ from 'lodash';
 import Frame from './frame.ts';
 import type { Dictionary, FrameConfiguration } from './frame.ts';
+import type { MethodSchemas, SchemaControllerMethod } from './define-method.ts';
+import parseRequest from './parse-request.ts';
 import serializers from './serializers/index.ts';
 import validators from './validators/index.ts';
 
@@ -25,6 +27,7 @@ interface PermissionConfiguration<TFrame extends Frame = Frame> extends Dictiona
 }
 
 export interface ControllerMethod<TFrame extends Frame = Frame> {
+  schema?: MethodSchemas;
   cache?: Cache;
   data?: FrameConfiguration['data'];
   generateCacheKeyData?: (frame: TFrame) => AsyncResult;
@@ -37,8 +40,11 @@ export interface ControllerMethod<TFrame extends Frame = Frame> {
   validation?: Dictionary | ((frame: TFrame) => AsyncResult);
 }
 
-type ControllerHandler = ControllerMethod &
-  ((dataOrOptions?: Dictionary | Frame, options?: Dictionary | Frame) => Promise<unknown>);
+type ControllerCall = (
+  dataOrOptions?: Dictionary | Frame,
+  options?: Dictionary | Frame,
+) => Promise<unknown>;
+type ControllerHandler = ControllerMethod & ControllerCall;
 
 export type ControllerFrameMap = Record<string, Frame>;
 
@@ -67,6 +73,21 @@ function sortKeysReplacer(_key: string, value: unknown) {
     return sorted;
   }
   return value;
+}
+
+function schemaCacheKeyReplacer(key: string, value: unknown) {
+  if (
+    typeof value === 'bigint' ||
+    typeof value === 'function' ||
+    typeof value === 'symbol' ||
+    (value && typeof value === 'object' && !Array.isArray(value) && !_.isPlainObject(value))
+  ) {
+    throw new IncorrectUsageError({
+      message:
+        'Schema cache keys must be JSON-compatible. Use generateCacheKeyData to serialize non-JSON values.',
+    });
+  }
+  return sortKeysReplacer(key, value);
 }
 
 const STAGES = {
@@ -254,9 +275,19 @@ const STAGES = {
   },
 };
 
-const controllerMap = new Map<Controller, Record<string, ControllerHandler>>();
-type PipelineResult<T extends Controller> = {
-  [K in Exclude<keyof T, 'docName'>]: ControllerHandler;
+const controllerMap = new Map<object, Record<string, ControllerHandler>>();
+type PipelineResult<T> = {
+  [K in Exclude<keyof T, 'docName'>]: T[K] & ControllerCall;
+};
+
+type PipelineController<T> = {
+  [K in keyof T]: K extends 'docName'
+    ? string | undefined
+    : T[K] extends { schema: infer Schemas }
+      ? Schemas extends MethodSchemas
+        ? SchemaControllerMethod<Schemas>
+        : never
+      : ControllerMethod;
 };
 
 /**
@@ -278,14 +309,26 @@ type PipelineResult<T extends Controller> = {
  * @param {String} [apiType] - Content or Admin API access
  * @return {Object}
  */
-const pipeline = <T extends Controller>(
+function pipeline<T extends Controller>(
   apiController: T,
   apiUtils: ApiUtils,
   apiType?: string,
-): PipelineResult<T> => {
+): PipelineResult<T>;
+// eslint-disable-next-line no-redeclare -- TypeScript overload for schema-aware controllers.
+function pipeline<T extends object>(
+  apiController: T & PipelineController<T>,
+  apiUtils: ApiUtils,
+  apiType?: string,
+): PipelineResult<T>;
+// eslint-disable-next-line no-redeclare -- Implementation shared by both TypeScript overloads.
+function pipeline(
+  apiController: Controller,
+  apiUtils: ApiUtils,
+  apiType?: string,
+): Record<string, ControllerHandler> {
   const cachedController = controllerMap.get(apiController);
   if (cachedController) {
-    return cachedController as PipelineResult<T>;
+    return cachedController;
   }
 
   const keys = Object.keys(apiController).filter((key) => key !== 'docName');
@@ -295,7 +338,8 @@ const pipeline = <T extends Controller>(
   //       We have to ensure that we expose a functional interface e.g. `api.posts.add` has to be available.
   const result = keys.reduce<Record<string, ControllerHandler>>((obj, method) => {
     // The clone keeps a controller's configuration private to the pipeline, but
-    // `cache` is not configuration: it is a shared adapter instance, and copying
+    // `schema` and `cache` must retain their instances. Zod schemas contain parser
+    // functions and internal state. The cache is a shared adapter, and copying
     // it breaks two things. lodash rebuilds a class instance as
     // `Object.create(prototype)` plus own enumerable properties, so the copy
     // keeps the methods but loses every private-field brand - an adapter holding
@@ -303,7 +347,7 @@ const pipeline = <T extends Controller>(
     // And a copy is a different object, so the `reset()` a service calls on
     // `site.changed` would never reach the cache actually serving requests.
     const apiImpl = _.cloneDeepWith(apiController, (value, key) =>
-      key === 'cache' ? value : undefined,
+      key === 'cache' || key === 'schema' ? value : undefined,
     )[method] as ControllerMethod;
 
     Object.freeze(apiImpl.headers);
@@ -332,10 +376,13 @@ const pipeline = <T extends Controller>(
           context: (options.context as Dictionary | undefined) || {},
         });
 
-        frame.configure({
-          options: apiImpl.options,
-          data: apiImpl.data,
-        });
+        frame.configure(
+          {
+            options: apiImpl.options,
+            data: apiImpl.data,
+          },
+          { deferBodyClone: Boolean(apiImpl.schema) },
+        );
       } else {
         frame = options;
       }
@@ -350,24 +397,50 @@ const pipeline = <T extends Controller>(
       frame.docName = docName;
       frame.method = method;
 
-      let cacheKeyData: unknown = frame.options;
-      if (apiImpl.generateCacheKeyData) {
-        cacheKeyData = await apiImpl.generateCacheKeyData(frame);
+      const validatedRequest = apiImpl.schema
+        ? await parseRequest(apiImpl.schema, frame)
+        : undefined;
+      if (apiImpl.schema) {
+        // Custom validation receives parsed input, even when the response is cached.
+        if (typeof apiImpl.validation === 'function') {
+          await apiImpl.validation(frame);
+        }
       }
 
-      const cacheKey = JSON.stringify(cacheKeyData, sortKeysReplacer);
+      let cacheKey = '';
+      // Legacy hooks also resolve gift access when response caching is disabled.
+      if (apiImpl.cache || (!apiImpl.schema && apiImpl.generateCacheKeyData)) {
+        let cacheKeyData: unknown = validatedRequest
+          ? { options: frame.options, validated: validatedRequest }
+          : frame.options;
+        if (apiImpl.generateCacheKeyData) {
+          cacheKeyData = await apiImpl.generateCacheKeyData(frame);
+        }
+        if (apiImpl.cache) {
+          cacheKey = JSON.stringify(
+            cacheKeyData,
+            apiImpl.schema ? schemaCacheKeyReplacer : sortKeysReplacer,
+          );
+        }
+      }
+
+      // A shared response cache must never bypass request authorization. Keep
+      // input preparation before permissions, but outside the cache loader so
+      // it runs once per request, including cache hits.
+      if (!apiImpl.schema) {
+        await STAGES.validation.input(apiUtils, apiConfig, apiImpl, frame);
+      }
+      await STAGES.serialisation.input(apiUtils, apiConfig, apiImpl, frame);
+      await STAGES.permissions(apiUtils, apiConfig, apiImpl, frame);
 
       if (apiImpl.cache) {
         const response = await apiImpl.cache.get(cacheKey, getResponse);
         if (response) {
-          return Promise.resolve(response);
+          return response;
         }
       }
 
       async function getResponse() {
-        await STAGES.validation.input(apiUtils, apiConfig, apiImpl, frame);
-        await STAGES.serialisation.input(apiUtils, apiConfig, apiImpl, frame);
-        await STAGES.permissions(apiUtils, apiConfig, apiImpl, frame);
         const response = await STAGES.query(apiUtils, apiConfig, apiImpl, frame);
         await STAGES.serialisation.output(response, apiUtils, apiConfig, apiImpl, frame);
         return frame.response;
@@ -389,8 +462,8 @@ const pipeline = <T extends Controller>(
 
   controllerMap.set(apiController, result);
 
-  return result as PipelineResult<T>;
-};
+  return result;
+}
 
 export { STAGES };
 export default Object.assign(pipeline, { STAGES });

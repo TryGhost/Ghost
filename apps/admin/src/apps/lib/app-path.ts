@@ -28,6 +28,24 @@ export function appPathFromLocation(
   return AppPathSchema.safeParse(path).data ?? entryPath;
 }
 
+/**
+ * The address the app's frame loads to open the app at one of its routes: the route resolved
+ * against the app's page. A route that resolves to another origin, or doesn't resolve at all,
+ * gives the page itself instead. `AppPathSchema` already refuses such a route, but the frame
+ * keeps the app's sandbox, `allow-same-origin` included, whatever it loads: a page from another
+ * origin, such as the site's own, would run there with that origin's access. So the origin is
+ * checked again where the address is made.
+ */
+export function appFrameUrl(pageUrl: string, path: string): string {
+  let url: URL;
+  try {
+    url = new URL(path, pageUrl);
+  } catch {
+    return pageUrl;
+  }
+  return url.origin === new URL(pageUrl).origin ? url.href : pageUrl;
+}
+
 /** Whether an Admin location shows the app's page, on any of the app's routes. */
 export function isAppLocation(installationId: string, { pathname }: { pathname: string }): boolean {
   const prefix = appRoute(installationId);

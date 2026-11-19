@@ -27,7 +27,7 @@ describe('Banner Component', () => {
   it.each([
     { variant: 'info' as const, expectedClass: 'bg-state-info/10' },
     { variant: 'success' as const, expectedClass: 'bg-state-success/10' },
-    { variant: 'warning' as const, expectedClass: 'bg-state-warning/10' },
+    { variant: 'warning' as const, expectedClass: 'bg-state-warning-surface' },
     { variant: 'destructive' as const, expectedClass: 'bg-state-danger/10' },
   ])('applies $variant variant correctly', ({ variant, expectedClass }) => {
     render(<Banner variant={variant}>Content</Banner>);
@@ -173,6 +173,23 @@ describe('Banner Component', () => {
     fireEvent.click(banner);
 
     expect(bannerClick.mock.calls.length, 'Banner click handler should be called').toBe(1);
+  });
+
+  it('keeps dismissal outside scrolling content without triggering the card action', () => {
+    const onDismiss = vi.fn();
+    const onClick = vi.fn();
+    const { container } = render(
+      <Banner dismissible scroll onClick={onClick} onDismiss={onDismiss}>
+        Long announcement
+      </Banner>,
+    );
+    const scroller = container.querySelector('[data-slot=banner-content]');
+    const dismiss = screen.getByRole('button', { name: 'Dismiss notification' });
+    expect(scroller?.contains(screen.getByText('Long announcement'))).toBe(true);
+    expect(scroller?.contains(dismiss)).toBe(false);
+    fireEvent.click(dismiss);
+    expect(onDismiss).toHaveBeenCalledOnce();
+    expect(onClick).not.toHaveBeenCalled();
   });
 
   it('applies custom className', () => {

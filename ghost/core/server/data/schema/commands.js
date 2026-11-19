@@ -4,7 +4,7 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const db = require('../db');
 const DatabaseInfo = require('@tryghost/database-info');
-const schema = require('./schema');
+const schema = require('./schema').default;
 const { defaultIndexName } = require('./lib/default-index-name');
 const { foreignKeySpecsOf, onDeleteOf } = require('./lib/foreign-keys');
 const { patternChecksOf } = require('./lib/column-patterns');
@@ -47,6 +47,8 @@ function addTableColumn(
     } else {
       column = tableBuilder[columnSpec.type](columnName, 191);
     }
+  } else if (columnSpec.type === 'dateTime' && Object.hasOwn(columnSpec, 'precision')) {
+    column = tableBuilder.dateTime(columnName, { precision: columnSpec.precision });
   } else {
     column = tableBuilder[columnSpec.type](columnName);
   }
