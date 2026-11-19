@@ -170,19 +170,19 @@ const toHsla = (input: Parameters<typeof Color>[0]): HslaColor => {
 const toColor = ({ hue, saturation, lightness, alpha }: HslaColor) =>
   Color.hsl(hue, saturation, lightness).alpha(alpha / 100);
 
-// A control can change a channel without changing the colour, e.g. saturation on black. That
-// still counts: a caller that showed transparent as #00000000 needs to hear about #000000.
 // How a value reads when compared with a reported hex. A string is compared as written, so
-// hsl() black with a different hue doesn't count as #000000, and a colour with an alpha
-// never matches a report, which has none.
+// hsl() black with a different hue doesn't count as #000000. Of other values, only an opaque
+// RGB one carries no more than a report does: an HSL object has a hue, and an alpha is lost.
 const echoKey = (value: Parameters<typeof Color>[0]) => {
   if (typeof value === 'string') {
     return value.toUpperCase();
   }
   const color = Color(value);
-  return color.alpha() === 1 ? color.hex() : null;
+  return color.model === 'rgb' && color.alpha() === 1 ? color.hex() : null;
 };
 
+// A control can change a channel without changing the colour, e.g. saturation on black. That
+// still counts: a caller that showed transparent as #00000000 needs to hear about #000000.
 const isSameHsla = (a: HslaColor, b: HslaColor) =>
   a.hue === b.hue &&
   a.saturation === b.saturation &&
@@ -240,7 +240,8 @@ export const ColorPickerRoot = ({
   // Follow a controlled value without reporting it back through onChange. A layout effect
   // runs in the same task as the commit, so no change can land before the sync and be undone.
   useLayoutEffect(() => {
-    if (!value) {
+    // 0 is black, so only a missing or empty value is skipped.
+    if (value === undefined || value === null || value === '') {
       return;
     }
     // The parent echoing the last report: keep the picker's own channels, which a hex can't
@@ -267,9 +268,11 @@ export const ColorPickerRoot = ({
     setColorState(next);
 
     const report = onChangeRef.current;
-    if (report) {
-      const hex = toColor(next).hex();
-      lastReportedRef.current = hex;
+    const hex = report ? toColor(next).hex() : null;
+    // Without an onChange this change isn't reported, so an earlier report is no longer the
+    // colour shown and can't be echoed.
+    lastReportedRef.current = hex;
+    if (report && hex) {
       report(hex);
     }
   }, []);

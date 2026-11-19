@@ -348,6 +348,70 @@ describe('ColorPicker Component', () => {
       expect(handleChange).toHaveBeenCalledTimes(2);
     });
 
+    it('adopts an HSL object with the reported hex but another hue', () => {
+      const handleChange = vi.fn();
+      const { rerender } = render(
+        <ColorPickerRoot value="#0000ff" onChange={handleChange}>
+          <ColorPickerSelection data-testid="gradient" />
+          <ColorPickerHue />
+        </ColorPickerRoot>,
+      );
+      fireEvent.pointerDown(mockGradientRect(), { clientX: 100, clientY: 200 });
+      expect(handleChange).toHaveBeenCalledWith('#000000');
+
+      rerender(
+        <ColorPickerRoot value={{ h: 120, s: 100, l: 0 }} onChange={handleChange}>
+          <ColorPickerSelection data-testid="gradient" />
+          <ColorPickerHue />
+        </ColorPickerRoot>,
+      );
+
+      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('120');
+    });
+
+    it('adopts an earlier report after a change made without an onChange', () => {
+      const handleChange = vi.fn();
+      const { rerender } = render(
+        <ColorPickerRoot value="#ff0000" onChange={handleChange}>
+          <ColorPickerFormat />
+        </ColorPickerRoot>,
+      );
+      fireEvent.change(screen.getByLabelText('Hex color'), { target: { value: '#00FF00' } });
+      expect(handleChange).toHaveBeenCalledWith('#00FF00');
+
+      rerender(
+        <ColorPickerRoot value="#ff0000">
+          <ColorPickerFormat />
+        </ColorPickerRoot>,
+      );
+      fireEvent.change(screen.getByLabelText('Hex color'), { target: { value: '#0000FF' } });
+      // The input shows what was typed until it loses focus.
+      fireEvent.blur(screen.getByLabelText('Hex color'));
+      rerender(
+        <ColorPickerRoot value="#00FF00">
+          <ColorPickerFormat />
+        </ColorPickerRoot>,
+      );
+
+      expect(screen.getByDisplayValue('#00FF00')).toBeTruthy();
+    });
+
+    it('adopts 0 as black', () => {
+      const { rerender } = render(
+        <ColorPickerRoot value="#ff0000">
+          <ColorPickerFormat />
+        </ColorPickerRoot>,
+      );
+
+      rerender(
+        <ColorPickerRoot value={0}>
+          <ColorPickerFormat />
+        </ColorPickerRoot>,
+      );
+
+      expect(screen.getByDisplayValue('#000000')).toBeTruthy();
+    });
+
     it('adopts a value with the reported hex plus an alpha', () => {
       const handleChange = vi.fn();
       const { rerender } = render(
