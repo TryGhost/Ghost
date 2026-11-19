@@ -31,6 +31,10 @@ With Admin 7 enabled, `FloatingSidebar overflow="visible"` leaves its open paint
 
 Browse the sidebar for the live inventory and APIs. Full rules: [Contributing to Shade](https://github.com/TryGhost/Ghost/blob/main/apps/shade/CONTRIBUTING.md), including [Layers](https://github.com/TryGhost/Ghost/blob/main/apps/shade/CONTRIBUTING.md#layers).
 
+## Logos and icons
+
+Shade's logos (`FacebookLogo`, `GoogleLogo`, `XLogo`, …) and `Icon.*` graphics are hidden from screen readers by default, so one beside a label doesn't change what the label says. When a logo or icon carries meaning on its own, name it with `title`, `aria-label` or `aria-labelledby`. `title` sets `aria-label`; it doesn't show a tooltip.
+
 ## Example: good vs. bad props
 
 ```tsx
