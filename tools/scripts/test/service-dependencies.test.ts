@@ -403,7 +403,10 @@ it('lists only roots outside the services directory that exist and use defineSer
     assert.match(pattern, /^\^[\w./\\-]+\$$/, 'List each root as one exact path');
     return pattern.slice(1, -1).replaceAll('\\', '');
   });
-  assert.deepEqual(listed, ['ghost/core/server/auth/better-auth/index.ts']);
+  assert.deepEqual(listed, [
+    'ghost/core/server/auth/better-auth/index.ts',
+    'ghost/shared/limits/index.ts',
+  ]);
   for (const file of listed) {
     assert.match(readFileSync(path.join(repository, file), 'utf8'), /kernel\/define-service'/);
   }
@@ -554,6 +557,33 @@ it('keeps the foundry to the bootstrap, and the bootstrap to boot and the legacy
     ],
     ['foundry-not-application', foundry, config],
     ['foundry-only-from-bootstrap', 'ghost/core/server/lib/builds-a-logger.ts', foundry],
+  ]);
+});
+
+it('keeps shared modules to what they are given, and their roots to the bootstrap and aliases', (t) => {
+  const limits = 'ghost/shared/limits/index.ts';
+  const settings = 'ghost/shared/settings/index.ts';
+  const f = fixture(t, {
+    'ghost/core/server/lib/feature.ts': 'export const feature = 1;',
+    // Its own files are fine.
+    [limits]: "import './host-limits';",
+    'ghost/shared/limits/host-limits.ts': 'export const load = 1;',
+    // Application code, and another shared module, are not: both are handed over.
+    [settings]: "import '../../core/server/lib/feature'; import '../limits';",
+    // Code that cannot meet the rule yet may import anything, from the transition folder.
+    'ghost/shared/transition/mail/index.ts': "import '../../../core/server/lib/feature';",
+    // The list and the named alias may load a root; nothing else may.
+    'ghost/bootstrap/shared.ts': "import '../shared/limits';",
+    'ghost/core/server/services/limits.ts': "import '../../../shared/limits';",
+    'ghost/core/server/lib/reads-limits.ts': "import '../../../shared/limits';",
+  });
+  const graph: ICruiseResult = JSON.parse(
+    f.run('json', 'ghost/core', ['ghost/bootstrap', 'ghost/shared']).stdout,
+  );
+  assert.deepEqual(violations(graph), [
+    ['shared-modules-are-given', settings, 'ghost/core/server/lib/feature.ts'],
+    ['shared-modules-are-given', settings, limits],
+    ['shared-modules-only-from-bootstrap', 'ghost/core/server/lib/reads-limits.ts', limits],
   ]);
 });
 

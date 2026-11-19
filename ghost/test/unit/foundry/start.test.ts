@@ -329,6 +329,22 @@ describe('application.stop', function () {
       'stop limits',
     ]);
   });
+  it('stops what an earlier start left running before it starts again', async function () {
+    const calls: string[] = [];
+    const application = define({ shared: { modules: [root(calls, 'limits')] } }, calls);
+
+    await application.start({ frontend: true });
+    await application.start({ frontend: true });
+
+    assert.deepEqual(calls, [
+      'config',
+      'load limits',
+      'init limits',
+      'stop limits',
+      'load limits',
+      'init limits',
+    ]);
+  });
 });
 
 describe('application.start: what a shared module is given', function () {

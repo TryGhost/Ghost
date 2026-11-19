@@ -144,6 +144,7 @@ export default defineConfig({
       provider: 'v8',
       include: [
         'bootstrap/**/*.{js,cjs,mjs,ts}',
+        'shared/**/*.{js,cjs,mjs,ts}',
         'core/*.js',
         'core/{frontend,server,shared}/**/*.{js,cjs,mjs,ts}',
       ],

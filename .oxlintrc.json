@@ -79,6 +79,7 @@
         "ghost/*.js",
         "ghost/core/**/*.ts",
         "ghost/bootstrap/**/*.ts",
+        "ghost/shared/**/*.ts",
         "kernel/src/**/*.ts",
         "foundry/src/**/*.ts",
         "ghost/*.ts",
@@ -149,6 +150,7 @@
       "files": [
         "ghost/core/**/*.{js,ts}",
         "ghost/bootstrap/**/*.ts",
+        "ghost/shared/**/*.ts",
         "kernel/src/**/*.ts",
         "foundry/src/**/*.ts"
       ],
@@ -264,6 +266,7 @@
       "files": [
         "ghost/core/**/*.{js,ts}",
         "ghost/bootstrap/**/*.ts",
+        "ghost/shared/**/*.ts",
         "ghost/test/**/*.{js,ts}",
         "kernel/src/**/*.ts",
         "foundry/src/**/*.ts"

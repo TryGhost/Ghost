@@ -4,16 +4,33 @@ const { sourceExclusions } = require('./tools/scripts/ci/service-dependency-reso
 
 // Service policy applies independently of inventory and migration status.
 const servicesRoot = 'ghost/core/server/services';
+// A shared module lives in ghost/shared/<name> and is started by the shared
+// list in ghost/bootstrap. Each file listed here is a legacy path that returns
+// a shared module's instance to the code that still imports it, until that code
+// is handed the instance instead.
+const sharedModuleAliases = [
+  '^ghost/core/server/services/limits\\.ts$', // Limits: ghost/shared/limits.
+];
+
 const serviceImplementations = {
   path: `^${servicesRoot}/([^/]+)(?:/|$)`,
-  // Legacy JS roots remain wiring candidates; nested indexes are implementations.
-  pathNot: `^${servicesRoot}/[^/]+/index\\.(?:js|ts)$`,
+  pathNot: [
+    // Legacy JS roots remain wiring candidates; nested indexes are implementations.
+    `^${servicesRoot}/[^/]+/index\\.(?:js|ts)$`,
+    // An alias wires a shared module to its legacy path; it is not an implementation.
+    ...sharedModuleAliases,
+  ],
 };
 
 // The service checks apply to the services directory only, so a defineService
 // root anywhere else gets none of them. Each root listed here is a reviewed
 // exception until the checks can follow a service to another home.
-const serviceRootsElsewhere = ['^ghost/core/server/auth/better-auth/index\\.ts$'];
+const serviceRootsElsewhere = [
+  '^ghost/core/server/auth/better-auth/index\\.ts$',
+  // Shared modules. The shared-module rules below and the shape test in
+  // ghost/test/unit/bootstrap/steps.test.ts apply to these instead.
+  '^ghost/shared/limits/index\\.ts$',
+];
 
 // Explicit code-library and contract allowances, not application instances.
 // Keep each package or file named individually and explain additions here.
@@ -447,10 +464,10 @@ module.exports = {
     {
       name: 'service-roots-in-services',
       comment:
-        'A defineService root belongs in server/services/<name>/index.ts, where the service checks apply. A root elsewhere needs a reviewed entry in serviceRootsElsewhere.',
+        'A defineService root belongs in server/services/<name>/index.ts, where the service checks apply, or in ghost/shared/<name>/index.ts for a shared module. A root elsewhere needs a reviewed entry in serviceRootsElsewhere.',
       severity: 'error',
       from: {
-        path: '^ghost/core/',
+        path: '^ghost/(?:core|shared)/',
         pathNot: [`^${servicesRoot}/[^/]+/index\\.ts$`, ...serviceRootsElsewhere],
       },
       to: {
@@ -515,6 +532,35 @@ module.exports = {
         ],
         dependencyTypesNot: ['type-only'],
       },
+    },
+    // A shared module is handed what it needs, so nothing it uses is hidden in
+    // an import and it can be built from fakes.
+    {
+      name: 'shared-modules-are-given',
+      comment:
+        'A shared module (ghost/shared/<name>) is handed the foundation and the earlier shared modules it names. It imports no application code, no other shared module, not the foundry and no package that holds an instance (the logger, metrics, the event bus, error reporting). Types may be imported from anywhere. Code that cannot meet this yet goes in ghost/shared/transition/<name>.',
+      severity: 'error',
+      from: { path: '^ghost/shared/([^/]+)/', pathNot: '^ghost/shared/transition/' },
+      to: {
+        path: [
+          '^ghost/core/',
+          '^ghost/bootstrap/',
+          '^ghost/shared/',
+          '^foundry/(?:src|build)/|^@tryghost/foundry(/|$)',
+          '(^|/)node_modules/@tryghost/(?:logging|metrics|domain-events)/|^@tryghost/(?:logging|metrics|domain-events)$',
+          '(^|/)node_modules/@sentry/|^@sentry/',
+        ],
+        pathNot: '^ghost/shared/$1/',
+        dependencyTypesNot: ['type-only', 'type-import'],
+      },
+    },
+    {
+      name: 'shared-modules-only-from-bootstrap',
+      comment:
+        'Nothing imports a shared module. The shared list in ghost/bootstrap/shared.ts starts it, and whoever needs its instance is handed it. The legacy paths in sharedModuleAliases return the instance to code that still imports them.',
+      severity: 'error',
+      from: { pathNot: ['^ghost/bootstrap/', '^ghost/shared/', ...sharedModuleAliases] },
+      to: { path: '^ghost/shared/', dependencyTypesNot: ['type-only', 'type-import'] },
     },
     // ============================================================
     // shared/ must not require server/* or frontend/*

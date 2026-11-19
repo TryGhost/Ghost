@@ -46,6 +46,20 @@ describe('defineService', function () {
     assert.equal(example.service.limit, 3);
   });
 
+  it('hands the start hook what each init() was given', async function () {
+    const given: unknown[] = [];
+    const example = defineService<object, { limit: number }>('Example', {
+      create: () => ({}),
+      start: (_service, dependencies) => void given.push(dependencies.limit),
+    });
+
+    await example.init({ limit: 3 });
+    await example.stop();
+    await example.init({ limit: 4 });
+
+    assert.deepEqual(given, [3, 4]);
+  });
+
   it('exposes typed extras without constructing the service or evaluating its getter', async function () {
     const instance = { value: 42 };
     const create = sinon.stub().returns(instance);
@@ -193,7 +207,7 @@ describe('defineService', function () {
 
       sinon.assert.calledOnce(create);
       sinon.assert.calledTwice(start);
-      sinon.assert.alwaysCalledWithExactly(start, instance);
+      sinon.assert.alwaysCalledWithExactly(start, instance, undefined);
       sinon.assert.callOrder(create, start, stop, start);
       assert.equal(root.service, instance);
     });

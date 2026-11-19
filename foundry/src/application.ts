@@ -152,7 +152,8 @@ export interface Application<AppConfig extends Config, Options = void, State = o
    * ready, then the background work without waiting for it. Rejects with the
    * error of the first step that fails; later steps do not run.
    *
-   * It may be called again after `stop()`. The foundation is built once.
+   * It may be called again. A start that follows one nobody stopped stops it
+   * first. The foundation is built once.
    *
    * @param state - The object this start's steps share. Pass one to keep a
    * reference to it when `start()` rejects.
@@ -294,6 +295,18 @@ export function createApplication<AppConfig extends Config, Options = void, Stat
     }
   }
 
+  async function stopStarted() {
+    const stopping = stoppable.reverse();
+    stoppable = [];
+    for (const { stop } of stopping) {
+      try {
+        await stop();
+      } catch (error) {
+        logging().error(error);
+      }
+    }
+  }
+
   return {
     name: definition.name,
     foundation,
@@ -302,7 +315,10 @@ export function createApplication<AppConfig extends Config, Options = void, Stat
     steps: definition.steps ?? {},
     async start(options, state = {} as State) {
       const steps = definition.steps ?? {};
-      stoppable = [];
+      // A start that follows one nobody stopped (a process that starts the
+      // application again, as tests do) stops it first, so that each module's
+      // `start` hook runs for this start too.
+      await stopStarted();
       let finishBackground: (work: Promise<void>) => void = () => {};
       const run: StartRun = {
         options,
@@ -326,16 +342,6 @@ export function createApplication<AppConfig extends Config, Options = void, Stat
 
       return run;
     },
-    async stop() {
-      const stopping = stoppable.reverse();
-      stoppable = [];
-      for (const { stop } of stopping) {
-        try {
-          await stop();
-        } catch (error) {
-          logging().error(error);
-        }
-      }
-    },
+    stop: stopStarted,
   };
 }

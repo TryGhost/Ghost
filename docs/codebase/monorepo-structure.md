@@ -59,14 +59,15 @@ is Ghost's application definition and holds the instances.
 
 `ghost/` is the main `ghost` package. The most common paths are:
 
-| Path                   | Contains                                                        |
-| ---------------------- | --------------------------------------------------------------- |
-| `ghost/bootstrap/`     | Ghost's application definition for the framework                |
-| `ghost/core/server/`   | APIs, models, services, data access, and server startup         |
-| `ghost/core/frontend/` | Theme rendering, helpers, middleware, and public assets         |
-| `ghost/core/shared/`   | Configuration and code shared across server boundaries          |
-| `ghost/content/`       | Default themes, adapters, settings, images, and runtime content |
-| `ghost/test/`          | Unit, integration, and server E2E tests                         |
+| Path                   | Contains                                                          |
+| ---------------------- | ----------------------------------------------------------------- |
+| `ghost/bootstrap/`     | Ghost's application definition for the framework                  |
+| `ghost/shared/`        | Shared modules: what every service relies on, started from a list |
+| `ghost/core/server/`   | APIs, models, services, data access, and server startup           |
+| `ghost/core/frontend/` | Theme rendering, helpers, middleware, and public assets           |
+| `ghost/core/shared/`   | Configuration and code shared across server boundaries            |
+| `ghost/content/`       | Default themes, adapters, settings, images, and runtime content   |
+| `ghost/test/`          | Unit, integration, and server E2E tests                           |
 
 Built Admin assets are copied into `ghost/core/built/admin/` for the Ghost
 release. Treat `built/`, `build/`, `dist/`, and `umd/` as generated output unless

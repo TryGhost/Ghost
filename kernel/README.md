@@ -108,7 +108,8 @@ A root may declare what it is handed instead of importing it:
 `defineService<Service, Dependencies>(name, (dependencies) => …)`. `create`
 receives what the first `init(dependencies)` was called with. Only the start
 sequence supplies it, and today only to the modules of the shared step, which
-are given the foundation and the earlier shared modules they name.
+are given the foundation and the earlier shared modules they name. A `start`
+hook receives it as its second argument, on every start.
 
 ### Readiness and retries
 

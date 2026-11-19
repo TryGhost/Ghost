@@ -141,14 +141,6 @@ function initUrlUtils() {
   debug('End: Load urlUtils');
 }
 
-/** Limits start before settings, so that limits are available for calculated settings. */
-async function initLimits() {
-  debug('Begin: limits');
-  const limits = require('./server/services/limits');
-  await limits.init();
-  debug('End: limits');
-}
-
 /**
  * Settings store key-value pairs used in critical pathways as well as public data like the site title.
  * @param {object} options
@@ -932,7 +924,6 @@ Object.assign(module.exports, {
   initQueryTracing,
   initFoundationChecks,
   initUrlUtils,
-  initLimits,
   initSettings,
   initI18n,
   initEmailAddressPolicy,

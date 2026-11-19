@@ -76,5 +76,6 @@ the modules every service may rely on, in an order that is real (settings
 reads limits; signing keys and i18n read settings). The framework hands each
 module the foundation and the instances of the earlier entries it names in
 `needs`. Entries named `legacy: …` are shared modules not yet shaped as one.
+The rules for a shared module are in [`ghost/shared`](../shared/README.md).
 
 Nothing in `transition/` is automatic: whatever needs it calls it by name.

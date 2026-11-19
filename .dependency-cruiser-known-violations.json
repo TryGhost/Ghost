@@ -576,21 +576,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/limits.ts",
-    "to": "@tryghost/logging"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/limits.ts",
-    "to": "ghost/core/server/data/db/index.js"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/limits.ts",
-    "to": "ghost/core/shared/config/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/link-tracking/link-click-repository.js",
     "to": "ghost/core/shared/config/index.ts"
   },

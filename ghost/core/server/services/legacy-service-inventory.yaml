@@ -3107,13 +3107,16 @@ services:
   limits.ts:
     kind: file
     disposition: migrate
-    futureHome: core/shared/limits
+    futureHome: shared/limits
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: complex
       modelImpact: fits
       reason: >-
+        The shared module now lives in ghost/shared/limits and the shared list starts it.
+        This file is the legacy alias that forwards to its instance; it goes when its
+        importers are handed the instance. The audit below describes those importers.
         Models retain the eager policy instance and boot loads it before settings, so
         construction and consumer ordering need coordinated changes. Keep policy reload as
         an explicit operation on that retained instance and preserve tolerated
@@ -3123,7 +3126,8 @@ services:
       sources:
         - core/server/services/limits.ts
         - core/server/models/integration.js
-        - core/boot.js
+        - bootstrap/shared.ts
+        - shared/limits/index.ts
         - test/utils/host-limits-utils.ts
         - test/unit/server/services/limits.test.js
       dependencies:

@@ -12,12 +12,12 @@ export interface ServiceLifecycle<Service, Dependencies = void> {
    */
   readonly create: CreateService<Service, Dependencies>;
   /** Acquires listeners, timers and the like. Runs after `create`, and on each init() after a stop(). */
-  readonly start?: (service: Service) => unknown;
+  readonly start?: (service: Service, dependencies: Dependencies) => unknown;
   /** Releases what `start` acquired. Also cleans up a failed `start`, so it must be safe after a partial one. */
   readonly stop?: (service: Service) => unknown;
 }
 
-interface ServiceRoot<Service, Dependencies = void> {
+export interface ServiceRoot<Service, Dependencies = void> {
   readonly init: (dependencies?: Dependencies) => Promise<void>;
   readonly stop: () => Promise<void>;
   readonly service: Service;
@@ -60,7 +60,7 @@ export function defineService<Service, Extras extends object, Dependencies = voi
   async function startService(dependencies: Dependencies): Promise<void> {
     const { service } = (created ??= { service: await lifecycle.create(dependencies) });
     try {
-      await lifecycle.start?.(service);
+      await lifecycle.start?.(service, dependencies);
     } catch (error) {
       await lifecycle.stop?.(service);
       throw error;

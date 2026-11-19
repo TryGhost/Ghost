@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import yaml from 'js-yaml';
 import type { Slot } from '@tryghost/foundry/application';
@@ -39,7 +39,7 @@ describe("Ghost's start sequence", function () {
         'shared.before': ['foundation checks'],
         'shared.modules': [
           'legacy: url utils',
-          'legacy: limits',
+          'limits',
           'legacy: settings',
           'signing-keys',
           'internal-keys',
@@ -159,6 +159,45 @@ describe("Ghost's start sequence", function () {
 
     it('names each entry once', function () {
       assert.deepEqual(sorted(new Set(order)), sorted(order));
+    });
+
+    // A shared module is a folder in ghost/shared with a defineService root. The
+    // list is the only thing that starts it, so a folder the list does not name
+    // would never start, and an entry without a folder would fail at boot.
+    describe('and the modules in ghost/shared', function () {
+      const source = read('bootstrap/shared.ts');
+      const folders = (directory: string) =>
+        existsSync(path.join(ghost, directory))
+          ? readdirSync(path.join(ghost, directory), { withFileTypes: true })
+              .filter((item) => item.isDirectory() && item.name !== 'transition')
+              .map((item) => `${directory}/${item.name}`)
+          : [];
+      const modules = [...folders('shared'), ...folders('shared/transition')];
+
+      it('finds the reshaped modules', function () {
+        assert.ok(modules.includes('shared/limits'));
+      });
+
+      for (const folder of modules) {
+        it(`${folder} has a defineService root that the list names once`, function () {
+          assert.ok(existsSync(path.join(ghost, folder, 'index.ts')), `${folder} has no index.ts`);
+          assert.match(
+            read(`${folder}/index.ts`),
+            /^export default defineService[<(]/m,
+            `${folder}/index.ts does not default-export a defineService root`,
+          );
+          assert.equal(
+            source.split(`require('../${folder}').default`).length - 1,
+            1,
+            `${folder} should be loaded by exactly one entry of bootstrap/shared.ts`,
+          );
+        });
+      }
+
+      it('names no shared module that does not exist', function () {
+        const named = [...source.matchAll(/require\('\.\.\/(shared\/[^']+)'\)\.default/g)];
+        assert.deepEqual(sorted(named.map((match) => match[1]!)), sorted(modules));
+      });
     });
   });
 

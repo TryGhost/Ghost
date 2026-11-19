@@ -107,7 +107,7 @@ export function compareKnownViolations(
 export function committedBuildOutput(repository: string) {
   const result = spawnSync(
     'git',
-    ['ls-files', '-z', '--', 'ghost/bootstrap', 'ghost/core', 'kernel', 'foundry'],
+    ['ls-files', '-z', '--', 'ghost/bootstrap', 'ghost/shared', 'ghost/core', 'kernel', 'foundry'],
     {
       cwd: repository,
       encoding: 'utf8',
@@ -168,11 +168,11 @@ export function scannerTypeScript(transpilers: unknown) {
 export const missingTypeScript =
   'dependency-cruiser could not load the `typescript` package. Without it the scan skips TypeScript files or reads type-only imports as ordinary imports, and reports different violations. Run the scan through pnpm, for example `pnpm lint:boundaries`. If that fails too, run `pnpm install`.';
 
-// The full scan covers the framework packages, Ghost's bootstrap, Core and the
-// apps. The first three are skipped where they are absent, as in the fixture
+// The full scan covers the framework packages, Ghost's bootstrap and shared
+// modules, Core and the apps. The first four are skipped where they are absent, as in the fixture
 // repositories of the tool tests.
 const scanRoots = (repository: string) => [
-  ...['kernel/src', 'foundry/src', 'ghost/bootstrap'].filter((root) =>
+  ...['kernel/src', 'foundry/src', 'ghost/bootstrap', 'ghost/shared'].filter((root) =>
     existsSync(path.join(repository, root)),
   ),
   'ghost/core',

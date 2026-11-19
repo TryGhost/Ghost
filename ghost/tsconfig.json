@@ -109,6 +109,7 @@
     "MigratorConfig.mts",
     "bin/**/*.ts",
     "bootstrap/**/*.ts",
+    "shared/**/*.ts",
     "core/**/*.ts",
     "types/**/*.d.ts"
   ]

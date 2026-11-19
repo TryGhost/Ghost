@@ -24,7 +24,7 @@ function createCoreHarness() {
         getIgnoredImageContentTypes: () => [],
       },
       './shared/url-utils': {},
-      './server/services/limits': { init: async () => {} },
+      '../shared/limits': { default: { init: async () => {} } },
       './server/services/settings/settings-service': settings,
       './server/services/signing-keys': { default: signingKeys },
       './server/services/internal-keys': { default: { init() {} } },

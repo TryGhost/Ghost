@@ -21,7 +21,7 @@ import { legacySteps, type BootRun } from './transition/legacy-steps';
 export const shared: readonly Entry<BootRun>[] = [
   // Built from config alone. It is here so its load time is visible on its own.
   { name: 'legacy: url utils', run: legacySteps.urlUtils },
-  { name: 'legacy: limits', run: legacySteps.limits },
+  { name: 'limits', load: () => require('../shared/limits').default },
   { name: 'legacy: settings', run: legacySteps.settings },
   // Signing keys come from settings and must be ready before anything signs or serves a JWKS.
   { name: 'signing-keys', load: () => require('../core/server/services/signing-keys').default },
