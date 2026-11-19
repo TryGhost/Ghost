@@ -48,7 +48,9 @@ const options = {
 const adapter = createKnexAdapter({ db })(options);
 const collisionAdapter = createKnexAdapter({
   db,
-  virtualColumns: { alias_bundles: { _joined_2: (executor) => executor.raw('?', ['Virtual']) } },
+  virtualColumns: {
+    alias_bundles: { _j2_alias_entries_id: (executor) => executor.raw('?', ['Virtual']) },
+  },
 })({
   ...options,
   plugins: [
@@ -61,9 +63,9 @@ const collisionAdapter = createKnexAdapter({
           fields: {
             ...options.plugins[0].schema.bundle.fields,
             title: { type: 'string', fieldName: '_joined_13_alias_entries_id' },
-            first: { type: 'string', fieldName: '_joined_0' },
-            second: { type: 'string', fieldName: '_joined_1' },
-            computed: { type: 'string', fieldName: '_joined_2' },
+            first: { type: 'string', fieldName: '_j0_alias_entries_id' },
+            second: { type: 'string', fieldName: '_j1_alias_entries_id' },
+            computed: { type: 'string', fieldName: '_j2_alias_entries_id' },
           },
         },
       },
@@ -97,10 +99,10 @@ describe('Knex adapter: simultaneous joins with overlapping mapped names', () =>
       t.string('id', 24).primary();
       t.string('public_code', 64).unique();
       t.string('_joined_13_alias_entries_id').defaultTo('Bundle');
-      t.string('_joined_0').defaultTo('First');
-      t.string('_joined_1').defaultTo('Second');
+      t.string('_j0_alias_entries_id').defaultTo('First');
+      t.string('_j1_alias_entries_id').defaultTo('Second');
       // This physical column is deliberately absent from the public schema.
-      t.string('_joined_3').defaultTo('Unmapped');
+      t.string('_j3_alias_entries_id').defaultTo('Unmapped');
     });
     for (const name of ['alias_entries', 'alias']) {
       await db.schema.createTable(name, (t) => {

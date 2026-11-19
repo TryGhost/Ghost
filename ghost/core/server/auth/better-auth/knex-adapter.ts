@@ -249,10 +249,10 @@ function createCustomAdapter(
           ...Object.entries(fields).map(([field, attr]) => attr.fieldName ?? field),
         ];
         for (const column of new Set(columns)) {
-          // Aliases belong to this query, independently of table/column spelling.
+          // The counter ensures uniqueness; the table/column suffix keeps SQL readable.
           let resultAlias: string;
           do {
-            resultAlias = `_joined_${nextAlias}`;
+            resultAlias = `_j${nextAlias}_${joinModel}_${column}`;
             nextAlias += 1;
           } while (usedAliases.has(resultAlias));
           usedAliases.add(resultAlias);
