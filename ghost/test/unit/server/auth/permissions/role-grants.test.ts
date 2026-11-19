@@ -93,6 +93,19 @@ const GRANTS: [string, string, string[]][] = [
   ],
   ['edit', 'setting', ['Administrator', 'Admin Integration']],
   [
+    'browse',
+    'segment',
+    ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor'],
+  ],
+  [
+    'read',
+    'segment',
+    ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor'],
+  ],
+  ['add', 'segment', ['Administrator', 'Admin Integration']],
+  ['edit', 'segment', ['Administrator', 'Admin Integration']],
+  ['destroy', 'segment', ['Administrator', 'Admin Integration']],
+  [
     'generate',
     'slug',
     ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor'],
@@ -319,9 +332,9 @@ const holders = (actionType: string, objectType: string) =>
 
 describe('Permissions', function () {
   describe('role grants', function () {
-    it('defines 149 permissions', function () {
+    it('defines 154 permissions', function () {
       // If you have to change this number, add the relevant rows to GRANTS.
-      assert.equal(allPermissionKeys.length, 149);
+      assert.equal(allPermissionKeys.length, 154);
     });
 
     it('lists every permission exactly once in GRANTS', function () {

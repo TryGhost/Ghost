@@ -1,4 +1,3 @@
-import errors from '@tryghost/errors';
 import ObjectId from 'bson-objectid';
 import { noop } from 'lodash';
 import { createAutomationsApi2 } from '../../../../../core/server/services/automations/automations-api-2';
@@ -120,29 +119,6 @@ describe('automations API', function () {
 
     afterEach(function () {
       vi.useRealTimers();
-    });
-
-    it('fails if called with an unexpected `eventName`', async function () {
-      const withTransaction = vi.fn();
-      const api = createApi({ repository: { ...repository, withTransaction } });
-
-      const eventNames = [undefined, 'invalid', 'membership_ended', 'membership_did_start'];
-      await Promise.all(
-        eventNames.map(async (eventName) => {
-          await expect(() =>
-            api.notify({
-              ...event,
-              eventName: eventName as any,
-              memberId: 'abc',
-              memberStatus: 'free',
-              memberTierIds: [],
-            }),
-          ).rejects.toThrow(errors.IncorrectUsageError);
-        }),
-      );
-
-      expect(withTransaction).not.toHaveBeenCalled();
-      expect(domainEvents.dispatch).not.toHaveBeenCalled();
     });
 
     it('does nothing if the labs flag is disabled', async function () {

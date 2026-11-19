@@ -13,6 +13,7 @@ import {
   verifyNoUnhandledRequests,
 } from './worker';
 import { resetDeclaredResources } from './resources';
+import { resetSharedViews } from './shared-views';
 import { guardFrameNavigations, resetFakeFrameOrigins } from './frames';
 import { resetModuleRoutes } from './module-loads';
 
@@ -99,6 +100,7 @@ afterEach(async () => {
     } finally {
       resetFakeApi();
       resetDeclaredResources();
+      resetSharedViews();
       // A journey can end mid screen transition; its markers would hide the next app's content.
       delete document.documentElement.dataset.screenExit;
       delete document.documentElement.dataset.screenTransition;

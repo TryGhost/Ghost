@@ -412,6 +412,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const users = require('./server/services/users').default;
   const memberWelcomeEmails = require('./server/services/member-welcome-emails').default;
   const editorPresence = require('./server/services/editor-presence').default;
+  const segments = require('./server/services/segments').default;
   const domainEvents = require('@tryghost/domain-events');
   const { automationsService } = require('./server/services/automations');
   const automationsApi = require('./server/services/automations/automations-api');
@@ -494,6 +495,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     users.init(),
     editorPresence.init(),
     machinePaymentsService.init(),
+    segments.init(),
   ]);
   if (ghostServer) {
     // Each releases what its start acquired; the next boot in this process starts it again.
@@ -541,7 +543,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   await jobsService.start();
   debug('End: Register job handlers');
 
-  await automationsService.init({
+  automationsService.init({
     domainEvents,
     apiUrl,
     schedulerAdapter,

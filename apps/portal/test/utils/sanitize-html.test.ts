@@ -2,11 +2,13 @@ import { sanitizeHtml, validateHexColor } from '../../src/utils/sanitize-html';
 
 describe('sanitizeHtml', () => {
   test('returns empty string for null input', () => {
+    // @ts-expect-error Deliberately passing the wrong type.
     const result = sanitizeHtml(null);
     expect(result).toBe('');
   });
 
   test('returns empty string for undefined input', () => {
+    // @ts-expect-error Deliberately passing the wrong type.
     const result = sanitizeHtml(undefined);
     expect(result).toBe('');
   });
@@ -177,12 +179,16 @@ describe('validateHexColor', () => {
   });
 
   test('returns empty string for null', () => {
+    // @ts-expect-error Deliberately passing the wrong type.
     expect(validateHexColor(null)).toBe('');
   });
 
   test('returns empty string for non-string', () => {
+    // @ts-expect-error Deliberately passing the wrong type.
     expect(validateHexColor(123)).toBe('');
+    // @ts-expect-error Deliberately passing the wrong type.
     expect(validateHexColor({})).toBe('');
+    // @ts-expect-error Deliberately passing the wrong type.
     expect(validateHexColor([])).toBe('');
   });
 

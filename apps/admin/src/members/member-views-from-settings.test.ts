@@ -1,13 +1,12 @@
 import {
-  type MemberView,
+  type StoredMemberView,
   buildViewsForDelete,
   buildViewsForSave,
-  isMemberViewSearchActive,
   parseSharedViewsJSON,
-} from './member-views';
+} from './member-views-from-settings';
 import { describe, expect, it, vi } from 'vitest';
 
-describe('member-views', () => {
+describe('member-views-from-settings', () => {
   describe('parseSharedViewsJSON', () => {
     it('returns only valid member views', () => {
       const result = parseSharedViewsJSON(
@@ -56,32 +55,6 @@ describe('member-views', () => {
     });
   });
 
-  describe('isMemberViewSearchActive', () => {
-    const view: MemberView = {
-      name: 'Paid members',
-      route: 'members',
-      filter: { filter: 'status:paid' },
-    };
-
-    it('matches when the canonical filter query param matches exactly', () => {
-      expect(isMemberViewSearchActive('?filter=status%3Apaid', view)).toBe(true);
-    });
-
-    it('ignores non-filter query params', () => {
-      expect(isMemberViewSearchActive('?filter=status%3Apaid&page=2&search=jamie', view)).toBe(
-        true,
-      );
-    });
-
-    it('does not match when the current filter differs', () => {
-      expect(isMemberViewSearchActive('?filter=status%3Afree', view)).toBe(false);
-    });
-
-    it('does not match when no canonical filter query param is present', () => {
-      expect(isMemberViewSearchActive('?search=jamie', view)).toBe(false);
-    });
-  });
-
   describe('buildViewsForSave', () => {
     it('creates a new member view using the canonical filter payload', () => {
       expect(buildViewsForSave([], 'Paid members', 'status:paid')).toEqual([
@@ -110,27 +83,27 @@ describe('member-views', () => {
     });
 
     it('updates an existing member view when the original view is provided', () => {
-      const originalView: MemberView = {
+      const originalView: StoredMemberView = {
         name: 'Paid members',
         route: 'members',
         filter: { filter: 'status:paid' },
       };
 
-      expect(buildViewsForSave([originalView], 'VIP members', 'label:[vip]', originalView)).toEqual(
-        [
-          {
-            name: 'VIP members',
-            route: 'members',
-            filter: { filter: 'label:[vip]' },
-          },
-        ],
-      );
+      expect(
+        buildViewsForSave([originalView], 'VIP members', 'label:[vip]', 'status:paid'),
+      ).toEqual([
+        {
+          name: 'VIP members',
+          route: 'members',
+          filter: { filter: 'label:[vip]' },
+        },
+      ]);
     });
   });
 
   describe('buildViewsForDelete', () => {
     it('removes the targeted member view', () => {
-      const memberView: MemberView = {
+      const memberView: StoredMemberView = {
         name: 'Paid members',
         route: 'members',
         filter: { filter: 'status:paid' },
@@ -147,7 +120,7 @@ describe('member-views', () => {
               filter: { type: 'draft' },
             },
           ],
-          memberView,
+          'status:paid',
         ),
       ).toEqual([
         {

@@ -108,8 +108,10 @@
         "inputs": [
           "default",
           "^default",
-          "developmentTablesCommand",
-          "dataCommands",
+          {
+            "input": "default",
+            "projects": "ghost"
+          },
           {
             "runtime": "node -v"
           }

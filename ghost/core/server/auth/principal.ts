@@ -7,12 +7,22 @@ export interface ModelLike {
   get(attribute: string): unknown;
 }
 
-export type User = ModelLike;
 export type Integration = ModelLike;
 
+/** A role model; an empty one, for a key with no role, has no id */
+export interface Role {
+  id?: string;
+  get(attribute: string): unknown;
+}
+
+export interface User extends ModelLike {
+  /** Set when the user was loaded with `withRelated: ['roles']` */
+  relations?: { roles?: { models: Role[] } };
+}
+
 export interface ApiKey extends ModelLike {
-  /** Set when the key was loaded with `withRelated: ['integration']` */
-  relations?: { integration?: Integration };
+  /** Set when the key was loaded with `withRelated: ['integration', 'role']` */
+  relations?: { integration?: Integration; role?: Role };
 }
 
 /** Token scopes, as `object_type:action` keys; populated from Phase 4. */
@@ -27,12 +37,18 @@ export interface Session {
   origin?: string | null;
 }
 
+export interface RoleView {
+  readonly id: string;
+  readonly name: string;
+}
+
 // Views are picked field by field, so a password or key secret never rides on req.auth
 export interface UserView {
   readonly id: string;
   readonly email: string;
   readonly name: string;
   readonly status: string;
+  readonly roles: readonly RoleView[];
 }
 
 export interface ApiKeyView {
@@ -40,6 +56,8 @@ export interface ApiKeyView {
   readonly type: string;
   readonly user_id: string | null;
   readonly integration_id: string | null;
+  /** Null for a content key, and for an admin key with no role */
+  readonly role: RoleView | null;
 }
 
 /** Expiry as epoch ms: a frozen `Date` can still be changed with `setTime`. */
@@ -62,21 +80,54 @@ export interface AppInstallationView {
   readonly id: string;
 }
 
+function relationNotLoaded(model: string, relation: string) {
+  return new errors.IncorrectUsageError({
+    message: `A ${model} view needs the ${model} loaded with its ${relation}.`,
+  });
+}
+
+function roleView(role: Role): RoleView {
+  const { id } = role;
+  const name = role.get('name');
+  // A role without both would grant nothing it should, so fail loudly
+  if (typeof id !== 'string' || typeof name !== 'string') {
+    throw new errors.IncorrectUsageError({
+      message: 'A role view needs a role with an id and name.',
+    });
+  }
+  return Object.freeze({ id, name });
+}
+
 export function userView(user: User): UserView {
+  // Missing roles would deny every check, so fail loudly instead
+  const roles = user.relations?.roles;
+  if (!roles) {
+    throw relationNotLoaded('user', 'roles');
+  }
+
   return Object.freeze({
     id: user.id,
     email: user.get('email') as string,
     name: user.get('name') as string,
     status: user.get('status') as string,
+    roles: Object.freeze(roles.models.map(roleView)),
   });
 }
 
 export function apiKeyView(apiKey: ApiKey): ApiKeyView {
+  const type = apiKey.get('type') as string;
+  // Bookshelf leaves no relation for a null role_id, as on content keys, which skip loading it
+  const role = apiKey.relations?.role;
+  if (!role && (apiKey.get('role_id') ?? null) !== null) {
+    throw relationNotLoaded('key', 'role');
+  }
+
   return Object.freeze({
     id: apiKey.id,
-    type: apiKey.get('type') as string,
+    type,
     user_id: (apiKey.get('user_id') as string | null | undefined) ?? null,
     integration_id: (apiKey.get('integration_id') as string | null | undefined) ?? null,
+    role: role?.id ? roleView(role) : null,
   });
 }
 
@@ -103,7 +154,8 @@ export function integrationView(integration: Integration): IntegrationView {
 export type Principal =
   | {
       kind: 'user';
-      method: 'session' | 'staff_token' | 'bearer_token' | 'sso';
+      // `setup` is the new Owner finishing setup in-process
+      method: 'session' | 'staff_token' | 'bearer_token' | 'sso' | 'setup';
       user: UserView;
       session?: SessionView;
       apiKey?: ApiKeyView;

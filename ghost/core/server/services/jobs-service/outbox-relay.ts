@@ -12,6 +12,9 @@ export interface OutboxRelayTimings {
 export interface OutboxRelayOptions extends OutboxRelayTimings {
   outbox: Pick<JobsOutbox, 'processNext'>;
   backend: Pick<JobsBackendBase, 'enqueue'>;
+  // Whether this process can run a job type. Any process can claim any row, so
+  // one from a newer version is left for a process that has its handler.
+  handles?: (type: string) => boolean;
   logging: JobsLogger;
   sentry?: JobsErrorReporter;
 }
@@ -19,6 +22,7 @@ export interface OutboxRelayOptions extends OutboxRelayTimings {
 export class OutboxRelay {
   readonly #outbox: Pick<JobsOutbox, 'processNext'>;
   readonly #backend: Pick<JobsBackendBase, 'enqueue'>;
+  readonly #handles: (type: string) => boolean;
   readonly #logging: JobsLogger;
   readonly #sentry?: JobsErrorReporter;
   readonly #pollIntervalMs: number;
@@ -33,6 +37,7 @@ export class OutboxRelay {
   constructor({
     outbox,
     backend,
+    handles = () => true,
     logging,
     sentry,
     pollIntervalMs,
@@ -41,6 +46,7 @@ export class OutboxRelay {
   }: OutboxRelayOptions) {
     this.#outbox = outbox;
     this.#backend = backend;
+    this.#handles = handles;
     this.#logging = logging;
     this.#sentry = sentry;
     this.#pollIntervalMs = pollIntervalMs;
@@ -142,6 +148,14 @@ export class OutboxRelay {
   }
 
   #submit(id: string, envelope: DispatchEnvelope): Promise<void> {
+    const type = envelope.payload.job.type;
+    if (!this.#handles(type)) {
+      return Promise.reject(
+        new errors.IncorrectUsageError({
+          message: `No handler registered in this process for job type "${type}"; leaving it in the outbox.`,
+        }),
+      );
+    }
     const submission = Promise.resolve(this.#backend.enqueue(id, envelope));
     let timer: ReturnType<typeof setTimeout> | undefined;
     const timeout = new Promise<never>((_resolve, reject) => {

@@ -717,3 +717,10 @@ html[data-screen-transition='return']::view-transition-new(admin-mobile-nav):onl
     transform: translateY(100%);
   }
 }
+
+/* Mobile hardening shares the page gutter without changing excluded surfaces. */
+@media (width < 1024px) {
+  [data-admin7-mobile='true'] .mobile-page-spacing {
+    --page-gutter: 16px;
+  }
+}

@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 
 import {
@@ -211,6 +212,62 @@ describe('fetch', () => {
     await ghost.fetch('/posts/', { method: 'POST', body });
     expect(host.fetch).toHaveBeenCalledWith(expect.objectContaining({ body: '{"a":1}' }));
   });
+
+  it('sends request data created in a same-origin child iframe as JSON', async () => {
+    const { ghost, host } = await started();
+    const iframe = document.createElement('iframe');
+    document.body.append(iframe);
+    try {
+      const child = iframe.contentWindow as Window & typeof globalThis;
+      const body = child.JSON.parse('{"posts":[{"title":"From child frame"}]}') as Record<
+        string,
+        unknown
+      >;
+      assert.equal(Object.getPrototypeOf(body), child.Object.prototype);
+      assert.notEqual(Object.getPrototypeOf(body), Object.prototype);
+
+      await ghost.fetch('/posts/', { method: 'POST', body });
+
+      assert.deepEqual(host.fetch.mock.calls, [
+        [{ path: '/posts/', method: 'POST', body: '{"posts":[{"title":"From child frame"}]}' }],
+      ]);
+    } finally {
+      iframe.remove();
+    }
+  });
+
+  it.each(['constructor descriptor', 'prototype parent', 'revoked prototype'])(
+    'rejects with invalid_argument when the body has an unreadable %s',
+    async (unreadable) => {
+      const { ghost, host } = await started();
+      const failure = new Error('Cannot inspect this prototype');
+      let prototype: object;
+      if (unreadable === 'revoked prototype') {
+        const revocable = Proxy.revocable({}, {});
+        revocable.revoke();
+        prototype = revocable.proxy;
+      } else {
+        const fail = () => {
+          throw failure;
+        };
+        prototype = new Proxy(
+          {},
+          unreadable === 'constructor descriptor'
+            ? { getOwnPropertyDescriptor: fail }
+            : { getPrototypeOf: fail },
+        );
+      }
+      const body = Object.create(prototype) as Record<string, unknown>;
+
+      const error: unknown = await ghost
+        .fetch('/posts/', { method: 'POST', body })
+        .catch((e: unknown) => e);
+
+      assert.ok(error instanceof sdk.GhostAppError);
+      assert.equal(error.code, 'invalid_argument');
+      assert.deepEqual(host.fetch.mock.calls, []);
+    },
+  );
 
   it.each([
     ['nothing', undefined],

@@ -120,9 +120,11 @@ the subdirectory, and `baseURL` is the admin origin only, because Better Auth
 ignores `basePath` when `baseURL` has a path.
 
 The session cookie is `ghost-admin-api-session` with the legacy path and
-`httpOnly`. When the admin URL is HTTPS, `useSecureCookies` makes it `Secure`
-and names it `__Secure-ghost-admin-api-session`, so a browser only accepts it
-over HTTPS, and `sameSite` is `none`; otherwise it is `lax`. Unlike the legacy
+`httpOnly`. When the admin URL is HTTPS, `defaultCookieAttributes` makes it
+`Secure`, so a browser only accepts it over HTTPS, and `sameSite` is `none`;
+otherwise it is `lax`. It has no `__Secure-` prefix for now (`useSecureCookies`
+is off) because Ghost(Pro)'s Fastly config drops the prefixed name; the prefix
+comes back once Fastly passes it. Unlike the legacy
 cookie this follows the admin URL rather than the site URL, since the cookie
 lives on the admin origin: an HTTPS site with an HTTP admin URL still gets a
 cookie the browser accepts. It is not `__Host-`, which would need `Path=/` and

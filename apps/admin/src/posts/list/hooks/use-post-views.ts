@@ -4,9 +4,11 @@ import {
   useBrowseSettings,
   useEditSettings,
 } from '@tryghost/admin-x-framework/api/settings';
+import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { parseAllSharedViewsJSON, type SharedView } from '@/members/api';
 import { useCallback } from 'react';
-import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useFetchApi, useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { z } from 'zod';
 import type { PostListParams } from '@/posts/list/post-query-params';
 import type { PostViewColor } from '@/posts/list/post-views';
 
@@ -18,50 +20,56 @@ import type { PostViewColor } from '@/posts/list/post-views';
  * so it can never drop an entry it didn't understand. See that file for why.
  */
 
-const SETTINGS_NOT_LOADED_ERROR = 'Settings are still loading, so nothing was changed';
-
-type SettingsData =
-  | { settings: Array<{ key: string; value: string | boolean | number | null }> }
-  | undefined;
-
-/**
- * Returns `undefined` — not `'[]'` — while settings are still loading. An
- * empty-list default here would let a save replace every existing view with
- * just the new one.
- */
-function getSharedViewsJSON(settingsData: SettingsData): string | undefined {
-  if (!settingsData) {
-    return undefined;
-  }
-
-  return getSettingValue<string>(settingsData.settings, 'shared_views') ?? '[]';
-}
-
 /** Just the posts views, for the filter bar's edit/save affordance. */
 export function usePostViews(): SharedView[] {
   const { data: settingsData } = useBrowseSettings();
-  const json = getSharedViewsJSON(settingsData);
 
-  if (json === undefined) {
+  if (!settingsData) {
     return [];
   }
 
+  const json = getSettingValue<string>(settingsData.settings, 'shared_views') ?? '[]';
   const parsed = parseAllSharedViewsJSON(json);
 
   return parsed.ok ? parsed.views.filter((view) => view.route === 'posts') : [];
 }
 
+const ViewsSettingsSchema = z.object({
+  settings: z.array(z.object({ key: z.string(), value: z.unknown() })),
+});
+
+/**
+ * The stored `shared_views` value, read from the server rather than the cached
+ * settings. Other writers change the setting too (member views, another tab),
+ * so a cached copy can be out of date, and a save built from it would put
+ * their old views back. A direct read leaves the cache alone, so the screen
+ * doesn't change mid-save.
+ */
+function useFetchSharedViews() {
+  const fetchApi = useFetchApi();
+
+  return useCallback(async (): Promise<string> => {
+    const data = ViewsSettingsSchema.parse(
+      await fetchApi<unknown>(apiUrl('/settings/', { group: 'views' })),
+    );
+    const value = data.settings.find(({ key }) => key === 'shared_views')?.value;
+    // An empty value is no views, as it is for the cached settings.
+    return typeof value === 'string' && value !== '' ? value : '[]';
+  }, [fetchApi]);
+}
+
 function useWriteSharedViews() {
-  const { data: settingsData } = useBrowseSettings();
+  const fetchSharedViews = useFetchSharedViews();
   const { mutateAsync: editSettings } = useEditSettings();
   const handleError = useHandleError();
 
   return useCallback(
     async (transform: (json: string) => string) => {
-      const json = getSharedViewsJSON(settingsData);
+      let json: string;
 
-      if (json === undefined) {
-        const error = new Error(SETTINGS_NOT_LOADED_ERROR);
+      try {
+        json = await fetchSharedViews();
+      } catch (error) {
         handleError(error, { withToast: false });
         throw error;
       }
@@ -76,7 +84,7 @@ function useWriteSharedViews() {
         throw error;
       }
     },
-    [settingsData, editSettings, handleError],
+    [fetchSharedViews, editSettings, handleError],
   );
 }
 
