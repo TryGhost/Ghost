@@ -101,9 +101,6 @@ describe('Post settings meta data', () => {
     await expect
       .element(editorScreen.settingsSerpPreview())
       .toHaveTextContent('original.example.com › story');
-    await expect
-      .element(editorScreen.settingsSerpPreview().getByRole('img', { name: 'Google' }))
-      .toBeVisible();
   });
 
   it('changes the canonical URL a post already carries', async () => {

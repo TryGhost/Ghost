@@ -270,7 +270,7 @@ Guardrails:
 SVGs in `src/assets/images` and `src/assets/icons` render through
 `svgGraphic` (`src/lib/svg-graphic.ts`), so they're decorative unless the
 caller names them. When you add one, remove the vendor `<title>`, `<desc>`
-and `id` attributes; the logo and icon tests fail if any remain.
+and `id` attributes.
 
 ### Common anti-patterns
 

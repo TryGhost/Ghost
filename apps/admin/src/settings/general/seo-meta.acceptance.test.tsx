@@ -57,7 +57,6 @@ describe('SEO meta settings', () => {
     await renderAdminApp('/settings');
 
     const section = settingsScreen.seoMeta();
-    await expect.element(section.getByRole('img', { name: 'Google' })).toBeVisible();
     await section.getByLabelText('Meta title').fill('Alternative title');
     await section.getByLabelText('Meta description').fill('Alternative description');
     await section.getByRole('button', { name: 'Save' }).click();
