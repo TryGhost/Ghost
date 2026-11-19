@@ -31,7 +31,7 @@ export const tagDetailScreen = {
   xPreviewLabel: () => page.getByText('X preview', { exact: true }),
   facebookPreviewLabel: () => page.getByText('Facebook preview', { exact: true }),
   searchPreviewLogo: () => page.getByTestId('seo-preview').getByRole('img', { name: 'Google' }),
-  facebookPreview: () => page.getByTestId('facebook-card-preview'),
+  facebookCardPreview: () => page.getByTestId('facebook-card-preview'),
 
   colorPickerButton: () => page.getByRole('button', { name: sel.accentColorPickerButton }),
   accentColorHexInput: () => page.getByLabelText(sel.accentColorHexLabel),

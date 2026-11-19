@@ -4,7 +4,9 @@ export interface SvgGraphicProps extends SVGProps<SVGSVGElement> {
   /**
    * Names the graphic for screen readers. It sets `aria-label`, and doesn't
    * render a tooltip or an SVG `<title>`. Without a `title`, `aria-label` or
-   * `aria-labelledby`, the graphic is decorative and hidden from them.
+   * `aria-labelledby`, the graphic is decorative and hidden from them. A
+   * non-blank `aria-label` takes precedence over `title`, and an explicit
+   * `aria-hidden` from the caller always wins.
    */
   title?: string | undefined;
 }

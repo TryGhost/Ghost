@@ -207,9 +207,10 @@ describe('Tag detail', () => {
       facebookTitle.element().compareDocumentPosition(facebookPreview.element()) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-    await expect
-      .element(tagDetailScreen.facebookPreview().getByRole('img'))
-      .not.toBeInTheDocument();
+    const facebookCard = tagDetailScreen.facebookCardPreview();
+    await expect.element(facebookCard).toBeVisible();
+    expect(facebookCard.element().querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+    await expect.element(facebookCard.getByRole('img')).not.toBeInTheDocument();
 
     const codeInjectionCard = tagDetailScreen.codeInjectionCard();
     const codeInjectionTrigger = tagDetailScreen.codeInjectionTrigger();
