@@ -1,6 +1,13 @@
 # Announcement Bar
 
-Announcement banner injected into Ghost sites.
+Standalone announcement banner for sites that load the public app. Current Ghost themes receive
+the announcement HTML and styles with the page through `{{ghost_head}}`. The public app continues
+to serve Ghost versions that mount the banner in the browser.
+
+Theme authors can place `<div id="announcement-bar-root"></div>` to choose where Ghost inserts the
+bar. The default location is the start of the body. Ghost offsets overlapping fixed or absolute
+site headers and exposes the measured height as `var(--gh-announcement-bar-height, 0px)`. A theme
+with unconventional header markup can identify its masthead with `data-ghost-header`.
 
 ## Development
 

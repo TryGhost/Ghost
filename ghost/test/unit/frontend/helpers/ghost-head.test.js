@@ -52,7 +52,10 @@ async function testGhostHead(options) {
 
   assertExists(rendered);
   // Note: we need to convert the string to an object in order to use the snapshot feature
-  assertMatchSnapshot({ rendered });
+  const snapshot = rendered
+    .replace(/(<style data-ghost-announcement>)[\s\S]*?(<\/style>)/, '$1[[BAR CSS]]$2')
+    .replace(/(<script data-announcement-bar="[^"]*"[^>]*>)[\s\S]*?(<\/script>)/, '$1[[BAR JS]]$2');
+  assertMatchSnapshot({ rendered: snapshot });
   return rendered;
 }
 
@@ -2138,7 +2141,7 @@ describe('{{ghost_head}} helper', function () {
       getStub.withArgs('members_enabled').returns(true);
       getStub.withArgs('paid_members_enabled').returns(true);
       getStub.withArgs('announcement_content').returns('Hello world');
-      getStub.withArgs('announcement_visibility').returns('visitors');
+      getStub.withArgs('announcement_visibility').returns(['visitors']);
 
       const rendered = await testGhostHead({
         hash: { exclude: '' },
@@ -2153,13 +2156,31 @@ describe('{{ghost_head}} helper', function () {
       assert.match(rendered, /sodo-search@/);
       assert.match(rendered, /portal@/);
       assert.match(rendered, /js.stripe.com/);
-      assert.match(rendered, /announcement-bar@/);
+      assert.match(rendered, /data-ghost-announcement/);
     });
+    it('only embeds a paid announcement in an eligible member’s page', async function () {
+      getStub.withArgs('announcement_content').returns('News for subscribers');
+      getStub.withArgs('announcement_visibility').returns(['paid_members']);
+      const options = testUtils.createHbsResponse({
+        locals: { relativeUrl: '/', context: ['home', 'index'], safeVersion: '4.3' },
+      });
+      for (const member of [null, { status: 'free' }]) {
+        options.data.member = member;
+        const html = (await ghost_head(options)).toString();
+        assert.doesNotMatch(html, /data-ghost-announcement|News for subscribers/);
+      }
+      options.data.member = { status: 'comped' };
+      assert.match(
+        (await ghost_head(options)).toString(),
+        /data-announcement="News for subscribers"/,
+      );
+    });
+
     it('does not show the announcement when exclude contains announcement', async function () {
       getStub.withArgs('members_enabled').returns(true);
       getStub.withArgs('paid_members_enabled').returns(true);
       getStub.withArgs('announcement_content').returns('Hello world');
-      getStub.withArgs('announcement_visibility').returns('visitors');
+      getStub.withArgs('announcement_visibility').returns(['visitors']);
 
       const rendered = await testGhostHead({
         hash: { exclude: 'announcement' },
@@ -2175,7 +2196,7 @@ describe('{{ghost_head}} helper', function () {
       assert.match(rendered, /portal@/);
       assert.match(rendered, /js.stripe.com/);
       assert.match(rendered, /generator/);
-      assert.doesNotMatch(rendered, /announcement-bar@/);
+      assert.doesNotMatch(rendered, /data-ghost-announcement/);
     });
 
     it('does not load the comments script when exclude contains comment_counts', async function () {
