@@ -251,9 +251,11 @@ class EmailService {
   /**
    * Boot-time scanner: recovers newsletter emails a previous container left without work.
    * Two shapes, both resumed through the normal emailJob path:
-   *   - `submitting` — the send was cut off mid-flight.
-   *   - `pending` — dispatch was dropped from the in-memory job queue before the job ever
-   *     started, so no batch work exists and nothing else will ever pick the row up.
+   *   - `submitting` — the send was cut off mid-flight; batches may be in any state.
+   *   - `pending` — either dispatch was dropped from the in-memory job queue before the job
+   *     ever started, so no batch work exists, or shutdown stopped the send partway and
+   *     returned it to `pending`, so batches may already be submitted, failed or left
+   *     `submitting`. Integrity failures are never returned to `pending`; they fail the email.
    * Iterates sequentially; one failure does not skip others. Rows older than the configured
    * max-age are flipped to `failed` (not resumed) so stale content does not get sent to
    * current members.
