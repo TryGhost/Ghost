@@ -20,7 +20,7 @@ const pollSchema = z
     editing: resourceSchema.optional(),
     tab: tabId.optional(),
     /** `hold` keeps or joins a place in the edited document's queue; `take` moves to its front. */
-    lease: z.enum(['hold', 'take']).optional(),
+    lease: z.enum(['hold', 'take', 'watch']).optional(),
   })
   .strict()
   .refine((value) => !value.lease || value.editing, {
@@ -45,8 +45,8 @@ export interface PresenceLease {
 
 export interface PollResult {
   active: ActivePresence[];
-  /** Present when the caller asked for the lease on the document it is editing. */
-  lease?: PresenceLease;
+  /** Present when the caller asked about the lease on the document it is editing; null while nobody holds it. */
+  lease?: PresenceLease | null;
   serverTime: number;
 }
 
@@ -230,7 +230,11 @@ export class EditorPresenceService {
           });
         }
       }
-      return { active: [...latest.values()], ...(held ? { lease: held } : {}), serverTime: now };
+      return {
+        active: [...latest.values()],
+        ...(claims ? { lease: held ?? null } : {}),
+        serverTime: now,
+      };
     } catch (error) {
       this.record('presence-poll', started, { outcome: 'error', ...measured });
       throw error;
@@ -240,10 +244,15 @@ export class EditorPresenceService {
   /** `take` moves the caller ahead of everyone queued for the document; `hold` keeps or joins a place. */
   private async queue(
     caller: string,
-    mode: 'hold' | 'take',
+    mode: 'hold' | 'take' | 'watch',
     resource: { id: string; type: ResourceType },
     now: number,
   ): Promise<StoredClaim[]> {
+    if (mode === 'watch') {
+      // A tab that only watches gives up any place it held, so it is never handed the lease.
+      await this.fromStore('release', () => this.store.release([caller]));
+      return this.fromStore('claims', () => this.store.claims());
+    }
     if (mode === 'take') {
       const queued = await this.fromStore('claims', () => this.store.claims());
       const ahead = queued

@@ -4,6 +4,7 @@ import type { ActivePresence } from '@/shared/presence/presence-api';
 import type { LeaseStatus } from '@/shared/presence/use-presence';
 import {
   INITIAL_TRACK,
+  RACE_WINDOW_MS,
   TAKEOVER_GRACE_MS,
   TAKEOVER_MAX_MS,
   advanceLease,
@@ -40,6 +41,27 @@ describe('advanceLease', () => {
     const outdated = { ...advanceLease(INITIAL_TRACK, mine), outdated: true };
     expect(advanceLease(outdated, theirs).outdated).toBe(false);
   });
+
+  it('finds a free document ready as it was read, and behind once someone has held it', () => {
+    expect(advanceLease(INITIAL_TRACK, 'free')).toMatchObject({
+      answered: true,
+      syncing: false,
+      sync: 0,
+    });
+    const released = advanceLease(advanceLease(INITIAL_TRACK, theirs), 'free');
+    expect(released).toMatchObject({ syncing: true, sync: 1, lost: false });
+  });
+
+  it('counts taking a free lease, and finding a free one held after all', () => {
+    const free = advanceLease(INITIAL_TRACK, 'free');
+    expect(advanceLease(free, mine)).toMatchObject({ claims: 1, beaten: 0, syncing: false });
+    expect(advanceLease(free, theirs)).toMatchObject({ claims: 0, beaten: 1 });
+    // A lease this tab held and lost was not found free.
+    expect(advanceLease(advanceLease(INITIAL_TRACK, mine), theirs)).toMatchObject({ beaten: 0 });
+    expect(advanceLease(advanceLease(INITIAL_TRACK, theirs), { ...mine })).toMatchObject({
+      claims: 0,
+    });
+  });
 });
 
 describe('useEditLease', () => {
@@ -49,6 +71,8 @@ describe('useEditLease', () => {
       flush: vi.fn(),
       reload: vi.fn().mockResolvedValue('reloaded'),
       hasNewerVersion: vi.fn().mockResolvedValue(false),
+      revert: vi.fn(() => true),
+      onBehind: vi.fn(),
     };
     const hook = renderHook(
       (props: { lease: LeaseStatus; active: ActivePresence[] }) =>
@@ -85,6 +109,7 @@ describe('useEditLease', () => {
       userId: OTHER,
       ownTab: false,
       lost: false,
+      raced: false,
     });
     expect(setup({ userId: ME, mine: false }).hook.result.current).toMatchObject({ ownTab: true });
   });
@@ -194,5 +219,90 @@ describe('useEditLease', () => {
     await act(() => vi.advanceTimersByTimeAsync(TAKEOVER_MAX_MS));
     expect(ports.reload).not.toHaveBeenCalled();
     expect(hook.result.current).toMatchObject({ locked: true, reason: 'held' });
+  });
+
+  it('leaves a document nobody holds open for editing', async () => {
+    const { hook, ports } = setup('pending');
+    hook.rerender({ lease: 'free', active: [] });
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(hook.result.current).toEqual({ locked: false });
+    expect(ports.reload).not.toHaveBeenCalled();
+  });
+
+  it('reads the latest copy before opening once the holder has left it free', async () => {
+    const { hook, ports } = setup(theirs);
+    hook.rerender({ lease: 'free', active: [] });
+    expect(hook.result.current).toEqual({ locked: true, reason: 'pending' });
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(ports.reload).toHaveBeenCalledTimes(1);
+    expect(hook.result.current).toEqual({ locked: false });
+  });
+
+  it('checks its copy when it takes a free lease, and keeps what it typed when the copy is the latest', async () => {
+    const { hook, ports } = setup('free', true);
+    hook.rerender({ lease: mine, active: [] });
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(ports.hasNewerVersion).toHaveBeenCalledTimes(1);
+    expect(ports.reload).not.toHaveBeenCalled();
+    expect(ports.onBehind).not.toHaveBeenCalled();
+    expect(hook.result.current).toEqual({ locked: false });
+  });
+
+  it('loads the latest over what it typed when it took a free lease on an older copy', async () => {
+    const { hook, ports } = setup('free', true);
+    ports.hasNewerVersion.mockResolvedValue(true);
+    hook.rerender({ lease: mine, active: [] });
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(ports.reload).toHaveBeenCalledExactlyOnceWith({ discardUnsaved: true });
+    expect(ports.onBehind).toHaveBeenCalledTimes(1);
+  });
+
+  describe('when a free lease turns out to be someone else’s', () => {
+    /** Free, then typing begins, then `afterMs` later the answer names another holder. */
+    const beatenAfter = async (afterMs: number, revertWorks = true) => {
+      const { hook, ports } = setup('free');
+      ports.revert.mockReturnValue(revertWorks);
+      ports.isDirty.mockReturnValue(true);
+      hook.rerender({ lease: 'free', active: [] });
+      await act(() => vi.advanceTimersByTimeAsync(afterMs));
+      hook.rerender({ lease: theirs, active: [] });
+      await act(() => vi.advanceTimersByTimeAsync(0));
+      return { hook, ports };
+    };
+
+    it('puts back what was typed a moment ago, locks, and says so', async () => {
+      const { hook, ports } = await beatenAfter(200);
+      expect(ports.revert).toHaveBeenCalledTimes(1);
+      expect(ports.reload).not.toHaveBeenCalled();
+      expect(hook.result.current).toMatchObject({ locked: true, reason: 'held', raced: true });
+    });
+
+    it('reads the server’s copy when the loaded one cannot be put back', async () => {
+      const { ports } = await beatenAfter(200, false);
+      expect(ports.reload).toHaveBeenCalledExactlyOnceWith({ discardUnsaved: true });
+    });
+
+    it('keeps work that is older than a moment', async () => {
+      const { hook, ports } = await beatenAfter(RACE_WINDOW_MS + 1);
+      expect(ports.revert).not.toHaveBeenCalled();
+      expect(ports.reload).not.toHaveBeenCalled();
+      expect(hook.result.current).toMatchObject({ locked: true, reason: 'held', raced: false });
+    });
+
+    it('has nothing to put back in a tab that was only reading', async () => {
+      const { hook, ports } = setup('free');
+      hook.rerender({ lease: theirs, active: [] });
+      await act(() => vi.advanceTimersByTimeAsync(0));
+      expect(ports.revert).not.toHaveBeenCalled();
+      expect(hook.result.current).toMatchObject({ locked: true, reason: 'held', raced: false });
+    });
+  });
+
+  it('keeps unsaved work when a lease it held is taken, rather than putting it back', async () => {
+    const { hook, ports } = setup(mine, true);
+    hook.rerender({ lease: theirs, active: [] });
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(ports.revert).not.toHaveBeenCalled();
+    expect(hook.result.current).toMatchObject({ lost: true, raced: false });
   });
 });

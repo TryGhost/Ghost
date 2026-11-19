@@ -11,10 +11,11 @@ import {
   useState,
 } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { AdminLink } from '@/shared/admin-link';
 import { usePresence } from '@/shared/presence/use-presence';
 import { PresenceAvatars } from '@/shared/presence/presence-avatars';
-import { LeaseBanner } from './lease/lease-banner';
+import { LeaseHolderAvatar, LeaseLock } from './lease/lease-notice';
 import { useEditLease } from './lease/use-edit-lease';
 import { getPostListReturnUrl } from '@/posts/api';
 import { reloadAdmin } from '@/auth/api';
@@ -85,6 +86,11 @@ import { useSettingsOpen } from './use-settings-open';
 import { useWritingFocus } from './use-writing-focus';
 import type { EditorRecord } from './session/projection';
 
+/** Said once the latest version has replaced what a tab typed onto an older one. */
+function notifyReloadedOverTyping() {
+  toast.info('A newer version was saved elsewhere, so it was loaded here.');
+}
+
 function EditorLoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <Stack align="center" className="h-full" data-testid={editorLoadError} justify="center">
@@ -100,13 +106,11 @@ function EditorHeader({
   postType,
   editorReturn,
   children,
-  presenceSlotRef,
   onBack,
 }: {
   postType: PostType;
   editorReturn?: EditorReturn;
   children?: ReactNode;
-  presenceSlotRef?: (node: HTMLDivElement | null) => void;
   onBack?: (event: MouseEvent<HTMLAnchorElement>) => void;
 }) {
   const listLabel = postType === 'page' ? 'Pages' : 'Posts';
@@ -142,10 +146,6 @@ function EditorHeader({
         )}
       </PageHeader.Action>
       {children}
-      <Box
-        ref={presenceSlotRef}
-        className="pointer-events-auto col-span-3 col-start-1 row-start-2 max-w-full min-w-0 justify-self-center empty:hidden lg:absolute lg:top-[calc(var(--spacing)*4+1px)] lg:left-1/2 lg:w-max lg:max-w-[calc(100%-480px)] lg:-translate-x-1/2"
-      />
     </Grid>
   );
 }
@@ -206,8 +206,10 @@ function EditorContent({
     ? { id: session.persistedId, type: postType }
     : undefined;
   const leaseEnabled = useFeatureFlag('editorLease');
+  // Opening a post does not take it from anyone; the first unsaved edit does.
   const presence = usePresence(presenceResource ? [presenceResource] : [], presenceResource, {
     lease: leaseEnabled,
+    wantsLease: session.isDirty(),
   });
   const showPresence = useFeatureFlag('editorPresence');
   const editLease = useEditLease({
@@ -218,11 +220,12 @@ function EditorContent({
     flush: session.commitField,
     reload: session.reload,
     hasNewerVersion: session.hasNewerVersion,
+    revert: session.revert,
+    onBehind: notifyReloadedOverTyping,
   });
-  const [presenceTarget, setPresenceTarget] = useState<HTMLElement | null>(null);
   const leaseHolderId =
     editLease.locked && editLease.reason === 'held' && !editLease.ownTab ? editLease.userId : null;
-  // The lease banner already shows the holder, so the avatar row leaves them out.
+  // The holder has an avatar of their own, first in the row, which the takeover hangs on.
   const otherPresence = useMemo(
     () =>
       leaseHolderId
@@ -230,6 +233,19 @@ function EditorContent({
         : presence.active,
     [presence.active, leaseHolderId],
   );
+  const leaseNotice = {
+    lease: editLease,
+    resourceId: session.persistedId,
+    resourceType: postType,
+    hasUnsavedContent: session.hasUnsavedContent,
+    contentText: session.contentText,
+    onReload: session.reload,
+    onTakeOver: presence.takeOver,
+  };
+  const leaseNoticeHidden =
+    editLease.locked &&
+    editLease.reason === 'outdated' &&
+    bannerSaveError(session.state, session.pendingSave) !== null;
   const [tkCount, setTkCount] = useState(0);
   const chromeEntrance = useScreenEntrance();
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
@@ -491,21 +507,6 @@ function EditorContent({
           state={session.state}
           onReload={session.reload}
         />
-        {/* A save that already collided has the session's banner, which offers the same reload. */}
-        {editLease.locked &&
-        editLease.reason === 'outdated' &&
-        bannerSaveError(session.state, session.pendingSave) ? null : (
-          <LeaseBanner
-            contentText={session.contentText}
-            hasUnsavedContent={session.hasUnsavedContent}
-            lease={editLease}
-            resourceId={session.persistedId}
-            resourceType={postType}
-            target={presenceTarget}
-            onReload={session.reload}
-            onTakeOver={presence.takeOver}
-          />
-        )}
         <ReauthDialog
           email={currentUser?.email ?? ''}
           open={session.reauthOpen}
@@ -540,32 +541,38 @@ function EditorContent({
             )}
           >
             {/* The back link stays while the writer types, so the way out is always in view. */}
-            <EditorHeader
-              editorReturn={editorReturn}
-              postType={postType}
-              presenceSlotRef={setPresenceTarget}
-              onBack={holdBack}
-            >
-              {editorReturn?.kind !== 'analytics' ||
-              didEmailFail ||
-              session.state.kind === 'error' ? (
-                <Box className="min-w-0" data-writing-focus={writingFocus}>
-                  <EditorStatus
-                    isDirty={session.isDirty()}
-                    pendingSave={session.pendingSave}
-                    record={statusRecord}
-                    state={session.state}
-                    onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
-                    onOpenUpdateFlow={canPublish ? openUpdateFlow : undefined}
-                    onRetrySave={session.retrySave}
-                  />
-                </Box>
-              ) : null}
+            <EditorHeader editorReturn={editorReturn} postType={postType} onBack={holdBack}>
+              <Inline align="center" className="min-w-0" gap="xs">
+                {editorReturn?.kind !== 'analytics' ||
+                didEmailFail ||
+                session.state.kind === 'error' ? (
+                  <Box className="min-w-0" data-writing-focus={writingFocus}>
+                    <EditorStatus
+                      isDirty={session.isDirty()}
+                      pendingSave={session.pendingSave}
+                      record={statusRecord}
+                      state={session.state}
+                      onOpenPublishFlow={offersEmailRetry ? openPublishFlow : undefined}
+                      onOpenUpdateFlow={canPublish ? openUpdateFlow : undefined}
+                      onRetrySave={session.retrySave}
+                    />
+                  </Box>
+                ) : null}
+                {/* A save that already collided has the session's banner, which offers the same reload. */}
+                {leaseNoticeHidden ? null : <LeaseLock {...leaseNotice} />}
+              </Inline>
               <Box className="col-start-3 ml-auto" data-writing-focus={writingFocus}>
                 <PageHeader.ActionGroup className="gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
-                  {showPresence ? (
-                    <PresenceAvatars active={otherPresence} resourceType={postType} />
-                  ) : null}
+                  <Inline align="center" gap="none">
+                    <LeaseHolderAvatar {...leaseNotice} />
+                    {showPresence ? (
+                      <PresenceAvatars
+                        active={otherPresence}
+                        className={leaseHolderId ? '-ml-2' : undefined}
+                        resourceType={postType}
+                      />
+                    ) : null}
+                  </Inline>
                   <EditorHeaderActions
                     bottomBar={bottomBar}
                     currentUser={currentUser}

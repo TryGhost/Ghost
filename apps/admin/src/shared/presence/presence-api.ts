@@ -24,7 +24,7 @@ const responseSchema = z.object({
     .array(
       z.object({
         active: z.array(activeSchema),
-        lease: z.object({ userId: z.string(), mine: z.boolean() }).optional(),
+        lease: z.object({ userId: z.string(), mine: z.boolean() }).nullable().optional(),
         serverTime: z.number().finite(),
       }),
     )

@@ -143,6 +143,30 @@ describe('Presence API', function () {
     assert.equal(passed.body.presence[0].lease.mine, false);
   });
 
+  it('lets a tab watch a document without holding it', async function () {
+    const editing = { id: fixtureManager.get('posts', 2).id, type: 'post' };
+    const poll = (agent, tab, lease) =>
+      agent
+        .post('presence/')
+        .body({ presence: [{ editing, tab, lease }] })
+        .expectStatus(200);
+
+    // Nobody holds a document its readers only watch.
+    await poll(ownerAgent, 'tab-owner-0002', 'watch').matchBodySnapshot({
+      presence: [{ serverTime: anyNumber }],
+    });
+    const alsoWatching = await poll(editorAgent, 'tab-editor-002', 'watch');
+    assert.equal(alsoWatching.body.presence[0].lease, null);
+
+    const claimed = await poll(editorAgent, 'tab-editor-002', 'hold');
+    assert.equal(claimed.body.presence[0].lease.mine, true);
+    const watching = await poll(ownerAgent, 'tab-owner-0002', 'watch');
+    assert.deepEqual(watching.body.presence[0].lease, {
+      userId: claimed.body.presence[0].lease.userId,
+      mine: false,
+    });
+  });
+
   it('accepts a contributor', async function () {
     await contributorAgent
       .post('presence/')

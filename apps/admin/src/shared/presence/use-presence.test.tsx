@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => {
       (
         resources: PresenceResource[],
         editing?: PresenceResource,
-        lease?: 'hold' | 'take',
+        lease?: 'hold' | 'take' | 'watch',
       ) => Promise<unknown>
     >();
   const leave = vi.fn<(resource: PresenceResource) => void>();
@@ -188,12 +188,16 @@ describe('usePresence', () => {
 });
 
 describe('usePresence lease', () => {
-  const answer = (lease?: { userId: string; mine: boolean }, serverTime = 0) => ({
-    presence: [{ active: [], ...(lease ? { lease } : {}), serverTime }],
+  /** `null` is a server that finds nobody holding the document; no argument is one that keeps no lease. */
+  const answer = (lease?: { userId: string; mine: boolean } | null, serverTime = 0) => ({
+    presence: [{ active: [], ...(lease === undefined ? {} : { lease }), serverTime }],
   });
   const holder = { userId: 'h'.repeat(24), mine: false };
   const mine = { userId: 'm'.repeat(24), mine: true };
-  const withLease = () => renderHook(() => usePresence([resource], resource, { lease: true }));
+  const withLease = (wants = false) =>
+    renderHook(({ wantsLease }) => usePresence([resource], resource, { lease: true, wantsLease }), {
+      initialProps: { wantsLease: wants },
+    });
   const setHidden = (hidden: boolean) => {
     Object.defineProperty(document, 'hidden', { configurable: true, value: hidden });
     document.dispatchEvent(new Event('visibilitychange'));
@@ -211,19 +215,75 @@ describe('usePresence lease', () => {
     vi.useRealTimers();
   });
 
-  it('asks to hold with every poll and reports the holder once the server answers', async () => {
+  it('only watches while it has no work of its own, and reports who holds the document', async () => {
     mocks.poll.mockResolvedValue(answer(holder));
     const hook = withLease();
     expect(hook.result.current.lease).toBe('pending');
     await act(() => vi.advanceTimersByTimeAsync(0));
-    expect(mocks.poll).toHaveBeenCalledWith([resource], resource, 'hold');
+    expect(mocks.poll).toHaveBeenCalledWith([resource], resource, 'watch');
     expect(hook.result.current.lease).toEqual(holder);
+    await act(() => vi.advanceTimersByTimeAsync(10_000));
+    expect(mocks.poll).toHaveBeenLastCalledWith([resource], resource, 'watch');
+    hook.unmount();
+  });
+
+  it('reports a document nobody holds as free', async () => {
+    mocks.poll.mockResolvedValue(answer(null));
+    const hook = withLease();
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(hook.result.current.lease).toBe('free');
+    hook.unmount();
+  });
+
+  it('asks for the lease at once when its work begins, and keeps asking while it holds it', async () => {
+    mocks.poll.mockResolvedValue(answer(null));
+    const hook = withLease();
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(mocks.poll).toHaveBeenCalledTimes(1);
+
+    mocks.poll.mockResolvedValue(answer(mine));
+    await act(async () => {
+      hook.rerender({ wantsLease: true });
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    // Not ten seconds later, with the poll that was due.
+    expect(mocks.poll).toHaveBeenCalledTimes(2);
+    expect(mocks.poll).toHaveBeenLastCalledWith([resource], resource, 'hold');
+    expect(hook.result.current.lease).toEqual(mine);
+
+    // Saved, so nothing of its own is left unsaved: it is still the one editing.
+    hook.rerender({ wantsLease: false });
     await act(() => vi.advanceTimersByTimeAsync(10_000));
     expect(mocks.poll).toHaveBeenLastCalledWith([resource], resource, 'hold');
     hook.unmount();
   });
 
-  it('asks for no lease, and reports none, unless the caller wants one', async () => {
+  it('does not ask again each time new work begins while it already holds the lease', async () => {
+    const hook = withLease(true);
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(mocks.poll).toHaveBeenCalledTimes(1);
+    hook.rerender({ wantsLease: false });
+    await act(async () => {
+      hook.rerender({ wantsLease: true });
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(mocks.poll).toHaveBeenCalledTimes(1);
+    hook.unmount();
+  });
+
+  it('goes back to watching once it neither holds the lease nor wants it', async () => {
+    mocks.poll.mockResolvedValue(answer(holder));
+    const hook = withLease(true);
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(mocks.poll).toHaveBeenLastCalledWith([resource], resource, 'hold');
+    expect(hook.result.current.lease).toEqual(holder);
+    hook.rerender({ wantsLease: false });
+    await act(() => vi.advanceTimersByTimeAsync(10_000));
+    expect(mocks.poll).toHaveBeenLastCalledWith([resource], resource, 'watch');
+    hook.unmount();
+  });
+
+  it('asks about no lease, and reports none, unless the caller follows one', async () => {
     const hook = renderHook(() => usePresence([resource], resource, { lease: false }));
     await act(() => vi.advanceTimersByTimeAsync(0));
     expect(mocks.poll).toHaveBeenCalledWith([resource], resource, undefined);
@@ -232,7 +292,7 @@ describe('usePresence lease', () => {
   });
 
   it('keeps its place while the tab is hidden, and asks at once on return', async () => {
-    const hook = withLease();
+    const hook = withLease(true);
     await act(() => vi.advanceTimersByTimeAsync(0));
     act(() => setHidden(true));
     expect(mocks.leave).not.toHaveBeenCalled();
@@ -297,7 +357,7 @@ describe('usePresence lease', () => {
     mocks.poll.mockResolvedValue({ presence: [{ active: [other], serverTime: 0 }] });
     const hook = withLease();
     await act(() => vi.advanceTimersByTimeAsync(0));
-    expect(mocks.poll.mock.calls.map((call) => call[2])).toEqual(['hold', undefined]);
+    expect(mocks.poll.mock.calls.map((call) => call[2])).toEqual(['watch', undefined]);
     expect(hook.result.current.lease).toBeNull();
     expect(hook.result.current.active).toEqual([other]);
     await act(() => vi.advanceTimersByTimeAsync(10_000));
