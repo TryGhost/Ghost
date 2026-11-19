@@ -90,13 +90,12 @@ called, not when the service root is declared.
 
 ### Responsibilities
 
-- **Boot** binds the root and awaits `init()` in the appropriate startup phase,
-  before code uses the service. It must await `init()` even when `create`
-  returns synchronously:
+- **The application** starts the root and awaits `init()` before code uses the
+  service, even when `create` returns synchronously. In Ghost the root is an
+  entry in the services list, and the start sequence awaits it:
 
-  ```js
-  const example = require('./server/services/example').default;
-  await example.init();
+  ```ts
+  { name: 'example', load: () => require('../core/server/services/example').default },
   ```
 
 - **The author of the `create` callback** constructs the instance, completes

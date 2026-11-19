@@ -18,8 +18,8 @@ import { afterEach, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { Script } from 'node:vm';
 import yaml from 'js-yaml';
-import { bootLines, createService } from '../create-service.ts';
-import { mutateBootInit } from '../services-verify.ts';
+import { createService, listLine } from '../create-service.ts';
+import { mutateListedInit } from '../services-verify.ts';
 import { readDependencyBoundaries } from '../../scripts/lib/dependency-boundaries.ts';
 import { legacyInventoryFile as inventoryPath } from '../../configs/oxlint/legacy-services.ts';
 
@@ -227,12 +227,10 @@ test('gx routes service generation to its checkout and prints boot instructions'
   const cli = path.join(root, 'tools/gx/cli.ts');
   const result = run(tmpdir(), cli, ['generate', 'service', name]);
   success(result);
-  assert.match(result.stdout, /ghost\/core\/boot\.js/);
-  for (const line of bootLines(name)) {
-    assert.ok(result.stdout.includes(line), line);
-  }
-  assert.match(result.stdout, /after its dependencies are ready/);
-  assert.match(result.stdout, /ghost\/test\/unit\/boot\//);
+  assert.match(result.stdout, /ghost\/bootstrap\/services\.ts/);
+  assert.ok(result.stdout.includes(listLine(name)), listLine(name));
+  assert.match(result.stdout, /after what it\s+reads while it starts/);
+  assert.match(result.stdout, /ghost\/test\/unit\/bootstrap\/steps\.test\.ts/);
   assert.match(result.stdout, /pnpm check/);
   assert.ok(result.stdout.includes(`pnpm gx services verify ${name}`));
   assert.match(result.stdout, /no inventory entry or lint registration/);
@@ -244,21 +242,14 @@ test('gx routes service generation to its checkout and prints boot instructions'
   assert.match(help.stdout, /Usage: pnpm gx generate service <name>/);
 });
 
-test('the boot call the generator prints and the guides show is the one services verify finds', () => {
-  const phase = (lines: string[]) => `async function initServices() {\n${lines.join('\n')}\n}\n`;
-  // One-word names, which can be reserved words, and digits still give a valid binding.
+test('the list entry the generator prints and the guides show is the one services verify finds', () => {
+  const list = (lines: string[]) => `export const services = [\n${lines.join('\n')}\n];\n`;
   for (const service of [name, 'new', 'tiers', 'oauth-2']) {
-    const lines = bootLines(service);
-    assert.doesNotThrow(() => new Script(phase(lines)), service);
-    assert.equal(lines.length, 2, service);
-    assert.ok(mutateBootInit(phase(lines), service), service);
+    const line = listLine(service);
+    assert.doesNotThrow(() => new Script(list([line]).replace('export ', '')), service);
+    assert.ok(mutateListedInit(list([line]), service), service);
   }
   const inline = /require\('[^']+'\)\.default\.init\(/;
-  assert.equal(
-    mutateBootInit(phase([`await require('./server/services/${name}').default.init();`]), name),
-    undefined,
-    'services verify does not follow an inline call, so nothing may tell an author to write one',
-  );
   for (const [guide, service] of [
     ['ghost/core/server/services/README.md', name],
     ['kernel/README.md', 'example'],
@@ -266,11 +257,11 @@ test('the boot call the generator prints and the guides show is the one services
   ] as const) {
     const source = readFileSync(path.join(repo, guide), 'utf8');
     assert.doesNotMatch(source, inline, guide);
-    const blocks = [...source.matchAll(/```js\n([\s\S]*?)```/g)]
+    const blocks = [...source.matchAll(/```ts\n([\s\S]*?)```/g)]
       .map((match) => match[1]!)
-      .filter((block) => block.includes(`'./server/services/${service}'`));
-    assert.equal(blocks.length, 1, `${guide} shows the boot call once`);
-    assert.ok(mutateBootInit(phase(blocks[0]!.split('\n')), service), guide);
+      .filter((block) => block.includes(`'../core/server/services/${service}'`));
+    assert.equal(blocks.length, 1, `${guide} shows the list entry once`);
+    assert.ok(blocks[0]!.includes(listLine(service)), guide);
   }
 });
 

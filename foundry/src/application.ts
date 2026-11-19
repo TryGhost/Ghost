@@ -60,9 +60,15 @@ interface RunStep<StartRun> extends Slots<StartRun> {
   readonly run?: (run: StartRun) => unknown;
 }
 
+/**
+ * An entry in a step's list: a module the framework starts, or a slot for
+ * work that has to sit between two modules and is not a module yet.
+ */
+export type Entry<StartRun> = Module<StartRun> | Slot<StartRun>;
+
 interface ModuleStep<StartRun> extends Slots<StartRun> {
   /** Started one after another, in this order. */
-  readonly modules: readonly Module<StartRun>[];
+  readonly modules: readonly Entry<StartRun>[];
 }
 
 /**
@@ -225,6 +231,10 @@ export function createApplication<AppConfig extends Config, Options = void, Stat
   async function runModules(step: ModuleStep<StartRun> | undefined, run: StartRun) {
     await runSlots(step?.before, run);
     for (const entry of step?.modules ?? []) {
+      if (!('load' in entry)) {
+        await runSlots([entry], run);
+        continue;
+      }
       if (entry.when?.(run) === false) {
         continue;
       }

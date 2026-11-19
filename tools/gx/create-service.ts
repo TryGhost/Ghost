@@ -110,38 +110,31 @@ describe('${className} root', function () {
   };
 }
 
-// The boot call an author adds. `gx services verify` finds a root's init() through
-// this binding, so the printed steps, the guides and that check use one form.
-export function bootLines(name: string) {
-  const [first, ...rest] = name.split('-');
-  // A one-word name can be a reserved word, such as "new", so it gets a suffix.
-  const binding = rest.length
-    ? first + rest.map((part) => part[0]!.toUpperCase() + part.slice(1)).join('')
-    : `${first}Service`;
-  return [
-    `const ${binding} = require('./server/services/${name}').default;`,
-    `await ${binding}.init();`,
-  ];
+export const servicesListFile = 'ghost/bootstrap/services.ts';
+
+// The entry an author adds to the services list. `gx services verify` finds a
+// root's start through this line, so the printed steps, the guides and that
+// check use one form.
+export function listLine(name: string) {
+  return `{ name: '${name}', load: () => require('../core/server/services/${name}').default },`;
 }
 
 export function nextSteps(name: string) {
   return `Next steps:
   1. Implement the capability and inject its application dependencies in index.ts.
-  2. In ghost/core/boot.js, bind the root and await its init() in the right phase,
-     after its dependencies are ready and before its consumers run:
-${bootLines(name)
-  .map((line) => `       ${line}`)
-  .join('\n')}
-     Document that order above defineService.
-  3. The boot tests already check that boot waits for init() and that its failure
-     fails boot. Add one in ghost/test/unit/boot/ only where order matters. A root in
-     initLegacyCore or initServicesForFrontend needs a stub in that phase's test.
+  2. In ${servicesListFile}, add the root to the services list, after what it
+     reads while it starts and before what reads it:
+       ${listLine(name)}
+     The framework awaits its init() there. Document that order above defineService.
+  3. The boot tests already check that the start sequence waits for init() and that
+     its failure fails boot. Where order matters, add the pair to the order table in
+     ghost/test/unit/bootstrap/steps.test.ts.
   4. If the service owns listeners, timers or work to drain, acquire and release them
-     in start and stop hooks, and register stop() with the server in boot.
+     in start and stop hooks. The framework calls stop() when Ghost stops.
   5. Extend the root test. If the root declares extras, catalogue them in
      ${legacyInventoryFile}.
   6. Run pnpm nx run ghost:test:unit test/unit/server/services/${name}/index.test.ts,
-     pnpm nx run ghost:test:unit test/unit/boot/ and pnpm check.
+     pnpm nx run ghost:test:unit test/unit/boot/ test/unit/bootstrap/ and pnpm check.
   7. Commit, then run pnpm gx services verify ${name}.
 `;
 }
@@ -227,7 +220,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       });
       process.stdout.write(`Created:\n${files.map((file) => `  ${file}`).join('\n')}\n
 Lint, boundary lint and the inventory test already check it: a service needs
-no inventory entry or lint registration. Lint fails until boot awaits its init().
+no inventory entry or lint registration. Lint fails until the services list names it.
 
 ${nextSteps(name)}
 See ghost/core/server/services/README.md for the service contract.\n`);

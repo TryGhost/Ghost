@@ -12,6 +12,7 @@ import {
 import { missingTypeScript, scannerTypeScript } from '../scripts/lib/dependency-boundaries.ts';
 
 const bootPath = 'ghost/core/boot.js';
+const listPath = 'ghost/bootstrap/services.ts';
 const allowlistPath = '.dependency-cruiser.cjs';
 const allowanceTestPath = 'tools/scripts/test/service-dependencies.test.ts';
 const lifecycleWords = /\binit|on[- ]demand|lazy|lazily|boot|wrapper|construct|captur|import/i;
@@ -266,6 +267,31 @@ export function specialistProblems({
   });
 }
 
+// Boot moves on after a chain of promise steps. An init that rejects within them,
+// like a stub behind an async wrapper, still fails boot; one a test holds pending
+// until a timer or setImmediate does not stop it. Only a test that holds init
+// pending can tell the difference. Boot tests run boot.js and the services list in
+// a vm context without Node globals, so this uses Promise alone.
+const movedOn = 'Array.from({ length: 50 }).reduce((step) => step.then(), Promise.resolve())';
+
+// Finds a root's entry in the services list, the form the generator and the guides
+// give: `load: () => require('../core/server/services/<name>').default`. The
+// mutated entry hands the framework a root whose init() it cannot wait for.
+export function mutateListedInit(list: string, service: string) {
+  const folder = service.replace(/\.[a-z]+$/, '');
+  const entry = new RegExp(
+    `load: \\(\\) => (require\\('\\.\\./core/server/services/${folder}(?:/index)?'\\)\\.default)`,
+  ).exec(list);
+  if (!entry) {
+    return undefined;
+  }
+  const root = entry[1]!;
+  return {
+    variable: folder,
+    source: `${list.slice(0, entry.index)}load: () => ({ init: () => Promise.race([${root}.init(), ${movedOn}]) })${list.slice(entry.index + entry[0].length)}`,
+  };
+}
+
 // Finds a root's init() through its binding in boot.js, the one form the generator
 // and the guides give: `const x = require('./server/services/<name>').default;`
 // followed by `x.init()`. An inline `require(...).default.init()` is not found.
@@ -304,12 +330,6 @@ export function mutateBootInit(boot: string, service: string) {
     }
   }
   const call = boot.slice(found.index, end + 1);
-  // Boot moves on after a chain of promise steps. An init that rejects within them,
-  // like a stub behind an async wrapper, still fails boot; one a test holds pending
-  // until a timer or setImmediate does not stop it. Only a test that holds init
-  // pending can tell the difference. Boot tests run boot.js in a vm context without
-  // Node globals, so this uses Promise alone.
-  const movedOn = 'Array.from({ length: 50 }).reduce((step) => step.then(), Promise.resolve())';
   return {
     variable: found.variable,
     source: `${boot.slice(0, found.index)}Promise.race([${call}, ${movedOn}])${boot.slice(end + 1)}`,
@@ -520,15 +540,20 @@ export function verifyService({
   }
 
   if (standard) {
-    const absolute = path.join(repository, bootPath);
+    // A standard service is started from the services list. One the list does not
+    // name yet is bound and awaited in a phase of boot.js.
+    const listFile = path.join(repository, listPath);
+    const listed = existsSync(listFile)
+      ? mutateListedInit(readFileSync(listFile, 'utf8'), service)
+      : undefined;
+    const absolute = listed ? listFile : path.join(repository, bootPath);
     const original = readFileSync(absolute, 'utf8');
-    const mutated = mutateBootInit(original, service);
+    const mutated = listed ?? mutateBootInit(original, service);
     if (!mutated) {
       record('boot-waits-for-init', 'fail', [
-        `No init call for ${service} found in boot.js.`,
-        `Bind the root, then await init() on the binding:`,
-        `  const example = require('./server/services/${service}').default;`,
-        `  await example.init();`,
+        `Nothing starts ${service}: it is not in ${listPath} and boot.js has no init call for it.`,
+        `Add it to the services list:`,
+        `  { name: '${service}', load: () => require('../core/server/services/${service}').default },`,
       ]);
     } else {
       try {

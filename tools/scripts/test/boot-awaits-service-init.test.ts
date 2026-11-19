@@ -47,7 +47,8 @@ function lint(
   {
     directories = ['alpha', 'beta', 'legacy'],
     inventory = JSON.stringify({ services: { legacy: {} } }),
-  }: { directories?: string[]; inventory?: string | null } = {},
+    list,
+  }: { directories?: string[]; inventory?: string | null; list?: string[] } = {},
 ) {
   const cwd = mkdtempSync(path.join(tmpdir(), 'ghost-boot-init-oxlint-'));
   try {
@@ -80,6 +81,18 @@ function lint(
     }
     writeFileSync(path.join(cwd, '.oxlintrc.json'), JSON.stringify(localConfig));
     writeFileSync(path.join(cwd, bootFile), source);
+    if (list) {
+      mkdirSync(path.join(cwd, 'ghost/bootstrap'), { recursive: true });
+      writeFileSync(
+        path.join(cwd, 'ghost/bootstrap/services.ts'),
+        `export const services = [\n${list
+          .map(
+            (name) =>
+              `  { name: '${name}', load: () => require('../core/server/services/${name}').default },`,
+          )
+          .join('\n')}\n];\n`,
+      );
+    }
     return run(cwd);
   } finally {
     rmSync(cwd, { recursive: true, force: true });
@@ -139,7 +152,8 @@ for (const [name, code] of valid) {
 }
 
 const messages = {
-  missing: /Boot never initializes (\w+)\. In the right boot phase, add: const example = require/,
+  missing: /Nothing starts (\w+)\. Add it to the services list in ghost\/bootstrap\/services\.ts/,
+  both: /The services list in ghost\/bootstrap\/services\.ts already starts (\w+)\. Remove this init\(\)/,
   notAwaited: /Await (\w+)\.init\(\) as a statement of its boot phase/,
   inline: /Bind the root, then await init\(\) on the binding/,
   phase: /boot\.js does not export (\w+) as a step, so nothing waits for (\w+)/,
@@ -240,10 +254,37 @@ test('requires a new service directory to be initialized without any registratio
   const result = lint(boot(), { directories: ['alpha', 'beta', 'legacy', 'brand-new'] });
   assert.equal(result.status, 1);
   assert.equal(result.diagnostics.length, 1);
-  assert.match(result.diagnostics[0]?.message ?? '', /Boot never initializes brand-new\./);
+  assert.match(result.diagnostics[0]?.message ?? '', /Nothing starts brand-new\./);
   assert.match(
     result.diagnostics[0]?.message ?? '',
-    /require\('\.\/server\/services\/brand-new'\)\.default; await example\.init\(\);/,
+    /\{ name: 'brand-new', load: \(\) => require\('\.\.\/core\/server\/services\/brand-new'\)\.default \}/,
+  );
+});
+
+test('accepts a service the services list names and boot.js does not mention', () => {
+  const result = lint(boot({ core: '' }), { list: ['alpha'] });
+  assert.equal(result.status, 0, JSON.stringify(result.diagnostics));
+});
+
+test('rejects a service started both by the services list and by boot.js', () => {
+  const result = lint(boot(), { list: ['alpha'] });
+  assert.equal(result.status, 1);
+  assert.equal(result.diagnostics.length, 1, JSON.stringify(result.diagnostics));
+  assert.equal(messages.both.exec(result.diagnostics[0]?.message ?? '')?.[1], 'alpha');
+});
+
+test('still requires a service that neither the list nor boot.js starts', () => {
+  const result = lint(boot({ core: '' }), { list: ['beta'] });
+  assert.equal(result.status, 1);
+  assert.deepEqual(
+    result.diagnostics.map(({ message }) => [
+      messages.missing.exec(message)?.[1],
+      messages.both.exec(message)?.[1],
+    ]),
+    [
+      ['alpha', undefined],
+      [undefined, 'beta'],
+    ],
   );
 });
 

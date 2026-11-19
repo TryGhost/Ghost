@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
-import { loadBootFunction } from './harness';
+import { loadBootSequence } from './harness';
 
 function createFrontendServicesHarness() {
   const routeSettings = { init: sinon.stub().resolves() };
@@ -11,16 +11,19 @@ function createFrontendServicesHarness() {
   const themes = { init: sinon.stub().resolves() };
   const offers = { init: sinon.stub().resolves() };
   // Exercise the production orchestration without booting the services it starts.
-  const initServicesForFrontend = loadBootFunction('initServicesForFrontend', {
-    './server/services/route-settings': routeSettings,
-    './server/services/custom-redirects': customRedirects,
-    './server/services/link-redirection': { default: linkRedirects },
-    './server/services/custom-theme-settings': { default: customThemeSettings },
-    './server/services/themes': themes,
-    './server/services/offers': offers,
-  });
+  const sequence = loadBootSequence(
+    {
+      './server/services/route-settings': routeSettings,
+      './server/services/custom-redirects': customRedirects,
+      './server/services/link-redirection': { default: linkRedirects },
+      './server/services/custom-theme-settings': { default: customThemeSettings },
+      './server/services/themes': themes,
+      './server/services/offers': offers,
+    },
+    { from: 'legacy: routing services', to: 'legacy: themes' },
+  );
   return {
-    init: (): Promise<void> => initServicesForFrontend({ bootLogger: { metric: sinon.stub() } }),
+    init: (): Promise<void> => sequence.start({ bootLogger: { metric: sinon.stub() } }),
     themes,
     offers,
   };

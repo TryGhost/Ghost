@@ -1,6 +1,6 @@
 import type { CreateRule, ESTree } from '@oxlint/plugins';
 
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readLegacyServices, servicesRoot } from '../legacy-services.ts';
@@ -8,6 +8,18 @@ import { readLegacyServices, servicesRoot } from '../legacy-services.ts';
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
 const bootFile = 'ghost/core/boot.js';
 const servicePath = /^\.\/server\/services\/([^/]+?)(?:\/index)?$/;
+const listFile = 'ghost/bootstrap/services.ts';
+const listEntry = /require\('\.\.\/core\/server\/services\/([^/']+?)(?:\/index)?'\)\.default/g;
+
+// The roots the services list names. The framework awaits init() on each, in
+// order. Read each time boot.js is linted, for the same reason as the inventory.
+function readListedServices() {
+  const file = path.join(root, listFile);
+  if (!existsSync(file)) {
+    return new Set<string>();
+  }
+  return new Set([...readFileSync(file, 'utf8').matchAll(listEntry)].map((match) => match[1]!));
+}
 
 // A service directory that the legacy service inventory does not list is standard.
 // A directory with no root is not a service: switching branches can leave one
@@ -49,7 +61,8 @@ export const bootAwaitsServiceInit: CreateRule = {
     schema: [],
     messages: {
       missing:
-        "Boot never initializes {{service}}. In the right boot phase, add: const example = require('./server/services/{{service}}').default; await example.init();",
+        "Nothing starts {{service}}. Add it to the services list in ghost/bootstrap/services.ts, after what it reads while it starts: { name: '{{service}}', load: () => require('../core/server/services/{{service}}').default },",
+      both: 'The services list in ghost/bootstrap/services.ts already starts {{service}}. Remove this init() from boot.js.',
       notAwaited:
         'Await {{binding}}.init() as a statement of its boot phase, on its own or inside an awaited Promise.all([...]). Boot must wait for {{service}} even when its init() is synchronous.',
       inline:
@@ -64,6 +77,7 @@ export const bootAwaitsServiceInit: CreateRule = {
       return {};
     }
     const services = readStandardServices();
+    const listed = readListedServices();
 
     // Roots bound as `const x = require('./server/services/<name>').default;`
     // directly in a boot phase.
@@ -204,6 +218,15 @@ export const bootAwaitsServiceInit: CreateRule = {
             bound.some((binding) => binding.name === name && (!phase || phase === binding.phase)),
           );
           const ready = inits.find(({ node }) => awaited.has(node));
+          if (listed.has(service)) {
+            // Started by the framework. A second start in boot.js would hide which one is real.
+            for (const node of [...inits.map((call) => call.node), inline.get(service)]) {
+              if (node) {
+                context.report({ node, messageId: 'both', data: { service } });
+              }
+            }
+            continue;
+          }
           if (ready) {
             const phase = ready.phase?.id?.name;
             if (phase !== undefined && !exportedPhases.has(phase)) {

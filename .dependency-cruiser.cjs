@@ -510,6 +510,8 @@ module.exports = {
         pathNot: [
           '^ghost/core/shared/config/loader\\.ts$', // Where Ghost's config is, until loading moves to the foundry.
           '^ghost/core/server/data/db/configure-knex\\.ts$', // Ghost's database options.
+          '^ghost/core/server/services/[^/]+/index\\.ts$', // Service roots the services list names.
+          '^ghost/core/server/auth/index\\.ts$', // Better Auth's root, named by the services list.
         ],
         dependencyTypesNot: ['type-only'],
       },

@@ -71,8 +71,9 @@ Then check that:
   and waits for its observable result. See [Testing](#testing).
 
 A new service that dispatches jobs is a standard service root: it
-default-exports `defineService`, and `ghost/core/boot.js` binds it and awaits
-its `init()` rather than leaving that to the first request. See
+default-exports `defineService`, and the services list in
+`ghost/bootstrap/services.ts` names it, so the start sequence awaits its
+`init()` rather than leaving that to the first request. See
 [creating a service](../../ghost/core/server/services/README.md#creating-a-service).
 
 ## Queues

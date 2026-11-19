@@ -48,6 +48,8 @@ the application's definition supplies what goes in each one, under `steps`.
 - **Modules** are named without being loaded: an entry is a name and a `load`
   function, called only when the step reaches the entry. What it returns needs
   an `init()` and may have a `stop()`, as a `defineService` root does.
+- **A slot may sit in a `modules` list**, between two modules, for work that
+  has to happen there and is not a module yet. It runs in its place.
 - **`when`** on a slot or a module skips it for one start.
 - **A failure** in steps 1 to 6 rejects `start()` with that error, and nothing
   after it runs.

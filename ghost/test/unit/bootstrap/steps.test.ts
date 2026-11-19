@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import yaml from 'js-yaml';
 import type { Slot } from '@tryghost/foundry/application';
 import application from '../../../bootstrap/app';
 import { legacySteps } from '../../../bootstrap/transition/legacy-steps';
@@ -38,18 +39,51 @@ describe("Ghost's start sequence", function () {
         'shared.before': ['foundation checks'],
         'shared.modules': [],
         'shared.after': ['legacy shared'],
-        'services.before': [
-          'legacy core',
-          'knex instrumentation',
-          'services for frontend',
-          'frontend',
-          'express apps',
-          'dynamic routing',
-          'app service',
-          'jobs service',
-          'legacy services',
+        'services.before': [],
+        'services.modules': [
+          'better-auth',
+          'gift-links',
+          'legacy: members metafields',
+          'app-installations',
+          'export-requests',
+          'invites',
+          'integrations',
+          'stripe-checkout-config',
+          'legacy: jobs cleanup',
+          'legacy: knex instrumentation',
+          'legacy: routing services',
+          'link-redirection',
+          'custom-theme-settings',
+          'legacy: themes',
+          'legacy: frontend',
+          'legacy: express apps',
+          'legacy: dynamic routing',
+          'legacy: app service',
+          'legacy: jobs service',
+          'legacy: services first',
+          'member-attribution',
+          'audience-feedback',
+          'newsletters',
+          'mentions',
+          'stats',
+          'legacy: services',
+          'staff',
+          'tiers',
+          'tags-public',
+          'posts-public',
+          'indexnow-ping',
+          'upgrades',
+          'slack-ping',
+          'comments',
+          'media-inliner',
+          'donations',
+          'recommendations',
+          'explore-ping',
+          'users',
+          'editor-presence',
+          'segments',
+          'member-welcome-emails',
         ],
-        'services.modules': [],
         'services.after': [],
         'jobs.before': [],
         'jobs.after': ['after jobs'],
@@ -64,8 +98,10 @@ describe("Ghost's start sequence", function () {
   });
 
   it('skips the frontend entries when Ghost boots without a frontend', function () {
-    const conditional = (application.steps.services?.before ?? []).filter((slot) => slot.when);
-    assert.deepEqual(names(conditional as never), ['frontend', 'app service']);
+    const conditional = (application.steps.services?.modules ?? []).filter(
+      (entry) => entry.when && 'run' in entry,
+    );
+    assert.deepEqual(names(conditional as never), ['legacy: frontend', 'legacy: app service']);
     for (const slot of conditional) {
       assert.equal(slot.when?.({ options: { frontend: false } } as never), false);
       assert.equal(slot.when?.({ options: { frontend: true } } as never), true);
@@ -82,7 +118,80 @@ describe("Ghost's start sequence", function () {
     ];
     assert.deepEqual(sorted(wrapped.map((match) => match[1]!)), sorted(exported));
 
-    const listed = [...read('bootstrap/app.ts').matchAll(/legacySteps\.(\w+)/g)];
+    const listed = [
+      ...(read('bootstrap/app.ts') + read('bootstrap/services.ts')).matchAll(/legacySteps\.(\w+)/g),
+    ];
     assert.deepEqual(sorted(listed.map((match) => match[1]!)), sorted(Object.keys(legacySteps)));
+  });
+
+  describe('the services list', function () {
+    const list = application.steps.services?.modules ?? [];
+    const order = list.map((entry) => entry.name);
+    const source = read('bootstrap/services.ts');
+    const legacy = Object.keys(
+      (
+        yaml.load(read('core/server/services/legacy-service-inventory.yaml')) as {
+          services: object;
+        }
+      ).services,
+    );
+
+    // Each pair is an order boot.js or its tests pinned before services started from a list.
+    for (const [first, second, why] of [
+      ['legacy: members metafields', 'stripe-checkout-config', 'checkout config reads metafields'],
+      ['legacy: members metafields', 'tiers', 'tiers reads metafields'],
+      ['custom-theme-settings', 'legacy: themes', 'no theme is activated before its settings'],
+      ['link-redirection', 'legacy: express apps', 'the site app reads its middleware'],
+      ['legacy: themes', 'legacy: express apps', 'the site app reads the offers middleware'],
+      ['legacy: express apps', 'legacy: dynamic routing', 'routers mount on the site app'],
+      ['legacy: dynamic routing', 'legacy: app service', 'apps load after routing'],
+      ['legacy: jobs service', 'legacy: services first', 'services take the job runner'],
+      ['legacy: jobs service', 'mentions', 'mentions reads the job runner'],
+      ['legacy: services first', 'tiers', 'gifts is built over the tiers root first'],
+      ['member-attribution', 'staff', 'staff captures the attribution service'],
+      ['member-attribution', 'legacy: services', 'email captures the attribution service'],
+      ['audience-feedback', 'legacy: services', 'email captures the feedback link service'],
+      ['newsletters', 'legacy: services', 'members captures newsletters'],
+      ['mentions', 'legacy: services', 'webhooks listen after mentions'],
+      ['mentions', 'recommendations', 'recommendations reads mentions'],
+      ['stats', 'explore-ping', 'explore captures the stats aggregate'],
+      ['link-redirection', 'legacy: services', 'link tracking reads link redirection'],
+      ['legacy: services', 'member-welcome-emails', 'welcome emails capture link tracking'],
+      ['legacy: services first', 'member-welcome-emails', 'welcome emails capture email address'],
+    ] as const) {
+      it(`starts ${first} before ${second}: ${why}`, function () {
+        assert.ok(order.includes(first) && order.includes(second));
+        assert.ok(order.indexOf(first) < order.indexOf(second));
+      });
+    }
+
+    it('names each entry once', function () {
+      assert.deepEqual(sorted(new Set(order)), sorted(order));
+    });
+
+    it('names only standard service roots, and marks every legacy step as one', function () {
+      for (const entry of list) {
+        if ('run' in entry) {
+          assert.match(entry.name, /^legacy: /);
+          continue;
+        }
+        if (entry.name === 'better-auth') {
+          // The one root outside server/services.
+          continue;
+        }
+        assert.ok(
+          source.includes(`require('../core/server/services/${entry.name}').default`),
+          `${entry.name} should load the root its name says`,
+        );
+        assert.ok(
+          existsSync(path.join(ghost, 'core/server/services', entry.name, 'index.ts')),
+          `${entry.name} has no index.ts root`,
+        );
+        assert.ok(
+          !legacy.includes(entry.name),
+          `${entry.name} is in the legacy service inventory; a legacy service cannot be started from the list`,
+        );
+      }
+    });
   });
 });

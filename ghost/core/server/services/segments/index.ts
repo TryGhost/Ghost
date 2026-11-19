@@ -11,7 +11,7 @@ import { SettingsSegmentRepository } from './settings-repository';
 const SETTING_KEY = 'shared_views';
 
 // Needs the database connection and the settings cache, which boot has ready before
-// initServices.
+// the services step.
 export default defineService('Segments', () => {
   const db: typeof import('../../data/db') = require('../../data/db');
   const settingsCache: typeof import('../../../shared/settings-cache') = require('../../../shared/settings-cache');

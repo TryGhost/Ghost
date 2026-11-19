@@ -3,7 +3,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { setImmediate } from 'node:timers/promises';
 import yaml from 'js-yaml';
-import { loadBootFunction } from './harness';
+import { loadBootFunction, loadBootSequence } from './harness';
 
 const core = path.resolve(__dirname, '../../../core');
 const servicesRoot = path.join(core, 'server/services');
@@ -64,20 +64,32 @@ function anything(overrides: Record<string, unknown> = {}): unknown {
   return stub;
 }
 
+// The names in the services list (bootstrap/services.ts). A standard service is one entry there.
+const listed = loadBootSequence({}, { fallback: () => anything() }).names;
+
 function start(service: string, init: () => Promise<void>) {
+  const modules = { [`./server/services/${service}`]: anything({ default: anything({ init }) }) };
+  if (listed.includes(service)) {
+    // The real list entry, run by the real start sequence.
+    return loadBootSequence(modules, {
+      fallback: () => anything(),
+      from: service,
+      to: service,
+    }).start();
+  }
+  // A service the list does not name yet has to be started by a phase of boot.js.
   const phase = phaseOf(service);
-  assert.ok(phase, `No boot phase binds ${service} and calls init() on the binding`);
-  const run = loadBootFunction(
+  assert.ok(
     phase,
-    { [`./server/services/${service}`]: anything({ default: anything({ init }) }) },
-    { fallback: () => anything() },
+    `${service} is not in the services list, and no boot phase binds it and calls init() on the binding`,
   );
+  const run = loadBootFunction(phase, modules, { fallback: () => anything() });
   return run({ config: anything(), bootLogger: anything(), jobsService: anything() });
 }
 
 describe('Boot waits for every standard service', function () {
   for (const service of standard) {
-    it(`waits for ${service} initialization before its phase finishes`, async function () {
+    it(`waits for ${service} initialization before its step finishes`, async function () {
       const ready = Promise.withResolvers<void>();
       let calls = 0;
       let finished = false;
@@ -101,7 +113,7 @@ describe('Boot waits for every standard service', function () {
       assert.equal(finished, true);
     });
 
-    it(`fails its phase with the same error when ${service} initialization fails`, async function () {
+    it(`fails its step with the same error when ${service} initialization fails`, async function () {
       const failure = new Error(`${service} initialization failed`);
 
       await assert.rejects(

@@ -285,8 +285,8 @@ function createApiInstance(config) {
     giftService,
     // Resolved here rather than passed as the module: the members service needs
     // the values service itself, and reading it at construction is what ties the
-    // two together in boot order. Metafields is initialised in initLegacyCore, the
-    // members API is built in initServices, so this is always the live instance.
+    // two together in boot order. Metafields is initialised before the legacy services in
+    // the services list, where the members API is built, so this is always the live instance.
     metafieldValues: metafieldsService.values,
     // And the bindings, through which a member's own answers to what a tier asks are saved, as
     // a checkout saves them.
@@ -295,7 +295,7 @@ function createApiInstance(config) {
     // here, like the tiers API above.
     tierRequirements: () => tiers.service.requirements,
     // Read here for the same reason: the Stripe Checkout config is also initialised in
-    // initLegacyCore, so its guarded service is ready when the members API is built.
+    // the services step, so its guarded service is ready when the members API is built.
     checkouts: stripeCheckoutConfig.service.checkouts,
     tracking: stripeTracking({ tracer, meter }),
     membersTracking: membersTracking({ tracer }),

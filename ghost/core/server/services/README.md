@@ -82,28 +82,25 @@ Complete the steps printed by the command:
 
 1. Implement the capability and wire only its required dependencies in the root.
    Preserve live settings reads and explain any deferred dependency lookups.
-2. In `ghost/core/boot.js`, bind the root and await its `init()`, as the roots
-   around it do:
+2. In [`ghost/bootstrap/services.ts`](../../../bootstrap/services.ts), add the
+   root to the services list, as the entries around it are:
 
-   ```js
-   const deliveryReceipts = require('./server/services/delivery-receipts').default;
-   await deliveryReceipts.init();
+   ```ts
+   { name: 'delivery-receipts', load: () => require('../core/server/services/delivery-receipts').default },
    ```
 
-   Most roots belong in `initServices`. `initLegacyCore` and
-   `initServicesForFrontend` run earlier, for roots that later phases or the frontend read. Place the call
-   after its dependencies are ready and before its consumers run, on its own or
-   inside the phase's awaited `Promise.all`. Document those requirements above
-   `defineService`. Consumers read `.service` after initialization. Keep this
-   form: `pnpm lint:oxlint` and `gx services verify` find the call through the
-   binding, not through an inline `require(...).default.init()`.
+   The start sequence awaits `init()` on each entry, one after another, and
+   calls `stop()` on each in reverse when Ghost stops. Place the entry after
+   what the root reads while it starts and before what reads it. Document those
+   requirements above `defineService`. Consumers read `.service` after
+   initialization. Keep this form: `pnpm lint:oxlint` and `gx services verify`
+   find the root through it. Nothing is added to `ghost/core/boot.js`.
 
 3. The [standard services boot test](../../../test/unit/boot/standard-services.test.ts)
-   already checks that boot waits for the root's `init()` and that its failure
-   fails boot. Add a test in `ghost/test/unit/boot/` only where order matters,
-   as for Mentions before Recommendations. The `initLegacyCore` and
-   `initServicesForFrontend` tests reject a root they do not list, so a root in
-   those phases needs a stub there.
+   already checks that the start sequence waits for the root's `init()` and that
+   its failure fails boot. Where order matters, as for Mentions before
+   Recommendations, add the pair to the order table in the
+   [start sequence test](../../../test/unit/bootstrap/steps.test.ts).
 4. Await required startup work before returning the instance. If the service
    owns listeners, timers or work to drain, acquire and release them in
    [`start` and `stop` hooks](#starting-and-stopping).
@@ -535,21 +532,29 @@ the comment and expect it to be questioned.
 Ghost's boot sequence owns service construction. A new service root must
 default-export the
 [kernel's `defineService` helper](../../../../kernel/README.md#service-initialization)
-and have its `init()` awaited from `ghost/core/boot.js` in the appropriate boot
-phase. Existing legacy roots keep their shape until migrated. Do not make the
+and be named in the services list in
+[`ghost/bootstrap/services.ts`](../../../bootstrap/services.ts), where the start
+sequence awaits its `init()`. Existing legacy roots keep their shape until migrated. Do not make the
 first request responsible for constructing the service.
 
-The Oxlint rule `ghost/boot-awaits-service-init` checks this in `boot.js`. Every
-service that is not legacy must be bound there and have its `init()` awaited as
-a statement of a boot phase that `boot.js` exports as a step, on its own or
-inside an awaited `Promise.all`. The application definition in
-[`ghost/bootstrap/app.ts`](../../../bootstrap/app.ts) lists each exported step once, and
-the framework awaits it. A new service directory fails lint until boot awaits it.
+The Oxlint rule `ghost/boot-awaits-service-init` checks this. Every service that
+is not legacy must be an entry in the services list. A root the list cannot hold
+yet, because it starts with the shared modules, is instead bound in
+`ghost/core/boot.js` and has its `init()` awaited as a statement of a boot phase
+that `boot.js` exports as a step. A root started in both places is rejected. A
+new service directory fails lint until one of them starts it.
 The rule reads source only. The
 [standard services boot test](../../../test/unit/boot/standard-services.test.ts)
-runs each phase: for every standard service it holds `init()` pending and checks
-the phase waits, then checks a failed `init()` fails the phase. Neither can tell
-whether the order between services is right; that needs its own boot test.
+runs each list entry through the start sequence: for every standard service it
+holds `init()` pending and checks the sequence waits, then checks a failed
+`init()` fails it. Neither can tell whether the order between services is right;
+the [start sequence test](../../../test/unit/bootstrap/steps.test.ts) pins the
+orders that matter.
+
+The list is one ordered sequence. Entries named `legacy: …` are initializers
+that still sit between services because each needs something boot makes or has
+no `init()` the framework can call; they are functions of `boot.js` and leave
+the list as their services become standard.
 
 With `defineService`, the service author supplies a `create` callback that constructs and returns a
 ready instance. Boot awaits the root's `init()`; consumers then read `.service`.
@@ -578,10 +583,9 @@ Await any work callers rely on before returning, such as loading data
 (`check()` in signing keys).
 
 Initialize a root after everything its `create` callback reads. Say what it
-needs in a comment above `defineService` and keep that order in `boot.js`. For
-example, recommendations reads the Mentions root during `create`, so boot
-initializes Mentions first. Roots that don't depend on each other can start
-together.
+needs in a comment above `defineService` and keep that order in the services
+list. For example, recommendations reads the Mentions root during `create`, so
+Mentions is listed first. Entries start one after another.
 
 ### Starting and stopping
 

@@ -63,42 +63,36 @@ Delete the generated example comments once the real dependencies are wired.
 Consumers read the instance through the root's `.service`. If a check rejects an
 import, fix the wiring; do not widen the allowlist to make lint pass.
 
-## 4. Initialize in boot
+## 4. Add it to the services list
 
-The generator leaves [boot.js](../../../ghost/core/boot.js) to you.
+The generator leaves the
+[services list](../../../ghost/bootstrap/services.ts) to you. Nothing is added
+to `boot.js`.
 
-- **Phase.** Most roots belong in `initServices`. `initLegacyCore` and
-  `initServicesForFrontend` run earlier, for roots that the frontend or later
-  phases read. Do not initialize on the first request.
-- **Order.** Initialize after everything `create` reads and before anything
-  reads `.service`. In `initServices`, a root that others read during their own
-  `create` is awaited on its own line before the `Promise.all`; independent
-  roots go inside it; a root that reads one of those goes after it.
-- **Form.** Bind the root, then call `init()` on the binding, as the lines
-  around it do. Await it even when `create` is synchronous:
+- **Order.** The start sequence awaits `init()` on each entry, one after
+  another. Place the entry after everything `create` reads and before anything
+  that reads `.service` while it starts. Do not initialize on the first request.
+- **Form.** One line, as the entries around it are:
 
-  ```js
-  const deliveryReceipts = require('./server/services/delivery-receipts').default;
-  await deliveryReceipts.init();
+  ```ts
+  { name: 'delivery-receipts', load: () => require('../core/server/services/delivery-receipts').default },
   ```
 
-  `pnpm lint:oxlint` and `gx services verify` find the call through that
-  binding. Lint fails until it is there, and neither recognises the inline
-  `await require(...).default.init()`.
+  `pnpm lint:oxlint` and `gx services verify` find the root through that line.
+  Lint fails until it is there.
 
 - **Comments.** Replace the generated comment above `defineService` with what
-  `create` needs ready. Where the order matters, say why beside the call in
-  boot, as the existing comments there do.
+  `create` needs ready. Where the order matters, say why beside the entry, as
+  the existing comments there do.
 - **Boot test.** `ghost/test/unit/boot/standard-services.test.ts` already
-  checks that boot waits for the root's `init()` and that its failure fails
-  boot; do not write that test again. Add a boot test only where order
-  matters. The `initLegacyCore` and `initServicesForFrontend` tests fail on a root
-  they do not list, so add a stub there for a root in those phases.
+  checks that the start sequence waits for the root's `init()` and that its
+  failure fails boot; do not write that test again. Where order matters, add
+  the pair to the order table in `ghost/test/unit/bootstrap/steps.test.ts`.
 - **Resources.** Finish startup work before returning the instance. Acquire
   listeners, timers and work to drain in `start` and release them in `stop`,
   following
   [starting and stopping](../../../ghost/core/server/services/README.md#starting-and-stopping).
-  Register `root.stop()` with `ghostServer.registerCleanupTask` in boot.
+  The framework calls `stop()` when Ghost stops; register nothing in boot.
 
 ## 5. Test and check
 
@@ -118,7 +112,7 @@ Run from the repository root:
 
 ```sh
 pnpm nx run ghost:test:unit test/unit/server/services/<name>/index.test.ts
-pnpm nx run ghost:test:unit test/unit/boot/
+pnpm nx run ghost:test:unit test/unit/boot/ test/unit/bootstrap/
 pnpm --filter ghost exec vitest run --config vitest.config.inventory.ts
 pnpm lint:oxlint
 pnpm lint:boundaries
@@ -126,7 +120,7 @@ pnpm check
 ```
 
 `pnpm lint:oxlint` applies `ghost/service-root-shape` to the root and
-`ghost/boot-awaits-service-init` to `boot.js`.
+`ghost/boot-awaits-service-init` to the services list.
 `pnpm lint:boundaries` checks the implementation's imports. The inventory test
 checks the directory has an `index.ts` root and that extras match the catalogue.
 

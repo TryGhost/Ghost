@@ -122,6 +122,33 @@ describe('application.start', function () {
     assert.deepEqual(calls, ['load limits', 'init limits']);
   });
 
+  it('runs a slot listed between two modules in its place, and stops it in reverse order', async function () {
+    const calls: string[] = [];
+    const application = define({
+      services: {
+        modules: [
+          root(calls, 'members'),
+          slot(calls, 'legacy', { stop: () => void calls.push('stop legacy') }),
+          root(calls, 'tiers'),
+        ],
+      },
+    });
+
+    await application.start({ frontend: true });
+    await application.stop();
+
+    assert.deepEqual(calls, [
+      'load members',
+      'init members',
+      'legacy',
+      'load tiers',
+      'init tiers',
+      'stop tiers',
+      'stop legacy',
+      'stop members',
+    ]);
+  });
+
   it('hands every entry the same run: options, foundation and shared state', async function () {
     const state: State = {};
     const application = define({

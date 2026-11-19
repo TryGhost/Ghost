@@ -151,8 +151,8 @@ and substantial harness changes, return to preparation. The migration commit
 adds new cases only for what cannot be tested before the root exists:
 
 - Boundary regressions for new exact dependency allowances.
-- Boot order, where another root reads this one: boot finishes this root's
-  `init()` before it starts theirs.
+- Boot order, where another root reads this one: this root is listed before
+  theirs, and the pair is in the order table of the start sequence test.
 - Readiness: a consumer's `init()` fails until this root is ready, and a
   consumer loaded before `init()` reads the instance on use.
 
@@ -181,8 +181,8 @@ A migrated service is no longer legacy:
 There is no lint list to update. Deleting the entry applies
 `ghost/service-root-shape` to the root and full boundary enforcement to the
 implementation. It also applies `ghost/boot-awaits-service-init` and the
-standard services boot test: boot must bind the root with `.default` and await
-its `init()`, as
+standard services boot test: the root must be an entry in the services list in
+`ghost/bootstrap/services.ts`, in place of its `init()` call in `boot.js`, as
 [creating a service](../../../ghost/core/server/services/README.md#creating-a-service)
 shows. Never add a legacy entry or defer a service's dependency
 checks: CI rejects both. Do not claim enforcement passed if that policy was

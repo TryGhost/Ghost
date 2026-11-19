@@ -340,7 +340,7 @@ services:
           - test/integration/adapters/route-settings/adapter-manager-wiring.test.ts
       startup:
         summary: >-
-          initLegacyCore calls synchronous init before subsequent core/service setup. Every init
+          the services step calls synchronous init before subsequent core/service setup. Every init
           enumerates configured types/features, deduplicates type/class/serialized-options
           combinations and loads classes to call optional synchronous static validate. It
           neither constructs instances nor checks required instance methods; module loading
@@ -609,7 +609,7 @@ services:
           - test/integration/services/email-analytics/automation-email-analytics.test.js
       startup:
         summary: >-
-          Boot loads both compositions during initServices and calls automations init after
+          Boot loads both compositions during the services step and calls automations init after
           dependent service initialization, job-handler registration and awaited jobs.start,
           before conditional post rescheduling. Boot's await of synchronous init cannot establish
           first-poll completion. Both new and legacy pollers are subscribed regardless of the
@@ -2807,7 +2807,7 @@ services:
           - test/unit/server/services/identity-tokens/index.test.ts
       startup:
         summary: >-
-          initShared awaits signing-key initialization before initServices awaits identity init
+          initShared awaits signing-key initialization before the services step awaits identity init
           with other prerequisites. ActivityPub background init checks instance and logs then
           returns if it is absent; the identities endpoint dereferences it without that guard.
           Importing this root alone does not initialize signing keys or issue a token.
@@ -4623,7 +4623,7 @@ services:
           - test/e2e-api/members/webhooks.test.js
       startup:
         summary: >-
-          Boot calls init during initLegacyCore after database/settings/signing-key/i18n setup and
+          Boot calls init during the services step after database/settings/signing-key/i18n setup and
           before members/tiers composition. Initialization has no feature gate, database-ready
           validation or rollback. API callers assume exported instances exist. Definition reads
           remain available when direct definition writes are blocked by Labs or a namespace's
@@ -5367,7 +5367,7 @@ services:
           There is no init or readiness gate: importing consumers performs composition, and calls
           can immediately fetch or write. Mentions requires WebmentionMetadata and the oEmbed
           service inside its defineService factory; recommendations requires oembed during init. Boot validates adapters in initFoundationChecks before
-          initServices but has no explicit oembed startup/drain registration. Missing provider
+          the services step but has no explicit oembed startup/drain registration. Missing provider
           config subtrees or adapter construction errors can reject the importing boot path.
           The Admin suite boots Ghost and exercises requests. Root units pin composition while
           the module is required, import failure leaving no cached root, and repeated imports
@@ -5906,7 +5906,7 @@ services:
           - test/unit/server/auth/reset-authentication.test.ts
       startup:
         summary: >-
-          Boot validates adapters before importing this eager root in initServices. It later
+          Boot validates adapters before importing this eager root in the services step. It later
           calls the shared adapter's run without awaiting a possible promise, initializes
           dependent services, registers job handlers and awaits jobs.start. After synchronous
           automations init returns, it awaits post rescheduleAll only when rescheduleOnBoot
@@ -7440,7 +7440,7 @@ services:
       consumers:
         summary: >-
           The members app retains a bound webhook-controller method when constructed before
-          initServices. Members API/import dependencies retain stripe.api; members startup
+          the services step. Members API/import dependencies retain stripe.api; members startup
           invokes migrations. Gifts resolves the API through a getter. Checkout previews read
           the current Stripe API configured flag through a callback, then create a session
           through members payments. Settings BREAD awaits connect before persisting changed
@@ -7791,7 +7791,7 @@ services:
       startup:
         summary: >-
           Source-checked: boot initializes custom-theme-settings immediately before
-          awaiting themes.init in initServicesForFrontend; that group currently runs
+          awaiting themes.init in the services step; that group currently runs
           even when frontend routing is disabled. Init loads only the active theme.
           Background startup calls loadInactiveThemes without awaiting its promise,
           before its test-environment guard; a later complete scan replaces the list.
@@ -9790,7 +9790,7 @@ followUps:
   newsletters:
     lifecycle:
       - >-
-        Boot now owns construction, but the initServices harness does not pin this root's
+        Boot now owns construction, but the the services step harness does not pin this root's
         ordering. Still protect the exact public surface and retained Admin/member consumers
         through stop/reboot and dependency failure, and define ownership/drain of the mail
         transport.

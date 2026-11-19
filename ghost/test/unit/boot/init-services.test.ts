@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
-import { loadBootFunction } from './harness';
+import { loadBootSequence } from './harness';
 
 function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const stripe = sinon.stub().resolves();
@@ -44,15 +44,10 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     service: {},
   };
   const scheduler = { run() {}, rescheduleOnBoot };
-  // Permissive: initServices has many dependencies, and only those listed here matter to these
+  // Permissive: the services step has many dependencies, and only those listed here matter to these
   // tests. Every other dependency gets a generic service.
-  // What was one phase is now three steps, run in this order by the application.
-  const initServices = loadBootFunction(
-    `(async (args) => {
-      const { schedulerAdapter } = await initServices(args);
-      await initJobs(args);
-      await initAfterJobs({ schedulerAdapter });
-    })`,
+  // The services list from the first legacy services onwards, then the jobs step.
+  const sequence = loadBootSequence(
     {
       'node:assert/strict': assert,
       './server/services/adapter-manager': { default: { getAdapter: () => scheduler } },
@@ -93,11 +88,16 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './server/services/signing-keys': { default: { service: signingKeys } },
       './server/services/automations': { automationsService: { init: automations } },
     },
-    { fallback: () => ({ ...genericService, default: genericService }) },
+    {
+      fallback: () => ({ ...genericService, default: genericService }),
+      from: 'legacy: services first',
+      jobs: true,
+    },
   );
   return {
     initServices: (ghostServer?: { registerCleanupTask: sinon.SinonStub }): Promise<void> =>
-      initServices({ config: {}, prometheusClient: null, jobsService, ghostServer }),
+      sequence.start({ config: {}, prometheusClient: null, jobsService, ghostServer }),
+    stop: sequence.stop,
     stripe,
     emailAddress,
     gifts,
@@ -257,22 +257,18 @@ for (const [label, init, stop] of [
   ['IndexNow', 'indexnow', 'indexnowStop'],
   ['Slack ping', 'slack', 'slackStop'],
 ] as const) {
-  it(`registers ${label} stop as a server cleanup task once it has initialized`, async function () {
+  it(`stops ${label} when the application stops, once it has initialized`, async function () {
     const boot = createServicesHarness();
-    const registerCleanupTask = sinon.stub();
 
-    await boot.initServices({ registerCleanupTask });
-
-    const registrations = registerCleanupTask.getCalls().filter((call) => call.args[1] === label);
-    assert.equal(registrations.length, 1);
-    assert.ok(boot[init].firstCall.calledBefore(registrations[0]));
+    await boot.initServices();
+    sinon.assert.calledOnce(boot[init]);
     sinon.assert.notCalled(boot[stop]);
 
-    await registrations[0].args[0]();
+    await boot.stop();
     sinon.assert.calledOnceWithExactly(boot[stop]);
   });
 
-  it(`does not stop ${label} when boot has no server to register with`, async function () {
+  it(`does not stop ${label} while the application is running`, async function () {
     const boot = createServicesHarness();
 
     await boot.initServices();

@@ -37,15 +37,18 @@ type LegacyBoot = Record<
   | 'initQueryTracing'
   | 'initFoundationChecks'
   | 'initShared'
-  | 'initLegacyCore'
+  | 'initMembersMetafields'
+  | 'initJobsCleanup'
   | 'initKnexInstrumentation'
-  | 'initServicesForFrontend'
+  | 'initRoutingServices'
+  | 'initThemes'
   | 'initFrontend'
   | 'initExpressApps'
   | 'initDynamicRouting'
   | 'initAppService'
   | 'initJobsService'
-  | 'initServices'
+  | 'initLegacyServicesFirst'
+  | 'initLegacyServices'
   | 'initJobs'
   | 'initAfterJobs'
   | 'initReady'
@@ -106,14 +109,17 @@ export const legacySteps = {
 
   shared: ({ foundation }: BootRun) => boot().initShared({ config: foundation.config }),
 
-  legacyCore: ({ foundation, state }: BootRun) =>
-    boot().initLegacyCore({ ghostServer: state.ghostServer, config: foundation.config }),
+  membersMetafields: () => boot().initMembersMetafields(),
+
+  jobsCleanup: ({ foundation, state }: BootRun) =>
+    boot().initJobsCleanup({ ghostServer: state.ghostServer, config: foundation.config }),
 
   knexInstrumentation: ({ state }: BootRun) =>
     boot().initKnexInstrumentation({ prometheusClient: state.prometheusClient }),
 
-  servicesForFrontend: ({ state }: BootRun) =>
-    boot().initServicesForFrontend({ bootLogger: state.bootLogger }),
+  routingServices: () => boot().initRoutingServices(),
+
+  themes: ({ state }: BootRun) => boot().initThemes({ bootLogger: state.bootLogger }),
 
   frontend: () => boot().initFrontend(),
 
@@ -134,15 +140,20 @@ export const legacySteps = {
     state.jobsService = boot().initJobsService({ config: foundation.config });
   },
 
-  services: async ({ foundation, state }: BootRun) => {
-    const { schedulerAdapter } = await boot().initServices({
+  legacyServicesFirst: async ({ state }: BootRun) => {
+    const { schedulerAdapter } = await boot().initLegacyServicesFirst({
+      ghostServer: state.ghostServer,
+    });
+    state.schedulerAdapter = schedulerAdapter;
+  },
+
+  legacyServices: ({ foundation, state }: BootRun) =>
+    boot().initLegacyServices({
       ghostServer: state.ghostServer,
       config: foundation.config,
       prometheusClient: state.prometheusClient,
       jobsService: state.jobsService,
-    });
-    state.schedulerAdapter = schedulerAdapter;
-  },
+    }),
 
   jobs: ({ state }: BootRun) => boot().initJobs({ jobsService: state.jobsService }),
 

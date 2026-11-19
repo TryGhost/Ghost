@@ -175,61 +175,23 @@ async function initShared({ config }) {
 }
 
 /**
- * Services that later phases or the frontend read, and that have no other home yet.
- * @param {object} options
- * @param {object} options.ghostServer
- * @param {object} options.config
+ * Member metafields: knex-backed, wired once the DB is ready. A legacy root with
+ * a synchronous init, so the services list cannot start it yet.
  */
-async function initLegacyCore({ ghostServer, config }) {
-  debug('Begin: initLegacyCore');
-
-  // Reads admin_session_secret, so it follows settings. Under legacy nothing loads
-  // Better Auth itself.
-  if (require('./server/auth').isBetterAuth) {
-    debug('Begin: Better Auth');
-    await require('./server/auth').betterAuth.init();
-    debug('End: Better Auth');
-  }
-
-  // Gift links service: wires the (knex-backed) repository once the DB is ready.
-  debug('Begin: Gift Links Service');
-  const giftLinksService = require('./server/services/gift-links').default;
-  await giftLinksService.init();
-  debug('End: Gift Links Service');
-
-  // Member metafields service: knex-backed, wired once the DB is ready.
+function initMembersMetafields() {
   debug('Begin: Member Metafields Service');
   const memberMetafieldsService = require('./server/services/members-metafields');
   memberMetafieldsService.init();
   debug('End: Member Metafields Service');
+}
 
-  // App installations service: knex-backed, wired once the DB is ready.
-  debug('Begin: App Installations Service');
-  const appInstallationsService = require('./server/services/app-installations').default;
-  await appInstallationsService.init();
-  debug('End: App Installations Service');
-
-  debug('Begin: Export Requests Service');
-  const exportRequests = require('./server/services/export-requests').default;
-  await exportRequests.init();
-  debug('End: Export Requests Service');
-
-  debug('Begin: Invites Service');
-  const invites = require('./server/services/invites').default;
-  await invites.init();
-  debug('End: Invites Service');
-
-  debug('Begin: Integrations Service');
-  const integrations = require('./server/services/integrations').default;
-  await integrations.init();
-  debug('End: Integrations Service');
-
-  // Stripe Checkout config service: knex-backed, wired once the DB is ready.
-  debug('Begin: Stripe Checkout Config Service');
-  const stripeCheckoutConfig = require('./server/services/stripe-checkout-config').default;
-  await stripeCheckoutConfig.init();
-  debug('End: Stripe Checkout Config Service');
-
+/**
+ * Stops the job runner when the server shuts down.
+ * @param {object} options
+ * @param {object} options.ghostServer
+ * @param {object} options.config
+ */
+function initJobsCleanup({ ghostServer, config }) {
   if (ghostServer) {
     // Jobs Service allows parts of Ghost to run in the background
     debug('Begin: Jobs Service');
@@ -240,18 +202,14 @@ async function initLegacyCore({ ghostServer, config }) {
     }, 'Jobs Service (in-memory)');
     debug('End: Jobs Service');
   }
-
-  debug('End: initLegacyCore');
 }
 
 /**
- * These are services required by Ghost's frontend.
- * @param {object} options
- * @param {BootLogger} options.bootLogger
-
+ * The legacy routing services the frontend reads. The services list starts
+ * link redirection and custom theme settings between this and initThemes.
  */
-async function initServicesForFrontend({ bootLogger }) {
-  debug('Begin: initServicesForFrontend');
+async function initRoutingServices() {
+  debug('Begin: initRoutingServices');
 
   debug('Begin: Routing Settings');
   const routeSettings = require('./server/services/route-settings');
@@ -263,16 +221,17 @@ async function initServicesForFrontend({ bootLogger }) {
   await customRedirects.init();
   debug('End: Redirects');
 
-  debug('Begin: Link Redirects');
-  const linkRedirects = require('./server/services/link-redirection').default;
-  await linkRedirects.init();
-  debug('End: Link Redirects');
+  debug('End: initRoutingServices');
+}
 
+/**
+ * Themes and offers. Custom theme settings must be initialized before any theme
+ * activation occurs: the services list starts it before this.
+ * @param {object} options
+ * @param {BootLogger} options.bootLogger
+ */
+async function initThemes({ bootLogger }) {
   debug('Begin: Themes');
-  // Custom theme settings must be initialized before any theme activation occurs
-  const customThemeSettingsService = require('./server/services/custom-theme-settings').default;
-  await customThemeSettingsService.init();
-
   const themeService = require('./server/services/themes');
   const themeServiceStart = Date.now();
   await themeService.init();
@@ -283,8 +242,6 @@ async function initServicesForFrontend({ bootLogger }) {
   const offers = require('./server/services/offers');
   await offers.init();
   debug('End: Offers');
-
-  debug('End: initServicesForFrontend');
 }
 
 /**
@@ -392,61 +349,26 @@ async function initAppService() {
 }
 
 /**
- * Services are components that make up part of Ghost and need initializing on boot
- * These services should all be part of core, frontend services should be loaded with the frontend
- * We are working towards this being a service loader, with the ability to make certain services optional
+ * The legacy services the standard services read while they start: the email
+ * address policy, the scheduler, Stripe and gifts. Each takes something boot
+ * makes, or has no init() the services list can call.
+ * @param {object} options
+ * @param {object} options.ghostServer
+ * @returns {Promise<{schedulerAdapter: object}>}
  */
-async function initServices({ ghostServer, config, prometheusClient, jobsService }) {
-  debug('Begin: initServices');
+async function initLegacyServicesFirst({ ghostServer }) {
+  debug('Begin: initLegacyServicesFirst');
 
-  debug('Begin: Services');
-  const identityTokens = require('./server/services/identity-tokens');
   const stripe = require('./server/services/stripe');
-  const members = require('./server/services/members');
-  const tiers = require('./server/services/tiers').default;
-  const indexnow = require('./server/services/indexnow-ping').default;
-  const upgrades = require('./server/services/upgrades').default;
-  const slack = require('./server/services/slack-ping').default;
-  const webhooks = require('./server/services/webhooks');
   // Built when it is loaded, from the internal keys that are ready by now.
   require('./server/services/post-scheduling');
-  const comments = require('./server/services/comments').default;
-  const staffService = require('./server/services/staff').default;
-  const memberAttribution = require('./server/services/member-attribution').default;
-  const membersEvents = require('./server/services/members-events');
-  const linkTracking = require('./server/services/link-tracking');
-  const audienceFeedback = require('./server/services/audience-feedback').default;
-  const emailSuppressionList = require('./server/services/email-suppression-list');
-  const emailService = require('./server/services/email-service');
-  const emailAnalytics = require('./server/services/email-analytics');
-  const mentionsService = require('./server/services/mentions').default;
-  const tagsPublic = require('./server/services/tags-public').default;
-  const postsPublic = require('./server/services/posts-public').default;
-  const mediaInliner = require('./server/services/media-inliner').default;
-  const contentImport = require('./server/services/content-import');
-  const donationService = require('./server/services/donations').default;
   const giftService = require('./server/services/gifts');
-  const machinePaymentsService = require('./server/services/machine-payments');
-  const recommendationsService = require('./server/services/recommendations').default;
   const emailAddressService = require('./server/services/email-address');
-  const newsletters = require('./server/services/newsletters').default;
-  const statsService = require('./server/services/stats').default;
-  const explorePingService = require('./server/services/explore-ping').default;
-  const users = require('./server/services/users').default;
-  const memberWelcomeEmails = require('./server/services/member-welcome-emails').default;
-  const editorPresence = require('./server/services/editor-presence').default;
-  const segments = require('./server/services/segments').default;
-  const domainEvents = require('@tryghost/domain-events');
-  const automationsApi = require('./server/services/automations/automations-api');
   const adapterManager = require('./server/services/adapter-manager').default;
   const { withErrorCapture } = require('./server/adapters/scheduling/error-capture');
 
   const assert = require('node:assert/strict');
-  const metrics = require('@tryghost/metrics');
-  const db = require('./server/data/db');
-  const models = require('./server/models');
   const urlUtils = require('./shared/url-utils').default;
-  const settingsCache = require('./shared/settings-cache');
   const internalKeys = require('./server/services/internal-keys').default.service;
   const { checkouts } = require('./server/services/stripe-checkout-config').default.service;
 
@@ -462,35 +384,51 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     internalKeys,
     checkouts,
   });
-  const giftDeliveryService = giftService.deliveryService;
-  assert(giftDeliveryService, 'Gift delivery service should be initialized');
+  assert(giftService.deliveryService, 'Gift delivery service should be initialized');
   if (ghostServer) {
     ghostServer.registerCleanupTask(async () => {
       await stripe.shutdown();
     }, 'Stripe');
   }
 
-  await memberAttribution.init();
-  // Email captures Audience Feedback's ready link service during initialization.
-  await audienceFeedback.init();
-  // Members captures the ready Newsletters instance during initialization.
-  await newsletters.init();
-  // Recommendations reads the ready Mentions instance during initialization.
-  await mentionsService.init();
-  // Explore captures the ready Stats aggregate during initialization.
-  await statsService.init();
+  debug('End: initLegacyServicesFirst');
+
+  // The same adapter instance is registered with automations after the job runner starts.
+  return { schedulerAdapter };
+}
+
+/**
+ * The legacy services that start together. The services list starts member
+ * attribution, audience feedback, newsletters and mentions before this, and
+ * every other standard service after it.
+ */
+async function initLegacyServices({ ghostServer, config, prometheusClient, jobsService }) {
+  debug('Begin: initLegacyServices');
+
+  const identityTokens = require('./server/services/identity-tokens');
+  const members = require('./server/services/members');
+  const webhooks = require('./server/services/webhooks');
+  const membersEvents = require('./server/services/members-events');
+  const linkTracking = require('./server/services/link-tracking');
+  const emailSuppressionList = require('./server/services/email-suppression-list');
+  const emailService = require('./server/services/email-service');
+  const emailAnalytics = require('./server/services/email-analytics');
+  const contentImport = require('./server/services/content-import');
+  const giftService = require('./server/services/gifts');
+  const machinePaymentsService = require('./server/services/machine-payments');
+  const domainEvents = require('@tryghost/domain-events');
+  const automationsApi = require('./server/services/automations/automations-api');
+
+  const metrics = require('@tryghost/metrics');
+  const db = require('./server/data/db');
+  const models = require('./server/models');
+  const settingsCache = require('./shared/settings-cache');
+  const giftDeliveryService = giftService.deliveryService;
 
   await Promise.all([
     identityTokens.init(),
-    staffService.init(),
     members.init(),
-    tiers.init(),
-    tagsPublic.init(),
-    postsPublic.init(),
     membersEvents.init(),
-    indexnow.init(),
-    upgrades.init(),
-    slack.init(),
     emailService.init({ ghostServer, jobsService }),
     emailAnalytics.init({
       automationsApi,
@@ -506,34 +444,13 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
       settingsCache,
     }),
     webhooks.listen(),
-    comments.init(),
     linkTracking.init(),
     emailSuppressionList.init(),
-    mediaInliner.init(),
     contentImport.init(),
-    donationService.init(),
-    recommendationsService.init(),
-    explorePingService.init(),
-    users.init(),
-    editorPresence.init(),
     machinePaymentsService.init(),
-    segments.init(),
   ]);
-  if (ghostServer) {
-    // Each releases what its start acquired; the next boot in this process starts it again.
-    ghostServer.registerCleanupTask(() => indexnow.stop(), 'IndexNow');
-    ghostServer.registerCleanupTask(() => slack.stop(), 'Slack ping');
-  }
-  // Member welcome emails captures the ready Email address and Link tracking instances during
-  // initialization, and automation polling sends through it once jobs start.
-  await memberWelcomeEmails.init();
 
-  debug('End: Services');
-
-  debug('End: initServices');
-
-  // The same adapter instance is registered with automations after the job runner starts.
-  return { schedulerAdapter };
+  debug('End: initLegacyServices');
 }
 
 /**
@@ -1010,15 +927,18 @@ Object.assign(module.exports, {
   initQueryTracing,
   initFoundationChecks,
   initShared,
-  initLegacyCore,
+  initMembersMetafields,
+  initJobsCleanup,
   initKnexInstrumentation,
-  initServicesForFrontend,
+  initRoutingServices,
+  initThemes,
   initFrontend,
   initExpressApps,
   initDynamicRouting,
   initAppService,
   initJobsService,
-  initServices,
+  initLegacyServicesFirst,
+  initLegacyServices,
   initJobs,
   initAfterJobs,
   initReady,

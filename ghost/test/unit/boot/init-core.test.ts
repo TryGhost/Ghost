@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
-import { loadBootFunction } from './harness';
+import { loadBootSequence } from './harness';
 
 function createCoreHarness() {
   const settings = {
@@ -13,13 +13,9 @@ function createCoreHarness() {
   const giftLinks = { init: sinon.stub().resolves() };
   const integrations = { init: sinon.stub().resolves() };
   const stripeCheckoutConfig = { init: sinon.stub().resolves() };
-  // What was one phase is now three steps, run in this order by the application.
-  const initCore = loadBootFunction(
-    `(async (args) => {
-      await initFoundationChecks(args);
-      await initShared(args);
-      await initLegacyCore(args);
-    })`,
+  // What was one phase: the foundation checks, the shared modules, then the
+  // services list up to Stripe checkout config.
+  const sequence = loadBootSequence(
     {
       './server/services/adapter-manager': { default: { init() {} } },
       './server/lib/image/image-decoders': { restrictImageDecoders() {} },
@@ -43,9 +39,13 @@ function createCoreHarness() {
       './server/services/integrations': { default: integrations },
       './server/services/stripe-checkout-config': { default: stripeCheckoutConfig },
     },
+    {
+      before: ['initFoundationChecks', 'initShared'],
+      to: 'stripe-checkout-config',
+    },
   );
   return {
-    init: (): Promise<void> => initCore({ config: { get: () => ({}) } }),
+    init: (): Promise<void> => sequence.start({ config: { get: () => ({}) } }),
     settings,
     signingKeys,
     i18n,

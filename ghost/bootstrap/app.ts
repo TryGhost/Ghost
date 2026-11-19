@@ -4,6 +4,7 @@ import { createLogger } from '@tryghost/foundry/logging';
 import { loadNconf } from '../core/shared/config/loader';
 import type { GhostConfig } from '../core/shared/config/validated';
 import { loggingOptions } from './logging-options';
+import { services } from './services';
 import { legacyEventBus } from './transition/legacy-events';
 import { shareLoggerWithLegacy } from './transition/legacy-logging';
 import { legacySteps, type BootOptions, type BootState } from './transition/legacy-steps';
@@ -53,9 +54,10 @@ const application: Application<GhostConfig, BootOptions, BootState> = createAppl
   // of the steps and runs every entry without knowing what it is. An entry
   // names what it runs without loading it.
   //
-  // Every entry is a legacy step today: a function of core/boot.js, reached
-  // through ./transition/legacy-steps.ts. The two `modules` lists are empty
-  // until shared modules and services are started from a list.
+  // Apart from the service roots in ./services.ts, every entry is a legacy
+  // step today: a function of core/boot.js, reached through
+  // ./transition/legacy-steps.ts. The shared list is empty until shared
+  // modules are started from a list.
   steps: {
     foundation: {
       after: [
@@ -78,23 +80,10 @@ const application: Application<GhostConfig, BootOptions, BootState> = createAppl
       modules: [],
       after: [{ name: 'legacy shared', run: legacySteps.shared }],
     },
+    // One ordered list: service roots, with the legacy steps that still sit
+    // between them. See ./services.ts.
     services: {
-      before: [
-        { name: 'legacy core', run: legacySteps.legacyCore },
-        { name: 'knex instrumentation', run: legacySteps.knexInstrumentation },
-        { name: 'services for frontend', run: legacySteps.servicesForFrontend },
-        { name: 'frontend', when: ({ options }) => options.frontend, run: legacySteps.frontend },
-        { name: 'express apps', run: legacySteps.expressApps },
-        { name: 'dynamic routing', run: legacySteps.dynamicRouting },
-        {
-          name: 'app service',
-          when: ({ options }) => options.frontend,
-          run: legacySteps.appService,
-        },
-        { name: 'jobs service', run: legacySteps.jobsService },
-        { name: 'legacy services', run: legacySteps.services },
-      ],
-      modules: [],
+      modules: services,
     },
     jobs: {
       run: legacySteps.jobs,

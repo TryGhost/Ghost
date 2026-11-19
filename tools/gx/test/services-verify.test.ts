@@ -17,6 +17,7 @@ import {
   findNewJavaScript,
   fixturePath,
   mutateBootInit,
+  mutateListedInit,
   serviceTerms,
   specialistProblems,
   verifyService,
@@ -619,6 +620,54 @@ test('changed unit tests run shuffled and alone after the full suite', async (t)
   assert.ok(checks.every((check) => check.status !== 'fail'));
 });
 
+test('the list mutation hands the framework a root it cannot wait for', () => {
+  const list = `export const services = [
+  { name: 'tiers', load: () => require('../core/server/services/tiers').default },
+  { name: 'staff', load: () => require('../core/server/services/staff').default },
+];
+`;
+  const mutated = mutateListedInit(list, 'staff');
+  assert.equal(mutated?.variable, 'staff');
+  assert.match(
+    mutated?.source ?? '',
+    /name: 'staff', load: \(\) => \(\{ init: \(\) => Promise\.race\(\[require\('\.\.\/core\/server\/services\/staff'\)\.default\.init\(\), Array\.from/,
+  );
+  assert.match(mutated?.source ?? '', /name: 'tiers', load: \(\) => require\(/);
+  assert.equal(mutateListedInit(list, 'comments'), undefined);
+});
+
+test('the boot check mutates the services list for a listed service and restores it', async (t) => {
+  const f = await fixture(t);
+  const list = `export const services = [
+  { name: 'staff', load: () => require('../core/server/services/staff').default },
+];
+`;
+  await f.write('ghost/bootstrap/services.ts', list);
+  f.commit('list');
+  let during = '';
+  const runner: RunCommand = (command, args, options) => {
+    if (command !== 'git' && args[1] !== 'depcruise' && args.includes('test/unit/boot')) {
+      during = execFileSync('cat', ['ghost/bootstrap/services.ts'], {
+        cwd: f.root,
+        encoding: 'utf8',
+      });
+      return { status: 1, output: '' };
+    }
+    return command === 'git' || args[1] === 'depcruise'
+      ? f.run(command, args, options)
+      : { status: 0, output: '' };
+  };
+  const check = f.verify('staff', false, runner).at(-1);
+  assert.equal(check?.name, 'boot-waits-for-init');
+  assert.equal(check?.status, 'pass');
+  assert.match(
+    during,
+    /Promise\.race\(\[require\('\.\.\/core\/server\/services\/staff'\)\.default\.init\(\)/,
+  );
+  assert.equal(await readFile(join(f.root, 'ghost/bootstrap/services.ts'), 'utf8'), list);
+  assert.equal(await readFile(join(f.root, 'ghost/core/boot.js'), 'utf8'), boot);
+});
+
 test('the boot check fails when tests survive the mutation and restores boot.js', async (t) => {
   const f = await fixture(t);
   let during = '';
@@ -654,10 +703,13 @@ test('the boot check says how to write the call when it cannot find one', async 
   const check = f.verify('staff', false).at(-1);
   assert.equal(check?.name, 'boot-waits-for-init');
   assert.equal(check?.status, 'fail');
-  assert.match(check?.details.join('\n') ?? '', /No init call for staff found in boot\.js/);
   assert.match(
     check?.details.join('\n') ?? '',
-    /const example = require\('\.\/server\/services\/staff'\)\.default;\n\s+await example\.init\(\);/,
+    /Nothing starts staff: it is not in ghost\/bootstrap\/services\.ts and boot\.js has no init call for it/,
+  );
+  assert.match(
+    check?.details.join('\n') ?? '',
+    /\{ name: 'staff', load: \(\) => require\('\.\.\/core\/server\/services\/staff'\)\.default \},/,
   );
 });
 

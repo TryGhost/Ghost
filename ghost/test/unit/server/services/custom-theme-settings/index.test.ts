@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
-import { loadBootFunction } from '../../../boot/harness';
+import { loadBootSequence } from '../../../boot/harness';
 
 const models = require('../../../../../core/server/models');
 const cache = require('../../../../../core/shared/custom-theme-settings-cache');
@@ -91,8 +91,8 @@ describe('Custom theme settings root and retained consumers', function () {
 
   function bootFrontend() {
     const offers = { init: sandbox.stub().resolves() };
-    const init = loadBootFunction(
-      'initServicesForFrontend',
+    // The part of the services list that starts what the frontend reads.
+    const sequence = loadBootSequence(
       {
         './server/services/custom-theme-settings': { default: root },
         './server/services/themes': themes,
@@ -104,9 +104,11 @@ describe('Custom theme settings root and retained consumers', function () {
           const service = { init: async () => {} };
           return { ...service, default: service };
         },
+        from: 'legacy: routing services',
+        to: 'legacy: themes',
       },
     );
-    return { init: () => init({ bootLogger: { metric() {} } }), offers };
+    return { init: () => sequence.start({ bootLogger: { metric() {} } }), offers };
   }
 
   it('constructs without querying settings, activating a theme or replacing the shared cache', async function () {

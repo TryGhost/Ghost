@@ -33,7 +33,8 @@ Only boot and the legacy paths named in the `bootstrap-only-from-boot`
 boundary rule import this folder. New code is handed what it needs.
 
 Outside `transition/`, a file here imports nothing from `ghost/core` except
-types, the config loader and the database options. The
+types, the config loader, the database options and the service roots the
+services list names. The
 `bootstrap-reaches-core-only-through-transition` boundary rule checks this.
 
 ## One instance
@@ -57,9 +58,16 @@ for the pattern to copy:
   foundation's event bus, so there is one bus either way.
 - [`legacy-steps.ts`](transition/legacy-steps.ts) holds one wrapper for each
   step of the start sequence that the framework does not own yet. The steps
-  themselves are still functions of [`core/boot.js`](../core/boot.js). Every
-  entry in `app.ts` is one of these today, and the two `modules` lists are
-  empty. A [test](../test/unit/bootstrap/steps.test.ts) checks that each step
-  `boot.js` exports is listed exactly once.
+  themselves are still functions of [`core/boot.js`](../core/boot.js). A
+  [test](../test/unit/bootstrap/steps.test.ts) checks that each step `boot.js`
+  exports is listed exactly once.
+
+## The services list
+
+[`services.ts`](services.ts) is what the services step starts: one ordered
+list. A standard service root is one line, and the framework awaits its
+`init()` and later calls its `stop()`. The entries named `legacy: …` are legacy
+steps that still sit between services; the list says what each waits on. The
+shared list is still empty.
 
 Nothing in `transition/` is automatic: whatever needs it calls it by name.
