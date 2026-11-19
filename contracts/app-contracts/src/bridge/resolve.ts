@@ -1,4 +1,5 @@
-import { findAllowedAdminApiRoute, type AdminApiRouteGroup } from './allowlist.ts';
+import type { AppPermissionKey } from '../scopes.ts';
+import { findAllowedAdminApiRoute, scopeForField, type AdminApiRouteGroup } from './allowlist.ts';
 import { refusedContent } from './content.ts';
 import { FETCH_PATH_MAX_LENGTH } from './fetch.ts';
 import { isContainedPath, type FetchMethod } from './rules.ts';
@@ -55,10 +56,15 @@ export type AdminApiRequestCheck =
  * A path that stays under the root is `blocked` unless the allowlist has a route for where it
  * resolves to, with this method. It's also `blocked` when its path or query mentions `ghost/api`,
  * or its first segment is an old API version (`v4`), whatever the allowlist says; when it carries
- * a query parameter its group doesn't list; or when its group checks content and its body holds a
- * field `refusedContent` refuses.
+ * a query parameter its group doesn't list; when its group checks content and its body holds a
+ * field `refusedContent` refuses; or when it needs a scope, by its route, an `include` or an
+ * `order`, that isn't among `approvedScopes`: those of the installation the app runs as.
  */
-export function checkAdminApiRequest(request: AdminApiRequest, apiRoot: URL): AdminApiRequestCheck {
+export function checkAdminApiRequest(
+  request: AdminApiRequest,
+  apiRoot: URL,
+  approvedScopes: ReadonlySet<AppPermissionKey>,
+): AdminApiRequestCheck {
   const { path, method = 'GET', body } = request;
   if (typeof path !== 'string' || path.length > FETCH_PATH_MAX_LENGTH || !isContainedPath(path)) {
     return { problem: 'invalid_path' };
@@ -103,16 +109,82 @@ export function checkAdminApiRequest(request: AdminApiRequest, apiRoot: URL): Ad
   if (!allowed) {
     return blocked(`Apps can't use ${method} ${pathname}`);
   }
-  const { group } = allowed;
+  const { group, resource } = allowed;
+  const unapproved = (scope: AppPermissionKey | null, what: string) =>
+    scope !== null && !approvedScopes.has(scope)
+      ? blocked(`This app wasn't approved for ${scope}, which ${what} needs`)
+      : undefined;
+
+  const forRoute = unapproved(group.scope, `${method} ${pathname}`);
+  if (forRoute) {
+    return forRoute;
+  }
 
   // Names are compared once decoded, by exact match, so `%5Bnewsletter%5D` is `[newsletter]`,
   // which isn't on any list, although Ghost's query parser reads it as `newsletter`.
   const { allowedParameters } = group;
-  if (allowedParameters) {
-    for (const name of url.searchParams.keys()) {
-      if (!allowedParameters.includes(name)) {
-        return blocked(`Apps can't use the ${name} parameter on ${method} ${pathname}`);
+  for (const name of url.searchParams.keys()) {
+    if (!allowedParameters.includes(name)) {
+      return blocked(`Apps can't use the ${name} parameter on ${method} ${pathname}`);
+    }
+  }
+
+  // Ghost splits both on commas and trims each part, and reads a sort as a field and a
+  // direction. Every `include` and `order` counts, as Ghost's query parser may read any of them.
+  const { fieldScopes } = resource;
+  if (fieldScopes) {
+    for (const value of url.searchParams.getAll('include')) {
+      for (const relation of value.split(',').map((part) => part.trim())) {
+        if (!relation) {
+          continue;
+        }
+        const scope = scopeForField(fieldScopes, relation);
+        if (scope === undefined) {
+          return blocked(`Apps can't include ${relation} on ${method} ${pathname}`);
+        }
+        const refused = unapproved(scope, `including ${relation}`);
+        if (refused) {
+          return refused;
+        }
       }
+    }
+    for (const value of url.searchParams.getAll('order')) {
+      for (const part of value.split(',')) {
+        const [field = ''] = part.trim().split(/\s+/);
+        const refused = unapproved(
+          scopeForField(fieldScopes, field) ?? null,
+          `ordering by ${field}`,
+        );
+        if (refused) {
+          return refused;
+        }
+      }
+    }
+  }
+
+  // Ghost includes how a post performed by default, so a request that names nothing names what
+  // the app may have, whether or not it asks for some `fields`: Ghost's rule for when its
+  // defaults apply isn't copied here, as an empty `fields` falls back to them. A route that
+  // takes no `include`, such as a delete, is left alone. `authors` needs no scope of its own, so
+  // what's named is never empty, which Ghost would refuse.
+  const defaults = resource.defaultIncludes?.[pathname.split('/')[1]?.toLowerCase() ?? ''];
+  const takesInclude = allowedParameters.includes('include');
+  if (defaults && fieldScopes && takesInclude) {
+    const named = url.searchParams
+      .getAll('include')
+      .flatMap((value) => value.split(','))
+      .some((part) => part.trim() !== '');
+    if (!named) {
+      const allowedDefaults = defaults.filter((relation) => {
+        const scope = scopeForField(fieldScopes, relation);
+        return scope === null || (scope !== undefined && approvedScopes.has(scope));
+      });
+      // Rewritten by hand, so the rest of the query keeps the spelling the app sent.
+      const kept = url.search
+        .slice(1)
+        .split('&')
+        .filter((pair) => pair !== '' && decodeEscapes(pair.split('=')[0] ?? '') !== 'include');
+      url.search = [...kept, `include=${allowedDefaults.join(',')}`].join('&');
     }
   }
 

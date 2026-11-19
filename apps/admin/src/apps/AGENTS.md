@@ -7,7 +7,9 @@ checks still apply.
 
 When an app needs an Admin API route, add it to the bridge's allowlist
 (`ADMIN_API_ALLOWLIST` in `contracts/app-contracts/src/bridge/allowlist.ts`)
-under its resource, in the group of the registry scope that opens it. A new
-scope goes in the scope registry (`contracts/app-contracts/src/scopes.ts`) with
-its review wording. The allowlist is a stopgap until Permissions and auth
-replaces it with app-scoped tokens checked on the server.
+under its resource, in the group of the registry scope that opens it. Every
+registry scope must open a route, an include or a sort. A new scope goes in the
+scope registry (`contracts/app-contracts/src/scopes.ts`) with its review
+wording. The bridge refuses a route, include or sort whose scope the running
+installation wasn't approved for, but it is still a stopgap: the server checking
+an app's own token is left to Permissions and auth.

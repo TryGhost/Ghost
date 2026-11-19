@@ -233,9 +233,16 @@ _Avoid_: proxy, API access, app token
 The Admin API routes the fetch escape hatch allows, by method, grouped by
 resource and then under the scope registry's names (`post:browse`,
 `post:edit`), in `ADMIN_API_ALLOWLIST`; the site's public details need no
-scope. Everything else is refused. Writes of posts, pages and tags are also
-checked so they can't send email, set code injection or write mobiledoc. It
-stands in for apps' own token, which takes the scopes over.
+scope. Every scope in the registry opens a route, an `include` or a sort, so
+none can be approved and grant nothing. What a resource's objects can include
+or be sorted by is listed once for the resource. Everything else is refused, and
+so is a route, an `include` or a sort whose scope the installation wasn't
+approved for: a related object needs its own scope, and how a post performed
+needs `post:read_stats`. When an app names no `include`, the bridge names the
+ones it may have, as Ghost's defaults include how a post performed. Writes of
+posts, pages and tags are also checked so they can't send email, set code
+injection or write mobiledoc. It stands in for apps' own token: the server
+checks nothing an app does through the bridge.
 _Avoid_: permissions, blocklist, denylist
 
 **Feature name**:
