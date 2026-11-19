@@ -1,5 +1,4 @@
 const hbs = require('express-hbs');
-const announcementBar = require('./announcement-bar');
 const config = require('../../../shared/config');
 const instance = hbs.create();
 
@@ -23,21 +22,7 @@ instance.configure = function configure(partialsPath, themePath) {
     hbsOptions.partialsDir.push(partialsPath);
   }
 
-  const render = instance.express4(hbsOptions);
-  return (filename, options, callback) => {
-    render(filename, options, (err, html) => {
-      if (err) {
-        return callback(err);
-      }
-
-      try {
-        html = announcementBar.insert(html, options._locals);
-      } catch (error) {
-        return callback(error);
-      }
-      callback(null, html);
-    });
-  };
+  return instance.express4(hbsOptions);
 };
 
 module.exports = instance;

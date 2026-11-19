@@ -1,5 +1,5 @@
 const settingsCache = require('../../../shared/settings-cache');
-const { getAnnouncementForViewer } = require('../../../shared/announcement');
+const { getAnnouncementForViewer } = require('../../lib/announcement');
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {

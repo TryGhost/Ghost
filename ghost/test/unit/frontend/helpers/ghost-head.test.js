@@ -52,10 +52,7 @@ async function testGhostHead(options) {
 
   assertExists(rendered);
   // Note: we need to convert the string to an object in order to use the snapshot feature
-  const snapshot = rendered
-    .replace(/(<style data-ghost-announcement>)[\s\S]*?(<\/style>)/, '$1[[BAR CSS]]$2')
-    .replace(/(<script data-announcement-bar="[^"]*"[^>]*>)[\s\S]*?(<\/script>)/, '$1[[BAR JS]]$2');
-  assertMatchSnapshot({ rendered: snapshot });
+  assertMatchSnapshot({ rendered });
   return rendered;
 }
 
@@ -2156,23 +2153,25 @@ describe('{{ghost_head}} helper', function () {
       assert.match(rendered, /sodo-search@/);
       assert.match(rendered, /portal@/);
       assert.match(rendered, /js.stripe.com/);
-      assert.match(rendered, /data-ghost-announcement/);
+      assert.match(rendered, /announcement-bar@/);
     });
-    it('only embeds a paid announcement in an eligible member’s page', async function () {
-      getStub.withArgs('announcement_content').returns('News for subscribers');
+    it('only embeds a paid announcement for eligible readers and escapes its HTML attribute', async function () {
+      getStub.withArgs('announcement_content').returns('<p title="news">Subscribers only</p>');
       getStub.withArgs('announcement_visibility').returns(['paid_members']);
       const options = testUtils.createHbsResponse({
         locals: { relativeUrl: '/', context: ['home', 'index'], safeVersion: '4.3' },
       });
       for (const member of [null, { status: 'free' }]) {
         options.data.member = member;
-        const html = (await ghost_head(options)).toString();
-        assert.doesNotMatch(html, /data-ghost-announcement|News for subscribers/);
+        assert.doesNotMatch(
+          String(await ghost_head(options)),
+          /data-announcement-bar|Subscribers only/,
+        );
       }
       options.data.member = { status: 'comped' };
       assert.match(
-        (await ghost_head(options)).toString(),
-        /data-announcement="News for subscribers"/,
+        String(await ghost_head(options)),
+        /data-announcement="&lt;p title&#x3D;&quot;news&quot;&gt;Subscribers only&lt;\/p&gt;"/,
       );
     });
 
@@ -2196,7 +2195,7 @@ describe('{{ghost_head}} helper', function () {
       assert.match(rendered, /portal@/);
       assert.match(rendered, /js.stripe.com/);
       assert.match(rendered, /generator/);
-      assert.doesNotMatch(rendered, /data-ghost-announcement/);
+      assert.doesNotMatch(rendered, /announcement-bar@/);
     });
 
     it('does not load the comments script when exclude contains comment_counts', async function () {
