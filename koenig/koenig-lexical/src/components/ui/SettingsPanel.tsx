@@ -13,9 +13,11 @@ import {MultiSelectDropdown} from './MultiSelectDropdown';
 import {Slider} from './Slider.jsx';
 import {TabView} from './TabView';
 import {Toggle} from './Toggle';
+import {useKoenigSelectedCardContext} from '../../context/KoenigSelectedCardContext';
 
 export function SettingsPanel({children, darkMode, cardWidth, tabs, defaultTab}) {
     const {ref} = useSettingsPanelReposition({}, cardWidth);
+    const {visibilitySettingsRequestId} = useKoenigSelectedCardContext();
 
     const tabContent = React.useMemo(() => {
         if (!tabs) {
@@ -35,7 +37,7 @@ export function SettingsPanel({children, darkMode, cardWidth, tabs, defaultTab})
                     data-testid="settings-panel"
                     data-kg-settings-panel
                 >
-                    <TabView defaultTab={defaultTab} tabContent={tabContent} tabs={tabs} />
+                    <TabView defaultTab={defaultTab} defaultTabKey={visibilitySettingsRequestId} tabContent={tabContent} tabs={tabs} />
                 </div>
             ) : (
                 <div ref={ref}

@@ -4,11 +4,10 @@ import React from 'react';
 // TODO: Re-enable when design tab is implemented
 // import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
-import {SettingsPanel} from '../components/ui/SettingsPanel.jsx';
+import {CardSettingsPanel} from '../components/CardSettingsPanel';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {TransistorCard} from '../components/ui/cards/TransistorCard.jsx';
-import {VisibilitySettings} from '../components/ui/VisibilitySettings.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useVisibilityToggle} from '../hooks/useVisibilityToggle.js';
 
@@ -19,22 +18,10 @@ export const TransistorNodeComponent = ({
 }) => {
     const [editor] = useLexicalComposerContext();
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
-    const {cardConfig, darkMode} = React.useContext(KoenigComposerContext);
+    const {cardConfig} = React.useContext(KoenigComposerContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
-    const {isVisibilityEnabled, visibilityOptions: rawVisibilityOptions, toggleVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
-
-    // Filter out nonMembers option - Transistor requires a member UUID so public visitors can't see it
-    const visibilityOptions = React.useMemo(() => {
-        return rawVisibilityOptions.map(group => ({
-            ...group,
-            toggles: group.toggles.filter(toggle => toggle.key !== 'nonMembers')
-        }));
-    }, [rawVisibilityOptions]);
-
-    const settingsTabs = [
-        {id: 'visibility', label: 'Visibility'}
-    ];
+    const {isVisibilityEnabled} = useVisibilityToggle(editor, nodeKey, cardConfig);
 
     const handleToolbarEdit = (event) => {
         event.preventDefault();
@@ -57,13 +44,6 @@ export const TransistorNodeComponent = ({
     //     });
     // };
 
-    const visibilitySettings = (
-        <VisibilitySettings
-            toggleVisibility={toggleVisibility}
-            visibilityOptions={visibilityOptions}
-        />
-    );
-
     return (
         <>
             <TransistorCard
@@ -85,12 +65,13 @@ export const TransistorNodeComponent = ({
                 <ToolbarMenu>
                     <ToolbarMenuItem
                         dataTestId="edit-transistor-card"
+                        hide={!isVisibilityEnabled}
                         icon="edit"
                         isActive={false}
                         label="Edit"
                         onClick={handleToolbarEdit}
                     />
-                    <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
+                    <ToolbarMenuSeparator hide={!isVisibilityEnabled || !cardConfig.createSnippet} />
                     <ToolbarMenuItem
                         dataTestId="create-snippet"
                         hide={!cardConfig.createSnippet}
@@ -102,21 +83,8 @@ export const TransistorNodeComponent = ({
                 </ToolbarMenu>
             </ActionToolbar>
 
-            {isVisibilityEnabled && isEditing && (
-                <SettingsPanel
-                    darkMode={darkMode}
-                    defaultTab="visibility"
-                    tabs={settingsTabs}
-                    onMouseDown={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }}
-                >
-                    {{
-                        visibility: visibilitySettings
-                    }}
-                </SettingsPanel>
-            )}
+            {/* Transistor needs a member UUID, so public visitors can't be shown the player */}
+            <CardSettingsPanel hiddenVisibilityToggles={['nonMembers']} />
         </>
     );
 };
