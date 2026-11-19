@@ -36,6 +36,11 @@ export interface AppInstallationHistoryEntry {
   created_at: string;
   /** The host the app moved to. Only set when an approval moved the app. */
   moved_to?: string;
+  /**
+   * What the entry changed, as Ghost stored it with the manifest: fields, by path. A suspension
+   * lists what waits for approval. Left out when nothing changed.
+   */
+  changes?: ManifestChange[];
 }
 
 /** What a publisher reviews before installing an app, or before approving changes to one. */

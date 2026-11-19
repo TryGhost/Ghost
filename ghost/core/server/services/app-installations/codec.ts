@@ -1,3 +1,4 @@
+import type { ManifestChange } from '@tryghost/app-contracts';
 import { z } from 'zod';
 import { DbAppInstallation, DbAppInstallationManifest } from './schema';
 
@@ -50,6 +51,11 @@ export interface AppInstallationHistoryEntry {
   created_at: Date;
   /** The host the app moved to. Only set when an approval moved the app. */
   moved_to?: string;
+  /**
+   * What the entry changed, as stored with its manifest row: fields, by path. A suspension lists
+   * what waits for approval. Left out when nothing changed.
+   */
+  changes?: ManifestChange[];
 }
 
 /** An installation, with its history when it's read with it. */

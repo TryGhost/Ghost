@@ -104,6 +104,7 @@ export function approvalWrite(manifests: Manifests): ApprovalWrite {
           loaded: manifests.loaded,
           source: 'approval',
           requiresApproval: decision.kind === 'suspend',
+          changes: decision.changes,
         },
       };
   }
@@ -129,13 +130,14 @@ export function recheckWrite(manifests: Manifests): ManifestWrite {
           loaded,
           source: decision.kind === 'resume' ? 'resume' : 'update',
           requiresApproval: false,
+          changes: decision.changes,
         },
       };
     // Replaces any older pending manifest, since only the latest is worth reviewing.
     case 'suspend':
       return {
         kind: 'add_pending',
-        row: { loaded, source: 'update', requiresApproval: true },
+        row: { loaded, source: 'update', requiresApproval: true, changes: decision.changes },
       };
   }
 }
