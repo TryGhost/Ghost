@@ -522,6 +522,7 @@ const TierDetailModalContent: React.FC<{ tier?: Tier }> = ({ tier }) => {
             <FieldGroup className="mb-10 gap-0 rounded-sm border border-border-default p-4 md:p-7">
               <SortableList
                 getDragHandleLabel={({ item }) => `Reorder benefit${item ? `: ${item}` : ''}`}
+                getItemLabel={({ item }) => item.trim() || 'Empty benefit'}
                 items={benefits.items}
                 itemSeparator={false}
                 renderItem={({ id, item }) => (
