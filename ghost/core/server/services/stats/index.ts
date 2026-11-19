@@ -23,6 +23,7 @@ export default defineService('Stats', (): StatsAggregate => {
   const logging = require('@tryghost/logging');
   const TinybirdServiceWrapper = require('../tinybird');
   const adapterManager = require('../adapter-manager').default;
+  const { memberAvatarImage } = require('../members/member-avatar');
 
   const webAnalyticsEnabled = initializeTinybirdForStats({
     config,
@@ -48,6 +49,7 @@ export default defineService('Stats', (): StatsAggregate => {
     urlUtils,
     logging,
     tinybirdClient,
+    memberAvatarImage,
   });
 
   const cache = config.get('hostSettings:statsCache:enabled')

@@ -10,12 +10,26 @@ const CommentsAnalyticsPanel: React.FC<{
   analytics: CommentsAnalytics;
   onFilter: (field: 'post' | 'author', id: string) => void;
 }> = ({ analytics, onFilter }) => {
-  const { range, customRange, tab, setTab, overview, topPosts, topCommenters } = analytics;
+  const {
+    range,
+    customRange,
+    tab,
+    setTab,
+    overview,
+    topPosts,
+    topCommenters,
+    postFiltered,
+    commenterFiltered,
+  } = analytics;
   const period = customRange ? 'in the selected period' : getPeriodText(range);
   const comparisonDays = customRange
     ? (Date.parse(customRange.to) - Date.parse(customRange.from)) / 86400000 + 1
     : undefined;
-  const queries = [overview, topPosts, topCommenters];
+  const queries = [
+    overview,
+    ...(!postFiltered ? [topPosts] : []),
+    ...(!commenterFiltered ? [topCommenters] : []),
+  ];
   const failed = queries.some(({ isError }) => isError);
 
   const postRows = useMemo(
@@ -29,19 +43,23 @@ const CommentsAnalyticsPanel: React.FC<{
   );
   const commenterRows = useMemo(
     () =>
-      topCommenters.data?.stats.map(({ member_id: id, name, comments }) => ({
-        id,
-        label: name || 'Unknown member',
-        comments,
-      })),
+      topCommenters.data?.stats.map(
+        ({ member_id: id, name, avatar_image: avatarImage, comments }) => ({
+          id,
+          label: name || 'Unknown member',
+          avatar: { name, src: avatarImage },
+          comments,
+        }),
+      ),
     [topCommenters.data],
   );
 
   return (
-    <Stack data-testid="comments-analytics" gap="lg">
-      <Text as="h2" size="sm" tone="secondary" weight="medium">
-        Analytics
-      </Text>
+    <Stack
+      aria-busy={queries.some(({ isFetching }) => isFetching)}
+      data-testid="comments-analytics"
+      gap="lg"
+    >
       {failed ? (
         <Stack align="center" className="py-10 text-center" gap="md">
           <Text size="sm" tone="secondary">
@@ -61,27 +79,32 @@ const CommentsAnalyticsPanel: React.FC<{
               comparisonDays={comparisonDays}
               isLoading={overview.isLoading}
               range={range}
+              showCommenters={!commenterFiltered}
               stats={overview.data?.stats[0]}
               tab={tab}
               onTabChange={setTab}
             />
           </Card>
-          <CommentsTopList
-            data-testid="comments-analytics-top-posts"
-            description={`Posts with the most comments ${period}`}
-            isLoading={topPosts.isLoading}
-            rows={postRows}
-            title="Top posts"
-            onSelect={({ id }) => onFilter('post', id)}
-          />
-          <CommentsTopList
-            data-testid="comments-analytics-top-commenters"
-            description={`Members who commented most ${period}`}
-            isLoading={topCommenters.isLoading}
-            rows={commenterRows}
-            title="Top commenters"
-            onSelect={({ id }) => onFilter('author', id)}
-          />
+          {!postFiltered && (
+            <CommentsTopList
+              data-testid="comments-analytics-top-posts"
+              description={`Posts with the most comments ${period}`}
+              isLoading={topPosts.isLoading}
+              rows={postRows}
+              title="Top posts"
+              onSelect={({ id }) => onFilter('post', id)}
+            />
+          )}
+          {!commenterFiltered && (
+            <CommentsTopList
+              data-testid="comments-analytics-top-commenters"
+              description={`Members who commented most ${period}`}
+              isLoading={topCommenters.isLoading}
+              rows={commenterRows}
+              title="Top commenters"
+              onSelect={({ id }) => onFilter('author', id)}
+            />
+          )}
         </>
       )}
     </Stack>

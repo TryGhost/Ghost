@@ -2,12 +2,13 @@ import assert from 'node:assert/strict';
 import ObjectId from 'bson-objectid';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, it } from 'vitest';
 import { agentProvider, fixtureManager, mockManager } from '../../utils/e2e-framework';
+import { memberAvatarImage } from '../../../core/server/services/members/member-avatar';
 const models = require('../../../core/server/models');
 
 describe('Comments stats API', function () {
   let agent: Awaited<ReturnType<typeof agentProvider.getAdminAPIAgent>>;
   let postIds: string[];
-  let members: { id: string; name: string | null }[];
+  let members: { id: string; name: string | null; email: string }[];
   const commentIds: string[] = [];
   const reportIds: string[] = [];
   const range = '?date_from=2020-03-01&date_to=2020-03-03&timezone=UTC';
@@ -55,7 +56,7 @@ describe('Comments stats API', function () {
       .whereNotNull('name')
       .orderBy('id')
       .limit(2)
-      .select('id', 'name');
+      .select('id', 'name', 'email');
     const [postA, postB] = postIds;
     const [memberA, memberB] = members.map(({ id }) => id);
 
@@ -134,7 +135,12 @@ describe('Comments stats API', function () {
       .expectStatus(200);
 
     assert.deepEqual(body.stats, [
-      { member_id: members[0].id, name: members[0].name, comments: 3 },
+      {
+        member_id: members[0].id,
+        name: members[0].name,
+        avatar_image: memberAvatarImage(members[0].email),
+        comments: 3,
+      },
     ]);
   });
 
@@ -168,7 +174,12 @@ describe('Comments stats API', function () {
       .expectStatus(200);
     assert.deepEqual(commenters.meta, { filters: true });
     assert.deepEqual(commenters.stats, [
-      { member_id: members[1].id, name: members[1].name, comments: 1 },
+      {
+        member_id: members[1].id,
+        name: members[1].name,
+        avatar_image: memberAvatarImage(members[1].email),
+        comments: 1,
+      },
     ]);
   });
 

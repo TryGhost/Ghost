@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  Avatar,
   Button,
   Card,
   CardContent,
@@ -13,6 +14,7 @@ import {
   DataListItemValue,
   DataListItemValueAbs,
   DataListRow,
+  Separator,
   Sheet,
   SheetContent,
   SheetDescription,
@@ -22,11 +24,17 @@ import {
   SkeletonTable,
 } from '@tryghost/shade/components';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
-import { Text } from '@tryghost/shade/primitives';
+import { Inline, Text } from '@tryghost/shade/primitives';
+import { memberAvatarProps } from '@/members/api';
 
 const PREVIEW_ROWS = 5;
 
-export type TopListRow = { id: string; label: string; comments: number };
+export type TopListRow = {
+  id: string;
+  label: string;
+  comments: number;
+  avatar?: { name: string | null; src?: string | null };
+};
 
 const Rows: React.FC<{ rows: TopListRow[]; onSelect: (row: TopListRow) => void }> = ({
   rows,
@@ -46,7 +54,17 @@ const Rows: React.FC<{ rows: TopListRow[]; onSelect: (row: TopListRow) => void }
               type="button"
               onClick={() => onSelect(row)}
             >
-              {row.label}
+              <Inline as="span" gap="sm">
+                {row.avatar && (
+                  <Avatar
+                    aria-hidden="true"
+                    className="size-6"
+                    {...memberAvatarProps(row.avatar)}
+                    src={row.avatar.src}
+                  />
+                )}
+                <span className="truncate">{row.label}</span>
+              </Inline>
             </button>
           </DataListItemContent>
           <DataListItemValue>
@@ -79,6 +97,7 @@ const CommentsTopList: React.FC<{
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
+        <Separator />
         {isLoading || !rows ? (
           <SkeletonTable lines={PREVIEW_ROWS} />
         ) : rows.length ? (

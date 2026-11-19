@@ -36,7 +36,12 @@ export type CommentsOverview = {
 };
 
 export type TopCommentedPost = { post_id: string; title: string; comments: number };
-export type TopCommenter = { member_id: string; name: string | null; comments: number };
+export type TopCommenter = {
+  member_id: string;
+  name: string | null;
+  avatar_image: string | null;
+  comments: number;
+};
 
 // Calendar dates are YYYY-MM-DD; database datetimes are UTC "YYYY-MM-DD HH:mm:ss"
 const toDatetime = (ms: number) => new Date(ms).toISOString().slice(0, 19).replace('T', ' ');
@@ -230,9 +235,17 @@ const datetimeMs = (value: Date | string) =>
 
 export class CommentsAnalyticsService {
   private readonly knex: Knex;
+  private readonly memberAvatarImage: (email: string | null | undefined) => string | null;
 
-  constructor({ knex }: { knex: Knex }) {
+  constructor({
+    knex,
+    memberAvatarImage,
+  }: {
+    knex: Knex;
+    memberAvatarImage: (email: string | null | undefined) => string | null;
+  }) {
     this.knex = knex;
+    this.memberAvatarImage = memberAvatarImage;
   }
 
   async getOverview(options: unknown): Promise<CommentsOverview> {
@@ -293,15 +306,16 @@ export class CommentsAnalyticsService {
   }
 
   async getTopCommenters(options: unknown): Promise<{ data: TopCommenter[] }> {
-    // Name only: the panel needs no contact data
+    // Email is used only to derive the same avatar as the members list.
     const rows = await this.ranked('member_id', options)
       .join('members as m', 'm.id', 't.member_id')
-      .select('t.member_id', 'm.name', 't.comment_count');
+      .select('t.member_id', 'm.name', 'm.email', 't.comment_count');
 
     return {
       data: rows.map((row) => ({
         member_id: row.member_id,
         name: row.name,
+        avatar_image: this.memberAvatarImage(row.email),
         comments: Number(row.comment_count),
       })),
     };

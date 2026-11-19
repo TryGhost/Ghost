@@ -46,6 +46,16 @@ const CommentsPage: React.FC<{
   const { filters, nql, setFilters } = useFilterState(timezone);
   const dislikesEnabled = true;
   const analyticsEnabled = useFeatureFlag('commentsAnalytics') && !singleCommentId;
+  const isSelected = (field: string) =>
+    filters.some(
+      (filter) =>
+        filter.field === field &&
+        filter.operator === 'is' &&
+        filter.values.length === 1 &&
+        Boolean(filter.values[0]),
+    );
+  const postFiltered = analyticsEnabled && isSelected('post');
+  const commenterFiltered = analyticsEnabled && isSelected('author');
   const wideLayout = useWideLayout();
   const [analyticsSheetOpen, setAnalyticsSheetOpen] = useState(false);
   // Narrow screens fetch nothing until the sheet first opens
@@ -54,8 +64,8 @@ const CommentsPage: React.FC<{
     timezone,
     analyticsEnabled && timezoneReady && (wideLayout || analyticsSheetOpened),
     nql,
+    { postFiltered, commenterFiltered },
   );
-  const showAnalytics = analyticsEnabled && !analytics.unavailable;
   const handleAddFilter = useCallback(
     (field: string, value: string, operator: string = 'is') => {
       const nextFilters = [
@@ -110,6 +120,7 @@ const CommentsPage: React.FC<{
     isFetching,
     isFetchingNextPage,
     isRefetching,
+    isPlaceholderData,
     fetchNextPage,
     hasNextPage,
   } = useBrowseComments({
@@ -120,6 +131,17 @@ const CommentsPage: React.FC<{
     },
     placeholderData: keepPreviousData,
   });
+
+  const noComments =
+    data !== undefined &&
+    !isPlaceholderData &&
+    !isFetching &&
+    !isError &&
+    data.comments.length === 0;
+  const showAnalytics = analyticsEnabled && !analytics.unavailable && !noComments;
+  if (noComments && analyticsSheetOpen) {
+    setAnalyticsSheetOpen(false);
+  }
 
   const shouldShowLoading =
     (analyticsEnabled && !timezoneReady) || (isFetching && !isFetchingNextPage && !isRefetching);
@@ -245,14 +267,16 @@ const CommentsPage: React.FC<{
           )}
         </ListPage.Header>
         <ListPage.Body>
-          {showAnalytics && wideLayout ? (
+          {analyticsEnabled && wideLayout ? (
             <Inline align="stretch" className="min-h-0 flex-1" gap="xl">
               <Stack className="min-w-0 flex-1" gap="none">
                 {commentsBody}
               </Stack>
-              <CommentsAnalyticsRail>
-                <CommentsAnalyticsPanel analytics={analytics} onFilter={handleAnalyticsFilter} />
-              </CommentsAnalyticsRail>
+              {showAnalytics && (
+                <CommentsAnalyticsRail>
+                  <CommentsAnalyticsPanel analytics={analytics} onFilter={handleAnalyticsFilter} />
+                </CommentsAnalyticsRail>
+              )}
             </Inline>
           ) : (
             commentsBody

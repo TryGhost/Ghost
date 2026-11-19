@@ -258,6 +258,7 @@ export type CommentsTopPostsResponseType = {
 export type CommentsTopCommenterItem = {
   member_id: string;
   name: string | null;
+  avatar_image?: string | null;
   comments: number;
 };
 

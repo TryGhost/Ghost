@@ -221,7 +221,11 @@ describe('CommentsAnalyticsService', function () {
       { id: 'r5', comment_id: 'c7' },
     ]);
 
-    service = new CommentsAnalyticsService({ knex: db });
+    service = new CommentsAnalyticsService({
+      knex: db,
+      memberAvatarImage: (email) =>
+        email === 'ann@example.com' ? 'https://example.com/ann.png' : null,
+    });
   });
 
   afterEach(async function () {
@@ -271,7 +275,7 @@ describe('CommentsAnalyticsService', function () {
       { post_id: 'post_a', title: 'Post A', comments: 1 },
     ]);
     assert.deepEqual((await service.getTopCommenters(matching)).data, [
-      { member_id: 'member_2', name: null, comments: 1 },
+      { member_id: 'member_2', name: null, avatar_image: null, comments: 1 },
     ]);
   });
 
@@ -315,7 +319,12 @@ describe('CommentsAnalyticsService', function () {
       reported: 0,
     });
     assert.deepEqual((await service.getTopCommenters(options)).data, [
-      { member_id: 'member_1', name: 'Ann', comments: 1 },
+      {
+        member_id: 'member_1',
+        name: 'Ann',
+        avatar_image: 'https://example.com/ann.png',
+        comments: 1,
+      },
     ]);
   });
 
@@ -436,9 +445,14 @@ describe('CommentsAnalyticsService', function () {
     const { data } = await service.getTopCommenters({ date_to: '2026-11-03' });
 
     assert.deepEqual(data, [
-      { member_id: 'member_1', name: 'Ann', comments: 2 },
-      { member_id: 'member_2', name: null, comments: 2 },
-      { member_id: 'member_3', name: 'Cal', comments: 1 },
+      {
+        member_id: 'member_1',
+        name: 'Ann',
+        avatar_image: 'https://example.com/ann.png',
+        comments: 2,
+      },
+      { member_id: 'member_2', name: null, avatar_image: null, comments: 2 },
+      { member_id: 'member_3', name: 'Cal', avatar_image: null, comments: 1 },
     ]);
   });
 
@@ -455,8 +469,13 @@ describe('CommentsAnalyticsService', function () {
     const { data } = await service.getTopCommenters(range('2026-11-01', '2026-11-03'));
 
     assert.deepEqual(data, [
-      { member_id: 'member_1', name: 'Ann', comments: 2 },
-      { member_id: 'member_2', name: null, comments: 1 },
+      {
+        member_id: 'member_1',
+        name: 'Ann',
+        avatar_image: 'https://example.com/ann.png',
+        comments: 2,
+      },
+      { member_id: 'member_2', name: null, avatar_image: null, comments: 1 },
     ]);
   });
 

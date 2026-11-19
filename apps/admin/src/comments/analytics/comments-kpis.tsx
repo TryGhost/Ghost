@@ -47,8 +47,10 @@ const CommentsKpis: React.FC<{
   comparisonDays?: number;
   tab: CommentsAnalyticsTab;
   isLoading: boolean;
+  showCommenters?: boolean;
   onTabChange: (tab: CommentsAnalyticsTab) => void;
-}> = ({ stats, range, comparisonDays, tab, isLoading, onTabChange }) => {
+}> = ({ stats, range, comparisonDays, tab, isLoading, showCommenters = true, onTabChange }) => {
+  const tabs = COMMENTS_ANALYTICS_TABS.filter((key) => showCommenters || key !== 'commenters');
   const { label, color } = TABS[tab];
   // admin7Design charts are flat, like the newsletter analytics bars
   const { admin7Design } = useShade();
@@ -77,8 +79,8 @@ const CommentsKpis: React.FC<{
       variant="kpis"
       onValueChange={(value) => onTabChange(value as CommentsAnalyticsTab)}
     >
-      <TabsList className="grid grid-cols-3">
-        {COMMENTS_ANALYTICS_TABS.map((key) => {
+      <TabsList className={showCommenters ? 'grid grid-cols-3' : 'grid grid-cols-2'}>
+        {tabs.map((key) => {
           const trend = stats
             ? getTrend(stats.totals[key], stats.previous_totals[key], range)
             : { direction: 'hidden' as const, value: '' };

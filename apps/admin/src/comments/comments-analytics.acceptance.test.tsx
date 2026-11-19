@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
+  browseResponse,
   comment,
   currentRoute,
   fakeAdminEndpoint,
@@ -16,6 +17,7 @@ import {
 } from '@test-utils/acceptance';
 import { commentsScreen } from './comments.screen';
 import { deferred } from '@/utils/deferred';
+import type { CommentsTopCommenterItem } from '@tryghost/admin-x-framework/api/stats';
 
 const labs = { commentsAnalytics: true };
 
@@ -40,7 +42,13 @@ const overview = {
   ],
 };
 
-function fakeCommentsStats(overviewResponse: Parameters<typeof fakeAdminEndpoint>[2] = overview) {
+function fakeCommentsStats(
+  overviewResponse: Parameters<typeof fakeAdminEndpoint>[2] = overview,
+  commenters: CommentsTopCommenterItem[] = [
+    { member_id: 'member1', name: 'Regular Reader', comments: 4 },
+    { member_id: 'member2', name: null, comments: 2 },
+  ],
+) {
   const overviewApi = fakeAdminEndpoint('GET', /^\/stats\/comments\/\?/, overviewResponse);
   const topPostsApi = fakeAdminEndpoint('GET', /^\/stats\/comments\/top-posts\/\?/, {
     meta: { filters: true },
@@ -48,10 +56,7 @@ function fakeCommentsStats(overviewResponse: Parameters<typeof fakeAdminEndpoint
   });
   const topCommentersApi = fakeAdminEndpoint('GET', /^\/stats\/comments\/top-commenters\/\?/, {
     meta: { filters: true },
-    stats: [
-      { member_id: 'member1', name: 'Regular Reader', comments: 4 },
-      { member_id: 'member2', name: null, comments: 2 },
-    ],
+    stats: commenters,
   });
   return { overviewApi, topPostsApi, topCommentersApi };
 }
@@ -366,6 +371,81 @@ describe('Comments analytics', () => {
     await expect.element(commentsScreen.analyticsKpiValue('comments')).toHaveTextContent('3');
   });
 
+  it('keeps the current view visible while a filter is loading', async () => {
+    const released = deferred<void>();
+    const original = comment({ html: '<p>Original row</p>' });
+    const filtered = comment({ html: '<p>Filtered result</p>' });
+    fakeAdminEndpoint('GET', /^\/comments\/\?/, async ({ url }) => {
+      if (new URL(url).searchParams.get('filter')?.includes('post_id')) {
+        await released.promise;
+        return browseResponse('comments', [filtered]);
+      }
+      return browseResponse('comments', [original]);
+    });
+    const { overviewApi } = fakeCommentsStats(async ({ url }) => {
+      if (new URL(url).searchParams.has('filter')) {
+        await released.promise;
+      }
+      return overview;
+    });
+    fakeFilterLookups();
+    await renderAdminApp('/comments', { labs });
+    await expect.element(commentsScreen.analyticsKpiValue('comments')).toHaveTextContent('12');
+    await expect.element(commentsScreen.commentRow('Original row')).toBeVisible();
+    await commentsScreen.analyticsTopPosts().row('Popular post 1').click();
+    await expect.poll(() => requestedFilter(overviewApi)).toContain('post_id');
+
+    try {
+      await expect.element(commentsScreen.analyticsPanel()).toHaveAttribute('aria-busy', 'true');
+      await expect.element(commentsScreen.commentRow('Original row')).toBeVisible();
+      await expect.element(commentsScreen.analyticsKpiValue('comments')).toHaveTextContent('12');
+    } finally {
+      released.resolve();
+    }
+    await expect.element(commentsScreen.commentRow('Filtered result')).toBeVisible();
+  });
+
+  it.each(['post', 'author'] as const)(
+    'keeps the filter bar mounted after selecting a top %s',
+    async (field) => {
+      const commentsApi = fakeComments([comment()]);
+      fakeCommentsStats();
+      fakeFilterLookups();
+      await renderAdminApp(field === 'author' ? '/comments?tab=commenters' : '/comments', { labs });
+      await expect.element(commentsScreen.analyticsKpiValue('comments')).toHaveTextContent('12');
+
+      const host = page.getByTestId('comments-page').element();
+      const filterVisible = () => host.querySelector('[data-slot="filter-bar"]') !== null;
+      const visibility = [filterVisible()];
+      const observer = new MutationObserver(() => visibility.push(filterVisible()));
+      observer.observe(host, { childList: true, subtree: true });
+
+      try {
+        if (field === 'post') {
+          await commentsScreen.analyticsTopPosts().row('Popular post 1').click();
+          await expect(commentsApi).toHaveSentFilter(/post_id:'?post0'?/);
+        } else {
+          await commentsScreen.analyticsTopCommenters().row('Regular Reader').click();
+          await expect(commentsApi).toHaveSentFilter(/member_id:'?member1'?/);
+          await expect
+            .element(commentsScreen.analyticsKpiTab('Comments'))
+            .toHaveAttribute('aria-selected', 'true');
+        }
+        await expect.poll(filterVisible).toBe(true);
+        await new Promise<void>((resolve) => {
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+        });
+      } finally {
+        observer.disconnect();
+      }
+
+      const transitions = visibility.filter(
+        (value, index) => index === 0 || value !== visibility[index - 1],
+      );
+      expect(transitions).toEqual([false, true]);
+    },
+  );
+
   it('progressively narrows both list and analytics to a top post and commenter', async () => {
     const commentsApi = fakeComments([comment()]);
     const statsApis = fakeCommentsStats();
@@ -375,15 +455,97 @@ describe('Comments analytics', () => {
     await commentsScreen.analyticsTopPosts().row('Popular post 1').click();
 
     await expect(commentsApi).toHaveSentFilter(/post_id:'?post0'?/);
+    await expect.element(commentsScreen.analyticsTopPosts()).not.toBeInTheDocument();
+    await expect.element(commentsScreen.analyticsTopCommenters()).toBeVisible();
 
     await commentsScreen.analyticsTopCommenters().row('Regular Reader').click();
 
     await expect(commentsApi).toHaveSentFilter(/member_id:'?member1'?/);
     await expect(commentsApi).toHaveSentFilter(/post_id:'?post0'?/);
-    for (const api of Object.values(statsApis)) {
-      await expect.poll(() => requestedFilter(api)).toMatch(/member_id:'?member1'?/);
-      await expect.poll(() => requestedFilter(api)).toMatch(/post_id:'?post0'?/);
-    }
+    await expect
+      .poll(() => requestedFilter(statsApis.overviewApi))
+      .toMatch(/member_id:'?member1'?/);
+    await expect.poll(() => requestedFilter(statsApis.overviewApi)).toMatch(/post_id:'?post0'?/);
+    await expect.element(commentsScreen.analyticsTopCommenters()).not.toBeInTheDocument();
+    await expect.element(commentsScreen.analyticsKpiTab('Commenters')).not.toBeInTheDocument();
+  });
+
+  it('hides top posts for a selected post without fetching that ranking', async () => {
+    fakeComments([comment()]);
+    const { topPostsApi, topCommentersApi } = fakeCommentsStats();
+    fakeFilterLookups();
+    await renderAdminApp('/comments?filter=post_id:post0', { labs });
+
+    await expect.element(commentsScreen.analyticsKpiValue('comments')).toHaveTextContent('12');
+    await expect.element(commentsScreen.analyticsTopPosts()).not.toBeInTheDocument();
+    await expect.element(commentsScreen.analyticsTopCommenters()).toBeVisible();
+    await expect.element(commentsScreen.analyticsKpiTab('Commenters')).toBeVisible();
+    expect(topPostsApi.requests).toHaveLength(0);
+    await expect.poll(() => topCommentersApi.requests.length).toBe(1);
+  });
+
+  it('hides commenter rankings and tab for a selected commenter, then restores them on Clear', async () => {
+    fakeComments([comment()]);
+    const { topCommentersApi } = fakeCommentsStats();
+    fakeFilterLookups();
+    await renderAdminApp('/comments?tab=commenters&filter=member_id:member1', { labs });
+
+    await expect
+      .element(commentsScreen.analyticsKpiTab('Comments'))
+      .toHaveAttribute('aria-selected', 'true');
+    await expect.element(commentsScreen.analyticsKpiTab('Commenters')).not.toBeInTheDocument();
+    await expect.element(commentsScreen.analyticsTopCommenters()).not.toBeInTheDocument();
+    await expect.element(commentsScreen.analyticsTopPosts()).toBeVisible();
+    await expect.poll(currentRoute).toContain('tab=comments');
+    expect(topCommentersApi.requests).toHaveLength(0);
+
+    await page.getByRole('button', { name: 'Clear', exact: true }).click();
+    await expect.element(commentsScreen.analyticsKpiTab('Commenters')).toBeVisible();
+    await expect.element(commentsScreen.analyticsTopCommenters()).toBeVisible();
+    await expect.poll(() => topCommentersApi.requests.length).toBe(1);
+  });
+
+  it('keeps both rankings and the commenters tab for exclusion filters', async () => {
+    fakeComments([comment()]);
+    fakeCommentsStats();
+    fakeFilterLookups();
+    await renderAdminApp('/comments?filter=post_id:-post0%2Bmember_id:-member1', { labs });
+
+    await expect.element(commentsScreen.analyticsTopPosts()).toBeVisible();
+    await expect.element(commentsScreen.analyticsTopCommenters()).toBeVisible();
+    await expect.element(commentsScreen.analyticsKpiTab('Commenters')).toBeVisible();
+  });
+
+  it('shows commenter avatars and initials in the sidebar and View all sheet', async () => {
+    fakeComments([comment()]);
+    const avatar =
+      'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><rect width="24" height="24" fill="blue"/></svg>';
+    fakeCommentsStats(overview, [
+      { member_id: 'member1', name: 'Regular Reader', avatar_image: avatar, comments: 7 },
+      // Missing avatar_image also supports older Core responses.
+      { member_id: 'member2', name: 'Initials Reader', comments: 6 },
+      ...Array.from({ length: 4 }, (_, i) => ({
+        member_id: `other${i}`,
+        name: `Reader ${i}`,
+        comments: 4 - i,
+      })),
+    ]);
+    await renderAdminApp('/comments', { labs });
+
+    const sidebar = commentsScreen.analyticsTopCommenters();
+    await expect.element(sidebar.row('Regular Reader')).toBeVisible();
+    expect(sidebar.row('Regular Reader').element().querySelector('img')?.getAttribute('src')).toBe(
+      avatar,
+    );
+    expect(sidebar.row('Initials Reader').element().textContent).toContain('IR');
+
+    await sidebar.viewAll().click();
+    const sheet = commentsScreen.analyticsTopCommentersSheet();
+    await expect.element(sheet.row('Reader 3')).toBeVisible();
+    expect(sheet.row('Regular Reader').element().querySelector('img')?.getAttribute('src')).toBe(
+      avatar,
+    );
+    expect(sheet.row('Initials Reader').element().textContent).toContain('IR');
   });
 
   it('lists the top 25 in a sheet from View all', async () => {
@@ -410,11 +572,24 @@ describe('Comments analytics', () => {
   });
 
   it('scrolls the rail with the page rather than on its own', async () => {
-    fakeComments([comment()]);
+    fakeComments(
+      Array.from({ length: 80 }, (_, index) =>
+        comment({
+          html:
+            index === 0 ? '<p>First scroll fixture</p>' : `<p>Scroll fixture entry ${index}</p>`,
+        }),
+      ),
+    );
     fakeCommentsStats();
     await renderAdminApp('/comments', { labs });
 
     await expect.element(commentsScreen.analyticsPanel()).toBeVisible();
+    await expect.element(commentsScreen.commentRow('First scroll fixture')).toBeVisible();
+    await expect.element(commentsScreen.analyticsKpiValue('comments')).toHaveTextContent('12');
+    await expect.element(commentsScreen.analyticsTopPosts().row('Popular post 1')).toBeVisible();
+    await expect
+      .element(commentsScreen.analyticsTopCommenters().row('Regular Reader'))
+      .toBeVisible();
 
     const scrollers = [];
     for (
@@ -427,6 +602,43 @@ describe('Comments analytics', () => {
       }
     }
     expect(scrollers).toHaveLength(1);
+
+    const scroller = scrollers[0];
+    const panel = commentsScreen.analyticsPanel().element();
+    const rail = panel.parentElement!;
+    const header = panel
+      .closest('[data-list-page="list-page"]')!
+      .querySelector('[data-list-page="header"]')!;
+    const scrollportBottom = () => scroller.getBoundingClientRect().top + scroller.clientHeight;
+    const scrollTo = async (top: number) => {
+      scroller.scrollTop = top;
+      scroller.dispatchEvent(new Event('scroll'));
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => resolve());
+      });
+    };
+
+    // Native bottom sticking starts flush below the header, without a top inset.
+    expect(panel.getBoundingClientRect().top).toBeCloseTo(header.getBoundingClientRect().bottom, 0);
+    const pinAt = rail.getBoundingClientRect().bottom - scrollportBottom();
+    expect(pinAt).toBeGreaterThan(0);
+    await scrollTo(pinAt + 200);
+    await expect.poll(() => rail.getBoundingClientRect().bottom).toBeCloseTo(scrollportBottom(), 0);
+
+    // Unlike the direction-aware JS version, CSS stays pinned on reversal until
+    // the rail's original position comes back into view.
+    await scrollTo(pinAt + 100);
+    await expect.poll(() => rail.getBoundingClientRect().bottom).toBeCloseTo(scrollportBottom(), 0);
+    await scrollTo(0);
+    await expect
+      .poll(() => panel.getBoundingClientRect().top)
+      .toBeCloseTo(header.getBoundingClientRect().bottom, 0);
+
+    // A tall viewport should not bottom-align a short panel with a large gap.
+    await page.viewport(1280, 1400);
+    await expect
+      .poll(() => panel.getBoundingClientRect().top)
+      .toBeCloseTo(header.getBoundingClientRect().bottom, 0);
   });
 
   it('opens the panel from the header on narrower screens', async () => {
@@ -468,7 +680,7 @@ describe('Comments analytics', () => {
     await expect(commentsApi).toHaveSentFilter(/member_id:'?member1'?/);
   });
 
-  it('keeps zero analytics visible for an empty filtered list and resets the shared scope', async () => {
+  it('hides analytics for an empty filtered list and restores it after resetting the shared scope', async () => {
     const entity = comment({ html: '<p>Visible after resetting</p>' });
     const commentsApi = fakeComments(({ filter }) =>
       filter?.includes('status:hidden') ? [] : [entity],
@@ -489,16 +701,30 @@ describe('Comments analytics', () => {
     await renderAdminApp('/comments?range=7&filter=status:hidden', { labs });
 
     await expect.element(commentsScreen.filteredEmptyState()).toBeVisible();
-    await expect.element(commentsScreen.analyticsPanel()).toBeVisible();
-    await expect.element(commentsScreen.analyticsKpiValue('comments')).toHaveTextContent('0');
-    await expect.element(commentsScreen.analyticsKpiValue('commenters')).toHaveTextContent('0');
-    await expect.element(commentsScreen.analyticsKpiValue('reported')).toHaveTextContent('0');
+    await expect.element(commentsScreen.analyticsPanel()).not.toBeInTheDocument();
+    await expect.element(commentsScreen.analyticsButton()).not.toBeInTheDocument();
     await commentsScreen.resetFiltersButton().click();
 
     await expect.element(commentsScreen.commentRow('Visible after resetting')).toBeVisible();
+    await expect.element(commentsScreen.analyticsPanel()).toBeVisible();
     await expect.element(commentsScreen.analyticsDateRange()).toHaveTextContent('All time');
     await expect.poll(() => commentsApi.lastRequest?.filter).not.toContain('status:hidden');
   });
+
+  it.each([1280, 1000])(
+    'hides the sidebar and its mobile action when no comments exist at width %s',
+    async (width) => {
+      await page.viewport(width, 800);
+      fakeComments([]);
+      fakeCommentsStats();
+      await renderAdminApp('/comments', { labs });
+
+      await expect.element(page.getByText('No comments yet', { exact: true })).toBeVisible();
+      await expect.element(commentsScreen.analyticsPanel()).not.toBeInTheDocument();
+      await expect.element(commentsScreen.analyticsButton()).not.toBeInTheDocument();
+      await expect.element(commentsScreen.analyticsDateRange()).toBeVisible();
+    },
+  );
 
   it('hides analytics when an older Core endpoint cannot apply filters', async () => {
     const commentsApi = fakeComments([comment({ html: '<p>Still filtered</p>' })]);
@@ -540,7 +766,7 @@ describe('Comments analytics', () => {
 
     await expect.poll(() => hideApi.requests.length).toBe(1);
     await expect.element(commentsScreen.filteredEmptyState()).toBeVisible();
-    await expect.element(commentsScreen.analyticsKpiValue('comments')).toHaveTextContent('0');
+    await expect.element(commentsScreen.analyticsPanel()).not.toBeInTheDocument();
     for (const [index, api] of Object.values(statsApis).entries()) {
       await expect.poll(() => api.requests.length).toBeGreaterThan(requestsBefore[index]);
       await expect.poll(() => requestedFilter(api)).toMatch(/status:published/);
@@ -589,9 +815,7 @@ describe('Comments analytics', () => {
         hide_comments: true,
       });
     await expect.element(commentsScreen.filteredEmptyState()).toBeVisible();
-    await expect.element(commentsScreen.analyticsKpiValue('comments')).toHaveTextContent('0');
-    await expect.element(commentsScreen.analyticsKpiValue('commenters')).toHaveTextContent('0');
-    await expect.element(commentsScreen.analyticsKpiValue('reported')).toHaveTextContent('0');
+    await expect.element(commentsScreen.analyticsPanel()).not.toBeInTheDocument();
     for (const [index, api] of Object.values(statsApis).entries()) {
       await expect.poll(() => api.requests.length).toBeGreaterThan(requestsBefore[index]);
       await expect.poll(() => requestedFilter(api)).toMatch(/status:published/);
