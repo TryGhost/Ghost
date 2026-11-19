@@ -149,11 +149,17 @@ describe('Tabs Component', () => {
 
   describe('TabsDropdownTrigger', () => {
     const DropdownTabs = ({
-      onValueChange,
+      activationMode,
+      id,
       label,
+      onValueChange,
+      orientation,
     }: {
-      onValueChange?: (value: string) => void;
+      activationMode?: 'automatic' | 'manual';
+      id?: string;
       label?: string;
+      onValueChange?: (value: string) => void;
+      orientation?: 'horizontal' | 'vertical';
     }) => {
       const [value, setValue] = useState('visitors');
       const change = (next: string) => {
@@ -161,11 +167,16 @@ describe('Tabs Component', () => {
         setValue(next);
       };
       return (
-        <Tabs value={value} onValueChange={change}>
+        <Tabs
+          activationMode={activationMode}
+          orientation={orientation}
+          value={value}
+          onValueChange={change}
+        >
           <TabsList>
             <TabsTrigger value="visitors">Visitors</TabsTrigger>
             <DropdownMenu>
-              <TabsDropdownTrigger aria-label={label} value="members">
+              <TabsDropdownTrigger aria-label={label} id={id} value="members">
                 Members
                 <svg aria-hidden="true" />
               </TabsDropdownTrigger>
@@ -173,11 +184,29 @@ describe('Tabs Component', () => {
                 <DropdownMenuItem onSelect={() => change('members')}>Paid members</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <TabsTrigger value="revenue">Revenue</TabsTrigger>
+            <DropdownMenu>
+              <TabsDropdownTrigger value="sources" disabled>
+                Sources
+              </TabsDropdownTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem>Referrers</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </TabsList>
           <TabsContent value="visitors">Visitors panel</TabsContent>
           <TabsContent value="members">Members panel</TabsContent>
+          <TabsContent value="revenue">Revenue panel</TabsContent>
         </Tabs>
       );
+    };
+
+    const arrow = async (from: HTMLElement, key: string) => {
+      act(() => from.focus());
+      fireEvent.keyDown(from, { key });
+      // Radix moves focus between tabs on the next tick.
+      await waitFor(() => expect(document.activeElement).not.toBe(from));
+      return document.activeElement;
     };
 
     it('renders the tab as the only control, which opens its menu', () => {
@@ -185,7 +214,7 @@ describe('Tabs Component', () => {
 
       const tabList = screen.getByRole('tablist');
       expect(within(tabList).queryAllByRole('button', { hidden: true })).toHaveLength(0);
-      expect(tabList.querySelectorAll('button')).toHaveLength(2);
+      expect(tabList.querySelectorAll('button')).toHaveLength(4);
 
       const tab = screen.getByRole('tab', { name: 'Members' });
       expect(tab.getAttribute('aria-haspopup')).toBe('menu');
@@ -234,37 +263,99 @@ describe('Tabs Component', () => {
       expect(screen.getByRole('menu', { name: 'Members metric' })).toBeTruthy();
     });
 
-    it('opens the menu on click without selecting the tab, also once dismissed', async () => {
+    it('opens the menu on click without selecting the tab', () => {
       const handleValueChange = vi.fn();
       render(<DropdownTabs onValueChange={handleValueChange} />);
 
       const tab = screen.getByRole('tab', { name: 'Members' });
       fireEvent.pointerDown(tab, { button: 0, ctrlKey: false });
       fireEvent.mouseDown(tab, { button: 0 });
-      expect(screen.getByRole('menu')).toBeTruthy();
 
+      expect(screen.getByRole('menu')).toBeTruthy();
+      expect(handleValueChange).not.toHaveBeenCalled();
+      expect(tab.getAttribute('aria-selected')).toBe('false');
+    });
+
+    it('selects the tab that a dismissed menu returns focus to, keeping one Tab stop', async () => {
+      render(<DropdownTabs />);
+
+      const visitors = screen.getByRole('tab', { name: 'Visitors' });
+      const revenue = screen.getByRole('tab', { name: 'Revenue' });
+      // Leave the list's Tab stop on a tab after the dropdown tab.
+      await arrow(screen.getByRole('tab', { name: 'Members' }), 'ArrowRight');
+      expect(document.activeElement).toBe(revenue);
+
+      const tab = screen.getByRole('tab', { name: 'Members' });
+      fireEvent.pointerDown(tab, { button: 0, ctrlKey: false });
       fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
       await waitFor(() => expect(document.activeElement).toBe(tab));
 
-      expect(screen.queryByRole('menu')).toBeNull();
-      expect(handleValueChange).not.toHaveBeenCalled();
-      expect(tab.getAttribute('aria-selected')).toBe('false');
+      // A focused tab is selected, as in any automatic tab list, and is the list's one Tab stop.
+      expect(tab.getAttribute('aria-selected')).toBe('true');
+      expect(tab.tabIndex).toBe(0);
+      expect(revenue.tabIndex).toBe(-1);
+      expect(visitors.tabIndex).toBe(-1);
     });
 
     it('is reached by arrow keys and selected like any other tab', async () => {
       const handleValueChange = vi.fn();
       render(<DropdownTabs onValueChange={handleValueChange} />);
 
-      const visitors = screen.getByRole('tab', { name: 'Visitors' });
       const members = screen.getByRole('tab', { name: 'Members' });
       expect(members.tabIndex).toBe(-1);
 
-      act(() => visitors.focus());
-      fireEvent.keyDown(visitors, { key: 'ArrowRight' });
-
-      await waitFor(() => expect(document.activeElement).toBe(members));
+      expect(await arrow(screen.getByRole('tab', { name: 'Visitors' }), 'ArrowRight')).toBe(
+        members,
+      );
       expect(handleValueChange).toHaveBeenCalledWith('members');
       expect(members.getAttribute('aria-selected')).toBe('true');
+    });
+
+    it('moves on with ArrowDown in a vertical tab list instead of opening the menu', async () => {
+      render(<DropdownTabs orientation="vertical" />);
+
+      const members = screen.getByRole('tab', { name: 'Members' });
+      expect(await arrow(members, 'ArrowDown')).toBe(screen.getByRole('tab', { name: 'Revenue' }));
+      expect(screen.queryByRole('menu')).toBeNull();
+
+      fireEvent.keyDown(members, { key: 'Enter' });
+      expect(screen.getByRole('menu', { name: 'Members' })).toBeTruthy();
+    });
+
+    it('opens the menu without selecting the tab in a manual tab list', async () => {
+      const handleValueChange = vi.fn();
+      render(<DropdownTabs activationMode="manual" onValueChange={handleValueChange} />);
+
+      const members = await arrow(screen.getByRole('tab', { name: 'Visitors' }), 'ArrowRight');
+      expect(members).toBe(screen.getByRole('tab', { name: 'Members' }));
+      fireEvent.keyDown(members as HTMLElement, { key: 'Enter' });
+
+      expect(screen.getByRole('menu', { name: 'Members' })).toBeTruthy();
+      expect(handleValueChange).not.toHaveBeenCalled();
+    });
+
+    it('skips a disabled dropdown tab and keeps its menu shut', async () => {
+      render(<DropdownTabs />);
+
+      const sources = screen.getByRole('tab', { name: 'Sources' });
+      expect(sources.hasAttribute('disabled')).toBe(true);
+      expect(await arrow(screen.getByRole('tab', { name: 'Revenue' }), 'ArrowRight')).toBe(
+        screen.getByRole('tab', { name: 'Visitors' }),
+      );
+
+      fireEvent.pointerDown(sources, { button: 0, ctrlKey: false });
+      fireEvent.keyDown(sources, { key: 'Enter' });
+      expect(screen.queryByRole('menu')).toBeNull();
+    });
+
+    it('puts an id on the tab and still names the menu', () => {
+      render(<DropdownTabs id="members-tab" />);
+
+      const tab = screen.getByRole('tab', { name: 'Members' });
+      expect(tab.id).toBe('members-tab');
+      fireEvent.keyDown(tab, { key: 'Enter' });
+
+      expect(screen.getByRole('menu', { name: 'Members' })).toBeTruthy();
     });
   });
 });
