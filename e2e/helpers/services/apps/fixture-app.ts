@@ -27,6 +27,8 @@ export interface FixtureAppManifest {
   accent_color: string;
   icon: { name: string };
   surfaces: [{ type: 'admin_page'; url: string }];
+  /** The permission keys the app needs, such as `["post:read"]`. */
+  scopes: string[];
 }
 
 /**
@@ -142,6 +144,7 @@ export class FixtureApp extends FakeServer {
       accent_color: '#15171a',
       icon: { name: 'blocks' },
       surfaces: [{ type: 'admin_page', url: 'app.html' }],
+      scopes: [],
     };
   }
 

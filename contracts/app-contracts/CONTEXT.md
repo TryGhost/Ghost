@@ -108,41 +108,58 @@ _Avoid_: allowed origin, app origin
 ### Access
 
 **Scope**:
-A named permission an app can be given, such as `post:edit`: the resource, then
-the action, as Platform names the permission in Core. Every scope is defined
-once, in the scope registry. There are no member scopes, and pages come under
-the `post:*` scopes.
+A named permission an app asks for, such as `post:edit`: the resource, then the
+action, as Platform names the permission in Core. Every scope is defined once,
+in the scope registry, and a manifest that names any other, or a wildcard, is
+refused. There are no member scopes, and pages come under the `post:*` scopes.
 _Avoid_: permission, grant, capability
 
 **Permission key**:
 A permission written `object_type:action`, such as `post:edit`, as Platform
-names it in Core. Each scope in the registry is one, and a manifest names a
-scope by its `permission_key`.
+names it in Core. Each scope in the registry is one, and a manifest's `scopes`
+lists them.
 _Avoid_: scope name, key, permission name, permission string
 
 **Resource**:
 The kind of object a scope acts on: Platform's object type, exactly, such as
-`post` or `slug`. Admin's access list shows one line per resource.
+`post` or `slug`. The review screen shows one line per resource.
 _Avoid_: object, entity
 
 **Scope registry**:
-The one list of scopes, with each scope's resource and the words Admin's access
-list uses for it. Admin's access list and the allowlist both read it.
+The one list of scopes, with each scope's resource and the words the review
+screen uses for it. Manifest validation, Admin's review screen and the
+allowlist all read it. The words are Ghost's own, never the developer's.
 _Avoid_: permission list, scope list
+
+**Scopes field**:
+The `scopes` a manifest asks for: a list of permission keys, each once, such as
+`["post:browse", "post:edit"]`. `[]` asks for nothing. Every scope is required,
+so approving a manifest approves exactly its scopes. A parsed and a stored
+manifest hold them in the registry's order, so the same scopes always store
+the same way. `optional_scopes` is refused until optional scopes exist.
+_Avoid_: access field, permissions
+
+**Scope change**:
+A scope added or removed between two versions of a manifest. Scopes are
+compared by meaning, not position, so reordering changes nothing. An added
+scope needs approval; a removed one is silent.
+_Avoid_: permission change, scope diff
 
 ### Changes
 
 **Change**:
-One field that differs between two versions of an app's manifest, the manifest
-URL included. Ghost compares and serves a change in the one shape App Contracts
-defines, which names its kind.
+One thing that differs between two versions of an app's manifest: a field, by
+its path, the manifest URL included, or a scope change, by its scope. Each
+kind decides whether it needs approval. Ghost compares, stores and serves a
+change in the one shape App Contracts defines, which names its kind.
 _Avoid_: diff, update
 
 **Silent change**:
 A change that applies without the publisher approving it again. Only the
-description, the accent colour, the name of an icon Admin ships and the backend
-key qualify; anything else that says who the app is, or is a URL Ghost loads or
-links to, does not.
+description, the accent colour, the name of an icon Admin ships, the backend
+key and a removed scope qualify; anything else that says
+who the app is, adds a scope, or is a URL Ghost loads or links to, does
+not.
 _Avoid_: minor change, safe change
 
 **Move**:

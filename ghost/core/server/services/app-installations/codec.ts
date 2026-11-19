@@ -52,8 +52,8 @@ export interface AppInstallationHistoryEntry {
   /** The host the app moved to. Only set when an approval moved the app. */
   moved_to?: string;
   /**
-   * What the entry changed, as stored with its manifest row: fields, by path. A suspension lists
-   * what waits for approval. Left out when nothing changed.
+   * What the entry changed, as stored with its manifest row: fields, then scopes in the scope
+   * registry's order. A suspension lists what waits for approval. Left out when nothing changed.
    */
   changes?: ManifestChange[];
 }

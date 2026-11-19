@@ -41,6 +41,7 @@ function manifest(overrides: Record<string, unknown> = {}) {
     accent_color: '#ff5500',
     icon: { name: 'audio-lines' },
     surfaces: [{ type: 'admin_page', url: '/admin' }],
+    scopes: [],
     manifest_url: MANIFEST_URL,
     identity_key: keys.identity.publicJwk,
     backend_key: keys.backend.publicJwk,

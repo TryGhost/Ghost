@@ -37,8 +37,8 @@ export interface AppInstallationHistoryEntry {
   /** The host the app moved to. Only set when an approval moved the app. */
   moved_to?: string;
   /**
-   * What the entry changed, as Ghost stored it with the manifest: fields, by path. A suspension
-   * lists what waits for approval. Left out when nothing changed.
+   * What the entry changed, as Ghost stored it with the manifest: fields, then scopes. A
+   * suspension lists what waits for approval. Left out when nothing changed.
    */
   changes?: ManifestChange[];
 }
@@ -68,8 +68,8 @@ export interface AppInstallationPreview {
     manifest: AppManifest;
     icon_data_url: string | null;
     /**
-     * The fields that differ, by path, such as `surfaces[0].url`, or `manifest_url` when the
-     * app moved.
+     * Field changes by path, such as `surfaces[0].url`, or `manifest_url` when the app moved,
+     * then scope changes in the registry's order.
      */
     changes: ManifestChange[];
   } | null;

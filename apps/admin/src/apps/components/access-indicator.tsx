@@ -1,6 +1,6 @@
 import React from 'react';
 import { Stack, Text } from '@tryghost/shade/primitives';
-import { APP_PERMISSION_KEYS, type AccessLine, describeScopes } from '@tryghost/app-contracts';
+import { APP_PERMISSION_KEYS, type ScopeLine, describeScopes } from '@tryghost/app-contracts';
 import type { AppManifest } from '@tryghost/admin-x-framework/api/app-installations';
 import { servedFrom } from '@/apps/lib/served-from';
 import { SectionEyebrow } from './section-eyebrow';
@@ -30,7 +30,7 @@ const ACCOUNT_ACCESS_INTRO =
 const ACCOUNT_ACCESS = describeScopes(APP_PERMISSION_KEYS);
 
 /** One line per resource: its name over what the app can do with it, one sentence per scope. */
-export const AccessLines: React.FC<{ lines: AccessLine[]; testId?: string }> = ({
+export const AccessLines: React.FC<{ lines: ScopeLine[]; testId?: string }> = ({
   lines,
   testId = 'access-item',
 }) => (

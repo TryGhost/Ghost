@@ -14,6 +14,11 @@ export function changesFrom(approved: Approved, loaded: LoadedManifest): Manifes
   return compareManifests(approved.manifest, loaded.manifest).changes;
 }
 
+/** What an install grants: every scope it declares, as added. */
+export function installChanges(loaded: LoadedManifest): ManifestChange[] {
+  return compareManifests(undefined, loaded.manifest).changes;
+}
+
 /** The approved, pending and just-loaded manifests. */
 interface Manifests {
   current: Pick<Installation, 'manifest_id' | 'manifest_url' | 'manifest'>;

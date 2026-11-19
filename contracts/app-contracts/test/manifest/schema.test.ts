@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { AppManifestSchema } from '../../src/manifest/index.ts';
 import { URL_MAX_LENGTH } from '../../src/manifest/limits.ts';
-import { devManifest, devOptions, errorsOf, manifest, manifestOf } from './helpers.ts';
+import { devManifest, devOptions, errorsOf, manifest, manifestOf, storedOf } from './helpers.ts';
 
 describe('shape', () => {
   it('rejects anything that is not an object', () => {
@@ -38,6 +38,7 @@ describe('shape', () => {
       'identity_key',
       'manifest_url',
       'name',
+      'scopes',
       'surfaces',
     ]);
   });
@@ -187,7 +188,9 @@ describe('author', () => {
       manifest({ author: { name: 'A', url: 'MAILTO:support@example.com' } }),
     );
     expect(accepted.author.url).toBe('mailto:support@example.com');
-    expect(AppManifestSchema.parse(accepted).author.url).toBe('mailto:support@example.com');
+    expect(AppManifestSchema.parse(storedOf(accepted)).author.url).toBe(
+      'mailto:support@example.com',
+    );
     expect(
       manifestOf(manifest({ author: { name: 'A', url: ' mailto:support@example.com' } })).author
         .url,
@@ -281,7 +284,7 @@ describe('manifest_url', () => {
   it('is held to by AppManifestSchema too', () => {
     const parsed = manifestOf(manifest());
     const result = AppManifestSchema.safeParse({
-      ...parsed,
+      ...storedOf(parsed),
       manifest_url: `${parsed.manifest_url}#`,
     });
     expect(result.error?.issues).toMatchObject([
@@ -333,7 +336,7 @@ describe('development on localhost', () => {
 
   it('is held to by AppManifestSchema too', () => {
     const parsed = manifestOf(devManifest(), devOptions);
-    const result = AppManifestSchema.safeParse({ ...parsed, development: false });
+    const result = AppManifestSchema.safeParse({ ...storedOf(parsed), development: false });
     expect(result.error?.issues).toMatchObject([{ path: ['development'], message: ON_LOCALHOST }]);
   });
 });
@@ -341,16 +344,15 @@ describe('development on localhost', () => {
 describe('AppManifestSchema', () => {
   it('accepts what parseManifest hands back, wherever Ghost is served from now', () => {
     const parsed = manifestOf(manifest());
-    expect(AppManifestSchema.parse(parsed)).toEqual(parsed);
-    expect(
-      AppManifestSchema.parse(manifestOf(manifest({ icon: { name: 'audio-lines' } }))),
-    ).toEqual(manifestOf(manifest({ icon: { name: 'audio-lines' } })));
+    expect(AppManifestSchema.parse(storedOf(parsed))).toEqual(parsed);
+    const named = manifestOf(manifest({ icon: { name: 'audio-lines' } }));
+    expect(AppManifestSchema.parse(storedOf(named))).toEqual(named);
   });
 
-  it('encodes a manifest back to the same shape it reads', () => {
+  it('encodes a manifest back to the shape it reads, which reads as the same manifest', () => {
     const parsed = manifestOf(manifest());
     expect(z.encode(AppManifestSchema, parsed)).toEqual(parsed);
-    expect(JSON.stringify(z.encode(AppManifestSchema, parsed))).toBe(JSON.stringify(parsed));
+    expect(AppManifestSchema.parse(JSON.parse(JSON.stringify(storedOf(parsed))))).toEqual(parsed);
   });
 
   it('reads back text stored before blank text was refused', () => {
@@ -361,7 +363,7 @@ describe('AppManifestSchema', () => {
       { ...parsed, description: '\u3164' },
       { ...parsed, author: { ...parsed.author, name: '\u3164' } },
     ]) {
-      expect(AppManifestSchema.parse(stored)).toEqual(stored);
+      expect(AppManifestSchema.parse(storedOf(stored))).toEqual(stored);
     }
   });
 
@@ -378,8 +380,58 @@ describe('AppManifestSchema', () => {
 
   it('still rejects what parseManifest rejects, other than the URL rules', () => {
     const parsed = manifestOf(manifest());
-    expect(AppManifestSchema.safeParse({ ...parsed, id: 'Podcast' }).success).toBe(false);
-    expect(AppManifestSchema.safeParse({ ...parsed, icon: {} }).success).toBe(false);
-    expect(AppManifestSchema.safeParse({ ...parsed, extra: true }).success).toBe(false);
+    const stored = storedOf(parsed);
+    expect(AppManifestSchema.safeParse({ ...stored, id: 'Podcast' }).success).toBe(false);
+    expect(AppManifestSchema.safeParse({ ...stored, icon: {} }).success).toBe(false);
+    expect(AppManifestSchema.safeParse({ ...stored, extra: true }).success).toBe(false);
+  });
+});
+
+describe('scopes', () => {
+  const withScopes = (scopes: unknown) => manifest({ scopes });
+
+  it('is required, and may ask for nothing', () => {
+    expect(errorsOf(manifest({ scopes: undefined }))[0]?.path).toBe('scopes');
+    expect(manifestOf(withScopes([])).scopes).toEqual([]);
+  });
+
+  it('reads permission keys into the registry’s order', () => {
+    expect(manifestOf(withScopes(['slug:generate', 'post:edit', 'post:read'])).scopes).toEqual([
+      'post:read',
+      'post:edit',
+      'slug:generate',
+    ]);
+  });
+
+  it('refuses a permission key Ghost doesn’t know, and wildcards', () => {
+    expect(errorsOf(withScopes(['post:publish']))).toEqual([
+      { path: 'scopes[0]', message: expect.stringContaining('permission key Ghost knows') },
+    ]);
+    for (const key of ['post:*', '*']) {
+      expect(errorsOf(withScopes([key]))).toEqual([
+        { path: 'scopes[0]', message: 'Expected a full permission key: wildcards are not allowed' },
+      ]);
+    }
+  });
+
+  it('refuses a permission key listed twice, and anything but a list of keys', () => {
+    expect(errorsOf(withScopes(['post:read', 'post:read']))).toEqual([
+      { path: 'scopes[1]', message: 'Expected post:read only once' },
+    ]);
+    expect(errorsOf(withScopes({ post: ['post:read'] }))[0]?.path).toBe('scopes');
+    expect(errorsOf(withScopes([{ permission_key: 'post:read' }]))[0]?.path).toBe('scopes[0]');
+  });
+
+  it('refuses optional scopes until Ghost supports them', () => {
+    expect(errorsOf(manifest({ optional_scopes: ['post:edit'] }))).toEqual([
+      { path: '', message: 'Optional scopes aren’t supported yet' },
+    ]);
+  });
+
+  it('stores the same scopes the same way, however they were written', () => {
+    const one = manifestOf(withScopes(['tag:edit', 'post:read']));
+    const other = manifestOf(withScopes(['post:read', 'tag:edit']));
+    expect(JSON.stringify(storedOf(one))).toBe(JSON.stringify(storedOf(other)));
+    expect(storedOf(one).scopes).toEqual(['post:read', 'tag:edit']);
   });
 });

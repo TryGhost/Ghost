@@ -19,6 +19,7 @@ const manifest: AppManifest = {
   accent_color: '#ff5500',
   icon: { name: 'audio-lines' },
   surfaces: [{ type: 'admin_page', url: 'https://podcast.example.com/admin' }],
+  scopes: [],
   manifest_url: 'https://podcast.example.com/ghost-app.json',
   identity_key: FIXTURE_IDENTITY_KEY,
   backend_key: FIXTURE_BACKEND_KEY,
@@ -86,7 +87,15 @@ describe('AppInstallationsRepository insert', function () {
   it('stores the manifest text, digest and icon exactly as they were given', async function () {
     const { repository, transacting, insert, trx } = inserting();
 
-    const installed = await repository.insert(loaded, ICON_DATA_URL, { transacting });
+    const granted = [
+      {
+        kind: 'scope' as const,
+        scope: 'post:read' as const,
+        change: 'added' as const,
+      },
+    ];
+
+    const installed = await repository.insert(loaded, ICON_DATA_URL, granted, { transacting });
 
     assert.deepEqual(
       trx.mock.calls.map(([table]) => table),
@@ -102,7 +111,7 @@ describe('AppInstallationsRepository insert', function () {
       icon_data_url: ICON_DATA_URL,
       source: 'install',
       requires_approval: false,
-      changes: '[]',
+      changes: JSON.stringify(granted),
       created_at: insert.mock.calls[0][0].created_at,
     });
     assert.equal(installed.icon_data_url, ICON_DATA_URL);
@@ -114,7 +123,7 @@ describe('AppInstallationsRepository insert', function () {
       Object.assign(new Error('Duplicate app'), { code: 'ER_DUP_ENTRY' }),
     );
 
-    await assert.rejects(repository.insert(loaded, null, { transacting }), {
+    await assert.rejects(repository.insert(loaded, null, [], { transacting }), {
       errorType: 'ConflictError',
       code: 'APP_ALREADY_INSTALLED',
     });
