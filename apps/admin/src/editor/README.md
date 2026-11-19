@@ -297,11 +297,12 @@ editor is also read-only for the moment before the server's first answer.
 | Header actions    | Disabled, and their shortcuts do nothing                                                          |
 | Settings panel    | `inert`, since it saves each edit as it is made                                                   |
 
-The one sign of it is an avatar with a lock, first in the header's avatar
-row: whoever is editing, or the writer's own avatar when another of their
-tabs is. The rest of the row leaves that person out. Hovering or clicking the
-avatar opens a card that says who is editing and offers Take over, or Edit
-here for the writer's own tab. The card opens by itself when the writer needs
+The one sign of it is a pill holding a lock and an avatar, first in the
+header's avatar row: whoever is editing, or the writer's own avatar when
+another of their tabs is. The rest of the row is everyone else with the
+document open, and leaves that person out. Hovering or clicking the pill
+opens a card that says who is editing and offers Take over, or Edit here for
+the writer's own tab. That card is the only place a takeover starts. The card opens by itself when the writer needs
 to know without asking: the lease was just taken from them, what they typed
 was put back, or they typed into the read-only document. While a takeover
 waits, the lock is a spinner.

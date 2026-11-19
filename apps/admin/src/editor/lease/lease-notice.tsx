@@ -154,12 +154,12 @@ function isRefusedTyping(event: KeyboardEvent): boolean {
 }
 
 /**
- * The one mark that the editor is read-only: the avatar of whoever is editing,
- * with a lock on it, first in the header's avatar row. The writer's own avatar
- * stands for their other tab. Its card says why and offers the way to edit,
- * and opens on hover, on a click, and by itself when the writer needs to know
- * without asking: the lease was just taken from them, what they typed was put
- * back, or they tried to type.
+ * The one mark that the editor is read-only: a pill holding a lock and the
+ * avatar of whoever is editing, first in the header's avatar row. The writer's
+ * own avatar stands for their other tab. Its card says why and offers the way
+ * to edit, and opens on hover, on a click, and by itself when the writer needs
+ * to know without asking: the lease was just taken from them, what they typed
+ * was put back, or they tried to type.
  */
 export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
   const { lease, resourceId, resourceType, currentUser } = props;
@@ -232,20 +232,16 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
     : held?.ownTab
       ? `This ${resourceType} is being edited in another of your tabs`
       : `${holder?.name ?? 'Someone else'} is editing this ${resourceType}`;
-  const Badge = taking ? LucideIcon.LoaderCircle : LucideIcon.Lock;
+  const Mark = taking ? LucideIcon.LoaderCircle : LucideIcon.Lock;
   let face: ReactNode = (
-    <Inline
-      align="center"
-      className="size-7 rounded-full border-2 border-background bg-muted"
-      justify="center"
-    >
-      <LucideIcon.User className="size-3.5 text-muted-foreground" />
+    <Inline align="center" className="size-6 rounded-full bg-background" justify="center">
+      <LucideIcon.User className="size-3.5" />
     </Inline>
   );
   if (person) {
     face = (
       <Avatar
-        className="size-7 border-2 border-background"
+        className="size-6"
         colorSeed={person.name}
         initials={userInitials(person.name)}
         src={person.image ?? undefined}
@@ -258,21 +254,23 @@ export function LeaseAvatar({ className, ...props }: LeaseAvatarProps) {
       <PopoverAnchor asChild>
         <button
           aria-label={label}
-          className={cn('pointer-events-auto relative z-10 shrink-0 rounded-full', className)}
+          className={cn(
+            'pointer-events-auto relative z-10 shrink-0 rounded-full bg-muted py-0.5 pr-0.5 pl-2 text-muted-foreground hover:text-foreground',
+            className,
+          )}
           data-testid={editorLeaseAvatar}
           type="button"
           onClick={pin}
           onPointerEnter={enter}
           onPointerLeave={leave}
         >
-          {face}
-          <Inline
-            align="center"
-            aria-hidden="true"
-            className="absolute -right-1 -bottom-1 size-4 rounded-full border border-background bg-foreground text-background"
-            justify="center"
-          >
-            <Badge className={cn('size-2.5', taking && 'animate-spin')} strokeWidth={2.5} />
+          <Inline align="center" gap="xs">
+            <Mark
+              aria-hidden="true"
+              className={cn('size-3.5', taking && 'animate-spin')}
+              strokeWidth={2.5}
+            />
+            {face}
           </Inline>
         </button>
       </PopoverAnchor>

@@ -134,7 +134,7 @@ describe('Post editor lease', () => {
   });
 
   describe('while someone else is editing', () => {
-    it('opens read-only, with their avatar and a lock as the one sign of it', async () => {
+    it('opens read-only, with a pill of a lock and their avatar as the one sign of it', async () => {
       fakePublishedPost();
       alex();
       fakeLease().state.other = OTHER_USER;
@@ -204,7 +204,7 @@ describe('Post editor lease', () => {
       expect(asked(polls.requests)).not.toContain('hold');
     });
 
-    it('shows them once, as the lease avatar, and everyone else in the avatar row', async () => {
+    it('shows them once, in the lease pill, and everyone else in the avatar row', async () => {
       const reader = 'd'.repeat(24);
       fakePublishedPost();
       fakeUsers([

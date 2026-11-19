@@ -225,7 +225,7 @@ function EditorContent({
   });
   const leaseHolderId =
     editLease.locked && editLease.reason === 'held' && !editLease.ownTab ? editLease.userId : null;
-  // The holder has an avatar of their own, first in the row, which the takeover hangs on.
+  // The holder is shown once, in the lease pill, which the takeover hangs on.
   const otherPresence = useMemo(
     () =>
       leaseHolderId
@@ -559,7 +559,7 @@ function EditorContent({
                 data-writing-focus={editLease.locked ? undefined : writingFocus}
               >
                 <PageHeader.ActionGroup className="gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
-                  <Inline align="center" gap="none">
+                  <Inline align="center" gap="xs">
                     <LeaseAvatar
                       contentText={session.contentText}
                       currentUser={currentUser}
@@ -570,11 +570,7 @@ function EditorContent({
                       onTakeOver={presence.takeOver}
                     />
                     {showPresence ? (
-                      <PresenceAvatars
-                        active={otherPresence}
-                        className={editLease.locked ? '-ml-2' : undefined}
-                        resourceType={postType}
-                      />
+                      <PresenceAvatars active={otherPresence} resourceType={postType} />
                     ) : null}
                   </Inline>
                   <EditorHeaderActions
