@@ -74,7 +74,8 @@ _Avoid_: admin host, admin domain
 
 **Session origin**:
 The origin a session was created from. A session works only from that origin,
-which must be the admin origin. A session with none is anonymous.
+which must be the admin origin. A request with a session that has none resolves
+to the anonymous principal.
 _Avoid_: referrer, session host
 
 **Verified session**:
@@ -84,12 +85,9 @@ _Avoid_: trusted session, full session
 
 **Unverified session**:
 A session from a password sign-in that is still waiting for its code. It can
-ask for a code, submit one, or sign out; everywhere else it is anonymous.
+ask for a code, submit one, or sign out; everywhere else a request with it
+resolves to the anonymous principal.
 _Avoid_: pending session, partial session, 2FA session
-
-**Anonymous**:
-A request treated as having no signed-in user, whatever cookie it sent.
-_Avoid_: unauthenticated, guest, public (a permissions term)
 
 **Rotation**:
 Replacing a session with a new one for the same browser. The new session keeps
@@ -105,15 +103,17 @@ A change that revokes sessions: a password change, a password reset, suspending,
 locking or deleting a user, and an authentication reset.
 
 **Authentication reset**:
-The site-wide emergency action that ends every staff session, locks every staff
-user and replaces every API key's secret.
+The site-wide emergency action that ends every staff session under either
+engine, replaces every staff user's password and every API key's secret, and
+locks every staff user who isn't suspended.
 _Avoid_: password reset, session reset
 
 ### Device verification
 
 **Device verification**:
 Asking for an emailed code when a password sign-in comes from a browser that
-has no device trust for that user. It is a site setting.
+has no device trust for that user, except on a user's first sign-in. It is on
+when the `security:staffDeviceVerification` config is.
 _Avoid_: 2FA, MFA, two-factor (which means authenticator apps)
 
 **Code**:
@@ -132,18 +132,20 @@ sign-in after a user's first. With it on, no browser gets device trust.
 _Avoid_: email 2FA, forced MFA
 
 **Passwordless sign-in**:
-Signing in by magic link, passkey or SSO. The session is verified from the
-start, and required email verification doesn't apply. Only the SSO adapter
-signs anyone in this way today.
+Signing in without a password. The session is verified from the start, and
+required email verification doesn't apply. Only the SSO adapter signs anyone
+in this way today.
 _Avoid_: social login
 
 ### Staff status
 
 **Active**:
-A staff user who can sign in.
+A staff user who can sign in. Stored as the status `active` or one of the
+`warn-*` statuses.
 
 **Suspended**:
-A staff user who can't sign in by any method. Stored as the status `inactive`.
+A staff user who can't sign in at all, or reset their password. Stored as the
+status `inactive`, which also marks the Owner until setup is finished.
 _Avoid_: inactive, disabled, banned
 
 **Locked**:
@@ -176,11 +178,6 @@ _Avoid_: SSO plugin, SSO provider
 **SSO session**:
 A verified session created for the user the SSO adapter resolved.
 
-**Team SSO**:
-Staff signing in through their own organization's identity provider. Not built
-yet.
-_Avoid_: SSO, when the SSO adapter isn't meant
-
 ### Mapping onto Ghost's tables
 
 **Virtual column**:
@@ -194,9 +191,15 @@ user.
 
 ## Not this
 
-- **Principal**, **scopes** and permissions are defined in
-  [Authentication and Authorization](../CONTEXT.md). This context ends where a
+- **Principal**, **anonymous**, **scopes** and permissions are defined in
+  [Authentication and Authorization](../CONTEXT.md). Better Auth ends where a
   session becomes a principal.
+- **Active** and **Suspended** here are staff statuses. An installation's are
+  defined in [App Installations](../../services/app-installations/CONTEXT.md),
+  and so is an **app session**, which is not a session here.
+- Magic links, passkeys and **Team SSO** (staff signing in through their own
+  organization's identity provider) aren't built yet. Plain "SSO" means the
+  SSO adapter.
 - **Members** sign in to a site through Portal with their own tokens. Nothing
   here covers them, and "user" here always means a staff user.
 - **Two-factor** means authenticator apps and backup codes, which aren't
