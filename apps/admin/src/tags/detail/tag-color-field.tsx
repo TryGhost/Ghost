@@ -47,11 +47,13 @@ const TagColorField: React.FC<TagColorFieldProps> = ({
     }
   }, [value]);
 
+  // Compares with lastValueRef, not value: the picker can report twice before a re-render,
+  // and value is still the colour from before the first report.
   const applyColor = (input: string) => {
     onError(null);
 
     if (input === '') {
-      if (value !== '') {
+      if (lastValueRef.current !== '') {
         lastValueRef.current = '';
         onChange('');
       }
@@ -64,7 +66,7 @@ const TagColorField: React.FC<TagColorFieldProps> = ({
     }
 
     if (HEX_COLOR_REGEX.test(newColor)) {
-      if (newColor === value) {
+      if (newColor === lastValueRef.current) {
         return;
       }
       lastValueRef.current = newColor;

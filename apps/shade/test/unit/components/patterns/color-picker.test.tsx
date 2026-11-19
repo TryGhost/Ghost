@@ -291,7 +291,45 @@ describe('ColorPicker Component', () => {
       expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('240');
     });
 
-    it('is called when a gradient click turns a transparent colour opaque', () => {
+    it('builds each change on the one before when both land before a re-render', () => {
+      const handleChange = vi.fn();
+      render(
+        <ColorPickerRoot defaultValue="#ff0000" onChange={handleChange}>
+          <ColorPickerSelection data-testid="gradient" />
+          <ColorPickerHue />
+        </ColorPickerRoot>,
+      );
+      const gradient = mockGradientRect();
+
+      act(() => {
+        fireEvent.pointerDown(gradient, { clientX: 100, clientY: 100 });
+        fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
+      });
+
+      // The hue step keeps the saturation and lightness the click set.
+      expect(handleChange).toHaveBeenCalledTimes(2);
+      expect(handleChange).toHaveBeenLastCalledWith('#8F3130');
+    });
+
+    it('adopts every channel of a new value, even one with the same hex', () => {
+      const handleChange = vi.fn();
+      const { rerender } = render(
+        <ColorPickerRoot value="hsl(240, 100%, 0%)" onChange={handleChange}>
+          <ColorPickerHue />
+        </ColorPickerRoot>,
+      );
+
+      rerender(
+        <ColorPickerRoot value="hsl(120, 100%, 0%)" onChange={handleChange}>
+          <ColorPickerHue />
+        </ColorPickerRoot>,
+      );
+
+      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('120');
+      expect(handleChange).not.toHaveBeenCalled();
+    });
+
+    it('reports black from a transparent colour', () => {
       // Admin shows a transparent setting as #00000000; clicking black must still report it.
       const handleChange = vi.fn();
       render(

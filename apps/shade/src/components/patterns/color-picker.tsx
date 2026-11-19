@@ -217,6 +217,8 @@ export const ColorPickerRoot = ({
   const [mode, setMode] = useState('hex');
   // Several changes can land before a re-render, so each one builds on the latest colour.
   const colorRef = useRef(color);
+  // Whether the current colour was made in the picker, rather than taken from value.
+  const pickedRef = useRef(false);
   // An eye dropper pick resolves later, so it reports to the latest onChange.
   const onChangeRef = useRef(onChange);
 
@@ -224,14 +226,15 @@ export const ColorPickerRoot = ({
     onChangeRef.current = onChange;
   });
 
-  // Follow a controlled value without reporting it back through onChange. A value that
-  // matches the current colour, such as the parent echoing the last change, keeps the
-  // picker's own hue and saturation, which a hex can't always carry (e.g. for greys).
+  // Follow a controlled value without reporting it back through onChange. When the parent
+  // echoes a colour made in the picker, keep the picker's own hue and saturation, which a
+  // hex can't always carry (e.g. for greys).
   useEffect(() => {
     if (value) {
       const next = toHsla(value);
-      if (!isSameColor(next, colorRef.current)) {
+      if (!(pickedRef.current && isSameColor(next, colorRef.current))) {
         colorRef.current = next;
+        pickedRef.current = false;
         setColorState(next);
       }
     }
@@ -241,6 +244,7 @@ export const ColorPickerRoot = ({
     const previous = colorRef.current;
     const next = { ...previous, ...change };
     colorRef.current = next;
+    pickedRef.current = true;
     setColorState(next);
 
     if (!isSameHsla(next, previous)) {
@@ -393,8 +397,9 @@ export const ColorPickerEyeDropper = ({ className, ...props }: ColorPickerEyeDro
   const { setColor } = useColorPicker();
   const pendingPick = useRef<AbortController | null>(null);
 
-  // A pick still open when the picker goes away must not report a colour.
-  useEffect(() => () => pendingPick.current?.abort(), []);
+  // A pick still open when the picker goes away must not report a colour. A layout effect
+  // aborts it as the picker is removed, before a pick resolving in between can report.
+  useLayoutEffect(() => () => pendingPick.current?.abort(), []);
 
   // Check if EyeDropper API is supported
   const isSupported = typeof window !== 'undefined' && 'EyeDropper' in window;
