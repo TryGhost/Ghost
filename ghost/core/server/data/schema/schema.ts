@@ -2510,7 +2510,7 @@ const schema = {
             'finished',
             'member changed status',
             'member changed tier',
-            'member lost label',
+            'member label removed',
             'member unsubscribed',
           ],
         ],

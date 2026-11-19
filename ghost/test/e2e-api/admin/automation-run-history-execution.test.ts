@@ -268,7 +268,7 @@ describe('Automation run history from the execution', function () {
     assert.equal(stopped.status, 'exited_early');
     assert.equal(stopped.failed, false);
     assert.equal(stopped.steps.length, 1);
-    assert.equal(stopped.steps[0].status, 'member lost label');
+    assert.equal(stopped.steps[0].status, 'member label removed');
     assert.equal(stopped.steps[0].finished_at, '2026-09-16T12:00:00.000Z');
     sinon.assert.notCalled(pollOptions.memberWelcomeEmailService.sendAutomationEmail);
   });

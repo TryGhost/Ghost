@@ -109,7 +109,7 @@ describe('Recorded trigger, wait, and outcome cards', () => {
 
   it.each([
     ['failed', 'Wait step failed'],
-    ['member lost label', 'Label removed'],
+    ['member label removed', 'Label removed'],
   ] as const)('shows the %s exit reason once after the stopped step', async (status, label) => {
     setup();
     const data = history('a');

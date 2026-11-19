@@ -665,7 +665,7 @@ describe('automations poll', function () {
       sinon.assert.calledOnceWithExactly(
         automationsApi.markStepTerminal,
         step,
-        'member lost label',
+        'member label removed',
       );
       sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
       sinon.assert.notCalled(memberWelcomeEmailService.sendAutomationEmail);

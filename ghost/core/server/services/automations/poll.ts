@@ -259,7 +259,7 @@ const processStep = async ({
     labelRule &&
     !member.related('labels').models.some((label) => label.id === labelRule.label_id)
   ) {
-    await automationsApi.markStepTerminal(step, 'member lost label');
+    await automationsApi.markStepTerminal(step, 'member label removed');
     return null;
   }
 
