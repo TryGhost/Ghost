@@ -16,6 +16,10 @@ export const appsScreen = {
   unverifiedDeveloperBadge: () => page.getByTestId(sel.appUnverifiedDeveloperBadge),
   accessIndicator: () => page.getByTestId(sel.accessIndicator),
   accessItems: () => page.getByTestId(sel.accessItem),
+  noAccess: () => page.getByTestId(sel.appNoAccess),
+  // An update's new scopes, marked where the review lists them, and what it no longer has.
+  newAccess: () => page.getByTestId(sel.accessNew),
+  removedAccess: () => page.getByTestId(sel.appAccessRemoved),
   capabilities: () => page.getByTestId(sel.appCapability),
   dataAccessedBy: () => page.getByTestId(sel.appDataAccessedBy),
   notice: () => page.getByTestId(sel.appInstallNotice),

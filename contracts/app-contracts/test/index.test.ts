@@ -32,7 +32,6 @@ describe('the root entry point', () => {
       'APP_ERROR_CODES',
       'APP_FAILURE_CODES',
       'APP_ID_MAX_LENGTH',
-      'APP_PERMISSION_KEYS',
       'ARGUMENT_MESSAGES',
       'BRIDGE_ERROR_CODES',
       'CONNECT_MESSAGE_TYPE',

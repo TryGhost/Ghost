@@ -28,7 +28,7 @@ export { URL_MAX_LENGTH } from './manifest/limits.ts';
 export { isLocalhost } from './manifest/localhost.ts';
 export { isPlainText, toPlainText } from './plain-text.ts';
 export { appPageUrl, servedFrom } from './manifest/served-from.ts';
-export { APP_PERMISSION_KEYS, type AppPermissionKey, type AppResourceName } from './scopes.ts';
+export type { AppPermissionKey, AppResourceName } from './scopes.ts';
 export { approvedScopes, describeScopes, type ScopeLine } from './manifest/scopes.ts';
 export { isScopeChange, isFieldChange, splitChanges } from './manifest/changes.ts';
 export type {
