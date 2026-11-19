@@ -685,6 +685,13 @@ export class ActivityPubAPI {
     return this.getPaginatedPosts(`.ghost/activitypub/v1/posts/${handle}`, next);
   }
 
+  async getPostsWithRepliesByAccount(
+    handle: string,
+    next?: string,
+  ): Promise<PaginatedPostsResponse> {
+    return this.getPaginatedPosts(`.ghost/activitypub/v1/posts/${handle}/with-replies`, next);
+  }
+
   async getPostsLikedByAccount(next?: string): Promise<PaginatedPostsResponse> {
     return this.getPaginatedPosts(`.ghost/activitypub/v1/posts/me/liked`, next);
   }

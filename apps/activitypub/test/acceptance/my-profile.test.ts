@@ -67,6 +67,68 @@ test.describe('My Profile', async () => {
       expect(thirdItemText).toContain(repostedPost.title);
     });
 
+    test('I can view my posts and replies on my profile', async ({ page }) => {
+      const myReply = {
+        ...myPosts.posts[0],
+        id: 'https://fake.host/.ghost/activitypub/note/22222222-aaaa-bbbb-cccc-222222222222',
+        type: 0,
+        title: '',
+        excerpt: '',
+        summary: null,
+        content: '<p>This is a reply I wrote</p>',
+        url: 'https://fake.host/.ghost/activitypub/note/22222222-aaaa-bbbb-cccc-222222222222',
+        featureImageUrl: null,
+        publishedAt: '2023-01-02T10:00:00.000Z',
+      };
+
+      await mockApi({
+        page,
+        requests: {
+          getMyProfilePosts: {
+            method: 'GET',
+            path: '/v1/posts/me',
+            response: myPosts,
+          },
+          getMyProfilePostsWithReplies: {
+            method: 'GET',
+            path: '/v1/posts/me/with-replies',
+            response: { posts: [myReply, ...myPosts.posts], next: null },
+          },
+          getMyAccount: {
+            method: 'GET',
+            path: '/v1/account/me',
+            response: {
+              id: 'alice',
+              handle: '@alice@fake.host',
+              name: 'Alice',
+              url: 'https://fake.host/@alice',
+              avatarUrl: 'https://fake.host/avatars/alice.jpg',
+              followingCount: 5,
+              followerCount: 10,
+              likedCount: 3,
+            },
+          },
+        },
+        options: { useActivityPub: true },
+      });
+
+      await page.goto('#/profile');
+
+      // The Posts tab does not include replies
+      await expect(page.getByTestId('profile-post-item')).toHaveCount(myPosts.posts.length);
+      await expect(page.getByTestId('profile-posts-list')).not.toContainText(
+        'This is a reply I wrote',
+      );
+
+      await page.getByRole('tab', { name: 'Posts and replies' }).click();
+
+      await expect(page).toHaveURL(/#\/profile\/with-replies$/);
+
+      const profileItems = page.getByTestId('profile-post-item');
+      await expect(profileItems).toHaveCount(myPosts.posts.length + 1);
+      await expect(profileItems.first()).toContainText('This is a reply I wrote');
+    });
+
     test('I can delete a post I created from my profile', async ({ page }) => {
       const firstPost = myPosts.posts[0]; // Post authored by me
       const postToDeleteId = encodeURIComponent(firstPost.id);
