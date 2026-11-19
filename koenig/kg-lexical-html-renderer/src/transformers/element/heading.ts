@@ -12,7 +12,8 @@ export default {
             return null;
         }
 
-        const tag = node.getTag();
+        // A tag that isn't a heading tag (`h` and a number) renders as h2
+        const tag = /^h\d+$/.test(node.getTag()) ? node.getTag() : 'h2';
         const id = generateId(node.getTextContent(), options);
 
         return `<${tag} id="${id}">${exportChildren(node)}</${tag}>`;
