@@ -1,3 +1,4 @@
+import type { ContextOverrides } from '../../../../utils/test-utils';
 import { render } from '../../../../utils/test-utils';
 import ContinueSubscriptionButton from '../../../../../src/components/pages/AccountHomePage/components/continue-subscription-button';
 import {
@@ -8,7 +9,7 @@ import {
   getNextPaymentData,
 } from '../../../../../src/utils/fixtures-generator';
 
-const setup = (overrides) => {
+const setup = (overrides: ContextOverrides = {}) => {
   const { mockDoActionFn, ...utils } = render(<ContinueSubscriptionButton />, {
     overrideContext: {
       ...overrides,
@@ -134,6 +135,6 @@ describe('ContinueSubscriptionButton', () => {
     const button = queryByText('Resume subscription');
     expect(button).toBeInTheDocument();
     // Button should be inside the banner
-    expect(banner.contains(button)).toBe(true);
+    expect(banner?.contains(button)).toBe(true);
   });
 });
