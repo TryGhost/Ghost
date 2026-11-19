@@ -38,6 +38,8 @@ const ToasterPortal = ({ container }: { container: HTMLElement | undefined }) =>
     ? createPortal(
         <ShadeScope style={{ width: 'unset', height: 'unset' }}>
           <Toaster
+            // Radix turns off pointer events on the body under a modal dialog or sheet.
+            className="pointer-events-auto"
             duration={5000}
             icons={{
               error: <Icon.ErrorFill className="text-red" />,

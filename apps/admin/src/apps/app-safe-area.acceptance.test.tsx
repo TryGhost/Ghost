@@ -709,6 +709,7 @@ describe('toasts in an app, while a dialog is open in its overlay', () => {
 
   beforeEach(async () => {
     setInsets(INSETS);
+    actions = 0;
     frame = document.createElement('iframe');
     frame.style.cssText = 'position: fixed; inset: 0; width: 100%; height: 100%; border: 0';
     document.body.append(frame);
@@ -732,30 +733,45 @@ describe('toasts in an app, while a dialog is open in its overlay', () => {
   });
 
   const toastIn = (document: Document) => document.querySelector('[data-sonner-toast]');
+  const button = (name: string) =>
+    [...frameRoot.querySelectorAll('button')].find((each) => each.textContent === name)!;
 
-  it('shows a toast raised in the dialog above it, inside the safe area, then back in the page', async () => {
-    await render(
-      <ShadeApp className="shade-admin" darkMode={false} overlay={frameOverlay}>
-        <Dialog defaultOpen>
-          <DialogContent>
-            <DialogTitle>Title</DialogTitle>
-            <DialogDescription>Description</DialogDescription>
-            <button type="button" onClick={() => toast.success('Saved', { duration: 60_000 })}>
-              Save
-            </button>
-            <DialogClose>Done</DialogClose>
-          </DialogContent>
-        </Dialog>
-      </ShadeApp>,
-    );
+  let actions = 0;
+  const ToastingDialog = () => (
+    <ShadeApp className="shade-admin" darkMode={false} overlay={frameOverlay}>
+      <Dialog defaultOpen>
+        <DialogContent>
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+          <button
+            type="button"
+            onClick={() =>
+              toast.success('Saved', {
+                duration: 60_000,
+                action: { label: 'Undo', onClick: () => (actions += 1) },
+              })
+            }
+          >
+            Save
+          </button>
+          <DialogClose>Done</DialogClose>
+        </DialogContent>
+      </Dialog>
+    </ShadeApp>
+  );
+
+  const raiseToast = async () => {
     await expect.poll(() => frameRoot.querySelector('[role=dialog]')).not.toBeNull();
-    const button = (name: string) =>
-      [...frameRoot.querySelectorAll('button')].find((each) => each.textContent === name)!;
     button('Save').click();
-
     await expect.poll(() => toastIn(frame.contentDocument!)).not.toBeNull();
     await settle();
-    const shown = toastIn(frame.contentDocument!)!;
+    return toastIn(frame.contentDocument!)!;
+  };
+
+  it('shows a toast raised in the dialog above it, inside the safe area, then back in the page', async () => {
+    await render(<ToastingDialog />);
+    const shown = await raiseToast();
+
     expect(toastIn(document)).toBeNull();
     expect(insideSafeArea(box(shown))).toEqual(INSIDE);
 
@@ -763,5 +779,19 @@ describe('toasts in an app, while a dialog is open in its overlay', () => {
 
     await expect.poll(() => toastIn(document)).toBe(shown);
     expect(toastIn(frame.contentDocument!)).toBeNull();
+  });
+
+  it('lets the publisher press a toast’s action above the dialog, which stays open', async () => {
+    await render(<ToastingDialog />);
+    const shown = await raiseToast();
+    const action = shown.querySelector('[data-button]')!;
+    const { left, top, width, height } = box(action);
+    const centre = { x: left + width / 2, y: top + height / 2 };
+    expect(frame.contentDocument!.elementFromPoint(centre.x, centre.y)).toBe(action);
+
+    await userEvent.click(page.elementLocator(frame), { position: centre });
+
+    await expect.poll(() => actions).toBe(1);
+    expect(frameRoot.querySelector('[role=dialog]')?.getAttribute('data-state')).toBe('open');
   });
 });
