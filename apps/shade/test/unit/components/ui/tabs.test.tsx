@@ -392,7 +392,7 @@ describe('Tabs Component', () => {
       expect(tab.getAttribute('aria-selected')).toBe('true');
     });
 
-    it('selects the tab when the selected tab cannot take the returning focus', async () => {
+    it('keeps the selection when the selected tab cannot take the returning focus', async () => {
       render(<DropdownTabs initialValue="sources" />);
 
       // Browsers don't focus a disabled tab; jsdom does, so refuse it here.
@@ -402,9 +402,10 @@ describe('Tabs Component', () => {
       clickOpen(tab);
       fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
 
-      await waitFor(() => expect(document.activeElement).toBe(tab));
-      expect(tab.getAttribute('aria-selected')).toBe('true');
-      expect(tab.tabIndex).toBe(0);
+      await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+      await waitFor(() => expect(sources.focus).toHaveBeenCalled());
+      expect(tab.getAttribute('aria-selected')).toBe('false');
+      expect(sources.getAttribute('aria-selected')).toBe('true');
     });
 
     it('selects the tab on later focus when its menu closed without returning focus', async () => {
@@ -569,6 +570,31 @@ describe('Tabs Component', () => {
       fireEvent.pointerDown(sources, { button: 0, ctrlKey: false });
       fireEvent.keyDown(sources, { key: 'Enter' });
       expect(screen.queryByRole('menu')).toBeNull();
+    });
+
+    it('keeps the menu state when aria-expanded or aria-controls are passed anyway', () => {
+      render(
+        <Tabs defaultValue="visitors">
+          <TabsList>
+            <TabsTrigger value="visitors">Visitors</TabsTrigger>
+            <DropdownMenu>
+              <TabsDropdownTrigger aria-controls="elsewhere" aria-expanded={false} value="members">
+                Members
+              </TabsDropdownTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem>Paid members</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </TabsList>
+          <TabsContent value="members">Members panel</TabsContent>
+        </Tabs>,
+      );
+
+      const tab = screen.getByRole('tab', { name: 'Members' });
+      fireEvent.keyDown(tab, { key: 'Enter' });
+
+      expect(tab.getAttribute('aria-expanded')).toBe('true');
+      expect(tab.getAttribute('aria-controls')).toMatch(/-content-members$/);
     });
 
     it('puts an id on the tab and still names the menu', () => {

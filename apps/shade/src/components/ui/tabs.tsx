@@ -343,7 +343,6 @@ interface TabsMenuTabProps extends React.ComponentPropsWithoutRef<typeof TabsPri
   'data-state'?: string;
   onTabKeyDown?: React.KeyboardEventHandler<HTMLButtonElement>;
   tabId?: string;
-  wrapperClassName?: string;
 }
 
 // DropdownMenuTrigger hands its slot the menu button's id, aria-controls and data-state, which
@@ -359,7 +358,6 @@ const TabsMenuTab = React.forwardRef<HTMLButtonElement, TabsMenuTabProps>(
       onKeyDown: onMenuKeyDown,
       onTabKeyDown,
       tabId,
-      wrapperClassName,
       ...props
     },
     ref,
@@ -385,7 +383,7 @@ const TabsMenuTab = React.forwardRef<HTMLButtonElement, TabsMenuTabProps>(
     }, [menuOpen, activationMode]);
 
     return (
-      <div className={wrapperClassName} id={menuTriggerId}>
+      <div id={menuTriggerId}>
         <TabsPrimitive.Trigger
           ref={ref}
           // An undefined id would replace the one Radix links the tab panel to.
@@ -407,16 +405,10 @@ const TabsMenuTab = React.forwardRef<HTMLButtonElement, TabsMenuTabProps>(
               const selectedTab = event.currentTarget
                 .closest('[role="tablist"]')
                 ?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
-              if (!selectedTab) {
-                // Nothing to return to: keep focus here without selecting this tab.
-                event.preventDefault();
-              } else {
-                selectedTab.focus();
-                // If the selected tab can't take focus, let this tab be selected instead.
-                if (document.activeElement === selectedTab) {
-                  event.preventDefault();
-                }
-              }
+              // Dismissing the menu never changes the selection. If nothing is selected, or the
+              // selected tab can't take focus, focus stays here without selecting this tab.
+              event.preventDefault();
+              selectedTab?.focus();
             }
           }}
           onKeyDown={(event) => {
@@ -442,7 +434,20 @@ TabsMenuTab.displayName = 'TabsMenuTab';
 // arrow-key order. Arrowing to it selects it, as for any tab. A click opens the menu without
 // selecting it, and the menu's items decide what is selected.
 const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTriggerProps>(
-  ({ children, className, disabled, id, onKeyDown, ...props }, ref) => {
+  (
+    {
+      // The menu owns these; JSX accepts them even though the props type leaves them out.
+      'aria-controls': _ariaControls,
+      'aria-expanded': _ariaExpanded,
+      children,
+      className,
+      disabled,
+      id,
+      onKeyDown,
+      ...props
+    }: TabsDropdownTriggerProps & { 'aria-controls'?: string; 'aria-expanded'?: boolean },
+    ref,
+  ) => {
     const { variant, controlShape } = React.useContext(TabsContext);
     const { admin7Design } = useShade();
     return (
@@ -456,18 +461,12 @@ const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTrig
                 admin7Design,
                 size: variant === 'button-sm' ? 'compact' : 'default',
               }),
-            // Fill the wrapper, which carries the hover background, in a stretched tab list.
+            // Fill the wrapper in a stretched tab list.
             'w-full cursor-pointer',
             className,
           )}
           disabled={disabled}
           tabId={id}
-          wrapperClassName={cn(
-            'relative rounded-control hover:bg-tab-hover',
-            (variant === 'button' || variant === 'button-sm') &&
-              controlShape === 'pill' &&
-              'rounded-full',
-          )}
           onTabKeyDown={onKeyDown}
           {...props}
         >
