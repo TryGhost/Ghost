@@ -13,7 +13,7 @@ function createCoreHarness() {
   const giftLinks = { init: sinon.stub().resolves() };
   const integrations = { init: sinon.stub().resolves() };
   const stripeCheckoutConfig = { init: sinon.stub().resolves() };
-  // What was one phase: the foundation checks, the shared modules, then the
+  // What was one phase: the foundation checks, the shared list, then the
   // services list up to Stripe checkout config.
   const sequence = loadBootSequence(
     {
@@ -30,6 +30,7 @@ function createCoreHarness() {
       './server/services/internal-keys': { default: { init() {} } },
       './server/lib/common/events': {},
       './shared/i18n': i18n,
+      './server/services/email-address': { init() {} },
       './server/auth': { isBetterAuth: false },
       './server/services/gift-links': { default: giftLinks },
       './server/services/members-metafields': { init() {} },
@@ -40,7 +41,7 @@ function createCoreHarness() {
       './server/services/stripe-checkout-config': { default: stripeCheckoutConfig },
     },
     {
-      before: ['initFoundationChecks', 'initShared'],
+      before: ['initFoundationChecks'],
       to: 'stripe-checkout-config',
     },
   );

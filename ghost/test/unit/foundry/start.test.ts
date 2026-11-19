@@ -330,3 +330,53 @@ describe('application.stop', function () {
     ]);
   });
 });
+
+describe('application.start: what a shared module is given', function () {
+  function shared(name: string, given: Record<string, unknown>, needs?: string[]) {
+    return {
+      name,
+      needs,
+      load: () => ({
+        init: async (dependencies: unknown) => void (given[name] = dependencies),
+        service: `${name} instance`,
+      }),
+    };
+  }
+
+  it('hands each shared module the foundation and the earlier modules it names', async function () {
+    const given: Record<string, any> = {};
+    const application = define({
+      shared: {
+        modules: [shared('limits', given), shared('settings', given, ['limits'])],
+      },
+    });
+
+    await application.start({ frontend: true });
+
+    assert.deepEqual(Object.keys(given.limits), ['foundation']);
+    assert.equal(given.limits.foundation, application.foundation);
+    assert.deepEqual(Object.keys(given.settings), ['foundation', 'limits']);
+    assert.equal(given.settings.limits, 'limits instance');
+  });
+
+  it('fails the start when a module names one that has not started before it', async function () {
+    const given: Record<string, unknown> = {};
+    const application = define({
+      shared: {
+        modules: [shared('settings', given, ['limits']), shared('limits', given)],
+      },
+    });
+
+    await assert.rejects(application.start({ frontend: true }), /settings needs limits/);
+    assert.deepEqual(given, {});
+  });
+
+  it('hands nothing to a root in the services step', async function () {
+    const given: Record<string, unknown> = {};
+    const application = define({ services: { modules: [shared('posts', given)] } });
+
+    await application.start({ frontend: true });
+
+    assert.equal(given.posts, undefined);
+  });
+});

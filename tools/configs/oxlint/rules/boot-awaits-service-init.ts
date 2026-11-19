@@ -8,17 +8,20 @@ import { readLegacyServices, servicesRoot } from '../legacy-services.ts';
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
 const bootFile = 'ghost/core/boot.js';
 const servicePath = /^\.\/server\/services\/([^/]+?)(?:\/index)?$/;
-const listFile = 'ghost/bootstrap/services.ts';
+// The services list, and the shared list, which starts a few standard roots too.
+const listFiles = ['ghost/bootstrap/services.ts', 'ghost/bootstrap/shared.ts'];
 const listEntry = /require\('\.\.\/core\/server\/services\/([^/']+?)(?:\/index)?'\)\.default/g;
 
 // The roots the services list names. The framework awaits init() on each, in
 // order. Read each time boot.js is linted, for the same reason as the inventory.
 function readListedServices() {
-  const file = path.join(root, listFile);
-  if (!existsSync(file)) {
-    return new Set<string>();
-  }
-  return new Set([...readFileSync(file, 'utf8').matchAll(listEntry)].map((match) => match[1]!));
+  return new Set(
+    listFiles
+      .map((listFile) => path.join(root, listFile))
+      .filter((file) => existsSync(file))
+      .flatMap((file) => [...readFileSync(file, 'utf8').matchAll(listEntry)])
+      .map((match) => match[1]!),
+  );
 }
 
 // A service directory that the legacy service inventory does not list is standard.

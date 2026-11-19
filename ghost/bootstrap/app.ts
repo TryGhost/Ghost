@@ -5,6 +5,7 @@ import { loadNconf } from '../core/shared/config/loader';
 import type { GhostConfig } from '../core/shared/config/validated';
 import { loggingOptions } from './logging-options';
 import { services } from './services';
+import { shared } from './shared';
 import { legacyEventBus } from './transition/legacy-events';
 import { shareLoggerWithLegacy } from './transition/legacy-logging';
 import { legacySteps, type BootOptions, type BootState } from './transition/legacy-steps';
@@ -54,10 +55,9 @@ const application: Application<GhostConfig, BootOptions, BootState> = createAppl
   // of the steps and runs every entry without knowing what it is. An entry
   // names what it runs without loading it.
   //
-  // Apart from the service roots in ./services.ts, every entry is a legacy
-  // step today: a function of core/boot.js, reached through
-  // ./transition/legacy-steps.ts. The shared list is empty until shared
-  // modules are started from a list.
+  // Apart from the roots in ./shared.ts and ./services.ts, every entry is a
+  // legacy step today: a function of core/boot.js, reached through
+  // ./transition/legacy-steps.ts.
   steps: {
     foundation: {
       after: [
@@ -77,8 +77,8 @@ const application: Application<GhostConfig, BootOptions, BootState> = createAppl
     },
     shared: {
       before: [{ name: 'foundation checks', run: legacySteps.foundationChecks }],
-      modules: [],
-      after: [{ name: 'legacy shared', run: legacySteps.shared }],
+      // One ordered list: what every service may rely on. See ./shared.ts.
+      modules: shared,
     },
     // One ordered list: service roots, with the legacy steps that still sit
     // between them. See ./services.ts.

@@ -104,6 +104,12 @@ called, not when the service root is declared.
   initialize its own service root.
 - **Consumers** use `.service` after initialization. Reading it earlier throws.
 
+A root may declare what it is handed instead of importing it:
+`defineService<Service, Dependencies>(name, (dependencies) => …)`. `create`
+receives what the first `init(dependencies)` was called with. Only the start
+sequence supplies it, and today only to the modules of the shared step, which
+are given the foundation and the earlier shared modules they name.
+
 ### Readiness and retries
 
 Concurrent calls to `init()` share one attempt. After successful initialization,

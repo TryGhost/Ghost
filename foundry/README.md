@@ -48,6 +48,11 @@ the application's definition supplies what goes in each one, under `steps`.
 - **Modules** are named without being loaded: an entry is a name and a `load`
   function, called only when the step reaches the entry. What it returns needs
   an `init()` and may have a `stop()`, as a `defineService` root does.
+- **A shared module is given what it needs.** In the `shared` step only, the
+  foundry calls `init({ foundation, ...needs })`: the foundation, and the
+  instance (`.service`) of each earlier entry of the same list that the entry
+  names in `needs`. Naming one that has not started fails the start. Roots in
+  the `services` step are handed nothing.
 - **A slot may sit in a `modules` list**, between two modules, for work that
   has to happen there and is not a module yet. It runs in its place.
 - **`when`** on a slot or a module skips it for one start.

@@ -129,49 +129,56 @@ async function initFoundationChecks({ config }) {
 }
 
 /**
- * The shared modules: what every service may rely on. The order is real:
- * settings reads limits, and signing keys and i18n read settings.
- * @param {object} options
- * @param {object} options.config
+ * The shared step's legacy entries. The shared list in bootstrap/shared.ts
+ * starts each in order, with the standard roots (signing keys, internal keys)
+ * between them. One function per entry, so the list is the order.
  */
-async function initShared({ config }) {
-  debug('Begin: initShared');
 
-  // URL Utils is a bit slow, put it here so the timing is visible separate from models
+/** URL Utils is a bit slow, so it loads on its own and its timing is visible. */
+function initUrlUtils() {
   debug('Begin: Load urlUtils');
   require('./shared/url-utils');
   debug('End: Load urlUtils');
+}
 
-  // Limit service is booted before settings, so that limits are available for calculated settings
+/** Limits start before settings, so that limits are available for calculated settings. */
+async function initLimits() {
   debug('Begin: limits');
   const limits = require('./server/services/limits');
   await limits.init();
   debug('End: limits');
+}
 
-  // Settings are a core concept we use settings to store key-value pairs used in critical pathways as well as public data like the site title
+/**
+ * Settings store key-value pairs used in critical pathways as well as public data like the site title.
+ * @param {object} options
+ * @param {object} options.config
+ */
+async function initSettings({ config }) {
   debug('Begin: settings');
   const settings = require('./server/services/settings/settings-service');
   await settings.init();
   await settings.syncEmailSettings(config.get('hostSettings:emailVerification:verified'));
   debug('End: settings');
+}
 
-  // Signing keys come from settings and must be ready before anything signs or serves a JWKS
-  debug('Begin: signing keys');
-  const signingKeys = require('./server/services/signing-keys').default;
-  await signingKeys.init();
-  debug('End: signing keys');
-
-  debug('Begin: Internal Keys Service');
-  const internalKeys = require('./server/services/internal-keys').default;
-  await internalKeys.init();
-  debug('End: Internal Keys Service');
-
+/** Reads the locale setting, so it follows settings. */
+async function initI18n() {
   debug('Begin: i18n');
   const i18n = require('./shared/i18n');
   await i18n.init({ events: require('./server/lib/common/events') });
   debug('End: i18n');
+}
 
-  debug('End: initShared');
+/**
+ * Mail has no start of its own, but no mailer can send until the address
+ * policy it asks for the sender exists. It reads settings when it is asked.
+ */
+function initEmailAddressPolicy() {
+  debug('Begin: email address policy');
+  const emailAddressService = require('./server/services/email-address');
+  emailAddressService.init();
+  debug('End: email address policy');
 }
 
 /**
@@ -363,7 +370,6 @@ async function initLegacyServicesFirst({ ghostServer }) {
   // Built when it is loaded, from the internal keys that are ready by now.
   require('./server/services/post-scheduling');
   const giftService = require('./server/services/gifts');
-  const emailAddressService = require('./server/services/email-address');
   const adapterManager = require('./server/services/adapter-manager').default;
   const { withErrorCapture } = require('./server/adapters/scheduling/error-capture');
 
@@ -373,7 +379,6 @@ async function initLegacyServicesFirst({ ghostServer }) {
   const { checkouts } = require('./server/services/stripe-checkout-config').default.service;
 
   // Initialize things that other services depend on first.
-  emailAddressService.init();
   const apiUrl = urlUtils.urlFor('api', { type: 'admin' }, true);
   const schedulerAdapter = withErrorCapture(adapterManager.getAdapter('scheduling'));
   schedulerAdapter.run();
@@ -926,7 +931,11 @@ Object.assign(module.exports, {
   initDatabaseReady,
   initQueryTracing,
   initFoundationChecks,
-  initShared,
+  initUrlUtils,
+  initLimits,
+  initSettings,
+  initI18n,
+  initEmailAddressPolicy,
   initMembersMetafields,
   initJobsCleanup,
   initKnexInstrumentation,

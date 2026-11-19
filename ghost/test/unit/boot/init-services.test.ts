@@ -90,6 +90,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     },
     {
       fallback: () => ({ ...genericService, default: genericService }),
+      // The email address policy is the last entry of the shared list.
+      before: ['initEmailAddressPolicy'],
       from: 'legacy: services first',
       jobs: true,
     },

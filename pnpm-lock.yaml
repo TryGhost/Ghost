@@ -2199,6 +2199,9 @@ importers:
 
   foundry:
     dependencies:
+      '@tryghost/errors':
+        specifier: 3.4.8
+        version: 3.4.8
       '@tryghost/kernel':
         specifier: workspace:*
         version: link:../kernel

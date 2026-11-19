@@ -37,8 +37,16 @@ describe("Ghost's start sequence", function () {
         'database.before': [],
         'database.after': ['query tracing'],
         'shared.before': ['foundation checks'],
-        'shared.modules': [],
-        'shared.after': ['legacy shared'],
+        'shared.modules': [
+          'legacy: url utils',
+          'legacy: limits',
+          'legacy: settings',
+          'signing-keys',
+          'internal-keys',
+          'legacy: i18n',
+          'legacy: email address policy',
+        ],
+        'shared.after': [],
         'services.before': [],
         'services.modules': [
           'better-auth',
@@ -119,9 +127,39 @@ describe("Ghost's start sequence", function () {
     assert.deepEqual(sorted(wrapped.map((match) => match[1]!)), sorted(exported));
 
     const listed = [
-      ...(read('bootstrap/app.ts') + read('bootstrap/services.ts')).matchAll(/legacySteps\.(\w+)/g),
+      ...(
+        read('bootstrap/app.ts') +
+        read('bootstrap/shared.ts') +
+        read('bootstrap/services.ts')
+      ).matchAll(/legacySteps\.(\w+)/g),
     ];
     assert.deepEqual(sorted(listed.map((match) => match[1]!)), sorted(Object.keys(legacySteps)));
+  });
+
+  describe('the shared list', function () {
+    const order = (application.steps.shared?.modules ?? []).map((entry) => entry.name);
+    const position = (name: string) =>
+      order.findIndex((entry) => entry === name || entry === `legacy: ${name}`);
+
+    // Each pair is a dependency a start reads silently: nothing throws when the order is wrong.
+    for (const [first, second, why] of [
+      [
+        'limits',
+        'settings',
+        'the publicSiteAccess limit decides whether settings makes the site private',
+      ],
+      ['settings', 'signing-keys', 'signing keys are read from settings'],
+      ['settings', 'i18n', 'i18n reads the locale setting'],
+    ] as const) {
+      it(`starts ${first} before ${second}: ${why}`, function () {
+        assert.ok(position(first) >= 0 && position(second) >= 0);
+        assert.ok(position(first) < position(second));
+      });
+    }
+
+    it('names each entry once', function () {
+      assert.deepEqual(sorted(new Set(order)), sorted(order));
+    });
   });
 
   describe('the services list', function () {

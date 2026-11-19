@@ -83,7 +83,7 @@ type SequenceArgs = {
 };
 
 /**
- * Runs the real services list (bootstrap/services.ts) through the real start sequence, with
+ * Runs the real shared and services lists (bootstrap/shared.ts, bootstrap/services.ts) through the real start sequence, with
  * every module it or core/boot.js requires answered from `modules`. Keys are written as boot.js
  * requires them (`./server/services/tiers`); the list's `../core/` prefix is mapped onto them.
  */
@@ -100,11 +100,14 @@ export function loadBootSequence(
     assert.equal(dependency, '../../core/boot');
     return boot;
   });
-  const list: Entry<any>[] = loadBootstrapFile('services.ts', (dependency) =>
-    dependency === './transition/legacy-steps'
-      ? { legacySteps }
-      : require(dependency.replace(/^\.\.\/core\//, './')),
-  ).services;
+  const loadList = (file: string) =>
+    loadBootstrapFile(file, (dependency) =>
+      dependency === './transition/legacy-steps'
+        ? { legacySteps }
+        : require(dependency.replace(/^\.\.\/core\//, './')),
+    );
+  // The shared list, then the services list, as the start sequence runs them.
+  const list: Entry<any>[] = [...loadList('shared.ts').shared, ...loadList('services.ts').services];
   const names = list.map((entry) => entry.name);
   const first = from === undefined ? 0 : names.indexOf(from);
   const last = to === undefined ? list.length - 1 : names.indexOf(to);

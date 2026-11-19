@@ -28,6 +28,24 @@ describe('defineService', function () {
     sinon.assert.calledOnce(create);
   });
 
+  it('hands create what init() was given', async function () {
+    const given: unknown[] = [];
+    const example = defineService<{ limit: number }, { limit: number }>(
+      'Example',
+      (dependencies) => {
+        given.push(dependencies);
+        return { limit: dependencies.limit };
+      },
+    );
+
+    await example.init({ limit: 3 });
+    // The instance is built once, so what a later init() is given is not read.
+    await example.init({ limit: 4 });
+
+    assert.deepEqual(given, [{ limit: 3 }]);
+    assert.equal(example.service.limit, 3);
+  });
+
   it('exposes typed extras without constructing the service or evaluating its getter', async function () {
     const instance = { value: 42 };
     const create = sinon.stub().returns(instance);

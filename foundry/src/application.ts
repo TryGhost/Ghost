@@ -1,3 +1,4 @@
+import { IncorrectUsageError } from '@tryghost/errors';
 import type { Config } from '@tryghost/kernel/config';
 import type { Database } from '@tryghost/kernel/database';
 import type { EventBus } from '@tryghost/kernel/events';
@@ -33,8 +34,11 @@ export interface Slot<StartRun> {
 
 /** What a list entry loads: a root with `init()`, as `defineService` returns. */
 export interface Startable {
-  init(): Promise<void>;
+  // A shared module is handed what it is given; every other root ignores it.
+  init(given?: any): Promise<void>;
   stop?(): Promise<void>;
+  /** The started instance. Read only to hand it to a later shared module. */
+  readonly service?: unknown;
 }
 
 /**
@@ -46,6 +50,12 @@ export interface Module<StartRun> {
   readonly load: () => Startable;
   /** Skips the module for this start when it returns false. */
   readonly when?: (run: StartRun) => boolean;
+  /**
+   * Shared step only: the earlier shared modules this one is given, by name.
+   * It receives `{ foundation, [name]: that module's instance }` and imports
+   * neither.
+   */
+  readonly needs?: readonly string[];
 }
 
 interface Slots<StartRun> {
@@ -80,7 +90,10 @@ export interface Steps<StartRun> {
   readonly foundation?: Pick<Slots<StartRun>, 'after'>;
   /** 2. The database is made ready: initialised or migrated. */
   readonly database?: RunStep<StartRun>;
-  /** 3. The shared modules, in the order listed. */
+  /**
+   * 3. The shared modules, in the order listed. Each is handed the foundation
+   * and the earlier shared modules it names in `needs`.
+   */
   readonly shared?: ModuleStep<StartRun>;
   /**
    * 4. Everything that is neither foundation nor shared. Today that is a list
@@ -228,8 +241,13 @@ export function createApplication<AppConfig extends Config, Options = void, Stat
     await runSlots(step?.after, run);
   }
 
-  async function runModules(step: ModuleStep<StartRun> | undefined, run: StartRun) {
+  async function runModules(
+    step: ModuleStep<StartRun> | undefined,
+    run: StartRun,
+    { give = false } = {},
+  ) {
     await runSlots(step?.before, run);
+    const started = new Map<string, Startable>();
     for (const entry of step?.modules ?? []) {
       if (!('load' in entry)) {
         await runSlots([entry], run);
@@ -240,7 +258,22 @@ export function createApplication<AppConfig extends Config, Options = void, Stat
       }
       const root = entry.load();
       stoppable.push({ name: entry.name, stop: () => root.stop?.() });
-      await root.init();
+      if (!give) {
+        await root.init();
+        continue;
+      }
+      const given: Record<string, unknown> = { foundation };
+      for (const name of entry.needs ?? []) {
+        const needed = started.get(name);
+        if (!needed) {
+          throw new IncorrectUsageError({
+            message: `${entry.name} needs ${name}, which no earlier entry in the same list started.`,
+          });
+        }
+        given[name] = needed.service;
+      }
+      await root.init(given);
+      started.set(entry.name, root);
     }
     await runSlots(step?.after, run);
   }
@@ -283,7 +316,7 @@ export function createApplication<AppConfig extends Config, Options = void, Stat
       startFoundation();
       await runSlots(steps.foundation?.after, run);
       await runStep(steps.database, run);
-      await runModules(steps.shared, run);
+      await runModules(steps.shared, run, { give: true });
       await runModules(steps.services, run);
       await runStep(steps.jobs, run);
       await runStep(steps.ready, run);

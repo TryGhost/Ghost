@@ -27,6 +27,7 @@
     "lint": "pnpm run '/^lint:/'"
   },
   "dependencies": {
+    "@tryghost/errors": "catalog:",
     "@tryghost/kernel": "workspace:*",
     "@tryghost/logging": "catalog:",
     "knex": "catalog:"

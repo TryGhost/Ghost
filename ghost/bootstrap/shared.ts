@@ -1,0 +1,32 @@
+import type { Entry } from '@tryghost/foundry/application';
+import { legacySteps, type BootRun } from './transition/legacy-steps';
+
+/**
+ * What the shared step starts, in this order, one after another: the modules
+ * every service may rely on. They start after the database is ready and
+ * before any service.
+ *
+ * The framework hands each module the foundation and the instances of the
+ * earlier entries it names in `needs`. A shared module imports neither.
+ *
+ * The order is real. Settings reads limits while it starts (the
+ * `publicSiteAccess` limit decides whether the site is made private), and
+ * signing keys and i18n read settings.
+ *
+ * The entries that call `legacySteps` are shared modules that are not shaped
+ * as one yet: each is still started by a function of `core/boot.js`. They are
+ * transitional and become one line here as each is reshaped into
+ * `ghost/shared/<name>/`.
+ */
+export const shared: readonly Entry<BootRun>[] = [
+  // Built from config alone. It is here so its load time is visible on its own.
+  { name: 'legacy: url utils', run: legacySteps.urlUtils },
+  { name: 'legacy: limits', run: legacySteps.limits },
+  { name: 'legacy: settings', run: legacySteps.settings },
+  // Signing keys come from settings and must be ready before anything signs or serves a JWKS.
+  { name: 'signing-keys', load: () => require('../core/server/services/signing-keys').default },
+  { name: 'internal-keys', load: () => require('../core/server/services/internal-keys').default },
+  { name: 'legacy: i18n', run: legacySteps.i18n },
+  // Mail cannot send without it, and mail is shared.
+  { name: 'legacy: email address policy', run: legacySteps.emailAddressPolicy },
+];

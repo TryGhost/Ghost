@@ -67,7 +67,14 @@ for the pattern to copy:
 [`services.ts`](services.ts) is what the services step starts: one ordered
 list. A standard service root is one line, and the framework awaits its
 `init()` and later calls its `stop()`. The entries named `legacy: …` are legacy
-steps that still sit between services; the list says what each waits on. The
-shared list is still empty.
+steps that still sit between services; the list says what each waits on.
+
+## The shared list
+
+[`shared.ts`](shared.ts) is what the shared step starts, before any service:
+the modules every service may rely on, in an order that is real (settings
+reads limits; signing keys and i18n read settings). The framework hands each
+module the foundation and the instances of the earlier entries it names in
+`needs`. Entries named `legacy: …` are shared modules not yet shaped as one.
 
 Nothing in `transition/` is automatic: whatever needs it calls it by name.

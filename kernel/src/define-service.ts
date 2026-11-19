@@ -1,19 +1,24 @@
 import { IncorrectUsageError } from '@tryghost/errors';
 
-type CreateService<Service> = () => Service | Promise<Service>;
+type CreateService<Service, Dependencies = void> = (
+  dependencies: Dependencies,
+) => Service | Promise<Service>;
 
 /** Separates what a service builds once from what it acquires on each boot. */
-export interface ServiceLifecycle<Service> {
-  /** Builds the instance once per process. The instance is retained across stop(). */
-  readonly create: CreateService<Service>;
+export interface ServiceLifecycle<Service, Dependencies = void> {
+  /**
+   * Builds the instance once per process. The instance is retained across stop().
+   * A root the start sequence hands something to (a shared module) receives it here.
+   */
+  readonly create: CreateService<Service, Dependencies>;
   /** Acquires listeners, timers and the like. Runs after `create`, and on each init() after a stop(). */
   readonly start?: (service: Service) => unknown;
   /** Releases what `start` acquired. Also cleans up a failed `start`, so it must be safe after a partial one. */
   readonly stop?: (service: Service) => unknown;
 }
 
-interface ServiceRoot<Service> {
-  readonly init: () => Promise<void>;
+interface ServiceRoot<Service, Dependencies = void> {
+  readonly init: (dependencies?: Dependencies) => Promise<void>;
   readonly stop: () => Promise<void>;
   readonly service: Service;
 }
@@ -29,21 +34,21 @@ interface ServiceRoot<Service> {
  * An optional extras object groups transitional helpers without invoking them.
  * @see [Service initialization](./README.md#service-initialization)
  */
-export function defineService<Service>(
+export function defineService<Service, Dependencies = void>(
   name: string,
-  definition: CreateService<Service> | ServiceLifecycle<Service>,
-): ServiceRoot<Service>;
-export function defineService<Service, Extras extends object>(
+  definition: CreateService<Service, Dependencies> | ServiceLifecycle<Service, Dependencies>,
+): ServiceRoot<Service, Dependencies>;
+export function defineService<Service, Extras extends object, Dependencies = void>(
   name: string,
-  definition: CreateService<Service> | ServiceLifecycle<Service>,
+  definition: CreateService<Service, Dependencies> | ServiceLifecycle<Service, Dependencies>,
   extras: Extras,
-): ServiceRoot<Service> & { readonly extras: Extras };
-export function defineService<Service, Extras extends object>(
+): ServiceRoot<Service, Dependencies> & { readonly extras: Extras };
+export function defineService<Service, Extras extends object, Dependencies = void>(
   name: string,
-  definition: CreateService<Service> | ServiceLifecycle<Service>,
+  definition: CreateService<Service, Dependencies> | ServiceLifecycle<Service, Dependencies>,
   extras?: Extras,
 ) {
-  const lifecycle: ServiceLifecycle<Service> =
+  const lifecycle: ServiceLifecycle<Service, Dependencies> =
     typeof definition === 'function' ? { create: definition } : definition;
 
   let created: { readonly service: Service } | undefined;
@@ -52,8 +57,8 @@ export function defineService<Service, Extras extends object>(
   let started = false;
   let initialization: Promise<void> | undefined;
 
-  async function startService(): Promise<void> {
-    const { service } = (created ??= { service: await lifecycle.create() });
+  async function startService(dependencies: Dependencies): Promise<void> {
+    const { service } = (created ??= { service: await lifecycle.create(dependencies) });
     try {
       await lifecycle.start?.(service);
     } catch (error) {
@@ -65,8 +70,9 @@ export function defineService<Service, Extras extends object>(
   }
 
   const root = {
-    init(): Promise<void> {
-      initialization ??= startService().catch((error) => {
+    init(dependencies?: Dependencies): Promise<void> {
+      // Only the start sequence supplies dependencies, and only to a root that declares them.
+      initialization ??= startService(dependencies as Dependencies).catch((error) => {
         initialization = undefined;
         throw error;
       });

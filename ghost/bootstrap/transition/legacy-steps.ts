@@ -36,7 +36,11 @@ type LegacyBoot = Record<
   | 'initDatabaseReady'
   | 'initQueryTracing'
   | 'initFoundationChecks'
-  | 'initShared'
+  | 'initUrlUtils'
+  | 'initLimits'
+  | 'initSettings'
+  | 'initI18n'
+  | 'initEmailAddressPolicy'
   | 'initMembersMetafields'
   | 'initJobsCleanup'
   | 'initKnexInstrumentation'
@@ -107,7 +111,15 @@ export const legacySteps = {
   foundationChecks: ({ foundation }: BootRun) =>
     boot().initFoundationChecks({ config: foundation.config }),
 
-  shared: ({ foundation }: BootRun) => boot().initShared({ config: foundation.config }),
+  urlUtils: () => boot().initUrlUtils(),
+
+  limits: () => boot().initLimits(),
+
+  settings: ({ foundation }: BootRun) => boot().initSettings({ config: foundation.config }),
+
+  i18n: () => boot().initI18n(),
+
+  emailAddressPolicy: () => boot().initEmailAddressPolicy(),
 
   membersMetafields: () => boot().initMembersMetafields(),
 

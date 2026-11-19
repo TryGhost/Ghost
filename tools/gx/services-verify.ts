@@ -13,6 +13,7 @@ import { missingTypeScript, scannerTypeScript } from '../scripts/lib/dependency-
 
 const bootPath = 'ghost/core/boot.js';
 const listPath = 'ghost/bootstrap/services.ts';
+const sharedListPath = 'ghost/bootstrap/shared.ts';
 const allowlistPath = '.dependency-cruiser.cjs';
 const allowanceTestPath = 'tools/scripts/test/service-dependencies.test.ts';
 const lifecycleWords = /\binit|on[- ]demand|lazy|lazily|boot|wrapper|construct|captur|import/i;
@@ -542,7 +543,13 @@ export function verifyService({
   if (standard) {
     // A standard service is started from the services list. One the list does not
     // name yet is bound and awaited in a phase of boot.js.
-    const listFile = path.join(repository, listPath);
+    // The shared list starts a few standard roots too.
+    const listFile =
+      [listPath, sharedListPath]
+        .map((file) => path.join(repository, file))
+        .find(
+          (file) => existsSync(file) && mutateListedInit(readFileSync(file, 'utf8'), service),
+        ) ?? path.join(repository, listPath);
     const listed = existsSync(listFile)
       ? mutateListedInit(readFileSync(listFile, 'utf8'), service)
       : undefined;
