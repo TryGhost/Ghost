@@ -524,6 +524,11 @@ describe('Email Service', function () {
   });
 
   describe('resumeInterruptedSends', function () {
+    // Ghost's config defaults hold the 24 hour resume limit.
+    const config = {
+      get: (key) => (key === 'bulkEmail:resumeMaxAgeMs' ? 24 * 60 * 60 * 1000 : undefined),
+    };
+
     // The scanner runs one query per cutoff side. Tests that don't exercise the stale
     // path get an empty list for it and the given emails for the fresh one.
     const filterAwareFindAll =
@@ -580,6 +585,7 @@ describe('Email Service', function () {
         sendingService,
         emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
         domainWarmingService,
+        config,
       });
 
       await localService.resumeInterruptedSends();
@@ -621,6 +627,7 @@ describe('Email Service', function () {
         sendingService,
         emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
         domainWarmingService,
+        config,
       });
 
       await localService.resumeInterruptedSends();
@@ -662,6 +669,7 @@ describe('Email Service', function () {
         sendingService,
         emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
         domainWarmingService,
+        config,
       });
 
       await localService.resumeInterruptedSends();
@@ -721,6 +729,7 @@ describe('Email Service', function () {
         sendingService,
         emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
         domainWarmingService,
+        config,
       });
 
       await localService.resumeInterruptedSends();
@@ -761,6 +770,7 @@ describe('Email Service', function () {
         sendingService,
         emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
         domainWarmingService,
+        config,
       });
 
       await localService.resumeInterruptedSends();
@@ -792,6 +802,7 @@ describe('Email Service', function () {
         sendingService,
         emailAnalyticsJobs: { scheduleRecurringNewslettersJob },
         domainWarmingService,
+        config,
       });
 
       await localService.resumeInterruptedSends();
