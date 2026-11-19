@@ -9,6 +9,7 @@ import MarkdownPastePlugin from '../plugins/MarkdownPastePlugin.jsx';
 import MarkdownShortcutPlugin from '../plugins/MarkdownShortcutPlugin';
 import React from 'react';
 import TKPlugin from '../plugins/TKPlugin.jsx';
+import useLexicalEditable from '@lexical/react/useLexicalEditable';
 import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {EditorPlaceholder} from './ui/EditorPlaceholder';
 import {ExternalControlPlugin} from '../plugins/ExternalControlPlugin';
@@ -49,6 +50,7 @@ const KoenigComposableEditor = ({
     const [editor] = useLexicalComposerContext();
     const {isCollabActive} = useCollaborationContext();
     const {editorContainerRef, darkMode, isTKEnabled} = React.useContext(KoenigComposerContext);
+    const isEditable = useLexicalEditable();
 
     const isNested = !!editor._parentEditor;
     const isDragReorderEnabled = isDragEnabled && !readOnly && !isNested;
@@ -108,7 +110,8 @@ const KoenigComposableEditor = ({
             {!isCollabActive && <HistoryPlugin externalHistoryState={historyState} />} {/* adds undo/redo, in multiplayer that's handled by yjs */}
             <KoenigBehaviourPlugin containerElem={editorContainerRef} cursorDidExitAtTop={cursorDidExitAtTop} isNested={isNested} />
             <MarkdownShortcutPlugin transformers={markdownTransformers} />
-            {floatingAnchorElem && (<FloatingToolbarPlugin anchorElem={floatingAnchorElem} hiddenFormats={hiddenFormats} isSnippetsEnabled={isSnippetsEnabled} />)}
+            {/* formatting changes the document, which a read-only editor must not offer */}
+            {isEditable && floatingAnchorElem && (<FloatingToolbarPlugin anchorElem={floatingAnchorElem} hiddenFormats={hiddenFormats} isSnippetsEnabled={isSnippetsEnabled} />)}
             <DragDropPastePlugin />
             {registerAPI ? <ExternalControlPlugin registerAPI={registerAPI} /> : null}
             {isDragReorderEnabled && <DragDropReorderPlugin containerElem={editorContainerRef} />}

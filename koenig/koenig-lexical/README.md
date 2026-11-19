@@ -54,6 +54,24 @@ The main module source. `/src/index.js` is the entry point for the exposed modul
 
 Used for developing/demoing the editor. Renders a blank editor with all features enabled.
 
+### Read-only
+
+Lexical's editable flag is the one switch. An app makes the editor read-only
+with `setEditable(false)` on the editor instance it gets from `registerAPI`,
+and editable again with `setEditable(true)`. While the flag is off the document
+can be read, selected and copied, and nothing can change it:
+
+- typing, pasting and dropping do nothing, which is Lexical's own behaviour
+- the format and link toolbars, and the plus and slash card menus, are not
+  rendered, including one that was open when the flag went off
+- no card is selected or in edit mode, so card toolbars, settings panels and
+  nested editors are closed; one that was open is closed without removing an
+  empty card, since that would change the document
+- every card is `inert`, so its own buttons and inputs take no input
+
+The `readOnly` prop is narrower: it turns off drag reordering and marks the
+content element read-only, and does not set the flag.
+
 ### Styling
 
 **CSS**
