@@ -14,6 +14,7 @@ tools.
 | [build-stale-assets.mts](build-stale-assets.mts)                     | TypeScript ESM                     | Rebuild stale browser assets before nodemon starts Ghost                                     | Keep: automatic build lifecycle |
 | [minify-assets.mts](minify-assets.mts)                               | TypeScript ESM                     | Browser JS bundling/minification; `pnpm --filter ghost build:assets:js`                      | Keep: Ghost asset build         |
 | [pack.mjs](pack.mjs)                                                 | JavaScript ESM                     | Ghost tarball assembly; root `pnpm archive` via Nx                                           | Keep: Ghost packaging           |
+| [archive-workspace.mts](archive-workspace.mts)                       | TypeScript ESM                     | Resolve pnpm installation settings and export the standalone archive's workspace policy      | Keep: Ghost packaging           |
 | [prune.mts](prune.mts)                                               | TypeScript ESM                     | Prune built image/archive trees; Dockerfile, archive builder and downstream callers          | Keep: shipped build contract    |
 | [export-query-parameter-policy.ts](export-query-parameter-policy.ts) | TypeScript, CommonJS through `tsx` | Validate/export normalized policy JSON; `pnpm query-parameter-policy:export --output <file>` | Keep: Ghost policy export       |
 
@@ -25,11 +26,24 @@ builds its Nx prerequisites; it is not a command to run against an arbitrary
 installed site. `pack.mjs` assembles the GitHub-release and npm-layout tarballs,
 including the production workspace component archives and installation metadata.
 
+The archive reads its installation settings through pnpm so local `include`
+files and installed declarative config dependencies resolve just as they do for
+the checkout. Run `pnpm install` before packaging. Only the archive's existing
+installation settings are exported; bootstrap policy, config dependencies,
+include paths and executable hooks remain checkout-only. Patch paths are rebased
+to the repository root before copying, and patches outside that root are rejected.
+Build permissions declared through `permissions.<selector>.build` currently stop
+packaging: they can override `allowBuilds`, so exporting only the latter could
+weaken the policy. Other checkout permissions are not shipped.
+The standalone archive keeps its intentional zero release-age check because its
+bundled workspace components are local unpublished tarballs.
+
 `.mts` files are TypeScript ES modules run directly by Node. This folder is outside
 Core's TypeScript compiler `include`; running a script with type stripping is not
 proof that it has been typechecked. Keep source-format and checker coverage
 explicit when changing it. The policy exporter is checked without emitting files
-through `scripts/tsconfig.json`, included in `pnpm --filter ghost test:types`.
+through `scripts/tsconfig.json`, along with `archive-workspace.mts`, included in
+`pnpm --filter ghost test:types`.
 `pack.mjs` is still JavaScript; conversion is separate from deciding where
 packaging code belongs.
 
