@@ -2487,7 +2487,7 @@ describe('Batch Sending Service', function () {
       );
     });
 
-    it('reports a verification failure once during shutdown without failing the email', async function () {
+    it('fails the email on a verification failure during shutdown', async function () {
       const Email = createModelClass({ findOne: { status: 'pending' } });
       const sentry = { captureException: sinon.stub() };
       const service = new BatchSendingService({ models: { Email }, sentry });
@@ -2495,15 +2495,17 @@ describe('Batch Sending Service', function () {
         recipientVerificationError,
       } = require('../../../../../core/server/services/email-service/recipient-accounting');
       const failure = recipientVerificationError('123', 'preparation_totals');
-      let interruptedEmail;
+      let failedEmail;
       sinon.stub(service, 'sendEmail').callsFake(async (email) => {
-        interruptedEmail = email;
+        failedEmail = email;
         service.onPreStop();
         throw failure;
       });
-      await service.emailJob({ emailId: '123' });
+      const result = await service.emailJob({ emailId: '123' });
+      assert.notEqual(result, 'interrupted');
       sinon.assert.calledOnceWithExactly(sentry.captureException, failure);
-      assert.equal(interruptedEmail.get('error'), undefined);
+      assert.equal(failedEmail.get('status'), 'failed');
+      assert.equal(failedEmail.get('error'), failure.message);
     });
 
     it('onPreStop stops workers claiming new batches without waiting for in-flight ones', async function () {
