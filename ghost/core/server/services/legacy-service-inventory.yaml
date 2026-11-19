@@ -2,6 +2,7 @@
 # Every service check applies to every service that is not listed under `services`.
 # That list only shrinks: migrating a service deletes its entry.
 # `followUps` records what is still open for services that already use defineService.
+# `knownBugs` records bugs found while auditing or migrating a service, until they are fixed.
 # Entry points are relative to this directory; evidence paths are relative to ghost.
 # An unverified facet is an open audit question, not an empty/no-op contract.
 services:
@@ -9880,3 +9881,34 @@ followUps:
         Test repeated boot for the shared composition. Units pin one retained instance across
         both endpoints within a single module instance, not module reload or same-process
         reboot.
+knownBugs:
+  notifications:
+    - summary: >-
+        The notifications unit tests stub the Ghost version and never restore it. A test file
+        that runs after them in the same worker reads the stubbed version, so the Explore ping
+        root test then fails on the version in its expected payload.
+      sources:
+        - test/unit/server/services/notifications/notifications.test.js
+      tests:
+        - test/unit/server/services/explore-ping/index.test.ts
+  oembed:
+    - summary: >-
+        Custom providers run before mention and bookmark dispatch, and their results need not
+        carry metadata. WebmentionMetadata reads the metadata without a guard, so a mention of a
+        URL a custom provider handles throws a TypeError. Recommendations falls back to null
+        fields for the same result. Root units pin both as current behaviour; whether mention
+        requests should skip custom providers is undecided.
+      sources:
+        - core/server/services/oembed/oembed-service.js
+        - core/server/services/mentions/webmention-metadata.js
+      tests:
+        - test/unit/server/services/oembed/index.test.ts
+    - summary: >-
+        The NFT provider calls json() on the request and then reads body from the result,
+        although json() already returns the parsed body. A successful OpenSea response therefore
+        throws a TypeError. Units pin the request and failure propagation, not a successful
+        payload.
+      sources:
+        - core/server/services/oembed/nft-oembed-provider.js
+      tests:
+        - test/unit/server/services/oembed/nft-oembed.test.ts

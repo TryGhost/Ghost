@@ -11,6 +11,8 @@ const inventoryFile = 'legacy-service-inventory.yaml';
 const metadata = ['README.md', inventoryFile];
 // The section for standard services that still have something open.
 const followUpsSection = 'followUps';
+// The section for bugs in any service, legacy or standard.
+const knownBugsSection = 'knownBugs';
 const facets = [
   'exports',
   'construction',
@@ -87,10 +89,20 @@ const followUpEntry = z.object({
   futureHome: description.optional(),
   lifecycle: z.array(description).min(1).optional(),
 });
+// A bug found while auditing or migrating a service. It stays until it is fixed,
+// so it outlives the service's legacy entry.
+const knownBug = z
+  .object({
+    summary: description,
+    sources: z.array(description).min(1),
+    tests: z.array(description).optional(),
+  })
+  .strict();
 const inventorySchema = z
   .object({
     services: z.record(description, legacyEntry),
     [followUpsSection]: z.record(description, followUpEntry),
+    [knownBugsSection]: z.record(description, z.array(knownBug).min(1)),
   })
   .strict();
 
@@ -236,6 +248,24 @@ describe('legacy service inventory', function () {
         [],
         `${name} has fields that do not belong in ${followUpsSection}`,
       );
+    }
+  });
+
+  it(`records ${knownBugsSection} only for services that exist, with evidence that exists`, function () {
+    for (const [name, bugs] of Object.entries(inventory[knownBugsSection])) {
+      assert.ok(
+        legacy[name] || standard.includes(name),
+        `${name} is not a service; remove its known bugs or correct the name`,
+      );
+      for (const bug of bugs) {
+        for (const source of bug.sources) {
+          assertFileWithin(coreRoot, source);
+        }
+        for (const test of bug.tests ?? []) {
+          assert.ok(test.startsWith('test/'), `Expected a test path: ${test}`);
+          assertFileWithin(path.join(coreRoot, 'test'), test.slice('test/'.length));
+        }
+      }
     }
   });
 
