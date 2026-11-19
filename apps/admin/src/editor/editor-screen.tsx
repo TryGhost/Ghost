@@ -15,7 +15,7 @@ import { AdminLink } from '@/shared/admin-link';
 import { usePresence } from '@/shared/presence/use-presence';
 import { PresenceAvatars } from '@/shared/presence/presence-avatars';
 import { useEditingLockPrototype } from '@/shared/presence/editing-lock-prototype';
-import { EditingLockPrototypeEditorAvatar } from '@/shared/presence/editing-lock-prototype-avatar';
+import { EditingLockPrototypeAvatars } from '@/shared/presence/editing-lock-prototype-avatar';
 import { EditingLockPrototypePanel } from '@/shared/presence/editing-lock-prototype-panel';
 import { getPostListReturnUrl } from '@/posts/api';
 import { reloadAdmin } from '@/auth/api';
@@ -530,9 +530,10 @@ function EditorContent({
               <Box className="col-start-3 ml-auto" data-writing-focus={writingFocus}>
                 <PageHeader.ActionGroup className="gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
                   {editingLock.isDemoPost && session.persistedId ? (
-                    <EditingLockPrototypeEditorAvatar
+                    <EditingLockPrototypeAvatars
                       key={editingLock.revision}
                       postId={session.persistedId}
+                      surface="editor"
                     />
                   ) : showPresence ? (
                     <PresenceAvatars active={presence.active} resourceType={postType} />

@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
 // Throwaway customer-research prototype. Enable in development with
-// /ghost/#/posts?editingLockPrototype=<post id>. Only takeover state is simulated;
+// /ghost/#/posts?editingLockPrototype=<post id>. All collaboration state is simulated;
 // no presence or ownership is written to the server. Reload resets the lock.
 // Remember only which post to demonstrate, so resetting also works after navigation
 // has removed the URL parameter. An empty parameter switches the prototype off.
@@ -26,10 +26,27 @@ const postId = demoPostId();
 
 type Phase = 'locked' | 'taking-over' | 'editing';
 export type EditingLockExperience = 'taking-over' | 'being-taken-over';
-let state = {
-  experience: 'taking-over' as EditingLockExperience,
-  phase: 'locked' as Phase,
-  alexPresent: true,
+export const PROTOTYPE_STAFF = [
+  { id: 'alex', name: 'Alex Smith' },
+  { id: 'sam', name: 'Sam Lee' },
+  { id: 'jamie', name: 'Jamie Chen' },
+] as const;
+export type PrototypeStaffId = (typeof PROTOTYPE_STAFF)[number]['id'];
+type PrototypeState = {
+  experience: EditingLockExperience;
+  phase: Phase;
+  editorId: PrototypeStaffId | 'you';
+  present: PrototypeStaffId[];
+  multiplePeople: boolean;
+  notice: boolean;
+  revision: number;
+};
+let state: PrototypeState = {
+  experience: 'taking-over',
+  phase: 'locked',
+  editorId: 'alex',
+  present: ['alex'],
+  multiplePeople: false,
   notice: false,
   revision: 0,
 };
@@ -48,24 +65,61 @@ function update(next: Partial<typeof state>) {
   console.info('[Editing lock prototype]', state);
 }
 
-export function resetEditingLockPrototype(experience = state.experience) {
+export function resetEditingLockPrototype(
+  experience = state.experience,
+  multiplePeople = state.multiplePeople,
+) {
   clearTimeout(takeoverTimer);
   update({
     experience,
     phase: experience === 'taking-over' ? 'locked' : 'editing',
-    alexPresent: experience === 'taking-over',
+    editorId: experience === 'taking-over' ? 'alex' : 'you',
+    multiplePeople,
+    present: multiplePeople
+      ? PROTOTYPE_STAFF.map((person) => person.id)
+      : experience === 'taking-over'
+        ? ['alex']
+        : [],
     notice: false,
     revision: state.revision + 1,
   });
 }
 
-export function simulateAlexOpeningPrototype() {
-  update({ alexPresent: true });
+export function setMultiplePeoplePrototype(enabled: boolean) {
+  resetEditingLockPrototype(state.experience, enabled);
 }
 
-export function simulateAlexTakingOverPrototype() {
-  if (state.experience === 'being-taken-over' && state.alexPresent && state.phase === 'editing') {
-    update({ phase: 'locked', notice: true, revision: state.revision + 1 });
+export function simulatePersonOpeningPrototype(id: PrototypeStaffId) {
+  if (!state.present.includes(id)) {
+    update({ present: [...state.present, id] });
+  }
+}
+
+export function simulatePersonClosingPrototype(id: PrototypeStaffId) {
+  const present = state.present.filter((person) => person !== id);
+  if (state.editorId === id) {
+    // Closing the active editor's post releases the prototype lock.
+    clearTimeout(takeoverTimer);
+    update({
+      present,
+      editorId: 'you',
+      phase: 'editing',
+      notice: false,
+      revision: state.revision + 1,
+    });
+  } else {
+    update({ present });
+  }
+}
+
+export function simulatePersonTakingOverPrototype(id: PrototypeStaffId) {
+  if (state.present.includes(id) && state.editorId !== id && state.phase !== 'taking-over') {
+    update({
+      editorId: id,
+      phase: 'locked',
+      notice: state.notice || state.editorId === 'you',
+      revision: state.revision + 1,
+    });
   }
 }
 
@@ -78,7 +132,7 @@ export function takeOverEditingPrototype() {
     return;
   }
   update({ phase: 'taking-over', notice: false });
-  takeoverTimer = setTimeout(() => update({ phase: 'editing' }), 2000);
+  takeoverTimer = setTimeout(() => update({ phase: 'editing', editorId: 'you' }), 2000);
 }
 
 export function useEditingLockPrototype(id?: string | null) {

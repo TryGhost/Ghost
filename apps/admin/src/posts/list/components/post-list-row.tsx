@@ -11,7 +11,7 @@ import { cn, LucideIcon } from '@tryghost/shade/utils';
 import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
 import { PresenceAvatars } from '@/shared/presence/presence-avatars';
 import { useEditingLockPrototype } from '@/shared/presence/editing-lock-prototype';
-import { EditingLockPrototypeListAvatar } from '@/shared/presence/editing-lock-prototype-avatar';
+import { EditingLockPrototypeAvatars } from '@/shared/presence/editing-lock-prototype-avatar';
 import type { ActivePresence } from '@/shared/presence/presence-api';
 import { AdminLink } from '@/shared/admin-link';
 import { FadingText } from '@/shared/fading-text';
@@ -316,10 +316,11 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
               </Stack>
             </RowLink>
           </RowPrimaryAction>
-          {editingLock.isDemoPost && editingLock.alexPresent ? (
-            <EditingLockPrototypeListAvatar
+          {editingLock.isDemoPost ? (
+            <EditingLockPrototypeAvatars
               className="relative z-10"
-              viewing={!editingLock.locked}
+              postId={post.id}
+              surface="list"
             />
           ) : !editingLock.isDemoPost && presenceActive && presenceActive.length > 0 ? (
             <PresenceAvatars
@@ -356,8 +357,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                   'ms-8',
                   // Below 1200px the metrics are hidden, so with avatars beside it the
                   // action needs no extra separation and the title keeps the room.
-                  ((editingLock.isDemoPost && editingLock.alexPresent) ||
-                    (presenceActive && presenceActive.length > 0)) &&
+                  (editingLock.isDemoPost || (presenceActive && presenceActive.length > 0)) &&
                     'max-[1200px]:ms-2',
                   'text-muted-foreground hover:bg-background hover:text-foreground',
                   isHovered && 'bg-background',

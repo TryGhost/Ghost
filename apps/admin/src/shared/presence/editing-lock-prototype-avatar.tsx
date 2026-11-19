@@ -10,47 +10,68 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tryghost/shade/components';
-import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
+import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import {
   dismissEditingLockPrototypeNotice,
+  PROTOTYPE_STAFF,
   takeOverEditingPrototype,
   useEditingLockPrototype,
 } from './editing-lock-prototype';
+import { userInitials } from './present-users';
 
-const NAME = 'Alex Smith';
-const EDITING_MESSAGE = `${NAME} is editing this post.`;
-const OPEN_MESSAGE = `${NAME} has this post open.`;
-
-function DemoAvatar() {
-  return <Avatar className="size-7 border-2 border-background" colorSeed={NAME} initials="AS" />;
+interface PrototypePerson {
+  id: string;
+  name: string;
+  image?: string | null;
 }
 
-export function EditingLockPrototypeListAvatar({
-  className,
-  viewing = false,
-  testId = 'editing-lock-list-avatar',
-}: {
-  className?: string;
-  viewing?: boolean;
-  testId?: string;
-}) {
-  const message = viewing ? OPEN_MESSAGE : EDITING_MESSAGE;
+function DemoAvatar({ person }: { person: PrototypePerson }) {
   return (
-    <Tooltip delayDuration={viewing ? 0 : undefined}>
+    <Avatar
+      className="size-7 border-2 border-background"
+      colorSeed={person.name}
+      initials={userInitials(person.name)}
+      src={person.image}
+    />
+  );
+}
+
+function PrototypePresenceAvatar({
+  person,
+  isEditor,
+  className,
+  testId,
+}: {
+  person: PrototypePerson;
+  isEditor: boolean;
+  className?: string;
+  testId: string;
+}) {
+  const message =
+    person.id === 'you'
+      ? isEditor
+        ? 'You’re editing this post.'
+        : 'You have this post open.'
+      : `${person.name} ${isEditor ? 'is editing this post.' : 'has this post open.'}`;
+  return (
+    <Tooltip delayDuration={isEditor ? undefined : 0}>
       <TooltipTrigger asChild>
         <span
           aria-label={message}
           className={cn(
             'pointer-events-auto shrink-0 rounded-full',
-            viewing && 'opacity-50',
+            !isEditor && 'opacity-50',
             className,
           )}
+          data-editor={isEditor}
+          data-participant-id={person.id}
           data-testid={testId}
           tabIndex={0}
           data-ignore-select
         >
-          <DemoAvatar />
+          <DemoAvatar person={person} />
         </span>
       </TooltipTrigger>
       <TooltipContent variant="white">{message}</TooltipContent>
@@ -58,8 +79,18 @@ export function EditingLockPrototypeListAvatar({
   );
 }
 
-export function EditingLockPrototypeEditorAvatar({ postId }: { postId: string }) {
-  const { phase, alexPresent, notice } = useEditingLockPrototype(postId);
+function PrototypeEditorPersonAvatar({
+  postId,
+  person,
+}: {
+  postId: string;
+  person: PrototypePerson;
+}) {
+  const snapshot = useEditingLockPrototype(postId);
+  const { phase } = snapshot;
+  const isEditor = snapshot.editorId === person.id;
+  const notice = snapshot.notice && isEditor;
+  const editingMessage = `${person.name} is editing this post.`;
   const [open, setOpen] = useState(false);
   const [startedHere, setStartedHere] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -88,11 +119,14 @@ export function EditingLockPrototypeEditorAvatar({ postId }: { postId: string })
     }
   };
 
-  if (!alexPresent) {
-    return null;
-  }
-  if (phase === 'editing' && !success) {
-    return <EditingLockPrototypeListAvatar testId="editing-lock-editor-avatar" viewing />;
+  if (!isEditor && !success) {
+    return (
+      <PrototypePresenceAvatar
+        isEditor={false}
+        person={person}
+        testId="editing-lock-editor-avatar"
+      />
+    );
   }
 
   return (
@@ -103,13 +137,15 @@ export function EditingLockPrototypeEditorAvatar({ postId }: { postId: string })
             success
               ? 'Editing takeover complete'
               : notice
-                ? `${NAME} has taken over editing this post.`
-                : EDITING_MESSAGE
+                ? `${person.name} has taken over editing this post.`
+                : editingMessage
           }
           className={cn(
             'pointer-events-auto shrink-0 rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-focus-ring',
-            phase === 'editing' && 'opacity-50',
+            !isEditor && 'opacity-50',
           )}
+          data-editor={isEditor}
+          data-participant-id={person.id}
           data-testid="editing-lock-editor-avatar"
           type="button"
           onClick={(event) => {
@@ -128,7 +164,7 @@ export function EditingLockPrototypeEditorAvatar({ postId }: { postId: string })
           }}
           onPointerLeave={leave}
         >
-          <DemoAvatar />
+          <DemoAvatar person={person} />
         </button>
       </PopoverTrigger>
       <PopoverContent
@@ -168,12 +204,12 @@ export function EditingLockPrototypeEditorAvatar({ postId }: { postId: string })
             <>
               <Stack gap="xs">
                 <Text className="text-base" weight="medium">
-                  {notice ? `${NAME} has taken over editing this post.` : EDITING_MESSAGE}
+                  {notice ? `${person.name} has taken over editing this post.` : editingMessage}
                 </Text>
                 <Text className="text-base" tone="secondary">
                   {notice
                     ? 'Take over to continue editing.'
-                    : 'Taking over will stop Alex from editing.'}
+                    : `Taking over will stop ${person.name.split(' ')[0]} from editing.`}
                 </Text>
               </Stack>
               <Button
@@ -194,5 +230,53 @@ export function EditingLockPrototypeEditorAvatar({ postId }: { postId: string })
         </Stack>
       </PopoverContent>
     </Popover>
+  );
+}
+
+export function EditingLockPrototypeAvatars({
+  postId,
+  surface,
+  className,
+}: {
+  postId: string;
+  surface: 'editor' | 'list';
+  className?: string;
+}) {
+  const { editorId, present } = useEditingLockPrototype(postId);
+  const { data: currentUser } = useCurrentUser();
+  const people: PrototypePerson[] = [
+    { id: 'you', name: currentUser?.name ?? 'You', image: currentUser?.profile_image },
+    ...PROTOTYPE_STAFF.filter((person) => present.includes(person.id)),
+  ];
+  const ordered = [
+    ...people.filter((person) => person.id === editorId),
+    ...people.filter((person) => person.id !== editorId),
+  ];
+
+  return (
+    <Inline
+      className={cn('pointer-events-auto isolate shrink-0', className)}
+      data-testid={`editing-lock-${surface}-avatars`}
+      gap="none"
+      data-ignore-select
+    >
+      {ordered.map((person, index) => (
+        <Box
+          key={person.id}
+          className={cn('relative', index > 0 && '-ml-2')}
+          style={{ zIndex: ordered.length - index }}
+        >
+          {surface === 'editor' && person.id !== 'you' ? (
+            <PrototypeEditorPersonAvatar person={person} postId={postId} />
+          ) : (
+            <PrototypePresenceAvatar
+              isEditor={person.id === editorId}
+              person={person}
+              testId={`editing-lock-${surface}-avatar`}
+            />
+          )}
+        </Box>
+      ))}
+    </Inline>
   );
 }
