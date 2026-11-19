@@ -22,7 +22,8 @@ const urlUtils = require('../../../../../core/shared/url-utils').default;
 const models = require('../../../../../core/server/models');
 const mail = require('../../../../../core/server/lib/mail');
 const externalRequest = require('../../../../../core/server/lib/request-external');
-const oembedService = require('../../../../../core/server/services/oembed');
+const oembedRoot = require('../../../../../core/server/services/oembed').default;
+const OEMBED_PATH = require.resolve('../../../../../core/server/services/oembed');
 const mentionsRoot = require('../../../../../core/server/services/mentions').default;
 const staff = require('../../../../../core/server/services/staff').default;
 const ROOT_PATH = require.resolve('../../../../../core/server/services/recommendations');
@@ -69,6 +70,11 @@ describe('Recommendations service root', function () {
   let error: sinon.SinonStub;
   let outgoingInit: sinon.SinonStub;
   let incomingInit: sinon.SinonStub;
+
+  // Boot initializes oEmbed before this root reads it.
+  beforeAll(async function () {
+    await oembedRoot.init();
+  });
 
   beforeEach(function () {
     // Load a fresh root per test so each case initializes the index's own wiring, then
@@ -183,6 +189,36 @@ describe('Recommendations service root', function () {
     mentionsReady = true;
     assert.equal(await root.init(), undefined);
     assert.equal(root.service.controller.service.mentionSendingService, sendingService);
+  });
+
+  it('rejects init without publishing anything while oEmbed is not ready, and initializes once it is', async function () {
+    // A fresh oEmbed root stands in for one boot has not initialized yet. The
+    // shared root is restored for the other files in this worker.
+    const sharedOembed = require.cache[OEMBED_PATH];
+    delete require.cache[OEMBED_PATH];
+    try {
+      await assert.rejects(
+        root.init(),
+        (failure: unknown) =>
+          failure instanceof IncorrectUsageError &&
+          /^oEmbed used before init\(\)/.test(failure.message),
+      );
+
+      assert.throws(() => root.service, IncorrectUsageError);
+      sinon.assert.notCalled(addMapper);
+      sinon.assert.notCalled(subscribe);
+      sinon.assert.notCalled(outgoingInit);
+      sinon.assert.notCalled(incomingInit);
+
+      await require(OEMBED_PATH).default.init();
+      assert.equal(await root.init(), undefined);
+      sinon.assert.calledOnce(addMapper);
+    } finally {
+      delete require.cache[OEMBED_PATH];
+      if (sharedOembed) {
+        require.cache[OEMBED_PATH] = sharedOembed;
+      }
+    }
   });
 
   for (const enabled of [undefined, true] as const) {
@@ -472,7 +508,7 @@ describe('Recommendations service root', function () {
   it('fetches recommendation metadata through the shared external request client and falls back to oEmbed', async function () {
     await root.init();
     const get = sandbox.stub(externalRequest, 'get').resolves({ statusCode: 404, body: '' });
-    const fetchOembed = sandbox.stub(oembedService, 'fetchOembedDataFromUrl').resolves({
+    const fetchOembed = sandbox.stub(oembedRoot.service, 'fetchOembedDataFromUrl').resolves({
       version: '1.0',
       type: 'mention',
       url: 'https://other.example/',
