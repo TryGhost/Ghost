@@ -434,13 +434,11 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await service.onShutdown();
     await email.refresh();
     const partialIds = (await service.getBatches(email)).map((batch) => batch.id);
-    assert.equal(email.get('status'), 'submitting');
+    assert.equal(email.get('status'), 'pending');
     assert.equal(email.get('prepared_at'), null);
     assert.equal(partialIds.length, 1);
     sinon.assert.notCalled(sender.send);
 
-    // The boot scanner releases the interrupted email's lock before dispatching it.
-    await email.save({ status: 'pending' }, { patch: true });
     const restarted = createService();
     await restarted.emailJob({ emailId: email.id });
     await email.refresh();
@@ -477,7 +475,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     await service.emailJob({ emailId: email.id });
     await service.onShutdown();
     await email.refresh();
-    assert.equal(email.get('status'), 'submitting');
+    assert.equal(email.get('status'), 'pending');
     const stopped = await service.getBatches(email);
     assert.ok(stopped.some((batch) => batch.get('status') === 'submitted'));
     assert.ok(stopped.some((batch) => batch.get('status') === 'pending'));
@@ -487,7 +485,6 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     segmenter.getMemberFilterForSegment.throws(
       new Error('Frozen recipients must not be swept again'),
     );
-    await email.save({ status: 'pending' }, { patch: true });
     await createService().emailJob({ emailId: email.id });
     await email.refresh();
     assert.equal(email.get('status'), 'submitted');
@@ -626,7 +623,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
     assert.equal(reported.length, 1);
     assert.equal(JSON.parse(reported[0].args[0].errorDetails).reason, 'batch_verification_failed');
     await email.refresh();
-    assert.equal(email.get('status'), 'submitting');
+    assert.equal(email.get('status'), 'pending');
     assert.equal(email.get('error'), null);
     assert.ok((await service.getBatches(email)).some((batch) => batch.get('status') === 'pending'));
   });
@@ -1493,7 +1490,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
       assert.equal(error.retryable, false);
       assert.equal(verificationDetails(error).reason, 'provider_payload_count');
       await email.refresh();
-      assert.equal(email.get('status'), shutdown ? 'submitting' : 'failed');
+      assert.equal(email.get('status'), shutdown ? 'pending' : 'failed');
       assert.equal(email.get('error'), shutdown ? null : error.message);
       if (shutdown) {
         assert.ok(

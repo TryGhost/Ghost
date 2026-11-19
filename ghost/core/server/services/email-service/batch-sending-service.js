@@ -250,6 +250,25 @@ class BatchSendingService {
     }
   }
 
+  // A send stopped by shutdown goes back to `pending`, so whatever runs the
+  // send next takes it through the normal status lock. If the write fails the
+  // email stays `submitting`, as it would after a crash.
+  async #releaseInterruptedEmail(emailId) {
+    try {
+      const released = await this.updateStatusLock(this.#models.Email, emailId, 'pending', [
+        'submitting',
+      ]);
+      logging.info(
+        `[Background Job] batch-sending-service-job send stopped because the container is shutting down — ${released ? `returned email ${emailId} to pending so it can resume` : `email ${emailId} was no longer submitting`}`,
+      );
+    } catch (err) {
+      logging.error(
+        err,
+        `[Background Job] batch-sending-service-job send stopped because the container is shutting down — could not return email ${emailId} to pending`,
+      );
+    }
+  }
+
   async #emailJobInner({ emailId }) {
     logging.info(`[Background Job] batch-sending-service-job started for email ${emailId}`);
 
@@ -326,9 +345,7 @@ class BatchSendingService {
         if (e?.retryable === false) {
           this.#sentry?.captureException(e);
         }
-        logging.info(
-          `[Background Job] batch-sending-service-job send stopped because the container is shutting down — leaving email ${email.id} status=submitting so it can resume on next boot`,
-        );
+        await this.#releaseInterruptedEmail(email.id);
         return 'interrupted';
       }
       const ghostError = new errors.EmailError({
