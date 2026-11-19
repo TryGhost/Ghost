@@ -50,7 +50,7 @@ export default defineService('${className}', () => {
     [`${SERVICES}/${name}/${name}-service.ts`]: `import type { GhostLogger } from '@tryghost/logging';
 
 // Import allowlisted libraries directly here; inject application instances from index.ts.
-// For example: import { getUnixTime } from '@tryghost/kernel/clock';
+// For example: import { toUnixTime } from '@tryghost/kernel/clock';
 interface ${className}Deps {
   logging: GhostLogger;
 }

@@ -11,11 +11,12 @@ It is the `@tryghost/foundry` workspace package, outside the `ghost` package:
 import { createApplication } from '@tryghost/foundry/application';
 ```
 
-| File                                   | What it builds                                                                                                                           |
-| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| [`logging.ts`](src/logging.ts)         | `createLogger(options)`: a logger from options, reading no options file                                                                  |
-| [`database.ts`](src/database.ts)       | `createDatabase(options)`: the database handle from Knex options                                                                         |
-| [`application.ts`](src/application.ts) | `createApplication(definition)`: builds config, the logger, the database handle and the event bus once each, in that order, on first use |
+| File                                   | What it builds                                                                                                                                      |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`logging.ts`](src/logging.ts)         | `createLogger(options)`: a logger from options, reading no options file                                                                             |
+| [`database.ts`](src/database.ts)       | `createDatabase(options)`: the database handle from Knex options                                                                                    |
+| [`clock.ts`](src/clock.ts)             | `createClock()`: the clock, which reads the system time                                                                                             |
+| [`application.ts`](src/application.ts) | `createApplication(definition)`: builds config, the logger, the database handle, the event bus and the clock once each, in that order, on first use |
 
 `createApplication` also returns `start()` and `stop()`: see
 [the start sequence](#the-start-sequence).
@@ -31,15 +32,15 @@ an application's definition supplies a function that loads its config.
 `application.start(options)` runs seven steps. The foundry owns their order;
 the application's definition supplies what goes in each one, under `steps`.
 
-| Step            | What the foundry does                                                 |
-| --------------- | --------------------------------------------------------------------- |
-| 1. `foundation` | Builds config, the logger, the database handle and the event bus      |
-| 2. `database`   | Calls the application's `run`, which initialises or migrates          |
-| 3. `shared`     | Starts each entry of `modules`, one after another, in the order given |
-| 4. `services`   | The same, for everything else. Domains will start here                |
-| 5. `jobs`       | Calls the application's `run`, which starts its job runner            |
-| 6. `ready`      | Calls the application's `run`                                         |
-| 7. `background` | Starts work that `start()` does not wait for                          |
+| Step            | What the foundry does                                                       |
+| --------------- | --------------------------------------------------------------------------- |
+| 1. `foundation` | Builds config, the logger, the database handle, the event bus and the clock |
+| 2. `database`   | Calls the application's `run`, which initialises or migrates                |
+| 3. `shared`     | Starts each entry of `modules`, one after another, in the order given       |
+| 4. `services`   | The same, for everything else. Domains will start here                      |
+| 5. `jobs`       | Calls the application's `run`, which starts its job runner                  |
+| 6. `ready`      | Calls the application's `run`                                               |
+| 7. `background` | Starts work that `start()` does not wait for                                |
 
 - **Slots.** Every step may have `before` and `after` lists (`foundation` has
   only `after`). A slot is a name and a `run` function, with an optional

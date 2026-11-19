@@ -51,7 +51,7 @@ loader; Nx builds it first.
 
 [`foundry/`](../../foundry/README.md) is the `@tryghost/foundry` workspace
 package: the framework code that builds what exists once per process (config,
-the logger, the database handle, the event bus). Only
+the logger, the database handle, the event bus, the clock). Only
 [`ghost/bootstrap/`](../../ghost/bootstrap/README.md) imports it; that folder
 is Ghost's application definition and holds the instances.
 

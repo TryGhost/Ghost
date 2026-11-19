@@ -16,28 +16,33 @@ make a helper part of the kernel.
 
 ## Foundation types
 
-Code that needs configuration, a logger, the database or the event bus is
-handed one. These files say what it is handed. Each is a type, so importing one
+Code that needs configuration, a logger, the database, the event bus or the
+time is handed one. These files say what it is handed. Each is a type, so importing one
 builds nothing and reads nothing:
 
 - [`logging.ts`](src/logging.ts): `Logger`, and `LoggerOptions` for whoever builds one.
 - [`config.ts`](src/config.ts): `Config`.
 - [`database.ts`](src/database.ts): `Database`.
 - [`events.ts`](src/events.ts): `EventBus`.
-- [`foundation.ts`](src/foundation.ts): `Foundation`, the four together.
+- [`clock.ts`](src/clock.ts): `Clock`.
+- [`foundation.ts`](src/foundation.ts): `Foundation`, the five together.
 
 The [foundry](../foundry/README.md) builds the instances. Nothing in the
 kernel can.
 
 ## Clock
 
-[`clock.ts`](src/clock.ts) exposes `getUnixTime()` for the current time in whole
-seconds. Services may import it directly. Its deprecated `moment` export keeps
-existing Moment Timezone operations available while services migrate; callers
-can change their import without rewriting date logic. It shares the existing
-library instance and leaves Ghost's timezone configuration unchanged.
+Nothing in the kernel reads the time. [`clock.ts`](src/clock.ts) has the `Clock`
+type, whose `now()` returns epoch milliseconds, and functions that work on a
+time they are given. The [foundry](../foundry/README.md) builds the one clock a
+process has, and it is handed out as `foundation.clock`.
 
-For calendar dates and site timezones, `clock.ts` also exposes Temporal-based
+`toUnixTime()` turns epoch milliseconds into whole seconds. Ghost code that
+imports the current time instead of being handed the clock uses
+[`ghost/core/shared/clock.ts`](../ghost/core/shared/clock.ts), which reads the
+foundation's clock and also holds the deprecated `moment` export.
+
+For calendar dates and site timezones, `clock.ts` exposes Temporal-based
 helpers that take ISO `YYYY-MM-DD` dates and IANA timezone names:
 `resolveTimeZone()`, `startOfLocalDay()`, `localDateOf()`, `addDays()` and
 `daysBetween()`. `startOfLocalDay()` follows the timezone's daylight saving

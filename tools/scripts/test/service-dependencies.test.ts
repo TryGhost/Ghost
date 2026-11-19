@@ -432,7 +432,7 @@ it('allows same-service code, explicit types, approved libraries and root wiring
     'ghost/core/server/lib/db-types/date.ts': 'export const date = true;',
     'ghost/core/server/lib/db-types/boolean.ts': 'export const boolean = true;',
     'ghost/core/server/lib/db-types/json.ts': 'export const json = true;',
-    'kernel/src/clock.ts': 'export const getUnixTime = () => 0; export const moment = {};',
+    'kernel/src/clock.ts': 'export const toUnixTime = () => 0; export const addDays = () => 0;',
     'ghost/core/server/lib/public-jwk.ts': 'export const key = true;',
     [`${services}/jobs-service/job.ts`]: 'export class Job {}',
     [`${alpha}/implementation.ts`]: `
@@ -442,7 +442,7 @@ it('allows same-service code, explicit types, approved libraries and root wiring
       import 'node:crypto'; import 'util'; import 'bson-objectid';
       import '../../lib/db-types/date'; import '../../lib/db-types/boolean'; import '../../lib/db-types/json';
       import '../../lib/public-jwk'; import '../jobs-service/job';
-      import {getUnixTime, moment} from '@tryghost/kernel/clock';
+      import {toUnixTime, addDays} from '@tryghost/kernel/clock';
     `,
   });
   for (const name of [

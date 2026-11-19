@@ -92,7 +92,7 @@ describe('application.start', function () {
       'ready',
       'background',
     ]);
-    assert.deepEqual(application.built(), ['config', 'logging', 'database', 'events']);
+    assert.deepEqual(application.built(), ['config', 'logging', 'database', 'events', 'clock']);
   });
 
   it('waits for each entry before the next, and loads a module only when it is reached', async function () {

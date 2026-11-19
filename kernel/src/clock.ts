@@ -1,12 +1,19 @@
-import momentTimezone from 'moment-timezone';
 import { Temporal } from 'temporal-polyfill';
 
-/** @deprecated Compatibility export for existing date logic. Prefer clock helpers where available. */
-export const moment = momentTimezone;
+/**
+ * The time, as the application is handed it. The foundry builds the one clock
+ * a process has; nothing in the kernel reads the time.
+ *
+ * @see [Clock](../README.md#clock)
+ */
+export interface Clock {
+  /** The current time in epoch milliseconds. */
+  now(): number;
+}
 
-/** Returns the current Unix time in whole seconds. */
-export function getUnixTime(): number {
-  return momentTimezone().unix();
+/** Returns the whole seconds of a time in epoch milliseconds, as a Unix time. */
+export function toUnixTime(epochMilliseconds: number): number {
+  return Math.floor(epochMilliseconds / 1000);
 }
 
 // Calendar dates below are ISO "YYYY-MM-DD" strings.

@@ -1,5 +1,5 @@
 const errors = require('@tryghost/errors');
-const { moment } = require('@tryghost/kernel/clock');
+const { moment } = require('../../../shared/clock');
 
 // Import source normalization from ReferrersStatsService
 const { normalizeSource } = require('./referrers-stats-service');

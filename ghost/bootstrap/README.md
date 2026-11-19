@@ -8,7 +8,7 @@ this folder holds only what Ghost tells the foundry.
 
 - **One application definition**, [`app.ts`](app.ts). It also holds the
   application object, so it is the one module where Ghost's config, logger,
-  database handle and event bus live. Importing it builds nothing. Boot calls
+  database handle, event bus and clock live. Importing it builds nothing. Boot calls
   `startFoundation()` first.
 - **Ghost's values for the foundation instances**: where config is, the
   logger's options ([`logging-options.ts`](logging-options.ts)) and the

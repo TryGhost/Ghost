@@ -1,6 +1,6 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const { moment } = require('@tryghost/kernel/clock');
+const { moment } = require('../../../shared/clock');
 
 const messages = {
   commentNotFound: 'Comment could not be found',

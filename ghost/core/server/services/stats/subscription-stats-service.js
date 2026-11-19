@@ -1,4 +1,4 @@
-const { moment } = require('@tryghost/kernel/clock');
+const { moment } = require('../../../shared/clock');
 
 class SubscriptionStatsService {
   /**

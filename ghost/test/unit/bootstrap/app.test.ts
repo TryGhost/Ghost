@@ -18,6 +18,11 @@ const probe = `
   let seen;
   DomainEvents.subscribe(Probe, (event) => { seen = event; });
   foundation.events.dispatch(probe);
+  // The legacy path reads the foundation's clock: it follows a change to it.
+  const realNow = foundation.clock.now;
+  foundation.clock.now = () => 1700000000999;
+  const clockReadThroughLegacyPath = require('./core/shared/clock').getUnixTime() === 1700000000;
+  foundation.clock.now = realNow;
   setImmediate(async () => {
     process.stdout.write(JSON.stringify({
       builtOnImport,
@@ -28,6 +33,7 @@ const probe = `
       knex: require('./core/server/data/db').knex === foundation.database.knex,
       connection: require('./core/server/data/db/connection') === foundation.database.knex,
       events: seen === probe,
+      clock: clockReadThroughLegacyPath,
     }));
     await foundation.database.knex.destroy();
   });
@@ -43,13 +49,14 @@ describe('Ghost application', function () {
     assert.equal(result.status, 0, result.stderr);
     assert.deepEqual(JSON.parse(result.stdout), {
       builtOnImport: [],
-      built: ['config', 'logging', 'database', 'events'],
+      built: ['config', 'logging', 'database', 'events', 'clock'],
       loggerBuiltBy: 'application',
       config: true,
       logging: true,
       knex: true,
       connection: true,
       events: true,
+      clock: true,
     });
   }, 60_000);
 

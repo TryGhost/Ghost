@@ -64,7 +64,7 @@ describe('createApplication', function () {
       'database with the logger',
       'events',
     ]);
-    assert.deepEqual(application.built(), ['config', 'logging', 'database', 'events']);
+    assert.deepEqual(application.built(), ['config', 'logging', 'database', 'events', 'clock']);
     assert.equal(foundation.database?.knex, knex);
     assert.equal(foundation.events, bus);
     assert.equal(application.startFoundation(), foundation);

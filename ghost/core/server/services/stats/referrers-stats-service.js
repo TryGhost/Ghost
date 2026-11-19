@@ -1,4 +1,4 @@
-const { moment } = require('@tryghost/kernel/clock');
+const { moment } = require('../../../shared/clock');
 
 // Import centralized date utilities
 const { getDateBoundaries, applyDateFilter, startOfUtcDayAgo } = require('./utils/date-utils');

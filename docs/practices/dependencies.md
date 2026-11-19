@@ -94,10 +94,13 @@ Some libraries are allowed only in one form:
 
 - **Lodash:** import individual functions, such as `lodash/pick`. The whole
   `lodash` package is not allowed. Plain JavaScript is often simpler.
-- **Dates and times:** use the [kernel clock](../../kernel/src/clock.ts).
-  Do not import Moment, Moment Timezone, Luxon or any other date library
-  elsewhere. The clock's deprecated `moment` export keeps existing date logic
-  working while it moves.
+- **Dates and times:** take the current time from the foundation's clock, and
+  work on it with the pure helpers in the
+  [kernel clock](../../kernel/src/clock.ts). Code that is not handed the
+  foundation uses [`shared/clock.ts`](../../ghost/core/shared/clock.ts), which
+  reads the same clock. Do not import Moment, Moment Timezone, Luxon or any
+  other date library elsewhere. The deprecated `moment` export of
+  `shared/clock.ts` keeps existing date logic working while it moves.
 - **Files, the operating system and networking:** do not import `fs`,
   `fs-extra`, `os` or `net`. Code that needs files is given a loader limited to
   those files, like `readTemplate` in the

@@ -1,3 +1,4 @@
+import type { Clock } from './clock';
 import type { Config } from './config';
 import type { Database } from './database';
 import type { EventBus } from './events';
@@ -15,4 +16,5 @@ export interface Foundation<AppConfig extends Config = Config> {
   /** Undefined when the application configures no database. */
   readonly database: Database | undefined;
   readonly events: EventBus;
+  readonly clock: Clock;
 }

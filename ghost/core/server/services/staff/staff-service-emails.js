@@ -1,4 +1,4 @@
-const { moment } = require('@tryghost/kernel/clock');
+const { moment } = require('../../../shared/clock');
 const { formatAddressForDelivery } = require('../../lib/mail/format-address-for-delivery');
 
 class StaffServiceEmails {

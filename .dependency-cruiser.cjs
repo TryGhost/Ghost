@@ -71,7 +71,8 @@ const serviceDependencyAllowlist = [
   '^(node:)?path$', // Path string parsing and joining.
   '^(node:)?vm$', // Bounded script execution for caller-owned regex matching with a timeout.
   '^(node:)?(assert/strict|stream|stream/promises|buffer|timers/promises)$', // Node's in-memory primitives: assertions, streams, buffers and timers; no I/O of their own.
-  '^kernel/(?:src|build)/clock\\.[jt]s$|^@tryghost/kernel/clock$', // Shared clock helpers and legacy date compatibility.
+  '^kernel/(?:src|build)/clock\\.[jt]s$|^@tryghost/kernel/clock$', // The Clock type and pure date helpers.
+  '^ghost/core/shared/clock\\.ts$', // Legacy path to the foundation's clock, and legacy date compatibility.
   '^ghost/core/server/lib/db-types/date\\.ts$', // Database date codec.
   '^ghost/core/server/lib/db-types/boolean\\.ts$', // Database boolean codec.
   '^ghost/core/server/lib/db-types/json\\.ts$', // Database JSON codec.
@@ -394,7 +395,7 @@ const serviceDependencyDecisions = {
   // owners is counted here too, without a pattern.
   importForm: [
     '^lodash$', // Import individual functions, such as lodash/isEmpty.
-    '^(moment(-timezone)?|luxon|temporal-polyfill)$', // Dates and times go through the kernel clock, which exports moment for existing date logic.
+    '^(moment(-timezone)?|luxon|temporal-polyfill)$', // The time comes from the foundation's clock and the kernel's date helpers work on it; shared/clock exports moment for existing date logic.
     '^(node:)?url$', // Use the global URL; url.parse is deprecated.
     '^(node:)?(fs(/promises)?|os|net)$|^fs-extra$', // No file system, operating system or networking modules: the root passes a loader limited to what is needed.
   ],
@@ -513,7 +514,7 @@ module.exports = {
     {
       name: 'bootstrap-only-from-boot',
       comment:
-        'ghost/bootstrap holds the application and its foundation instances. Boot starts it; the legacy modules listed here return its config and database handle to code that still imports them. Everything else is handed what it needs.',
+        'ghost/bootstrap holds the application and its foundation instances. Boot starts it; the legacy modules listed here return its config, database handle and clock to code that still imports them. Everything else is handed what it needs.',
       severity: 'error',
       from: {
         pathNot: [
@@ -521,6 +522,7 @@ module.exports = {
           '^ghost/core/boot\\.js$', // Boot builds the foundation first.
           '^ghost/core/shared/config/index\\.ts$', // Legacy path to the foundation's config.
           '^ghost/core/server/data/db/connection\\.ts$', // Legacy path to the foundation's database handle.
+          '^ghost/core/shared/clock\\.ts$', // Legacy path to the foundation's clock.
         ],
       },
       to: { path: '^ghost/bootstrap/' },

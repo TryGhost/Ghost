@@ -1,9 +1,11 @@
 import { IncorrectUsageError } from '@tryghost/errors';
+import type { Clock } from '@tryghost/kernel/clock';
 import type { Config } from '@tryghost/kernel/config';
 import type { Database } from '@tryghost/kernel/database';
 import type { EventBus } from '@tryghost/kernel/events';
 import type { Foundation } from '@tryghost/kernel/foundation';
 import type { Logger } from '@tryghost/kernel/logging';
+import { createClock } from './clock';
 
 /**
  * One start of the application. `start()` makes a new one each time it is
@@ -86,7 +88,7 @@ interface ModuleStep<StartRun> extends Slots<StartRun> {
  * of the steps; the application supplies their contents.
  */
 export interface Steps<StartRun> {
-  /** 1. The framework builds config, logging, the database handle and the event bus. */
+  /** 1. The framework builds config, logging, the database handle, the event bus and the clock. */
   readonly foundation?: Pick<Slots<StartRun>, 'after'>;
   /** 2. The database is made ready: initialised or migrated. */
   readonly database?: RunStep<StartRun>;
@@ -115,7 +117,8 @@ export interface Steps<StartRun> {
 /**
  * What an application supplies. Each foundation function is called at most
  * once per process, the first time what it builds is needed, in this order:
- * config, logging, database, events.
+ * config, logging, database, events. The clock is built last and needs
+ * nothing from the application.
  */
 export interface ApplicationDefinition<AppConfig extends Config, Options = void, State = object> {
   readonly name: string;
@@ -197,6 +200,7 @@ export function createApplication<AppConfig extends Config, Options = void, Stat
     definition.database({ config: config(), logging: logging() }),
   );
   const events = tracked('events', () => definition.events({ logging: logging() }));
+  const clock = tracked<Clock>('clock', createClock);
 
   const foundation: Foundation<AppConfig> = {
     get config() {
@@ -211,6 +215,9 @@ export function createApplication<AppConfig extends Config, Options = void, Stat
     get events() {
       return events();
     },
+    get clock() {
+      return clock();
+    },
   };
 
   function startFoundation() {
@@ -218,6 +225,7 @@ export function createApplication<AppConfig extends Config, Options = void, Stat
     logging();
     database();
     events();
+    clock();
     return foundation;
   }
 

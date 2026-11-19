@@ -1,4 +1,4 @@
-const { moment } = require('@tryghost/kernel/clock');
+const { moment } = require('../../../shared/clock');
 const { startOfUtcDayAgo, utcToday } = require('./utils/date-utils');
 
 class MembersStatsService {
