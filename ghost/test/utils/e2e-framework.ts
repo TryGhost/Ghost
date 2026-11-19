@@ -27,8 +27,7 @@ import configUtils from './config-utils';
 import * as urlServiceUtils from './url-service-utils';
 // @ts-expect-error This module lacks type definitions.
 import mockManager from './e2e-framework-mock-manager';
-// @ts-expect-error This module lacks type definitions.
-import boot from '../../core/boot';
+import { bootGhost } from '../../bootstrap/transition/boot';
 import {
   AdminAPITestAgent,
   ContentAPITestAgent,
@@ -101,7 +100,7 @@ const startGhost = async (options = {}) => {
   const bootOptions = Object.assign({}, defaults, options);
 
   const bootNow = Date.now();
-  const ghostServer = await boot(bootOptions);
+  const ghostServer = await bootGhost(bootOptions);
   const bootTime = Date.now() - bootNow;
   totalStartTime += bootTime;
   totalBoots += 1;

@@ -8,14 +8,14 @@ describe('Retired internal CLI entrypoints', function () {
   let directory: string;
   beforeAll(function () {
     directory = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-retired-cli-'));
-    fs.mkdirSync(path.join(directory, 'core'));
+    fs.mkdirSync(path.join(directory, 'bootstrap/transition'), { recursive: true });
     fs.copyFileSync(
       path.resolve(__dirname, '../../../index.js'),
       path.join(directory, 'index.cjs'),
     );
     fs.writeFileSync(
-      path.join(directory, 'core/boot.js'),
-      "module.exports = () => process.stdout.write('SERVER_BOOT\\n');",
+      path.join(directory, 'bootstrap/transition/boot.js'),
+      "module.exports = { bootGhost: () => process.stdout.write('SERVER_BOOT\\n') };",
     );
   });
   afterAll(function () {

@@ -31,6 +31,7 @@ export interface BootLogger {
 // is also compiled by packages with stricter settings.
 export interface Server {
   registerCleanupTask(task: () => unknown, name: string): void;
+  shutdown(code: number): unknown;
 }
 export interface ExpressApp {
   use(path: unknown, app: unknown): unknown;

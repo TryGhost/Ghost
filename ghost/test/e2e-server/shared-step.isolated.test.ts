@@ -108,8 +108,8 @@ describe('The shared step, with the real modules and nothing after it', function
   });
 
   it('gives settings and flags the values a full boot gives', async function () {
-    const boot = require('../../core/boot');
-    await boot({ backend: true, frontend: false, server: false });
+    const { bootGhost } = require('../../bootstrap/transition/boot');
+    await bootGhost({ backend: true, frontend: false, server: false });
 
     assert.deepEqual(comparable(settingsCache.getAll()), afterShared.settings);
     assert.deepEqual(settingsCache.getPublic(), afterShared.publicSettings);

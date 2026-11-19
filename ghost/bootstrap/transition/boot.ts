@@ -1,68 +1,48 @@
 // Booting Ghost
 // -------------
-// - The start sequence belongs to the framework: ghost/bootstrap/app.ts lists what runs in each step
-// - The steps the framework does not own yet are in ghost/bootstrap/transition/boot-steps.ts
-// - This file builds the foundation, starts the application and handles a failed start
-// - It is FULL of debug statements so we can see timings, because the boot needs to be as fast as possible
+// The entry point `ghost/index.js` and the tests call. The start sequence
+// belongs to the framework: `application.start()` runs the steps that
+// `../app.ts` lists. What is here is what surrounds it and is still Ghost's
+// own: the timing of boot, what a failed start does to the process, and the
+// exit CI asks for.
 //
+// Transitional. This was `core/boot.js`. It leaves this folder when the
+// foundry owns the process: a failed start, the log flush and the exit.
+//
+import type { Logger } from '@tryghost/kernel/logging';
+import type { BootOptions, BootState } from './legacy-steps';
+
 // IMPORTANT:
 // ----------
 // The only global requires here should be overrides + debug so we can monitor timings with DEBUG = ghost: boot * node ghost
-require('./server/overrides');
-const debug = require('@tryghost/debug')('boot');
+require('../../core/server/overrides');
+const debug: (message: string) => void = require('@tryghost/debug')('boot');
 // END OF GLOBAL REQUIRES
 
 /**
  * Helper class to create consistent log messages
  */
 class BootLogger {
-  /**
-   * @param {Pick<import('@tryghost/logging').GhostLogger, 'info'>} logging
-   * @param {{metric: (name: string, time: number) => unknown}} metrics
-   * @param {number} startTime
-   */
-  constructor(logging, metrics, startTime) {
-    this.logging = logging;
-    this.metrics = metrics;
-    this.startTime = startTime;
+  readonly #logging: Pick<Logger, 'info'>;
+  readonly #metrics: { metric(name: string, time: number): unknown };
+  readonly #startTime: number;
+
+  constructor(
+    logging: Pick<Logger, 'info'>,
+    metrics: { metric(name: string, time: number): unknown },
+    startTime: number,
+  ) {
+    this.#logging = logging;
+    this.#metrics = metrics;
+    this.#startTime = startTime;
   }
-  /**
-   * @param {string} message
-   * @returns {void}
-   */
-  log(message) {
-    const { logging, startTime } = this;
-    logging.info(`Ghost ${message} in ${(Date.now() - startTime) / 1000}s`);
+
+  log(message: string): void {
+    this.#logging.info(`Ghost ${message} in ${(Date.now() - this.#startTime) / 1000}s`);
   }
-  /**
-   * @param {string} name
-   * @param {number} [initialTime]
-   * @returns {void}
-   */
-  metric(name, initialTime) {
-    const { metrics, startTime } = this;
 
-    if (!initialTime) {
-      initialTime = startTime;
-    }
-
-    metrics.metric(name, Date.now() - initialTime);
-  }
-}
-
-/**
- * Helper function to handle sending server ready notifications
- * @param {string} [error]
- */
-function notifyServerReady(error) {
-  const notify = require('./server/notify');
-
-  if (error) {
-    debug('Notifying server ready (error)');
-    notify.notifyServerReady(error);
-  } else {
-    debug('Notifying server ready (success)');
-    notify.notifyServerReady();
+  metric(name: string, initialTime?: number): void {
+    this.#metrics.metric(name, Date.now() - (initialTime || this.#startTime));
   }
 }
 
@@ -71,23 +51,26 @@ function notifyServerReady(error) {
  * Boot Ghost - The magic starts here
  * ----------------------------------
  *
- * The start sequence belongs to the framework: `application.start()` runs the
- * steps listed in `ghost/bootstrap/app.ts`. This function builds the
- * foundation, starts the application, and handles a failed start.
+ * Builds the foundation, starts the application, and handles a failed start.
  *
- * @returns {Promise<object>} ghostServer
+ * @returns the server, or the root Express app when Ghost boots without one.
+ * Returned for tests, and typed loosely for them: nothing in Ghost reads it.
  */
-async function bootGhost({ backend = true, frontend = true, server = true } = {}) {
+export async function bootGhost({
+  backend = true,
+  frontend = true,
+  server = true,
+}: Partial<BootOptions> = {}): Promise<any> {
   // Metrics
   const startTime = Date.now();
   debug('Begin Boot');
 
   // We need access to these variables in both the try and catch block
-  let application;
-  let flushLogsAndMetrics;
-  let logging;
-  // What the steps of this boot hand to each other. See ghost/bootstrap/transition/legacy-steps.ts
-  const state = {};
+  let application: typeof import('../app').default;
+  let flushLogsAndMetrics: () => Promise<void>;
+  let logging: Logger;
+  // What the steps of this boot hand to each other. See ./legacy-steps.ts
+  const state: BootState = {};
 
   // These require their own try-catch block and error format, because we can't log an error if logging isn't working
   try {
@@ -99,18 +82,18 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     debug('End: Load version info');
 
     // The foundation is built first, in one place: config, then the logger,
-    // then the database handle and the event bus. Everything else is handed
-    // these or reaches them through the legacy paths, which return the same
-    // instances. Building the database handle opens no connection.
+    // then the database handle, the event bus and the clock. Everything else
+    // is handed these or reaches them through the legacy paths, which return
+    // the same instances. Building the database handle opens no connection.
     debug('Begin: Build foundation');
-    application = require('../bootstrap/app').default;
+    application = require('../app').default;
     logging = application.startFoundation().logging;
     debug('End: Build foundation');
 
     // Metrics and the log flush still load their own way
     debug('Begin: Load metrics');
     const metrics = require('@tryghost/metrics');
-    flushLogsAndMetrics = require('./shared/flush').flushLogsAndMetrics;
+    flushLogsAndMetrics = require('../../core/shared/flush').flushLogsAndMetrics;
     state.bootLogger = new BootLogger(logging, metrics, startTime);
     debug('End: Load metrics');
 
@@ -144,7 +127,7 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     let serverStartError = error;
     if (!errors.utils.isGhostError(serverStartError)) {
       serverStartError = new errors.InternalServerError({
-        message: serverStartError.message,
+        message: (serverStartError as Error).message,
         err: serverStartError,
       });
     }
@@ -155,7 +138,8 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
 
     // If ghost was started and something else went wrong, we shut it down
     if (state.ghostServer) {
-      notifyServerReady(serverStartError);
+      debug('Notifying server ready (error)');
+      require('../../core/server/notify').notifyServerReady(serverStartError);
       state.ghostServer.shutdown(2);
     } else {
       // Ghost server failed to start, drain the log transports before exiting
@@ -164,5 +148,3 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     }
   }
 }
-
-module.exports = bootGhost;

@@ -529,15 +529,16 @@ it('applies a rule that does not exclude types to type-only imports', (t) => {
   ]);
 });
 
-it('keeps the foundry to the bootstrap, and the bootstrap to boot and the legacy paths', (t) => {
+it('keeps the foundry to the bootstrap, and the bootstrap to itself and the legacy paths', (t) => {
   const foundry = 'foundry/src/logging.ts';
   const app = 'ghost/bootstrap/app.ts';
   const f = fixture(t, {
     [foundry]: "import '../../ghost/core/shared/config'; export const createLogger = () => ({});",
     // The bootstrap is the one importer of the foundry.
     [app]: "import { createLogger } from '../../foundry/src/logging'; export default createLogger;",
-    // Boot and the two legacy paths may reach the application; nothing else may.
-    'ghost/core/boot.js': "require('../bootstrap/app');",
+    // Boot, which is in the bootstrap, and the two legacy paths may reach the application;
+    // nothing else may.
+    'ghost/bootstrap/transition/boot.ts': "require('../app');",
     'ghost/core/shared/config/index.ts': "import '../../../bootstrap/app';",
     'ghost/core/server/data/db/connection.ts': "import '../../../../bootstrap/app';",
     'ghost/core/server/lib/builds-a-logger.ts': "import '../../../../foundry/src/logging';",

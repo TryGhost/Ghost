@@ -29,8 +29,10 @@ this folder holds only what Ghost tells the foundry.
 - No wiring for a single shared module or service. That belongs with the
   module.
 
-Only boot and the legacy paths named in the `bootstrap-only-from-boot`
-boundary rule import this folder. New code is handed what it needs.
+Only the entry point [`ghost/index.js`](../index.js), which calls
+[`transition/boot.ts`](transition/boot.ts), and the legacy paths named in the
+`bootstrap-only-from-boot` boundary rule import this folder. New code is
+handed what it needs.
 
 Outside `transition/`, a file here imports nothing from `ghost/core` except
 types, the config loader, the database options and the service roots the
@@ -56,6 +58,11 @@ for the pattern to copy:
 - [`legacy-events.ts`](transition/legacy-events.ts) adapts
   `@tryghost/domain-events`, a class with one static emitter, to the
   foundation's event bus, so there is one bus either way.
+- [`boot.ts`](transition/boot.ts) is `bootGhost`, which `ghost/index.js` and
+  the tests call. It was `core/boot.js`. It builds the foundation and calls
+  `application.start()`; what is left around that is the timing of boot, what
+  a failed start does to the process, and the exit CI asks for. It leaves when
+  the foundry owns those.
 - [`legacy-steps.ts`](transition/legacy-steps.ts) holds one wrapper for each
   step of the start sequence that the framework does not own yet. The steps
   themselves are the functions of

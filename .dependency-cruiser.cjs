@@ -509,12 +509,11 @@ module.exports = {
     {
       name: 'bootstrap-only-from-boot',
       comment:
-        'ghost/bootstrap holds the application and its foundation instances. Boot starts it; the legacy modules listed here return its config, database handle, clock and adapter manager to code that still imports them. Everything else is handed what it needs.',
+        'ghost/bootstrap holds the application and its foundation instances. Boot, which is in ghost/bootstrap/transition and called by ghost/index.js, starts it; the legacy modules listed here return its config, database handle, clock and adapter manager to code that still imports them. Everything else is handed what it needs.',
       severity: 'error',
       from: {
         pathNot: [
           '^ghost/bootstrap/',
-          '^ghost/core/boot\\.js$', // Boot builds the foundation first.
           '^ghost/core/shared/config/index\\.ts$', // Legacy path to the foundation's config.
           '^ghost/core/server/data/db/connection\\.ts$', // Legacy path to the foundation's database handle.
           '^ghost/core/shared/clock\\.ts$', // Legacy path to the foundation's clock.
