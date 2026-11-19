@@ -22,7 +22,7 @@ module.exports = function pagination(options) {
   options.hash = options.hash || {};
   options.data = options.data || {};
 
-  if (!_.isObject(this.pagination) || _.isFunction(this.pagination)) {
+  if (!_.isObject(this.pagination) || typeof this.pagination === 'function') {
     throw new errors.IncorrectUsageError({
       level: 'normal',
       message: tpl(messages.invalidData),
@@ -31,10 +31,10 @@ module.exports = function pagination(options) {
   }
 
   if (
-    _.isUndefined(this.pagination.page) ||
-    _.isUndefined(this.pagination.pages) ||
-    _.isUndefined(this.pagination.total) ||
-    _.isUndefined(this.pagination.limit)
+    this.pagination.page === undefined ||
+    this.pagination.pages === undefined ||
+    this.pagination.total === undefined ||
+    this.pagination.limit === undefined
   ) {
     throw new errors.IncorrectUsageError({
       message: tpl(messages.valuesMustBeDefined),
@@ -42,8 +42,8 @@ module.exports = function pagination(options) {
   }
 
   if (
-    (!_.isNull(this.pagination.next) && !_.isNumber(this.pagination.next)) ||
-    (!_.isNull(this.pagination.prev) && !_.isNumber(this.pagination.prev))
+    (this.pagination.next !== null && typeof this.pagination.next !== 'number') ||
+    (this.pagination.prev !== null && typeof this.pagination.prev !== 'number')
   ) {
     throw new errors.IncorrectUsageError({
       message: tpl(messages.nextPrevValuesMustBeNumeric),
@@ -51,10 +51,10 @@ module.exports = function pagination(options) {
   }
 
   if (
-    !_.isNumber(this.pagination.page) ||
-    !_.isNumber(this.pagination.pages) ||
-    !_.isNumber(this.pagination.total) ||
-    !_.isNumber(this.pagination.limit)
+    typeof this.pagination.page !== 'number' ||
+    typeof this.pagination.pages !== 'number' ||
+    typeof this.pagination.total !== 'number' ||
+    typeof this.pagination.limit !== 'number'
   ) {
     throw new errors.IncorrectUsageError({ message: tpl(messages.valuesMustBeNumeric) });
   }

@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const urlUtils = require('../../shared/url-utils').default;
 
 function getPaginatedUrl(page, data, absolute) {
@@ -26,7 +25,7 @@ function getPaginatedUrl(page, data, absolute) {
   } else if (page === 'prev' && data.pagination.prev) {
     newRelativeUrl =
       data.pagination.prev > 1 ? urlUtils.urlJoin(pagePath, data.pagination.prev, '/') : '/';
-  } else if (_.isNumber(page)) {
+  } else if (typeof page === 'number') {
     newRelativeUrl = page > 1 ? urlUtils.urlJoin(pagePath, page, '/') : '/';
   } else {
     // If none of the cases match, return null right away

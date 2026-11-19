@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import logging from '@tryghost/logging';
@@ -142,7 +141,10 @@ export async function setupUser<UserData extends UpdateSetupUserData>(
     });
   }
 
-  const user: SetupUser = await models.User.setup(userData, _.extend({ id: owner.id }, context));
+  const user: SetupUser = await models.User.setup(
+    userData,
+    Object.assign({ id: owner.id }, context),
+  );
 
   // The edited user is the response, so its roles come from the lookup rather than a load onto it
   const principal: OwnerPrincipal = {

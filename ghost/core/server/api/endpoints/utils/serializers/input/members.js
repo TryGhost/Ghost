@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:members');
 const mapNQLKeyValues = require('@tryghost/nql').utils.mapKeyValues;
 const { chainTransformers } = require('@tryghost/mongo-utils');
@@ -99,7 +98,7 @@ module.exports = {
     debug('add');
     if (frame.data.members[0].labels) {
       frame.data.members[0].labels.forEach((label, index) => {
-        if (_.isString(label)) {
+        if (typeof label === 'string') {
           frame.data.members[0].labels[index] = {
             name: label,
           };

@@ -79,7 +79,7 @@ class FixtureManager {
     const matchedObj = {};
 
     if (Array.isArray(match)) {
-      _.each(match, (matchProp) => {
+      match.forEach((matchProp) => {
         matchedObj[matchProp] = item.get(matchProp);
       });
     } else {
@@ -147,7 +147,7 @@ class FixtureManager {
    * @returns {Object} model fixture
    */
   findModelFixture(modelName) {
-    return _.find(this.fixtures.models, (modelFixture) => {
+    return this.fixtures.models.find((modelFixture) => {
       return modelFixture.name === modelName;
     });
   }
@@ -185,7 +185,7 @@ class FixtureManager {
    * @returns {Object} relation fixture
    */
   findRelationFixture(from, to) {
-    return _.find(this.fixtures.relations, (relation) => {
+    return this.fixtures.relations.find((relation) => {
       return relation.from.model === from && relation.to.model === to;
     });
   }
@@ -317,7 +317,7 @@ class FixtureManager {
     // are different, otherwise `prev_post` and `next_post` helpers won't work with
     // them.
     if (modelFixture.name === 'Post') {
-      _.forEach(modelFixture.entries, (post, index) => {
+      modelFixture.entries.forEach((post, index) => {
         if (!post.published_at) {
           post.published_at = moment().add(index, 'seconds');
         }
@@ -347,7 +347,7 @@ class FixtureManager {
       }
     }
 
-    return { expected: modelFixture.entries.length, done: _.compact(results).length };
+    return { expected: modelFixture.entries.length, done: results.filter(Boolean).length };
   }
 
   /**

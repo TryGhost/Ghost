@@ -105,8 +105,10 @@ module.exports = function (Bookshelf) {
         }
 
         // Some keywords cannot be changed
-        const protectedSlugs = _.union(urlUtils.getProtectedSlugs(), Model.protectedSlugs || []);
-        slug = _.includes(protectedSlugs, slug) ? slug + '-' + baseName : slug;
+        const protectedSlugs = [
+          ...new Set([...urlUtils.getProtectedSlugs(), ...(Model.protectedSlugs || [])]),
+        ];
+        slug = protectedSlugs.includes(slug) ? slug + '-' + baseName : slug;
 
         // if slug is empty after trimming use the model name
         if (!slug) {

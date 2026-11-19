@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const moment = require('moment');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
@@ -258,22 +257,19 @@ class UpdateCheckService {
         }
 
         // CASE: filter out messages based on your groups
-        return (
-          _.includes(
-            notificationGroups.map(function (groupIdentifier) {
-              if (
-                notification &&
-                notification.version &&
-                notification.version.match(new RegExp(groupIdentifier))
-              ) {
-                return true;
-              }
+        return notificationGroups
+          .map(function (groupIdentifier) {
+            if (
+              notification &&
+              notification.version &&
+              notification.version.match(new RegExp(groupIdentifier))
+            ) {
+              return true;
+            }
 
-              return false;
-            }),
-            true,
-          ) === true
-        );
+            return false;
+          })
+          .includes(true);
       });
     }
 
@@ -353,7 +349,9 @@ class UpdateCheckService {
     );
 
     try {
-      const result = await this.api.settings.read(_.extend({ key: 'next_update_check' }, internal));
+      const result = await this.api.settings.read(
+        Object.assign({ key: 'next_update_check' }, internal),
+      );
 
       const nextUpdateCheck = result.settings[0];
       const nextCheckAt = nextUpdateCheck && nextUpdateCheck.value;

@@ -148,11 +148,11 @@ class Registry {
    * @description Reset all routers.
    */
   resetAllRouters() {
-    _.each(this.routers, (value) => {
+    for (const value of Object.values(this.routers)) {
       if (value && typeof value.reset === 'function') {
         value.reset();
       }
-    });
+    }
 
     this.routers = {};
   }
