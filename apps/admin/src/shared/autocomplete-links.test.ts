@@ -62,13 +62,22 @@ describe('buildAutocompleteLinks', () => {
     expect(links.map((link) => link.label)).toContain('Paid signup');
   });
 
-  it('hides both signup links when members signup is invite-only', () => {
+  it('hides both signup links and the gift link when members signup is invite-only', () => {
     const labels = buildAutocompleteLinks({ ...settings, membersSignupAccess: 'invite' }, []).map(
       (link) => link.label,
     );
 
     expect(labels).not.toContain('Free signup');
     expect(labels).not.toContain('Paid signup');
+    expect(labels).not.toContain('Gift subscriptions');
+    expect(labels).toContain('Upgrade or change plan');
+  });
+
+  it('keeps the gift link when only paid signup is allowed', () => {
+    const labels = buildAutocompleteLinks({ ...settings, membersSignupAccess: 'paid' }, []).map(
+      (link) => link.label,
+    );
+
     expect(labels).toContain('Gift subscriptions');
   });
 

@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.78.0-rc.0",
+  "version": "6.79.0-rc.0",
   "description": "The professional publishing platform",
   "keywords": [
     "blog",
@@ -32,7 +32,7 @@
     "types/",
     "index.js",
     "loggingrc.js",
-    "MigratorConfig.js",
+    "MigratorConfig.mjs",
     "nodemon.json",
     "tsconfig.json"
   ],
@@ -58,6 +58,7 @@
     "test:unit": "vitest run",
     "test:integration": "vitest run -c vitest.config.db.ts --project integration --project integration-migrations",
     "test:e2e": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api --project e2e-isolated",
+    "test:e2e:better-auth": "auth__engine=better-auth vitest run -c vitest.config.db.ts --project e2e-api --project e2e-isolated",
     "test:legacy": "vitest run -c vitest.config.db.ts --project legacy",
     "test:ci:e2e": "COVERAGE_LANE=e2e pnpm test:e2e --coverage",
     "test:ci:integration": "COVERAGE_LANE=integration pnpm test:integration --coverage",
@@ -66,7 +67,7 @@
     "test:e2e:slow": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api --reporter=verbose",
     "test:leg:slow": "vitest run -c vitest.config.db.ts --project legacy --reporter=verbose",
     "test:types": "tsc --noEmit && tsc --noEmit -p test/tsconfig.json && tsc -p scripts/tsconfig.json",
-    "lint:server": "eslint 'core/server/**/*.{js,ts}' 'core/*.{js,ts}' '*.{js,ts}' 'bin/**/*.{js,ts}' 'scripts/**/*.{js,ts}' 'types/**/*.ts' --cache",
+    "lint:server": "eslint 'core/server/**/*.{js,ts}' 'core/*.{js,ts}' '*.{js,ts,mts}' 'bin/**/*.{js,ts}' 'scripts/**/*.{js,ts}' 'types/**/*.ts' --cache",
     "lint:kernel": "eslint 'core/kernel/**/*.{js,ts}' --cache",
     "lint:shared": "eslint 'core/shared/**/*.{js,ts}' --cache",
     "lint:frontend": "eslint 'core/frontend/**/*.{js,ts}' --cache",
@@ -76,6 +77,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1161.0",
+    "@better-auth/core": "catalog:",
     "@breejs/later": "catalog:",
     "@extractus/oembed-extractor": "catalog:",
     "@faker-js/faker": "catalog:",
@@ -118,14 +120,14 @@
     "@tryghost/mg-clean-html": "catalog:",
     "@tryghost/mongo-knex": "catalog:",
     "@tryghost/mongo-utils": "0.6.6",
-    "@tryghost/mw-error-handler": "3.3.24",
+    "@tryghost/mw-error-handler": "3.4.0",
     "@tryghost/mw-vhost": "3.4.0",
     "@tryghost/nodemailer": "2.4.0",
     "@tryghost/nql": "catalog:",
     "@tryghost/nql-lang": "catalog:",
     "@tryghost/nql-string": "workspace:*",
     "@tryghost/parse-email-address": "workspace:*",
-    "@tryghost/prometheus-metrics": "5.0.10",
+    "@tryghost/prometheus-metrics": "5.0.11",
     "@tryghost/referrer-parser": "0.1.26",
     "@tryghost/request": "catalog:",
     "@tryghost/root-utils": "2.4.0",
@@ -136,7 +138,7 @@
     "@tryghost/url-utils": "catalog:",
     "@tryghost/validator": "catalog:",
     "@tryghost/version": "2.4.0",
-    "@tryghost/zip": "4.0.2",
+    "@tryghost/zip": "4.1.0",
     "@x402/core": "catalog:",
     "@x402/evm": "catalog:",
     "@x402/hono": "catalog:",
@@ -240,7 +242,7 @@
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-test-workers": "workspace:*",
     "@tryghost/email-mock-receiver": "2.4.0",
-    "@tryghost/express-test": "2.3.22",
+    "@tryghost/express-test": "2.4.0",
     "@tryghost/webhook-mock-receiver": "2.4.0",
     "@types/bookshelf": "1.2.9",
     "@types/common-tags": "1.8.4",
@@ -337,6 +339,12 @@
         ]
       },
       "test:e2e": {
+        "dependsOn": [
+          "build:assets",
+          "^build"
+        ]
+      },
+      "test:e2e:better-auth": {
         "dependsOn": [
           "build:assets",
           "^build"

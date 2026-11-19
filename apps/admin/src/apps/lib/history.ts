@@ -22,7 +22,3 @@ export function historyTitle(entry: AppInstallationHistoryEntry): string {
       return 'Changed';
   }
 }
-
-export function installedBy(history: AppInstallationHistoryEntry[]): string | undefined {
-  return history.find((entry) => entry.event === 'installed')?.actor?.name ?? undefined;
-}

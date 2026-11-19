@@ -23,7 +23,6 @@ const { cardAssets } = require('../services/assets-minification');
 
 const logging = require('@tryghost/logging');
 const _ = require('lodash');
-const cssParser = require('css-tree');
 const debug = require('@tryghost/debug')('ghost_head');
 const { styles: templateStyles } = require('./tpl/styles');
 const { getFrontendAppConfig, getDataAttributes } = require('../utils/frontend-apps');
@@ -47,7 +46,14 @@ const serializeAccentColor = memoize(
       return null;
     }
 
+    // Hex is the common case and safe verbatim; skip loading css-tree for it.
+    if (/^#[0-9a-f]{3,8}$/i.test(value)) {
+      return `--ghost-accent-color:${value}`;
+    }
+
     try {
+      // Lazy: css-tree is heavy and only needed for non-hex values.
+      const cssParser = require('css-tree');
       const declaration = cssParser.parse(`--ghost-accent-color:${value}`, {
         context: 'declaration',
         parseCustomProperty: true,

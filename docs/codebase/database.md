@@ -1,7 +1,7 @@
 # Database Structure
 
 Ghost's database schema is defined in
-[`schema.js`](../../ghost/core/server/data/schema/schema.js). It is the
+[`schema.ts`](../../ghost/core/server/data/schema/schema.ts). It is the
 current shape expected after every migration has run. Bookshelf models in
 [`models/`](../../ghost/core/server/models/) define relationships and
 application behavior; do not infer those rules from the table shape alone.

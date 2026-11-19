@@ -42,6 +42,7 @@ export function init({ knex, config }: JobsServiceInitOptions): JobsService {
     const relay = new OutboxRelay({
       outbox: store,
       backend,
+      handles: (type) => getInstance().handles(type),
       logging,
       sentry,
       pollIntervalMs: outboxConfig.pollIntervalMs,
@@ -52,7 +53,13 @@ export function init({ knex, config }: JobsServiceInitOptions): JobsService {
     const tracker = outboxConfig.keepUntilSettled
       ? new OutboxTracker({ store, logging })
       : undefined;
-    outbox = { store, relay, tracker, leaseMs: outboxConfig.leaseMs };
+    outbox = {
+      store,
+      relay,
+      tracker,
+      leaseMs: outboxConfig.leaseMs,
+      pollIntervalMs: outboxConfig.pollIntervalMs,
+    };
   }
 
   instance = new JobsService({

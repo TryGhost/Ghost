@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 
-// @ts-expect-error This module lacks type definitions.
-import legacyApiPathMatch from '../../../../../../../core/server/web/api/middleware/api-version-compatibility/legacy-api-path-match';
+import { legacyApiPathMatch } from '../../../../../../../core/server/web/api/middleware/api-version-compatibility/legacy-api-path-match';
 
 describe('Legacy Path Match', function () {
   it('returns null, admin for all supported permutations', function () {
@@ -82,6 +81,26 @@ describe('Legacy Path Match', function () {
 
     permutations.forEach((url) => {
       assert.deepEqual(legacyApiPathMatch(url), { version: 'v4', api: 'admin' }, url);
+    });
+  });
+
+  it('returns the version and content api for content urls', function () {
+    assert.deepEqual(legacyApiPathMatch('/ghost/api/v3/content/posts/?key=xxx'), {
+      version: 'v3',
+      api: 'content',
+    });
+    assert.deepEqual(legacyApiPathMatch('/content/posts'), { version: null, api: 'content' });
+  });
+
+  it('matches case-insensitively', function () {
+    assert.deepEqual(legacyApiPathMatch('/ghost/api/V4/Admin/'), { version: 'V4', api: 'Admin' });
+  });
+
+  it('returns null, undefined for non-api urls', function () {
+    const permutations = ['/', '/ghost/api/', '/v5/admin/', '/v4/members/', '/administrator/'];
+
+    permutations.forEach((url) => {
+      assert.deepEqual(legacyApiPathMatch(url), { version: null, api: undefined }, url);
     });
   });
 });

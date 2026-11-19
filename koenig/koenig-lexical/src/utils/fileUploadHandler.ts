@@ -1,13 +1,15 @@
 import {$getNodeByKey} from 'lexical';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
+import type {FileUploadResult} from '../context/KoenigComposerContext';
+import type {LexicalEditor} from 'lexical';
 
-export const stripFileExtension = (fileName) => {
+export const stripFileExtension = (fileName: string) => {
     const fileExtension = fileName.split('.').pop();
     const fileNameWithoutExtension = fileName.replace(`.${fileExtension}`, '');
     return fileNameWithoutExtension;
 };
 
-export const fileUploadHandler = async (files, nodeKey, editor, upload) => {
+export const fileUploadHandler = async (files: File[] | FileList | null, nodeKey: string, editor: LexicalEditor, upload: FileUploadResult['upload']) => {
     if (!files) {
         return;
     }
@@ -25,7 +27,7 @@ export const fileUploadHandler = async (files, nodeKey, editor, upload) => {
     const fileSize = meta?.[0].size;
     const src = result?.[0].url;
 
-    let dataset = {
+    const dataset = {
         fileName: fileName,
         fileSize: fileSize,
         src: src

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import type { TableDefinition } from '../../../core/server/data/schema/types';
 
 // require, not import: these must be the same CommonJS instances that
 // in-development.ts loads, so the tables added to the schema, the config set
@@ -8,7 +9,8 @@ const testUtils = require('../../utils');
 const configUtils = require('../../utils/config-utils');
 const db = require('../../../core/server/data/db');
 const commands = require('../../../core/server/data/schema/commands');
-const schema = require('../../../core/server/data/schema/schema');
+const schema: Record<string, TableDefinition> =
+  require('../../../core/server/data/schema/schema').default;
 const { addTable } = require('../../../core/server/data/migrations/utils');
 const inDevelopment: typeof import('../../../core/server/data/schema/in-development') = require('../../../core/server/data/schema/in-development');
 

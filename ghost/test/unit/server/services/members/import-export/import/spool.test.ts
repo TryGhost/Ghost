@@ -56,6 +56,24 @@ describe('members import row spool', function () {
     assert.deepEqual(await fs.readdir(storagePath), []);
   });
 
+  it('reads a removed key as no rows', async function () {
+    const spool = createRowSpool(importsStore());
+    const key = await spool.write([row('first@example.com')]);
+    await spool.remove(key);
+
+    assert.equal(await spool.read(key), null);
+  });
+
+  it('raises a read that fails for any other reason', async function () {
+    const key = 'members-import-00000000-0000-0000-0000-000000000000.json';
+    // A directory under the key, so the read fails with something other than not found.
+    await fs.mkdir(path.join(storagePath, key));
+
+    await assert.rejects(() => createRowSpool(importsStore()).read(key), {
+      errorType: 'InternalServerError',
+    });
+  });
+
   // A job reads and removes the rows long after the request wrote them, on whichever
   // spool instance its process built, so nothing may hang off the instance that wrote.
   it('reads and removes rows written by another spool instance', async function () {

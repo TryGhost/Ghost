@@ -1,0 +1,86 @@
+diff --git a/package.json b/package.json
+index 5ba776c0d5bdf1487da2f26af302a1ab7e1e40ce..6e677553128df671eeead8ef963af048d94ee1d0 100644
+--- a/package.json
++++ b/package.json
+@@ -32,7 +32,7 @@
+     "type",
+     "inference"
+   ],
+-  "main": "./index.cjs",
++  "main": "./index.js",
+   "types": "./index.d.cts",
+   "module": "./index.js",
+   "zshy": {
+@@ -60,62 +60,52 @@
+     ".": {
+       "@zod/source": "./src/index.ts",
+       "types": "./index.d.cts",
+-      "import": "./index.js",
+-      "require": "./index.cjs"
++      "default": "./index.js"
+     },
+     "./mini": {
+       "@zod/source": "./src/mini/index.ts",
+       "types": "./mini/index.d.cts",
+-      "import": "./mini/index.js",
+-      "require": "./mini/index.cjs"
++      "default": "./mini/index.js"
+     },
+     "./compile": {
+       "@zod/source": "./src/compile.ts",
+       "types": "./compile.d.cts",
+-      "import": "./compile.js",
+-      "require": "./compile.cjs"
++      "default": "./compile.js"
+     },
+     "./locales": {
+       "@zod/source": "./src/locales/index.ts",
+       "types": "./locales/index.d.cts",
+-      "import": "./locales/index.js",
+-      "require": "./locales/index.cjs"
++      "default": "./locales/index.js"
+     },
+     "./v3": {
+       "@zod/source": "./src/v3/index.ts",
+       "types": "./v3/index.d.cts",
+-      "import": "./v3/index.js",
+-      "require": "./v3/index.cjs"
++      "default": "./v3/index.js"
+     },
+     "./v4": {
+       "@zod/source": "./src/v4/index.ts",
+       "types": "./v4/index.d.cts",
+-      "import": "./v4/index.js",
+-      "require": "./v4/index.cjs"
++      "default": "./v4/index.js"
+     },
+     "./v4-mini": {
+       "@zod/source": "./src/v4-mini/index.ts",
+       "types": "./v4-mini/index.d.cts",
+-      "import": "./v4-mini/index.js",
+-      "require": "./v4-mini/index.cjs"
++      "default": "./v4-mini/index.js"
+     },
+     "./v4/mini": {
+       "@zod/source": "./src/v4/mini/index.ts",
+       "types": "./v4/mini/index.d.cts",
+-      "import": "./v4/mini/index.js",
+-      "require": "./v4/mini/index.cjs"
++      "default": "./v4/mini/index.js"
+     },
+     "./v4/core": {
+       "@zod/source": "./src/v4/core/index.ts",
+       "types": "./v4/core/index.d.cts",
+-      "import": "./v4/core/index.js",
+-      "require": "./v4/core/index.cjs"
++      "default": "./v4/core/index.js"
+     },
+     "./v4/locales": {
+       "@zod/source": "./src/v4/locales/index.ts",
+       "types": "./v4/locales/index.d.cts",
+-      "import": "./v4/locales/index.js",
+-      "require": "./v4/locales/index.cjs"
++      "default": "./v4/locales/index.js"
+     },
+     "./v4/locales/*": {
+       "@zod/source": "./src/v4/locales/*",

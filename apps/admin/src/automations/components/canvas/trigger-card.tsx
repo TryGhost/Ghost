@@ -1,5 +1,6 @@
 import {
   buildTriggerRules,
+  getTriggerLabelId,
   getTriggerTierIds,
   subscriptionChangedSelectionFromRules,
 } from '@/automations/utils/trigger-rules';
@@ -22,6 +23,7 @@ import {
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { AutomationCard, AutomationCardHeader, CollapsibleCardBody } from './automation-card';
+import { LabelTriggerPicker, type SelectedTriggerLabel } from './label-trigger-picker';
 import { useCollapsibleCard } from './use-collapsible-card';
 import { TierScopePicker } from './tier-scope-picker';
 import { ChipPicker } from '@/shared/pickers/chip-picker';
@@ -33,10 +35,12 @@ import {
 } from '@/automations/utils/tier-selection';
 
 export type TriggerData = {
+  isActive: boolean;
   tierQuery: Pick<ReturnType<typeof useBrowseTiers>, 'data' | 'isLoading' | 'isError' | 'refetch'>;
   triggerType: AutomationTriggerRule['trigger_type'];
   rules: readonly AutomationTriggerRule[];
   savedTierIds: readonly string[];
+  selectedTriggerLabel?: SelectedTriggerLabel;
   onUpdate: (trigger: AutomationTrigger) => void;
 };
 
@@ -253,7 +257,12 @@ const choiceList = new Intl.ListFormat('en', { type: 'disjunction' });
 
 // The collapsed card's one statement, e.g. "Member changes from any paid tier to Gold".
 // Undefined while a choice is still missing, so a half-finished statement never shows.
-function getTriggerStatement({ triggerType, rules, tierQuery }: TriggerData): string | undefined {
+function getTriggerStatement({
+  triggerType,
+  rules,
+  tierQuery,
+  selectedTriggerLabel,
+}: TriggerData): string | undefined {
   const tierNames = (tierIds: readonly string[]) =>
     choiceList.format(
       tierIds.map((tierId) => {
@@ -282,6 +291,14 @@ function getTriggerStatement({ triggerType, rules, tierQuery }: TriggerData): st
       const fromText = from === 'any_paid' ? 'any paid tier' : tierNames(from);
       const toText = to === 'downgraded_to_free' ? 'free' : tierNames(to);
       return `Member changes from ${fromText} to ${toText}`;
+    }
+    // SHAPING PROTOTYPE ONLY: NY-1756 predates the label trigger; this wording is a stand-in.
+    case 'label_added': {
+      if (!getTriggerLabelId(rules)) {
+        return undefined;
+      }
+      const name = selectedTriggerLabel?.deleted ? undefined : selectedTriggerLabel?.name;
+      return name ? `Member gets the ${name} label` : undefined;
     }
     default: {
       const _exhaustive: never = triggerType;
@@ -314,6 +331,24 @@ function getTriggerPresentation(trigger: TriggerData, errorMessage?: string) {
           </Text>
         ),
       };
+    case 'label_added':
+      return {
+        title: 'Label added',
+        Icon: LucideIcon.Tag,
+        content: (
+          <LabelTriggerPicker
+            disabled={trigger.isActive}
+            errorMessage={errorMessage}
+            labelId={getTriggerLabelId(trigger.rules)}
+            selectedLabel={trigger.selectedTriggerLabel}
+            onChange={(labelId) =>
+              trigger.onUpdate({
+                trigger_rules: buildTriggerRules({ triggerType: 'label_added', labelId }),
+              })
+            }
+          />
+        ),
+      };
     default: {
       const _exhaustive: never = trigger.triggerType;
       throw new Error(`Unknown automation trigger type: ${String(_exhaustive)}`);
@@ -342,7 +377,6 @@ export const TriggerCard: React.FC<
       {...card.cardProps}
       className={cn('nodrag nopan w-[400px]', card.cardProps.className)}
       gap="none"
-      onClick={(event) => event.stopPropagation()}
       onDoubleClick={(event) => event.stopPropagation()}
     >
       <AutomationCardHeader

@@ -10,6 +10,13 @@ describe('redisConnection', function () {
     assert.equal(redisConnection.parse({ port: '6380' }).port, 6380);
   });
 
+  it('reads null credentials as none', function () {
+    const connection = redisConnection.parse({ username: null, password: null });
+
+    assert.equal(connection.username, undefined);
+    assert.equal(connection.password, undefined);
+  });
+
   it('reads all-digit credentials parsed from the environment as strings', function () {
     const connection = redisConnection.parse({ username: 111, password: 222 });
 

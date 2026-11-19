@@ -6,6 +6,7 @@ import { fromDatabaseDate } from '../../../../core/server/lib/db-types/date';
 import type {
   ActionToInsert,
   EdgeRow,
+  EmailRecipientToInsert,
   RunStepToInsert,
 } from '../../../../core/server/services/automations/automations-repository-2';
 import { createDatabaseAutomationsRepository2 } from '../../../../core/server/services/automations/database-automations-repository-2';
@@ -202,6 +203,137 @@ describe('database automations repository', function () {
       const expected = actual.toSorted();
 
       expect(actual).toEqual(expected);
+    });
+  });
+
+  alphabeticalDescribe('fetchAndLockMembers', function () {
+    let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
+    let automationId: string;
+    let otherAutomationId: string;
+    let memberId: string;
+    let otherMemberId: string;
+
+    beforeEach(async function () {
+      repository = createDatabaseAutomationsRepository2({ knex });
+      automationId = ObjectId().toHexString();
+      otherAutomationId = ObjectId().toHexString();
+      memberId = ObjectId().toHexString();
+      otherMemberId = ObjectId().toHexString();
+      await knex('automations').insert(createAutomation(automationId));
+      await knex('members').insert(createMember(memberId));
+    });
+
+    afterEach(async function () {
+      await knex('automation_runs')
+        .whereIn('automation_id', [automationId, otherAutomationId])
+        .delete();
+      await knex('automations').whereIn('id', [automationId, otherAutomationId]).delete();
+      await knex('members').whereIn('id', [memberId, otherMemberId]).delete();
+    });
+
+    it('returns each existing member once with current emails', async function () {
+      await knex('members').insert(createMember(otherMemberId));
+      await knex('members').where('id', memberId).update({ email: 'changed@example.com' });
+      const members = await repository.withTransaction((trx) =>
+        repository.fetchAndLockMembers(trx, [otherMemberId, memberId, memberId, 'missing']),
+      );
+      expect(members).toHaveLength(2);
+      expect(members).toEqual(
+        expect.arrayContaining([
+          { id: memberId, email: 'changed@example.com' },
+          { id: otherMemberId, email: `${otherMemberId}@example.com` },
+        ]),
+      );
+      expect(await repository.fetchAndLockMembers(knex, [])).toEqual([]);
+      expect(await repository.fetchAndLockMembers(knex, ['missing'])).toEqual([]);
+    });
+
+    it('locks members until the transaction ends', async function () {
+      await knex('members').insert(createMember(otherMemberId));
+
+      const trx = await knex.transaction();
+      onTestFinished(async () => {
+        await trx.rollback();
+      });
+
+      await repository.fetchAndLockMembers(trx, [otherMemberId, memberId]);
+
+      for (const id of [memberId, otherMemberId]) {
+        // Use `NOWAIT` to immediately fail if another transaction holds this row's lock.
+        await repository.withTransaction(async (otherTrx) => {
+          await expect(
+            otherTrx('members').where({ id }).forUpdate().noWait().first(),
+          ).rejects.toMatchObject({ code: 'ER_LOCK_NOWAIT' });
+        });
+      }
+
+      await trx.commit();
+
+      await repository.withTransaction(async (otherTrx) => {
+        await expect(
+          otherTrx('members').where('id', memberId).forUpdate().noWait().first(),
+        ).resolves.toBeDefined();
+      });
+    });
+  });
+
+  alphabeticalDescribe('findAutomationMemberEnrollments', function () {
+    let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
+    let automationId: string;
+    let otherAutomationId: string;
+    let memberId: string;
+    let otherMemberId: string;
+
+    beforeEach(async function () {
+      repository = createDatabaseAutomationsRepository2({ knex });
+      automationId = ObjectId().toHexString();
+      otherAutomationId = ObjectId().toHexString();
+      memberId = ObjectId().toHexString();
+      otherMemberId = ObjectId().toHexString();
+      await knex('automations').insert(createAutomation(automationId));
+      await knex('members').insert(createMember(memberId));
+    });
+
+    afterEach(async function () {
+      await knex('automation_runs')
+        .whereIn('automation_id', [automationId, otherAutomationId])
+        .delete();
+      await knex('automations').whereIn('id', [automationId, otherAutomationId]).delete();
+      await knex('members').whereIn('id', [memberId, otherMemberId]).delete();
+    });
+
+    it('returns prior automation enrollments', async function () {
+      await knex('members').insert(createMember(otherMemberId));
+      await knex('automations').insert(createAutomation(otherAutomationId));
+      await knex('automation_runs').insert([
+        createRun(automationId, memberId),
+        createRun(automationId, memberId),
+        createRun(otherAutomationId, otherMemberId),
+      ]);
+
+      const result = await repository.findAutomationMemberEnrollments(
+        knex,
+        [automationId, otherAutomationId],
+        [memberId, otherMemberId],
+      );
+      expect(result).toHaveLength(2);
+      expect(result).toEqual(
+        expect.arrayContaining([
+          { automation_id: automationId, member_id: memberId },
+          { automation_id: otherAutomationId, member_id: otherMemberId },
+        ]),
+      );
+
+      expect(
+        await repository.findAutomationMemberEnrollments(knex, [automationId], [otherMemberId]),
+      ).toEqual([]);
+    });
+
+    it('returns no pairs for empty inputs', async function () {
+      expect(await repository.findAutomationMemberEnrollments(knex, [], [memberId])).toEqual([]);
+      expect(await repository.findAutomationMemberEnrollments(knex, [automationId], [])).toEqual(
+        [],
+      );
     });
   });
 
@@ -676,58 +808,6 @@ describe('database automations repository', function () {
     });
   });
 
-  alphabeticalDescribe('hasMemberEnteredAutomation', function () {
-    let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
-    let automationId: string;
-    let otherAutomationId: string;
-    let memberId: string;
-    let otherMemberId: string;
-
-    const hasMemberEnteredAutomation = () =>
-      repository.withConnection((connection) =>
-        repository.hasMemberEnteredAutomation(connection, automationId, memberId),
-      );
-
-    beforeEach(async function () {
-      repository = createDatabaseAutomationsRepository2({ knex });
-      automationId = ObjectId().toHexString();
-      otherAutomationId = ObjectId().toHexString();
-      memberId = ObjectId().toHexString();
-      otherMemberId = ObjectId().toHexString();
-      await knex('automations').insert(createAutomation(automationId));
-      await knex('members').insert(createMember(memberId));
-    });
-
-    afterEach(async function () {
-      await knex('automation_runs')
-        .whereIn('automation_id', [automationId, otherAutomationId])
-        .delete();
-      await knex('automations').whereIn('id', [automationId, otherAutomationId]).delete();
-      await knex('members').whereIn('id', [memberId, otherMemberId]).delete();
-    });
-
-    it('returns false when the member has not entered any automation', async function () {
-      await expect(hasMemberEnteredAutomation()).resolves.toBe(false);
-    });
-
-    it('returns true when the member has entered the automation', async function () {
-      await knex('automation_runs').insert(createRun(automationId, memberId));
-      await expect(hasMemberEnteredAutomation()).resolves.toBe(true);
-    });
-
-    it('returns false when only another member has entered the automation', async function () {
-      await knex('members').insert(createMember(otherMemberId));
-      await knex('automation_runs').insert(createRun(automationId, otherMemberId));
-      await expect(hasMemberEnteredAutomation()).resolves.toBe(false);
-    });
-
-    it('returns false when the member has only entered another automation', async function () {
-      await knex('automations').insert(createAutomation(otherAutomationId));
-      await knex('automation_runs').insert(createRun(otherAutomationId, memberId));
-      await expect(hasMemberEnteredAutomation()).resolves.toBe(false);
-    });
-  });
-
   alphabeticalDescribe('incrementEmailClickedCount', function () {
     const fixture = useEmailClickFixture();
     const { repository } = fixture;
@@ -777,6 +857,30 @@ describe('database automations repository', function () {
           .email_opened_count,
       ).toBe(8);
     });
+  });
+
+  alphabeticalDescribe('incrementEmailSentCount', function () {
+    const fixture = useEmailClickFixture();
+    const { repository } = fixture;
+
+    it.each([null, 0, 5])(
+      'increments a count initially set to %s and leaves other revisions unchanged',
+      async function (count) {
+        await knex('automation_action_revisions')
+          .where('id', fixture.revisionIds[0])
+          .update({ email_sent_count: count });
+
+        await repository.incrementEmailSentCount(knex, fixture.revisionIds[0]);
+
+        const rows = await knex('automation_action_revisions')
+          .whereIn('id', fixture.revisionIds)
+          .select('id', 'email_sent_count');
+        expect(rows.find((row) => row.id === fixture.revisionIds[0])?.email_sent_count).toBe(
+          (count ?? 0) + 1,
+        );
+        expect(rows.find((row) => row.id === fixture.revisionIds[1])?.email_sent_count).toBeNull();
+      },
+    );
   });
 
   alphabeticalDescribe('insertActions', function () {
@@ -833,6 +937,91 @@ describe('database automations repository', function () {
       await repository.insertActions(knex, []);
 
       await expect(findActions()).resolves.toEqual([action]);
+    });
+  });
+
+  alphabeticalDescribe('insertEmailRecipient', function () {
+    const fixture = useEmailClickFixture();
+    const { repository } = fixture;
+
+    const createRecipientToInsert = (): EmailRecipientToInsert => ({
+      id: ObjectId().toHexString(),
+      created_at: createdAt,
+      updated_at: updatedAt,
+      member_id: fixture.memberId,
+      member_uuid: '00000000-0000-4000-8000-000000000001',
+      member_email: 'member@example.com',
+      member_name: 'Test Member',
+      automation_action_revision_id: fixture.revisionIds[0],
+      automation_run_step_id: fixture.stepId,
+      mailgun_message_id: 'mailgun-message-id',
+      track_clicks: true,
+      track_opens: true,
+    });
+
+    const findRecipient = async (id: string) => {
+      const row = await knex('automated_email_recipients').where({ id }).first();
+      return (
+        row && {
+          ...row,
+          created_at: fromDatabaseDate(row.created_at),
+          updated_at: fromDatabaseDate(row.updated_at),
+        }
+      );
+    };
+
+    it('inserts a recipient with its tracking settings and timestamps', async function () {
+      const recipient = createRecipientToInsert();
+
+      await repository.insertEmailRecipient(knex, recipient);
+
+      expect(await findRecipient(recipient.id)).toEqual({
+        ...recipient,
+        automated_email_id: null,
+        delivered_at: null,
+        opened_at: null,
+        clicked_at: null,
+        track_clicks: 1,
+        track_opens: 1,
+      });
+    });
+
+    it('inserts a recipient without a Mailgun message ID or member name', async function () {
+      const { mailgun_message_id: _mailgunMessageId, ...recipient } = {
+        ...createRecipientToInsert(),
+        member_name: null,
+        track_clicks: false,
+        track_opens: false,
+      };
+
+      await repository.insertEmailRecipient(knex, recipient);
+
+      expect(await findRecipient(recipient.id)).toMatchObject({
+        mailgun_message_id: null,
+        member_name: null,
+        track_clicks: 0,
+        track_opens: 0,
+      });
+    });
+
+    it('rolls back the sent count with a failed insert in the same transaction', async function () {
+      const recipient = {
+        ...createRecipientToInsert(),
+        automation_run_step_id: ObjectId().toHexString(),
+      };
+
+      await expect(
+        repository.withTransaction(async (trx) => {
+          await repository.incrementEmailSentCount(trx, fixture.revisionIds[0]);
+          await repository.insertEmailRecipient(trx, recipient);
+        }),
+      ).rejects.toThrow(/foreign key/i);
+
+      expect(
+        (await knex('automation_action_revisions').where('id', fixture.revisionIds[0]).first())
+          .email_sent_count,
+      ).toBeNull();
+      expect(await findRecipient(recipient.id)).toBeUndefined();
     });
   });
 
@@ -1092,45 +1281,6 @@ describe('database automations repository', function () {
       } finally {
         await trx.rollback();
       }
-    });
-  });
-
-  alphabeticalDescribe('lockMember', function () {
-    let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
-    let memberId: string;
-
-    beforeEach(async function () {
-      repository = createDatabaseAutomationsRepository2({ knex });
-      memberId = ObjectId().toHexString();
-      await knex('members').insert(createMember(memberId));
-    });
-
-    afterEach(async function () {
-      await knex('members').where('id', memberId).delete();
-    });
-
-    it('locks the member until the transaction ends', async function () {
-      const trx = await knex.transaction();
-      onTestFinished(async () => {
-        await trx.rollback();
-      });
-
-      await repository.lockMember(trx, memberId);
-
-      // Use `NOWAIT` to immediately fail if another transaction holds this row's lock.
-      await repository.withTransaction(async (otherTrx) => {
-        await expect(
-          otherTrx('members').where('id', memberId).forUpdate().noWait().first(),
-        ).rejects.toMatchObject({ code: 'ER_LOCK_NOWAIT' });
-      });
-
-      await trx.commit();
-
-      await repository.withTransaction(async (otherTrx) => {
-        await expect(
-          otherTrx('members').where('id', memberId).forUpdate().noWait().first(),
-        ).resolves.not.toThrow();
-      });
     });
   });
 

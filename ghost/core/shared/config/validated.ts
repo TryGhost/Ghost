@@ -7,27 +7,9 @@ import { z } from 'zod';
 import { lenient, parseLeniently } from './lenient';
 import { reportInvalid } from './report';
 import { configSchema, type ConfigAt, type ConfigPath, type ValidatedConfig } from './schema';
+import { deepFreeze } from '../deep-freeze';
 
 const lenientConfigSchema = lenient(configSchema);
-
-/**
- * Recursively freeze a plain-data tree in place. Only safe on a structure
- * nothing else holds a reference to, and an already-frozen subtree is left
- * alone, children included.
- */
-export function deepFreeze<T>(value: T): T {
-  if (value === null || typeof value !== 'object' || Object.isFrozen(value)) {
-    return value;
-  }
-
-  Object.freeze(value);
-
-  for (const child of Object.values(value as Record<string, unknown>)) {
-    deepFreeze(child);
-  }
-
-  return value;
-}
 
 /**
  * Whether a schema violation is fatal.

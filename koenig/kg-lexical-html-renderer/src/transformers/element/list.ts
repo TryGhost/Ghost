@@ -10,7 +10,8 @@ const exportList = function (node: ElementNode, options: RendererOptions, export
     }
 
     const tag = node.getTag();
-    const start = node.getStart();
+    // Only a whole number is written as the start
+    const start: unknown = node.getStart();
 
     // track an open <li> outside of the child loop, we do this so we can nest lists
     // inside <li> elements that already have their contents rendered, e.g.:
@@ -59,7 +60,7 @@ const exportList = function (node: ElementNode, options: RendererOptions, export
     const listContent = exportListContent(node);
 
     // CASE: list has a start value specified > 1
-    if (start !== 1 && start !== null && start !== undefined) {
+    if (Number.isInteger(start) && start !== 1) {
         return `<${tag} start="${start}">${listContent}</${tag}>`;
     } else {
         return `<${tag}>${listContent}</${tag}>`;

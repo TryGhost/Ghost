@@ -151,6 +151,7 @@ describe('JobsService', function () {
       logOutboxUnavailable?: boolean;
       backend?: JobsBackendBase;
       leaseMs?: number;
+      pollIntervalMs?: number;
     } = {},
   ) {
     return new JobsService({
@@ -163,6 +164,7 @@ describe('JobsService', function () {
             relay: overrides.outbox.relay,
             tracker: overrides.outbox.tracker,
             leaseMs: overrides.leaseMs ?? 120_000,
+            pollIntervalMs: overrides.pollIntervalMs ?? 30_000,
           }
         : undefined,
       logOutboxUnavailable: overrides.logOutboxUnavailable,
@@ -513,7 +515,7 @@ describe('JobsService', function () {
       const QUARTER = LEASE_MS / 4;
 
       beforeEach(function () {
-        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
       });
 
       afterEach(function () {
@@ -556,10 +558,102 @@ describe('JobsService', function () {
         const service = makeService({ outbox, leaseMs: LEASE_MS });
         try {
           await service.start();
-          await vi.advanceTimersByTimeAsync(QUARTER);
+          await vi.advanceTimersByTimeAsync(LEASE_MS);
 
           assert.deepEqual(outbox.renewals, []);
           assert.equal(outbox.staleAfter.length, 2, 'still releases stale rows');
+        } finally {
+          await service.shutdown();
+        }
+      });
+
+      it('while idle, checks for stale rows one lease after start and then once per poll interval', async function () {
+        const POLL_MS = 60_000;
+        const outbox = makeOutbox();
+        const service = makeService({ outbox, leaseMs: LEASE_MS, pollIntervalMs: POLL_MS });
+        try {
+          await service.start();
+          await vi.advanceTimersByTimeAsync(LEASE_MS - QUARTER);
+          assert.equal(outbox.staleAfter.length, 1, 'only the check at start');
+
+          await vi.advanceTimersByTimeAsync(QUARTER);
+          assert.equal(outbox.staleAfter.length, 2, 'one lease after start');
+
+          await vi.advanceTimersByTimeAsync(POLL_MS - QUARTER);
+          assert.equal(outbox.staleAfter.length, 2);
+          await vi.advanceTimersByTimeAsync(QUARTER);
+          assert.equal(outbox.staleAfter.length, 3, 'then once per poll interval');
+        } finally {
+          await service.shutdown();
+        }
+      });
+
+      it('retries a failed stale check on the next tick instead of a poll interval later', async function () {
+        const POLL_MS = 60_000;
+        const outbox = makeOutbox();
+        const release = outbox.store.releaseSubmitted.bind(outbox.store);
+        let failNext = false;
+        outbox.store.releaseSubmitted = async (options) => {
+          if (failNext) {
+            failNext = false;
+            throw new Error('db gone');
+          }
+          return release(options);
+        };
+        const service = makeService({ outbox, leaseMs: LEASE_MS, pollIntervalMs: POLL_MS });
+        try {
+          await service.start();
+          failNext = true;
+          await vi.advanceTimersByTimeAsync(LEASE_MS);
+          assert.equal(logger.calls.error.length, 1, 'the check one lease after start failed');
+
+          await vi.advanceTimersByTimeAsync(QUARTER);
+          assert.equal(outbox.staleAfter.length, 2, 'the next tick checks again');
+        } finally {
+          await service.shutdown();
+        }
+      });
+
+      it('still checks one lease after start when it held jobs at an earlier tick', async function () {
+        const outbox = makeOutbox();
+        const holding = new HoldingBackend();
+        holding.held = ['a'];
+        const service = makeService({
+          outbox,
+          backend: holding,
+          leaseMs: LEASE_MS,
+          pollIntervalMs: 60_000,
+        });
+        try {
+          await service.start();
+          await vi.advanceTimersByTimeAsync(QUARTER);
+          assert.equal(outbox.staleAfter.length, 2, 'checked at start and while holding a job');
+
+          holding.held = [];
+          await vi.advanceTimersByTimeAsync(LEASE_MS - QUARTER);
+          assert.equal(outbox.staleAfter.length, 3, 'the check one lease after start still runs');
+        } finally {
+          await service.shutdown();
+        }
+      });
+
+      it('wakes the relay when it releases rows', async function () {
+        const outbox = makeOutbox({ released: [{ id: 'r', type: 'greet' }] });
+        const service = makeService({ outbox, leaseMs: LEASE_MS });
+        try {
+          await service.start();
+          assert.deepEqual(outbox.relayCalls, ['release', 'wake', 'start']);
+        } finally {
+          await service.shutdown();
+        }
+      });
+
+      it('does not wake the relay when nothing was released', async function () {
+        const outbox = makeOutbox();
+        const service = makeService({ outbox, leaseMs: LEASE_MS });
+        try {
+          await service.start();
+          assert.deepEqual(outbox.relayCalls, ['release', 'start']);
         } finally {
           await service.shutdown();
         }
@@ -700,7 +794,7 @@ describe('JobsService', function () {
       });
       assert.equal(
         message,
-        '[Jobs Outbox] Dropped 1 submitted rows whose job types recover on their own',
+        '[Jobs Outbox] Dropped 1 submitted rows whose job types are not replayed after a restart',
       );
     });
 
@@ -714,7 +808,7 @@ describe('JobsService', function () {
       );
     });
 
-    it('logs at start which backend runs jobs and which outbox mode it is in', async function () {
+    it('logs at start which backend runs jobs, its outbox mode and the outbox timings', async function () {
       await makeService({ outbox: makeOutbox() }).start();
       await makeService({ outbox: makeOutbox({ tracked: false }) }).start();
       await makeService().start();
@@ -728,11 +822,27 @@ describe('JobsService', function () {
       );
       assert.deepEqual(started, [
         [
-          { system: { event: 'jobs.started', backend: 'FakeBackend', outbox_mode: 'retain' } },
+          {
+            system: {
+              event: 'jobs.started',
+              backend: 'FakeBackend',
+              outbox_mode: 'retain',
+              poll_interval_ms: 30_000,
+              lease_ms: 120_000,
+            },
+          },
           '[Jobs] Started on FakeBackend with the outbox on, keeping rows until their job settles',
         ],
         [
-          { system: { event: 'jobs.started', backend: 'FakeBackend', outbox_mode: 'on' } },
+          {
+            system: {
+              event: 'jobs.started',
+              backend: 'FakeBackend',
+              outbox_mode: 'on',
+              poll_interval_ms: 30_000,
+              lease_ms: 120_000,
+            },
+          },
           '[Jobs] Started on FakeBackend with the outbox on',
         ],
         [
@@ -828,7 +938,7 @@ describe('JobsService', function () {
       assert.equal(logger.calls.error.length, 1);
       assert.equal(logger.calls.error[0]![0], boom);
       assert.match(
-        String(logger.calls.error[0]![1]),
+        String(logger.calls.error[0]!.at(-1)),
         /^\[Background Job\] greet failed after \d+ms$/,
       );
     });
@@ -855,7 +965,7 @@ describe('JobsService', function () {
       logger.calls.info.splice(0, startLines);
 
       assert.equal(logger.calls.info.length, 2);
-      assert.equal(logger.calls.info[0]![0], '[Background Job] greet started');
+      assert.equal(logger.calls.info[0]!.at(-1), '[Background Job] greet started');
 
       const [event, message] = logger.calls.info[1]! as [
         { system: { event: string; job_type: string; duration_ms: number } },
@@ -881,7 +991,7 @@ describe('JobsService', function () {
       assert.equal(logger.calls.error.length, 0);
       assert.deepEqual(captured, []);
       assert.match(
-        String(logger.calls.info.at(-1)![0]),
+        String(logger.calls.info.at(-1)!.at(-1)),
         /^\[Background Job\] greet interrupted after \d+ms$/,
       );
     });
@@ -900,6 +1010,57 @@ describe('JobsService', function () {
 
       assert.equal(logger.calls.info.length, 1, 'only the started line is logged');
       assert.equal(logger.calls.error.length, 1);
+    });
+  });
+
+  describe('lifecycle log fields', function () {
+    type Line = { system: { event: string; job_type: string; outbox_mode: string } };
+    const fieldsOf = (lines: unknown[][]) =>
+      lines
+        .map((args) =>
+          args.find(
+            (arg): arg is Line => typeof arg === 'object' && arg !== null && 'system' in arg,
+          ),
+        )
+        .filter((line): line is Line => line !== undefined)
+        .map(({ system }) => [system.event, system.job_type, system.outbox_mode]);
+
+    async function runOnce(
+      outbox: ReturnType<typeof makeOutbox> | undefined,
+      handler: () => Promise<void | 'interrupted'>,
+    ) {
+      const service = makeService({ outbox });
+      service.handle(GreetJob, handler);
+      await service.start();
+      logger.calls.info.length = 0;
+      assert.ok(backend.processor);
+      await backend.processor({ type: 'greet', payload: '{"name":"Ada"}' }).catch(() => {});
+    }
+
+    it('tags the started and completed lines with the job type and outbox mode', async function () {
+      await runOnce(makeOutbox(), async () => {});
+
+      assert.deepEqual(fieldsOf(logger.calls.info), [
+        ['job.started', 'greet', 'retain'],
+        ['job.completed', 'greet', 'retain'],
+      ]);
+    });
+
+    it('tags the failed line', async function () {
+      await runOnce(makeOutbox({ tracked: false }), async () => {
+        throw new Error('handler exploded');
+      });
+
+      assert.deepEqual(fieldsOf(logger.calls.error), [['job.failed', 'greet', 'on']]);
+    });
+
+    it('tags the interrupted line', async function () {
+      await runOnce(undefined, async () => 'interrupted' as const);
+
+      assert.deepEqual(fieldsOf(logger.calls.info), [
+        ['job.started', 'greet', 'off'],
+        ['job.interrupted', 'greet', 'off'],
+      ]);
     });
   });
 

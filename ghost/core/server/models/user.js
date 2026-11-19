@@ -13,21 +13,17 @@ const {
   readPasswordHash,
   writePasswordHash,
 } = require('../auth/better-auth/credential-password');
-const { usesBetterAuth } = require('../auth/better-auth/enabled');
 const urlUtils = require('../../shared/url-utils').default;
 const { ASSIGNABLE_ROLES, setIsRoles } = require('./role-utils');
 const activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'];
 const DEFAULT_ACCESSIBILITY_PREFERENCES = JSON.stringify({ nightShift: 'system' });
 
 /**
- * With auth:betterAuthDev the hash goes to the credential row (written in
- * onSaved) and `users.password` keeps the placeholder (plan §4.5).
+ * The hash goes to the credential row (written in onSaved) and
+ * `users.password` keeps the placeholder (plan §4.5).
  * A patch save writes `attrs`, not the model's attributes.
  */
 function moveHashToCredentialAccount(model, attrs, hash) {
-  if (!usesBetterAuth()) {
-    return;
-  }
   model._credentialHash = hash;
   model.set('password', PASSWORD_PLACEHOLDER);
   if (attrs) {
@@ -226,7 +222,7 @@ const User = ghostBookshelf.Model.extend(
      */
     lock: function lock(options = {}) {
       // The credential row is written with the user, in one transaction
-      if (!options.transacting && usesBetterAuth()) {
+      if (!options.transacting) {
         return ghostBookshelf.transaction((transacting) => this.lock({ ...options, transacting }));
       }
 
@@ -632,7 +628,7 @@ const User = ghostBookshelf.Model.extend(
       const self = this;
 
       // The credential row is written with the user, in one transaction
-      if (data.password && !options.transacting && usesBetterAuth()) {
+      if (data.password && !options.transacting) {
         return ghostBookshelf.transaction((transacting) => {
           return self.edit(data, { ...unfilteredOptions, transacting });
         });
@@ -719,7 +715,7 @@ const User = ghostBookshelf.Model.extend(
       const self = this;
 
       // Every new user has a password, from the data or the defaults
-      if (!options.transacting && usesBetterAuth()) {
+      if (!options.transacting) {
         return ghostBookshelf.transaction((transacting) => {
           return self.add(dataToClone, { ...unfilteredOptions, transacting });
         });
@@ -1139,7 +1135,7 @@ const User = ghostBookshelf.Model.extend(
             // models index, which requires this file. Loaded top-down from the index
             // that resolves, but loaded from this file first it leaves `User`
             // undefined while author.js extends it.
-            const permissions = require('../services/permissions');
+            const permissions = require('../auth/permissions');
 
             return permissions
               .canThis(context)
@@ -1203,10 +1199,7 @@ const User = ghostBookshelf.Model.extend(
             });
           }
 
-          return readPasswordHash(ghostBookshelf.knex, {
-            id: user.id,
-            password: user.get('password'),
-          })
+          return readPasswordHash(ghostBookshelf.knex, { id: user.id })
             .then((hash) => {
               return self.isPasswordCorrect({
                 plainPassword: object.password,
@@ -1268,7 +1261,7 @@ const User = ghostBookshelf.Model.extend(
     changePassword: async function changePassword(object, unfilteredOptions) {
       const options = this.filterOptions(unfilteredOptions, 'changePassword');
 
-      if (!options.transacting && usesBetterAuth()) {
+      if (!options.transacting) {
         return ghostBookshelf.transaction((transacting) => {
           return this.changePassword(object, { ...unfilteredOptions, transacting });
         });
@@ -1288,7 +1281,6 @@ const User = ghostBookshelf.Model.extend(
           plainPassword: oldPassword,
           hashedPassword: await readPasswordHash(options.transacting || ghostBookshelf.knex, {
             id: user.id,
-            password: user.get('password'),
           }),
         });
       }
@@ -1303,6 +1295,8 @@ const User = ghostBookshelf.Model.extend(
       for (const session of sessions) {
         await session.destroy(options);
       }
+      // Under legacy too, so a later switch to better-auth can't revive them
+      await options.transacting('user_sessions').where({ user_id: userId }).del();
 
       return updatedUser;
     },

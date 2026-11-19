@@ -66,6 +66,21 @@ function loggable(err: unknown): Error {
 }
 
 /**
+ * The attribute groups that hold at least one attribute. A log line leaves an empty group out:
+ * Grafana's Elasticsearch data source turns an empty object into a field of that name, and its
+ * logs panel reads a field named `labels` as each line's labels, so it fails to show any page
+ * that mixes lines with the field and lines without it.
+ */
+function nonEmptyGroups(attributes: Labels): Partial<Labels> {
+  return {
+    ...(Object.keys(attributes.labels).length > 0 ? { labels: attributes.labels } : {}),
+    ...(Object.keys(attributes.numeric_labels).length > 0
+      ? { numeric_labels: attributes.numeric_labels }
+      : {}),
+  };
+}
+
+/**
  * Creates a tracer that ships each span through `transport` as a `SpanDocument`, and logs the
  * exception of each failed span through `logging` as a line named `<span name>.exception`.
  */
@@ -135,8 +150,7 @@ export function createTracer({
       err: loggable(err),
       ...context,
       error: { type: errorTypeOf(err) },
-      labels: attributes.labels,
-      numeric_labels: attributes.numeric_labels,
+      ...nonEmptyGroups(attributes),
     });
   }
 

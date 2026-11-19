@@ -163,7 +163,7 @@ async function initCore({ ghostServer, config }) {
 
   // Reads admin_session_secret, so it follows settings. Under legacy nothing loads
   // Better Auth itself.
-  if (config.get('auth:engine') === 'better-auth') {
+  if (require('./server/auth').isBetterAuth) {
     debug('Begin: Better Auth');
     await require('./server/auth').betterAuth.init();
     debug('End: Better Auth');
@@ -382,7 +382,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const stripe = require('./server/services/stripe');
   const members = require('./server/services/members');
   const tiers = require('./server/services/tiers').default;
-  const permissions = require('./server/services/permissions');
   const indexnow = require('./server/services/indexnow-ping').default;
   const upgrades = require('./server/services/upgrades').default;
   const slack = require('./server/services/slack-ping').default;
@@ -412,6 +411,8 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const explorePingService = require('./server/services/explore-ping').default;
   const users = require('./server/services/users').default;
   const memberWelcomeEmails = require('./server/services/member-welcome-emails').default;
+  const editorPresence = require('./server/services/editor-presence').default;
+  const segments = require('./server/services/segments').default;
   const domainEvents = require('@tryghost/domain-events');
   const { automationsService } = require('./server/services/automations');
   const automationsApi = require('./server/services/automations/automations-api');
@@ -465,7 +466,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     tagsPublic.init(),
     postsPublic.init(),
     membersEvents.init(),
-    permissions.init(),
     indexnow.init(),
     upgrades.init(),
     slack.init(),
@@ -493,7 +493,9 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     recommendationsService.init(),
     explorePingService.init(),
     users.init(),
+    editorPresence.init(),
     machinePaymentsService.init(),
+    segments.init(),
   ]);
   if (ghostServer) {
     // Each releases what its start acquired; the next boot in this process starts it again.
@@ -521,7 +523,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   assert(emailService.service, 'Email service should be initialized');
   registerJobHandlers({
     gifts: emailAnalytics.getGifts(),
-    automations: emailAnalytics.getAutomations(),
+    automationAnalytics: emailAnalytics.getAutomations(),
     newsletters: emailAnalytics.getNewsletters(),
     jobsService,
     memberJobs,
@@ -536,11 +538,12 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     contentImport,
     updateCheck,
     signingKeys: signingKeys.service,
+    authCleanup: require('./server/auth/better-auth/cleanup'),
   });
   await jobsService.start();
   debug('End: Register job handlers');
 
-  await automationsService.init({
+  automationsService.init({
     domainEvents,
     apiUrl,
     schedulerAdapter,
@@ -639,6 +642,14 @@ async function initBackgroundServices({ config }) {
   try {
     const signingKeys = require('./server/services/signing-keys').default;
     await signingKeys.extras.scheduleCheckJob(jobsService);
+  } catch (err) {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
+  }
+
+  try {
+    const authCleanup = require('./server/auth/better-auth/cleanup');
+    await authCleanup.scheduleClearExpiredJob(jobsService);
   } catch (err) {
     const logging = require('@tryghost/logging');
     logging.error(err);

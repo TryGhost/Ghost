@@ -18,12 +18,15 @@ export interface ShadeAppProps extends React.HTMLProps<HTMLDivElement> {
    * previews and standalone apps default to the Admin 7 design. Removed with the flag.
    */
   admin7Design?: boolean;
+  /** Temporary Admin mobile-hardening flag. Standalone surfaces stay off by default. */
+  admin7Mobile?: boolean;
 }
 
 const ShadeApp: React.FC<ShadeAppProps> = ({
   darkMode,
   controlShape,
   admin7Design = true,
+  admin7Mobile = false,
   className,
   children,
   ...props
@@ -31,8 +34,18 @@ const ShadeApp: React.FC<ShadeAppProps> = ({
   const appClassName = clsx('shade', className);
 
   return (
-    <div className={appClassName} {...props} data-admin7-design={admin7Design}>
-      <ShadeProvider admin7Design={admin7Design} controlShape={controlShape} darkMode={darkMode}>
+    <div
+      className={appClassName}
+      {...props}
+      data-admin7-design={admin7Design}
+      data-admin7-mobile={admin7Mobile}
+    >
+      <ShadeProvider
+        admin7Design={admin7Design}
+        admin7Mobile={admin7Mobile}
+        controlShape={controlShape}
+        darkMode={darkMode}
+      >
         {children}
       </ShadeProvider>
     </div>

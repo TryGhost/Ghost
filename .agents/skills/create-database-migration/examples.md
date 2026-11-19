@@ -1,5 +1,8 @@
 # Example database migrations
 
+These examples predate TypeScript migrations. Follow their structure, but write
+new migrations as `.ts` files with `import` and `export default`.
+
 ## Create a table
 
 See [add mentions table](../../../ghost/core/server/data/migrations/versions/5.31/2023-01-19-07-46-add-mentions-table.js).

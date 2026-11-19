@@ -325,8 +325,8 @@ describe('App installations Admin API', function () {
         manifest: installed.manifest,
         icon_data_url: null,
         changes: [
-          { path: 'description', requires_approval: false },
-          { path: 'name', requires_approval: true },
+          { kind: 'field', path: 'description', requires_approval: false },
+          { kind: 'field', path: 'name', requires_approval: true },
         ],
       });
     });
@@ -569,8 +569,8 @@ describe('App installations Admin API', function () {
       serve(moved, NEW_URL);
       const reviewed = await preview(NEW_URL);
       assert.deepEqual(reviewed.installation.changes, [
-        { path: 'manifest_url', requires_approval: true },
-        { path: 'surfaces[0].url', requires_approval: true },
+        { kind: 'field', path: 'manifest_url', requires_approval: true },
+        { kind: 'field', path: 'surfaces[0].url', requires_approval: true },
       ]);
       serve(moved, NEW_URL);
 
@@ -620,7 +620,7 @@ describe('App installations Admin API', function () {
       serve(manifest({ description: 'Episodes and players.' }));
       const reviewed = await preview();
       assert.deepEqual(reviewed.installation.changes, [
-        { path: 'description', requires_approval: false },
+        { kind: 'field', path: 'description', requires_approval: false },
       ]);
       serve(manifest({ description: 'Episodes and players.' }));
 
@@ -697,7 +697,7 @@ describe('App installations Admin API', function () {
       assert.equal(error.details.installation.status, 'suspended');
       assert.equal(error.details.installation.revision, 1);
       assert.deepEqual(error.details.installation.changes, [
-        { path: 'name', requires_approval: true },
+        { kind: 'field', path: 'name', requires_approval: true },
       ]);
       const row = await installationRow(installed.id);
       assert.equal(row.status, 'suspended');
@@ -897,7 +897,7 @@ describe('App installations Admin API', function () {
       serve(manifest({ description: 'Episodes and players.' }));
       const reviewed = await preview();
       assert.deepEqual(reviewed.installation.changes, [
-        { path: 'description', requires_approval: false },
+        { kind: 'field', path: 'description', requires_approval: false },
       ]);
       serve(manifest({ description: 'Episodes and players.' }));
 
@@ -2371,6 +2371,27 @@ describe('App installations Admin API', function () {
       assert.equal(action.resource_id, installation.id);
       assert.equal(action.actor_id, owner.actor.id);
       assert.equal(JSON.parse(action.context).primary_name, 'Podcast');
+    });
+
+    // The action is part of the uninstall, so failing to write it keeps the app installed.
+    it('keeps the app installed when its action cannot be written', async function () {
+      const installation = await install();
+      sinon.stub(logging, 'error');
+      await models.Base.knex.raw(`
+        CREATE TRIGGER fail_app_installation_action
+        BEFORE INSERT ON actions FOR EACH ROW
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'action write failed'
+      `);
+      try {
+        await agent.delete(`apps/installations/${installation.id}/`).expectStatus(500);
+      } finally {
+        await models.Base.knex.raw('DROP TRIGGER fail_app_installation_action');
+      }
+
+      const row = await installationRow(installation.id);
+      assert.equal(row.status, 'active');
+      assert.equal(row.current_app_id, 'com.example.podcast');
+      assert.equal((await actions()).length, 1);
     });
 
     it('does nothing, and records nothing, the second time', async function () {

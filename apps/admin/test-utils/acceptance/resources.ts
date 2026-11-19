@@ -25,6 +25,7 @@ import {
 } from '@tryghost/test-data';
 
 import { MEMBER_COUNT_PROBE_PATH } from './boot';
+import { currentSharedViews, writeSharedViews } from './shared-views';
 import {
   fakeAdminEndpoint,
   record418,
@@ -555,12 +556,23 @@ export interface EditSettingsCapture {
   readonly lastRequest: SettingsPutBody | undefined;
 }
 
+export interface FakeEditSettingsOptions {
+  /**
+   * Holds every PUT until this settles, for a spec that acts while a save is in
+   * flight. Each request is still captured as soon as it arrives.
+   */
+  respondAfter?: Promise<unknown>;
+}
+
 /**
  * Handles PUT /settings/ the way Ghost does — echoes back the full settings
  * world with the submitted keys applied — and captures every request body so
- * specs can assert exactly what the UI saved.
+ * specs can assert exactly what the UI saved. `shared_views` is echoed from,
+ * and saved to, the test's fake setting (see shared-views.ts).
  */
-export function fakeEditSettings(): EditSettingsCapture {
+export function fakeEditSettings({
+  respondAfter,
+}: FakeEditSettingsOptions = {}): EditSettingsCapture {
   const requests: SettingsPutBody[] = [];
 
   registerRoute('PUT', '/settings/');
@@ -571,15 +583,23 @@ export function fakeEditSettings(): EditSettingsCapture {
 
     const body = (await request.json()) as SettingsPutBody;
     requests.push(body);
+    await respondAfter;
 
     const overrides = Object.fromEntries(body.settings.map(({ key, value }) => [key, value]));
+    if (typeof overrides.shared_views === 'string') {
+      writeSharedViews(overrides.shared_views);
+    }
     // The fixture accepts Labs separately; otherwise it overwrites the saved
     // JSON with defaults and a feature toggle immediately appears unchecked.
     const labs =
       typeof overrides.labs === 'string'
         ? (JSON.parse(overrides.labs) as Record<string, boolean>)
         : undefined;
-    const response: SettingsResponse = settingsResponse({ settings: overrides, labs });
+    // Like Ghost's, the echo keeps the stored `shared_views` when the PUT leaves it out.
+    const response: SettingsResponse = settingsResponse({
+      settings: { shared_views: currentSharedViews(), ...overrides },
+      labs,
+    });
     return HttpResponse.json(response);
   });
 

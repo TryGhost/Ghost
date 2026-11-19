@@ -2399,7 +2399,7 @@ describe('Batch Sending Service', function () {
       sinon.assert.calledOnce(sendBatches);
     });
 
-    it('emailJob leaves email in submitting status when sendEmail rejects with SHUTDOWN_CODE', async function () {
+    it('emailJob reports a send stopped with SHUTDOWN_CODE as interrupted, not failed', async function () {
       const captureException = sinon.stub();
       const Email = createModelClass({
         findOne: {
@@ -2426,11 +2426,6 @@ describe('Batch Sending Service', function () {
       sinon.assert.notCalled(errorLog);
       sinon.assert.notCalled(captureException);
       assert.equal(
-        afterEmailModel.get('status'),
-        'submitting',
-        'Email status must remain submitting so the next boot can resume it',
-      );
-      assert.equal(
         afterEmailModel.get('error'),
         undefined,
         'No error field should be written when send stops on shutdown',
@@ -2442,7 +2437,7 @@ describe('Batch Sending Service', function () {
       );
     });
 
-    it('emailJob leaves email in submitting status for any error once shutting down', async function () {
+    it('emailJob reports any error once shutting down as interrupted, not failed', async function () {
       const Email = createModelClass({
         findOne: {
           status: 'pending',
@@ -2463,15 +2458,36 @@ describe('Batch Sending Service', function () {
       const result = await service.emailJob({ emailId: '123' });
 
       assert.equal(result, 'interrupted');
-      assert.equal(
-        afterEmailModel.get('status'),
-        'submitting',
-        'Email must stay submitting so the boot resume scan picks it up',
-      );
       assert.equal(afterEmailModel.get('error'), undefined);
     });
 
-    it('reports a verification failure once during shutdown and preserves the resumable status', async function () {
+    it('emailJob still reports interrupted when the email cannot be returned to pending', async function () {
+      const Email = createModelClass({ findOne: { status: 'pending' } });
+      const service = new BatchSendingService({ models: { Email } });
+      const updateStatusLock = service.updateStatusLock.bind(service);
+      const releaseFailure = new Error('database unavailable during shutdown');
+      sinon.stub(service, 'updateStatusLock').callsFake((Model, id, status, allowed) => {
+        if (status === 'pending') {
+          return Promise.reject(releaseFailure);
+        }
+        return updateStatusLock(Model, id, status, allowed);
+      });
+      sinon.stub(service, 'sendEmail').callsFake(async () => {
+        service.onPreStop();
+        throw new Error('connection lost');
+      });
+
+      const result = await service.emailJob({ emailId: '123' });
+
+      assert.equal(result, 'interrupted');
+      sinon.assert.calledWithMatch(
+        errorLog,
+        releaseFailure,
+        /could not return email 123 to pending/,
+      );
+    });
+
+    it('fails the email on a verification failure during shutdown', async function () {
       const Email = createModelClass({ findOne: { status: 'pending' } });
       const sentry = { captureException: sinon.stub() };
       const service = new BatchSendingService({ models: { Email }, sentry });
@@ -2479,16 +2495,17 @@ describe('Batch Sending Service', function () {
         recipientVerificationError,
       } = require('../../../../../core/server/services/email-service/recipient-accounting');
       const failure = recipientVerificationError('123', 'preparation_totals');
-      let interruptedEmail;
+      let failedEmail;
       sinon.stub(service, 'sendEmail').callsFake(async (email) => {
-        interruptedEmail = email;
+        failedEmail = email;
         service.onPreStop();
         throw failure;
       });
-      await service.emailJob({ emailId: '123' });
+      const result = await service.emailJob({ emailId: '123' });
+      assert.notEqual(result, 'interrupted');
       sinon.assert.calledOnceWithExactly(sentry.captureException, failure);
-      assert.equal(interruptedEmail.get('status'), 'submitting');
-      assert.equal(interruptedEmail.get('error'), undefined);
+      assert.equal(failedEmail.get('status'), 'failed');
+      assert.equal(failedEmail.get('error'), failure.message);
     });
 
     it('onPreStop stops workers claiming new batches without waiting for in-flight ones', async function () {

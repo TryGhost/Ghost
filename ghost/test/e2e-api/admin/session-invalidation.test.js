@@ -1,4 +1,5 @@
 const { agentProvider, fixtureManager, resetRateLimits } = require('../../utils/e2e-framework');
+const assert = require('node:assert/strict');
 const { mockMail, restore } = require('../../utils/e2e-framework-mock-manager');
 const models = require('../../../core/server/models');
 const { passwordHashOf } = require('../../utils/password-hash');
@@ -77,6 +78,40 @@ describe('Session invalidation on password change', function () {
 
     await agentA.get('users/me/').expectStatus(200);
     await agentB.get('users/me/').expectStatus(403);
+  });
+
+  it('Changing password deletes Better Auth sessions from an earlier switch', async function () {
+    await agentA.loginAsOwner();
+    // Left from an earlier run under better-auth
+    await models.Base.knex('user_sessions').insert({
+      id: 'b00000000000000000000002',
+      user_id: ownerId,
+      token: 'password-change-dormant-session',
+      expires_at: new Date(Date.now() + 60 * 60 * 1000),
+      created_at: new Date(),
+      updated_at: new Date(),
+    });
+
+    const newPassword = 'Sl1m3rson99-dormant!';
+
+    await agentA
+      .put('users/password/')
+      .body({
+        password: [
+          {
+            newPassword,
+            ne2Password: newPassword,
+            oldPassword: DEFAULT_PASSWORD,
+            user_id: ownerId,
+          },
+        ],
+      })
+      .expectStatus(200);
+
+    const dormant = await models.Base.knex('user_sessions').where({
+      id: 'b00000000000000000000002',
+    });
+    assert.equal(dormant.length, 0);
   });
 
   it('Stolen-cookie scenario: a cloned session cookie is invalidated by password change', async function () {

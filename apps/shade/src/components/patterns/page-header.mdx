@@ -92,7 +92,8 @@ its parent and owns the label, icon, responsive treatment and button chrome. It
 uses `PageHeader.FilterTrigger` for the empty Admin 7 header and becomes the
 compact Add filter button in an active FilterBar. The header trigger advertises
 the shortcut that Filters binds, including the F tooltip. Generic actions can
-pass `shortcut` when the screen implements a matching shortcut.
+pass `shortcut` when the screen implements a matching shortcut. It also sets
+`aria-keyshortcuts`, so never pass it for a key nothing handles.
 
 ```tsx
 <Filters

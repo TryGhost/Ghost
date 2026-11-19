@@ -1,6 +1,7 @@
 import errors from '@tryghost/errors';
 import { type Knex } from 'knex';
 import { z } from 'zod';
+import { toDatabaseDate } from '../../lib/db-types/date';
 import type { AutomationsRepository2 } from './automations-repository-2';
 
 type Connection = Knex | Knex.Transaction;
@@ -177,6 +178,30 @@ export const createDatabaseAutomationsRepository2 = ({
       await connection('automation_trigger_rules').where('automation_id', automationId).delete();
     },
 
+    async fetchAndLockMembers(connection, memberIds) {
+      const ids = [...new Set(memberIds)];
+      if (ids.length === 0) {
+        return [];
+      }
+      const rows = await connection('members')
+        .select('id', 'email')
+        .whereIn('id', ids)
+        .orderBy('id')
+        .forUpdate();
+      return z.array(z.object({ id: z.string(), email: z.string() })).parse(rows);
+    },
+
+    async findAutomationMemberEnrollments(connection, automationIds, memberIds) {
+      if (automationIds.length === 0 || memberIds.length === 0) {
+        return [];
+      }
+      const rows = await connection('automation_runs')
+        .distinct('automation_id', 'member_id')
+        .whereIn('automation_id', automationIds)
+        .whereIn('member_id', memberIds);
+      return z.array(z.object({ automation_id: z.string(), member_id: z.string() })).parse(rows);
+    },
+
     async findEmailRecipientForClick(
       connection,
       { automationActionRevisionId, automationRunStepId, memberId },
@@ -252,13 +277,6 @@ export const createDatabaseAutomationsRepository2 = ({
       return Number(result?.count ?? 0);
     },
 
-    async hasMemberEnteredAutomation(connection, automationId, memberId) {
-      const query = connection('automation_runs')
-        .select(connection.raw('1'))
-        .where({ automation_id: automationId, member_id: memberId });
-      return await selectExists(connection, query);
-    },
-
     async incrementEmailClickedCount(connection, revisionId) {
       await connection('automation_action_revisions')
         .where({ id: revisionId })
@@ -274,10 +292,24 @@ export const createDatabaseAutomationsRepository2 = ({
         );
     },
 
+    async incrementEmailSentCount(connection, revisionId) {
+      await connection('automation_action_revisions')
+        .where('id', revisionId)
+        .update({ email_sent_count: connection.raw('COALESCE(email_sent_count, 0) + 1') });
+    },
+
     async insertActions(connection, toInsert) {
       if (toInsert.length > 0) {
         await connection('automation_actions').insert(toInsert);
       }
+    },
+
+    async insertEmailRecipient(connection, toInsert) {
+      await connection('automated_email_recipients').insert({
+        ...toInsert,
+        created_at: toDatabaseDate(toInsert.created_at),
+        updated_at: toDatabaseDate(toInsert.updated_at),
+      });
     },
 
     async insertRunSteps(connection, toInsert) {
@@ -347,10 +379,6 @@ export const createDatabaseAutomationsRepository2 = ({
         .whereIn('id', ids)
         .orderBy('id')
         .forUpdate();
-    },
-
-    async lockMember(connection, memberId) {
-      await connection('members').where('id', memberId).forUpdate().first('id');
     },
 
     async lockNotYetOpenedEmailRecipients(connection, automatedEmailRecipientIds) {

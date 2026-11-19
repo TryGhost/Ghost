@@ -69,8 +69,8 @@ function partitionByReplay(
   return outcome;
 }
 
-// MySQL rounds a fractional DATETIME on insert, which can round available_at up
-// and leave a freshly inserted row briefly ineligible.
+// MySQL rounds a fractional DATETIME, which can round available_at up and leave
+// a freshly inserted row, or one due for a retry, briefly ineligible.
 function floorToSecond(date: Date): Date {
   return new Date(Math.floor(date.getTime() / 1000) * 1000);
 }
@@ -138,7 +138,7 @@ export class JobsOutbox {
       } catch (error) {
         await trx(TABLE)
           .where('id', id)
-          .update({ available_at: new Date(Date.now() + retryDelayMs) });
+          .update({ available_at: floorToSecond(new Date(Date.now() + retryDelayMs)) });
         return { status: 'failed', id, error };
       }
 
@@ -171,8 +171,9 @@ export class JobsOutbox {
   }
 
   // Hands over again rows no process has renewed within staleAfterMs. A job
-  // type that is not replayed has its own recovery, so its rows are deleted
-  // rather than handed over again.
+  // type that is not replayed may not be safe to run again from the start, so
+  // its rows are deleted rather than handed over again. Only some of those
+  // types recover the work another way.
   async releaseSubmitted({
     replays,
     staleAfterMs,

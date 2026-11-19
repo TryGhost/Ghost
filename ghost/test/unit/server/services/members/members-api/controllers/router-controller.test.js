@@ -102,6 +102,7 @@ describe('RouterController', function () {
       getMembersSupportAddress: sinon.stub().returns('noreply@example.com'),
       arePaidMembersEnabled: sinon.stub().returns(true),
       areDonationsEnabled: sinon.stub().returns(true),
+      isMembersInviteOnly: sinon.stub().returns(false),
     };
   });
 
@@ -1369,6 +1370,31 @@ describe('RouterController', function () {
           assert(error instanceof errors.DisabledFeatureError);
           sinon.assert.notCalled(giftService.service.startCheckout);
         }
+      });
+
+      it('throws DisabledFeatureError on invite-only sites', async function () {
+        const controller = createGiftController({
+          tiersService: paidTierService(),
+          settingsHelpers: {
+            ...settingsHelpers,
+            isMembersInviteOnly: sinon.stub().returns(true),
+          },
+        });
+
+        await assert.rejects(
+          controller.createCheckoutSession(
+            {
+              body: { type: 'gift', tierId: 'tier_123', cadence: 'month', metadata: {} },
+            },
+            mockRes,
+          ),
+          (error) => {
+            assert(error instanceof errors.DisabledFeatureError);
+            assert.equal(error.message, 'This site is invite-only, contact the owner for access.');
+            return true;
+          },
+        );
+        sinon.assert.notCalled(giftService.service.startCheckout);
       });
 
       it('does not block paid members from purchasing gifts', async function () {

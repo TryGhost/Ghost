@@ -9,6 +9,7 @@ import {
   renderAdminApp,
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
+import { PINS_FULL_HINT } from './lib/pins';
 import { appsScreen } from './apps.screen';
 import {
   MANIFEST_URL,
@@ -213,6 +214,23 @@ describe('Apps in the sidebar', () => {
       .toEqual({ pinned: ['installation-2', 'installation-1'], unpinned: [] });
   });
 
+  it('won’t pin a fourth app from its details, and says why', async () => {
+    fakeInstallations(FOUR_APPS);
+    fakeAdminEndpoint('GET', readPath('installation-4'), () => ({ app_installations: [app(4)] }));
+    const preferences = fakePreferencesApi();
+    await renderAdminApp('/apps/details/installation-4', withPins());
+    await expect.poll(listedApps).toEqual(['App 1', 'App 2', 'App 3', 'App 4']);
+
+    await appsScreen.detailsActions().click();
+    const pinItem = appsScreen.menuItem('Pin to sidebar');
+    await expect.element(pinItem).toHaveAttribute('aria-disabled', 'true');
+    await expect.element(pinItem).toHaveAccessibleDescription(PINS_FULL_HINT);
+    await pinItem.click({ force: true });
+
+    await expect.element(pinItem).toBeVisible();
+    expect(preferences.savedPins()).toBeUndefined();
+  });
+
   it('keeps changes made in quick succession, however their saves land', async () => {
     fakeInstallations(FOUR_APPS);
     const saves = holdPinSaves();
@@ -268,9 +286,12 @@ describe('Apps in the sidebar', () => {
     await renderAdminApp('/apps', withPins());
 
     await appsScreen.rowActions('App 4').click();
-    await expect
-      .element(appsScreen.menuItem('Pin to sidebar'))
-      .toHaveAttribute('aria-disabled', 'true');
+    const pinItem = appsScreen.menuItem('Pin to sidebar');
+    await expect.element(pinItem).toHaveAttribute('aria-disabled', 'true');
+    await expect.element(pinItem).toHaveAccessibleDescription(PINS_FULL_HINT);
+    // It stays open on the reason, and pins nothing
+    await pinItem.click({ force: true });
+    await expect.element(pinItem).toBeVisible();
     await userEvent.keyboard('{Escape}');
 
     const pin = appsScreen.pinToggle('Pin App 4 to the sidebar');

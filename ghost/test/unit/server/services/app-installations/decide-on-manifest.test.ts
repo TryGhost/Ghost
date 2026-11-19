@@ -55,8 +55,8 @@ describe('decideOnManifest', function () {
       decideOnManifest({ current, pending: null, loaded: loaded({ ...silent, ...needsApproval }) })
         .changes,
       [
-        { path: 'description', requires_approval: false },
-        { path: 'name', requires_approval: true },
+        { kind: 'field', path: 'description', requires_approval: false },
+        { kind: 'field', path: 'name', requires_approval: true },
       ],
     );
     assert.deepEqual(decideOnManifest({ current, pending: null, loaded: loaded() }).changes, []);
@@ -122,7 +122,7 @@ describe('decideOnManifest', function () {
     it('uses the pending manifest when it is the one loaded, saying which it is', function () {
       assert.deepEqual(decideOnManifest({ current, pending, loaded: loaded(needsApproval) }), {
         kind: 'use_pending',
-        changes: [{ path: 'name', requires_approval: true }],
+        changes: [{ kind: 'field', path: 'name', requires_approval: true }],
         pendingManifestId: 'pending-manifest',
       });
     });

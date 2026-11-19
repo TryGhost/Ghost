@@ -1319,5 +1319,50 @@ describe('checkoutGift action', () => {
     expect(result.popupNotification).toBeDefined();
     expect(result.popupNotification.type).toBe('checkoutGift:failed');
     expect(result.popupNotification.status).toBe('error');
+    expect(result.popupNotification.message).toBe('Failed to process checkout, please try again');
+  });
+
+  test('shows the invite-only message when the site refuses the gift checkout', async () => {
+    const mockApi = {
+      member: {
+        // The API client throws the first error of the response body as-is
+        checkoutGift: vi.fn(() =>
+          Promise.reject({
+            type: 'DisabledFeatureError',
+            message: 'This site is invite-only, contact the owner for access.',
+          }),
+        ),
+      },
+    };
+
+    const result = await ActionHandler({
+      action: 'checkoutGift',
+      data: { tierId: 'tier_123', cadence: 'month' },
+      state: {},
+      api: mockApi,
+    });
+
+    expect(result.action).toBe('checkoutGift:failed');
+    expect(result.popupNotification.message).toBe(
+      'This site is invite-only, contact the owner for access.',
+    );
+  });
+
+  test('falls back to the generic message when the error has no message', async () => {
+    const mockApi = {
+      member: {
+        checkoutGift: vi.fn(() => Promise.reject({})),
+      },
+    };
+
+    const result = await ActionHandler({
+      action: 'checkoutGift',
+      data: { tierId: 'tier_123', cadence: 'month' },
+      state: {},
+      api: mockApi,
+    });
+
+    expect(result.action).toBe('checkoutGift:failed');
+    expect(result.popupNotification.message).toBe('Failed to process checkout, please try again');
   });
 });

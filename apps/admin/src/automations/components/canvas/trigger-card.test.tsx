@@ -36,6 +36,7 @@ function Picker({ initial }: { initial: TierSelection }) {
   return (
     <TriggerCard
       trigger={{
+        isActive: false,
         tierQuery: {
           data: { tiers, isEnd: true },
           isLoading: false,

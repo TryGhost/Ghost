@@ -21,11 +21,14 @@ the sending outcome; a job handler returning does not imply submission, since
 it may have skipped the send, recorded a failure, or stopped for shutdown.
 
 Shutdown first stops workers from claiming new batches. The batch sender's
-separate cleanup task waits for active batch preparation and submission even
-if the jobs backend's shutdown wait times out. This tracking currently ends
-before the final email status write. On boot, recovery reschedules eligible
-interrupted sends within `bulkEmail:resumeMaxAgeMs` and skips batches already
-submitted.
+separate cleanup task waits for each send job to settle, including its final
+email status write, even if the jobs backend's shutdown wait times out. When
+shutdown stops a send, the batch sender tries to return its email to `pending`,
+unless a recipient-integrity check failed, which fails the email as it would
+outside shutdown. A `pending` email can therefore already have batch work. If
+returning the email to `pending` fails, or a crash cuts the send short, it stays
+`submitting`. On boot, recovery reschedules eligible interrupted sends within
+`bulkEmail:resumeMaxAgeMs` and skips batches already submitted.
 
 ## Testing
 

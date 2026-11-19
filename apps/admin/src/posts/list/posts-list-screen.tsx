@@ -5,6 +5,10 @@ import { LoadMoreButton, useScrollRestoration } from '@/shared/virtual-list';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { FilterBar, PageHeader } from '@tryghost/shade/patterns';
 import { PostListRow } from './components/post-list-row';
+import { usePresence, usePresenceEnabled } from '@/shared/presence/use-presence';
+import { usePresenceByResource } from '@/shared/presence/use-presence-by-resource';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { useVisibleResources } from '@/shared/presence/use-visible-resources';
 import { PostsEmptyState } from './components/posts-empty-state';
 import { PostsFilters } from './components/posts-filters';
 import { ManagePostViewPopover } from './components/manage-post-view-popover';
@@ -168,6 +172,15 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   const revealRef = useRevealOnMount<HTMLDivElement>(mountedLoading);
 
   useScrollRestoration({ parentRef: listRef, isLoading, resetOnNavigation: true });
+  const presenceEnabled = usePresenceEnabled();
+  const presenceResources = useVisibleResources(
+    listRef,
+    items.map((item) => ({ id: item.id, type: resource === 'pages' ? 'page' : 'post' })),
+    presenceEnabled,
+  );
+  const presence = usePresence(presenceResources);
+  const presenceForResource = usePresenceByResource(presence.active);
+  const showPresence = useFeatureFlag('editorPresence');
 
   // Snapshotted when the menu item is picked: Radix closes the menu at once,
   // which clears a transient selection before the modal could read it.
@@ -393,6 +406,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                   // Not under a large title, whose header has
                   // its own separator.
                   className={cn(
+                    'in-data-[admin7-mobile=true]:max-lg:border-t-0',
                     !largeTitles && 'border-t border-border-default',
                     selection.modifierHeld && [
                       'cursor-default',
@@ -422,6 +436,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                       metricsSettings={metricsSettings}
                       paidMembersEnabled={paidMembersEnabled}
                       post={item}
+                      presenceActive={showPresence ? presenceForResource(item.id) : undefined}
                       resource={resource}
                       showGiftLink={menuGiftLinkPostId === item.id}
                       timezone={timezone}

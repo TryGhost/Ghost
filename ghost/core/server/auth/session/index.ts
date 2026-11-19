@@ -87,7 +87,7 @@ const sessionService = createSessionService({
   getOriginOfRequest,
   getSession: expressSession.getSession,
   findUserById({ id }: { id: string }) {
-    return models.User.findOne({ id, status: 'active' });
+    return models.User.findOne({ id, status: 'active' }, { withRelated: ['roles'] });
   },
   getSettingsCache(key: string) {
     return settingsCache.get(key);
@@ -108,6 +108,12 @@ const sessionService = createSessionService({
   urlUtils,
   t,
 });
+
+// Better Auth's `ghostSso`: a verified session pinned to the admin origin
+async function createBetterAuthSsoSession(_req: Request, res: Response, user: { id: string }) {
+  const getStaffSessions = require('../better-auth/staff-sessions').default;
+  res.append('Set-Cookie', await getStaffSessions().createSsoSession(user.id));
+}
 
 // Looks funky but this is a "custom" piece of middleware
 function createSessionFromToken() {
@@ -130,14 +136,19 @@ function createSessionFromToken() {
     },
   });
 
+  // Chosen once, when the backend app mounts this
+  const createSession = require('../index').isBetterAuth
+    ? createBetterAuthSsoSession
+    : // The service attaches req.session itself before reading it
+      (sessionService.createVerifiedSessionForUser as (
+        req: Request,
+        res: Response,
+        user: { id: string },
+      ) => Promise<void>);
+
   return sessionFromToken({
     callNextWithError: false,
-    // The service attaches req.session itself before reading it
-    createSession: sessionService.createVerifiedSessionForUser as (
-      req: Request,
-      res: Response,
-      user: { id: string },
-    ) => Promise<void>,
+    createSession,
     findUserByLookup: ssoAdapter.getUserForIdentity.bind(ssoAdapter),
     getLookupFromToken: ssoAdapter.getIdentityFromCredentials.bind(ssoAdapter),
     getTokenFromRequest: ssoAdapter.getRequestCredentials.bind(ssoAdapter),

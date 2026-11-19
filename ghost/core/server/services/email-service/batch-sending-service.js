@@ -250,6 +250,25 @@ class BatchSendingService {
     }
   }
 
+  // A send stopped by shutdown goes back to `pending`, so whatever runs the
+  // send next takes it through the normal status lock. If the write fails the
+  // email stays `submitting`, as it would after a crash.
+  async #releaseInterruptedEmail(emailId) {
+    try {
+      const released = await this.updateStatusLock(this.#models.Email, emailId, 'pending', [
+        'submitting',
+      ]);
+      logging.info(
+        `[Background Job] batch-sending-service-job send stopped because the container is shutting down — ${released ? `returned email ${emailId} to pending so it can resume` : `email ${emailId} was no longer submitting`}`,
+      );
+    } catch (err) {
+      logging.error(
+        err,
+        `[Background Job] batch-sending-service-job send stopped because the container is shutting down — could not return email ${emailId} to pending`,
+      );
+    }
+  }
+
   async #emailJobInner({ emailId }) {
     logging.info(`[Background Job] batch-sending-service-job started for email ${emailId}`);
 
@@ -321,14 +340,12 @@ class BatchSendingService {
     } catch (e) {
       // Any failure while shutting down counts as interrupted, not failed:
       // collapsed budgets surface transient errors as hard failures, and `failed`
-      // drops the email out of the boot resume scan.
-      if ((e && e.code === SHUTDOWN_CODE) || this.#shuttingDown) {
-        if (e?.retryable === false) {
-          this.#sentry?.captureException(e);
-        }
-        logging.info(
-          `[Background Job] batch-sending-service-job send stopped because the container is shutting down — leaving email ${email.id} status=submitting so it can resume on next boot`,
-        );
+      // drops the email out of the boot resume scan. An integrity failure
+      // (retryable: false) comes from persisted data rather than the shortened
+      // budget, so it still fails the email for an operator to check.
+      const stoppedByShutdown = (e && e.code === SHUTDOWN_CODE) || this.#shuttingDown;
+      if (stoppedByShutdown && e?.retryable !== false) {
+        await this.#releaseInterruptedEmail(email.id);
         return 'interrupted';
       }
       const ghostError = new errors.EmailError({

@@ -33,6 +33,8 @@ export type {
   AppManifest,
   AppSurface,
   AppSurfaceType,
+  FieldChange,
+  ManifestChange,
   ManifestError,
   ParseManifestOptions,
   ParseManifestResult,

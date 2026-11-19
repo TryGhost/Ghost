@@ -109,7 +109,8 @@ _Avoid_: allowed origin, app origin
 
 **Change**:
 One field that differs between two versions of an app's manifest, the manifest
-URL included.
+URL included. Ghost compares and serves a change in the one shape App Contracts
+defines, which names its kind.
 _Avoid_: diff, update
 
 **Silent change**:

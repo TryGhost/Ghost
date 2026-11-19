@@ -12,6 +12,9 @@ export interface OutboxRelayTimings {
 export interface OutboxRelayOptions extends OutboxRelayTimings {
   outbox: Pick<JobsOutbox, 'processNext'>;
   backend: Pick<JobsBackendBase, 'enqueue'>;
+  // Whether this process can run a job type. Any process can claim any row, so
+  // one from a newer version is left for a process that has its handler.
+  handles?: (type: string) => boolean;
   logging: JobsLogger;
   sentry?: JobsErrorReporter;
 }
@@ -19,6 +22,7 @@ export interface OutboxRelayOptions extends OutboxRelayTimings {
 export class OutboxRelay {
   readonly #outbox: Pick<JobsOutbox, 'processNext'>;
   readonly #backend: Pick<JobsBackendBase, 'enqueue'>;
+  readonly #handles: (type: string) => boolean;
   readonly #logging: JobsLogger;
   readonly #sentry?: JobsErrorReporter;
   readonly #pollIntervalMs: number;
@@ -33,6 +37,7 @@ export class OutboxRelay {
   constructor({
     outbox,
     backend,
+    handles = () => true,
     logging,
     sentry,
     pollIntervalMs,
@@ -41,6 +46,7 @@ export class OutboxRelay {
   }: OutboxRelayOptions) {
     this.#outbox = outbox;
     this.#backend = backend;
+    this.#handles = handles;
     this.#logging = logging;
     this.#sentry = sentry;
     this.#pollIntervalMs = pollIntervalMs;
@@ -72,17 +78,30 @@ export class OutboxRelay {
   }
 
   async #run(): Promise<void> {
+    // Nothing wakes the relay for a retry, so it sleeps only until the
+    // latest one is due, even across drains started by a wake-up; one drain
+    // then retries every row that failed before it
+    let retryDueAt: number | undefined;
     while (this.#running) {
       this.#woken = false;
-      await this.#drain();
+      if (retryDueAt !== undefined && Date.now() >= retryDueAt) {
+        retryDueAt = undefined;
+      }
+      if (await this.#drain()) {
+        retryDueAt = Date.now() + this.#retryDelayMs;
+      }
       if (!this.#running) {
         break;
       }
-      await this.#sleep(this.#pollIntervalMs);
+      const untilRetry =
+        retryDueAt === undefined ? this.#pollIntervalMs : Math.max(0, retryDueAt - Date.now());
+      await this.#sleep(Math.min(this.#pollIntervalMs, untilRetry));
     }
   }
 
-  async #drain(): Promise<void> {
+  // Resolves true when a claim or a hand-off failed and needs a retry
+  async #drain(): Promise<boolean> {
+    let failed = false;
     while (this.#running) {
       let outcome: ProcessOutcome;
       try {
@@ -95,11 +114,11 @@ export class OutboxRelay {
           error,
         );
         this.#sentry?.captureException(error);
-        return;
+        return true;
       }
 
       if (outcome.status === 'idle') {
-        return;
+        return failed;
       }
       if (outcome.status === 'delivered') {
         // created_at is stored floored to the second, so this reads up to 1s high
@@ -117,6 +136,7 @@ export class OutboxRelay {
         );
       }
       if (outcome.status === 'failed') {
+        failed = true;
         this.#logging.error(
           `[Jobs Outbox] submission failed for dispatch ${outcome.id}; retrying later`,
           outcome.error,
@@ -124,9 +144,18 @@ export class OutboxRelay {
         this.#sentry?.captureException(outcome.error, { tags: { dispatch_id: outcome.id } });
       }
     }
+    return failed;
   }
 
   #submit(id: string, envelope: DispatchEnvelope): Promise<void> {
+    const type = envelope.payload.job.type;
+    if (!this.#handles(type)) {
+      return Promise.reject(
+        new errors.IncorrectUsageError({
+          message: `No handler registered in this process for job type "${type}"; leaving it in the outbox.`,
+        }),
+      );
+    }
     const submission = Promise.resolve(this.#backend.enqueue(id, envelope));
     let timer: ReturnType<typeof setTimeout> | undefined;
     const timeout = new Promise<never>((_resolve, reject) => {
