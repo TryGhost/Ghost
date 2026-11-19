@@ -11,7 +11,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Brand logos exported by Shade, sized with standard SVG dimensions. Logos are hidden from screen readers by default, so a logo beside a label adds nothing to its name. When a logo stands on its own, name it with `title`, `aria-label` or `aria-labelledby`.',
+          "Brand logos exported by Shade, sized with standard SVG dimensions. Logos are hidden from screen readers by default, so a logo beside a label adds nothing to its name. When a logo stands on its own, name it with `title`, `aria-label` or `aria-labelledby`. `title` sets `aria-label`; it doesn't show a tooltip.",
       },
     },
   },

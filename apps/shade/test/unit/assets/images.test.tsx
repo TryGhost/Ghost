@@ -36,6 +36,7 @@ describe('Logos', () => {
     const svg = screen.getByRole('img', { name: 'Brand' });
 
     expect(svg.hasAttribute('aria-hidden')).toBe(false);
+    expect(svg.hasAttribute('title')).toBe(false);
   });
 
   it.each(Object.entries(logos))('%s is named by aria-label', (_name, Logo) => {
@@ -60,5 +61,30 @@ describe('Logos', () => {
     const { container } = render(<GoogleLogo aria-hidden={false} />);
 
     expect(container.querySelector('svg')?.getAttribute('aria-hidden')).toBe('false');
+  });
+
+  it('keeps the defaults when a prop is passed through as undefined', () => {
+    const { container } = render(<GoogleLogo aria-hidden={undefined} />);
+    render(<FacebookLogo role={undefined} title="Facebook" />);
+
+    expect(container.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+    expect(screen.getByRole('img', { name: 'Facebook' })).toBeTruthy();
+  });
+
+  it('treats a blank label as no label', () => {
+    const { container } = render(
+      <>
+        <GoogleLogo aria-label="" title="Google" />
+        <FacebookLogo title=" " />
+        <XLogo aria-labelledby="" />
+      </>,
+    );
+    const [google, facebook, x] = Array.from(container.querySelectorAll('svg'));
+
+    expect(screen.getByRole('img', { name: 'Google' })).toBe(google);
+    expect(facebook.getAttribute('aria-hidden')).toBe('true');
+    expect(facebook.hasAttribute('role')).toBe(false);
+    expect(x.getAttribute('aria-hidden')).toBe('true');
+    expect(x.hasAttribute('role')).toBe(false);
   });
 });

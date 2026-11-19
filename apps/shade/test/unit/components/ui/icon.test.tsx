@@ -54,6 +54,18 @@ describe('Icon', () => {
     const svg = screen.getByRole('img', { name: 'Error' });
 
     expect(svg.hasAttribute('aria-hidden')).toBe(false);
+    expect(svg.hasAttribute('title')).toBe(false);
+  });
+
+  it('is named by aria-labelledby', () => {
+    render(
+      <>
+        <span id="icon-name">Success</span>
+        <Icon.SuccessFill aria-labelledby="icon-name" />
+      </>,
+    );
+
+    expect(screen.getByRole('img', { name: 'Success' })).toBeTruthy();
   });
 
   it('is named by aria-label and keeps its size classes', () => {
@@ -65,8 +77,24 @@ describe('Icon', () => {
   });
 
   it('lets the caller override the defaults', () => {
-    const { container } = render(<Icon.Typography aria-hidden={false} />);
+    const { container } = render(
+      <>
+        <Icon.Typography aria-hidden={false} />
+        <Icon.InfoFill role="graphics-symbol" title="Information" />
+      </>,
+    );
+    const [typography, info] = Array.from(container.querySelectorAll('svg'));
 
-    expect(container.querySelector('svg')?.getAttribute('aria-hidden')).toBe('false');
+    expect(typography.getAttribute('aria-hidden')).toBe('false');
+    expect(info.getAttribute('role')).toBe('graphics-symbol');
+    expect(info.getAttribute('aria-label')).toBe('Information');
+  });
+
+  it('keeps the defaults when a prop is passed through as undefined', () => {
+    const { container } = render(<Icon.Typography aria-hidden={undefined} />);
+    render(<Icon.ErrorFill role={undefined} title="Error" />);
+
+    expect(container.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+    expect(screen.getByRole('img', { name: 'Error' })).toBeTruthy();
   });
 });

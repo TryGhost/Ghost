@@ -2,31 +2,31 @@ import { createElement, type FunctionComponent, type SVGProps } from 'react';
 
 export interface SvgGraphicProps extends SVGProps<SVGSVGElement> {
   /**
-   * Names the graphic for screen readers. Without a `title`, `aria-label` or
+   * Names the graphic for screen readers. It sets `aria-label`, and doesn't
+   * render a tooltip or an SVG `<title>`. Without a `title`, `aria-label` or
    * `aria-labelledby`, the graphic is decorative and hidden from them.
    */
-  title?: string;
+  title?: string | undefined;
 }
+
+const nonBlank = (value: string | undefined) => (value?.trim() ? value : undefined);
 
 /**
  * Applies Shade's rule for SVG logos and icons: decorative by default, and an
  * image with a name when the caller gives one. Callers can still override
- * `aria-hidden` and `role`.
+ * `aria-hidden` and `role`; a prop passed as `undefined` keeps the default.
  *
  * This lives in code rather than SVGR options because Admin and other apps
  * compile Shade's source with their own SVGR config.
  */
-export function svgGraphicProps<P extends SvgGraphicProps>({
-  title,
-  ...props
-}: P): SVGProps<SVGSVGElement> {
-  const label = props['aria-label'] ?? title;
+export function svgGraphicProps({ title, ...props }: SvgGraphicProps): SVGProps<SVGSVGElement> {
+  const label = nonBlank(props['aria-label']) ?? nonBlank(title);
 
-  if (label || props['aria-labelledby']) {
-    return { role: 'img', ...props, 'aria-label': label };
+  if (label || nonBlank(props['aria-labelledby'])) {
+    return { ...props, role: props.role ?? 'img', 'aria-label': label };
   }
 
-  return { 'aria-hidden': true, ...props };
+  return { ...props, 'aria-hidden': props['aria-hidden'] ?? true };
 }
 
 export function svgGraphic(
