@@ -172,6 +172,17 @@ const toColor = ({ hue, saturation, lightness, alpha }: HslaColor) =>
 
 // A control can change a channel without changing the colour, e.g. saturation on black. That
 // still counts: a caller that showed transparent as #00000000 needs to hear about #000000.
+// How a value reads when compared with a reported hex. A string is compared as written, so
+// hsl() black with a different hue doesn't count as #000000, and a colour with an alpha
+// never matches a report, which has none.
+const echoKey = (value: Parameters<typeof Color>[0]) => {
+  if (typeof value === 'string') {
+    return value.toUpperCase();
+  }
+  const color = Color(value);
+  return color.alpha() === 1 ? color.hex() : null;
+};
+
 const isSameHsla = (a: HslaColor, b: HslaColor) =>
   a.hue === b.hue &&
   a.saturation === b.saturation &&
@@ -217,9 +228,8 @@ export const ColorPickerRoot = ({
   const [mode, setMode] = useState('hex');
   // Several changes can land before a re-render, so each one builds on the latest colour.
   const colorRef = useRef(color);
-  // Hexes reported through onChange since the picker last took a colour from value, oldest
-  // first, to recognise the parent echoing one back.
-  const reportedRef = useRef<string[]>([]);
+  // The hex last reported through onChange, to recognise the parent echoing it back.
+  const lastReportedRef = useRef<string | null>(null);
   // An eye dropper pick resolves later, so it reports to the latest onChange.
   const onChangeRef = useRef(onChange);
 
@@ -233,17 +243,13 @@ export const ColorPickerRoot = ({
     if (!value) {
       return;
     }
-    // The parent echoing a report, possibly an earlier one that arrived late: keep the picker's
-    // own channels, which a hex can't always carry (e.g. the hue of a grey). A string is
-    // matched as written, so another way of writing the colour, such as hsl() black with a
-    // different hue, is adopted.
-    const key = typeof value === 'string' ? value.toUpperCase() : Color(value).hex();
-    const echoed = reportedRef.current.lastIndexOf(key);
-    if (echoed !== -1) {
-      reportedRef.current = reportedRef.current.slice(echoed);
+    // The parent echoing the last report: keep the picker's own channels, which a hex can't
+    // always carry (e.g. the hue of a grey). Anything else is adopted in full, including an
+    // earlier colour, another way of writing this one, or the same hex with an alpha.
+    if (lastReportedRef.current !== null && echoKey(value) === lastReportedRef.current) {
       return;
     }
-    reportedRef.current = [];
+    lastReportedRef.current = null;
     const next = toHsla(value);
     if (!isSameHsla(next, colorRef.current)) {
       colorRef.current = next;
@@ -263,9 +269,7 @@ export const ColorPickerRoot = ({
     const report = onChangeRef.current;
     if (report) {
       const hex = toColor(next).hex();
-      if (reportedRef.current[reportedRef.current.length - 1] !== hex) {
-        reportedRef.current.push(hex);
-      }
+      lastReportedRef.current = hex;
       report(hex);
     }
   }, []);
@@ -430,22 +434,26 @@ export const ColorPickerEyeDropper = ({ className, ...props }: ColorPickerEyeDro
     const controller = new AbortController();
     pendingPick.current = controller;
 
+    let picked: number[];
     try {
       // @ts-expect-error - EyeDropper API is experimental
       const eyeDropper = new EyeDropper();
       const result = await eyeDropper.open({ signal: controller.signal });
-      if (controller.signal.aborted) {
-        return;
-      }
-      const [hue, saturation, lightness] = Color(result.sRGBHex).hsl().array();
-
-      setColor({ hue, saturation, lightness, alpha: 100 });
+      picked = Color(result.sRGBHex).hsl().array();
     } catch (error) {
       if (!controller.signal.aborted) {
         // eslint-disable-next-line no-console
         console.error('EyeDropper failed:', error);
       }
+      return;
     }
+    if (controller.signal.aborted) {
+      return;
+    }
+
+    // Outside the try, so an error thrown by onChange reaches the caller.
+    const [hue, saturation, lightness] = picked;
+    setColor({ hue, saturation, lightness, alpha: 100 });
   };
 
   return (
@@ -492,28 +500,33 @@ export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProp
   const color = Color.hsl(hue, saturation, lightness);
   const [inputValue, setInputValue] = useState<string | null>(null);
 
+  // Only parsing sits inside a try, so an error thrown by onChange reaches the caller.
   const handleInputChange = (value: string, index?: number) => {
-    try {
-      if (mode === 'hex') {
-        setColor(toHsla(value));
-      } else if ((mode === 'rgb' || mode === 'hsl') && index !== undefined) {
-        // Built from the latest colour, which may be newer than this render's.
-        setColor((current) => {
-          const values = Color.hsl(current.hue, current.saturation, current.lightness)
-            [mode]()
-            .array()
-            .map((v) => Math.round(v));
-          values[index] = parseInt(value, 10) || 0;
-          const newColor = toHsla(Color[mode](values[0], values[1], values[2]));
-          return {
-            hue: newColor.hue,
-            saturation: newColor.saturation,
-            lightness: newColor.lightness,
-          };
-        });
+    if (mode === 'hex') {
+      let next: HslaColor;
+      try {
+        next = toHsla(value);
+      } catch {
+        // Invalid color, ignore
+        return;
       }
-    } catch {
-      // Invalid color, ignore
+      setColor(next);
+    } else if ((mode === 'rgb' || mode === 'hsl') && index !== undefined) {
+      // Built from the latest colour, which may be newer than this render's. The color
+      // library clamps out-of-range channels, so this can't throw.
+      setColor((current) => {
+        const values = Color.hsl(current.hue, current.saturation, current.lightness)
+          [mode]()
+          .array()
+          .map((v) => Math.round(v));
+        values[index] = parseInt(value, 10) || 0;
+        const newColor = toHsla(Color[mode](values[0], values[1], values[2]));
+        return {
+          hue: newColor.hue,
+          saturation: newColor.saturation,
+          lightness: newColor.lightness,
+        };
+      });
     }
   };
 

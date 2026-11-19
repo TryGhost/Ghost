@@ -335,7 +335,7 @@ describe('ColorPicker Component', () => {
       expect(handleChange.mock.calls).toEqual([['#8F3030'], ['#8F4030']]);
     });
 
-    it('keeps the latest colour when the parent echoes an earlier one late', () => {
+    it('adopts a value reset to a colour picked earlier', () => {
       const handleChange = vi.fn();
       const { rerender } = render(<Parent value="#ff0000" onChange={handleChange} />);
       fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
@@ -344,7 +344,54 @@ describe('ColorPicker Component', () => {
 
       rerender(<Parent value="#FF0400" onChange={handleChange} />);
 
-      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('2');
+      expect(Number(screen.getByRole('slider').getAttribute('aria-valuenow'))).toBeCloseTo(1, 0);
+      expect(handleChange).toHaveBeenCalledTimes(2);
+    });
+
+    it('adopts a value with the reported hex plus an alpha', () => {
+      const handleChange = vi.fn();
+      const { rerender } = render(
+        <ColorPickerRoot value="#00ff00" onChange={handleChange}>
+          <ColorPickerAlpha />
+          <ColorPickerFormat />
+        </ColorPickerRoot>,
+      );
+      fireEvent.change(screen.getByLabelText('Hex color'), { target: { value: '#FF0000' } });
+      expect(handleChange).toHaveBeenCalledWith('#FF0000');
+
+      rerender(
+        <ColorPickerRoot value={[255, 0, 0, 0.5]} onChange={handleChange}>
+          <ColorPickerAlpha />
+          <ColorPickerFormat />
+        </ColorPickerRoot>,
+      );
+
+      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('50');
+    });
+
+    it('lets an error thrown by onChange reach the caller', () => {
+      render(
+        <ColorPickerRoot
+          defaultValue="#ff0000"
+          onChange={() => {
+            throw new Error('onChange failed');
+          }}
+        >
+          <ColorPickerFormat />
+        </ColorPickerRoot>,
+      );
+      // jsdom reports an error thrown in an event listener on window, not to the dispatcher.
+      const errors: unknown[] = [];
+      const recordError = (event: ErrorEvent) => {
+        errors.push(event.error);
+        event.preventDefault();
+      };
+      window.addEventListener('error', recordError);
+
+      fireEvent.change(screen.getByLabelText('Hex color'), { target: { value: '#00ff00' } });
+      window.removeEventListener('error', recordError);
+
+      expect(errors.map((error) => (error as Error).message)).toContain('onChange failed');
     });
 
     it('recognises an echo passed as a new array on every render', () => {
