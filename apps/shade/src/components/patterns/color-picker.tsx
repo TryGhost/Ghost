@@ -177,8 +177,15 @@ const echoKey = (value: Parameters<typeof Color>[0]) => {
   if (typeof value === 'string') {
     return value.toUpperCase();
   }
+  const isRgb =
+    typeof value === 'number' ||
+    Array.isArray(value) ||
+    (typeof value === 'object' && value !== null && 'r' in value);
+  if (!isRgb) {
+    return null;
+  }
   const color = Color(value);
-  return color.model === 'rgb' && color.alpha() === 1 ? color.hex() : null;
+  return color.alpha() === 1 ? color.hex() : null;
 };
 
 // A control can change a channel without changing the colour, e.g. saturation on black. That
