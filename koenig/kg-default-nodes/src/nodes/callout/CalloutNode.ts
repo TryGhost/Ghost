@@ -8,16 +8,17 @@ const calloutProperties = {
     backgroundColor: {default: 'blue'}
 } satisfies DecoratorNodePropertyMap;
 
-export type CalloutData = DecoratorNodeData<typeof calloutProperties>;
+export type CalloutData = DecoratorNodeData<typeof calloutProperties, true>;
 
 export class CalloutNode extends generateDecoratorNode({
     nodeType: 'callout',
+    hasVisibility: true,
     properties: calloutProperties,
     defaultRenderFn: renderCalloutNode
 }) {
     /* override */
-    constructor({calloutText, calloutEmoji, backgroundColor}: CalloutData = {}, key?: string) {
-        super({}, key);
+    constructor({calloutText, calloutEmoji, backgroundColor, visibility}: CalloutData = {}, key?: string) {
+        super({visibility}, key);
         this.__calloutText = calloutText || '';
         this.__calloutEmoji = calloutEmoji ?? '💡';
         this.__backgroundColor = backgroundColor || 'blue';

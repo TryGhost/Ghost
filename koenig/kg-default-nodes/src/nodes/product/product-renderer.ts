@@ -1,3 +1,4 @@
+import {renderWithVisibility, type Visibility} from '../../utils/visibility.js';
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMFeatureOptions, ExportDOMOptions} from '../../export-dom.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
@@ -8,6 +9,7 @@ import {escapeAttribute} from 'entities';
 import {escapeHtml} from '../../utils/escape-html.js';
 
 interface ProductNodeData {
+    visibility?: Visibility;
     productStarRating: number;
     isEmpty: () => boolean;
     getDataset: () => ProductTemplateBaseData;
@@ -86,7 +88,7 @@ export function renderProductNode(node: ProductNodeData, options: ProductRenderO
     const element = document.createElement('div');
     element.innerHTML = htmlString.trim();
 
-    return {element: getFirstHtmlElement(element, 'renderProductNode'), type: 'outer' as const};
+    return renderWithVisibility({element: getFirstHtmlElement(element, 'renderProductNode'), type: 'outer' as const}, node.visibility, options);
 }
 
 export function cardTemplate({data}: {data: ProductTemplateData; feature?: ExportDOMFeatureOptions}) {

@@ -7,10 +7,11 @@ const toggleProperties = {
     content: {default: '', urlType: 'html', wordCount: true}
 } satisfies DecoratorNodePropertyMap;
 
-export type ToggleData = DecoratorNodeData<typeof toggleProperties>;
+export type ToggleData = DecoratorNodeData<typeof toggleProperties, true>;
 
 export class ToggleNode extends generateDecoratorNode({
     nodeType: 'toggle',
+    hasVisibility: true,
     properties: toggleProperties,
     defaultRenderFn: renderToggleNode
 }) {

@@ -27,20 +27,33 @@ const headerProperties = {
     swapped: {default: false}
 } satisfies DecoratorNodePropertyMap;
 
-export type HeaderData = DecoratorNodeData<typeof headerProperties>;
+export type HeaderData = DecoratorNodeData<typeof headerProperties, true>;
 
 type HeaderRenderNode = Parameters<typeof renderHeaderNodeV1>[0] & Parameters<typeof renderHeaderNodeV2>[0];
 type HeaderRenderOutput = ReturnType<typeof renderHeaderNodeV1> | ReturnType<typeof renderHeaderNodeV2>;
 
 // This is our first node that has a custom version property
-export class HeaderNode extends generateDecoratorNode<typeof headerProperties, false, HeaderRenderOutput, HeaderRenderNode>({
+export class HeaderNode extends generateDecoratorNode<typeof headerProperties, true, HeaderRenderOutput, HeaderRenderNode>({
     nodeType: 'header',
+    hasVisibility: true,
     properties: headerProperties,
     defaultRenderFn: {
         1: renderHeaderNodeV1,
         2: renderHeaderNodeV2
     }
 }) {
+    hasVisibility() {
+        return this.version === 2;
+    }
+
+    exportJSON() {
+        const json = super.exportJSON();
+        if (!this.hasVisibility()) {
+            delete json.visibility;
+        }
+        return json;
+    }
+
     static importDOM() {
         return parseHeaderNode(this);
     }
