@@ -4,6 +4,7 @@ import path from 'node:path';
 import yaml from 'js-yaml';
 import type { Slot } from '@tryghost/foundry/application';
 import application from '../../../bootstrap/app';
+import { backgroundSteps } from '../../../bootstrap/transition/background-steps';
 import { legacySteps } from '../../../bootstrap/transition/legacy-steps';
 
 const ghost = path.resolve(__dirname, '../../..');
@@ -98,7 +99,23 @@ describe("Ghost's start sequence", function () {
         'jobs.after': ['after jobs'],
         'ready.before': [],
         'ready.after': [],
-        background: ['background services'],
+        background: [
+          'inactive themes',
+          'interrupted email sends',
+          'pending gift deliveries',
+          'gift cleanup job',
+          'gift reminder job',
+          'member token cleanup job',
+          'expired comp cleanup job',
+          'signing key check job',
+          'auth cleanup job',
+          'email analytics jobs',
+          'activitypub',
+          'tinybird sync job',
+          'update check jobs',
+          'remote flags',
+          'milestones',
+        ],
       },
     );
     assert.equal(database?.run, legacySteps.database);
@@ -135,6 +152,52 @@ describe("Ghost's start sequence", function () {
       ).matchAll(/legacySteps\.(\w+)/g),
     ];
     assert.deepEqual(sorted(listed.map((match) => match[1]!)), sorted(Object.keys(legacySteps)));
+  });
+
+  describe('the background list', function () {
+    const list = application.steps.background ?? [];
+
+    it('lists every background step exactly once', function () {
+      const listed = [...read('bootstrap/background.ts').matchAll(/backgroundSteps\.(\w+)/g)];
+      assert.deepEqual(
+        sorted(listed.map((match) => match[1]!)),
+        sorted(Object.keys(backgroundSteps)),
+      );
+    });
+
+    // Tests start Ghost many times in one process, so only loading the
+    // inactive themes runs under them.
+    describe('in each environment', function () {
+      const environment = process.env.NODE_ENV;
+      afterEach(function () {
+        process.env.NODE_ENV = environment;
+      });
+      const runs = (env: string) => {
+        process.env.NODE_ENV = env;
+        const run = { state: {} } as never;
+        return list.filter((slot) => slot.when?.(run) !== false).map((slot) => slot.name);
+      };
+
+      for (const env of ['testing', 'testing-mysql', 'test']) {
+        it(`runs only the inactive themes in ${env}`, function () {
+          assert.deepEqual(runs(env), ['inactive themes']);
+        });
+      }
+      for (const env of ['development', 'production']) {
+        it(`runs every entry in ${env}`, function () {
+          assert.deepEqual(runs(env), names(list));
+        });
+      }
+
+      it('decides once for each start, when the second entry is reached', function () {
+        const run = { state: {} } as never;
+        process.env.NODE_ENV = 'production';
+        assert.equal(list[1]?.when?.(run), true);
+        process.env.NODE_ENV = 'testing';
+        assert.equal(list[2]?.when?.(run), true);
+        assert.equal(list[2]?.when?.({ state: {} } as never), false);
+      });
+    });
   });
 
   describe('the shared list', function () {

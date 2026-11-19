@@ -3,6 +3,7 @@ import { createDatabase } from '@tryghost/foundry/database';
 import { createLogger } from '@tryghost/foundry/logging';
 import { loadNconf } from '../core/shared/config/loader';
 import type { GhostConfig } from '../core/shared/config/validated';
+import { background } from './background';
 import { loggingOptions } from './logging-options';
 import { services } from './services';
 import { shared } from './shared';
@@ -79,7 +80,7 @@ const application: Application<
   //
   // Apart from the roots in ./shared.ts and ./services.ts, every entry is a
   // legacy step today: a function of core/boot.js, reached through
-  // ./transition/legacy-steps.ts.
+  // ./transition/legacy-steps.ts, or of ./transition/background-steps.ts.
   steps: {
     foundation: {
       after: [
@@ -114,7 +115,8 @@ const application: Application<
     ready: {
       run: legacySteps.ready,
     },
-    background: [{ name: 'background services', run: legacySteps.backgroundServices }],
+    // One ordered list: what starts once Ghost is serving. See ./background.ts.
+    background,
   },
 });
 

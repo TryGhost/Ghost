@@ -1,7 +1,6 @@
-import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
-import { loadBootFunction } from './harness';
+import { loadBackground } from './harness';
 
 function createBackgroundHarness(environment = 'production') {
   const emailAnalyticsJobs = { scheduleRecurringJobs: sinon.stub().resolves() };
@@ -13,13 +12,12 @@ function createBackgroundHarness(environment = 'production') {
   const updateCheck = { scheduleJobs: sinon.stub().resolves() };
   const tinybirdSync = { scheduleJob: sinon.stub().resolves() };
   const milestones = { initAndRun: sinon.stub() };
+  const remoteFlags = { init: sinon.stub() };
   const signingKeys = { extras: { scheduleCheckJob: sinon.stub().resolves() } };
   const authCleanup = { scheduleClearExpiredJob: sinon.stub().resolves() };
   const jobsInstance = {};
-  const initBackgroundServices = loadBootFunction(
-    'initBackgroundServices',
+  const background = loadBackground(
     {
-      '@tryghost/logging': logging,
       './server/services/email-analytics/jobs': emailAnalyticsJobs,
       './server/services/themes': themes,
       './server/services/email-service': { service: { resumeInterruptedSends: recovery } },
@@ -38,13 +36,14 @@ function createBackgroundHarness(environment = 'production') {
       './server/services/activitypub': { init: activity },
       './server/services/tinybird-sync': tinybirdSync,
       './server/services/update-check': updateCheck,
-      './server/services/remote-flags': { init() {} },
+      './server/services/remote-flags': remoteFlags,
       './server/services/milestones': milestones,
     },
-    { globals: { process: { env: { NODE_ENV: environment } } } },
+    { environment, logging },
   );
   return {
-    init: (): Promise<void> => initBackgroundServices({ config: { get: () => true } }),
+    init: (): Promise<void> => background.start(),
+    remoteFlags,
     themes,
     recovery,
     giftRecovery,
@@ -195,4 +194,30 @@ it('logs a failed auth cleanup schedule and continues background startup', async
 
   sinon.assert.calledOnceWithExactly(boot.logging.error, failure);
   sinon.assert.calledOnce(boot.activity);
+});
+
+// On main these three were not isolated: a failure in one stopped what followed.
+it('logs a failed ActivityPub start and still starts what follows it', async function () {
+  const boot = createBackgroundHarness();
+  const failure = new Error('activitypub unavailable');
+  boot.activity.rejects(failure);
+
+  await boot.init();
+
+  sinon.assert.calledOnceWithExactly(boot.logging.error, failure);
+  sinon.assert.calledOnce(boot.tinybirdSync.scheduleJob);
+  sinon.assert.calledOnce(boot.updateCheck.scheduleJobs);
+  sinon.assert.calledOnce(boot.remoteFlags.init);
+  sinon.assert.calledOnce(boot.milestones.initAndRun);
+});
+
+it('logs a failed remote flags start and still starts milestones', async function () {
+  const boot = createBackgroundHarness();
+  const failure = new Error('remote flags misconfigured');
+  boot.remoteFlags.init.throws(failure);
+
+  await boot.init();
+
+  sinon.assert.calledOnceWithExactly(boot.logging.error, failure);
+  sinon.assert.calledOnce(boot.milestones.initAndRun);
 });

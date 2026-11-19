@@ -69,7 +69,7 @@ describe('Background startup', function () {
 
     // Enter the real background path without running database setup or required
     // foreground services under production settings. These two calls surround
-    // the synchronous test-environment guard in initBackgroundServices.
+    // the test-environment guard of the background list (bootstrap/background.ts).
     const loadInactiveThemes = themes.loadInactiveThemes;
     sandbox.stub(themes, 'loadInactiveThemes').callsFake(() => {
       themeLoad = Promise.resolve(loadInactiveThemes());

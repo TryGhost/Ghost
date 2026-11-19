@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
+import type { GhostLogger } from '@tryghost/logging';
 import { createApplication, type Entry } from '@tryghost/foundry/application';
 
 const GHOST = resolve(__dirname, '../../..');
@@ -51,7 +52,11 @@ export function loadBootFunction(
 }
 
 // Evaluates a TypeScript file of ghost/bootstrap with `require` answered by the test.
-function loadBootstrapFile(file: string, require: (dependency: string) => unknown) {
+function loadBootstrapFile(
+  file: string,
+  require: (dependency: string) => unknown,
+  globals: Record<string, unknown> = {},
+) {
   const { outputText } = ts.transpileModule(
     readFileSync(resolve(GHOST, 'bootstrap', file), 'utf8'),
     {
@@ -59,7 +64,7 @@ function loadBootstrapFile(file: string, require: (dependency: string) => unknow
     },
   );
   const module = { exports: {} as Record<string, any> };
-  runInNewContext(outputText, { require, module, exports: module.exports });
+  runInNewContext(outputText, { ...globals, require, module, exports: module.exports });
   return module.exports;
 }
 
@@ -139,5 +144,44 @@ export function loadBootSequence(
       await application.start({ frontend }, { ...args });
     },
     stop: () => application.stop(),
+  };
+}
+
+/**
+ * Runs the real background list (bootstrap/background.ts) through the real start sequence, with
+ * every module its steps require answered from `modules`. Keys are written from core
+ * (`./server/services/themes`); the steps' `../../core/` prefix is mapped onto them.
+ */
+export function loadBackground(
+  modules: Record<string, unknown>,
+  { environment, logging }: { environment: string; logging: Pick<GhostLogger, 'error'> },
+) {
+  const require = stubbedRequire(modules, undefined);
+  const { backgroundSteps } = loadBootstrapFile('transition/background-steps.ts', (dependency) =>
+    require(dependency.replace(/^\.\.\/\.\.\/core\//, './')),
+  );
+  const { background } = loadBootstrapFile(
+    'background.ts',
+    (dependency) => {
+      assert.equal(dependency, './transition/background-steps');
+      return { backgroundSteps };
+    },
+    { process: { env: { NODE_ENV: environment } } },
+  );
+  const config = { get: () => true };
+  const application = createApplication<any>({
+    name: 'Ghost under test',
+    config: () => config,
+    logging: () => logging as never,
+    database: () => undefined,
+    events: () => ({ subscribe() {}, dispatch() {} }),
+    steps: { background },
+  });
+  return {
+    // Resolves when every entry has settled.
+    async start(): Promise<void> {
+      const run = await application.start();
+      await run.background;
+    },
   };
 }

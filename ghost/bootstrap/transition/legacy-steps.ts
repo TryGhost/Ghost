@@ -23,6 +23,8 @@ export interface BootState {
   ghostApp?: unknown;
   jobsService?: unknown;
   schedulerAdapter?: unknown;
+  /** Set by the background list when it decides whether this start is under test. */
+  backgroundOutsideTests?: boolean;
 }
 
 export type BootRun = Run<GhostConfig, BootOptions, BootState>;
@@ -53,8 +55,7 @@ type LegacyBoot = Record<
   | 'initLegacyServices'
   | 'initJobs'
   | 'initAfterJobs'
-  | 'initReady'
-  | 'initBackgroundServices',
+  | 'initReady',
   (options?: any) => any
 >;
 
@@ -175,7 +176,4 @@ export const legacySteps = {
       ghostApp: state.ghostApp,
       databaseWarning: state.databaseWarning,
     }),
-
-  backgroundServices: ({ foundation }: BootRun) =>
-    boot().initBackgroundServices({ config: foundation.config }),
 };

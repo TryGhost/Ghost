@@ -61,6 +61,8 @@ for the pattern to copy:
   themselves are still functions of [`core/boot.js`](../core/boot.js). A
   [test](../test/unit/bootstrap/steps.test.ts) checks that each step `boot.js`
   exports is listed exactly once.
+- [`background-steps.ts`](transition/background-steps.ts) holds the steps of
+  the background list. Each belongs to the service it calls.
 
 ## Adapters
 
@@ -88,5 +90,15 @@ reads limits; signing keys and i18n read settings). The framework hands each
 module the foundation and the instances of the earlier entries it names in
 `needs`. Entries named `legacy: …` are shared modules not yet shaped as one.
 The rules for a shared module are in [`ghost/shared`](../shared/README.md).
+
+## The background list
+
+[`background.ts`](background.ts) is what the background step runs once Ghost
+is serving: schedules, recovery of interrupted work and services nothing waits
+for. `start()` does not wait for it. Each entry is one function of
+[`transition/background-steps.ts`](transition/background-steps.ts). The
+framework runs them in order and logs a failure without stopping the rest, so
+no entry catches its own errors. Under a test environment only the first
+entry runs.
 
 Nothing in `transition/` is automatic: whatever needs it calls it by name.
