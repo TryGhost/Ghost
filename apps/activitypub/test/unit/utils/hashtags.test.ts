@@ -128,16 +128,16 @@ describe('hashtags', function () {
   });
 
   describe('handleHashtagLinkClick', function () {
-    function click(html: string, selector: string) {
+    function click(html: string, selector: string, init: MouseEventInit = {}) {
       const container = document.createElement('div');
       container.innerHTML = html;
       document.body.appendChild(container);
 
       const navigate = vi.fn();
-      const handler = (e: Event) => handleHashtagLinkClick(e, navigate);
+      const handler = (e: MouseEvent) => handleHashtagLinkClick(e, navigate);
       container.addEventListener('click', handler);
 
-      const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+      const event = new MouseEvent('click', { bubbles: true, cancelable: true, ...init });
       container.querySelector(selector)!.dispatchEvent(event);
 
       container.remove();
@@ -153,6 +153,19 @@ describe('hashtags', function () {
 
       expect(navigate).toHaveBeenCalledWith('/hashtags/foo');
       expect(event.defaultPrevented).toBe(true);
+    });
+
+    it('leaves clicks that open the link elsewhere to the browser', function () {
+      for (const init of [{ metaKey: true }, { ctrlKey: true }, { shiftKey: true }, { button: 1 }]) {
+        const { event, navigate } = click(
+          '<a href="https://example.com/tag/foo/" rel="tag">#<span>foo</span></a>',
+          'span',
+          init,
+        );
+
+        expect(navigate).not.toHaveBeenCalled();
+        expect(event.defaultPrevented).toBe(false);
+      }
     });
 
     it('leaves other links alone', function () {

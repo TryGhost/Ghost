@@ -204,7 +204,7 @@ const ProfileLinkedContent: React.FC<{
           handleProfileClick(handle, navigate);
         }
       } else {
-        handleHashtagLinkClick(e, navigate);
+        handleHashtagLinkClick(e as MouseEvent, navigate);
       }
     };
 

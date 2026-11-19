@@ -46,8 +46,14 @@ export function getHashtagFromLink(link: Element): string | null {
 }
 
 // Opens the hashtag feed in-app when a click landed on a hashtag link and
-// reports whether it did, so the caller can leave other clicks alone
-export function handleHashtagLinkClick(e: Event, navigate: (to: string) => void): boolean {
+// reports whether it did, so the caller can leave other clicks alone. Clicks
+// with a modifier key, e.g. to open the link in a new tab, are left to the
+// browser
+export function handleHashtagLinkClick(e: MouseEvent, navigate: (to: string) => void): boolean {
+  if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+    return false;
+  }
+
   const link = (e.target as Element | null)?.closest('a');
   const hashtag = link ? getHashtagFromLink(link) : null;
 
