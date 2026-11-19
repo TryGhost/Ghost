@@ -71,7 +71,6 @@
     {
       "files": [
         "ghost/core/server/**/*.js",
-        "ghost/core/kernel/**/*.js",
         "ghost/core/shared/**/*.js",
         "ghost/core/frontend/**/*.js",
         "ghost/core/*.js",
@@ -79,6 +78,7 @@
         "ghost/scripts/**/*.js",
         "ghost/*.js",
         "ghost/core/**/*.ts",
+        "kernel/src/**/*.ts",
         "ghost/*.ts",
         "packages/adapters/cache-base/src/**/*.ts",
         "packages/adapters/cache-base/test/**/*.ts",
@@ -144,7 +144,7 @@
       ]
     },
     {
-      "files": ["ghost/core/**/*.{js,ts}"],
+      "files": ["ghost/core/**/*.{js,ts}", "kernel/src/**/*.ts"],
       "rules": {
         "local-filenames/match-regex": ["error", "^[a-z0-9.-]+$", false]
       },
@@ -234,7 +234,7 @@
         "ghost/service-root-shape": [
           "error",
           {
-            "helperImport": "../../../kernel/define-service"
+            "helperImport": "@tryghost/kernel/define-service"
           }
         ],
         "ghost/no-injected-service-libraries": "error"
@@ -254,7 +254,7 @@
       }
     },
     {
-      "files": ["ghost/core/**/*.{js,ts}", "ghost/test/**/*.{js,ts}"],
+      "files": ["ghost/core/**/*.{js,ts}", "ghost/test/**/*.{js,ts}", "kernel/src/**/*.ts"],
       "rules": {
         "ghost/prefer-canonical-types": "error"
       }

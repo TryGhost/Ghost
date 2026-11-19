@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { findPackageJSON } from 'node:module';
 import path from 'node:path';
 import type { ICruiseResult, IViolation } from 'dependency-cruiser';
@@ -105,7 +105,7 @@ export function compareKnownViolations(
 // repository nothing is committed and there is nothing to report. Any other
 // Git failure stops the check, so it cannot pass without having looked.
 export function committedBuildOutput(repository: string) {
-  const result = spawnSync('git', ['ls-files', '-z', '--', 'ghost/core'], {
+  const result = spawnSync('git', ['ls-files', '-z', '--', 'ghost/core', 'kernel'], {
     cwd: repository,
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024,
@@ -164,6 +164,14 @@ export function scannerTypeScript(transpilers: unknown) {
 export const missingTypeScript =
   'dependency-cruiser could not load the `typescript` package. Without it the scan skips TypeScript files or reads type-only imports as ordinary imports, and reports different violations. Run the scan through pnpm, for example `pnpm lint:boundaries`. If that fails too, run `pnpm install`.';
 
+// The full scan covers the kernel package, Core and the apps. The kernel is
+// skipped where it is absent, as in the fixture repositories of the tool tests.
+const scanRoots = (repository: string) => [
+  ...(existsSync(path.join(repository, 'kernel/src')) ? ['kernel/src'] : []),
+  'ghost/core',
+  'apps',
+];
+
 // Lint and contributor reports use this single scan and known-violations file.
 // Reports retain all findings; only lint uses the comparison to decide success.
 // Given files, only they and what they import are scanned, as the commit hook
@@ -184,7 +192,7 @@ export function readDependencyBoundaries(repository: string, files: string[] = [
     process.execPath,
     [
       cli,
-      ...(files.length ? files : ['ghost/core', 'apps']),
+      ...(files.length ? files : scanRoots(repository)),
       '--config',
       '.dependency-cruiser.cjs',
       '--output-type',

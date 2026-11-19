@@ -45,7 +45,7 @@ const serviceDependencyAllowlist = [
   '^(node:)?path$', // Path string parsing and joining.
   '^(node:)?vm$', // Bounded script execution for caller-owned regex matching with a timeout.
   '^(node:)?(assert/strict|stream|stream/promises|buffer|timers/promises)$', // Node's in-memory primitives: assertions, streams, buffers and timers; no I/O of their own.
-  '^ghost/core/kernel/clock\\.ts$', // Shared clock helpers and legacy date compatibility.
+  '^kernel/(?:src|build)/clock\\.[jt]s$|^@tryghost/kernel/clock$', // Shared clock helpers and legacy date compatibility.
   '^ghost/core/server/lib/db-types/date\\.ts$', // Database date codec.
   '^ghost/core/server/lib/db-types/boolean\\.ts$', // Database boolean codec.
   '^ghost/core/server/lib/db-types/json\\.ts$', // Database JSON codec.
@@ -451,14 +451,10 @@ module.exports = {
       severity: 'error',
       from: {
         path: '^ghost/core/',
-        pathNot: [
-          `^${servicesRoot}/[^/]+/index\\.ts$`,
-          '^ghost/core/kernel/',
-          ...serviceRootsElsewhere,
-        ],
+        pathNot: [`^${servicesRoot}/[^/]+/index\\.ts$`, ...serviceRootsElsewhere],
       },
       to: {
-        path: '^ghost/core/kernel/define-service\\.ts$',
+        path: '^kernel/(?:src|build)/define-service\\.[jt]s$|^@tryghost/kernel/define-service$',
         dependencyTypesNot: ['type-only', 'type-import'],
       },
     },
@@ -467,8 +463,8 @@ module.exports = {
       name: 'kernel-not-application',
       comment: 'Kernel code must not import application code, including shared.',
       severity: 'error',
-      from: { path: '^ghost/core/kernel/' },
-      to: { path: '^ghost/', pathNot: '^ghost/core/kernel/' },
+      from: { path: '^kernel/' },
+      to: { path: '^ghost/' },
     },
     // ============================================================
     // shared/ must not require server/* or frontend/*
@@ -729,6 +725,7 @@ module.exports = {
     doNotFollow: {
       path: [
         'node_modules',
+        '^kernel/build/',
         '^(?!ghost/core/server/services/)(apps|ghost|packages|contracts|koenig)/.*/(build|built|dist)/',
       ],
     },

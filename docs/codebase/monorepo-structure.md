@@ -41,18 +41,25 @@ through theme helpers such as `{{ghost_head}}` and `{{comments}}`.
 Admin is a single React application. See
 [`apps/admin/README.md`](../../apps/admin/README.md) for how it is organized.
 
+## Kernel
+
+[`kernel/`](../../kernel/README.md) is the `@tryghost/kernel` workspace package:
+application-independent framework primitives. Ghost imports it by name, for
+example `@tryghost/kernel/define-service`. It is compiled to `kernel/build/`,
+which must exist before Ghost is typechecked or run without a TypeScript
+loader; Nx builds it first.
+
 ## Ghost Core
 
 `ghost/` is the main `ghost` package. The most common paths are:
 
-| Path                                                      | Contains                                                        |
-| --------------------------------------------------------- | --------------------------------------------------------------- |
-| [`ghost/core/kernel/`](../../ghost/core/kernel/README.md) | Application-independent framework primitives                    |
-| `ghost/core/server/`                                      | APIs, models, services, data access, and server startup         |
-| `ghost/core/frontend/`                                    | Theme rendering, helpers, middleware, and public assets         |
-| `ghost/core/shared/`                                      | Configuration and code shared across server boundaries          |
-| `ghost/content/`                                          | Default themes, adapters, settings, images, and runtime content |
-| `ghost/test/`                                             | Unit, integration, and server E2E tests                         |
+| Path                   | Contains                                                        |
+| ---------------------- | --------------------------------------------------------------- |
+| `ghost/core/server/`   | APIs, models, services, data access, and server startup         |
+| `ghost/core/frontend/` | Theme rendering, helpers, middleware, and public assets         |
+| `ghost/core/shared/`   | Configuration and code shared across server boundaries          |
+| `ghost/content/`       | Default themes, adapters, settings, images, and runtime content |
+| `ghost/test/`          | Unit, integration, and server E2E tests                         |
 
 Built Admin assets are copied into `ghost/core/built/admin/` for the Ghost
 release. Treat `built/`, `build/`, `dist/`, and `umd/` as generated output unless

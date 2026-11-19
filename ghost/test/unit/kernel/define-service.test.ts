@@ -3,7 +3,7 @@ import { setImmediate } from 'node:timers/promises';
 import { IncorrectUsageError } from '@tryghost/errors';
 import sinon from 'sinon';
 import { expectTypeOf } from 'vitest';
-import { defineService } from '../../../core/kernel/define-service';
+import { defineService } from '@tryghost/kernel/define-service';
 
 describe('defineService', function () {
   it('constructs only at init and reuses the ready instance', async function () {

@@ -2286,6 +2286,9 @@ importers:
       '@tryghost/image-transform':
         specifier: workspace:*
         version: link:../packages/image-transform
+      '@tryghost/kernel':
+        specifier: workspace:*
+        version: link:../kernel
       '@tryghost/kg-card-factory':
         specifier: workspace:*
         version: link:../koenig/kg-card-factory
@@ -2837,6 +2840,34 @@ importers:
       better-sqlite3:
         specifier: 'catalog:'
         version: 13.1.1
+
+  kernel:
+    dependencies:
+      '@tryghost/errors':
+        specifier: 3.4.8
+        version: 3.4.8
+      moment-timezone:
+        specifier: 0.6.6
+        version: 0.6.6
+      temporal-polyfill:
+        specifier: 'catalog:'
+        version: 0.3.2
+    devDependencies:
+      '@internal/cfg-eslint':
+        specifier: workspace:*
+        version: link:../tools/configs/eslint
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.5
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   koenig/kg-card-factory:
     devDependencies:

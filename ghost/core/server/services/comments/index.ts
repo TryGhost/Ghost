@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { IncorrectUsageError } from '@tryghost/errors';
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '@tryghost/kernel/define-service';
 
 // The renderer reads its HTML template on every send. The reader closes over this fixed
 // map, so the renderer can read exactly these files and nothing else.

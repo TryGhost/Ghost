@@ -22,7 +22,7 @@ For an existing service, use [migrate-service](../migrate-service/SKILL.md).
 
 Then read [creating a service](../../../ghost/core/server/services/README.md#creating-a-service),
 [initialization](../../../ghost/core/server/services/README.md#initialization)
-and the [kernel contract](../../../ghost/core/kernel/README.md#service-initialization).
+and the [kernel contract](../../../kernel/README.md#service-initialization).
 [IndexNow](../../../ghost/core/server/services/indexnow-ping/index.ts) and its
 [root test](../../../ghost/test/unit/server/services/indexnow-ping/index.test.ts)
 are the worked example.

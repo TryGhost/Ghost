@@ -7,7 +7,7 @@ import {
   localDateOf,
   resolveTimeZone,
   startOfLocalDay,
-} from '../../../kernel/clock';
+} from '@tryghost/kernel/clock';
 
 export type CommentsInterval = 'day' | 'week' | 'month';
 

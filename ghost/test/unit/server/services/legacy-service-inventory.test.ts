@@ -106,12 +106,19 @@ const inventorySchema = z
   })
   .strict();
 
+// The kernel package sits beside the ghost package, so evidence in it is
+// written as ../kernel/....
+const kernelRoot = path.resolve(coreRoot, '../kernel');
+
 function assertFileWithin(root: string, relativePath: string) {
   const resolved = path.resolve(root, relativePath);
-  const relative = path.relative(root, resolved);
+  const within = (directory: string) => {
+    const relative = path.relative(directory, resolved);
+    return !relative.startsWith('..') && relative !== '';
+  };
   assert.ok(
-    !path.isAbsolute(relativePath) && !relative.startsWith('..') && relative !== '',
-    `Evidence must be inside ${root}: ${relativePath}`,
+    !path.isAbsolute(relativePath) && (within(root) || within(kernelRoot)),
+    `Evidence must be inside ${root} or the kernel package: ${relativePath}`,
   );
   assert.ok(statSync(resolved).isFile(), `Expected a file: ${relativePath}`);
 }

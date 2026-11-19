@@ -1,6 +1,7 @@
 {
   "watch": [
     ".",
+    "../kernel/src",
     "../koenig/kg-card-factory/src",
     "../koenig/kg-clean-basic-html/src",
     "../koenig/kg-converters/src",

@@ -144,7 +144,7 @@ A service that is not listed is standard. It must be:
 
 - A directory with an `index.ts` root. The inventory test checks this.
 - A root that default-exports the
-  [kernel's `defineService` initializer](../../kernel/README.md#service-initialization).
+  [kernel's `defineService` initializer](../../../../kernel/README.md#service-initialization).
   See the [standard root contract](#standard-root-contract).
 - Free of hidden dependencies. See [dependency boundaries](#dependency-boundaries).
 
@@ -174,7 +174,7 @@ violations. Git history keeps the audit record. Move any extra it declares into
 The service checks apply to this directory only. A `defineService` root
 anywhere else gets none of them: no root-shape rule, no dependency rules and no
 boot checks. [Better Auth](../auth/better-auth/index.ts) is the one such root.
-It follows the [kernel contract](../../kernel/README.md#service-initialization)
+It follows the [kernel contract](../../../../kernel/README.md#service-initialization)
 by review.
 
 Extending the checks to roots elsewhere is out of scope for this migration. It
@@ -200,7 +200,7 @@ Implementation files may import:
   [dependency-cruiser config](../../../../.dependency-cruiser.cjs).
 
 Migrating a service does not require rewriting date logic that uses the
-[clock's](../../kernel/clock.ts) deprecated `moment` export.
+[clock's](../../../../kernel/src/clock.ts) deprecated `moment` export.
 
 Import allowlisted libraries directly where they are used; do not pass the
 library or its exports through the service's dependencies. Local use in the
@@ -534,7 +534,7 @@ the comment and expect it to be questioned.
 
 Ghost's boot sequence owns service construction. A new service root must
 default-export the
-[kernel's `defineService` helper](../../kernel/README.md#service-initialization)
+[kernel's `defineService` helper](../../../../kernel/README.md#service-initialization)
 and have its `init()` awaited from `ghost/core/boot.js` in the appropriate boot
 phase. Existing legacy roots keep their shape until migrated. Do not make the
 first request responsible for constructing the service.
@@ -584,7 +584,7 @@ together.
 ### Starting and stopping
 
 A service that owns listeners, timers or work to drain passes
-[lifecycle hooks](../../kernel/README.md#starting-and-stopping) instead of a
+[lifecycle hooks](../../../../kernel/README.md#starting-and-stopping) instead of a
 callback. `create` builds the instance once per process; `start` and `stop`
 acquire and release what it needs on each boot. [IndexNow](indexnow-ping/index.ts)
 subscribes in `start` and unsubscribes in `stop`:

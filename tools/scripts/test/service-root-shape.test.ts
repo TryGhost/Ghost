@@ -13,7 +13,7 @@ const requireRoot = createRequire(path.join(root, 'package.json'));
 const binary = path.join(path.dirname(requireRoot.resolve('oxlint/package.json')), 'bin/oxlint');
 const config = JSON.parse(readFileSync(path.join(root, '.oxlintrc.json'), 'utf8'));
 const ruleName = 'ghost/service-root-shape';
-const helperImport = '../../../kernel/define-service';
+const helperImport = '@tryghost/kernel/define-service';
 const prefix = `import { defineService } from '${helperImport}';\n`;
 const factory = `defineService('Example', () => ({}))`;
 
@@ -388,11 +388,6 @@ test('configures the rule for every service root with the kernel helper', () => 
   );
   const settings = overrides[0].rules[ruleName];
   assert.equal(settings[0], 'error');
-  assert.equal(
-    settings[1].helperImport,
-    path
-      .relative('ghost/core/server/services/example', 'ghost/core/kernel/define-service')
-      .split(path.sep)
-      .join('/'),
-  );
+  // The kernel is a package, so every root imports the helper by name.
+  assert.equal(settings[1].helperImport, '@tryghost/kernel/define-service');
 });

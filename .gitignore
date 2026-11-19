@@ -185,6 +185,7 @@ Caddyfile
 /koenig/*/build
 /packages/**/build
 /contracts/*/build
+/kernel/build
 /packages/app-sdk/dist
 # Typescript build artifacts
 tsconfig.tsbuildinfo

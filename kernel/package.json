@@ -1,0 +1,59 @@
+{
+  "name": "@tryghost/kernel",
+  "version": "private",
+  "private": true,
+  "description": "Application-independent framework primitives for Ghost: defineService, clock helpers and the adapter manager.",
+  "license": "MIT",
+  "author": "Ghost Foundation",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TryGhost/Ghost.git",
+    "directory": "kernel"
+  },
+  "files": [
+    "build"
+  ],
+  "exports": {
+    "./adapter-manager": {
+      "source": "./src/adapter-manager/index.ts",
+      "types": "./build/adapter-manager/index.d.ts",
+      "default": "./build/adapter-manager/index.js"
+    },
+    "./*": {
+      "source": "./src/*.ts",
+      "types": "./build/*.d.ts",
+      "default": "./build/*.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test:types": "tsc --noEmit",
+    "lint:code": "eslint src/ --cache",
+    "lint": "pnpm run '/^lint:/'"
+  },
+  "dependencies": {
+    "@tryghost/errors": "catalog:",
+    "moment-timezone": "catalog:",
+    "temporal-polyfill": "catalog:"
+  },
+  "devDependencies": {
+    "@internal/cfg-eslint": "workspace:*",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:"
+  },
+  "ghostPackage": {
+    "goldenPath": "exempt",
+    "reason": "Framework code compiled to CommonJS, as it was inside ghost/core. Its tests still run in ghost/test/unit/kernel."
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/build"
+        ]
+      }
+    }
+  }
+}
