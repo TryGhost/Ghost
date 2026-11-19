@@ -68,7 +68,10 @@ export default defineConfig({
     // (names each file) plus `github-actions` for inline annotations.
     reporters: process.env.GITHUB_ACTIONS ? ['default', 'github-actions'] : ['dot'],
     coverage: {
-      provider: 'v8',
+      // @vitest/coverage-v8, corrected for source that Node loads rather than
+      // vitest; see the module.
+      provider: 'custom',
+      customProviderModule: './test/utils/vitest-coverage-provider.ts',
       reporter: ['text-summary', 'html', 'cobertura'],
       exclude: [
         'core/server/data/migrations/**',
