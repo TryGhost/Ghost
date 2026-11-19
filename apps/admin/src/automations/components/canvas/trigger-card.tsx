@@ -310,7 +310,6 @@ export const TriggerCard: React.FC<
       aria-label={title}
       className="nodrag nopan w-[400px]"
       gap="xl"
-      onClick={(event) => event.stopPropagation()}
       onDoubleClick={(event) => event.stopPropagation()}
       onFocusCapture={onInteract}
       onPointerDownCapture={onInteract}
