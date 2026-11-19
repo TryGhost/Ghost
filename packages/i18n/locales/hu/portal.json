@@ -63,7 +63,7 @@
     "Choose a different plan": "Válassz egy másik csomagot",
     "Choose a plan": "Válassz egy csomagot",
     "Choose a tier": "Válassz egy csomagot",
-    "Choose an option": "Válassz egy lehetőséget"
+    "Choose an option": "Válassz egy lehetőséget",
     "Choose your newsletters": "Válaszd ki a hírleveleidet",
     "City": "Város",
     "Click here to retry": "Kattints ide az újrapróbálkozáshoz",
@@ -90,7 +90,7 @@
     "Could not sign in. Login link expired.": "A bejelentkezési link lejárt, a regisztráció sikertelen.",
     "Could not update email! Invalid link.": "Hibás link! Az e-mail-cím megváltoztatása sikertelen.",
     "Country": "Ország",
-    "Country code": "Országkód"
+    "Country code": "Országkód",
     "Create a new contact": "Új kapcsolat létrehozása",
     "Current plan": "Aktuális csomag",
     "Delete account": "Fiók törlése",
@@ -135,7 +135,7 @@
     "Failed to update billing information, please try again": "Nem sikerült a számlázási adatokat frissíteni. Kérjük, próbáld újra",
     "Failed to update newsletter settings": "Nem sikerült frissíteni a hírlevél beállításokat",
     "Failed to update subscription, please try again": "Nem sikerült frissíteni az előfizetést. Kérjük, próbáld újra",
-    "Failed to verify code, please try again": "Nem sikerült a kódot ellenőrizni, megkérünk próbálkozz újra",
+    "Failed to verify code, please try again": "Nem sikerült ellenőrizni a kódot. Kérjük, próbáld újra",
     "For a friend or colleague": "Barátnak vagy kollégának",
     "Forever": "Örökké",
     "Free Trial – Ends {trialEnd}": "Ingyenes próbaidőszak — Vége ekkor: {trialEnd}",
