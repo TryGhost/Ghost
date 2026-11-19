@@ -217,8 +217,9 @@ export const ColorPickerRoot = ({
   const [mode, setMode] = useState('hex');
   // Several changes can land before a re-render, so each one builds on the latest colour.
   const colorRef = useRef(color);
-  // The hex last reported through onChange, to recognise the parent echoing it back.
-  const lastReportedRef = useRef<string | null>(null);
+  // Hexes reported through onChange since the picker last took a colour from value, oldest
+  // first, to recognise the parent echoing one back.
+  const reportedRef = useRef<string[]>([]);
   // An eye dropper pick resolves later, so it reports to the latest onChange.
   const onChangeRef = useRef(onChange);
 
@@ -232,15 +233,17 @@ export const ColorPickerRoot = ({
     if (!value) {
       return;
     }
-    // The parent echoing the last report: keep the picker's own channels, which a hex can't
-    // always carry (e.g. the hue of a grey).
-    if (
-      typeof value === 'string' &&
-      value.toLowerCase() === lastReportedRef.current?.toLowerCase()
-    ) {
+    // The parent echoing a report, possibly an earlier one that arrived late: keep the picker's
+    // own channels, which a hex can't always carry (e.g. the hue of a grey). A string is
+    // matched as written, so another way of writing the colour, such as hsl() black with a
+    // different hue, is adopted.
+    const key = typeof value === 'string' ? value.toUpperCase() : Color(value).hex();
+    const echoed = reportedRef.current.lastIndexOf(key);
+    if (echoed !== -1) {
+      reportedRef.current = reportedRef.current.slice(echoed);
       return;
     }
-    lastReportedRef.current = null;
+    reportedRef.current = [];
     const next = toHsla(value);
     if (!isSameHsla(next, colorRef.current)) {
       colorRef.current = next;
@@ -251,13 +254,19 @@ export const ColorPickerRoot = ({
   const setColor = useCallback((change: ColorChange) => {
     const previous = colorRef.current;
     const next = { ...previous, ...(typeof change === 'function' ? change(previous) : change) };
+    if (isSameHsla(next, previous)) {
+      return;
+    }
     colorRef.current = next;
     setColorState(next);
 
-    if (!isSameHsla(next, previous)) {
+    const report = onChangeRef.current;
+    if (report) {
       const hex = toColor(next).hex();
-      lastReportedRef.current = hex;
-      onChangeRef.current?.(hex);
+      if (reportedRef.current[reportedRef.current.length - 1] !== hex) {
+        reportedRef.current.push(hex);
+      }
+      report(hex);
     }
   }, []);
 

@@ -335,6 +335,65 @@ describe('ColorPicker Component', () => {
       expect(handleChange.mock.calls).toEqual([['#8F3030'], ['#8F4030']]);
     });
 
+    it('keeps the latest colour when the parent echoes an earlier one late', () => {
+      const handleChange = vi.fn();
+      const { rerender } = render(<Parent value="#ff0000" onChange={handleChange} />);
+      fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
+      fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
+      expect(handleChange.mock.calls).toEqual([['#FF0400'], ['#FF0900']]);
+
+      rerender(<Parent value="#FF0400" onChange={handleChange} />);
+
+      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('2');
+    });
+
+    it('recognises an echo passed as a new array on every render', () => {
+      function ArrayParent() {
+        const [, setReports] = useState(0);
+        return (
+          <ColorPickerRoot
+            value={[0, 0, 0]}
+            onChange={() =>
+              setReports((count) => {
+                // Fail fast instead of hanging the run if the picker loops.
+                if (count > 10) {
+                  throw new Error('onChange looped');
+                }
+                return count + 1;
+              })
+            }
+          >
+            <ColorPickerHue />
+          </ColorPickerRoot>
+        );
+      }
+      render(<ArrayParent />);
+
+      fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
+
+      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('1');
+    });
+
+    it('adopts a new value when nothing was reported, even one matching the shown hex', () => {
+      const { rerender } = render(
+        <ColorPickerRoot value="#0000FF">
+          <ColorPickerAlpha />
+          <ColorPickerFormat />
+        </ColorPickerRoot>,
+      );
+      fireEvent.change(screen.getByLabelText('Hex color'), { target: { value: '#FF000080' } });
+      expect(Number(screen.getByRole('slider').getAttribute('aria-valuenow'))).toBeCloseTo(50, 0);
+
+      rerender(
+        <ColorPickerRoot value="#FF0000">
+          <ColorPickerAlpha />
+          <ColorPickerFormat />
+        </ColorPickerRoot>,
+      );
+
+      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('100');
+    });
+
     it('adopts a new value with the same hex as the colour just picked', () => {
       const handleChange = vi.fn();
       const { rerender } = render(
