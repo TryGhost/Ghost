@@ -7,6 +7,7 @@ import { FilterBar, PageHeader } from '@tryghost/shade/patterns';
 import { PostListRow } from './components/post-list-row';
 import { usePresence, usePresenceEnabled } from '@/shared/presence/use-presence';
 import { usePresenceByResource } from '@/shared/presence/use-presence-by-resource';
+import { EditingLockPrototypePanel } from '@/shared/presence/editing-lock-prototype-panel';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useVisibleResources } from '@/shared/presence/use-visible-resources';
 import { PostsEmptyState } from './components/posts-empty-state';
@@ -524,6 +525,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
           </Suspense>
         )}
       </Container>
+      {resource === 'posts' && <EditingLockPrototypePanel />}
     </Box>
   );
 }

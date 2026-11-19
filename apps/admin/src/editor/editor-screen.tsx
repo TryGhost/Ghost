@@ -16,6 +16,7 @@ import { usePresence } from '@/shared/presence/use-presence';
 import { PresenceAvatars } from '@/shared/presence/presence-avatars';
 import { useEditingLockPrototype } from '@/shared/presence/editing-lock-prototype';
 import { EditingLockPrototypeEditorAvatar } from '@/shared/presence/editing-lock-prototype-avatar';
+import { EditingLockPrototypePanel } from '@/shared/presence/editing-lock-prototype-panel';
 import { getPostListReturnUrl } from '@/posts/api';
 import { reloadAdmin } from '@/auth/api';
 import { NotFound } from '@/shared/not-found';
@@ -433,9 +434,9 @@ function EditorContent({
   const settingsToggle = (
     <PageHeader.Action
       ref={settingsToggleRef}
-      aria-expanded={settingsOpen}
+      aria-expanded={settingsOpen && !isLocked}
       className={
-        settingsOpen
+        settingsOpen && !isLocked
           ? 'bg-transparent enabled:aria-expanded:bg-transparent enabled:aria-expanded:shadow-none enabled:aria-expanded:hover:bg-sidebar-accent'
           : 'bg-background/80 backdrop-blur-sm'
       }
@@ -479,7 +480,7 @@ function EditorContent({
           {
             '--editor-overlap': `${headerHeight}px`,
             // Never animated: what moves with the panel transitions its own property.
-            '--editor-settings-progress': settingsOpen ? 1 : 0,
+            '--editor-settings-progress': settingsOpen && !isLocked ? 1 : 0,
             // Unset until measured: the toggle's slot then starts at auto width, which
             // nothing eases from, rather than easing out from an unmeasured toggle.
             '--editor-settings-toggle-width': settingsToggleWidth
@@ -529,7 +530,10 @@ function EditorContent({
               <Box className="col-start-3 ml-auto" data-writing-focus={writingFocus}>
                 <PageHeader.ActionGroup className="gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
                   {editingLock.isDemoPost && session.persistedId ? (
-                    <EditingLockPrototypeEditorAvatar postId={session.persistedId} />
+                    <EditingLockPrototypeEditorAvatar
+                      key={editingLock.revision}
+                      postId={session.persistedId}
+                    />
                   ) : showPresence ? (
                     <PresenceAvatars active={presence.active} resourceType={postType} />
                   ) : null}
@@ -594,7 +598,7 @@ function EditorContent({
         >
           {settingsToggle}
         </Box>
-        {settingsPresent ? (
+        {settingsPresent && !isLocked ? (
           <RefusedEntryContext.Provider value={refusedEntry.report}>
             <PostSettingsSidebar
               cardConfig={currentCardConfig}
@@ -614,6 +618,7 @@ function EditorContent({
         {snippetDialog}
         <DirtyConfirmDialog testId={editorLeaveDialog} {...leaveGuard.dialogProps} />
       </Inline>
+      {editingLock.isDemoPost && <EditingLockPrototypePanel />}
     </Stack>
   );
 }

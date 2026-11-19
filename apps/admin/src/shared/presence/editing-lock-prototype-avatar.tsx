@@ -12,7 +12,11 @@ import {
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
-import { takeOverEditingPrototype, useEditingLockPrototype } from './editing-lock-prototype';
+import {
+  dismissEditingLockPrototypeNotice,
+  takeOverEditingPrototype,
+  useEditingLockPrototype,
+} from './editing-lock-prototype';
 
 const NAME = 'Alex Smith';
 const EDITING_MESSAGE = `${NAME} is editing this post.`;
@@ -55,7 +59,7 @@ export function EditingLockPrototypeListAvatar({
 }
 
 export function EditingLockPrototypeEditorAvatar({ postId }: { postId: string }) {
-  const { phase } = useEditingLockPrototype(postId);
+  const { phase, alexPresent, notice } = useEditingLockPrototype(postId);
   const [open, setOpen] = useState(false);
   const [startedHere, setStartedHere] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -71,25 +75,37 @@ export function EditingLockPrototypeEditorAvatar({ postId }: { postId: string })
     }
     cancelClose();
     setOpen(next);
+    if (!next && notice) {
+      dismissEditingLockPrototypeNotice();
+    }
     if (!next && success) {
       setStartedHere(false);
     }
   };
   const leave = () => {
-    if (!startedHere) {
+    if (!startedHere && !notice) {
       closeTimer.current = setTimeout(() => setOpen(false), 180);
     }
   };
 
+  if (!alexPresent) {
+    return null;
+  }
   if (phase === 'editing' && !success) {
     return <EditingLockPrototypeListAvatar testId="editing-lock-editor-avatar" viewing />;
   }
 
   return (
-    <Popover open={open} onOpenChange={changeOpen}>
+    <Popover open={notice || open} onOpenChange={changeOpen}>
       <PopoverTrigger asChild>
         <button
-          aria-label={success ? 'Editing takeover complete' : EDITING_MESSAGE}
+          aria-label={
+            success
+              ? 'Editing takeover complete'
+              : notice
+                ? `${NAME} has taken over editing this post.`
+                : EDITING_MESSAGE
+          }
           className={cn(
             'pointer-events-auto shrink-0 rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-focus-ring',
             phase === 'editing' && 'opacity-50',
@@ -126,7 +142,7 @@ export function EditingLockPrototypeEditorAvatar({ postId }: { postId: string })
           }
         }}
         onOpenAutoFocus={(event) => {
-          if (hovered.current) {
+          if (hovered.current || notice) {
             event.preventDefault();
           }
         }}
@@ -152,10 +168,12 @@ export function EditingLockPrototypeEditorAvatar({ postId }: { postId: string })
             <>
               <Stack gap="xs">
                 <Text className="text-base" weight="medium">
-                  {EDITING_MESSAGE}
+                  {notice ? `${NAME} has taken over editing this post.` : EDITING_MESSAGE}
                 </Text>
                 <Text className="text-base" tone="secondary">
-                  Taking over will stop Alex from editing.
+                  {notice
+                    ? 'Take over to continue editing.'
+                    : 'Taking over will stop Alex from editing.'}
                 </Text>
               </Stack>
               <Button
@@ -164,6 +182,7 @@ export function EditingLockPrototypeEditorAvatar({ postId }: { postId: string })
                 variant="secondary"
                 onClick={() => {
                   cancelClose();
+                  setOpen(true);
                   setStartedHere(true);
                   takeOverEditingPrototype();
                 }}

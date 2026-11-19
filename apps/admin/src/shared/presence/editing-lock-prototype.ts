@@ -25,7 +25,15 @@ function demoPostId() {
 const postId = demoPostId();
 
 type Phase = 'locked' | 'taking-over' | 'editing';
-let phase: Phase = 'locked';
+export type EditingLockExperience = 'taking-over' | 'being-taken-over';
+let state = {
+  experience: 'taking-over' as EditingLockExperience,
+  phase: 'locked' as Phase,
+  alexPresent: true,
+  notice: false,
+  revision: 0,
+};
+let takeoverTimer: ReturnType<typeof setTimeout> | undefined;
 const listeners = new Set<() => void>();
 
 function subscribe(listener: () => void) {
@@ -33,27 +41,53 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener);
 }
 
-function setPhase(next: Phase) {
-  phase = next;
+function update(next: Partial<typeof state>) {
+  state = { ...state, ...next };
   listeners.forEach((listener) => listener());
   // eslint-disable-next-line no-console -- Expose this throwaway prototype's state during research.
-  console.info('[Editing lock prototype]', next);
+  console.info('[Editing lock prototype]', state);
+}
+
+export function resetEditingLockPrototype(experience = state.experience) {
+  clearTimeout(takeoverTimer);
+  update({
+    experience,
+    phase: experience === 'taking-over' ? 'locked' : 'editing',
+    alexPresent: experience === 'taking-over',
+    notice: false,
+    revision: state.revision + 1,
+  });
+}
+
+export function simulateAlexOpeningPrototype() {
+  update({ alexPresent: true });
+}
+
+export function simulateAlexTakingOverPrototype() {
+  if (state.experience === 'being-taken-over' && state.alexPresent && state.phase === 'editing') {
+    update({ phase: 'locked', notice: true, revision: state.revision + 1 });
+  }
+}
+
+export function dismissEditingLockPrototypeNotice() {
+  update({ notice: false });
 }
 
 export function takeOverEditingPrototype() {
-  if (!postId || phase !== 'locked') {
+  if (!postId || state.phase !== 'locked') {
     return;
   }
-  setPhase('taking-over');
-  window.setTimeout(() => setPhase('editing'), 2000);
+  update({ phase: 'taking-over', notice: false });
+  takeoverTimer = setTimeout(() => update({ phase: 'editing' }), 2000);
 }
 
 export function useEditingLockPrototype(id?: string | null) {
-  const currentPhase = useSyncExternalStore(subscribe, () => phase);
+  const current = useSyncExternalStore(subscribe, () => state);
   const isDemoPost = !!postId && id === postId;
   return {
     isDemoPost,
-    phase: currentPhase,
-    locked: isDemoPost && currentPhase !== 'editing',
+    ...current,
+    enabled: !!postId,
+    locked: isDemoPost && current.phase !== 'editing',
   };
 }
