@@ -6,6 +6,11 @@ const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 
+// A queued email that may still be sent: pending, with a published post.
+function sendableEmail() {
+  return { status: 'pending', post: createModel({ status: 'published' }) };
+}
+
 // We need a short sleep in some tests to simulate time passing
 // This way we don't actually add a delay to the tests
 const simulateSleep = async (ms, clock) => {
@@ -37,7 +42,8 @@ describe('Batch Sending Service', function () {
   });
 
   describe('scheduleEmail', function () {
-    it('dispatches a SendEmailJob for the email', async function () {
+    it('dispatches a SendEmailJob for the email, stamped with when it was requested', async function () {
+      sinon.useFakeTimers(new Date('2026-11-19T12:00:00.000Z'));
       const jobsService = { dispatch: sinon.stub().resolves() };
       const service = new BatchSendingService({ jobsService });
 
@@ -46,7 +52,22 @@ describe('Batch Sending Service', function () {
       sinon.assert.calledOnce(jobsService.dispatch);
       const job = jobsService.dispatch.firstCall.args[0];
       assert.equal(job.constructor.type, 'send-email');
-      assert.deepEqual({ ...job }, { emailId: 'email-id' });
+      assert.deepEqual(
+        { ...job },
+        { emailId: 'email-id', requestedAt: '2026-11-19T12:00:00.000Z' },
+      );
+    });
+
+    it('stamps the job with a request time it is given', async function () {
+      const jobsService = { dispatch: sinon.stub().resolves() };
+      const service = new BatchSendingService({ jobsService });
+
+      await service.scheduleEmail(createModel({ id: 'email-id' }), {
+        requestedAt: new Date('2026-11-18T12:00:00.000Z'),
+      });
+
+      const job = jobsService.dispatch.firstCall.args[0];
+      assert.equal(job.requestedAt, '2026-11-18T12:00:00.000Z');
     });
 
     it('rejects when the queue refuses the dispatch', async function () {
@@ -62,6 +83,22 @@ describe('Batch Sending Service', function () {
   });
 
   describe('emailJob', function () {
+    it('fails an email whose send was requested longer ago than the configured limit', async function () {
+      const email = createModel(sendableEmail());
+      const Email = createModelClass();
+      sinon.stub(Email, 'findOne').resolves(email);
+      const service = new BatchSendingService({ models: { Email }, resumeMaxAgeMs: 60_000 });
+      const sendEmail = sinon.stub(service, 'sendEmail').resolves();
+
+      await service.emailJob({
+        emailId: email.id,
+        requestedAt: new Date(Date.now() - 2 * 60_000).toISOString(),
+      });
+
+      sinon.assert.notCalled(sendEmail);
+      assert.equal(email.get('status'), 'failed');
+    });
+
     it('logs and preserves status lock failures', async function () {
       const lockError = new Error('Database unavailable');
       const service = new BatchSendingService({});
@@ -115,11 +152,7 @@ describe('Batch Sending Service', function () {
     });
 
     it('does send email if pending', async function () {
-      const Email = createModelClass({
-        findOne: {
-          status: 'pending',
-        },
-      });
+      const Email = createModelClass({ findOne: sendableEmail() });
       const service = new BatchSendingService({
         models: { Email },
       });
@@ -148,11 +181,7 @@ describe('Batch Sending Service', function () {
     });
 
     it('saves error state if sending fails', async function () {
-      const Email = createModelClass({
-        findOne: {
-          status: 'pending',
-        },
-      });
+      const Email = createModelClass({ findOne: sendableEmail() });
       const service = new BatchSendingService({
         models: { Email },
       });
@@ -179,11 +208,7 @@ describe('Batch Sending Service', function () {
     });
 
     it('retries saving error state if sending fails', async function () {
-      const Email = createModelClass({
-        findOne: {
-          status: 'pending',
-        },
-      });
+      const Email = createModelClass({ findOne: sendableEmail() });
       const service = new BatchSendingService({
         models: { Email },
         AFTER_RETRY_CONFIG: { maxRetries: 20, maxTime: 2000, sleep: 1 },
@@ -220,11 +245,7 @@ describe('Batch Sending Service', function () {
     });
 
     it('saves default error message if sending fails', async function () {
-      const Email = createModelClass({
-        findOne: {
-          status: 'pending',
-        },
-      });
+      const Email = createModelClass({ findOne: sendableEmail() });
       const captureException = sinon.stub();
       const service = new BatchSendingService({
         models: { Email },
@@ -2233,7 +2254,12 @@ describe('Batch Sending Service', function () {
     it('onShutdown does not resolve until an in-flight send settles', async function () {
       const EmailBatch = createModelClass({ findAll: [] });
       const service = new BatchSendingService({
-        models: { EmailBatch },
+        models: {
+          Email: createModelClass({
+            findOne: { ...sendableEmail(), email_count: 2000, newsletter: createModel({}) },
+          }),
+          EmailBatch,
+        },
         sendingService: {
           getTargetDeliveryWindow() {
             return 0;
@@ -2260,16 +2286,8 @@ describe('Batch Sending Service', function () {
         return true;
       });
 
-      const email = createModel({
-        status: 'submitting',
-        email_count: 2000,
-        newsletter: createModel({}),
-        post: createModel({}),
-      });
-      sinon.stub(service, 'updateStatusLock').resolves(email);
-
       // Kick off the job; do NOT await — it must remain in flight.
-      const sendPromise = service.emailJob({ emailId: email.id });
+      const sendPromise = service.emailJob({ emailId: '123' });
       let sendEmailDone = false;
       sendPromise
         .then(() => {
@@ -2304,7 +2322,8 @@ describe('Batch Sending Service', function () {
     });
 
     it('onShutdown does not resolve until the submitted status write settles', async function () {
-      const service = new BatchSendingService({ models: { Email: {} } });
+      const Email = createModelClass();
+      const service = new BatchSendingService({ models: { Email } });
 
       // Gate the `submitted` write so the job stays in flight after the send settles.
       let releaseSave;
@@ -2315,13 +2334,15 @@ describe('Batch Sending Service', function () {
       const saveReached = new Promise((resolve) => {
         markSaveReached = resolve;
       });
-      const email = createModel({ status: 'submitting', email_count: 1000 });
+      const email = createModel({ ...sendableEmail(), email_count: 1000 });
       const save = sinon.stub(email, 'save').callsFake(async (properties) => {
-        markSaveReached();
-        await saveGate;
+        if (properties.status === 'submitted') {
+          markSaveReached();
+          await saveGate;
+        }
         Object.assign(email, properties);
       });
-      sinon.stub(service, 'updateStatusLock').resolves(email);
+      sinon.stub(Email, 'findOne').resolves(email);
       sinon.stub(service, 'sendEmail').resolves();
 
       const jobPromise = service.emailJob({ emailId: email.id });
@@ -2341,14 +2362,21 @@ describe('Batch Sending Service', function () {
       await onShutdownPromise;
       await jobPromise;
       assert.equal(onShutdownDone, true);
-      sinon.assert.calledOnce(save);
-      assert.equal(save.firstCall.args[0].status, 'submitted');
+      assert.deepEqual(
+        save.getCalls().map((call) => call.args[0].status),
+        ['submitting', 'submitted'],
+      );
     });
 
     it('onShutdown does not resolve until in-flight batch creation settles', async function () {
       const EmailBatch = createModelClass({ findAll: [] });
       const service = new BatchSendingService({
-        models: { EmailBatch },
+        models: {
+          Email: createModelClass({
+            findOne: { ...sendableEmail(), email_count: 2000, newsletter: createModel({}) },
+          }),
+          EmailBatch,
+        },
         sendingService: {
           getTargetDeliveryWindow() {
             return 0;
@@ -2367,16 +2395,8 @@ describe('Batch Sending Service', function () {
       });
       const sendBatches = sinon.stub(service, 'sendBatches').resolves();
 
-      const email = createModel({
-        status: 'submitting',
-        email_count: 2000,
-        newsletter: createModel({}),
-        post: createModel({}),
-      });
-      sinon.stub(service, 'updateStatusLock').resolves(email);
-
       // Kick off the job; do NOT await — creation must remain in flight.
-      const sendPromise = service.emailJob({ emailId: email.id });
+      const sendPromise = service.emailJob({ emailId: '123' });
 
       let onShutdownDone = false;
       const onShutdownPromise = service.onShutdown().then(() => {
@@ -2401,11 +2421,7 @@ describe('Batch Sending Service', function () {
 
     it('emailJob reports a send stopped with SHUTDOWN_CODE as interrupted, not failed', async function () {
       const captureException = sinon.stub();
-      const Email = createModelClass({
-        findOne: {
-          status: 'pending',
-        },
-      });
+      const Email = createModelClass({ findOne: sendableEmail() });
       const service = new BatchSendingService({
         models: { Email },
         sentry: { captureException },
@@ -2438,11 +2454,7 @@ describe('Batch Sending Service', function () {
     });
 
     it('emailJob reports any error once shutting down as interrupted, not failed', async function () {
-      const Email = createModelClass({
-        findOne: {
-          status: 'pending',
-        },
-      });
+      const Email = createModelClass({ findOne: sendableEmail() });
       const service = new BatchSendingService({
         models: { Email },
       });
@@ -2462,7 +2474,7 @@ describe('Batch Sending Service', function () {
     });
 
     it('emailJob still reports interrupted when the email cannot be returned to pending', async function () {
-      const Email = createModelClass({ findOne: { status: 'pending' } });
+      const Email = createModelClass({ findOne: sendableEmail() });
       const service = new BatchSendingService({ models: { Email } });
       const updateStatusLock = service.updateStatusLock.bind(service);
       const releaseFailure = new Error('database unavailable during shutdown');
@@ -2488,7 +2500,7 @@ describe('Batch Sending Service', function () {
     });
 
     it('fails the email on a verification failure during shutdown', async function () {
-      const Email = createModelClass({ findOne: { status: 'pending' } });
+      const Email = createModelClass({ findOne: sendableEmail() });
       const sentry = { captureException: sinon.stub() };
       const service = new BatchSendingService({ models: { Email }, sentry });
       const {

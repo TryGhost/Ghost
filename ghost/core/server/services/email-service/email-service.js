@@ -20,6 +20,7 @@ const tpl = require('@tryghost/tpl');
 const EmailRenderer = require('./email-renderer');
 const EmailSegmenter = require('./email-segmenter');
 const SendingService = require('./sending-service');
+const { isSendablePostStatus } = require('./send-eligibility');
 const logging = require('@tryghost/logging');
 
 const messages = {
@@ -311,7 +312,7 @@ class EmailService {
     const status = email.get('status');
     const post = await email.getLazyRelation('post');
     const postStatus = post ? post.get('status') : null;
-    const sendable = postStatus === 'published' || postStatus === 'sent';
+    const sendable = isSendablePostStatus(postStatus);
 
     if (!sendable) {
       // Parent post was unpublished or deleted while the email was in flight.
@@ -352,8 +353,11 @@ class EmailService {
     const breadcrumb = await this.#buildResumeBreadcrumb(email);
     logging.warn(`Email resume: scheduling ${email.id} for re-send ${JSON.stringify(breadcrumb)}`);
 
-    // Skip checkLimits — this email already passed limits when first sent.
-    await this.#batchSendingService.scheduleEmail(email);
+    // Skip checkLimits — this email already passed limits when first sent. The job keeps
+    // the email's original request time, so it measures the same age the scan just checked.
+    await this.#batchSendingService.scheduleEmail(email, {
+      requestedAt: new Date(email.get('created_at')),
+    });
   }
 
   async #buildResumeBreadcrumb(email) {
@@ -393,7 +397,7 @@ class EmailService {
   async retryEmail(email) {
     // Block accidentaly retrying non-published posts (can happen due to bugs in frontend)
     const post = await email.getLazyRelation('post');
-    if (post.get('status') !== 'published' && post.get('status') !== 'sent') {
+    if (!isSendablePostStatus(post.get('status'))) {
       throw new errors.IncorrectUsageError({
         message: tpl(messages.retryEmailStatusError),
       });
@@ -459,7 +463,10 @@ class EmailService {
    * @returns {Promise<void | 'interrupted'>} 'interrupted' when shutdown stopped the send
    */
   async handleSendEmailJob(job) {
-    return this.#batchSendingService.emailJob({ emailId: job.emailId });
+    return this.#batchSendingService.emailJob({
+      emailId: job.emailId,
+      requestedAt: job.requestedAt,
+    });
   }
 
   /**

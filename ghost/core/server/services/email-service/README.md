@@ -10,7 +10,11 @@ New sends, retries, and boot recovery dispatch a data-only `SendEmailJob`
 containing the email ID through the class-based jobs service. Boot injects
 that service and registers `EmailService.handleSendEmailJob`, which delegates
 to `BatchSendingService.emailJob`. The batch sender refetches the email and
-acquires its status lock before preparing or submitting batches. See the
+acquires its status lock before preparing or submitting batches. While it holds
+the lock, it marks a `pending` email failed instead of sending it when the
+email's post is no longer published, or when its send was requested longer ago
+than `bulkEmail:resumeMaxAgeMs`. Each send and retry dispatches a job stamped
+with when it was requested, and a replay of that job keeps the stamp. See the
 [jobs guide](../../../../../docs/codebase/jobs.md#queues) for queue isolation
 and concurrency limits.
 
