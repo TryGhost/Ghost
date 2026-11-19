@@ -321,7 +321,7 @@ const serviceDependencyDecisions = {
     '^ghost/core/shared/settings-cache/', // Settings.
     '^ghost/core/server/models/index\\.js$', // Models.
     '^ghost/core/server/data/db/', // The database connection.
-    '^@tryghost/domain-events$|^ghost/core/server/lib/common/events\\.js$|^ghost/core/shared/events(-ts)?/index\\.(js|ts)$', // Event buses.
+    '^@tryghost/domain-events$|^packages/domain-events/index\\.js$|^ghost/core/server/lib/common/events\\.js$|^ghost/core/shared/events(-ts)?/index\\.(js|ts)$', // Event buses.
     `^${servicesRoot}/`, // Other services, including the events and helpers they own.
     '^ghost/core/shared/url-utils\\.ts$', // URL utils, built from config.
     '^ghost/core/shared/labs\\.js$', // Labs flags, read from settings and config.
