@@ -16,11 +16,7 @@ function createCoreHarness() {
   // services list up to Stripe checkout config.
   const sequence = loadBootSequence(
     {
-      './server/lib/image/image-decoders': { restrictImageDecoders() {} },
-      './server/lib/image/image-content': {
-        IMAGE_UPLOAD_TYPES: [],
-        getIgnoredImageContentTypes: () => [],
-      },
+      './server/lib/image/image-upload-config': { applyImageUploadConfig() {} },
       './shared/url-utils': {},
       '../shared/limits': { default: { init: async () => {} } },
       '../shared/transition/settings': { default: { init: async () => {} } },

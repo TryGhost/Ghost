@@ -98,24 +98,8 @@ async function initFoundationChecks({ config }) {
   // Limit image processing to the configured image formats before anything
   // can process an image
   debug('Begin: image upload config');
-  const { restrictImageDecoders } = require('./server/lib/image/image-decoders');
-  const {
-    IMAGE_UPLOAD_TYPES,
-    getIgnoredImageContentTypes,
-  } = require('./server/lib/image/image-content');
-  const uploads = config.get('uploads');
-  restrictImageDecoders(IMAGE_UPLOAD_TYPES.flatMap((type) => uploads[type]?.extensions ?? []));
-
-  // Image uploads can only be stored as image types, so point out any
-  // configured types that will be ignored
-  for (const type of IMAGE_UPLOAD_TYPES) {
-    const ignored = getIgnoredImageContentTypes(uploads[type]?.contentTypes ?? []);
-    if (ignored.length > 0) {
-      require('@tryghost/logging').warn(
-        `Ignoring uploads.${type}.contentTypes that are not image types: ${ignored.join(', ')}`,
-      );
-    }
-  }
+  const { applyImageUploadConfig } = require('./server/lib/image/image-upload-config');
+  applyImageUploadConfig(config.get('uploads'));
   debug('End: image upload config');
 
   debug('End: initFoundationChecks');
@@ -607,22 +591,14 @@ async function initBackgroundServices({ config }) {
   }
 
   // Load email analytics recurring jobs. Runs before activitypub.init for the
-  // same reason as the schedules above. Each failure is logged rather than
-  // thrown so one failed registration cannot hide a sibling's or stop the
-  // remaining background services from starting.
-  if (config.get('backgroundJobs:emailAnalytics')) {
+  // same reason as the schedules above. The scheduler decides whether they
+  // are configured, and logs each failure itself.
+  try {
     const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
-    const results = await Promise.allSettled([
-      emailAnalyticsJobs.scheduleRecurringNewslettersJob(),
-      emailAnalyticsJobs.scheduleRecurringAutomationsJob(),
-      emailAnalyticsJobs.scheduleRecurringGiftDeliveriesJob(),
-    ]);
+    await emailAnalyticsJobs.scheduleRecurringJobs();
+  } catch (err) {
     const logging = require('@tryghost/logging');
-    for (const result of results) {
-      if (result.status === 'rejected') {
-        logging.error(result.reason);
-      }
-    }
+    logging.error(err);
   }
 
   const activitypub = require('./server/services/activitypub');
