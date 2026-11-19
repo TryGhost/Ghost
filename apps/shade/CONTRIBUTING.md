@@ -269,8 +269,10 @@ Guardrails:
 
 SVGs in `src/assets/images` and `src/assets/icons` render through
 `svgGraphic` (`src/lib/svg-graphic.ts`), so they're decorative unless the
-caller names them. When you add one, remove the vendor `<title>`, `<desc>`
-and `id` attributes.
+caller names them. When you add one, remove the vendor `<title>` and
+`<desc>`, and any `id` that nothing in the SVG refers to. An `id` the SVG
+does refer to, such as a gradient, mask or clip path, has to be unique for
+each copy on the page instead.
 
 ### Common anti-patterns
 
