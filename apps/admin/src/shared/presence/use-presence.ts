@@ -20,16 +20,19 @@ export const LEASE_PENDING_MS = 5_000;
 export const LEASE_STALE_MS = 60_000;
 
 /**
- * Who may edit the document. `pending` until the server has answered, `null`
- * when it keeps no lease for this client (not asked for, an older server, or
- * presence failing), otherwise the holder. `takenAt` is the server time at
- * which this tab took the lease over, while it still holds it.
+ * Who may edit the document. `pending` until the server has answered, `free`
+ * while nobody holds it, `null` when the server keeps no lease for this client
+ * (not asked for, an older server, or presence failing), otherwise the holder.
+ * `takenAt` is the server time at which this tab took the lease over, while it
+ * still holds it.
  */
-export type LeaseStatus = (PresenceLease & { takenAt?: number }) | 'pending' | null;
+export type LeaseStatus = (PresenceLease & { takenAt?: number }) | 'pending' | 'free' | null;
 
 export interface PresenceOptions {
-  /** Queue this tab for the lease on the document it is editing. */
+  /** Follow the lease on the document this tab is editing. */
   lease?: boolean;
+  /** The tab has work of its own, so it asks for the lease rather than only watching who holds it. */
+  wantsLease?: boolean;
 }
 
 /** The Labs flag; an older backend without the endpoint answers 404 and polling stops. */
@@ -41,8 +44,9 @@ export function usePresenceEnabled(): boolean {
  * Poll presence for `resources` while the tab is visible and, when `editing`
  * is set, record this user on that resource with every poll. Returns other
  * users active on the requested resources; the server never returns the caller.
- * With `lease`, the tab also queues for the edited document, keeps polling
- * while hidden so it does not lose its place, and learns who holds the lease.
+ * With `lease`, the tab also learns who holds the edited document and keeps
+ * polling while hidden so it does not lose its place. It only watches until it
+ * `wantsLease`; from then, and for as long as it holds the lease, it asks for it.
  */
 export function usePresence(
   resources: PresenceResource[],
@@ -59,6 +63,8 @@ export function usePresence(
   const leaseKey =
     enabled && options.lease && editingId && editingType ? `${editingType}:${editingId}` : null;
   const takeRef = useRef(false);
+  const wantsRef = useRef(false);
+  const holdingRef = useRef(false);
   const pollerRef = useRef<ActivityPoller | undefined>(undefined);
   const resourcesRef = useRef(resources);
   // Refs may not be written during render; the poller reads the latest window at poll time.
@@ -66,6 +72,16 @@ export function usePresence(
     resourcesRef.current = resources;
   });
   const startRef = useRef<(() => void) | undefined>(undefined);
+
+  // Before the polling effect, so the first poll already knows. The claim goes
+  // out with the first edit, not with the next poll due.
+  const wantsLease = options.wantsLease ?? false;
+  useEffect(() => {
+    wantsRef.current = wantsLease;
+    if (wantsLease && !holdingRef.current) {
+      pollerRef.current?.pollNow();
+    }
+  }, [wantsLease]);
 
   useEffect(() => {
     if (!enabled) {
@@ -93,6 +109,7 @@ export function usePresence(
       }
     };
     takeRef.current = false;
+    holdingRef.current = false;
     let leaseSupported = true;
     let leaseAnswered = false;
     let takenAt: number | undefined;
@@ -138,6 +155,7 @@ export function usePresence(
             // Leaving gave the place up, so the answer no longer holds until the next poll.
             disarm();
             leaseAnswered = false;
+            holdingRef.current = false;
             answerWith(reason === 'unsupported' ? null : 'pending');
           }
         },
@@ -146,7 +164,12 @@ export function usePresence(
           if (window.length === 0) {
             return undefined;
           }
-          const mode = leaseKey && leaseSupported ? (takeRef.current ? 'take' : 'hold') : undefined;
+          const asking = takeRef.current
+            ? 'take'
+            : holdingRef.current || wantsRef.current
+              ? 'hold'
+              : 'watch';
+          const mode = leaseKey && leaseSupported ? asking : undefined;
           try {
             let raw: unknown;
             try {
@@ -175,11 +198,12 @@ export function usePresence(
                 if (!response.lease?.mine) {
                   takenAt = undefined;
                 }
-                answerWith(
-                  response.lease
-                    ? { ...response.lease, ...(takenAt === undefined ? {} : { takenAt }) }
-                    : null,
-                );
+                holdingRef.current = response.lease?.mine ?? false;
+                if (response.lease) {
+                  answerWith({ ...response.lease, ...(takenAt === undefined ? {} : { takenAt }) });
+                } else {
+                  answerWith(response.lease === null ? 'free' : null);
+                }
               }
             }
             return true;

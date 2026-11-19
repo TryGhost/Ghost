@@ -35,7 +35,7 @@ again.
 | `writing-focus.ts`, `use-writing-focus.ts`       | Hides the editor's chrome while the writer types and brings it back on a pointer move or scroll                      |
 | `editor-font.ts`, `use-editor-font.ts`           | The font the writer reads the post in while editing, chosen in the settings panel                                    |
 | `settings-open.ts`, `use-settings-open.ts`       | Whether the settings panel opens with the editor, as the writer last left it                                         |
-| `lease/`                                         | Whether this tab may edit the document, read from the presence poll, and the banner for when it may not              |
+| `lease/`                                         | Whether this tab may edit the document, read from the presence poll, and the avatar and notice for when it may not   |
 
 Two small modules are shared across all of the above. `request-options.ts`
 carries the editor's opt-out from the transport's session-expiry redirect, which
@@ -242,14 +242,50 @@ is open the bar's actions are hidden with the word count.
 ## The lease
 
 Behind the `editorLease` Labs flag, which needs `editorPresencePolling`, one
-editor tab at a time may edit a post or page. The presence poll asks the
-server who holds the document, and `lease/use-edit-lease.ts` turns the answer
+editor tab at a time may edit a post or page. Nobody holds a document until
+someone edits it: opening one takes nothing, so a writer who only reads never
+locks anyone out, and the first unsaved edit takes the lease. The presence
+poll says who holds the document, and `lease/use-edit-lease.ts` turns that
 into whether this tab is locked.
 
-A locked tab opens the document read-only: it can be read, scrolled, selected
-and copied from, and nothing in it can be changed. The editor opens that way
-until the server has answered, and becomes editable once this tab holds the
-lease.
+- A tab opens for editing when nobody holds the document. It only watches,
+  and asks for the lease at once when its first edit leaves it with unsaved
+  work. From then on it holds the lease, saved or not, until it leaves or
+  another tab takes over.
+- A tab that takes a free lease checks that its copy is the latest. When a
+  later version was saved by someone it never saw, the latest is loaded over
+  what was just typed, and a notice says so.
+- Two tabs that start within a moment of each other are settled by the
+  server. The later one is put back to the copy it loaded, with no request,
+  locks, and its card says what it typed was not kept. Unsaved work begun
+  more than ten seconds earlier is not a lost race and is kept in the tab.
+- When the holder leaves, every tab watching reads the latest copy and may
+  edit, and the first of them to type takes the lease.
+- After a takeover the tab waits before reading, so the previous holder's
+  last save can land: three seconds once that holder has polled again or has
+  gone, and twelve at most.
+- A tab that loses the lease saves its draft at once, then locks. Unsaved edits
+  to a published post are never saved for the writer, so they stay in that
+  tab: its card says the unsaved changes are still here and offers Copy
+  content.
+- A tab that becomes free to edit with unsaved work is not read over. It asks
+  the server whether a later version was saved. If none was, it opens as it
+  is. If one was, its next save would collide, so it stays read-only and a
+  notice above the header says so, with Reload and Copy content. Reload asks
+  first, then discards the unsaved work and reads the latest copy. If the
+  question cannot be answered, the tab opens and the collision check judges
+  its save. When a save from this tab has already collided, the collision
+  banner is shown alone, since it offers the same two ways out.
+- Closing or reloading the tab gives the lease up at once. A tab that dies
+  without telling the server keeps the lease until the server's lease window
+  runs out; Edit here or Take over does not wait for that.
+- With no lease to obey, the editor behaves as it does without the flag: the
+  flag off, a server that does not know the lease, a new post that has not
+  been created yet, or presence failing.
+
+A locked tab shows the document read-only at full contrast: it can be read,
+scrolled, selected and copied from, and nothing in it can be changed. The
+editor is also read-only for the moment before the server's first answer.
 
 | Part              | While locked                                                                                      |
 | ----------------- | ------------------------------------------------------------------------------------------------- |
@@ -261,40 +297,14 @@ lease.
 | Header actions    | Disabled, and their shortcuts do nothing                                                          |
 | Settings panel    | `inert`, since it saves each edit as it is made                                                   |
 
-A glass pill in the header says why: who is editing, with their avatar, or that
-another of the writer's own tabs is, with Take over or Edit here. From
-Tailwind's `lg` breakpoint it sits centred on the header row, and below that on
-a row of its own under it. The header's avatar row leaves out the person the
-pill names.
-
-- The tab the first answer names opens for editing as it is, since it has just
-  read the document.
-- A tab that becomes the holder later, because the holder left or went quiet,
-  reads the latest copy before it unlocks.
-- A tab that becomes the holder with unsaved work is not read over. It asks
-  the server whether a later version was saved. If none was, it unlocks as it
-  is. If one was, its work is on a version that has been saved over and its
-  next save would collide, so it stays read-only and the pill says so, with
-  Copy content and Reload. Reload asks first, then discards the unsaved work
-  and reads the latest copy. If the question cannot be answered, the tab
-  unlocks and the collision check judges its save. When a save from this tab
-  has already collided, the collision banner above the header is shown alone:
-  it offers the same two ways out, and the tab stays read-only until the
-  reload.
-- After a takeover the tab waits before that read, so the previous holder's
-  last save can land: three seconds once that holder has polled again or has
-  gone, and twelve at most. The banner reads "Taking over" meanwhile.
-- A tab that loses the lease saves its draft at once, then locks. Unsaved edits
-  to a published post are never saved for the writer, so they stay in that
-  tab: the pill says the unsaved changes are still here and offers Copy
-  content beside Take over or Edit here.
-- Closing or reloading the tab gives the lease up at once, so the next tab in
-  line, or the same tab once it has loaded again, can edit without waiting. A
-  tab that dies without telling the server keeps the lease until the server's
-  lease window runs out; Edit here or Take over does not wait for that.
-- With no lease to obey, the editor behaves as it does without the flag: the
-  flag off, a server that does not know the lease, a new post that has not
-  been created yet, or presence failing.
+The one sign of it is an avatar with a lock, first in the header's avatar
+row: whoever is editing, or the writer's own avatar when another of their
+tabs is. The rest of the row leaves that person out. Hovering or clicking the
+avatar opens a card that says who is editing and offers Take over, or Edit
+here for the writer's own tab. The card opens by itself when the writer needs
+to know without asking: the lease was just taken from them, what they typed
+was put back, or they typed into the read-only document. While a takeover
+waits, the lock is a spinner.
 
 The lease is advisory. The server refuses no save because of it, and the
 collision check still decides a save built on an older version.

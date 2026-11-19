@@ -101,6 +101,8 @@ export interface EditorSessionHandle {
   reload: (options?: ReloadOptions) => Promise<ReloadOutcome>;
   /** Asks the server whether a later version than this document's was saved. False when the read fails. */
   hasNewerVersion: () => Promise<boolean>;
+  /** Puts back the copy the document was last loaded at, dropping unsaved work, with no request. False when it could not. */
+  revert: () => boolean;
   /** A later version was saved elsewhere, and a reload onto it would lose nothing. */
   newerVersionAvailable: boolean;
   /** Puts a revision's content back into the editor and saves it; true once persisted. */
@@ -511,6 +513,17 @@ export function useEditorSession({
     [fetchApi, persistedId, postType, queryClient, session],
   );
 
+  // The loaded copy can be behind the session's own saves; the session then refuses it.
+  const revert = useCallback((): boolean => {
+    if (!loadedRecord || !session.recordReloaded(loadedRecord, { discardUnsaved: true })) {
+      return false;
+    }
+    setTitle(loadedRecord.title === DEFAULT_TITLE ? '' : loadedRecord.title);
+    setInitialLexical(loadedRecord.lexical ?? null);
+    setContentKey((key) => key + 1);
+    return true;
+  }, [loadedRecord, session]);
+
   // Its own request, and nothing is adopted: the document may hold unsaved work.
   const hasNewerVersion = useCallback(async (): Promise<boolean> => {
     if (!persistedId) {
@@ -670,6 +683,7 @@ export function useEditorSession({
       contentText,
       reload,
       hasNewerVersion,
+      revert,
       newerVersionAvailable,
       restoreRevision,
       patchFeatureImage: session.patchFeatureImage,
@@ -720,6 +734,7 @@ export function useEditorSession({
       reload,
       restoreRevision,
       retrySave,
+      revert,
       session,
       settings,
       slug,

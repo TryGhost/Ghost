@@ -402,7 +402,9 @@ With no collision to recover from, a reload replaces only a document with
 nothing unsaved. `reload({ discardUnsaved: true })` replaces unsaved work too,
 for a caller that has had the writer confirm it. `hasNewerVersion()` asks the
 server whether a later version than the document's was saved, with a read of
-its own that adopts nothing, and answers false when that read fails.
+its own that adopts nothing, and answers false when that read fails. `revert()` puts back
+the copy the document was last loaded at, dropping unsaved work with no
+request; it answers false when the session has since saved past that copy.
 
 The screen's query also refetches on its own, after every save that lands and
 on reconnect once it is stale. Opening a post always sends a read of its own,

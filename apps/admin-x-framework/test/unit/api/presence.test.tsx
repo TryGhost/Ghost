@@ -32,6 +32,11 @@ describe('presence api', () => {
     expect(presenceRequestBody([resource], resource, 'take')).toEqual({
       presence: [{ resources: [resource], editing: resource, tab: presenceTabId(), lease: 'take' }],
     });
+    expect(presenceRequestBody([resource], resource, 'watch')).toEqual({
+      presence: [
+        { resources: [resource], editing: resource, tab: presenceTabId(), lease: 'watch' },
+      ],
+    });
     expect(presenceRequestBody([resource], undefined, 'hold')).toEqual({
       presence: [{ resources: [resource] }],
     });

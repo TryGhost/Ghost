@@ -41,12 +41,17 @@ ids and a server timestamp; names and avatars come from the staff users list.
 
 ## The lease
 
-With `lease`, `usePresence` also queues the editor's tab for the document it is
-editing and reports who holds it: `pending` until the server answers, the
-holder and whether it is this tab, or `null` when there is no lease to obey.
+With `lease`, `usePresence` also follows the lease on the document the editor
+has open and reports it: `pending` until the server answers, `free` while
+nobody holds the document, the holder and whether it is this tab, or `null`
+when there is no lease to obey.
 
-- Every poll asks to hold. `takeOver()` makes the next poll, sent at once, ask
-  to take the lease instead.
+- A poll only watches, which queues nothing, until the caller says it
+  `wantsLease`. From then, and for as long as the tab holds the lease, every
+  poll asks to hold. The first of those is sent at once, not with the poll
+  that was due. A tab that neither holds the lease nor wants it goes back to
+  watching, which gives up any place it had.
+- `takeOver()` makes the next poll, sent at once, ask to take the lease.
 - The tab keeps polling at the 30-second cadence while it is hidden and does
   not send a leave, so switching tabs does not give the document away. The
   30-minute idle stop still applies and still sends the leave, and so does

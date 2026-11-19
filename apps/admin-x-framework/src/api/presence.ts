@@ -18,8 +18,12 @@ export interface ActivePresence {
   ts: number;
 }
 
-/** `hold` keeps or joins this tab's place in the edited document's queue; `take` moves it to the front. */
-export type PresenceLeaseRequest = 'hold' | 'take';
+/**
+ * `hold` keeps or joins this tab's place in the edited document's queue and
+ * `take` moves it to the front. `watch` asks who holds the document and gives
+ * up any place this tab held.
+ */
+export type PresenceLeaseRequest = 'hold' | 'take' | 'watch';
 
 export interface PresenceLease {
   /** The user whose tab may edit the document now. */
@@ -30,8 +34,8 @@ export interface PresenceLease {
 
 export interface PresencePollResult {
   active: ActivePresence[];
-  /** Present when the poll asked for the lease and the server keeps one. */
-  lease?: PresenceLease;
+  /** Present when the poll asked about the lease and the server keeps one; null while nobody holds it. */
+  lease?: PresenceLease | null;
   serverTime: number;
 }
 
