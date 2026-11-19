@@ -572,13 +572,15 @@ describe('Tabs Component', () => {
       expect(screen.queryByRole('menu')).toBeNull();
     });
 
-    it('keeps the menu state when aria-expanded or aria-controls are passed anyway', () => {
+    it('keeps the menu state when menu-owned ARIA props are passed anyway', () => {
+      // As when shared tab props are spread onto the trigger.
+      const shared = { 'aria-haspopup': undefined, 'aria-expanded': false, 'aria-controls': 'x' };
       render(
         <Tabs defaultValue="visitors">
           <TabsList>
             <TabsTrigger value="visitors">Visitors</TabsTrigger>
             <DropdownMenu>
-              <TabsDropdownTrigger aria-controls="elsewhere" aria-expanded={false} value="members">
+              <TabsDropdownTrigger {...shared} value="members">
                 Members
               </TabsDropdownTrigger>
               <DropdownMenuContent>
@@ -593,6 +595,7 @@ describe('Tabs Component', () => {
       const tab = screen.getByRole('tab', { name: 'Members' });
       fireEvent.keyDown(tab, { key: 'Enter' });
 
+      expect(tab.getAttribute('aria-haspopup')).toBe('menu');
       expect(tab.getAttribute('aria-expanded')).toBe('true');
       expect(tab.getAttribute('aria-controls')).toMatch(/-content-members$/);
     });

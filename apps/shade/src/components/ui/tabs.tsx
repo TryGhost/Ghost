@@ -332,7 +332,7 @@ TabsContent.displayName = TabsPrimitive.Content.displayName;
 interface TabsDropdownTriggerProps extends Omit<
   React.ComponentProps<typeof TabsPrimitive.Trigger>,
   // The menu owns these: it sets aria-expanded, and the tab keeps aria-controls for its panel.
-  'asChild' | 'aria-controls' | 'aria-expanded'
+  'asChild' | 'aria-controls' | 'aria-expanded' | 'aria-haspopup'
 > {
   children: React.ReactNode;
 }
@@ -439,13 +439,15 @@ const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTrig
       // The menu owns these; JSX accepts them even though the props type leaves them out.
       'aria-controls': _ariaControls,
       'aria-expanded': _ariaExpanded,
+      'aria-haspopup': _ariaHasPopup,
       children,
       className,
       disabled,
       id,
       onKeyDown,
       ...props
-    }: TabsDropdownTriggerProps & { 'aria-controls'?: string; 'aria-expanded'?: boolean },
+    }: TabsDropdownTriggerProps &
+      Pick<React.AriaAttributes, 'aria-controls' | 'aria-expanded' | 'aria-haspopup'>,
     ref,
   ) => {
     const { variant, controlShape } = React.useContext(TabsContext);
