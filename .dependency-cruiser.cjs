@@ -246,6 +246,7 @@ const specialistDependencies = [
     dependency: npm('sanitize-html'),
     owners: [
       core('server/models/comment.js'),
+      core('frontend/services/theme-engine/announcement-bar.js'),
       core('frontend/services/proxy.js'),
       core('server/data/importer/importers/json-to-html.js'),
       service('members/members-api/controllers/router-controller.js'),

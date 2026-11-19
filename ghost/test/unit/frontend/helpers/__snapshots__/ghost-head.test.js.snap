@@ -3195,7 +3195,8 @@ Object {
     opacity: 0.92;
 }</style><script async src=\\"https://js.stripe.com/v3/\\"></script>
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/announcement-bar@~1.1/umd/announcement-bar.min.js\\" data-announcement-bar=\\"http://127.0.0.1:2369/\\" data-api-url=\\"http://127.0.0.1:2369/members/api/announcement/\\" crossorigin=\\"anonymous\\"></script>
+    <style data-ghost-announcement>[[BAR CSS]]</style>
+<script data-announcement-bar=\\"http://127.0.0.1:2369/\\" data-announcement=\\"Hello world\\">[[BAR JS]]</script>
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
     <script defer src=\\"/public/member-attribution.min.js?v=asset-hash\\"></script>",
 }

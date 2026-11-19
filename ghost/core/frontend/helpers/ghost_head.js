@@ -27,6 +27,8 @@ const debug = require('@tryghost/debug')('ghost_head');
 const { styles: templateStyles } = require('./tpl/styles');
 const { getFrontendAppConfig, getDataAttributes } = require('../utils/frontend-apps');
 const labs = require('../../shared/labs');
+const { getAnnouncementForViewer } = require('../../shared/announcement');
+const announcementBar = require('../services/theme-engine/announcement-bar');
 const { memoize } = require('../../shared/memoize');
 const { getMarkdownUrl } = require('../services/llms/markdown');
 const { isPurchasableEntry, isMachinePaymentsEnabled } = require('../../shared/machine-payments');
@@ -234,42 +236,22 @@ function getSearchHelper(frontendKey) {
 
 function getAnnouncementBarHelper(data) {
   const preview = data?.site?._preview;
-  const isFilled =
-    settingsCache.get('announcement_content') &&
-    settingsCache.get('announcement_visibility').length;
-
-  if (!isFilled && !preview) {
-    return '';
-  }
-
-  const { scriptUrl } = getFrontendAppConfig('announcementBar');
-  const siteUrl = urlUtils.getSiteUrl();
-  const announcementUrl = new URL('members/api/announcement/', siteUrl);
-  const attrs = {
-    'announcement-bar': siteUrl,
-    'api-url': announcementUrl,
-  };
-
+  let announcement;
   if (preview) {
-    const searchParam = new URLSearchParams(preview);
-    const announcement = searchParam.get('announcement');
-    const announcementBackground = searchParam.has('announcement_bg')
-      ? searchParam.get('announcement_bg')
-      : '';
-    const announcementVisibility = searchParam.has('announcement_vis');
-
-    if (!announcement || !announcementVisibility) {
-      return '';
+    const params = new URLSearchParams(preview);
+    if (params.has('announcement_vis') && params.get('announcement')) {
+      announcement = {
+        announcement: params.get('announcement'),
+        announcement_background: params.get('announcement_bg'),
+      };
     }
-    attrs.announcement = escapeExpression(announcement);
-    attrs['announcement-background'] = escapeExpression(announcementBackground);
-    attrs.preview = true;
+  } else {
+    announcement = getAnnouncementForViewer(settingsCache, data.member);
   }
 
-  const dataAttrs = getDataAttributes(attrs);
-  const helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
-
-  return helper;
+  return announcement
+    ? announcementBar.head(data.root._locals, announcement, !!preview, urlUtils.getSiteUrl())
+    : '';
 }
 
 function getAdminToolbarHelper(dataRoot, siteTitle, excludeList) {
