@@ -15,6 +15,10 @@ const MARKED_PLACEHOLDER_REGEX = /\uE000(\w+)\uE000/g;
 // does with `--uuid--`: URL objects percent-encode `%%{...}%%`.
 const UUID_MARKER = '--uuid--';
 const STEP_ID_MARKER = '--step-id--';
+// Only the m and step values: the redirect path, which includes the site's own path, may
+// contain the marker text too.
+const UUID_PARAM_REGEX = new RegExp(`([?&])m=${UUID_MARKER}(?=&|$)`);
+const STEP_ID_PARAM_REGEX = new RegExp(`([?&])step=${STEP_ID_MARKER}(?=&|$)`);
 
 /**
  * @typedef {object} Recipient
@@ -57,6 +61,11 @@ const TRUSTED_IDS = new Set(['uuid', 'step_id', 'unsubscribe_url', 'list_unsubsc
 
 // The token names authors can write in content and subjects; anything else is removed.
 const CONTENT_TOKEN_IDS = [...Object.keys(MEMBER_VALUES), 'site_title', 'site_url'];
+// Lexical renders `{token}` as inline code; this matches those wrappers so they can be removed.
+const CODE_WRAPPED_TOKEN_REGEX = new RegExp(
+  `<code>(\\{(?:${CONTENT_TOKEN_IDS.join('|')})(?:\\s*,?\\s*"[^"]*")?\\})<\\/code>`,
+  'g',
+);
 
 class MemberWelcomeEmailRenderer {
   #wrapperTemplate;
@@ -183,11 +192,7 @@ class MemberWelcomeEmailRenderer {
     }
 
     // Remove <code> wrappers around replacement strings (Lexical treats curly braces as inline code)
-    const tokenIds = CONTENT_TOKEN_IDS.join('|');
-    content = content.replace(
-      new RegExp(`<code>(\\{(?:${tokenIds})(?:\\s*,?\\s*"[^"]*")?\\})<\\/code>`, 'g'),
-      '$1',
-    );
+    content = content.replace(CODE_WRAPPED_TOKEN_REGEX, '$1');
 
     // A token with a fallback gets its own placeholder, whose value applies the fallback.
     /** @type {Map<string, (recipient: Recipient) => string>} */
@@ -256,12 +261,10 @@ class MemberWelcomeEmailRenderer {
             STEP_ID_MARKER,
             UUID_MARKER,
           );
-          // Only the m and step values: the redirect path, which includes the site's own
-          // path, may contain the marker text too.
           return trackedUrl
             .toString()
-            .replace(new RegExp(`([?&])m=${UUID_MARKER}(?=&|$)`), '$1m=%%{uuid}%%')
-            .replace(new RegExp(`([?&])step=${STEP_ID_MARKER}(?=&|$)`), '$1step=%%{step_id}%%');
+            .replace(UUID_PARAM_REGEX, '$1m=%%{uuid}%%')
+            .replace(STEP_ID_PARAM_REGEX, '$1step=%%{step_id}%%');
         }
         return urlWithPlaceholders;
       },
