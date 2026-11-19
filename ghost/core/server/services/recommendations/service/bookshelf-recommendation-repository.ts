@@ -1,5 +1,5 @@
 import { AllOptions, BookshelfRepository, ModelClass, ModelInstance } from './bookshelf-repository';
-import { Knex } from 'knex';
+import type { Knex } from 'knex';
 import { Recommendation } from './recommendation';
 import { RecommendationRepository } from './recommendation-repository';
 import type { GhostLogger } from '@tryghost/logging';

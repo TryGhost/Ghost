@@ -8,6 +8,13 @@ const meta = {
   title: 'Patterns / Share Modal',
   component: ShareModal.Root,
   tags: ['autodocs'],
+  parameters: {
+    docs: {
+      description: {
+        component: 'Share a post or publication with social links and a copyable URL.',
+      },
+    },
+  },
 } satisfies Meta<typeof ShareModal.Root>;
 
 export default meta;
@@ -326,5 +333,39 @@ export const StackedActions: Story = {
     };
 
     return <StackedExample />;
+  },
+};
+
+export const LongURL: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use for long, unbroken URLs: the URL truncates while the modal and copy button stay within the viewport.',
+      },
+    },
+  },
+  render: () => {
+    const url = `https://example.com/${'a-very-long-publication-link-'.repeat(12)}?ref=newsletter`;
+
+    return (
+      <ShareModal.Root>
+        <ShareModal.Trigger asChild>
+          <Button>Share a long URL</Button>
+        </ShareModal.Trigger>
+        <ShareModal.Content>
+          <ShareModal.Header>
+            <ShareModal.Title>Share your publication</ShareModal.Title>
+            <ShareModal.Description>
+              The link should stay inside this modal, even on a narrow screen.
+            </ShareModal.Description>
+          </ShareModal.Header>
+          <ShareModal.CopyURLBox copyURL={url}>
+            <ShareModal.CopyButton copyURL={url} icon="copy" size="sm" variant="outline" />
+          </ShareModal.CopyURLBox>
+          <ShareModal.SocialLinks layout="stacked" links={publicationSocialLinks} />
+        </ShareModal.Content>
+      </ShareModal.Root>
+    );
   },
 };

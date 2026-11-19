@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { inspect, isDeepStrictEqual } from 'node:util';
 import { isPlainObject } from 'lodash';
-// @ts-expect-error @tryghost/express-test lacks type definitions.
 import * as expressTest from '@tryghost/express-test';
 
 const { snapshotManager } = expressTest.snapshot;

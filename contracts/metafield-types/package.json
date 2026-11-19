@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/metafield-types",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Ghost member custom field types: which types exist, what each is made of, and how a value of each is validated",
   "license": "MIT",
   "author": "Ghost Foundation",
@@ -15,6 +15,18 @@
   "type": "module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
+  "imports": {
+    "#phone-lib": {
+      "source": {
+        "browser": "./src/phone-lib.ts",
+        "node": "./src/phone-lib.node.ts",
+        "default": "./src/phone-lib.ts"
+      },
+      "browser": "./build/phone-lib.js",
+      "node": "./build/phone-lib.node.js",
+      "default": "./build/phone-lib.js"
+    }
+  },
   "exports": {
     ".": {
       "source": "./src/index.ts",

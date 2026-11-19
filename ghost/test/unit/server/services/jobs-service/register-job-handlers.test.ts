@@ -32,6 +32,7 @@ describe('register-job-handlers', function () {
   let contentImport: { handleJob: sinon.SinonStub };
   let updateCheck: sinon.SinonStub;
   let signingKeys: { check: sinon.SinonStub };
+  let authCleanup: { clearExpired: sinon.SinonStub };
 
   // Handlers are looked up by their job type rather than registration order,
   // so adding a handler does not silently shift which one a test exercises.
@@ -64,10 +65,11 @@ describe('register-job-handlers', function () {
     contentImport = { handleJob: sinon.stub().resolves() };
     updateCheck = sinon.stub().resolves();
     signingKeys = { check: sinon.stub().resolves() };
+    authCleanup = { clearExpired: sinon.stub().resolves() };
 
     registerJobHandlers({
       gifts: { startFetch: sinon.stub().resolves() },
-      automations: { startFetch: sinon.stub().resolves() },
+      automationAnalytics: { startFetch: sinon.stub().resolves() },
       newsletters: { startFetch: sinon.stub().resolves() },
       jobsService,
       memberJobs,
@@ -82,6 +84,7 @@ describe('register-job-handlers', function () {
       contentImport,
       updateCheck,
       signingKeys,
+      authCleanup,
     });
   });
 
@@ -265,6 +268,12 @@ describe('register-job-handlers', function () {
     await assert.rejects(handlerFor('check-signing-keys')({}), (thrown) => thrown === error);
   });
 
+  it('runs clear-expired-auth-rows with the injected auth cleanup', async function () {
+    await handlerFor('clear-expired-auth-rows')({});
+
+    sinon.assert.calledOnceWithExactly(authCleanup.clearExpired);
+  });
+
   it('runs process-webmention with the injected mentions controller', async function () {
     const processWebmentionHandler = handlerFor('process-webmention');
     const job = new ProcessWebmentionJob({
@@ -311,6 +320,14 @@ describe('register-job-handlers', function () {
     await sendEmailHandler(job);
 
     assert.ok(emailService.handleSendEmailJob.calledOnceWithExactly(job));
+  });
+
+  it('passes an interrupted send back to the jobs service', async function () {
+    emailService.handleSendEmailJob.resolves('interrupted');
+
+    const result = await handlerFor('send-email')(new SendEmailJob({ emailId: 'email-id' }));
+
+    assert.equal(result, 'interrupted');
   });
 
   it('registers send-email on a dedicated queue with room for two sends', function () {

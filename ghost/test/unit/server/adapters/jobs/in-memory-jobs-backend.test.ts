@@ -56,6 +56,25 @@ describe('InMemoryJobsBackend', function () {
       assert.deepEqual(settlements, [{ id: 'd1', status: 'dead', error }]);
     });
 
+    it('does not settle a job that was interrupted, so it can be handed over again', async function () {
+      const backend = new InMemoryJobsBackend();
+      const onSettled = sinon.stub();
+      const delivered = Promise.withResolvers<void>();
+      backend.start({
+        processor: async () => {
+          delivered.resolve();
+          return 'interrupted';
+        },
+        onSettled,
+      });
+
+      backend.enqueue('d1', dispatch({ type: 'job', payload: '{}' }));
+      await delivered.promise;
+      await backend.shutdown({ timeoutMs: 100 });
+
+      sinon.assert.notCalled(onSettled);
+    });
+
     it('keeps delivering when reporting a settlement fails', async function () {
       const error = sinon.stub(logging, 'error');
       const backend = new InMemoryJobsBackend();
@@ -86,6 +105,84 @@ describe('InMemoryJobsBackend', function () {
   // Boot starts the jobs service before the web app is mounted or any
   // recurring job is scheduled, so a pre-start enqueue or schedule is a
   // boot-ordering bug.
+  describe('held ids', function () {
+    it('holds an enqueued job until it settles', async function () {
+      const backend = new InMemoryJobsBackend();
+      const release = Promise.withResolvers<void>();
+      const settled = Promise.withResolvers<void>();
+      backend.start({ processor: () => release.promise, onSettled: async () => settled.resolve() });
+
+      backend.enqueue('d1', dispatch({ type: 'job', payload: '{}' }));
+      assert.deepEqual(backend.heldIds(), ['d1']);
+
+      release.resolve();
+      await settled.promise;
+      assert.deepEqual(backend.heldIds(), []);
+      await backend.shutdown({ timeoutMs: 100 });
+    });
+
+    it('holds a queued job that has not started yet', async function () {
+      const backend = new InMemoryJobsBackend({ concurrency: 1 });
+      const release = Promise.withResolvers<void>();
+      backend.start({ processor: () => release.promise });
+
+      backend.enqueue('d1', dispatch({ type: 'job', payload: '{}' }));
+      backend.enqueue('d2', dispatch({ type: 'job', payload: '{}' }));
+
+      assert.deepEqual(backend.heldIds().sort(), ['d1', 'd2']);
+      release.resolve();
+      await backend.shutdown({ timeoutMs: 100 });
+    });
+
+    it('keeps holding a job taken again after a restart when the abandoned run finishes', async function () {
+      const backend = new InMemoryJobsBackend();
+      const abandoned = Promise.withResolvers<void>();
+      backend.start({ processor: () => abandoned.promise });
+      backend.enqueue('d1', dispatch({ type: 'job', payload: '{}' }));
+      await backend.shutdown({ timeoutMs: 10 });
+
+      backend.start({ processor: () => new Promise<void>(() => {}) });
+      backend.enqueue('d1', dispatch({ type: 'job', payload: '{}' }));
+      abandoned.resolve();
+      await new Promise<void>((resolve) => {
+        setImmediate(resolve);
+      });
+
+      assert.deepEqual(backend.heldIds(), ['d1']);
+      await backend.shutdown({ timeoutMs: 10 });
+    });
+
+    it('stops holding a job that reports it was interrupted, so its row is left to go stale', async function () {
+      const backend = new InMemoryJobsBackend();
+      const finished = Promise.withResolvers<void>();
+      backend.start({
+        processor: async () => {
+          finished.resolve();
+          return 'interrupted';
+        },
+      });
+
+      backend.enqueue('d1', dispatch({ type: 'job', payload: '{}' }));
+      await finished.promise;
+      await new Promise<void>((resolve) => {
+        setImmediate(resolve);
+      });
+
+      assert.deepEqual(backend.heldIds(), []);
+      await backend.shutdown({ timeoutMs: 10 });
+    });
+
+    it('holds nothing after shutdown, since the jobs it abandons are gone with it', async function () {
+      const backend = new InMemoryJobsBackend();
+      backend.start({ processor: () => new Promise<void>(() => {}) });
+      backend.enqueue('d1', dispatch({ type: 'job', payload: '{}' }));
+
+      await backend.shutdown({ timeoutMs: 10 });
+
+      assert.deepEqual(backend.heldIds(), []);
+    });
+  });
+
   it('throws on an enqueue before start instead of silently losing the job', function () {
     const backend = new InMemoryJobsBackend();
     assert.throws(

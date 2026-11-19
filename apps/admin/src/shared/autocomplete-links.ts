@@ -41,6 +41,9 @@ export function buildAutocompleteLinks(
   const membersSignupAccess = settings.membersSignupAccess ?? 'all';
   const isFreeSignupAllowed = membersSignupAccess === 'all';
   const isSignupAllowed = membersSignupAccess === 'all' || membersSignupAccess === 'paid';
+  // Same rule as signupAccessAllowsGifts: a gift recipient who isn't already a member couldn't
+  // join an invite-only site to redeem it, so Portal doesn't sell gifts there
+  const isGiftingAllowed = membersSignupAccess !== 'invite';
 
   const defaults = [
     { label: 'Homepage', value: settings.homepageUrl },
@@ -66,9 +69,10 @@ export function buildAutocompleteLinks(
     ? [{ label: 'Recommendations', value: '#/portal/recommendations' }]
     : [];
 
-  const giftLink = settings.paidMembersEnabled
-    ? [{ label: 'Gift subscriptions', value: '#/portal/gift' }]
-    : [];
+  const giftLink =
+    settings.paidMembersEnabled && isGiftingAllowed
+      ? [{ label: 'Gift subscriptions', value: '#/portal/gift' }]
+      : [];
 
   return [
     ...defaults,

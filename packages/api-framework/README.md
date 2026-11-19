@@ -50,7 +50,7 @@ widening its inferred methods. Frames without a custom shape expose `id` as
 These generics describe an endpoint's expected working shape; they do not
 validate raw HTTP input. Use them as the compatibility bridge for existing
 endpoints. The schema-aware definition API below derives parsed request types
-from Zod for future migrations.
+from Zod when migrating an endpoint.
 
 #### Structure
 
@@ -162,15 +162,15 @@ edit: {
 }
 ```
 
-### Schema-aware method definitions (preparatory API)
+### Schema-aware methods
 
-`defineMethod()` infers callback request types from Zod schemas. This is currently
-a definition API only: runtime parsing and pipeline integration are not
-implemented. Do not register these methods with `pipeline()` yet; its TypeScript
-contract rejects callbacks that require a validated frame.
+`defineMethod()` infers callback request types from Zod schemas. Register these
+methods with `pipeline()` to parse request input into `frame.validated` before
+schema-aware callbacks run. Both the HTTP wrapper and internal API calls use
+the same parsing path.
 
 ```ts
-import { defineMethod, type Controller, type InferMethodFrame } from '@tryghost/api-framework';
+import { defineMethod, pipeline, type Controller, type InferMethodFrame } from '@tryghost/api-framework';
 import { z } from 'zod';
 
 const read = defineMethod({
@@ -198,10 +198,10 @@ const controller = {
   docName: 'widgets',
   read,
 } satisfies Controller<{ read: ReadFrame }>;
-```
 
-This checks the definition only. It does not make the controller executable
-through the current pipeline.
+const api = pipeline(controller, apiUtils);
+await api.read({ id: 'widget-id', page: '2' });
+```
 
 Declare `schema.options`, `schema.body`, or both. Only declared channels appear
 in `frame.validated`. Callbacks for `validation`, `permissions`,
@@ -209,22 +209,94 @@ in `frame.validated`. Callbacks for `validation`, `permissions`,
 frame. `permissions` and `query` are required in schema-aware definitions.
 
 The validated channels use `z.output`, including defaults and transforms, rather
-than the schema's input type. Their frame uses the shared `Frame` generic with
-dictionary-shaped working `options` and `data`, including an untrusted `id`;
-it does not apply the default frame's `string | undefined` convenience type to
-schema-method input. Input serializers can still change these working values.
+than the schema's input type. Schema-method callbacks expose `frame.data` as
+`never`; use `frame.validated.body` for request data. This applies to validation,
+permission hooks, permissions, cache-key callbacks, queries, and extracted
+helpers. Serializers retain the normal `Frame` type and its mutable working
+`data`. Working `frame.options` remains dictionary-shaped, including an untrusted
+`id`, rather than the default frame's `string | undefined` convenience type.
 `frame.validated` and its channel properties are readonly references;
 the schemas determine whether their nested output values are readonly. The
-runtime integration must keep these values independent of serializer mutations.
+pipeline passes input directly to Zod without an additional deep clone. Zod
+constructs new objects and arrays for explicitly described structures, but
+`z.unknown()`, `z.any()`, passthrough values, and custom transforms can retain
+input references. Treat input as read-only in refinements and transforms, and
+describe nested structures explicitly when parsed values must be isolated from
+working-frame mutations.
 
-The runtime follow-up must parse before custom validation and cache-key callbacks
-receive the frame, including on cache hits. Declaring a schema alone does not
-establish that ordering or perform validation.
+For schema methods, the body copy used by `frame.data` is deferred until a
+serializer or legacy helper first reads it. Methods that use only `frame.validated`
+avoid that copy entirely. Reading `frame.data` creates one mutable copy and
+reuses it; assigning a replacement skips the copy. Legacy methods retain eager
+body copying. A caller-supplied Frame that was already configured retains its
+existing working data.
+
+`schema.options` parses the original request's query, route params, and internal
+options merged in that order, so route params override query values and internal
+options override both. The `context` key is excluded; trusted context remains
+on `frame.options.context`. Schemas do not require a matching `options` allowlist.
+Keep the existing `options` and `data` configuration when serializers or legacy
+helpers need those values in the mutable working frame.
+
+`schema.body` parses the original request body, rather than `frame.data` (which
+can contain params instead). A missing body is `undefined`, and an empty body
+is `{}`; use Zod defaults or optional schemas when either is acceptable.
+
+For schema methods, Zod replaces the legacy shared and API input validators.
+It validates only the declared channels; declare both when both need validation.
+An optional custom `validation` callback runs after parsing, before cache-key
+generation and lookup, including on cache hits. Invalid input rejects with a
+Ghost `ValidationError` (HTTP 422), whose property and issue paths identify the
+`options` or `body` channel. Unexpected errors thrown by refinements or transforms
+propagate unchanged.
+
+The default cache key includes the working options (including trusted context)
+and all parsed channels. `generateCacheKeyData` can use `frame.validated` to
+provide a custom key. Input serializers and permissions run before cache lookup
+on every request. Queries and output serializers run on cache misses.
+
+Schema cache keys are generated only when `cache` is configured. The default
+key keeps working options and validated channels in separate fields. Keys must
+be JSON-compatible; for non-JSON schema outputs such as `Map`, `Set`, or
+`bigint`, provide `generateCacheKeyData` that converts them to a suitable key.
+Legacy key callbacks still run without a cache because some also prepare access
+context, but their unused results are not serialized.
+
+#### Resource bodies
+
+Admin API writes send one resource in an array under a root key, such as
+`{labels: [{name: 'News'}]}`. `resourceBody()` builds the schema for that body
+and parses it to the resource, so callbacks do not unwrap it themselves:
+
+```ts
+import { defineMethod, resourceBody } from '@tryghost/api-framework';
+import { z } from 'zod';
+
+const label = z.object({ name: z.string() });
+
+const add = defineMethod({
+  schema: { body: resourceBody('labels', label) },
+  permissions: true,
+  query(frame) {
+    // The label itself, not {labels: [label]}.
+    return frame.validated.body.name;
+  },
+});
+```
+
+The body must hold exactly one resource. Validation issues keep their path in
+the body as sent, such as `body.labels.0.name`, and `z.input` of the schema is
+still that body. `frame.data` is unchanged, so serializers and legacy helpers
+continue to read `frame.data.labels[0]`.
+
+The result is not a `z.object()`, so it has no `.extend()` or `.pick()`. Compose
+the resource schema first, then wrap it.
 
 `defineMethod()` preserves the supplied configuration, schemas, and callbacks by
-reference. It does not parse requests, invoke callbacks, or change existing
-controller behavior. Existing controllers continue to use `Controller` and
-`ControllerMethod` without this helper.
+reference. It does not parse requests or invoke callbacks itself; the pipeline
+provides that behavior. Existing controllers without schemas continue to use
+`Controller` and `ControllerMethod` with their existing validation and cache
+behavior.
 
 ## Develop
 

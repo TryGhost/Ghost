@@ -70,8 +70,6 @@ function latestPhoneRequest(stripe: StripeTestService) {
 test.describe('Ghost Admin - Checkout fields', () => {
   test.use({
     stripeEnabled: true,
-    // Phone fields on, as checkout saves the phone number only into one.
-    labs: { stripeCheckoutCollection: true, customFieldTypePhone: true },
   });
 
   test('shipping address - a member gives one at checkout, and it lands on their record', async ({
@@ -369,19 +367,5 @@ test.describe('Ghost Admin - Checkout fields', () => {
 
     await startPaidSignupViaPortal(page, { tierName });
     expect(latestShippingRequest(stripe!)).toBeUndefined();
-  });
-});
-
-test.describe('Ghost Admin - Checkout fields without the collection flag', () => {
-  test.use({ stripeEnabled: true });
-
-  test('labs flag off - only the design is offered, without tabs', async ({ page }) => {
-    const settingsPage = new SettingsPage(page);
-    await settingsPage.goto();
-    const checkout = new CheckoutSettingsModal(page);
-    await checkout.open();
-
-    await expect(checkout.customizeDesignSwitch).toBeVisible();
-    await expect(checkout.fieldsTab).toHaveCount(0);
   });
 });

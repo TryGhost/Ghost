@@ -28,6 +28,8 @@ export interface RequestOptions {
   responseType?: ResponseType;
   /** False leaves the caller to handle `SessionExpiredError` instead of leaving the page. */
   sessionExpiryRedirect?: boolean;
+  /** False keeps a 503 or version mismatch from this request out of the site-wide maintenance and upgrade alerts. */
+  reportUpgradeStatus?: boolean;
   onUploadProgress?: (progress: number) => void;
 }
 
@@ -284,6 +286,7 @@ export const useFetchApi = () => {
         retry = true,
         responseType,
         sessionExpiryRedirect = true,
+        reportUpgradeStatus: reportUpgrade = true,
         onUploadProgress,
       }: RequestOptions = {},
     ): Promise<ResponseData> => {
@@ -420,7 +423,7 @@ export const useFetchApi = () => {
               newError = new ServerUnreachableError({ cause: error });
             }
 
-            if (GHOST_API_REQUEST.test(endpoint.toString())) {
+            if (reportUpgrade && GHOST_API_REQUEST.test(endpoint.toString())) {
               reportUpgradeStatus(newError);
             }
 

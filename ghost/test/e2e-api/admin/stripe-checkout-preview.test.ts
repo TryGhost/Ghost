@@ -95,7 +95,6 @@ describe('Stripe Checkout Preview Admin API', function () {
 
   describe('with unsaved shipping', function () {
     beforeEach(async function () {
-      mockManager.mockLabsEnabled('stripeCheckoutCollection');
       for (const field of [
         { name: 'Delivery address', type: 'address' },
         { name: 'Recipient name', type: 'short_text' },

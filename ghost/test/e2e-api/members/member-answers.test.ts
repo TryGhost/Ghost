@@ -134,8 +134,6 @@ describe('Member answers by port', function () {
   beforeEach(async function () {
     mockManager.mockMail();
     mockManager.mockStripe();
-    mockManager.mockLabsEnabled('stripeCheckoutCollection');
-    mockManager.mockLabsEnabled('customFieldTypePhone');
     addressKey = await defineField('Delivery address', 'address');
     recipientKey = await defineField('Recipient name', 'short_text');
     phoneKey = await defineField('Contact phone', 'phone');

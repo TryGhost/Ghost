@@ -25,10 +25,15 @@ export class PortalAccountProfilePage extends PortalPage {
 
   /**
    * The button beside a phone field's number that shows the country the number is from, as its
-   * calling code, and opens the list of countries to pick from.
+   * flag and calling code, and opens the list of countries to pick from.
    */
   phoneCountry(key: string): Locator {
     return this.portalFrame.locator(`[data-test-input="input-custom:${key}-country"]`);
+  }
+
+  /** The flag a phone field shows beside its calling code, named by its country. */
+  phoneFlag(key: string, country: string): Locator {
+    return this.phoneCountry(key).getByRole('img', { name: country });
   }
 
   /** The search box over the list that is open, which shows what it searches as its placeholder. */

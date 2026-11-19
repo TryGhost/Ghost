@@ -47,6 +47,7 @@
     "@types/react-dom": "catalog:react17",
     "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
+    "country-flag-icons": "catalog:",
     "dompurify": "catalog:",
     "eslint": "catalog:",
     "jsdom": "catalog:",

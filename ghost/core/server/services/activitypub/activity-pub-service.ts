@@ -1,7 +1,7 @@
 import ObjectID from 'bson-objectid';
-import { Knex } from 'knex';
+import type { Knex } from 'knex';
 import type { GhostLogger } from '@tryghost/logging';
-import { IdentityTokenService } from '../identity-tokens/identity-token-service';
+import type { IdentityTokenService } from '../identity-tokens/identity-token-service';
 
 type ExpectedWebhook = {
   event: string;

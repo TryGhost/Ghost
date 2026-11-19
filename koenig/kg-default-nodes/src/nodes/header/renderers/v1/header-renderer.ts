@@ -1,5 +1,7 @@
 import {addCreateDocumentOption} from '../../../../utils/add-create-document-option.js';
 import type {ExportDOMOptions, ExportDOMOutput} from '../../../../export-dom.js';
+import {cssUrl} from '../../../../utils/css-url.js';
+import {escapeHtml} from '../../../../utils/escape-html.js';
 import {html} from '../../../../utils/tagged-template-fns.js';
 import {renderEmptyContainer} from '../../../../utils/render-empty-container.js';
 import {slugify} from '../../../../utils/slugify.js';
@@ -27,19 +29,19 @@ export function renderHeaderNodeV1(node: HeaderV1NodeData, options: RenderOption
     }
 
     const templateData = {
-        size: node.size,
-        style: node.style,
+        size: escapeHtml(node.size),
+        style: escapeHtml(node.style),
         buttonEnabled: node.buttonEnabled && Boolean(node.buttonUrl) && Boolean(node.buttonText),
-        buttonUrl: node.buttonUrl,
-        buttonText: node.buttonText,
+        buttonUrl: escapeHtml(node.buttonUrl),
+        buttonText: escapeHtml(node.buttonText),
         header: node.header,
         headerSlug: slugify(node.header),
         subheader: node.subheader,
         subheaderSlug: slugify(node.subheader),
         hasHeader: !!node.header,
         hasSubheader: !!node.subheader && !!node.subheader.replace(/(<br\s*\/?>)+$/i, '').trim(),
-        backgroundImageStyle: node.style === 'image' ? `background-image: url(${node.backgroundImageSrc})` : '',
-        backgroundImageSrc: node.backgroundImageSrc
+        backgroundImageStyle: node.style === 'image' ? `background-image: ${cssUrl(node.backgroundImageSrc)}` : '',
+        backgroundImageSrc: escapeHtml(node.backgroundImageSrc)
     };
 
     const headerHtml = html`

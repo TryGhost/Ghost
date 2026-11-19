@@ -5,7 +5,6 @@ import { vi } from 'vitest';
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import { mockSystemTime } from '../../utils/clock-utils';
-// @ts-expect-error This module lacks type definitions.
 import DomainEvents from '@tryghost/domain-events';
 import * as db from '../../../core/server/data/db';
 // @ts-expect-error This module lacks type definitions.

@@ -5,10 +5,9 @@ import { isOutdatedReviewCode } from '@tryghost/app-contracts';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import type { AppInstallationPreview } from '@tryghost/admin-x-framework/api/app-installations';
 import { AlreadyInstalled } from './already-installed';
-import { ApproveReview } from './approve-review';
 import { Failed } from './failed';
-import { InstallReview } from './install-review';
 import { Loading } from './loading';
+import { Review } from './review';
 import { type InstallFailure, apiErrorOf, installFailureOf } from '@/apps/lib/install-failure';
 import { appRoute } from '@/apps/lib/routes';
 import { useInstallFlow } from '@/apps/lib/use-install-flow';
@@ -126,20 +125,15 @@ export const InstallDialog: React.FC<InstallDialogProps> = ({ manifestUrl, onClo
         onRetry={() => void confirmReviewed(reviewed)}
       />
     );
-  } else if (!reviewed.installation) {
+  } else if (
+    !reviewed.installation ||
+    reviewed.installation.changes.length ||
+    reviewed.installation.status !== 'active'
+  ) {
     content = (
-      <InstallReview
-        isConfirming={isConfirming}
-        notice={notice}
-        preview={reviewed}
-        onClose={close}
-        onConfirm={() => void confirmReviewed(reviewed)}
-      />
-    );
-  } else if (reviewed.installation.changes.length || reviewed.installation.status !== 'active') {
-    content = (
-      <ApproveReview
-        installation={reviewed.installation}
+      <Review
+        // An install that turns out to be an approval starts afresh, as another screen would.
+        key={reviewed.installation ? 'approve' : 'install'}
         isConfirming={isConfirming}
         notice={notice}
         preview={reviewed}
@@ -164,7 +158,7 @@ export const InstallDialog: React.FC<InstallDialogProps> = ({ manifestUrl, onClo
     >
       {/* The review can be taller than a short screen; the backdrop then scrolls the whole dialog. */}
       <DialogContent
-        className="max-w-md overflow-x-hidden"
+        className="max-w-lg overflow-x-hidden"
         data-testid="app-install-dialog"
         scroll="overlay"
       >

@@ -2,7 +2,11 @@ import assert from 'node:assert/strict';
 import createKnex, { type Knex } from 'knex';
 import { vi } from 'vitest';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
-import { AppInstallationsRepository } from '../../../../../core/server/services/app-installations/app-installations-repository';
+import {
+  alreadyInstalled,
+  AppInstallationsRepository,
+  retryOnDeadlock,
+} from '../../../../../core/server/services/app-installations/app-installations-repository';
 import type { Installation } from '../../../../../core/server/services/app-installations/codec';
 import type { LoadedManifest } from '../../../../../core/server/services/app-installations/load-manifest';
 import { FIXTURE_BACKEND_KEY, FIXTURE_IDENTITY_KEY } from '../../../../utils/app-identity';
@@ -45,7 +49,7 @@ const installation: Installation = {
   updated_at: new Date(),
 };
 
-/** A repository over a database where locking the installation finds `locked`. */
+/** A transaction in which locking the installation finds `locked`. */
 function lockingFinds(locked: { status: string; revision: number } | undefined) {
   const trx = (table: string) => {
     assert.equal(table, 'app_installations');
@@ -56,33 +60,33 @@ function lockingFinds(locked: { status: string; revision: number } | undefined) 
       },
     };
   };
-  const knex = {
-    transaction: async <T>(write: (trx: Knex.Transaction) => Promise<T>) =>
-      write(trx as unknown as Knex.Transaction),
+  return {
+    repository: new AppInstallationsRepository({} as Knex),
+    transacting: trx as unknown as Knex.Transaction,
   };
-  return new AppInstallationsRepository(knex as unknown as Knex);
 }
 
 const deadlock = () => Object.assign(new Error('Deadlock victim'), { code: 'ER_LOCK_DEADLOCK' });
 
-/** A repository over a database whose transactions and inserts can be made to fail. */
+/** A transaction whose inserts can be made to fail. */
 function inserting() {
   const insert = vi
     .fn<(_row: Record<string, unknown>) => Promise<unknown[]>>()
     .mockResolvedValue([]);
   const trx = vi.fn((_table: string) => ({ insert }));
-  const transaction = vi.fn(async (write: (connection: Knex.Transaction) => Promise<void>) => {
-    await write(trx as unknown as Knex.Transaction);
-  });
-  const repository = new AppInstallationsRepository({ transaction } as unknown as Knex);
-  return { repository, insert, trx, transaction };
+  return {
+    repository: new AppInstallationsRepository({} as Knex),
+    transacting: trx as unknown as Knex.Transaction,
+    insert,
+    trx,
+  };
 }
 
 describe('AppInstallationsRepository insert', function () {
   it('stores the manifest text, digest and icon exactly as they were given', async function () {
-    const { repository, insert, trx } = inserting();
+    const { repository, transacting, insert, trx } = inserting();
 
-    const installed = await repository.insert(loaded, ICON_DATA_URL);
+    const installed = await repository.insert(loaded, ICON_DATA_URL, { transacting });
 
     assert.deepEqual(
       trx.mock.calls.map(([table]) => table),
@@ -103,87 +107,90 @@ describe('AppInstallationsRepository insert', function () {
     assert.equal(installed.icon_data_url, ICON_DATA_URL);
   });
 
-  it('restarts the whole transaction when its manifest insert deadlocks', async function () {
-    const { repository, insert, trx, transaction } = inserting();
-    insert.mockResolvedValueOnce([]).mockRejectedValueOnce(deadlock());
-
-    const installed = await repository.insert(loaded, null);
-
-    assert.equal(transaction.mock.calls.length, 2);
-    assert.deepEqual(
-      trx.mock.calls.map(([table]) => table),
-      [
-        'app_installations',
-        'app_installation_manifests',
-        'app_installations',
-        'app_installation_manifests',
-      ],
+  it('reports a conflict when the app is already installed', async function () {
+    const { repository, transacting, insert } = inserting();
+    insert.mockRejectedValueOnce(
+      Object.assign(new Error('Duplicate app'), { code: 'ER_DUP_ENTRY' }),
     );
-    assert.deepEqual(insert.mock.calls[0], insert.mock.calls[2]);
-    assert.deepEqual(insert.mock.calls[1], insert.mock.calls[3]);
-    assert.equal(installed.id, insert.mock.calls[2][0].id);
-  });
 
-  it('reports a conflict when a retried install encounters the winner', async function () {
-    const { repository, transaction } = inserting();
-    transaction
-      .mockRejectedValueOnce(deadlock())
-      .mockRejectedValueOnce(Object.assign(new Error('Duplicate app'), { code: 'ER_DUP_ENTRY' }));
-
-    await assert.rejects(repository.insert(loaded, null), {
+    await assert.rejects(repository.insert(loaded, null, { transacting }), {
       errorType: 'ConflictError',
       code: 'APP_ALREADY_INSTALLED',
     });
-    assert.equal(transaction.mock.calls.length, 2);
+    assert.equal(insert.mock.calls.length, 1);
+  });
+});
+
+describe('retryOnDeadlock', function () {
+  it('runs again when it deadlocks', async function () {
+    const run = vi.fn<() => Promise<string>>().mockRejectedValueOnce(deadlock());
+    run.mockResolvedValueOnce('written');
+
+    assert.equal(await retryOnDeadlock(run), 'written');
+    assert.equal(run.mock.calls.length, 2);
   });
 
-  it('can recover from both retryable failures within the three-attempt bound', async function () {
-    const { repository, transaction } = inserting();
-    transaction.mockRejectedValueOnce(deadlock()).mockRejectedValueOnce(deadlock());
+  it('reports a conflict when a retried install encounters the winner', async function () {
+    const run = vi
+      .fn<() => Promise<void>>()
+      .mockRejectedValueOnce(deadlock())
+      .mockRejectedValueOnce(alreadyInstalled(manifest.id));
 
-    await repository.insert(loaded, null);
+    await assert.rejects(retryOnDeadlock(run), {
+      errorType: 'ConflictError',
+      code: 'APP_ALREADY_INSTALLED',
+    });
+    assert.equal(run.mock.calls.length, 2);
+  });
 
-    assert.equal(transaction.mock.calls.length, 3);
+  it('can recover from two deadlocks within the three-attempt bound', async function () {
+    const run = vi
+      .fn<() => Promise<void>>()
+      .mockRejectedValueOnce(deadlock())
+      .mockRejectedValueOnce(deadlock())
+      .mockResolvedValueOnce();
+
+    await retryOnDeadlock(run);
+
+    assert.equal(run.mock.calls.length, 3);
   });
 
   it('propagates the last deadlock after three attempts', async function () {
-    const { repository, transaction } = inserting();
     const error = deadlock();
-    transaction.mockRejectedValue(error);
+    const run = vi.fn<() => Promise<void>>().mockRejectedValue(error);
 
-    await assert.rejects(repository.insert(loaded, null), (reason) => reason === error);
+    await assert.rejects(retryOnDeadlock(run), (reason) => reason === error);
 
-    assert.equal(transaction.mock.calls.length, 3);
+    assert.equal(run.mock.calls.length, 3);
   });
 
   it('does not retry unrelated database errors', async function () {
-    const { repository, transaction } = inserting();
     const error = Object.assign(new Error('Connection lost'), { code: 'ECONNRESET' });
-    transaction.mockRejectedValue(error);
+    const run = vi.fn<() => Promise<void>>().mockRejectedValue(error);
 
-    await assert.rejects(repository.insert(loaded, null), (reason) => reason === error);
+    await assert.rejects(retryOnDeadlock(run), (reason) => reason === error);
 
-    assert.equal(transaction.mock.calls.length, 1);
+    assert.equal(run.mock.calls.length, 1);
   });
 });
 
 describe('AppInstallationsRepository whileUnchanged', function () {
   it('writes while the installation is at the revision it was read at', async function () {
-    const repository = lockingFinds({ status: 'active', revision: 3 });
+    const { repository, transacting } = lockingFinds({ status: 'active', revision: 3 });
 
-    assert.deepEqual(await repository.whileUnchanged(installation, async () => 'written'), {
-      status: 'written',
-      value: 'written',
-    });
+    assert.deepEqual(
+      await repository.whileUnchanged(installation, async () => 'written', { transacting }),
+      { status: 'written', value: 'written' },
+    );
   });
 
   it('tells a write whose result reads like a refusal apart from a refusal', async function () {
-    const repository = lockingFinds({ status: 'active', revision: 3 });
+    const { repository, transacting } = lockingFinds({ status: 'active', revision: 3 });
 
-    assert.deepEqual(await repository.whileUnchanged(installation, async () => 'changed'), {
-      status: 'written',
-      value: 'changed',
-    });
+    assert.deepEqual(
+      await repository.whileUnchanged(installation, async () => 'changed', { transacting }),
+      { status: 'written', value: 'changed' },
+    );
   });
 
   it('refuses to write once the installation has been uninstalled or changed', async function () {
@@ -192,12 +199,16 @@ describe('AppInstallationsRepository whileUnchanged', function () {
       [{ status: 'uninstalled', revision: 4 }, 'uninstalled'],
       [{ status: 'suspended', revision: 4 }, 'changed'],
     ] as const) {
-      const repository = lockingFinds(locked);
+      const { repository, transacting } = lockingFinds(locked);
       let wrote = false;
 
-      const result = await repository.whileUnchanged(installation, async () => {
-        wrote = true;
-      });
+      const result = await repository.whileUnchanged(
+        installation,
+        async () => {
+          wrote = true;
+        },
+        { transacting },
+      );
 
       assert.deepEqual(result, { status: refused });
       assert.equal(wrote, false);

@@ -5,6 +5,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
   Table,
   TableBody,
@@ -17,6 +18,7 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { Link } from '@tryghost/admin-x-framework';
 import type { AppInstallation } from '@tryghost/admin-x-framework/api/app-installations';
 import { AppIcon } from './app-icon';
+import { PinMenuItem } from './pin-menu-item';
 import { appDetailsRoute, appReviewRoute, appRoute } from '@/apps/lib/routes';
 import { openRowLink, openRowLinkInNewTab } from '@/apps/lib/row-link';
 import type { AppPinsState } from '@/apps/lib/use-app-pins';
@@ -69,13 +71,10 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall, pins })
               </TableHead>
               <TableCell className="p-4">
                 <Inline gap="xs" justify="end">
-                  {status === 'suspended' ? (
+                  {/* The row opens the app, so only an app waiting for approval gets a button. */}
+                  {status === 'suspended' && (
                     <Button variant="outline" asChild>
                       <Link to={appReviewRoute(installation.manifest_url)}>Review changes</Link>
-                    </Button>
-                  ) : (
-                    <Button variant="outline" asChild>
-                      <Link to={appRoute(id)}>Open</Link>
                     </Button>
                   )}
                   <DropdownMenu>
@@ -89,21 +88,26 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall, pins })
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      {/* The same items, icons and order as the menu on an app's details */}
                       <DropdownMenuItem asChild>
-                        <Link to={appDetailsRoute(id)}>Details</Link>
+                        <Link to={appDetailsRoute(id)}>
+                          <LucideIcon.Info />
+                          Details
+                        </Link>
                       </DropdownMenuItem>
                       {pins && (
-                        <DropdownMenuItem
-                          disabled={!pins.isPinned(id) && !pins.canPinMore}
-                          onSelect={() => pins.setPinned(id, !pins.isPinned(id))}
-                        >
-                          {pins.isPinned(id) ? 'Unpin from sidebar' : 'Pin to sidebar'}
-                        </DropdownMenuItem>
+                        <PinMenuItem
+                          full={!pins.canPinMore}
+                          pinned={pins.isPinned(id)}
+                          onPinnedChange={(pinned) => pins.setPinned(id, pinned)}
+                        />
                       )}
+                      <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive"
                         onSelect={() => onUninstall(installation)}
                       >
+                        <LucideIcon.Trash />
                         Uninstall
                       </DropdownMenuItem>
                     </DropdownMenuContent>

@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-// @ts-expect-error This module lacks type definitions.
 import schema from '../../../../../core/server/data/schema/schema';
 import { foreignKeysOf } from '../../../../../core/server/data/schema/lib/foreign-keys';
 
@@ -13,11 +12,11 @@ describe('In-development schema tables', function () {
     await configUtils.restore();
   });
 
-  it('only lists tables defined in schema.js', function () {
+  it('only lists tables defined in schema.ts', function () {
     for (const tableName of inDevelopment.IN_DEVELOPMENT_TABLES) {
       assert(
         Object.hasOwn(schema, tableName),
-        `In-development table ${tableName} is not defined in schema.js`,
+        `In-development table ${tableName} is not defined in schema.ts`,
       );
     }
   });

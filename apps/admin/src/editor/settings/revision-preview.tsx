@@ -1,4 +1,3 @@
-import DOMPurify from 'dompurify';
 import { Suspense, useCallback } from 'react';
 import { LoadingIndicator } from '@tryghost/shade/components';
 import { Inline, Text } from '@tryghost/shade/primitives';
@@ -19,19 +18,10 @@ import type { PostCardConfig } from '@/editor/card-config';
 import { editorFileUploader } from '@/editor/koenig-file-uploader';
 import { reportKoenigError, reportKoenigRenderError } from '@/editor/report-error';
 import type { RevisionEntry } from './post-history';
+import { sanitizeCaption } from './sanitize-caption';
 
 /** The part of Lexical's editor the loader's minimal instance type leaves out. */
 type LexicalEditable = { setEditable: (editable: boolean) => void };
-
-/** A caption is stored HTML; only the marks a caption can carry survive here. */
-function sanitizeCaption(caption: string | null): string {
-  return DOMPurify.sanitize(caption ?? '', {
-    ALLOWED_TAGS: ['a', 'b', 'i', 'span'],
-    ALLOWED_ATTR: ['href', 'style'],
-    ALLOW_DATA_ATTR: false,
-    ALLOW_ARIA_ATTR: false,
-  });
-}
 
 function RevisionBody({
   editor,

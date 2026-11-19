@@ -1,4 +1,7 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
+import {escapeAttribute} from 'entities';
+import {escapeHtml} from '../../utils/escape-html.js';
+import {sanitizeColor} from '../../utils/sanitize-color.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
 import {getFirstHtmlElement} from '../../utils/get-first-html-element.js';
 
@@ -52,21 +55,21 @@ function cardTemplate(nodeData: SignupNodeData) {
     const backgroundImageStyle = nodeData.backgroundColor !== 'accent' && (!nodeData.backgroundImageSrc || nodeData.layout === 'split') ? `background-color: ${nodeData.backgroundColor}` : '';
 
     const imgTemplate = nodeData.backgroundImageSrc ? `
-        <picture><img class="kg-signup-card-image" src="${nodeData.backgroundImageSrc}" alt="" /></picture>
+        <picture><img class="kg-signup-card-image" src="${escapeHtml(nodeData.backgroundImageSrc)}" alt="" /></picture>
     ` : ``;
 
     const formTemplate = `
         <form class="kg-signup-card-form" data-members-form="signup">
-            ${nodeData.labels.map((label: string) => `<input data-members-label type="hidden" value="${label}" />`).join('\n')}
+            ${nodeData.labels.map((label: string) => `<input data-members-label type="hidden" value="${escapeAttribute(String(label ?? ''))}" />`).join('\n')}
             <div class="kg-signup-card-fields">
                 <input class="kg-signup-card-input" id="email" data-members-email="" type="email" required="true" placeholder="jamie@example.com" />
                 <button class="kg-signup-card-button ${buttonAccent}" style="${buttonStyle}color: ${nodeData.buttonTextColor};" type="submit">
-                    <span class="kg-signup-card-button-default">${nodeData.buttonText || 'Subscribe'}</span>
+                    <span class="kg-signup-card-button-default">${escapeHtml(nodeData.buttonText || 'Subscribe')}</span>
                     <span class="kg-signup-card-button-loading">${loadingIcon()}</span>
                 </button>
             </div>
             <div class="kg-signup-card-success" ${nodeData.textColor ? `style="color: ${nodeData.textColor};"` : ''}>
-                ${nodeData.successMessage || 'Thanks! Now check your email to confirm.'}
+                ${escapeHtml(nodeData.successMessage || 'Thanks! Now check your email to confirm.')}
             </div>
             <div class="kg-signup-card-error" ${nodeData.textColor ? `style="color: ${nodeData.textColor};"` : ''} data-members-error></div>
         </form>
@@ -120,12 +123,12 @@ export function renderSignupCardToDOM(dataset: SignupDatasetNode, options: Signu
         disclaimer: dataset.__disclaimer,
         backgroundImageSrc: dataset.__backgroundImageSrc,
         backgroundSize: dataset.__backgroundSize,
-        backgroundColor: dataset.__backgroundColor,
-        buttonColor: dataset.__buttonColor,
+        backgroundColor: sanitizeColor(dataset.__backgroundColor),
+        buttonColor: sanitizeColor(dataset.__buttonColor, 'accent'),
         labels: dataset.__labels,
         layout: dataset.__layout,
-        textColor: dataset.__textColor,
-        buttonTextColor: dataset.__buttonTextColor,
+        textColor: sanitizeColor(dataset.__textColor),
+        buttonTextColor: sanitizeColor(dataset.__buttonTextColor),
         successMessage: dataset.__successMessage,
         swapped: dataset.__swapped
     };
@@ -166,7 +169,7 @@ export function getCardClasses(nodeData: SignupNodeData) {
     const cardClasses = ['kg-card kg-signup-card'];
 
     if (nodeData.layout && nodeData.layout !== 'split') {
-        cardClasses.push(`kg-width-${nodeData.layout}`);
+        cardClasses.push(`kg-width-${escapeHtml(nodeData.layout)}`);
     }
 
     if (nodeData.layout === 'split') {

@@ -1,4 +1,5 @@
 import logging from '@tryghost/logging';
+import type request from '@tryghost/request';
 import { resolve } from './resolve';
 
 const DEFAULT_POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
@@ -6,16 +7,6 @@ const DEFAULT_JITTER_MS = 60 * 1000; // up to 1 minute of spread per poll
 const REQUEST_TIMEOUT_MS = 10 * 1000;
 
 type FlagOverrides = Record<string, boolean>;
-
-interface RequestResponse {
-  statusCode?: number;
-  body?: string;
-  headers?: Record<string, string | undefined>;
-}
-
-// @tryghost/request validates with validator.isURL, which only accepts strings and
-// rejects a URL object outright, so the client is always called with a string.
-type RequestFn = (url: string, options: Record<string, unknown>) => Promise<RequestResponse>;
 
 export interface RemoteFlagsServiceDeps {
   /** canonical manifest URL (one per environment) */
@@ -25,7 +16,7 @@ export interface RemoteFlagsServiceDeps {
   /** sink for resolved overrides (the shared override store's replace()) */
   applyOverrides: (overrides: FlagOverrides) => void;
   /** @tryghost/request-compatible client */
-  request: RequestFn;
+  request: typeof request;
   /** base poll interval in ms */
   pollInterval?: number;
   /** max random extra delay per poll in ms */
@@ -44,7 +35,7 @@ export class RemoteFlagsService {
   url: URL;
   siteUuid?: string;
   applyOverrides: (overrides: FlagOverrides) => void;
-  request: RequestFn;
+  request: typeof request;
   pollInterval: number;
   jitter: number;
   getRandom: () => number;
@@ -89,13 +80,14 @@ export class RemoteFlagsService {
 
   /** @private */
   async _doRefresh(): Promise<void> {
-    let response: RequestResponse;
+    let response: request.Response<string>;
     try {
       const headers: Record<string, string> = {};
       if (this._etag) {
         headers['if-none-match'] = this._etag;
       }
-      // Pass the string form: @tryghost/request rejects a URL object.
+      // Pass the string form: @tryghost/request validates with validator.isURL,
+      // which rejects a URL object outright.
       response = await this.request(this.url.href, {
         method: 'GET',
         headers,
@@ -144,7 +136,7 @@ export class RemoteFlagsService {
 
       let manifest: unknown;
       try {
-        manifest = JSON.parse(response.body as string);
+        manifest = JSON.parse(response.body);
       } catch (parseErr) {
         logging.warn(
           {

@@ -14,6 +14,10 @@ const internalKeysRoot = require('../../core/server/services/internal-keys')
   .default as typeof import('../../core/server/services/internal-keys').default;
 const { getFrontendKey } = require('../../core/frontend/services/proxy');
 
+// Staff sessions live in user_sessions under Better Auth
+const sessionTable =
+  configUtils.config.get('auth:engine') === 'better-auth' ? 'user_sessions' : 'sessions';
+
 describe('Internal keys through cold boot and authentication reset', function () {
   let agents: Awaited<ReturnType<typeof agentProvider.getAgentsWithFrontend>> | undefined;
   const sandbox = sinon.createSandbox();
@@ -46,7 +50,7 @@ describe('Internal keys through cold boot and authentication reset', function ()
       originURL: configUtils.config.get('url'),
     });
     await otherStaffAgent.loginAsAdmin();
-    const beforeReset = await db.knex('sessions').count({ count: '*' });
+    const beforeReset = await db.knex(sessionTable).count({ count: '*' });
     assert.ok(Number(beforeReset[0].count) >= 2, 'Both staff sessions must exist before reset');
     const previousFrontendPromise = internalKeys.get('ghost-internal-frontend');
     const previousFrontend = await previousFrontendPromise;
@@ -67,7 +71,7 @@ describe('Internal keys through cold boot and authentication reset', function ()
     assert.ok(body.security_action[0].api_keys_rotated >= 2);
     assert.ok(body.security_action[0].users_locked > 0);
     sinon.assert.calledOnceWithExactly(reschedule, { previousKey: previousScheduler });
-    const afterReset = await db.knex('sessions').count({ count: '*' });
+    const afterReset = await db.knex(sessionTable).count({ count: '*' });
     assert.equal(Number(afterReset[0].count), 0, 'Reset must delete every persisted staff session');
 
     const currentFrontend = await models.Integration.getApiKeyBySlug(

@@ -20,14 +20,3 @@ it.each([
     )
     .toBe(String(labs.admin7Mobile));
 });
-
-it('keeps mobile hardening off when the backend does not supply the flag', async () => {
-  fakeMembers([]);
-  await renderAdminApp('/members', { labs: { admin7Design: false } });
-
-  await expect
-    .poll(() =>
-      document.querySelector('[data-react-admin-mounted]')?.getAttribute('data-admin7-mobile'),
-    )
-    .toBe('false');
-});

@@ -36,6 +36,11 @@ const ManageViewPopoverContent: React.FC<ManageViewPopoverContentProps> = ({
   const isEditing = Boolean(activeView);
 
   const handleSave = async () => {
+    // Enter can be pressed again before the first save finishes.
+    if (saving) {
+      return;
+    }
+
     const trimmed = name.trim();
 
     if (!trimmed) {
@@ -174,9 +179,7 @@ const ManageViewPopover: React.FC<ManageViewPopoverProps> = ({
   onDeleted,
 }) => {
   const [open, setOpen] = useState(false);
-  const contentKey = activeView
-    ? `edit:${activeView.name}:${activeView.filter.filter}`
-    : `save:${filter}`;
+  const contentKey = activeView ? `edit:${activeView.name}:${activeView.filter}` : `save:${filter}`;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

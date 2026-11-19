@@ -21,6 +21,7 @@ import {
   type RowsToWrite,
   type ValueRow,
 } from '../../../../../core/server/services/members-metafields/storage';
+import schema from '../../../../../core/server/data/schema/schema';
 
 /**
  * What the values service's statements do to a field's rows for a write's changes: a merge
@@ -98,10 +99,9 @@ describe('custom field value storage', function () {
     });
   });
 
-  // schema.js is JavaScript the compiler can't see into, so the values table is checked against
-  // the columns storage writes: one per kind of value.
+  // The values table keeps a column for each kind of value storage writes.
   it('has the values table keep a column for each kind of value', function () {
-    const table = require('../../../../../core/server/data/schema/schema').members_metafield_values;
+    const table = schema.members_metafield_values;
     const declared = Object.keys(table).filter((column) => column.startsWith('value_'));
     assert.deepEqual([...declared].sort(), [...VALUE_COLUMNS].sort());
   });
