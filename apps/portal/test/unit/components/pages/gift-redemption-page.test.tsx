@@ -13,7 +13,7 @@ const gift = {
   },
 };
 
-const renderGiftRedemptionPage = (Page, overrideContext = {}) => {
+const renderGiftRedemptionPage = (Page: typeof GiftRedemptionPage, overrideContext = {}) => {
   return render(<Page />, {
     overrideContext: {
       site: {

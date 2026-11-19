@@ -4,7 +4,10 @@ import TransistorPodcastsAction from '../../../../../src/components/pages/Accoun
 describe('TransistorPodcastsAction', () => {
   const TEST_UUID = '12345678-1234-4123-8123-123456789abc';
 
-  const setup = ({ hasPodcasts, memberUuid } = {}) => {
+  const setup = ({
+    hasPodcasts,
+    memberUuid,
+  }: { hasPodcasts?: boolean; memberUuid?: string | null } = {}) => {
     const { mockDoActionFn, ...utils } = render(
       <TransistorPodcastsAction hasPodcasts={hasPodcasts} memberUuid={memberUuid} />,
       {
