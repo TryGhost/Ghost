@@ -31,12 +31,17 @@ function isJsonBody(value: unknown): value is JsonBody {
   }
   // Another realm's Object.prototype has its own identity, but still has no parent and
   // owns the native Object constructor. Class and host prototypes do not meet both rules.
-  const constructor: unknown = Object.getOwnPropertyDescriptor(prototype, 'constructor')?.value;
-  return (
-    Object.getPrototypeOf(prototype) === null &&
-    typeof constructor === 'function' &&
-    Function.prototype.toString.call(constructor) === Function.prototype.toString.call(Object)
-  );
+  try {
+    const constructor: unknown = Object.getOwnPropertyDescriptor(prototype, 'constructor')?.value;
+    return (
+      Object.getPrototypeOf(prototype) === null &&
+      typeof constructor === 'function' &&
+      Function.prototype.toString.call(constructor) === Function.prototype.toString.call(Object)
+    );
+  } catch {
+    // A Proxy may refuse inspection. Keep the refusal in the invalid_argument error path.
+    return false;
+  }
 }
 
 // A cycle or a BigInt makes `JSON.stringify` throw, and a `toJSON` that returns `undefined`

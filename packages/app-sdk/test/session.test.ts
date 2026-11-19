@@ -236,6 +236,39 @@ describe('fetch', () => {
     }
   });
 
+  it.each(['constructor descriptor', 'prototype parent', 'revoked prototype'])(
+    'refuses a body with an unreadable %s without asking Admin',
+    async (unreadable) => {
+      const { ghost, host } = await started();
+      const failure = new Error('Cannot inspect this prototype');
+      let prototype: object;
+      if (unreadable === 'revoked prototype') {
+        const revocable = Proxy.revocable({}, {});
+        revocable.revoke();
+        prototype = revocable.proxy;
+      } else {
+        const fail = () => {
+          throw failure;
+        };
+        prototype = new Proxy(
+          {},
+          unreadable === 'constructor descriptor'
+            ? { getOwnPropertyDescriptor: fail }
+            : { getPrototypeOf: fail },
+        );
+      }
+      const body = Object.create(prototype) as Record<string, unknown>;
+
+      const error: unknown = await ghost
+        .fetch('/posts/', { method: 'POST', body })
+        .catch((e: unknown) => e);
+
+      assert.ok(error instanceof sdk.GhostAppError);
+      assert.equal(error.code, 'invalid_argument');
+      assert.deepEqual(host.fetch.mock.calls, []);
+    },
+  );
+
   it.each([
     ['nothing', undefined],
     ['a status out of range', { status: 101, statusText: '', headers: {}, body: '' }],
