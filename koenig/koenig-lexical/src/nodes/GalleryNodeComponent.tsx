@@ -29,7 +29,10 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
         return existingImages;
     });
 
-    const galleryReorder = useGalleryReorder({images, updateImages: reorderImages, isSelected});
+    const getVisibility = React.useCallback(() => {
+        return editor.getEditorState().read(() => $getNodeByKey(nodeKey)?.visibility);
+    }, [editor, nodeKey]);
+    const galleryReorder = useGalleryReorder({images, updateImages: reorderImages, isSelected, getVisibility});
     const imageUploader = fileUploader.useFileUpload('image');
     const imageFilesDropper = useFileDragAndDrop({handleDrop: handleImageFilesDrop});
 

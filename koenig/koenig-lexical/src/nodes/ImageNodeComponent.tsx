@@ -20,6 +20,7 @@ import {getImageFilenameFromSrc} from '../utils/getImageFilenameFromSrc';
 import {imageUploadHandler} from '../utils/imageUploadHandler';
 import {isCardWidth} from '@tryghost/kg-default-nodes';
 import {isGif} from '../utils/isGif';
+import {isSameVisibility} from '../utils/visibility';
 import {openFileSelection} from '../utils/openFileSelection';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useVisibilityToggle} from '../hooks/useVisibilityToggle';
@@ -46,10 +47,14 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
     // stable fn refs to avoid excessive re-inits of the drag/drop handler effects
     // which can cause unexpected side-effects with event handling
     const canDropImageCard = React.useCallback((draggable) => {
-        return draggable.type === 'card'
-            && draggable.cardName === 'image'
-            && draggable.nodeKey !== nodeKey;
-    }, [nodeKey]);
+        if (draggable.type !== 'card' || draggable.cardName !== 'image' || draggable.nodeKey === nodeKey) {
+            return false;
+        }
+
+        // a gallery has one audience, so only merge images that share one
+        const targetVisibility = editor.getEditorState().read(() => $getNodeByKey(nodeKey)?.visibility);
+        return isSameVisibility(draggable.dataset?.visibility, targetVisibility);
+    }, [editor, nodeKey]);
     const onDropImageCard = React.useCallback((draggable) => {
         const {type, cardName, nodeKey: draggedNodeKey, dataset} = draggable;
 
@@ -57,7 +62,8 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
             editor.update(() => {
                 const targetImageNode = $getNodeByKey(nodeKey);
                 const droppedImageNode = $getNodeByKey(draggedNodeKey);
-                const galleryNode = $createGalleryNode();
+                // keep the shared audience (canDropImageCard only allows matching ones)
+                const galleryNode = $createGalleryNode({visibility: targetImageNode.visibility});
 
                 // images don't contain the filename dataset property so we need to add it
                 dataset.fileName = dataset?.fileName || getImageFilenameFromSrc(dataset.src);

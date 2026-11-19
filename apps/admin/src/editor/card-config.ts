@@ -77,6 +77,7 @@ export interface PostCardConfig extends PostCardConfigPorts {
   post: CardConfigPost | undefined;
   snippets: CardConfigSnippet[];
   visibilitySettings: CardVisibilitySettings;
+  visibilityCardTypes: string[];
 }
 
 // An unsaved post has no visibility until the first save applies the site
@@ -102,6 +103,17 @@ export function getCardVisibilitySettings(
 ): CardVisibilitySettings {
   const isPage = post?.isPage || post?.displayName === 'page';
   return isPage ? 'web only' : 'web and email';
+}
+
+// Cards that had visibility before the server started listing supported cards
+// in config. Admin can deploy ahead of the server, so an older server only
+// gets visibility settings for these.
+export const LEGACY_VISIBILITY_CARD_TYPES = ['html', 'call-to-action', 'transistor'];
+
+export function getVisibilityCardTypes(config: Pick<Config, 'cardVisibility'>): string[] {
+  return Array.isArray(config.cardVisibility)
+    ? config.cardVisibility
+    : LEGACY_VISIBILITY_CARD_TYPES;
 }
 
 function imageSetting(settings: Setting[], key: string): string | null {
@@ -146,6 +158,7 @@ export function buildPostCardConfig(
     createSnippet: ports.createSnippet,
     deleteSnippet: ports.deleteSnippet,
     visibilitySettings: getCardVisibilitySettings(sources.post),
+    visibilityCardTypes: getVisibilityCardTypes(config),
   };
 }
 

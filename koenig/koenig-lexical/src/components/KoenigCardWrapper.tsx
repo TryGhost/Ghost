@@ -5,7 +5,7 @@ import {$getNodeByKey, CLICK_COMMAND, COMMAND_PRIORITY_LOW} from 'lexical';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {CardWrapper} from './ui/CardWrapper';
 import {EDIT_CARD_COMMAND, SELECT_CARD_COMMAND, SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../plugins/KoenigBehaviourPlugin';
-import {cardHasEditMode, isVisibilityEnabled} from '../utils/visibility';
+import {cardHasEditMode, isCardVisibilityAvailable} from '../utils/visibility';
 import {mergeRegister} from '@lexical/utils';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -174,12 +174,12 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     }, [editor, isSelected, isEditing, nodeKey, containerRef, cardConfig]);
 
     let isVisibilityActive = false;
-    if (isVisibilityEnabled(cardConfig)) {
-        editor.getEditorState().read(() => {
-            const cardNode = $getNodeByKey(nodeKey);
-            isVisibilityActive = $isKoenigCard(cardNode) ? cardNode.getIsVisibilityActive() : false;
-        });
-    }
+    editor.getEditorState().read(() => {
+        const cardNode = $getNodeByKey(nodeKey);
+        isVisibilityActive = $isKoenigCard(cardNode)
+            && isCardVisibilityAvailable(cardNode.getType(), cardConfig)
+            && cardNode.getIsVisibilityActive();
+    });
 
     return (
         <CardContext.Provider value={{
