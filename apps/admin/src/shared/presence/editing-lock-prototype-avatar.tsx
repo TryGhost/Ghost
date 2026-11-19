@@ -116,7 +116,7 @@ export function EditingLockPrototypeEditorAvatar({ postId }: { postId: string })
         onPointerEnter={cancelClose}
         onPointerLeave={leave}
       >
-        <Stack className="min-h-24" gap="md" justify="center">
+        <Stack gap="md">
           {phase === 'taking-over' ? (
             <Inline aria-live="polite" gap="sm" role="status">
               <LoadingIndicator color="current" size="sm" />
@@ -136,7 +136,9 @@ export function EditingLockPrototypeEditorAvatar({ postId }: { postId: string })
                 </Text>
               </Stack>
               <Button
-                className="self-start"
+                className="w-full"
+                size="sm"
+                variant="secondary"
                 onClick={() => {
                   cancelClose();
                   setStartedHere(true);
