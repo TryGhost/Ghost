@@ -43,6 +43,14 @@ The manifest an installation runs: the version the publisher last approved, or
 a newer one the re-check applied because it had only silent changes.
 _Avoid_: active manifest, current manifest
 
+**Stored changes**:
+What a manifest row differs by from the approved manifest when the row was
+added, kept with the row: field changes by path, in the shape App Contracts
+defines for a change. An install has no approved manifest to differ from, so it
+stores none. The history serves them as Ghost computed them, and Admin only
+displays them.
+_Avoid_: diff, changelog
+
 **Pending manifest**:
 A newer manifest the re-check found that needs the publisher's approval. An
 installation has at most one; a newer one replaces it.
@@ -158,6 +166,9 @@ The timeline of an installation, newest first: installed, updated, suspended,
 resumed, changes approved and uninstalled. Each update, suspension and resume is
 one manifest row the re-check stored. Resumed means the app reverted the pending
 changes, so the re-check lifted the suspension, applying any silent changes.
+Each entry shows the changes stored with its manifest row, computed against
+the approved manifest when the row was added: a suspension what waits for
+approval, and an approval the changes of the manifest it approved.
 _Avoid_: audit log, activity
 
 **Actor**:

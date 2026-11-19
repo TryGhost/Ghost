@@ -46,6 +46,8 @@ function loaded(overrides: Partial<AppManifest> = {}): LoadedManifest {
 
 const silent = { description: 'Episodes and players.' };
 const needsApproval = { name: 'Podcasts' };
+const SILENT_CHANGES = [{ kind: 'field' as const, path: 'description', requires_approval: false }];
+const APPROVAL_CHANGES = [{ kind: 'field' as const, path: 'name', requires_approval: true }];
 
 const pending = { id: 'pending-manifest', digest: loaded(needsApproval).digest };
 
@@ -181,16 +183,28 @@ describe('approvalWrite', function () {
   });
 
   it('adds an approval row for any other manifest, which becomes the approved one', function () {
-    for (const [name, manifest, pendingManifest, requiresApproval] of [
-      ['silent changes', loaded(silent), null, false],
-      ['silent changes kept after reverting the pending ones', loaded(silent), pending, false],
-      ['changes that need approval', loaded({ ...silent, ...needsApproval }), null, true],
+    for (const [name, manifest, pendingManifest, requiresApproval, changes] of [
+      ['silent changes', loaded(silent), null, false, SILENT_CHANGES],
+      [
+        'silent changes kept after reverting the pending ones',
+        loaded(silent),
+        pending,
+        false,
+        SILENT_CHANGES,
+      ],
+      [
+        'changes that need approval',
+        loaded({ ...silent, ...needsApproval }),
+        null,
+        true,
+        [...SILENT_CHANGES, ...APPROVAL_CHANGES],
+      ],
     ] as const) {
       assert.deepEqual(
         approvalWrite({ current, pending: pendingManifest, loaded: manifest }),
         {
           kind: 'add_approved',
-          row: { loaded: manifest, source: 'approval', requiresApproval },
+          row: { loaded: manifest, source: 'approval', requiresApproval, changes },
         },
         name,
       );
@@ -212,7 +226,7 @@ describe('recheckWrite', function () {
     const manifest = loaded(silent);
     assert.deepEqual(recheckWrite({ current, pending: null, loaded: manifest }), {
       kind: 'add_approved',
-      row: { loaded: manifest, source: 'update', requiresApproval: false },
+      row: { loaded: manifest, source: 'update', requiresApproval: false, changes: SILENT_CHANGES },
     });
   });
 
@@ -220,7 +234,7 @@ describe('recheckWrite', function () {
     const manifest = loaded();
     assert.deepEqual(recheckWrite({ current, pending, loaded: manifest }), {
       kind: 'add_approved',
-      row: { loaded: manifest, source: 'resume', requiresApproval: false },
+      row: { loaded: manifest, source: 'resume', requiresApproval: false, changes: [] },
     });
   });
 
@@ -228,7 +242,12 @@ describe('recheckWrite', function () {
     const manifest = loaded(needsApproval);
     assert.deepEqual(recheckWrite({ current, pending: null, loaded: manifest }), {
       kind: 'add_pending',
-      row: { loaded: manifest, source: 'update', requiresApproval: true },
+      row: {
+        loaded: manifest,
+        source: 'update',
+        requiresApproval: true,
+        changes: APPROVAL_CHANGES,
+      },
     });
   });
 });

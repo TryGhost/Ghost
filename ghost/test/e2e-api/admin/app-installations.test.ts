@@ -743,6 +743,34 @@ describe('App installations Admin API', function () {
       assert.equal(row.revision, 2);
     });
 
+    it('records what each manifest version changed in the history', async function () {
+      const installed = await install();
+      await suspendWithPending(installed.id, manifest({ name: 'Podcasts' }));
+      serve(manifest({ name: 'Podcasts' }));
+      const reviewed = await preview();
+      serve(manifest({ name: 'Podcasts' }));
+      await approve(
+        installed.id,
+        MANIFEST_URL,
+        reviewed.digest,
+        200,
+        reviewed.installation.revision,
+      );
+
+      const { body } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+      const renamed = [{ kind: 'field', path: 'name', requires_approval: true }];
+      assert.deepEqual(
+        body.app_installations[0].history.map((entry: any) => [entry.event, entry.changes ?? []]),
+        [
+          ['changes_approved', renamed],
+          ['suspended', renamed],
+          ['installed', []],
+        ],
+      );
+    });
+
     it('approves the manifest waiting for approval as its own row, not a copy', async function () {
       const installed = await install();
       const pendingId = await suspendWithPending(installed.id, manifest({ name: 'Podcasts' }));
