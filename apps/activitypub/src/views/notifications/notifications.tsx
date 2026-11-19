@@ -19,6 +19,7 @@ import {
 } from '@components/feed/feed-item';
 import { EmptyViewIcon, EmptyViewIndicator } from '@src/components/global/empty-view-indicator';
 import { Notification, isApiError } from '@src/api/activitypub';
+import { handleHashtagLinkClick } from '@utils/hashtags';
 import { handleProfileClick } from '@utils/handle-profile-click';
 import { renderTimestamp } from '@src/utils/render-timestamp';
 import { sanitizeHtml, stripHtml } from '@src/utils/content-formatters';
@@ -202,6 +203,8 @@ const ProfileLinkedContent: React.FC<{
           e.stopPropagation();
           handleProfileClick(handle, navigate);
         }
+      } else {
+        handleHashtagLinkClick(e, navigate);
       }
     };
 

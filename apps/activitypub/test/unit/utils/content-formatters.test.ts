@@ -99,6 +99,41 @@ describe('Content Formatters', function () {
       expect(unsafe.hasAttribute('href')).toBe(false);
     });
 
+    it('leaves hashtag links alone when keepHashtagLinks is set', function () {
+      const div = renderHtml(
+        openLinksInNewTab(
+          '<a href="https://example.com/tag/foo/" class="mention hashtag" rel="tag">#<span>foo</span></a><a href="https://example.com">a</a>',
+          { keepHashtagLinks: true },
+        ),
+      );
+      const [hashtag, regular] = Array.from(div.querySelectorAll('a'));
+
+      expect(hashtag.hasAttribute('target')).toBe(false);
+      expect(hashtag.getAttribute('rel')).toBe('tag');
+      expect(regular.getAttribute('target')).toBe('_blank');
+      expect(regular.getAttribute('rel')).toBe('noopener noreferrer');
+    });
+
+    it('opens hashtag links in a new tab by default', function () {
+      const div = renderHtml(
+        openLinksInNewTab('<a href="https://example.com/tag/foo/" rel="tag">#foo</a>'),
+      );
+      const link = div.querySelector('a') as HTMLAnchorElement;
+
+      expect(link.getAttribute('target')).toBe('_blank');
+      expect(link.getAttribute('rel')).toBe('noopener noreferrer');
+    });
+
+    it('still drops unsafe hrefs from hashtag links when keepHashtagLinks is set', function () {
+      const div = renderHtml(
+        openLinksInNewTab('<a href="javascript:alert(1)" rel="tag">#foo</a>', {
+          keepHashtagLinks: true,
+        }),
+      );
+
+      expect(div.querySelector('a')!.hasAttribute('href')).toBe(false);
+    });
+
     it('does not parse content into the live document', function () {
       const createElement = document.createElement.bind(document);
       const created: string[] = [];

@@ -100,6 +100,7 @@ const QUERY_KEYS = {
   feed: ['feed'],
   inbox: ['inbox'],
   discoveryFeed: ['discovery_feed'],
+  hashtagFeed: ['hashtag_feed'],
   postsByAccount: ['account_posts'],
   postsLikedByAccount: ['account_liked_posts'],
   notifications: (handle: string) => ['notifications', handle],
@@ -115,6 +116,7 @@ function updateLikeCache(queryClient: QueryClient, id: string, liked: boolean) {
     QUERY_KEYS.feed,
     QUERY_KEYS.inbox,
     QUERY_KEYS.discoveryFeed,
+    QUERY_KEYS.hashtagFeed,
     QUERY_KEYS.postsLikedByAccount,
     QUERY_KEYS.profilePosts(null),
   ];
@@ -193,6 +195,7 @@ function updateFollowCache(
     QUERY_KEYS.feed,
     QUERY_KEYS.inbox,
     QUERY_KEYS.discoveryFeed,
+    QUERY_KEYS.hashtagFeed,
     QUERY_KEYS.profilePosts('index'),
   ];
 
@@ -553,6 +556,7 @@ function updateReplyCache(queryClient: QueryClient, id: string, delta: number) {
     QUERY_KEYS.feed,
     QUERY_KEYS.inbox,
     QUERY_KEYS.discoveryFeed,
+    QUERY_KEYS.hashtagFeed,
     QUERY_KEYS.profilePosts('index'),
     QUERY_KEYS.postsLikedByAccount,
   ];
@@ -801,6 +805,7 @@ export function useBlockMutationForUser(handle: string) {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.feed });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inbox });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.discoveryFeed });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.hashtagFeed });
     },
     onError(error: { message: string; statusCode: number }) {
       if (error.statusCode === 429) {
@@ -844,6 +849,7 @@ function updateRepostCache(queryClient: QueryClient, id: string, reposted: boole
     QUERY_KEYS.feed,
     QUERY_KEYS.inbox,
     QUERY_KEYS.discoveryFeed,
+    QUERY_KEYS.hashtagFeed,
     QUERY_KEYS.profilePosts(null),
   ];
 
@@ -2114,6 +2120,40 @@ export function useDiscoveryFeedForUser(options: { enabled: boolean; topic: stri
   return { discoveryFeedQuery, updateDiscoveryFeedActivity };
 }
 
+export function useHashtagFeedForUser(options: { enabled: boolean; hashtag: string }) {
+  const queryKey = [...QUERY_KEYS.hashtagFeed, options.hashtag];
+  const queryClient = useQueryClient();
+
+  const hashtagFeedQuery = useInfiniteQuery({
+    queryKey,
+    enabled: options.enabled,
+    staleTime: 20 * 1000, // 20s
+    async queryFn({ pageParam }: { pageParam?: string }) {
+      const siteUrl = await getSiteUrl();
+      const api = createActivityPubAPI('index', siteUrl);
+      return api.getHashtagFeed(options.hashtag, pageParam).then((response) => {
+        return {
+          posts: response.posts.map(mapPostToActivity),
+          next: response.next,
+        };
+      });
+    },
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam(prevPage) {
+      return prevPage.next;
+    },
+  });
+
+  const updateHashtagFeedActivity = (id: string, updated: Partial<Activity>) => {
+    updateActivityInPaginatedCollection(queryClient, queryKey, 'posts', id, (activity) => ({
+      ...activity,
+      ...updated,
+    }));
+  };
+
+  return { hashtagFeedQuery, updateHashtagFeedActivity };
+}
+
 export function usePostsByAccount(profileHandle: string, options: { enabled: boolean }) {
   const queryKey = QUERY_KEYS.profilePosts(profileHandle === 'me' ? 'index' : profileHandle);
   const queryClient = useQueryClient();
@@ -2380,6 +2420,31 @@ export function useDeleteMutationForUser(handle: string) {
         },
       );
 
+      // Update the hashtag feed cache:
+      // - Remove the post from any hashtag feeds it may be in
+      const previousHashtagFeeds = queryClient.getQueriesData<{ pages: { posts: Activity[] }[] }>({
+        queryKey: QUERY_KEYS.hashtagFeed,
+      });
+
+      queryClient.setQueriesData(
+        { queryKey: QUERY_KEYS.hashtagFeed },
+        (current?: { pages: { posts: Activity[] }[] }) => {
+          if (!current) {
+            return current;
+          }
+
+          return {
+            ...current,
+            pages: current.pages.map((page: { posts: Activity[] }) => {
+              return {
+                ...page,
+                posts: page.posts.filter((item: Activity) => item.object.id !== id),
+              };
+            }),
+          };
+        },
+      );
+
       // Update the account cache:
       // - Decrement liked post count if the removed post was in the liked collection
       let accountQueryKey: string[] = [];
@@ -2501,6 +2566,7 @@ export function useDeleteMutationForUser(handle: string) {
           key: profilePostsQueryKey,
           data: previousProfilePosts,
         },
+        previousHashtagFeeds,
         previousAccount: removedFromLiked
           ? {
               key: accountQueryKey,
@@ -2528,6 +2594,9 @@ export function useDeleteMutationForUser(handle: string) {
       queryClient.setQueryData(context.previousOutbox.key, context.previousOutbox.data);
       queryClient.setQueryData(context.previousLiked.key, context.previousLiked.data);
       context.previousProfilePosts.data.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+      context.previousHashtagFeeds.forEach(([queryKey, data]) => {
         queryClient.setQueryData(queryKey, data);
       });
 

@@ -54,8 +54,13 @@ export interface GetRecommendationsResponse {
   accounts: ExploreAccount[];
 }
 
+export type HashtagSearchResult = {
+  name: string;
+};
+
 export interface SearchResults {
   accounts: AccountSearchResult[];
+  hashtags: HashtagSearchResult[];
 }
 
 export interface Thread {
@@ -529,11 +534,15 @@ export class ActivityPubAPI {
     const json = await this.fetchJSON(url, 'GET');
 
     if (json && 'accounts' in json) {
-      return json as SearchResults;
+      // Servers without hashtag search omit the field
+      const hashtags = 'hashtags' in json && Array.isArray(json.hashtags) ? json.hashtags : [];
+
+      return { ...(json as SearchResults), hashtags };
     }
 
     return {
       accounts: [],
+      hashtags: [],
     };
   }
 
@@ -651,6 +660,11 @@ export class ActivityPubAPI {
 
   async getDiscoveryFeed(topic: string, next?: string): Promise<PaginatedPostsResponse> {
     const endpoint = `.ghost/activitypub/v1/feed/discover/${topic}`;
+    return this.getPaginatedPosts(endpoint, next);
+  }
+
+  async getHashtagFeed(hashtag: string, next?: string): Promise<PaginatedPostsResponse> {
+    const endpoint = `.ghost/activitypub/v1/feed/hashtag/${encodeURIComponent(hashtag)}`;
     return this.getPaginatedPosts(endpoint, next);
   }
 

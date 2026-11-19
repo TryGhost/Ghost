@@ -18,6 +18,7 @@ import FeedItemStats from './feed-item-stats';
 import clsx from 'clsx';
 import getHandle from '../../utils/get-handle';
 import getReadingTime from '../../utils/get-reading-time';
+import { handleHashtagLinkClick } from '../../utils/hashtags';
 import { handleProfileClick } from '../../utils/handle-profile-click';
 import { openLinksInNewTab, sanitizeHtml, stripHtml } from '../../utils/content-formatters';
 import { renderTimestamp } from '../../utils/render-timestamp';
@@ -611,6 +612,8 @@ const FeedItem: React.FC<FeedItemProps> = ({
           e.stopPropagation();
           handleProfileClick(handle, navigate);
         }
+      } else {
+        handleHashtagLinkClick(e, navigate);
       }
     };
 
@@ -733,7 +736,9 @@ const FeedItem: React.FC<FeedItemProps> = ({
           {!isLoading ? (
             <div
               dangerouslySetInnerHTML={{
-                __html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? ''),
+                __html: sanitizeHtml(
+                  openLinksInNewTab(object.content || '', { keepHashtagLinks: true }) ?? '',
+                ),
               }}
               ref={contentRef}
               onClick={(e) => {
@@ -1138,7 +1143,10 @@ const FeedItem: React.FC<FeedItemProps> = ({
                       ) : (
                         <div
                           dangerouslySetInnerHTML={{
-                            __html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? ''),
+                            __html: sanitizeHtml(
+                              openLinksInNewTab(object.content || '', { keepHashtagLinks: true }) ??
+                                '',
+                            ),
                           }}
                           ref={contentRef}
                           className="ap-note-content break-anywhere tracking-[-0.006em] text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3"
