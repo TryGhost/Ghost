@@ -182,6 +182,7 @@ describe('Tabs Component', () => {
               </TabsDropdownTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem onSelect={() => change('members')}>Paid members</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => change('revenue')}>Revenue</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <TabsTrigger value="revenue">Revenue</TabsTrigger>
@@ -334,6 +335,85 @@ describe('Tabs Component', () => {
 
       await waitFor(() => expect(document.activeElement).toBe(tab));
       expect(tab.getAttribute('aria-selected')).toBe('false');
+    });
+
+    it('moves focus to the tab that a menu item selects', async () => {
+      render(<DropdownTabs />);
+
+      const tab = await arrow(screen.getByRole('tab', { name: 'Visitors' }), 'ArrowRight');
+      fireEvent.keyDown(tab as HTMLElement, { key: 'Enter' });
+      fireEvent.click(screen.getByRole('menuitem', { name: 'Revenue' }));
+
+      const revenue = screen.getByRole('tab', { name: 'Revenue' });
+      await waitFor(() => expect(document.activeElement).toBe(revenue));
+      expect(revenue.getAttribute('aria-selected')).toBe('true');
+      expect(tab?.getAttribute('aria-selected')).toBe('false');
+    });
+
+    it('keeps focus on the tab, unselected, when nothing in the list is selected', async () => {
+      render(
+        <Tabs>
+          <TabsList>
+            <TabsTrigger value="visitors">Visitors</TabsTrigger>
+            <DropdownMenu>
+              <TabsDropdownTrigger value="members">Members</TabsDropdownTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem>Paid members</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </TabsList>
+        </Tabs>,
+      );
+
+      const tab = screen.getByRole('tab', { name: 'Members' });
+      clickOpen(tab);
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+
+      await waitFor(() => expect(document.activeElement).toBe(tab));
+      expect(tab.getAttribute('aria-selected')).toBe('false');
+    });
+
+    it('treats focus after a pointer press that opened no menu like any focus', () => {
+      render(<DropdownTabs />);
+
+      const tab = screen.getByRole('tab', { name: 'Members' });
+      fireEvent.pointerDown(tab, { button: 2 });
+      expect(screen.queryByRole('menu')).toBeNull();
+      act(() => tab.focus());
+
+      expect(document.activeElement).toBe(tab);
+      expect(tab.getAttribute('aria-selected')).toBe('true');
+    });
+
+    it('runs consumer focus and pointer handlers', () => {
+      const handleFocus = vi.fn();
+      const handlePointerDown = vi.fn();
+      render(
+        <Tabs defaultValue="members">
+          <TabsList>
+            <DropdownMenu>
+              <TabsDropdownTrigger
+                value="members"
+                onFocus={handleFocus}
+                onPointerDown={handlePointerDown}
+              >
+                Members
+              </TabsDropdownTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem>Paid members</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </TabsList>
+        </Tabs>,
+      );
+
+      const tab = screen.getByRole('tab', { name: 'Members' });
+      act(() => tab.focus());
+      fireEvent.pointerDown(tab, { button: 0, ctrlKey: false });
+
+      expect(handleFocus).toHaveBeenCalledTimes(1);
+      expect(handlePointerDown).toHaveBeenCalledTimes(1);
+      expect(screen.getByRole('menu')).toBeTruthy();
     });
 
     it('runs a consumer key handler first, which can keep the menu shut', () => {

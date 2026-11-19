@@ -355,7 +355,6 @@ const TabsMenuTab = React.forwardRef<HTMLButtonElement, TabsMenuTabProps>(
       'data-state': _menuState,
       onFocus,
       onKeyDown: onMenuKeyDown,
-      onPointerDown,
       onTabKeyDown,
       tabId,
       wrapperClassName,
@@ -364,8 +363,14 @@ const TabsMenuTab = React.forwardRef<HTMLButtonElement, TabsMenuTabProps>(
     ref,
   ) => {
     const { activationMode } = React.useContext(TabsContext);
-    // Set when a click opens the menu from a tab that isn't selected.
-    const clickOpenedRef = React.useRef(false);
+    const menuOpen = props['aria-expanded'] === true;
+    // Set once the menu opens, so the focus it returns on closing can be told apart.
+    const menuOpenedRef = React.useRef(false);
+    React.useEffect(() => {
+      if (menuOpen && activationMode === 'automatic') {
+        menuOpenedRef.current = true;
+      }
+    }, [menuOpen, activationMode]);
 
     return (
       <div className={wrapperClassName} id={menuTriggerId}>
@@ -376,23 +381,22 @@ const TabsMenuTab = React.forwardRef<HTMLButtonElement, TabsMenuTabProps>(
           onFocus={(event) => {
             onFocus?.(event);
             const fromMenu =
-              clickOpenedRef.current &&
+              menuOpenedRef.current &&
               !(
                 event.relatedTarget instanceof Element &&
                 event.relatedTarget.getAttribute('role') === 'tab'
               );
-            clickOpenedRef.current = false;
-            // Closing a menu returns focus to its trigger, and a focused tab is selected. A menu
-            // opened by a click and dismissed shouldn't switch tabs, so focus goes back to the
-            // selected tab, which also keeps the tab list's one Tab stop there.
+            menuOpenedRef.current = false;
+            // Closing a menu returns focus to its trigger, and a focused tab is selected. When
+            // the tab isn't selected by then (the menu was opened by a click and dismissed, or an
+            // item selected another tab), focus goes to the selected tab instead, which also
+            // keeps the tab list's one Tab stop there.
             if (fromMenu && event.currentTarget.getAttribute('aria-selected') !== 'true') {
-              const selectedTab = event.currentTarget
+              event.preventDefault();
+              event.currentTarget
                 .closest('[role="tablist"]')
-                ?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
-              if (selectedTab) {
-                event.preventDefault();
-                selectedTab.focus();
-              }
+                ?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')
+                ?.focus();
             }
           }}
           onKeyDown={(event) => {
@@ -405,13 +409,6 @@ const TabsMenuTab = React.forwardRef<HTMLButtonElement, TabsMenuTabProps>(
               return;
             }
             onMenuKeyDown?.(event);
-          }}
-          onPointerDown={(event) => {
-            clickOpenedRef.current =
-              activationMode === 'automatic' &&
-              props['aria-expanded'] !== true &&
-              event.currentTarget.getAttribute('aria-selected') !== 'true';
-            onPointerDown?.(event);
           }}
           {...props}
         />
