@@ -24,13 +24,17 @@ const standard = readdirSync(servicesRoot, { withFileTypes: true })
       ['index.ts', 'index.js'].some((file) => existsSync(path.join(servicesRoot, item.name, file))),
   )
   .map((item) => item.name);
-const boot = readFileSync(path.join(core, 'boot.js'), 'utf8');
-const phases = [...boot.matchAll(/^(?:async )?function (\w+)\(/gm)];
+// The legacy steps: what core/boot.js called its phases.
+const boot = readFileSync(
+  path.resolve(__dirname, '../../../bootstrap/transition/boot-steps.ts'),
+  'utf8',
+);
+const phases = [...boot.matchAll(/^(?:export )?(?:async )?function (\w+)\(/gm)];
 
 // The phase that binds a root and calls init() on the binding. Lint requires this form.
 function phaseOf(service: string) {
   const bound = new RegExp(
-    `const (\\w+) = require\\('\\./server/services/${service}(?:/index)?'\\)\\.default;`,
+    `const (\\w+)(?:: [^=]+?)? =\\s+require\\('\\.\\./\\.\\./core/server/services/${service}(?:/index)?'\\)\\.default;`,
     'g',
   );
   for (const binding of boot.matchAll(bound)) {
@@ -77,11 +81,11 @@ function start(service: string, init: () => Promise<void>) {
       to: service,
     }).start();
   }
-  // A service the list does not name yet has to be started by a phase of boot.js.
+  // A service the list does not name yet has to be started by a legacy step.
   const phase = phaseOf(service);
   assert.ok(
     phase,
-    `${service} is not in the services list, and no boot phase binds it and calls init() on the binding`,
+    `${service} is not in the services list, and no legacy step binds it and calls init() on the binding`,
   );
   const run = loadBootFunction(phase, modules, { fallback: () => anything() });
   return run({ config: anything(), bootLogger: anything(), jobsService: anything() });

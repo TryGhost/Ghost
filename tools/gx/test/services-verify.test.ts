@@ -32,9 +32,10 @@ const inventory = `services:
   other:
     disposition: migrate
 `;
-// The root is bound inside its phase, as lint requires of boot.js.
-const boot = `async function initServices() {
-  const staffService = require('./server/services/staff').default;
+// The root is bound inside its step, as lint requires of the legacy steps.
+const bootPath = 'ghost/bootstrap/transition/boot-steps.ts';
+const boot = `export async function initServices(): Promise<void> {
+  const staffService = require('../../core/server/services/staff').default;
   await Promise.all([staffService.init()]);
 }
 `;
@@ -89,7 +90,7 @@ async function fixture(t: TestContext) {
   git('init', '-q');
   await write(inventoryPath, inventory);
   await write('ghost/core/server/services/staff/index.ts', 'export {};\n');
-  await write('ghost/core/boot.js', boot);
+  await write(bootPath, boot);
   const base = commit('base');
   const calls: string[] = [];
   const cruises: Record<string, Cruise> = { source: empty, built: empty };
@@ -316,9 +317,11 @@ test('the boot mutation stops boot waiting but keeps rejections', async () => {
   assert.match(withArguments?.source ?? '', /race\(\[staffService\.init\(\{ a: f\(1\) \}\), Array/);
 
   // Run the mutated boot as the boot tests do, in a context without Node globals,
-  // against the two kinds of init they use.
+  // against the two kinds of init they use. The boot tests compile the steps
+  // file first; here its two TypeScript parts are cut by hand.
+  const compiled = mutated?.source.replace('export ', '').replace(': Promise<void>', '');
   const startBoot = (init: () => Promise<unknown>) =>
-    runInNewContext(`${mutated?.source}\ninitServices();`, {
+    runInNewContext(`${compiled}\ninitServices();`, {
       require: () => ({ default: { init } }),
     }) as Promise<void>;
   let released = false;
@@ -347,12 +350,12 @@ test('the boot mutation follows a binding only within its own phase', () => {
   // The generator names a one-word service <name>Service, which earlier phases
   // already use for other roots.
   const earlier = `async function initServicesForFrontend() {
-  const themeService = require('./server/services/themes');
+  const themeService = require('../../core/server/services/themes');
   await themeService.init();
 }
 `;
   const later = (body: string) => `async function initServices() {
-  const themeService = require('./server/services/theme').default;
+  const themeService = require('../../core/server/services/theme').default;
 ${body}
 }
 `;
@@ -372,11 +375,11 @@ ${body}
   );
   // A root bound again, only to read the ready instance, does not hide its init().
   const twice = `async function initCore() {
-  const keys = require('./server/services/keys').default;
+  const keys = require('../../core/server/services/keys').default;
   await keys.init();
 }
 async function initServices() {
-  const keys = require('./server/services/keys').default;
+  const keys = require('../../core/server/services/keys').default;
   use(keys.service);
 }
 `;
@@ -665,15 +668,15 @@ test('the boot check mutates the services list for a listed service and restores
     /Promise\.race\(\[require\('\.\.\/core\/server\/services\/staff'\)\.default\.init\(\)/,
   );
   assert.equal(await readFile(join(f.root, 'ghost/bootstrap/services.ts'), 'utf8'), list);
-  assert.equal(await readFile(join(f.root, 'ghost/core/boot.js'), 'utf8'), boot);
+  assert.equal(await readFile(join(f.root, bootPath), 'utf8'), boot);
 });
 
-test('the boot check fails when tests survive the mutation and restores boot.js', async (t) => {
+test('the boot check fails when tests survive the mutation and restores the steps file', async (t) => {
   const f = await fixture(t);
   let during = '';
   const runner: RunCommand = (command, args, options) => {
     if (command !== 'git' && args[1] !== 'depcruise' && args.includes('test/unit/boot')) {
-      during = execFileSync('cat', ['ghost/core/boot.js'], { cwd: f.root, encoding: 'utf8' });
+      during = execFileSync('cat', [bootPath], { cwd: f.root, encoding: 'utf8' });
       return { status: 0, output: '' };
     }
     return command === 'git' || args[1] === 'depcruise'
@@ -686,16 +689,16 @@ test('the boot check fails when tests survive the mutation and restores boot.js'
   assert.equal(check?.name, 'boot-waits-for-init');
   assert.equal(check?.status, 'fail');
   assert.match(during, /Promise\.race\(\[staffService\.init\(\)/);
-  assert.equal(await readFile(join(f.root, 'ghost/core/boot.js'), 'utf8'), boot);
+  assert.equal(await readFile(join(f.root, bootPath), 'utf8'), boot);
 });
 
 test('the boot check says how to write the call when it cannot find one', async (t) => {
   const f = await fixture(t);
   // The inline form runs, but the check cannot follow it to mutate it.
   await f.write(
-    'ghost/core/boot.js',
-    `async function initServices() {
-  await require('./server/services/staff').default.init();
+    bootPath,
+    `export async function initServices(): Promise<void> {
+  await require('../../core/server/services/staff').default.init();
 }
 `,
   );
@@ -705,7 +708,7 @@ test('the boot check says how to write the call when it cannot find one', async 
   assert.equal(check?.status, 'fail');
   assert.match(
     check?.details.join('\n') ?? '',
-    /Nothing starts staff: it is not in ghost\/bootstrap\/services\.ts and boot\.js has no init call for it/,
+    /Nothing starts staff: it is not in ghost\/bootstrap\/services\.ts and ghost\/bootstrap\/transition\/boot-steps\.ts has no init call for it/,
   );
   assert.match(
     check?.details.join('\n') ?? '',

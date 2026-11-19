@@ -1,5 +1,14 @@
+import assert from 'node:assert/strict';
 import type { Run } from '@tryghost/foundry/application';
 import type { GhostConfig } from '../../core/shared/config/validated';
+import type {
+  BootLogger,
+  ExpressApp,
+  JobsService,
+  PrometheusClient,
+  SchedulerAdapter,
+  Server,
+} from './boot-steps';
 
 /** What `bootGhost` is called with: which parts of Ghost this process runs. */
 export interface BootOptions {
@@ -14,60 +23,37 @@ export interface BootOptions {
  */
 export interface BootState {
   /** Set by `bootGhost` before the application starts. */
-  bootLogger?: unknown;
-  prometheusClient?: unknown;
-  rootApp?: unknown;
+  bootLogger?: BootLogger;
+  /** Null when Prometheus is not enabled. */
+  prometheusClient?: PrometheusClient | null;
+  rootApp?: ExpressApp;
   /** Absent when Ghost boots without an HTTP server. */
-  ghostServer?: unknown;
+  ghostServer?: Server;
   databaseWarning?: string | null;
-  ghostApp?: unknown;
-  jobsService?: unknown;
-  schedulerAdapter?: unknown;
+  ghostApp?: ExpressApp;
+  jobsService?: JobsService;
+  schedulerAdapter?: SchedulerAdapter;
   /** Set by the background list when it decides whether this start is under test. */
   backgroundOutsideTests?: boolean;
 }
 
 export type BootRun = Run<GhostConfig, BootOptions, BootState>;
 
-// The steps core/boot.js exports. It is JavaScript, so they are untyped here.
-type LegacyBoot = Record<
-  | 'initUnhandledRejections'
-  | 'initSentry'
-  | 'initPrometheusClient'
-  | 'initHttpServer'
-  | 'initDatabaseReady'
-  | 'initQueryTracing'
-  | 'initFoundationChecks'
-  | 'initUrlUtils'
-  | 'initI18n'
-  | 'initEmailAddressPolicy'
-  | 'initMembersMetafields'
-  | 'initJobsCleanup'
-  | 'initKnexInstrumentation'
-  | 'initRoutingServices'
-  | 'initThemes'
-  | 'initFrontend'
-  | 'initExpressApps'
-  | 'initDynamicRouting'
-  | 'initAppService'
-  | 'initJobsService'
-  | 'initLegacyServicesFirst'
-  | 'initLegacyServices'
-  | 'initJobs'
-  | 'initAfterJobs'
-  | 'initReady',
-  (options?: any) => any
->;
+// Loaded when the first step runs. It loads each step's own modules only
+// inside that step, so listing the steps loads nothing.
+const boot = (): typeof import('./boot-steps') => require('./boot-steps');
 
-// The functions themselves are still in core/boot.js. It is loaded when the
-// first step runs, and loads each step's own modules only inside that step,
-// so listing the steps loads nothing.
-const boot = (): LegacyBoot => require('../../core/boot');
+// What an earlier step of the same start made. The order in `../app.ts`
+// guarantees it; this says so when a start is assembled in another order.
+function made<Value>(value: Value | undefined, name: keyof BootState): Value {
+  assert.ok(value !== undefined, `No earlier step made ${name}`);
+  return value;
+}
 
 /**
  * The steps of Ghost's start that the framework does not own yet, one function
  * each, in the order `../app.ts` lists them. Each is a wrapper: it takes what
- * the function in `core/boot.js` needs from the run, and keeps what it returns
+ * the function in `./boot-steps.ts` needs from the run, and keeps what it returns
  * for later steps.
  *
  * Transitional. A step leaves this file when it becomes a shared module or a
@@ -90,7 +76,7 @@ export const legacySteps = {
     const { rootApp, ghostServer } = await boot().initHttpServer({
       server: options.server,
       config: foundation.config,
-      bootLogger: state.bootLogger,
+      bootLogger: made(state.bootLogger, 'bootLogger'),
       prometheusClient: state.prometheusClient,
       stopApplication,
     });
@@ -101,7 +87,7 @@ export const legacySteps = {
   database: async ({ foundation, state }: BootRun) => {
     state.databaseWarning = await boot().initDatabaseReady({
       config: foundation.config,
-      bootLogger: state.bootLogger,
+      bootLogger: made(state.bootLogger, 'bootLogger'),
     });
   },
 
@@ -126,7 +112,8 @@ export const legacySteps = {
 
   routingServices: () => boot().initRoutingServices(),
 
-  themes: ({ state }: BootRun) => boot().initThemes({ bootLogger: state.bootLogger }),
+  themes: ({ state }: BootRun) =>
+    boot().initThemes({ bootLogger: made(state.bootLogger, 'bootLogger') }),
 
   frontend: () => boot().initFrontend(),
 
@@ -159,21 +146,22 @@ export const legacySteps = {
       ghostServer: state.ghostServer,
       config: foundation.config,
       prometheusClient: state.prometheusClient,
-      jobsService: state.jobsService,
+      jobsService: made(state.jobsService, 'jobsService'),
     }),
 
-  jobs: ({ state }: BootRun) => boot().initJobs({ jobsService: state.jobsService }),
+  jobs: ({ state }: BootRun) =>
+    boot().initJobs({ jobsService: made(state.jobsService, 'jobsService') }),
 
   afterJobs: ({ state }: BootRun) =>
-    boot().initAfterJobs({ schedulerAdapter: state.schedulerAdapter }),
+    boot().initAfterJobs({ schedulerAdapter: made(state.schedulerAdapter, 'schedulerAdapter') }),
 
   ready: ({ foundation, state }: BootRun) =>
     boot().initReady({
       config: foundation.config,
       logging: foundation.logging,
-      bootLogger: state.bootLogger,
-      rootApp: state.rootApp,
-      ghostApp: state.ghostApp,
+      bootLogger: made(state.bootLogger, 'bootLogger'),
+      rootApp: made(state.rootApp, 'rootApp'),
+      ghostApp: made(state.ghostApp, 'ghostApp'),
       databaseWarning: state.databaseWarning,
     }),
 };

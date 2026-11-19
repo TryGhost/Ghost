@@ -14,7 +14,8 @@ import { legacySteps, type BootRun } from './transition/legacy-steps';
  * signing keys and i18n read settings.
  *
  * The entries that call `legacySteps` are shared modules that are not shaped
- * as one yet: each is still started by a function of `core/boot.js`. They are
+ * as one yet: each is still started by a function of
+ * `./transition/boot-steps.ts`. They are
  * transitional and become one line here as each is reshaped into
  * `ghost/shared/<name>/`. An entry that loads from `ghost/shared/transition/`
  * is transitional too: it is listed by hand, like everything in a transition

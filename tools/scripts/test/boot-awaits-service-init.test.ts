@@ -13,7 +13,7 @@ const requireRoot = createRequire(path.join(root, 'package.json'));
 const binary = path.join(path.dirname(requireRoot.resolve('oxlint/package.json')), 'bin/oxlint');
 const config = JSON.parse(readFileSync(path.join(root, '.oxlintrc.json'), 'utf8'));
 const ruleName = 'ghost/boot-awaits-service-init';
-const bootFile = 'ghost/core/boot.js';
+const bootFile = 'ghost/bootstrap/transition/boot-steps.ts';
 
 interface Diagnostic {
   code: string;
@@ -80,6 +80,7 @@ function lint(
       plugin.specifier = `./tools/configs/oxlint/${path.basename(plugin.specifier)}`;
     }
     writeFileSync(path.join(cwd, '.oxlintrc.json'), JSON.stringify(localConfig));
+    mkdirSync(path.dirname(path.join(cwd, bootFile)), { recursive: true });
     writeFileSync(path.join(cwd, bootFile), source);
     if (list) {
       mkdirSync(path.join(cwd, 'ghost/bootstrap'), { recursive: true });
@@ -99,25 +100,19 @@ function lint(
   }
 }
 
-const alpha = `  const alpha = require('./server/services/alpha').default;
+const alpha = `  const alpha = require('../../core/server/services/alpha').default;
   await alpha.init();`;
 const group = `  await Promise.all([beta.init(), legacy.init()]);`;
-const phases = `Object.assign(module.exports, { initCore, initServices });`;
 // Each case replaces one of these parts.
-function boot({ core = alpha, services = group, entry = phases } = {}) {
-  return `async function initCore() {
+function boot({ core = alpha, services = group, exported = 'export ' } = {}) {
+  return `${exported}async function initCore(): Promise<void> {
 ${core}
 }
-async function initServices() {
-  const beta = require('./server/services/beta').default;
-  const legacy = require('./server/services/legacy');
+export async function initServices(): Promise<void> {
+  const beta = require('../../core/server/services/beta').default;
+  const legacy = require('../../core/server/services/legacy');
 ${services}
 }
-async function bootGhost() {
-  await application.start();
-}
-module.exports = bootGhost;
-${entry}
 `;
 }
 
@@ -126,7 +121,7 @@ const valid = [
   [
     'init arguments and an index path',
     boot({
-      core: `  const alpha = require('./server/services/alpha/index').default;
+      core: `  const alpha = require('../../core/server/services/alpha/index').default;
   await alpha.init({ config: read() });`,
     }),
   ],
@@ -134,7 +129,7 @@ const valid = [
     'a second binding that only reads the ready instance',
     boot({
       services: `${group}
-  const alphaAgain = require('./server/services/alpha').default;
+  const alphaAgain = require('../../core/server/services/alpha').default;
   use(alphaAgain.service);`,
     }),
   ],
@@ -156,7 +151,7 @@ const messages = {
   both: /The services list in ghost\/bootstrap\/services\.ts already starts (\w+)\. Remove this init\(\)/,
   notAwaited: /Await (\w+)\.init\(\) as a statement of its boot phase/,
   inline: /Bind the root, then await init\(\) on the binding/,
-  phase: /boot\.js does not export (\w+) as a step, so nothing waits for (\w+)/,
+  phase: /boot-steps\.ts does not export (\w+) as a step, so nothing waits for (\w+)/,
 };
 const rejected = [
   ['a service that boot never mentions', boot({ core: '' }), 'missing', 'alpha'],
@@ -187,7 +182,7 @@ const rejected = [
   ],
   [
     'an inline call that services verify cannot follow',
-    boot({ core: "  await require('./server/services/alpha').default.init();" }),
+    boot({ core: "  await require('../../core/server/services/alpha').default.init();" }),
     'inline',
     undefined,
   ],
@@ -213,23 +208,16 @@ const rejected = [
   [
     'a root bound in one phase and initialized in another',
     boot({
-      core: "  const alpha = require('./server/services/alpha').default;",
+      core: "  const alpha = require('../../core/server/services/alpha').default;",
       services: `${group}\n  await alpha.init();`,
     }),
     'missing',
     'alpha',
   ],
+  ['a step that the file does not export', boot({ exported: '' }), 'phase', 'initCore'],
   [
-    'a phase that boot does not export as a step',
-    boot({ entry: phases.replace('initCore, ', '') }),
-    'phase',
-    'initCore',
-  ],
-  [
-    'a phase that boot only exports in a branch',
-    boot({
-      entry: `${phases.replace('initCore, ', '')}\nif (enabled) {\n  Object.assign(module.exports, { initCore });\n}`,
-    }),
+    'a step that is only exported under another name',
+    boot({ exported: '' }) + 'export { initCore as start };\n',
     'phase',
     'initCore',
   ],
@@ -261,19 +249,19 @@ test('requires a new service directory to be initialized without any registratio
   );
 });
 
-test('accepts a service the services list names and boot.js does not mention', () => {
+test('accepts a service the services list names and no legacy step mentions', () => {
   const result = lint(boot({ core: '' }), { list: ['alpha'] });
   assert.equal(result.status, 0, JSON.stringify(result.diagnostics));
 });
 
-test('rejects a service started both by the services list and by boot.js', () => {
+test('rejects a service started both by the services list and by a legacy step', () => {
   const result = lint(boot(), { list: ['alpha'] });
   assert.equal(result.status, 1);
   assert.equal(result.diagnostics.length, 1, JSON.stringify(result.diagnostics));
   assert.equal(messages.both.exec(result.diagnostics[0]?.message ?? '')?.[1], 'alpha');
 });
 
-test('still requires a service that neither the list nor boot.js starts', () => {
+test('still requires a service that neither the list nor a legacy step starts', () => {
   const result = lint(boot({ core: '' }), { list: ['beta'] });
   assert.equal(result.status, 1);
   assert.deepEqual(
@@ -310,7 +298,7 @@ test('fails instead of passing when the legacy service inventory cannot be read'
   }
 });
 
-test('the checked-in boot.js awaits every standard service and the rule is configured for it', () => {
+test('the checked-in steps await every standard service and the rule is configured for it', () => {
   const overrides = config.overrides.filter(
     (override: { rules: Record<string, unknown> }) => override.rules[ruleName],
   );

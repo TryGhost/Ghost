@@ -134,11 +134,11 @@ describe("Ghost's start sequence", function () {
     }
   });
 
-  // A step that boot.js exports but no list names would never run, and the lint
+  // A step that boot-steps.ts exports but no list names would never run, and the lint
   // rule that checks services are awaited trusts the export.
-  it('lists every step that boot.js exports exactly once', function () {
-    // Loading boot.js loads only its overrides and debug.
-    const exported = Object.keys(require('../../../core/boot'));
+  it('lists every legacy step exactly once', function () {
+    // Loading the steps loads only debug.
+    const exported = Object.keys(require('../../../bootstrap/transition/boot-steps'));
     const wrapped = [
       ...read('bootstrap/transition/legacy-steps.ts').matchAll(/boot\(\)\.(\w+)\(/g),
     ];
@@ -279,7 +279,7 @@ describe("Ghost's start sequence", function () {
       ).services,
     );
 
-    // Each pair is an order boot.js or its tests pinned before services started from a list.
+    // Each pair is an order core/boot.js or its tests pinned before services started from a list.
     for (const [first, second, why] of [
       ['legacy: members metafields', 'stripe-checkout-config', 'checkout config reads metafields'],
       ['legacy: members metafields', 'tiers', 'tiers reads metafields'],

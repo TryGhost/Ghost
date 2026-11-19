@@ -8,8 +8,8 @@ import { legacySteps, type BootRun } from './transition/legacy-steps';
  *
  * An entry names its root without loading it: `load` is called when the step
  * reaches the entry. A standard service (see the services guide in
- * `core/server/services/README.md`) is one line here and nothing in
- * `core/boot.js`.
+ * `core/server/services/README.md`) is one line here and nothing anywhere
+ * else.
  *
  * The entries that call `legacySteps` are legacy initializers that still sit
  * between services: each needs something boot makes, or has no `init()` the

@@ -11,7 +11,8 @@ import {
 } from '../configs/oxlint/legacy-services.ts';
 import { missingTypeScript, scannerTypeScript } from '../scripts/lib/dependency-boundaries.ts';
 
-const bootPath = 'ghost/core/boot.js';
+// The legacy steps of the start sequence: what core/boot.js called its phases.
+const bootPath = 'ghost/bootstrap/transition/boot-steps.ts';
 const listPath = 'ghost/bootstrap/services.ts';
 const sharedListPath = 'ghost/bootstrap/shared.ts';
 const allowlistPath = '.dependency-cruiser.cjs';
@@ -271,7 +272,7 @@ export function specialistProblems({
 // Boot moves on after a chain of promise steps. An init that rejects within them,
 // like a stub behind an async wrapper, still fails boot; one a test holds pending
 // until a timer or setImmediate does not stop it. Only a test that holds init
-// pending can tell the difference. Boot tests run boot.js and the services list in
+// pending can tell the difference. Boot tests run the legacy steps and the services list in
 // a vm context without Node globals, so this uses Promise alone.
 const movedOn = 'Array.from({ length: 50 }).reduce((step) => step.then(), Promise.resolve())';
 
@@ -293,23 +294,24 @@ export function mutateListedInit(list: string, service: string) {
   };
 }
 
-// Finds a root's init() through its binding in boot.js, the one form the generator
-// and the guides give: `const x = require('./server/services/<name>').default;`
-// followed by `x.init()`. An inline `require(...).default.init()` is not found.
+// Finds a root's init() through its binding in a legacy step, the one form lint
+// accepts: `const x = require('../../core/server/services/<name>').default;`, with
+// or without a type on the binding, followed by `x.init()`. An inline
+// `require(...).default.init()` is not found.
 export function mutateBootInit(boot: string, service: string) {
   const folder = service.replace(/\.[a-z]+$/, '');
   const bindings = boot.matchAll(
     new RegExp(
-      `const (\\w+) = require\\('\\./server/services/${folder}(?:/index)?'\\)(?:\\.default)?;`,
+      `const (\\w+)(?:: [^=]+?)? =\\s+require\\('\\.\\./\\.\\./core/server/services/${folder}(?:/index)?'\\)(?:\\.default)?;`,
       'g',
     ),
   );
-  // A binding is local to its boot phase and other phases reuse names, such as
-  // themeService. Look for its init() only from the binding to the end of that phase.
+  // A binding is local to its step and other steps reuse names, such as
+  // themeService. Look for its init() only from the binding to the end of that step.
   let found: { variable: string; index: number; length: number } | undefined;
   for (const required of bindings) {
     const from = required.index + required[0].length;
-    const next = /^(?:async )?function /m.exec(boot.slice(from));
+    const next = /^(?:export )?(?:async )?function /m.exec(boot.slice(from));
     const call = new RegExp(`\\b${required[1]}\\.init\\(`).exec(
       boot.slice(from, next ? from + next.index : undefined),
     );
@@ -542,7 +544,7 @@ export function verifyService({
 
   if (standard) {
     // A standard service is started from the services list. One the list does not
-    // name yet is bound and awaited in a phase of boot.js.
+    // name yet is bound and awaited in a legacy step.
     // The shared list starts a few standard roots too.
     const listFile =
       [listPath, sharedListPath]
@@ -558,7 +560,7 @@ export function verifyService({
     const mutated = listed ?? mutateBootInit(original, service);
     if (!mutated) {
       record('boot-waits-for-init', 'fail', [
-        `Nothing starts ${service}: it is not in ${listPath} and boot.js has no init call for it.`,
+        `Nothing starts ${service}: it is not in ${listPath} and ${bootPath} has no init call for it.`,
         `Add it to the services list:`,
         `  { name: '${service}', load: () => require('../core/server/services/${service}').default },`,
       ]);

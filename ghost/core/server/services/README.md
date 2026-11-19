@@ -94,7 +94,7 @@ Complete the steps printed by the command:
    what the root reads while it starts and before what reads it. Document those
    requirements above `defineService`. Consumers read `.service` after
    initialization. Keep this form: `pnpm lint:oxlint` and `gx services verify`
-   find the root through it. Nothing is added to `ghost/core/boot.js`.
+   find the root through it. Nothing else is added to boot.
 
 3. The [standard services boot test](../../../test/unit/boot/standard-services.test.ts)
    already checks that the start sequence waits for the root's `init()` and that
@@ -539,10 +539,10 @@ first request responsible for constructing the service.
 
 The Oxlint rule `ghost/boot-awaits-service-init` checks this. Every service that
 is not legacy must be an entry in the services list. A root the list cannot hold
-yet, because it starts with the shared modules, is instead bound in
-`ghost/core/boot.js` and has its `init()` awaited as a statement of a boot phase
-that `boot.js` exports as a step. A root started in both places is rejected. A
-new service directory fails lint until one of them starts it.
+yet is instead bound in a legacy step in
+`ghost/bootstrap/transition/boot-steps.ts` and has its `init()` awaited as a
+statement of a step that file exports. A root started in both places is
+rejected. A new service directory fails lint until one of them starts it.
 The rule reads source only. The
 [standard services boot test](../../../test/unit/boot/standard-services.test.ts)
 runs each list entry through the start sequence: for every standard service it
@@ -553,7 +553,7 @@ orders that matter.
 
 The list is one ordered sequence. Entries named `legacy: …` are initializers
 that still sit between services because each needs something boot makes or has
-no `init()` the framework can call; they are functions of `boot.js` and leave
+no `init()` the framework can call; they are functions of `boot-steps.ts` and leave
 the list as their services become standard.
 
 With `defineService`, the service author supplies a `create` callback that constructs and returns a

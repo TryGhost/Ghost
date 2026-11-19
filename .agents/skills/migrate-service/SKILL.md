@@ -182,7 +182,8 @@ There is no lint list to update. Deleting the entry applies
 `ghost/service-root-shape` to the root and full boundary enforcement to the
 implementation. It also applies `ghost/boot-awaits-service-init` and the
 standard services boot test: the root must be an entry in the services list in
-`ghost/bootstrap/services.ts`, in place of its `init()` call in `boot.js`, as
+`ghost/bootstrap/services.ts`, in place of its `init()` call in
+`ghost/bootstrap/transition/boot-steps.ts`, as
 [creating a service](../../../ghost/core/server/services/README.md#creating-a-service)
 shows. Never add a legacy entry or defer a service's dependency
 checks: CI rejects both. Do not claim enforcement passed if that policy was

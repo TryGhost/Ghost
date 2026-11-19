@@ -66,8 +66,8 @@ import, fix the wiring; do not widen the allowlist to make lint pass.
 ## 4. Add it to the services list
 
 The generator leaves the
-[services list](../../../ghost/bootstrap/services.ts) to you. Nothing is added
-to `boot.js`.
+[services list](../../../ghost/bootstrap/services.ts) to you. Nothing else is
+added to boot.
 
 - **Order.** The start sequence awaits `init()` on each entry, one after
   another. Place the entry after everything `create` reads and before anything

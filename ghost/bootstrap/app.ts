@@ -79,8 +79,9 @@ const application: Application<
   // names what it runs without loading it.
   //
   // Apart from the roots in ./shared.ts and ./services.ts, every entry is a
-  // legacy step today: a function of core/boot.js, reached through
-  // ./transition/legacy-steps.ts, or of ./transition/background-steps.ts.
+  // legacy step today: a function of ./transition/boot-steps.ts, reached
+  // through ./transition/legacy-steps.ts, or of
+  // ./transition/background-steps.ts.
   steps: {
     foundation: {
       after: [

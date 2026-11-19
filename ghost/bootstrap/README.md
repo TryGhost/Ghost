@@ -58,8 +58,10 @@ for the pattern to copy:
   foundation's event bus, so there is one bus either way.
 - [`legacy-steps.ts`](transition/legacy-steps.ts) holds one wrapper for each
   step of the start sequence that the framework does not own yet. The steps
-  themselves are still functions of [`core/boot.js`](../core/boot.js). A
-  [test](../test/unit/bootstrap/steps.test.ts) checks that each step `boot.js`
+  themselves are the functions of
+  [`boot-steps.ts`](transition/boot-steps.ts), which were the phases of
+  `core/boot.js`: TypeScript now, otherwise unchanged. A
+  [test](../test/unit/bootstrap/steps.test.ts) checks that each step that file
   exports is listed exactly once.
 - [`background-steps.ts`](transition/background-steps.ts) holds the steps of
   the background list. Each belongs to the service it calls.

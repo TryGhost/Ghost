@@ -7,48 +7,65 @@ import type { GhostLogger } from '@tryghost/logging';
 import { createApplication, type Entry } from '@tryghost/foundry/application';
 
 const GHOST = resolve(__dirname, '../../..');
-const BOOT_PATH = resolve(GHOST, 'core/boot.js');
+// The legacy steps of the start sequence, which were the phases of core/boot.js.
+const STEPS_FILE = 'transition/boot-steps.ts';
 
 export type BootFunction = (args: Record<string, unknown>) => Promise<void>;
 
 type Options = {
   // Answers a dependency the test did not list. Without it, an unlisted dependency fails the test.
   fallback?: (name: string) => unknown;
-  // Extra globals for boot.js, such as `process`.
+  // Extra globals for the steps, such as `process`.
   globals?: Record<string, unknown>;
 };
 
 function stubbedRequire(modules: Record<string, unknown>, fallback: Options['fallback']) {
   const available: Record<string, unknown> = {
-    // Loaded at the top of boot.js by every phase.
-    './server/overrides': {},
+    // Loaded at the top of the steps file.
     '@tryghost/debug': () => () => {},
     ...modules,
   };
   return (dependency: string) => {
-    if (Object.hasOwn(available, dependency)) {
-      return available[dependency];
+    // The steps are in ghost/bootstrap/transition and the lists in ghost/bootstrap. Tests name a
+    // module as core/boot.js did, from core: `./server/services/tiers`.
+    const name = dependency.replace(/^(?:\.\.\/)+core\//, './');
+    if (Object.hasOwn(available, name)) {
+      return available[name];
     }
     assert.ok(fallback, `Unexpected boot dependency: ${dependency}`);
-    return fallback(dependency);
+    return fallback(name);
   };
 }
 
 /**
- * Loads one boot phase from core/boot.js with `require` answered from `modules`, so a test can
- * drive that phase's orchestration without booting the services it calls.
+ * Loads one legacy step from bootstrap/transition/boot-steps.ts with `require` answered from
+ * `modules`, so a test can drive that step's orchestration without booting the services it calls.
  */
 export function loadBootFunction(
   name: string,
   modules: Record<string, unknown>,
   { fallback, globals = {} }: Options = {},
 ): BootFunction {
-  const context = {
-    ...globals,
-    require: stubbedRequire(modules, fallback),
-    module: { exports: {} },
-  };
-  return runInNewContext(`${readFileSync(BOOT_PATH, 'utf8')}\n${name};`, context);
+  const steps = loadBootstrapFile(STEPS_FILE, stubbedRequire(modules, fallback), globals);
+  assert.equal(typeof steps[name], 'function', `${STEPS_FILE} exports no step ${name}`);
+  return steps[name];
+}
+
+const compiled = new Map<string, string>();
+
+// A file of ghost/bootstrap compiled to the CommonJS the build produces. Compiled once for each
+// version of the source.
+function compile(file: string) {
+  const source = readFileSync(resolve(GHOST, 'bootstrap', file), 'utf8');
+  let output = compiled.get(source);
+  if (output === undefined) {
+    output = ts.transpileModule(source, {
+      fileName: file,
+      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+    }).outputText;
+    compiled.set(source, output);
+  }
+  return output;
 }
 
 // Evaluates a TypeScript file of ghost/bootstrap with `require` answered by the test.
@@ -57,19 +74,13 @@ function loadBootstrapFile(
   require: (dependency: string) => unknown,
   globals: Record<string, unknown> = {},
 ) {
-  const { outputText } = ts.transpileModule(
-    readFileSync(resolve(GHOST, 'bootstrap', file), 'utf8'),
-    {
-      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-    },
-  );
   const module = { exports: {} as Record<string, any> };
-  runInNewContext(outputText, { ...globals, require, module, exports: module.exports });
+  runInNewContext(compile(file), { ...globals, require, module, exports: module.exports });
   return module.exports;
 }
 
 type SequenceOptions = Options & {
-  // Functions of boot.js to call first, each with the config.
+  // Legacy steps to call first, each with the config.
   before?: string[];
   // The part of the services list to run: from and to are entry names, both included.
   from?: string;
@@ -89,27 +100,29 @@ type SequenceArgs = {
 
 /**
  * Runs the real shared and services lists (bootstrap/shared.ts, bootstrap/services.ts) through the real start sequence, with
- * every module it or core/boot.js requires answered from `modules`. Keys are written as boot.js
- * requires them (`./server/services/tiers`); the list's `../core/` prefix is mapped onto them.
+ * every module it or a legacy step requires answered from `modules`. Keys are written from core
+ * (`./server/services/tiers`); the `../core/` prefix of the lists and steps is mapped onto them.
  */
 export function loadBootSequence(
   modules: Record<string, unknown>,
   { fallback, globals = {}, before = [], from, to, jobs = false }: SequenceOptions = {},
 ) {
   const require = stubbedRequire(modules, fallback);
-  const boot: Record<string, (args: unknown) => unknown> = runInNewContext(
-    `${readFileSync(BOOT_PATH, 'utf8')}\nmodule.exports;`,
-    { ...globals, require, module: { exports: {} } },
+  const boot: Record<string, (args: unknown) => unknown> = loadBootstrapFile(
+    STEPS_FILE,
+    require,
+    globals,
   );
   const { legacySteps } = loadBootstrapFile('transition/legacy-steps.ts', (dependency) => {
-    assert.equal(dependency, '../../core/boot');
+    if (dependency === 'node:assert/strict') {
+      return assert;
+    }
+    assert.equal(dependency, './boot-steps');
     return boot;
   });
   const loadList = (file: string) =>
     loadBootstrapFile(file, (dependency) =>
-      dependency === './transition/legacy-steps'
-        ? { legacySteps }
-        : require(dependency.replace(/^\.\.\/core\//, './')),
+      dependency === './transition/legacy-steps' ? { legacySteps } : require(dependency),
     );
   // The shared list, then the services list, as the start sequence runs them.
   const list: Entry<any>[] = [...loadList('shared.ts').shared, ...loadList('services.ts').services];
@@ -157,9 +170,7 @@ export function loadBackground(
   { environment, logging }: { environment: string; logging: Pick<GhostLogger, 'error'> },
 ) {
   const require = stubbedRequire(modules, undefined);
-  const { backgroundSteps } = loadBootstrapFile('transition/background-steps.ts', (dependency) =>
-    require(dependency.replace(/^\.\.\/\.\.\/core\//, './')),
-  );
+  const { backgroundSteps } = loadBootstrapFile('transition/background-steps.ts', require);
   const { background } = loadBootstrapFile(
     'background.ts',
     (dependency) => {

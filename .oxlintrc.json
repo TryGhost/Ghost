@@ -250,7 +250,7 @@
       }
     },
     {
-      "files": ["ghost/core/boot.js"],
+      "files": ["ghost/bootstrap/transition/boot-steps.ts"],
       "rules": {
         "ghost/boot-awaits-service-init": "error"
       }
