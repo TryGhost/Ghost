@@ -290,6 +290,25 @@ describe('Utils: visibility', function () {
                 expect(getHTMLTextAreaElement(result.element).value).toBe('\n<!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free" --><p>testing</p><!--kg-gated-block:end-->\n');
             });
 
+            it('hides a card whose member segment isn\'t one of Ghost\'s own', function () {
+                const badSegment = {web: {nonMember: false, memberSegment: 'status:gold'}};
+                const result = runRender('testing', badSegment as Partial<Visibility>, 'web');
+
+                expect(getHTMLElement(result.element).tagName).toBe('SPAN');
+                expect(getHTMLElement(result.element).innerHTML).toBe('');
+
+                // Visitors who aren't members don't see it either
+                const shownToVisitors = runRender('testing', {web: {nonMember: true, memberSegment: 'status:gold'}} as Partial<Visibility>, 'web');
+                expect(getHTMLElement(shownToVisitors.element).tagName).toBe('SPAN');
+                expect(getHTMLElement(shownToVisitors.element).innerHTML).toBe('');
+            });
+
+            it('treats a visitor setting that isn\'t true or false as false', function () {
+                const notBoolean = {web: {nonMember: 'yes', memberSegment: 'status:free'}};
+                const gated = runRender('testing', notBoolean as unknown as Partial<Visibility>, 'web');
+                expect(getHTMLTextAreaElement(gated.element).value).toBe('\n<!--kg-gated-block:begin nonMember:false memberSegment:"status:free" --><p>testing</p><!--kg-gated-block:end-->\n');
+            });
+
             it('adds wrapping comments when member segment is gated', function () {
                 const visibility = {web: {nonMember: true, memberSegment: 'status:free'}};
                 const result = runRender('testing', visibility, 'web');
