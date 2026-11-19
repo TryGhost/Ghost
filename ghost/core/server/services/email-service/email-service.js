@@ -32,12 +32,6 @@ const messages = {
   postChangedWhilePublishing: 'The post was changed while it was being published, please try again',
 };
 
-// Resume scanner won't pick up `pending` or `submitting` rows older than this. Rows beyond
-// the cutoff are flipped to `failed` on first boot so they surface in admin UI for operator
-// review rather than being silently resumed (and sending stale newsletters to current members).
-// Override via `bulkEmail:resumeMaxAgeMs` in config.
-const DEFAULT_RESUME_MAX_AGE_MS = 24 * 60 * 60 * 1000;
-
 // Non-terminal email statuses, both of which the boot scanner recovers.
 const RESUMABLE_EMAIL_STATUSES = ['pending', 'submitting'];
 
@@ -261,7 +255,7 @@ class EmailService {
    * current members.
    */
   async resumeInterruptedSends() {
-    const maxAgeMs = this.#config?.get?.('bulkEmail:resumeMaxAgeMs') ?? DEFAULT_RESUME_MAX_AGE_MS;
+    const maxAgeMs = this.#config.get('bulkEmail:resumeMaxAgeMs');
     const cutoffIso = new Date(Date.now() - maxAgeMs).toISOString();
 
     // Stale rows: too old to safely resume. Flip to `failed` so they surface in admin UI
