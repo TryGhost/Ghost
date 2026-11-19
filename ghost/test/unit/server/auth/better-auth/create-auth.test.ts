@@ -97,9 +97,9 @@ describe('createAuth', function () {
     assert.deepEqual(new Set(context.trustedOrigins), new Set(['https://admin.example.com']));
   });
 
-  it('prefixes the session cookie with __Secure- only on HTTPS', async function () {
+  it('marks the session cookie Secure only on HTTPS, without the __Secure- prefix', async function () {
     const secure = (await createAuth(deps()).$context).authCookies.sessionToken;
-    assert.equal(secure.name, '__Secure-ghost-admin-api-session');
+    assert.equal(secure.name, 'ghost-admin-api-session');
     assert.equal(secure.attributes.path, '/ghost');
     assert.equal(secure.attributes.sameSite, 'none');
     assert.equal(secure.attributes.secure, true);
@@ -118,7 +118,7 @@ describe('createAuth', function () {
         deps({ siteUrl: 'http://example.com/', adminUrl: 'https://admin.example.com/' }),
       ).$context
     ).authCookies.sessionToken;
-    assert.equal(httpsAdmin.name, '__Secure-ghost-admin-api-session');
+    assert.equal(httpsAdmin.name, 'ghost-admin-api-session');
     assert.equal(httpsAdmin.attributes.secure, true);
     assert.equal(httpsAdmin.attributes.sameSite, 'none');
 
