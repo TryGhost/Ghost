@@ -90,8 +90,8 @@ Complete the steps printed by the command:
    await deliveryReceipts.init();
    ```
 
-   Most roots belong in `initServices`. `initCore` and `initServicesForFrontend`
-   run earlier, for roots that later phases or the frontend read. Place the call
+   Most roots belong in `initServices`. `initLegacyCore` and
+   `initServicesForFrontend` run earlier, for roots that later phases or the frontend read. Place the call
    after its dependencies are ready and before its consumers run, on its own or
    inside the phase's awaited `Promise.all`. Document those requirements above
    `defineService`. Consumers read `.service` after initialization. Keep this
@@ -101,7 +101,7 @@ Complete the steps printed by the command:
 3. The [standard services boot test](../../../test/unit/boot/standard-services.test.ts)
    already checks that boot waits for the root's `init()` and that its failure
    fails boot. Add a test in `ghost/test/unit/boot/` only where order matters,
-   as for Mentions before Recommendations. The `initCore` and
+   as for Mentions before Recommendations. The `initLegacyCore` and
    `initServicesForFrontend` tests reject a root they do not list, so a root in
    those phases needs a stub there.
 4. Await required startup work before returning the instance. If the service
@@ -541,8 +541,10 @@ first request responsible for constructing the service.
 
 The Oxlint rule `ghost/boot-awaits-service-init` checks this in `boot.js`. Every
 service that is not legacy must be bound there and have its `init()` awaited as
-a statement of a boot phase that `bootGhost` awaits, on its own or inside an
-awaited `Promise.all`. A new service directory fails lint until boot awaits it.
+a statement of a boot phase that `boot.js` exports as a step, on its own or
+inside an awaited `Promise.all`. The application definition in
+[`ghost/bootstrap/app.ts`](../../../bootstrap/app.ts) lists each exported step once, and
+the framework awaits it. A new service directory fails lint until boot awaits it.
 The rule reads source only. The
 [standard services boot test](../../../test/unit/boot/standard-services.test.ts)
 runs each phase: for every standard service it holds `init()` pending and checks

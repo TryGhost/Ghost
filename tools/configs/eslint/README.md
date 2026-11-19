@@ -98,7 +98,7 @@ be read. Catalogue metadata validation remains separate from linting.
 
 The Oxlint-only `ghost/boot-awaits-service-init` rule checks `ghost/core/boot.js`.
 Every service that is not listed in the legacy service inventory must be bound
-there and have its `init()` awaited in a boot phase that `bootGhost` awaits. It
+there and have its `init()` awaited in a boot phase that `boot.js` exports as a step. It
 reads the service directories and the inventory, so a new service needs no
 configuration and fails lint until boot awaits it. Its implementation is
 `../oxlint/rules/boot-awaits-service-init.ts`; see

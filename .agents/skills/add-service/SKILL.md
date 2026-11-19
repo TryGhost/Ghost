@@ -67,7 +67,7 @@ import, fix the wiring; do not widen the allowlist to make lint pass.
 
 The generator leaves [boot.js](../../../ghost/core/boot.js) to you.
 
-- **Phase.** Most roots belong in `initServices`. `initCore` and
+- **Phase.** Most roots belong in `initServices`. `initLegacyCore` and
   `initServicesForFrontend` run earlier, for roots that the frontend or later
   phases read. Do not initialize on the first request.
 - **Order.** Initialize after everything `create` reads and before anything
@@ -92,7 +92,7 @@ The generator leaves [boot.js](../../../ghost/core/boot.js) to you.
 - **Boot test.** `ghost/test/unit/boot/standard-services.test.ts` already
   checks that boot waits for the root's `init()` and that its failure fails
   boot; do not write that test again. Add a boot test only where order
-  matters. The `initCore` and `initServicesForFrontend` tests fail on a root
+  matters. The `initLegacyCore` and `initServicesForFrontend` tests fail on a root
   they do not list, so add a stub there for a root in those phases.
 - **Resources.** Finish startup work before returning the instance. Acquire
   listeners, timers and work to drain in `start` and release them in `stop`,

@@ -14,6 +14,11 @@ this folder holds only what Ghost tells the foundry.
   logger's options ([`logging-options.ts`](logging-options.ts)) and the
   database options. `loggingrc.js` returns the same logger options to the
   packages that read that file themselves.
+- **The ordered lists and slots**: `steps` in `app.ts` says what runs in each
+  step of the [start sequence](../../foundry/README.md#the-start-sequence),
+  and in what order. An entry names what it runs and loads nothing until its
+  step reaches it, so the HTTP server is listening in maintenance mode before
+  anything heavy is loaded.
 - **[`transition/`](transition/)**: code that is here because boot needs it but
   that is not yet shaped to these rules. See below.
 
@@ -26,6 +31,10 @@ this folder holds only what Ghost tells the foundry.
 
 Only boot and the legacy paths named in the `bootstrap-only-from-boot`
 boundary rule import this folder. New code is handed what it needs.
+
+Outside `transition/`, a file here imports nothing from `ghost/core` except
+types, the config loader and the database options. The
+`bootstrap-reaches-core-only-through-transition` boundary rule checks this.
 
 ## One instance
 
@@ -46,5 +55,11 @@ for the pattern to copy:
 - [`legacy-events.ts`](transition/legacy-events.ts) adapts
   `@tryghost/domain-events`, a class with one static emitter, to the
   foundation's event bus, so there is one bus either way.
+- [`legacy-steps.ts`](transition/legacy-steps.ts) holds one wrapper for each
+  step of the start sequence that the framework does not own yet. The steps
+  themselves are still functions of [`core/boot.js`](../core/boot.js). Every
+  entry in `app.ts` is one of these today, and the two `modules` lists are
+  empty. A [test](../test/unit/bootstrap/steps.test.ts) checks that each step
+  `boot.js` exports is listed exactly once.
 
 Nothing in `transition/` is automatic: whatever needs it calls it by name.

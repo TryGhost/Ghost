@@ -89,8 +89,7 @@ function lint(
 const alpha = `  const alpha = require('./server/services/alpha').default;
   await alpha.init();`;
 const group = `  await Promise.all([beta.init(), legacy.init()]);`;
-const phases = `    await initCore();
-    const app = await initServices();`;
+const phases = `Object.assign(module.exports, { initCore, initServices });`;
 // Each case replaces one of these parts.
 function boot({ core = alpha, services = group, entry = phases } = {}) {
   return `async function initCore() {
@@ -102,14 +101,10 @@ async function initServices() {
 ${services}
 }
 async function bootGhost() {
-  try {
-${entry}
-    return app;
-  } catch (error) {
-    process.exit(1);
-  }
+  await application.start();
 }
 module.exports = bootGhost;
+${entry}
 `;
 }
 
@@ -147,7 +142,7 @@ const messages = {
   missing: /Boot never initializes (\w+)\. In the right boot phase, add: const example = require/,
   notAwaited: /Await (\w+)\.init\(\) as a statement of its boot phase/,
   inline: /Bind the root, then await init\(\) on the binding/,
-  phase: /bootGhost does not await (\w+), so nothing waits for (\w+)/,
+  phase: /boot\.js does not export (\w+) as a step, so nothing waits for (\w+)/,
 };
 const rejected = [
   ['a service that boot never mentions', boot({ core: '' }), 'missing', 'alpha'],
@@ -211,15 +206,15 @@ const rejected = [
     'alpha',
   ],
   [
-    'a phase that boot starts without awaiting',
-    boot({ entry: phases.replace('await initCore', 'initCore') }),
+    'a phase that boot does not export as a step',
+    boot({ entry: phases.replace('initCore, ', '') }),
     'phase',
     'initCore',
   ],
   [
-    'a phase that boot only awaits in a branch',
+    'a phase that boot only exports in a branch',
     boot({
-      entry: phases.replace('await initCore();', 'if (enabled) {\n      await initCore();\n    }'),
+      entry: `${phases.replace('initCore, ', '')}\nif (enabled) {\n  Object.assign(module.exports, { initCore });\n}`,
     }),
     'phase',
     'initCore',

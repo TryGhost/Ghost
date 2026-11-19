@@ -499,6 +499,21 @@ module.exports = {
       },
       to: { path: '^ghost/bootstrap/' },
     },
+    {
+      name: 'bootstrap-reaches-core-only-through-transition',
+      comment:
+        'ghost/bootstrap says what Ghost tells the foundry and knows nothing about how Ghost behaves. Code that still has to reach into ghost/core goes in ghost/bootstrap/transition, where it is marked as not yet correct. Types may be imported from anywhere.',
+      severity: 'error',
+      from: { path: '^ghost/bootstrap/', pathNot: '^ghost/bootstrap/transition/' },
+      to: {
+        path: '^ghost/core/',
+        pathNot: [
+          '^ghost/core/shared/config/loader\\.ts$', // Where Ghost's config is, until loading moves to the foundry.
+          '^ghost/core/server/data/db/configure-knex\\.ts$', // Ghost's database options.
+        ],
+        dependencyTypesNot: ['type-only'],
+      },
+    },
     // ============================================================
     // shared/ must not require server/* or frontend/*
     // ============================================================

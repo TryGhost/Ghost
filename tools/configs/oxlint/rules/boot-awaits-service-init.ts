@@ -7,7 +7,6 @@ import { readLegacyServices, servicesRoot } from '../legacy-services.ts';
 
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
 const bootFile = 'ghost/core/boot.js';
-const entry = 'bootGhost';
 const servicePath = /^\.\/server\/services\/([^/]+?)(?:\/index)?$/;
 
 // A service directory that the legacy service inventory does not list is standard.
@@ -36,8 +35,10 @@ type CallExpression = ESTree.CallExpression;
 
 /**
  * Requires boot to await the init() of every service that is not a legacy
- * service. It reads boot.js only: it cannot tell whether the order is right,
- * which the boot tests cover.
+ * service, in a phase that boot.js exports as a step. It reads boot.js only: it
+ * cannot tell whether the order is right, which the boot tests cover, or that
+ * the application definition lists each exported step, which the bootstrap
+ * test covers.
  */
 export const bootAwaitsServiceInit: CreateRule = {
   meta: {
@@ -53,7 +54,8 @@ export const bootAwaitsServiceInit: CreateRule = {
         'Await {{binding}}.init() as a statement of its boot phase, on its own or inside an awaited Promise.all([...]). Boot must wait for {{service}} even when its init() is synchronous.',
       inline:
         "Bind the root, then await init() on the binding: const example = require('./server/services/{{service}}').default; await example.init();",
-      phase: `${entry} does not await {{phase}}, so nothing waits for {{service}}.`,
+      phase:
+        'boot.js does not export {{phase}} as a step, so nothing waits for {{service}}. Add it to the Object.assign(module.exports, {...}) list and to a step in ghost/bootstrap/app.ts.',
     },
   },
   create(context) {
@@ -69,7 +71,7 @@ export const bootAwaitsServiceInit: CreateRule = {
     const calls: { name: string; node: CallExpression; phase?: Phase }[] = [];
     const awaited = new Set<CallExpression>();
     const inline = new Map<string, ESTree.Node>();
-    const awaitedPhases = new Set<string>();
+    const exportedPhases = new Set<string>();
 
     // The service a `require('./server/services/<name>').default` expression loads.
     function rootService(node: ESTree.Node | null | undefined) {
@@ -128,32 +130,38 @@ export const bootAwaitsServiceInit: CreateRule = {
       }
       return awaitedIn(call);
     }
-    // `await phase(...)` in the entry function, outside any branch or callback.
-    function awaitedByEntry(call: CallExpression) {
-      if (call.parent?.type !== 'AwaitExpression') {
-        return false;
-      }
-      for (
-        let node: ESTree.Node | null | undefined = call.parent.parent;
-        node;
-        node = node.parent
+    // `Object.assign(module.exports, { phase, ... })` at the top of boot.js: the
+    // steps the application definition lists. The framework awaits each one.
+    function exportedSteps(call: CallExpression) {
+      const [target, steps] = call.arguments;
+      if (
+        call.parent?.type !== 'ExpressionStatement' ||
+        call.parent.parent?.type !== 'Program' ||
+        call.callee.type !== 'MemberExpression' ||
+        call.callee.computed ||
+        call.callee.object.type !== 'Identifier' ||
+        call.callee.object.name !== 'Object' ||
+        call.callee.property.type !== 'Identifier' ||
+        call.callee.property.name !== 'assign' ||
+        target?.type !== 'MemberExpression' ||
+        target.computed ||
+        target.object.type !== 'Identifier' ||
+        target.object.name !== 'module' ||
+        target.property.type !== 'Identifier' ||
+        target.property.name !== 'exports' ||
+        steps?.type !== 'ObjectExpression'
       ) {
-        if (node.type === 'FunctionDeclaration') {
-          return node.id?.name === entry && node.parent?.type === 'Program';
-        }
-        if (
-          ![
-            'ExpressionStatement',
-            'VariableDeclarator',
-            'VariableDeclaration',
-            'BlockStatement',
-            'TryStatement',
-          ].includes(node.type)
-        ) {
-          return false;
-        }
+        return [];
       }
-      return false;
+      return steps.properties.flatMap((property) =>
+        property.type === 'Property' &&
+        !property.computed &&
+        property.key.type === 'Identifier' &&
+        property.value.type === 'Identifier' &&
+        property.value.name === property.key.name
+          ? [property.key.name]
+          : [],
+      );
     }
 
     return {
@@ -165,11 +173,8 @@ export const bootAwaitsServiceInit: CreateRule = {
         }
       },
       CallExpression(node) {
-        if (node.callee.type === 'Identifier') {
-          if (awaitedByEntry(node)) {
-            awaitedPhases.add(node.callee.name);
-          }
-          return;
+        for (const step of exportedSteps(node)) {
+          exportedPhases.add(step);
         }
         if (
           node.callee.type !== 'MemberExpression' ||
@@ -201,7 +206,7 @@ export const bootAwaitsServiceInit: CreateRule = {
           const ready = inits.find(({ node }) => awaited.has(node));
           if (ready) {
             const phase = ready.phase?.id?.name;
-            if (phase !== undefined && !awaitedPhases.has(phase)) {
+            if (phase !== undefined && !exportedPhases.has(phase)) {
               context.report({ node: ready.node, messageId: 'phase', data: { phase, service } });
             }
             continue;

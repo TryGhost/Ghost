@@ -46,8 +46,13 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const scheduler = { run() {}, rescheduleOnBoot };
   // Permissive: initServices has many dependencies, and only those listed here matter to these
   // tests. Every other dependency gets a generic service.
+  // What was one phase is now three steps, run in this order by the application.
   const initServices = loadBootFunction(
-    'initServices',
+    `(async (args) => {
+      const { schedulerAdapter } = await initServices(args);
+      await initJobs(args);
+      await initAfterJobs({ schedulerAdapter });
+    })`,
     {
       'node:assert/strict': assert,
       './server/services/adapter-manager': { default: { getAdapter: () => scheduler } },

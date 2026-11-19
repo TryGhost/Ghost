@@ -135,7 +135,7 @@ ${bootLines(name)
      Document that order above defineService.
   3. The boot tests already check that boot waits for init() and that its failure
      fails boot. Add one in ghost/test/unit/boot/ only where order matters. A root in
-     initCore or initServicesForFrontend needs a stub in that phase's test.
+     initLegacyCore or initServicesForFrontend needs a stub in that phase's test.
   4. If the service owns listeners, timers or work to drain, acquire and release them
      in start and stop hooks, and register stop() with the server in boot.
   5. Extend the root test. If the root declares extras, catalogue them in

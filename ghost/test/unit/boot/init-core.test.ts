@@ -13,29 +13,37 @@ function createCoreHarness() {
   const giftLinks = { init: sinon.stub().resolves() };
   const integrations = { init: sinon.stub().resolves() };
   const stripeCheckoutConfig = { init: sinon.stub().resolves() };
-  const initCore = loadBootFunction('initCore', {
-    './server/services/adapter-manager': { default: { init() {} } },
-    './server/lib/image/image-decoders': { restrictImageDecoders() {} },
-    './server/lib/image/image-content': {
-      IMAGE_UPLOAD_TYPES: [],
-      getIgnoredImageContentTypes: () => [],
+  // What was one phase is now three steps, run in this order by the application.
+  const initCore = loadBootFunction(
+    `(async (args) => {
+      await initFoundationChecks(args);
+      await initShared(args);
+      await initLegacyCore(args);
+    })`,
+    {
+      './server/services/adapter-manager': { default: { init() {} } },
+      './server/lib/image/image-decoders': { restrictImageDecoders() {} },
+      './server/lib/image/image-content': {
+        IMAGE_UPLOAD_TYPES: [],
+        getIgnoredImageContentTypes: () => [],
+      },
+      './shared/url-utils': {},
+      './server/services/limits': { init: async () => {} },
+      './server/services/settings/settings-service': settings,
+      './server/services/signing-keys': { default: signingKeys },
+      './server/services/internal-keys': { default: { init() {} } },
+      './server/lib/common/events': {},
+      './shared/i18n': i18n,
+      './server/auth': { isBetterAuth: false },
+      './server/services/gift-links': { default: giftLinks },
+      './server/services/members-metafields': { init() {} },
+      './server/services/app-installations': { default: { init() {} } },
+      './server/services/export-requests': { default: { init() {} } },
+      './server/services/invites': { default: { init() {} } },
+      './server/services/integrations': { default: integrations },
+      './server/services/stripe-checkout-config': { default: stripeCheckoutConfig },
     },
-    './shared/url-utils': {},
-    './server/services/limits': { init: async () => {} },
-    './server/services/settings/settings-service': settings,
-    './server/services/signing-keys': { default: signingKeys },
-    './server/services/internal-keys': { default: { init() {} } },
-    './server/lib/common/events': {},
-    './shared/i18n': i18n,
-    './server/auth': { isBetterAuth: false },
-    './server/services/gift-links': { default: giftLinks },
-    './server/services/members-metafields': { init() {} },
-    './server/services/app-installations': { default: { init() {} } },
-    './server/services/export-requests': { default: { init() {} } },
-    './server/services/invites': { default: { init() {} } },
-    './server/services/integrations': { default: integrations },
-    './server/services/stripe-checkout-config': { default: stripeCheckoutConfig },
-  });
+  );
   return {
     init: (): Promise<void> => initCore({ config: { get: () => ({}) } }),
     settings,

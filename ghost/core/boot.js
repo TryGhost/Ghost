@@ -88,14 +88,12 @@ async function initDatabase({ config }) {
 }
 
 /**
- * Core is intended to be all the bits of Ghost that are fundamental and we can't do anything without them!
- * (There's more to do to make this true)
+ * Checks that need config and nothing else, run before anything is started.
  * @param {object} options
- * @param {object} options.ghostServer
  * @param {object} options.config
  */
-async function initCore({ ghostServer, config }) {
-  debug('Begin: initCore');
+async function initFoundationChecks({ config }) {
+  debug('Begin: initFoundationChecks');
 
   // Validate configured adapters up-front so misconfiguration fails at boot
   // rather than on first lazy use (e.g. first image upload or scheduled job)
@@ -126,6 +124,18 @@ async function initCore({ ghostServer, config }) {
     }
   }
   debug('End: image upload config');
+
+  debug('End: initFoundationChecks');
+}
+
+/**
+ * The shared modules: what every service may rely on. The order is real:
+ * settings reads limits, and signing keys and i18n read settings.
+ * @param {object} options
+ * @param {object} options.config
+ */
+async function initShared({ config }) {
+  debug('Begin: initShared');
 
   // URL Utils is a bit slow, put it here so the timing is visible separate from models
   debug('Begin: Load urlUtils');
@@ -160,6 +170,18 @@ async function initCore({ ghostServer, config }) {
   const i18n = require('./shared/i18n');
   await i18n.init({ events: require('./server/lib/common/events') });
   debug('End: i18n');
+
+  debug('End: initShared');
+}
+
+/**
+ * Services that later phases or the frontend read, and that have no other home yet.
+ * @param {object} options
+ * @param {object} options.ghostServer
+ * @param {object} options.config
+ */
+async function initLegacyCore({ ghostServer, config }) {
+  debug('Begin: initLegacyCore');
 
   // Reads admin_session_secret, so it follows settings. Under legacy nothing loads
   // Better Auth itself.
@@ -219,7 +241,7 @@ async function initCore({ ghostServer, config }) {
     debug('End: Jobs Service');
   }
 
-  debug('End: initCore');
+  debug('End: initLegacyCore');
 }
 
 /**
@@ -386,7 +408,8 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const upgrades = require('./server/services/upgrades').default;
   const slack = require('./server/services/slack-ping').default;
   const webhooks = require('./server/services/webhooks');
-  const postScheduling = require('./server/services/post-scheduling').default;
+  // Built when it is loaded, from the internal keys that are ready by now.
+  require('./server/services/post-scheduling');
   const comments = require('./server/services/comments').default;
   const staffService = require('./server/services/staff').default;
   const memberAttribution = require('./server/services/member-attribution').default;
@@ -414,7 +437,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const editorPresence = require('./server/services/editor-presence').default;
   const segments = require('./server/services/segments').default;
   const domainEvents = require('@tryghost/domain-events');
-  const { automationsService } = require('./server/services/automations');
   const automationsApi = require('./server/services/automations/automations-api');
   const adapterManager = require('./server/services/adapter-manager').default;
   const { withErrorCapture } = require('./server/adapters/scheduling/error-capture');
@@ -506,6 +528,29 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   // initialization, and automation polling sends through it once jobs start.
   await memberWelcomeEmails.init();
 
+  debug('End: Services');
+
+  debug('End: initServices');
+
+  // The same adapter instance is registered with automations after the job runner starts.
+  return { schedulerAdapter };
+}
+
+/**
+ * Hands the job runner every handler, then starts it. Handlers must be
+ * registered before the runner starts.
+ * @param {object} options
+ * @param {object} options.jobsService
+ */
+async function initJobs({ jobsService }) {
+  const assert = require('node:assert/strict');
+  const giftService = require('./server/services/gifts');
+  const emailService = require('./server/services/email-service');
+  const emailAnalytics = require('./server/services/email-analytics');
+  const mentionsService = require('./server/services/mentions').default;
+  const mediaInliner = require('./server/services/media-inliner').default;
+  const contentImport = require('./server/services/content-import');
+
   debug('Begin: Register job handlers');
   const registerJobHandlers =
     require('./server/services/jobs-service/register-job-handlers').default;
@@ -542,6 +587,22 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   });
   await jobsService.start();
   debug('End: Register job handlers');
+}
+
+/**
+ * What must follow the job runner's start and still blocks boot: automation
+ * polling sends through the runner, and posts are rescheduled last.
+ * @param {object} options
+ * @param {object} options.schedulerAdapter the adapter initServices started
+ */
+async function initAfterJobs({ schedulerAdapter }) {
+  const { automationsService } = require('./server/services/automations');
+  const postScheduling = require('./server/services/post-scheduling').default;
+  const domainEvents = require('@tryghost/domain-events');
+  const urlUtils = require('./shared/url-utils').default;
+  const settingsCache = require('./shared/settings-cache');
+  const internalKeys = require('./server/services/internal-keys').default.service;
+  const apiUrl = urlUtils.urlFor('api', { type: 'admin' }, true);
 
   automationsService.init({
     domainEvents,
@@ -554,10 +615,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   if (schedulerAdapter.rescheduleOnBoot) {
     await postScheduling.rescheduleAll();
   }
-
-  debug('End: Services');
-
-  debug('End: initServices');
 }
 
 /**
@@ -704,13 +761,154 @@ async function initBackgroundServices({ config }) {
 }
 
 /**
+ * Logs unhandled rejections instead of leaving them to the process default.
+ * @param {object} options
+ * @param {Pick<import('@tryghost/logging').GhostLogger, 'error' | 'warn'>} options.logging
+ */
+function initUnhandledRejections({ logging }) {
+  debug('Begin: Add unhandled rejection handler');
+  process.on('unhandledRejection', (error) => {
+    logging.error('Unhandled rejection:', error);
+  });
+  debug('End: Add unhandled rejection handler');
+}
+
+/**
+ * Sentry must be initialized early, but requires config
+ */
+function initSentry() {
+  debug('Begin: Load sentry');
+  require('./shared/sentry');
+  debug('End: Load sentry');
+}
+
+/**
+ * Start the server with a minimal app in global maintenance mode
+ * @param {object} options
+ * @param {boolean} options.server
+ * @param {object} options.config
+ * @param {BootLogger} options.bootLogger
+ * @param {object} [options.prometheusClient]
+ * @param {() => Promise<void>} options.stopApplication stops what the application started
+ * @returns {Promise<{rootApp: object, ghostServer?: object}>}
+ */
+async function initHttpServer({ server, config, bootLogger, prometheusClient, stopApplication }) {
+  debug('Begin: load server + minimal app');
+  const rootApp = require('./app')();
+
+  if (!server) {
+    return { rootApp };
+  }
+
+  const { GhostServer } = require('./server/ghost-server');
+  const ghostServer = new GhostServer({
+    url: config.getSiteUrl(),
+    env: config.get('env'),
+    serverConfig: config.get('server'),
+  });
+  await ghostServer.start(rootApp);
+  bootLogger.log('server started');
+
+  // Ensure the prometheus client is stopped when the server shuts down
+  ghostServer.registerCleanupTask(async () => {
+    if (prometheusClient) {
+      prometheusClient.stop();
+    }
+  }, 'Prometheus client');
+
+  // The server still owns signals, draining and the exit. The application
+  // stops what its own steps started as one of the server's cleanup tasks.
+  ghostServer.registerCleanupTask(stopApplication, 'Application');
+  debug('End: load server + minimal app');
+
+  return { rootApp, ghostServer };
+}
+
+/**
+ * Get the DB ready, and say so
+ * @param {object} options
+ * @param {object} options.config
+ * @param {BootLogger} options.bootLogger
+ * @returns {Promise<string|null>} a warning to log once boot completes
+ */
+async function initDatabaseReady({ config, bootLogger }) {
+  debug('Begin: Get DB ready');
+  const databaseWarning = await initDatabase({ config });
+  bootLogger.log('database ready');
+  return databaseWarning;
+}
+
+/**
+ * Traces queries on the connection for Sentry
+ */
+function initQueryTracing() {
+  const connection = require('./server/data/db/connection');
+  require('./shared/sentry').initQueryTracing(connection);
+  debug('End: Get DB ready');
+
+  debug('Begin: Load Ghost Services & Apps');
+}
+
+/**
+ * Instrument the knex instance and connection pool if prometheus is enabled
+ * Needs to be after initLegacyCore because the pool is destroyed and recreated before then, which removes the event listeners
+ * @param {object} options
+ * @param {object} [options.prometheusClient]
+ */
+function initKnexInstrumentation({ prometheusClient }) {
+  if (prometheusClient) {
+    prometheusClient.instrumentKnex(require('./server/data/db/connection'));
+  }
+}
+
+/**
+ * Builds the job runner. It starts in initJobs, once every handler is registered.
+ * @param {object} options
+ * @param {object} options.config
+ */
+function initJobsService({ config }) {
+  const knex = require('./server/data/db').knex;
+  return require('./server/services/jobs-service').init({ knex, config });
+}
+
+/**
+ * Mount the full Ghost app onto the minimal root app, disable maintenance mode and let everyone know
+ * @param {object} options
+ * @param {object} options.config
+ * @param {Pick<import('@tryghost/logging').GhostLogger, 'error' | 'warn'>} options.logging
+ * @param {BootLogger} options.bootLogger
+ * @param {object} options.rootApp
+ * @param {object} options.ghostApp
+ * @param {string|null} options.databaseWarning
+ */
+function initReady({ config, logging, bootLogger, rootApp, ghostApp, databaseWarning }) {
+  debug('End: Load Ghost Services & Apps');
+
+  debug('Begin: mountGhost');
+  rootApp.disable('maintenance');
+  rootApp.use(config.getSubdir(), ghostApp);
+  debug('End: mountGhost');
+
+  // We are technically done here - let everyone know!
+  bootLogger.log('booted');
+  // After boot, so the dev console's boot output doesn't scroll it away
+  if (databaseWarning) {
+    logging.warn(databaseWarning);
+  }
+  bootLogger.metric('boot-time');
+  notifyServerReady();
+}
+
+/**
  * ----------------------------------
  * Boot Ghost - The magic starts here
  * ----------------------------------
  *
- * - This function is written with async/await so you can read, line by line, what happens on boot
- * - All the functions above handle init/boot logic for a single component
-
+ * The start sequence belongs to the framework: `application.start()` runs the
+ * steps listed in `ghost/bootstrap/app.ts`, and each step calls one of the
+ * functions above. This function builds the foundation, starts the
+ * application, and handles a failed start.
+ *
  * @returns {Promise<object>} ghostServer
  */
 async function bootGhost({ backend = true, frontend = true, server = true } = {}) {
@@ -719,12 +917,11 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
   debug('Begin Boot');
 
   // We need access to these variables in both the try and catch block
-  let bootLogger;
-  let config;
+  let application;
   let flushLogsAndMetrics;
-  let ghostServer;
   let logging;
-  let metrics;
+  // What the steps of this boot hand to each other. See ghost/bootstrap/transition/legacy-steps.ts
+  const state = {};
 
   // These require their own try-catch block and error format, because we can't log an error if logging isn't working
   try {
@@ -740,121 +937,25 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     // these or reaches them through the legacy paths, which return the same
     // instances. Building the database handle opens no connection.
     debug('Begin: Build foundation');
-    const foundation = require('../bootstrap/app').default.startFoundation();
-    config = foundation.config;
-    logging = foundation.logging;
+    application = require('../bootstrap/app').default;
+    logging = application.startFoundation().logging;
     debug('End: Build foundation');
 
     // Metrics and the log flush still load their own way
     debug('Begin: Load metrics');
-    metrics = require('@tryghost/metrics');
+    const metrics = require('@tryghost/metrics');
     flushLogsAndMetrics = require('./shared/flush').flushLogsAndMetrics;
-    bootLogger = new BootLogger(logging, metrics, startTime);
+    state.bootLogger = new BootLogger(logging, metrics, startTime);
     debug('End: Load metrics');
 
     // At this point logging is required, so we can handle errors better
-
-    // Add a process handler to capture and log unhandled rejections
-    debug('Begin: Add unhandled rejection handler');
-    process.on('unhandledRejection', (error) => {
-      logging.error('Unhandled rejection:', error);
-    });
-    debug('End: Add unhandled rejection handler');
   } catch (error) {
     console.error(error); // eslint-disable-line no-console
     process.exit(1);
   }
 
   try {
-    // Step 1 - require more fundamental components
-
-    // Sentry must be initialized early, but requires config
-    debug('Begin: Load sentry');
-    const sentry = require('./shared/sentry');
-    debug('End: Load sentry');
-
-    // Initialize prometheus client early to enable metrics collection during boot
-    // Note: this does not start the metrics server yet to avoid increasing boot time
-    const prometheusClient = initPrometheusClient({ config });
-
-    // Step 2 - Start server with minimal app in global maintenance mode
-    debug('Begin: load server + minimal app');
-    const rootApp = require('./app')();
-
-    if (server) {
-      const { GhostServer } = require('./server/ghost-server');
-      ghostServer = new GhostServer({
-        url: config.getSiteUrl(),
-        env: config.get('env'),
-        serverConfig: config.get('server'),
-      });
-      await ghostServer.start(rootApp);
-      bootLogger.log('server started');
-
-      // Ensure the prometheus client is stopped when the server shuts down
-      ghostServer.registerCleanupTask(async () => {
-        if (prometheusClient) {
-          prometheusClient.stop();
-        }
-      }, 'Prometheus client');
-      debug('End: load server + minimal app');
-    }
-
-    // Step 3 - Get the DB ready
-    debug('Begin: Get DB ready');
-    const databaseWarning = await initDatabase({ config });
-    bootLogger.log('database ready');
-    const connection = require('./server/data/db/connection');
-    sentry.initQueryTracing(connection);
-    debug('End: Get DB ready');
-
-    // Step 4 - Load Ghost with all its services
-    debug('Begin: Load Ghost Services & Apps');
-    await initCore({ ghostServer, config });
-
-    // Instrument the knex instance and connection pool if prometheus is enabled
-    // Needs to be after initCore because the pool is destroyed and recreated in initCore, which removes the event listeners
-    if (prometheusClient) {
-      prometheusClient.instrumentKnex(connection);
-    }
-
-    await initServicesForFrontend({ bootLogger });
-
-    if (frontend) {
-      initFrontend();
-    }
-    const ghostApp = await initExpressApps({ frontend, backend, config });
-
-    await initDynamicRouting({ frontend });
-
-    if (frontend) {
-      await initAppService();
-    }
-
-    const knex = require('./server/data/db').knex;
-    const jobsService = require('./server/services/jobs-service').init({ knex, config });
-
-    await initServices({ ghostServer, config, prometheusClient, jobsService });
-
-    debug('End: Load Ghost Services & Apps');
-
-    // Step 5 - Mount the full Ghost app onto the minimal root app & disable maintenance mode
-    debug('Begin: mountGhost');
-    rootApp.disable('maintenance');
-    rootApp.use(config.getSubdir(), ghostApp);
-    debug('End: mountGhost');
-
-    // Step 6 - We are technically done here - let everyone know!
-    bootLogger.log('booted');
-    // After boot, so the dev console's boot output doesn't scroll it away
-    if (databaseWarning) {
-      logging.warn(databaseWarning);
-    }
-    bootLogger.metric('boot-time');
-    notifyServerReady();
-
-    // Step 7 - Init our background services, we don't wait for this to finish
-    initBackgroundServices({ config });
+    await application.start({ backend, frontend, server }, state);
 
     // If we pass the env var, kill Ghost
     if (process.env.GHOST_CI_SHUTDOWN_AFTER_BOOT) {
@@ -865,10 +966,10 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     // We return the server purely for testing purposes
     if (server) {
       debug('End Boot: Returning Ghost Server');
-      return ghostServer;
+      return state.ghostServer;
     } else {
       debug('End boot: Returning Root App');
-      return rootApp;
+      return state.rootApp;
     }
   } catch (error) {
     const errors = require('@tryghost/errors');
@@ -887,9 +988,9 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
     console.error(serverStartError); // eslint-disable-line no-console
 
     // If ghost was started and something else went wrong, we shut it down
-    if (ghostServer) {
+    if (state.ghostServer) {
       notifyServerReady(serverStartError);
-      ghostServer.shutdown(2);
+      state.ghostServer.shutdown(2);
     } else {
       // Ghost server failed to start, drain the log transports before exiting
       await flushLogsAndMetrics();
@@ -899,3 +1000,27 @@ async function bootGhost({ backend = true, frontend = true, server = true } = {}
 }
 
 module.exports = bootGhost;
+// The steps of the start sequence. ghost/bootstrap/app.ts lists each one once.
+Object.assign(module.exports, {
+  initUnhandledRejections,
+  initSentry,
+  initPrometheusClient,
+  initHttpServer,
+  initDatabaseReady,
+  initQueryTracing,
+  initFoundationChecks,
+  initShared,
+  initLegacyCore,
+  initKnexInstrumentation,
+  initServicesForFrontend,
+  initFrontend,
+  initExpressApps,
+  initDynamicRouting,
+  initAppService,
+  initJobsService,
+  initServices,
+  initJobs,
+  initAfterJobs,
+  initReady,
+  initBackgroundServices,
+});

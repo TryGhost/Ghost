@@ -537,12 +537,21 @@ it('keeps the foundry to the bootstrap, and the bootstrap to boot and the legacy
     'ghost/core/server/data/db/connection.ts': "import '../../../../bootstrap/app';",
     'ghost/core/server/lib/builds-a-logger.ts': "import '../../../../foundry/src/logging';",
     'ghost/core/server/lib/reads-the-application.ts': "import '../../../bootstrap/app';",
+    // The bootstrap reaches Core only from its transition folder.
+    'ghost/core/server/lib/feature.ts': 'export const feature = 1;',
+    'ghost/bootstrap/knows-a-feature.ts': "import '../core/server/lib/feature';",
+    'ghost/bootstrap/transition/legacy-step.ts': "import '../../core/server/lib/feature';",
   });
   const graph: ICruiseResult = JSON.parse(
     f.run('json', 'ghost/core', ['ghost/bootstrap', 'foundry/src']).stdout,
   );
   assert.deepEqual(violations(graph), [
     ['bootstrap-only-from-boot', 'ghost/core/server/lib/reads-the-application.ts', app],
+    [
+      'bootstrap-reaches-core-only-through-transition',
+      'ghost/bootstrap/knows-a-feature.ts',
+      'ghost/core/server/lib/feature.ts',
+    ],
     ['foundry-not-application', foundry, config],
     ['foundry-only-from-bootstrap', 'ghost/core/server/lib/builds-a-logger.ts', foundry],
   ]);
