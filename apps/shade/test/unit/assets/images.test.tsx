@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
-import { FacebookLogo, GhostLogo, GhostOrb, GoogleLogo, XLogo } from '../../../src/assets/images';
+import * as logos from '../../../src/assets/images';
 import { render } from '../utils/test-utils';
 
-const logos = { FacebookLogo, GhostLogo, GhostOrb, GoogleLogo, XLogo };
+const { FacebookLogo, GoogleLogo, XLogo } = logos;
 
 describe('Logos', () => {
+  it('has logos to check', () => {
+    expect(Object.keys(logos).length).toBeGreaterThan(0);
+  });
+
   it.each(Object.entries(logos))('%s is decorative by default', (_name, Logo) => {
     const { container } = render(<Logo />);
     const svg = container.querySelector('svg');

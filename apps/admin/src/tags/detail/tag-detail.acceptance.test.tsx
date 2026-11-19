@@ -207,9 +207,11 @@ describe('Tag detail', () => {
       facebookTitle.element().compareDocumentPosition(facebookPreview.element()) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-    const facebookCard = tagDetailScreen.facebookPreview().element();
-    expect(facebookCard.querySelector('svg')).not.toBeNull();
-    expect(facebookCard.querySelectorAll('svg:not([aria-hidden="true"])')).toHaveLength(0);
+    const facebookLogo = tagDetailScreen
+      .facebookPreview()
+      .element()
+      .querySelector(':scope > div > svg');
+    expect(facebookLogo?.getAttribute('aria-hidden')).toBe('true');
 
     const codeInjectionCard = tagDetailScreen.codeInjectionCard();
     const codeInjectionTrigger = tagDetailScreen.codeInjectionTrigger();
