@@ -6,7 +6,7 @@
   },
   "src/components/patterns/color-picker.tsx": {
     "react-hooks/set-state-in-effect": {
-      "count": 2
+      "count": 1
     }
   },
   "src/components/patterns/filters.tsx": {

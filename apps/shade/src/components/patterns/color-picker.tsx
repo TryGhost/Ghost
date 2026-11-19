@@ -12,6 +12,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -166,10 +167,11 @@ const toHsla = (input: Parameters<typeof Color>[0]): HslaColor => {
   };
 };
 
-const toHex = ({ hue, saturation, lightness, alpha }: HslaColor) =>
-  Color.hsl(hue, saturation, lightness)
-    .alpha(alpha / 100)
-    .hex();
+const toColor = ({ hue, saturation, lightness, alpha }: HslaColor) =>
+  Color.hsl(hue, saturation, lightness).alpha(alpha / 100);
+
+// hex() drops alpha, so compare with hexa() to notice an alpha-only change.
+const isSameColor = (a: HslaColor, b: HslaColor) => toColor(a).hexa() === toColor(b).hexa();
 
 interface ColorPickerContextValue extends HslaColor {
   mode: string;
@@ -207,30 +209,36 @@ export const ColorPickerRoot = ({
   const [mode, setMode] = useState('hex');
   // Several changes can land before a re-render, so each one builds on the latest colour.
   const colorRef = useRef(color);
+  // An eye dropper pick resolves later, so it reports to the latest onChange.
+  const onChangeRef = useRef(onChange);
 
-  // Follow a controlled value without reporting it back through onChange.
+  useLayoutEffect(() => {
+    onChangeRef.current = onChange;
+  });
+
+  // Follow a controlled value without reporting it back through onChange. A value that
+  // matches the current colour, such as the parent echoing the last change, keeps the
+  // picker's own hue and saturation, which a hex can't always carry (e.g. for greys).
   useEffect(() => {
     if (value) {
       const next = toHsla(value);
-      colorRef.current = next;
-      setColorState(next);
+      if (!isSameColor(next, colorRef.current)) {
+        colorRef.current = next;
+        setColorState(next);
+      }
     }
   }, [value]);
 
-  const setColor = useCallback(
-    (change: Partial<HslaColor>) => {
-      const previous = colorRef.current;
-      const next = { ...previous, ...change };
-      colorRef.current = next;
-      setColorState(next);
+  const setColor = useCallback((change: Partial<HslaColor>) => {
+    const previous = colorRef.current;
+    const next = { ...previous, ...change };
+    colorRef.current = next;
+    setColorState(next);
 
-      const hex = toHex(next);
-      if (hex !== toHex(previous)) {
-        onChange?.(hex);
-      }
-    },
-    [onChange],
-  );
+    if (!isSameColor(next, previous)) {
+      onChangeRef.current?.(toColor(next).hex());
+    }
+  }, []);
 
   return (
     <ColorPickerContext.Provider value={{ ...color, mode, setColor, setMode }}>

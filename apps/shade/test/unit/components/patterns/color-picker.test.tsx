@@ -2,12 +2,29 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 import { useState } from 'react';
 import ColorPicker, {
+  ColorPickerAlpha,
   ColorPickerFormat,
   ColorPickerHue,
   ColorPickerRoot,
   ColorPickerSelection,
 } from '../../../../src/components/patterns/color-picker';
 import { render } from '../../utils/test-utils';
+
+function mockGradientRect() {
+  const gradient = screen.getByTestId('gradient');
+  vi.spyOn(gradient, 'getBoundingClientRect').mockReturnValue({
+    left: 0,
+    top: 0,
+    width: 200,
+    height: 200,
+    right: 200,
+    bottom: 200,
+    x: 0,
+    y: 0,
+    toJSON: () => {},
+  });
+  return gradient;
+}
 
 describe('ColorPicker Component', () => {
   beforeAll(() => {
@@ -45,32 +62,16 @@ describe('ColorPicker Component', () => {
         </ColorPickerRoot>,
       );
 
-      const gradient = screen.getByTestId('gradient');
-      vi.spyOn(gradient, 'getBoundingClientRect').mockReturnValue({
-        left: 0,
-        top: 0,
-        width: 200,
-        height: 200,
-        right: 200,
-        bottom: 200,
-        x: 0,
-        y: 0,
-        toJSON: () => {},
-      });
-
-      return { gradient, handleChange };
+      return { gradient: mockGradientRect(), handleChange };
     }
 
     it('updates color on single click without dragging', () => {
       const { gradient, handleChange } = renderGradient();
-      const callsBefore = handleChange.mock.calls.length;
 
       fireEvent.pointerDown(gradient, { clientX: 100, clientY: 100 });
 
-      expect(
-        handleChange.mock.calls.length > callsBefore,
-        'Color should change after clicking the gradient',
-      ).toBeTruthy();
+      // Saturation and lightness change together, and are reported once.
+      expect(handleChange).toHaveBeenCalledTimes(1);
     });
 
     it('clicking top-left corner produces white', () => {
@@ -184,6 +185,7 @@ describe('ColorPicker Component', () => {
     it('is not called when the parent re-renders', () => {
       const handleChange = vi.fn();
       const { rerender } = render(<Parent value="#ff0000" onChange={handleChange} />);
+      handleChange.mockClear();
 
       rerender(<Parent value="#ff0000" onChange={handleChange} />);
       rerender(<Parent value="#ff0000" onChange={handleChange} />);
@@ -192,13 +194,34 @@ describe('ColorPicker Component', () => {
     });
 
     it('is not called when value changes', () => {
+      // A stable onChange, so only the new value could trigger a call.
       const handleChange = vi.fn();
-      const { rerender } = render(<Parent value="#ff0000" onChange={handleChange} />);
+      const { rerender } = render(
+        <ColorPickerRoot value="#ff0000" onChange={handleChange}>
+          <ColorPickerFormat />
+        </ColorPickerRoot>,
+      );
+      handleChange.mockClear();
 
-      rerender(<Parent value="#00ff00" onChange={handleChange} />);
+      rerender(
+        <ColorPickerRoot value="#00ff00" onChange={handleChange}>
+          <ColorPickerFormat />
+        </ColorPickerRoot>,
+      );
 
       expect(screen.getByDisplayValue('#00FF00')).toBeTruthy();
       expect(handleChange).not.toHaveBeenCalled();
+    });
+
+    it('builds the next change on a colour synced from value', () => {
+      const handleChange = vi.fn();
+      const { rerender } = render(<Parent value="#ff0000" onChange={handleChange} />);
+      rerender(<Parent value="#00ff00" onChange={handleChange} />);
+
+      fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
+
+      expect(handleChange).toHaveBeenCalledTimes(1);
+      expect(handleChange).toHaveBeenCalledWith('#00FF04');
     });
 
     it('is called once when the hue slider moves', () => {
@@ -211,7 +234,7 @@ describe('ColorPicker Component', () => {
       expect(handleChange).toHaveBeenCalledWith('#FF0400');
     });
 
-    it('is called once when a typed colour changes every channel', () => {
+    it('is called once when a typed colour changes hue, saturation and lightness', () => {
       const handleChange = vi.fn();
       render(<Parent value="#ff0000" onChange={handleChange} />);
 
@@ -219,6 +242,52 @@ describe('ColorPicker Component', () => {
 
       expect(handleChange).toHaveBeenCalledTimes(1);
       expect(handleChange).toHaveBeenCalledWith('#336699');
+    });
+
+    it('is called when only the alpha changes', () => {
+      const handleChange = vi.fn();
+      render(
+        <ColorPickerRoot value="#ff0000" onChange={handleChange}>
+          <ColorPickerAlpha />
+        </ColorPickerRoot>,
+      );
+
+      fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowLeft' });
+
+      expect(handleChange).toHaveBeenCalledTimes(1);
+    });
+
+    it('is called when an opaque colour replaces a transparent one with the same hex', () => {
+      const handleChange = vi.fn();
+      render(
+        <ColorPickerRoot defaultValue="#00000000" onChange={handleChange}>
+          <ColorPickerFormat />
+        </ColorPickerRoot>,
+      );
+
+      // The input already shows #000000, so type the short form of opaque black.
+      fireEvent.change(screen.getByLabelText('Hex color'), { target: { value: '#000' } });
+
+      expect(handleChange).toHaveBeenCalledTimes(1);
+      expect(handleChange).toHaveBeenCalledWith('#000000');
+    });
+
+    it('keeps its hue when the parent echoes back a colour that has none', () => {
+      function Controlled() {
+        const [value, setValue] = useState('#0000ff');
+        return (
+          <ColorPickerRoot value={value} onChange={setValue}>
+            <ColorPickerSelection data-testid="gradient" />
+            <ColorPickerHue />
+          </ColorPickerRoot>
+        );
+      }
+      render(<Controlled />);
+
+      // The bottom edge is black, which carries no hue.
+      fireEvent.pointerDown(mockGradientRect(), { clientX: 100, clientY: 200 });
+
+      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('240');
     });
 
     it('settles when the parent stores the colour in a new object on every change', () => {
