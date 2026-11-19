@@ -182,6 +182,7 @@ describe('Tag detail', () => {
       metaTitle.element().compareDocumentPosition(searchPreview.element()) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
+    await expect.element(tagDetailScreen.searchPreviewLogo()).toBeVisible();
 
     await xTab.click();
     await expect.element(searchTab).toHaveAttribute('aria-selected', 'false');
@@ -206,6 +207,9 @@ describe('Tag detail', () => {
       facebookTitle.element().compareDocumentPosition(facebookPreview.element()) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
+    expect(
+      tagDetailScreen.facebookPreview().element().querySelector('svg')?.getAttribute('aria-hidden'),
+    ).toBe('true');
 
     const codeInjectionCard = tagDetailScreen.codeInjectionCard();
     const codeInjectionTrigger = tagDetailScreen.codeInjectionTrigger();

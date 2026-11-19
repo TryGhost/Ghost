@@ -24,7 +24,7 @@ describe('Icon', () => {
   );
 
   it.each(icons)(
-    'Icon.%s does not add a description to the control it sits in',
+    'Icon.%s does not add vendor text to the name of the control it sits in',
     (_name, IconComponent) => {
       render(
         <button type="button">
@@ -33,7 +33,7 @@ describe('Icon', () => {
         </button>,
       );
 
-      expect(screen.getByRole('button', { name: 'Save', description: '' })).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Save' })).toBeTruthy();
       expect(screen.getByRole('button').textContent).toBe('Save');
     },
   );
@@ -88,6 +88,13 @@ describe('Icon', () => {
     expect(typography.getAttribute('aria-hidden')).toBe('false');
     expect(info.getAttribute('role')).toBe('graphics-symbol');
     expect(info.getAttribute('aria-label')).toBe('Information');
+  });
+
+  it('stays hidden when the caller hides a named icon', () => {
+    const { container } = render(<Icon.ErrorFill title="Error" aria-hidden />);
+
+    expect(container.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+    expect(screen.queryByRole('img')).toBeNull();
   });
 
   it('keeps the defaults when a prop is passed through as undefined', () => {

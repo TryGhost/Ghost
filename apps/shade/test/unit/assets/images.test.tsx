@@ -63,6 +63,13 @@ describe('Logos', () => {
     expect(container.querySelector('svg')?.getAttribute('aria-hidden')).toBe('false');
   });
 
+  it('stays hidden when the caller hides a named logo', () => {
+    const { container } = render(<GoogleLogo title="Google" aria-hidden />);
+
+    expect(container.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+    expect(screen.queryByRole('img')).toBeNull();
+  });
+
   it('keeps the defaults when a prop is passed through as undefined', () => {
     const { container } = render(<GoogleLogo aria-hidden={undefined} />);
     render(<FacebookLogo role={undefined} title="Facebook" />);
