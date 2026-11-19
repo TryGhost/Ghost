@@ -77,6 +77,30 @@ describe('Settings layout', () => {
     await expect.poll(() => scroller()!.scrollTop).toBeGreaterThan(0);
   });
 
+  it.each([false, true])(
+    'prevents sideways scrolling at 820px with mobile hardening (admin7Design=%s)',
+    async (admin7Design) => {
+      fakeSettingsScreens();
+      fakeAnalyticsOverview();
+      await page.viewport(820, 1000);
+      try {
+        await renderAdminApp('/settings', { labs: { admin7Mobile: true, admin7Design } });
+        await expect.element(settingsScreen.titleAndDescription()).toBeVisible();
+        await expect(page.getByRole('combobox', { name: 'Who can comment on posts?' })).toHaveCount(
+          1,
+        );
+
+        const scroller = document.getElementById('settings-scroller')!;
+        expect(scroller.scrollWidth).toBe(scroller.clientWidth);
+        scroller.scrollTo({ left: 100, top: 100 });
+        await expect.poll(() => scroller.scrollTop).toBeGreaterThan(0);
+        expect(scroller.scrollLeft).toBe(0);
+      } finally {
+        await page.viewport(1280, 800);
+      }
+    },
+  );
+
   it('falls back to the landing route when nothing opened settings', async () => {
     fakeSettingsScreens();
     fakeAnalyticsOverview();

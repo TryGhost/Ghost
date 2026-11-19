@@ -244,8 +244,11 @@ export function createAuth(deps: CreateAuthDeps) {
       // Pinned: Better Auth turns both checks off when NODE_ENV is test or TEST is set
       disableOriginCheck: false,
       disableCSRFCheck: false,
-      // Sets `Secure` and the `__Secure-` name prefix together, on an HTTPS admin URL only
-      useSecureCookies: ssl,
+      // No `__Secure-` prefix until Ghost(Pro)'s Fastly config passes the prefixed cookie name;
+      // then restore `useSecureCookies: ssl` and drop `defaultCookieAttributes`
+      useSecureCookies: false,
+      // `Secure` on an HTTPS admin URL only
+      defaultCookieAttributes: { secure: ssl },
       cookies: {
         session_token: {
           name: SESSION_COOKIE_NAME,

@@ -14,6 +14,7 @@ describe.each([false, true])('PageMenu with admin7Design=%s', (admin7Design) => 
       <ShadeContext.Provider
         value={{
           admin7Design,
+          admin7Mobile: false,
           controlShape: 'pill',
           darkMode: false,
           isAnyTextFieldFocused: false,

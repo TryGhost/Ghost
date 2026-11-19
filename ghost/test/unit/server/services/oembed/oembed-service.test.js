@@ -4,6 +4,7 @@ const nock = require('nock');
 const got = require('got').default;
 const logging = require('@tryghost/logging');
 const sinon = require('sinon');
+const iconv = require('iconv-lite');
 const sharp = require('sharp');
 const zlib = require('zlib');
 
@@ -1633,6 +1634,139 @@ describe('oembed-service', function () {
 
     afterEach(function () {
       sinon.restore();
+    });
+  });
+
+  describe('bookmark error logging', function () {
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('logs a metadata extraction failure and rejects as an unknown provider', async function () {
+      const loggingStub = sinon.stub(logging, 'error');
+      const service = new OembedService({
+        config: {
+          get() {
+            return true;
+          },
+        },
+        externalRequest: sinon.stub(),
+      });
+
+      await assert.rejects(
+        service.fetchBookmarkData('https://example.com/page', null, 'bookmark'),
+        {
+          name: 'ValidationError',
+          message: 'No provider found for supplied URL.',
+        },
+      );
+      sinon.assert.calledOnce(loggingStub);
+      assert.equal(loggingStub.firstCall.args[0].message, 'cheerio.load() expects a string');
+    });
+
+    it('logs a failed mention icon check and falls back to the default icon', async function () {
+      const loggingStub = sinon.stub(logging, 'error');
+      const failure = new Error('icon unreachable');
+      const externalRequest = sinon.stub();
+      externalRequest.head = sinon.stub().rejects(failure);
+      const service = new OembedService({
+        config: {
+          get() {
+            return true;
+          },
+        },
+        externalRequest,
+      });
+
+      const result = await service.buildBookmarkData(
+        'https://example.com/page',
+        { title: 'Title', icon: 'https://example.com/icon.png' },
+        'mention',
+      );
+
+      sinon.assert.calledOnceWithExactly(externalRequest.head, 'https://example.com/icon.png');
+      sinon.assert.calledOnceWithExactly(loggingStub, failure);
+      assert.equal(result.metadata.icon, 'https://static.ghost.org/v5.0.0/images/link-icon.svg');
+    });
+
+    it('logs a failed page decode and returns the undecoded body', async function () {
+      const loggingStub = sinon.stub(logging, 'error');
+      const failure = new Error('decode failed');
+      sinon.stub(iconv, 'decode').throws(failure);
+      const externalRequest = sinon.stub().resolves({
+        headers: { 'content-type': 'text/html; charset=iso-8859-1' },
+        body: Buffer.from('<p>Page</p>'),
+        url: 'https://example.com/page',
+      });
+      const service = new OembedService({
+        config: {
+          get() {
+            return true;
+          },
+        },
+        externalRequest,
+      });
+
+      const result = await service.fetchPageHtml('https://example.com/page');
+
+      sinon.assert.calledOnceWithExactly(loggingStub, failure);
+      assert.deepEqual(result, {
+        body: '<p>Page</p>',
+        url: 'https://example.com/page',
+        contentType: 'text/html; charset=iso-8859-1',
+      });
+    });
+
+    it('logs a failed bookmark icon store and falls back to the default icon', async function () {
+      const loggingStub = sinon.stub(logging, 'error');
+      const failure = new Error('icon store failed');
+      const service = new OembedService({
+        config: {
+          get() {
+            return true;
+          },
+        },
+        externalRequest: sinon.stub(),
+      });
+      const processImage = sinon.stub(service, 'processImageFromUrl').rejects(failure);
+
+      const result = await service.buildBookmarkData(
+        'https://example.com/page',
+        { title: 'Title', icon: 'https://example.com/icon.png' },
+        'bookmark',
+      );
+
+      sinon.assert.calledOnceWithExactly(processImage, 'https://example.com/icon.png', 'icon');
+      sinon.assert.calledOnceWithExactly(loggingStub, failure);
+      assert.equal(result.metadata.icon, 'https://static.ghost.org/v5.0.0/images/link-icon.svg');
+    });
+
+    it('logs a failed bookmark thumbnail store and keeps the original thumbnail', async function () {
+      const loggingStub = sinon.stub(logging, 'error');
+      const failure = new Error('thumbnail store failed');
+      const service = new OembedService({
+        config: {
+          get() {
+            return true;
+          },
+        },
+        externalRequest: sinon.stub(),
+      });
+      const processImage = sinon.stub(service, 'processImageFromUrl').rejects(failure);
+
+      const result = await service.buildBookmarkData(
+        'https://example.com/page',
+        { title: 'Title', thumbnail: 'https://example.com/cover.png' },
+        'bookmark',
+      );
+
+      sinon.assert.calledOnceWithExactly(
+        processImage,
+        'https://example.com/cover.png',
+        'thumbnail',
+      );
+      sinon.assert.calledOnceWithExactly(loggingStub, failure);
+      assert.equal(result.metadata.thumbnail, 'https://example.com/cover.png');
     });
   });
 

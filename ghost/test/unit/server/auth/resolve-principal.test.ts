@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import type { NextFunction, Request, Response } from 'express';
 import type { ApiKey, Principal, Session, User } from '../../../../core/server/auth/principal';
-import { applyPrincipal, userView } from '../../../../core/server/auth/principal';
+import { apiKeyView, applyPrincipal, userView } from '../../../../core/server/auth/principal';
 import {
   createPrincipalResolver,
   fromApiKey,
@@ -17,23 +17,41 @@ function model(id: string, attributes: Record<string, unknown> = {}) {
   return { id, get: (key: string) => attributes[key], toJSON: () => ({ id, ...attributes }) };
 }
 
-const owner = model('owner', {
+const ownerRole = model('role-owner', { name: 'Owner' });
+const owner = Object.assign(
+  model('owner', { email: 'owner@example.com', name: 'Owner', status: 'active', password: 'hash' }),
+  { relations: { roles: { models: [ownerRole] } } },
+) as User;
+const ownerView = {
+  id: 'owner',
   email: 'owner@example.com',
   name: 'Owner',
   status: 'active',
-  password: 'hash',
-}) as User;
-const ownerView = { id: 'owner', email: 'owner@example.com', name: 'Owner', status: 'active' };
+  roles: [{ id: 'role-owner', name: 'Owner' }],
+};
 
 const integration = model('integration', { type: 'custom', slug: 'zapier', secret: 'shh' });
 const integrationView = { id: 'integration', type: 'custom', slug: 'zapier' };
 
-const staffKey = model('key', { user_id: 'owner', type: 'admin', secret: 'shh' }) as ApiKey;
-const staffKeyView = { id: 'key', type: 'admin', user_id: 'owner', integration_id: null };
+// A staff token's key has no role: an empty related model
+const staffKey = Object.assign(model('key', { user_id: 'owner', type: 'admin', secret: 'shh' }), {
+  relations: { role: { get: () => undefined } },
+}) as ApiKey;
+const staffKeyView = {
+  id: 'key',
+  type: 'admin',
+  user_id: 'owner',
+  integration_id: null,
+  role: null,
+};
 
+const adminIntegrationRole = model('role-integration', { name: 'Admin Integration' });
+
+// Content keys are loaded without their role
 function integrationKey(type: string) {
+  const role = type === 'admin' ? { role: adminIntegrationRole } : {};
   return Object.assign(model('key', { integration_id: 'integration', type, secret: 'shh' }), {
-    relations: { integration },
+    relations: { integration, ...role },
   }) as ApiKey;
 }
 const integrationKeyView = (type: string) => ({
@@ -41,6 +59,7 @@ const integrationKeyView = (type: string) => ({
   type,
   user_id: null,
   integration_id: 'integration',
+  role: type === 'admin' ? { id: 'role-integration', name: 'Admin Integration' } : null,
 });
 
 function session(overrides: Partial<Session> = {}): Session {
@@ -266,7 +285,7 @@ describe('resolvePrincipal', function () {
     });
 
     it('resolves a URL token the same way, with no cookie fallback', async function () {
-      const apiKey = model('key', { type: 'admin' }) as ApiKey;
+      const apiKey = integrationKey('admin');
       const keyed = await run(setup().adminApiWithUrl, { api_key: apiKey, user: null });
       const anonymous = await run(setup().adminApiWithUrl, withCookie());
 
@@ -310,7 +329,7 @@ describe('legacy principal', function () {
 
   it('gives a key with a missing integration row no integration', async function () {
     const apiKey = Object.assign(model('key', { integration_id: 'gone', type: 'admin' }), {
-      relations: { integration: { get: () => undefined } },
+      relations: { integration: { get: () => undefined }, role: adminIntegrationRole },
     }) as unknown as ApiKey;
     const { req } = await run(legacyAdminApi, { api_key: apiKey, user: null });
 
@@ -507,5 +526,41 @@ describe('applyPrincipal', function () {
       assert.equal(Object.isFrozen(req.auth.scopes), true);
       assert.doesNotMatch(JSON.stringify(req.auth), /hash/);
     });
+  });
+});
+
+describe('principal views', function () {
+  it('carries the user’s roles, frozen', function () {
+    const view = userView(owner);
+    assert.deepEqual(view.roles, [{ id: 'role-owner', name: 'Owner' }]);
+    assert.equal(Object.isFrozen(view.roles), true);
+    assert.equal(Object.isFrozen(view.roles[0]), true);
+  });
+
+  it('refuses a user loaded without roles, which would deny every check', function () {
+    assert.throws(() => userView(model('owner') as User), { errorType: 'IncorrectUsageError' });
+  });
+
+  it('refuses a key whose role_id is set but whose role was not loaded', function () {
+    assert.throws(
+      () => apiKeyView(model('key', { type: 'admin', role_id: 'role-integration' }) as ApiKey),
+      { errorType: 'IncorrectUsageError' },
+    );
+  });
+
+  // Bookshelf attaches no relation when the foreign key is null
+  it('gives a key with a null role_id no role, whether admin or content', function () {
+    for (const type of ['admin', 'content']) {
+      assert.equal(apiKeyView(model('key', { type, role_id: null }) as ApiKey).role, null);
+    }
+  });
+
+  it('refuses a role without an id or name', function () {
+    const roles = (role: ReturnType<typeof model> | { get: () => undefined }) =>
+      Object.assign(model('owner'), { relations: { roles: { models: [role] } } }) as User;
+    assert.throws(() => userView(roles({ get: () => undefined })), {
+      errorType: 'IncorrectUsageError',
+    });
+    assert.throws(() => userView(roles(model('role'))), { errorType: 'IncorrectUsageError' });
   });
 });

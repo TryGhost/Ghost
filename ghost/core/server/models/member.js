@@ -561,31 +561,27 @@ const Member = ghostBookshelf.Model.extend(
        * For the reason above, `detached` handler is using the scope of `detaching`
        * to access the models that are not present in `detached`.
        */
-      model.related('labels').once('detaching', function onDetaching(collection, label) {
-        model
-          .related('labels')
-          .once('detached', function onDetached(detachedCollection, response, options) {
-            label.emitChange('detached', options);
-            model.emitChange('label.detached', options);
-          });
+      model.related('labels').once('detaching', (collection, label) => {
+        model.related('labels').once('detached', (detachedCollection, response, options) => {
+          label.emitChange('detached', options);
+          model.emitChange('label.detached', options);
+        });
       });
 
-      model.related('labels').once('attaching', function onDetaching(collection, labels) {
-        model
-          .related('labels')
-          .once('attached', function onDetached(detachedCollection, response, options) {
-            labels.forEach((label) => {
-              label.emitChange('attached', options);
-              model.emitChange('label.attached', options);
+      model.related('labels').once('attaching', (collection, labels) => {
+        model.related('labels').once('attached', (detachedCollection, response, options) => {
+          labels.forEach((label) => {
+            label.emitChange('attached', options);
+            model.emitChange('label.attached', options);
 
-              const event = new LabelAddedToMembersEvent(label.id, [model.id]);
-              afterCommit(
-                options.transacting,
-                () => DomainEvents.dispatch(event),
-                (err) => logging.error(err),
-              );
-            });
+            const event = new LabelAddedToMembersEvent(label.id, [model.id]);
+            afterCommit(
+              options.transacting,
+              () => DomainEvents.dispatch(event),
+              (err) => logging.error(err),
+            );
           });
+        });
       });
     },
 
