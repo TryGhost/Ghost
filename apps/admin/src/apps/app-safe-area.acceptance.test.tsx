@@ -8,6 +8,7 @@ import {
   AlertDialogDescription,
   AlertDialogTitle,
   Dialog,
+  DialogClose,
   DialogContent,
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +32,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
+  toast,
 } from '@tryghost/shade/components';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { ListPage } from '@tryghost/shade/page-templates';
@@ -704,5 +706,77 @@ describe('in an app’s page, where a dialog renders while the overlay loads', (
     await settle();
 
     expect(insideSafeArea(box(byRole('dialog')))).toEqual(INSIDE);
+  });
+});
+
+describe('toasts in an app, while a dialog is open in its overlay', () => {
+  let frame: HTMLIFrameElement;
+  let frameRoot: HTMLDivElement;
+
+  /**
+   * The overlay as a document of its own, as an app's is: a frame over the whole window, with the
+   * app's stylesheets and the safe area from the window's edges, as the SDK gives it.
+   */
+  const frameOverlay: AppOverlay = {
+    container: () => frameRoot,
+    hold: () => ({ setOpen: () => {}, release: () => {} }),
+  };
+
+  beforeEach(async () => {
+    setInsets(INSETS);
+    frame = document.createElement('iframe');
+    frame.style.cssText = 'position: fixed; inset: 0; width: 100%; height: 100%; border: 0';
+    document.body.append(frame);
+    const overlayDocument = frame.contentDocument!;
+    for (const sheet of document.head.querySelectorAll('style, link[rel=stylesheet]')) {
+      overlayDocument.head.append(sheet.cloneNode(true));
+    }
+    overlayDocument.documentElement.style.cssText = document.documentElement.style.cssText;
+    overlayDocument.body.style.margin = '0';
+    frameRoot = overlayDocument.createElement('div');
+    overlayDocument.body.append(frameRoot);
+    // Let the cloned stylesheets load.
+    await new Promise((resolve) => {
+      setTimeout(resolve, 100);
+    });
+  });
+
+  afterEach(() => {
+    toast.dismiss();
+    frame.remove();
+  });
+
+  const toastIn = (document: Document) => document.querySelector('[data-sonner-toast]');
+
+  it('shows a toast raised in the dialog above it, inside the safe area, then back in the page', async () => {
+    await render(
+      <ShadeApp className="shade-admin" darkMode={false} overlay={frameOverlay}>
+        <Dialog defaultOpen>
+          <DialogContent>
+            <DialogTitle>Title</DialogTitle>
+            <DialogDescription>Description</DialogDescription>
+            <button type="button" onClick={() => toast.success('Saved', { duration: 60_000 })}>
+              Save
+            </button>
+            <DialogClose>Done</DialogClose>
+          </DialogContent>
+        </Dialog>
+      </ShadeApp>,
+    );
+    await expect.poll(() => frameRoot.querySelector('[role=dialog]')).not.toBeNull();
+    const button = (name: string) =>
+      [...frameRoot.querySelectorAll('button')].find((each) => each.textContent === name)!;
+    button('Save').click();
+
+    await expect.poll(() => toastIn(frame.contentDocument!)).not.toBeNull();
+    await settle();
+    const shown = toastIn(frame.contentDocument!)!;
+    expect(toastIn(document)).toBeNull();
+    expect(insideSafeArea(box(shown))).toEqual(INSIDE);
+
+    button('Done').click();
+
+    await expect.poll(() => toastIn(document)).toBe(shown);
+    expect(toastIn(frame.contentDocument!)).toBeNull();
   });
 });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { type AppOverlay, AppOverlayContext } from '@/lib/app-overlay';
+import { type AppOverlay, AppOverlayContext, useOverlayToasts } from '@/lib/app-overlay';
 import ShadeProvider from '@/providers/shade-provider';
 import type { ControlShape } from '@/providers/shade-context';
 import { useSafeAreaSlide } from '@/lib/safe-area';
@@ -53,6 +53,7 @@ const ShadeApp: React.FC<ShadeAppProps> = ({
   useSafeAreaSlide(root);
   // After the safe area's padding, so a className's own padding wins.
   const appClassName = cn('shade', SAFE_AREA_PADDING, className);
+  const [hostedOverlay, toasterContainer] = useOverlayToasts(overlay);
 
   return (
     <div
@@ -67,8 +68,9 @@ const ShadeApp: React.FC<ShadeAppProps> = ({
         admin7Mobile={admin7Mobile}
         controlShape={controlShape}
         darkMode={darkMode}
+        toasterContainer={toasterContainer}
       >
-        <AppOverlayContext.Provider value={overlay}>{children}</AppOverlayContext.Provider>
+        <AppOverlayContext.Provider value={hostedOverlay}>{children}</AppOverlayContext.Provider>
       </ShadeProvider>
     </div>
   );
