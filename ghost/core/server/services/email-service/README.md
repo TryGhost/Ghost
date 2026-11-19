@@ -31,8 +31,13 @@ shutdown stops a send, the batch sender tries to return its email to `pending`,
 unless a recipient-integrity check failed, which fails the email as it would
 outside shutdown. A `pending` email can therefore already have batch work. If
 returning the email to `pending` fails, or a crash cuts the send short, it stays
-`submitting`. On boot, recovery reschedules eligible interrupted sends within
-`bulkEmail:resumeMaxAgeMs` and skips batches already submitted.
+`submitting`. When the jobs outbox keeps rows until their jobs settle, it hands
+an interrupted send's job over again after a restart, and the boot recovery
+does not run. Otherwise, on boot, recovery reschedules eligible interrupted
+sends within `bulkEmail:resumeMaxAgeMs` and skips batches already submitted. A
+send job that finds its email `submitting` skips it and logs
+`send_email.skipped`; with the outbox keeping rows, a send a crash cut short
+stays `submitting` until someone checks it.
 
 ## Testing
 
