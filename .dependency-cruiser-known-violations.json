@@ -1141,12 +1141,12 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/settings/settings-utils.js",
+    "from": "ghost/core/server/services/settings/settings-utils.ts",
     "to": "@tryghost/logging"
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/settings/settings-utils.js",
+    "from": "ghost/core/server/services/settings/settings-utils.ts",
     "to": "ghost/core/shared/config/index.ts"
   },
   {
