@@ -257,6 +257,26 @@ describe('FileNode', function () {
         }));
     });
     describe('visibility', function () {
+        it('links email to the post when the card is public on web', editorTest(function () {
+            const node = $createFileNode(dataset);
+            const {element} = node.exportDOM(editor, {...exportOptions, target: 'email', postUrl: 'https://example.com/post'});
+
+            expect((element as HTMLElement).outerHTML).toContain('href="https://example.com/post"');
+        }));
+
+        it('links email to the file when the card is hidden from some web visitors', editorTest(function () {
+            const node = $createFileNode(dataset);
+            node.visibility = {
+                web: {nonMember: false, memberSegment: 'status:-free'},
+                email: {memberSegment: 'status:free'}
+            };
+            const {element} = node.exportDOM(editor, {...exportOptions, target: 'email', postUrl: 'https://example.com/post'});
+            const output = (element as HTMLElement).outerHTML;
+
+            expect(output).not.toContain('https://example.com/post');
+            expect(output).toContain(`href="${dataset.src}"`);
+        }));
+
         it('renders nothing when hidden from email', editorTest(function () {
             exportOptions.target = 'email';
 

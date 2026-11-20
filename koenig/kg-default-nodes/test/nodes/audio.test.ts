@@ -220,6 +220,19 @@ describe('AudioNode', function () {
             expect(output).toContain('href="https://example.com/posts/test-audio"');
             expect(output).toContain('Click to play audio');
         }));
+
+        it('links email to the audio file when the card is restricted on web', editorTest(function () {
+            const audioNode = $createAudioNode(dataset);
+            audioNode.visibility = {
+                web: {nonMember: false, memberSegment: 'status:-free'},
+                email: {memberSegment: 'status:free,status:-free'}
+            };
+            const {element} = audioNode.exportDOM(editor, {...exportOptions, target: 'email', postUrl: 'https://example.com/posts/test-audio'});
+
+            const output = getHTMLElement(element).outerHTML;
+            expect(output).not.toContain('https://example.com/posts/test-audio');
+            expect(output).toContain(`href="${dataset.src}"`);
+        }));
     });
 
     describe('importDOM', function () {
