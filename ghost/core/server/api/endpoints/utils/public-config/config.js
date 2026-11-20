@@ -5,6 +5,27 @@ const labs = require('../../../../../shared/labs');
 const databaseInfo = require('../../../../data/db/info');
 const ghostVersion = require('@tryghost/version');
 
+// Cards whose web and email visibility this server renders. Admin deploys
+// ahead of the server on Ghost(Pro), so the editor only offers visibility
+// settings for cards listed here.
+// Add a card only once the server fully supports its visibility.
+const CARD_VISIBILITY_NODE_TYPES = [
+  'html',
+  'call-to-action',
+  'transistor',
+  'image',
+  'gallery',
+  'video',
+  'audio',
+  'file',
+  'callout',
+  'header',
+  'product',
+  'toggle',
+  'button',
+  'bookmark',
+];
+
 const tinybirdStatsPayloadProperties = ['endpoint', 'endpointBrowser', 'version', 'datasource'];
 
 const tinybirdLocalStatsPayloadProperties = ['enabled', 'endpoint', 'datasource'];
@@ -68,6 +89,7 @@ module.exports = function getConfigProperties() {
     security: config.get('security'),
     // Allowlisted, unlike `security`, which is exposed verbatim
     auth: pick(config.get('auth'), ['engine']),
+    cardVisibility: CARD_VISIBILITY_NODE_TYPES,
   };
 
   if (config.get('explore') && config.get('explore:testimonials_url')) {
