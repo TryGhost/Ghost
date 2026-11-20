@@ -19,6 +19,9 @@ const {
 } = require('../../../../../core/shared/events');
 const MilestoneCreatedEvent = require('../../../../../core/server/services/milestones/milestone-created-event');
 const STAFF_PATH = require.resolve('../../../../../core/server/services/staff');
+const {
+  services,
+}: typeof import('../../../../utils/services') = require('../../../../utils/services');
 
 type Handler = (event: unknown) => Promise<void>;
 type Recipient = { email: string; slug: string };
@@ -81,7 +84,7 @@ describe('Staff notifications', function () {
   let findMember: sinon.SinonStub;
   let findSubscription: sinon.SinonStub;
   let attribution: Record<string, sinon.SinonStub>;
-  let root: { init(): Promise<void>; readonly service: { emails: Emails } };
+  let root: typeof import('../../../../../core/server/services/staff').default;
   let emails: Emails;
 
   beforeEach(async function () {
@@ -127,11 +130,14 @@ describe('Staff notifications', function () {
         require.cache[STAFF_PATH] = saved;
       }
     }
-    await root.init();
-    emails = root.service.emails;
+    // As boot does: the declared listeners are attached, then services may be built.
+    services.register(root);
+    services.open();
+    emails = services.get(root).emails as unknown as Emails;
   });
 
   afterEach(async function () {
+    await services.close();
     sandbox.restore();
     await configUtils.restore();
   });

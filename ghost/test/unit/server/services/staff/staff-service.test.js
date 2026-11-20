@@ -10,7 +10,6 @@ const {
 const MilestoneCreatedEvent = require('../../../../../core/server/services/milestones/milestone-created-event');
 
 // Stuff we are testing
-const DomainEvents = require('@tryghost/domain-events');
 
 const StaffService = require('../../../../../core/server/services/staff/staff-service');
 const { staffEmailTemplateFiles } = require('../../../../utils/staff-email-template-files');
@@ -119,7 +118,6 @@ describe('StaffService', function () {
   describe('email notifications:', function () {
     let mailStub;
     let loggingWarningStub;
-    let subscribeStub;
     let getEmailAlertUsersStub;
     let service;
     const options = {
@@ -172,7 +170,6 @@ describe('StaffService', function () {
     beforeEach(function () {
       loggingWarningStub = sinon.stub().resolves();
       mailStub = sinon.stub().resolves();
-      subscribeStub = sinon.stub().resolves();
       getEmailAlertUsersStub = sinon.stub().resolves([
         {
           email: 'owner@ghost.org',
@@ -193,9 +190,6 @@ describe('StaffService', function () {
         mailer: {
           send: mailStub,
         },
-        DomainEvents: {
-          subscribe: subscribeStub,
-        },
         settingsCache,
         urlUtils,
         blogIcon,
@@ -208,82 +202,38 @@ describe('StaffService', function () {
       sinon.restore();
     });
 
-    describe('subscribeEvents', function () {
-      it('subscribes to events', async function () {
-        service.subscribeEvents();
-        sinon.assert.callCount(subscribeStub, 4);
-        sinon.assert.calledWith(subscribeStub, SubscriptionActivatedEvent);
-        sinon.assert.calledWith(subscribeStub, SubscriptionCancelledEvent);
-        sinon.assert.calledWith(subscribeStub, MemberCreatedEvent);
-        sinon.assert.calledWith(subscribeStub, MilestoneCreatedEvent);
+    describe('notify', function () {
+      it('handles the event it is given', async function () {
+        sinon.stub(service, 'handleEvent').resolves();
+        const event = MemberCreatedEvent.create({ source: 'member', memberId: 'member-2' });
+
+        await service.notify(MemberCreatedEvent, event);
+
+        sinon.assert.calledOnceWithExactly(service.handleEvent, MemberCreatedEvent, event);
       });
 
-      it('listens to events', async function () {
-        service = new StaffService({
-          ...collaborators,
-          logging: {
-            warn: () => {},
-            error: () => {},
-          },
-          models: {
-            User: {
-              getEmailAlertUsers: getEmailAlertUsersStub,
-            },
-          },
-          mailer: {
-            send: mailStub,
-          },
-          DomainEvents,
-          settingsCache,
-          urlUtils,
-          blogIcon,
-          settingsHelpers,
-        });
-        service.subscribeEvents();
-        sinon.spy(service, 'handleEvent');
-        DomainEvents.dispatch(
-          MemberCreatedEvent.create({
-            source: 'member',
-            memberId: 'member-2',
-          }),
-        );
-        await DomainEvents.allSettled();
-        sinon.assert.calledWith(service.handleEvent, MemberCreatedEvent);
+      it('logs a failure instead of throwing, naming what could not be sent', async function () {
+        const failure = new Error('mail is down');
+        const error = sinon.stub();
+        service.logging = { error };
+        sinon.stub(service, 'handleEvent').rejects(failure);
 
-        DomainEvents.dispatch(
-          SubscriptionActivatedEvent.create({
-            source: 'member',
-            memberId: 'member-1',
-            subscriptionId: 'sub-1',
-            offerId: 'offer-1',
-            tierId: 'tier-1',
-          }),
-        );
-        await DomainEvents.allSettled();
-        sinon.assert.calledWith(service.handleEvent, SubscriptionActivatedEvent);
-
-        DomainEvents.dispatch(
-          SubscriptionCancelledEvent.create({
-            source: 'member',
-            memberId: 'member-1',
-            subscriptionId: 'sub-1',
-            tierId: 'tier-1',
-          }),
-        );
-        await DomainEvents.allSettled();
-        sinon.assert.calledWith(service.handleEvent, SubscriptionCancelledEvent);
-
-        DomainEvents.dispatch(
-          MilestoneCreatedEvent.create({
-            milestone: {
-              type: 'arr',
-              value: '100',
-              currency: 'usd',
-            },
-          }),
-        );
-        await DomainEvents.allSettled();
-        sinon.assert.calledWith(service.handleEvent, MilestoneCreatedEvent);
+        for (const [Event, message] of [
+          [MemberCreatedEvent, 'Failed to notify free member signup - member-1'],
+          [
+            SubscriptionActivatedEvent,
+            'Failed to notify paid member subscription start - member-1',
+          ],
+          [
+            SubscriptionCancelledEvent,
+            'Failed to notify paid member subscription cancel - member-1',
+          ],
+          [MilestoneCreatedEvent, 'Failed to notify milestone'],
+        ]) {
+          await service.notify(Event, { data: { memberId: 'member-1' } });
+          sinon.assert.calledWithExactly(error, failure, message);
+        }
+        sinon.assert.callCount(error, 4);
       });
     });
 
@@ -363,9 +313,6 @@ describe('StaffService', function () {
           models: models,
           mailer: {
             send: mailStub,
-          },
-          DomainEvents: {
-            subscribe: subscribeStub,
           },
           settingsCache,
           urlUtils,

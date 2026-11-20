@@ -9,8 +9,8 @@ function createCoreHarness() {
   const settings = { init: sinon.stub().resolves() };
   const signingKeys = { init: sinon.stub().resolves() };
   const i18n = { init: sinon.stub().resolves() };
-  const giftLinks = { init: sinon.stub().resolves() };
-  const integrations = { init: sinon.stub().resolves() };
+  // The first root the services list starts when Better Auth is off.
+  const appInstallations = { init: sinon.stub().resolves() };
   const stripeCheckoutConfig = { init: sinon.stub().resolves() };
   // What was one phase: the foundation checks, the shared list, then the
   // services list up to Stripe checkout config.
@@ -27,12 +27,10 @@ function createCoreHarness() {
       './shared/i18n': i18n,
       './server/services/email-address': { init() {} },
       './server/auth': { isBetterAuth: false },
-      './server/services/gift-links': { default: giftLinks },
       './server/services/members-metafields': { init() {} },
-      './server/services/app-installations': { default: { init() {} } },
+      './server/services/app-installations': { default: appInstallations },
       './server/services/export-requests': { default: { init() {} } },
       './server/services/invites': { default: { init() {} } },
-      './server/services/integrations': { default: integrations },
       './server/services/stripe-checkout-config': { default: stripeCheckoutConfig },
     },
     {
@@ -45,8 +43,7 @@ function createCoreHarness() {
     settings,
     signingKeys,
     i18n,
-    giftLinks,
-    integrations,
+    appInstallations,
     stripeCheckoutConfig,
   };
 }
@@ -118,7 +115,7 @@ it('waits for i18n initialization before continuing or resolving initCore', asyn
   try {
     await setImmediate();
     sinon.assert.calledOnce(boot.i18n.init);
-    sinon.assert.notCalled(boot.giftLinks.init);
+    sinon.assert.notCalled(boot.appInstallations.init);
     assert.equal(completed, false);
   } finally {
     ready.resolve();
@@ -126,7 +123,7 @@ it('waits for i18n initialization before continuing or resolving initCore', asyn
   }
   await startup;
 
-  sinon.assert.calledOnce(boot.giftLinks.init);
+  sinon.assert.calledOnce(boot.appInstallations.init);
   assert.equal(completed, true);
 });
 
@@ -138,40 +135,5 @@ it('propagates the original i18n initialization error without continuing initCor
   await assert.rejects(boot.init(), (error) => error === failure);
 
   sinon.assert.calledOnce(boot.i18n.init);
-  sinon.assert.notCalled(boot.giftLinks.init);
-});
-
-it('waits for Integrations initialization before continuing or resolving initCore', async function () {
-  const boot = createCoreHarness();
-  const ready = Promise.withResolvers<void>();
-  boot.integrations.init.returns(ready.promise);
-  let completed = false;
-  const startup = boot.init().then(() => {
-    completed = true;
-  });
-
-  try {
-    await setImmediate();
-    sinon.assert.calledOnce(boot.integrations.init);
-    sinon.assert.notCalled(boot.stripeCheckoutConfig.init);
-    assert.equal(completed, false);
-  } finally {
-    ready.resolve();
-    await Promise.allSettled([startup]);
-  }
-  await startup;
-
-  sinon.assert.calledOnce(boot.stripeCheckoutConfig.init);
-  assert.equal(completed, true);
-});
-
-it('propagates the original Integrations initialization error without continuing initCore', async function () {
-  const boot = createCoreHarness();
-  const failure = new Error('Integrations initialization failed');
-  boot.integrations.init.rejects(failure);
-
-  await assert.rejects(boot.init(), (error) => error === failure);
-
-  sinon.assert.calledOnce(boot.integrations.init);
-  sinon.assert.notCalled(boot.stripeCheckoutConfig.init);
+  sinon.assert.notCalled(boot.appInstallations.init);
 });

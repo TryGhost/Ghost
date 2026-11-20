@@ -1,9 +1,9 @@
 const sinon = require('sinon');
-const staffService = require('../../../../../core/server/services/staff').default;
 const emailAddressService = require('../../../../../core/server/services/email-address');
 const memberAttribution = require('../../../../../core/server/services/member-attribution').default;
 
 const DomainEvents = require('@tryghost/domain-events');
+const { openServices, services } = require('../../../../utils/services');
 const { mockManager } = require('../../../../utils/e2e-framework');
 const models = require('../../../../../core/server/models');
 
@@ -24,6 +24,9 @@ describe('Staff Service:', function () {
 
     // GhostMailer's getFromAddress reads this singleton, normally set during boot.
     emailAddressService.init();
+    // As boot does: Staff's declared listeners are attached and nothing is
+    // built. Each test's event builds the service.
+    openServices();
     sinon.stub(memberAttribution, 'service').get(() => ({
       getMemberCreatedAttribution: async () => null,
       getSubscriptionCreatedAttribution: async () => null,
@@ -79,7 +82,8 @@ describe('Staff Service:', function () {
     });
   });
 
-  afterEach(function () {
+  afterEach(async function () {
+    await services.close();
     sinon.restore();
     mockManager.restore();
   });
@@ -90,7 +94,6 @@ describe('Staff Service:', function () {
     };
 
     it('sends email for member source', async function () {
-      await staffService.init();
       DomainEvents.dispatch(
         MemberCreatedEvent.create({
           source: 'member',
@@ -108,7 +111,6 @@ describe('Staff Service:', function () {
     });
 
     it('sends email for api source', async function () {
-      await staffService.init();
       DomainEvents.dispatch(
         MemberCreatedEvent.create({
           source: 'api',
@@ -126,7 +128,6 @@ describe('Staff Service:', function () {
     });
 
     it('does not send email for importer source', async function () {
-      await staffService.init();
       DomainEvents.dispatch(
         MemberCreatedEvent.create({
           source: 'import',
@@ -153,7 +154,6 @@ describe('Staff Service:', function () {
     });
 
     it('sends email for member source', async function () {
-      await staffService.init();
       DomainEvents.dispatch(
         SubscriptionActivatedEvent.create({
           source: 'member',
@@ -171,7 +171,6 @@ describe('Staff Service:', function () {
     });
 
     it('sends email for api source', async function () {
-      await staffService.init();
       DomainEvents.dispatch(
         SubscriptionActivatedEvent.create({
           source: 'api',
@@ -189,7 +188,6 @@ describe('Staff Service:', function () {
     });
 
     it('does not send email for importer source', async function () {
-      await staffService.init();
       DomainEvents.dispatch(
         SubscriptionActivatedEvent.create({
           source: 'import',
@@ -211,7 +209,6 @@ describe('Staff Service:', function () {
     };
 
     it('sends email for member source', async function () {
-      await staffService.init();
       DomainEvents.dispatch(
         SubscriptionCancelledEvent.create(
           {
@@ -232,7 +229,6 @@ describe('Staff Service:', function () {
     });
 
     it('sends email for api source', async function () {
-      await staffService.init();
       DomainEvents.dispatch(
         SubscriptionCancelledEvent.create({
           source: 'api',
@@ -250,7 +246,6 @@ describe('Staff Service:', function () {
     });
 
     it('does not send email for importer source', async function () {
-      await staffService.init();
       DomainEvents.dispatch(
         SubscriptionCancelledEvent.create({
           source: 'import',
@@ -266,7 +261,6 @@ describe('Staff Service:', function () {
 
   describe('milestone created event:', function () {
     it('sends email for achieved milestone', async function () {
-      await staffService.init();
       DomainEvents.dispatch(
         MilestoneCreatedEvent.create({
           milestone: {

@@ -5,7 +5,7 @@ import { loadNconf } from '../core/shared/config/loader';
 import type { GhostConfig } from '../core/shared/config/validated';
 import { background } from './background';
 import { loggingOptions } from './logging-options';
-import { services } from './services';
+import { declared, services } from './services';
 import { shared } from './shared';
 import { legacyEventBus } from './transition/legacy-events';
 import { shareLoggerWithLegacy } from './transition/legacy-logging';
@@ -55,7 +55,7 @@ const application: Application<
   },
 
   // The published event bus is one static emitter. See ./transition/legacy-events.ts.
-  events: () => legacyEventBus(),
+  events: ({ logging }) => legacyEventBus({ logging }),
 
   // Which adapter types Ghost has and where its adapters are: see ./adapters.ts.
   // Loaded here, not at the top, so that the base classes load when the
@@ -107,6 +107,8 @@ const application: Application<
     // One ordered list: service roots, with the legacy steps that still sit
     // between them. See ./services.ts.
     services: {
+      // Definitions whose listeners are attached and which are built on first use.
+      declared,
       modules: services,
     },
     jobs: {

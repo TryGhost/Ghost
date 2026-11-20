@@ -3,6 +3,10 @@ import sinon from 'sinon';
 
 const configUtils = require('../../../../utils/config-utils');
 const settingsCache = require('../../../../../core/shared/settings-cache');
+const {
+  openServices,
+  services,
+}: typeof import('../../../../utils/services') = require('../../../../utils/services');
 
 const rootPath = require.resolve('../../../../../core/server/auth/better-auth');
 type Root = typeof import('../../../../../core/server/auth/better-auth').default;
@@ -26,20 +30,38 @@ describe('Better Auth service root', function () {
     if (cachedRoot) {
       require.cache[rootPath] = cachedRoot;
     }
+    await services.close();
     sinon.restore();
     await configUtils.restore();
   });
 
-  it('fails init when Better Auth setup fails, and can retry', async function () {
+  it('refuses to be built before Ghost has started', async function () {
+    const betterAuth = loadRoot();
+
+    assert.throws(() => betterAuth.service, {
+      message: /^Better Auth was used while Ghost is not started/,
+    });
+    await assert.rejects(services.resolve(betterAuth), {
+      message: /^Better Auth was used while Ghost is not started/,
+    });
+  });
+
+  it('fails its build when Better Auth setup fails, and can be built again', async function () {
     const betterAuth = loadRoot();
     // Better Auth rejects an empty secret during its deferred setup
     const get = sinon.stub(settingsCache, 'get').withArgs('admin_session_secret').returns('');
+    openServices();
 
-    await assert.rejects(betterAuth.init(), { message: /Empty secret value/ });
-    assert.throws(() => betterAuth.service, { message: /used before init\(\)/ });
+    // What boot does with the list entry: it waits for the build.
+    await assert.rejects(services.start(betterAuth), { message: /Empty secret value/ });
 
     get.returns('a'.repeat(64));
-    await betterAuth.init();
+    // It is built asynchronously, so a read that cannot wait is told so until the build has finished.
+    assert.throws(() => betterAuth.service, {
+      message: /is built asynchronously and is not ready/,
+    });
+    await services.resolve(betterAuth);
     assert.equal(typeof betterAuth.service.handler, 'function');
+    assert.equal(betterAuth.service, await services.resolve(betterAuth));
   });
 });

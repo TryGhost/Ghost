@@ -21,7 +21,10 @@ const controller = {
     headers: {
       cacheInvalidate: false,
     },
-    cache: tagsPublicService.service.cache,
+    // Read for each request: the service is built on first use, not when this file loads.
+    get cache() {
+      return tagsPublicService.service.cache;
+    },
     options: ['include', 'filter', 'fields', 'limit', 'order', 'page', 'debug'],
     validation: {
       options: {

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { Frame } from '@tryghost/api-framework';
 import sinon from 'sinon';
+import { createServices, type Services } from '@tryghost/foundry/services';
+import type { Foundation } from '@tryghost/kernel/foundation';
 
-// Match the CommonJS root and consumers used by boot and the API framework.
-const db = require('../../../../../core/server/data/db');
 // The access consumer imports members, which reads database metadata at import.
 // Load that unrelated dependency before replacing gift-links' database binding.
 require('../../../../../core/server/services/members');
@@ -39,6 +39,9 @@ describe('gift-links root with its API consumers', function () {
   let knex: sinon.SinonStub<[string], typeof query>;
   let currentKnex: typeof knex;
   let getKnex: sinon.SinonSpy<[], typeof knex>;
+  // An application of the test's own, whose foundation hands out the fake database.
+  let services: Services;
+  let root: Root;
 
   beforeEach(function () {
     originalModules = new Map(Object.entries(require.cache));
@@ -53,7 +56,16 @@ describe('gift-links root with its API consumers', function () {
     });
     currentKnex = knex;
     getKnex = sandbox.spy(() => currentKnex);
-    sandbox.stub(db, 'knex').get(getKnex);
+    const database = {
+      get knex() {
+        return getKnex();
+      },
+    };
+    services = createServices({ name: 'Test', foundation: { database } as unknown as Foundation });
+    services.open();
+    root = require(ROOT_PATH).default;
+    // The consumers read the root's `.service`, which asks Ghost's application.
+    sandbox.stub(root, 'service').get(() => services.get(root));
   });
 
   afterEach(function () {
@@ -70,22 +82,18 @@ describe('gift-links root with its API consumers', function () {
     }
   });
 
-  it('defers database binding until init and retains that binding and service on repeated init', async function () {
-    const root: Root = require(ROOT_PATH).default;
-    assert.throws(() => root.service, /Gift Links used before init/);
+  it('defers database binding until first use and retains that binding and service afterwards', async function () {
     sinon.assert.notCalled(getKnex);
     sinon.assert.notCalled(knex);
     sinon.assert.notCalled(query.insert);
 
     const readyKnex = sandbox.stub<[string], typeof query>().returns(query);
     currentKnex = readyKnex;
-    assert.equal(await root.init(), undefined);
     const service = (require(ROOT_PATH).default as Root).service;
     assert.ok(service);
     sinon.assert.notCalled(readyKnex);
 
     currentKnex = knex;
-    assert.equal(await root.init(), undefined);
     assert.equal(root.service, service);
     assert.equal(await service.getPostByToken('missing-token'), null);
     sinon.assert.calledOnce(getKnex);
@@ -94,11 +102,15 @@ describe('gift-links root with its API consumers', function () {
     sinon.assert.notCalled(query.insert);
   });
 
-  it('lets the earlier public access consumer resolve a token through the initialized service', async function () {
+  it('refuses to build without a database, or before the application is started', async function () {
+    const empty = createServices({ name: 'Test', foundation: {} as Foundation });
+    assert.throws(() => empty.get(root), /Gift Links was used while Test is not started/);
+    empty.open();
+    assert.throws(() => empty.get(root), /Gift Links needs a database/);
+  });
+
+  it('lets the earlier public access consumer resolve a token through the service built on first use', async function () {
     const access: Access = require(ACCESS_PATH);
-    const root: Root = require(ROOT_PATH).default;
-    assert.throws(() => root.service, /Gift Links used before init/);
-    await root.init();
     query.first.resolves({
       post_id: 'post-id',
       token: 'live-token',
@@ -122,8 +134,6 @@ describe('gift-links root with its API consumers', function () {
 
   it('passes the original query failure through the earlier public access consumer', async function () {
     const access: Access = require(ACCESS_PATH);
-    const root: Root = require(ROOT_PATH).default;
-    await root.init();
     const failure = new Error('Cannot look up gift link');
     query.first.rejects(failure);
     const frame = giftFrame('live-token');
@@ -137,9 +147,6 @@ describe('gift-links root with its API consumers', function () {
 
   it('lets the earlier Admin controller remove links and record the action through the wired knex', async function () {
     const controller = require(CONTROLLER_PATH);
-    const root: Root = require(ROOT_PATH).default;
-    assert.throws(() => root.service, /Gift Links used before init/);
-    await root.init();
 
     const result = await controller.removeAll.query({ options: { context: { user: 'actor-id' } } });
 

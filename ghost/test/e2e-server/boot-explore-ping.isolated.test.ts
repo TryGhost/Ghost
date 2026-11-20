@@ -72,17 +72,18 @@ describe('Explore ping during boot', function () {
       };
       return originalPing.call(this);
     });
-    const originalInit = explore.init;
-    const originalPolicy = config.isProductionOrDevelopment;
-    sandbox.stub(config, 'isProductionOrDevelopment').callsFake(() => {
-      return allowExplore || originalPolicy();
+    const originalStart = explore.start;
+    assert.ok(originalStart);
+    const originalGet = config.get;
+    sandbox.stub(config, 'get').callsFake((key: unknown) => {
+      return allowExplore && key === 'env' ? 'production' : originalGet.call(config, key);
     });
-    // Enable only this initializer's environment gate. Other boot services keep
+    // Enable only this start's environment gate. Other boot services keep
     // their test-environment behavior; the root unit tests cover the real policy.
-    sandbox.stub(explore, 'init').callsFake(() => {
+    sandbox.stub(explore, 'start').callsFake((service, given) => {
       allowExplore = true;
       try {
-        return originalInit();
+        return originalStart(service, given);
       } finally {
         allowExplore = false;
         initialized.resolve();
@@ -102,7 +103,7 @@ describe('Explore ping during boot', function () {
       boot = bootPromise;
       void bootPromise.catch(() => {});
       // Database reset and earlier boot stages happen before Explore starts.
-      // Apply the payload deadline only once its initializer has run.
+      // Apply the payload deadline only once its start has run.
       await Promise.race([initialized.promise, bootPromise]);
       const payload = await within(received.promise, 'Boot never sent its Explore payload');
       // Real Posts, Members and Stats roots query the default database fixtures.

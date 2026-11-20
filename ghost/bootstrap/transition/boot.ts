@@ -60,6 +60,7 @@ export async function bootGhost({
   backend = true,
   frontend = true,
   server = true,
+  worker = true,
 }: Partial<BootOptions> = {}): Promise<any> {
   // Metrics
   const startTime = Date.now();
@@ -104,7 +105,7 @@ export async function bootGhost({
   }
 
   try {
-    await application.start({ backend, frontend, server }, state);
+    await application.start({ backend, frontend, server, worker }, state);
 
     // If we pass the env var, kill Ghost
     if (process.env.GHOST_CI_SHUTDOWN_AFTER_BOOT) {

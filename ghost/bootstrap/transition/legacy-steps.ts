@@ -15,6 +15,12 @@ export interface BootOptions {
   readonly backend: boolean;
   readonly frontend: boolean;
   readonly server: boolean;
+  /**
+   * Whether this process does the work of the worker role: what runs on its
+   * own, with no request behind it. Every Ghost process does today. A service
+   * `start` that is worker-role work is listed with `when: worker`.
+   */
+  readonly worker: boolean;
 }
 
 /**

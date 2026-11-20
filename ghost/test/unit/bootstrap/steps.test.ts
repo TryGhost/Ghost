@@ -25,6 +25,7 @@ describe("Ghost's start sequence", function () {
         'shared.modules': names(shared?.modules as never),
         'shared.after': names(shared?.after),
         'services.before': names(services?.before),
+        'services.declared': names(services?.declared as never),
         'services.modules': names(services?.modules as never),
         'services.after': names(services?.after),
         'jobs.before': names(jobs?.before),
@@ -50,14 +51,13 @@ describe("Ghost's start sequence", function () {
         ],
         'shared.after': [],
         'services.before': [],
+        'services.declared': ['staff', 'tags-public', 'posts-public'],
         'services.modules': [
           'better-auth',
-          'gift-links',
           'legacy: members metafields',
           'app-installations',
           'export-requests',
           'invites',
-          'integrations',
           'stripe-checkout-config',
           'legacy: jobs cleanup',
           'legacy: knex instrumentation',
@@ -77,16 +77,12 @@ describe("Ghost's start sequence", function () {
           'mentions',
           'stats',
           'legacy: services',
-          'staff',
           'tiers',
-          'tags-public',
-          'posts-public',
           'indexnow-ping',
           'upgrades',
           'slack-ping',
           'comments',
           'media-inliner',
-          'donations',
           'recommendations',
           'explore-ping',
           'users',
@@ -132,6 +128,15 @@ describe("Ghost's start sequence", function () {
       assert.equal(slot.when?.({ options: { frontend: false } } as never), false);
       assert.equal(slot.when?.({ options: { frontend: true } } as never), true);
     }
+  });
+
+  // The explore ping is work of the worker role: a process that does not do that work skips it.
+  it('starts explore-ping only in a process that does the work of the worker role', function () {
+    const entry = (application.steps.services?.modules ?? []).find(
+      ({ name }) => name === 'explore-ping',
+    );
+    assert.equal(entry?.when?.({ options: { worker: false } } as never), false);
+    assert.equal(entry?.when?.({ options: { worker: true } } as never), true);
   });
 
   // A step that boot-steps.ts exports but no list names would never run, and the lint
@@ -291,7 +296,6 @@ describe("Ghost's start sequence", function () {
       ['legacy: jobs service', 'legacy: services first', 'services take the job runner'],
       ['legacy: jobs service', 'mentions', 'mentions reads the job runner'],
       ['legacy: services first', 'tiers', 'gifts is built over the tiers root first'],
-      ['member-attribution', 'staff', 'staff captures the attribution service'],
       ['member-attribution', 'legacy: services', 'email captures the attribution service'],
       ['audience-feedback', 'legacy: services', 'email captures the feedback link service'],
       ['newsletters', 'legacy: services', 'members captures newsletters'],

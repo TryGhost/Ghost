@@ -518,6 +518,7 @@ module.exports = {
           '^ghost/core/server/data/db/connection\\.ts$', // Legacy path to the foundation's database handle.
           '^ghost/core/shared/clock\\.ts$', // Legacy path to the foundation's clock.
           '^ghost/core/server/services/adapter-manager/index\\.ts$', // Legacy path to the adapter manager the foundry builds and runs.
+          '^ghost/core/shared/service-alias\\.ts$', // Legacy path to the services the application builds from definitions.
         ],
       },
       to: { path: '^ghost/bootstrap/' },

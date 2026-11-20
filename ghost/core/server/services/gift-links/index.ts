@@ -1,9 +1,18 @@
+import { IncorrectUsageError } from '@tryghost/errors';
 import { defineService } from '@tryghost/kernel/define-service';
+import { alias } from '../../../shared/service-alias';
 import { ActionLog } from '../../lib/action-log/action-log';
 import { GiftLinksService } from './service';
 
-// Constructed by init() at boot, not at import: knex is only available once the DB has connected.
-export default defineService('Gift Links', () => {
-  const { knex } = require('../../data/db');
-  return new GiftLinksService({ knex, actionLog: new ActionLog() });
-});
+// Nothing to start. Built the first time an endpoint reads it.
+export default alias(
+  defineService({
+    name: 'Gift Links',
+    create: ({ foundation }) => {
+      if (!foundation.database) {
+        throw new IncorrectUsageError({ message: 'Gift Links needs a database.' });
+      }
+      return new GiftLinksService({ knex: foundation.database.knex, actionLog: new ActionLog() });
+    },
+  }),
+);

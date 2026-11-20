@@ -1,24 +1,26 @@
 import { z } from 'zod';
 import type { CacheBase } from '@tryghost/adapter-base-cache';
 import { defineService } from '@tryghost/kernel/define-service';
+import { alias } from '../../../shared/service-alias';
+import { legacyEvent } from '../../lib/common/legacy-event';
 
-export default defineService('Posts Public', () => {
-  const adapterManager = require('../adapter-manager').default;
-  const config = require('../../../shared/config');
-  const events = require('../../lib/common/events');
+// Built the first time an endpoint reads its cache, or when the site first changes.
+export default alias(
+  defineService({
+    name: 'Posts Public',
+    create: ({ foundation }) => {
+      // The adapter manager is not something a definition can be handed yet.
+      const adapterManager = require('../adapter-manager').default;
 
-  const cacheEnabled = z.coerce
-    .boolean()
-    .parse(config.get('hostSettings:postsPublicCache:enabled'));
-  const cache: CacheBase | undefined = cacheEnabled
-    ? adapterManager.getAdapter('cache:postsPublic')
-    : undefined;
+      const cacheEnabled = z.coerce
+        .boolean()
+        .parse(foundation.config.get('hostSettings:postsPublicCache:enabled'));
+      const cache: CacheBase | undefined = cacheEnabled
+        ? adapterManager.getAdapter('cache:postsPublic')
+        : undefined;
 
-  if (cache) {
-    events.on('site.changed', () => {
-      cache.reset();
-    });
-  }
-
-  return { cache };
-});
+      return { cache };
+    },
+    listeners: [{ event: legacyEvent('site.changed'), handle: ({ cache }) => cache?.reset() }],
+  }),
+);

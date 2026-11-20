@@ -14,15 +14,20 @@ const legacy = Object.keys(
     }
   ).services,
 );
+// A root written as `defineService({ ... })` is a service definition. Boot does not start it:
+// the application builds it on first use. See test/unit/bootstrap/definitions.test.ts.
+function startedByBoot(service: string) {
+  const root = ['index.ts', 'index.js']
+    .map((file) => path.join(servicesRoot, service, file))
+    .find((file) => existsSync(file));
+  return (
+    root !== undefined && !/\bdefineService(?:<[^(]*>)?\(\s*\{/.test(readFileSync(root, 'utf8'))
+  );
+}
 // A service directory that the legacy service inventory does not list is standard.
 // A directory with no root is not a service: switching branches can leave one behind.
 const standard = readdirSync(servicesRoot, { withFileTypes: true })
-  .filter(
-    (item) =>
-      item.isDirectory() &&
-      !legacy.includes(item.name) &&
-      ['index.ts', 'index.js'].some((file) => existsSync(path.join(servicesRoot, item.name, file))),
-  )
+  .filter((item) => item.isDirectory() && !legacy.includes(item.name) && startedByBoot(item.name))
   .map((item) => item.name);
 // The legacy steps: what core/boot.js called its phases.
 const boot = readFileSync(
@@ -91,7 +96,7 @@ function start(service: string, init: () => Promise<void>) {
   return run({ config: anything(), bootLogger: anything(), jobsService: anything() });
 }
 
-describe('Boot waits for every standard service', function () {
+describe('Boot waits for every standard service that holds its own instance', function () {
   for (const service of standard) {
     it(`waits for ${service} initialization before its step finishes`, async function () {
       const ready = Promise.withResolvers<void>();

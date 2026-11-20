@@ -1,18 +1,34 @@
+import { IncorrectUsageError } from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import * as security from '@tryghost/security';
 import { defineService } from '@tryghost/kernel/define-service';
+import { alias } from '../../../shared/service-alias';
 import { createAuth, type GhostAuth } from './create-auth';
 import { createSignInCodeEmail } from '../emails/sign-in-code';
 
 export type { GhostAuth } from './create-auth';
 
-// Boot initializes this after settings, which follows the database, and only
-// when auth:engine is better-auth
-export default defineService('Better Auth', async (): Promise<GhostAuth> => {
-  const config = require('../../../shared/config');
+// Built asynchronously, and read by code that cannot wait for it, so boot
+// builds it from the services list, and only when auth:engine is better-auth.
+// It reads admin_session_secret, which is ready whenever a service can be built.
+export default alias(
+  defineService({
+    name: 'Better Auth',
+    create: async ({ foundation }): Promise<GhostAuth> => {
+      if (!foundation.database) {
+        throw new IncorrectUsageError({ message: 'Better Auth needs a database.' });
+      }
+      return createGhostAuth(foundation.config, foundation.database.knex);
+    },
+  }),
+);
+
+async function createGhostAuth(
+  config: { get(key: string): unknown },
+  knex: import('knex').Knex,
+): Promise<GhostAuth> {
   const settingsCache = require('../../../shared/settings-cache');
   const urlUtils = require('../../../shared/url-utils').default;
-  const { knex } = require('../../data/db');
   const spamPrevention = require('../../web/shared/middleware/api/spam-prevention');
   const { GhostMailer } = require('../../lib/mail');
   const { t } = require('../../../shared/i18n');
@@ -21,7 +37,7 @@ export default defineService('Better Auth', async (): Promise<GhostAuth> => {
   const auth = createAuth({
     db: knex,
     secret: settingsCache.get('admin_session_secret'),
-    sessionMaxAgeMs: config.get('admin:sessionMaxAgeMs'),
+    sessionMaxAgeMs: config.get('admin:sessionMaxAgeMs') as number,
     urlUtils,
     password: security.password,
     logger: logging,
@@ -59,4 +75,4 @@ export default defineService('Better Auth', async (): Promise<GhostAuth> => {
   // betterAuth() defers its setup to this promise; awaiting it fails boot, not the first request
   await auth.$context;
   return auth;
-});
+}

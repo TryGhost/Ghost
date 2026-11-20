@@ -19,6 +19,10 @@ this folder holds only what Ghost tells the foundry.
   and in what order. An entry names what it runs and loads nothing until its
   step reaches it, so the HTTP server is listening in maintenance mode before
   anything heavy is loaded.
+- **Which service definitions boot knows about**:
+  [`services.ts`](services.ts) has `declared`, the definitions whose listeners
+  boot attaches without building them, next to `services`, what boot starts.
+  A definition with nothing to declare is in neither.
 - **[`transition/`](transition/)**: code that is here because boot needs it but
   that is not yet shaped to these rules. See below.
 
@@ -57,7 +61,9 @@ for the pattern to copy:
   package does not promise.
 - [`legacy-events.ts`](transition/legacy-events.ts) adapts
   `@tryghost/domain-events`, a class with one static emitter, to the
-  foundation's event bus, so there is one bus either way.
+  foundation's event bus, so there is one bus either way. A listener for an
+  event named with `legacyEvent()` goes to the legacy bus
+  (`core/server/lib/common/events`) instead.
 - [`boot.ts`](transition/boot.ts) is `bootGhost`, which `ghost/index.js` and
   the tests call. It was `core/boot.js`. It builds the foundation and calls
   `application.start()`; what is left around that is the timing of boot, what

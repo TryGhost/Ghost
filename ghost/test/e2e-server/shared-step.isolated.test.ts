@@ -46,7 +46,7 @@ describe('The shared step, with the real modules and nothing after it', function
       steps: { database, shared },
     });
     await sharedOnly.start(
-      { backend: true, frontend: false, server: false },
+      { backend: true, frontend: false, server: false, worker: true },
       { bootLogger: { log() {}, metric() {} } },
     );
 

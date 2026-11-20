@@ -166,6 +166,34 @@ Migrating a service means deleting its `services` entry and its known
 violations. Git history keeps the audit record. Move any extra it declares into
 `followUps`, and any bug its `blockers` describe into `knownBugs`.
 
+### Service definitions
+
+A root can be a
+[service definition](../../../../kernel/README.md#service-definitions)
+instead of a root that holds its instance. Boot does not start it: the
+application builds it the first time it is used.
+[Gift links](gift-links/index.ts), [Tags Public](tags-public/index.ts),
+[Staff](staff/index.ts) and [Explore ping](explore-ping/index.ts) are examples
+of each kind.
+
+- `create` is handed the foundation and what the definition names in `needs`.
+  Take the database, config, the logger and the event bus from the foundation.
+- Events the service handles are `listeners` of the definition, not
+  subscriptions made inside `create`. Name the root in `declared` in
+  [`ghost/bootstrap/services.ts`](../../../bootstrap/services.ts).
+- Work that runs with no request behind it is a `start`. Name the root in
+  `services` in the same file, with `when: worker` when it is work of the
+  worker role.
+- A root with neither is named in no list.
+- `alias()` from [`shared/service-alias.ts`](../../shared/service-alias.ts)
+  keeps `.service` working for code that reads the service off the root. It
+  is transitional: it assumes one application in the process.
+
+The [definitions test](../../../test/unit/bootstrap/definitions.test.ts)
+checks that each definition is in the list it must be in and no other. A unit
+test that reads `.service` without booting Ghost opens the application's
+services first, with [`test/utils/services.ts`](../../../test/utils/services.ts).
+
 ### Roots outside this directory
 
 The service checks apply to this directory only. A `defineService` root

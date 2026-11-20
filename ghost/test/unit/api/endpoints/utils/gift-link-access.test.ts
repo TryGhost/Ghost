@@ -10,6 +10,10 @@ const {
   generateGiftKeyData,
   applyGiftAccess,
 } = require('../../../../../core/server/api/endpoints/utils/gift-link-access');
+const {
+  openServices,
+  services,
+}: typeof import('../../../../utils/services') = require('../../../../utils/services');
 const { Product } = require('../../../../../core/server/models/product');
 const pagesPublicController = require('../../../../../core/server/api/endpoints/pages-public');
 
@@ -18,16 +22,19 @@ function frameWithGift(giftToken?: string) {
 }
 
 describe('Gift link access', function () {
-  beforeAll(async function () {
-    await require('../../../../../core/server/services/posts-public').default.init();
+  // Gift links, and the response cache of the posts endpoint, are services built on first use.
+  beforeAll(function () {
+    openServices();
+  });
+
+  afterAll(async function () {
+    await services.close();
   });
 
   let getPostByTokenStub: sinon.SinonStub;
 
   beforeEach(async function () {
-    // The service singleton is normally wired at boot; the stub replaces
-    // its only query so no DB is touched.
-    await giftLinksService.init();
+    // The stub replaces the service's only query so no DB is touched.
     getPostByTokenStub = sinon.stub(giftLinksService.service, 'getPostByToken');
 
     sinon.stub(Product, 'findAll').resolves([

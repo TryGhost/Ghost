@@ -1,5 +1,24 @@
-import type { Entry } from '@tryghost/foundry/application';
+import type { Declared, Entry } from '@tryghost/foundry/application';
 import { legacySteps, type BootRun } from './transition/legacy-steps';
+
+// Whether this process does the work of the worker role. Every Ghost process
+// does today; see BootOptions.
+const worker = ({ options }: BootRun) => options.worker;
+
+/**
+ * Service definitions that declare listeners. The framework attaches the
+ * listeners when the services step begins and builds nothing: each service is
+ * built the first time it is used or one of its events arrives. The order
+ * means nothing.
+ *
+ * A definition with nothing to declare is not listed anywhere. It is built the
+ * first time it is used.
+ */
+export const declared: readonly Declared[] = [
+  { name: 'staff', load: () => require('../core/server/services/staff').default },
+  { name: 'tags-public', load: () => require('../core/server/services/tags-public').default },
+  { name: 'posts-public', load: () => require('../core/server/services/posts-public').default },
+];
 
 /**
  * What the services step starts, in this order, one after another. The
@@ -7,9 +26,13 @@ import { legacySteps, type BootRun } from './transition/legacy-steps';
  * `stop()` on each in reverse.
  *
  * An entry names its root without loading it: `load` is called when the step
- * reaches the entry. A standard service (see the services guide in
- * `core/server/services/README.md`) is one line here and nothing anywhere
- * else.
+ * reaches the entry. A root that holds its own instance (the older form of
+ * `defineService`) is one line here and nothing anywhere else.
+ *
+ * A service definition (see the services guide in
+ * `core/server/services/README.md`) is listed here only when boot has to
+ * build it: it declares a `start`, or it is built asynchronously and read by
+ * code that cannot wait. The framework builds it at its place in the list.
  *
  * The entries that call `legacySteps` are legacy initializers that still sit
  * between services: each needs something boot makes, or has no `init()` the
@@ -20,14 +43,13 @@ import { legacySteps, type BootRun } from './transition/legacy-steps';
  * Eventually this step starts domains, and this list becomes the domains.
  */
 export const services: readonly Entry<BootRun>[] = [
-  // Reads admin_session_secret, so it follows settings. Under legacy nothing
-  // loads Better Auth itself.
+  // Built here because it is built asynchronously and the code that reads it
+  // cannot wait. Under legacy nothing loads Better Auth itself.
   {
     name: 'better-auth',
     when: () => require('../core/server/auth').isBetterAuth,
     load: () => require('../core/server/auth').betterAuth,
   },
-  { name: 'gift-links', load: () => require('../core/server/services/gift-links').default },
   // Stripe checkout config and tiers read member metafields while they start.
   { name: 'legacy: members metafields', run: legacySteps.membersMetafields },
   {
@@ -39,7 +61,6 @@ export const services: readonly Entry<BootRun>[] = [
     load: () => require('../core/server/services/export-requests').default,
   },
   { name: 'invites', load: () => require('../core/server/services/invites').default },
-  { name: 'integrations', load: () => require('../core/server/services/integrations').default },
   {
     name: 'stripe-checkout-config',
     load: () => require('../core/server/services/stripe-checkout-config').default,
@@ -97,21 +118,22 @@ export const services: readonly Entry<BootRun>[] = [
   // analytics, webhooks, link tracking, the email suppression list, content
   // import and machine payments, started together.
   { name: 'legacy: services', run: legacySteps.legacyServices },
-  { name: 'staff', load: () => require('../core/server/services/staff').default },
   { name: 'tiers', load: () => require('../core/server/services/tiers').default },
-  { name: 'tags-public', load: () => require('../core/server/services/tags-public').default },
-  { name: 'posts-public', load: () => require('../core/server/services/posts-public').default },
   { name: 'indexnow-ping', load: () => require('../core/server/services/indexnow-ping').default },
   { name: 'upgrades', load: () => require('../core/server/services/upgrades').default },
   { name: 'slack-ping', load: () => require('../core/server/services/slack-ping').default },
   { name: 'comments', load: () => require('../core/server/services/comments').default },
   { name: 'media-inliner', load: () => require('../core/server/services/media-inliner').default },
-  { name: 'donations', load: () => require('../core/server/services/donations').default },
   {
     name: 'recommendations',
     load: () => require('../core/server/services/recommendations').default,
   },
-  { name: 'explore-ping', load: () => require('../core/server/services/explore-ping').default },
+  // Its start pings Explore, which is work of the worker role. Nothing reads the service.
+  {
+    name: 'explore-ping',
+    when: worker,
+    load: () => require('../core/server/services/explore-ping').default,
+  },
   { name: 'users', load: () => require('../core/server/services/users').default },
   {
     name: 'editor-presence',

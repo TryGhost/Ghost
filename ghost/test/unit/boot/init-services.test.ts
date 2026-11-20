@@ -15,11 +15,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const recommendations = sinon.stub();
   const media = sinon.stub().resolves();
   const email = sinon.stub().resolves();
-  const donations = sinon.stub().resolves();
   const tiers = sinon.stub().resolves();
   const memberAttribution = sinon.stub().resolves();
-  // Staff captures the ready attribution service.
-  const staff = sinon.stub().resolves();
   const linkTracking = sinon.stub().resolves();
   const memberWelcomeEmails = sinon.stub().resolves();
   const indexnow = sinon.stub().resolves();
@@ -73,10 +70,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       },
       './server/services/email-service': { init: email, service: {} },
       './server/services/email-suppression-list': emailSuppressionList,
-      './server/services/donations': { default: { init: donations } },
       './server/services/tiers': { default: { init: tiers } },
       './server/services/member-attribution': { default: { init: memberAttribution } },
-      './server/services/staff': { default: { init: staff } },
       './server/services/link-tracking': { init: linkTracking },
       './server/services/member-welcome-emails': { default: { init: memberWelcomeEmails } },
       './server/services/webhooks': { listen: webhooks },
@@ -109,10 +104,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     emailSuppressionList,
     media,
     email,
-    donations,
     tiers,
     memberAttribution,
-    staff,
     linkTracking,
     memberWelcomeEmails,
     webhooks,
@@ -213,26 +206,6 @@ it('waits for Stripe initialization before initializing gifts and the other serv
   sinon.assert.calledOnce(boot.start);
 });
 
-it('waits for member attribution initialization before initializing staff', async function () {
-  const boot = createServicesHarness();
-  const ready = Promise.withResolvers<void>();
-  boot.memberAttribution.returns(ready.promise);
-  const startup = boot.initServices();
-
-  try {
-    await setImmediate();
-    sinon.assert.calledOnce(boot.memberAttribution);
-    sinon.assert.notCalled(boot.staff);
-    sinon.assert.notCalled(boot.register);
-  } finally {
-    ready.resolve();
-    await startup;
-  }
-
-  sinon.assert.calledOnce(boot.staff);
-  sinon.assert.callOrder(boot.memberAttribution, boot.staff, boot.register);
-});
-
 it('propagates a synchronous recommendations initialization error without starting dependent work', async function () {
   const boot = createServicesHarness();
   const failure = new Error('recommendations initialization failed');
@@ -319,11 +292,9 @@ for (const dependency of [
   'mentions',
   'media',
   'email',
-  'donations',
   'memberWelcomeEmails',
   'tiers',
   'webhooks',
-  'staff',
   'indexnow',
   'slack',
 ] as const) {

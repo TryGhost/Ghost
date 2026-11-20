@@ -75,8 +75,11 @@ describe('Better Auth boot', function () {
 
     const app = await boot();
 
+    // Had boot built it, this read would return the instance. It is built
+    // asynchronously, so a read that cannot wait is refused until it has been.
     assert.throws(() => auth.betterAuth.service, {
-      message: 'Better Auth used before init(). Call init() from boot first.',
+      message:
+        'Better Auth is built asynchronously and is not ready. Await resolve(), or have the start sequence build it.',
     });
     await assertPasswordInCredentialRow(app, 'changed-under-legacy-1');
   });

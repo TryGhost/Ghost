@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import { openServices, services } from '../../../../utils/services';
 
 const factoryPath =
   require.resolve('../../../../../core/server/services/integrations/integrations-service');
@@ -30,14 +31,16 @@ describe('Integrations with its retained endpoint', function () {
     refreshSecret = sandbox.stub(models.ApiKey, 'refreshSecret');
     factory = sandbox.spy(createService);
     sandbox.replace(require.cache[factoryPath]!, 'exports', factory);
-    // The endpoint must be importable before boot initializes its service.
+    // The endpoint must be importable before its service is built.
     endpoint = require(endpointPath);
     sinon.assert.notCalled(factory);
-    const root = require(rootPath).default;
-    await root.init();
+    // Boot opens the application's services; the first read builds this one.
+    openServices();
+    assert.ok(require(rootPath).default.service);
   });
 
-  afterEach(function () {
+  afterEach(async function () {
+    await services.close();
     sandbox.restore();
     for (const [path, previous] of previousModules) {
       delete require.cache[path];
@@ -47,7 +50,7 @@ describe('Integrations with its retained endpoint', function () {
     }
   });
 
-  it('constructs once at initialization without querying either borrowed model', function () {
+  it('constructs once, on first use, without querying either borrowed model', function () {
     sinon.assert.calledOnceWithExactly(factory, {
       IntegrationModel: models.Integration,
       ApiKeyModel: models.ApiKey,
