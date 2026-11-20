@@ -23,6 +23,22 @@ vi.mock('@tryghost/admin-x-framework/hooks', () => ({
 }));
 vi.mock('@tryghost/admin-x-framework/api/presence', () => ({
   usePresenceApi: () => mocks.api,
+  presenceTabId: () => 'this-tab',
+}));
+/** The other tabs of the browser: what this tab told them, and a way to speak as one of them. */
+const tabs = vi.hoisted(() => {
+  const listening = new Set<(signal: unknown) => void>();
+  const told: unknown[] = [];
+  return { listening, told, say: (signal: unknown) => listening.forEach((hear) => hear(signal)) };
+});
+vi.mock('./lease-channel', () => ({
+  openLeaseChannel: (onSignal: (signal: unknown) => void) => {
+    tabs.listening.add(onSignal);
+    return {
+      post: (signal: unknown) => tabs.told.push(signal),
+      close: () => tabs.listening.delete(onSignal),
+    };
+  },
 }));
 
 const resource: PresenceResource = { id: 'a'.repeat(24), type: 'post' };
@@ -209,6 +225,7 @@ describe('usePresence lease', () => {
     mocks.enabled = true;
     mocks.poll.mockReset().mockResolvedValue(answer(mine));
     mocks.leave.mockReset();
+    tabs.told.length = 0;
     Object.defineProperty(document, 'hidden', { configurable: true, value: false });
   });
   afterEach(() => {
@@ -325,6 +342,94 @@ describe('usePresence lease', () => {
     expect(mocks.poll).toHaveBeenLastCalledWith([resource], resource, 'hold');
     expect(hook.result.current.lease).toEqual({ ...mine, takenAt: 5_000 });
     hook.unmount();
+  });
+
+  describe('between tabs of one browser', () => {
+    const LEASE = `post:${resource.id}`;
+    const takeOver = async () => {
+      mocks.poll.mockResolvedValue(answer(holder));
+      const hook = withLease();
+      await act(() => vi.advanceTimersByTimeAsync(0));
+      mocks.poll.mockResolvedValue(answer(mine, 5_000));
+      await act(async () => {
+        hook.result.current.takeOver();
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      return hook;
+    };
+    const hears = (signal: object) =>
+      act(async () => {
+        tabs.say({ lease: LEASE, ...signal });
+        await vi.advanceTimersByTimeAsync(0);
+      });
+
+    it('tells the other tabs once it has taken the lease over, and not before', async () => {
+      mocks.poll.mockResolvedValue(answer(holder));
+      const hook = withLease(true);
+      await act(() => vi.advanceTimersByTimeAsync(0));
+      expect(tabs.told).toEqual([]);
+      hook.unmount();
+
+      (await takeOver()).unmount();
+      expect(tabs.told).toEqual([{ type: 'taken', lease: LEASE, from: 'this-tab' }]);
+    });
+
+    it('learns that the tab it took the lease from knows, from that tab’s answer to it', async () => {
+      const hook = await takeOver();
+      await hears({ type: 'heard', from: 'old-tab', to: 'some-other-tab' });
+      expect(hook.result.current.lease).toEqual({ ...mine, takenAt: 5_000 });
+
+      await hears({ type: 'heard', from: 'old-tab', to: 'this-tab' });
+      expect(hook.result.current.lease).toEqual({ ...mine, takenAt: 5_000, heard: true });
+      await act(() => vi.advanceTimersByTimeAsync(10_000));
+      expect(hook.result.current.lease).toEqual({ ...mine, takenAt: 5_000, heard: true });
+      hook.unmount();
+    });
+
+    it('asks at once when another tab says it took the lease, and answers once it reads that it lost it', async () => {
+      const hook = withLease(true);
+      await act(() => vi.advanceTimersByTimeAsync(0));
+      expect(mocks.poll).toHaveBeenCalledTimes(1);
+
+      mocks.poll.mockResolvedValue(answer(holder));
+      await hears({ type: 'taken', from: 'new-tab' });
+      expect(mocks.poll).toHaveBeenCalledTimes(2);
+      expect(hook.result.current.lease).toEqual(holder);
+      expect(tabs.told).toEqual([{ type: 'heard', lease: LEASE, from: 'this-tab', to: 'new-tab' }]);
+      hook.unmount();
+    });
+
+    it('holds its answer while its own poll still says it holds the lease', async () => {
+      const hook = withLease(true);
+      await act(() => vi.advanceTimersByTimeAsync(0));
+      // Its poll was answered before the takeover landed.
+      await hears({ type: 'taken', from: 'new-tab' });
+      expect(tabs.told).toEqual([]);
+
+      mocks.poll.mockResolvedValue(answer(holder));
+      await act(() => vi.advanceTimersByTimeAsync(10_000));
+      expect(tabs.told).toEqual([{ type: 'heard', lease: LEASE, from: 'this-tab', to: 'new-tab' }]);
+      hook.unmount();
+    });
+
+    it('does not answer for the holder when it was only watching', async () => {
+      mocks.poll.mockResolvedValue(answer(holder));
+      const hook = withLease();
+      await act(() => vi.advanceTimersByTimeAsync(0));
+      await hears({ type: 'taken', from: 'new-tab' });
+      // It asks, to show the new holder at once, and has nothing to say.
+      expect(mocks.poll).toHaveBeenCalledTimes(2);
+      expect(tabs.told).toEqual([]);
+      hook.unmount();
+    });
+
+    it('takes no notice of another document’s takeover', async () => {
+      const hook = withLease(true);
+      await act(() => vi.advanceTimersByTimeAsync(0));
+      await hears({ type: 'taken', lease: `post:${'b'.repeat(24)}`, from: 'new-tab' });
+      expect(mocks.poll).toHaveBeenCalledTimes(1);
+      hook.unmount();
+    });
   });
 
   it('opens for editing when the first answer does not come', async () => {

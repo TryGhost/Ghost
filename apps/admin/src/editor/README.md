@@ -268,7 +268,10 @@ into whether this tab is locked.
   longer on the document, and twelve otherwise, which is longer than the
   holder's next poll. Nothing the server lists says the holder's tab has heard:
   a later heartbeat can be another of its tabs, and the writer's own other tab
-  is never listed, so taking over from it always waits the twelve.
+  is never listed. A tab of the same browser says so itself: it is told of the
+  takeover at once, asks the server, locks, and answers that it knows, and the
+  wait is then the three seconds. From another browser or device there is no
+  such word, and the wait is the twelve.
 - A tab that loses the lease saves its draft at once, then locks. Unsaved edits
   to a published post are never saved for the writer, so they stay in that
   tab: its card says the unsaved changes are still here and offers Copy

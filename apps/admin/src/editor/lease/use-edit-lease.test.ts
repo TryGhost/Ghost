@@ -189,6 +189,21 @@ describe('useEditLease', () => {
     expect(hook.result.current).toEqual({ locked: false });
   });
 
+  it('waits only the grace period once the tab it took the lease from says it knows', async () => {
+    const { hook, ports } = setup({ userId: ME, mine: false });
+    const taken = { ...mine, takenAt: 5_000 };
+    hook.rerender({ lease: taken, active: [] });
+    await act(() => vi.advanceTimersByTimeAsync(1_000));
+    expect(hook.result.current).toEqual({ locked: true, reason: 'taking' });
+
+    hook.rerender({ lease: { ...taken, heard: true }, active: [] });
+    await act(() => vi.advanceTimersByTimeAsync(TAKEOVER_GRACE_MS - 1));
+    expect(ports.reload).not.toHaveBeenCalled();
+    await act(() => vi.advanceTimersByTimeAsync(1));
+    expect(ports.reload).toHaveBeenCalledTimes(1);
+    expect(hook.result.current).toEqual({ locked: false });
+  });
+
   it('waits only the grace period when the holder has already gone', async () => {
     const { hook, ports } = setup(theirs);
     hook.rerender({ lease: { ...mine, takenAt: 5_000 }, active: [] });

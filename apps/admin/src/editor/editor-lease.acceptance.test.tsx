@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, onTestFinished } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import {
   currentUserResponse,
@@ -286,6 +286,29 @@ describe('Post editor lease', () => {
       .toHaveAccessibleName('This post is being edited in another of your tabs');
     await avatar().click();
     await expect.element(card().getByRole('button', { name: 'Edit here' })).toBeVisible();
+  });
+
+  it('opens moments after taking over from the writer’s own other tab, once that tab says it knows', async () => {
+    fakePublishedPost();
+    const { state, me } = fakeLease();
+    state.other = me;
+    await open();
+    // The other tab, as this one hears it: told of the takeover, it answers that it knows.
+    const otherTab = new BroadcastChannel('ghost-editor-lease');
+    onTestFinished(() => otherTab.close());
+    const told: string[] = [];
+    otherTab.onmessage = ({
+      data,
+    }: MessageEvent<{ type: string; lease: string; from: string }>) => {
+      told.push(data.type);
+      otherTab.postMessage({ type: 'heard', lease: data.lease, from: 'other-tab', to: data.from });
+    };
+
+    await avatar().click();
+    await card().getByRole('button', { name: 'Edit here' }).click();
+    await expect.poll(() => told).toEqual(['taken']);
+    // Without the other tab's word this waits twelve seconds, since the server never lists it.
+    await expect.poll(canvasLocked, { timeout: 7_000 }).toBe(false);
   });
 
   it('puts back what was typed, and locks, when someone else began a moment earlier', async () => {

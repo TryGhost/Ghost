@@ -68,6 +68,13 @@ when there is no lease to obey.
   again, through idleness too.
 - When polling stops for idleness the lease has been given up, so the lease
   reads `pending` until the next answer.
+- The server tells a tab it lost the lease only at that tab's next poll. Tabs
+  of one browser on the same site also tell each other, over a
+  `BroadcastChannel`. A tab that has taken the lease over says `taken`; every
+  tab on that document then polls at once; and the tab that held the lease
+  answers `heard` once its own poll says it no longer does, which the taker's
+  lease then carries as `heard: true`. Nothing depends on it: in a browser
+  without the channel, or between browsers, the tabs learn from their polls.
 
 What the editor does with the lease is described in the
 [editor README](../../editor/README.md#the-lease).
@@ -75,6 +82,7 @@ What the editor does with the lease is described in the
 ## Modules
 
 - `activity-poller.ts` owns cadence, visibility and backoff.
+- `lease-channel.ts` carries a takeover between the tabs of one browser.
 - `use-presence.ts` runs the poller for a set of resources and exposes `active`.
 - `use-visible-resources.ts` collects `[data-presence-id]` rows on screen.
 - `use-presence-by-resource.ts` groups `active` by resource id for list rows.

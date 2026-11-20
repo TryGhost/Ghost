@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ActivePresence } from '@/shared/presence/presence-api';
 import type { LeaseStatus } from '@/shared/presence/use-presence';
 
-/** Once the previous holder has gone: time for its last save to land. */
+/** Once the previous holder has gone, or has said it knows: time for its last save to land. */
 export const TAKEOVER_GRACE_MS = 3_000;
 /** For a previous holder still on the document: time for its next poll to tell it, and for its last save. */
 export const TAKEOVER_MAX_MS = 12_000;
@@ -236,6 +236,8 @@ export function useEditLease({
     currentUserId !== undefined &&
     track.holder !== currentUserId &&
     !active.some((entry) => entry.userId === track.holder);
+  // A tab of this browser says so itself, which is how the writer's own other tab is heard from.
+  const settled = gone || (held?.mine === true && held.heard === true);
   const { sync, syncing } = track;
   const finished = useRef(0);
 
@@ -262,10 +264,10 @@ export function useEditLease({
         );
       })();
     };
-    const wait = takenAt === undefined ? 0 : gone ? TAKEOVER_GRACE_MS : TAKEOVER_MAX_MS;
+    const wait = takenAt === undefined ? 0 : settled ? TAKEOVER_GRACE_MS : TAKEOVER_MAX_MS;
     const timer = setTimeout(finish, wait);
     return () => clearTimeout(timer);
-  }, [sync, syncing, takenAt, gone]);
+  }, [sync, syncing, takenAt, settled]);
 
   if (track.lease === null) {
     return { locked: false };

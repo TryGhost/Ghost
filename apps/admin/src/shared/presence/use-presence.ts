@@ -2,8 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { dequal } from 'dequal';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { APIError, SessionExpiredError } from '@tryghost/admin-x-framework/errors';
-import { usePresenceApi } from '@tryghost/admin-x-framework/api/presence';
+import { presenceTabId, usePresenceApi } from '@tryghost/admin-x-framework/api/presence';
 import { startActivityPoller, type ActivityPoller } from './activity-poller';
+import { openLeaseChannel } from './lease-channel';
 import { mergeActive, type LivePresence } from './merge-active';
 import {
   parsePresenceResponse,
@@ -24,9 +25,13 @@ export const LEASE_STALE_MS = 60_000;
  * while nobody holds it, `null` when the server keeps no lease for this client
  * (not asked for, an older server, or presence failing), otherwise the holder.
  * `takenAt` is the server time at which this tab took the lease over, while it
- * still holds it.
+ * still holds it, and `heard` that the tab it was taken from has said it knows.
  */
-export type LeaseStatus = (PresenceLease & { takenAt?: number }) | 'pending' | 'free' | null;
+export type LeaseStatus =
+  | (PresenceLease & { takenAt?: number; heard?: boolean })
+  | 'pending'
+  | 'free'
+  | null;
 
 export interface PresenceOptions {
   /** Follow the lease on the document this tab is editing. */
@@ -113,6 +118,10 @@ export function usePresence(
     let leaseSupported = true;
     let leaseAnswered = false;
     let takenAt: number | undefined;
+    let heard = false;
+    // The tab that says it took the lease from this one, answered once this tab's own poll agrees.
+    let taker: string | undefined;
+    const self = presenceTabId();
     let failOpen: ReturnType<typeof setTimeout> | undefined;
     const answerWith = (lease: LeaseStatus) => {
       if (leaseKey) {
@@ -140,6 +149,28 @@ export function usePresence(
       armFailOpen();
     }
     let poller: ActivityPoller | undefined;
+    // The server tells a tab it lost the lease only at its next poll. Another tab of
+    // this browser says so at once, and hears back when this one has learned it.
+    const channel = leaseKey
+      ? openLeaseChannel((signal) => {
+          if (signal.lease !== leaseKey) {
+            return;
+          }
+          if (signal.type === 'taken') {
+            taker = signal.from;
+            poller?.pollNow();
+          } else if (signal.to === self && takenAt !== undefined) {
+            heard = true;
+            setAnswer((previous) =>
+              previous?.key === leaseKey &&
+              typeof previous.lease === 'object' &&
+              previous.lease?.mine
+                ? { key: leaseKey, lease: { ...previous.lease, heard: true } }
+                : previous,
+            );
+          }
+        })
+      : null;
     const start = () => {
       if (poller || resourcesRef.current.length === 0) {
         return;
@@ -195,13 +226,31 @@ export function usePresence(
                 if (mode === 'take') {
                   takeRef.current = false;
                   takenAt = response.serverTime;
+                  heard = false;
                 }
                 if (!response.lease?.mine) {
                   takenAt = undefined;
+                  heard = false;
                 }
+                const held = holdingRef.current;
                 holdingRef.current = response.lease?.mine ?? false;
+                if (leaseKey && mode === 'take' && holdingRef.current) {
+                  channel?.post({ type: 'taken', lease: leaseKey, from: self });
+                }
+                // Only the tab that held the lease and now reads that it does not has heard. One
+                // still told it holds it asked before the takeover landed, and waits for its next answer.
+                if (leaseKey && taker && !(held && holdingRef.current)) {
+                  if (held) {
+                    channel?.post({ type: 'heard', lease: leaseKey, from: self, to: taker });
+                  }
+                  taker = undefined;
+                }
                 if (response.lease) {
-                  answerWith({ ...response.lease, ...(takenAt === undefined ? {} : { takenAt }) });
+                  answerWith({
+                    ...response.lease,
+                    ...(takenAt === undefined ? {} : { takenAt }),
+                    ...(heard ? { heard } : {}),
+                  });
                 } else {
                   answerWith(response.lease === null ? 'free' : null);
                 }
@@ -235,6 +284,7 @@ export function usePresence(
       startRef.current = undefined;
       pollerRef.current = undefined;
       poller?.stop();
+      channel?.close();
       clearTimeout(expire);
       disarm();
     };
