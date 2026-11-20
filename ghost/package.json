@@ -99,7 +99,7 @@
     "@tryghost/custom-fonts": "catalog:",
     "@tryghost/database-info": "2.4.0",
     "@tryghost/debug": "catalog:",
-    "@tryghost/domain-events": "catalog:",
+    "@tryghost/domain-events": "workspace:*",
     "@tryghost/errors": "catalog:",
     "@tryghost/helpers": "catalog:",
     "@tryghost/html-to-plaintext": "1.0.17",

@@ -387,7 +387,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-suppression-list/mailgun-email-suppression-list.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -437,7 +437,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/gifts/gift-delivery-service.ts",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -732,7 +732,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/milestones/service.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -762,7 +762,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/milestones/slack-notifications/service.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -852,7 +852,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/offers/offer-bookshelf-repository.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -872,7 +872,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/offers/offers-module.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -997,7 +997,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/posts/posts-service.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -1372,7 +1372,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/verification-trigger.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
