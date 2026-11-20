@@ -11,8 +11,7 @@ import {
 } from '../../../../../core/server/services/editor-presence/editor-presence-service';
 import { MemoryPresenceStore } from '../../../../../core/server/services/editor-presence/memory-presence-store';
 import type {
-  ClaimTime,
-  Claimed,
+  LeaseTime,
   PresenceStore,
 } from '../../../../../core/server/services/editor-presence/presence-store';
 import { RedisPresenceStore } from '../../../../../core/server/services/editor-presence/redis-presence-store';
@@ -95,8 +94,8 @@ describe('EditorPresenceService', function () {
       touch: async () => assert.fail('touch called'),
       read: async () => assert.fail('read called'),
       remove: async () => assert.fail('remove called'),
-      claim: async () => assert.fail('claim called'),
-      claims: async () => assert.fail('claims called'),
+      hold: async () => assert.fail('hold called'),
+      holders: async () => assert.fail('holders called'),
       release: async () => assert.fail('release called'),
     };
     const { service, now } = build({ store: failing });
@@ -214,8 +213,8 @@ describe('EditorPresenceService', function () {
       touch: async () => undefined,
       read: async () => [],
       remove: async () => undefined,
-      claim: async () => ({ claims: [], joined: false }),
-      claims: async () => [],
+      hold: async () => [],
+      holders: async () => [],
       release: async () => undefined,
       ...failure,
     };
@@ -405,7 +404,7 @@ describe('EditorPresenceService lease', function () {
     assert.deepEqual(other.lease, { userId: USER_1, mine: false });
   });
 
-  it('passes the lease to the next in line when the holder leaves', async function () {
+  it('gives the document to the next tab that asks once the holder leaves', async function () {
     const { service, advance } = build({ leaseWindowMs: LEASE_WINDOW });
     await service.poll(USER_1, hold(TAB_1));
     advance(1_000);
@@ -432,13 +431,10 @@ describe('EditorPresenceService lease', function () {
     advance(60_000);
     const lapsed = await service.poll(USER_2, hold(TAB_2));
     assert.deepEqual(lapsed.lease, { userId: USER_2, mine: true });
-    assert.deepEqual(
-      (await store.claims(0)).map((claim) => claim.member),
-      [`post:${POST_A}:${USER_2}:${TAB_2}`],
-    );
+    assert.deepEqual(await store.holders(0), [`post:${POST_A}:${USER_2}:${TAB_2}`]);
   });
 
-  it('sends a returning holder to the back once its place has lapsed', async function () {
+  it('does not give a returning holder a document that another tab has held since', async function () {
     const { service, advance } = build({ leaseWindowMs: LEASE_WINDOW });
     await service.poll(USER_1, hold(TAB_1));
     advance(1_000);
@@ -452,23 +448,24 @@ describe('EditorPresenceService lease', function () {
     });
   });
 
-  it('sends a returning holder to the back even when it polls before the tab that waited', async function () {
+  it('gives a document whose holder stopped asking to whichever tab asks first', async function () {
     const { service, advance } = build({ leaseWindowMs: LEASE_WINDOW });
     await service.poll(USER_1, hold(TAB_1));
     advance(100_000);
     await service.poll(USER_2, hold(TAB_2));
     advance(LEASE_WINDOW - 100_000 + 1_000);
+    // Nobody is in line for it: the one that held it is back first, so holds it again.
     assert.deepEqual((await service.poll(USER_1, hold(TAB_1))).lease, {
-      userId: USER_2,
-      mine: false,
+      userId: USER_1,
+      mine: true,
     });
     assert.deepEqual((await service.poll(USER_2, hold(TAB_2))).lease, {
-      userId: USER_2,
-      mine: true,
+      userId: USER_1,
+      mine: false,
     });
   });
 
-  it('does not give a lapsed holder its place back for a plain heartbeat', async function () {
+  it('does not keep a document for a holder that sends only heartbeats', async function () {
     const { service, advance } = build({ leaseWindowMs: LEASE_WINDOW });
     await service.poll(USER_1, hold(TAB_1));
     advance(100_000);
@@ -486,26 +483,28 @@ describe('EditorPresenceService lease', function () {
     });
   });
 
-  it('does not give a lapsed holder its place back when its claim fails after its heartbeat', async function () {
+  it('holds nothing for a tab whose hold failed after its heartbeat', async function () {
     class FailsOnce extends MemoryPresenceStore {
       failing = false;
-      async claim(member: string, time: ClaimTime, to?: 'front' | 'back'): Promise<Claimed> {
+      async hold(member: string, time: LeaseTime, whoever?: boolean): Promise<string[]> {
         if (this.failing) {
           this.failing = false;
           throw new Error('ECONNRESET');
         }
-        return super.claim(member, time, to);
+        return super.hold(member, time, whoever);
       }
     }
     const store = new FailsOnce();
     const { service, advance } = build({ store, leaseWindowMs: LEASE_WINDOW });
     await service.poll(USER_1, hold(TAB_1));
-    advance(100_000);
-    await service.poll(USER_2, hold(TAB_2));
-    advance(LEASE_WINDOW - 100_000 + 1_000);
+    advance(LEASE_WINDOW + 1_000);
 
     store.failing = true;
     await assert.rejects(service.poll(USER_1, hold(TAB_1)), { statusCode: 503 });
+    assert.deepEqual((await service.poll(USER_2, hold(TAB_2))).lease, {
+      userId: USER_2,
+      mine: true,
+    });
     assert.deepEqual((await service.poll(USER_1, hold(TAB_1))).lease, {
       userId: USER_2,
       mine: false,
@@ -522,8 +521,8 @@ describe('EditorPresenceService lease', function () {
     assert.equal((await service.poll(USER_2, hold(TAB_2))).lease?.mine, true);
   });
 
-  describe('when two tabs join at once', function () {
-    /** The Redis store, with the first tab held back between reading the queue and joining it. */
+  describe('when two tabs ask at once', function () {
+    /** The Redis store, with the first tab held back between reading who holds the document and asking for it. */
     function overlapping() {
       const client = new FakeRedisClient();
       const store = new RedisPresenceStore({
@@ -539,14 +538,14 @@ describe('EditorPresenceService lease', function () {
       const reached = new Promise<void>((resolve) => {
         reach = resolve;
       });
-      // A poll's first pipeline is its heartbeat and its second is its place in the queue.
+      // A poll's first pipeline is its heartbeat and its second asks for the document.
       client.beforeExec = async (count) => {
         if (count === 2) {
           reach();
           await released;
         }
       };
-      return { ...build({ store, leaseWindowMs: LEASE_WINDOW }), reached, release };
+      return { ...build({ store, leaseWindowMs: LEASE_WINDOW }), client, reached, release };
     }
 
     it('tells only the one that got there first that the document is its own', async function () {
@@ -558,7 +557,7 @@ describe('EditorPresenceService lease', function () {
 
       assert.deepEqual(quick.lease, { userId: USER_2, mine: true });
       assert.deepEqual((await slow).lease, { userId: USER_2, mine: false });
-      // And it stays that way: the slow one went behind, not ahead on its name or number.
+      // And it stays that way, whichever of them sorts first.
       assert.equal((await service.poll(USER_2, hold(TAB_2))).lease?.mine, true);
       assert.equal((await service.poll(USER_1, hold(TAB_1))).lease?.mine, false);
     });
@@ -574,9 +573,38 @@ describe('EditorPresenceService lease', function () {
       assert.deepEqual((await slow).lease, { userId: USER_1, mine: true });
       assert.equal((await service.poll(USER_2, hold(TAB_2))).lease?.mine, false);
     });
+
+    it('leaves the document with its holder when the other tab’s request fails and it asks again', async function () {
+      const fixture = overlapping();
+      const { service, store, client, reached, release } = fixture;
+      const slow = service.poll(USER_1, hold(TAB_1));
+      await reached;
+      const quick = await service.poll(USER_2, hold(TAB_2));
+      // The slow tab's write runs, and its answer never arrives.
+      client.afterExec = (count) => {
+        if (count === 2) {
+          throw new Error('ECONNRESET');
+        }
+      };
+      release();
+      await assert.rejects(slow, { statusCode: 503 });
+
+      // It asks again through a service that remembers nothing of the first try.
+      const again = new EditorPresenceService({
+        store,
+        now: () => fixture.now,
+        leaseWindowMs: LEASE_WINDOW,
+      });
+      assert.deepEqual(quick.lease, { userId: USER_2, mine: true });
+      assert.deepEqual((await again.poll(USER_1, hold(TAB_1))).lease, {
+        userId: USER_2,
+        mine: false,
+      });
+      assert.equal((await service.poll(USER_2, hold(TAB_2))).lease?.mine, true);
+    });
   });
 
-  it('moves a tab to the front on take, and the tab it passed learns on its next poll', async function () {
+  it('hands the document over on take, and the tab it was taken from learns on its next poll', async function () {
     const { service, advance } = build({ leaseWindowMs: LEASE_WINDOW });
     await service.poll(USER_1, hold(TAB_1));
     advance(1_000);
@@ -596,7 +624,7 @@ describe('EditorPresenceService lease', function () {
     assert.equal((await service.poll(USER_2, hold(TAB_2))).lease?.mine, false);
   });
 
-  it('takes like a hold when nobody else queues', async function () {
+  it('takes like a hold when nobody holds the document', async function () {
     const { service } = build({ leaseWindowMs: LEASE_WINDOW });
     assert.deepEqual((await service.poll(USER_1, take(TAB_1))).lease, {
       userId: USER_1,
@@ -604,7 +632,7 @@ describe('EditorPresenceService lease', function () {
     });
   });
 
-  it('keeps each document and each type of document in its own queue', async function () {
+  it('holds each document and each type of document apart', async function () {
     const { service, advance } = build({ leaseWindowMs: LEASE_WINDOW });
     await service.poll(USER_1, hold(TAB_1));
     advance(1_000);
@@ -623,11 +651,11 @@ describe('EditorPresenceService lease', function () {
     assert.equal((await service.poll(USER_1, hold(TAB_1))).lease?.mine, true);
   });
 
-  it('leaves a tab that does not ask out of the queue and out of the answer', async function () {
+  it('leaves a tab that does not ask holding nothing, and out of the answer', async function () {
     const { service, store, advance } = build({ leaseWindowMs: LEASE_WINDOW });
     const plain = await service.poll(USER_1, { editing, tab: TAB_1 });
     assert.equal('lease' in plain, false);
-    assert.deepEqual(await store.claims(0), []);
+    assert.deepEqual(await store.holders(0), []);
 
     advance(1_000);
     const asked = await service.poll(USER_2, hold(TAB_2));
@@ -648,7 +676,7 @@ describe('EditorPresenceService lease', function () {
       const second = await service.poll(USER_2, watch(TAB_2));
       assert.equal(first.lease, null);
       assert.equal(second.lease, null);
-      assert.deepEqual(await store.claims(0), []);
+      assert.deepEqual(await store.holders(0), []);
       // Watching is still being present.
       assert.deepEqual(
         second.active.map((entry) => entry.userId),
@@ -656,13 +684,13 @@ describe('EditorPresenceService lease', function () {
       );
     });
 
-    it('tells a watching tab who holds the document, without queueing it', async function () {
+    it('tells a watching tab who holds the document, without holding it', async function () {
       const { service, store, advance } = build({ leaseWindowMs: LEASE_WINDOW });
       await service.poll(USER_1, hold(TAB_1));
       advance(1_000);
       const watching = await service.poll(USER_2, watch(TAB_2));
       assert.deepEqual(watching.lease, { userId: USER_1, mine: false });
-      assert.equal((await store.claims(0)).length, 1);
+      assert.equal((await store.holders(0)).length, 1);
     });
 
     it('hands nobody the lease when the holder leaves, until a tab asks to hold', async function () {
@@ -679,20 +707,54 @@ describe('EditorPresenceService lease', function () {
       });
     });
 
-    it('gives a place up when its tab goes back to watching', async function () {
+    it('gives the document up when its holder goes back to watching', async function () {
       const { service, store, advance } = build({ leaseWindowMs: LEASE_WINDOW });
       await service.poll(USER_1, hold(TAB_1));
       advance(1_000);
-      await service.poll(USER_2, hold(TAB_2));
-      advance(1_000);
-      const back = await service.poll(USER_2, watch(TAB_2));
-      assert.deepEqual(back.lease, { userId: USER_1, mine: false });
-      assert.equal((await store.claims(0)).length, 1);
+      assert.deepEqual((await service.poll(USER_2, watch(TAB_2))).lease, {
+        userId: USER_1,
+        mine: false,
+      });
 
-      // So it is not next in line once the holder has gone.
-      await service.leave(USER_1, { resource: editing, tab: TAB_1 });
       advance(1_000);
-      assert.equal((await service.poll(USER_2, watch(TAB_2))).lease, null);
+      assert.equal((await service.poll(USER_1, watch(TAB_1))).lease, null);
+      assert.deepEqual(await store.holders(0), []);
+      assert.deepEqual((await service.poll(USER_2, hold(TAB_2))).lease, {
+        userId: USER_2,
+        mine: true,
+      });
+    });
+
+    it('answers a holder that goes back to watching from who holds the document after it let go', async function () {
+      let reach!: () => void;
+      const reached = new Promise<void>((resolve) => {
+        reach = resolve;
+      });
+      let resume!: () => void;
+      const paused = new Promise<void>((resolve) => {
+        resume = resolve;
+      });
+      class PausedRelease extends MemoryPresenceStore {
+        async release(member: string): Promise<void> {
+          reach();
+          await paused;
+          return super.release(member);
+        }
+      }
+      const { service } = build({ store: new PausedRelease(), leaseWindowMs: LEASE_WINDOW });
+      await service.poll(USER_1, hold(TAB_1));
+
+      // It has read itself as the holder, and not yet let go.
+      const watching = service.poll(USER_1, watch(TAB_1));
+      await reached;
+      assert.deepEqual((await service.poll(USER_2, take(TAB_2))).lease, {
+        userId: USER_2,
+        mine: true,
+      });
+      resume();
+
+      assert.deepEqual((await watching).lease, { userId: USER_2, mine: false });
+      assert.equal((await service.poll(USER_2, hold(TAB_2))).lease?.mine, true);
     });
 
     it('gives the lease to the first of two tabs that ask at nearly the same time', async function () {
@@ -733,11 +795,11 @@ describe('EditorPresenceService lease', function () {
         errorType: 'ValidationError',
       });
     }
-    assert.deepEqual(await store.claims(0), []);
+    assert.deepEqual(await store.holders(0), []);
     assert.equal('lease' in (await service.poll(USER_1, { editing })), false);
   });
 
-  it('records which lease a poll asked for, and a failed claim as degraded', async function () {
+  it('records which lease a poll asked for, and a failed hold as degraded', async function () {
     const { service, recorded } = build({ leaseWindowMs: LEASE_WINDOW });
     await service.poll(USER_1, take(TAB_1));
     assert.equal(recorded[0].value.lease, 'take');
@@ -748,10 +810,10 @@ describe('EditorPresenceService lease', function () {
         touch: async () => undefined,
         read: async () => [],
         remove: async () => undefined,
-        claim: async () => {
+        hold: async () => {
           throw new Error("NOPERM User 1 has no permissions to run the 'zadd' command");
         },
-        claims: async () => [],
+        holders: async () => [],
         release: async () => undefined,
       },
     });
@@ -759,7 +821,7 @@ describe('EditorPresenceService lease', function () {
     assert.deepEqual(
       failing.recorded.map((entry) => [entry.name, entry.value.operation ?? entry.value.lease]),
       [
-        ['presence-degraded', 'claim'],
+        ['presence-degraded', 'hold'],
         ['presence-poll', 'hold'],
       ],
     );

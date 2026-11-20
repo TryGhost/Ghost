@@ -6,7 +6,6 @@ import {
   encodeMember,
   type PresenceStore,
   type ResourceType,
-  type StoredClaim,
 } from './presence-store';
 
 const objectId = z.string().regex(/^[a-f0-9]{24}$/i);
@@ -18,7 +17,7 @@ const pollSchema = z
     resources: z.array(resourceSchema).max(50).default([]),
     editing: resourceSchema.optional(),
     tab: tabId.optional(),
-    /** `hold` keeps or joins a place in the edited document's queue; `take` moves to its front. */
+    /** `hold` holds the edited document if nobody does, `take` whoever does, and `watch` only asks. */
     lease: z.enum(['hold', 'take', 'watch']).optional(),
   })
   .strict()
@@ -64,7 +63,7 @@ export interface EditorPresenceServiceOptions {
   now?: () => number;
   /** Heartbeats newer than this are reported as active. */
   activeWindowMs?: number;
-  /** A queued tab keeps its place in a lease queue while its last heartbeat is newer than this. */
+  /** A tab keeps a document while it last asked for the lease within this long. */
   leaseWindowMs?: number;
   /** Members older than this are dropped from the store. */
   retentionMs?: number;
@@ -75,7 +74,7 @@ export const DEFAULT_ACTIVE_WINDOW_MS = 60_000;
 /** Longer than the active window: a hidden tab's timers slow to one a minute, and it must not lose its place. */
 export const DEFAULT_LEASE_WINDOW_MS = 150_000;
 export const DEFAULT_RETENTION_MS = DEFAULT_LEASE_WINDOW_MS;
-/** A retention below the lease window would expire the lease key under a place that had not lapsed. */
+/** A retention below the lease window would expire the lease key under a hold that had not lapsed. */
 export const MIN_RETENTION_MS = DEFAULT_LEASE_WINDOW_MS;
 /** A store call past this answers 503; ioredis has no deadline of its own on a stalled connection. */
 export const DEFAULT_STORE_TIMEOUT_MS = 2_000;
@@ -88,7 +87,7 @@ export function resolveRetentionMs(ttlSeconds: unknown): number {
   return Math.max(MIN_RETENTION_MS, Math.round(ttlSeconds * 1000));
 }
 
-type StoreOperation = 'touch' | 'read' | 'remove' | 'claim' | 'claims' | 'release';
+type StoreOperation = 'touch' | 'read' | 'remove' | 'hold' | 'holders' | 'release';
 
 function failureReason(error: unknown): string {
   const details = error as { code?: unknown; name?: unknown; message?: unknown };
@@ -174,8 +173,8 @@ export class EditorPresenceService {
    * Record that `userId` has `editing` open, then return everyone else active on
    * the requested resources. Callers see only the ids they asked about. `tab`
    * keeps each of the caller's editor tabs as its own member, so closing one
-   * does not clear the others. With `lease`, the caller's tab also queues for
-   * the document, and the answer names the tab at the front.
+   * does not clear the others. With `lease`, the answer also names the user
+   * whose tab holds the document.
    */
   async poll(userId: string, input: unknown): Promise<PollResult> {
     const { resources, editing, tab, lease } = parse(pollSchema, input);
@@ -197,10 +196,11 @@ export class EditorPresenceService {
       if (caller) {
         await this.fromStore('touch', () => this.store.touch(caller, now, this.retentionMs));
       }
-      const claims =
-        caller && editing && lease ? await this.queue(caller, lease, editing, now) : undefined;
+      const holders = caller && lease ? await this.lease(caller, lease, now) : undefined;
       const stored = await this.fromStore('read', () => this.store.read(now - this.activeWindowMs));
-      const held = claims && caller && editing ? this.holder(claims, editing, caller) : undefined;
+      const holder = editing && holders?.find((member) => isFor(member, editing));
+      const who = holder ? decodeMember(holder) : null;
+      const held = who ? { userId: who.userId, mine: holder === caller } : null;
       this.record('presence-poll', started, { outcome: 'ok', ...measured });
 
       // A user with the document open in several tabs is reported once, with the latest heartbeat.
@@ -229,7 +229,7 @@ export class EditorPresenceService {
       }
       return {
         active: [...latest.values()],
-        ...(claims ? { lease: held ?? null } : {}),
+        ...(holders ? { lease: held } : {}),
         serverTime: now,
       };
     } catch (error) {
@@ -239,67 +239,28 @@ export class EditorPresenceService {
   }
 
   /**
-   * `take` moves the caller ahead of everyone queued; `hold` keeps its place or
-   * joins at the back. A place lasts while its tab keeps asking, so a tab that
-   * stopped for longer than the lease window joins again.
+   * Answers the member holding each document. `hold` holds the caller's if
+   * nobody does and `take` holds it whoever does. `watch` only reads, after
+   * giving up any hold the caller had, so a tab that stopped editing is never
+   * left holding its document.
    */
-  private async queue(
+  private async lease(
     caller: string,
     mode: 'hold' | 'take' | 'watch',
-    resource: { id: string; type: ResourceType },
     now: number,
-  ): Promise<StoredClaim[]> {
+  ): Promise<string[]> {
     const since = now - this.leaseWindowMs;
-    if (mode === 'watch') {
-      const claims = await this.fromStore('claims', () => this.store.claims(since));
-      if (!claims.some(({ member }) => member === caller)) {
-        return claims;
-      }
-      // A tab that only watches gives up any place it held, so it is never handed the lease.
-      await this.fromStore('release', () => this.store.release(caller));
-      return claims.filter(({ member }) => member !== caller);
+    if (mode !== 'watch') {
+      const time = { now, since, retentionMs: this.retentionMs };
+      return this.fromStore('hold', () => this.store.hold(caller, time, mode === 'take'));
     }
-    const time = { now, since, retentionMs: this.retentionMs };
-    const { claims, joined } = await this.fromStore('claim', () =>
-      this.store.claim(caller, time, mode === 'take' ? 'front' : undefined),
-    );
-    // A tab already there when this one joined may have been told the document is its own,
-    // whatever order this one was given, so this one goes behind every tab it found.
-    const own = claims.find(({ member }) => member === caller);
-    const beside =
-      joined &&
-      own &&
-      claims.some(
-        ({ member, order }) => member !== caller && isFor(member, resource) && order >= own.order,
-      );
-    return beside
-      ? (await this.fromStore('claim', () => this.store.claim(caller, time, 'back'))).claims
-      : claims;
-  }
-
-  /**
-   * The lowest-placed claim on a document holds its lease. Two tabs that joined
-   * at once and each went behind the other can share an order; the member
-   * decides then, so every poll names the same one.
-   */
-  private holder(
-    claims: StoredClaim[],
-    resource: { id: string; type: ResourceType },
-    caller: string,
-  ): PresenceLease | undefined {
-    let first: StoredClaim | undefined;
-    for (const claim of claims) {
-      if (
-        isFor(claim.member, resource) &&
-        (!first ||
-          claim.order < first.order ||
-          (claim.order === first.order && claim.member < first.member))
-      ) {
-        first = claim;
-      }
+    const holders = await this.fromStore('holders', () => this.store.holders(since));
+    if (!holders.includes(caller)) {
+      return holders;
     }
-    const decoded = first && decodeMember(first.member);
-    return decoded ? { userId: decoded.userId, mine: first?.member === caller } : undefined;
+    await this.fromStore('release', () => this.store.release(caller));
+    // Read again: what was read before giving it up may not be who holds it now.
+    return this.fromStore('holders', () => this.store.holders(since));
   }
 
   async leave(userId: string, input: unknown): Promise<void> {

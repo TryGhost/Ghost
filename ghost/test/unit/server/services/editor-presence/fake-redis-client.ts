@@ -11,6 +11,8 @@ export class FakeRedisClient implements RedisPresenceClient {
   failNext: Error | null = null;
   /** Called when a pipeline is about to run; a test awaits here to hold it back while others run. */
   beforeExec: ((nth: number) => Promise<void> | void) | null = null;
+  /** Called once a pipeline has run; a test throws here for a reply that never arrived. */
+  afterExec: ((nth: number) => void) | null = null;
   private pipelines = 0;
 
   private set(key: string): Map<string, number> {
@@ -25,15 +27,17 @@ export class FakeRedisClient implements RedisPresenceClient {
   pipeline(): RedisPresencePipeline {
     const queue: Array<() => unknown> = [];
     const pipeline: RedisPresencePipeline = {
-      zadd: (key: string, ...rest: [number, string] | ['XX', number, string]) => {
-        const onlyIfPresent = rest[0] === 'XX';
-        const [score, member] = (onlyIfPresent ? rest.slice(1) : rest) as [number, string];
-        this.commands.push(onlyIfPresent ? 'zadd xx' : 'zadd');
+      zadd: (key: string, ...rest: [number, string] | ['NX' | 'XX', number, string]) => {
+        const flag = typeof rest[0] === 'string' ? rest[0] : undefined;
+        const [score, member] = (flag ? rest.slice(1) : rest) as [number, string];
+        this.commands.push(flag ? `zadd ${flag.toLowerCase()}` : 'zadd');
         queue.push(() => {
           const set = this.set(key);
-          if (!onlyIfPresent || set.has(member)) {
+          if (!flag || (flag === 'NX') !== set.has(member)) {
             set.set(member, score);
+            return 1;
           }
+          return 0;
         });
         return pipeline;
       },
@@ -73,13 +77,16 @@ export class FakeRedisClient implements RedisPresenceClient {
       },
       exec: async () => {
         this.pipelines += 1;
-        await this.beforeExec?.(this.pipelines);
+        const nth = this.pipelines;
+        await this.beforeExec?.(nth);
         if (this.failNext) {
           const error = this.failNext;
           this.failNext = null;
           return [[error, null]];
         }
-        return queue.map((command) => [null, command()] as [Error | null, unknown]);
+        const results = queue.map((command) => [null, command()] as [Error | null, unknown]);
+        this.afterExec?.(nth);
+        return results;
       },
     };
     return pipeline;

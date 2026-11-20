@@ -1,15 +1,15 @@
-import type {
-  ClaimTime,
-  Claimed,
-  PresenceStore,
-  StoredClaim,
-  StoredPresence,
+import {
+  documentOf,
+  type LeaseTime,
+  type PresenceStore,
+  type StoredPresence,
 } from './presence-store';
 
 export class MemoryPresenceStore implements PresenceStore {
   readonly kind = 'memory';
   private readonly entries = new Map<string, number>();
-  private readonly queue = new Map<string, { order: number; renewed: number }>();
+  /** By document. */
+  private readonly holds = new Map<string, { member: string; renewed: number }>();
 
   async touch(member: string, now: number, retentionMs: number): Promise<void> {
     const current = this.entries.get(member);
@@ -36,34 +36,29 @@ export class MemoryPresenceStore implements PresenceStore {
 
   async remove(member: string): Promise<void> {
     this.entries.delete(member);
-    this.queue.delete(member);
+    await this.release(member);
   }
 
-  async claim(member: string, { now, since }: ClaimTime, to?: 'front' | 'back'): Promise<Claimed> {
-    for (const [key, { renewed }] of this.queue) {
-      if (renewed < since) {
-        this.queue.delete(key);
-      }
+  async hold(member: string, { now, since }: LeaseTime, take = false): Promise<string[]> {
+    const document = documentOf(member);
+    const held = this.holds.get(document);
+    if (take || !held || held.renewed < since || held.member === member) {
+      this.holds.set(document, { member, renewed: now });
     }
-    const own = this.queue.get(member);
-    if (own && !to) {
-      own.renewed = now;
-      return { claims: await this.claims(since), joined: false };
-    }
-    const orders = [...this.queue].filter(([key]) => key !== member).map(([, { order }]) => order);
-    const order = to === 'front' ? Math.min(0, ...orders) - 1 : Math.max(0, ...orders) + 1;
-    this.queue.set(member, { order, renewed: now });
-    return { claims: await this.claims(since), joined: !to };
+    return this.holders(since);
   }
 
-  async claims(since: number): Promise<StoredClaim[]> {
-    return [...this.queue]
-      .filter(([, { renewed }]) => renewed >= since)
-      .map(([member, { order }]) => ({ member, order }));
+  async holders(since: number): Promise<string[]> {
+    return [...this.holds.values()]
+      .filter(({ renewed }) => renewed >= since)
+      .map(({ member }) => member);
   }
 
   async release(member: string): Promise<void> {
-    this.queue.delete(member);
+    const document = documentOf(member);
+    if (this.holds.get(document)?.member === member) {
+      this.holds.delete(document);
+    }
   }
 
   get size(): number {
