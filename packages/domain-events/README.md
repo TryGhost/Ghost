@@ -51,3 +51,7 @@ pnpm build   # compile to build/ with tsc (ESM)
 pnpm test    # type-check + unit tests
 pnpm lint    # lint source and tests
 ```
+
+Run `pnpm build` before `pnpm test`. One test loads the compiled package through
+`require()`, the way Ghost's CommonJS code does, so it needs `build/` to exist.
+Nx builds first on its own: `pnpm nx run @tryghost/domain-events:test`.
