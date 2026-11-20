@@ -231,6 +231,9 @@ jobs:
             # product behaviour, so the build + E2E lane is skipped.
             # React Admin tests still run through the affected unit, acceptance,
             # lint and typecheck targets; only the build + E2E lane is skipped.
+            # Agent skills and settings (.agents, .claude) are excluded for the
+            # same reason: nothing in them is read when Ghost builds or runs.
+            # Their own checks run from the lint job, which any-code drives.
             e2e:
               - '!ghost/core/server/services/legacy-service-inventory.yaml'
               - '!**/*.md'
@@ -238,6 +241,8 @@ jobs:
               - '!.github/CODEOWNERS'
               - '!.devcontainer/**'
               - '!.vscode/**'
+              - '!.agents/**'
+              - '!.claude/**'
               - '!ghost/test/**'
               - '!ghost/vitest.config.ts'
               - '!ghost/vitest.config.inventory.ts'
