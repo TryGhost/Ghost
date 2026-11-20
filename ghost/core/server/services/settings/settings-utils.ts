@@ -1,29 +1,22 @@
-const crypto = require('crypto');
-const validator = require('@tryghost/validator');
-const config = require('../../../shared/config');
-const logging = require('@tryghost/logging');
+import crypto from 'node:crypto';
+import logging from '@tryghost/logging';
+import validator from '@tryghost/validator';
+import config from '../../../shared/config';
 
 // The string returned when a setting is set as write-only
 const obfuscatedSetting = '••••••••';
 
 /**
  * @description // The function used to decide whether a setting is write-only
- * @param {Object} setting setting record
- * @param {string} setting.key
- * @returns {boolean}
  */
-function isSecretSetting(setting) {
+function isSecretSetting(setting: { key: string }): boolean {
   return /secret|api_key/.test(setting.key);
 }
 
 /**
  * @description The function that obfuscates a write-only setting
- * @param {Object} setting setting record
- * @param {string} setting.value
- * @param {string} setting.key
- * @returns {Object} settings record with obfuscated value if it's a secret
  */
-function hideValueIfSecret(setting) {
+function hideValueIfSecret<T extends { key: string; value?: unknown }>(setting: T): T {
   if (setting.value && isSecretSetting(setting)) {
     return { ...setting, value: obfuscatedSetting };
   }
@@ -31,14 +24,14 @@ function hideValueIfSecret(setting) {
 }
 
 // Cached site UUID to ensure consistency
-let SITE_UUID;
+let SITE_UUID: string | undefined;
 /**
  * @description Get or generate a site UUID, used for seeding the site_uuid setting
  * Uses the configured site_uuid if valid, otherwise generates a new one
  * To get the `site_uuid` setting, use `settingsCache.get('site_uuid')` instead
- * @returns {string} lowercase UUID
+ * @returns lowercase UUID
  */
-function getOrGenerateSiteUuid() {
+function getOrGenerateSiteUuid(): string {
   if (!SITE_UUID) {
     try {
       const configuredSiteUuid = config.get('site_uuid');
@@ -56,7 +49,7 @@ function getOrGenerateSiteUuid() {
       SITE_UUID = crypto.randomUUID();
     }
   }
-  return SITE_UUID.toLowerCase();
+  return SITE_UUID!.toLowerCase();
 }
 
 // Reset function for testing
@@ -64,9 +57,4 @@ getOrGenerateSiteUuid._reset = () => {
   SITE_UUID = undefined;
 };
 
-module.exports = {
-  obfuscatedSetting,
-  isSecretSetting,
-  hideValueIfSecret,
-  getOrGenerateSiteUuid,
-};
+export { getOrGenerateSiteUuid, hideValueIfSecret, isSecretSetting, obfuscatedSetting };
