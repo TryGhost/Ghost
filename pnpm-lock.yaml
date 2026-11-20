@@ -357,8 +357,8 @@ catalogs:
       specifier: 1.1.110
       version: 1.1.110
     '@tryghost/metrics':
-      specifier: 3.7.7
-      version: 3.7.7
+      specifier: 3.8.0
+      version: 3.8.0
     '@tryghost/mg-clean-html':
       specifier: 0.12.7
       version: 0.12.7
@@ -829,7 +829,7 @@ catalogs:
 
 overrides:
   '@tryghost/errors': 3.4.8
-  '@tryghost/logging': 6.0.7
+  '@tryghost/logging': 6.1.0
   '@tryghost/nql': 0.13.5
   '@tryghost/nql-lang': 0.7.1
   jackspeak: 4.2.3
@@ -2134,8 +2134,8 @@ importers:
         specifier: 'catalog:'
         version: 2.3.23(supports-color@10.2.2)
       '@tryghost/logging':
-        specifier: 6.0.7
-        version: 6.0.7(supports-color@10.2.2)
+        specifier: 6.1.0
+        version: 6.1.0(supports-color@10.2.2)
       '@tryghost/metafield-types':
         specifier: workspace:*
         version: link:../contracts/metafield-types
@@ -2308,8 +2308,8 @@ importers:
         specifier: workspace:*
         version: link:../packages/limit-service
       '@tryghost/logging':
-        specifier: 6.0.7
-        version: 6.0.7(supports-color@10.2.2)
+        specifier: 6.1.0
+        version: 6.1.0(supports-color@10.2.2)
       '@tryghost/metafield-csv':
         specifier: workspace:*
         version: link:../packages/metafield-csv
@@ -2318,7 +2318,7 @@ importers:
         version: link:../contracts/metafield-types
       '@tryghost/metrics':
         specifier: 'catalog:'
-        version: 3.7.7(supports-color@10.2.2)
+        version: 3.8.0(supports-color@10.2.2)
       '@tryghost/mg-clean-html':
         specifier: 'catalog:'
         version: 0.12.7
@@ -2350,11 +2350,11 @@ importers:
         specifier: workspace:*
         version: link:../packages/parse-email-address
       '@tryghost/prometheus-metrics':
-        specifier: 5.0.11
-        version: 5.0.11(express@4.22.3(supports-color@10.2.2))(supports-color@10.2.2)
+        specifier: 5.0.12
+        version: 5.0.12(express@4.22.3(supports-color@10.2.2))(supports-color@10.2.2)
       '@tryghost/referrer-parser':
-        specifier: 0.1.26
-        version: 0.1.26
+        specifier: 0.1.27
+        version: 0.1.27
       '@tryghost/request':
         specifier: 'catalog:'
         version: 4.1.0
@@ -2365,8 +2365,8 @@ importers:
         specifier: 'catalog:'
         version: 4.0.4
       '@tryghost/social-urls':
-        specifier: 0.1.67
-        version: 0.1.67
+        specifier: 0.1.68
+        version: 0.1.68
       '@tryghost/string':
         specifier: 'catalog:'
         version: 0.3.9
@@ -3824,8 +3824,8 @@ importers:
   packages/adapters/scheduling-base:
     dependencies:
       '@tryghost/logging':
-        specifier: 6.0.7
-        version: 6.0.7(supports-color@10.2.2)
+        specifier: 6.1.0
+        version: 6.1.0(supports-color@10.2.2)
     devDependencies:
       '@internal/cfg-eslint':
         specifier: 'workspace:'
@@ -4165,8 +4165,8 @@ importers:
   packages/domain-events:
     dependencies:
       '@tryghost/logging':
-        specifier: 6.0.7
-        version: 6.0.7(supports-color@10.2.2)
+        specifier: 6.1.0
+        version: 6.1.0(supports-color@10.2.2)
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
@@ -4581,8 +4581,8 @@ importers:
         specifier: 3.4.8
         version: 3.4.8
       '@tryghost/logging':
-        specifier: 6.0.7
-        version: 6.0.7(supports-color@10.2.2)
+        specifier: 6.1.0
+        version: 6.1.0(supports-color@10.2.2)
       '@tryghost/pretty-cli':
         specifier: 'catalog:'
         version: 3.4.4
@@ -8914,11 +8914,11 @@ packages:
     resolution: {integrity: sha512-I709F0EinnT+6jJOpL5Kbdn3xta0Dxg4f59yNEEHUuCDwps5eS5uRqHcnuT/IEYEPWkT5vplTENWeUtbTyp/qg==}
     engines: {node: ^22.12.0 || >=24.0.0}
 
-  '@tryghost/logging@6.0.7':
-    resolution: {integrity: sha512-EvWsWwZtD8HCLI9aXHoNY4xajHpUm6p24G8G4MrARvVTHr8Wa044gAqC50gsgKYUeACzG70JbBwXlnFX9TtuHg==}
+  '@tryghost/logging@6.1.0':
+    resolution: {integrity: sha512-bvlzwfLMDT7mHLPMN2q14EDwgwFb8BZxcBV1m6BJrI7uc47/G4P159DNMfhQ0dN7YLVDrnuyy3BXsNRj89PVoA==}
 
-  '@tryghost/metrics@3.7.7':
-    resolution: {integrity: sha512-M/nFa+N4kuOamsIMFRODhCdFwIz48eO8xzEDJIjx5yC7V1mCltD/Hf5RlUPom2Rx/PMMfVa3OEt/yhY/6yCT1Q==}
+  '@tryghost/metrics@3.8.0':
+    resolution: {integrity: sha512-QORjylKYizLDMZXn3xQJxWp8NpmQOSUp9np6ik85ihK8N0Ymt4vHMwDO/OuZkdtxRfJw7da7SzozYaBIczXYtA==}
 
   '@tryghost/mg-clean-html@0.12.7':
     resolution: {integrity: sha512-J1D6NIOtWSDdzDLVQ5M+jcHJsFw7iKx3mz/QIywzDujr6a4WImhyQVRszEuTVumLgK511S1K0JEi5t/9NfDV7w==}
@@ -8953,8 +8953,8 @@ packages:
   '@tryghost/pretty-stream@2.3.22':
     resolution: {integrity: sha512-UGXOdUVxE/+fs+tsYPVjizJDLBq2oQfKuwZuk6elecBMWqP0gzuRX3Rsc7NOJaFPSb28lEojHLto1PhnTXivDA==}
 
-  '@tryghost/prometheus-metrics@5.0.11':
-    resolution: {integrity: sha512-sjPra3JlehwUWyQ4uDsRsBKxOuEG+VXC8B0JUr+H3YpTkK57gXn+xkyc40BBhueGubAVLzYU1mfIHQ9+rq7Usw==}
+  '@tryghost/prometheus-metrics@5.0.12':
+    resolution: {integrity: sha512-qi75M8jBRkJpiD8LtSN7OUHdCzvWmCut5Hqqy3F77VmL5p1Pjxh8Pa2rGoHVS7W7oDFr7++2yyyZ3iUSrtnJ0g==}
     peerDependencies:
       express: 4.22.3
     peerDependenciesMeta:
@@ -8964,8 +8964,8 @@ packages:
   '@tryghost/promise@2.4.0':
     resolution: {integrity: sha512-cxWO4chr3siVynnUJPXZcetiWlvDxPvtSiB5Ah8p7dF/TLo2sBZ473e2cWElxNjucW3UzLX6StzJRGagRNdTew==}
 
-  '@tryghost/referrer-parser@0.1.26':
-    resolution: {integrity: sha512-GKczqlCmFSjD21bdpMoGqzYNLu2gVp/8TMtO46c5dle+iuPPe6Ku8QPAVWbu7Vd7z2qU8PPYCQa9KFWKkRFw+g==}
+  '@tryghost/referrer-parser@0.1.27':
+    resolution: {integrity: sha512-BffB5UBOBf7vTNUIOo5deR3YUTQA+8WuYcazj3npP0cIjb8KluSfb+WkaknXotEyfILaRU8ryPff/tgRqTheEw==}
     engines: {node: '>=16.0.0'}
 
   '@tryghost/request@4.1.0':
@@ -8978,8 +8978,8 @@ packages:
   '@tryghost/security@4.0.4':
     resolution: {integrity: sha512-CDlc0BYNjsOPhDufU8JjRk6FWMf5alId1qS3ed7tYmixfIBI84rLVWeoRUT52omJ6Z3j2gh4hxy/GT1IU9rrQg==}
 
-  '@tryghost/social-urls@0.1.67':
-    resolution: {integrity: sha512-dFx1vAZ1bA6r8XQb8F7uIlNCBnGRZTsncAmBlQ4tgUVQB60AZTEeq9alOc+M9pdSKX9fqrdAfh2bTOw56JEgYg==}
+  '@tryghost/social-urls@0.1.68':
+    resolution: {integrity: sha512-ZNsXMrVIJfB4pg8SQCNeZtWA9nNkjY5aATzsCBWN1FwoPPDzTsndS6L1EYSVKA+WuBdaK22IIUrVOaJBTt8nPA==}
 
   '@tryghost/string@0.3.9':
     resolution: {integrity: sha512-4ngm0f7lvnPgE6mmCavyeHeFxIwkZIhT+LXT/7Tccp9VT3IbLKwigEirI8ccjJltWc0x7ADmb55x3aDo2x3CLA==}
@@ -20861,7 +20861,7 @@ snapshots:
       '@vitest/snapshot': 4.1.12
       '@vitest/utils': 4.1.12
 
-  '@tryghost/logging@6.0.7(supports-color@10.2.2)':
+  '@tryghost/logging@6.1.0(supports-color@10.2.2)':
     dependencies:
       '@tryghost/bunyan-rotating-filestream': 0.0.29
       '@tryghost/http-stream': 2.4.1(supports-color@10.2.2)
@@ -20873,7 +20873,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/metrics@3.7.7(supports-color@10.2.2)':
+  '@tryghost/metrics@3.8.0(supports-color@10.2.2)':
     dependencies:
       '@tryghost/elasticsearch': 6.1.0(supports-color@10.2.2)
       '@tryghost/pretty-stream': 2.3.22
@@ -20959,10 +20959,10 @@ snapshots:
       lodash: 4.18.1
       prettyjson: 1.2.5
 
-  '@tryghost/prometheus-metrics@5.0.11(express@4.22.3(supports-color@10.2.2))(supports-color@10.2.2)':
+  '@tryghost/prometheus-metrics@5.0.12(express@4.22.3(supports-color@10.2.2))(supports-color@10.2.2)':
     dependencies:
       '@tryghost/debug': 2.3.23(supports-color@10.2.2)
-      '@tryghost/logging': 6.0.7(supports-color@10.2.2)
+      '@tryghost/logging': 6.1.0(supports-color@10.2.2)
       prom-client: 15.1.3
       stoppable: 1.1.0
     optionalDependencies:
@@ -20972,7 +20972,7 @@ snapshots:
 
   '@tryghost/promise@2.4.0': {}
 
-  '@tryghost/referrer-parser@0.1.26': {}
+  '@tryghost/referrer-parser@0.1.27': {}
 
   '@tryghost/request@4.1.0':
     dependencies:
@@ -20993,7 +20993,7 @@ snapshots:
       '@tryghost/string': 0.3.9
       bcryptjs: 3.0.3
 
-  '@tryghost/social-urls@0.1.67': {}
+  '@tryghost/social-urls@0.1.68': {}
 
   '@tryghost/string@0.3.9':
     dependencies:
@@ -25385,7 +25385,7 @@ snapshots:
     dependencies:
       '@tryghost/database-info': 2.4.0
       '@tryghost/errors': 3.4.8
-      '@tryghost/logging': 6.0.7(supports-color@10.2.2)
+      '@tryghost/logging': 6.1.0(supports-color@10.2.2)
       commander: 15.1.0
       debug: 4.4.3(supports-color@10.2.2)
       knex: 3.3.0(better-sqlite3@13.1.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
