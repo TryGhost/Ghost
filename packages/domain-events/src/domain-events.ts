@@ -1,123 +1,161 @@
-const EventEmitter = require('events').EventEmitter;
-const logging = require('@tryghost/logging');
+import { EventEmitter } from 'node:events';
+import logging from '@tryghost/logging';
 
 /**
- * @template T
- * @typedef {import('./').ConstructorOf<T>} ConstructorOf<T>
+ * A class that can be constructed to produce `T`. The arguments are `never[]`
+ * so that any constructor is accepted, whatever it takes.
  */
+export type ConstructorOf<T> = new (...args: never[]) => T;
 
 /**
- * @template Data
- * @typedef {object} IEvent
- * @prop {Date} timestamp
- * @prop {Data} data
+ * Shape every domain event is expected to follow.
  */
+export interface IEvent<Data = unknown> {
+  timestamp: Date;
+  data: Data;
+}
 
-class DomainEvents {
+/**
+ * A simple in-process event bus for domain events. Events are keyed by their
+ * class name, so subscribers pass the event class and dispatchers pass an
+ * instance of it.
+ *
+ * At runtime this is a class with only static members. It is typed as a
+ * singleton object, and the package exports this interface under the same
+ * name as the bus, so that both `DomainEvents` and `typeof DomainEvents`
+ * describe it, e.g. `Pick<DomainEvents, 'dispatch' | 'subscribe'>`.
+ */
+export interface DomainEventsApi {
   /**
-   * @private
-   * @type EventEmitter
+   * The underlying emitter. Not part of the supported API; it is exposed so
+   * tests can remove listeners between cases.
    */
-  static ee = new EventEmitter();
-
-  /**
-   * @template Data
-   * @template {IEvent<Data>} EventClass
-   * @param {ConstructorOf<EventClass>} Event
-   * @param {(event: EventClass) => Promise<void> | void} handler
-   *
-   * @returns {void}
-   */
-  static subscribe(Event, handler) {
-    DomainEvents.ee.on(Event.name, async (event) => {
-      try {
-        await handler(event);
-      } catch (e) {
-        logging.error('Unhandled error in event handler for event: ' + Event.name);
-        logging.error(e);
-      }
-      if (this.#trackingEnabled) {
-        this.#onProcessed();
-      } else {
-        // Tracking is disabled outside tests.
-      }
-    });
-  }
+  readonly ee: EventEmitter;
 
   /**
-   * @template Data
-   * @param {IEvent<Data>} event
-   * @returns {void}
+   * Subscribe to an event class. Errors thrown by the handler are logged,
+   * not rethrown.
    */
-  static dispatch(event) {
-    DomainEvents.dispatchRaw(event.constructor.name, event);
-  }
+  subscribe<EventClass extends IEvent<unknown>>(
+    Event: ConstructorOf<EventClass>,
+    handler: (event: EventClass) => Promise<void> | void,
+  ): void;
 
   /**
-   * Dispatch an event in case you don't have an instance of the event class, but you do have the event name and event data.
-   * @template Data
-   * @param {string} name
-   * @param {Data} data
-   * @returns {void}
+   * Dispatch an event instance to all subscribers of its class.
    */
-  static dispatchRaw(name, data) {
-    if (this.#trackingEnabled) {
-      this.#dispatchCount += DomainEvents.ee.listenerCount(name);
-    } else {
-      // Tracking is disabled outside tests.
-    }
-    DomainEvents.ee.emit(name, data);
-  }
-
-  // Methods and properties below are only for testing purposes
-  static #awaitQueue = [];
-  static #dispatchCount = 0;
-  static #processedCount = 0;
-  static #trackingEnabled = process.env.NODE_ENV?.startsWith('test');
+  dispatch<Data>(event: IEvent<Data>): void;
 
   /**
-   * Waits for all the events in the queue to be dispatched and fully processed (async).
+   * Dispatch an event when you have its name and data, but no instance of
+   * the event class.
    */
-  static allSettled() {
-    return new Promise((resolve) => {
-      if (this.#processedCount >= this.#dispatchCount) {
-        // Resolve immediately if there are no events in the queue
-        resolve();
-        return;
-      } else {
-        this.#awaitQueue.push({ resolve });
-      }
-    });
-  }
+  dispatchRaw<Data>(name: string, data: Data): void;
 
-  static #onProcessed() {
-    this.#processedCount += 1;
-    if (this.#processedCount >= this.#dispatchCount) {
-      for (const item of this.#awaitQueue) {
-        item.resolve();
-      }
-      this.#awaitQueue = [];
-    } else {
-      // Wait for the remaining tracked listeners.
-    }
-  }
+  /**
+   * Wait until every tracked dispatched event has been fully processed.
+   * Tracking is only enabled when `NODE_ENV` starts with `test`.
+   */
+  allSettled(): Promise<void>;
 
   /**
    * Enable or disable dispatch/processed tracking. Test-only.
-   * @param {boolean} enabled
    */
-  static setTrackingEnabledForTest(enabled) {
-    this.#trackingEnabled = enabled;
-  }
+  setTrackingEnabledForTest(enabled: boolean): void;
 
   /**
    * Clear the await queue and reset dispatch/processed counts. Test-only.
    */
-  static resetTrackingStateForTest() {
-    this.#awaitQueue = [];
-    this.#dispatchCount = 0;
-    this.#processedCount = 0;
-  }
+  resetTrackingStateForTest(): void;
 }
 
-module.exports = DomainEvents;
+interface AwaitQueueItem {
+  resolve: () => void;
+}
+
+// The event bus is one per process. Ghost's test runner can load this module
+// twice, once through `require()` and once through `import`, and two copies
+// would each keep their own subscribers. Registering the bus under a global
+// symbol makes every copy of the module hand out the same one.
+const sharedKey: unique symbol = Symbol.for('@tryghost/domain-events');
+const shared: typeof globalThis & { [sharedKey]?: DomainEventsApi } = globalThis;
+
+function createDomainEvents(): DomainEventsApi {
+  return class DomainEvents {
+    static ee = new EventEmitter();
+
+    static subscribe<EventClass extends IEvent<unknown>>(
+      Event: ConstructorOf<EventClass>,
+      handler: (event: EventClass) => Promise<void> | void,
+    ): void {
+      DomainEvents.ee.on(Event.name, async (event: EventClass) => {
+        try {
+          await handler(event);
+        } catch (e) {
+          logging.error('Unhandled error in event handler for event: ' + Event.name);
+          logging.error(e);
+        }
+        if (this.#trackingEnabled) {
+          this.#onProcessed();
+        } else {
+          // Tracking is disabled outside tests.
+        }
+      });
+    }
+
+    static dispatch<Data>(event: IEvent<Data>): void {
+      DomainEvents.dispatchRaw(event.constructor.name, event);
+    }
+
+    static dispatchRaw<Data>(name: string, data: Data): void {
+      if (this.#trackingEnabled) {
+        this.#dispatchCount += DomainEvents.ee.listenerCount(name);
+      } else {
+        // Tracking is disabled outside tests.
+      }
+      DomainEvents.ee.emit(name, data);
+    }
+
+    // Methods and properties below are only for testing purposes
+    static #awaitQueue: AwaitQueueItem[] = [];
+    static #dispatchCount = 0;
+    static #processedCount = 0;
+    static #trackingEnabled = process.env.NODE_ENV?.startsWith('test') ?? false;
+
+    static allSettled(): Promise<void> {
+      return new Promise((resolve) => {
+        if (this.#processedCount >= this.#dispatchCount) {
+          // Resolve immediately if there are no events in the queue
+          resolve();
+          return;
+        } else {
+          this.#awaitQueue.push({ resolve });
+        }
+      });
+    }
+
+    static #onProcessed(): void {
+      this.#processedCount += 1;
+      if (this.#processedCount >= this.#dispatchCount) {
+        for (const item of this.#awaitQueue) {
+          item.resolve();
+        }
+        this.#awaitQueue = [];
+      } else {
+        // Wait for the remaining tracked listeners.
+      }
+    }
+
+    static setTrackingEnabledForTest(enabled: boolean): void {
+      this.#trackingEnabled = enabled;
+    }
+
+    static resetTrackingStateForTest(): void {
+      this.#awaitQueue = [];
+      this.#dispatchCount = 0;
+      this.#processedCount = 0;
+    }
+  };
+}
+
+export const domainEvents: DomainEventsApi = (shared[sharedKey] ??= createDomainEvents());

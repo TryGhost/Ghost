@@ -1,20 +1,14 @@
 import { nodeLibConfig } from '@internal/cfg-eslint';
 
-// Interim state between the file renames and the TypeScript conversion: the
-// sources are still CommonJS, and the hand-written declaration files in src/
-// are not linted until the conversion replaces them. The filename rule
-// crashes on a `module.exports = <class>` file under ESLint 9, so it is off
-// until the sources are ESM.
-const legacyRules = {
-  'ghost/filenames/match-regex': 'off',
-  '@typescript-eslint/no-require-imports': 'off',
-};
-
 export default nodeLibConfig({
-  commonjs: true,
-  srcGlobs: ['index.js', 'src/domain-events.ts'],
-  testGlobs: ['test/**/*.ts'],
-  extraSrcRules: legacyRules,
-  // The test still declares `assert` and `sinon` with require().
-  extraTestRules: { ...legacyRules, 'no-redeclare': 'off' },
+  extraBlocks: [
+    {
+      // The entry point declares the event bus and its type under one name,
+      // which is what lets `DomainEvents` be used as a value and as a type.
+      // ESLint reads that as a redeclaration. TypeScript still rejects real
+      // ones, so the rule is off for this one file only.
+      files: ['src/index.ts'],
+      rules: { 'no-redeclare': 'off' },
+    },
+  ],
 });

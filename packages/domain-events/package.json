@@ -10,16 +10,24 @@
     "directory": "packages/domain-events"
   },
   "files": [
-    "index.js",
-    "index.d.ts",
-    "src"
+    "build"
   ],
-  "main": "index.js",
-  "types": "index.d.ts",
+  "type": "module",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    }
+  },
   "scripts": {
+    "build": "tsc",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
+    "test:types": "tsc --noEmit -p test/tsconfig.json",
     "test": "pnpm run '/^test:/'",
-    "lint:code": "eslint index.js src/domain-events.ts --cache",
+    "lint:code": "eslint src/ --cache",
     "lint:test": "eslint test/ --cache",
     "lint": "pnpm run '/^lint:/'"
   },
@@ -28,15 +36,27 @@
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-typescript": "workspace:*",
     "@internal/cfg-vitest": "workspace:*",
     "@types/node": "catalog:",
+    "@types/sinon": "catalog:",
+    "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
     "sinon": "catalog:",
+    "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "ghostPackage": {
-    "goldenPath": "migration",
-    "reason": "Imported from TryGhost/framework with history preserved; still legacy CommonJS JavaScript with hand-written type declarations, awaiting conversion to the TypeScript ESM golden path."
+    "goldenPath": "compliant"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/build"
+        ]
+      }
+    }
   }
 }
