@@ -228,8 +228,8 @@ catalogs:
       specifier: 9.39.5
       version: 9.39.5
     '@extractus/oembed-extractor':
-      specifier: 6.0.0
-      version: 6.0.0
+      specifier: 6.0.1
+      version: 6.0.1
     '@faker-js/faker':
       specifier: 10.6.0
       version: 10.6.0
@@ -2210,7 +2210,7 @@ importers:
         version: 4.2.0
       '@extractus/oembed-extractor':
         specifier: 'catalog:'
-        version: 6.0.0
+        version: 6.0.1
       '@faker-js/faker':
         specifier: 'catalog:'
         version: 10.6.0
@@ -5672,8 +5672,8 @@ packages:
       '@noble/hashes':
         optional: true
 
-  '@extractus/oembed-extractor@6.0.0':
-    resolution: {integrity: sha512-CQz0BwCZ6cv9KqSVLacOpPT5h0FgkWFO3krddAjv2FOgkDiVSNK2iHjESXzqdu9ttHZ0dmI6KtuY80ivtzXucA==}
+  '@extractus/oembed-extractor@6.0.1':
+    resolution: {integrity: sha512-utkNk85MtdHWq4P29dh/48M8R2DTs5xpL1jqBFD6wWBrr3iDWt2r0qzadv7erdiw/wpqUgZ6BTabdwAZt81Afw==}
 
   '@faker-js/faker@10.6.0':
     resolution: {integrity: sha512-3RQHgEtvL1Frl/d1cSreo7qhJ3Gk1OdNUai/CtZ8G+wYeRQnJih3s9xJ9/kgYekPQRdwgh0HXRPqMlzWGwivIQ==}
@@ -10866,6 +10866,10 @@ packages:
   cssom@0.5.0:
     resolution: {integrity: sha512-iKuQcq+NdHqlAcwUY0o/HL69XQrUaQdMjmStJ8JFmUaiiQErlhrmuigkg/CU4E2J0IyUKUrMAgl36TvN67MqTw==}
 
+  cssomnom@0.1.12:
+    resolution: {integrity: sha512-nlsLjRxRN2RPomw3r+e+oD3KQBbEbKK0+oBUATbodf5N38FlOMg/5nqV0CdClNvpVsjFLikD63H6dgKTgeuuUg==}
+    engines: {node: '>=20.0.0'}
+
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
 
@@ -13035,6 +13039,15 @@ packages:
 
   linkedom@0.18.13:
     resolution: {integrity: sha512-ES/o9qotMpzpN2MHs+Iq/JcVoOj8Fa5wiQYrTdFpvAnwXL0g66XHHUc9WUMk6nAlBtGsFQ24ne+SYnvnaQ2FSw==}
+    engines: {node: '>=16'}
+    peerDependencies:
+      canvas: '>= 2'
+    peerDependenciesMeta:
+      canvas:
+        optional: true
+
+  linkedom@0.18.15:
+    resolution: {integrity: sha512-o0w7eD/SvoCao+pUi6dzocCLuMR11g4Tv/et0W2OUzwWmUcewntSzyl+Ua/K+0yKym0Y/Mav3nFAaI5Av5jvZg==}
     engines: {node: '>=16'}
     peerDependencies:
       canvas: '>= 2'
@@ -17880,9 +17893,9 @@ snapshots:
     optionalDependencies:
       '@noble/hashes': 1.8.0
 
-  '@extractus/oembed-extractor@6.0.0':
+  '@extractus/oembed-extractor@6.0.1':
     dependencies:
-      linkedom: 0.18.13
+      linkedom: 0.18.15
     transitivePeerDependencies:
       - canvas
 
@@ -23013,6 +23026,8 @@ snapshots:
 
   cssom@0.5.0: {}
 
+  cssomnom@0.1.12: {}
+
   csstype@3.2.3: {}
 
   d3-array@3.2.4:
@@ -25559,6 +25574,14 @@ snapshots:
     dependencies:
       css-select: 7.0.0
       cssom: 0.5.0
+      html-escaper: 3.0.3
+      htmlparser2: 10.1.0
+      uhyphen: 0.2.0
+
+  linkedom@0.18.15:
+    dependencies:
+      css-select: 7.0.0
+      cssomnom: 0.1.12
       html-escaper: 3.0.3
       htmlparser2: 10.1.0
       uhyphen: 0.2.0
