@@ -4,6 +4,7 @@ import path from 'node:path';
 
 const MIGRATIONS_PATH = 'ghost/core/server/data/migrations/versions';
 const VERSIONS_DIR = '/migrations/versions/';
+const INIT_PATH = 'ghost/core/server/data/migrations/init';
 const PACKAGE_JSON_PATH = 'ghost/package.json';
 
 interface MinorVersion {
@@ -72,6 +73,22 @@ function getSafeVersion(): SafeVersion {
   };
 }
 
+function recordedName(file: string): string {
+  return file.replace(/\.([cm]?)ts$/, '.$1js');
+}
+
+// Parses `git diff --name-status -z`, whose paths are never quoted.
+function parseNameStatus(nameStatus: string) {
+  const fields = nameStatus.split('\0').filter(Boolean);
+  const entries: [status: string, from: string, to?: string][] = [];
+  while (fields.length > 0) {
+    const status = fields.shift()!;
+    const from = fields.shift()!;
+    entries.push(/^[RC]/.test(status) ? [status, from, fields.shift()] : [status, from]);
+  }
+  return entries;
+}
+
 /**
  * Migrations added by a `git diff --name-status` listing. A rename counts as
  * an add unless it keeps its path within the versions directory, so moving
@@ -82,16 +99,12 @@ function getSafeVersion(): SafeVersion {
  * files up: a rename, a delete plus an add, or a rename across two similar files.
  */
 function addedMigrations(nameStatus: string): string[] {
-  const recordedName = (file: string) => file.replace(/\.([cm]?)ts$/, '.$1js');
   const versionsRelative = (file: string) => {
     const index = file.indexOf(VERSIONS_DIR);
     return index === -1 ? null : file.slice(index + VERSIONS_DIR.length);
   };
 
-  const entries = nameStatus
-    .split('\n')
-    .filter(Boolean)
-    .map((line) => line.split('\t') as [status: string, from: string, to?: string]);
+  const entries = parseNameStatus(nameStatus);
   const removed = new Set(
     entries
       .filter(([status]) => status === 'D' || status.startsWith('R'))
@@ -199,24 +212,9 @@ function checkOrphanedFolders(safeVersion: SafeVersion): string | null {
 function checkStalePlacements(
   safeVersion: SafeVersion,
   lastPublishedMinor: PublishedVersion | null,
-  baseSha: string,
-  compareSha: string,
+  nameStatus: string,
 ): string | null {
-  let mergeBaseSha;
-  try {
-    mergeBaseSha = runGit(['merge-base', baseSha, compareSha]);
-  } catch (error) {
-    throw new Error(
-      `Unable to determine merge-base for ${baseSha} and ${compareSha}. ` +
-        `Ensure the base branch history is available in the checkout.\n${(error as Error).message}`,
-    );
-  }
-
-  // No pathspec: rename detection needs both sides in the diff, so a moved
-  // migrations directory reads as renames rather than adds.
-  const newFiles = addedMigrations(
-    runGit(['diff', '--name-status', '--find-renames', mergeBaseSha, compareSha]),
-  );
+  const newFiles = addedMigrations(nameStatus);
 
   if (newFiles.length === 0) {
     return null;
@@ -264,8 +262,63 @@ function checkStalePlacements(
 }
 
 /**
+ * Check 3: Init scripts must not be added, removed or renamed. A new one can
+ * mark pending versioned migrations as applied on upgrade without running
+ * them, and test DB builders skip the existing two by position. Editing a
+ * script in place, or converting it between .js and .ts, is fine.
+ */
+export function checkInitScripts(nameStatus: string): string | null {
+  const before = new Set<string>();
+  const after = new Set<string>();
+  const addInit = (set: Set<string>, file?: string) => {
+    if (file?.startsWith(INIT_PATH + '/')) {
+      set.add(recordedName(file));
+    }
+  };
+
+  for (const [status, from, to] of parseNameStatus(nameStatus)) {
+    if (status === 'D' || status.startsWith('R')) {
+      addInit(before, from);
+    }
+    addInit(after, status === 'A' ? from : status.startsWith('R') ? to : undefined);
+  }
+
+  const changed = [
+    ...[...before].filter((file) => !after.has(file)).map((file) => `  removed ${file}`),
+    ...[...after].filter((file) => !before.has(file)).map((file) => `  added ${file}`),
+  ];
+  if (changed.length === 0) {
+    return null;
+  }
+  return (
+    `Init scripts added, removed or renamed:\n${changed.join('\n')}\n\n` +
+    'On upgrade, knex-migrator runs a new init script and then marks every pending migration as applied ' +
+    'without running it. Put schema changes in a versioned migration instead.'
+  );
+}
+
+/**
+ * The PR's changes as a `git diff --name-status` listing against its merge-base.
+ */
+function prNameStatus(baseSha: string, compareSha: string): string {
+  let mergeBaseSha;
+  try {
+    mergeBaseSha = runGit(['merge-base', baseSha, compareSha]);
+  } catch (error) {
+    throw new Error(
+      `Unable to determine merge-base for ${baseSha} and ${compareSha}. ` +
+        `Ensure the base branch history is available in the checkout.\n${(error as Error).message}`,
+    );
+  }
+
+  // No pathspec: rename detection needs both sides in the diff, so a moved
+  // migrations directory reads as renames rather than adds.
+  return runGit(['diff', '--name-status', '-z', '--find-renames', mergeBaseSha, compareSha]);
+}
+
+/**
  * Entry point. Runs the orphaned-folder check unconditionally and the
- * stale-placement check when PR_BASE_SHA / PR_COMPARE_SHA env vars are
+ * stale-placement and init checks when PR_BASE_SHA / PR_COMPARE_SHA env vars are
  * present. Aggregates failures into a single thrown error so the CI job
  * reports every problem at once.
  */
@@ -296,12 +349,17 @@ function main() {
   const compareSha = process.env.PR_COMPARE_SHA || process.env.GITHUB_SHA;
 
   if (baseSha && compareSha) {
-    const staleError = checkStalePlacements(safeVersion, lastPublishedMinor, baseSha, compareSha);
+    const nameStatus = prNameStatus(baseSha, compareSha);
+    const staleError = checkStalePlacements(safeVersion, lastPublishedMinor, nameStatus);
     if (staleError) {
       errors.push(staleError);
     }
+    const initError = checkInitScripts(nameStatus);
+    if (initError) {
+      errors.push(initError);
+    }
   } else {
-    console.log('No PR context (PR_BASE_SHA not set). Skipping stale placement check.');
+    console.log('No PR context (PR_BASE_SHA not set). Skipping stale placement and init checks.');
   }
 
   if (errors.length > 0) {
