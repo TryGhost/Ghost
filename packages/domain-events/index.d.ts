@@ -1,3 +1,3 @@
-import DomainEvents = require('./lib/DomainEvents');
+import DomainEvents = require('./src/DomainEvents');
 
 export = DomainEvents;
