@@ -1,12 +1,38 @@
-const _ = require('lodash');
-const logging = require('@tryghost/logging');
+import logging from '@tryghost/logging';
+import _ from 'lodash';
+import moment from 'moment';
 
 const models = require('../../../models');
 const baseUtils = require('../../../models/base/utils');
 
-const moment = require('moment');
+type FixtureEntry = Record<string, any>;
 
-class FixtureManager {
+export interface ModelFixture {
+  name: string;
+  entries: FixtureEntry[];
+}
+
+type Match = string | string[];
+
+export interface RelationFixture {
+  from: { model: string; Model?: string; match: Match; relation: string };
+  to: { model: string; match: Match };
+  // Keyed by `from` match value; each entry maps `to` match keys to values, or lists `to` values.
+  entries: Record<string, Record<string, string | string[]> | string[]>;
+}
+
+export interface Fixtures {
+  models: ModelFixture[];
+  relations: RelationFixture[];
+}
+
+type PlaceholderMap = Record<string, (models: any) => string>;
+
+export class FixtureManager {
+  private _fixtures: Fixtures;
+  placeholderMap: PlaceholderMap;
+  hasProcessedFixtures: boolean;
+
   /**
    * Create a new FixtureManager instance
    *
@@ -23,7 +49,7 @@ class FixtureManager {
    *     __OWNER_USER_ID__: (models) => models.User.generateId()
    * })
    */
-  constructor(fixtures, placeholderMap = {}) {
+  constructor(fixtures: Fixtures, placeholderMap: PlaceholderMap = {}) {
     this._fixtures = fixtures;
     this.placeholderMap = placeholderMap;
     this.hasProcessedFixtures = false;
@@ -33,7 +59,7 @@ class FixtureManager {
    * Lazily get the fixtures, processing placeholders on first access
    * @returns {Object}
    */
-  get fixtures() {
+  get fixtures(): Fixtures {
     if (!this.hasProcessedFixtures) {
       this._fixtures = this.processFixtures(this._fixtures, this.placeholderMap);
       this.hasProcessedFixtures = true;
@@ -54,29 +80,29 @@ class FixtureManager {
    * @param {String|Array} [value]
    * @returns {Function} matching function
    */
-  static matchFunc(match, key, value) {
+  static matchFunc(match: Match, key: unknown, value?: unknown) {
     if (Array.isArray(match)) {
-      return function (item) {
+      return function (item: any) {
         let valueTest = true;
 
         if (Array.isArray(value)) {
-          valueTest = value.indexOf(item.get(match[1])) > -1;
+          valueTest = value.indexOf(item.get(match[1]!)) > -1;
         } else if (value !== 'all') {
-          valueTest = item.get(match[1]) === value;
+          valueTest = item.get(match[1]!) === value;
         }
 
-        return item.get(match[0]) === key && valueTest;
+        return item.get(match[0]!) === key && valueTest;
       };
     }
 
-    return function (item) {
+    return function (item: any) {
       key = key === 0 && value ? value : key;
       return item.get(match) === key;
     };
   }
 
-  static matchObj(match, item) {
-    const matchedObj = {};
+  static matchObj(match: Match, item: any) {
+    const matchedObj: Record<string, unknown> = {};
 
     if (Array.isArray(match)) {
       match.forEach((matchProp) => {
@@ -97,7 +123,7 @@ class FixtureManager {
    * @param {object} options
    * @returns
    */
-  async addAllFixtures(options) {
+  async addAllFixtures(options?: Record<string, unknown>) {
     const ownerUserId = this.findOwnerUserId();
 
     const localOptions = _.merge(
@@ -116,13 +142,13 @@ class FixtureManager {
     );
 
     const roleModel = this.fixtures.models.find((m) => m.name === 'Role');
-    await this.addFixturesForModel(roleModel, localOptions);
+    await this.addFixturesForModel(roleModel!, localOptions);
 
     const userModel = this.fixtures.models.find((m) => m.name === 'User');
-    await this.addFixturesForModel(userModel, localOptions);
+    await this.addFixturesForModel(userModel!, localOptions);
 
     const userRolesRelation = this.fixtures.relations.find((r) => r.from.relation === 'roles');
-    await this.addFixturesForRelation(userRolesRelation, localOptions);
+    await this.addFixturesForRelation(userRolesRelation!, localOptions);
 
     for (const model of this.fixtures.models.filter((m) => !['User', 'Role'].includes(m.name))) {
       logging.info('Model: ' + model.name);
@@ -146,7 +172,7 @@ class FixtureManager {
    * @param {string} modelName
    * @returns {Object} model fixture
    */
-  findModelFixture(modelName) {
+  findModelFixture(modelName: string) {
     return this.fixtures.models.find((modelFixture) => {
       return modelFixture.name === modelName;
     });
@@ -159,8 +185,8 @@ class FixtureManager {
    * @param {String|Object|Function} matchExpr
    * @returns {Object} model fixture entry
    */
-  findModelFixtureEntry(modelName, matchExpr) {
-    return _.find(this.findModelFixture(modelName).entries, matchExpr);
+  findModelFixtureEntry(modelName: string, matchExpr?: any) {
+    return _.find(this.findModelFixture(modelName)!.entries, matchExpr);
   }
 
   /**
@@ -170,8 +196,8 @@ class FixtureManager {
    * @param {String|Object|Function} matchExpr
    * @returns {Object} model fixture
    */
-  findModelFixtures(modelName, matchExpr) {
-    const foundModel = _.cloneDeep(this.findModelFixture(modelName));
+  findModelFixtures(modelName: string, matchExpr?: any) {
+    const foundModel = _.cloneDeep(this.findModelFixture(modelName)!);
     foundModel.entries = _.filter(foundModel.entries, matchExpr);
     return foundModel;
   }
@@ -184,7 +210,7 @@ class FixtureManager {
    * @param {string} to
    * @returns {Object} relation fixture
    */
-  findRelationFixture(from, to) {
+  findRelationFixture(from: string, to: string) {
     return this.fixtures.relations.find((relation) => {
       return relation.from.model === from && relation.to.model === to;
     });
@@ -196,9 +222,11 @@ class FixtureManager {
    * @returns {string}
    */
   findOwnerUserId() {
-    const relation = this.findRelationFixture('User', 'Role');
+    const relation = this.findRelationFixture('User', 'Role')!;
 
-    return Object.keys(relation.entries).find((key) => relation.entries[key].includes('Owner'));
+    return Object.keys(relation.entries).find((key) =>
+      (relation.entries[key] as string[]).includes('Owner'),
+    );
   }
 
   /******************************************************
@@ -218,28 +246,28 @@ class FixtureManager {
    * the fixtures.
    * @returns {Object}
    */
-  processFixtures(fixtures, placeholderMap) {
-    const cache = new Map();
+  processFixtures(fixtures: Fixtures, placeholderMap: PlaceholderMap): Fixtures {
+    const cache = new Map<string, string>();
 
-    const processString = (str, replacements) => {
+    const processString = (str: string, replacements: PlaceholderMap) => {
       let result = str;
 
       for (const placeholder in replacements) {
         if (result.includes(placeholder)) {
           if (!cache.has(placeholder)) {
-            cache.set(placeholder, replacements[placeholder](models));
+            cache.set(placeholder, replacements[placeholder]!(models));
           }
 
           const processedValue = cache.get(placeholder);
 
-          result = result.replaceAll(placeholder, processedValue);
+          result = result.replaceAll(placeholder, processedValue!);
         }
       }
 
       return result;
     };
 
-    const replacePlaceholders = (obj, replacements) => {
+    const replacePlaceholders = (obj: unknown, replacements: PlaceholderMap): unknown => {
       if (obj === null || obj === undefined) {
         return obj;
       }
@@ -253,14 +281,17 @@ class FixtureManager {
       }
 
       if (typeof obj === 'object') {
-        const result = {};
+        const result: Record<string, unknown> = {};
 
         for (const key in obj) {
           if (Object.hasOwn(obj, key)) {
             // Process the key itself for placeholders
             const newKey = processString(key, replacements);
 
-            result[newKey] = replacePlaceholders(obj[key], replacements);
+            result[newKey] = replacePlaceholders(
+              (obj as Record<string, unknown>)[key],
+              replacements,
+            );
           }
         }
 
@@ -270,7 +301,7 @@ class FixtureManager {
       return obj;
     };
 
-    return replacePlaceholders(fixtures, placeholderMap);
+    return replacePlaceholders(fixtures, placeholderMap) as Fixtures;
   }
 
   /******************************************************
@@ -286,13 +317,13 @@ class FixtureManager {
    * @param {{from, to, entries}} relation
    * @returns {Promise<*>}
    */
-  fetchRelationData(relation, options) {
+  fetchRelationData(relation: RelationFixture, options?: Record<string, unknown>) {
     const fromOptions = _.extend({}, options, { withRelated: [relation.from.relation] });
 
     const fromRelations = models[relation.from.model].findAll(fromOptions);
     const toRelations = models[relation.to.model].findAll(options);
 
-    return Promise.all([fromRelations, toRelations]).then(([from, to]) => {
+    return Promise.all([fromRelations, toRelations]).then(([from, to]): { from: any; to: any } => {
       return {
         from: from,
         to: to,
@@ -308,7 +339,7 @@ class FixtureManager {
    * @param {{name, entries}} modelFixture
    * @returns {Promise<any>}
    */
-  async addFixturesForModel(modelFixture, options = {}) {
+  async addFixturesForModel(modelFixture: ModelFixture, options: Record<string, unknown> = {}) {
     // Clone the fixtures as they get changed in this function.
     // The initial blog posts will be added a `published_at` property, which
     // would change the fixturesHash.
@@ -324,9 +355,9 @@ class FixtureManager {
       });
     }
 
-    const results = [];
+    const results: unknown[] = [];
     for (const entry of modelFixture.entries) {
-      let data = {};
+      let data: FixtureEntry = {};
 
       // CASE: if id is specified, only query by id
       if (entry.id) {
@@ -358,8 +389,11 @@ class FixtureManager {
    * @param {{from, to, entries}} relationFixture
    * @returns {Promise<any>}
    */
-  async addFixturesForRelation(relationFixture, options) {
-    const ops = [];
+  async addFixturesForRelation(
+    relationFixture: RelationFixture,
+    options?: Record<string, unknown>,
+  ) {
+    const ops: Array<() => Promise<any>> = [];
     let max = 0;
 
     const data = await this.fetchRelationData(relationFixture, options);
@@ -382,8 +416,8 @@ class FixtureManager {
         max += toItems.length;
 
         // Remove any duplicates that already exist in the collection
-        toItems = _.reject(toItems, (item) => {
-          return fromItem.related(relationFixture.from.relation).find((model) => {
+        toItems = _.reject(toItems, (item: any) => {
+          return fromItem.related(relationFixture.from.relation).find((model: any) => {
             const objectToMatch = FixtureManager.matchObj(relationFixture.to.match, item);
             return Object.keys(objectToMatch).every((keyToCheck) => {
               return model.get(keyToCheck) === objectToMatch[keyToCheck];
@@ -405,15 +439,15 @@ class FixtureManager {
       });
     });
 
-    const result = [];
+    const result: any[] = [];
     for (const op of ops) {
       result.push(await op());
     }
     return { expected: max, done: _(result).map('length').sum() };
   }
 
-  async removeFixturesForModel(modelFixture, options) {
-    const results = [];
+  async removeFixturesForModel(modelFixture: ModelFixture, options?: Record<string, unknown>) {
+    const results: unknown[] = [];
     for (const entry of modelFixture.entries) {
       const found = await models[modelFixture.name].findOne(
         entry.id ? { id: entry.id } : entry,
@@ -428,9 +462,12 @@ class FixtureManager {
     return { expected: modelFixture.entries.length, done: results.length };
   }
 
-  async removeFixturesForRelation(relationFixture, options) {
+  async removeFixturesForRelation(
+    relationFixture: RelationFixture,
+    options?: Record<string, unknown>,
+  ) {
     const data = await this.fetchRelationData(relationFixture, options);
-    const ops = [];
+    const ops: Array<() => Promise<any>> = [];
 
     _.each(relationFixture.entries, (entry, key) => {
       const fromItem = data.from.find(FixtureManager.matchFunc(relationFixture.from.match, key));
@@ -454,12 +491,10 @@ class FixtureManager {
       });
     });
 
-    const results = [];
+    const results: any[] = [];
     for (const op of ops) {
       results.push(await op());
     }
     return results;
   }
 }
-
-module.exports = FixtureManager;
