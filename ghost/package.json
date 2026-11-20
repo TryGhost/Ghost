@@ -41,7 +41,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "archive": "node scripts/pack.mjs",
+    "archive": "node scripts/pack.mts",
     "dev": "nodemon index.js",
     "build:assets": "pnpm run '/^build:assets:/'",
     "build:assets:js": "node scripts/minify-assets.mts",

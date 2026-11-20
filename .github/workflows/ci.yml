@@ -1652,7 +1652,7 @@ jobs:
           fi
 
       - name: Build production closure and server
-        # pack.mjs's `pnpm pack` only tars existing build/ output; it does not build.
+        # pack.mts's `pnpm pack` only tars existing build/ output; it does not build.
         # Build ghost's prod workspace closure (kg-*/adapters; i18n has no build
         # script) + ghost's own server output first. nx-free recursive filters.
         run: |
@@ -1677,7 +1677,7 @@ jobs:
         # dependsOn would rebuild admin/tsc/assets we already have).
         run: pnpm --filter ghost run archive
 
-      # pack.mjs emits the same tree in two layouts. The prefix-free tarball is
+      # pack.mts emits the same tree in two layouts. The prefix-free tarball is
       # the release asset; the -npm one carries the package/ prefix npm and
       # today's Ghost-CLI need, and goes away with the npm publish in 7.0.
       - name: Upload release tarball

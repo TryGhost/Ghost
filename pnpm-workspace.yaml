@@ -311,7 +311,7 @@ overrides:
   # url-utils in with it. Point that edge at the workspace package instead, so
   # content import renders cards with the same code Ghost itself renders them
   # with. The override is global rather than scoped to mg-utils so the component
-  # tarball override that pack.mjs writes under the same key replaces it.
+  # tarball override that pack.mts writes under the same key replaces it.
   '@tryghost/kg-default-cards': 'workspace:*'
   '@tryghost/mg-utils>fast-xml-parser': '^5.12.0'
   # consolidate 0.15 pulls in a bunch of legacy dependencies that ultimately
