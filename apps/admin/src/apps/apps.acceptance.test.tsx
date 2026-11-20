@@ -1422,6 +1422,483 @@ describe('Managing apps', () => {
     });
   });
 
+  describe('the app’s overlay', () => {
+    const tintClasses = (): string[] =>
+      (appsScreen.overlayTint().element() as HTMLElement).className.split(' ');
+    const showOverlay = (tint: 'dialog' | 'sheet') =>
+      callHostRaw(APP_ORIGIN, 'overlayShown', { tint });
+
+    it('covers Admin with its tint and the overlay frame while the page has a dialog open', async () => {
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      await expect.element(appsScreen.overlayFrame()).not.toBeVisible();
+
+      answer(await showOverlay('sheet'));
+
+      await expect.element(appsScreen.overlayFrame()).toBeVisible();
+      await expect.poll(() => tintClasses()).toContain('opacity-100');
+      expect(tintClasses()).toContain('bg-black/10');
+
+      answer(await callHostRaw(APP_ORIGIN, 'overlayHidden'));
+
+      await expect.poll(() => tintClasses()).toContain('opacity-0');
+      await expect.element(appsScreen.overlayFrame()).not.toBeVisible();
+    });
+
+    it('loads the overlay frame at the page’s route, and keeps it there as the app moves', async () => {
+      await fakeAppPage(installation());
+      await renderAdminApp(`${APP_ROUTE}/episodes/12`, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      await expect
+        .element(appsScreen.overlayFrame())
+        .toHaveAttribute('src', `${APP_ORIGIN}/episodes/12`);
+
+      answer(await callAppFrame(APP_ORIGIN, 'navigate', '/episodes/13'));
+
+      await expect.poll(() => currentRoute()).toBe(`${APP_ROUTE}/episodes/13`);
+      await expect
+        .element(appsScreen.overlayFrame())
+        .toHaveAttribute('src', `${APP_ORIGIN}/episodes/12`);
+    });
+
+    it('leaves the overlay to the page when the publisher presses the tint', async () => {
+      // A raw page answers nothing Admin tells it, as a page whose dialog stays open.
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      answer(await showOverlay('dialog'));
+      await expect.element(appsScreen.overlayFrame()).toBeVisible();
+
+      await userEvent.click(appsScreen.overlayTint(), { position: { x: 5, y: 5 } });
+
+      await expect.element(appsScreen.overlayFrame()).toBeVisible();
+      expect(tintClasses()).not.toContain('opacity-0');
+    });
+
+    describe('shows only the app’s safe area', () => {
+      const overlayFrame = () => appsScreen.overlayFrame().element() as HTMLIFrameElement;
+      /** What's under a point of the window, for presses there. */
+      const pressed = (x: number, y: number) => document.elementFromPoint(x, y);
+      const tint = () => appsScreen.overlayTint().element();
+
+      it('over the whole window, so the dialog lays out as Admin’s own would', async () => {
+        await fakeAppPage(installation(), { kind: 'raw' });
+        await renderAdminApp(APP_ROUTE, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
+
+        answer(await showOverlay('dialog'));
+
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        const box = overlayFrame().getBoundingClientRect();
+        expect([box.left, box.top, box.width, box.height]).toEqual([
+          0,
+          0,
+          window.innerWidth,
+          window.innerHeight,
+        ]);
+      });
+
+      it('over the app’s page, and none of Admin’s chrome, its footer included', async () => {
+        await fakeAppPage(installation(), { kind: 'raw' });
+        await renderAdminApp(APP_ROUTE, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
+
+        answer(await showOverlay('sheet'));
+
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        const pageBox = appsScreen.frame().element().getBoundingClientRect();
+        const footer = appsScreen.footer().element().getBoundingClientRect();
+        const middle = (pageBox.top + footer.top) / 2;
+        expect(pressed(pageBox.left + 2, middle)).toBe(overlayFrame());
+        expect(pressed(pageBox.right - 2, pageBox.top + 2)).toBe(overlayFrame());
+        expect(pressed(pageBox.left + 2, footer.top - 2)).toBe(overlayFrame());
+        // Admin's navigation, beside the page, and the app's footer, over its bottom.
+        expect(pressed(pageBox.left - 2, middle)).toBe(tint());
+        expect(pressed(pageBox.left + 2, footer.top + 2)).toBe(tint());
+      });
+
+      it('clear of Admin 7’s unpinned nav, whose circle reaches past the page’s padding', async () => {
+        allowUnhandledRequests();
+        await fakeAppPage(installation(), { kind: 'raw' });
+        const me = currentUserResponse();
+        me.users[0].accessibility = JSON.stringify({
+          navigation: {
+            expanded: { posts: true, members: true },
+            menu: { visible: true, mode: 'compact' },
+          },
+        });
+        await renderAdminApp(APP_ROUTE, {
+          labs: { ...labs, admin7Design: true },
+          boot: { browseMe: { response: me } },
+        });
+        await expect.element(appsScreen.frame()).toBeVisible();
+        await expect.poll(sidebarScreen.floatingState).toBe('closed');
+        const circle = document
+          .querySelector('[data-slot=floating-sidebar]')!
+          .getBoundingClientRect();
+
+        answer(await showOverlay('sheet'));
+
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        const middle = circle.top + circle.height / 2;
+        // The circle, and the space beside it where hovering opens the navigation, then past it.
+        expect(pressed(circle.right - 2, middle)).toBe(tint());
+        expect(pressed(circle.right + 12, middle)).toBe(tint());
+        expect(pressed(circle.right + 20, middle)).toBe(overlayFrame());
+
+        // Hovering below the circle, over the tint, doesn't open the navigation beneath it, also
+        // straight from the app's overlay. The navigation only opens for a pointer that comes from
+        // elsewhere, so it starts beside, then over the overlay.
+        await userEvent.hover(appsScreen.overlayTint(), { position: { x: 5, y: 5 } });
+        await userEvent.hover(appsScreen.overlayFrame(), {
+          position: { x: circle.right + 60, y: middle },
+        });
+        await userEvent.hover(appsScreen.overlayTint(), {
+          position: { x: circle.left + circle.width / 2, y: circle.bottom + 120 },
+        });
+        await new Promise((resolve) => {
+          setTimeout(resolve, 300);
+        });
+        expect(sidebarScreen.floatingState()).toBe('closed');
+      });
+
+      it('over Admin 7’s unpinned nav while it closes, as Admin’s own sheets cover it', async () => {
+        allowUnhandledRequests();
+        await fakeAppPage(installation(), { kind: 'raw' });
+        const me = currentUserResponse();
+        me.users[0].accessibility = JSON.stringify({
+          navigation: {
+            expanded: { posts: true, members: true },
+            menu: { visible: true, mode: 'compact' },
+          },
+        });
+        await renderAdminApp(APP_ROUTE, {
+          labs: { ...labs, admin7Design: true },
+          boot: { browseMe: { response: me } },
+        });
+        await expect.element(appsScreen.frame()).toBeVisible();
+        await expect.poll(sidebarScreen.floatingState).toBe('closed');
+        // Opened by hovering below its circle, as it opens over Admin's own pages.
+        const circle = document
+          .querySelector('[data-slot=floating-sidebar]')!
+          .getBoundingClientRect();
+        await userEvent.hover(appsScreen.footer());
+        await userEvent.hover(appsScreen.frame(), {
+          position: { x: 300, y: 300 },
+        });
+        await userEvent.hover(sidebarScreen.shellNav(), {
+          position: { x: circle.width / 2, y: circle.height + 120 },
+        });
+        await expect.poll(sidebarScreen.floatingState).toBe('open');
+        const panel = document
+          .querySelector('[data-slot=floating-sidebar]')!
+          .getBoundingClientRect();
+
+        answer(await showOverlay('sheet'));
+
+        // A sheet from the left shows whole over the panel, which closes beneath it, rather than
+        // the panel cutting into it.
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        const middle = panel.top + panel.height / 2;
+        expect([sidebarScreen.floatingState(), pressed(panel.right - 4, middle)]).toEqual([
+          'open',
+          overlayFrame(),
+        ]);
+        expect(pressed(panel.right + 20, middle)).toBe(overlayFrame());
+      });
+
+      it('moves the side panel’s window out of its way, also when it opens between dialogs', async () => {
+        await fakeAppPage(installation(), { kind: 'raw' });
+        await renderAdminApp(APP_ROUTE, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
+        answer(await showOverlay('dialog'));
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        answer(await callHostRaw(APP_ORIGIN, 'overlayHidden'));
+        await expect.element(appsScreen.overlayFrame()).not.toBeVisible();
+        const help = document.createElement('iframe');
+        help.srcdoc = '<p>Help</p>';
+        window.ghost!.sidePanel.open(help, { size: 'default' });
+        const window_ = () => document.querySelector('[data-side-panel-layout=window]')!;
+        await expect.poll(() => window_().getAttribute('data-side-panel')).toBe('default');
+        await new Promise((resolve) => {
+          setTimeout(resolve, 400);
+        });
+        const panel = window_().getBoundingClientRect();
+
+        answer(await showOverlay('dialog'));
+
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        // Out of the way, as Admin's own dialogs cover it, so the app's dialog shows whole there.
+        expect(getComputedStyle(window_()).visibility).toBe('hidden');
+        expect(pressed(panel.left + 4, panel.top + 4)).toBe(overlayFrame());
+
+        answer(await callHostRaw(APP_ORIGIN, 'overlayHidden'));
+        await expect.poll(() => getComputedStyle(window_()).visibility).toBe('visible');
+      });
+
+      it('moves the side panel’s bar out of its way, which floats beside a docked panel too', async () => {
+        onTestFinished(() => page.viewport(1280, 720));
+        await fakeAppPage(installation(), { kind: 'raw' });
+        await renderAdminApp(APP_ROUTE, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
+        const help = document.createElement('iframe');
+        help.srcdoc = '<p>Help</p>';
+        // Minimized as a window, then the window widens enough to dock it.
+        const panel = window.ghost!.sidePanel.open(help, { size: 'default' });
+        panel?.setSize('minimized');
+        const bar = () => document.querySelector('[data-side-panel=minimized]');
+        await expect.poll(() => bar()).not.toBeNull();
+        await page.viewport(1600, 800);
+        await expect.poll(() => bar()?.getAttribute('data-side-panel-layout')).toBe('docked');
+        await new Promise((resolve) => {
+          setTimeout(resolve, 400);
+        });
+        const box = bar()!.getBoundingClientRect();
+
+        answer(await showOverlay('dialog'));
+
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        expect(getComputedStyle(bar()!).visibility).toBe('hidden');
+        expect(pressed(box.left + box.width / 2, box.top + box.height / 2)).not.toBe(bar());
+      });
+
+      it('beside the docked side panel at its default width, also when it was expanded', async () => {
+        await page.viewport(1600, 800);
+        onTestFinished(() => page.viewport(1280, 720));
+        await fakeAppPage(installation(), { kind: 'raw' });
+        await renderAdminApp(APP_ROUTE, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
+        const help = document.createElement('iframe');
+        help.srcdoc = '<p>Help</p>';
+        const panel = window.ghost!.sidePanel.open(help, { size: 'default' });
+        const docked = () => document.querySelector('[data-side-panel-layout=docked]')!;
+        const panelLeft = () => Math.round(docked().getBoundingClientRect().left);
+        await expect.poll(() => docked().getAttribute('data-side-panel')).toBe('default');
+        await new Promise((resolve) => {
+          setTimeout(resolve, 700);
+        });
+        const defaultLeft = panelLeft();
+        panel?.setSize('full');
+        await expect.poll(panelLeft).toBeLessThan(defaultLeft - 200);
+
+        answer(await showOverlay('dialog'));
+
+        // Expanded, it would leave none of the app's page to show the overlay over.
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        await expect.poll(panelLeft).toBe(defaultLeft);
+        const middle = window.innerHeight / 2;
+        await expect.poll(() => pressed(defaultLeft - 20, middle)).toBe(overlayFrame());
+        expect(pressed(defaultLeft + 20, middle)).toBe(tint());
+      });
+
+      it('and takes no presses from the moment it starts to hide', async () => {
+        await fakeAppPage(installation(), { kind: 'raw' });
+        await renderAdminApp(APP_ROUTE, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
+        answer(await showOverlay('dialog'));
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        const pageBox = appsScreen.frame().element().getBoundingClientRect();
+        const centre = [pageBox.left + pageBox.width / 2, pageBox.top + 100] as const;
+        expect(pressed(...centre)).toBe(overlayFrame());
+
+        answer(await callHostRaw(APP_ORIGIN, 'overlayHidden'));
+
+        // While it still shows, for the dialog's closing animation, presses reach the page.
+        await expect.poll(() => pressed(...centre)).toBe(appsScreen.frame().element());
+        expect(getComputedStyle(overlayFrame()).visibility).toBe('visible');
+      });
+
+      it('with the card’s rounded corners, which stay Admin’s', async () => {
+        allowUnhandledRequests();
+        await fakeAppPage(installation(), { kind: 'raw' });
+        await renderAdminApp(APP_ROUTE, { labs: { ...labs, admin7Design: true } });
+        await expect.element(appsScreen.frame()).toBeVisible();
+        await expect.poll(sidebarScreen.floatingState).toBe('pinned');
+
+        answer(await showOverlay('sheet'));
+
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        const card = appsScreen.frame().element().getBoundingClientRect();
+        // The card's top-right corner, and just inside it.
+        expect(pressed(card.right - 1, card.top + 1)).toBe(tint());
+        expect(pressed(card.right - 12, card.top + 12)).toBe(overlayFrame());
+      });
+
+      it('beside Admin 7’s pinned nav, which the app’s page runs beneath', async () => {
+        // The Admin 7 sidebar owns its request graph (member stats); this is about the overlay.
+        allowUnhandledRequests();
+        await fakeAppPage(installation(), { kind: 'raw' });
+        await renderAdminApp(APP_ROUTE, { labs: { ...labs, admin7Design: true } });
+        await expect.element(appsScreen.frame()).toBeVisible();
+        await expect.poll(sidebarScreen.floatingState).toBe('pinned');
+        const nav = document.querySelector('[data-slot=floating-sidebar]')!.getBoundingClientRect();
+        const pageBox = appsScreen.frame().element().getBoundingClientRect();
+        // Beneath the nav, the app's page is there, but not in its safe area.
+        expect(pageBox.left).toBeLessThan(nav.right);
+
+        answer(await showOverlay('dialog'));
+
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        const footer = appsScreen.footer().element().getBoundingClientRect();
+        const middle = (pageBox.top + footer.top) / 2;
+        expect(pressed(nav.right - 2, middle)).toBe(tint());
+        expect(pressed(footer.left + 2, middle)).toBe(overlayFrame());
+        // Above the page, Admin 7's top bar.
+        expect(pressed(footer.left + 2, pageBox.top - 2)).toBe(tint());
+      });
+    });
+
+    it('keeps focus in the overlay frame when the publisher presses the tint', async () => {
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      answer(await showOverlay('dialog'));
+      await expect.element(appsScreen.overlayFrame()).toBeVisible();
+      const overlayFrame = appsScreen.overlayFrame().element();
+      await expect.poll(() => document.activeElement).toBe(overlayFrame);
+
+      // Over Admin's sidebar, outside the app's area.
+      await userEvent.click(appsScreen.overlayTint(), { position: { x: 5, y: 5 } });
+
+      expect(document.activeElement).toBe(overlayFrame);
+    });
+
+    it('puts focus back in the page frame as the overlay hides', async () => {
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      answer(await showOverlay('dialog'));
+      await expect.poll(() => document.activeElement).toBe(appsScreen.overlayFrame().element());
+
+      answer(await callHostRaw(APP_ORIGIN, 'overlayHidden'));
+
+      // So the page can put it back on what opened the dialog.
+      await expect.poll(() => document.activeElement).toBe(appsScreen.frame().element());
+    });
+
+    it('leaves focus that left the overlay where it went as the overlay hides', async () => {
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      answer(await showOverlay('dialog'));
+      await expect.poll(() => document.activeElement).toBe(appsScreen.overlayFrame().element());
+      const elsewhere = document.createElement('button');
+      document.body.append(elsewhere);
+      onTestFinished(() => elsewhere.remove());
+      elsewhere.focus();
+
+      answer(await callHostRaw(APP_ORIGIN, 'overlayHidden'));
+
+      await expect.element(appsScreen.overlayFrame()).not.toBeVisible();
+      expect(document.activeElement).toBe(elsewhere);
+    });
+
+    it('keeps Tab and Shift+Tab in the topmost of the page’s nested dialogs', async () => {
+      await fakeAppPage(installation());
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+
+      const opened = async () =>
+        !(
+          'error' in
+          (await callAppFrame(APP_ORIGIN, 'openDialogs', [
+            ['Outer first', 'Outer last'],
+            ['Inner first', 'Inner last'],
+          ]))
+        );
+      // Once the overlay has loaded, which it starts to once the page has started.
+      await expect.poll(opened).toBe(true);
+
+      await expect.element(appsScreen.overlayFrame()).toBeVisible();
+      const focused = () => callAppFrame(APP_ORIGIN, 'overlayFocus');
+      await expect.poll(focused).toBe('Inner first');
+      await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+      await expect.poll(focused).toBe('Inner last');
+      await userEvent.keyboard('{Tab}');
+      await expect.poll(focused).toBe('Inner first');
+    });
+
+    it(
+      'covers Admin with a dialog the page opens without a press, and moves focus into it',
+      { timeout: 30_000 },
+      async () => {
+        await fakeAppPage(installation());
+        await renderAdminApp(APP_ROUTE, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
+        await expect.element(appsScreen.overlayFrame()).toBeInTheDocument();
+        // Admin's own chrome has focus as the dialog opens.
+        const chrome = [...document.querySelectorAll<HTMLAnchorElement>('a[href]')].find((link) =>
+          link.checkVisibility(),
+        );
+        chrome?.focus();
+        expect(document.activeElement).toBe(chrome);
+
+        // From a timer, as after a slow fetch. Calling into the frame gives it and Admin the
+        // publisher's activation, which lapses after 5 seconds.
+        answer(await callAppFrame(APP_ORIGIN, 'openDialogLater', ['First', 'Last'], 7_000));
+        // Read in Admin alone until focus has moved, as calling into the frame would activate it.
+        await expect
+          .poll(() => document.activeElement, { timeout: 15_000 })
+          .toBe(appsScreen.overlayFrame().element());
+        await new Promise((resolve) => {
+          setTimeout(resolve, 500);
+        });
+
+        expect((await appState()).laterDialog).toEqual({ activation: false, focused: 'First' });
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        expect(tintClasses()).toContain('opacity-100');
+        const focused = () => callAppFrame(APP_ORIGIN, 'overlayFocus');
+        expect(await focused()).toBe('First');
+        await userEvent.keyboard('{Tab}');
+        await expect.poll(focused).toBe('Last');
+        await userEvent.keyboard('{Tab}');
+        await expect.poll(focused).toBe('First');
+
+        await userEvent.keyboard('{Escape}');
+
+        await expect.element(appsScreen.overlayFrame()).not.toBeVisible();
+        await expect.poll(() => document.activeElement).toBe(appsScreen.frame().element());
+      },
+    );
+
+    it('makes the rest of Admin inert and hidden from assistive technology while the overlay shows', async () => {
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.frame()).toBeVisible();
+      // The part of Admin with its sidebar and the app's page.
+      const admin = [...document.body.children].find((element) =>
+        element.contains(appsScreen.frame().element()),
+      ) as HTMLElement | undefined;
+      const state = () => ({ hidden: admin?.getAttribute('aria-hidden'), inert: admin?.inert });
+      expect(state()).toEqual({ hidden: null, inert: false });
+
+      answer(await showOverlay('dialog'));
+      // The page frame too, so focus can't land in the page behind the dialog.
+      await expect.poll(state).toEqual({ hidden: 'true', inert: true });
+      expect(appsScreen.overlayFrame().element().closest('[inert]')).toBeNull();
+
+      answer(await callHostRaw(APP_ORIGIN, 'overlayHidden'));
+      await expect.poll(state).toEqual({ hidden: null, inert: false });
+    });
+
+    it('loads the app’s page again when the overlay frame holds a document on Admin’s origin', async () => {
+      await fakeAppPage(installation(), { kind: 'raw' });
+      await renderAdminApp(APP_ROUTE, { labs });
+      await expect.element(appsScreen.overlayFrame()).toBeInTheDocument();
+      const overlayFrame = appsScreen.overlayFrame().element() as HTMLIFrameElement;
+      // Once the app's page is in the frame, as an app's own navigation replaces it. Until then,
+      // the frame's navigation to the page, in another process, can still win over this one.
+      await expect.poll(() => overlayFrame.contentDocument).toBeNull();
+
+      // A `srcdoc` document is on Admin's origin, as one the app navigated to would be.
+      overlayFrame.srcdoc = '<p>Admin’s own</p>';
+
+      await expect.poll(() => overlayFrame.isConnected).toBe(false);
+      await expect.element(appsScreen.frame()).toBeVisible();
+    });
+  });
+
   describe('the Admin API, on the app’s behalf', () => {
     it('sends an app’s request with Admin’s headers and the app’s own, and returns the response', async () => {
       await fakeAppPage(installation());

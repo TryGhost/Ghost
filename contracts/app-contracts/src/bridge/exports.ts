@@ -1,4 +1,5 @@
 import type { FetchRequest } from './fetch.ts';
+import type { OverlayOptions } from './overlay.ts';
 import type { FetchResponse, Layout, PathMove, Place, StartContext, Theme } from './rules.ts';
 
 /**
@@ -37,6 +38,14 @@ export interface HostExports {
   pathChanged(path: string, move: PathMove): Promise<string>;
   /** Sends the publisher to a named place in Admin. */
   open(place: Place): Promise<void>;
+  /**
+   * Shows the overlay frame, with Admin's tint over the rest of Admin, because the page opened a
+   * dialog or a sheet into it, or changes the tint of the overlay already shown. Admin refuses
+   * it as `rejected` unless the app is started.
+   */
+  overlayShown(options: OverlayOptions): Promise<void>;
+  /** Hides the overlay frame and the tint, because the page's last dialog or sheet closed. */
+  overlayHidden(): Promise<void>;
 }
 
 /** What an app's page exposes to Admin, through the SDK. */
@@ -51,4 +60,10 @@ export interface AppExports {
   pathChanged(path: string): Promise<void>;
   /** Admin laid out the page's frame differently, such as when its navigation pins or unpins. */
   layoutChanged(layout: Layout): Promise<void>;
+  /**
+   * The publisher pressed Admin's tint, which only shows over Admin's own chrome. The page
+   * treats it as a press outside its topmost dialog or sheet, which closes it unless it stays open
+   * when pressed outside, as an alert dialog does.
+   */
+  overlayDismissed(): Promise<void>;
 }
