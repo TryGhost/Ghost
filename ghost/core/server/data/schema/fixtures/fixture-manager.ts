@@ -1,4 +1,5 @@
 import logging from '@tryghost/logging';
+import type KnexMigrator from 'knex-migrator';
 import _ from 'lodash';
 import moment from 'moment';
 
@@ -123,10 +124,13 @@ export class FixtureManager {
    * @param {object} options
    * @returns
    */
-  async addAllFixtures(options?: Record<string, unknown>) {
+  async addAllFixtures(options?: KnexMigrator.MigrationContext) {
     const ownerUserId = this.findOwnerUserId();
 
-    const localOptions = _.merge(
+    const localOptions = _.merge<
+      Record<string, unknown>,
+      KnexMigrator.MigrationContext | undefined
+    >(
       {
         autoRefresh: false,
         context: {
