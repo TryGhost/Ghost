@@ -152,8 +152,39 @@ describe('createAuth', function () {
       '/change-email',
       '/delete-user',
       '/sign-in/social',
+      '/api-key/create',
+      '/api-key/get',
+      '/api-key/update',
+      '/api-key/delete',
+      '/api-key/list',
     ]);
     assert.equal(options.telemetry?.enabled, false);
+  });
+
+  it('adds the apiKey plugin only where api_tokens exists', async function () {
+    const ids = async (apiTokens: boolean) =>
+      (await createAuth({ ...deps(), apiTokens }).$context).options.plugins?.map(
+        (plugin) => plugin.id,
+      );
+
+    assert.equal((await ids(false))?.includes('api-key'), false);
+    assert.equal((await ids(true))?.includes('api-key'), true);
+  });
+
+  it('logs refused API keys at debug, since the API answers 401', async function () {
+    const calls: string[] = [];
+    const logger = {
+      debug: () => calls.push('debug'),
+      info: () => calls.push('info'),
+      warn: () => calls.push('warn'),
+      error: () => calls.push('error'),
+    };
+    const { logger: log } = await createAuth({ ...deps(), logger }).$context;
+    calls.length = 0;
+
+    log.error('Failed to validate API key:', new Error('Invalid API key.'));
+    log.error('Something else');
+    assert.deepEqual(calls, ['debug', 'error']);
   });
 
   it("rate limits on Ghost's limiters in every environment", async function () {

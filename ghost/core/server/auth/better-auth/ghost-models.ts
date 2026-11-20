@@ -91,6 +91,27 @@ export const ghostTwoFactorSchema = {
   },
 };
 
+/** The `apiKey` plugin's `schema` option: its `apikey` model onto `api_tokens`. */
+export const ghostApiKeySchema = {
+  apikey: {
+    modelName: 'api_tokens',
+    fields: {
+      ...timestamps,
+      configId: 'config_id',
+      referenceId: 'reference_id',
+      refillInterval: 'refill_interval',
+      refillAmount: 'refill_amount',
+      lastRefillAt: 'last_refill_at',
+      rateLimitEnabled: 'rate_limit_enabled',
+      rateLimitTimeWindow: 'rate_limit_time_window',
+      rateLimitMax: 'rate_limit_max',
+      requestCount: 'request_count',
+      lastRequest: 'last_request',
+      expiresAt: 'expires_at',
+    },
+  },
+};
+
 /**
  * `users` columns Better Auth never sets. Ghost disables Better Auth sign-up,
  * so this only applies to users it provisions (such as SSO). The slug is the

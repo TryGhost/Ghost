@@ -77,6 +77,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1161.0",
+    "@better-auth/api-key": "catalog:",
     "@better-auth/core": "catalog:",
     "@breejs/later": "catalog:",
     "@extractus/oembed-extractor": "catalog:",

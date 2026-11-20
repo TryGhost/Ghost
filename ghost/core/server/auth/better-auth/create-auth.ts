@@ -14,6 +14,7 @@ import {
   type DeviceVerificationCode,
 } from './plugins/device-verification';
 import { ghostSessionGate } from './plugins/session-gate';
+import { ghostApiTokens } from './plugins/api-tokens';
 import { ghostStaffLifecycle } from './plugins/staff-lifecycle';
 import { ROUTES } from './routes';
 import {
@@ -57,7 +58,11 @@ export type CreateAuthDeps = {
   sendDeviceVerificationCode(message: DeviceVerificationCode): Promise<void>;
   /** The legacy session's origin rule (Origin, else Referer, else the admin URL) */
   getRequestOrigin(headers: Headers): string | null;
+  /** Whether `api_tokens` exists, so Personal Access Tokens can be verified */
+  apiTokens?: boolean;
 };
+
+const REFUSED_API_KEY = 'Failed to validate API key';
 
 type SessionPins = { userId?: string; verified?: boolean; origin?: string | null };
 
@@ -155,6 +160,12 @@ export function createAuth(deps: CreateAuthDeps) {
       ROUTES.changeEmail,
       ROUTES.deleteUser,
       ROUTES.signInSocial,
+      // Tokens are managed through Ghost, not by a session over HTTP (no token UI yet)
+      ROUTES.apiKeyCreate,
+      ROUTES.apiKeyGet,
+      ROUTES.apiKeyUpdate,
+      ROUTES.apiKeyDelete,
+      ROUTES.apiKeyList,
     ],
     hooks: {
       // A password change ends every other session, as PUT /users/password does
@@ -232,10 +243,13 @@ export function createAuth(deps: CreateAuthDeps) {
         emailLimiter: deps.limiters.verificationEmail,
         sendCode: deps.sendDeviceVerificationCode,
       }),
+      ...(deps.apiTokens ? [ghostApiTokens()] : []),
     ],
     telemetry: { enabled: false },
     logger: {
-      log: (level, message, ...args) => deps.logger[level](message, ...args),
+      // The apiKey plugin logs every refused token as an error; the API's 401 is enough
+      log: (level, message, ...args) =>
+        deps.logger[message.startsWith(REFUSED_API_KEY) ? 'debug' : level](message, ...args),
     },
     advanced: {
       database: { generateId: generateGhostId },

@@ -1,7 +1,9 @@
+import errors from '@tryghost/errors';
 import assert from 'node:assert/strict';
 import type { NextFunction, Request, Response } from 'express';
 import type { ApiKey, Principal, Session, User } from '../../../../core/server/auth/principal';
 import { apiKeyView, applyPrincipal, userView } from '../../../../core/server/auth/principal';
+import { createBearerAuthenticator, type BearerDeps } from '../../../../core/server/auth/bearer';
 import {
   createPrincipalResolver,
   fromApiKey,
@@ -73,12 +75,29 @@ function session(overrides: Partial<Session> = {}): Session {
   };
 }
 
+const PAT = 'ghost_pat_abcdef';
+
+// Better Auth's verifyApiKey for one valid token owned by the owner
+function bearer(overrides: Partial<BearerDeps> = {}) {
+  return createBearerAuthenticator({
+    getVerifyApiKey:
+      () =>
+      async ({ key }) =>
+        key === PAT
+          ? { valid: true, error: null, key: { id: 'token', referenceId: 'owner' } }
+          : { valid: false, error: { code: 'INVALID_API_KEY' }, key: null },
+    findActiveUser: async (id) => (id === 'owner' ? owner : null),
+    ...overrides,
+  });
+}
+
 function setup(overrides: Partial<ResolvePrincipalDeps> = {}) {
   const deps: ResolvePrincipalDeps = {
     getSession: async () => ({ session: session() }),
     getOriginOfRequest: (req) => (req.headers.origin as string) ?? null,
     getAdminOrigin: () => ADMIN,
     findActiveUser: async (id) => (id === 'owner' ? owner : null),
+    authenticateBearer: bearer(),
     ...overrides,
   };
   return createPrincipalResolver(deps);
@@ -225,7 +244,7 @@ describe('resolvePrincipal', function () {
         },
       });
       const { req } = await run(resolver.adminApi, {
-        headers: { ...withCookie().headers, authorization: 'Bearer unverified' },
+        headers: { ...withCookie().headers, authorization: 'Basic unverified' },
         api_key: null,
       });
 
@@ -291,6 +310,51 @@ describe('resolvePrincipal', function () {
 
       assert.equal(keyed.req.auth?.kind, 'integration');
       assert.deepEqual(anonymous.req.auth, { kind: 'anonymous' });
+    });
+  });
+
+  describe('admin API, Bearer', function () {
+    const withBearer = (token: string) => ({
+      headers: { ...withCookie().headers, authorization: `Bearer ${token}` },
+      api_key: null,
+    });
+
+    it('resolves a Personal Access Token to its user, ignoring any cookie', async function () {
+      let read = false;
+      const resolver = setup({
+        getSession: async () => {
+          read = true;
+          return { session: session() };
+        },
+      });
+      const { req, error } = await run(resolver.adminApi, withBearer(PAT));
+
+      assert.equal(error, undefined);
+      assert.equal(read, false);
+      assert.deepEqual(req.auth, {
+        kind: 'user',
+        method: 'bearer_token',
+        user: ownerView,
+        apiToken: { id: 'token' },
+      });
+      assert.equal(req.user, owner);
+      assert.equal(req.api_key, null);
+    });
+
+    it('refuses a token that fails verification, without the cookie', async function () {
+      let read = false;
+      const resolver = setup({
+        getSession: async () => {
+          read = true;
+          return { session: session() };
+        },
+      });
+      const { req, error } = await run(resolver.adminApi, withBearer('ghost_pat_wrong'));
+
+      assert.equal(read, false);
+      assert.ok(error instanceof errors.UnauthorizedError);
+      assert.equal(req.auth, undefined);
+      assert.equal(req.user, undefined);
     });
   });
 

@@ -9,6 +9,19 @@ export = {
     return require('../../shared/config').get('auth:engine') === 'better-auth';
   },
 
+  // Personal Access Tokens need auth:engine better-auth and `api_tokens`, an
+  // in-development table. Fixed for the process, like the engine.
+  get apiTokensAvailable(): boolean {
+    if (require('../../shared/config').get('auth:engine') !== 'better-auth') {
+      return false;
+    }
+    const inDevelopment = require('../data/schema/in-development');
+    return (
+      !inDevelopment.isInDevelopmentTable('api_tokens') ||
+      inDevelopment.shouldCreateInDevelopmentTables()
+    );
+  },
+
   get authorize(): typeof import('./authorize') {
     return require('./authorize');
   },
