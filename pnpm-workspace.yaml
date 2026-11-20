@@ -100,9 +100,9 @@ catalog:
   '@tryghost/debug': 2.3.23
   '@tryghost/errors': 3.4.8
   '@tryghost/helpers': 1.1.110
-  '@tryghost/logging': 6.0.7
+  '@tryghost/logging': 6.1.0
   '@tryghost/mg-clean-html': 0.12.7
-  '@tryghost/metrics': 3.7.7
+  '@tryghost/metrics': 3.8.0
   '@tryghost/mongo-knex': 0.11.2
   '@tryghost/nql': 0.13.5
   '@tryghost/nql-lang': 0.7.1
