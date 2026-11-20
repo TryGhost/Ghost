@@ -1,5 +1,12 @@
 /* eslint-disable camelcase */
 
+/** @typedef {ReturnType<typeof getProductData> | ReturnType<typeof getFreeProduct>} Product */
+/** @typedef {ReturnType<typeof getNewsletterData>} Newsletter */
+/** @typedef {ReturnType<typeof getSubscriptionData>} Subscription */
+/** @typedef {ReturnType<typeof getOfferData>} Offer */
+/** @typedef {ReturnType<typeof getNextPaymentData>} NextPayment */
+/** @typedef {ReturnType<typeof getDiscountData>} Discount */
+
 export const sites = {
   singleProduct: getSiteData({
     products: getProductsData({ numOfProducts: 1 }),
@@ -26,6 +33,36 @@ export function generateUuid() {
   });
 }
 
+/** @param {{
+ *   title?: string,
+ *   description?: string,
+ *   logo?: string,
+ *   icon?: string,
+ *   url?: string,
+ *   plans?: {monthly: number, yearly: number, currency: string},
+ *   products?: Product[],
+ *   portalProducts?: string[],
+ *   accentColor?: string,
+ *   portalPlans?: string[],
+ *   portalDefaultPlan?: string,
+ *   membersSignupAccess?: string,
+ *   freePriceName?: string,
+ *   freePriceDescription?: string,
+ *   paidMembersEnabled?: boolean,
+ *   portalButton?: boolean,
+ *   portalName?: boolean,
+ *   portalButtonIcon?: string,
+ *   portalButtonSignupText?: string,
+ *   portalButtonStyle?: string,
+ *   membersSupportAddress?: string,
+ *   editorDefaultEmailRecipients?: string,
+ *   newsletters?: Newsletter[],
+ *   posts?: ReturnType<typeof getPostsData>,
+ *   commentsEnabled?: string,
+ *   recommendations?: object[],
+ *   recommendationsEnabled?: boolean,
+ *   labs?: Record<string, boolean>,
+ * }} options */
 export function getSiteData({
   title = 'The Blueprint',
   description = 'Thoughts, stories and ideas.',
@@ -92,6 +129,23 @@ export function getSiteData({
   };
 }
 
+/** @param {{
+ *   name?: string,
+ *   code?: string,
+ *   displayTitle?: string,
+ *   displayDescription?: string,
+ *   type?: string,
+ *   cadence?: string,
+ *   amount?: number,
+ *   duration?: string,
+ *   durationInMonths?: number | null,
+ *   currencyRestriction?: boolean,
+ *   currency?: string | null,
+ *   status?: string,
+ *   tierId?: string | undefined,
+ *   tierName?: string,
+ *   redemptionType?: string,
+ * }} options */
 export function getOfferData({
   name = 'Black Friday',
   code = 'black-friday',
@@ -131,6 +185,13 @@ export function getOfferData({
   };
 }
 
+/** @param {{
+ *   originalAmount?: number,
+ *   amount?: number,
+ *   interval?: string,
+ *   currency?: string,
+ *   discount?: Discount | null,
+ * }} options */
 export function getNextPaymentData({
   originalAmount = 500,
   amount = 500,
@@ -147,6 +208,15 @@ export function getNextPaymentData({
   };
 }
 
+/** @param {{
+ *   offerId?: string,
+ *   start?: string,
+ *   end?: string | null,
+ *   duration?: string,
+ *   durationInMonths?: number | null,
+ *   type?: string,
+ *   amount?: number,
+ * }} options */
 export function getDiscountData({
   offerId = `offer_${objectId()}`,
   start = '2025-01-01T00:00:00.000Z',
@@ -167,6 +237,18 @@ export function getDiscountData({
   };
 }
 
+/** @param {{
+ *   name?: string,
+ *   email?: string,
+ *   firstname?: string,
+ *   subscriptions?: Subscription[],
+ *   paid?: boolean,
+ *   status?: string,
+ *   avatarImage?: string,
+ *   subscribed?: boolean,
+ *   email_suppression?: {suppressed: boolean, info: {reason: string, timestamp: string} | null},
+ *   newsletters?: Newsletter[],
+ * }} options */
 export function getMemberData({
   name = 'Jamie Larson',
   email = 'jamie@example.com',
@@ -193,15 +275,8 @@ export function getMemberData({
     subscriptions,
     email_suppression,
     newsletters,
+    status: status === undefined ? (paid ? 'paid' : 'free') : status,
   };
-
-  if (status !== undefined) {
-    member.status = status;
-  } else if (paid) {
-    member.status = 'paid';
-  } else {
-    member.status = 'free';
-  }
 
   return member;
 }
@@ -320,6 +395,16 @@ export function getProductsData({ numOfProducts = 3 } = {}) {
   return [...paidProducts, freeProduct];
 }
 
+/** @param {{
+ *   type?: string,
+ *   name?: string,
+ *   description?: string,
+ *   id?: string,
+ *   monthlyPrice?: ReturnType<typeof getPriceData>,
+ *   yearlyPrice?: ReturnType<typeof getPriceData>,
+ *   numOfBenefits?: number,
+ *   trialDays?: number | null,
+ * }} options */
 export function getProductData({
   type = 'paid',
   name = 'Basic',
@@ -400,6 +485,23 @@ export function getPriceData({
   };
 }
 
+/** @param {{
+ *   id?: string,
+ *   status?: string,
+ *   currency?: string,
+ *   interval?: string,
+ *   amount?: number,
+ *   nickname?: string,
+ *   cardLast4?: string,
+ *   offer?: Partial<Offer> | null | undefined,
+ *   priceId?: string | undefined,
+ *   startDate?: string | undefined,
+ *   currentPeriodEnd?: string | Date | null,
+ *   cancelAtPeriodEnd?: boolean,
+ *   trialEndAt?: string | Date | null,
+ *   nextPayment?: NextPayment | null,
+ *   tier?: {id?: string, name?: string, expiry_at?: string | Date | null} | null | undefined,
+ * }} options */
 export function getSubscriptionData({
   id = `sub_${objectId()}`,
   status = 'active',

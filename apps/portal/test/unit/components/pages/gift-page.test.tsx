@@ -243,10 +243,11 @@ describe('GiftPage', () => {
 
   test('returns an expired signed-in draft to the visible buyer email field', () => {
     const site = buildSite();
-    const productId = site.products[0].id;
+    const productId = site.products[0]?.id;
+    expect(productId).toBeDefined();
     const draft = createGiftFormState({ buyerName: 'Jamie' });
     draft.plan.selectedDuration = 1;
-    draft.plan.selectedProductId = productId;
+    draft.plan.selectedProductId = productId!;
     draft.plan.completed = true;
     draft.delivery.method = 'link';
     window.sessionStorage.setItem(GIFT_FORM_STATE_KEY, JSON.stringify(draft));
