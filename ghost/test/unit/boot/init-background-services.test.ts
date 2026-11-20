@@ -86,6 +86,7 @@ const isolatedSteps: [string, (boot: BackgroundHarness) => sinon.SinonStub][] = 
     (boot) => boot.memberJobs.scheduleExpiredCompCleanupJob,
   ],
   ['expired auth row cleanup scheduling', (boot) => boot.authCleanup.scheduleClearExpiredJob],
+  ['social web (ActivityPub) start', (boot) => boot.activity],
   ['Tinybird sync scheduling', (boot) => boot.tinybirdSync.scheduleJob],
   ['update check scheduling', (boot) => boot.updateCheck.scheduleJobs],
 ];
@@ -331,22 +332,31 @@ for (const [name, getStep] of isolatedSteps) {
   });
 }
 
-it('stops background startup when ActivityPub fails, after the earlier jobs are scheduled', async function () {
+it('logs a failed ActivityPub start and still starts the background work after it', async function () {
   const boot = createBackgroundHarness();
   const failure = new Error('activitypub unavailable');
   boot.activity.rejects(failure);
 
-  await assert.rejects(boot.init(), (error) => error === failure);
+  await boot.init();
 
-  const steps = backgroundSteps(boot);
-  const activityIndex = steps.indexOf(boot.activity);
-  for (const step of steps.slice(0, activityIndex + 1)) {
-    sinon.assert.calledOnce(step);
-  }
-  for (const step of steps.slice(activityIndex + 1)) {
-    sinon.assert.notCalled(step);
-  }
-  sinon.assert.notCalled(boot.logging.error);
+  sinon.assert.calledOnceWithExactly(boot.logging.error, failure);
+  sinon.assert.calledOnceWithExactly(
+    boot.tinybirdSync.scheduleJob,
+    sinon.match.same(boot.jobsInstance),
+  );
+  sinon.assert.calledOnceWithExactly(
+    boot.updateCheck.scheduleJobs,
+    sinon.match.same(boot.jobsInstance),
+  );
+  sinon.assert.calledOnce(boot.remoteFlags.init);
+  sinon.assert.calledOnce(boot.milestones.initAndRun);
+  sinon.assert.callOrder(
+    boot.activity,
+    boot.tinybirdSync.scheduleJob,
+    boot.updateCheck.scheduleJobs,
+    boot.remoteFlags.init,
+    boot.milestones.initAndRun,
+  );
 });
 
 it('skips email analytics scheduling when its background jobs are disabled', async function () {
