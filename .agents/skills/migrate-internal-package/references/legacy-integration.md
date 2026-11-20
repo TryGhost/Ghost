@@ -42,17 +42,22 @@ The factory throws on any option it does not define. Its valid keys are
 `extraTestRules` and `extraBlocks`; check
 `tools/configs/eslint/index.mjs` if this list looks out of date.
 
-Ghost's filename rule, `ghost/filenames/match-regex`, accepts only lower-case
-names. It rejects imported files such as `lib/DomainEvents.js`, and under
-ESLint 9 it can crash on some legacy files with
-`context.getScope is not a function` instead of reporting them. Renaming files
-is modernization work, so when the import keeps such names, turn the rule off
-for this package and say why next to it:
+Ghost's filename rule, `ghost/filenames/match-regex`, needs turning off for
+this package in either of two cases:
+
+- an imported file name is not lower-case, such as `lib/DomainEvents.js`, and
+  renaming it is modernization work;
+- an imported file has a top-level `module.exports = <identifier>;`. Under
+  ESLint 9 the rule then crashes with `context.getScope is not a function`
+  before it looks at the file name, so a compliant name such as
+  `lib/events.js` does not avoid it.
+
+Turn the rule off and say why next to it:
 
 ```js
 import {nodeLibConfig} from '@internal/cfg-eslint';
 
-// The imported files keep their original names until modernization.
+// Imported files keep their names and CommonJS exports until modernization.
 const legacyFilenames = {'ghost/filenames/match-regex': 'off'};
 
 export default nodeLibConfig({
@@ -65,7 +70,8 @@ export default nodeLibConfig({
 });
 ```
 
-Leave the rule on when every imported file name already satisfies it.
+Leave the rule on only when neither case applies. Changing how a file exports
+to avoid the crash is a runtime change and belongs to modernization.
 
 Prefer fixing trivial configuration drift. When a Ghost rule conflicts with a
 test that intentionally exercises legacy behavior, use a narrow, documented
