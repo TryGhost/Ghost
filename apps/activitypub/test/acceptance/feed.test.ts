@@ -86,6 +86,77 @@ test.describe('Feed', async () => {
     });
   });
 
+  test('I can publish a note with up to four images', async ({ page }) => {
+    const { lastApiRequests } = await mockApi({
+      page,
+      requests: {
+        getFeed: {
+          method: 'GET',
+          path: '/v1/feed/notes',
+          response: feedFixture,
+        },
+        getActivityPubUser: {
+          method: 'GET',
+          path: '/users/index',
+          response: activityPubUser,
+        },
+        uploadImage: {
+          method: 'POST',
+          path: '/v1/upload/image',
+          response: {
+            fileUrl: 'https://localhost/.ghost/activitypub/gcs/image.png',
+          },
+        },
+        postNote: {
+          method: 'POST',
+          path: '/v1/actions/note',
+          response: {
+            post: {
+              id: 'new-note-id',
+              type: 0,
+              content: '<p>A note with images</p>',
+              publishedAt: new Date().toISOString(),
+            },
+          },
+        },
+      },
+      options: { useActivityPub: true },
+    });
+
+    await page.goto('#/notes');
+    await expect(page.getByTestId('feed-list')).toBeVisible();
+    await page.getByLabel('New post').click();
+
+    const noteDialog = page.getByTestId('new-note-modal');
+    await expect(noteDialog).toBeVisible();
+    await noteDialog.getByTestId('note-textarea').fill('A note with images');
+
+    // A 1x1 transparent PNG
+    const buffer = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
+      'base64',
+    );
+    await noteDialog
+      .locator('input[type="file"]')
+      .setInputFiles(
+        [1, 2, 3, 4, 5].map((n) => ({ name: `image-${n}.png`, mimeType: 'image/png', buffer })),
+      );
+
+    // Only the first four images are kept
+    await expect(noteDialog.getByTestId('image-preview')).toHaveCount(4);
+    await expect(page.getByText('You can add up to 4 images.')).toBeVisible();
+
+    const postButton = noteDialog.getByTestId('post-button');
+    await expect(postButton).toBeEnabled();
+    await postButton.click();
+
+    await expect.poll(() => lastApiRequests.postNote).toBeTruthy();
+    expect(lastApiRequests.postNote?.body).toEqual({
+      content: 'A note with images',
+      images: Array(4).fill({ url: 'https://localhost/.ghost/activitypub/gcs/image.png' }),
+    });
+  });
+
   test('I can view a list of notes in the Feed', async ({ page }) => {
     await mockApi({
       page,

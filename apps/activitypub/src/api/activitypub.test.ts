@@ -405,16 +405,48 @@ describe('ActivityPubAPI', function () {
         fakeFetch,
       );
 
-      const result = await api.note('Hello, world!', {
-        url: 'https://example.com/image.jpg',
-        altText: 'Test alt text',
-      });
+      const result = await api.note('Hello, world!', [
+        {
+          url: 'https://example.com/image.jpg',
+          altText: 'Test alt text',
+        },
+      ]);
 
       expect(result).toEqual({
         id: 'https://example.com/note/abc123',
         content: 'Hello, world!',
         image: 'https://example.com/image.jpg',
       });
+    });
+
+    test('It sends several images as a list', async function () {
+      const fakeFetch = Fetch({
+        [`https://activitypub.api/.ghost/activitypub/v1/actions/note`]: {
+          async assert(_resource, init) {
+            expect(init?.method).toEqual('POST');
+            expect(init?.body).toEqual(
+              '{"content":"Hello, world!","images":[{"url":"https://example.com/one.jpg","altText":"First"},{"url":"https://example.com/two.jpg"}]}',
+            );
+          },
+          response: JSONResponse({
+            post: {
+              id: 'https://example.com/note/abc123',
+            },
+          }),
+        },
+      });
+
+      const api = new ActivityPubAPI(
+        new URL('https://activitypub.api'),
+        new URL('https://auth.api'),
+        'index',
+        fakeFetch,
+      );
+
+      await api.note('Hello, world!', [
+        { url: 'https://example.com/one.jpg', altText: 'First' },
+        { url: 'https://example.com/two.jpg' },
+      ]);
     });
   });
 
@@ -471,10 +503,12 @@ describe('ActivityPubAPI', function () {
         fakeFetch,
       );
 
-      const result = await api.reply('123', 'Hello, world!', {
-        url: 'https://example.com/image.jpg',
-        altText: 'Reply image alt text',
-      });
+      const result = await api.reply('123', 'Hello, world!', [
+        {
+          url: 'https://example.com/image.jpg',
+          altText: 'Reply image alt text',
+        },
+      ]);
 
       expect(result).toEqual({
         id: 'https://example.com/reply/abc123',
@@ -482,6 +516,34 @@ describe('ActivityPubAPI', function () {
         inReplyTo: '123',
         image: 'https://example.com/image.jpg',
       });
+    });
+
+    test('It sends several images as a list', async function () {
+      const fakeFetch = Fetch({
+        [`https://activitypub.api/.ghost/activitypub/v1/actions/reply/123`]: {
+          async assert(_resource, init) {
+            expect(init?.method).toEqual('POST');
+            expect(init?.body).toEqual(
+              '{"content":"Hello, world!","images":[{"url":"https://example.com/one.jpg"},{"url":"https://example.com/two.jpg","altText":"Second"}]}',
+            );
+          },
+          response: JSONResponse({
+            id: 'https://example.com/reply/abc123',
+          }),
+        },
+      });
+
+      const api = new ActivityPubAPI(
+        new URL('https://activitypub.api'),
+        new URL('https://auth.api'),
+        'index',
+        fakeFetch,
+      );
+
+      await api.reply('123', 'Hello, world!', [
+        { url: 'https://example.com/one.jpg' },
+        { url: 'https://example.com/two.jpg', altText: 'Second' },
+      ]);
     });
   });
 

@@ -23,9 +23,6 @@
     }
   },
   "src/components/modals/new-note-modal.tsx": {
-    "react-hooks/immutability": {
-      "count": 1
-    },
     "react-hooks/set-state-in-effect": {
       "count": 2
     }
