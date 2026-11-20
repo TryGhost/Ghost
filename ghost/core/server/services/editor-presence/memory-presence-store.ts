@@ -1,13 +1,14 @@
-import type { PresenceStore, StoredClaim, StoredPresence } from './presence-store';
+import type { ClaimPlace, PresenceStore, StoredClaim, StoredPresence } from './presence-store';
 
 export class MemoryPresenceStore implements PresenceStore {
   readonly kind = 'memory';
   private readonly entries = new Map<string, number>();
   private readonly queue = new Map<string, number>();
+  private placed = 0;
 
-  async touch(member: string, now: number, retentionMs: number): Promise<void> {
-    const current = this.entries.get(member);
-    if (current === undefined || current < now) {
+  async touch(member: string, now: number, retentionMs: number): Promise<number | undefined> {
+    const previous = this.entries.get(member);
+    if (previous === undefined || previous < now) {
       this.entries.set(member, now);
     }
     const cutoff = now - retentionMs;
@@ -16,6 +17,7 @@ export class MemoryPresenceStore implements PresenceStore {
         this.entries.delete(key);
       }
     }
+    return previous;
   }
 
   async read(since: number): Promise<StoredPresence[]> {
@@ -35,12 +37,12 @@ export class MemoryPresenceStore implements PresenceStore {
 
   async claim(
     member: string,
-    order: number,
     _retentionMs: number,
-    replace = false,
+    { front = false, move = false }: ClaimPlace = {},
   ): Promise<StoredClaim[]> {
-    if (replace || !this.queue.has(member)) {
-      this.queue.set(member, order);
+    if (move || !this.queue.has(member)) {
+      this.placed += 1;
+      this.queue.set(member, front ? -this.placed : this.placed);
     }
     return this.claims();
   }
@@ -49,9 +51,15 @@ export class MemoryPresenceStore implements PresenceStore {
     return [...this.queue].map(([member, order]) => ({ member, order }));
   }
 
-  async release(members: string[]): Promise<void> {
-    for (const member of members) {
-      this.queue.delete(member);
+  async release(member: string): Promise<void> {
+    this.queue.delete(member);
+  }
+
+  async prune(claims: StoredClaim[]): Promise<void> {
+    for (const { member, order } of claims) {
+      if (this.queue.get(member) === order) {
+        this.queue.delete(member);
+      }
     }
   }
 

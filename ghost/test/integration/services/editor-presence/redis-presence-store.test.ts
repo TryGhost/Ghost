@@ -47,27 +47,49 @@ describe.skipIf(process.env.GHOST_TEST_REDIS_AVAILABLE !== '1')(
       assert.deepEqual(await store.read(0), []);
     });
 
-    it('queues first come, first served, moves a member on replace and expires the key', async function () {
-      await store.claim('post:a:u1', 1_000, 60_000);
-      await store.claim('post:a:u2', 2_000, 60_000);
-      assert.deepEqual(await store.claim('post:a:u1', 3_000, 60_000), [
-        { member: 'post:a:u1', order: 1_000 },
-        { member: 'post:a:u2', order: 2_000 },
-      ]);
+    it('queues first come, first served, moves a member and expires the key', async function () {
+      const inOrder = async () =>
+        (await store.claims()).sort((x, y) => x.order - y.order).map((claim) => claim.member);
+      await store.claim('post:a:u2', 60_000);
+      await store.claim('post:a:u1', 60_000);
+      await store.claim('post:a:u2', 60_000);
+      assert.deepEqual(await inOrder(), ['post:a:u2', 'post:a:u1']);
 
       const ttl = await cache.redisClient.pttl(store.leaseKey);
       assert.ok(ttl > 0 && ttl <= 60_000, `expected a TTL within 60s, got ${ttl}`);
 
-      assert.deepEqual(await store.claim('post:a:u2', 999, 60_000, true), [
-        { member: 'post:a:u2', order: 999 },
-        { member: 'post:a:u1', order: 1_000 },
-      ]);
+      await store.claim('post:a:u1', 60_000, { front: true, move: true });
+      assert.deepEqual(await inOrder(), ['post:a:u1', 'post:a:u2']);
+      await store.claim('post:a:u1', 60_000, { move: true });
+      assert.deepEqual(await inOrder(), ['post:a:u2', 'post:a:u1']);
 
-      await store.release(['post:a:u2']);
+      await store.release('post:a:u2');
       await store.touch('post:a:u1', 5_000, 60_000);
       await store.remove('post:a:u1');
       assert.deepEqual(await store.claims(), []);
       assert.deepEqual(await store.read(0), []);
+    });
+
+    it('prunes a claim by the order it was read with and keeps counting places after it', async function () {
+      await store.claim('post:a:u1', 60_000);
+      await store.claim('post:a:u2', 60_000);
+      const [seen] = (await store.claims()).filter((claim) => claim.member === 'post:a:u2');
+      await store.claim('post:a:u2', 60_000, { move: true });
+      await store.prune([seen]);
+      assert.equal((await store.claims()).length, 2);
+
+      await store.prune((await store.claims()).filter((claim) => claim.member === 'post:a:u2'));
+      const claims = await store.claim('post:a:u3', 60_000);
+      assert.deepEqual(
+        claims.sort((x, y) => x.order - y.order).map((claim) => claim.member),
+        ['post:a:u1', 'post:a:u3'],
+      );
+      assert.equal(new Set(claims.map((claim) => claim.order)).size, 2);
+    });
+
+    it('answers the heartbeat before this one', async function () {
+      assert.equal(await store.touch('post:a:u1', 1_000, 60_000), undefined);
+      assert.equal(await store.touch('post:a:u1', 2_000, 60_000), 1_000);
     });
   },
 );

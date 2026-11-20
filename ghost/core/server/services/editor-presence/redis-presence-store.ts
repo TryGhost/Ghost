@@ -1,5 +1,5 @@
 import { InternalServerError } from '@tryghost/errors';
-import type { PresenceStore, StoredClaim, StoredPresence } from './presence-store';
+import type { ClaimPlace, PresenceStore, StoredClaim, StoredPresence } from './presence-store';
 
 type ExecResult = Array<[Error | null, unknown]> | null;
 
@@ -17,7 +17,7 @@ export interface RedisPresenceClient {
 
 export interface RedisPresencePipeline {
   zadd(key: string, score: number, member: string): RedisPresencePipeline;
-  zadd(key: string, flag: 'NX', score: number, member: string): RedisPresencePipeline;
+  zadd(key: string, flag: 'NX' | 'INCR', score: number, member: string): RedisPresencePipeline;
   pexpire(key: string, milliseconds: number): RedisPresencePipeline;
   zremrangebyscore(key: string, min: number | string, max: number | string): RedisPresencePipeline;
   zrangebyscore(
@@ -50,6 +50,19 @@ function scored(flat: string[]): Array<[string, number]> {
   return result;
 }
 
+/**
+ * Counts the places handed out, as a member of the lease set so that it expires
+ * with the claims it numbered. It counts in twos and places take the odd
+ * numbers between, so dropping a place by its order never drops the count.
+ */
+const PLACED = 'placed';
+
+function queued(flat: unknown): StoredClaim[] {
+  return scored(flat as string[])
+    .filter(([member]) => member !== PLACED)
+    .map(([member, order]) => ({ member, order }));
+}
+
 export class RedisPresenceStore implements PresenceStore {
   readonly kind = 'redis';
   readonly key: string;
@@ -63,15 +76,17 @@ export class RedisPresenceStore implements PresenceStore {
   }
 
   /** PEXPIRE must directly follow ZADD so a new key never lacks a TTL; no MULTI, the commands commute. */
-  async touch(member: string, now: number, retentionMs: number): Promise<void> {
-    settled(
+  async touch(member: string, now: number, retentionMs: number): Promise<number | undefined> {
+    const results = settled(
       await this.client
         .pipeline()
+        .zrangebyscore(this.key, '-inf', '+inf', 'WITHSCORES')
         .zadd(this.key, now, member)
         .pexpire(this.key, retentionMs)
         .zremrangebyscore(this.key, '-inf', now - retentionMs)
         .exec(),
     );
+    return scored(results[0][1] as string[]).find(([stored]) => stored === member)?.[1];
   }
 
   async read(since: number): Promise<StoredPresence[]> {
@@ -86,37 +101,67 @@ export class RedisPresenceStore implements PresenceStore {
     ]);
   }
 
-  /** ZADD NX is what makes a place first come, first served: a queued member's score is left alone. */
+  /**
+   * ZADD INCR is atomic, which is what makes a place first come, first served:
+   * every new place gets a number of its own, higher than any before it.
+   */
   async claim(
     member: string,
-    order: number,
     retentionMs: number,
-    replace = false,
+    { front = false, move = false }: ClaimPlace = {},
   ): Promise<StoredClaim[]> {
+    if (!move) {
+      const kept = settled(
+        await this.client
+          .pipeline()
+          .pexpire(this.leaseKey, retentionMs)
+          .zrangebyscore(this.leaseKey, '-inf', '+inf', 'WITHSCORES')
+          .exec(),
+      );
+      const claims = queued(kept[1][1]);
+      if (claims.some((claim) => claim.member === member)) {
+        return claims;
+      }
+    }
+    const counted = settled(
+      await this.client
+        .pipeline()
+        .zadd(this.leaseKey, 'INCR', 2, PLACED)
+        .pexpire(this.leaseKey, retentionMs)
+        .exec(),
+    );
+    const place = Number(counted[0][1]) - 1;
+    const order = front ? -place : place;
     const pipeline = this.client.pipeline();
-    const queued = replace
+    const placed = move
       ? pipeline.zadd(this.leaseKey, order, member)
       : pipeline.zadd(this.leaseKey, 'NX', order, member);
     const results = settled(
-      await queued
+      await placed
         .pexpire(this.leaseKey, retentionMs)
         .zrangebyscore(this.leaseKey, '-inf', '+inf', 'WITHSCORES')
         .exec(),
     );
-    return scored(results[2][1] as string[]).map(([queuedMember, queuedOrder]) => ({
-      member: queuedMember,
-      order: queuedOrder,
-    }));
+    return queued(results[2][1]);
   }
 
   async claims(): Promise<StoredClaim[]> {
-    const flat = await this.client.zrangebyscore(this.leaseKey, '-inf', '+inf', 'WITHSCORES');
-    return scored(flat).map(([member, order]) => ({ member, order }));
+    return queued(await this.client.zrangebyscore(this.leaseKey, '-inf', '+inf', 'WITHSCORES'));
   }
 
-  async release(members: string[]): Promise<void> {
-    if (members.length > 0) {
-      await this.client.zrem(this.leaseKey, ...members);
+  async release(member: string): Promise<void> {
+    await this.client.zrem(this.leaseKey, member);
+  }
+
+  /** By score, not by member: a claim its member has since renewed has another order and stays. */
+  async prune(claims: StoredClaim[]): Promise<void> {
+    if (claims.length === 0) {
+      return;
     }
+    const pipeline = this.client.pipeline();
+    for (const { order } of claims) {
+      pipeline.zremrangebyscore(this.leaseKey, order, order);
+    }
+    settled(await pipeline.exec());
   }
 }

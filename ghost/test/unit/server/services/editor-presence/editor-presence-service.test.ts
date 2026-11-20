@@ -10,7 +10,10 @@ import {
   type PresenceMetrics,
 } from '../../../../../core/server/services/editor-presence/editor-presence-service';
 import { MemoryPresenceStore } from '../../../../../core/server/services/editor-presence/memory-presence-store';
-import type { PresenceStore } from '../../../../../core/server/services/editor-presence/presence-store';
+import type {
+  PresenceStore,
+  StoredClaim,
+} from '../../../../../core/server/services/editor-presence/presence-store';
 
 const POST_A = 'a'.repeat(24);
 const POST_B = 'b'.repeat(24);
@@ -92,6 +95,7 @@ describe('EditorPresenceService', function () {
       claim: async () => assert.fail('claim called'),
       claims: async () => assert.fail('claims called'),
       release: async () => assert.fail('release called'),
+      prune: async () => assert.fail('prune called'),
     };
     const { service, now } = build({ store: failing });
     assert.deepEqual(await service.poll(USER_1, {}), { active: [], serverTime: now });
@@ -211,6 +215,7 @@ describe('EditorPresenceService', function () {
       claim: async () => [],
       claims: async () => [],
       release: async () => undefined,
+      prune: async () => undefined,
       ...failure,
     };
   }
@@ -276,7 +281,7 @@ describe('EditorPresenceService', function () {
 
     it('answers 503 with reason timeout when the store does not respond in time', async function () {
       const store = failingStore({
-        touch: () => new Promise<void>(() => {}),
+        touch: () => new Promise<undefined>(() => {}),
         read: async () => assert.fail('read called after touch timed out'),
       });
       const { service, recorded } = build({ store });
@@ -446,6 +451,70 @@ describe('EditorPresenceService lease', function () {
     });
   });
 
+  it('sends a returning holder to the back even when it polls before the tab that waited', async function () {
+    const { service, advance } = build({ leaseWindowMs: LEASE_WINDOW });
+    await service.poll(USER_1, hold(TAB_1));
+    advance(100_000);
+    await service.poll(USER_2, hold(TAB_2));
+    advance(LEASE_WINDOW - 100_000 + 1_000);
+    assert.deepEqual((await service.poll(USER_1, hold(TAB_1))).lease, {
+      userId: USER_2,
+      mine: false,
+    });
+    assert.deepEqual((await service.poll(USER_2, hold(TAB_2))).lease, {
+      userId: USER_2,
+      mine: true,
+    });
+  });
+
+  it('keeps a place its tab took again while another poll was dropping the lapsed one', async function () {
+    let reached!: () => void;
+    const pruning = new Promise<void>((resolve) => {
+      reached = resolve;
+    });
+    let resume!: () => void;
+    const paused = new Promise<void>((resolve) => {
+      resume = resolve;
+    });
+    class PausedPrune extends MemoryPresenceStore {
+      async prune(claims: StoredClaim[]): Promise<void> {
+        reached();
+        await paused;
+        return super.prune(claims);
+      }
+    }
+    const { service, advance } = build({ store: new PausedPrune(), leaseWindowMs: LEASE_WINDOW });
+    const watch = (tab: string) => ({ editing, tab, lease: 'watch' as const });
+    await service.poll(USER_1, hold(TAB_1));
+    advance(LEASE_WINDOW + 1_000);
+
+    // The watcher has read the holder as lapsed and not yet dropped its claim.
+    const watching = service.poll(USER_2, watch(TAB_2));
+    await pruning;
+    assert.deepEqual((await service.poll(USER_1, hold(TAB_1))).lease, {
+      userId: USER_1,
+      mine: true,
+    });
+    resume();
+    await watching;
+
+    advance(1_000);
+    assert.deepEqual((await service.poll(USER_2, watch(TAB_2))).lease, {
+      userId: USER_1,
+      mine: false,
+    });
+  });
+
+  it('gives the lease to the first of two tabs that ask in the same millisecond', async function () {
+    const { service } = build({ leaseWindowMs: LEASE_WINDOW });
+    // The second to ask sorts first as a member, which must not decide it.
+    const first = await service.poll(USER_2, hold(TAB_2));
+    const second = await service.poll(USER_1, hold(TAB_1));
+    assert.deepEqual(first.lease, { userId: USER_2, mine: true });
+    assert.deepEqual(second.lease, { userId: USER_2, mine: false });
+    assert.equal((await service.poll(USER_2, hold(TAB_2))).lease?.mine, true);
+  });
+
   it('moves a tab to the front on take, and the tab it passed learns on its next poll', async function () {
     const { service, advance } = build({ leaseWindowMs: LEASE_WINDOW });
     await service.poll(USER_1, hold(TAB_1));
@@ -485,6 +554,7 @@ describe('EditorPresenceService lease', function () {
     });
     const page = await service.poll(USER_3, {
       editing: { id: POST_A, type: 'page' },
+      tab: TAB_1,
       lease: 'hold',
     });
     assert.deepEqual(otherPost.lease, { userId: USER_2, mine: true });
@@ -589,9 +659,21 @@ describe('EditorPresenceService lease', function () {
       service.poll(USER_1, { resources: [{ id: POST_A, type: 'post' }], lease: 'hold' }),
       { errorType: 'ValidationError' },
     );
-    await assert.rejects(service.poll(USER_1, { editing, lease: 'keep' }), {
+    await assert.rejects(service.poll(USER_1, { editing, tab: TAB_1, lease: 'keep' }), {
       errorType: 'ValidationError',
     });
+  });
+
+  it('rejects a lease from a caller that does not name its tab', async function () {
+    const { service, store } = build();
+    // Unnamed, a user's tabs are one member, and each would be told the lease is its own.
+    for (const lease of ['hold', 'take', 'watch']) {
+      await assert.rejects(service.poll(USER_1, { editing, lease }), {
+        errorType: 'ValidationError',
+      });
+    }
+    assert.deepEqual(await store.claims(), []);
+    assert.equal('lease' in (await service.poll(USER_1, { editing })), false);
   });
 
   it('records which lease a poll asked for, and a failed claim as degraded', async function () {
@@ -610,6 +692,7 @@ describe('EditorPresenceService lease', function () {
         },
         claims: async () => [],
         release: async () => undefined,
+        prune: async () => undefined,
       },
     });
     await assert.rejects(failing.service.poll(USER_1, hold(TAB_1)), { statusCode: 503 });

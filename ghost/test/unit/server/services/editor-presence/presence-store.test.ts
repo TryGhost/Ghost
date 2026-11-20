@@ -32,7 +32,9 @@ const scenarios: Array<{
   },
 ];
 
-const byOrder = (claims: StoredClaim[]) => [...claims].sort((x, y) => x.order - y.order);
+/** The queue as the service reads it: members from the front to the back. */
+const inOrder = (claims: StoredClaim[]) =>
+  [...claims].sort((x, y) => x.order - y.order).map((claim) => claim.member);
 
 describe('presence member encoding', function () {
   it('round-trips a member', function () {
@@ -100,45 +102,88 @@ for (const { label, build } of scenarios) {
       assert.deepEqual(await store.read(0), []);
     });
 
+    it('answers the heartbeat before this one', async function () {
+      const { store } = build();
+      assert.equal(await store.touch('post:a:u1', 1_000, RETENTION), undefined);
+      assert.equal(await store.touch('post:a:u2', 1_500, RETENTION), undefined);
+      assert.equal(await store.touch('post:a:u1', 2_000, RETENTION), 1_000);
+    });
+
     it('keeps a queued member in its place and returns every claim', async function () {
       const { store } = build();
-      await store.claim('post:a:u1', 1_000, RETENTION);
-      await store.claim('post:a:u2', 2_000, RETENTION);
-      const claims = await store.claim('post:a:u1', 3_000, RETENTION);
-      const expected = [
-        { member: 'post:a:u1', order: 1_000 },
-        { member: 'post:a:u2', order: 2_000 },
-      ];
-      assert.deepEqual(byOrder(claims), expected);
-      assert.deepEqual(byOrder(await store.claims()), expected);
+      await store.claim('post:a:u1', RETENTION);
+      await store.claim('post:a:u2', RETENTION);
+      const claims = await store.claim('post:a:u1', RETENTION);
+      assert.deepEqual(inOrder(claims), ['post:a:u1', 'post:a:u2']);
+      assert.deepEqual(inOrder(await store.claims()), ['post:a:u1', 'post:a:u2']);
     });
 
-    it('moves a queued member when asked to replace its place', async function () {
+    it('gives every place an order of its own, in the order they were asked for', async function () {
       const { store } = build();
-      await store.claim('post:a:u1', 1_000, RETENTION);
-      await store.claim('post:a:u2', 2_000, RETENTION);
-      const claims = await store.claim('post:a:u2', 999, RETENTION, true);
-      assert.deepEqual(byOrder(claims), [
-        { member: 'post:a:u2', order: 999 },
-        { member: 'post:a:u1', order: 1_000 },
-      ]);
+      // Asked for in reverse of how the members sort, which must not decide it.
+      for (const member of ['post:a:u3', 'post:a:u2', 'post:a:u1']) {
+        await store.claim(member, RETENTION);
+      }
+      const claims = await store.claims();
+      assert.deepEqual(inOrder(claims), ['post:a:u3', 'post:a:u2', 'post:a:u1']);
+      assert.equal(new Set(claims.map((claim) => claim.order)).size, 3);
     });
 
-    it('releases the named claims and leaves heartbeats alone', async function () {
+    it('moves a member behind everyone, or ahead of everyone with front', async function () {
+      const { store } = build();
+      await store.claim('post:a:u1', RETENTION);
+      await store.claim('post:a:u2', RETENTION);
+      await store.claim('post:a:u3', RETENTION);
+      const back = await store.claim('post:a:u1', RETENTION, { move: true });
+      assert.deepEqual(inOrder(back), ['post:a:u2', 'post:a:u3', 'post:a:u1']);
+
+      const front = await store.claim('post:a:u3', RETENTION, { front: true, move: true });
+      assert.deepEqual(inOrder(front), ['post:a:u3', 'post:a:u2', 'post:a:u1']);
+      // The latest to go to the front is ahead of whoever went there before.
+      const again = await store.claim('post:a:u2', RETENTION, { front: true, move: true });
+      assert.deepEqual(inOrder(again), ['post:a:u2', 'post:a:u3', 'post:a:u1']);
+    });
+
+    it('releases a member’s own claim and leaves heartbeats alone', async function () {
       const { store } = build();
       await store.touch('post:a:u1', 1_000, RETENTION);
-      await store.claim('post:a:u1', 1_000, RETENTION);
-      await store.claim('post:a:u2', 2_000, RETENTION);
-      await store.release(['post:a:u1', 'post:a:never']);
-      await store.release([]);
-      assert.deepEqual(await store.claims(), [{ member: 'post:a:u2', order: 2_000 }]);
+      await store.claim('post:a:u1', RETENTION);
+      await store.claim('post:a:u2', RETENTION);
+      await store.release('post:a:u1');
+      await store.release('post:a:never');
+      assert.deepEqual(inOrder(await store.claims()), ['post:a:u2']);
       assert.deepEqual(await store.read(0), [{ member: 'post:a:u1', ts: 1_000 }]);
+    });
+
+    it('prunes a claim only while it has the order it was read with', async function () {
+      const { store } = build();
+      await store.claim('post:a:u1', RETENTION);
+      await store.claim('post:a:u2', RETENTION);
+      const [seen] = (await store.claims()).filter((claim) => claim.member === 'post:a:u1');
+      // Its member comes back before the claim seen as stale is dropped.
+      await store.claim('post:a:u1', RETENTION, { move: true });
+      await store.prune([seen]);
+      await store.prune([]);
+      assert.deepEqual(inOrder(await store.claims()), ['post:a:u2', 'post:a:u1']);
+
+      await store.prune((await store.claims()).filter((claim) => claim.member === 'post:a:u1'));
+      assert.deepEqual(inOrder(await store.claims()), ['post:a:u2']);
+    });
+
+    it('still places the next member last after pruning the latest claim', async function () {
+      const { store } = build();
+      await store.claim('post:a:u1', RETENTION);
+      await store.claim('post:a:u2', RETENTION);
+      await store.prune((await store.claims()).filter((claim) => claim.member === 'post:a:u2'));
+      const claims = await store.claim('post:a:u3', RETENTION);
+      assert.deepEqual(inOrder(claims), ['post:a:u1', 'post:a:u3']);
+      assert.equal(new Set(claims.map((claim) => claim.order)).size, 2);
     });
 
     it('drops a removed member from the queue too', async function () {
       const { store } = build();
       await store.touch('post:a:u1', 1_000, RETENTION);
-      await store.claim('post:a:u1', 1_000, RETENTION);
+      await store.claim('post:a:u1', RETENTION);
       await store.remove('post:a:u1');
       assert.deepEqual(await store.claims(), []);
     });
@@ -165,24 +210,60 @@ describe('RedisPresenceStore pipeline', function () {
       leaseKey: 'presence:leases',
     });
     await store.touch('post:a:u1', 1_000, RETENTION);
-    assert.deepEqual(client.commands, ['zadd', 'pexpire', 'zremrangebyscore']);
+    assert.deepEqual(client.commands, ['zrangebyscore', 'zadd', 'pexpire', 'zremrangebyscore']);
   });
 
-  it('queues with ZADD NX and expires the lease key before reading it back', async function () {
+  it('numbers a new place with ZADD INCR and expires the lease key with every write', async function () {
     const client = new FakeRedisClient();
     const store = new RedisPresenceStore({
       client,
       key: 'presence:active',
       leaseKey: 'presence:leases',
     });
-    await store.claim('post:a:u1', 1_000, RETENTION);
-    assert.deepEqual(client.commands, ['zadd nx', 'pexpire', 'zrangebyscore']);
+    await store.claim('post:a:u1', RETENTION);
+    assert.deepEqual(client.commands, [
+      'pexpire',
+      'zrangebyscore',
+      'zadd incr',
+      'pexpire',
+      'zadd nx',
+      'pexpire',
+      'zrangebyscore',
+    ]);
     assert.equal(client.ttls.get('presence:leases'), RETENTION);
     assert.equal(client.sets.get('presence:active'), undefined);
 
+    // A member already queued only keeps the key alive.
     client.commands.length = 0;
-    await store.claim('post:a:u1', 500, RETENTION, true);
-    assert.deepEqual(client.commands, ['zadd', 'pexpire', 'zrangebyscore']);
+    await store.claim('post:a:u1', RETENTION);
+    assert.deepEqual(client.commands, ['pexpire', 'zrangebyscore']);
+
+    client.commands.length = 0;
+    await store.claim('post:a:u1', RETENTION, { front: true, move: true });
+    assert.deepEqual(client.commands, ['zadd incr', 'pexpire', 'zadd', 'pexpire', 'zrangebyscore']);
+  });
+
+  it('keeps its count of places out of the claims and apart from their orders', async function () {
+    const client = new FakeRedisClient();
+    const store = new RedisPresenceStore({
+      client,
+      key: 'presence:active',
+      leaseKey: 'presence:leases',
+    });
+    await store.claim('post:a:u1', RETENTION);
+    const claims = await store.claim('post:a:u2', RETENTION, { front: true });
+    assert.deepEqual(claims.map((claim) => claim.member).sort(), ['post:a:u1', 'post:a:u2']);
+    assert.deepEqual(await store.claims(), claims);
+
+    const stored = client.sets.get('presence:leases') as Map<string, number>;
+    const [count] = [...stored]
+      .filter(([member]) => !member.includes(':'))
+      .map(([, score]) => score);
+    assert.equal(stored.size, 3);
+    assert.equal(
+      claims.some((claim) => claim.order === count),
+      false,
+    );
   });
 
   it('surfaces a failed claim', async function () {
@@ -193,7 +274,7 @@ describe('RedisPresenceStore pipeline', function () {
       leaseKey: 'presence:leases',
     });
     client.failNext = new Error('NOPERM');
-    await assert.rejects(store.claim('post:a:u1', 1_000, RETENTION), /NOPERM/);
+    await assert.rejects(store.claim('post:a:u1', RETENTION), /NOPERM/);
   });
 
   it('surfaces a failed command', async function () {

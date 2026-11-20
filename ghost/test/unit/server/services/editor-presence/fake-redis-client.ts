@@ -22,15 +22,21 @@ export class FakeRedisClient implements RedisPresenceClient {
   pipeline(): RedisPresencePipeline {
     const queue: Array<() => unknown> = [];
     const pipeline: RedisPresencePipeline = {
-      zadd: (key: string, ...rest: [number, string] | ['NX', number, string]) => {
-        const onlyIfAbsent = rest[0] === 'NX';
-        const [score, member] = (onlyIfAbsent ? rest.slice(1) : rest) as [number, string];
-        this.commands.push(onlyIfAbsent ? 'zadd nx' : 'zadd');
+      zadd: (key: string, ...rest: [number, string] | ['NX' | 'INCR', number, string]) => {
+        const flag = typeof rest[0] === 'string' ? rest[0] : undefined;
+        const [score, member] = (flag ? rest.slice(1) : rest) as [number, string];
+        this.commands.push(flag ? `zadd ${flag.toLowerCase()}` : 'zadd');
         queue.push(() => {
           const set = this.set(key);
-          if (!onlyIfAbsent || !set.has(member)) {
+          if (flag === 'INCR') {
+            const next = (set.get(member) ?? 0) + score;
+            set.set(member, next);
+            return String(next);
+          }
+          if (flag !== 'NX' || !set.has(member)) {
             set.set(member, score);
           }
+          return undefined;
         });
         return pipeline;
       },
