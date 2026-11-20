@@ -1,1 +1,1 @@
-module.exports = require('./lib/DomainEvents');
+module.exports = require('./src/DomainEvents');
