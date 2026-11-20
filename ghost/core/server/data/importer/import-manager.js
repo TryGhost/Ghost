@@ -21,6 +21,17 @@ const messages = {
   zipContainsMultipleDataFormats:
     'Zip file contains multiple data formats. Please split up and import separately.',
 };
+// Aborts an import between rows once Ghost starts shutting down. It rolls back the import's
+// transaction, so a job that runs again later starts from a clean database.
+class ImportInterruptedError extends errors.InternalServerError {
+  constructor() {
+    super({
+      message: 'The import stopped because Ghost is shutting down.',
+      code: 'IMPORT_INTERRUPTED',
+    });
+  }
+}
+
 const defaults = {
   extensions: ['.zip'],
   contentTypes: ['application/zip', 'application/x-zip-compressed'],
@@ -28,6 +39,8 @@ const defaults = {
 };
 
 class ImportManager {
+  #stop = new AbortController();
+
   constructor({
     jobsService,
     importsStorage,
@@ -516,7 +529,8 @@ class ImportManager {
    * Run a queued import: read the stored upload back and import it, logging when it starts
    * and how it ends
    * @param {ContentImportJob} job
-   * @returns {Promise<Object.<string, ImportResult>|undefined>}
+   * @returns {Promise<Object.<string, ImportResult>|undefined|'interrupted'>} 'interrupted' when
+   * shutdown stopped the import, so the job runs again
    */
   async executeImport(job) {
     const importOptions = {
@@ -524,6 +538,7 @@ class ImportManager {
       importTag: job.importTag,
       returnImportedData: job.returnImportedData,
       importPersistUser: job.importPersistUser,
+      signal: this.#stop.signal,
     };
     const upload = this.importsStorage.readStream({ path: job.uploadKey });
     const missing = await upload.then(
@@ -541,6 +556,7 @@ class ImportManager {
     }
     const startedAt = Date.now();
     this.logging.info('[Background Job] site-content-import started');
+    let interrupted = false;
     try {
       const result = await this.processImport(
         () => this.loadStoredUpload(upload, job.fileName),
@@ -567,6 +583,13 @@ class ImportManager {
       }
       return result;
     } catch (err) {
+      if (err instanceof ImportInterruptedError) {
+        interrupted = true;
+        this.logging.info(
+          `[Background Job] site-content-import interrupted after ${Date.now() - startedAt}ms`,
+        );
+        return 'interrupted';
+      }
       this.logging.error(
         err,
         `[Background Job] site-content-import failed after ${Date.now() - startedAt}ms`,
@@ -578,9 +601,20 @@ class ImportManager {
         (stream) => stream.destroy(),
         () => {},
       );
-      // After the email, so a job cut short before it was sent still finds its upload
-      await this.cleanUpUpload(job.uploadKey);
+      // After the email, so a job cut short before it was sent still finds its upload. An
+      // interrupted job keeps it to run again.
+      if (!interrupted) {
+        await this.cleanUpUpload(job.uploadKey);
+      }
     }
+  }
+
+  /**
+   * Stops queued imports between rows from now on, so they roll back rather than run into
+   * the shutdown timeout. Called as Ghost starts shutting down.
+   */
+  onPreStop() {
+    this.#stop.abort(new ImportInterruptedError());
   }
 
   /**
@@ -596,6 +630,7 @@ class ImportManager {
     const env = this.config.get('env');
     let loaded;
     let importResult;
+    let interrupted = false;
     try {
       // Step 1: Load the content to import
       loaded = await loadImport();
@@ -612,6 +647,11 @@ class ImportManager {
 
       return importResult;
     } catch (err) {
+      if (err instanceof ImportInterruptedError) {
+        // Rolled back and left to run again, so there is nothing to tell the user yet
+        interrupted = true;
+        throw err;
+      }
       this.logging.error(err, '[Background Job] site-content-import error');
       const errorDetails = err.errorDetails || [err];
       importResult = { data: { errors: errorDetails } };
@@ -619,7 +659,7 @@ class ImportManager {
       // Step 5: Cleanup the files this import owns
       await this.cleanUp(loaded?.cleanupDirectory);
 
-      if (!env?.startsWith('testing')) {
+      if (!interrupted && !env?.startsWith('testing')) {
         // Step 6: Send email
         await this.sendCompletionEmail(importResult, importOptions);
       }
@@ -656,6 +696,7 @@ class ImportManager {
  * @property {string} [user.email]
  * @property {string} [importTag]
  * @property {Object} [data]
+ * @property {AbortSignal} [signal] aborts the import between rows
  */
 
 /**

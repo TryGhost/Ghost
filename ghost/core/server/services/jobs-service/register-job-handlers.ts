@@ -131,7 +131,9 @@ export default function registerJobHandlers({
   });
 
   jobsService.handle(ContentImportJob, async (job) => {
-    await siteImporter.executeImport(job);
+    if ((await siteImporter.executeImport(job)) === 'interrupted') {
+      return 'interrupted';
+    }
   });
 
   jobsService.handle(MembersImportJob, async (job) => {

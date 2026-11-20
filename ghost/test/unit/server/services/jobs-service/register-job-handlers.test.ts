@@ -122,6 +122,16 @@ describe('register-job-handlers', function () {
     await delivery;
   });
 
+  it('passes on a site import that shutdown interrupted, so the job runs again', async function () {
+    siteImporter.executeImport.resolves('interrupted');
+    assert.equal(await handlerFor(ContentImportJob.type)({}), 'interrupted');
+  });
+
+  it('does not report a finished site import as interrupted', async function () {
+    siteImporter.executeImport.resolves({ data: {} });
+    assert.equal(await handlerFor(ContentImportJob.type)({}), undefined);
+  });
+
   it('propagates site import completion-email failures', async function () {
     const error = new Error('email failed');
     siteImporter.executeImport.rejects(error);

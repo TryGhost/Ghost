@@ -346,6 +346,8 @@ class Base {
     });
 
     for (const op of ops) {
+      // Outside each row's try, which would record the interruption as that row failing
+      importOptions.signal?.throwIfAborted();
       await op();
     }
   }

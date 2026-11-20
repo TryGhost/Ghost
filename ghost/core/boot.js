@@ -516,6 +516,9 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const signingKeys = require('./server/services/signing-keys').default;
   memberJobs.init();
   const siteImporter = require('./server/data/importer').init({ jobsService });
+  if (ghostServer) {
+    ghostServer.registerPreStopTask(() => siteImporter.onPreStop(), 'Site import (stop importing)');
+  }
   assert(giftService.service, 'Gift service should be initialized');
   assert(mentionsService.service.controller, 'Mentions controller should be initialized');
   assert(mentionsService.service.sendingService, 'Mentions sending service should be initialized');

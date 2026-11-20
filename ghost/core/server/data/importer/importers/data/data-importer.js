@@ -193,6 +193,7 @@ const DataImporter = {
       });
 
       for (const op of ops) {
+        importOptions.signal?.throwIfAborted();
         await op();
       }
 

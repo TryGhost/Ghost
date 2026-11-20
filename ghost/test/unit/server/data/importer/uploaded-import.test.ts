@@ -498,6 +498,38 @@ describe('Uploaded site imports', function () {
     assert.deepEqual(await fs.readdir(storage.storagePath), []);
   });
 
+  it('leaves an import that shutdown stopped to run again, without emailing', async function () {
+    const first = subject();
+    await first.manager.importFromFile(await archive({ 'data.json': json }), {
+      user: { email: 'owner@example.com' },
+    });
+    const job = queuedJob(first);
+    // Like the data importer, it checks between rows whether Ghost is stopping.
+    first.manager.importers = [
+      {
+        type: 'data',
+        preProcess: (data: unknown) => data,
+        doImport: async (_data: unknown, importOptions: { signal: AbortSignal }) => {
+          first.manager.onPreStop();
+          importOptions.signal.throwIfAborted();
+          return {};
+        },
+      },
+    ];
+
+    assert.equal(await first.manager.executeImport(job), 'interrupted');
+
+    sinon.assert.notCalled(first.deps.mailer.send);
+    assert.deepEqual(await fs.readdir(storage.storagePath), [job.uploadKey]);
+
+    const later = subject();
+    sinon.stub(later.manager, 'doImport').resolves({});
+    assert.deepEqual(await later.manager.executeImport(job), {});
+    sinon.assert.calledOnceWithMatch(later.deps.mailer.send, {
+      subject: 'Your content import has finished',
+    });
+  });
+
   it('rejects email failure without retrying, after deleting the upload and local files', async function () {
     const first = subject();
     const { manager, deps } = first;
