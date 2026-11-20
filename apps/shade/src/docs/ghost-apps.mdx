@@ -103,7 +103,7 @@ Pass the app SDK's `ghost.overlay` as `overlay`. Shade's dialogs, alert dialogs 
 
 A dialog that opens before the overlay has loaded, which it starts to once the app has started, renders in the page instead, and so does one that isn't modal.
 
-`ShadeApp` also renders the toaster. Show toasts with `toast` from `@tryghost/shade/components`, such as `toast.success('Saved')`. Don't add `sonner` as a dependency: a second copy of it shows nothing.
+`ShadeApp` also renders the toaster. Show toasts with `toast` from `@tryghost/shade/components`, such as `toast.success('Saved')`. Don't add `sonner` as a dependency: a second copy of it shows nothing. While a dialog or sheet is open in the overlay, toasts show above it there, inside the safe area, and they go back to the page as it closes.
 
 Leave `admin7Design` at its default. It mirrors Admin's `admin7Design` Labs flag while Admin 7 rolls out; an app always gets the Admin 7 design.
 

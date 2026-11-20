@@ -55,6 +55,50 @@ export interface AppOverlay {
 export const AppOverlayContext = React.createContext<AppOverlay | undefined>(undefined);
 
 /**
+ * Follows which dialogs are open in the app's overlay, for toasts to show above them, as they do
+ * above Admin's own. Returns the overlay for the dialogs to hold, and the element toasts render
+ * in: the overlay's while a dialog is open there, else undefined, for the page.
+ */
+export function useOverlayToasts(
+  overlay: AppOverlay | undefined,
+): [AppOverlay | undefined, HTMLElement | undefined] {
+  const [container, setContainer] = React.useState<HTMLElement>();
+  const tracked = React.useMemo((): AppOverlay | undefined => {
+    if (!overlay) {
+      return undefined;
+    }
+    // The overlay's element, by the hold of each dialog open in it, in the order they opened.
+    const open = new Map<object, HTMLElement>();
+    const update = () => setContainer([...open.values()].at(-1));
+    return {
+      container: () => overlay.container(),
+      hold(tint, element) {
+        const key = {};
+        const hold = overlay.hold(tint, element);
+        return {
+          setOpen(next) {
+            hold.setOpen(next);
+            open.delete(key);
+            // A dialog the overlay had nowhere for renders in the page, and so do its toasts.
+            const root = next ? overlay.container() : undefined;
+            if (root?.contains(element)) {
+              open.set(key, root);
+            }
+            update();
+          },
+          release() {
+            open.delete(key);
+            update();
+            hold.release();
+          },
+        };
+      },
+    };
+  }, [overlay]);
+  return [tracked, overlay ? container : undefined];
+}
+
+/**
  * Where portalled content inside a dialog in the overlay renders: the overlay too, so a
  * Select or Popover in a dialog opens above it rather than in the page underneath.
  */

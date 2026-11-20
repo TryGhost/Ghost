@@ -9,6 +9,7 @@ import {
   useModalOpen,
 } from '@/lib/app-overlay';
 import { cn } from '@/lib/utils';
+import { keepOpenOnToast } from '@/lib/toast-press';
 import { ShadeScope } from '@/shade-scope';
 
 const Dialog = (props: React.ComponentProps<typeof DialogPrimitive.Root>) => {
@@ -118,6 +119,7 @@ const DialogContent = React.forwardRef<
         className,
       )}
       {...props}
+      onInteractOutside={(event) => keepOpenOnToast(event, props.onInteractOutside)}
     >
       {children}
     </DialogPrimitive.Content>,

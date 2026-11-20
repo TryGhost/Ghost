@@ -8,6 +8,7 @@ import { X } from 'lucide-react';
 
 import { overlayTint, useHostedModal, useModalOpen } from '@/lib/app-overlay';
 import { cn } from '@/lib/utils';
+import { keepOpenOnToast } from '@/lib/toast-press';
 import { ShadeScope } from '@/shade-scope';
 
 const Sheet = (props: React.ComponentProps<typeof SheetPrimitive.Root>) => {
@@ -94,6 +95,7 @@ const SheetContent = React.forwardRef<
               className,
             )}
             {...props}
+            onInteractOutside={(event) => keepOpenOnToast(event, props.onInteractOutside)}
           >
             <SheetPrimitive.Close
               className={cn(
