@@ -63,6 +63,30 @@ export function isVisibilityRestricted(visibility: Visibility) {
         || visibility.email?.memberSegment !== ALL_MEMBERS_SEGMENT;
 }
 
+interface SerializedNode {
+    visibility?: Visibility;
+    children?: SerializedNode[];
+    [key: string]: unknown;
+}
+
+/**
+ * Whether any card in a serialized Lexical document has restricted visibility.
+ * Accepts the stored JSON string or the parsed document.
+ */
+export function hasRestrictedCards(lexical: string | {root?: SerializedNode} | null | undefined): boolean {
+    if (!lexical) {
+        return false;
+    }
+
+    const document = typeof lexical === 'string' ? JSON.parse(lexical) : lexical;
+
+    const hasRestrictedNode = (nodes: unknown): boolean => Array.isArray(nodes) && nodes.some((node: SerializedNode) => (
+        (node?.visibility && isVisibilityRestricted(node.visibility)) || hasRestrictedNode(node?.children)
+    ));
+
+    return hasRestrictedNode(document?.root?.children);
+}
+
 // old formats...
 //
 // "segment" only applies to email visibility

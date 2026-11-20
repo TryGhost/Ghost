@@ -1,6 +1,6 @@
 import {JSDOM} from 'jsdom';
 import type {Visibility} from '../../src/utils/visibility.js';
-import {isOldVisibilityFormat, isVisibilityRestricted, migrateOldVisibilityFormat, renderWithVisibility, buildDefaultVisibility} from '../../src/utils/visibility.js';
+import {hasRestrictedCards, isOldVisibilityFormat, isVisibilityRestricted, migrateOldVisibilityFormat, renderWithVisibility, buildDefaultVisibility} from '../../src/utils/visibility.js';
 
 type VisibilityRenderOutput = Parameters<typeof renderWithVisibility>[0];
 
@@ -102,6 +102,57 @@ describe('Utils: visibility', function () {
         it('returns false if new visibility format is visible to all', function () {
             const visibility = {web: {nonMember: true, memberSegment: 'status:free,status:-free'}, email: {memberSegment: 'status:free,status:-free'}};
             expect(isVisibilityRestricted(visibility)).toBe(false);
+        });
+    });
+
+    describe('hasRestrictedCards', function () {
+        const ALL = 'status:free,status:-free';
+
+        function doc(children: unknown[]) {
+            return JSON.stringify({root: {type: 'root', children}});
+        }
+
+        function card(visibility: Visibility) {
+            return {type: 'html', html: '<p>Card</p>', visibility};
+        }
+
+        it('returns false for an empty document', function () {
+            expect(hasRestrictedCards(null)).toBe(false);
+            expect(hasRestrictedCards(undefined)).toBe(false);
+            expect(hasRestrictedCards('')).toBe(false);
+        });
+
+        it('returns false when no card has visibility settings', function () {
+            const lexical = doc([
+                {type: 'paragraph', children: [{type: 'text', text: 'Hello'}]},
+                {type: 'image', src: '/image.jpg'}
+            ]);
+            expect(hasRestrictedCards(lexical)).toBe(false);
+        });
+
+        it('returns false when every card is visible to everyone', function () {
+            const lexical = doc([card({web: {nonMember: true, memberSegment: ALL}, email: {memberSegment: ALL}})]);
+            expect(hasRestrictedCards(lexical)).toBe(false);
+        });
+
+        it('returns true when a card is restricted', function () {
+            const lexical = doc([card({web: {nonMember: true, memberSegment: ALL}, email: {memberSegment: 'status:free'}})]);
+            expect(hasRestrictedCards(lexical)).toBe(true);
+        });
+
+        it('returns true when a card uses the old restricted format', function () {
+            const lexical = doc([card({emailOnly: true, segment: ''})]);
+            expect(hasRestrictedCards(lexical)).toBe(true);
+        });
+
+        it('returns true when a restricted card is nested', function () {
+            const lexical = doc([{type: 'list', children: [{type: 'listitem', children: [card({showOnWeb: false})]}]}]);
+            expect(hasRestrictedCards(lexical)).toBe(true);
+        });
+
+        it('accepts a parsed document', function () {
+            const lexical = JSON.parse(doc([card({showOnWeb: false})]));
+            expect(hasRestrictedCards(lexical)).toBe(true);
         });
     });
 
