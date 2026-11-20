@@ -12,10 +12,6 @@ type Tag = {
   created_at: string;
 };
 
-type User = {
-  id: string;
-};
-
 class TagsImporter extends TableImporter<Tag> {
   static table = 'tags';
   static dependencies = ['users'];
@@ -24,14 +20,14 @@ class TagsImporter extends TableImporter<Tag> {
     max: 24,
   });
 
-  declare users: User[];
+  declare users: unknown[];
 
   constructor(knex: Knex, transaction: Knex.Transaction) {
     super(TagsImporter.table, knex, transaction);
   }
 
   async import(quantity = this.defaultQuantity): Promise<void> {
-    this.users = await this.transaction.select('id').from<User>('users');
+    this.users = await this.transaction.select('id').from('users');
     await super.import(quantity);
   }
 
