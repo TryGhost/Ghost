@@ -344,6 +344,24 @@ describe('VideoNode', function () {
             expect(output).toContain('<a class="kg-video-preview" href="https://example.com/my-post"');
             expect(output).toContain('background="/content/images/2022/11/koenig-lexical.jpg"');
         }));
+
+        it('links email to the video file when the card is restricted on web', editorTest(function () {
+            const videoNode = $createVideoNode({
+                src: '/content/images/2022/11/koenig-lexical.mp4',
+                width: 200,
+                height: 100,
+                thumbnailSrc: '/content/images/2022/11/koenig-lexical.jpg'
+            });
+            videoNode.visibility = {
+                web: {nonMember: true, memberSegment: ''},
+                email: {memberSegment: 'status:free,status:-free'}
+            };
+            const {element} = videoNode.exportDOM(editor, {...exportOptions, target: 'email', postUrl: 'https://example.com/my-post'});
+            const output = (element as HTMLElement).outerHTML;
+
+            expect(output).not.toContain('https://example.com/my-post');
+            expect(output).toContain('<a class="kg-video-preview" href="/content/images/2022/11/koenig-lexical.mp4"');
+        }));
     });
 
     describe('hasEditMode', function () {

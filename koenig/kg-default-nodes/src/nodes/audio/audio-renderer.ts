@@ -2,7 +2,7 @@ import {addCreateDocumentOption} from '../../utils/add-create-document-option.js
 import {escapeHtml} from '../../utils/escape-html.js';
 import type {ExportDOMOptions, ExportDOMOutput} from '../../export-dom.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
-import {renderWithVisibility, type Visibility} from '../../utils/visibility.js';
+import {getEmailMediaHref, renderWithVisibility, type Visibility} from '../../utils/visibility.js';
 
 interface AudioNodeData {
     src: string;
@@ -185,7 +185,7 @@ function frontendTemplate(node: AudioNodeData, document: Document, thumbnailCls:
 }
 
 function emailTemplate(node: AudioNodeData, document: Document, options: AudioRenderOptions, thumbnailCls: string, emptyThumbnailCls: string) {
-    const postUrl = escapeHtml(options.postUrl || node.src);
+    const postUrl = escapeHtml(getEmailMediaHref(node.src, node.visibility, options.postUrl));
     const html = (`
         <table cellspacing="0" cellpadding="0" border="0" class="kg-audio-card">
                 <tr>

@@ -1,7 +1,7 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
-import {renderWithVisibility, type Visibility} from '../../utils/visibility.js';
+import {getEmailMediaHref, renderWithVisibility, type Visibility} from '../../utils/visibility.js';
 import {escapeHtml} from '../../utils/escape-html.js';
 import {bytesToSize} from '../../utils/size-byte-converter.js';
 
@@ -33,7 +33,7 @@ export function renderFileNode(node: FileNodeData, options: RenderOptions = {}) 
 }
 
 function emailTemplate(node: FileNodeData, document: Document, options: RenderOptions) {
-    const href = escapeHtml(options.postUrl || node.src);
+    const href = escapeHtml(getEmailMediaHref(node.src, node.visibility, options.postUrl));
     let iconCls;
     if (!node.fileTitle && !node.fileCaption) {
         iconCls = 'margin-top: 6px; height: 20px; width: 20px; max-width: 20px; padding-top: 4px; padding-bottom: 4px;';
