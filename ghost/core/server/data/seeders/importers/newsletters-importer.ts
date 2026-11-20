@@ -1,21 +1,34 @@
-const { TableImporter } = require('./table-importer');
-const { blogStartDate } = require('../utils/blog-info');
-const { faker } = require('@faker-js/faker');
-const { slugify } = require('@tryghost/string');
+import { TableImporter } from './table-importer';
+import { blogStartDate } from '../utils/blog-info';
+import { faker } from '@faker-js/faker';
+import { slugify } from '@tryghost/string';
+import type { Knex } from 'knex';
 
-class NewslettersImporter extends TableImporter {
+type Newsletter = {
+  id: string;
+  uuid: string;
+  name: string;
+  slug: string;
+  sender_reply_to: string;
+  status: string;
+  subscribe_on_signup: boolean;
+  sort_order: number;
+  created_at: Date;
+};
+
+class NewslettersImporter extends TableImporter<Newsletter> {
   static table = 'newsletters';
-  static dependencies = [];
+  static dependencies: string[] = [];
 
   defaultQuantity = 2;
 
   sortOrder = 0;
 
-  constructor(knex, transaction) {
+  constructor(knex: Knex, transaction: Knex.Transaction) {
     super(NewslettersImporter.table, knex, transaction);
   }
 
-  generate() {
+  generate(): Newsletter {
     const name = `${faker.commerce.productAdjective()} ${faker.word.noun()}`;
     const sortOrder = this.sortOrder;
     this.sortOrder = this.sortOrder + 1;

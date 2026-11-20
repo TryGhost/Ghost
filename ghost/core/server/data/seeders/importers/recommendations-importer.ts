@@ -1,20 +1,34 @@
-const { TableImporter } = require('./table-importer');
-const { faker } = require('@faker-js/faker');
+import { TableImporter } from './table-importer';
+import { faker } from '@faker-js/faker';
+import type { Knex } from 'knex';
 
-function capitalize(str) {
+type Recommendation = {
+  id: string;
+  url: string;
+  title: string;
+  excerpt: string;
+  featured_image: string;
+  favicon: string;
+  description: string;
+  one_click_subscribe: boolean;
+  created_at: Date;
+  updated_at: Date;
+};
+
+function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-class RecommendationsImporter extends TableImporter {
+class RecommendationsImporter extends TableImporter<Recommendation> {
   static table = 'recommendations';
-  static dependencies = [];
+  static dependencies: string[] = [];
   defaultQuantity = 0;
 
-  constructor(knex, transaction) {
+  constructor(knex: Knex, transaction: Knex.Transaction) {
     super(RecommendationsImporter.table, knex, transaction);
   }
 
-  generate() {
+  generate(): Recommendation {
     const id = this.fastFakeObjectId();
     return {
       id,
