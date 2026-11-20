@@ -1,13 +1,13 @@
 // For information on writing migrations, see https://www.notion.so/ghost/Database-migrations-eb5b78c435d741d2b34a582d57c24253
 
-const logging = require('@tryghost/logging');
-const DatabaseInfo = require('@tryghost/database-info');
-const { default: ObjectID } = require('bson-objectid');
+import logging from '@tryghost/logging';
+import DatabaseInfo from '@tryghost/database-info';
+import ObjectID from 'bson-objectid';
 
 // For DML - data changes
-const { createTransactionalMigration } = require('../../utils');
+import { createTransactionalMigration } from '../../utils';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     // Backfill missing offer redemptions
     try {
@@ -43,7 +43,7 @@ module.exports = createTransactionalMigration(
       if (rows && rows.length > 0) {
         logging.info(`Backfilling ${rows.length} offer redemptions`);
         // Generate IDs for each row
-        const offerRedemptions = rows.map((row) => {
+        const offerRedemptions = rows.map((row: any) => {
           return {
             id: new ObjectID().toHexString(),
             ...row,
@@ -54,7 +54,7 @@ module.exports = createTransactionalMigration(
       } else {
         logging.info('No offer redemptions to backfill');
       }
-    } catch (error) {
+    } catch (error: any) {
       logging.error(`Error backfilling offer redemptions: ${error.message}`);
     }
   },

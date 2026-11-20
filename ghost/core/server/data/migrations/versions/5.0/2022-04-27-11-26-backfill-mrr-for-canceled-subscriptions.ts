@@ -1,8 +1,8 @@
-const logging = require('@tryghost/logging');
+import logging from '@tryghost/logging';
 
-const { createTransactionalMigration } = require('../../utils');
+import { createTransactionalMigration } from '../../utils';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     logging.info(
       'Setting "mrr" to 0 for all canceled subscriptions in "members_stripe_customers_subscriptions"',

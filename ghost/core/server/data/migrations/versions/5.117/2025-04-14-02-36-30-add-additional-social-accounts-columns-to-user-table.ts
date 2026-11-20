@@ -1,5 +1,5 @@
-const { combineNonTransactionalMigrations, createAddColumnMigration } = require('../../utils');
-module.exports = combineNonTransactionalMigrations(
+import { combineNonTransactionalMigrations, createAddColumnMigration } from '../../utils';
+export default combineNonTransactionalMigrations(
   createAddColumnMigration('users', 'threads', {
     type: 'string',
     maxlength: 191,

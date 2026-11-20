@@ -1,7 +1,7 @@
-const logging = require('@tryghost/logging');
-const ObjectID = require('bson-objectid').default;
-const security = require('@tryghost/security');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import ObjectID from 'bson-objectid';
+import security from '@tryghost/security';
+import { createTransactionalMigration } from '../../utils';
 
 const frontendIntegration = {
   slug: 'ghost-internal-frontend',
@@ -10,7 +10,7 @@ const frontendIntegration = {
   type: 'internal',
 };
 
-const addInternalIntegrationAndKey = async (knex, integration) => {
+const addInternalIntegrationAndKey = async (knex: any, integration: any) => {
   const message = `Adding ${integration.name} integration`;
 
   const existing = await knex('integrations').select('id').where('slug', integration.slug).first();
@@ -42,7 +42,7 @@ const addInternalIntegrationAndKey = async (knex, integration) => {
   await knex('api_keys').insert(contentKey);
 };
 
-const removeInternalIntegrationAndKey = async (knex, integration) => {
+const removeInternalIntegrationAndKey = async (knex: any, integration: any) => {
   const message = `Removing ${integration.name} integration`;
 
   const existing = await knex('integrations').select('id').where('slug', integration.slug).first();
@@ -58,7 +58,7 @@ const removeInternalIntegrationAndKey = async (knex, integration) => {
   await knex('integrations').where('id', existing.id).delete();
 };
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     await addInternalIntegrationAndKey(knex, frontendIntegration);
   },

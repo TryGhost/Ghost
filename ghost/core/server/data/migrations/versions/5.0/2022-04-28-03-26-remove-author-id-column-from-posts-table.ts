@@ -1,7 +1,10 @@
-const { createDropColumnMigration } = require('../../utils');
+import { createDropColumnMigration } from '../../utils';
 
-module.exports = createDropColumnMigration('posts', 'author_id', {});
+// @ts-expect-error empty column definition; down is replaced below
+const migration = createDropColumnMigration('posts', 'author_id', {});
 
-module.exports.down = async () => {
+migration.down = async () => {
   // noop - major version migrations are not backwards compatible
 };
+
+export default migration;

@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration('posts', 'show_title_and_feature_image', {
+export default createAddColumnMigration('posts', 'show_title_and_feature_image', {
   type: 'boolean',
   nullable: false,
   defaultTo: true,

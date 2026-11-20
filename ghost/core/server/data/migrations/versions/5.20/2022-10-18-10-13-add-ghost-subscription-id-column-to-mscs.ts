@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration(
+export default createAddColumnMigration(
   'members_stripe_customers_subscriptions',
   'ghost_subscription_id',
   {

@@ -1,8 +1,8 @@
 // For information on writing migrations, see https://www.notion.so/ghost/Database-migrations-eb5b78c435d741d2b34a582d57c24253
 
-const logging = require('@tryghost/logging');
-const { default: ObjectID } = require('bson-objectid');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import ObjectID from 'bson-objectid';
+import { createTransactionalMigration } from '../../utils';
 
 const MIGRATION_USER = 1;
 
@@ -13,7 +13,7 @@ const coreContentIntegration = {
   type: 'core',
 };
 
-const addIntegration = async (knex, integration) => {
+const addIntegration = async (knex: any, integration: any) => {
   const message = `Adding "${integration.name}" integration`;
 
   const existing = await knex('integrations').select('id').where('slug', integration.slug).first();
@@ -33,7 +33,7 @@ const addIntegration = async (knex, integration) => {
   await knex('integrations').insert(integration);
 };
 
-const removeIntegration = async (knex, integration) => {
+const removeIntegration = async (knex: any, integration: any) => {
   const message = `Removing ${integration.name} integration`;
 
   const existing = await knex('integrations').select('id').where('slug', integration.slug).first();
@@ -49,7 +49,7 @@ const removeIntegration = async (knex, integration) => {
   await knex('integrations').where('id', existing.id).del();
 };
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     await addIntegration(knex, coreContentIntegration);
   },

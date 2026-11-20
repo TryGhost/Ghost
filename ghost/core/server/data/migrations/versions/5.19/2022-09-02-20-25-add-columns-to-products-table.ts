@@ -1,6 +1,6 @@
-const { createAddColumnMigration, combineNonTransactionalMigrations } = require('../../utils');
+import { createAddColumnMigration, combineNonTransactionalMigrations } from '../../utils';
 
-module.exports = combineNonTransactionalMigrations(
+export default combineNonTransactionalMigrations(
   createAddColumnMigration('products', 'monthly_price', {
     type: 'integer',
     unsigned: true,

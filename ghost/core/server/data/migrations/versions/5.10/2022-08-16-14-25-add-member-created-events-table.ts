@@ -1,6 +1,6 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
-module.exports = addTable('members_created_events', {
+export default addTable('members_created_events', {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   created_at: { type: 'dateTime', nullable: false },
   member_id: {

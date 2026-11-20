@@ -1,6 +1,6 @@
-const logging = require('@tryghost/logging');
+import logging from '@tryghost/logging';
 
-module.exports = {
+export default {
   async up() {
     logging.warn('Skipping migration - noop');
   },

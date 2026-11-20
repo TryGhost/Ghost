@@ -1,6 +1,6 @@
-const { addSetting } = require('../../utils');
+import { addSetting } from '../../utils';
 
-module.exports = addSetting({
+export default addSetting({
   key: 'email_track_clicks',
   value: 'true',
   type: 'boolean',

@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration('users', 'recommendation_notifications', {
+export default createAddColumnMigration('users', 'recommendation_notifications', {
   type: 'boolean',
   nullable: false,
   defaultTo: true,

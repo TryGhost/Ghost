@@ -1,9 +1,9 @@
-const DatabaseInfo = require('@tryghost/database-info');
-const logging = require('@tryghost/logging');
+import DatabaseInfo from '@tryghost/database-info';
+import logging from '@tryghost/logging';
 
-const { createTransactionalMigration } = require('../../utils');
+import { createTransactionalMigration } from '../../utils';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     if (DatabaseInfo.isSQLite(knex)) {
       const duplicates = await knex('offer_redemptions')

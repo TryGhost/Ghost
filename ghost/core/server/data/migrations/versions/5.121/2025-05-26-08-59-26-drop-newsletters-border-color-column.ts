@@ -1,6 +1,6 @@
-const { createDropColumnMigration } = require('../../utils');
+import { createDropColumnMigration } from '../../utils';
 
-module.exports = createDropColumnMigration('newsletters', 'border_color', {
+export default createDropColumnMigration('newsletters', 'border_color', {
   type: 'string',
   maxlength: 50,
   nullable: true,

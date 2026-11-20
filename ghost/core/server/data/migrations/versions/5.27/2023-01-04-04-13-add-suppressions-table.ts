@@ -1,6 +1,6 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
-module.exports = addTable('suppressions', {
+export default addTable('suppressions', {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   email: { type: 'string', maxlength: 191, nullable: false, unique: true },
   email_id: { type: 'string', maxlength: 24, nullable: true, references: 'emails.id' },

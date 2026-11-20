@@ -1,10 +1,10 @@
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
-const ObjectID = require('bson-objectid').default;
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
+import ObjectID from 'bson-objectid';
 
 const MIGRATION_USER = 1;
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     logging.info('Adding Ghost ActivityPub integration');
     const existing = await knex

@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration('post_revisions', 'custom_excerpt', {
+export default createAddColumnMigration('post_revisions', 'custom_excerpt', {
   type: 'string',
   maxlength: 2000,
   nullable: true,

@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration('newsletters', 'show_latest_posts', {
+export default createAddColumnMigration('newsletters', 'show_latest_posts', {
   type: 'boolean',
   nullable: false,
   defaultTo: false,

@@ -1,9 +1,9 @@
-const logging = require('@tryghost/logging');
-const { uniq } = require('lodash');
+import logging from '@tryghost/logging';
+import { uniq } from 'lodash';
 
-const { createTransactionalMigration } = require('../../utils');
+import { createTransactionalMigration } from '../../utils';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     logging.info('Adjusting MRR based on Offer Redemptions');
     const offerRedemptions = await knex
@@ -41,7 +41,7 @@ module.exports = createTransactionalMigration(
       .where('type', 'created')
       .whereIn('member_id', memberIds);
 
-    function storeEventOnMemberId(storage, event) {
+    function storeEventOnMemberId(storage: any, event: any) {
       return {
         ...storage,
         [event.member_id]: storage[event.member_id]
@@ -52,9 +52,9 @@ module.exports = createTransactionalMigration(
 
     const mrrCreatedEventsByMemberId = mrrCreatedEvents.reduce(storeEventOnMemberId, {});
 
-    const updatedEvents = [];
+    const updatedEvents: any[] = [];
 
-    function calculateMRR(subscription, redemption) {
+    function calculateMRR(subscription: any, redemption?: any): number {
       if (redemption && subscription.interval !== redemption.discount_interval) {
         logging.error('Found invalid price & redemption pair');
         return calculateMRR(subscription);

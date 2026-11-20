@@ -1,8 +1,8 @@
-const { InternalServerError } = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
+import { InternalServerError } from '@tryghost/errors';
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
 
-module.exports = module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     logging.info('Updating Admin API key for "Self-Serve Migration Integration"');
 

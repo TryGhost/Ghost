@@ -1,6 +1,6 @@
-const { combineTransactionalMigrations, addSetting } = require('../../utils');
+import { combineTransactionalMigrations, addSetting } from '../../utils';
 
-module.exports = combineTransactionalMigrations(
+export default combineTransactionalMigrations(
   addSetting({
     key: 'portal_signup_terms_html',
     value: null,

@@ -1,6 +1,6 @@
-const { addSetting } = require('../../utils');
+import { addSetting } from '../../utils';
 
-module.exports = addSetting({
+export default addSetting({
   key: 'body_font',
   value: '',
   type: 'string',

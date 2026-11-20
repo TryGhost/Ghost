@@ -1,6 +1,6 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
-module.exports = addTable('members_feedback', {
+export default addTable('members_feedback', {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   score: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
   member_id: {

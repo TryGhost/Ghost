@@ -1,7 +1,7 @@
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     logging.info(
       'Setting email_disabled to true for all members that have their email on the suppression list',

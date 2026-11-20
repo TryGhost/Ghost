@@ -1,10 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration(
-  'members_stripe_customers_subscriptions',
-  'trial_end_at',
-  {
-    type: 'dateTime',
-    nullable: true,
-  },
-);
+export default createAddColumnMigration('members_stripe_customers_subscriptions', 'trial_end_at', {
+  type: 'dateTime',
+  nullable: true,
+});

@@ -1,6 +1,6 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
-module.exports = addTable('recommendation_click_events', {
+export default addTable('recommendation_click_events', {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   recommendation_id: {
     type: 'string',

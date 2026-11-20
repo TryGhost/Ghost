@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration('newsletters', 'button_corners', {
+export default createAddColumnMigration('newsletters', 'button_corners', {
   type: 'string',
   maxlength: 50,
   nullable: false,

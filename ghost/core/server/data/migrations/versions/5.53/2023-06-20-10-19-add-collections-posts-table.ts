@@ -1,8 +1,8 @@
 // For information on writing migrations, see https://www.notion.so/ghost/Database-migrations-eb5b78c435d741d2b34a582d57c24253
 
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
-module.exports = addTable('collections_posts', {
+export default addTable('collections_posts', {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   collection_id: {
     type: 'string',

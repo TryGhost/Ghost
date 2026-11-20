@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration('members_products', 'expiry_at', {
+export default createAddColumnMigration('members_products', 'expiry_at', {
   type: 'dateTime',
   nullable: true,
 });

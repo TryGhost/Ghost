@@ -1,4 +1,4 @@
-const { combineTransactionalMigrations, createRemovePermissionMigration } = require('../../utils');
+import { combineTransactionalMigrations, createRemovePermissionMigration } from '../../utils';
 
 const ROLES = ['Admin Integration', 'Administrator', 'Author', 'Editor', 'Contributor'];
 
@@ -55,10 +55,12 @@ const PERMISSIONS = [
   },
 ];
 
-module.exports = combineTransactionalMigrations(
+const migration = combineTransactionalMigrations(
   ...PERMISSIONS.map((p) => createRemovePermissionMigration(p, ROLES)),
 );
 
-module.exports.down = async function () {
+migration.down = async function () {
   // no-op: we don't want to re-add the permissions
 };
+
+export default migration;

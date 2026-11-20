@@ -1,8 +1,8 @@
-const { addForeign, dropForeign } = require('../../../schema/commands');
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
+import { addForeign, dropForeign } from '../../../schema/commands';
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     logging.info('Adding on delete CASCADE for comments parent_id');
 

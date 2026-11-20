@@ -1,6 +1,6 @@
-const { combineTransactionalMigrations, addPermissionToRole } = require('../../utils');
+import { combineTransactionalMigrations, addPermissionToRole } from '../../utils';
 
-module.exports = combineTransactionalMigrations(
+export default combineTransactionalMigrations(
   addPermissionToRole({
     permission: 'Browse newsletters',
     role: 'Admin Integration',

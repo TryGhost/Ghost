@@ -4,10 +4,10 @@
  * Otherwise, it will generate a new random UUID.
  */
 
-const { addSetting } = require('../../utils');
-const { getOrGenerateSiteUuid } = require('../../../../services/settings/settings-utils');
+import { addSetting } from '../../utils';
+import { getOrGenerateSiteUuid } from '../../../../services/settings/settings-utils';
 
-module.exports = addSetting({
+export default addSetting({
   key: 'site_uuid',
   value: getOrGenerateSiteUuid(),
   type: 'string',

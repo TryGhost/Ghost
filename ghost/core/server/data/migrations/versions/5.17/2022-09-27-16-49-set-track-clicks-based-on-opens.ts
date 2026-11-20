@@ -1,8 +1,8 @@
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
 
 // Set email_track_clicks to the current value of email_track_opens
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(connection) {
     const reuseValueOfSetting = await connection('settings')
       .where('key', '=', 'email_track_opens')

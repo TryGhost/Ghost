@@ -1,7 +1,7 @@
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     // The 'none' value is no longer supported/used
     logging.info(

@@ -1,10 +1,10 @@
-const logging = require('@tryghost/logging');
-const { default: ObjectID } = require('bson-objectid');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import ObjectID from 'bson-objectid';
+import { createTransactionalMigration } from '../../utils';
 
 const MIGRATION_USER = 1;
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     logging.info('Creating Ghost Explore Integration');
     const existingIntegration = await knex('integrations')

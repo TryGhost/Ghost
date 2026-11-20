@@ -1,12 +1,12 @@
-const { InternalServerError } = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
-const security = require('@tryghost/security');
-const { default: ObjectID } = require('bson-objectid');
-const { createTransactionalMigration } = require('../../utils');
+import { InternalServerError } from '@tryghost/errors';
+import logging from '@tryghost/logging';
+import security from '@tryghost/security';
+import ObjectID from 'bson-objectid';
+import { createTransactionalMigration } from '../../utils';
 
 const MIGRATION_USER = 1;
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     logging.info('Adding Admin API key for "Self-Serve Migration Integration"');
 

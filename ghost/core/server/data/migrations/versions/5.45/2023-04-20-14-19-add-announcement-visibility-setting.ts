@@ -1,9 +1,9 @@
-const logging = require('@tryghost/logging');
-const {
+import logging from '@tryghost/logging';
+import {
   createTransactionalMigration,
   combineTransactionalMigrations,
   addSetting,
-} = require('../../utils');
+} from '../../utils';
 
 const visibilitySettingCleanup = createTransactionalMigration(
   async function up(knex) {
@@ -24,7 +24,7 @@ const visibilitySettingCleanup = createTransactionalMigration(
   },
 );
 
-module.exports = combineTransactionalMigrations(
+export default combineTransactionalMigrations(
   visibilitySettingCleanup,
   addSetting({
     key: 'announcement_visibility',

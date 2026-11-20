@@ -1,11 +1,11 @@
 // For information on writing migrations, see https://www.notion.so/ghost/Database-migrations-eb5b78c435d741d2b34a582d57c24253
 
-const logging = require('@tryghost/logging');
+import logging from '@tryghost/logging';
 
 // For DML - data changes
-const { createTransactionalMigration } = require('../../utils');
+import { createTransactionalMigration } from '../../utils';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     try {
       await knex('jobs')
@@ -15,7 +15,7 @@ module.exports = createTransactionalMigration(
           'email-analytics-missing',
         ])
         .del();
-    } catch (error) {
+    } catch (error: any) {
       logging.info(`Failed to delete email analytics jobs: ${error.message}`);
     }
   },

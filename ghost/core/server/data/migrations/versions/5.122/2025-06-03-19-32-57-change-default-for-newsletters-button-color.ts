@@ -1,12 +1,12 @@
 // For information on writing migrations, see https://www.notion.so/ghost/Database-migrations-eb5b78c435d741d2b34a582d57c24253
 
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
 
 // old default was null but that doesn't match our existing button behaviour
 // of rendering accent colored buttons. Update all `null` values to `'accent'`
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     try {
       logging.info('Changing newsletters.button_color default to "accent"');
@@ -14,7 +14,7 @@ module.exports = createTransactionalMigration(
         table.string('button_color', 50).defaultTo('accent').alter();
       });
       await knex('newsletters').whereNull('button_color').update({ button_color: 'accent' });
-    } catch (error) {
+    } catch (error: any) {
       logging.error(
         `Error changing newsletters.button_color default to "accent": ${error.message}`,
       );
@@ -30,7 +30,7 @@ module.exports = createTransactionalMigration(
       await knex.schema.alterTable('newsletters', function (table) {
         table.string('button_color', 50).defaultTo(null).alter();
       });
-    } catch (error) {
+    } catch (error: any) {
       logging.error(`Error changing newsletters.button_color default to NULL: ${error.message}`);
     }
   },

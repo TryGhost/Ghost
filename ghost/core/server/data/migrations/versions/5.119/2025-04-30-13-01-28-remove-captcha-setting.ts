@@ -1,3 +1,3 @@
-const { removeSetting } = require('../../utils');
+import { removeSetting } from '../../utils';
 
-module.exports = removeSetting('captcha_enabled');
+export default removeSetting('captcha_enabled');
