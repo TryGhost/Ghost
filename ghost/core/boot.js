@@ -647,8 +647,8 @@ async function initBackgroundServices({ config }) {
     }
   }
 
-  const activitypub = require('./server/services/activitypub');
-  await activitypub.init();
+  // Isolated like the jobs around it: a failed start is logged and the work below still starts.
+  await runIsolated(() => require('./server/services/activitypub').init());
 
   const jobsAfterActivityPub = [
     () => require('./server/services/tinybird-sync').scheduleJob(jobsService),
