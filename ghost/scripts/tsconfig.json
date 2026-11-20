@@ -3,5 +3,5 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "include": ["export-query-parameter-policy.ts"]
+  "include": ["export-query-parameter-policy.ts", "generate-config-reference.ts"]
 }
