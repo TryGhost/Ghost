@@ -8,9 +8,9 @@ import {
   type MigrationFunction,
 } from './migrations';
 import type { ColumnDefinition, ColumnMigrationOptions } from '../../schema/types';
+import { commands } from '../../schema';
 
 const DatabaseInfo = require('@tryghost/database-info');
-const { commands } = require('../../schema');
 
 interface SQLiteColumnInfo {
   name: string;
