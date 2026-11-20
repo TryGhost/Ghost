@@ -17,6 +17,7 @@ import { createApplication } from '@tryghost/foundry/application';
 | [`database.ts`](src/database.ts)                   | `createDatabase(options)`: the database handle from Knex options                                                                                    |
 | [`clock.ts`](src/clock.ts)                         | `createClock()`: the clock, which reads the system time                                                                                             |
 | [`adapter-manager/`](src/adapter-manager/index.ts) | `AdapterManager`: loads, validates and caches adapters. See [Adapter manager](#adapter-manager)                                                     |
+| [`services.ts`](src/services.ts)                   | `createServices({ name, foundation })`: what has been built from service definitions. See [Services](#services)                                     |
 | [`application.ts`](src/application.ts)             | `createApplication(definition)`: builds config, the logger, the database handle, the event bus and the clock once each, in that order, on first use |
 
 `createApplication` also returns `start()` and `stop()`: see
@@ -57,6 +58,11 @@ the application's definition supplies what goes in each one, under `steps`.
   the `services` step are handed nothing.
 - **A slot may sit in a `modules` list**, between two modules, for work that
   has to happen there and is not a module yet. It runs in its place.
+- **A service definition in `modules`** (the `services` step only) is built
+  where the list names it and, when it declares a `start`, started. Its
+  `stop` runs when the application stops.
+- **`declared`** (the `services` step only) names service definitions whose
+  listeners are attached when the step begins. Nothing in it is built.
 - **`when`** on a slot or a module skips it for one start.
 - **A failure** in steps 1 to 6 rejects `start()` with that error, and nothing
   after it runs.
@@ -72,6 +78,37 @@ the application's definition supplies what goes in each one, under `steps`.
 
 The foundry installs no signal handlers and never exits the process. The
 application decides when to call `stop()`.
+
+## Services
+
+An application holds what has been built from
+[service definitions](../kernel/README.md#service-definitions), as
+`application.services`. A definition holds nothing, so two applications in one
+process have an instance each.
+
+- **`get(definition)`** returns the instance and builds it if this is its
+  first use. `create` is handed the foundation and the instance of each thing
+  the definition names in `needs`, which is built first.
+- **Building is refused** until `start()` reaches the `services` step, and
+  again after `stop()`. Before that step the database and the shared modules
+  are not ready, and a service built then would read values that are not
+  there yet.
+- **A failed build** throws to whoever used the service. Nothing is kept, so
+  the next use builds again.
+- **A service that is built asynchronously** is awaited with
+  `resolve(definition)`. `get()` throws until that has finished. An
+  application whose callers cannot wait names the definition in `modules`,
+  and the start sequence builds it there.
+- **`register(definition)`** attaches the definition's declared listeners to
+  the event bus, once for the life of the application. An event that arrives
+  while the application is started builds the service if nothing has yet,
+  then calls the listener. A failed build reaches the event bus as a failed
+  listener would. Nothing is delivered while the application is stopped.
+- **A definition that declares listeners or a `start`** is refused when the
+  application never registered it: its events would otherwise be missed until
+  its first use.
+- **`stop()`** runs the `stop` of each service the start sequence started and
+  forgets every instance. The next `start()` builds its own.
 
 ## Adapter manager
 

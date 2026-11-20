@@ -22,7 +22,7 @@ export const serviceRootShape: CreateRule = {
     schema: [
       {
         type: 'object',
-        properties: { helperImport: { type: 'string' } },
+        properties: { helperImport: { type: 'string' }, aliasImport: { type: 'string' } },
         required: ['helperImport'],
         additionalProperties: false,
       },
@@ -31,7 +31,10 @@ export const serviceRootShape: CreateRule = {
       runtimeExport: 'Named runtime exports belong in extras; type-only exports are allowed.',
       defaultExport: 'Export a default initializer created by the kernel defineService helper.',
       alias: 'Initializer and extras aliases must resolve to local const declarations.',
-      arguments: 'Use defineService(name, create or { create, start?, stop? }, extras?).',
+      arguments:
+        'Use defineService({ name, create, ... }) for a definition, or the older defineService(name, create or { create, start?, stop? }, extras?).',
+      definition:
+        'A service definition is one object written in place, so that what it declares can be read: defineService({ name, create, needs?, listeners?, start?, stop? }).',
       explicitExtras: 'Extras must be an explicit object so every member can be catalogued.',
       property: 'List extras explicitly with static names; no spreads or accessors.',
       duplicate: 'List each extra once.',
@@ -58,7 +61,13 @@ export const serviceRootShape: CreateRule = {
       option && typeof option === 'object' && !Array.isArray(option)
         ? option.helperImport
         : undefined;
+    const aliasImport =
+      option && typeof option === 'object' && !Array.isArray(option)
+        ? option.aliasImport
+        : undefined;
     const factories = new Set<Variable | undefined>();
+    // The transitional wrapper that gives a definition a `.service` getter.
+    const wrappers = new Set<Variable | undefined>();
     const constants = new Map<Variable | undefined, ESTree.Node>();
     const aliases: [Variable | undefined, ESTree.Node][] = [];
     const managed = new Set<Variable | undefined>();
@@ -189,15 +198,21 @@ export const serviceRootShape: CreateRule = {
 
     return {
       ImportDeclaration(node) {
-        if (node.source.value === helperImport && node.importKind !== 'type') {
+        const imported =
+          node.source.value === helperImport
+            ? { name: 'defineService', into: factories }
+            : aliasImport !== undefined && node.source.value === aliasImport
+              ? { name: 'alias', into: wrappers }
+              : undefined;
+        if (imported && node.importKind !== 'type') {
           for (const specifier of node.specifiers) {
             if (
               specifier.type === 'ImportSpecifier' &&
               specifier.importKind !== 'type' &&
               specifier.imported.type === 'Identifier' &&
-              specifier.imported.name === 'defineService'
+              specifier.imported.name === imported.name
             ) {
-              factories.add(variable(specifier.local));
+              imported.into.add(variable(specifier.local));
             }
           }
         }
@@ -252,9 +267,21 @@ export const serviceRootShape: CreateRule = {
           report(program, 'defaultExport');
           return;
         }
-        const initializer = resolve(defaultExport.declaration, managed);
+        let initializer = resolve(defaultExport.declaration, managed);
         if (!initializer) {
           return;
+        }
+        // alias(defineService({ ... })): the definition, with its transitional getter.
+        const wrapper =
+          initializer.type === 'CallExpression' &&
+          initializer.callee.type === 'Identifier' &&
+          wrappers.has(variable(initializer.callee)) &&
+          initializer.arguments.length === 1 &&
+          initializer.arguments[0]?.type !== 'SpreadElement'
+            ? initializer
+            : undefined;
+        if (wrapper) {
+          initializer = unwrap(wrapper.arguments[0] as ESTree.Node);
         }
         if (
           initializer.type !== 'CallExpression' ||
@@ -265,6 +292,15 @@ export const serviceRootShape: CreateRule = {
           return;
         }
         if (
+          initializer.arguments.length === 1 &&
+          initializer.arguments[0]?.type !== 'SpreadElement'
+        ) {
+          // A definition. Nothing more to check: it has no extras.
+          if (unwrap(initializer.arguments[0] as ESTree.Node).type !== 'ObjectExpression') {
+            report(initializer, 'definition');
+          }
+        } else if (
+          wrapper ||
           ![2, 3].includes(initializer.arguments.length) ||
           initializer.arguments.some((argument) => argument.type === 'SpreadElement')
         ) {
@@ -289,7 +325,7 @@ export const serviceRootShape: CreateRule = {
           }
         }
         for (const call of calls) {
-          if (call !== initializer && call.arguments.some(referencesManaged)) {
+          if (call !== initializer && call !== wrapper && call.arguments.some(referencesManaged)) {
             report(call, 'escape');
           }
         }

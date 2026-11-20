@@ -38,3 +38,10 @@ export function parseLegacyServices(source: string): Map<string, LegacyService> 
 export function readLegacyServices(repository: string) {
   return parseLegacyServices(readFileSync(path.join(repository, legacyInventoryFile), 'utf8'));
 }
+
+// A root written as `defineService({ ... })` is a service definition: the
+// application builds it on first use, and boot does not start it. The older
+// form takes the service's name first.
+export function isServiceDefinition(source: string) {
+  return /\bdefineService(?:<[^(]*>)?\(\s*\{/.test(source);
+}

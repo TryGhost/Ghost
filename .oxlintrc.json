@@ -243,7 +243,8 @@
         "ghost/service-root-shape": [
           "error",
           {
-            "helperImport": "@tryghost/kernel/define-service"
+            "helperImport": "@tryghost/kernel/define-service",
+            "aliasImport": "../../../shared/service-alias"
           }
         ],
         "ghost/no-injected-service-libraries": "error"

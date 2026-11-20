@@ -3,7 +3,7 @@ import type { CreateRule, ESTree } from '@oxlint/plugins';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readLegacyServices, servicesRoot } from '../legacy-services.ts';
+import { isServiceDefinition, readLegacyServices, servicesRoot } from '../legacy-services.ts';
 
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
 // The legacy steps of the start sequence: what core/boot.js called its phases.
@@ -29,19 +29,22 @@ function readListedServices() {
 // A directory with no root is not a service: switching branches can leave one
 // behind holding only untracked files. This is read each time the steps file is linted,
 // so an editor's long-lived lint process sees a new service or an inventory edit.
+//
+// A root that is a service definition is left out: boot does not start it, so
+// there is no init() to await. The bootstrap unit tests check where a
+// definition must be listed instead.
 function readStandardServices() {
   const legacy = readLegacyServices(root);
   const directory = path.join(root, servicesRoot);
+  const startedByBoot = (service: string) => {
+    const file = ['index.ts', 'index.js']
+      .map((name) => path.join(directory, service, name))
+      .find((candidate) => existsSync(candidate));
+    return file !== undefined && !isServiceDefinition(readFileSync(file, 'utf8'));
+  };
   return new Set(
     readdirSync(directory, { withFileTypes: true })
-      .filter(
-        (item) =>
-          item.isDirectory() &&
-          !legacy.has(item.name) &&
-          ['index.ts', 'index.js'].some((file) =>
-            existsSync(path.join(directory, item.name, file)),
-          ),
-      )
+      .filter((item) => item.isDirectory() && !legacy.has(item.name) && startedByBoot(item.name))
       .map((item) => item.name),
   );
 }
@@ -51,7 +54,7 @@ type CallExpression = ESTree.CallExpression;
 
 /**
  * Requires boot to await the init() of every service that is not a legacy
- * service: either the services list names it, or a legacy step that
+ * service and holds its own instance: either the services list names it, or a legacy step that
  * boot-steps.ts exports awaits it. It reads the list and the steps file only:
  * it cannot tell whether the order is right, which the boot tests cover, or
  * that the application definition lists each exported step, which the

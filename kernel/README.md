@@ -83,7 +83,48 @@ The adapter manager itself, and the loader that reads adapters from disk, are
 in the [foundry](../foundry/README.md#adapter-manager): a manager is built once
 and reads files, so it is not kernel code.
 
+## Service definitions
+
+[`defineService({ ... })`](src/define-service.ts), given one object, returns
+that object as a `ServiceDefinition`. It builds nothing and keeps nothing: a
+definition says how to build a service, and whoever builds from it keeps the
+instance. In Ghost that is the application, through the
+[foundry's services](../foundry/README.md#services).
+
+```ts
+export default defineService({
+  name: 'Example',
+  needs: { attribution },
+  create: ({ foundation, attribution }) => new Example(foundation.database, attribution),
+  listeners: [{ event: PostPublished, handle: (example, event: PostPublished) => example.send(event) }],
+  start: (example) => example.poll(),
+  stop: (example) => example.stopPolling(),
+});
+```
+
+- **`name`** identifies the service in errors.
+- **`needs`** names what `create` is handed besides the foundation: other
+  definitions, or roots of the [older form](#service-initialization), by the
+  key each is handed under. Whoever builds the service builds what it needs
+  first. Importing a definition to name it imports no instance.
+- **`create`** builds the instance from what it is handed. It runs the first
+  time the service is used, not at boot. It may return a promise; a service
+  built that way must be awaited by whoever uses it.
+- **`listeners`** are the events the service handles. They are declared, not
+  subscribed inside `create`, so that the builder can listen before the
+  service exists and build it when the first event arrives.
+- **`start`** and **`stop`** are for long-running work: a timer, a poll, a
+  request made on start. Only a service the application starts runs them.
+  A service that has nothing of the kind declares neither.
+
+The kernel only describes. It does not decide when a service is built, who may
+use it, or what happens to it when the application stops.
+
 ## Service initialization
+
+This is the older form, which a root keeps until it becomes a
+[definition](#service-definitions). The root holds its instance, so a process
+has one, and boot must start every root before anything reads it.
 
 [`defineService(name, create)`](src/define-service.ts) gives a service root `init()`,
 `stop()` and a `.service` getter. `name` identifies the service in the error raised

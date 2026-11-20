@@ -2,12 +2,14 @@ import { IncorrectUsageError } from '@tryghost/errors';
 import type { AdapterManagerOptions, BaseClassMap } from '@tryghost/kernel/adapter-manager';
 import type { Clock } from '@tryghost/kernel/clock';
 import type { Config } from '@tryghost/kernel/config';
+import type { ServiceDefinition } from '@tryghost/kernel/define-service';
 import type { Database } from '@tryghost/kernel/database';
 import type { EventBus } from '@tryghost/kernel/events';
 import type { Foundation } from '@tryghost/kernel/foundation';
 import type { Logger } from '@tryghost/kernel/logging';
 import { AdapterManager } from './adapter-manager';
 import { createClock } from './clock';
+import { createServices, type Services } from './services';
 
 /**
  * One start of the application. `start()` makes a new one each time it is
@@ -51,7 +53,12 @@ export interface Startable {
  */
 export interface Module<StartRun> {
   readonly name: string;
-  readonly load: () => Startable;
+  /**
+   * A root with `init()`, which the step starts and waits for. Or, in the
+   * services step, a service definition, which the step builds here and, when
+   * it declares a `start`, starts.
+   */
+  readonly load: () => Startable | ServiceDefinition<any, any>;
   /** Skips the module for this start when it returns false. */
   readonly when?: (run: StartRun) => boolean;
   /**
@@ -86,6 +93,24 @@ interface ModuleStep<StartRun> extends Slots<StartRun> {
 }
 
 /**
+ * A service definition the application registers without building it: the
+ * definition's listeners are attached, and the service is built when it is
+ * first used or when one of its events arrives.
+ */
+export interface Declared {
+  readonly name: string;
+  readonly load: () => ServiceDefinition<any, any>;
+}
+
+interface ServicesStep<StartRun> extends ModuleStep<StartRun> {
+  /**
+   * Registered when the step begins, before `modules`, in no particular
+   * order. Nothing here is built by the start sequence.
+   */
+  readonly declared?: readonly Declared[];
+}
+
+/**
  * What goes in each step of the start sequence. The framework owns the order
  * of the steps; the application supplies their contents.
  */
@@ -106,8 +131,11 @@ export interface Steps<StartRun> {
    * 4. Everything that is neither foundation nor shared. Today that is a list
    * of service roots. Domains will start here: the step keeps its place and
    * its slots, and the list becomes the domains.
+   *
+   * From the beginning of this step until `stop()`, services are built from
+   * their definitions on first use.
    */
-  readonly services?: ModuleStep<StartRun>;
+  readonly services?: ServicesStep<StartRun>;
   /** 5. The job runner starts. */
   readonly jobs?: RunStep<StartRun>;
   /** 6. The application is ready to serve. */
@@ -176,6 +204,12 @@ export interface Application<
    * adapters up by importing a manager.
    */
   readonly adapters: AdapterManager<BaseClasses>;
+  /**
+   * What has been built from service definitions for this application. A
+   * service is built the first time it is asked for here, once `start()` has
+   * reached the services step, and forgotten by `stop()`.
+   */
+  readonly services: Services;
   /** Builds every foundation instance now, in order. Boot calls this first. */
   startFoundation(): Foundation<AppConfig>;
   /** Which foundation instances have been built so far, in the order they were. */
@@ -200,6 +234,10 @@ export interface Application<
    * is logged and the rest still run. Calling it again does nothing.
    */
   stop(): Promise<void>;
+}
+
+function isStartable(root: Startable | ServiceDefinition<any, any>): root is Startable {
+  return typeof (root as Startable).init === 'function';
 }
 
 function once<Value>(build: () => Value): () => Value {
@@ -268,6 +306,8 @@ export function createApplication<
     },
   };
 
+  const services = createServices({ name: definition.name, foundation });
+
   function startFoundation() {
     config();
     logging();
@@ -299,10 +339,19 @@ export function createApplication<
   }
 
   async function runModules(
-    step: ModuleStep<StartRun> | undefined,
+    step: ServicesStep<StartRun> | undefined,
     run: StartRun,
     { give = false } = {},
   ) {
+    if (!give) {
+      // What services read is ready: the foundation, the database and the
+      // shared modules. Closing is the last thing `stop()` does for this step.
+      stoppable.push({ name: 'services', stop: () => services.close() });
+      services.open();
+      for (const declared of step?.declared ?? []) {
+        services.register(declared.load());
+      }
+    }
     await runSlots(step?.before, run);
     const started = new Map<string, Startable>();
     for (const entry of step?.modules ?? []) {
@@ -314,6 +363,13 @@ export function createApplication<
         continue;
       }
       const root = entry.load();
+      if (!isStartable(root)) {
+        // A definition: built here, started if it has a `start`, and stopped
+        // with every other service when the application's services close.
+        services.register(root);
+        await services.start(root);
+        continue;
+      }
       stoppable.push({ name: entry.name, stop: () => root.stop?.() });
       if (!give) {
         await root.init();
@@ -369,6 +425,7 @@ export function createApplication<
     get adapters() {
       return adapters();
     },
+    services,
     startFoundation,
     built: () => [...order],
     steps: definition.steps ?? {},

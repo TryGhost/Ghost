@@ -1,4 +1,47 @@
 import { IncorrectUsageError } from '@tryghost/errors';
+import type { Foundation } from './foundation';
+
+/**
+ * Something a definition can name in `needs`: another definition, or a root
+ * that still holds its own instance and is read through `.service`.
+ */
+export type Needed<Service> = ServiceDefinition<Service, any> | { readonly service: Service };
+
+/** What `create` is handed: the foundation, and the instance of each thing in `needs`. */
+export type Given<Needs> = 0 extends 1 & Needs
+  ? any
+  : { readonly foundation: Foundation } & {
+      readonly [Name in keyof Needs]: Needs[Name] extends Needed<infer Service> ? Service : never;
+    };
+
+/**
+ * An event the service handles, declared so that whoever builds the service
+ * can listen before the service exists and build it when the event arrives.
+ */
+export interface ServiceListener<Service> {
+  /** The event's class, as the event bus keys it. */
+  readonly event: { readonly name: string };
+  // `never` lets each listener name the type of the event it expects.
+  readonly handle: (service: Service, event: never) => unknown;
+}
+
+/**
+ * How to build one service. It holds no instance: whoever builds from it keeps
+ * what it built.
+ */
+export interface ServiceDefinition<Service, Needs = object> {
+  readonly name: string;
+  /** What `create` is handed besides the foundation, by the name it is handed under. */
+  readonly needs?: Needs;
+  /** Builds the instance. Runs the first time the service is used. */
+  readonly create: (given: Given<Needs>) => Service | Promise<Service>;
+  /** Events delivered to the service. They build it if nothing has yet. */
+  readonly listeners?: readonly ServiceListener<Service>[];
+  /** Long-running work. Runs only when the application starts the service. */
+  readonly start?: (service: Service, given: Given<Needs>) => unknown;
+  /** Releases what `start` acquired. Also runs after a failed `start`. */
+  readonly stop?: (service: Service) => unknown;
+}
 
 type CreateService<Service, Dependencies = void> = (
   dependencies: Dependencies,
@@ -24,7 +67,15 @@ export interface ServiceRoot<Service, Dependencies = void> {
 }
 
 /**
- * Provides init(), stop() and a .service getter for one application-owned instance.
+ * Describes how to build a service, or (the older form, with a name first)
+ * provides init(), stop() and a .service getter for one instance the root holds.
+ *
+ * Given one object, it returns that object as a {@link ServiceDefinition}:
+ * nothing is built and nothing is kept. The application builds the service the
+ * first time it is used and keeps the instance.
+ *
+ * The form with a name first is transitional. It holds its instance, so there
+ * is one per process, and it must be started before it is read.
  *
  * @param name - Service name used when reporting access before initialization.
  * @param definition - A `create` callback returning a fully initialized instance,
@@ -34,6 +85,10 @@ export interface ServiceRoot<Service, Dependencies = void> {
  * An optional extras object groups transitional helpers without invoking them.
  * @see [Service initialization](./README.md#service-initialization)
  */
+export function defineService<
+  Service,
+  const Needs extends Record<string, Needed<any>> = Record<never, never>,
+>(definition: ServiceDefinition<Service, Needs>): ServiceDefinition<Service, Needs>;
 export function defineService<Service, Dependencies = void>(
   name: string,
   definition: CreateService<Service, Dependencies> | ServiceLifecycle<Service, Dependencies>,
@@ -44,10 +99,16 @@ export function defineService<Service, Extras extends object, Dependencies = voi
   extras: Extras,
 ): ServiceRoot<Service, Dependencies> & { readonly extras: Extras };
 export function defineService<Service, Extras extends object, Dependencies = void>(
-  name: string,
-  definition: CreateService<Service, Dependencies> | ServiceLifecycle<Service, Dependencies>,
+  name: string | ServiceDefinition<Service, any>,
+  definition?: CreateService<Service, Dependencies> | ServiceLifecycle<Service, Dependencies>,
   extras?: Extras,
 ) {
+  if (typeof name !== 'string') {
+    return name;
+  }
+  if (definition === undefined) {
+    throw new IncorrectUsageError({ message: `${name} has no definition.` });
+  }
   const lifecycle: ServiceLifecycle<Service, Dependencies> =
     typeof definition === 'function' ? { create: definition } : definition;
 

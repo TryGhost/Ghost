@@ -79,6 +79,14 @@ const valid = [
   ['empty module marker', `export {}; export default ${factory};`],
   ['default initializer', `export default ${factory};`],
   [
+    'a service definition',
+    `export default defineService({ name: 'Example', create: () => ({}), listeners: [] });`,
+  ],
+  [
+    'a service definition with its transitional getter',
+    `import { alias } from '../../../shared/service-alias'; export default alias(defineService({ name: 'Example', create: () => ({}) }));`,
+  ],
+  [
     'erased type exports',
     `export type { Actor } from './actions'; export { type Result } from './models';
     export interface Context { actor: string } export type Id = string; export default ${factory};`,
@@ -138,6 +146,21 @@ const rejected = [
   ],
   ['wildcard export', `export * from './actions'; export default ${factory};`, 'runtimeExport'],
   ['default class', 'export default class Example {}', 'defaultExport'],
+  [
+    'a definition that is not written in place',
+    `const definition = { name: 'Example', create }; export default defineService(definition);`,
+    'definition',
+  ],
+  [
+    'the transitional getter on a root that holds its instance',
+    `import { alias } from '../../../shared/service-alias'; export default alias(${factory});`,
+    'arguments',
+  ],
+  [
+    'a lookalike getter imported from another module',
+    `import { alias } from './other'; export default alias(defineService({ name: 'Example', create }));`,
+    'defaultExport',
+  ],
   ['missing default', 'const root = ' + factory, 'defaultExport'],
   ['hand-written initializer', 'export default { init() {}, service: {} };', 'defaultExport'],
   ['spread initializer', `export default { ...${factory}, extras: {} };`, 'defaultExport'],
@@ -227,6 +250,8 @@ const rejected = [
 const messages: Record<string, RegExp> = {
   runtimeExport: /Named runtime exports/,
   defaultExport: /Export a default initializer/,
+  definition: /one object written in place/,
+  arguments: /Use defineService\(\{ name, create, \.\.\. \}\)/,
   alias: /resolve to local const/,
   explicitExtras: /explicit object/,
   property: /static names/,

@@ -48,7 +48,13 @@ function lint(
     directories = ['alpha', 'beta', 'legacy'],
     inventory = JSON.stringify({ services: { legacy: {} } }),
     list,
-  }: { directories?: string[]; inventory?: string | null; list?: string[] } = {},
+    definitions = [],
+  }: {
+    directories?: string[];
+    inventory?: string | null;
+    list?: string[];
+    definitions?: string[];
+  } = {},
 ) {
   const cwd = mkdtempSync(path.join(tmpdir(), 'ghost-boot-init-oxlint-'));
   try {
@@ -70,6 +76,13 @@ function lint(
       if (!directory.endsWith('/')) {
         writeFileSync(path.join(cwd, servicesRoot, directory, 'index.ts'), '');
       }
+    }
+    for (const directory of definitions) {
+      mkdirSync(path.join(cwd, servicesRoot, directory), { recursive: true });
+      writeFileSync(
+        path.join(cwd, servicesRoot, directory, 'index.ts'),
+        `export default alias(\n  defineService({\n    name: '${directory}',\n    create: () => ({}),\n  }),\n);\n`,
+      );
     }
     writeFileSync(path.join(cwd, servicesRoot, 'README.md'), '');
     writeFileSync(path.join(cwd, servicesRoot, 'standalone.ts'), '');
@@ -237,6 +250,16 @@ for (const [name, code, messageId, subject] of rejected) {
     }
   });
 }
+
+// Boot does not start a definition: the application builds it on first use.
+test('does not ask boot to start a root that is a service definition', () => {
+  const result = lint(boot(), {
+    directories: ['alpha', 'beta', 'legacy'],
+    definitions: ['lazy'],
+  });
+  assert.equal(result.status, 0, JSON.stringify(result.diagnostics));
+  assert.deepEqual(result.diagnostics, []);
+});
 
 test('requires a new service directory to be initialized without any registration', () => {
   const result = lint(boot(), { directories: ['alpha', 'beta', 'legacy', 'brand-new'] });
