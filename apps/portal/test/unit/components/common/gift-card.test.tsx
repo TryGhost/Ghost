@@ -25,7 +25,8 @@ describe('getGiftCardTextureUrls', () => {
 });
 
 describe('GiftCard', () => {
-  const getCard = (container) => container.querySelector('.gh-portal-gift-checkout-card');
+  const getCard = (container: HTMLElement) =>
+    container.querySelector<HTMLElement>('.gh-portal-gift-checkout-card');
 
   test('points the card textures at the site', () => {
     const { container } = render(<GiftCard siteTitle="The Blueprint" />, {
@@ -33,10 +34,10 @@ describe('GiftCard', () => {
     });
 
     const card = getCard(container);
-    expect(card.style.getPropertyValue('--gh-gift-orb')).toBe(
+    expect(card?.style.getPropertyValue('--gh-gift-orb')).toBe(
       'url("https://example.com/blog/gift/assets/gift-card-orb.webp")',
     );
-    expect(card.style.getPropertyValue('--gh-gift-noise')).toBe(
+    expect(card?.style.getPropertyValue('--gh-gift-noise')).toBe(
       'url("https://example.com/blog/gift/assets/gift-card-noise.webp")',
     );
   });
@@ -47,6 +48,6 @@ describe('GiftCard', () => {
     });
 
     expect(getByText('The Blueprint')).toBeInTheDocument();
-    expect(getCard(container).hasAttribute('style')).toBe(false);
+    expect(getCard(container)?.hasAttribute('style')).toBe(false);
   });
 });
