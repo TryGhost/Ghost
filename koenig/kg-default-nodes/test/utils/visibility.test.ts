@@ -218,6 +218,190 @@ describe('Utils: visibility', function () {
         });
     });
 
+    // Each shape below is new-format data with a channel or key left out.
+    // Missing values take the public default; supplied values are kept.
+    describe('partial new-format visibility', function () {
+        let document: Document;
+
+        beforeAll(function () {
+            document = (new JSDOM()).window.document;
+        });
+
+        function render(visibility: Visibility, target: string) {
+            const p = document.createElement('p');
+            p.innerHTML = 'testing';
+            return renderWithVisibility({element: p, type: 'html'} as VisibilityRenderOutput, visibility, {target});
+        }
+
+        function expectHidden(result: VisibilityRenderOutput) {
+            expect(getHTMLElement(result.element).tagName).toBe('SPAN');
+            expect(getHTMLElement(result.element).innerHTML).toBe('');
+        }
+
+        function expectUnchanged(result: VisibilityRenderOutput) {
+            expect(getHTMLElement(result.element).tagName).toBe('P');
+            expect(getHTMLElement(result.element).innerHTML).toBe('testing');
+        }
+
+        function expectWebGate(result: VisibilityRenderOutput, gate: string) {
+            expect(getHTMLTextAreaElement(result.element).value).toBe(`\n<!--kg-gated-block:begin ${gate} --><p>testing</p><!--kg-gated-block:end-->\n`);
+        }
+
+        function expectEmailSegment(result: VisibilityRenderOutput, segment: string) {
+            expect(getHTMLElement(result.element).tagName).toBe('DIV');
+            expect(getHTMLElement(result.element).dataset.ghSegment).toBe(segment);
+            expect(getHTMLElement(result.element).innerHTML).toBe('<p>testing</p>');
+        }
+
+        describe('only web supplied, hidden on web', function () {
+            const visibility = (): Visibility => ({web: {nonMember: false, memberSegment: ''}});
+
+            it('keeps web hidden when only web is supplied', function () {
+                expect(migrateOldVisibilityFormat(visibility())).toEqual({
+                    web: {nonMember: false, memberSegment: ''},
+                    email: {memberSegment: 'status:free,status:-free'}
+                });
+            });
+
+            it('reports a web-only hidden card as restricted', function () {
+                expect(isVisibilityRestricted(visibility())).toBe(true);
+            });
+
+            it('renders nothing on web when only a hidden web channel is supplied', function () {
+                expectHidden(render(visibility(), 'web'));
+            });
+
+            it('sends to all email recipients when the email channel is missing', function () {
+                expectUnchanged(render(visibility(), 'email'));
+            });
+        });
+
+        describe('only email supplied, free members only', function () {
+            const visibility = (): Visibility => ({email: {memberSegment: 'status:free'}});
+
+            it('keeps the email segment when only email is supplied', function () {
+                expect(migrateOldVisibilityFormat(visibility())).toEqual({
+                    web: {nonMember: true, memberSegment: 'status:free,status:-free'},
+                    email: {memberSegment: 'status:free'}
+                });
+            });
+
+            it('reports an email-only free segment as restricted', function () {
+                expect(isVisibilityRestricted(visibility())).toBe(true);
+            });
+
+            it('wraps email output in the free segment when only email is supplied', function () {
+                expectEmailSegment(render(visibility(), 'email'), 'status:free');
+            });
+
+            it('shows on web to everyone when the web channel is missing', function () {
+                expectUnchanged(render(visibility(), 'web'));
+            });
+        });
+
+        describe('web supplied without nonMember', function () {
+            const visibility = (): Visibility => ({
+                web: {memberSegment: 'status:-free'},
+                email: {memberSegment: 'status:free,status:-free'}
+            });
+
+            it('keeps the web member segment when nonMember is missing', function () {
+                expect(migrateOldVisibilityFormat(visibility())).toEqual({
+                    web: {nonMember: true, memberSegment: 'status:-free'},
+                    email: {memberSegment: 'status:free,status:-free'}
+                });
+            });
+
+            it('reports a paid-only web segment without nonMember as restricted', function () {
+                expect(isVisibilityRestricted(visibility())).toBe(true);
+            });
+
+            it('gates web output to the supplied segment when nonMember is missing', function () {
+                expectWebGate(render(visibility(), 'web'), 'nonMember:true memberSegment:"status:-free"');
+            });
+        });
+
+        describe('memberSegment: null in one channel', function () {
+            it('keeps the web setting when email.memberSegment is null', function () {
+                const visibility = {
+                    web: {nonMember: false, memberSegment: 'status:free'},
+                    email: {memberSegment: null}
+                } as unknown as Visibility;
+
+                expect(migrateOldVisibilityFormat(visibility)).toEqual({
+                    web: {nonMember: false, memberSegment: 'status:free'},
+                    email: {memberSegment: 'status:free,status:-free'}
+                });
+                expect(isVisibilityRestricted(visibility)).toBe(true);
+                expectWebGate(render(visibility, 'web'), 'nonMember:false memberSegment:"status:free"');
+                expectUnchanged(render(visibility, 'email'));
+            });
+
+            it('keeps the email setting and nonMember when web.memberSegment is null', function () {
+                const visibility = {
+                    web: {nonMember: false, memberSegment: null},
+                    email: {memberSegment: 'status:-free'}
+                } as unknown as Visibility;
+
+                expect(migrateOldVisibilityFormat(visibility)).toEqual({
+                    web: {nonMember: false, memberSegment: 'status:free,status:-free'},
+                    email: {memberSegment: 'status:-free'}
+                });
+                expect(isVisibilityRestricted(visibility)).toBe(true);
+                expectWebGate(render(visibility, 'web'), 'nonMember:false memberSegment:"status:free,status:-free"');
+                expectEmailSegment(render(visibility, 'email'), 'status:-free');
+            });
+        });
+
+        it('does not mutate the supplied partial object', function () {
+            const visibility: Visibility = {web: {nonMember: false, memberSegment: ''}};
+            migrateOldVisibilityFormat(visibility);
+            expect(visibility).toEqual({web: {nonMember: false, memberSegment: ''}});
+        });
+    });
+
+    // Pins legacy conversion and full new-format handling so the partial
+    // format fix cannot change them.
+    describe('legacy and full formats (regression)', function () {
+        const ALL = 'status:free,status:-free';
+        const cases: Array<[string, Visibility, Visibility['web'], Visibility['email'], boolean]> = [
+            ['{}', {}, {nonMember: true, memberSegment: ALL}, {memberSegment: ALL}, false],
+            ['{emailOnly: false}', {emailOnly: false}, {nonMember: true, memberSegment: ALL}, {memberSegment: ALL}, false],
+            ['{emailOnly: true}', {emailOnly: true}, {nonMember: false, memberSegment: ''}, {memberSegment: ALL}, true],
+            ['{emailOnly: true, segment: "status:free"}', {emailOnly: true, segment: 'status:free'}, {nonMember: false, memberSegment: ''}, {memberSegment: 'status:free'}, true],
+            ['{showOnWeb: true, showOnEmail: true}', {showOnWeb: true, showOnEmail: true}, {nonMember: true, memberSegment: ALL}, {memberSegment: ALL}, false],
+            ['{showOnWeb: false, showOnEmail: true}', {showOnWeb: false, showOnEmail: true}, {nonMember: false, memberSegment: ''}, {memberSegment: ALL}, true],
+            ['{showOnWeb: true, showOnEmail: false}', {showOnWeb: true, showOnEmail: false}, {nonMember: true, memberSegment: ALL}, {memberSegment: ''}, true],
+            ['{showOnWeb: true}', {showOnWeb: true}, {nonMember: true, memberSegment: ALL}, {memberSegment: ALL}, false],
+            ['{showOnWeb: false}', {showOnWeb: false}, {nonMember: false, memberSegment: ''}, {memberSegment: ALL}, true],
+            ['{showOnEmail: false}', {showOnEmail: false}, {nonMember: true, memberSegment: ALL}, {memberSegment: ''}, true],
+            ['{showOnEmail: false, segment: "status:free"}', {showOnEmail: false, segment: 'status:free'}, {nonMember: true, memberSegment: ALL}, {memberSegment: ''}, true],
+            ['segment ""', {showOnEmail: true, segment: ''}, {nonMember: true, memberSegment: ALL}, {memberSegment: ALL}, false],
+            ['segment "status:free"', {showOnEmail: true, segment: 'status:free'}, {nonMember: true, memberSegment: ALL}, {memberSegment: 'status:free'}, true],
+            ['segment "status:paid"', {showOnEmail: true, segment: 'status:paid'}, {nonMember: true, memberSegment: ALL}, {memberSegment: 'status:-free'}, true],
+            ['segment "status:-free"', {showOnEmail: true, segment: 'status:-free'}, {nonMember: true, memberSegment: ALL}, {memberSegment: 'status:-free'}, true],
+            ['segment "status:-free+status:-paid"', {showOnEmail: true, segment: 'status:-free+status:-paid'}, {nonMember: true, memberSegment: ALL}, {memberSegment: ''}, true],
+            ['legacy keys alongside partial new keys', {emailOnly: false, segment: '', web: {memberSegment: ''}, email: {memberSegment: ''}}, {nonMember: true, memberSegment: ALL}, {memberSegment: ALL}, false]
+        ];
+
+        cases.forEach(([label, before, web, email, restricted]) => {
+            it(`converts legacy ${label}`, function () {
+                const result = migrateOldVisibilityFormat(JSON.parse(JSON.stringify(before)));
+                expect(result.web).toEqual(web);
+                expect(result.email).toEqual(email);
+                expect(isVisibilityRestricted(JSON.parse(JSON.stringify(before)))).toBe(restricted);
+            });
+        });
+
+        it('returns a full new-format object unchanged', function () {
+            const before: Visibility = {web: {nonMember: false, memberSegment: 'status:-free'}, email: {memberSegment: ''}};
+            const after = migrateOldVisibilityFormat(before);
+            expect(after).toBe(before);
+            expect(after).toEqual({web: {nonMember: false, memberSegment: 'status:-free'}, email: {memberSegment: ''}});
+            expect(isVisibilityRestricted(before)).toBe(true);
+        });
+    });
+
     describe('renderWithVisibility', function () {
         let document: Document;
 
