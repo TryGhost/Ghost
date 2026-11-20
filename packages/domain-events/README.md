@@ -54,4 +54,7 @@ pnpm lint    # lint source and tests
 
 Run `pnpm build` before `pnpm test`. One test loads the compiled package through
 `require()`, the way Ghost's CommonJS code does, so it needs `build/` to exist.
-Nx builds first on its own: `pnpm nx run @tryghost/domain-events:test`.
+
+Through Nx, only the `test:unit` target builds first:
+`pnpm nx run @tryghost/domain-events:test:unit`. The `test` target runs the
+package script directly and does not, so it needs `pnpm build` beforehand too.
