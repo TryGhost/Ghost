@@ -32,11 +32,40 @@ import {nodeLibConfig} from '@internal/cfg-eslint';
 export default nodeLibConfig({
     typescript: false,
     commonjs: true,
-    legacyLocalFilenames: true,
     srcGlobs: ['index.js', 'lib/**/*.js'],
     testGlobs: ['test/**/*.js']
 });
 ```
+
+The factory throws on any option it does not define. Its valid keys are
+`typescript`, `commonjs`, `srcGlobs`, `testGlobs`, `ignores`, `extraSrcRules`,
+`extraTestRules` and `extraBlocks`; check
+`tools/configs/eslint/index.mjs` if this list looks out of date.
+
+Ghost's filename rule, `ghost/filenames/match-regex`, accepts only lower-case
+names. It rejects imported files such as `lib/DomainEvents.js`, and under
+ESLint 9 it can crash on some legacy files with
+`context.getScope is not a function` instead of reporting them. Renaming files
+is modernization work, so when the import keeps such names, turn the rule off
+for this package and say why next to it:
+
+```js
+import {nodeLibConfig} from '@internal/cfg-eslint';
+
+// The imported files keep their original names until modernization.
+const legacyFilenames = {'ghost/filenames/match-regex': 'off'};
+
+export default nodeLibConfig({
+    typescript: false,
+    commonjs: true,
+    srcGlobs: ['index.js', 'lib/**/*.js'],
+    testGlobs: ['test/**/*.js'],
+    extraSrcRules: legacyFilenames,
+    extraTestRules: legacyFilenames
+});
+```
+
+Leave the rule on when every imported file name already satisfies it.
 
 Prefer fixing trivial configuration drift. When a Ghost rule conflicts with a
 test that intentionally exercises legacy behavior, use a narrow, documented
@@ -123,14 +152,22 @@ Run the package through its Nx surface and exercise a real consumer:
 pnpm nx run @tryghost/<package>:lint
 pnpm nx run @tryghost/<package>:test
 pnpm format:check
+pnpm lint
 pnpm build
 ```
+
+`pnpm lint` includes `pnpm lint:boundaries`, which fails until the service
+boundary rules name the package by its workspace path as described in the
+skill.
 
 Also verify:
 
 - the package resolves through the consumer's production `require()` or import;
-- relevant consumer tests pass;
+- relevant consumer tests pass, or the handoff names the database-backed ones
+  left to CI because MySQL was unavailable;
 - `pnpm archive` succeeds from `ghost`;
 - the resulting Ghost archive contains the package component.
 
-Generated archives are verification artifacts, not files to commit.
+Generated archives are verification artifacts, not files to commit. The same
+applies to compiled `.js` and `.mjs` files that `pnpm archive` can leave
+untracked under `ghost/`.
