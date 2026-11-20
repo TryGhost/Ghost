@@ -280,7 +280,7 @@ class CacheManager {
 
     // // if we have been passed a collection of settings, use this to populate the cache
     if (settingsCollection && settingsCollection.models) {
-      _.each(settingsCollection.models, this._updateSettingFromModel);
+      settingsCollection.models.forEach(this._updateSettingFromModel);
     }
 
     this.calculatedFields = Array.isArray(calculatedFields) ? calculatedFields : [];

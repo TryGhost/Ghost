@@ -294,6 +294,10 @@ describe('Config Schema', function () {
   });
 
   describe('auth', function () {
+    afterEach(function () {
+      vi.unstubAllEnvs();
+    });
+
     const mysql = {
       client: 'mysql2',
       connection: { host: '127.0.0.1', user: 'root', password: '', database: 'ghost' },
@@ -330,6 +334,69 @@ describe('Config Schema', function () {
 
       assert.equal(configSchema.parse(configSources()).auth.engine, 'legacy');
       assert.equal(warn.mock.calls.length, 0);
+    });
+
+    it('rejects an engine it does not know', function () {
+      const result = configSchema.safeParse(configSources({ auth: { engine: 'nope' } }));
+
+      assert.deepEqual(result.error?.issues[0]?.path, ['auth', 'engine']);
+    });
+
+    // main has no Better Auth key yet, so any key stands in for one
+    describe('a key the engine does not read', function () {
+      it('fails the parse under test', function () {
+        const issues = configSchema.safeParse(
+          configSources({ auth: { engine: 'legacy', sso: { enabled: true } } }),
+        ).error?.issues;
+
+        assert.deepEqual(
+          issues?.map((issue) => ({ code: issue.code, path: issue.path })),
+          [{ code: 'unrecognized_keys', path: ['auth'] }],
+        );
+      });
+
+      it('warns under legacy outside test, then strips it', function () {
+        vi.stubEnv('NODE_ENV', 'production');
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+        const parsed = configSchema.parse(
+          configSources({ auth: { engine: 'legacy', sso: { enabled: true } } }),
+        );
+
+        assert.deepEqual(parsed.auth, { engine: 'legacy' });
+        assert.match(String(warn.mock.calls[0]?.[0]), /auth:sso/);
+      });
+
+      it('drops it with the SQLite fallback to legacy', function () {
+        vi.stubEnv('NODE_ENV', 'production');
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+        const parsed = configSchema.parse(
+          configSources({
+            database: { client: 'sqlite3', connection: { filename: '/a.db' } },
+            auth: { engine: 'better-auth', sso: { enabled: true } },
+          }),
+        );
+
+        assert.deepEqual(parsed.auth, { engine: 'legacy' });
+        assert.ok(warn.mock.calls.some(([message]) => /needs MySQL/.test(String(message))));
+      });
+    });
+
+    it('falls back to legacy without the stray key under a lenient parse', function () {
+      vi.stubEnv('NODE_ENV', 'production');
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const validated = validateConfig(
+        configSources({
+          env: 'production',
+          database: { client: 'sqlite3', connection: { filename: '/a.db' } },
+          auth: { engine: 'better-auth', sso: { enabled: true } },
+        }),
+      );
+
+      assert.deepEqual(validated.auth, { engine: 'legacy' });
+      assert.ok(warn.mock.calls.some(([message]) => /needs MySQL/.test(String(message))));
     });
   });
 

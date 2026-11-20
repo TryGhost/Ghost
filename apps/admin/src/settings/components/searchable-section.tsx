@@ -18,7 +18,7 @@ const SearchableSection: React.FC<SearchableSectionProps> = ({ children, keyword
       {title && (
         <Text
           as="h2"
-          className="settings-heading z-20 mt-[-5px] mb-px pb-10 tracking-tight in-data-[admin7-design=true]:text-[length:var(--large-title-size-sm)] in-data-[admin7-design=true]:leading-[1.15]!"
+          className="settings-heading z-20 mt-[-5px] mb-px pb-10 tracking-tight in-data-[admin7-design=true]:text-[length:var(--large-title-size-sm)] in-data-[admin7-design=true]:leading-[1.15]! in-data-[admin7-mobile=true]:max-lg:mb-0 in-data-[admin7-mobile=true]:max-lg:pb-6"
           leading="heading"
           size="2xl"
           weight="semibold"
@@ -27,7 +27,7 @@ const SearchableSection: React.FC<SearchableSectionProps> = ({ children, keyword
         </Text>
       )}
       {children && (
-        <Stack className="gap-12" gap="none">
+        <Stack className="gap-12 in-data-[admin7-mobile=true]:max-lg:gap-6" gap="none">
           {children}
         </Stack>
       )}

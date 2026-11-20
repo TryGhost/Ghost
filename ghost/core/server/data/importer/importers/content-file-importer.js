@@ -88,7 +88,7 @@ class ContentFileImporter {
   preProcess(importData) {
     if (this.type === 'images') {
       if (importData.images && importData.data && importData.data.data) {
-        _.each(importData.images, function (image) {
+        importData.images.forEach(function (image) {
           preProcessPosts(importData.data.data, image);
           preProcessTags(importData.data.data, image);
           preProcessUsers(importData.data.data, image);
@@ -102,7 +102,7 @@ class ContentFileImporter {
     //        to make this importer more generic
     if (this.type === 'media') {
       if (importData.media && importData.data && importData.data.data) {
-        _.each(importData.media, function (file) {
+        importData.media.forEach(function (file) {
           preProcessPosts(importData.data.data, file);
         });
       }
@@ -112,7 +112,7 @@ class ContentFileImporter {
 
     if (this.type === 'files') {
       if (importData.files && importData.data && importData.data.data) {
-        _.each(importData.files, function (file) {
+        importData.files.forEach(function (file) {
           preProcessPosts(importData.data.data, file);
         });
       }

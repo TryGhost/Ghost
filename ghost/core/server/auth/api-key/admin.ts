@@ -12,7 +12,7 @@ const models = require('../../models');
 
 type ApiKeyRequest = Request & AuthenticatedRequest;
 
-/** A key loaded with `withRelated: ['integration']` */
+/** A key loaded with its integration, and its role when it is an admin key */
 export type LoadedApiKey = ApiKey & { relations: { integration?: Integration } };
 
 export interface AdminApiKeyResult {
@@ -162,7 +162,7 @@ export const authenticateWithToken = async function apiKeyAuthenticateWithToken(
 
   const apiKey: LoadedApiKey | null = await models.ApiKey.findOne(
     { id: apiKeyId },
-    { withRelated: ['integration'] },
+    { withRelated: ['integration', 'role'] },
   );
 
   if (!apiKey) {
@@ -239,7 +239,7 @@ export const authenticateWithToken = async function apiKeyAuthenticateWithToken(
     // fetch the user and store it on the request for later checks and logging
     const user: User = await models.User.findOne(
       { id: apiKey.get('user_id'), status: 'active' },
-      { require: true },
+      { require: true, withRelated: ['roles'] },
     );
 
     result.user = user;

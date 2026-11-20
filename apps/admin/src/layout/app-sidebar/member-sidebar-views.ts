@@ -1,22 +1,7 @@
 import { useLocation } from '@tryghost/admin-x-framework';
 import { useMemo } from 'react';
+import { useMemberViews } from '@/members/api';
 import { type NavSavedView } from './nav-saved-views';
-import { type SharedView, useSharedViews } from './shared-views';
-
-interface MemberSidebarView extends SharedView {
-  route: 'members';
-  filter: Record<string, string | null> & {
-    filter: string;
-  };
-}
-
-function isMemberSidebarView(view: SharedView): view is MemberSidebarView {
-  return (
-    view.route === 'members' &&
-    typeof view.filter.filter === 'string' &&
-    view.filter.filter.length > 0
-  );
-}
 
 function getMemberViewUrl(filter: string) {
   return `members?${new URLSearchParams({ filter }).toString()}`;
@@ -32,14 +17,14 @@ function isMemberViewActive(pathname: string, currentSearch: string, filter: str
 
 export function useMemberSidebarViews() {
   const location = useLocation();
-  const sharedViews = useSharedViews('members');
+  const memberViews = useMemberViews();
 
   return useMemo<NavSavedView[]>(() => {
-    return sharedViews.filter(isMemberSidebarView).map((view) => ({
-      key: `${view.name}:${view.filter.filter}`,
+    return memberViews.map((view) => ({
+      key: `${view.name}:${view.filter}`,
       name: view.name,
-      to: getMemberViewUrl(view.filter.filter),
-      isActive: isMemberViewActive(location.pathname, location.search, view.filter.filter),
+      to: getMemberViewUrl(view.filter),
+      isActive: isMemberViewActive(location.pathname, location.search, view.filter),
     }));
-  }, [location.pathname, location.search, sharedViews]);
+  }, [location.pathname, location.search, memberViews]);
 }

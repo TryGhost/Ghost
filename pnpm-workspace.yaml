@@ -64,7 +64,7 @@ catalog:
   '@codemirror/view': 6.43.15
   '@eslint/compat': 2.1.1
   '@eslint/js': 9.39.5
-  '@extractus/oembed-extractor': 6.0.0
+  '@extractus/oembed-extractor': 6.0.1
   '@faker-js/faker': 10.6.0
   '@playwright/test': 1.65.0
   '@radix-ui/react-avatar': 1.2.1
@@ -98,7 +98,6 @@ catalog:
   '@tryghost/color-utils': 0.2.24
   '@tryghost/custom-fonts': 1.0.15
   '@tryghost/debug': 2.3.23
-  '@tryghost/domain-events': 3.4.1
   '@tryghost/errors': 3.4.8
   '@tryghost/helpers': 1.1.110
   '@tryghost/logging': 6.0.7
@@ -252,7 +251,7 @@ catalog:
   '@x402/core': 2.29.0
   '@x402/evm': 2.29.0
   '@x402/hono': 2.29.0
-  hono: 4.13.16
+  hono: 4.13.19
   '@octokit/core': 7.0.8
   '@octokit/plugin-retry': 8.1.1
   '@octokit/plugin-throttling': 11.0.5
@@ -311,7 +310,7 @@ overrides:
   # url-utils in with it. Point that edge at the workspace package instead, so
   # content import renders cards with the same code Ghost itself renders them
   # with. The override is global rather than scoped to mg-utils so the component
-  # tarball override that pack.mjs writes under the same key replaces it.
+  # tarball override that pack.mts writes under the same key replaces it.
   '@tryghost/kg-default-cards': 'workspace:*'
   '@tryghost/mg-utils>fast-xml-parser': '^5.12.0'
   # consolidate 0.15 pulls in a bunch of legacy dependencies that ultimately

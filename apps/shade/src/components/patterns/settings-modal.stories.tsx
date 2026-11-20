@@ -28,14 +28,14 @@ const SettingsModalStory = (props: Omit<SettingsModalProps, 'onClose'>) => {
 };
 
 const meta = {
-  title: 'Patterns / Settings Modal',
+  title: 'Deprecated / Settings Modal',
   component: SettingsModalStory,
   tags: ['autodocs'],
   parameters: {
     docs: {
       description: {
         component:
-          'Consumer-controlled shell for the legacy full-page settings dialogs. New modal flows should use Shade Dialog primitives directly.',
+          "Deprecated. Consumer-controlled shell for Admin's legacy full-page settings dialogs. It doesn't trap focus or announce itself to screen readers, so new modals should use `Dialog` instead.",
       },
     },
   },

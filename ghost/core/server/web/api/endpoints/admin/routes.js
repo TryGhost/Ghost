@@ -110,6 +110,13 @@ module.exports = function apiRoutes() {
   router.put('/gifts/flush_reminders', mw.authAdminApiWithUrl, http(api.gifts.flushReminders));
   router.put('/gifts/flush_deliveries', mw.authAdminApiWithUrl, http(api.gifts.flushDeliveries));
 
+  // ## Segments
+  router.get('/segments', mw.authAdminApi, http(api.segments.browse));
+  router.post('/segments', mw.authAdminApi, http(api.segments.add));
+  router.get('/segments/:id', mw.authAdminApi, http(api.segments.read));
+  router.put('/segments/:id', mw.authAdminApi, http(api.segments.edit));
+  router.delete('/segments/:id', mw.authAdminApi, http(api.segments.destroy));
+
   // ## Settings
   router.get('/settings/routes/yaml', mw.authAdminApi, http(api.settings.download));
   router.post(

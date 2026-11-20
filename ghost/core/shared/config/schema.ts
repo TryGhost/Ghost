@@ -21,7 +21,8 @@ function legacyAuthOnSqlite<
   }
   // eslint-disable-next-line no-console
   console.warn('auth:engine better-auth needs MySQL; using the legacy engine on SQLite.');
-  return { ...config, auth: { ...config.auth, engine: 'legacy' } };
+  // only engine: Better Auth's own keys do not belong to the legacy option
+  return { ...config, auth: { engine: 'legacy' } };
 }
 
 /**
@@ -166,14 +167,24 @@ export type ConfigPath<T = ValidatedConfig> = T extends object
 /** `undefined` when a section on the path may be absent, so its children may be too. */
 type Absent<T> = undefined extends T ? undefined : never;
 
+/** A key any option of a union names; `keyof` alone sees only the shared ones. */
+type AnyKey<T> = T extends unknown ? keyof Known<T> : never;
+
+/** `T[K]` per option of a union, `undefined` for an option without `K`. */
+type Member<T, K extends PropertyKey> = T extends unknown
+  ? K extends keyof Known<T>
+    ? Known<T>[K]
+    : undefined
+  : never;
+
 /** The value a key path resolves to, or `unknown` if the schema misses it. */
 export type ConfigAt<
   P extends string,
   T = ValidatedConfig,
 > = P extends `${infer Head}:${infer Rest}`
-  ? Head extends keyof Known<T>
-    ? ConfigAt<Rest, NonNullable<Known<T>[Head]>> | Absent<Known<T>[Head]>
+  ? Head extends AnyKey<T>
+    ? ConfigAt<Rest, NonNullable<Member<T, Head>>> | Absent<Member<T, Head>>
     : unknown
-  : P extends keyof Known<T>
-    ? Known<T>[P]
+  : P extends AnyKey<T>
+    ? Member<T, P>
     : unknown;

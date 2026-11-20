@@ -8,7 +8,11 @@
  *   `include=resource` loads every kind that can be logged.
  * - `verbs` are the `event` values the kind may store.
  *
- * Bookshelf models log their own actions and aren't listed here.
+ * A kind can be one that a Bookshelf model logs too: the segments service logs an edit of the
+ * setting it stores segments in, as a settings save does through the Settings model. Bookshelf
+ * models still log their own actions through their actions plugin, and a kind that only they log
+ * isn't listed here. The `Action` model lists Bookshelf models before these read models, so it
+ * loads a kind's resource through the kind's Bookshelf model when there is one.
  */
 export const ACTION_KINDS = {
   app_installation: {
@@ -22,6 +26,10 @@ export const ACTION_KINDS = {
   member_custom_field: {
     table: 'members_metafields',
     verbs: ['added', 'edited', 'archived', 'restored', 'deleted'],
+  },
+  setting: {
+    table: 'settings',
+    verbs: ['edited'],
   },
   stripe_checkout_config: {
     table: 'stripe_checkout_config',

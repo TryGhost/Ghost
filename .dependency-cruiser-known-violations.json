@@ -131,11 +131,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/custom-redirects/validation.js",
-    "to": "lodash"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-address/email-address-service-wrapper.js",
     "to": "ghost/core/server/services/settings-helpers/index.js"
   },
@@ -392,7 +387,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-suppression-list/mailgun-email-suppression-list.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -442,7 +437,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/gifts/gift-delivery-service.ts",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -737,7 +732,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/milestones/service.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -767,7 +762,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/milestones/slack-notifications/service.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -857,7 +852,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/offers/offer-bookshelf-repository.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -877,7 +872,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/offers/offers-module.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -1002,7 +997,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/posts/posts-service.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -1146,12 +1141,12 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/settings/settings-utils.js",
+    "from": "ghost/core/server/services/settings/settings-utils.ts",
     "to": "@tryghost/logging"
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/settings/settings-utils.js",
+    "from": "ghost/core/server/services/settings/settings-utils.ts",
     "to": "ghost/core/shared/config/index.ts"
   },
   {
@@ -1342,11 +1337,6 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/update-check/update-check-service.js",
-    "to": "lodash"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/update-check/update-check-service.js",
     "to": "moment"
   },
   {
@@ -1382,7 +1372,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/verification-trigger.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -1403,11 +1393,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/verification/verification-webhook-service.ts",
     "to": "ghost/core/shared/config/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/webhooks/listen.js",
-    "to": "lodash"
   },
   {
     "rule": "service-dependencies",

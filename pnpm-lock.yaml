@@ -228,8 +228,8 @@ catalogs:
       specifier: 9.39.5
       version: 9.39.5
     '@extractus/oembed-extractor':
-      specifier: 6.0.0
-      version: 6.0.0
+      specifier: 6.0.1
+      version: 6.0.1
     '@faker-js/faker':
       specifier: 10.6.0
       version: 10.6.0
@@ -353,9 +353,6 @@ catalogs:
     '@tryghost/debug':
       specifier: 2.3.23
       version: 2.3.23
-    '@tryghost/domain-events':
-      specifier: 3.4.1
-      version: 3.4.1
     '@tryghost/helpers':
       specifier: 1.1.110
       version: 1.1.110
@@ -597,8 +594,8 @@ catalogs:
       specifier: 16.0.0
       version: 16.0.0
     hono:
-      specifier: 4.13.16
-      version: 4.13.16
+      specifier: 4.13.19
+      version: 4.13.19
     html-minifier-next:
       specifier: 8.11.0
       version: 8.11.0
@@ -858,7 +855,7 @@ overrides:
 
 packageExtensionsChecksum: sha256-ObOLO7cMPhZpUKrGhf0yokgWfmIPQH99MnaBfCkqyCs=
 
-pnpmfileChecksum: sha256-vaAX0kStZHzADiYRouqDNWkfKpdBITagXyWx9PR8MHU=
+pnpmfileChecksum: sha256-AwKRiqAiiyw7mhu7r5HOhmmr0OlIegIp2REd/wgTGuM=
 
 patchedDependencies:
   '@elastic/elasticsearch@8.19.2': 725142a9606e50dff3ed4c17fb9256d5457c7c75ce262898b87ef0ffff14dcc2
@@ -2210,7 +2207,7 @@ importers:
         version: 4.2.0
       '@extractus/oembed-extractor':
         specifier: 'catalog:'
-        version: 6.0.0
+        version: 6.0.1
       '@faker-js/faker':
         specifier: 'catalog:'
         version: 10.6.0
@@ -2269,8 +2266,8 @@ importers:
         specifier: 'catalog:'
         version: 2.3.23(supports-color@10.2.2)
       '@tryghost/domain-events':
-        specifier: 'catalog:'
-        version: 3.4.1(supports-color@10.2.2)
+        specifier: workspace:*
+        version: link:../packages/domain-events
       '@tryghost/errors':
         specifier: 3.4.8
         version: 3.4.8
@@ -2396,7 +2393,7 @@ importers:
         version: 2.29.0
       '@x402/hono':
         specifier: 'catalog:'
-        version: 2.29.0(hono@4.13.16)
+        version: 2.29.0(hono@4.13.19)
       archiver:
         specifier: 8.0.0
         version: 8.0.0
@@ -2519,7 +2516,7 @@ importers:
         version: 2.1.0
       hono:
         specifier: 'catalog:'
-        version: 4.13.16
+        version: 4.13.19
       html-to-text:
         specifier: 'catalog:'
         version: 10.0.1
@@ -2594,7 +2591,7 @@ importers:
         version: 0.6.6
       mppx:
         specifier: 'catalog:'
-        version: 0.17.4(@x402/core@2.29.0)(@x402/hono@2.29.0(hono@4.13.16))(express@4.22.3(supports-color@10.2.2))(hono@4.13.16)(viem@2.57.13)
+        version: 0.17.4(@x402/core@2.29.0)(@x402/hono@2.29.0(hono@4.13.19))(express@4.22.3(supports-color@10.2.2))(hono@4.13.19)(viem@2.57.13)
       multer:
         specifier: 2.5.0
         version: 2.5.0
@@ -4165,6 +4162,34 @@ importers:
         specifier: 'catalog:'
         version: 4.1.12(@opentelemetry/api@1.9.1)(@types/node@22.20.5)(@vitest/browser-playwright@4.1.12)(@vitest/coverage-v8@4.1.12)(@vitest/ui@4.1.12)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.5)(@typescript/typescript6@6.0.2))(vite@8.1.6(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
 
+  packages/domain-events:
+    dependencies:
+      '@tryghost/logging':
+        specifier: 6.0.7
+        version: 6.0.7(supports-color@10.2.2)
+    devDependencies:
+      '@internal/cfg-eslint':
+        specifier: workspace:*
+        version: link:../../tools/configs/eslint
+      '@internal/cfg-vitest':
+        specifier: workspace:*
+        version: link:../../tools/configs/vitest
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.5
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 4.1.12(@vitest/browser@4.1.12)(vitest@4.1.12)
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
+      sinon:
+        specifier: 'catalog:'
+        version: 22.1.0
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.12(@opentelemetry/api@1.9.1)(@types/node@22.20.5)(@vitest/browser-playwright@4.1.12)(@vitest/coverage-v8@4.1.12)(@vitest/ui@4.1.12)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.5)(@typescript/typescript6@6.0.2))(vite@8.1.6(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
+
   packages/i18n:
     dependencies:
       '@tryghost/debug':
@@ -5672,8 +5697,8 @@ packages:
       '@noble/hashes':
         optional: true
 
-  '@extractus/oembed-extractor@6.0.0':
-    resolution: {integrity: sha512-CQz0BwCZ6cv9KqSVLacOpPT5h0FgkWFO3krddAjv2FOgkDiVSNK2iHjESXzqdu9ttHZ0dmI6KtuY80ivtzXucA==}
+  '@extractus/oembed-extractor@6.0.1':
+    resolution: {integrity: sha512-utkNk85MtdHWq4P29dh/48M8R2DTs5xpL1jqBFD6wWBrr3iDWt2r0qzadv7erdiw/wpqUgZ6BTabdwAZt81Afw==}
 
   '@faker-js/faker@10.6.0':
     resolution: {integrity: sha512-3RQHgEtvL1Frl/d1cSreo7qhJ3Gk1OdNUai/CtZ8G+wYeRQnJih3s9xJ9/kgYekPQRdwgh0HXRPqMlzWGwivIQ==}
@@ -8857,9 +8882,6 @@ packages:
   '@tryghost/debug@2.3.23':
     resolution: {integrity: sha512-/fYNYoSUpX8iTr4i2VmJljfehqkljLYbLN5kU5EenvwHue6SHOycGel1r7GsdKKEuDTB2Ckk8/ji+D6D06A6Ng==}
 
-  '@tryghost/domain-events@3.4.1':
-    resolution: {integrity: sha512-AQLNI2It/9xABIuNG895RXv7iSuDjlNEEIs6aySlZ5gDDtK0ITF5rOk2BtUr7T9x2c3DToc4Mf7C53x/ZGGtog==}
-
   '@tryghost/elasticsearch@6.1.0':
     resolution: {integrity: sha512-PvrcF36srNRUXAo7zvjMepMWGNp8RngdvKAly+yfpZZaFRADUcUBvMRc3CfaMQ2h0OozwyQlupK5xe+HvnwJpA==}
     engines: {node: ^22.12.0 || >=24.0.0}
@@ -10866,6 +10888,10 @@ packages:
   cssom@0.5.0:
     resolution: {integrity: sha512-iKuQcq+NdHqlAcwUY0o/HL69XQrUaQdMjmStJ8JFmUaiiQErlhrmuigkg/CU4E2J0IyUKUrMAgl36TvN67MqTw==}
 
+  cssomnom@0.1.12:
+    resolution: {integrity: sha512-nlsLjRxRN2RPomw3r+e+oD3KQBbEbKK0+oBUATbodf5N38FlOMg/5nqV0CdClNvpVsjFLikD63H6dgKTgeuuUg==}
+    engines: {node: '>=20.0.0'}
+
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
 
@@ -12086,8 +12112,8 @@ packages:
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
 
-  hono@4.13.16:
-    resolution: {integrity: sha512-AOLOEhvrV+iH92xXCnFr/5+3KjPKcI3xP63XJtX5spAnkznPdHijlIsUTpi7/9EhWqrTCekw5c5zh1K+YsVw7A==}
+  hono@4.13.19:
+    resolution: {integrity: sha512-KmXvQAXwcAHV+muzbIwoJ23niEB5nMoDVr9WcRkU8mvjUECm/1+7v4Jgp7P7a+H6MLFrh+vXrGonGrGS+RQfkA==}
     engines: {node: '>=16.9.0'}
 
   hosted-git-info@7.0.2:
@@ -13035,6 +13061,15 @@ packages:
 
   linkedom@0.18.13:
     resolution: {integrity: sha512-ES/o9qotMpzpN2MHs+Iq/JcVoOj8Fa5wiQYrTdFpvAnwXL0g66XHHUc9WUMk6nAlBtGsFQ24ne+SYnvnaQ2FSw==}
+    engines: {node: '>=16'}
+    peerDependencies:
+      canvas: '>= 2'
+    peerDependenciesMeta:
+      canvas:
+        optional: true
+
+  linkedom@0.18.15:
+    resolution: {integrity: sha512-o0w7eD/SvoCao+pUi6dzocCLuMR11g4Tv/et0W2OUzwWmUcewntSzyl+Ua/K+0yKym0Y/Mav3nFAaI5Av5jvZg==}
     engines: {node: '>=16'}
     peerDependencies:
       canvas: '>= 2'
@@ -17880,9 +17915,9 @@ snapshots:
     optionalDependencies:
       '@noble/hashes': 1.8.0
 
-  '@extractus/oembed-extractor@6.0.0':
+  '@extractus/oembed-extractor@6.0.1':
     dependencies:
-      linkedom: 0.18.13
+      linkedom: 0.18.15
     transitivePeerDependencies:
       - canvas
 
@@ -20779,12 +20814,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/domain-events@3.4.1(supports-color@10.2.2)':
-    dependencies:
-      '@tryghost/logging': 6.0.7(supports-color@10.2.2)
-    transitivePeerDependencies:
-      - supports-color
-
   '@tryghost/elasticsearch@6.1.0(supports-color@10.2.2)':
     dependencies:
       '@elastic/elasticsearch': 8.19.2(patch_hash=725142a9606e50dff3ed4c17fb9256d5457c7c75ce262898b87ef0ffff14dcc2)(supports-color@10.2.2)
@@ -21769,11 +21798,11 @@ snapshots:
       - ethers
       - utf-8-validate
 
-  '@x402/hono@2.29.0(hono@4.13.16)':
+  '@x402/hono@2.29.0(hono@4.13.19)':
     dependencies:
       '@x402/core': 2.29.0
       '@x402/extensions': 2.29.0
-      hono: 4.13.16
+      hono: 4.13.19
     transitivePeerDependencies:
       - bufferutil
       - ethers
@@ -23012,6 +23041,8 @@ snapshots:
       css-tree: 2.2.1
 
   cssom@0.5.0: {}
+
+  cssomnom@0.1.12: {}
 
   csstype@3.2.3: {}
 
@@ -24578,7 +24609,7 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono@4.13.16: {}
+  hono@4.13.19: {}
 
   hosted-git-info@7.0.2:
     dependencies:
@@ -25563,6 +25594,14 @@ snapshots:
       htmlparser2: 10.1.0
       uhyphen: 0.2.0
 
+  linkedom@0.18.15:
+    dependencies:
+      css-select: 7.0.0
+      cssomnom: 0.1.12
+      html-escaper: 3.0.3
+      htmlparser2: 10.1.0
+      uhyphen: 0.2.0
+
   linkify-it@5.0.2:
     dependencies:
       uc.micro: 2.1.0
@@ -26386,7 +26425,7 @@ snapshots:
 
   moment@2.31.0: {}
 
-  mppx@0.17.4(@x402/core@2.29.0)(@x402/hono@2.29.0(hono@4.13.16))(express@4.22.3(supports-color@10.2.2))(hono@4.13.16)(viem@2.57.13):
+  mppx@0.17.4(@x402/core@2.29.0)(@x402/hono@2.29.0(hono@4.13.19))(express@4.22.3(supports-color@10.2.2))(hono@4.13.19)(viem@2.57.13):
     dependencies:
       ox: 0.14.59
       structured-headers: 2.1.0
@@ -26394,9 +26433,9 @@ snapshots:
       zod: 4.6.7(patch_hash=011cbd2c390354e6d9b4a7c1d83ee357aec0ab419beb9a74d91587ce9b33c6a6)
     optionalDependencies:
       '@x402/core': 2.29.0
-      '@x402/hono': 2.29.0(hono@4.13.16)
+      '@x402/hono': 2.29.0(hono@4.13.19)
       express: 4.22.3(supports-color@10.2.2)
-      hono: 4.13.16
+      hono: 4.13.19
 
   mrmime@2.0.1: {}
 

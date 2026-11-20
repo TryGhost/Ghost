@@ -74,6 +74,7 @@ The shell requests handled by default (`boot.ts`): `browseSettings`, `browseConf
 // Labs flags (sugar for lockstep settings + config overrides; merges into
 // any browseSettings/browseConfig boot override, named flags winning):
 await renderAdminApp("/tags", {labs: {someFlag: true}});
+await renderInApp(<MyComponent />, {labs: {admin7Mobile: true}});
 
 // The editor's autosave debounce, injected as a test-only `/config/` key, so a
 // save that lands proves it was sent without waiting (`withoutAutosave()`), or
@@ -90,7 +91,9 @@ me.users[0].accessibility = JSON.stringify({whatsNew: {lastSeenDate: "2025-01-01
 await renderAdminApp("/tags", {boot: {browseMe: {response: me}}});
 ```
 
-Boot responses are STATELESS — a canned reply per request, nothing is stored — with one exception: `editUserPreferences` echoes the PUT's user fields back, because the framework replaces its cached current user with that response (a canned reply would silently wipe every preferences write).
+Boot responses are STATELESS — a canned reply per request, nothing is stored — with two exceptions. `editUserPreferences` echoes the PUT's user fields back, because the framework replaces its cached current user with that response (a canned reply would silently wipe every preferences write). The `shared_views` setting is stored, as described next.
+
+The fake stores the `shared_views` setting, which holds the saved member and posts views, in `shared-views.ts`. A test starts with the `shared_views` value of its `browseSettings` response, and a `shared_views` saved through `fakeEditSettings` replaces that value for the rest of the test, in later `GET /settings/` responses and in the echo of a PUT that leaves it out. Seed saved views with `withSavedViews(...)`.
 
 ## Faking a resource that has no fake yet
 

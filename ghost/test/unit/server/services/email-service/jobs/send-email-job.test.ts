@@ -10,8 +10,8 @@ describe('SendEmailJob', function () {
     assert.deepEqual({ ...job }, { emailId: 'email-id' });
   });
 
-  it('survives JSON serialization', function () {
-    const job = new SendEmailJob({ emailId: 'email-id' });
+  it('survives JSON serialization, keeping its request time for a replay', function () {
+    const job = new SendEmailJob({ emailId: 'email-id', requestedAt: '2026-11-19T12:00:00.000Z' });
 
     const revived = new SendEmailJob(JSON.parse(JSON.stringify(job)));
 

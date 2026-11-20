@@ -142,6 +142,60 @@ describe('oEmbed service root', function () {
       sinon.assert.notCalled(laterStore.saveRaw);
     });
 
+    it('converts SVG images to PNG before storing them through the captured images adapter', async function () {
+      const root = loadRoot();
+      const svg = Buffer.from(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><rect width="8" height="8" fill="red"/></svg>',
+      );
+      sandbox.stub(root, 'fetchImageBuffer').resolves(svg);
+
+      await root.processImageFromUrl('https://source.example/icon.svg', 'icon');
+
+      sinon.assert.calledOnce(imageStore.saveRaw);
+      const [stored, targetPath] = imageStore.saveRaw.firstCall.args;
+      assert.deepEqual([...stored.subarray(0, 4)], [0x89, 0x50, 0x4e, 0x47]);
+      assert.match(targetPath, /^icon\/icon-[0-9a-f-]{36}\.png$/);
+    });
+
+    it('reads the upload extension allowlist on each image operation', async function () {
+      const root = loadRoot();
+      // 1x1 PNG
+      const png = Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+        'base64',
+      );
+      sandbox.stub(root, 'fetchImageBuffer').resolves(png);
+      getConfig.withArgs('uploads').returns({ images: { extensions: ['.png'] } });
+
+      await root.processImageFromUrl('https://source.example/icon.png', 'icon');
+      getConfig.withArgs('uploads').returns({ images: { extensions: ['.jpg'] } });
+
+      await assert.rejects(root.processImageFromUrl('https://source.example/icon.png', 'icon'), {
+        name: 'ValidationError',
+        message: 'Image is not a supported file type.',
+      });
+      sinon.assert.calledOnce(imageStore.saveRaw);
+    });
+
+    it('logs a failed Twitter API request through the application logger and keeps the base embed', async function () {
+      const root = loadRoot();
+      const error = sandbox.stub(logging, 'error');
+      mockManager.disableNetwork();
+      const embed = { type: 'rich', version: '1.0', html: '<blockquote>Tweet</blockquote>' };
+      nock('https://publish.twitter.com').get('/oembed').query(true).reply(200, embed);
+      nock('https://api.twitter.com')
+        .get('/2/tweets/1630581157568839683')
+        .query(true)
+        .reply(403, { detail: 'Forbidden' });
+
+      const result = await root.fetchOembedDataFromUrl(TWEET_URL);
+
+      assert.deepEqual(result, { ...embed, type: 'twitter' });
+      sinon.assert.calledOnce(error);
+      assert.equal(error.firstCall.args[0].response.statusCode, 403);
+      assert.deepEqual(error.firstCall.args[0].context, { detail: 'Forbidden' });
+    });
+
     it('rejects the import when a provider config subtree is missing, and a later import composes afresh', function () {
       getConfig.withArgs('opensea').returns(undefined);
 

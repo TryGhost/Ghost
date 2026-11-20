@@ -41,7 +41,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "archive": "node scripts/pack.mjs",
+    "archive": "node scripts/pack.mts",
     "dev": "nodemon index.js",
     "build:assets": "pnpm run '/^build:assets:/'",
     "build:assets:js": "node scripts/minify-assets.mts",
@@ -99,7 +99,7 @@
     "@tryghost/custom-fonts": "catalog:",
     "@tryghost/database-info": "2.4.0",
     "@tryghost/debug": "catalog:",
-    "@tryghost/domain-events": "catalog:",
+    "@tryghost/domain-events": "workspace:*",
     "@tryghost/errors": "catalog:",
     "@tryghost/helpers": "catalog:",
     "@tryghost/html-to-plaintext": "1.0.17",

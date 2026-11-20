@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const { byColumnValues, CHUNK_SIZE } = require('./bulk-filters');
 
@@ -98,7 +97,7 @@ module.exports = function (Bookshelf) {
        * @returns {Promise<object[]>} The locked rows that still exist
        */
       lockForUpdate: async function lockForUpdate(ids, { transacting, columns = ['id'] }) {
-        const sortedIds = _.uniq(ids).sort();
+        const sortedIds = [...new Set(ids)].sort();
         const rows = [];
 
         for (let offset = 0; offset < sortedIds.length; offset += CHUNK_SIZE) {
@@ -154,14 +153,15 @@ module.exports = function (Bookshelf) {
           .where(where)
           .forUpdate()
           .pluck(foreignKey);
-        if (_.difference(currentIds, ids).length > 0) {
+        const lockedIds = new Set(ids);
+        if (currentIds.some((id) => !lockedIds.has(id))) {
           throw new errors.ConflictError({
             message: 'Records were linked while being changed, please try again.',
             code: LINKED_RECORDS_CHANGED,
           });
         }
 
-        return _.uniq(currentIds);
+        return [...new Set(currentIds)];
       },
 
       /**

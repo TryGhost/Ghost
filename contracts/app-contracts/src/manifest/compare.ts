@@ -1,3 +1,5 @@
+import type { ManifestChange } from './changes-schema.ts';
+import { changeRequiresApproval } from './changes.ts';
 import type { AppManifest } from './schema.ts';
 
 /**
@@ -15,13 +17,10 @@ const SILENT_PREFIXES = ['backend_key.'];
 const isSilent = (path: string) =>
   SILENT_PATHS.has(path) || SILENT_PREFIXES.some((prefix) => path.startsWith(prefix));
 
-export interface ManifestChange {
-  /** Where in the manifest the change is, e.g. `surfaces[0].url`. */
-  path: string;
-  /** Whether this change needs the publisher to approve it before it applies. */
-  requiresApproval: boolean;
-}
-
+/**
+ * What `compareManifests` finds. Each change is in the snake-case shape Ghost serves; the
+ * comparison itself is a JavaScript API, so its own fields are camel case.
+ */
 export interface ManifestComparison {
   /** Every field that differs, in a stable order. Empty when nothing changed. */
   changes: ManifestChange[];
@@ -73,7 +72,11 @@ export function compareManifests(approved: AppManifest, next: AppManifest): Mani
 
   const changes = paths
     .filter((path) => before.get(path) !== after.get(path))
-    .map((path) => ({ path, requiresApproval: !isSilent(path) }));
+    .map((path): ManifestChange => ({
+      kind: 'field',
+      path,
+      requires_approval: !isSilent(path),
+    }));
 
-  return { changes, requiresApproval: changes.some((change) => change.requiresApproval) };
+  return { changes, requiresApproval: changes.some(changeRequiresApproval) };
 }

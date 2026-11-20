@@ -14,11 +14,7 @@ describe('ManageViewPopover', () => {
   it('resets the name when switching from an active saved view to save mode', () => {
     const activeFilter = "email:'test'";
     const unsavedFilter = "email:'test'+label:'vip'";
-    const activeView = {
-      name: 'Existing view',
-      route: 'members' as const,
-      filter: { filter: activeFilter },
-    };
+    const activeView = { name: 'Existing view', filter: activeFilter };
 
     const { rerender } = render(
       <ManageViewPopover

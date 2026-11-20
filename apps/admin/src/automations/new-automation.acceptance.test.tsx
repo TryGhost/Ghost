@@ -508,6 +508,71 @@ describe('New automation', () => {
       .not.toBeInTheDocument();
   });
 
+  it('focuses the label picker without opening it when its label is clicked', async () => {
+    fakeAutomations([]);
+    fakeMembers([]);
+    const spring = buildLabel({ name: 'Spring ebook' });
+    const labels = fakeAdminEndpoint('GET', /^\/labels\/\?/, { labels: [spring] });
+
+    await renderAdminApp('/automations/new', { labs: { ...labs, automationsLeadMagnets: true } });
+    await page.getByRole('button').getByText('Label added', { exact: true }).click();
+    const picker = page.getByRole('combobox', {
+      name: 'Triggered when this label is added to a member:',
+    });
+
+    const triggerLabel = page.getByText('Triggered when this label is added to a member:', {
+      exact: true,
+    });
+    await triggerLabel.hover();
+    await expect.poll(() => picker.element().matches(':hover')).toBe(false);
+    await triggerLabel.click();
+    await expect.element(picker).toHaveFocus();
+    await expect.element(picker).toHaveAttribute('aria-expanded', 'false');
+    await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+    expect(labels.requests).toHaveLength(0);
+
+    await userEvent.keyboard('{Enter}');
+    await expect
+      .element(page.getByRole('option', { name: spring.name, exact: true }))
+      .toBeVisible();
+    await userEvent.keyboard('{Escape}');
+    await picker.hover();
+    await expect.poll(() => picker.element().matches(':hover')).toBe(true);
+    await picker.click();
+    await expect
+      .element(page.getByRole('option', { name: spring.name, exact: true }))
+      .toBeVisible();
+  });
+
+  it('dismisses the label picker when clicking elsewhere in its trigger card', async () => {
+    fakeAutomations([]);
+    fakeMembers([]);
+    const spring = buildLabel({ name: 'Spring ebook' });
+    fakeAdminEndpoint('GET', /^\/labels\/\?/, { labels: [spring] });
+
+    await renderAdminApp('/automations/new', { labs: { ...labs, automationsLeadMagnets: true } });
+    await page.getByRole('button').getByText('Label added', { exact: true }).click();
+    const picker = page.getByRole('combobox', {
+      name: 'Triggered when this label is added to a member:',
+    });
+    const search = page.getByRole('combobox', { name: 'Search labels' });
+
+    await picker.click();
+    await search.fill('Spring');
+    await expect.element(search).toBeVisible();
+    await page.getByText('Label added', { exact: true }).click();
+    await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+    await expect.element(picker).toHaveFocus();
+
+    await picker.click();
+    await expect.element(search).toHaveValue('');
+    await expect
+      .element(page.getByRole('option', { name: spring.name, exact: true }))
+      .toBeVisible();
+    await page.getByTestId('automation-canvas').click({ position: { x: 20, y: 100 }, force: true });
+    await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+  });
+
   for (const action of ['Save', 'Publish'] as const) {
     it(`validates label selection before ${action.toLowerCase()} and sends the selected label`, async () => {
       fakeAutomations([]);

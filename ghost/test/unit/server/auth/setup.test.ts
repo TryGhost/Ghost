@@ -5,6 +5,7 @@ import logging from '@tryghost/logging';
 import {
   doFixtures,
   doProductAndNewsletter as doTierAndNewsletter,
+  setupUser,
   type SetupData,
 } from '../../../../core/server/auth/setup';
 
@@ -14,6 +15,10 @@ const models: {
     findOne(query: { slug: string }): Promise<{ id: string } | null>;
     edit(data: { mobiledoc: string }, options: { id: string }): Promise<unknown>;
   };
+  User: {
+    findOne(query: unknown): Promise<unknown>;
+    setup(data: unknown, options: unknown): Promise<unknown>;
+  };
 } = require('../../../../core/server/models');
 
 describe('Auth Service: setup', function () {
@@ -21,8 +26,61 @@ describe('Auth Service: setup', function () {
     sinon.restore();
   });
 
+  describe('setupUser', function () {
+    it('acts as the Owner with the roles its lookup loaded, leaving the response alone', async function () {
+      const ownerRole = { id: 'role-owner', get: () => 'Owner' };
+      const findOwner = sinon.stub(models.User, 'findOne').resolves({
+        id: 'user-1',
+        get: () => 'before setup',
+        relations: { roles: { models: [ownerRole] } },
+      });
+      const edited = {
+        id: 'user-1',
+        get: (key: string) =>
+          ({ email: 'owner@example.com', name: 'Owner', status: 'active' })[key],
+        relations: {},
+      };
+      sinon.stub(models.User, 'setup').resolves(edited);
+
+      const data = await setupUser({
+        name: 'Owner',
+        email: 'owner@example.com',
+        password: 'password',
+        blogTitle: 'Test Blog',
+        status: 'active',
+      });
+
+      assert.deepEqual(data.principal, {
+        kind: 'user',
+        method: 'setup',
+        user: {
+          id: 'user-1',
+          email: 'owner@example.com',
+          name: 'Owner',
+          status: 'active',
+          roles: [{ id: 'role-owner', name: 'Owner' }],
+        },
+      });
+      assert.equal(data.user, edited);
+      assert.deepEqual(edited.relations, {});
+      sinon.assert.calledOnce(findOwner);
+    });
+  });
+
   describe('doProductAndNewsletter', function () {
-    it('updates default product and newsletter name', async function () {
+    it('updates default product and newsletter name as the Owner', async function () {
+      // setupUser builds the principal once; this step only passes it on
+      const principal = {
+        kind: 'user',
+        method: 'setup',
+        user: {
+          id: 'user-1',
+          email: 'owner@example.com',
+          name: 'Owner',
+          status: 'active',
+          roles: [{ id: 'role-owner', name: 'Owner' }],
+        },
+      } as const;
       const tierEditStub = sinon.stub().resolves();
       const newsletterEditStub = sinon.stub().resolves();
       const tierBrowseStub = sinon.stub().resolves({
@@ -62,23 +120,23 @@ describe('Auth Service: setup', function () {
         newsletters: newslettersApi,
       };
       const data = {
-        user: {
-          id: 'user-1',
-        },
+        principal,
         userData: {
           blogTitle: 'Test Blog',
         },
       };
       await doTierAndNewsletter(data, api);
+
+      const context = { user: 'user-1', principal };
       sinon.assert.calledOnceWithExactly(
         tierEditStub,
         { tiers: [{ name: 'Test Blog' }] },
-        { context: { user: 'user-1' }, id: 'product-2' },
+        { context, id: 'product-2' },
       );
       sinon.assert.calledOnceWithExactly(
         newsletterEditStub,
         { newsletters: [{ name: 'Test Blog' }] },
-        { context: { user: 'user-1' }, id: 'newsletter-2' },
+        { context, id: 'newsletter-2' },
       );
     });
   });

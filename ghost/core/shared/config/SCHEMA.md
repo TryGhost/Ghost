@@ -47,7 +47,7 @@ Organise it by area:
   top-level key it describes and composed into `configSchema` in `schema.ts`.
   [`schema/auth.ts`](schema/auth.ts) and [`schema/explore.ts`](schema/explore.ts)
   are the first. An area file may export named types for its values, such as
-  `AuthEngine`, so code that passes a value around imports it rather than
+  `AuthConfig` and `AuthEngine`, so code that passes a value around imports it rather than
   restating it.
 - **Field types more than one area uses**, such as `httpUrl()`, are in
   [`schema/primitives.ts`](schema/primitives.ts). A shape several areas embed
@@ -210,6 +210,19 @@ when it doesn't. A closed section has three options:
 - **`z.strictObject()` rejects an unknown key.** Strict environments throw, and
   everywhere else the section falls back to raw. Use it only where an unknown key
   must be an error.
+
+### Keys that only apply to one mode
+
+When a section's other keys depend on one of its values, make it a
+`z.discriminatedUnion` on that value, with each option naming only the keys
+that mode reads. `auth` is the example: options specific to Better Auth go in
+its `better-auth` option, so they exist only under `engine: 'better-auth'`.
+Each option is a `knownKeys()` object, so a Better Auth key under
+`engine: 'legacy'` is reported and stripped like any other unknown key.
+
+`config.get()` types a path through a union per option: a key that one option
+lacks resolves to `undefined` for it, so `config.get('auth:sso')` would be
+`... | undefined` until the caller narrows on `auth:engine`.
 
 ## Don't mutate what `get()` returns
 

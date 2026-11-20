@@ -1,7 +1,12 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('email-service:mailgun-provider-service');
-const { escapeExpression } = require('handlebars');
+const {
+  createRecipientVariables,
+  getHtmlEscapedIds,
+  replaceTokensWithRecipientVariables,
+} = require('../../lib/mailgun/mailgun-recipient-variables');
+const { buildRecipientMessageId } = require('../../lib/mailgun/mailgun-recipient-message-id');
 const {
   RECIPIENT_VERIFICATION_CODE,
   recipientVerificationError,
@@ -54,34 +59,6 @@ class MailgunEmailProvider {
     this.#config = config;
   }
 
-  #createRecipientData(replacements, htmlEscapedIds) {
-    let recipientData = {};
-
-    recipientData = replacements.reduce((acc, replacement) => {
-      const { id, value } = replacement;
-      acc[id] = value;
-      // Mailgun's recipient-variables substitution is a simple string replace with
-      // no HTML awareness, and the same value is used for both the html and plaintext
-      // bodies. Member-controlled values get an extra, escaped variant that only the
-      // html body points at. Trusted server-generated values (urls, uuids, hmacs) are
-      // skipped so their URLs don't end up entity-encoded inside hrefs.
-      if (htmlEscapedIds.has(id)) {
-        acc[`${id}_html`] = typeof value === 'string' ? escapeExpression(value) : value;
-      }
-      return acc;
-    }, {});
-
-    return recipientData;
-  }
-
-  #updateRecipientVariables(data, replacementDefinitions, isHtml) {
-    for (const def of replacementDefinitions) {
-      const useHtmlVariant = isHtml && !def.trusted;
-      data = data.replace(def.token, `%recipient.${def.id}${useHtmlVariant ? '_html' : ''}%`);
-    }
-    return data;
-  }
-
   /**
    * Create mailgun error message for storing in the database
    * @param {Object} error
@@ -130,8 +107,8 @@ class MailgunEmailProvider {
         id: emailId,
         track_opens: !!options.openTrackingEnabled,
         track_clicks: !!options.clickTrackingEnabled,
-        // only newsletters opt in; automation and gift emails rely on the id Mailgun returns
-        perRecipientMessageId: true,
+        buildRecipientMessageId: ({ recipientEmail, domain }) =>
+          buildRecipientMessageId({ emailId, recipientEmail, domain }),
       };
 
       const mailgunTagFromConfig = this.#config.get('bulkEmail:mailgun:tag');
@@ -144,11 +121,9 @@ class MailgunEmailProvider {
       }
 
       // create recipient data for Mailgun using replacement definitions
-      const htmlEscapedIds = new Set(
-        replacementDefinitions.filter((def) => !def.trusted).map((def) => def.id),
-      );
+      const htmlEscapedIds = getHtmlEscapedIds(replacementDefinitions);
       const recipientData = recipients.reduce((acc, recipient) => {
-        acc[recipient.email] = this.#createRecipientData(recipient.replacements, htmlEscapedIds);
+        acc[recipient.email] = createRecipientVariables(recipient.replacements, htmlEscapedIds);
         return acc;
       }, {});
       if (
@@ -173,10 +148,10 @@ class MailgunEmailProvider {
       // update content to use Mailgun variable syntax for all replacements
       ['html', 'plaintext'].forEach((key) => {
         if (messageData[key]) {
-          messageData[key] = this.#updateRecipientVariables(
+          messageData[key] = replaceTokensWithRecipientVariables(
             messageData[key],
             replacementDefinitions,
-            key === 'html',
+            key,
           );
         }
       });
