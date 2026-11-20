@@ -42,18 +42,6 @@ export class HeaderNode extends generateDecoratorNode<typeof headerProperties, t
         2: renderHeaderNodeV2
     }
 }) {
-    hasVisibility() {
-        return this.version === 2;
-    }
-
-    exportJSON() {
-        const json = super.exportJSON();
-        if (!this.hasVisibility()) {
-            delete json.visibility;
-        }
-        return json;
-    }
-
     static importDOM() {
         return parseHeaderNode(this);
     }

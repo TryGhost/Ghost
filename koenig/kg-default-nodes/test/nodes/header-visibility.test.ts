@@ -22,21 +22,23 @@ function withEditor(fn: () => void) {
 }
 
 describe('Header visibility', function () {
-    it('round-trips v2 visibility and keeps v1 unsupported', function () {
-        return withEditor(() => {
-            const node = $createHeaderNode({version: 2, header: 'Members', visibility: restricted});
-            expect(node.hasVisibility()).toBe(true);
-            expect(HeaderNode.clone(node).visibility).toEqual(restricted);
-            expect(HeaderNode.importJSON(node.exportJSON()).visibility).toEqual(restricted);
-            const legacy = $createHeaderNode({version: 1, header: 'Legacy', visibility: restricted});
-            expect(legacy.hasVisibility()).toBe(false);
-            expect(legacy.getIsVisibilityActive()).toBe(false);
-            expect(legacy.exportJSON()).not.toHaveProperty('visibility');
+    // Config lists `header` as supporting visibility, so every version must
+    // keep and apply it; a v1 header set through the API must not render publicly
+    for (const version of [1, 2]) {
+        it(`round-trips v${version} visibility`, function () {
+            return withEditor(() => {
+                const node = $createHeaderNode({version, header: 'Members', visibility: restricted});
+                expect(node.hasVisibility()).toBe(true);
+                expect(node.getIsVisibilityActive()).toBe(true);
+                expect(HeaderNode.clone(node).visibility).toEqual(restricted);
+                expect(node.exportJSON().visibility).toEqual(restricted);
+                expect(HeaderNode.importJSON(node.exportJSON()).visibility).toEqual(restricted);
+            });
         });
-    });
+    }
 
     for (const target of ['html', 'email']) {
-        it(`gates v2 on ${target} and leaves v1 unchanged`, function () {
+        it(`gates v1 and v2 on ${target}`, function () {
             return withEditor(() => {
                 for (const version of [1, 2]) {
                     const node = $createHeaderNode({version, header: 'Members', visibility: restricted});
@@ -44,19 +46,21 @@ describe('Header visibility', function () {
                     const element = result.element as HTMLElement & HTMLTextAreaElement;
                     const output = result.type === 'value' ? element.value : element.outerHTML;
                     expect(output).toContain('Members');
-                    expect(output.includes(target === 'email' ? 'data-gh-segment' : 'kg-gated-block')).toBe(version === 2);
+                    expect(output).toContain(target === 'email' ? 'data-gh-segment="status:-free"' : 'kg-gated-block:begin nonMember:false memberSegment:"status:-free"');
                 }
             });
         });
 
-        it(`omits v2 when hidden on ${target}`, function () {
+        it(`omits v1 and v2 when hidden on ${target}`, function () {
             return withEditor(() => {
-                const node = $createHeaderNode({version: 2, header: 'Hidden', visibility: {
-                    web: {nonMember: false, memberSegment: ''}, email: {memberSegment: ''}
-                }});
-                const result = node.exportDOM(undefined, {createDocument, target});
-                expect(result.type).toBe('inner');
-                expect((result.element as HTMLElement).innerHTML).toBe('');
+                for (const version of [1, 2]) {
+                    const node = $createHeaderNode({version, header: 'Hidden', visibility: {
+                        web: {nonMember: false, memberSegment: ''}, email: {memberSegment: ''}
+                    }});
+                    const result = node.exportDOM(undefined, {createDocument, target});
+                    expect(result.type).toBe('inner');
+                    expect((result.element as HTMLElement).innerHTML).toBe('');
+                }
             });
         });
     }
