@@ -1,9 +1,8 @@
-const commands = require('../../schema').commands;
-const views = require('../../schema').views;
-const inDevelopment = require('../../schema').inDevelopment;
-const logging = require('@tryghost/logging');
+import { commands, views, inDevelopment } from '../../schema';
+import logging from '@tryghost/logging';
+import type KnexMigrator from 'knex-migrator';
 
-module.exports.up = async (options) => {
+export const up = async (options: KnexMigrator.MigrationContext) => {
   const connection = options.connection;
 
   const existingTables = await commands.getTables(connection);

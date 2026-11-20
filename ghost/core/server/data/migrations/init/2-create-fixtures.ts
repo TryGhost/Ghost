@@ -1,9 +1,10 @@
-const { fixtureManager } = require('../../schema/fixtures');
+import type KnexMigrator from 'knex-migrator';
+import { fixtureManager } from '../../schema/fixtures';
 
-module.exports.config = {
+export const config: KnexMigrator.MigrationConfig = {
   transaction: true,
 };
 
-module.exports.up = async function insertFixtures(options) {
+export const up = async function insertFixtures(options: KnexMigrator.MigrationContext) {
   return await fixtureManager.addAllFixtures(options);
 };
