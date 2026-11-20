@@ -8,6 +8,7 @@ import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {BookmarkCard} from '../components/ui/cards/BookmarkCard.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem} from '../components/ui/ToolbarMenu.jsx';
+import {isDocumentEditable} from '../hooks/useIsDocumentEditable';
 import {isInternalUrl} from '../utils/isInternalUrl.js';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -69,6 +70,11 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
     }, [editor, nodeKey, urlInputValue]);
 
     const handleClose = useCallback(() => {
+        // reached from a window-level Escape listener, so not only when the card has focus
+        if (!isDocumentEditable(editor)) {
+            return;
+        }
+
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             const nextSibling = node.getNextSibling();

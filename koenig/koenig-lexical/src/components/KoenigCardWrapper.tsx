@@ -36,24 +36,12 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     const isEditing = isSelected && isEditingCard;
 
     // a card's own controls change the document, so nothing in a read-only
-    // editor's card is clicked, dragged or focused. Not `inert`: that would also
+    // editor's card is clicked, dragged or keeps focus: the stylesheet takes the
+    // pointer from the card and everything in it. Not `inert`, which would also
     // keep the card's text out of selections, find-in-page and screen readers
-    React.useEffect(() => {
-        const container = containerRef.current;
-        if (!isReadOnly || !container) {
-            return;
-        }
-
-        const refuseFocus = (event) => {
-            event.target.blur?.();
-        };
-
-        container.addEventListener('focusin', refuseFocus);
-
-        return () => {
-            container.removeEventListener('focusin', refuseFocus);
-        };
-    }, [isReadOnly]);
+    const refuseFocus = React.useCallback((event) => {
+        event.target.blur?.();
+    }, []);
 
     const handleVisibilityToggle = React.useCallback((event) => {
         event.preventDefault();
@@ -193,14 +181,15 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                 ref={containerRef}
                 cardType={cardType}
                 cardWidth={width}
+                data-kg-read-only={isReadOnly ? '' : undefined}
                 feature={cardConfig?.feature}
                 IndicatorIcon={IndicatorIcon}
                 isDragging={isDragging}
                 isEditing={isEditing}
                 isSelected={isSelected}
                 isVisibilityActive={isVisibilityActive}
-                style={isReadOnly ? {pointerEvents: 'none'} : undefined}
                 wrapperStyle={wrapperStyle}
+                onFocusCapture={isReadOnly ? refuseFocus : undefined}
                 onIndicatorClick={handleVisibilityToggle}
             >
                 {children}

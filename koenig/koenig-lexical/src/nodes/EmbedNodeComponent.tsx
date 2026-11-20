@@ -9,6 +9,7 @@ import {EmbedCard} from '../components/ui/cards/EmbedCard';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem} from '../components/ui/ToolbarMenu.jsx';
 import {getEmbedRendererUrl} from '../utils/embed-renderer';
+import {isDocumentEditable} from '../hooks/useIsDocumentEditable';
 import {useCallback} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -63,6 +64,11 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
     }, [editor, nodeKey]);
 
     const handleClose = useCallback(() => {
+        // reached from a window-level Escape listener, so not only when the card has focus
+        if (!isDocumentEditable(editor)) {
+            return;
+        }
+
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             const nextSibling = node.getNextSibling();

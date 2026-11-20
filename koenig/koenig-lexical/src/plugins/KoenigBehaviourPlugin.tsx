@@ -166,7 +166,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
             // clicks outside of editor should deselect cards
             //  this more generic handling prevents the need to handle blur for codemirror cards (and likely others)
-            if (containerElem.current && !containerElem.current.contains(event.target)) {
+            if (editor.isEditable() && containerElem.current && !containerElem.current.contains(event.target)) {
                 editor.getEditorState().read(() => {
                     const selection = $getSelection();
                     if ($isNodeSelection(selection)) {
@@ -200,20 +200,47 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 return;
             }
 
-            // the elements stop being editable a render later, and a key pressed
-            // before then would still reach whichever of them has focus
-            const focused = document.activeElement;
-            if (focused instanceof HTMLElement && (containerElem.current?.contains(focused) || focused.closest('[data-kg-portal]'))) {
-                focused.blur();
-            }
-
-            // no editor.update() here: Lexical queues one made from this listener
-            // and runs it inside the next update, whatever that turns out to be
             setSelectedCardKey(null);
             setIsEditingCard(false);
             setShowVisibilitySettings(false);
+
+            // Lexical's own selection of the card goes too, or the card would come
+            // back selected with the next update once editable. In a microtask, as
+            // Lexical queues an update made from this listener and runs it inside
+            // the next one, whatever that turns out to be
+            queueMicrotask(() => {
+                if (editor.isEditable()) {
+                    return;
+                }
+                editor.update(() => {
+                    if ($isNodeSelection($getSelection())) {
+                        $setSelection(null);
+                    }
+                }, {tag: 'history-merge'});
+            });
         });
-    }, [editor, containerElem, isNested, setSelectedCardKey, setIsEditingCard, setShowVisibilitySettings]);
+    }, [editor, isNested, setSelectedCardKey, setIsEditingCard, setShowVisibilitySettings]);
+
+    // the editor's elements stop being editable a render after the flag goes off.
+    // Until then the browser would still apply a key to whichever has focus, and
+    // Lexical would take the changed DOM into the document
+    React.useEffect(() => {
+        if (isNested) {
+            return;
+        }
+
+        const refuseInput = (event) => {
+            if (!editor.isEditable() && event.target instanceof Node && editor.getRootElement()?.contains(event.target)) {
+                event.preventDefault();
+            }
+        };
+
+        document.addEventListener('beforeinput', refuseInput, true);
+
+        return () => {
+            document.removeEventListener('beforeinput', refuseInput, true);
+        };
+    }, [editor, isNested]);
 
     // Override built-in keyboard movement around card (DecoratorNode) boundaries,
     // cards should be selected on up/down and when deleting content around them.
@@ -326,6 +353,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 INSERT_CARD_COMMAND,
                 ({cardNode, openInEditMode}) => {
+                    if (!isDocumentEditable(editor)) {
+                        return true;
+                    }
+
                     let focusNode;
 
                     const selection = $getSelection();
@@ -405,6 +436,11 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 DESELECT_CARD_COMMAND,
                 ({cardKey}) => {
+                    // deselecting removes an empty card, which a read-only editor may not
+                    if (!isDocumentEditable(editor)) {
+                        return true;
+                    }
+
                     $deselectCard(editor, cardKey);
 
                     setSelectedCardKey(null);
@@ -417,6 +453,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 DELETE_CARD_COMMAND,
                 ({cardKey, direction = 'forward'}) => {
+                    if (!isDocumentEditable(editor)) {
+                        return true;
+                    }
+
                     const cardNode = $getNodeByKey(cardKey);
                     const previousSibling = cardNode.getPreviousSibling();
                     const nextSibling = cardNode.getNextSibling();

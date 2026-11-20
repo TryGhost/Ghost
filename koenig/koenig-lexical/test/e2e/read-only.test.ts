@@ -1,4 +1,5 @@
-import {ctrlOrCmd, focusEditor, initialize, insertCard, selectBackwards} from '../utils/e2e';
+import {E2E_PORT} from '../../playwright.config';
+import {ctrlOrCmd, dragMouse, focusEditor, initialize, insertCard, selectBackwards} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 async function setEditable(page, editable) {
@@ -16,6 +17,24 @@ async function setEditableAndRender(page, editable) {
     } else {
         await expect(root).toHaveAttribute('aria-readonly', 'true');
     }
+}
+
+const documentJson = page => page.evaluate(() => JSON.stringify(window.lexicalEditor.getEditorState().toJSON().root.children));
+const documentTypes = async page => JSON.parse(await documentJson(page)).map(node => node.type).join(',');
+const text = value => ({detail: 0, format: 0, mode: 'normal', style: '', text: value, type: 'text', version: 1});
+const paragraph = (...children) => ({children: children.map(child => (typeof child === 'string' ? text(child) : child)), direction: 'ltr', format: '', indent: 0, type: 'paragraph', version: 1});
+const withContent = children => `/#/?content=${encodeURIComponent(JSON.stringify({root: {children, direction: null, format: '', indent: 0, type: 'root', version: 1}}))}`;
+const SVG = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="600" height="400" fill="teal"/></svg>';
+const PNG = `http://localhost:${E2E_PORT}/Koenig-editor-1.png`;
+
+// a press and release where the pointer is, which is what reaches a control the
+// page says takes no pointer input
+async function pressAt(page, locator) {
+    const box = await locator.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.up();
+    await page.waitForTimeout(300);
 }
 
 function calloutText(page) {
@@ -116,6 +135,15 @@ test.describe('Read-only', async () => {
         const card = await insertCard(page, {cardName: 'image'});
         await page.keyboard.press('ArrowDown');
         await expect(card).toHaveAttribute('data-kg-card-selected', 'false');
+        // a control that does take focus while the editor is editable
+        const takesFocus = await card.evaluate((element) => {
+            const button = element.querySelector('button');
+            button.focus();
+            const focused = document.activeElement === button;
+            button.blur();
+            return focused;
+        });
+        expect(takesFocus).toBe(true);
 
         await setEditableAndRender(page, false);
 
@@ -125,7 +153,6 @@ test.describe('Read-only', async () => {
         await expect(page.locator('[data-kg-card-toolbar]')).toHaveCount(0);
 
         // the keyboard reaches a control the pointer cannot
-        await expect(card.locator('button').first()).toBeAttached();
         const focusedInCard = await card.evaluate((element) => {
             element.querySelector('button')?.focus();
             return element.contains(document.activeElement);
@@ -230,34 +257,6 @@ test.describe('Read-only and back', () => {
         expect(await calloutText(page)).toBe('Card text');
     });
 
-    test('takes no input in a card where the browser has no inert', async ({page}) => {
-        // a browser without the property: setting it does nothing
-        await page.addInitScript(() => {
-            Object.defineProperty(HTMLElement.prototype, 'inert', {configurable: true, get() {
-                return undefined;
-            }, set() {}});
-        });
-        await initialize({page});
-        await focusEditor(page);
-        const card = await insertCard(page, {cardName: 'callout'});
-        await page.keyboard.type('Card text');
-        await page.keyboard.press(`${ctrlOrCmd(page)}+Enter`);
-        await page.keyboard.press('Enter');
-        await page.keyboard.type('Para after');
-        await expect(card).toHaveAttribute('data-kg-card-selected', 'false');
-
-        await setEditableAndRender(page, false);
-
-        const text = await card.locator('[data-lexical-editor] p').boundingBox();
-        await page.mouse.click(text.x + 18, text.y + text.height / 2);
-        // give a wrongly selected card time to show
-        await page.waitForTimeout(300);
-
-        await expect(card).toHaveAttribute('data-kg-card-selected', 'false');
-        await expect(page.locator('[data-kg-card-toolbar]')).toHaveCount(0);
-        expect(await calloutText(page)).toBe('Card text');
-    });
-
     test('opens the link prompt with the shortcut once editable again', async ({page}) => {
         await initialize({page});
         await focusEditor(page);
@@ -310,26 +309,207 @@ test.describe('Read-only and back', () => {
 
         // Lexical makes every nested editor editable along with the top-level one
         await expect(card.locator('[data-lexical-editor]')).toHaveAttribute('contenteditable', 'false');
+
+        // and when React never gets to render the read-only state in between
+        await page.evaluate(() => {
+            window.lexicalEditor.setEditable(false);
+            window.lexicalEditor.setEditable(true);
+        });
+        await page.waitForTimeout(500);
+        await expect(card.locator('[data-lexical-editor]')).toHaveAttribute('contenteditable', 'false');
+    });
+
+    test('shows a card’s toolbar again after the editor went read-only in the middle of a drag', async ({page}) => {
+        await initialize({page, uri: withContent([{type: 'image', version: 1, src: PNG, width: 600, height: 300, title: '', alt: '', caption: '', cardWidth: 'regular', href: ''}, {type: 'horizontalrule', version: 1}, paragraph('This is some text')])});
+        const card = page.locator('[data-kg-card="image"]');
+        await expect(card.locator('img')).toBeVisible();
+        await dragMouse(page, await card.boundingBox(), await page.locator('p:not(figure p)').boundingBox(), 'start', 'start', false, 100, 100);
+        await setEditableAndRender(page, false);
+        await page.mouse.up();
+        await setEditableAndRender(page, true);
+
+        await page.locator('p:not(figure p)').click();
+        await card.locator('img').click();
+        await expect(card).toHaveAttribute('data-kg-card-selected', 'true');
+        await expect(page.locator('[data-kg-card-toolbar="image"]')).toBeVisible();
     });
 });
 
-// no read-only involved: the format toolbar of a card's editor comes and goes with
-// the card's edit mode, and must work each time
-test.describe('Card editor format toolbar', () => {
-    test('opens the link prompt with the shortcut the second time a card is edited', async ({page}) => {
+// the writers that are not typing: each of these changed a read-only document
+test.describe('Read-only document', () => {
+    test('is not changed by dragging a link within it', async ({page}) => {
+        const link = {children: [text('Ghost link')], direction: 'ltr', format: '', indent: 0, type: 'link', rel: null, target: null, title: null, url: 'https://ghost.org/', version: 1};
+        await initialize({page, uri: withContent([paragraph(link), paragraph('Second paragraph here')])});
+        await setEditableAndRender(page, false);
+        const before = await documentJson(page);
+
+        const anchor = await page.locator('[data-lexical-editor] a').first().boundingBox();
+        const second = await page.locator('[data-lexical-editor]').first().locator('> p').nth(1).boundingBox();
+        await page.mouse.move(anchor.x + anchor.width / 2, anchor.y + anchor.height / 2);
+        await page.mouse.down();
+        // a drag starts only after a short hold
+        await page.waitForTimeout(500);
+        await page.mouse.move(anchor.x + anchor.width / 2 + 10, anchor.y + anchor.height / 2 + 10, {steps: 5});
+        await page.mouse.move(second.x + 200, second.y + second.height / 2, {steps: 10});
+        await page.waitForTimeout(200);
+        await page.mouse.up();
+        await page.waitForTimeout(400);
+
+        expect(await documentJson(page)).toBe(before);
+    });
+
+    test('is not changed by HTML dropped on it from outside', async ({page}) => {
+        await initialize({page, uri: withContent([paragraph('Para one')])});
+        await setEditableAndRender(page, false);
+        const before = await documentJson(page);
+        const dataTransfer = await page.evaluateHandle(() => {
+            const data = new DataTransfer();
+            data.setData('text/html', '<p>DROPPED</p>');
+            return data;
+        });
+
+        await page.dispatchEvent('[data-lexical-editor] > p', 'drop', {dataTransfer});
+        await page.waitForTimeout(300);
+
+        expect(await documentJson(page)).toBe(before);
+    });
+
+    // these buttons ask for pointer input themselves, over what their card says
+    for (const [cardName, testId, changed] of [['signup', 'media-upload-remove', 'backgroundImageSrc'], ['header', 'media-upload-size', 'backgroundSize']]) {
+        test(`is not changed by the image button of a ${cardName} card`, async ({page}) => {
+            const node = cardName === 'signup'
+                ? {type: 'signup', version: 1, alignment: 'left', backgroundColor: 'accent', backgroundImageSrc: SVG, buttonColor: '#ffffff', buttonText: '', buttonTextColor: '#000000', disclaimer: '<span>Disclaimer</span>', header: '<span>Header</span>', labels: [], layout: 'split', subheader: '<span>Subheader</span>', textColor: '#FFFFFF', swaped: false}
+                : {type: 'header', version: 2, size: 'small', style: 'dark', buttonEnabled: false, buttonUrl: '', buttonText: '', header: '<span>Header</span>', subheader: '<span>Sub</span>', backgroundImageSrc: SVG, alignment: 'center', backgroundColor: '#000000', backgroundSize: 'cover', textColor: '#FFFFFF', buttonColor: '#ffffff', buttonTextColor: '#000000', layout: 'split', swapped: false};
+            await initialize({page, uri: withContent([node, paragraph('After')])});
+            await setEditableAndRender(page, false);
+            const card = page.locator(`[data-kg-card="${cardName}"]`);
+            await expect(card).toHaveCSS('pointer-events', 'none');
+            const before = JSON.parse(await documentJson(page))[0][changed];
+
+            await pressAt(page, card.getByTestId(testId));
+
+            expect(JSON.parse(await documentJson(page))[0][changed]).toBe(before);
+        });
+    }
+
+    test('keeps an empty card that was being edited when a click lands outside the editor', async ({page}) => {
         await initialize({page});
         await focusEditor(page);
-        const card = await insertCard(page, {cardName: 'callout'});
-        await page.keyboard.type('Card text here');
-
-        await page.keyboard.press(`${ctrlOrCmd(page)}+Enter`);
-        await expect(card).toHaveAttribute('data-kg-card-editing', 'false');
-        await page.keyboard.press(`${ctrlOrCmd(page)}+Enter`);
+        await page.keyboard.type('Para');
+        await page.keyboard.press('Enter');
+        const card = await insertCard(page, {cardName: 'html'});
         await expect(card).toHaveAttribute('data-kg-card-editing', 'true');
-        await expect(card.locator('[data-lexical-editor]')).toBeFocused();
+        await setEditableAndRender(page, false);
+        await expect(page.locator('[data-kg-card="html"]')).toHaveCount(1);
 
-        await selectBackwards(page, 'here'.length);
-        await expect(page.locator('[data-kg-floating-toolbar]')).toBeVisible();
+        await page.getByTestId('post-title').click();
+        await page.waitForTimeout(300);
+
+        await expect(page.locator('[data-kg-card="html"]')).toHaveCount(1);
+    });
+
+    test('keeps an empty bookmark card when Escape is pressed', async ({page}) => {
+        await initialize({page});
+        await focusEditor(page);
+        await page.keyboard.type('Para');
+        await page.keyboard.press('Enter');
+        await insertCard(page, {cardName: 'bookmark'});
+        await setEditableAndRender(page, false);
+
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(300);
+
+        await expect(page.locator('[data-kg-card="bookmark"]')).toHaveCount(1);
+    });
+
+    test('closes an emoji menu that was open, so nothing is picked from it', async ({page}) => {
+        await initialize({page});
+        await focusEditor(page);
+        await page.keyboard.type('Hi :smil');
+        await expect(page.getByTestId('emoji-menu')).toBeVisible();
+        await setEditableAndRender(page, false);
+        const before = await documentJson(page);
+
+        await expect(page.getByTestId('emoji-menu')).toHaveCount(0);
+        expect(await documentJson(page)).toBe(before);
+    });
+
+    test('closes the link search results that were open, so nothing is picked from them', async ({page}) => {
+        await initialize({page});
+        await focusEditor(page);
+        await page.keyboard.type('@');
+        await expect(page.getByTestId('at-link-popup').locator('li[role="option"]').first()).toBeVisible();
+        await setEditableAndRender(page, false);
+        const before = await documentTypes(page);
+
+        await expect(page.getByTestId('at-link-popup')).toHaveCount(0);
+        expect(await documentTypes(page)).toBe(before);
+    });
+
+    test('closes an image selector that was open, and keeps its card', async ({page}) => {
+        await page.route('https://api.unsplash.com/**', route => route.fulfill({status: 200, body: '[]'}));
+        await initialize({page});
+        await focusEditor(page);
+        await page.keyboard.type('Para');
+        await page.keyboard.press('Enter');
+        await page.click('[data-kg-plus-button]');
+        await page.click('button[data-kg-card-menu-item="Unsplash"]');
+        await expect(page.locator('[data-kg-modal="unsplash"]')).toBeVisible();
+        await setEditableAndRender(page, false);
+        const before = await documentTypes(page);
+
+        await expect(page.locator('[data-kg-modal="unsplash"]')).toHaveCount(0);
+        expect(await documentTypes(page)).toBe(before);
+    });
+
+    test('is not changed by going read-only while a card’s emptied field has focus', async ({page}) => {
+        await initialize({page});
+        await focusEditor(page);
+        const card = await insertCard(page, {cardName: 'signup'});
+        await expect(card).toHaveAttribute('data-kg-card-editing', 'true');
+        await page.getByTestId('signup-button-text').click();
+        await page.keyboard.press(`${ctrlOrCmd(page)}+A`);
+        await page.keyboard.press('Backspace');
+        await expect(page.getByTestId('signup-button-text')).toHaveValue('');
+        await page.waitForTimeout(300);
+        const before = await documentJson(page);
+
+        await setEditableAndRender(page, false);
+        await page.waitForTimeout(300);
+
+        expect(await documentJson(page)).toBe(before);
+    });
+
+    test('does not select again, once editable, a card that was selected when it went read-only', async ({page}) => {
+        await initialize({page});
+        await focusEditor(page);
+        await page.keyboard.type('Para');
+        await page.keyboard.press('Enter');
+        const card = await insertCard(page, {cardName: 'image'});
+        await expect(card).toHaveAttribute('data-kg-card-selected', 'true');
+
+        await setEditableAndRender(page, false);
+        await setEditableAndRender(page, true);
+        // an update that leaves the selection where it was
+        await page.evaluate(() => window.lexicalEditor.focus());
+        await page.waitForTimeout(300);
+
+        await expect(card).toHaveAttribute('data-kg-card-selected', 'false');
+    });
+});
+
+// no read-only involved: a format toolbar's link shortcut must work again after
+// the toolbar has unmounted and mounted, as a caption's does when Alt is toggled
+test.describe('Format toolbar link shortcut', () => {
+    test('opens the link prompt in an image caption after toggling Alt and back', async ({page}) => {
+        await initialize({page, uri: withContent([paragraph('Before'), {type: 'image', version: 1, src: PNG, width: 600, height: 300, title: '', alt: '', caption: 'A caption here', cardWidth: 'regular', href: ''}, paragraph('After')])});
+        const card = page.locator('[data-kg-card="image"]');
+        await card.locator('img').click();
+        await page.click('[data-testid="alt-toggle-button"]');
+        await page.click('[data-testid="alt-toggle-button"]');
+        await card.getByTestId('image-caption-editor').locator('[data-lexical-editor]').click();
+        await page.keyboard.press(`${ctrlOrCmd(page)}+A`);
+        await page.waitForTimeout(200);
 
         await page.keyboard.press(`${ctrlOrCmd(page)}+K`);
         await expect(page.getByTestId('link-input')).toBeVisible();

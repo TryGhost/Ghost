@@ -30,6 +30,7 @@ import {
 import {$insertFirst, mergeRegister} from '@lexical/utils';
 import {AtLinkResultsPopup} from '../components/ui/AtLinkResultsPopup';
 import {isInternalUrl} from '../utils/isInternalUrl';
+import {useIsDocumentEditable} from '../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useSearchLinks} from '../hooks/useSearchLinks';
 
@@ -60,6 +61,7 @@ function noResultOptions() {
 // Manages at-link search nodes and display of the search results panel when appropriate
 export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
     const [editor] = useLexicalComposerContext();
+    const isEditable = useIsDocumentEditable();
     const [focusedAtLinkNode, setFocusedAtLinkNode] = React.useState(null);
     const [query, setQuery] = React.useState('');
     const searchOptions = React.useMemo(() => ({noResultOptions}), []);
@@ -451,8 +453,9 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
         });
     }, [editor, focusedAtLinkNode, siteUrl]);
 
-    // render nothing when we don't have a focused at-link node
-    if (!focusedAtLinkNode) {
+    // render nothing when we don't have a focused at-link node, or when picking
+    // a result could not be allowed to change the document
+    if (!focusedAtLinkNode || !isEditable) {
         return null;
     }
 

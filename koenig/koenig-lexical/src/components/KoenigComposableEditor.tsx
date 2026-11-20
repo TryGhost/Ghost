@@ -54,7 +54,7 @@ const KoenigComposableEditor = ({
     const isEditable = useIsDocumentEditable();
 
     const isNested = !!editor._parentEditor;
-    const isDragReorderEnabled = isDragEnabled && !readOnly && !isNested && isEditable;
+    const isDragReorderEnabled = isDragEnabled && !readOnly && !isNested;
 
     const {onChange: sharedOnChange} = useSharedOnChangeContext();
     const _onChange = React.useCallback((editorState) => {
