@@ -7,6 +7,10 @@ import type {
   RunStepToInsert,
   RunToInsert,
 } from '../../../../../core/server/services/automations/automations-repository-2';
+import {
+  AUTOMATION_RUN_STEP_PRIORITY_HIGH,
+  AUTOMATION_RUN_STEP_PRIORITY_LOW,
+} from '../../../../../core/server/services/automations/constants';
 import { StartAutomationsPollEvent } from '../../../../../core/server/services/automations/events/start-automations-poll-event';
 import {
   createTestAutomationsRepository2,
@@ -322,6 +326,7 @@ describe('automations API', function () {
           created_at: now,
           updated_at: now,
           ready_at: new Date('2026-01-02T05:04:05Z'),
+          priority: AUTOMATION_RUN_STEP_PRIORITY_HIGH,
         },
         {
           id: expect.any(String),
@@ -330,6 +335,7 @@ describe('automations API', function () {
           created_at: now,
           updated_at: now,
           ready_at: now,
+          priority: AUTOMATION_RUN_STEP_PRIORITY_HIGH,
         },
       ]);
       expect(new Set([...runs, ...steps].map((row) => row.id)).size).toBe(4);
@@ -414,6 +420,7 @@ describe('automations API', function () {
             updated_at: now,
             ready_at:
               run.automation_id === wait.automation_id ? new Date('2026-01-02T05:04:05Z') : now,
+            priority: AUTOMATION_RUN_STEP_PRIORITY_HIGH,
           })),
         );
         expect(domainEvents.dispatch).toHaveBeenCalledExactlyOnceWith(
@@ -566,6 +573,75 @@ describe('automations API', function () {
 
       expect(steps).toHaveLength(1);
       expect(steps[0].ready_at).toEqual(new Date(now.getTime() + 200));
+    });
+
+    describe('priority', function () {
+      const notifyLabelAdded = async ({
+        memberCount,
+        automationCount,
+        alreadyEnrolledCount = 0,
+      }: {
+        memberCount: number;
+        automationCount: number;
+        alreadyEnrolledCount?: number;
+      }) => {
+        const members = Array.from({ length: memberCount }, (_, index) => ({
+          id: `member-${index}`,
+          email: `member-${index}@example.com`,
+        }));
+        firstActions = Array.from({ length: automationCount }, createFirstAction);
+        runs = members.slice(0, alreadyEnrolledCount).map((member) => ({
+          id: ObjectId().toHexString(),
+          automation_id: firstActions[0].automation_id,
+          member_id: member.id,
+        }));
+        const api = createApi({
+          repository: { ...repository, fetchAndLockMembers: () => members },
+          domainEvents,
+        });
+
+        await api.notify({
+          eventName: 'label_added',
+          labelId: 'label',
+          memberIds: members.map(({ id }) => id),
+        });
+      };
+
+      it('queues fewer than 10 new runs at high priority', async function () {
+        await notifyLabelAdded({ memberCount: 9, automationCount: 1 });
+
+        expect(steps).toHaveLength(9);
+        expect(steps.every((step) => step.priority === AUTOMATION_RUN_STEP_PRIORITY_HIGH)).toBe(
+          true,
+        );
+      });
+
+      it('queues 10 or more new runs at low priority', async function () {
+        await notifyLabelAdded({ memberCount: 10, automationCount: 1 });
+
+        expect(steps).toHaveLength(10);
+        expect(steps.every((step) => step.priority === AUTOMATION_RUN_STEP_PRIORITY_LOW)).toBe(
+          true,
+        );
+      });
+
+      it('counts a run for each member in each matching automation', async function () {
+        await notifyLabelAdded({ memberCount: 5, automationCount: 2 });
+
+        expect(steps).toHaveLength(10);
+        expect(steps.every((step) => step.priority === AUTOMATION_RUN_STEP_PRIORITY_LOW)).toBe(
+          true,
+        );
+      });
+
+      it('does not count members who already entered the automation', async function () {
+        await notifyLabelAdded({ memberCount: 10, automationCount: 1, alreadyEnrolledCount: 1 });
+
+        expect(steps).toHaveLength(9);
+        expect(steps.every((step) => step.priority === AUTOMATION_RUN_STEP_PRIORITY_HIGH)).toBe(
+          true,
+        );
+      });
     });
 
     it.each([

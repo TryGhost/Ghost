@@ -109,6 +109,7 @@ function buildStep(attrs: Partial<StepBase> = {}): StepBase {
     action_id: 'action-id',
     automation_action_revision_id: 'revision-id',
     ready_at: new Date(),
+    priority: 10,
     step_attempts: 1,
     ...attrs,
   } satisfies StepBase;

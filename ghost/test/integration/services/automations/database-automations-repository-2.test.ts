@@ -9,6 +9,10 @@ import type {
   EmailRecipientToInsert,
   RunStepToInsert,
 } from '../../../../core/server/services/automations/automations-repository-2';
+import {
+  AUTOMATION_RUN_STEP_PRIORITY_HIGH,
+  AUTOMATION_RUN_STEP_PRIORITY_LOW,
+} from '../../../../core/server/services/automations/constants';
 import { createDatabaseAutomationsRepository2 } from '../../../../core/server/services/automations/database-automations-repository-2';
 // @ts-expect-error This module lacks type definitions.
 import testUtils from '../../../utils';
@@ -74,6 +78,7 @@ describe('database automations repository', function () {
     created_at: createdAt,
     updated_at: updatedAt,
     ready_at: readyAt,
+    priority: AUTOMATION_RUN_STEP_PRIORITY_HIGH,
   });
 
   const useEmailClickFixture = () => {
@@ -1042,6 +1047,7 @@ describe('database automations repository', function () {
           'created_at',
           'updated_at',
           'ready_at',
+          'priority',
         )
         .where('automation_run_id', runId)
         .orderBy('id');
@@ -1082,7 +1088,11 @@ describe('database automations repository', function () {
     it('inserts multiple run steps', async function () {
       const steps = [
         createRunStep(runId, revisionId),
-        { ...createRunStep(runId, revisionId), ready_at: new Date(readyAt.getTime() + 3600000) },
+        {
+          ...createRunStep(runId, revisionId),
+          ready_at: new Date(readyAt.getTime() + 3600000),
+          priority: AUTOMATION_RUN_STEP_PRIORITY_LOW,
+        },
       ];
       await repository.withConnection((connection) => repository.insertRunSteps(connection, steps));
       await expect(findRunSteps()).resolves.toEqual(

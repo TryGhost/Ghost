@@ -101,6 +101,7 @@ type AutomationStepBase = {
   action_id: string;
   automation_action_revision_id: string;
   ready_at: Date;
+  priority: number;
   step_attempts: number;
 };
 
@@ -207,7 +208,10 @@ export type AutomationsRepository = {
    * Returns the next step's ready time, or null if no next step was created.
    */
   finishStepAndEnqueueNext(
-    step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>,
+    step: Pick<
+      AutomationStepToRun,
+      'id' | 'locked_by' | 'action_id' | 'automation_run_id' | 'priority'
+    >,
   ): Promise<Date | null>;
   /**
    * Stop a locked step without continuing the automation, preserving the
