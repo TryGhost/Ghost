@@ -4,6 +4,9 @@ import { expect, test } from '@playwright/test';
 import { mockApi } from '@tryghost/admin-x-framework/test/acceptance';
 import { mockInitialApiRequests } from '../utils/initial-api-requests';
 
+// Playwright resolves relative paths from the Playwright config's directory
+const imagePath = './test/acceptance/fixtures/image.png';
+
 test.describe('Feed', async () => {
   test.beforeEach(async ({ page }) => {
     await mockInitialApiRequests(page);
@@ -123,7 +126,8 @@ test.describe('Feed', async () => {
       options: { useActivityPub: true },
     });
 
-    await page.goto('#/notes');
+    // Several images only reach the service once it supports `images`
+    await page.goto('#/notes?noteImages=ON');
     await expect(page.getByTestId('feed-list')).toBeVisible();
     await page.getByLabel('New post').click();
 
@@ -131,16 +135,7 @@ test.describe('Feed', async () => {
     await expect(noteDialog).toBeVisible();
     await noteDialog.getByTestId('note-textarea').fill('A note with images');
 
-    // A 1x1 transparent PNG
-    const buffer = Buffer.from(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
-      'base64',
-    );
-    await noteDialog
-      .locator('input[type="file"]')
-      .setInputFiles(
-        [1, 2, 3, 4, 5].map((n) => ({ name: `image-${n}.png`, mimeType: 'image/png', buffer })),
-      );
+    await noteDialog.locator('input[type="file"]').setInputFiles(Array(5).fill(imagePath));
 
     // Only the first four images are kept
     await expect(noteDialog.getByTestId('image-preview')).toHaveCount(4);
@@ -154,6 +149,42 @@ test.describe('Feed', async () => {
     expect(lastApiRequests.postNote?.body).toEqual({
       content: 'A note with images',
       images: Array(4).fill({ url: 'https://localhost/.ghost/activitypub/gcs/image.png' }),
+    });
+  });
+
+  test('I can publish a note with one image when the noteImages flag is off', async ({ page }) => {
+    const { lastApiRequests } = await mockApi({
+      page,
+      requests: {
+        getFeed: { method: 'GET', path: '/v1/feed/notes', response: feedFixture },
+        getActivityPubUser: { method: 'GET', path: '/users/index', response: activityPubUser },
+        uploadImage: {
+          method: 'POST',
+          path: '/v1/upload/image',
+          response: { fileUrl: 'https://localhost/.ghost/activitypub/gcs/image.png' },
+        },
+        postNote: { method: 'POST', path: '/v1/actions/note', response: { post: { id: 'x' } } },
+      },
+      options: { useActivityPub: true },
+    });
+
+    await page.goto('#/notes');
+    await expect(page.getByTestId('feed-list')).toBeVisible();
+    await page.getByLabel('New post').click();
+
+    const noteDialog = page.getByTestId('new-note-modal');
+    await noteDialog.getByTestId('note-textarea').fill('A note with one image');
+    await noteDialog.locator('input[type="file"]').setInputFiles(Array(2).fill(imagePath));
+
+    await expect(noteDialog.getByTestId('image-preview')).toHaveCount(1);
+    await expect(page.getByText('You can only add one image.')).toBeVisible();
+    await noteDialog.getByTestId('post-button').click();
+
+    await expect.poll(() => lastApiRequests.postNote).toBeTruthy();
+    // One image keeps using `image`, which services without `images` support accept
+    expect(lastApiRequests.postNote?.body).toEqual({
+      content: 'A note with one image',
+      image: { url: 'https://localhost/.ghost/activitypub/gcs/image.png' },
     });
   });
 

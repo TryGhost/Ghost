@@ -19,7 +19,7 @@ import {
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { ComponentPropsWithoutRef, ReactNode } from 'react';
 import { FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE } from '@utils/image';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { MAX_NOTE_IMAGES } from '@src/api/activitypub';
 import { toast } from 'sonner';
 import {
@@ -29,6 +29,7 @@ import {
   useReplyMutationForUser,
   useUserDataForUser,
 } from '@hooks/use-activity-pub-queries';
+import { useFeatureFlags } from '@src/lib/feature-flags';
 import { useNavigateWithBasePath } from '@src/hooks/use-navigate-with-base-path';
 
 interface ComposerImage {
@@ -113,6 +114,10 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
     }
   }, [isOpen, props.open]);
 
+  // The service only accepts several images once `images` is deployed, so that part of the
+  // composer is behind a flag until it is
+  const { isEnabled } = useFeatureFlags();
+  const imageLimit = isEnabled('noteImages') ? MAX_NOTE_IMAGES : 1;
   const isDisabled = !content.trim() || !user || isPosting || content.length > MAX_CONTENT_LENGTH;
   const isImageUploading = images.some((image) => image.url === null);
   const altInputImage = images.find((image) => image.id === altInputImageId);
@@ -238,9 +243,13 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
 
   const addImages = useCallback(
     async (files: File[]) => {
-      const room = MAX_NOTE_IMAGES - imagesRef.current.length;
+      const room = imageLimit - imagesRef.current.length;
       if (files.length > room) {
-        toast.error(`You can add up to ${MAX_NOTE_IMAGES} images.`);
+        toast.error(
+          imageLimit === 1
+            ? 'You can only add one image.'
+            : `You can add up to ${formatNumber(imageLimit)} images.`,
+        );
       }
 
       const added = files
@@ -280,7 +289,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
         }),
       );
     },
-    [removeImage, updateImages],
+    [imageLimit, removeImage, updateImages],
   );
 
   const handlePaste = useCallback(
@@ -423,7 +432,6 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
                     rows={1}
                     value={content}
                     onChange={handleChange}
-                    onPaste={handlePaste}
                   />
                 </FormPrimitive.Control>
               </FormPrimitive.Field>
@@ -457,7 +465,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
                 data-testid="image-preview"
               >
                 <img
-                  alt={`Image attachment preview ${index + 1}`}
+                  alt={`Image attachment preview ${formatNumber(index + 1)}`}
                   className={`${images.length === 1 ? 'max-h-[320px]' : 'h-full'} w-full rounded-sm object-cover outline-1 -outline-offset-1 outline-black/10 ${image.url === null && 'opacity-10'}`}
                   src={image.previewUrl}
                 />
@@ -493,7 +501,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
               placeholder={
                 images.length === 1
                   ? 'Type alt text for image (optional)'
-                  : `Type alt text for image ${images.indexOf(altInputImage) + 1} (optional)`
+                  : `Type alt text for image ${formatNumber(images.indexOf(altInputImage) + 1)} (optional)`
               }
               type="text"
               value={altInputImage.altText}
@@ -512,7 +520,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({
         >
           <Button
             className="mr-auto w-[34px]"
-            disabled={images.length >= MAX_NOTE_IMAGES}
+            disabled={images.length >= imageLimit}
             variant="outline"
             onClick={() => imageInputRef.current?.click()}
           >
