@@ -66,6 +66,7 @@ const PRIVATE_FEATURES = [
   'inAppSupport',
   'editorPresencePolling',
   'editorPresence',
+  'editorLease',
   'commentsAnalytics',
 ];
 

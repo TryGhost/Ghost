@@ -11,9 +11,12 @@ import {
   useState,
 } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { AdminLink } from '@/shared/admin-link';
 import { usePresence } from '@/shared/presence/use-presence';
 import { PresenceAvatars } from '@/shared/presence/presence-avatars';
+import { LeaseAvatar, LeaseOutdatedNotice } from './lease/lease-notice';
+import { useEditLease } from './lease/use-edit-lease';
 import { getPostListReturnUrl } from '@/posts/api';
 import { reloadAdmin } from '@/auth/api';
 import { NotFound } from '@/shared/not-found';
@@ -61,6 +64,7 @@ import type { EditorStatusRecord } from './post-status';
 import { buildPublishFlowPost } from './publish/flow-post';
 import { PAID_TIERS_SEARCH_PARAMS } from './browse-params';
 import { initialEmailError } from './publish/use-publish-flow';
+import { bannerSaveError } from './session/error-mapping';
 import { SessionBanners } from './session/session-banners';
 import { type InvalidField, settingsFieldErrorFor, titleError } from './session/settings-fields';
 import { ReauthDialog } from './session/reauth-dialog';
@@ -81,6 +85,11 @@ import { useSettingsShortcut } from './use-editor-shortcuts';
 import { useSettingsOpen } from './use-settings-open';
 import { useWritingFocus } from './use-writing-focus';
 import type { EditorRecord } from './session/projection';
+
+/** Said once the latest version has replaced what a tab typed onto an older one. */
+function notifyReloadedOverTyping() {
+  toast.info('A newer version was saved elsewhere, so it was loaded here.');
+}
 
 function EditorLoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
@@ -196,8 +205,34 @@ function EditorContent({
   const presenceResource = session.persistedId
     ? { id: session.persistedId, type: postType }
     : undefined;
-  const presence = usePresence(presenceResource ? [presenceResource] : [], presenceResource);
+  const leaseEnabled = useFeatureFlag('editorLease');
+  // Opening a post does not take it from anyone; the first unsaved edit does.
+  const presence = usePresence(presenceResource ? [presenceResource] : [], presenceResource, {
+    lease: leaseEnabled,
+    wantsLease: session.isDirty(),
+  });
   const showPresence = useFeatureFlag('editorPresence');
+  const editLease = useEditLease({
+    lease: presence.lease,
+    active: presence.active,
+    currentUserId: currentUser?.id,
+    isDirty: session.isDirty,
+    flush: session.commitField,
+    reload: session.reload,
+    hasNewerVersion: session.hasNewerVersion,
+    revert: session.revert,
+    onBehind: notifyReloadedOverTyping,
+  });
+  const leaseHolderId =
+    editLease.locked && editLease.reason === 'held' && !editLease.ownTab ? editLease.userId : null;
+  // The holder is shown once, in the lease pill, which the takeover hangs on.
+  const otherPresence = useMemo(
+    () =>
+      leaseHolderId
+        ? presence.active.filter((entry) => entry.userId !== leaseHolderId)
+        : presence.active,
+    [presence.active, leaseHolderId],
+  );
   const [tkCount, setTkCount] = useState(0);
   const chromeEntrance = useScreenEntrance();
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
@@ -212,6 +247,11 @@ function EditorContent({
     },
     [refusedEntry],
   );
+  // A flow left open when another tab takes the document would still write: its
+  // buttons are not the header's, which the lock disables.
+  if (editLease.locked && openFlow !== 'none') {
+    setOpenFlow('none');
+  }
   const openPublishFlow = useCallback(() => changeOpenFlow('publish'), [changeOpenFlow]);
   const openUpdateFlow = useCallback(() => changeOpenFlow('update'), [changeOpenFlow]);
   const holdBack = useCallback(
@@ -264,6 +304,13 @@ function EditorContent({
   const [settingsMoving, setSettingsMoving] = useState(false);
   const shellRef = useRef<HTMLDivElement>(null);
   const settingsFrameRef = useRef<HTMLDivElement>(null);
+  // The settings panel saves each edit as it is made, so a tab without the lease gets none.
+  const settingsLocked = editLease.locked;
+  useEffect(() => {
+    if (settingsFrameRef.current) {
+      settingsFrameRef.current.inert = settingsLocked;
+    }
+  });
   const settingsToggleRef = useRef<HTMLButtonElement>(null);
   const [settingsToggleWidth, setSettingsToggleWidth] = useState(0);
   useLayoutEffect(() => {
@@ -452,6 +499,15 @@ function EditorContent({
           state={session.state}
           onReload={session.reload}
         />
+        {/* A save that already collided has the session's banner, which offers the same reload. */}
+        {bannerSaveError(session.state, session.pendingSave) ? null : (
+          <LeaseOutdatedNotice
+            contentText={session.contentText}
+            lease={editLease}
+            resourceType={postType}
+            onReload={session.reload}
+          />
+        )}
         <ReauthDialog
           email={currentUser?.email ?? ''}
           open={session.reauthOpen}
@@ -502,14 +558,30 @@ function EditorContent({
                   />
                 </Box>
               ) : null}
-              <Box className="col-start-3 ml-auto" data-writing-focus={writingFocus}>
+              {/* A tab that was typing when it was locked must see why at once, not once the chrome fades back in. */}
+              <Box
+                className="col-start-3 ml-auto"
+                data-writing-focus={editLease.locked ? undefined : writingFocus}
+              >
                 <PageHeader.ActionGroup className="gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
-                  {showPresence ? (
-                    <PresenceAvatars active={presence.active} resourceType={postType} />
-                  ) : null}
+                  <Inline align="center" gap="xs">
+                    <LeaseAvatar
+                      contentText={session.contentText}
+                      currentUser={currentUser}
+                      hasUnsavedContent={session.hasUnsavedContent}
+                      lease={editLease}
+                      resourceId={session.persistedId}
+                      resourceType={postType}
+                      onTakeOver={presence.takeOver}
+                    />
+                    {showPresence ? (
+                      <PresenceAvatars active={otherPresence} resourceType={postType} />
+                    ) : null}
+                  </Inline>
                   <EditorHeaderActions
                     bottomBar={bottomBar}
                     currentUser={currentUser}
+                    locked={editLease.locked}
                     offersEmailRetry={offersEmailRetry}
                     openFlow={openFlow}
                     post={publishPost}
@@ -543,6 +615,7 @@ function EditorContent({
                 font={editorFont.font}
                 handleRef={postEditorRef}
                 postType={postType}
+                readOnly={editLease.locked}
                 settingsMoving={settingsMoving}
                 showExcerpt={showExcerpt}
                 titleAndFeatureImageHidden={
@@ -575,6 +648,7 @@ function EditorContent({
               featureImage={featureImage.featureImage}
               frameRef={settingsFrameRef}
               hasInlineExcerpt={showExcerpt}
+              locked={settingsLocked}
               opensInPlace={settingsMemory.restored}
               postType={postType}
               reveal={settingsReveal}

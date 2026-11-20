@@ -38,6 +38,30 @@ describe('createEditorSession', () => {
     });
   });
 
+  it('knows a later version of its own post from the one it holds', () => {
+    const { session } = sessionHarness({ record: record() });
+
+    expect(session.isBehind(record())).toBe(false);
+    expect(session.isBehind(record({ updated_at: THEIR_SAVE_AT }))).toBe(true);
+    expect(session.isBehind(record({ id: 'another-post', updated_at: THEIR_SAVE_AT }))).toBe(false);
+  });
+
+  it('reloads over unsaved work only when the writer chose to discard it', () => {
+    const { session } = sessionHarness({ record: record(), baseline: record().lexical });
+    const later = record({ title: 'Their title', updated_at: THEIR_SAVE_AT });
+    session.patchTitle('My title');
+
+    expect(session.recordReloaded(later)).toBe(false);
+    expect(session.getSaveSnapshot()).toMatchObject({ title: 'My title', isDirty: true });
+
+    expect(session.recordReloaded(later, { discardUnsaved: true })).toBe(true);
+    expect(session.getSaveSnapshot()).toMatchObject({
+      title: 'Their title',
+      updatedAt: THEIR_SAVE_AT,
+      isDirty: false,
+    });
+  });
+
   describe('a refetch of a version this session did not load', () => {
     const theirs = () =>
       record({
