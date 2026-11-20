@@ -2479,6 +2479,7 @@ const schema = {
       restrictDelete: true,
     },
     ready_at: { type: 'dateTime', nullable: false },
+    priority: { type: 'integer', nullable: false, unsigned: true, defaultTo: 10 },
     step_attempts: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
     started_at: { type: 'dateTime', nullable: true },
     finished_at: { type: 'dateTime', nullable: true },
