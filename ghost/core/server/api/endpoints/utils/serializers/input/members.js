@@ -39,6 +39,17 @@ function mapSubscribedFlagToNewsletterRelation(frame) {
     : transformer;
 }
 
+// Counting every match can take far longer than reading one page of them, so a
+// caller can ask for the page alone and leave the response without pagination.
+function mapSkipPagination(frame) {
+  if (frame.options.skip_pagination === undefined) {
+    return;
+  }
+
+  frame.options.skipPagination = String(frame.options.skip_pagination).toLowerCase() === 'true';
+  delete frame.options.skip_pagination;
+}
+
 function validateBulkFilter(frame) {
   frame.options.mongoTransformer = frame.options.mongoTransformer
     ? chainTransformers(validateAdminApiBulkFilterTransformer, frame.options.mongoTransformer)
@@ -76,6 +87,7 @@ module.exports = {
     debug('browse');
     defaultRelations(frame);
     mapSubscribedFlagToNewsletterRelation(frame);
+    mapSkipPagination(frame);
 
     if (!frame.options.order) {
       frame.options.autoOrder = 'created_at DESC, id DESC';

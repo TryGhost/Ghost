@@ -18,6 +18,49 @@ describe('Unit: endpoints/utils/serializers/input/members', function () {
     });
   });
 
+  describe('browse', function () {
+    type BrowseFrame = {
+      options: {
+        skip_pagination?: string;
+        skipPagination?: boolean;
+      };
+    };
+
+    it('maps skip_pagination=true to skipPagination', function () {
+      const frame: BrowseFrame = { options: { skip_pagination: 'true' } };
+
+      serializers.input.members.browse({}, frame);
+
+      assert.equal(frame.options.skipPagination, true);
+      assert.equal('skip_pagination' in frame.options, false);
+    });
+
+    it('maps skip_pagination=false to skipPagination', function () {
+      const frame: BrowseFrame = { options: { skip_pagination: 'false' } };
+
+      serializers.input.members.browse({}, frame);
+
+      assert.equal(frame.options.skipPagination, false);
+      assert.equal('skip_pagination' in frame.options, false);
+    });
+
+    it('maps skip_pagination regardless of case', function () {
+      const frame: BrowseFrame = { options: { skip_pagination: 'TRUE' } };
+
+      serializers.input.members.browse({}, frame);
+
+      assert.equal(frame.options.skipPagination, true);
+    });
+
+    it('leaves skipPagination unset without skip_pagination', function () {
+      const frame: BrowseFrame = { options: {} };
+
+      serializers.input.members.browse({}, frame);
+
+      assert.equal('skipPagination' in frame.options, false);
+    });
+  });
+
   describe('bulkDestroy', function () {
     it('rejects restricted filters while preserving subscribed mapping', function () {
       const transformerCalls: unknown[] = [];

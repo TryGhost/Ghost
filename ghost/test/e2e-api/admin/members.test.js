@@ -56,6 +56,22 @@ const {
   restoreEmailVerificationUtils,
 } = require('../../utils/email-verification-utils');
 
+async function recordQueries(fn) {
+  const queries = [];
+  const handler = (query) => queries.push(query.sql);
+
+  knex.client.on('query', handler);
+  try {
+    await fn();
+  } finally {
+    knex.client.off('query', handler);
+  }
+
+  return queries;
+}
+
+const countsMembers = (sql) => sql.includes('count(') && sql.includes('`members`');
+
 async function assertMemberEvents({ eventType, memberId, asserts }) {
   const events = await models[eventType].where('member_id', memberId).fetchAll();
   const eventsJSON = events.map((e) => e.toJSON());
@@ -779,6 +795,54 @@ describe('Members API', function () {
         'content-version': anyContentVersion,
         etag: anyEtag,
       });
+  });
+
+  it('Can browse with skip_pagination=true without counting members', async function () {
+    const countedQueries = await recordQueries(async () => {
+      await agent.get('/members/?limit=3').expectStatus(200);
+    });
+    assert.notEqual(countedQueries.filter(countsMembers).length, 0);
+
+    let body;
+    const queries = await recordQueries(async () => {
+      ({ body } = await agent.get('/members/?limit=3&skip_pagination=true').expectStatus(200));
+    });
+
+    assert.deepEqual(queries.filter(countsMembers), []);
+    assert.equal(body.members.length, 3);
+    assert.deepEqual(body.meta, {});
+  });
+
+  it('Can browse a later page with skip_pagination=true', async function () {
+    const browseIds = async (query) => {
+      const { body } = await agent.get(`/members/?${query}`).expectStatus(200);
+      return body.members.map((member) => member.id);
+    };
+
+    const firstPage = await browseIds('limit=3&skip_pagination=true');
+    const secondPage = await browseIds('limit=3&page=2&skip_pagination=true');
+
+    assert.equal(secondPage.length, 3);
+    assert.deepEqual(secondPage, await browseIds('limit=3&page=2'));
+    assert.deepEqual(
+      secondPage.filter((id) => firstPage.includes(id)),
+      [],
+    );
+  });
+
+  it('Can browse with skip_pagination=false', async function () {
+    const { body: paginated } = await agent.get('/members/?limit=3').expectStatus(200);
+    const { body } = await agent.get('/members/?limit=3&skip_pagination=false').expectStatus(200);
+
+    assert.equal(body.members.length, 3);
+    assert.equal(typeof body.meta.pagination.total, 'number');
+    assert.deepEqual(body.meta, paginated.meta);
+  });
+
+  it('Cannot browse with an invalid skip_pagination value', async function () {
+    const { body } = await agent.get('/members/?skip_pagination=maybe').expectStatus(422);
+
+    assert.equal(body.errors[0].type, 'ValidationError');
   });
 
   it('Can browse with filter', async function () {
