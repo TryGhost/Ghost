@@ -71,8 +71,14 @@ describe('The shared step, with the real modules and nothing after it', function
         `${service} was loaded by the shared step`,
       );
     }
+    // Staff is built on first use, and only from the services step on.
     assert.throws(
       () => require('../../core/server/services/staff').default.service,
+      /^IncorrectUsageError: Staff was used while Ghost is not started/,
+    );
+    // A root that holds its instance is still started by the services step.
+    assert.throws(
+      () => require('../../core/server/services/member-attribution').default.service,
       /used before init/,
     );
   });
