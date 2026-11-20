@@ -1,6 +1,6 @@
-const { addTable, combineNonTransactionalMigrations } = require('../../utils');
+import { addTable, combineNonTransactionalMigrations } from '../../utils';
 
-module.exports = combineNonTransactionalMigrations(
+export default combineNonTransactionalMigrations(
   addTable('automation_actions', {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     created_at: { type: 'dateTime', nullable: false },

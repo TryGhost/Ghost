@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration('tokens', 'uuid', {
+export default createAddColumnMigration('tokens', 'uuid', {
   type: 'string',
   maxlength: 36,
   nullable: true,

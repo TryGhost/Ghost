@@ -1,4 +1,4 @@
-const { dropTables } = require('../../utils');
+import { dropTables } from '../../utils';
 
 // The tax ID was the last Stripe Checkout setting that listed its tiers here: shipping and the
 // phone number keep theirs as tier requirements. Tax ID collection is removed from the Stripe
@@ -7,7 +7,7 @@ const { dropTables } = require('../../utils');
 //
 // The shape is pinned as it stands in schema.js before this migration, so a rollback keeps
 // rebuilding it however schema.js moves on.
-module.exports = dropTables(['stripe_checkout_config_tiers'], {
+export default dropTables(['stripe_checkout_config_tiers'], {
   stripe_checkout_config_tiers: {
     section: {
       type: 'string',

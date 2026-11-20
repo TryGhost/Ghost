@@ -1,9 +1,9 @@
-const logging = require('@tryghost/logging');
-const {
+import logging from '@tryghost/logging';
+import {
   combineNonTransactionalMigrations,
   createAddColumnMigration,
   createNonTransactionalMigration,
-} = require('../../utils');
+} from '../../utils';
 
 const TABLE = 'members_custom_field_values';
 
@@ -16,7 +16,7 @@ const TABLE = 'members_custom_field_values';
 // the feature is behind the `membersCustomFields` flag with no released data, and adding
 // a required column over them ends either in an error, as SQLite refuses one with no
 // default, or in an invented writer wherever the engine supplies its own empty string.
-module.exports = combineNonTransactionalMigrations(
+export default combineNonTransactionalMigrations(
   createNonTransactionalMigration(
     async function up(knex) {
       if (!(await knex.schema.hasColumn(TABLE, 'written_by_type'))) {

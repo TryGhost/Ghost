@@ -1,9 +1,9 @@
-const { combineNonTransactionalMigrations, createAddColumnMigration } = require('../../utils');
+import { combineNonTransactionalMigrations, createAddColumnMigration } from '../../utils';
 
-const addColumn = (table, name, definition) =>
+const addColumn = (table: any, name: any, definition: any) =>
   createAddColumnMigration(table, name, definition, { algorithm: 'auto' });
 
-module.exports = combineNonTransactionalMigrations(
+export default combineNonTransactionalMigrations(
   addColumn('emails', 'preflight_email_count', { type: 'integer', nullable: true, unsigned: true }),
   addColumn('emails', 'candidate_count', { type: 'integer', nullable: true, unsigned: true }),
   addColumn('emails', 'preparation_excluded_count', {

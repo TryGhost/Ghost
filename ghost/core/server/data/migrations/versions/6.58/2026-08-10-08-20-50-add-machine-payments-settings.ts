@@ -1,7 +1,7 @@
-const crypto = require('crypto');
-const { combineTransactionalMigrations, addSetting } = require('../../utils');
+import crypto from 'crypto';
+import { combineTransactionalMigrations, addSetting } from '../../utils';
 
-module.exports = combineTransactionalMigrations(
+export default combineTransactionalMigrations(
   addSetting({
     key: 'machine_payments_enabled',
     value: 'false',

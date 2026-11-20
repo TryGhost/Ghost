@@ -1,7 +1,7 @@
-const logging = require('@tryghost/logging');
+import logging from '@tryghost/logging';
 
 // noop: this migration was moved to 6.18
-module.exports = {
+export default {
   async up() {
     logging.warn('Skipping migration - noop');
   },

@@ -1,9 +1,9 @@
-const { combineNonTransactionalMigrations, createAddColumnMigration } = require('../../utils');
+import { combineNonTransactionalMigrations, createAddColumnMigration } from '../../utils';
 
-const addPostsColumn = (name, definition) =>
+const addPostsColumn = (name: any, definition: any) =>
   createAddColumnMigration('posts', name, definition, { algorithm: 'auto' });
 
-module.exports = combineNonTransactionalMigrations(
+export default combineNonTransactionalMigrations(
   addPostsColumn('auto_excerpt', {
     type: 'string',
     maxlength: 500,

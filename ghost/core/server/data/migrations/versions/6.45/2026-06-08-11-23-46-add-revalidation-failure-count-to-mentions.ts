@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration('mentions', 'revalidation_failure_count', {
+export default createAddColumnMigration('mentions', 'revalidation_failure_count', {
   type: 'integer',
   nullable: false,
   unsigned: true,

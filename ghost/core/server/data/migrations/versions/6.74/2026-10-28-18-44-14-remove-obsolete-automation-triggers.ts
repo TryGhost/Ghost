@@ -1,10 +1,10 @@
-const logging = require('@tryghost/logging');
-const {
+import logging from '@tryghost/logging';
+import {
   combineNonTransactionalMigrations,
   createDropColumnMigration,
   createDropNullableMigration,
   dropTables,
-} = require('../../utils');
+} from '../../utils';
 
 const migration = combineNonTransactionalMigrations(
   dropTables(['automation_trigger_tiers'], {
@@ -40,10 +40,10 @@ const migration = combineNonTransactionalMigrations(
   }),
 );
 
-module.exports = {
+export default {
   ...migration,
 
-  async down(options) {
+  async down(options: any) {
     const knex = options.connection;
 
     await migration.down(options);
@@ -62,13 +62,13 @@ module.exports = {
         await knex('automations').where('id', automation.id).update({ trigger_tier_scope: null });
         continue;
       }
-      if (rules.some((rule) => rule.trigger_type === 'free_signup')) {
+      if (rules.some((rule: any) => rule.trigger_type === 'free_signup')) {
         scope = 'free';
-      } else if (rules.some((rule) => rule.scope === 'any_paid_tier')) {
+      } else if (rules.some((rule: any) => rule.scope === 'any_paid_tier')) {
         scope = 'all_paid';
-      } else if (rules.some((rule) => rule.scope === 'specific_paid_tier')) {
+      } else if (rules.some((rule: any) => rule.scope === 'specific_paid_tier')) {
         scope = 'selected_paid';
-        const productIds = [...new Set(rules.map((rule) => rule.product_id).filter(Boolean))];
+        const productIds = [...new Set(rules.map((rule: any) => rule.product_id).filter(Boolean))];
         if (productIds.length) {
           await knex('automation_trigger_tiers')
             .insert(

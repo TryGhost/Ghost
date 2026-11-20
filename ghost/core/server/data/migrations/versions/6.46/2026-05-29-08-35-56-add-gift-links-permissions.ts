@@ -1,6 +1,6 @@
-const { combineTransactionalMigrations, addPermissionWithRoles } = require('../../utils');
+import { combineTransactionalMigrations, addPermissionWithRoles } from '../../utils';
 
-module.exports = combineTransactionalMigrations(
+export default combineTransactionalMigrations(
   // Per-post create/read/reset — Admin/Editor/Super Editor/Author (Owner inherits all
   // permissions). Authors are limited to their own posts; that ownership check lives in
   // the gift_links API endpoint, not in the role grant.

@@ -1,7 +1,7 @@
-const crypto = require('crypto');
-const { addSetting } = require('../../utils');
+import crypto from 'crypto';
+import { addSetting } from '../../utils';
 
-module.exports = addSetting({
+export default addSetting({
   key: 'indexnow_api_key',
   value: crypto.randomBytes(16).toString('hex'),
   type: 'string',

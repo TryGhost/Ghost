@@ -1,6 +1,6 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
-module.exports = addTable('members_custom_field_bindings', {
+export default addTable('members_custom_field_bindings', {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   product_id: {
     type: 'string',

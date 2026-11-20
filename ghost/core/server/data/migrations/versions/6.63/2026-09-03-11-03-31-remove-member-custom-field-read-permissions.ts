@@ -1,4 +1,4 @@
-const { combineTransactionalMigrations, createRemovePermissionMigration } = require('../../utils');
+import { combineTransactionalMigrations, createRemovePermissionMigration } from '../../utils';
 
 const RESOURCE = 'member_custom_field';
 
@@ -10,7 +10,7 @@ const RESOURCE = 'member_custom_field';
 // values was refused.
 //
 // What remains on this resource is defining fields, which stays with the publisher.
-module.exports = combineTransactionalMigrations(
+export default combineTransactionalMigrations(
   createRemovePermissionMigration(
     {
       name: 'Browse member custom fields',

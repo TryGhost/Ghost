@@ -1,11 +1,11 @@
-const { combineTransactionalMigrations, addPermissionWithRoles } = require('../../utils');
+import { combineTransactionalMigrations, addPermissionWithRoles } from '../../utils';
 
 const RESOURCE = 'member_custom_field';
 
 // Administrators and Admin Integrations define fields; Super Editors can read
 // definitions so they can set values (values ride on the existing `member` edit
 // permission). Other roles get no access to field definitions.
-module.exports = combineTransactionalMigrations(
+export default combineTransactionalMigrations(
   addPermissionWithRoles(
     {
       name: 'Browse member custom fields',

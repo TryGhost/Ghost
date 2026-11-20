@@ -1,10 +1,10 @@
-const { InternalServerError } = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
-const security = require('@tryghost/security');
-const ObjectID = require('bson-objectid').default;
-const { createTransactionalMigration } = require('../../utils');
+import { InternalServerError } from '@tryghost/errors';
+import logging from '@tryghost/logging';
+import security from '@tryghost/security';
+import ObjectID from 'bson-objectid';
+import { createTransactionalMigration } from '../../utils';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     logging.info('Adding Admin API key for Transistor integration');
 

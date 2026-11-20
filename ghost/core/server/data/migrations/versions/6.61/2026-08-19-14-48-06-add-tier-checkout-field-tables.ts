@@ -1,6 +1,6 @@
-const { combineNonTransactionalMigrations, addTable } = require('../../utils');
+import { combineNonTransactionalMigrations, addTable } from '../../utils';
 
-module.exports = combineNonTransactionalMigrations(
+export default combineNonTransactionalMigrations(
   addTable('products_checkout_fields', {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     binding_id: {

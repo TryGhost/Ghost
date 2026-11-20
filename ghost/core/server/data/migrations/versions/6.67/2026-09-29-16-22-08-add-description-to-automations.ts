@@ -1,11 +1,11 @@
-const logging = require('@tryghost/logging');
-const {
+import logging from '@tryghost/logging';
+import {
   combineNonTransactionalMigrations,
   createAddColumnMigration,
   createNonTransactionalMigration,
-} = require('../../utils');
+} from '../../utils';
 
-module.exports = combineNonTransactionalMigrations(
+export default combineNonTransactionalMigrations(
   createAddColumnMigration('automations', 'description', {
     type: 'string',
     maxlength: 2000,

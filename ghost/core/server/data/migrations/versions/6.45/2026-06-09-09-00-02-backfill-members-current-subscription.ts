@@ -1,7 +1,7 @@
-const { createTransactionalMigration } = require('../../utils');
-const logging = require('@tryghost/logging');
+import { createTransactionalMigration } from '../../utils';
+import logging from '@tryghost/logging';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     // On very large sites this backfill can be run manually ahead of the
     // deploy (e.g. via the Stats-Service) so the boot-blocking migration

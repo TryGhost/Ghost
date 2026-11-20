@@ -1,6 +1,6 @@
-const logging = require('@tryghost/logging');
-const { createNonTransactionalMigration } = require('../../utils');
-const { addIndex, dropIndex, getIndexes } = require('../../../schema/commands');
+import logging from '@tryghost/logging';
+import { createNonTransactionalMigration } from '../../utils';
+import { addIndex, dropIndex, getIndexes } from '../../../schema/commands';
 
 const table = 'email_recipients';
 const compositeIndexName = 'email_recipients_member_id_opened_at_email_id_index';
@@ -9,7 +9,7 @@ const compositeIndexName = 'email_recipients_member_id_opened_at_email_id_index'
 // has member_id as its leading column, so it serves every lookup the
 // single-column member_id index did. Only drop the old index once the
 // composite one is in place, so member_id lookups never lose index coverage.
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     const indexes = await getIndexes(table, knex);
 

@@ -1,13 +1,13 @@
-const logging = require('@tryghost/logging');
-const { createNonTransactionalMigration } = require('../../utils');
-const {
+import logging from '@tryghost/logging';
+import { createNonTransactionalMigration } from '../../utils';
+import {
   addColumn,
   dropColumn,
   addUnique,
   dropUnique,
   addIndex,
   dropIndex,
-} = require('../../../schema/commands');
+} from '../../../schema/commands';
 
 const TABLE = 'members_custom_field_values';
 
@@ -17,7 +17,7 @@ const LEAF_UNIQUE = 'members_custom_field_values_leaf_unique';
 
 // Values are discarded rather than converted: custom fields sit behind a private flag and
 // have never been released, so only a site deliberately opted in can hold one.
-async function discardStoredValues(knex) {
+async function discardStoredValues(knex: any) {
   const discarded = await knex(TABLE).del();
   if (discarded > 0) {
     logging.warn(
@@ -39,7 +39,7 @@ async function discardStoredValues(knex) {
 // nothing recorded as done and knex-migrator runs it again on the next boot. Every step
 // therefore tolerates having already happened: the constraint and index helpers swallow
 // that themselves, the column steps ask first.
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     // First, so nothing can collide with the new constraint.
     await discardStoredValues(knex);

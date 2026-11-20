@@ -1,6 +1,6 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
-module.exports = addTable('automation_trigger_rules', {
+export default addTable('automation_trigger_rules', {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   automation_id: {
     type: 'string',

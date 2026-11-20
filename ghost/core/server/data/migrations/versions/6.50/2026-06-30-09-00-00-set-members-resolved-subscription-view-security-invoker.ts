@@ -1,7 +1,7 @@
-const { createNonTransactionalMigration } = require('../../utils');
-const logging = require('@tryghost/logging');
-const commands = require('../../../schema/commands');
-const views = require('../../../schema/views');
+import { createNonTransactionalMigration } from '../../utils';
+import logging from '@tryghost/logging';
+import * as commands from '../../../schema/commands';
+import * as views from '../../../schema/views';
 
 // The members_resolved_subscription view shipped in 6.45 was created without an
 // explicit security context, so MySQL stamped it with `SQL SECURITY DEFINER`
@@ -12,7 +12,7 @@ const views = require('../../../schema/views');
 // mysqldump. Recreate it through commands.createViewOrReplace, which forces
 // `SQL SECURITY INVOKER` on MySQL. CREATE OR REPLACE swaps the definition in
 // place, so existing installs are fixed without dropping the view.
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     logging.info('Recreating members_resolved_subscription view with SQL SECURITY INVOKER');
     await commands.createViewOrReplace(
@@ -23,7 +23,7 @@ module.exports = createNonTransactionalMigration(
   },
   async function down(knex) {
     logging.info('Recreating members_resolved_subscription view with default security');
-    await knex.schema.createViewOrReplace('members_resolved_subscription', function (view) {
+    await knex.schema.createViewOrReplace('members_resolved_subscription', function (view: any) {
       view.as(knex.raw(views.members_resolved_subscription));
     });
   },

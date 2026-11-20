@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration(
+export default createAddColumnMigration(
   'automated_email_recipients',
   'automation_run_step_id',
   {

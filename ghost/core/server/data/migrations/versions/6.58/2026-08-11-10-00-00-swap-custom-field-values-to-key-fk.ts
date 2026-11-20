@@ -1,6 +1,6 @@
-const logging = require('@tryghost/logging');
-const { createNonTransactionalMigration } = require('../../utils');
-const commands = require('../../../schema/commands');
+import logging from '@tryghost/logging';
+import { createNonTransactionalMigration } from '../../utils';
+import * as commands from '../../../schema/commands';
 
 const TABLE = 'members_custom_field_values';
 
@@ -72,14 +72,14 @@ const ID_SHAPE = {
 // rather than an ALTER. Existing rows are discarded either way: the feature is behind the
 // `membersCustomFields` flag with no released data, so a wipe is cheaper than a backfill.
 // Re-running after a mid-migration crash is safe — the table is dropped first if present.
-async function rebuild(knex, shape) {
+async function rebuild(knex: any, shape: any) {
   if (await knex.schema.hasTable(TABLE)) {
     await commands.deleteTable(TABLE, knex);
   }
   await commands.createTable(TABLE, knex, shape);
 }
 
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     logging.info('Keying members_custom_field_values by custom_field_key');
     await rebuild(knex, KEY_SHAPE);

@@ -1,3 +1,3 @@
-const { createAddIndexMigration } = require('../../utils');
+import { createAddIndexMigration } from '../../utils';
 
-module.exports = createAddIndexMigration('actions', ['resource_type', 'resource_id']);
+export default createAddIndexMigration('actions', ['resource_type', 'resource_id']);

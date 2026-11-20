@@ -1,14 +1,14 @@
-const {
+import {
   combineNonTransactionalMigrations,
   createAddColumnMigration,
   createAddIndexMigration,
   createSetNullableMigration,
-} = require('../../utils');
+} from '../../utils';
 
-const addGiftColumn = (name, definition) =>
+const addGiftColumn = (name: any, definition: any) =>
   createAddColumnMigration('gifts', name, definition, { algorithm: 'auto' });
 
-module.exports = combineNonTransactionalMigrations(
+export default combineNonTransactionalMigrations(
   addGiftColumn('buyer_name', { type: 'string', maxlength: 191, nullable: true }),
   addGiftColumn('recipient_name', { type: 'string', maxlength: 191, nullable: true }),
   addGiftColumn('personal_message', { type: 'text', maxlength: 500, nullable: true }),

@@ -1,9 +1,9 @@
-const logging = require('@tryghost/logging');
-const crypto = require('crypto');
+import logging from '@tryghost/logging';
+import crypto from 'crypto';
 
-const { createTransactionalMigration } = require('../../utils');
+import { createTransactionalMigration } from '../../utils';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     const tokensWithoutUUID = await knex.select('id').from('tokens').whereNull('uuid');
 

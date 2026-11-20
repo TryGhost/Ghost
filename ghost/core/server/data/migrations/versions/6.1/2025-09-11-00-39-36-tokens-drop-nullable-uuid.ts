@@ -1,3 +1,3 @@
-const { createDropNullableMigration } = require('../../utils');
+import { createDropNullableMigration } from '../../utils';
 
-module.exports = createDropNullableMigration('tokens', 'uuid');
+export default createDropNullableMigration('tokens', 'uuid');

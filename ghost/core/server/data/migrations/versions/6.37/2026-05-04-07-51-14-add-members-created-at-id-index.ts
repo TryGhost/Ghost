@@ -1,10 +1,10 @@
-const logging = require('@tryghost/logging');
-const DatabaseInfo = require('@tryghost/database-info');
-const { createNonTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import DatabaseInfo from '@tryghost/database-info';
+import { createNonTransactionalMigration } from '../../utils';
 
 const INDEX_NAME = 'members_created_at_id_index';
 
-async function hasIndex(knex) {
+async function hasIndex(knex: any) {
   if (DatabaseInfo.isSQLite(knex)) {
     const result = await knex.raw(
       `select * from sqlite_master where type = 'index' and tbl_name = 'members' and name = '${INDEX_NAME}'`,
@@ -16,7 +16,7 @@ async function hasIndex(knex) {
   return result[0].length !== 0;
 }
 
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     if (await hasIndex(knex)) {
       logging.info(

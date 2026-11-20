@@ -1,10 +1,10 @@
-const logging = require('@tryghost/logging');
-const ObjectID = require('bson-objectid').default;
-const {
+import logging from '@tryghost/logging';
+import ObjectID from 'bson-objectid';
+import {
   createTransactionalMigration,
   combineTransactionalMigrations,
   createRemovePermissionMigration,
-} = require('../../utils');
+} from '../../utils';
 
 const INTEGRATION = {
   type: 'core',
@@ -135,7 +135,7 @@ const removeRole = createTransactionalMigration(
 
 // Down migrations run in reverse, so the role is restored before the permission that has
 // to be linked back to it
-module.exports = combineTransactionalMigrations(
+export default combineTransactionalMigrations(
   removeDirectUserGrants,
   createRemovePermissionMigration(PERMISSION, PERMISSION_ROLES),
   removeIntegration,

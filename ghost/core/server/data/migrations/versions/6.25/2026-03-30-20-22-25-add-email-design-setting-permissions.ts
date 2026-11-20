@@ -1,6 +1,6 @@
-const { combineTransactionalMigrations, addPermissionWithRoles } = require('../../utils');
+import { combineTransactionalMigrations, addPermissionWithRoles } from '../../utils';
 
-module.exports = combineTransactionalMigrations(
+export default combineTransactionalMigrations(
   addPermissionWithRoles(
     {
       name: 'Browse email design settings',

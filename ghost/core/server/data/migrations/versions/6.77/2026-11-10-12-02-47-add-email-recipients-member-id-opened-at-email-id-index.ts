@@ -1,7 +1,3 @@
-const { createAddIndexMigration } = require('../../utils');
+import { createAddIndexMigration } from '../../utils';
 
-module.exports = createAddIndexMigration('email_recipients', [
-  'member_id',
-  'opened_at',
-  'email_id',
-]);
+export default createAddIndexMigration('email_recipients', ['member_id', 'opened_at', 'email_id']);

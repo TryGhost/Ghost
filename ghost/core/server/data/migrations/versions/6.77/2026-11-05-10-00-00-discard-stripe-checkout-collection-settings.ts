@@ -1,5 +1,5 @@
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
 
 // Which tiers need a shipping address or a phone number moves out of the Stripe Checkout
 // settings, into tier requirements, and the ports their answers come back through are renamed
@@ -12,7 +12,7 @@ const { createTransactionalMigration } = require('../../utils');
 // The ports' names before the rename, pinned as they stood when this was written.
 const COLLECTED_PORTS = ['shipping_address', 'shipping_name', 'phone'];
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     const bindings = await knex('members_metafield_bindings')
       .whereIn('port', COLLECTED_PORTS)

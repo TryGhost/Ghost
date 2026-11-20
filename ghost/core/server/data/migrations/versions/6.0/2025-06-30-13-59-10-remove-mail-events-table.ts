@@ -1,3 +1,3 @@
-const { dropTables } = require('../../utils');
+import { dropTables } from '../../utils';
 
-module.exports = dropTables(['temp_mail_events']);
+export default dropTables(['temp_mail_events']);

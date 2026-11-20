@@ -1,3 +1,3 @@
-const { createDropNullableMigration } = require('../../utils');
+import { createDropNullableMigration } from '../../utils';
 
-module.exports = createDropNullableMigration('automated_emails', 'email_design_setting_id');
+export default createDropNullableMigration('automated_emails', 'email_design_setting_id');

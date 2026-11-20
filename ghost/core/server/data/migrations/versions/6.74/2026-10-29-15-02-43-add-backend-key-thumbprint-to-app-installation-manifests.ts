@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration('app_installation_manifests', 'backend_key_thumbprint', {
+export default createAddColumnMigration('app_installation_manifests', 'backend_key_thumbprint', {
   type: 'string',
   maxlength: 64,
   nullable: false,

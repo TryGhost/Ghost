@@ -1,4 +1,4 @@
-const { createTransactionalMigration } = require('../../utils');
+import { createTransactionalMigration } from '../../utils';
 
 // The `resetAllPasswords` action on the `authentication` object backed the
 // orphaned `/authentication/global_password_reset` endpoint. That endpoint is
@@ -7,7 +7,7 @@ const { createTransactionalMigration } = require('../../utils');
 // permission row to match its new contract rather than introduce a fresh row
 // alongside a stale one.
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     await knex('permissions')
       .where({ action_type: 'resetAllPasswords', object_type: 'authentication' })

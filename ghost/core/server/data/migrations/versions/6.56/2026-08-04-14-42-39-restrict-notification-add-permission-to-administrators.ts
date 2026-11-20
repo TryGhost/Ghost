@@ -1,6 +1,6 @@
-const { combineTransactionalMigrations, removePermissionFromRole } = require('../../utils');
+import { combineTransactionalMigrations, removePermissionFromRole } from '../../utils';
 
-module.exports = combineTransactionalMigrations(
+export default combineTransactionalMigrations(
   removePermissionFromRole({
     permission: 'Add notifications',
     role: 'Editor',

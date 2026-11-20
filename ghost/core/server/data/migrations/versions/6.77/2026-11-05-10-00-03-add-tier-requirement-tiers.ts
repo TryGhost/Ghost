@@ -1,6 +1,6 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
-module.exports = addTable('tier_requirement_tiers', {
+export default addTable('tier_requirement_tiers', {
   requirement: {
     type: 'string',
     maxlength: 50,

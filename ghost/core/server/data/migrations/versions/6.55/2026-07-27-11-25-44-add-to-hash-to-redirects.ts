@@ -1,21 +1,15 @@
-const logging = require('@tryghost/logging');
-const {
+import logging from '@tryghost/logging';
+import {
   combineNonTransactionalMigrations,
   createAddColumnMigration,
   createNonTransactionalMigration,
-} = require('../../utils');
-const {
-  addIndex,
-  addUnique,
-  dropIndex,
-  dropUnique,
-  getIndexes,
-} = require('../../../schema/commands');
+} from '../../utils';
+import { addIndex, addUnique, dropIndex, dropUnique, getIndexes } from '../../../schema/commands';
 
 const uniqueColumns = ['automation_action_revision_id', 'to_hash'];
 const leftoverIndexName = 'redirects_automation_action_revision_id_index';
 
-module.exports = combineNonTransactionalMigrations(
+export default combineNonTransactionalMigrations(
   createAddColumnMigration(
     'redirects',
     'to_hash',
@@ -44,7 +38,7 @@ module.exports = combineNonTransactionalMigrations(
     async function down(knex) {
       try {
         await dropUnique('redirects', uniqueColumns, knex);
-      } catch (err) {
+      } catch (err: any) {
         // The composite unique ends up as the only index covering the
         // automation_action_revision_id FK: fresh installs create it
         // that way, and on upgrades InnoDB drops the FK's own index

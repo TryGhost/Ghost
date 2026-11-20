@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration(
+export default createAddColumnMigration(
   'members_status_events',
   'batch_id',
   {

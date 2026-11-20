@@ -1,8 +1,8 @@
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
-const ObjectId = require('bson-objectid').default;
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
+import ObjectId from 'bson-objectid';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     // The welcome_email_automations and welcome_email_automated_emails tables
     // already exist from a prior dormant migration. This migration copies data

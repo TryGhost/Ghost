@@ -1,13 +1,13 @@
-const logging = require('@tryghost/logging');
+import logging from '@tryghost/logging';
 
-const { createTransactionalMigration } = require('../../utils');
+import { createTransactionalMigration } from '../../utils';
 
 // llms_enabled defaults to "true" in default-settings.json, so brand-new
 // sites get the feature switched on. This migration only runs when an
 // existing site upgrades (fresh installs stamp migrations as complete
 // without executing them), so it flips the setting off for sites that
 // predate the feature being on by default — leaving new sites untouched.
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     const setting = await knex('settings').where({ key: 'llms_enabled' }).first();
 

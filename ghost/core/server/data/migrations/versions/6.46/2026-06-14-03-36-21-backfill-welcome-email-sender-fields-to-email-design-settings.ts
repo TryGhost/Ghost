@@ -1,11 +1,11 @@
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
 
 const SOURCE_TABLE = 'welcome_email_automated_emails';
 const TARGET_TABLE = 'email_design_settings';
 const SENDER_FIELDS = ['sender_name', 'sender_email', 'sender_reply_to'];
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     const rows = await knex(SOURCE_TABLE)
       .select(['id', 'email_design_setting_id', ...SENDER_FIELDS])
@@ -34,7 +34,7 @@ module.exports = createTransactionalMigration(
         continue;
       }
 
-      const attrs = SENDER_FIELDS.reduce((memo, field) => {
+      const attrs = SENDER_FIELDS.reduce((memo: any, field) => {
         if (existingSettings[field] === null && row[field] !== null) {
           memo[field] = row[field];
         }

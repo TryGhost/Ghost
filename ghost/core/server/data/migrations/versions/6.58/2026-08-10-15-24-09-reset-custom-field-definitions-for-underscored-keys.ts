@@ -1,5 +1,5 @@
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
 
 const FIELDS_TABLE = 'members_custom_fields';
 const VALUES_TABLE = 'members_custom_field_values';
@@ -14,7 +14,7 @@ const MINTED_KEY_SHAPE = /^[a-z0-9]+(?:_[a-z0-9]+)*$/;
 // since 6.53, but the definitions endpoint shipped four days before that guard did.
 const INHERITED_PROPERTY_NAMES = Object.getOwnPropertyNames(Object.prototype);
 
-function isUnmintable(key) {
+function isUnmintable(key: any) {
   return !MINTED_KEY_SHAPE.test(key) || INHERITED_PROPERTY_NAMES.includes(key);
 }
 
@@ -34,7 +34,7 @@ function isUnmintable(key) {
 // Values are deleted explicitly rather than left to the foreign key: it cascades on
 // MySQL, but SQLite only enforces one when `foreign_keys` is on, which knex-migrator
 // does not guarantee.
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     const definitions = await knex(FIELDS_TABLE).select('id', 'key');
     const discarded = definitions.filter((definition) => isUnmintable(definition.key));
