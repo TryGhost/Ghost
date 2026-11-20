@@ -163,10 +163,6 @@ module.exports = class MentionSendingService {
       timeout: {
         request: 15000,
       },
-      retry: {
-        // Only retry on network issues, or specific HTTP status codes
-        limit: 3,
-      },
     });
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
