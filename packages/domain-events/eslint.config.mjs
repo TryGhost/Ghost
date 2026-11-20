@@ -1,16 +1,20 @@
 import { nodeLibConfig } from '@internal/cfg-eslint';
 
-// The imported files keep their PascalCase names (src/DomainEvents.js and its
-// test) because Ghost deep-imports `@tryghost/domain-events/lib/DomainEvents`.
-// Renaming belongs to the modernization follow-up, so the filename rule is off
-// until then.
-const legacyFilenames = { 'ghost/filenames/match-regex': 'off' };
+// Interim state between the file renames and the TypeScript conversion: the
+// sources are still CommonJS, and the hand-written declaration files in src/
+// are not linted until the conversion replaces them. The filename rule
+// crashes on a `module.exports = <class>` file under ESLint 9, so it is off
+// until the sources are ESM.
+const legacyRules = {
+  'ghost/filenames/match-regex': 'off',
+  '@typescript-eslint/no-require-imports': 'off',
+};
 
 export default nodeLibConfig({
-  typescript: false,
   commonjs: true,
-  srcGlobs: ['index.js', 'src/**/*.js'],
-  testGlobs: ['test/**/*.js'],
-  extraSrcRules: legacyFilenames,
-  extraTestRules: legacyFilenames,
+  srcGlobs: ['index.js', 'src/domain-events.ts'],
+  testGlobs: ['test/**/*.ts'],
+  extraSrcRules: legacyRules,
+  // The test still declares `assert` and `sinon` with require().
+  extraTestRules: { ...legacyRules, 'no-redeclare': 'off' },
 });

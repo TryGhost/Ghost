@@ -1,1 +1,1 @@
-module.exports = require('./src/DomainEvents');
+module.exports = require('./src/domain-events.ts');
