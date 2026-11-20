@@ -366,6 +366,26 @@ describe('useEditorSession reload', () => {
     expect(stable.fetchApi.mock.calls.length).toBe(requests);
   });
 
+  it('reads the latest copy and leaves the document alone when the caller no longer wants it', async () => {
+    const newer = record({ title: 'Their title', updated_at: '2026-01-02T00:00:00.000Z' });
+    stable.fetchApi.mockResolvedValueOnce({ posts: [newer] });
+    const { result } = setup();
+    const loaded = result.current.loadedRecord;
+    act(() => result.current.bind.onTitleChange('Unsaved and still wanted'));
+    const onlyIf = vi.fn(() => false);
+
+    let outcome = '';
+    await act(async () => {
+      outcome = await result.current.reload({ discardUnsaved: true, onlyIf });
+    });
+
+    expect(outcome).toBe('abandoned');
+    expect(onlyIf).toHaveBeenCalledTimes(1);
+    expect(result.current.loadedRecord).toBe(loaded);
+    expect(result.current.bind.title).toBe('Unsaved and still wanted');
+    expect(result.current.isDirty()).toBe(true);
+  });
+
   it('refuses a newer version when the writer edits while the reload waits', async () => {
     const newer = record({ title: 'Their title', updated_at: '2026-01-02T00:00:00.000Z' });
     stable.fetchApi.mockResolvedValueOnce({ posts: [newer] });

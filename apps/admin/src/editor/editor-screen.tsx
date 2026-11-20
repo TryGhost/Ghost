@@ -247,6 +247,11 @@ function EditorContent({
     },
     [refusedEntry],
   );
+  // A flow left open when another tab takes the document would still write: its
+  // buttons are not the header's, which the lock disables.
+  if (editLease.locked && openFlow !== 'none') {
+    setOpenFlow('none');
+  }
   const openPublishFlow = useCallback(() => changeOpenFlow('publish'), [changeOpenFlow]);
   const openUpdateFlow = useCallback(() => changeOpenFlow('update'), [changeOpenFlow]);
   const holdBack = useCallback(
@@ -643,6 +648,7 @@ function EditorContent({
               featureImage={featureImage.featureImage}
               frameRef={settingsFrameRef}
               hasInlineExcerpt={showExcerpt}
+              locked={settingsLocked}
               opensInPlace={settingsMemory.restored}
               postType={postType}
               reveal={settingsReveal}

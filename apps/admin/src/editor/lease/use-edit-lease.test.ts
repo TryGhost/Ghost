@@ -164,17 +164,26 @@ describe('useEditLease', () => {
     expect(hook.result.current).toEqual({ locked: false });
   });
 
-  it('waits after a takeover until the holder has polled, then for its last save', async () => {
+  it('waits the longest after a takeover while the holder is on the document, whatever it has sent since', async () => {
     const { hook, ports } = setup(theirs);
     const taken = { ...mine, takenAt: 5_000 };
     hook.rerender({ lease: taken, active: present(4_000) });
     expect(hook.result.current).toEqual({ locked: true, reason: 'taking' });
-    await act(() => vi.advanceTimersByTimeAsync(TAKEOVER_GRACE_MS + 1_000));
-    expect(ports.reload).not.toHaveBeenCalled();
-
+    // A later heartbeat can be another of the holder's tabs, so it is no sign the holder heard.
     hook.rerender({ lease: taken, active: present(6_000) });
-    await act(() => vi.advanceTimersByTimeAsync(TAKEOVER_GRACE_MS - 1));
+    await act(() => vi.advanceTimersByTimeAsync(TAKEOVER_MAX_MS - 1));
     expect(ports.reload).not.toHaveBeenCalled();
+    await act(() => vi.advanceTimersByTimeAsync(1));
+    expect(ports.reload).toHaveBeenCalledTimes(1);
+    expect(hook.result.current).toEqual({ locked: false });
+  });
+
+  it('waits the longest after taking over from the writer’s own other tab, which is never listed', async () => {
+    const { hook, ports } = setup({ userId: ME, mine: false });
+    hook.rerender({ lease: { ...mine, takenAt: 5_000 }, active: [] });
+    await act(() => vi.advanceTimersByTimeAsync(TAKEOVER_MAX_MS - 1));
+    expect(ports.reload).not.toHaveBeenCalled();
+    expect(hook.result.current).toEqual({ locked: true, reason: 'taking' });
     await act(() => vi.advanceTimersByTimeAsync(1));
     expect(ports.reload).toHaveBeenCalledTimes(1);
     expect(hook.result.current).toEqual({ locked: false });
@@ -253,8 +262,55 @@ describe('useEditLease', () => {
     ports.hasNewerVersion.mockResolvedValue(true);
     hook.rerender({ lease: mine, active: [] });
     await act(() => vi.advanceTimersByTimeAsync(0));
-    expect(ports.reload).toHaveBeenCalledExactlyOnceWith({ discardUnsaved: true });
+    expect(ports.reload).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ discardUnsaved: true }),
+    );
     expect(ports.onBehind).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves unsaved work alone when the lease is lost while its copy is still being checked', async () => {
+    const { hook, ports } = setup('free', true);
+    let answer!: (newer: boolean) => void;
+    ports.hasNewerVersion.mockReturnValue(
+      new Promise<boolean>((resolve) => {
+        answer = resolve;
+      }),
+    );
+    hook.rerender({ lease: mine, active: [] });
+    await act(() => vi.advanceTimersByTimeAsync(0));
+
+    // Another tab takes over before the check comes back.
+    hook.rerender({ lease: theirs, active: [] });
+    await act(async () => {
+      answer(true);
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(ports.reload).not.toHaveBeenCalled();
+    expect(ports.onBehind).not.toHaveBeenCalled();
+    expect(hook.result.current).toMatchObject({ locked: true, reason: 'held', lost: true });
+  });
+
+  it('calls off loading the latest copy when the lease is lost while it is being read', async () => {
+    const { hook, ports } = setup('free', true);
+    ports.hasNewerVersion.mockResolvedValue(true);
+    let finish!: (outcome: string) => void;
+    ports.reload.mockReturnValue(
+      new Promise<string>((resolve) => {
+        finish = resolve;
+      }),
+    );
+    hook.rerender({ lease: mine, active: [] });
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    const [options] = ports.reload.mock.calls[0] as [{ onlyIf: () => boolean }];
+    expect(options.onlyIf()).toBe(true);
+
+    hook.rerender({ lease: theirs, active: [] });
+    expect(options.onlyIf()).toBe(false);
+    await act(async () => {
+      finish('abandoned');
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(ports.onBehind).not.toHaveBeenCalled();
   });
 
   describe('when a free lease turns out to be someone else’s', () => {

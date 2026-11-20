@@ -63,6 +63,11 @@ import { syncSearchIndexes } from '@/shared/search-index';
  */
 export type ReloadOutcome = 'reloaded' | 'gone' | 'failed' | 'abandoned';
 
+export interface SessionReloadOptions extends ReloadOptions {
+  /** Asked once the latest copy has been read: false abandons it and leaves the document as it is. */
+  onlyIf?: () => boolean;
+}
+
 interface EditorReadResponse {
   posts?: EditorRecord[];
   pages?: EditorRecord[];
@@ -98,7 +103,7 @@ export interface EditorSessionHandle {
   /** The unsaved title and body as plain text, for the writer to keep. */
   contentText: () => string;
   /** Replaces the document with the server's copy, or says why it could not. Unsaved work is kept unless the writer chose to discard it. */
-  reload: (options?: ReloadOptions) => Promise<ReloadOutcome>;
+  reload: (options?: SessionReloadOptions) => Promise<ReloadOutcome>;
   /** Asks the server whether a later version than this document's was saved. False when the read fails. */
   hasNewerVersion: () => Promise<boolean>;
   /** Puts back the copy the document was last loaded at, dropping unsaved work, with no request. False when it could not. */
@@ -457,7 +462,7 @@ export function useEditorSession({
 
   // Its own request: a query refetch would land before the session could refuse the copy.
   const reload = useCallback(
-    async (options?: ReloadOptions): Promise<ReloadOutcome> => {
+    async (options?: SessionReloadOptions): Promise<ReloadOutcome> => {
       if (!persistedId) {
         return 'failed';
       }
@@ -498,6 +503,9 @@ export function useEditorSession({
         fresh = cached;
       }
 
+      if (options?.onlyIf && !options.onlyIf()) {
+        return 'abandoned';
+      }
       if (!session.recordReloaded(fresh, options)) {
         return 'failed';
       }

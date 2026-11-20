@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import type { ActivePresence } from '@/shared/presence/presence-api';
 import type { LeaseStatus } from '@/shared/presence/use-presence';
 
-/** Once the previous holder has been told, or has gone: time for its last save to land. */
+/** Once the previous holder has gone: time for its last save to land. */
 export const TAKEOVER_GRACE_MS = 3_000;
-/** The longest a takeover waits on a holder that never answers. */
+/** For a previous holder still on the document: time for its next poll to tell it, and for its last save. */
 export const TAKEOVER_MAX_MS = 12_000;
 /** Work begun this recently is the few characters of a lost race, not work worth keeping in the tab. */
 export const RACE_WINDOW_MS = 10_000;
@@ -115,13 +115,13 @@ export function advanceLease(track: LeaseTrack, lease: LeaseStatus): LeaseTrack 
 
 export interface EditLeaseOptions {
   lease: LeaseStatus;
-  /** The others on the document, which shows whether the previous holder has polled since a takeover. */
+  /** The others on the document, which shows whether the previous holder has left it since a takeover. */
   active: ActivePresence[];
   currentUserId?: string;
   isDirty: () => boolean;
   /** Saves a draft's unsaved work at once. */
   flush: () => void;
-  reload: (options?: { discardUnsaved?: boolean }) => Promise<unknown>;
+  reload: (options?: { discardUnsaved?: boolean; onlyIf?: () => boolean }) => Promise<unknown>;
   /** Whether the server holds a later version than this tab's document. */
   hasNewerVersion: () => Promise<boolean>;
   /** Puts back the copy the document was loaded at, with no request; false when it could not. */
@@ -144,8 +144,9 @@ export interface EditLeaseOptions {
  * - A tab that started a moment after someone else did loses the race: what
  *   it typed is put back and it locks. Work older than a moment is kept.
  * - After a takeover the tab first gives the previous holder's editor time to
- *   learn of it and land its last save. A tab that loses the lease saves its
- *   draft at once, so the next holder reads those words.
+ *   learn of it and land its last save: the longer wait unless that holder is
+ *   known to have left. A tab that loses the lease saves its draft at once, so
+ *   the next holder reads those words.
  */
 export function useEditLease({
   lease,
@@ -199,15 +200,26 @@ export function useEditLease({
     setTrack((current) => (current.beaten === beaten ? { ...current, raced: true } : current));
   }, [beaten]);
 
+  const holding = useRef(false);
+  useEffect(() => {
+    holding.current = holds(track.lease);
+  });
+
   const { claims } = track;
   useEffect(() => {
     if (claims === 0) {
       return;
     }
     let superseded = false;
+    // The check outlives the answer it began under. Once the lease is lost, what the
+    // tab typed is all there is of it, and loading over it would lose it.
+    const wanted = () => !superseded && holding.current;
     void (async () => {
-      if ((await ports.current.hasNewerVersion()) && !superseded) {
-        await ports.current.reload({ discardUnsaved: true });
+      if (!(await ports.current.hasNewerVersion()) || !wanted()) {
+        return;
+      }
+      const outcome = await ports.current.reload({ discardUnsaved: true, onlyIf: wanted });
+      if (outcome === 'reloaded') {
         ports.current.onBehind?.();
       }
     })();
@@ -218,9 +230,12 @@ export function useEditLease({
 
   const held = typeof track.lease === 'object' ? track.lease : null;
   const takenAt = held?.mine ? held.takenAt : undefined;
-  const previous = active.find((entry) => entry.userId === track.holder);
-  // A holder no longer listed has left; one listed with a later heartbeat has been told.
-  const told = takenAt === undefined || !previous || previous.ts > takenAt;
+  // Only a holder no longer on the document is known to have stopped. A heartbeat since can be
+  // another of its tabs, and the writer's own other tab is never listed, so neither says it heard.
+  const gone =
+    currentUserId !== undefined &&
+    track.holder !== currentUserId &&
+    !active.some((entry) => entry.userId === track.holder);
   const { sync, syncing } = track;
   const finished = useRef(0);
 
@@ -247,10 +262,10 @@ export function useEditLease({
         );
       })();
     };
-    const wait = takenAt === undefined ? 0 : told ? TAKEOVER_GRACE_MS : TAKEOVER_MAX_MS;
+    const wait = takenAt === undefined ? 0 : gone ? TAKEOVER_GRACE_MS : TAKEOVER_MAX_MS;
     const timer = setTimeout(finish, wait);
     return () => clearTimeout(timer);
-  }, [sync, syncing, takenAt, told]);
+  }, [sync, syncing, takenAt, gone]);
 
   if (track.lease === null) {
     return { locked: false };

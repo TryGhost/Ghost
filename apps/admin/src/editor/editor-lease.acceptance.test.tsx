@@ -4,6 +4,8 @@ import {
   currentUserResponse,
   fakeAdminEndpoint,
   fakeEditorChrome,
+  fakeNewsletters,
+  fakeTiers,
   fakeUsers,
   post,
   renderAdminApp,
@@ -16,6 +18,7 @@ import {
   editorLeaseReloadConfirm,
 } from '@tryghost/test-data/selectors/editor';
 import { editorScreen } from './editor.screen';
+import { publishScreen } from './publish/publish.screen';
 
 const POST_ID = 'a'.repeat(24);
 const OTHER_USER = 'b'.repeat(24);
@@ -225,6 +228,51 @@ describe('Post editor lease', () => {
       await expect.element(others.getByLabelText('Robin Reader has this post open')).toBeVisible();
       await expect.element(others.getByLabelText(/Alex Smith/)).not.toBeInTheDocument();
     });
+  });
+
+  it('closes a flow that was open when the post locked, so nothing is written from it', async () => {
+    fakePublishedPost();
+    alex();
+    fakeTiers([]);
+    fakeNewsletters([]);
+    fakeAdminEndpoint('GET', /^\/members\/\?.*order=id/, {
+      members: [],
+      meta: { pagination: { page: 1, limit: 1, pages: 1, total: 20, next: null, prev: null } },
+    });
+    const saves = fakeAdminEndpoint('PUT', new RegExp(`^/posts/${POST_ID}/\\?`), () => ({
+      posts: [post({ id: POST_ID, status: 'draft' })],
+    }));
+    const { state } = fakeLease();
+    await open();
+    await editorScreen.unpublishButton().click();
+    await expect.element(publishScreen.updateFlow()).toBeVisible();
+
+    state.other = OTHER_USER;
+    pollNow();
+    await expect.poll(canvasLocked).toBe(true);
+    await expect.element(publishScreen.updateFlow()).not.toBeInTheDocument();
+    expect(saves.requests).toHaveLength(0);
+
+    // And it stays closed once the post opens again.
+    state.other = null;
+    pollNow();
+    await expect.poll(canvasLocked).toBe(false);
+    await expect.element(publishScreen.updateFlow()).not.toBeInTheDocument();
+  });
+
+  it('closes a delete confirmation that was open when the post locked', async () => {
+    fakePublishedPost();
+    alex();
+    const { state } = fakeLease();
+    await open();
+    await editorScreen.settingsToggle().click();
+    await editorScreen.settingsDelete().click();
+    await expect.element(editorScreen.settingsDeleteDialog()).toBeVisible();
+
+    state.other = OTHER_USER;
+    pollNow();
+    await expect.poll(canvasLocked).toBe(true);
+    await expect.element(editorScreen.settingsDeleteDialog()).not.toBeInTheDocument();
   });
 
   it('stands the writer’s own avatar in for their other tab', async () => {

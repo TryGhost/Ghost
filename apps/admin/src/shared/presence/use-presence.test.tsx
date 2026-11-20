@@ -365,6 +365,26 @@ describe('usePresence lease', () => {
     hook.unmount();
   });
 
+  it('goes on reporting no lease after idleness when the server has refused the field', async () => {
+    mocks.poll.mockRejectedValueOnce(new APIError(new Response(null, { status: 422 })));
+    mocks.poll.mockResolvedValue({ presence: [{ active: [other], serverTime: 0 }] });
+    const hook = withLease();
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(hook.result.current.lease).toBeNull();
+
+    // No answer about the lease will ever come, so there is none to wait for.
+    await act(() => vi.advanceTimersByTimeAsync(31 * 60_000));
+    expect(mocks.leave).toHaveBeenCalledTimes(1);
+    expect(hook.result.current.lease).toBeNull();
+    await act(async () => {
+      document.dispatchEvent(new Event('keydown'));
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(mocks.poll).toHaveBeenLastCalledWith([resource], resource, undefined);
+    expect(hook.result.current.lease).toBeNull();
+    hook.unmount();
+  });
+
   it('reports no lease when the server keeps none, and waits again once polling stops for idleness', async () => {
     mocks.poll.mockResolvedValue(answer());
     const hook = withLease();

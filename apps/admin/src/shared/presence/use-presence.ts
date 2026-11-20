@@ -156,7 +156,8 @@ export function usePresence(
             disarm();
             leaseAnswered = false;
             holdingRef.current = false;
-            answerWith(reason === 'unsupported' ? null : 'pending');
+            // A server that keeps no lease never answers about one, so there is nothing to wait for.
+            answerWith(reason === 'unsupported' || !leaseSupported ? null : 'pending');
           }
         },
         async poll(isCurrent) {

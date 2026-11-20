@@ -223,6 +223,10 @@ export function EditorHeaderActions({
   const { persistedId } = session;
   const record = session.loadedRecord;
   const [previewOpen, setPreviewOpen] = useState(false);
+  // The preview publishes and saves the email subject, so it closes with the editor.
+  if (locked && previewOpen) {
+    setPreviewOpen(false);
+  }
   const feedback = useSaveFeedback({ session, displayName: postType, siteUrl });
   const contributorSave = useSaveButtonPhase(feedback.save, session.contentKey);
 

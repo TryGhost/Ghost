@@ -254,16 +254,21 @@ into whether this tab is locked.
   another tab takes over.
 - A tab that takes a free lease checks that its copy is the latest. When a
   later version was saved by someone it never saw, the latest is loaded over
-  what was just typed, and a notice says so.
+  what was just typed, and a notice says so. The check is dropped if the lease
+  is lost before it answers: by then what the tab typed is kept for the writer
+  to copy, not loaded over.
 - Two tabs that start within a moment of each other are settled by the
   server. The later one is put back to the copy it loaded, with no request,
   locks, and its card says what it typed was not kept. Unsaved work begun
   more than ten seconds earlier is not a lost race and is kept in the tab.
 - When the holder leaves, every tab watching reads the latest copy and may
   edit, and the first of them to type takes the lease.
-- After a takeover the tab waits before reading, so the previous holder's
-  last save can land: three seconds once that holder has polled again or has
-  gone, and twelve at most.
+- After a takeover the tab waits before reading, so the previous holder can
+  learn of it and its last save can land: three seconds when that holder is no
+  longer on the document, and twelve otherwise, which is longer than the
+  holder's next poll. Nothing the server lists says the holder's tab has heard:
+  a later heartbeat can be another of its tabs, and the writer's own other tab
+  is never listed, so taking over from it always waits the twelve.
 - A tab that loses the lease saves its draft at once, then locks. Unsaved edits
   to a published post are never saved for the writer, so they stay in that
   tab: its card says the unsaved changes are still here and offers Copy
@@ -296,6 +301,7 @@ editor is also read-only for the moment before the server's first answer.
 | Writing area      | Dropped files are not inserted, and a click below the body does not add a paragraph               |
 | Header actions    | Disabled, and their shortcuts do nothing                                                          |
 | Settings panel    | `inert`, since it saves each edit as it is made                                                   |
+| Open flows        | The publish and update flows, the preview, the delete confirmation and the post history close     |
 
 The one sign of it is a pill holding a lock and an avatar, first in the
 header's avatar row: whoever is editing, or the writer's own avatar when

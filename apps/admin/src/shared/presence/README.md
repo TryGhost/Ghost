@@ -65,7 +65,7 @@ when there is no lease to obey.
   broken presence endpoint never holds a document shut.
 - A server that answers 422 to the lease field does not know it. The poll is
   sent again without it, and the lease reads `null` until the editor is opened
-  again.
+  again, through idleness too.
 - When polling stops for idleness the lease has been given up, so the lease
   reads `pending` until the next answer.
 
