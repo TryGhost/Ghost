@@ -621,19 +621,29 @@ class ImportManager {
 
       if (!env?.startsWith('testing')) {
         // Step 6: Send email
-        const email = this.generateCompletionEmail(importResult, {
-          emailRecipient: importOptions.user.email,
-          importTag: importOptions.importTag,
-        });
-        await this.mailer.send({
-          to: importOptions.user.email,
-          subject: importResult?.data?.errors
-            ? 'Your content import was unsuccessful'
-            : 'Your content import has finished',
-          html: email,
-        });
+        await this.sendCompletionEmail(importResult, importOptions);
       }
     }
+  }
+
+  /**
+   * Email the user how the import went
+   * @param {Object} importResult the import's report, or its errors when it failed
+   * @param {ImportOptions} importOptions
+   * @returns {Promise<void>}
+   */
+  async sendCompletionEmail(importResult, importOptions) {
+    const email = this.generateCompletionEmail(importResult, {
+      emailRecipient: importOptions.user.email,
+      importTag: importOptions.importTag,
+    });
+    await this.mailer.send({
+      to: importOptions.user.email,
+      subject: importResult?.data?.errors
+        ? 'Your content import was unsuccessful'
+        : 'Your content import has finished',
+      html: email,
+    });
   }
 }
 
