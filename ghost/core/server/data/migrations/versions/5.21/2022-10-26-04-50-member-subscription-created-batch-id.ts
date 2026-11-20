@@ -4,8 +4,6 @@ import ObjectId from 'bson-objectid';
 import { createTransactionalMigration } from '../../utils';
 import DatabaseInfo from '@tryghost/database-info';
 import * as errors from '@tryghost/errors';
-// @ts-expect-error GhostError is type-only; undefined at runtime (pre-existing bug)
-const GhostError = errors.GhostError;
 
 // This migration links together members_created_events and members_subscription_created_events
 
@@ -65,7 +63,7 @@ export default createTransactionalMigration(
 
       if (response1[0] !== 0) {
         logging.error(`Inserted ${response1[0]} members_created_events, expected 0`);
-        throw new GhostError({
+        throw new errors.InternalServerError({
           message: 'Rolling back',
         });
       }
@@ -86,8 +84,8 @@ export default createTransactionalMigration(
         .merge(['batch_id']);
 
       if (response2[0] !== 0) {
-        logging.error(`Inserted ${response1[0]} members_subscription_created_events, expected 0`);
-        throw new GhostError({
+        logging.error(`Inserted ${response2[0]} members_subscription_created_events, expected 0`);
+        throw new errors.InternalServerError({
           message: 'Rolling back',
         });
       }
