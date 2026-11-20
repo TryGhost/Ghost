@@ -19,9 +19,9 @@ export interface ActivePresence {
 }
 
 /**
- * `hold` keeps or joins this tab's place in the edited document's queue and
- * `take` moves it to the front. `watch` asks who holds the document and gives
- * up any place this tab held.
+ * `hold` holds the edited document for this tab if nobody holds it, or keeps
+ * holding it, and `take` holds it whoever does. `watch` asks who holds the
+ * document and gives up this tab's own hold.
  */
 export type PresenceLeaseRequest = 'hold' | 'take' | 'watch';
 

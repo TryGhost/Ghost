@@ -46,18 +46,19 @@ has open and reports it: `pending` until the server answers, `free` while
 nobody holds the document, the holder and whether it is this tab, or `null`
 when there is no lease to obey.
 
-- A poll only watches, which queues nothing, until the caller says it
+- A poll only watches, which holds nothing, until the caller says it
   `wantsLease`. From then, and for as long as the tab holds the lease, every
   poll asks to hold. The first of those is sent at once, not with the poll
   that was due. A tab that neither holds the lease nor wants it goes back to
-  watching, which gives up any place it had.
+  watching, which gives up the lease if it had it.
 - `takeOver()` makes the next poll, sent at once, ask to take the lease.
 - The tab keeps polling at the 30-second cadence while it is hidden and does
   not send a leave, so switching tabs does not give the document away. The
   30-minute idle stop still applies and still sends the leave, and so does
   closing or reloading the page, on `pagehide`. A tab that dies without that
-  event, a crash or a browser killed in the background, keeps its place until
-  its heartbeat ages out of the lease window, or until another tab takes over.
+  event, a crash or a browser killed in the background, keeps the lease until
+  the lease window passes without a poll from it, or until another tab takes
+  over.
 - An answer is kept through failing polls for a minute, then dropped. A first
   answer that has not come within five seconds is treated the same way. In
   both cases the lease reads `null` and the editor is open for editing: a
@@ -65,7 +66,7 @@ when there is no lease to obey.
 - A server that answers 422 to the lease field does not know it. The poll is
   sent again without it, and the lease reads `null` until the editor is opened
   again.
-- When polling stops for idleness the place has been given up, so the lease
+- When polling stops for idleness the lease has been given up, so the lease
   reads `pending` until the next answer.
 
 What the editor does with the lease is described in the

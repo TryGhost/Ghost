@@ -45,7 +45,7 @@ export function usePresenceEnabled(): boolean {
  * is set, record this user on that resource with every poll. Returns other
  * users active on the requested resources; the server never returns the caller.
  * With `lease`, the tab also learns who holds the edited document and keeps
- * polling while hidden so it does not lose its place. It only watches until it
+ * polling while hidden so it does not lose the lease. It only watches until it
  * `wantsLease`; from then, and for as long as it holds the lease, it asks for it.
  */
 export function usePresence(
@@ -152,7 +152,7 @@ export function usePresence(
             api.leave(current);
           }
           if (leaseKey && reason !== 'disposed') {
-            // Leaving gave the place up, so the answer no longer holds until the next poll.
+            // Leaving gave the lease up, so the answer no longer holds until the next poll.
             disarm();
             leaseAnswered = false;
             holdingRef.current = false;
