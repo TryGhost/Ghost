@@ -34,4 +34,29 @@ describe('toast', () => {
     expect(await screen.findByText('Saved the post')).toBeTruthy();
     expect(await screen.findByText('Could not save')).toBeTruthy();
   });
+
+  it("keeps toasts inside a Ghost app's safe area, clear of Admin's chrome", async () => {
+    render(
+      <ShadeApp darkMode={false}>
+        <p>App</p>
+      </ShadeApp>,
+    );
+    await act(async () => {});
+
+    act(() => {
+      toast.success('Saved the post');
+    });
+    await screen.findByText('Saved the post');
+
+    const toaster = document.querySelector<HTMLElement>('[data-sonner-toaster]')!;
+    expect(toaster.style.getPropertyValue('--offset-bottom')).toBe(
+      'calc(24px + var(--ghost-safe-area-inset-bottom, 0px))',
+    );
+    expect(toaster.style.getPropertyValue('--offset-left')).toBe(
+      'calc(24px + var(--ghost-safe-area-inset-left, 0px))',
+    );
+    expect(toaster.style.getPropertyValue('--mobile-offset-bottom')).toBe(
+      'calc(16px + var(--ghost-safe-area-inset-bottom, 0px))',
+    );
+  });
 });

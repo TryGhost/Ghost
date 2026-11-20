@@ -66,6 +66,7 @@ window.addEventListener('message', (event: MessageEvent<{ type?: unknown } | nul
     },
     themeChanged: () => Promise.resolve(),
     pathChanged: () => Promise.resolve(),
+    layoutChanged: () => Promise.resolve(),
   };
   host = new ThreadMessagePort<HostExports, AppExports>(port, { exports }).imports;
   port.start();

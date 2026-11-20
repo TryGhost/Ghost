@@ -1,7 +1,8 @@
-import clsx from 'clsx';
 import React from 'react';
 import ShadeProvider from '@/providers/shade-provider';
 import type { ControlShape } from '@/providers/shade-context';
+import { useSafeAreaSlide } from '@/lib/safe-area';
+import { cn } from '@/lib/utils';
 
 /**
  * The className is used to scope the styles of the app to the app's namespace.
@@ -9,6 +10,16 @@ import type { ControlShape } from '@/providers/shade-context';
  * in order to work correctly.
  */
 export const SHADE_APP_NAMESPACES = 'shade shade-admin shade-activitypub';
+
+/*
+ * In a Ghost app, Admin's chrome floats over the edges of the app's page, and the app SDK sets how
+ * far it reaches in as `--ghost-safe-area-inset-*`. Padding by them keeps the app's content clear
+ * of the chrome. Anywhere else the variables aren't set, so there's no padding.
+ */
+const SAFE_AREA_PADDING = cn(
+  'pt-[var(--ghost-safe-area-inset-top,0px)] pr-[var(--ghost-safe-area-inset-right,0px)]',
+  'pb-[var(--ghost-safe-area-inset-bottom,0px)] pl-[var(--ghost-safe-area-inset-left,0px)]',
+);
 
 export interface ShadeAppProps extends React.HTMLProps<HTMLDivElement> {
   darkMode: boolean;
@@ -31,10 +42,14 @@ const ShadeApp: React.FC<ShadeAppProps> = ({
   children,
   ...props
 }) => {
-  const appClassName = clsx('shade', className);
+  const root = React.useRef<HTMLDivElement>(null);
+  useSafeAreaSlide(root);
+  // After the safe area's padding, so a className's own padding wins.
+  const appClassName = cn('shade', SAFE_AREA_PADDING, className);
 
   return (
     <div
+      ref={root}
       className={appClassName}
       {...props}
       data-admin7-design={admin7Design}

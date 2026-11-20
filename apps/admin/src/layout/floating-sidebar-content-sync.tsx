@@ -26,11 +26,12 @@ import {
 
 /**
  * The page column the slide keeps continuous (the first match: the
- * outermost). Without one (e.g. Settings) the page slides by half the gap's
- * change, which suits content centred beside it.
+ * outermost). An app's page lays out its own column in its frame, which slides
+ * itself, so its footer stands in for it. Without one (e.g. Settings) the page
+ * slides by half the gap's change, which suits content centred beside it.
  */
 const PAGE_COLUMN_SELECTOR =
-  '.max-w-page, [data-list-page=list-page], [data-detail-page=detail-page], .gh-canvas, .gh-main-width';
+  '.max-w-page, [data-list-page=list-page], [data-detail-page=detail-page], .gh-canvas, .gh-main-width, [data-app-footer]';
 
 /**
  * Full-bleed page backdrops (e.g. the member map): they span the scrollport

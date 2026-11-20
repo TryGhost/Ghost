@@ -13,8 +13,10 @@ import {
   isConnectMessage,
   isContainedPath,
   isFetchResponse,
+  isLayout,
   isRecord,
   isReservedRequestHeader,
+  isSafeArea,
   isStartContext,
   isTheme,
   methodAllowsBody,
@@ -40,6 +42,7 @@ const context = {
   theme,
   session: { revision: 3 },
   path: '/episodes/12',
+  layout: { safeArea: { top: 0, right: 0, bottom: 57, left: 285 } },
 };
 
 const response = {
@@ -148,6 +151,42 @@ describe('a theme', () => {
   });
 });
 
+describe('a safe area', () => {
+  const check = holds(isSafeArea);
+
+  it('has an inset of zero or more pixels from each edge', () => {
+    check({ top: 0, right: 0, bottom: 0, left: 0 }, true);
+    check({ top: 0, right: 8, bottom: 56.5, left: 285 }, true);
+    check({ top: 0, right: 0, bottom: 0, left: 0, somethingNew: 1 }, true);
+  });
+
+  it('rejects a missing, negative or non-finite inset', () => {
+    for (const value of [
+      null,
+      {},
+      { top: 0, right: 0, bottom: 0 },
+      { top: -1, right: 0, bottom: 0, left: 0 },
+      { top: 0, right: '8', bottom: 0, left: 0 },
+      { top: 0, right: 0, bottom: Infinity, left: 0 },
+      { top: 0, right: 0, bottom: 0, left: Number.NaN },
+    ]) {
+      check(value, false);
+    }
+  });
+});
+
+describe('a layout', () => {
+  const check = holds(isLayout);
+
+  it('has a safe area', () => {
+    check(context.layout, true);
+    check({ ...context.layout, somethingNew: true }, true);
+    check({}, false);
+    check({ safeArea: { top: 0 } }, false);
+    check(null, false);
+  });
+});
+
 describe('a start context', () => {
   const check = holds(isStartContext);
 
@@ -170,6 +209,8 @@ describe('a start context', () => {
       { ...context, session: { revision: '3' } },
       { ...context, path: 'episodes' },
       { ...context, path: '//evil.example' },
+      { ...context, layout: undefined },
+      { ...context, layout: { safeArea: { top: 0, right: 0, bottom: -1, left: 0 } } },
     ]) {
       check(value, false);
     }
