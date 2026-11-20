@@ -6873,7 +6873,7 @@ services:
           - core/server/services/settings-helpers/index.js
           - core/server/models/settings.js
           - >-
-            core/server/data/migrations/versions/5.124/2025-06-06-23-12-11-create-site-uuid-setting.js
+            core/server/data/migrations/versions/5.124/2025-06-06-23-12-11-create-site-uuid-setting.ts
           - core/server/api/endpoints/settings.js
           - core/boot.js
     entryPoints:
@@ -6925,7 +6925,7 @@ services:
           - core/server/api/endpoints/index.js
           - core/server/services/recommendations/index.ts
           - core/server/models/settings.js
-          - core/server/data/migrations/versions/5.124/2025-06-06-23-12-11-create-site-uuid-setting.js
+          - core/server/data/migrations/versions/5.124/2025-06-06-23-12-11-create-site-uuid-setting.ts
         tests:
           - test/unit/server/services/settings/settings-bread-service.test.js
           - test/e2e-api/admin/settings.test.js

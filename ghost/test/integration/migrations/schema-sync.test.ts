@@ -372,14 +372,16 @@ async function createMigratedDatabase(knex: Knex) {
     table.string('currentVersion');
   });
 
+  // knex-migrator records a .ts migration under its .js name, as a real 4.47 database has it
+  const recordedName = (file: string) => file.replace(/\.ts$/, '.js');
   const executed: ExecutedMigration[] = [];
   for (const name of fs.readdirSync(path.join(MIGRATIONS_PATH, 'init'))) {
-    executed.push({ name, version: 'init', currentVersion: V4_VERSION });
+    executed.push({ name: recordedName(name), version: 'init', currentVersion: V4_VERSION });
   }
   for (const version of fs.readdirSync(path.join(MIGRATIONS_PATH, 'versions'))) {
     if (semver.lte(semver.coerce(version)!, semver.coerce(V4_VERSION)!)) {
       for (const name of fs.readdirSync(path.join(MIGRATIONS_PATH, 'versions', version))) {
-        executed.push({ name, version, currentVersion: V4_VERSION });
+        executed.push({ name: recordedName(name), version, currentVersion: V4_VERSION });
       }
     }
   }
