@@ -1,8 +1,8 @@
 /**
  * A Ghost app built with Shade, which app-page-frame.acceptance.test.tsx frames as an app's page:
- * the SDK's `connect()`, then `ShadeApp` around a page column with a menu and a select. The
- * `bundleFrameScript` command bundles it into one module, and the spec serves it with Shade's
- * stylesheet as an app builds it.
+ * the SDK's `connect()`, then `ShadeApp` with the overlay, around a page column with a menu, a
+ * select and a dialog. The `bundleFrameScript` command bundles it into one module, and the spec
+ * serves it with Shade's stylesheet as an app builds it.
  *
  * The spec reads the page through `window.__app` with `callInFrame`. `window.__frameFlags.tall`
  * makes the page taller than the frame, so it scrolls.
@@ -12,6 +12,11 @@ import { connect } from '@tryghost/app-sdk';
 import { ShadeApp } from '@tryghost/shade/app';
 import {
   Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -146,11 +151,11 @@ const hooks: TestAppHooks = {
 };
 (window as unknown as { __app: TestAppHooks }).__app = hooks;
 
-void connect().then(() => {
+void connect().then((ghost) => {
   const root = document.createElement('div');
   document.body.append(root);
   createRoot(root).render(
-    <ShadeApp darkMode={false}>
+    <ShadeApp darkMode={false} overlay={ghost.overlay}>
       {/* Fills the frame, beneath Admin's chrome too, as Shade's docs suggest */}
       <div className="fixed inset-0 -z-10 bg-background" id="backdrop" />
       <Container
@@ -161,6 +166,15 @@ void connect().then(() => {
       >
         <h1 id="title">Podcast</h1>
         <div className="flex items-center justify-between gap-2">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button id="open-dialog">Open dialog</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogTitle>Episode</DialogTitle>
+              <DialogDescription>An episode’s details</DialogDescription>
+            </DialogContent>
+          </Dialog>
           <div className="flex gap-2">
             <Select defaultValue="weekly">
               <SelectTrigger id="open-select">
