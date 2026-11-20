@@ -114,7 +114,16 @@
           "buttonColor": "#ffffff",
           "buttonTextColor": "#000000",
           "layout": "full",
-          "swapped": false
+          "swapped": false,
+          "visibility": {
+            "web": {
+              "nonMember": true,
+              "memberSegment": "status:free,status:-free"
+            },
+            "email": {
+              "memberSegment": "status:free,status:-free"
+            }
+          }
         },
         {
           "type": "signup",
