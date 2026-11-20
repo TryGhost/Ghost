@@ -858,7 +858,7 @@ overrides:
 
 packageExtensionsChecksum: sha256-ObOLO7cMPhZpUKrGhf0yokgWfmIPQH99MnaBfCkqyCs=
 
-pnpmfileChecksum: sha256-vaAX0kStZHzADiYRouqDNWkfKpdBITagXyWx9PR8MHU=
+pnpmfileChecksum: sha256-AwKRiqAiiyw7mhu7r5HOhmmr0OlIegIp2REd/wgTGuM=
 
 patchedDependencies:
   '@elastic/elasticsearch@8.19.2': 725142a9606e50dff3ed4c17fb9256d5457c7c75ce262898b87ef0ffff14dcc2

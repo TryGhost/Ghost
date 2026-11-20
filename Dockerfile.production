@@ -14,7 +14,7 @@
 # Build context: the monorepo repo root. The deploy stage runs `pnpm deploy`
 # against the workspace to produce a self-contained app dir (source + resolved
 # node_modules), so this image no longer depends on the `pnpm pack` output that
-# Ghost-CLI uses (scripts/pack.mjs). The `full` stage's admin and embed renderer
+# Ghost-CLI uses (scripts/pack.mts). The `full` stage's admin and embed renderer
 # builds are injected into the context by CI under core/built.
 #
 # Ownership model: application code (node_modules, server source, admin) is owned

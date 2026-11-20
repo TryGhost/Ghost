@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * pack.mjs — Build the Ghost release tarballs.
+ * pack.mts — Build the Ghost release tarballs.
  *
  * Produces two tarballs from one build tree, differing only in layout:
  *
@@ -50,12 +50,37 @@ const BUILD_DIR = path.join(CORE_DIR, 'package');
 const COMPONENTS_DIR = path.join(BUILD_DIR, 'components');
 
 // Matches pnpm's own root-license glob (LICEN{S,C}E{,.*}).
-const isLicenseFile = (name) => /^licen[sc]e(\..+)?$/i.test(name);
+const isLicenseFile = (name: string): boolean => /^licen[sc]e(\..+)?$/i.test(name);
 
-const readJson = async (file) => JSON.parse(await fs.readFile(file, 'utf8'));
-const writeJson = (file, data) => fs.writeFile(file, JSON.stringify(data, null, 2) + '\n');
-const readYaml = async (file) => yaml.load(await fs.readFile(file, 'utf8'));
-const exists = (file) =>
+interface PackageJson {
+  version: string;
+  packageManager?: string;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  nx?: unknown;
+  [key: string]: unknown;
+}
+
+type WorkspaceConfig = Record<string, unknown> & {
+  catalog?: Record<string, string>;
+  overrides?: Record<string, string>;
+  patchedDependencies?: Record<string, string>;
+};
+
+interface PackResult {
+  name?: string;
+  version?: string;
+  filename?: string;
+  path?: string;
+}
+
+const readJson = async <T,>(file: string): Promise<T> =>
+  JSON.parse(await fs.readFile(file, 'utf8')) as T;
+const writeJson = (file: string, data: unknown) =>
+  fs.writeFile(file, JSON.stringify(data, null, 2) + '\n');
+const readYaml = async <T,>(file: string): Promise<T> =>
+  yaml.load(await fs.readFile(file, 'utf8')) as T;
+const exists = (file: string): Promise<boolean> =>
   fs.access(file).then(
     () => true,
     () => false,
@@ -64,7 +89,7 @@ const exists = (file) =>
 // Run pnpm with the silent reporter (progress/warnings are noise for a build
 // script; failures still throw with stderr attached). maxBuffer is bumped since
 // captured output can exceed execFile's 1 MB default.
-const pnpm = (args, opts = {}) =>
+const pnpm = (args: string[], opts: { cwd?: string; env?: NodeJS.ProcessEnv } = {}) =>
   execFileAsync('pnpm', ['--reporter=silent', ...args], {
     cwd: ROOT_DIR,
     encoding: 'utf8',
@@ -75,11 +100,8 @@ const pnpm = (args, opts = {}) =>
 /**
  * Parse `pnpm pack --json` output, which may be a JSON array or a stream of
  * newline-delimited JSON objects depending on the pnpm version.
- *
- * @param {string} output
- * @returns {Array<{name?: string, version?: string, filename?: string, path?: string}>}
  */
-function parsePackJson(output) {
+function parsePackJson(output: string): PackResult[] {
   const trimmed = output.trim();
   if (!trimmed) {
     return [];
@@ -92,15 +114,15 @@ function parsePackJson(output) {
       .split('\n')
       .map((line) => line.trim())
       .filter(Boolean)
-      .map((line) => JSON.parse(line));
+      .map((line) => JSON.parse(line) as PackResult);
   }
 }
 
 // Read the root manifest + workspace config up front (independent of the build).
 // packageManager is required by corepack and verified by CI release checks.
 const [rootPkg, rootWorkspace] = await Promise.all([
-  readJson(path.join(ROOT_DIR, 'package.json')),
-  readYaml(path.join(ROOT_DIR, 'pnpm-workspace.yaml')),
+  readJson<PackageJson>(path.join(ROOT_DIR, 'package.json')),
+  readYaml<WorkspaceConfig>(path.join(ROOT_DIR, 'pnpm-workspace.yaml')),
 ]);
 if (!rootPkg.packageManager) {
   throw new Error('Root package.json is missing required "packageManager" field');
@@ -127,7 +149,7 @@ const { stdout: packJson } = await pnpm([
 ]);
 
 // `pnpm pack --json` emits one JSON object per packed package.
-const components = new Map(); // package name → tarball filename
+const components = new Map<string, string>(); // package name → tarball filename
 for (const obj of parsePackJson(packJson)) {
   const name = obj.name;
   const file = path.basename(obj.filename || obj.path || '');
@@ -185,7 +207,7 @@ await Promise.all(
 
 // Carry the root packageManager over — ghost's own manifest doesn't declare one.
 const pkgPath = path.join(BUILD_DIR, 'package.json');
-const pkg = await readJson(pkgPath);
+const pkg = await readJson<PackageJson>(pkgPath);
 pkg.packageManager = rootPkg.packageManager;
 await writeJson(pkgPath, pkg);
 console.log(`  Set packageManager: ${rootPkg.packageManager.split('+')[0]}`);
@@ -244,7 +266,7 @@ if (patchSpecs.length > 0) {
 //     supply-chain policies not meaningful at end-user install (the bundled
 //     @tryghost/* component tarballs aren't on npm, so an age check would 404)
 console.log('\nWriting pnpm-workspace.yaml...');
-const buildWorkspace = {};
+const buildWorkspace: WorkspaceConfig = {};
 for (const key of [
   'catalog',
   'catalogs',
@@ -313,8 +335,8 @@ const requiredFiles = [
 ];
 const [packagedPkg, packagedWorkspace, missingFiles, componentTgzCount, packagedFiles] =
   await Promise.all([
-    readJson(pkgPath),
-    readYaml(path.join(BUILD_DIR, 'pnpm-workspace.yaml')),
+    readJson<PackageJson>(pkgPath),
+    readYaml<WorkspaceConfig | undefined>(path.join(BUILD_DIR, 'pnpm-workspace.yaml')),
     Promise.all(
       requiredFiles.map(async (rel) => ((await exists(path.join(BUILD_DIR, rel))) ? null : rel)),
     ),
