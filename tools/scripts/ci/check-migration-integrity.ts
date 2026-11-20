@@ -76,27 +76,35 @@ function getSafeVersion(): SafeVersion {
  * Migrations added by a `git diff --name-status` listing. A rename counts as
  * an add unless it keeps its path within the versions directory, so moving
  * the whole directory adds nothing but moving a file into a version folder does.
+ *
+ * knex-migrator records a TypeScript migration under its compiled name, so
+ * converting `x.js` to `x.ts` in place adds nothing, however git pairs the
+ * files up: a rename, a delete plus an add, or a rename across two similar files.
  */
 function addedMigrations(nameStatus: string): string[] {
+  const recordedName = (file: string) => file.replace(/\.([cm]?)ts$/, '.$1js');
   const versionsRelative = (file: string) => {
     const index = file.indexOf(VERSIONS_DIR);
     return index === -1 ? null : file.slice(index + VERSIONS_DIR.length);
   };
 
-  return nameStatus
+  const entries = nameStatus
     .split('\n')
     .filter(Boolean)
-    .map((line) => line.split('\t') as [status: string, from: string, to?: string])
+    .map((line) => line.split('\t') as [status: string, from: string, to?: string]);
+  const removed = new Set(
+    entries
+      .filter(([status]) => status === 'D' || status.startsWith('R'))
+      .map(([, from]) => recordedName(from)),
+  );
+
+  return entries
     .filter(([status, from, to]) => {
-      if (status === 'A') {
-        return from.startsWith(MIGRATIONS_PATH + '/');
+      const added = status === 'A' ? from : status.startsWith('R') ? to : undefined;
+      if (!added?.startsWith(MIGRATIONS_PATH + '/') || removed.has(recordedName(added))) {
+        return false;
       }
-      return (
-        status.startsWith('R') &&
-        to !== undefined &&
-        to.startsWith(MIGRATIONS_PATH + '/') &&
-        versionsRelative(from) !== versionsRelative(to)
-      );
+      return status === 'A' || versionsRelative(from) !== versionsRelative(added);
     })
     .map(([status, from, to]) => (status === 'A' ? from : to!));
 }
