@@ -1,10 +1,10 @@
-const { combineTransactionalMigrations, addPermissionWithRoles } = require('../../utils');
+import { combineTransactionalMigrations, addPermissionWithRoles } from '../../utils';
 
 const RESOURCE = 'app_installation';
 
 // An app acts with the access of the staff user who is signed in, so only
 // Administrators (and the Owner, who needs no grant) manage apps. Integrations get none.
-module.exports = combineTransactionalMigrations(
+export default combineTransactionalMigrations(
   addPermissionWithRoles(
     {
       name: 'Browse app installations',

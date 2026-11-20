@@ -1,10 +1,10 @@
-const { combineTransactionalMigrations, addPermissionWithRoles } = require('../../utils');
+import { combineTransactionalMigrations, addPermissionWithRoles } from '../../utils';
 
 const RESOURCE = 'upgrade';
 
 // Only Administrators (and the Owner, who needs no grant) can request host-managed
 // updates. Integrations get none.
-module.exports = combineTransactionalMigrations(
+export default combineTransactionalMigrations(
   addPermissionWithRoles(
     {
       name: 'Browse upgrades',

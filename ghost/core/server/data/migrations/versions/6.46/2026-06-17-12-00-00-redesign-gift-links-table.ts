@@ -1,9 +1,9 @@
-const { createNonTransactionalMigration } = require('../../utils');
-const { createTable, deleteTable } = require('../../../schema/commands');
+import { createNonTransactionalMigration } from '../../utils';
+import { createTable, deleteTable } from '../../../schema/commands';
 
 // Safe to drop and rebuild rather than alter in place: gift_links is empty everywhere (the
 // gift-link API has never shipped).
-const ORIGINAL_GIFT_LINKS_TABLE = {
+const ORIGINAL_GIFT_LINKS_TABLE: any = {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   post_id: {
     type: 'string',
@@ -29,7 +29,7 @@ const ORIGINAL_GIFT_LINKS_TABLE = {
   '@@INDEXES@@': [['post_id', 'status']],
 };
 
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     // Drop the dependent table first (idempotent + FK-safe): post_gift_links references
     // gift_links, and it may already exist from a fresh schema build.

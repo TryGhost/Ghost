@@ -1,18 +1,12 @@
-const logging = require('@tryghost/logging');
-const { createNonTransactionalMigration } = require('../../utils');
-const {
-  addIndex,
-  addUnique,
-  dropIndex,
-  dropUnique,
-  getIndexes,
-} = require('../../../schema/commands');
+import logging from '@tryghost/logging';
+import { createNonTransactionalMigration } from '../../utils';
+import { addIndex, addUnique, dropIndex, dropUnique, getIndexes } from '../../../schema/commands';
 
 const table = 'products_benefits';
 const uniqueColumns = ['product_id', 'benefit_id'];
 const leftoverIndexName = 'products_benefits_product_id_index';
 
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     await addUnique(table, uniqueColumns, knex);
 
@@ -30,7 +24,7 @@ module.exports = createNonTransactionalMigration(
   async function down(knex) {
     try {
       await dropUnique(table, uniqueColumns, knex);
-    } catch (err) {
+    } catch (err: any) {
       // The composite unique ends up as the only index covering the
       // product_id FK: fresh installs create it that way, and on upgrades
       // InnoDB drops the FK's own index once the composite can serve the

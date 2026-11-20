@@ -1,9 +1,9 @@
-const ObjectId = require('bson-objectid');
-const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
+import ObjectId from 'bson-objectid';
+import * as errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     await knex('automation_trigger_rules').del();
 

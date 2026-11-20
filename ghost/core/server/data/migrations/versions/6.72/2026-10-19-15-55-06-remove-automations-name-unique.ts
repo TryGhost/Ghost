@@ -1,8 +1,8 @@
-const logging = require('@tryghost/logging');
-const { createNonTransactionalMigration } = require('../../utils');
-const { addUnique, dropUnique } = require('../../../schema/commands');
+import logging from '@tryghost/logging';
+import { createNonTransactionalMigration } from '../../utils';
+import { addUnique, dropUnique } from '../../../schema/commands';
 
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     // This index had two different index names. Make sure to cover both.
     await dropUnique('automations', ['name'], knex);
@@ -17,15 +17,15 @@ module.exports = createNonTransactionalMigration(
     // anyway.
     class CollatedSet {
       #collator = new Intl.Collator('en', { sensitivity: 'base' });
-      /** @type {string[]} */ #strings = [];
+      /** @type {string[]} */ #strings: string[] = [];
 
       /** @param {string} string */
-      add(string) {
+      add(string: string) {
         this.#strings.push(string);
       }
 
       /** @param {string} string */
-      has(string) {
+      has(string: string) {
         return this.#strings.some((s) => this.#collator.compare(s, string) === 0);
       }
     }

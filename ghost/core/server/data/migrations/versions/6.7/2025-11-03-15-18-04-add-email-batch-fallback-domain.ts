@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration('email_batches', 'fallback_sending_domain', {
+export default createAddColumnMigration('email_batches', 'fallback_sending_domain', {
   type: 'boolean',
   nullable: false,
   defaultTo: false,

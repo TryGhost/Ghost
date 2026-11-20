@@ -1,5 +1,5 @@
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
 
 const AUTOMATION_NAME_UPDATES = [
   {
@@ -14,7 +14,7 @@ const AUTOMATION_NAME_UPDATES = [
   },
 ];
 
-async function renameAutomations(knex, direction) {
+async function renameAutomations(knex: any, direction: any) {
   // There are only two of these, so it's fine to use a `for` loop.
   // eslint-disable-next-line no-restricted-syntax
   for (const { slug, upName, downName } of AUTOMATION_NAME_UPDATES) {
@@ -30,7 +30,7 @@ async function renameAutomations(knex, direction) {
   }
 }
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     await renameAutomations(knex, 'up');
   },

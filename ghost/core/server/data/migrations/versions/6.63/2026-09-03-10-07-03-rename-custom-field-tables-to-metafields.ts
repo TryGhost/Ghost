@@ -1,6 +1,6 @@
-const logging = require('@tryghost/logging');
-const { commands } = require('../../../schema');
-const { createNonTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { commands } from '../../../schema';
+import { createNonTransactionalMigration } from '../../utils';
 
 // The tables that held member custom fields are renamed to metafields, the name the API
 // and the rest of the domain already use. Dropped and recreated rather than renamed in
@@ -20,7 +20,7 @@ const DROP_ORDER = [
 
 // Specs pinned as they stand in schema.js at the time of writing, per the migration rules:
 // this file must keep building the same shape however schema.js moves on.
-const CREATE_ORDER = [
+const CREATE_ORDER: any = [
   [
     'members_metafields',
     {
@@ -126,7 +126,7 @@ const CREATE_ORDER = [
   ],
 ];
 
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(connection) {
     // The whole migration hangs on the old definitions table being there. A fresh install
     // builds the new names straight from schema.js, and the replay suite runs this against

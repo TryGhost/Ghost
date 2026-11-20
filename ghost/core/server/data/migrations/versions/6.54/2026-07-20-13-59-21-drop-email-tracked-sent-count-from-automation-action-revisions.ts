@@ -1,6 +1,6 @@
-const { createDropColumnMigration } = require('../../utils');
+import { createDropColumnMigration } from '../../utils';
 
-module.exports = createDropColumnMigration(
+export default createDropColumnMigration(
   'automation_action_revisions',
   'email_tracked_sent_count',
   {

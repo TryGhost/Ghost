@@ -1,6 +1,6 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
-module.exports = addTable('members_current_subscription', {
+export default addTable('members_current_subscription', {
   member_id: {
     type: 'string',
     maxlength: 24,

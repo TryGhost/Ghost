@@ -1,7 +1,7 @@
-const { addSetting } = require('../../utils');
-const crypto = require('crypto');
+import { addSetting } from '../../utils';
+import crypto from 'crypto';
 
-module.exports = addSetting({
+export default addSetting({
   key: 'members_otc_secret',
   value: crypto.randomBytes(64).toString('hex'),
   type: 'string',

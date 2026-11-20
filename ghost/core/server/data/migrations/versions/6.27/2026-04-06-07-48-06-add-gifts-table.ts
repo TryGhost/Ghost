@@ -1,6 +1,6 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
-module.exports = addTable('gifts', {
+export default addTable('gifts', {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   token: { type: 'string', maxlength: 48, nullable: false, unique: true },
 

@@ -1,12 +1,12 @@
-const { createNonTransactionalMigration } = require('../../utils');
-const { addIndex, dropIndex, getIndexes } = require('../../../schema/commands');
+import { createNonTransactionalMigration } from '../../utils';
+import { addIndex, dropIndex, getIndexes } from '../../../schema/commands';
 
 const table = 'automation_runs';
 const compositeIndexColumns = ['automation_id', 'created_at'];
 const foreignKeyIndexColumns = ['automation_id'];
 const foreignKeyIndexName = 'automation_runs_automation_id_index';
 
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     await addIndex(table, compositeIndexColumns, knex);
 

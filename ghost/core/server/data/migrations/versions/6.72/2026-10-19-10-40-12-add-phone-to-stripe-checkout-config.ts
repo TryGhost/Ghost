@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration('stripe_checkout_config', 'phone', {
+export default createAddColumnMigration('stripe_checkout_config', 'phone', {
   type: 'text',
   maxlength: 65535,
   nullable: true,

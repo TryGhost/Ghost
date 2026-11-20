@@ -1,13 +1,13 @@
-const DatabaseInfo = require('@tryghost/database-info');
-const logging = require('@tryghost/logging');
-const { createSetNullableMigration } = require('../../utils');
+import DatabaseInfo from '@tryghost/database-info';
+import logging from '@tryghost/logging';
+import { createSetNullableMigration } from '../../utils';
 
 const nullableMigration = createSetNullableMigration('automations', 'slug');
 
-module.exports = {
+export default {
   ...nullableMigration,
 
-  async down(config) {
+  async down(config: any) {
     logging.info('Backfilling null automations.slug values with random IDs');
     const connection = config.transacting || config.connection;
     const randomId = DatabaseInfo.isSQLite(connection) ? 'hex(randomblob(64))' : 'UUID()';

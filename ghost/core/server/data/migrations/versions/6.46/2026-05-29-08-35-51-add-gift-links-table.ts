@@ -1,6 +1,6 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
-module.exports = addTable('gift_links', {
+export default addTable('gift_links', {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   post_id: {
     type: 'string',

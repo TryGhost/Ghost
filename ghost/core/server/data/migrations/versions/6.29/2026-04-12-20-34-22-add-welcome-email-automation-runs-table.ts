@@ -1,11 +1,11 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
 // The default names are too long for MySQL.
 const WELCOME_EMAIL_AUTOMATION_RUNS_AUTOMATION_FK = 'wear_automation_id_foreign';
 const WELCOME_EMAIL_AUTOMATION_RUNS_MEMBER_FK = 'wear_member_id_foreign';
 const WELCOME_EMAIL_AUTOMATION_RUNS_NEXT_EMAIL_FK = 'wear_next_email_id_foreign';
 
-const welcomeEmailAutomationRunsSpec = {
+const welcomeEmailAutomationRunsSpec: any = {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   welcome_email_automation_id: {
     type: 'string',
@@ -55,4 +55,4 @@ const welcomeEmailAutomationRunsSpec = {
   '@@INDEXES@@': [['ready_at']],
 };
 
-module.exports = addTable('welcome_email_automation_runs', welcomeEmailAutomationRunsSpec);
+export default addTable('welcome_email_automation_runs', welcomeEmailAutomationRunsSpec);

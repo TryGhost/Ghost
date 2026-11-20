@@ -1,13 +1,13 @@
-const logging = require('@tryghost/logging');
-const { createNonTransactionalMigration } = require('../../utils');
-const { addColumn, addIndex, dropColumn, dropIndex } = require('../../../schema/commands');
+import logging from '@tryghost/logging';
+import { createNonTransactionalMigration } from '../../utils';
+import { addColumn, addIndex, dropColumn, dropIndex } from '../../../schema/commands';
 
-const columnDefinition = {
+const columnDefinition: any = {
   type: 'dateTime',
   nullable: true,
 };
 
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     const hasPinnedAtColumn = await knex.schema.hasColumn('comments', 'pinned_at');
     if (hasPinnedAtColumn) {

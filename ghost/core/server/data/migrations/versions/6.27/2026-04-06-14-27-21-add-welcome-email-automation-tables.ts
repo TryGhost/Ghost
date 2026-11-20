@@ -1,10 +1,10 @@
-const { addTable, combineNonTransactionalMigrations } = require('../../utils');
+import { addTable, combineNonTransactionalMigrations } from '../../utils';
 
 // The default names are too long.
 const WELCOME_EMAIL_AUTOMATED_EMAILS_AUTOMATION_FK = 'weae_automation_id_foreign';
 const WELCOME_EMAIL_AUTOMATED_EMAILS_NEXT_EMAIL_FK = 'weae_next_email_id_foreign';
 
-module.exports = combineNonTransactionalMigrations(
+export default combineNonTransactionalMigrations(
   addTable('welcome_email_automations', {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     status: {

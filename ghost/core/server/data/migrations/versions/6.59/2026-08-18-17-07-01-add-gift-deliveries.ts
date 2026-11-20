@@ -1,6 +1,6 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
-const giftDeliveries = {
+const giftDeliveries: any = {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   gift_id: {
     type: 'string',
@@ -31,4 +31,4 @@ const giftDeliveries = {
   '@@INDEXES@@': [['status', 'started_at']],
 };
 
-module.exports = addTable('gift_deliveries', giftDeliveries);
+export default addTable('gift_deliveries', giftDeliveries);

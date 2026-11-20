@@ -1,4 +1,4 @@
-const { combineTransactionalMigrations, addSetting } = require('../../utils');
+import { combineTransactionalMigrations, addSetting } from '../../utils';
 
 // Rows for rotating the signing keypairs; empty until a rotation is in progress
 const keys = [
@@ -8,7 +8,7 @@ const keys = [
   'members_previous_public_key',
 ];
 
-module.exports = combineTransactionalMigrations(
+export default combineTransactionalMigrations(
   ...keys.map((key) =>
     addSetting({
       key,

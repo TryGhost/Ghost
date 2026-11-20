@@ -1,5 +1,5 @@
-const { createNonTransactionalMigration } = require('../../utils');
-const { addIndex, dropIndex } = require('../../../schema/commands');
+import { createNonTransactionalMigration } from '../../utils';
+import { addIndex, dropIndex } from '../../../schema/commands';
 
 // Indexes for the admin "all comments" moderation page (getAdminAllComments).
 // The query orders by created_at and emits count.replies / count.direct_replies
@@ -19,7 +19,7 @@ const { addIndex, dropIndex } = require('../../../schema/commands');
 // down() has to recreate the single-column FK indexes before dropping the
 // composites or MySQL rejects the drop with "needed in a foreign key
 // constraint".
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     await addIndex('comments', ['created_at'], knex);
     await addIndex('comments', ['status'], knex);

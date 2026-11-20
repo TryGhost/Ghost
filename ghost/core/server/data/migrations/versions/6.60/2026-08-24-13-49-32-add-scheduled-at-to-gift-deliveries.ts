@@ -1,10 +1,10 @@
-const {
+import {
   combineNonTransactionalMigrations,
   createAddColumnMigration,
   createAddIndexMigration,
-} = require('../../utils');
+} from '../../utils';
 
-module.exports = combineNonTransactionalMigrations(
+export default combineNonTransactionalMigrations(
   createAddColumnMigration(
     'gift_deliveries',
     'scheduled_at',

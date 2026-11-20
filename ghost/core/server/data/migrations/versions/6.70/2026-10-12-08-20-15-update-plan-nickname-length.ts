@@ -1,11 +1,11 @@
-const logging = require('@tryghost/logging');
-const { createNonTransactionalMigration } = require('../../utils');
-const DatabaseInfo = require('@tryghost/database-info');
+import logging from '@tryghost/logging';
+import { createNonTransactionalMigration } from '../../utils';
+import DatabaseInfo from '@tryghost/database-info';
 
 // Stripe allows a price nickname of up to 255 characters, but the column that
 // snapshots it on the subscription row only held 50. Widening it matches the
 // stripe_prices.nickname column, which was widened the same way in 5.93.
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     if (DatabaseInfo.isSQLite(knex)) {
       logging.warn(

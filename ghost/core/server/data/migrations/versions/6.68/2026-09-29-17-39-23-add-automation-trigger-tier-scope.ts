@@ -1,10 +1,10 @@
-const logging = require('@tryghost/logging');
-const {
+import logging from '@tryghost/logging';
+import {
   addTable,
   combineNonTransactionalMigrations,
   createAddColumnMigration,
   createNonTransactionalMigration,
-} = require('../../utils');
+} from '../../utils';
 
 /**
  * This migration:
@@ -15,7 +15,7 @@ const {
  * Databases should have at most two automations, making this migration
  * simpler.
  */
-module.exports = combineNonTransactionalMigrations(
+export default combineNonTransactionalMigrations(
   createAddColumnMigration('automations', 'trigger_tier_scope', {
     type: 'string',
     maxlength: 50,
@@ -25,10 +25,10 @@ module.exports = combineNonTransactionalMigrations(
 
   createNonTransactionalMigration(
     async function up(knex) {
-      const freeUpdatedRows = await knex('automations')
+      const freeUpdatedRows: any = await knex('automations')
         .where({ slug: 'member-welcome-email-free' })
         .update('trigger_tier_scope', 'free');
-      const paidUpdatedRows = await knex('automations')
+      const paidUpdatedRows: any = await knex('automations')
         .where({ slug: 'member-welcome-email-paid' })
         .update('trigger_tier_scope', 'all_paid');
       logging.info(`Set trigger tier scope for ${freeUpdatedRows + paidUpdatedRows} automations`);

@@ -1,11 +1,11 @@
-const { createNonTransactionalMigration } = require('../../utils');
-const logging = require('@tryghost/logging');
-const views = require('../../../schema/views');
+import { createNonTransactionalMigration } from '../../utils';
+import logging from '@tryghost/logging';
+import * as views from '../../../schema/views';
 
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     logging.info('Creating members_resolved_subscription view');
-    await knex.schema.createViewOrReplace('members_resolved_subscription', function (view) {
+    await knex.schema.createViewOrReplace('members_resolved_subscription', function (view: any) {
       view.as(knex.raw(views.members_resolved_subscription));
     });
   },

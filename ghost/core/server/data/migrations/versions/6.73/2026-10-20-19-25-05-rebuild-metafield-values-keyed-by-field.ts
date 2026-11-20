@@ -1,7 +1,7 @@
-const logging = require('@tryghost/logging');
-const DatabaseInfo = require('@tryghost/database-info');
-const { commands } = require('../../../schema');
-const { createNonTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import DatabaseInfo from '@tryghost/database-info';
+import { commands } from '../../../schema';
+import { createNonTransactionalMigration } from '../../utils';
 
 const TABLE = 'members_metafield_values';
 
@@ -75,10 +75,10 @@ const KEYED_BY_ID = {
   },
 };
 
-async function hasMemberForeignKey(connection) {
+async function hasMemberForeignKey(connection: any) {
   if (DatabaseInfo.isSQLite(connection)) {
     const foreignKeys = await connection.raw(`PRAGMA foreign_key_list('${TABLE}')`);
-    return foreignKeys.some((key) => key.from === 'member_id' && key.table === 'members');
+    return foreignKeys.some((key: any) => key.from === 'member_id' && key.table === 'members');
   }
   const [rows] = await connection.raw(
     `SELECT 1 FROM information_schema.KEY_COLUMN_USAGE
@@ -95,7 +95,7 @@ async function hasMemberForeignKey(connection) {
  * Whether the table is fully built in `shape`. A table counts only once the statement
  * `createTable` sends last has run, so one a crash left half-built is rebuilt.
  */
-async function isBuilt(connection, shape) {
+async function isBuilt(connection: any, shape: any) {
   if (!(await connection.schema.hasTable(TABLE))) {
     return false;
   }
@@ -112,7 +112,7 @@ async function isBuilt(connection, shape) {
   );
 }
 
-async function rebuild(connection, shape, description) {
+async function rebuild(connection: any, shape: any, description: any) {
   if (await connection.schema.hasTable(TABLE)) {
     const { count } = await connection(TABLE).count('* as count').first();
     logging.warn(`Discarding ${count} member metafield values to rebuild ${TABLE} ${description}`);
@@ -126,7 +126,7 @@ async function rebuild(connection, shape, description) {
   await commands.createTable(TABLE, connection, shape.spec);
 }
 
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(connection) {
     // Also what the replay suite finds, running this against the final schema.
     if (await isBuilt(connection, KEYED_BY_FIELD)) {

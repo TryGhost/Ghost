@@ -1,4 +1,4 @@
-const { dropTables } = require('../../utils');
+import { dropTables } from '../../utils';
 
 // Stripe Checkout collection was configured per tier: the questions a tier asked and the
 // options it collected with. That implementation is removed, and one configuration for the
@@ -10,7 +10,7 @@ const { dropTables } = require('../../utils');
 //
 // The shapes are pinned as they stand in schema.js before this migration, so a rollback
 // keeps rebuilding them however schema.js moves on.
-module.exports = dropTables(['products_checkout_fields', 'products_checkout_config'], {
+export default dropTables(['products_checkout_fields', 'products_checkout_config'], {
   products_checkout_fields: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     binding_id: {

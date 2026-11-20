@@ -1,8 +1,8 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
 // Takes the table out of development, so `replaceDevelopmentCopy` replaces the copy that
 // development and testing databases already have.
-module.exports = addTable(
+export default addTable(
   'app_installations',
   {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },

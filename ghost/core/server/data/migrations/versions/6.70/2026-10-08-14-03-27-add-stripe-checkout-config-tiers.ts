@@ -1,6 +1,6 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
-module.exports = addTable('stripe_checkout_config_tiers', {
+export default addTable('stripe_checkout_config_tiers', {
   section: {
     type: 'string',
     maxlength: 50,

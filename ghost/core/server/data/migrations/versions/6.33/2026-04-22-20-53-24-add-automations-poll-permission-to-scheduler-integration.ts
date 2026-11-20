@@ -1,6 +1,6 @@
-const { addPermissionWithRoles } = require('../../utils');
+import { addPermissionWithRoles } from '../../utils';
 
-module.exports = addPermissionWithRoles(
+export default addPermissionWithRoles(
   {
     name: 'Poll automations',
     action: 'poll',

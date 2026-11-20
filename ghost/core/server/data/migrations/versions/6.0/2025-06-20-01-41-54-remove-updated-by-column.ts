@@ -1,13 +1,13 @@
-const logging = require('@tryghost/logging');
-const { createNonTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { createNonTransactionalMigration } from '../../utils';
 
-async function dropUpdatedBy(knex, table) {
+async function dropUpdatedBy(knex: any, table: any) {
   const hasUpdatedBy = await knex.schema.hasColumn(table, 'updated_by');
 
   if (hasUpdatedBy) {
     logging.info(`Dropping updated_by from ${table}`);
 
-    await knex.schema.alterTable(table, function (t) {
+    await knex.schema.alterTable(table, function (t: any) {
       t.dropColumn('updated_by');
     });
   } else {
@@ -15,7 +15,7 @@ async function dropUpdatedBy(knex, table) {
   }
 }
 
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     logging.info('Dropping updated_by from all tables');
 

@@ -1,6 +1,6 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
-module.exports = addTable('automated_emails', {
+export default addTable('automated_emails', {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   status: { type: 'string', maxlength: 50, nullable: false, defaultTo: 'inactive' },
   slug: { type: 'string', maxlength: 191, nullable: false, unique: true },

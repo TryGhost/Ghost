@@ -1,3 +1,3 @@
-const { createDropNullableMigration } = require('../../utils');
+import { createDropNullableMigration } from '../../utils';
 
-module.exports = createDropNullableMigration('automations', 'trigger_type');
+export default createDropNullableMigration('automations', 'trigger_type');

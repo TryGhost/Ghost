@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration(
+export default createAddColumnMigration(
   'redirects',
   'automation_action_revision_id',
   {

@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration(
+export default createAddColumnMigration(
   'automation_trigger_rules',
   'label_id',
   {

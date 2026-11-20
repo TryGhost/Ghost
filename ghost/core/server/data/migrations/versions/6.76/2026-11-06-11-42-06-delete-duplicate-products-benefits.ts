@@ -1,9 +1,9 @@
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
 
 const table = 'products_benefits';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     // Nothing stopped a tier from being linked to the same benefit twice, and
     // a duplicate would make the next migration's unique constraint fail. The

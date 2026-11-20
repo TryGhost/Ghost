@@ -1,6 +1,6 @@
-const { createDropColumnMigration } = require('../../utils');
+import { createDropColumnMigration } from '../../utils';
 
-module.exports = createDropColumnMigration('gift_links', 'revoked_at', {
+export default createDropColumnMigration('gift_links', 'revoked_at', {
   type: 'dateTime',
   nullable: true,
 });

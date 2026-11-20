@@ -1,6 +1,6 @@
-const logging = require('@tryghost/logging');
-const { commands } = require('../../../schema');
-const { createNonTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { commands } from '../../../schema';
+import { createNonTransactionalMigration } from '../../utils';
 
 // Stripe Checkout now collects into the same field whichever tier was bought, so a binding
 // belongs to the site rather than to a tier and `product_id` goes. The table is rebuilt
@@ -12,7 +12,7 @@ const TABLE = 'members_metafield_bindings';
 
 // Both shapes are pinned as they stand in schema.js at the time of writing, so this keeps
 // building them however schema.js moves on.
-const SITE_WIDE = {
+const SITE_WIDE: any = {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   port: { type: 'string', maxlength: 191, nullable: false, unique: true },
   metafield_key: {
@@ -27,7 +27,7 @@ const SITE_WIDE = {
   '@@INDEXES@@': [['metafield_key']],
 };
 
-const PER_TIER = {
+const PER_TIER: any = {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   product_id: {
     type: 'string',
@@ -52,13 +52,13 @@ const PER_TIER = {
   '@@INDEXES@@': [['metafield_key']],
 };
 
-async function rebuild(connection, spec, description) {
+async function rebuild(connection: any, spec: any, description: any) {
   logging.warn(`Discarding every row in ${TABLE} to make bindings ${description}`);
   await commands.deleteTable(TABLE, connection);
   await commands.createTable(TABLE, connection, spec);
 }
 
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(connection) {
     // A run that failed between dropping and creating the table leaves none, which the column
     // check below would read as already done.

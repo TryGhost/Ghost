@@ -1,11 +1,11 @@
-const logging = require('@tryghost/logging');
-const ObjectID = require('bson-objectid').default;
+import logging from '@tryghost/logging';
+import ObjectID from 'bson-objectid';
 
-const { createTransactionalMigration } = require('../../utils');
+import { createTransactionalMigration } from '../../utils';
 
 const LEGACY_HARDCODED_USER_ID = '1';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     const newId = new ObjectID().toHexString();
 

@@ -1,6 +1,6 @@
-const { createAddIndexMigration } = require('../../utils');
+import { createAddIndexMigration } from '../../utils';
 
-module.exports = createAddIndexMigration('automation_run_steps', [
+export default createAddIndexMigration('automation_run_steps', [
   'status',
   'ready_at',
   'created_at',

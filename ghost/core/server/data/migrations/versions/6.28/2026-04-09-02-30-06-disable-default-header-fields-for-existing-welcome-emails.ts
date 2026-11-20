@@ -1,10 +1,10 @@
-const logging = require('@tryghost/logging');
-const { MigrationError } = require('@tryghost/errors');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { MigrationError } from '@tryghost/errors';
+import { createTransactionalMigration } from '../../utils';
 
 const DEFAULT_SLUG = 'default-automated-email';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     const existingWelcomeEmail = await knex('welcome_email_automations').first('id');
 

@@ -1,6 +1,6 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
-module.exports = addTable('outbox', {
+export default addTable('outbox', {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   event_type: { type: 'string', maxlength: 50, nullable: false },
   status: { type: 'string', maxlength: 50, nullable: false, defaultTo: 'pending' },

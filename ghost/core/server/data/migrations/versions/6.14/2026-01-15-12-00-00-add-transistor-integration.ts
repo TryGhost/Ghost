@@ -1,8 +1,8 @@
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
-const ObjectID = require('bson-objectid').default;
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
+import ObjectID from 'bson-objectid';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     logging.info('Adding Transistor integration');
     const existing = await knex

@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration('emails', 'csd_email_count', {
+export default createAddColumnMigration('emails', 'csd_email_count', {
   type: 'integer',
   nullable: true,
   unsigned: true,

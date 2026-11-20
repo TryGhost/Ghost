@@ -1,8 +1,8 @@
-const logging = require('@tryghost/logging');
-const { commands } = require('../../../schema');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { commands } from '../../../schema';
+import { createTransactionalMigration } from '../../utils';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     const recipientsTableExists = await knex.schema.hasTable('automated_email_recipients');
     if (!recipientsTableExists) {

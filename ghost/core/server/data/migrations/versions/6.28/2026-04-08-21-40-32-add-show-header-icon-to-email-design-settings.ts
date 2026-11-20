@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration('email_design_settings', 'show_header_icon', {
+export default createAddColumnMigration('email_design_settings', 'show_header_icon', {
   type: 'boolean',
   nullable: false,
   defaultTo: true,

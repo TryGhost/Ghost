@@ -1,10 +1,10 @@
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
 
 // Apps are behind a private labs flag, so these tables only hold test data, which an app's
 // identity can't be proven for. Clearing them lets the next migrations add the keys every
 // installation now needs, which can't be added to filled tables without a placeholder value.
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     // Manifests first, as each references its installation.
     const manifests = await knex('app_installation_manifests').del();

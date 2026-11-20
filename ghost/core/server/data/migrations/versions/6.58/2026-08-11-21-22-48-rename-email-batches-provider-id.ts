@@ -1,5 +1,5 @@
-const { createRenameColumnMigration } = require('../../utils');
+import { createRenameColumnMigration } from '../../utils';
 
-module.exports = createRenameColumnMigration('email_batches', 'provider_id', 'mailgun_message_id', {
+export default createRenameColumnMigration('email_batches', 'provider_id', 'mailgun_message_id', {
   algorithm: 'auto',
 });

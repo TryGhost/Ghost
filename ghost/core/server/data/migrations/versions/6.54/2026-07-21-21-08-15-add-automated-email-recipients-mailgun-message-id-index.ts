@@ -1,5 +1,5 @@
-const { createAddIndexMigration } = require('../../utils');
+import { createAddIndexMigration } from '../../utils';
 
-module.exports = createAddIndexMigration('automated_email_recipients', ['mailgun_message_id'], {
+export default createAddIndexMigration('automated_email_recipients', ['mailgun_message_id'], {
   length: 31,
 });

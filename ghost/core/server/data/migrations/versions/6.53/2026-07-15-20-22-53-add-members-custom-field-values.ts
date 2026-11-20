@@ -1,9 +1,9 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
 // A member's value for one custom field definition — the table the definitions
 // migration deferred. One row per (member, field); a field a member has no value
 // for simply has no row.
-module.exports = addTable('members_custom_field_values', {
+export default addTable('members_custom_field_values', {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   // Values hang off the definition's internal id, not its key: the key is the
   // wire handle, the id is the stable spine.

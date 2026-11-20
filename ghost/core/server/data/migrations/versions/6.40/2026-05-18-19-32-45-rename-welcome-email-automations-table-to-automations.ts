@@ -1,10 +1,10 @@
-const logging = require('@tryghost/logging');
-const { createNonTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { createNonTransactionalMigration } from '../../utils';
 
 const FROM_TABLE = 'welcome_email_automations';
 const TO_TABLE = 'automations';
 
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(connection) {
     const fromExists = await connection.schema.hasTable(FROM_TABLE);
     const toExists = await connection.schema.hasTable(TO_TABLE);

@@ -1,8 +1,8 @@
-const logging = require('@tryghost/logging');
-const { commands } = require('../../../schema');
-const { createNonTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { commands } from '../../../schema';
+import { createNonTransactionalMigration } from '../../utils';
 
-const oldAutomatedEmailsSpec = {
+const oldAutomatedEmailsSpec: any = {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   status: {
     type: 'string',
@@ -34,7 +34,7 @@ const oldAutomatedEmailsSpec = {
   '@@INDEXES@@': [['slug'], ['status']],
 };
 
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     const exists = await knex.schema.hasTable('automated_emails');
     if (!exists) {

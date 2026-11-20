@@ -1,10 +1,10 @@
-const logging = require('@tryghost/logging');
-const { default: ObjectID } = require('bson-objectid');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import ObjectID from 'bson-objectid';
+import { createTransactionalMigration } from '../../utils';
 
 const DEFAULT_SLUG = 'default-automated-email';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     logging.info('Inserting default email_design_settings row');
 

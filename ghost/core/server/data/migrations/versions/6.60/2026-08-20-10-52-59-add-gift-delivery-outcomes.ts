@@ -1,9 +1,9 @@
-const {
+import {
   combineNonTransactionalMigrations,
   createAddColumnMigration,
   createNonTransactionalMigration,
-} = require('../../utils');
-const { addIndex, dropIndex } = require('../../../schema/commands');
+} from '../../utils';
+import { addIndex, dropIndex } from '../../../schema/commands';
 
 const addProviderMessageIdIndex = createNonTransactionalMigration(
   async function up(knex) {
@@ -14,7 +14,7 @@ const addProviderMessageIdIndex = createNonTransactionalMigration(
   },
 );
 
-module.exports = combineNonTransactionalMigrations(
+export default combineNonTransactionalMigrations(
   createAddColumnMigration('gift_deliveries', 'outcome', {
     type: 'string',
     maxlength: 50,

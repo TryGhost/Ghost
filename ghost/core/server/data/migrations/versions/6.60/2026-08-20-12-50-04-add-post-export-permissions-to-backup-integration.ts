@@ -1,6 +1,6 @@
-const { addPermissionToRole } = require('../../utils');
+import { addPermissionToRole } from '../../utils';
 
-module.exports = addPermissionToRole({
+export default addPermissionToRole({
   permission: 'Browse posts',
   role: 'DB Backup Integration',
 });

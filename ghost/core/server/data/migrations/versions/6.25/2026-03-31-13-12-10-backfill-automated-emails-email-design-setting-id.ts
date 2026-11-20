@@ -1,10 +1,10 @@
-const { MigrationError } = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
+import { MigrationError } from '@tryghost/errors';
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
 
 const DEFAULT_SLUG = 'default-automated-email';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     logging.info('Backfilling automated_emails.email_design_setting_id');
 

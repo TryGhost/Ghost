@@ -1,7 +1,7 @@
-const logging = require('@tryghost/logging');
-const DatabaseInfo = require('@tryghost/database-info');
-const { commands } = require('../../../schema');
-const { createNonTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import DatabaseInfo from '@tryghost/database-info';
+import { commands } from '../../../schema';
+import { createNonTransactionalMigration } from '../../utils';
 
 const FIELDS = 'members_metafields';
 const VALUES = 'members_metafield_values';
@@ -171,10 +171,10 @@ const KEYED_BY_KEY = {
   ],
 };
 
-async function bindingsPointAtFields(connection) {
+async function bindingsPointAtFields(connection: any) {
   if (DatabaseInfo.isSQLite(connection)) {
     const foreignKeys = await connection.raw(`PRAGMA foreign_key_list('${BINDINGS}')`);
-    return foreignKeys.some((key) => key.table === FIELDS);
+    return foreignKeys.some((key: any) => key.table === FIELDS);
   }
   const [rows] = await connection.raw(
     `SELECT 1 FROM information_schema.KEY_COLUMN_USAGE
@@ -191,7 +191,7 @@ async function bindingsPointAtFields(connection) {
  * one's statements in turn, so that holds once the statement sent last for the bindings,
  * the last table, has run. A set a crash left half-built is rebuilt.
  */
-async function isBuilt(connection, shape) {
+async function isBuilt(connection: any, shape: any) {
   if (!(await connection.schema.hasTable(BINDINGS))) {
     return false;
   }
@@ -205,7 +205,7 @@ async function isBuilt(connection, shape) {
   );
 }
 
-async function rebuild(connection, shape) {
+async function rebuild(connection: any, shape: any) {
   /* eslint-disable no-restricted-syntax */
   for (const [table] of [...shape.tables].reverse()) {
     if (await connection.schema.hasTable(table)) {
@@ -225,7 +225,7 @@ async function rebuild(connection, shape) {
   /* eslint-enable no-restricted-syntax */
 }
 
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(connection) {
     // Also what the replay suite finds, running this against the final schema.
     if (await isBuilt(connection, NAMESPACED)) {
