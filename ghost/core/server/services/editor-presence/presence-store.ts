@@ -16,15 +16,22 @@ export interface StoredPresence {
 
 export interface StoredClaim {
   member: string;
-  /** The lowest order among a document's live members holds its lease. No two claims share one. */
+  /** The lowest order among a document's claims holds its lease. */
   order: number;
 }
 
-export interface ClaimPlace {
-  /** Ahead of every claim so far, not behind them. */
-  front?: boolean;
-  /** Give a member that is already queued a new place. */
-  move?: boolean;
+export interface ClaimTime {
+  now: number;
+  /** A claim last renewed before this has lapsed. */
+  since: number;
+  retentionMs: number;
+}
+
+export interface Claimed {
+  /** Every claim that has not lapsed. */
+  claims: StoredClaim[];
+  /** Whether this call gave the member a place it did not have. */
+  joined: boolean;
 }
 
 /**
@@ -35,27 +42,24 @@ export interface ClaimPlace {
  */
 export interface PresenceStore {
   readonly kind: 'redis' | 'memory';
-  /**
-   * Record a heartbeat and drop members last seen before `now - retentionMs`.
-   * Answers the member's heartbeat before this one, if it was still stored.
-   */
-  touch(member: string, now: number, retentionMs: number): Promise<number | undefined>;
+  /** Record a heartbeat and drop members last seen before `now - retentionMs`. */
+  touch(member: string, now: number, retentionMs: number): Promise<void>;
   /** Members with a heartbeat at or after `since`. */
   read(since: number): Promise<StoredPresence[]>;
   /** Forget a member: its heartbeat and its claim. */
   remove(member: string): Promise<void>;
   /**
-   * Queue a member and return every claim. The store numbers places in the
-   * order they are asked for, so a later one is behind every earlier one, or
-   * ahead of them with `front`. A member already queued keeps its place unless
-   * `move` gives it a new one.
+   * Renew a member's place in the queue, or give it one behind every claim
+   * found, and return the claims that have not lapsed. `to` gives it a new
+   * place instead: ahead of every claim found, or behind them. Only this call
+   * renews a claim, so a heartbeat never brings a lapsed one back: its member
+   * joins again.
    */
-  claim(member: string, retentionMs: number, place?: ClaimPlace): Promise<StoredClaim[]>;
-  claims(): Promise<StoredClaim[]>;
-  /** Drop a member's own claim. */
+  claim(member: string, time: ClaimTime, to?: 'front' | 'back'): Promise<Claimed>;
+  /** Claims renewed at or after `since`. */
+  claims(since: number): Promise<StoredClaim[]>;
+  /** Drop a member's claim. */
   release(member: string): Promise<void>;
-  /** Drop claims whose members stopped, each only while it still has the order given. */
-  prune(claims: StoredClaim[]): Promise<void>;
 }
 
 export function isResourceType(value: string): value is ResourceType {

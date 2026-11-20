@@ -9,7 +9,7 @@ Both are advisory. Nothing here refuses a save, and saves are still checked for
 
 ## Data model
 
-Two sorted sets per site, with the same members:
+Two sorted sets per site:
 
 ```
 key     <keyPrefix>active        e.g. 2368:presence:active
@@ -17,16 +17,13 @@ member  <type>:<resourceId>:<userId>[:<tab>]
 score   last heartbeat, server milliseconds
 
 key     <keyPrefix>leases        e.g. 2368:presence:leases
-member  <type>:<resourceId>:<userId>:<tab>
-score   place in the document's queue, lowest first
-member  placed
-score   count of the places handed out
+member  <type>:<resourceId>:<userId>:<tab>:<order>
+score   when that tab last asked for the lease, server milliseconds
 ```
 
-A heartbeat is one pipeline: a `ZRANGEBYSCORE` that reads the member's previous
-heartbeat, `ZADD` the member with the current time, `PEXPIRE` the key for the
-retention window, `ZREMRANGEBYSCORE` everything older than the retention
-window. It is not a `MULTI` transaction: the commands commute, the
+A heartbeat is one pipeline: `ZADD` the member with the current time, `PEXPIRE`
+the key for the retention window, `ZREMRANGEBYSCORE` everything older than the
+retention window. It is not a `MULTI` transaction: the commands commute, the
 next heartbeat repairs a partial write, and the Redis user then needs only
 `ZADD`, `PEXPIRE`, `ZREMRANGEBYSCORE`, `ZRANGEBYSCORE` and `ZREM`. A read is one
 `ZRANGEBYSCORE` for the active window;
@@ -35,29 +32,28 @@ process. Idle sites hold no key. A client that names its editor tab gets one
 member per tab, so closing one tab leaves the others in place; the response
 still lists each user once per resource, with their latest heartbeat.
 
-A tab that asks for the lease is given a place in its document's queue.
-Places are numbered by a count kept in the lease set itself, the member
-`placed`, which `ZADD INCR` raises atomically: every new place has a number of
-its own, higher than any before it, whichever process hands it out and
-whatever its clock says. A tab already queued keeps its place however often it
-polls; its poll only renews the key's expiry and reads the queue. The holder is
-worked out on every such poll rather than stored: the lowest-placed member for
-that document whose heartbeat is inside the lease window. Taking the lease
-over gives the caller a new place with its number negated, which puts it ahead
-of every hold and every earlier takeover.
+A tab that asks for the lease has a place in the queue: one element that names
+the tab and its order, scored by when the tab last asked. The rest depends on
+the two being one element. Only a lease poll from the tab renews its place, with
+`ZADD XX` on that element, so a place that lapsed is never brought back by a
+heartbeat, by a poll whose claim failed, or after it was removed. Lapsed places
+are removed with `ZREMRANGEBYSCORE` on that score, so removing them cannot take
+a place renewed or made since.
 
-A tab whose heartbeat fell outside the lease window has lost its place. When
-it polls again it joins at the back with a new number, whether or not another
-tab polled in between. Claims left by members that stopped are removed by any
-poll that reads them, with `ZREMRANGEBYSCORE` on the claim's own number, so a
-claim its tab has since taken again, under a new number, is left alone. The
-count goes up in twos and places take the odd numbers between, so removing a
-place by its number never removes the count. The lease therefore needs no
-Redis command that presence did not already use.
+A tab with no place takes one behind the highest order it reads, then reads
+the queue again. If it finds a tab of its own document that it is not behind,
+the two joined at once and the other may already have been told the document is
+its own, so this one moves behind everything it found. Of two tabs that join
+together, at most one is told it holds the document; when each saw the other,
+neither is until its next poll. A tab whose place lapsed joins the same way,
+behind the tabs that kept waiting. Taking over is a new place below the lowest
+order read. The holder is worked out on every poll: the lowest order for the
+document, with the member deciding between equal orders so every poll names
+the same tab. The lease needs no Redis command that presence did not already
+use.
 
 An answer is true when it is read. A tab that a takeover passed, or whose
-heartbeat lapsed, goes on believing it holds the document until its next
-poll. The collision check on save covers that interval.
+place lapsed, goes on believing it holds the document until its next poll. The collision check on save covers that interval.
 
 Only ids are stored. Admin resolves names and avatars from the staff users list.
 
@@ -158,14 +154,15 @@ caller's own.
 ## Windows
 
 - Active window (60s): heartbeats newer than this are reported.
-- Lease window (150s): a queued tab keeps its place while its last heartbeat is
-  newer than this, and joins at the back if it polls again later. It is longer than the active window because browsers slow a
+- Lease window (150s): a queued tab keeps its place while it last asked for the
+  lease within this long, and joins at the back if it asks again later. It is longer than the active window because browsers slow a
   hidden tab's timers to about one a minute, and a tab the writer has only
   switched away from should not lose the document.
 - Retention (150s by default): older members are trimmed on write and the keys
   expire. The `ttl` (seconds) on the `cache:presence` adapter sets it when
-  present, floored at the lease window: a shorter retention would trim members
-  that still hold a place, so the lease would move between tabs on its own. A
+  present, floored at the lease window: a shorter retention would expire the
+  lease key under places that had not lapsed, so the lease would move between
+  tabs on its own. A
   config change therefore changes how long a site's keys may live.
 
 Every write sets its key's expiry in the same pipeline as the `ZADD`, so
@@ -187,7 +184,7 @@ saving never depend on presence, and clients treat 503 as a signal to back off.
 duration and outcome; a poll also says which lease it asked for (`hold`,
 `take`, `watch` or `none`).
 `presence-degraded` records each store failure with the operation (`touch`,
-`read`, `remove`, `claim`, `claims`, `release`, `prune`) and a reason: `noperm`, `offline` (disconnected with the
+`read`, `remove`, `claim`, `claims`, `release`) and a reason: `noperm`, `offline` (disconnected with the
 offline queue off), `timeout`, a socket error code, the first word of a Redis
 reply error such as `readonly` or `loading`, or the error name. With the
 offline queue on, which is the adapter's default, an unreachable Redis shows

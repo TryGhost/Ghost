@@ -9,6 +9,9 @@ export class FakeRedisClient implements RedisPresenceClient {
   readonly ttls = new Map<string, number>();
   readonly commands: string[] = [];
   failNext: Error | null = null;
+  /** Called when a pipeline is about to run; a test awaits here to hold it back while others run. */
+  beforeExec: ((nth: number) => Promise<void> | void) | null = null;
+  private pipelines = 0;
 
   private set(key: string): Map<string, number> {
     let set = this.sets.get(key);
@@ -22,21 +25,25 @@ export class FakeRedisClient implements RedisPresenceClient {
   pipeline(): RedisPresencePipeline {
     const queue: Array<() => unknown> = [];
     const pipeline: RedisPresencePipeline = {
-      zadd: (key: string, ...rest: [number, string] | ['NX' | 'INCR', number, string]) => {
-        const flag = typeof rest[0] === 'string' ? rest[0] : undefined;
-        const [score, member] = (flag ? rest.slice(1) : rest) as [number, string];
-        this.commands.push(flag ? `zadd ${flag.toLowerCase()}` : 'zadd');
+      zadd: (key: string, ...rest: [number, string] | ['XX', number, string]) => {
+        const onlyIfPresent = rest[0] === 'XX';
+        const [score, member] = (onlyIfPresent ? rest.slice(1) : rest) as [number, string];
+        this.commands.push(onlyIfPresent ? 'zadd xx' : 'zadd');
         queue.push(() => {
           const set = this.set(key);
-          if (flag === 'INCR') {
-            const next = (set.get(member) ?? 0) + score;
-            set.set(member, next);
-            return String(next);
-          }
-          if (flag !== 'NX' || !set.has(member)) {
+          if (!onlyIfPresent || set.has(member)) {
             set.set(member, score);
           }
-          return undefined;
+        });
+        return pipeline;
+      },
+      zrem: (key, ...members) => {
+        this.commands.push('zrem');
+        queue.push(() => {
+          const set = this.set(key);
+          for (const member of members) {
+            set.delete(member);
+          }
         });
         return pipeline;
       },
@@ -65,6 +72,8 @@ export class FakeRedisClient implements RedisPresenceClient {
         return pipeline;
       },
       exec: async () => {
+        this.pipelines += 1;
+        await this.beforeExec?.(this.pipelines);
         if (this.failNext) {
           const error = this.failNext;
           this.failNext = null;

@@ -1,14 +1,19 @@
-import type { ClaimPlace, PresenceStore, StoredClaim, StoredPresence } from './presence-store';
+import type {
+  ClaimTime,
+  Claimed,
+  PresenceStore,
+  StoredClaim,
+  StoredPresence,
+} from './presence-store';
 
 export class MemoryPresenceStore implements PresenceStore {
   readonly kind = 'memory';
   private readonly entries = new Map<string, number>();
-  private readonly queue = new Map<string, number>();
-  private placed = 0;
+  private readonly queue = new Map<string, { order: number; renewed: number }>();
 
-  async touch(member: string, now: number, retentionMs: number): Promise<number | undefined> {
-    const previous = this.entries.get(member);
-    if (previous === undefined || previous < now) {
+  async touch(member: string, now: number, retentionMs: number): Promise<void> {
+    const current = this.entries.get(member);
+    if (current === undefined || current < now) {
       this.entries.set(member, now);
     }
     const cutoff = now - retentionMs;
@@ -17,7 +22,6 @@ export class MemoryPresenceStore implements PresenceStore {
         this.entries.delete(key);
       }
     }
-    return previous;
   }
 
   async read(since: number): Promise<StoredPresence[]> {
@@ -35,32 +39,31 @@ export class MemoryPresenceStore implements PresenceStore {
     this.queue.delete(member);
   }
 
-  async claim(
-    member: string,
-    _retentionMs: number,
-    { front = false, move = false }: ClaimPlace = {},
-  ): Promise<StoredClaim[]> {
-    if (move || !this.queue.has(member)) {
-      this.placed += 1;
-      this.queue.set(member, front ? -this.placed : this.placed);
+  async claim(member: string, { now, since }: ClaimTime, to?: 'front' | 'back'): Promise<Claimed> {
+    for (const [key, { renewed }] of this.queue) {
+      if (renewed < since) {
+        this.queue.delete(key);
+      }
     }
-    return this.claims();
+    const own = this.queue.get(member);
+    if (own && !to) {
+      own.renewed = now;
+      return { claims: await this.claims(since), joined: false };
+    }
+    const orders = [...this.queue].filter(([key]) => key !== member).map(([, { order }]) => order);
+    const order = to === 'front' ? Math.min(0, ...orders) - 1 : Math.max(0, ...orders) + 1;
+    this.queue.set(member, { order, renewed: now });
+    return { claims: await this.claims(since), joined: !to };
   }
 
-  async claims(): Promise<StoredClaim[]> {
-    return [...this.queue].map(([member, order]) => ({ member, order }));
+  async claims(since: number): Promise<StoredClaim[]> {
+    return [...this.queue]
+      .filter(([, { renewed }]) => renewed >= since)
+      .map(([member, { order }]) => ({ member, order }));
   }
 
   async release(member: string): Promise<void> {
     this.queue.delete(member);
-  }
-
-  async prune(claims: StoredClaim[]): Promise<void> {
-    for (const { member, order } of claims) {
-      if (this.queue.get(member) === order) {
-        this.queue.delete(member);
-      }
-    }
   }
 
   get size(): number {

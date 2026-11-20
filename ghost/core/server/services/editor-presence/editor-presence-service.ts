@@ -7,7 +7,6 @@ import {
   type PresenceStore,
   type ResourceType,
   type StoredClaim,
-  type StoredPresence,
 } from './presence-store';
 
 const objectId = z.string().regex(/^[a-f0-9]{24}$/i);
@@ -76,7 +75,7 @@ export const DEFAULT_ACTIVE_WINDOW_MS = 60_000;
 /** Longer than the active window: a hidden tab's timers slow to one a minute, and it must not lose its place. */
 export const DEFAULT_LEASE_WINDOW_MS = 150_000;
 export const DEFAULT_RETENTION_MS = DEFAULT_LEASE_WINDOW_MS;
-/** A retention below the lease window trims members that still hold a place in a queue. */
+/** A retention below the lease window would expire the lease key under a place that had not lapsed. */
 export const MIN_RETENTION_MS = DEFAULT_LEASE_WINDOW_MS;
 /** A store call past this answers 503; ioredis has no deadline of its own on a stalled connection. */
 export const DEFAULT_STORE_TIMEOUT_MS = 2_000;
@@ -89,7 +88,7 @@ export function resolveRetentionMs(ttlSeconds: unknown): number {
   return Math.max(MIN_RETENTION_MS, Math.round(ttlSeconds * 1000));
 }
 
-type StoreOperation = 'touch' | 'read' | 'remove' | 'claim' | 'claims' | 'release' | 'prune';
+type StoreOperation = 'touch' | 'read' | 'remove' | 'claim' | 'claims' | 'release';
 
 function failureReason(error: unknown): string {
   const details = error as { code?: unknown; name?: unknown; message?: unknown };
@@ -195,20 +194,13 @@ export class EditorPresenceService {
     try {
       const caller =
         editing && encodeMember({ type: editing.type, resourceId: editing.id, userId, tab });
-      const previous = caller
-        ? await this.fromStore('touch', () => this.store.touch(caller, now, this.retentionMs))
-        : undefined;
-      const lapsed = previous === undefined || previous < now - this.leaseWindowMs;
-      // Claims are read before heartbeats: every claim seen had its heartbeat written first.
-      const claims = caller && lease ? await this.queue(caller, lease, lapsed) : undefined;
-      const window = claims
-        ? Math.max(this.activeWindowMs, this.leaseWindowMs)
-        : this.activeWindowMs;
-      const stored = await this.fromStore('read', () => this.store.read(now - window));
-      const held =
-        claims && caller && editing
-          ? await this.holder(claims, stored, editing, caller, now)
-          : undefined;
+      if (caller) {
+        await this.fromStore('touch', () => this.store.touch(caller, now, this.retentionMs));
+      }
+      const claims =
+        caller && editing && lease ? await this.queue(caller, lease, editing, now) : undefined;
+      const stored = await this.fromStore('read', () => this.store.read(now - this.activeWindowMs));
+      const held = claims && caller && editing ? this.holder(claims, editing, caller) : undefined;
       this.record('presence-poll', started, { outcome: 'ok', ...measured });
 
       // A user with the document open in several tabs is reported once, with the latest heartbeat.
@@ -247,48 +239,64 @@ export class EditorPresenceService {
   }
 
   /**
-   * `take` moves the caller ahead of everyone queued; `hold` keeps or joins a
-   * place. A caller whose heartbeat had lapsed lost its place whichever tab
-   * polls next, so it joins again at the back.
+   * `take` moves the caller ahead of everyone queued; `hold` keeps its place or
+   * joins at the back. A place lasts while its tab keeps asking, so a tab that
+   * stopped for longer than the lease window joins again.
    */
   private async queue(
     caller: string,
     mode: 'hold' | 'take' | 'watch',
-    lapsed: boolean,
+    resource: { id: string; type: ResourceType },
+    now: number,
   ): Promise<StoredClaim[]> {
+    const since = now - this.leaseWindowMs;
     if (mode === 'watch') {
+      const claims = await this.fromStore('claims', () => this.store.claims(since));
+      if (!claims.some(({ member }) => member === caller)) {
+        return claims;
+      }
       // A tab that only watches gives up any place it held, so it is never handed the lease.
       await this.fromStore('release', () => this.store.release(caller));
-      return this.fromStore('claims', () => this.store.claims());
+      return claims.filter(({ member }) => member !== caller);
     }
-    const place = mode === 'take' ? { front: true, move: true } : { move: lapsed };
-    return this.fromStore('claim', () => this.store.claim(caller, this.retentionMs, place));
+    const time = { now, since, retentionMs: this.retentionMs };
+    const { claims, joined } = await this.fromStore('claim', () =>
+      this.store.claim(caller, time, mode === 'take' ? 'front' : undefined),
+    );
+    // A tab already there when this one joined may have been told the document is its own,
+    // whatever order this one was given, so this one goes behind every tab it found.
+    const own = claims.find(({ member }) => member === caller);
+    const beside =
+      joined &&
+      own &&
+      claims.some(
+        ({ member, order }) => member !== caller && isFor(member, resource) && order >= own.order,
+      );
+    return beside
+      ? (await this.fromStore('claim', () => this.store.claim(caller, time, 'back'))).claims
+      : claims;
   }
 
   /**
-   * The first member in a document's queue that still heartbeats holds its
-   * lease. Claims whose member stopped are dropped, so the next in line moves up.
+   * The lowest-placed claim on a document holds its lease. Two tabs that joined
+   * at once and each went behind the other can share an order; the member
+   * decides then, so every poll names the same one.
    */
-  private async holder(
+  private holder(
     claims: StoredClaim[],
-    stored: StoredPresence[],
     resource: { id: string; type: ResourceType },
     caller: string,
-    now: number,
-  ): Promise<PresenceLease | undefined> {
-    const since = now - this.leaseWindowMs;
-    const live = new Set(stored.filter(({ ts }) => ts >= since).map(({ member }) => member));
-    const stale: StoredClaim[] = [];
+  ): PresenceLease | undefined {
     let first: StoredClaim | undefined;
     for (const claim of claims) {
-      if (!live.has(claim.member)) {
-        stale.push(claim);
-      } else if (isFor(claim.member, resource) && (!first || claim.order < first.order)) {
+      if (
+        isFor(claim.member, resource) &&
+        (!first ||
+          claim.order < first.order ||
+          (claim.order === first.order && claim.member < first.member))
+      ) {
         first = claim;
       }
-    }
-    if (stale.length > 0) {
-      await this.fromStore('prune', () => this.store.prune(stale));
     }
     const decoded = first && decodeMember(first.member);
     return decoded ? { userId: decoded.userId, mine: first?.member === caller } : undefined;
