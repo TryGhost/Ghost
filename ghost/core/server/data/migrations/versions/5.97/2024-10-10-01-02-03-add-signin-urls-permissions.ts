@@ -1,6 +1,6 @@
-const { addPermissionToRole } = require('../../utils');
+import { addPermissionToRole } from '../../utils';
 
-module.exports = addPermissionToRole({
+export default addPermissionToRole({
   permission: 'Read member signin urls',
   role: 'Admin Integration',
 });

@@ -1,6 +1,6 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
-module.exports = addTable('mentions', {
+export default addTable('mentions', {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   source: { type: 'string', maxlength: 2000, nullable: false },
   source_title: { type: 'string', maxlength: 2000, nullable: true },

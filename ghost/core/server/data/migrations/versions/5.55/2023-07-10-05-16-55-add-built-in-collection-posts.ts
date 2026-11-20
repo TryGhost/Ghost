@@ -1,11 +1,11 @@
-const logging = require('@tryghost/logging');
-const { default: ObjectID } = require('bson-objectid');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import ObjectID from 'bson-objectid';
+import { createTransactionalMigration } from '../../utils';
 
-const insertPostCollections = async (knex, collectionId, postIds) => {
+const insertPostCollections = async (knex: any, collectionId: any, postIds: any) => {
   logging.warn(`Batch inserting ${postIds.length} collection posts for collection ${collectionId}`);
 
-  const collectionPosts = postIds.map((postId) => {
+  const collectionPosts = postIds.map((postId: any) => {
     return {
       id: new ObjectID().toHexString(),
       collection_id: collectionId,
@@ -17,7 +17,7 @@ const insertPostCollections = async (knex, collectionId, postIds) => {
   await knex.batchInsert('collections_posts', collectionPosts, 100);
 };
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     logging.info('Populating built-in collections');
 

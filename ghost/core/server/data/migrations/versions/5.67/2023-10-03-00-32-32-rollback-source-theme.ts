@@ -1,7 +1,7 @@
 // For information on writing migrations, see https://www.notion.so/ghost/Database-migrations-eb5b78c435d741d2b34a582d57c24253
 
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
 
 // For DDL - schema changes
 // const {createNonTransactionalMigration} = require('../../utils');
@@ -12,7 +12,7 @@ const { createTransactionalMigration } = require('../../utils');
 // Or use a specific helper
 // const {addTable, createAddColumnMigration} = require('../../utils');
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up() {
     // don't do anything
     // we don't want to change the active theme automatically

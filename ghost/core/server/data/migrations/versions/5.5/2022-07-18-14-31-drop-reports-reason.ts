@@ -1,6 +1,6 @@
-const { createDropColumnMigration } = require('../../utils');
+import { createDropColumnMigration } from '../../utils';
 
-module.exports = createDropColumnMigration('comment_reports', 'reason', {
+export default createDropColumnMigration('comment_reports', 'reason', {
   type: 'text',
   maxlength: 65535,
   nullable: false,

@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration('members', 'email_disabled', {
+export default createAddColumnMigration('members', 'email_disabled', {
   type: 'boolean',
   nullable: false,
   defaultTo: false,

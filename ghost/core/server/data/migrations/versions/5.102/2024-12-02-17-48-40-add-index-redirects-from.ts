@@ -1,11 +1,11 @@
 // For information on writing migrations, see https://www.notion.so/ghost/Database-migrations-eb5b78c435d741d2b34a582d57c24253
 
-const logging = require('@tryghost/logging');
-const { createNonTransactionalMigration } = require('../../utils');
-const { addIndex, dropIndex } = require('../../../schema/commands');
-const errors = require('@tryghost/errors');
+import logging from '@tryghost/logging';
+import { createNonTransactionalMigration } from '../../utils';
+import { addIndex, dropIndex } from '../../../schema/commands';
+import * as errors from '@tryghost/errors';
 
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     logging.info('Adding index to redirects.from');
 

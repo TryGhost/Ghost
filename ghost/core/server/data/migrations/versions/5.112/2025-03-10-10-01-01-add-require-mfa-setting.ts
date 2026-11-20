@@ -1,6 +1,6 @@
-const { addSetting } = require('../../utils');
+import { addSetting } from '../../utils';
 
-module.exports = addSetting({
+export default addSetting({
   key: 'require_email_mfa',
   value: 'false',
   type: 'boolean',

@@ -1,15 +1,15 @@
-const logging = require('@tryghost/logging');
-const { createNonTransactionalMigration } = require('../../utils');
-const { addIndex, dropIndex } = require('../../../schema/commands');
+import logging from '@tryghost/logging';
+import { createNonTransactionalMigration } from '../../utils';
+import { addIndex, dropIndex } from '../../../schema/commands';
 
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     await addIndex('members_subscribe_events', ['newsletter_id', 'created_at'], knex);
   },
   async function down(knex) {
     try {
       await dropIndex('members_subscribe_events', ['newsletter_id', 'created_at'], knex);
-    } catch (err) {
+    } catch (err: any) {
       if (err.code === 'ER_DROP_INDEX_FK') {
         logging.error({
           message:

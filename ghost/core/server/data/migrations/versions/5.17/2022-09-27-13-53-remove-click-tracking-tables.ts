@@ -1,6 +1,6 @@
-const { addTable, combineNonTransactionalMigrations } = require('../../utils');
+import { addTable, combineNonTransactionalMigrations } from '../../utils';
 
-function reverseMigration({ up, down, config }) {
+function reverseMigration({ up, down, config }: any) {
   return {
     config,
     up: down,
@@ -8,7 +8,7 @@ function reverseMigration({ up, down, config }) {
   };
 }
 
-module.exports = reverseMigration(
+export default reverseMigration(
   combineNonTransactionalMigrations(
     addTable('link_redirects', {
       id: { type: 'string', maxlength: 24, nullable: false, primary: true },

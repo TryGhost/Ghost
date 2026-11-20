@@ -1,3 +1,3 @@
-const { createAddIndexMigration } = require('../../utils');
+import { createAddIndexMigration } from '../../utils';
 
-module.exports = createAddIndexMigration('members_created_events', ['attribution_id']);
+export default createAddIndexMigration('members_created_events', ['attribution_id']);

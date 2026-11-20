@@ -1,6 +1,6 @@
-const { addSetting } = require('../../utils');
+import { addSetting } from '../../utils';
 
-module.exports = addSetting({
+export default addSetting({
   key: 'members_track_sources',
   value: 'true',
   type: 'boolean',

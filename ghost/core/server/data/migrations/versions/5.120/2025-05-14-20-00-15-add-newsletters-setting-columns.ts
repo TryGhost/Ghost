@@ -1,6 +1,6 @@
-const { combineNonTransactionalMigrations, createAddColumnMigration } = require('../../utils');
+import { combineNonTransactionalMigrations, createAddColumnMigration } from '../../utils';
 
-module.exports = combineNonTransactionalMigrations(
+export default combineNonTransactionalMigrations(
   createAddColumnMigration('newsletters', 'title_font_weight', {
     type: 'string',
     maxlength: 50,

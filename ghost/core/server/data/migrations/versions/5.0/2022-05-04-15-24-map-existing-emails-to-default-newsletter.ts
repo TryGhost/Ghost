@@ -1,7 +1,7 @@
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     logging.info('Linking existing emails and related posts to the default newsletter');
 
@@ -34,6 +34,7 @@ module.exports = createTransactionalMigration(
     // Set newsletter ID only on posts with related email records without a newsletter assigned
     await knex('posts')
       .update('newsletter_id', newsletter.id)
+      // @ts-expect-error knex typings reject a raw subquery in whereIn
       .whereIn('id', knex.raw('SELECT post_id FROM emails WHERE emails.newsletter_id IS NULL'));
 
     await knex('emails').update('newsletter_id', newsletter.id).whereNull('newsletter_id');

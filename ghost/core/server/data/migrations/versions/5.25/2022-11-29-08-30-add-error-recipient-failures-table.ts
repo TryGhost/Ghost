@@ -1,6 +1,6 @@
-const utils = require('../../utils');
+import * as utils from '../../utils';
 
-module.exports = utils.addTable('email_recipient_failures', {
+export default utils.addTable('email_recipient_failures', {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   email_id: { type: 'string', maxlength: 24, nullable: false, references: 'emails.id' },
   member_id: { type: 'string', maxlength: 24, nullable: true },

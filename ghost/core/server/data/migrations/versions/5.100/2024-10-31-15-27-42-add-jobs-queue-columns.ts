@@ -1,6 +1,6 @@
-const { combineNonTransactionalMigrations, createAddColumnMigration } = require('../../utils');
+import { combineNonTransactionalMigrations, createAddColumnMigration } from '../../utils';
 
-module.exports = combineNonTransactionalMigrations(
+export default combineNonTransactionalMigrations(
   createAddColumnMigration('jobs', 'metadata', {
     type: 'string',
     maxlength: 2000,

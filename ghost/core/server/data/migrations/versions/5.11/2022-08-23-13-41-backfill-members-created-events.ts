@@ -1,9 +1,9 @@
-const ObjectID = require('bson-objectid').default;
-const logging = require('@tryghost/logging');
+import ObjectID from 'bson-objectid';
+import logging from '@tryghost/logging';
 
-const { createTransactionalMigration } = require('../../utils');
+import { createTransactionalMigration } from '../../utils';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     const members = await knex('members').select('id', 'created_at');
 

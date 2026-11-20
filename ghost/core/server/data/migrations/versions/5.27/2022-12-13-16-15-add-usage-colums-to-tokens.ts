@@ -1,6 +1,6 @@
-const { createAddColumnMigration, combineNonTransactionalMigrations } = require('../../utils');
+import { createAddColumnMigration, combineNonTransactionalMigrations } from '../../utils';
 
-module.exports = combineNonTransactionalMigrations(
+export default combineNonTransactionalMigrations(
   createAddColumnMigration('tokens', 'updated_at', {
     type: 'dateTime',
     nullable: true,

@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration('members_subscription_created_events', 'batch_id', {
+export default createAddColumnMigration('members_subscription_created_events', 'batch_id', {
   type: 'string',
   maxlength: 24,
   nullable: true,

@@ -1,3 +1,3 @@
-const { dropTables } = require('../../utils');
+import { dropTables } from '../../utils';
 
-module.exports = dropTables(['oauth']);
+export default dropTables(['oauth']);

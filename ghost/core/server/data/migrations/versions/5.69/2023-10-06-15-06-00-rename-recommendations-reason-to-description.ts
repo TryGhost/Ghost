@@ -1,3 +1,3 @@
-const { createRenameColumnMigration } = require('../../utils');
+import { createRenameColumnMigration } from '../../utils';
 
-module.exports = createRenameColumnMigration('recommendations', 'reason', 'description');
+export default createRenameColumnMigration('recommendations', 'reason', 'description');

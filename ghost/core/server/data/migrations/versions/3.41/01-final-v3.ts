@@ -1,2 +1,2 @@
-const { createFinalMigration } = require('../../utils');
-module.exports = createFinalMigration(3);
+import { createFinalMigration } from '../../utils';
+export default createFinalMigration(3);

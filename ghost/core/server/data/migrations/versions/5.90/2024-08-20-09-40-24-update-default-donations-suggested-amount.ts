@@ -1,17 +1,17 @@
 // For information on writing migrations, see https://www.notion.so/ghost/Database-migrations-eb5b78c435d741d2b34a582d57c24253
 
-const logging = require('@tryghost/logging');
+import logging from '@tryghost/logging';
 
 // For DDL - schema changes
 // const {createNonTransactionalMigration} = require('../../utils');
 
 // For DML - data changes
-const { createTransactionalMigration } = require('../../utils');
+import { createTransactionalMigration } from '../../utils';
 
 // Or use a specific helper
 // const {addTable, createAddColumnMigration} = require('../../utils');
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     try {
       // find the existing donations_suggested_amount setting
@@ -30,7 +30,7 @@ module.exports = createTransactionalMigration(
       // new default is '500', update the setting
       logging.info('Updating donations_suggested_amount default setting to 500');
       await knex('settings').where({ key: 'donations_suggested_amount' }).update({ value: '500' });
-    } catch (error) {
+    } catch (error: any) {
       logging.error(`Error updating donations_suggested_amount setting: ${error.message}`);
     }
   },

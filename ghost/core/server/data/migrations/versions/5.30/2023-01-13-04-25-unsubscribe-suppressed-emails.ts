@@ -1,8 +1,8 @@
-const logging = require('@tryghost/logging');
+import logging from '@tryghost/logging';
 
-const { createTransactionalMigration } = require('../../utils');
+import { createTransactionalMigration } from '../../utils';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     const membersWithSuppressedEmails = await knex
       .select('members.id')

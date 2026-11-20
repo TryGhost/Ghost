@@ -1,3 +1,3 @@
-const { createRenameColumnMigration } = require('../../utils');
+import { createRenameColumnMigration } from '../../utils';
 
-module.exports = createRenameColumnMigration('newsletters', 'title_color', 'post_title_color');
+export default createRenameColumnMigration('newsletters', 'title_color', 'post_title_color');

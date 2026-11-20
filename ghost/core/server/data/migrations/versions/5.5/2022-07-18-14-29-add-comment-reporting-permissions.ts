@@ -1,6 +1,6 @@
-const { addPermissionWithRoles } = require('../../utils');
+import { addPermissionWithRoles } from '../../utils';
 
-module.exports = addPermissionWithRoles(
+export default addPermissionWithRoles(
   {
     name: 'Report comments',
     action: 'report',

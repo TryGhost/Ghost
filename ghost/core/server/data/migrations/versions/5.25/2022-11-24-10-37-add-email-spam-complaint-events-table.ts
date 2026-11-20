@@ -1,6 +1,6 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
-module.exports = addTable('email_spam_complaint_events', {
+export default addTable('email_spam_complaint_events', {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   member_id: {
     type: 'string',

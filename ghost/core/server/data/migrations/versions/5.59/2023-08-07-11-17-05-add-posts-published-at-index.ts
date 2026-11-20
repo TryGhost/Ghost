@@ -1,10 +1,10 @@
-const logging = require('@tryghost/logging');
-const DatabaseInfo = require('@tryghost/database-info');
-const { createNonTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import DatabaseInfo from '@tryghost/database-info';
+import { createNonTransactionalMigration } from '../../utils';
 
 const INDEX_NAME = 'posts_published_at_index';
 
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     let hasIndex = false;
 

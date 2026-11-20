@@ -1,8 +1,8 @@
-const logging = require('@tryghost/logging');
-const { createNonTransactionalMigration } = require('../../utils');
-const DatabaseInfo = require('@tryghost/database-info');
+import logging from '@tryghost/logging';
+import { createNonTransactionalMigration } from '../../utils';
+import DatabaseInfo from '@tryghost/database-info';
 
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     if (DatabaseInfo.isSQLite(knex)) {
       logging.warn('Skipping migration for SQLite3');

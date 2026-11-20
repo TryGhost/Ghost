@@ -1,7 +1,7 @@
-const logging = require('@tryghost/logging');
-const { createNonTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { createNonTransactionalMigration } from '../../utils';
 
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     logging.info('Clearing collections_posts table');
     await knex('collections_posts').truncate();

@@ -1,8 +1,8 @@
-const logging = require('@tryghost/logging');
+import logging from '@tryghost/logging';
 
-const { createTransactionalMigration } = require('../../utils');
+import { createTransactionalMigration } from '../../utils';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     const subscriptionsToUpdate = await knex('members_stripe_customers_subscriptions AS s')
       .join('offers AS o', 's.offer_id', '=', 'o.id')

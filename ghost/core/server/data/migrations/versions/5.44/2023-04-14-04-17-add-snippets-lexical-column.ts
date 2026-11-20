@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration('snippets', 'lexical', {
+export default createAddColumnMigration('snippets', 'lexical', {
   type: 'text',
   maxlength: 1000000000,
   fieldtype: 'long',

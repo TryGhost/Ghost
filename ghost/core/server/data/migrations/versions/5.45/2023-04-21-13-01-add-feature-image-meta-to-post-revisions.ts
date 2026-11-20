@@ -1,6 +1,6 @@
-const { combineNonTransactionalMigrations, createAddColumnMigration } = require('../../utils');
+import { combineNonTransactionalMigrations, createAddColumnMigration } from '../../utils';
 
-module.exports = combineNonTransactionalMigrations(
+export default combineNonTransactionalMigrations(
   createAddColumnMigration('post_revisions', 'feature_image_caption', {
     type: 'text',
     maxlength: 65535,

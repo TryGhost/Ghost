@@ -1,7 +1,7 @@
-const { createTransactionalMigration } = require('../../utils');
-const logging = require('@tryghost/logging');
+import { createTransactionalMigration } from '../../utils';
+import logging from '@tryghost/logging';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     const portalPlansRaw = await knex('settings')
       .select('value')

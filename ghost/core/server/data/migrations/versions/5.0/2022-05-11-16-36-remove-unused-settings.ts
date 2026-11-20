@@ -1,5 +1,5 @@
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
 
 const settingsToRemove = [
   'editor_is_launch_complete',
@@ -29,7 +29,7 @@ const settingsToRemove = [
 // 'portal_products',
 // 'stripe_plans'
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     const existingSettings = await knex('settings').whereIn('key', settingsToRemove).pluck('key');
 

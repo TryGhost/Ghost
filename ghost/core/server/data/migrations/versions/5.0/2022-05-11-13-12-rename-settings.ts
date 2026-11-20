@@ -1,6 +1,6 @@
-const logging = require('@tryghost/logging');
-const _ = require('lodash');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import _ from 'lodash';
+import { createTransactionalMigration } from '../../utils';
 
 const renameMappings = [
   {
@@ -13,7 +13,7 @@ const renameMappings = [
   },
 ];
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     const keys = _.flatMap(renameMappings, (m) => {
       return [m.from, m.to];

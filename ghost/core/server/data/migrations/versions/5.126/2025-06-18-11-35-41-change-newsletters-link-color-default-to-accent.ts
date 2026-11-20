@@ -1,8 +1,8 @@
-const logging = require('@tryghost/logging');
-const { createNonTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { createNonTransactionalMigration } from '../../utils';
 
 // newsletters.link_color was supposed to have a default value of 'accent' to match pre-emailCustomization behaviour
-module.exports = createNonTransactionalMigration(
+export default createNonTransactionalMigration(
   async function up(knex) {
     logging.info('Setting newsletters.link_color default to "accent"');
     await knex.schema.alterTable('newsletters', function (table) {

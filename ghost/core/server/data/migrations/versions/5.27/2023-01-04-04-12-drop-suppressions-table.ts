@@ -1,4 +1,4 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
 const migration = addTable('suppressions', {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -8,7 +8,7 @@ const migration = addTable('suppressions', {
   created_at: { type: 'dateTime', nullable: false },
 });
 
-module.exports = {
+export default {
   up: migration.down,
   down: migration.up,
 };

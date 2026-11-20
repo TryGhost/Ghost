@@ -1,10 +1,10 @@
 // For information on writing migrations, see https://www.notion.so/ghost/Database-migrations-eb5b78c435d741d2b34a582d57c24253
 
-const { InternalServerError } = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
-const security = require('@tryghost/security');
-const { default: ObjectID } = require('bson-objectid');
-const { createTransactionalMigration } = require('../../utils');
+import { InternalServerError } from '@tryghost/errors';
+import logging from '@tryghost/logging';
+import security from '@tryghost/security';
+import ObjectID from 'bson-objectid';
+import { createTransactionalMigration } from '../../utils';
 
 const MIGRATION_USER = 1;
 
@@ -15,7 +15,7 @@ const coreContentIntegration = {
   type: 'core',
 };
 
-const addIntegrationContentKey = async (knex, integration) => {
+const addIntegrationContentKey = async (knex: any, integration: any) => {
   const message = `Adding "${integration.name}" integration content key`;
 
   const existingIntegration = await knex('integrations')
@@ -55,7 +55,7 @@ const addIntegrationContentKey = async (knex, integration) => {
   });
 };
 
-const removeIntegrationContentKey = async (knex, integration) => {
+const removeIntegrationContentKey = async (knex: any, integration: any) => {
   const message = `Removing "${integration.name}" integration content key`;
 
   const existingIntegration = await knex('integrations')
@@ -88,7 +88,7 @@ const removeIntegrationContentKey = async (knex, integration) => {
   await knex('api_keys').where('id', existing.id).del();
 };
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     await addIntegrationContentKey(knex, coreContentIntegration);
   },

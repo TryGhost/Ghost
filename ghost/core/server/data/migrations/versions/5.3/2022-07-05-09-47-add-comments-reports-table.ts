@@ -1,6 +1,6 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
-module.exports = addTable('comment_reports', {
+export default addTable('comment_reports', {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   comment_id: {
     type: 'string',

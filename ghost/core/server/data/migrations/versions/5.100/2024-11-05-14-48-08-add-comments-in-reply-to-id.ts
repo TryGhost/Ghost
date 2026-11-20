@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration('comments', 'in_reply_to_id', {
+export default createAddColumnMigration('comments', 'in_reply_to_id', {
   type: 'string',
   maxlength: 24,
   nullable: true,

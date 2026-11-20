@@ -1,13 +1,15 @@
-const _ = require('lodash');
-const logging = require('@tryghost/logging');
-const ObjectId = require('bson-objectid').default;
-const { createTransactionalMigration } = require('../../utils');
-const DatabaseInfo = require('@tryghost/database-info');
-const GhostError = require('@tryghost/errors').GhostError;
+import _ from 'lodash';
+import logging from '@tryghost/logging';
+import ObjectId from 'bson-objectid';
+import { createTransactionalMigration } from '../../utils';
+import DatabaseInfo from '@tryghost/database-info';
+import * as errors from '@tryghost/errors';
+// @ts-expect-error GhostError is type-only; undefined at runtime (pre-existing bug)
+const GhostError = errors.GhostError;
 
 // This migration links together members_created_events and members_subscription_created_events
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     if (DatabaseInfo.isSQLite(knex)) {
       logging.info(

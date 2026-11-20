@@ -1,10 +1,12 @@
-const logging = require('@tryghost/logging');
-const { createIrreversibleMigration } = require('../../utils');
-const lexicalLib = require('../../../../lib/lexical');
-const { mobiledocToLexical } = require('@tryghost/kg-converters');
-const htmlToPlaintext = require('@tryghost/html-to-plaintext');
+import logging from '@tryghost/logging';
+import { createIrreversibleMigration } from '../../utils';
+// @ts-expect-error untyped JS module
+import lexicalLib from '../../../../lib/lexical';
+import { mobiledocToLexical } from '@tryghost/kg-converters';
+// @ts-expect-error package ships no types
+import htmlToPlaintext from '@tryghost/html-to-plaintext';
 
-module.exports = createIrreversibleMigration(async (knex) => {
+export default createIrreversibleMigration(async (knex) => {
   logging.info(`Starting regeneration of posts HTML`);
 
   await knex.transaction(async (trx) => {
@@ -46,7 +48,7 @@ module.exports = createIrreversibleMigration(async (knex) => {
 
       const html = await lexicalLib.render(mobiledocToLexical(post.mobiledoc));
 
-      const updatedAttrs = {
+      const updatedAttrs: any = {
         html,
       };
 

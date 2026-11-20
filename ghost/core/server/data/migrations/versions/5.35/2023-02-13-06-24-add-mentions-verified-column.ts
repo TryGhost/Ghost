@@ -1,6 +1,6 @@
-const { createAddColumnMigration } = require('../../utils');
+import { createAddColumnMigration } from '../../utils';
 
-module.exports = createAddColumnMigration('mentions', 'verified', {
+export default createAddColumnMigration('mentions', 'verified', {
   type: 'boolean',
   nullable: false,
   defaultTo: false,

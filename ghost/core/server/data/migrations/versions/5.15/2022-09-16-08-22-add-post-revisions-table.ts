@@ -1,6 +1,6 @@
-const { addTable } = require('../../utils');
+import { addTable } from '../../utils';
 
-module.exports = addTable('post_revisions', {
+export default addTable('post_revisions', {
   id: { type: 'string', maxlength: 24, nullable: false, primary: true },
   post_id: { type: 'string', maxlength: 24, nullable: false, index: true },
   lexical: { type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true },

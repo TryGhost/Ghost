@@ -1,7 +1,7 @@
-const logging = require('@tryghost/logging');
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(transaction) {
     const postsFreeCount = await transaction('posts')
       .where('email_recipient_filter', 'free')

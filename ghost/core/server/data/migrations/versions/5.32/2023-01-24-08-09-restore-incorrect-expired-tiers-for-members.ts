@@ -1,8 +1,8 @@
-const logging = require('@tryghost/logging');
-const ObjectId = require('bson-objectid').default;
-const { createTransactionalMigration } = require('../../utils');
+import logging from '@tryghost/logging';
+import ObjectId from 'bson-objectid';
+import { createTransactionalMigration } from '../../utils';
 
-module.exports = createTransactionalMigration(
+export default createTransactionalMigration(
   async function up(knex) {
     logging.info('Restoring member<>tier mapping for members with paid status');
     try {
