@@ -1,13 +1,13 @@
 import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
-import useLexicalEditable from '@lexical/react/useLexicalEditable';
 import {$getNodeByKey, CLICK_COMMAND, COMMAND_PRIORITY_LOW} from 'lexical';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {CardWrapper} from './ui/CardWrapper';
 import {EDIT_CARD_COMMAND, SELECT_CARD_COMMAND, SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {VISIBILITY_SETTINGS} from '../utils/visibility';
 import {mergeRegister} from '@lexical/utils';
+import {useIsDocumentEditable} from '../hooks/useIsDocumentEditable';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import type {CardWidth} from '@tryghost/kg-default-nodes';
@@ -30,18 +30,30 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     const skipClick = React.useRef(false);
 
     const {selectedCardKey, isEditingCard, isDragging} = useKoenigSelectedCardContext();
-    const isEditable = useLexicalEditable();
+    const isReadOnly = !useIsDocumentEditable();
 
     const isSelected = selectedCardKey === nodeKey;
     const isEditing = isSelected && isEditingCard;
 
-    // a card's own controls change the document, so a read-only editor takes
-    // no input in its cards. Through the element as React 18 has no inert prop
+    // a card's own controls change the document, so nothing in a read-only
+    // editor's card is clicked, dragged or focused. Not `inert`: that would also
+    // keep the card's text out of selections, find-in-page and screen readers
     React.useEffect(() => {
-        if (containerRef.current) {
-            containerRef.current.inert = !isEditable;
+        const container = containerRef.current;
+        if (!isReadOnly || !container) {
+            return;
         }
-    }, [isEditable]);
+
+        const refuseFocus = (event) => {
+            event.target.blur?.();
+        };
+
+        container.addEventListener('focusin', refuseFocus);
+
+        return () => {
+            container.removeEventListener('focusin', refuseFocus);
+        };
+    }, [isReadOnly]);
 
     const handleVisibilityToggle = React.useCallback((event) => {
         event.preventDefault();
@@ -187,6 +199,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                 isEditing={isEditing}
                 isSelected={isSelected}
                 isVisibilityActive={isVisibilityActive}
+                style={isReadOnly ? {pointerEvents: 'none'} : undefined}
                 wrapperStyle={wrapperStyle}
                 onIndicatorClick={handleVisibilityToggle}
             >

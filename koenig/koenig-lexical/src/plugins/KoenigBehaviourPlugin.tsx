@@ -54,6 +54,7 @@ import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {$isListItemNode, $isListNode, INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND} from '@lexical/list';
 import {$setBlocksType} from '@lexical/selection';
 import {MIME_TEXT_HTML, MIME_TEXT_PLAIN, PASTE_MARKDOWN_COMMAND} from './MarkdownPastePlugin.jsx';
+import {isDocumentEditable} from '../hooks/useIsDocumentEditable';
 import {mergeRegister} from '@lexical/utils';
 import {registerDefaultTransforms} from '@tryghost/kg-default-transforms';
 import {shouldIgnoreEvent} from '../utils/shouldIgnoreEvent';
@@ -199,21 +200,20 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 return;
             }
 
-            // Lexical's element follows a render later, and a key pressed
-            // before then would change the DOM without changing the document
-            const rootElement = editor.getRootElement();
-            if (rootElement) {
-                rootElement.contentEditable = 'false';
+            // the elements stop being editable a render later, and a key pressed
+            // before then would still reach whichever of them has focus
+            const focused = document.activeElement;
+            if (focused instanceof HTMLElement && (containerElem.current?.contains(focused) || focused.closest('[data-kg-portal]'))) {
+                focused.blur();
             }
 
+            // no editor.update() here: Lexical queues one made from this listener
+            // and runs it inside the next update, whatever that turns out to be
             setSelectedCardKey(null);
             setIsEditingCard(false);
             setShowVisibilitySettings(false);
-            editor.update(() => {
-                $setSelection(null);
-            }, {tag: 'history-merge'});
         });
-    }, [editor, isNested, setSelectedCardKey, setIsEditingCard, setShowVisibilitySettings]);
+    }, [editor, containerElem, isNested, setSelectedCardKey, setIsEditingCard, setShowVisibilitySettings]);
 
     // Override built-in keyboard movement around card (DecoratorNode) boundaries,
     // cards should be selected on up/down and when deleting content around them.
@@ -354,6 +354,11 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 SELECT_CARD_COMMAND,
                 ({cardKey}) => {
+                    // a read-only editor selects no card, whatever asked for it
+                    if (!isDocumentEditable(editor)) {
+                        return true;
+                    }
+
                     // already selected, delete if empty as we're exiting edit mode
                     if (selectedCardKey === cardKey && isEditingCard) {
                         const cardNode = $getNodeByKey(cardKey);
@@ -379,6 +384,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 EDIT_CARD_COMMAND,
                 ({cardKey, focusEditor}) => {
+                    if (!isDocumentEditable(editor)) {
+                        return true;
+                    }
+
                     if (selectedCardKey && selectedCardKey !== cardKey) {
                         $deselectCard(editor, selectedCardKey);
                     }
@@ -1549,6 +1558,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 SHOW_CARD_VISIBILITY_SETTINGS_COMMAND,
                 ({cardKey}) => {
+                    if (!isDocumentEditable(editor)) {
+                        return true;
+                    }
+
                     editor.update(() => {
                         const cardNode = $getNodeByKey(cardKey);
 

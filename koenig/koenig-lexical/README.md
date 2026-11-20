@@ -56,21 +56,33 @@ Used for developing/demoing the editor. Renders a blank editor with all features
 
 ### Read-only
 
-Lexical's editable flag is the one switch. An app makes the editor read-only
-with `setEditable(false)` on the editor instance it gets from `registerAPI`,
-and editable again with `setEditable(true)`. While the flag is off the document
-can be read, selected and copied, and nothing can change it:
+Lexical's editable flag on the top-level editor is the one switch. An app makes
+the editor read-only with `setEditable(false)` on the editor instance it gets
+from `registerAPI`, and editable again with `setEditable(true)`. While the flag
+is off the document can be read, selected and copied, and nothing can change
+it:
 
 - typing, pasting and dropping do nothing, which is Lexical's own behaviour
+- whatever had focus in the editor loses it, so a key pressed in the moment
+  before the change is rendered goes nowhere
 - the format and link toolbars, and the plus and slash card menus, are not
   rendered, including one that was open when the flag went off
-- no card is selected or in edit mode, so card toolbars, settings panels and
-  nested editors are closed; one that was open is closed without removing an
-  empty card, since that would change the document
-- every card is `inert`, so its own buttons and inputs take no input
+- no card is selected or in edit mode, and none can be: card toolbars, settings
+  panels and nested editors are closed, and one that was open is closed without
+  removing an empty card, since that would change the document
+- a card takes no pointer input and nothing in it takes focus, so its own
+  buttons, links, inputs and media controls do nothing. Its text is still part
+  of a selection drawn across it, and of find-in-page and the accessibility tree
+- cards cannot be dragged to reorder them
 
-The `readOnly` prop is narrower: it turns off drag reordering and marks the
-content element read-only, and does not set the flag.
+A card's nested editor has an editable flag of its own, which follows the
+card's edit mode. Lexical copies the top-level flag to every nested editor when
+it changes, so once the editor is editable again the nested editors of cards
+that are not being edited are closed again.
+
+The `readOnly` prop is a different, narrower thing: it only turns off drag
+reordering and adds a `readonly` attribute to the content element. It does not
+set the flag, and the editor can still be typed in.
 
 ### Styling
 

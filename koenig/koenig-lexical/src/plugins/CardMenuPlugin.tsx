@@ -1,9 +1,9 @@
 import PlusCardMenuPlugin from '../plugins/PlusCardMenuPlugin';
 import SlashCardMenuPlugin from '../plugins/SlashCardMenuPlugin';
-import useLexicalEditable from '@lexical/react/useLexicalEditable';
+import {useIsDocumentEditable} from '../hooks/useIsDocumentEditable';
 
 export const CardMenuPlugin = () => {
-    const isEditable = useLexicalEditable();
+    const isEditable = useIsDocumentEditable();
 
     // the menus insert cards, which a read-only editor must not offer
     if (!isEditable) {

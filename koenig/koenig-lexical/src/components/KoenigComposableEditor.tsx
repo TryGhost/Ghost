@@ -9,7 +9,6 @@ import MarkdownPastePlugin from '../plugins/MarkdownPastePlugin.jsx';
 import MarkdownShortcutPlugin from '../plugins/MarkdownShortcutPlugin';
 import React from 'react';
 import TKPlugin from '../plugins/TKPlugin.jsx';
-import useLexicalEditable from '@lexical/react/useLexicalEditable';
 import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {EditorPlaceholder} from './ui/EditorPlaceholder';
 import {ExternalControlPlugin} from '../plugins/ExternalControlPlugin';
@@ -21,6 +20,7 @@ import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
 import {RestrictContentPlugin} from '../index.js';
 import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
 import {useCollaborationContext} from '@lexical/react/LexicalCollaborationContext';
+import {useIsDocumentEditable} from '../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useSharedHistoryContext} from '../context/SharedHistoryContext';
 import {useSharedOnChangeContext} from '../context/SharedOnChangeContext';
@@ -50,10 +50,11 @@ const KoenigComposableEditor = ({
     const [editor] = useLexicalComposerContext();
     const {isCollabActive} = useCollaborationContext();
     const {editorContainerRef, darkMode, isTKEnabled} = React.useContext(KoenigComposerContext);
-    const isEditable = useLexicalEditable();
+    // not this editor's own flag: in a card's nested editor that follows the card's edit mode
+    const isEditable = useIsDocumentEditable();
 
     const isNested = !!editor._parentEditor;
-    const isDragReorderEnabled = isDragEnabled && !readOnly && !isNested;
+    const isDragReorderEnabled = isDragEnabled && !readOnly && !isNested && isEditable;
 
     const {onChange: sharedOnChange} = useSharedOnChangeContext();
     const _onChange = React.useCallback((editorState) => {
