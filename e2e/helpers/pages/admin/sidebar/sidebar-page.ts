@@ -90,6 +90,12 @@ export class SidebarPage extends AdminPage {
   public readonly upgradeNowLink: Locator;
   public readonly themeErrorBanner: Locator;
   public readonly themeErrorDialog: Locator;
+  /**
+   * The saved member views a publisher can see under Members, in the order the sidebar
+   * shows them. Links that are rendered but not visible are left out, so asserting the
+   * whole list also asserts that every view in it is on screen.
+   */
+  public readonly memberViewLinks: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -120,6 +126,12 @@ export class SidebarPage extends AdminPage {
       .getByRole('status')
       .filter({ hasText: sidebarSel.themeErrorsBannerText });
     this.themeErrorDialog = page.getByRole('dialog', { name: sidebarSel.themeErrorsDialog });
+    // The submenu has no accessible name, so it is found by the id that the
+    // "Toggle member views" button points at with aria-controls.
+    this.memberViewLinks = this.sidebar
+      .locator(`#${sidebarSel.memberViewsMenu}`)
+      .getByRole('link')
+      .filter({ visible: true });
   }
 
   getNavLink(name: string): Locator {

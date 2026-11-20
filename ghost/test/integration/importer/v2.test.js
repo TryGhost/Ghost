@@ -12,6 +12,7 @@ const errors = require('@tryghost/errors');
 const db = require('../../../core/server/data/db');
 
 const models = require('../../../core/server/models');
+const { passwordHashOf } = require('../../utils/password-hash');
 const dataImporter = require('../../../core/server/data/importer/importers/data');
 
 const importOptions = {
@@ -357,7 +358,7 @@ describe('Importer', function () {
             Object.assign({ withRelated: ['roles'] }, testUtils.context.internal),
           );
         })
-        .then(function (result) {
+        .then(async function (result) {
           assert.equal(result.models.length, 2);
 
           assert.equal(
@@ -372,7 +373,7 @@ describe('Importer', function () {
           assert.equal(result.models[1].get('name'), exportData.data.users[0].name);
 
           return models.User.isPasswordCorrect({
-            hashedPassword: result.models[0].get('password'),
+            hashedPassword: await passwordHashOf(result.models[0]),
             plainPassword: testUtils.DataGenerator.Content.users[0].password,
           });
         });

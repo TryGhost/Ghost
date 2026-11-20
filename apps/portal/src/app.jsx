@@ -14,7 +14,7 @@ import { transformPortalAnchorToRelative } from './utils/transform-portal-anchor
 import { getActivePage, isAccountPage, isOfferPage } from './pages';
 import ActionHandler from './actions';
 import { getGiftRedemptionErrorMessage } from './utils/gift-redemption-notification';
-import { GIFT_DURATION_CATALOGUE } from './utils/gift-subscriptions';
+import { GIFT_DURATION_CATALOGUE, signupAccessAllowsGifts } from './utils/gift-subscriptions';
 import { clearGiftFormState } from './components/pages/gift/form-state';
 import { preloadGiftCardTextures } from './components/common/gift-card';
 import { fetchMemberCustomFields } from './utils/custom-fields';
@@ -843,7 +843,8 @@ export default class App extends React.Component {
         return {};
       }
 
-      if (page === 'gift') {
+      // sites without gifts show a message instead of the gift card
+      if (page === 'gift' && signupAccessAllowsGifts({ site })) {
         preloadGiftCardTextures(site.url);
       }
 

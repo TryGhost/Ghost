@@ -27,6 +27,7 @@ import {
   buildCustomFieldSavePayload,
   customFieldSave,
   editorFor,
+  getCustomFieldTypingErrors,
   getCustomFieldValidationErrors,
   isEdited,
   parseCustomFieldServerErrors,
@@ -468,7 +469,8 @@ const CustomFieldInput: React.FC<{
  * one clear outcome — deliberately outside the page's draft/Save flow so
  * "which Save saves what" never needs answering. Validation mirrors the
  * page's email field: computed live, rendered on save-attempt; a server 422
- * naming this field pins its message to the input as a backstop.
+ * naming this field pins its message to the input as a backstop. The exception is an invalid
+ * character in a phone number, which shows an error while typing.
  */
 const MemberCustomFieldEditModal: React.FC<{
   memberId: string;
@@ -491,7 +493,13 @@ const MemberCustomFieldEditModal: React.FC<{
 
   const save = customFieldSave(editor, opened);
   const validationErrors = getCustomFieldValidationErrors(save);
-  const errors = { ...(saveAttempted ? validationErrors : {}), ...serverErrors };
+  // A typing error is about the current input, so it takes precedence over errors from an
+  // earlier save attempt.
+  const errors = {
+    ...(saveAttempted ? validationErrors : {}),
+    ...serverErrors,
+    ...getCustomFieldTypingErrors(editor),
+  };
   // Keyed by the part each names, which is how the input places them. The dialog saves this one
   // field, so an error naming anything but one of its parts is about the field itself.
   const inputErrors = Object.fromEntries(

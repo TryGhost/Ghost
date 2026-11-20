@@ -1,10 +1,10 @@
 import { cva } from 'class-variance-authority';
 
-// Shared by panel tabs and route-based PageMenu navigation.
+// Shared by button tabs, including Settings previews, and PageMenu navigation.
 const tabSurfaceVariants = cva('', {
   variants: {
     admin7Design: {
-      true: 'rounded-full bg-tab-inactive text-foreground hover:bg-tab-inactive-hover hover:text-foreground enabled:active:bg-tab-inactive-hover enabled:aria-expanded:bg-tab-inactive-hover enabled:aria-expanded:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:hover:bg-primary data-[state=active]:hover:text-primary-foreground data-[state=active]:enabled:active:bg-primary data-[state=active]:enabled:aria-expanded:bg-primary data-[state=active]:enabled:aria-expanded:text-primary-foreground',
+      true: 'rounded-full border border-border bg-transparent text-foreground hover:bg-tab-hover hover:text-foreground enabled:active:bg-button-ghost-hover enabled:aria-expanded:bg-button-ghost-hover enabled:aria-expanded:text-foreground data-[state=active]:border-transparent data-[state=active]:bg-tab-inactive data-[state=active]:text-foreground data-[state=active]:hover:bg-tab-inactive data-[state=active]:hover:text-foreground data-[state=active]:enabled:active:bg-button-ghost-hover data-[state=active]:enabled:aria-expanded:bg-button-ghost-hover data-[state=active]:enabled:aria-expanded:text-foreground',
       false: '',
     },
     size: {

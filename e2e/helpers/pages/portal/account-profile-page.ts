@@ -31,6 +31,11 @@ export class PortalAccountProfilePage extends PortalPage {
     return this.portalFrame.locator(`[data-test-input="input-custom:${key}-country"]`);
   }
 
+  /** The flag a phone field shows beside its calling code, named by its country. */
+  phoneFlag(key: string, country: string): Locator {
+    return this.phoneCountry(key).getByRole('img', { name: country });
+  }
+
   /** The search box over the list that is open, which shows what it searches as its placeholder. */
   listSearch(placeholder: string): Locator {
     return this.portalFrame.getByPlaceholder(placeholder, { exact: true });

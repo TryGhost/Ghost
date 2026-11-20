@@ -1,14 +1,16 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import type { TableDefinition } from '../../../core/server/data/schema/types';
 
 // require, not import: these must be the same CommonJS instances that
 // in-development.ts loads, so the tables added to the schema, the config set
-// here and the spies on commands are the ones it sees
+// here are the ones it sees
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/config-utils');
 const db = require('../../../core/server/data/db');
 const commands = require('../../../core/server/data/schema/commands');
-const schema = require('../../../core/server/data/schema/schema');
+const schema: Record<string, TableDefinition> =
+  require('../../../core/server/data/schema/schema').default;
 const { addTable } = require('../../../core/server/data/migrations/utils');
 const inDevelopment: typeof import('../../../core/server/data/schema/in-development') = require('../../../core/server/data/schema/in-development');
 
@@ -85,19 +87,24 @@ describe('In-development tables', function () {
       await db.knex(PARENT).insert({ id: 'parent' });
       await db.knex(CHILD).insert({ id: 'child', parent_id: 'parent' });
 
-      const deleteTable = sinon.spy(commands, 'deleteTable');
-      const createTable = sinon.spy(commands, 'createTable');
+      // Read the order off the SQL: the TypeScript commands module's exports can't be spied on.
+      const dropped: string[] = [];
+      const created: string[] = [];
+      const recordDdl = ({ sql }: { sql: string }) => {
+        const match = /^(drop|create) table (?:if exists )?`([^`]+)`/i.exec(sql);
+        if (match) {
+          (match[1].toLowerCase() === 'drop' ? dropped : created).push(match[2]);
+        }
+      };
+      db.knex.on('query', recordDdl);
+      try {
+        await inDevelopment.rebuildInDevelopmentTables(db.knex);
+      } finally {
+        db.knex.off('query', recordDdl);
+      }
 
-      await inDevelopment.rebuildInDevelopmentTables(db.knex);
-
-      assert.deepEqual(
-        deleteTable.getCalls().map((call) => call.args[0]),
-        [CHILD, PARENT],
-      );
-      assert.deepEqual(
-        createTable.getCalls().map((call) => call.args[0]),
-        [PARENT, CHILD],
-      );
+      assert.deepEqual(dropped, [CHILD, PARENT]);
+      assert.deepEqual(created, [PARENT, CHILD]);
       assert.equal((await db.knex(PARENT).pluck('id')).length, 0);
       assert.equal((await db.knex(CHILD).pluck('id')).length, 0);
     });

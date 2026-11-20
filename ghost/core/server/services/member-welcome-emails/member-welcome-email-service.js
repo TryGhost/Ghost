@@ -427,7 +427,6 @@ class MemberWelcomeEmailService {
    * @param {undefined | null | string} options.member.name
    * @param {string} options.member.email
    * @param {string} options.member.uuid
-   * @param {'free' | 'paid'} options.memberStatus
    * @param {object} options.email
    * @param {string} options.email.lexical
    * @param {string} options.email.subject
@@ -437,19 +436,18 @@ class MemberWelcomeEmailService {
    * @param {boolean} [options.trackClicks]
    * @param {string | null} [options.automationActionRevisionId]
    * @param {string | null} [options.automationRunStepId]
-   * @param {null | {url: string, oneClickUrl: string}} [options.unsubscribe] - When set, the footer links to an unsubscribe URL and the email carries one-click List-Unsubscribe headers
+   * @param {(memberUuid: string) => string} [options.getUnsubscribeUrl] - When set, the footer links to this unsubscribe URL and the email carries one-click List-Unsubscribe headers pointing at it
    * @returns {Promise<unknown>}
    */
   async #sendEmail({
     member,
-    memberStatus,
     email,
     emailType,
     trackOpens,
     trackClicks = false,
     automationActionRevisionId = null,
     automationRunStepId = null,
-    unsubscribe = null,
+    getUnsubscribeUrl,
   }) {
     if (!member.email) {
       throw new errors.IncorrectUsageError({
@@ -465,25 +463,27 @@ class MemberWelcomeEmailService {
             emailType === 'automation'
               ? 'member_welcome_email.automation_sending'
               : 'member_welcome_email.sending',
-          member_status: memberStatus,
         },
       },
       `${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending ${emailType} email to ${name}${member.email}`,
     );
 
-    const { html, text, subject } = await this.#renderer.render({
+    const rendered = await this.#renderer.render({
       lexical: email.lexical,
       subject: email.subject,
       designSettings: email.designSettings,
+      siteSettings: this.#getSiteSettings(),
+      getUnsubscribeUrl,
+      // Tracked links carry the member UUID and step ID, so track only when both exist.
+      trackClicks: trackClicks && Boolean(automationRunStepId && member.uuid),
+      automationActionRevisionId,
+    });
+    const { html, text, subject, listUnsubscribe } = this.#renderer.personalize(rendered, {
       member: {
         name: member.name,
         email: member.email,
         uuid: member.uuid,
       },
-      siteSettings: this.#getSiteSettings(),
-      unsubscribeUrl: unsubscribe?.url,
-      trackClicks,
-      automationActionRevisionId,
       automationRunStepId,
     });
 
@@ -525,7 +525,7 @@ class MemberWelcomeEmailService {
       text,
       tags,
       trackOpens,
-      listUnsubscribe: unsubscribe?.oneClickUrl,
+      listUnsubscribe,
       ...senderOptions,
     });
   }
@@ -633,7 +633,6 @@ class MemberWelcomeEmailService {
 
     await this.#sendEmail({
       member,
-      memberStatus,
       emailType: 'welcome',
       email,
     });
@@ -651,7 +650,6 @@ class MemberWelcomeEmailService {
    * @param {string} options.member.email
    * @param {null | string} options.member.name
    * @param {string} options.member.uuid
-   * @param {'free' | 'paid'} options.memberStatus
    * @param {boolean} options.trackOpens
    * @param {boolean} options.trackClicks
    * @param {string} options.automationActionRevisionId
@@ -661,7 +659,6 @@ class MemberWelcomeEmailService {
   async sendAutomationEmail({
     email,
     member,
-    memberStatus,
     trackOpens,
     trackClicks,
     automationActionRevisionId,
@@ -677,17 +674,16 @@ class MemberWelcomeEmailService {
     // at the same /unsubscribe/?...&updatesAndAnnouncements=1 URL (handled by the unsubscribe
     // controller), just like newsletters. Preview/test sends render separately and never reach
     // this path.
-    const unsubscribeUrl =
+    const getUnsubscribeUrl =
       this.#labs.isSet('automations') && member.uuid
-        ? this.#settingsHelpers.createUnsubscribeUrl(member.uuid, { updatesAndAnnouncements: true })
-        : null;
-    const unsubscribe = unsubscribeUrl
-      ? { url: unsubscribeUrl, oneClickUrl: unsubscribeUrl }
-      : null;
+        ? (memberUuid) =>
+            this.#settingsHelpers.createUnsubscribeUrl(memberUuid, {
+              updatesAndAnnouncements: true,
+            })
+        : undefined;
 
     return await this.#sendEmail({
       member,
-      memberStatus,
       emailType: 'automation',
       email: {
         lexical: email.lexical,
@@ -698,7 +694,7 @@ class MemberWelcomeEmailService {
       trackClicks,
       automationActionRevisionId,
       automationRunStepId,
-      unsubscribe,
+      getUnsubscribeUrl,
     });
   }
 
@@ -767,16 +763,24 @@ class MemberWelcomeEmailService {
       : await this.#getDefaultEmailDesignSettings();
     const designSettingsJson = designSettings?.id ? designSettings.toJSON() : null;
 
-    const preview = await this.#renderer.render({
+    const rendered = await this.#renderer.render({
       lexical,
       subject,
       designSettings: designSettingsJson,
-      member: testMember,
       siteSettings: this.#getSiteSettings(),
+    });
+    const {
+      html,
+      text,
+      subject: renderedSubject,
+    } = this.#renderer.personalize(rendered, {
+      member: testMember,
     });
 
     return {
-      ...preview,
+      html,
+      text,
+      subject: renderedSubject,
       designSettings,
     };
   }

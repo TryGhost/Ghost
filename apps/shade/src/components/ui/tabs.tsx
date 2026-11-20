@@ -32,16 +32,9 @@ export interface TabsProps extends React.ComponentPropsWithoutRef<typeof TabsPri
 }
 
 const Tabs = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Root>, TabsProps>(
-  ({ variant = 'segmented', ...props }, ref) => {
+  ({ variant, ...props }, ref) => {
     const { controlShape, admin7Design } = useShade();
-    // Standard tabs share the Admin 7 pill treatment. KPI tabs retain their
-    // chart-card layout; compact tabs retain their smaller size.
-    const resolvedVariant =
-      admin7Design && variant !== 'kpis'
-        ? variant === 'button-sm' || variant === 'segmented-sm' || variant === 'pill'
-          ? 'button-sm'
-          : 'button'
-        : variant;
+    const resolvedVariant = variant ?? (admin7Design ? 'underline' : 'segmented');
 
     return (
       <TabsContext.Provider value={{ variant: resolvedVariant, controlShape }}>
@@ -73,6 +66,11 @@ const tabsListVariants = cva('inline-flex items-center text-muted-foreground', {
     },
   },
   compoundVariants: [
+    {
+      variant: 'underline',
+      admin7Design: true,
+      className: 'overflow-y-hidden border-b-0 inset-shadow-[0_-1px_0] inset-shadow-border-default',
+    },
     {
       variant: ['button', 'button-sm'],
       admin7Design: true,
@@ -124,8 +122,18 @@ const tabsTriggerVariants = cva(
         rounded: '',
         pill: '',
       },
+      admin7Design: {
+        true: '',
+        false: '',
+      },
     },
     compoundVariants: [
+      {
+        variant: 'underline',
+        admin7Design: true,
+        className:
+          'h-auto py-2.5 text-control-lg font-normal data-[state=active]:font-semibold after:bottom-0 after:h-px',
+      },
       {
         variant: ['button', 'button-sm'],
         controlShape: 'pill',
@@ -139,18 +147,95 @@ const tabsTriggerVariants = cva(
   },
 );
 
+// Reserve selected-weight text width without duplicating icons, badges or child components.
+function renderTabsTriggerLabel(children: React.ReactNode, asChild = false): React.ReactNode {
+  if (children === null || children === undefined) {
+    return children;
+  }
+
+  if (asChild && React.isValidElement<{ children?: React.ReactNode }>(children)) {
+    return React.cloneElement(children, undefined, renderTabsTriggerLabel(children.props.children));
+  }
+
+  const sizedChildren = React.Children.map(children, (child) => {
+    if (typeof child === 'string' || typeof child === 'number') {
+      const label = typeof child === 'string' ? child.trim() : child;
+      if (label === '') {
+        return child;
+      }
+
+      // Keep boundary spaces in the inline flow between nested label elements.
+      const leadingSpace = typeof child === 'string' ? child.match(/^\s*/)?.[0] : undefined;
+      const trailingSpace = typeof child === 'string' ? child.match(/\s*$/)?.[0] : undefined;
+      return (
+        <>
+          {leadingSpace}
+          <span className="inline-grid">
+            <span
+              aria-hidden="true"
+              className="pointer-events-none invisible col-start-1 row-start-1 font-semibold select-none"
+            >
+              {label}
+            </span>
+            <span className="col-start-1 row-start-1">{label}</span>
+          </span>
+          {trailingSpace}
+        </>
+      );
+    }
+    if (
+      React.isValidElement<{ children?: React.ReactNode }>(child) &&
+      (child.type === React.Fragment || (typeof child.type === 'string' && child.type !== 'svg'))
+    ) {
+      return React.cloneElement(child, undefined, renderTabsTriggerLabel(child.props.children));
+    }
+    return child;
+  });
+
+  const renderedChildren: React.ReactNode[] = [];
+  let labelChildren: React.ReactNode[] = [];
+  const flushLabel = () => {
+    if (
+      labelChildren.length > 1 &&
+      labelChildren.some((child) => typeof child !== 'string' || child.trim())
+    ) {
+      // A single inline context preserves spaces between direct trigger children.
+      renderedChildren.push(<span key={`label-${renderedChildren.length}`}>{labelChildren}</span>);
+    } else {
+      renderedChildren.push(...labelChildren);
+    }
+    labelChildren = [];
+  };
+
+  React.Children.toArray(sizedChildren).forEach((child) => {
+    if (
+      typeof child === 'string' ||
+      typeof child === 'number' ||
+      (React.isValidElement(child) &&
+        (child.type === React.Fragment || (typeof child.type === 'string' && child.type !== 'svg')))
+    ) {
+      labelChildren.push(child);
+    } else {
+      flushLabel();
+      renderedChildren.push(child);
+    }
+  });
+  flushLabel();
+  return renderedChildren;
+}
+
 const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
->(({ className, onMouseDownCapture, ...props }, ref) => {
+>(({ children, className, onMouseDownCapture, ...props }, ref) => {
   const { variant, controlShape } = React.useContext(TabsContext);
   const { admin7Design } = useShade();
   return (
     <TabsPrimitive.Trigger
       ref={ref}
       className={cn(
-        tabsTriggerVariants({ variant, controlShape }),
-        variant !== 'kpis' &&
+        tabsTriggerVariants({ variant, controlShape, admin7Design }),
+        (variant === 'button' || variant === 'button-sm') &&
           tabSurfaceVariants({
             admin7Design,
             size: variant === 'button-sm' ? 'compact' : 'default',
@@ -168,7 +253,11 @@ const TabsTrigger = React.forwardRef<
         onMouseDownCapture?.(event);
       }}
       {...props}
-    />
+    >
+      {admin7Design && variant === 'underline'
+        ? renderTabsTriggerLabel(children, props.asChild)
+        : children}
+    </TabsPrimitive.Trigger>
   );
 });
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
@@ -251,8 +340,8 @@ const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTrig
         <TabsPrimitive.Trigger
           ref={ref}
           className={cn(
-            tabsTriggerVariants({ variant, controlShape }),
-            variant !== 'kpis' &&
+            tabsTriggerVariants({ variant, controlShape, admin7Design }),
+            (variant === 'button' || variant === 'button-sm') &&
               tabSurfaceVariants({
                 admin7Design,
                 size: variant === 'button-sm' ? 'compact' : 'default',
@@ -261,7 +350,9 @@ const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTrig
           )}
           {...props}
         >
-          <div className="flex items-center gap-2">{children}</div>
+          <div className="flex items-center gap-2">
+            {admin7Design && variant === 'underline' ? renderTabsTriggerLabel(children) : children}
+          </div>
         </TabsPrimitive.Trigger>
         <DropdownMenuTrigger
           className="absolute inset-0 size-full cursor-pointer"

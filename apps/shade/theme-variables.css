@@ -58,11 +58,11 @@
   );
   --shadow-glass-floating:
     inset 0 1px 0 rgb(255 255 255 / 0.55), inset 0 -1px 0 rgb(255 255 255 / 0.12),
-    0 0 0 0.5px rgb(0 0 0 / 0.06), 0 40px 60px -15px rgb(0 0 0 / 0.18),
+    0 0 0 0.5px rgb(0 0 0 / 0.09), 0 40px 60px -15px rgb(0 0 0 / 0.18),
     0 12px 24px -8px rgb(0 0 0 / 0.1), 0 3px 8px rgb(0 0 0 / 0.04);
   --shadow-glass-docked:
     inset 0 1px 0 rgb(255 255 255 / 0), inset 0 -1px 0 rgb(255 255 255 / 0),
-    0 0 0 1px rgb(0 0 0 / 0.06), 0 8px 24px -10px rgb(0 0 0 / 0), 0 4px 12px -4px rgb(0 0 0 / 0),
+    0 0 0 1px rgb(0 0 0 / 0.09), 0 8px 24px -10px rgb(0 0 0 / 0), 0 4px 12px -4px rgb(0 0 0 / 0),
     0 2px 6px rgb(0 0 0 / 0);
   --focus-ring: var(--color-gray-600);
   --state-info: var(--color-blue-700);
@@ -114,6 +114,8 @@
   --badge-warning: var(--color-yellow-200);
   --badge-warning-hover: var(--color-yellow-300);
   --badge-warning-foreground: var(--color-yellow-700);
+  --badge-purple: var(--color-purple-200);
+  --badge-purple-foreground: var(--color-purple-800);
   --state-danger: var(--color-red-600);
   --state-danger-foreground: var(--color-black);
   --control-height: 32px;
@@ -167,12 +169,12 @@
   --control-border: color-mix(in oklab, var(--color-gray-200), var(--color-gray-300));
   --text-section-heading: 1.6rem;
   --text-section-heading-lg: 2.1rem;
-  /* Text-entry fields have a defined outline and a small resting shadow. */
+  /* Text-entry fields have a defined outline and a flat surface. */
   --field-surface: var(--control-surface);
   --field-readonly-surface: var(--control-readonly-surface);
   --field-disabled-surface: var(--control-disabled-surface);
   --field-border: var(--color-gray-400);
-  --field-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  --field-shadow: 0 0 #0000;
   --field-chip-surface: var(--secondary);
   --field-chip-internal-surface: transparent;
   --field-chip-internal-border: var(--field-chip-surface);
@@ -201,6 +203,14 @@
 /* admin7Design off: the previous palette and the tokens that changed with it.
    Temporary: delete with the flag, along with the previous dark block below. */
 [data-admin7-design='false'] {
+  --shadow-glass-floating:
+    inset 0 1px 0 rgb(255 255 255 / 0.55), inset 0 -1px 0 rgb(255 255 255 / 0.12),
+    0 0 0 0.5px rgb(0 0 0 / 0.06), 0 40px 60px -15px rgb(0 0 0 / 0.18),
+    0 12px 24px -8px rgb(0 0 0 / 0.1), 0 3px 8px rgb(0 0 0 / 0.04);
+  --shadow-glass-docked:
+    inset 0 1px 0 rgb(255 255 255 / 0), inset 0 -1px 0 rgb(255 255 255 / 0),
+    0 0 0 1px rgb(0 0 0 / 0.06), 0 8px 24px -10px rgb(0 0 0 / 0), 0 4px 12px -4px rgb(0 0 0 / 0),
+    0 2px 6px rgb(0 0 0 / 0);
   --color-black: oklch(20.38% 0.0067 258.4);
   --color-gray-50: oklch(98.54% 0.0013 286.4);
   --color-gray-100: oklch(96.97% 0.0017 247.8);
@@ -393,7 +403,7 @@
   --control-disabled-surface: var(--color-gray-950);
   --control-border: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
   --field-border: var(--color-gray-900);
-  --field-shadow: 0 1px 2px rgb(0 0 0 / 0.16);
+  --field-shadow: 0 0 #0000;
   --control-pressed-shadow: lch(0 0 0 / 0.07) 0px 1px 2px 0px inset;
   --control-outline-shadow:
     lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
@@ -450,7 +460,7 @@
   --border-default: var(--color-gray-950);
   --border-strong: var(--color-gray-700);
   --surface-glass: oklch(25% 0.002 255 / 0.55);
-  --border-glass: rgb(255 255 255 / 0.1);
+  --border-glass: rgb(255 255 255 / 0.14);
   --surface-glass-highlight: linear-gradient(
     180deg,
     rgb(255 255 255 / 0.066) 0%,
@@ -471,6 +481,8 @@
   --badge-warning-hover: color-mix(in oklab, var(--state-warning) 30%, transparent);
   /* yellow-600 text falls below AA on the dark surfaces */
   --badge-warning-foreground: var(--color-yellow-400);
+  --badge-purple: var(--color-purple-900);
+  --badge-purple-foreground: var(--color-purple-300);
   --state-danger: var(--color-red-500);
   --state-danger-foreground: var(--color-black);
   --chart-gray: var(--color-gray-700);

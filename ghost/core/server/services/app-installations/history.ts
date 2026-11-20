@@ -1,11 +1,14 @@
+import type { ManifestChange } from '@tryghost/app-contracts';
 import { movedBetween, type AppManifest } from '@tryghost/app-contracts/manifest';
 import { z } from 'zod';
-import type { AppInstallationEvent } from './actions';
+import type { ActionVerb } from '../../lib/action-log/kinds';
 import type { AppInstallationHistoryEntry, HistoryActor } from './codec';
 import type { AppInstallationManifestSource } from './schema';
 
 export interface HistoryManifest {
   id: string;
+  /** What differs from the manifest approved when the row was added, as stored with it. */
+  changes: ManifestChange[];
   source: z.infer<typeof AppInstallationManifestSource>;
   requires_approval: boolean;
   created_at: Date;
@@ -34,19 +37,33 @@ interface Approval {
 type Entry = AppInstallationHistoryEntry;
 
 /**
- * `manifestContents` holds the manifests before and after each approval, by id.
- * They're only used to tell whether an approval moved the app.
+ * `manifestContents` holds the manifests before and after each approval, by id. They're only
+ * used to tell whether an approval moved the app. What each entry changed is the changes stored
+ * with its manifest row: a suspension's are what waits for approval, and an approval's are the
+ * approved row's.
  */
 export function buildHistory(
   manifests: HistoryManifest[],
   actions: HistoryAction[],
   manifestContents: Map<string, AppManifest>,
 ): AppInstallationHistoryEntry[] {
-  const approvals = approvalsIn(actions);
+  const changesOf = new Map(manifests.map(({ id, changes }) => [id, changes]));
+  const withChanges = (entry: Entry, changes: ManifestChange[] | undefined): Entry =>
+    changes?.length ? { ...entry, changes } : entry;
   return newestFirst([
-    ...installOf(manifests, actions),
-    ...updatesSuspensionsAndResumesOf(manifests),
-    ...approvals.map((approval) => approvalEntry(approval, manifestContents)),
+    ...installOf(manifests, actions).map(({ entry, source }) =>
+      withChanges(entry, changesOf.get(source)),
+    ),
+    ...updatesSuspensionsAndResumesOf(manifests).map((entry) =>
+      withChanges(entry, changesOf.get(entry.id)),
+    ),
+    // Approving what was already approved changes nothing.
+    ...approvalsIn(actions).map((approval) =>
+      withChanges(
+        approvalEntry(approval, manifestContents),
+        approval.from === approval.to ? [] : changesOf.get(approval.to),
+      ),
+    ),
     ...uninstallsIn(actions),
   ]);
 }
@@ -56,7 +73,11 @@ export function approvalManifestIds(actions: HistoryAction[]): string[] {
   return [...new Set(approvalsIn(actions).flatMap(({ from, to }) => [from, to]))];
 }
 
-function installOf(manifests: HistoryManifest[], actions: HistoryAction[]): Entry[] {
+/** The install entry, with the id of the manifest row it comes from. */
+function installOf(
+  manifests: HistoryManifest[],
+  actions: HistoryAction[],
+): { entry: Entry; source: string }[] {
   const installed = manifests.find(({ source }) => source === 'install');
   if (!installed) {
     return [];
@@ -64,10 +85,13 @@ function installOf(manifests: HistoryManifest[], actions: HistoryAction[]): Entr
   const recorded = actions.find(withEvent('installed'));
   return [
     {
-      id: recorded?.id ?? installed.id,
-      event: 'installed',
-      actor: recorded?.actor ?? null,
-      created_at: installed.created_at,
+      entry: {
+        id: recorded?.id ?? installed.id,
+        event: 'installed',
+        actor: recorded?.actor ?? null,
+        created_at: installed.created_at,
+      },
+      source: installed.id,
     },
   ];
 }
@@ -137,5 +161,5 @@ function newestFirst(entries: Entry[]): Entry[] {
   );
 }
 
-const withEvent = (event: AppInstallationEvent) => (action: HistoryAction) =>
+const withEvent = (event: ActionVerb<'app_installation'>) => (action: HistoryAction) =>
   action.event === event;

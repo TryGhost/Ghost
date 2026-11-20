@@ -28,7 +28,7 @@ Newsletter Email Sending covers the preparation and submission of newsletter ema
 
 ### App Contracts
 
-Path: `packages/app-contracts/CONTEXT.md`
+Path: `contracts/app-contracts/CONTEXT.md`
 
 App Contracts covers what Ghost and an app must agree on: how an app describes itself in its manifest, how two versions of that manifest differ, and how Admin and an app's page talk over the bridge while Admin shows it.
 
@@ -37,6 +37,12 @@ App Contracts covers what Ghost and an app must agree on: how an app describes i
 Path: `ghost/core/server/services/app-installations/CONTEXT.md`
 
 App Installations covers a site's record of the apps it has approved, from the publisher's review of an install link through approvals of later changes to uninstalling.
+
+### Segments
+
+Path: `ghost/core/server/services/segments/CONTEXT.md`
+
+Segments covers named filters over members, which Admin's members list shows as saved views.
 
 ## Relationships
 

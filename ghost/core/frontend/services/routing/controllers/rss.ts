@@ -29,7 +29,7 @@ export interface RelatedData {
  */
 function getTitle(relatedData?: RelatedData): string {
   const data = relatedData || {};
-  let titleStart = _.get(data, 'author[0].name') || _.get(data, 'tag[0].name') || '';
+  let titleStart = data.author?.[0]?.name || data.tag?.[0]?.name || '';
 
   titleStart += titleStart ? ' - ' : '';
   return titleStart + settingsCache.get('title');

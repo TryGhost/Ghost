@@ -6,6 +6,9 @@ const { isSvgExtension } = require('../../lib/image/image-content');
 const { sanitizeSvgBuffer } = require('../../lib/image/svg-sanitizer');
 const vm = require('node:vm');
 const { createOriginSchemes } = require('./origin-schemes');
+const ExternalMediaInlinerJob = require('./external-media-inliner-job').default;
+
+const DEFAULT_DOMAINS = ['https://s3.amazonaws.com/revue', 'https://substackcdn.com'];
 
 // Plaintext media URLs are first tried over https. That attempt connects with a
 // short timeout and doesn't retry connection failures, so an origin without
@@ -131,6 +134,9 @@ class ExternalMediaInliner {
   /** @type {import('./types').ExternalMediaInlinerDependencies['loadHeicConvert']} */
   #loadHeicConvert;
 
+  /** @type {import('./types').ExternalMediaInlinerDependencies['dispatchJob']} */
+  #dispatchJob;
+
   /** @type {((buffer: Buffer) => Promise<{ext: string} | undefined>) | undefined} */
   #fileTypeFromBuffer;
 
@@ -148,6 +154,7 @@ class ExternalMediaInliner {
     this.#urlUtils = deps.urlUtils;
     this.#loadFileType = deps.loadFileType;
     this.#loadHeicConvert = deps.loadHeicConvert;
+    this.#dispatchJob = deps.dispatchJob;
     this.getMediaStorage = deps.getMediaStorage;
   }
 
@@ -661,6 +668,16 @@ class ExternalMediaInliner {
         );
       }
     }
+  }
+
+  /**
+   * @param {string[]} [domains] domains to inline media from
+   */
+  async startInlining(domains) {
+    this.#logging.info('[Background Job] external-media-inliner queued');
+    await this.#dispatchJob(
+      new ExternalMediaInlinerJob({ domains: domains?.length ? domains : DEFAULT_DOMAINS }),
+    );
   }
 
   /**

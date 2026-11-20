@@ -6,13 +6,12 @@ const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const { IncorrectUsageError } = require('@tryghost/errors');
 const KnexMigrator = require('knex-migrator');
-// Resolve MigratorConfig.js from the package root, not process.cwd() — see db-utils.js.
+// Resolve MigratorConfig from the package root, not process.cwd() — see db-utils.js.
 const knexMigrator = new KnexMigrator({ knexMigratorFilePath: path.join(__dirname, '../..') });
 
 // Ghost Internals
 const models = require('../../core/server/models');
 const { fixtureManager } = require('../../core/server/data/schema/fixtures');
-const permissions = require('../../core/server/services/permissions');
 const settingsService = require('../../core/server/services/settings/settings-service');
 const labsService = require('../../core/shared/labs');
 const {
@@ -303,12 +302,22 @@ const fixtures = {
     return models.User.findOne({ id: addedUser.id, status: 'all' }, context.internal);
   },
 
-  insertRoles: function insertRoles() {
-    return Promise.all(
-      DataGenerator.forKnex.roles.map((role) => {
-        return models.Role.add(role, context.internal);
-      }),
-    );
+  /**
+   * Adds the role fixtures one at a time. A teardown or reset has usually just
+   * deleted roles with the same names, and MySQL keeps those deleted rows in the
+   * unique index on the role name until its purge thread removes them. An insert
+   * that finds one takes a shared gap lock in the index, so two concurrent
+   * inserts can each hold a gap lock that blocks the other, and MySQL rolls one
+   * of them back with a deadlock error.
+   */
+  insertRoles: async function insertRoles() {
+    const roles = [];
+
+    for (const role of DataGenerator.forKnex.roles) {
+      roles.push(await models.Role.add(role, context.internal));
+    }
+
+    return roles;
   },
 
   initOwnerUser: function initOwnerUser() {
@@ -317,11 +326,7 @@ const fixtures = {
     user = DataGenerator.forKnex.createBasic(user);
     user = _.extend({}, user, { status: 'inactive' });
 
-    return Promise.all(
-      DataGenerator.forKnex.roles.map((role) => {
-        return models.Role.add(role, context.internal);
-      }),
-    ).then(function () {
+    return fixtures.insertRoles().then(function () {
       const userRolesRelation = _.cloneDeep(DataGenerator.forKnex.roles_users[0]);
       user.roles = _.filter(DataGenerator.forKnex.roles, { id: userRolesRelation.role_id });
       return fixtures.addUser(user);
@@ -369,25 +374,21 @@ const fixtures = {
   },
 
   createUsersWithRoles: function createUsersWithRoles() {
-    return Promise.all(
-      DataGenerator.forKnex.roles.map((role) => {
-        return models.Role.add(role, context.internal);
-      }),
-    ).then(function () {
-      return Promise.all(
-        _.cloneDeep(DataGenerator.forKnex.users).map((user) => {
-          let userRolesRelations = _.filter(DataGenerator.forKnex.roles_users, {
-            user_id: user.id,
-          });
+    return fixtures.insertRoles().then(async function () {
+      // One at a time: concurrent credential inserts over keys the reset just
+      // deleted deadlock in MySQL
+      for (const user of _.cloneDeep(DataGenerator.forKnex.users)) {
+        let userRolesRelations = _.filter(DataGenerator.forKnex.roles_users, {
+          user_id: user.id,
+        });
 
-          userRolesRelations = _.map(userRolesRelations, function (userRolesRelation) {
-            return _.find(DataGenerator.forKnex.roles, { id: userRolesRelation.role_id });
-          });
+        userRolesRelations = _.map(userRolesRelations, function (userRolesRelation) {
+          return _.find(DataGenerator.forKnex.roles, { id: userRolesRelation.role_id });
+        });
 
-          user.roles = userRolesRelations;
-          return fixtures.addUser(user);
-        }),
-      );
+        user.roles = userRolesRelations;
+        await fixtures.addUser(user);
+      }
     });
   },
 
@@ -397,19 +398,19 @@ const fixtures = {
     let roles = await models.Role.fetchAll();
     roles = roles.toJSON();
 
-    const users = await Promise.all(
-      usersWithoutOwner.map((user) => {
-        let userRolesRelations = _.filter(DataGenerator.forKnex.roles_users, { user_id: user.id });
+    // One at a time, as in createUsersWithRoles
+    const users = [];
+    for (const user of usersWithoutOwner) {
+      let userRolesRelations = _.filter(DataGenerator.forKnex.roles_users, { user_id: user.id });
 
-        userRolesRelations = _.map(userRolesRelations, function (userRolesRelation) {
-          return _.find(roles, { name: userRolesRelation.role_name });
-        });
+      userRolesRelations = _.map(userRolesRelations, function (userRolesRelation) {
+        return _.find(roles, { name: userRolesRelation.role_name });
+      });
 
-        user.roles = userRolesRelations;
+      user.roles = userRolesRelations;
 
-        return models.User.add(user, context.internal);
-      }),
-    );
+      users.push(await models.User.add(user, context.internal));
+    }
 
     // // Add API key for each user
     await Promise.all(
@@ -975,9 +976,6 @@ const toDoList = {
   'owner:post': function overrideOwnerUser() {
     return fixtures.overrideOwnerUser();
   },
-  'perms:init': function initPermissions() {
-    return permissions.init();
-  },
   filter: function createFilterParamFixtures() {
     return filterData(DataGenerator);
   },
@@ -1041,7 +1039,6 @@ const toDoList = {
  *
  * This is effectively a list of instructions with regard to which fixtures should be setup for this test.
  *  * `default` - a special option which will cause the full suite of normal fixtures to be initialized
- *  * `perms:init` - build the permissions actions map
  *  * `users:roles` - create a full suite of users, one per role
  * @param {Object} toDos
  */

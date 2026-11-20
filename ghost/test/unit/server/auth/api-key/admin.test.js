@@ -3,7 +3,7 @@ const { assertExists } = require('../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const jwt = require('jsonwebtoken');
 const sinon = require('sinon');
-const apiKeyAuth = require('../../../../../core/server/auth/api-key');
+const apiKeyAuth = require('../../../../../core/server/auth/api-key').default;
 const { ApiKey } = require('../../../../../core/server/models/api-key');
 
 describe('Admin API Key Auth', function () {

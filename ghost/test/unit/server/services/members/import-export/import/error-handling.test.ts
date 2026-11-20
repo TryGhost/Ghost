@@ -58,6 +58,7 @@ function harness(
   const dispatched: MembersImportJob[] = [];
   const spooled = new Map<string, MemberImportRow[]>();
   const removedKeys: string[] = [];
+  const spans: Array<{ name: string; outcome: string }> = [];
   let spoolWrites = 0;
   let spoolRemoved = false;
   // The importer reads knex once, at construction, so a test cannot swap it afterwards.
@@ -77,17 +78,14 @@ function harness(
         spooled.set(key, spooledRows);
         return key;
       },
-      read: async (key: string): Promise<MemberImportRow[]> => {
-        const spooledRows = spooled.get(key);
-        assert.ok(spooledRows, `expected rows spooled under ${key}`);
-        return spooledRows;
-      },
+      read: async (key: string): Promise<MemberImportRow[] | null> => spooled.get(key) ?? null,
       remove: async (key: string) => {
         spoolRemoved = true;
         removedKeys.push(key);
         if (removalFailure) {
           throw removalFailure;
         }
+        spooled.delete(key);
       },
     },
     members: {
@@ -156,7 +154,15 @@ function harness(
     getTimezone: () => 'Etc/UTC',
     getInlineThreshold: () => inlineThreshold,
     tracking: importExportTracking(
-      createTracer({ transport: { metric: async () => null }, logging: { error() {} } }),
+      createTracer({
+        transport: {
+          metric: async (_name: string, span: { event: { name: string; outcome: string } }) => {
+            spans.push(span.event);
+            return null;
+          },
+        },
+        logging: { error() {} },
+      }),
     ),
   };
 
@@ -194,6 +200,7 @@ function harness(
     run,
     dispatched,
     removedKeys,
+    spans,
     noopVerification,
     sent,
     reported,
@@ -501,6 +508,19 @@ describe('members import error handling', function () {
       assert.match(h.onlyReport().message, /EACCES/);
     });
 
+    it('survives a spool read that throws before it returns a promise', async function () {
+      const h = harness();
+      // Synchronous, so .then() on the returned promise would never see it.
+      h.deps.spool.read = (() => {
+        throw new Error('EACCES: permission denied');
+      }) as unknown as (key: string) => Promise<MemberImportRow[] | null>;
+
+      await h.run();
+
+      assert.equal(h.onlyEmail().subject, COULD_NOT_COMPLETE);
+      assert.match(h.onlyReport().message, /EACCES/);
+    });
+
     it('never rejects the queued job', async function () {
       const h = harness();
       h.deps.tiers.getDefault = async () => {
@@ -517,6 +537,58 @@ describe('members import error handling', function () {
           },
         }),
       );
+    });
+  });
+
+  describe('a job that runs again', function () {
+    it('does not tell the publisher a second time once the first run finished', async function () {
+      const h = harness();
+      await h.run();
+
+      await h.importer.handle(h.revive(h.dispatched[0]), h.noopVerification);
+
+      assert.deepEqual(
+        h.sent.map(({ subject }) => subject),
+        [COMPLETED],
+      );
+    });
+
+    it('does not record a run once the first run finished', async function () {
+      const h = harness();
+      await h.run();
+
+      await h.importer.handle(h.revive(h.dispatched[0]), h.noopVerification);
+
+      assert.deepEqual(
+        h.spans.filter(({ name }) => name === 'members.import.run').map(({ outcome }) => outcome),
+        ['success'],
+      );
+    });
+
+    it('tells the publisher when the first run stopped while sending the email', async function () {
+      const h = harness();
+      let stopped = false;
+      let reachedEmail: () => void = () => {};
+      const emailReached = new Promise<void>((resolve) => {
+        reachedEmail = resolve;
+      });
+      const send = h.deps.email.send;
+      // The first send never settles, as when the process stops part way through it.
+      h.deps.email.send = async (payload: SentEmail) => {
+        if (!stopped) {
+          stopped = true;
+          reachedEmail();
+          return new Promise<void>(() => {});
+        }
+        return send(payload);
+      };
+      await h.defer();
+      void h.importer.handle(h.revive(h.dispatched[0]), h.noopVerification);
+      await emailReached;
+
+      await h.importer.handle(h.revive(h.dispatched[0]), h.noopVerification);
+
+      assert.equal(h.onlyEmail().subject, COMPLETED);
     });
   });
 

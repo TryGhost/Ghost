@@ -11,7 +11,15 @@ import { normalizeIP } from '../../../../../core/server/web/shared/middleware/ap
 
 // Never blocks; the rate limits have their own tests
 const allow = () => ({ consume: async () => ({ allowed: true as const }), reset: async () => {} });
-const limiters = { globalBlock: allow, globalReset: allow, userLogin: allow, userReset: allow };
+const limiters = {
+  globalBlock: allow,
+  globalReset: allow,
+  userLogin: allow,
+  userReset: allow,
+  sendVerificationCode: allow,
+  userVerification: allow,
+  verificationEmail: allow,
+};
 
 function withHeader(ip: string | undefined, headers: Record<string, string> = {}) {
   const req = { ip, headers: { ...headers } } as Request;
@@ -46,14 +54,18 @@ describe('setClientIPHeader', function () {
       secret: 'a'.repeat(64),
       sessionMaxAgeMs: 1000,
       urlUtils: {
-        getAdminUrl: () => undefined,
-        getSiteUrl: () => 'https://example.com/',
+        getAdminOrigin: () => 'https://example.com',
         getSubdir: () => '',
         isSSL: () => true,
       },
       password: { hash: async () => '', compare: async () => false },
       logger: { debug() {}, info() {}, warn() {}, error() {} },
       limiters,
+      sendPasswordResetEmail: async () => {},
+      isStaffDeviceVerificationEnabled: () => true,
+      isEmailMfaRequired: () => false,
+      sendDeviceVerificationCode: async () => {},
+      getRequestOrigin: (headers) => headers.get('origin'),
     });
     const { options } = await auth.$context;
 

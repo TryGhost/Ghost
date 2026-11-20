@@ -9,7 +9,7 @@
  *             `files` set + a resolved production node_modules). The COPY layer
  *             that follows is extracted single-threaded, once per CI E2E shard,
  *             and that cost scales with file count rather than bytes.
- *   archive — scripts/pack.mjs, against the extracted package/ dir. No
+ *   archive — scripts/pack.mts, against the extracted package/ dir. No
  *             node_modules there (the consumer installs its own), so only the
  *             source rules apply.
  *
@@ -19,8 +19,8 @@
  *
  *   node scripts/prune.mts . --profile=image
  *
- * Run directly by node (type stripping, no build step) — `scripts/` is outside
- * the tsconfig `include`, so nothing compiles this.
+ * Run directly by node (type stripping, no build step). Typechecked, not
+ * compiled, through scripts/tsconfig.json.
  *
  * The exclusions below are load-bearing — each is something a naive version of
  * the rule deleted and broke. Keep them, and prefer `--dry-run` over reasoning
@@ -69,6 +69,13 @@ const bucketOf = (rel: string): string => {
   const match = /^node_modules\/\.pnpm\/([^/]+)\//.exec(rel);
   return match ? match[1]! : '(app)';
 };
+
+// better-sqlite3's prebuilds/ name, as its lib/binding.js picks one at runtime.
+const isLinuxMusl = (): boolean =>
+  process.platform === 'linux' &&
+  !(process.report.getReport() as { header: { glibcVersionRuntime?: string } }).header
+    .glibcVersionRuntime;
+export const PREBUILD_TARGET = `${isLinuxMusl() ? 'linuxmusl' : process.platform}-${process.arch}`;
 
 // Script files are never build inputs, whatever directory they sit in.
 const isScript = (base: string): boolean => /\.(js|json|mjs|cjs|node)$/.test(base);
@@ -133,6 +140,18 @@ const RULES: Rule[] = [
       // node-gyp rebuild is already impossible in the image (no toolchain
       // is installed, deliberately), so nothing reads these.
       return /\.(cc|cpp|cxx|c|h|hpp|hxx|gyp|gypi)$/.test(base);
+    },
+  },
+  {
+    name: 'prebuilds',
+    profiles: ['image'],
+    summary: 'better-sqlite3 binaries for other platforms',
+    // better-sqlite3 ships a binary per platform and loads only its own, so this
+    // assumes the tree runs where it's pruned - true of Dockerfile.production's
+    // deploy stage, which builds on the target platform.
+    match(rel) {
+      const match = /^node_modules\/.*\/better-sqlite3\/prebuilds\/([^/]+)\.node$/.exec(rel);
+      return match !== null && match[1] !== PREBUILD_TARGET;
     },
   },
 ];

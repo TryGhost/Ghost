@@ -8,7 +8,6 @@ export default defineService('Explore ping', () => {
     settingsCache: require('../../../shared/settings-cache'),
     config,
     logging: require('@tryghost/logging'),
-    ghostVersion: require('@tryghost/version'),
     request: require('@tryghost/request'),
     posts: require('../posts/posts-service-instance')(),
     members: require('../members'),

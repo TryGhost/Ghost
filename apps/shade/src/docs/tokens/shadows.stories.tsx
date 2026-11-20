@@ -31,7 +31,6 @@ export const Scale: Story = {
         { name: 'xl', cssVar: '--shadow-xl' },
         { name: 'inner', cssVar: '--shadow-inner' },
         { name: 'control-pressed', cssVar: '--shadow-control-pressed' },
-        { name: 'field', cssVar: '--field-shadow' },
       ]}
     />
   ),

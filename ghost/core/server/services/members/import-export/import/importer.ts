@@ -340,30 +340,44 @@ class MembersCSVImporter<Plan> {
     { spoolKey, labelName, extraLabels, emailRecipient }: MembersImportJob,
     verificationTrigger: VerificationTrigger,
   ): Promise<void> {
+    // Started from a resolved promise, so a read that throws before returning one is
+    // caught the same way as one that rejects.
+    const read = await Promise.resolve()
+      .then(() => this._spool.read(spoolKey))
+      .then(
+        (rows) => (rows ? { rows } : ('removed' as const)),
+        (error: unknown) => ({ error }),
+      );
+    if (read === 'removed') {
+      // The rows are only removed once the publisher has been told, so a job that runs
+      // again after that has nothing left to do. Checked before the run starts so that
+      // it is not recorded as one.
+      logging.warn(
+        { event: { name: 'members.import.already_finished' } },
+        'Members import skipped: its rows were already removed',
+      );
+      return;
+    }
+
     const startedAt = Date.now();
     logging.info({ event: { name: 'members.import.started' } }, 'Members import started');
     // Null until the import produces one: parsing and mapping already happened inside
     // the request, so anything failing from here is ours rather than the file's.
     let result: ImportResult | null = null;
     try {
-      // The rows are read back as part of the run, so a run that can't read them has failed.
-      result = await this._tracking.import('background', async (attempt) =>
-        this.importRows(
-          attempt,
-          await this._spool.read(spoolKey),
-          labelName,
-          extraLabels,
-          verificationTrigger,
-        ),
-      );
+      result = await this._tracking.import('background', async (attempt) => {
+        // Thrown inside the run, so a run that can't read its rows has failed.
+        if ('error' in read) {
+          throw read.error;
+        }
+        return this.importRows(attempt, read.rows, labelName, extraLabels, verificationTrigger);
+      });
     } catch (error) {
       // A run only throws before its write loop, so nothing was written.
       this._report(error);
-    } finally {
-      await this.settle(() => this._spool.remove(spoolKey));
     }
 
-    // Whatever became of it, the publisher hears exactly once. If this is what fails,
+    // Whatever became of the run, the publisher hears about it. If this is what fails,
     // there is nobody left to tell but us.
     await this.settle(() =>
       this._email.send(
@@ -375,6 +389,8 @@ class MembersCSVImporter<Plan> {
         }),
       ),
     );
+    // After the email, so a job cut short before it was sent still finds the rows.
+    await this.settle(() => this._spool.remove(spoolKey));
 
     if (result) {
       logging.info(

@@ -17,19 +17,21 @@ import {
 import type { ShapeText } from '@tryghost/metafield-types/shapes';
 import {
   CALLING_CODES,
-  flagOf,
+  hasOnlyPhoneCharacters,
   holdNumber,
   phoneCountryOptions,
   pickCountry,
   shownCountry,
   startPhoneEntry,
   typeNumber,
+  type PhoneCountry,
   type PhoneEntry,
 } from '@tryghost/metafield-types/phone';
 
 import InputForm from './input-form';
 import ListPicker from './list-picker';
-import { countryOptions, countryOptionsAmong } from '../../utils/countries';
+import { countryName, countryOptions, countryOptionsAmong } from '../../utils/countries';
+import { canLoadFlags, flagUrl } from '../../utils/flags';
 import { hasMode } from '../../utils/check-mode';
 import { isCookiesDisabled } from '../../utils/helpers';
 import { t } from '../../utils/i18n';
@@ -61,7 +63,7 @@ export const MemberCustomFieldsStyles = `
         min-width: 0;
     }
 
-    /* The country, shown as its flag and calling code, takes only the room those need. */
+    /* The country, shown as its flag and calling code, takes only the room it needs. */
     .gh-portal-input-group-row .gh-portal-input-section.gh-portal-phone-country {
         flex: 0 0 auto;
     }
@@ -76,6 +78,19 @@ export const MemberCustomFieldsStyles = `
     .gh-portal-phone-country .gh-portal-listpicker-field:focus-within,
     .gh-portal-phone-country .gh-portal-listpicker.is-open .gh-portal-listpicker-field {
         z-index: 2;
+    }
+
+    /* A country's flag, over a soft grey of the same shape. The grey holds the flag's place
+       before a country is known and while its flag loads, so the calling code doesn't move. */
+    .gh-portal-phone-flag {
+        display: inline-block;
+        width: 21px;
+        height: 14px;
+        margin-inline-end: 6px;
+        border-radius: 2px;
+        vertical-align: -2px;
+        background: linear-gradient(135deg, var(--grey12), var(--grey11));
+        object-fit: cover;
     }
 
     .gh-portal-custom-field-errors li {
@@ -179,27 +194,65 @@ interface FieldProps<S extends FieldShape> {
 }
 
 /**
- * Why the site refused what a field's inputs hold, under the inputs. Beside the label, where Portal
- * puts a short reason such as a missing name, a reason long enough to say how to put it right has
- * no room.
+ * A field's error messages, shown under its inputs. Portal puts short errors such as a missing
+ * name beside the label, but there is no room there for a message long enough to say how to fix
+ * the input. The wrapper is a polite live region that stays mounted while the field is shown, so
+ * a screen reader announces an error that appears while focus is in the input, such as one shown
+ * while typing.
  */
 function FieldErrors({ id, messages }: { id: string; messages: string[] }) {
-  if (messages.length === 0) {
+  return (
+    <div aria-live="polite">
+      {messages.length > 0 && (
+        <ul className="gh-portal-custom-field-errors" id={id}>
+          {messages.map((message) => (
+            <li key={message}>{message}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/**
+ * The flag of the country a phone input shows, beside its calling code, named by its country for
+ * a screen reader. With no country yet, as after typing only a +, the grey a flag is shown over
+ * holds its place.
+ *
+ * Several countries can share a calling code, so the flag is the country's, not the code's: the
+ * one a member picked, or the one their number's digits place it in, as the phone input works it
+ * out.
+ *
+ * Where flags can't be loaded, the input shows the calling code alone and leaves no room for a
+ * flag: on a page with nowhere to load them from, and once a flag has failed to load, as it does
+ * for a copy of Portal's script hosted without its flags, or on a site whose content security
+ * policy doesn't allow images from where the script is hosted.
+ */
+function CountryFlag({ country }: { country?: PhoneCountry }) {
+  const [failed, setFailed] = useState(false);
+  if (failed || !canLoadFlags()) {
     return null;
   }
+  if (!country) {
+    return <span aria-hidden="true" className="gh-portal-phone-flag" />;
+  }
   return (
-    <ul className="gh-portal-custom-field-errors" id={id}>
-      {messages.map((message) => (
-        <li key={message}>{message}</li>
-      ))}
-    </ul>
+    <img
+      alt={countryName(country)}
+      className="gh-portal-phone-flag"
+      // The flag asked for says which country a member's number is from, so the request
+      // doesn't also say which page they are on.
+      referrerPolicy="no-referrer"
+      src={flagUrl(country)}
+      onError={() => setFailed(true)}
+    />
   );
 }
 
 /**
  * A phone number, written beside the country it is from, as Stripe Checkout asks for one: the
- * country as its flag and code, picked from a list of every country that can be searched by name or
- * by code, and the number. The list opens across the whole input. A member writes the number as
+ * country as its flag and calling code, picked from a list of every country that can be searched
+ * by name or by code, and the number. The list opens across the whole input. A member writes the number as
  * they would at home and the country's code goes in front, or writes it with its code, and the
  * country shown follows. The site keeps it in one international form.
  */
@@ -216,7 +269,13 @@ function PhoneInput({
   const disabled = hasMode(['preview']) || isCookiesDisabled();
   const options = useMemo(() => phoneCountryOptions(countryOptions()), []);
   const phoneRef = useRef<HTMLDivElement>(null);
-  const [entry, setEntry] = useState(() => startPhoneEntry(value, navigator.languages ?? []));
+  const [entry, setEntry] = useState(() =>
+    startPhoneEntry(
+      value,
+      navigator.languages ?? [],
+      Intl.DateTimeFormat().resolvedOptions().timeZone,
+    ),
+  );
   // What this input last sent. A value that differs came from the site, such as the number it
   // kept after a save, and replaces what was typed.
   const sent = useRef(value);
@@ -239,7 +298,6 @@ function PhoneInput({
       <div className="gh-portal-input-section gh-portal-phone-country">
         <ListPicker
           alignTo={phoneRef}
-          answerText={(code) => `${flagOf(code)} +${CALLING_CODES[code]}`}
           clearable={false}
           // A number is refused as a whole, and its country is often what puts it right.
           describedBy={input.describedBy}
@@ -249,8 +307,19 @@ function PhoneInput({
           label={t('Country code')}
           multiple={false}
           options={options}
-          placeholder="+"
+          placeholder={
+            <>
+              <CountryFlag />+
+            </>
+          }
           readOnly={readOnly ?? false}
+          // The flag is an image, as an emoji flag shows as two letters in Chrome and Edge on
+          // Windows.
+          renderAnswer={(code) => (
+            <>
+              <CountryFlag country={code} />+{CALLING_CODES[code]}
+            </>
+          )}
           value={country ? [country] : []}
           // The country shown, picked again, changes nothing, as a select's own option doesn't.
           onChange={([to]) => {
@@ -302,10 +371,19 @@ function LeafInputs({
 function ScalarField({ field, value, errors, onChange, onKeyDown }: FieldProps<'scalar'>) {
   const name = `custom:${field.key}`;
   const held = scalarValue(value);
-  const error = errors[name];
+  const input = leafInput(FIELD_STRUCTURES[field.type].leaf, held || undefined);
+  // A phone number is validated while typing only for invalid characters, such as a letter, which
+  // needs no knowledge of any country's numbers. Whether the number itself is valid is left to
+  // the server. An error about the current input takes precedence over the server's error about
+  // the last value sent.
+  const mistyped =
+    input.type === 'phone' && !hasOnlyPhoneCharacters(held)
+      ? t('Enter the phone number using only digits, spaces and symbols like + - ( ).')
+      : undefined;
+  const error = mistyped ?? errors[name];
   const errorsId = `custom-${field.key}-errors`;
   const leaf: DrawnLeaf = {
-    ...leafInput(FIELD_STRUCTURES[field.type].leaf, held || undefined),
+    ...input,
     value: held,
     label: field.name,
     name,

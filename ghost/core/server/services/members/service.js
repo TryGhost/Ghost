@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const MembersSSR = require('./members-ssr');
@@ -7,7 +6,6 @@ const MembersConfigProvider = require('./members-config-provider');
 const { makeImporter, makeExporter } = require('./import-export');
 const { resolveInlineThreshold } = require('./import-export/config');
 const MembersStats = require('./stats/members-stats');
-const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils').default;
 const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
@@ -124,14 +122,11 @@ const countRemovedEmailRecipients = async (since, limit) => {
 
 const initVerificationTrigger = () => {
   return new VerificationTrigger({
-    getApiTriggerThreshold: () =>
-      _.get(config.get('hostSettings'), 'emailVerification.apiThreshold'),
-    getAdminTriggerThreshold: () =>
-      _.get(config.get('hostSettings'), 'emailVerification.adminThreshold'),
-    getImportTriggerThreshold: () =>
-      _.get(config.get('hostSettings'), 'emailVerification.importThreshold'),
+    getApiTriggerThreshold: () => config.get('hostSettings')?.emailVerification?.apiThreshold,
+    getAdminTriggerThreshold: () => config.get('hostSettings')?.emailVerification?.adminThreshold,
+    getImportTriggerThreshold: () => config.get('hostSettings')?.emailVerification?.importThreshold,
     getRemovedRecipientsThreshold: () =>
-      _.get(config.get('hostSettings'), 'emailVerification.removedRecipientsThreshold'),
+      config.get('hostSettings')?.emailVerification?.removedRecipientsThreshold,
     isVerified: () => config.get('hostSettings:emailVerification:verified') === true,
     isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
     setVerificationRequired: (value) => settingsCache.set('email_verification_required', { value }),
@@ -170,10 +165,6 @@ module.exports = {
 
     if (!membersApi) {
       membersApi = createMembersApiInstance(membersConfig);
-
-      membersApi.bus.on('error', function (err) {
-        logging.error(err);
-      });
     }
 
     module.exports.requestIntegrityTokenProvider = new RequestIntegrityTokenProvider({

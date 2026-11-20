@@ -5,10 +5,9 @@ import type {
   SchedulerAdapter,
   SchedulerJob,
 } from '@tryghost/adapter-base-scheduling';
-
-// CJS-only module without TS declarations.
 // TODO: replace with dependency injection once the sentry module is TS
-const sentry = require('../../../shared/sentry');
+// @ts-expect-error This module lacks type definitions.
+import sentry from '../../../shared/sentry';
 
 /**
  * The surface Ghost consumes from a resolved scheduling adapter: the

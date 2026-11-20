@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
 import { utils as errorUtils } from '@tryghost/errors';
-import createKnex from 'knex';
-// @ts-expect-error This module lacks type definitions.
-import commands from '../../../../../core/server/data/schema/commands';
+import createKnex, { type Knex } from 'knex';
+import * as commands from '../../../../../core/server/data/schema/commands';
+import type { TableDefinition } from '../../../../../core/server/data/schema/types';
+
+// Hand-built stand-ins for the knex calls a command makes.
+const asKnex = (fake: object) => fake as unknown as Knex;
 
 describe('schema commands', function () {
   describe('getTables', function () {
@@ -16,7 +19,7 @@ describe('schema commands', function () {
         ],
       };
 
-      assert.deepEqual(await commands.getTables(fakeKnex), ['posts', 'users']);
+      assert.deepEqual(await commands.getTables(asKnex(fakeKnex)), ['posts', 'users']);
     });
   });
 
@@ -26,7 +29,9 @@ describe('schema commands', function () {
     });
 
     try {
-      await commands._hasForeignSQLite({ transaction: knex });
+      await commands._hasForeignSQLite({ transaction: knex } as Parameters<
+        typeof commands._hasForeignSQLite
+      >[0]);
       assert.fail('addForeign did not throw');
     } catch (err) {
       assert(err instanceof Error);
@@ -41,7 +46,7 @@ describe('schema commands', function () {
     });
 
     try {
-      await commands._hasPrimaryKeySQLite(null, knex);
+      await commands._hasPrimaryKeySQLite(null as unknown as string, knex);
       assert.fail('hasPrimaryKeySQLite did not throw');
     } catch (err) {
       assert(err instanceof Error);
@@ -65,7 +70,7 @@ describe('schema commands', function () {
       const knex = createKnex({ client, useNullAsDefault: true });
 
       try {
-        return commands._buildTable('test_table', knex, tableSpec).toString();
+        return commands._buildTable('test_table', knex, tableSpec as TableDefinition).toString();
       } finally {
         knex.destroy();
       }
@@ -160,7 +165,7 @@ describe('schema commands', function () {
   });
 
   describe('collation of foreign key columns', function () {
-    const id = { type: 'string', maxlength: 24, nullable: false };
+    const id = { type: 'string', maxlength: 24, nullable: false } as const;
 
     function fakeKnex({
       client = 'mysql2',
@@ -194,7 +199,7 @@ describe('schema commands', function () {
             member_id: { ...id, references: 'members.id' },
             slug: { type: 'string', maxlength: 191, nullable: false },
           },
-          knex,
+          asKnex(knex),
         );
 
         assert.deepEqual(collations, {
@@ -225,7 +230,7 @@ describe('schema commands', function () {
               },
             ],
           },
-          knex,
+          asKnex(knex),
         );
 
         assert.deepEqual(collations, {
@@ -246,7 +251,7 @@ describe('schema commands', function () {
             post_id: { ...id, references: 'posts.id' },
             parent_id: { ...id, references: 'new_table.id' },
           },
-          knex,
+          asKnex(knex),
         );
 
         assert.deepEqual(collations, { post_id: 'utf8mb4_general_ci' });
@@ -255,7 +260,7 @@ describe('schema commands', function () {
       it('does not query the database for a table with no foreign keys', async function () {
         const knex = fakeKnex();
 
-        assert.deepEqual(await commands._getForeignKeyCollations({ id }, knex), {});
+        assert.deepEqual(await commands._getForeignKeyCollations({ id }, asKnex(knex)), {});
         assert.equal(knex.queries.length, 0);
       });
 
@@ -264,7 +269,7 @@ describe('schema commands', function () {
 
         const collations = await commands._getForeignKeyCollations(
           { id, post_id: { ...id, references: 'posts.id' } },
-          knex,
+          asKnex(knex),
         );
 
         assert.deepEqual(collations, {});
@@ -276,7 +281,7 @@ describe('schema commands', function () {
 
         const collations = await commands._getForeignKeyCollations(
           { id, post_id: { ...id, references: 'posts.id' } },
-          knex,
+          asKnex(knex),
         );
 
         assert.deepEqual(collations, {});
@@ -329,7 +334,7 @@ describe('schema commands', function () {
   });
 
   describe('a column pattern', function () {
-    const slug = { type: 'string', maxlength: 191, nullable: false };
+    const slug = { type: 'string' as const, maxlength: 191, nullable: false };
 
     // The database suites run on MySQL only, so this is what covers SQLite.
     it('is left out on SQLite, which has no regular expression function', function () {
@@ -446,7 +451,7 @@ describe('schema commands', function () {
         },
       };
 
-      await commands.createViewOrReplace('my_view', 'SELECT 1 AS one', fakeKnex);
+      await commands.createViewOrReplace('my_view', 'SELECT 1 AS one', asKnex(fakeKnex));
 
       assert.equal(rawStatements.length, 1);
       assert.match(rawStatements[0], /CREATE OR REPLACE SQL SECURITY INVOKER VIEW/);
@@ -467,7 +472,7 @@ describe('schema commands', function () {
         },
       };
 
-      await commands.createViewOrReplace('my_view', 'SELECT 1 AS one', fakeKnex);
+      await commands.createViewOrReplace('my_view', 'SELECT 1 AS one', asKnex(fakeKnex));
 
       assert.deepEqual(builderViews, ['my_view']);
     });
@@ -484,9 +489,15 @@ describe('schema commands', function () {
         },
       };
 
-      await commands.renameColumn('email_batches', 'provider_id', 'mailgun_message_id', fakeKnex, {
-        algorithm: 'instant',
-      });
+      await commands.renameColumn(
+        'email_batches',
+        'provider_id',
+        'mailgun_message_id',
+        asKnex(fakeKnex),
+        {
+          algorithm: 'instant',
+        },
+      );
 
       assert.deepEqual(rawStatements, [
         'ALTER TABLE `email_batches` RENAME COLUMN `provider_id` TO `mailgun_message_id`, algorithm=instant',
@@ -503,7 +514,7 @@ describe('schema commands', function () {
         },
       };
 
-      await commands.renameColumn('table', 'old_column', 'new_column', fakeKnex);
+      await commands.renameColumn('table', 'old_column', 'new_column', asKnex(fakeKnex));
 
       assert.deepEqual(rawStatements, [
         'ALTER TABLE `table` RENAME COLUMN `old_column` TO `new_column`',
@@ -531,9 +542,15 @@ describe('schema commands', function () {
         },
       };
 
-      await commands.renameColumn('email_batches', 'provider_id', 'mailgun_message_id', fakeKnex, {
-        algorithm: 'instant',
-      });
+      await commands.renameColumn(
+        'email_batches',
+        'provider_id',
+        'mailgun_message_id',
+        asKnex(fakeKnex),
+        {
+          algorithm: 'instant',
+        },
+      );
 
       assert.deepEqual(rawStatements, [
         'ALTER TABLE `email_batches` RENAME COLUMN `provider_id` TO `mailgun_message_id`, algorithm=instant',
@@ -555,9 +572,15 @@ describe('schema commands', function () {
       };
 
       await assert.rejects(
-        commands.renameColumn('email_batches', 'provider_id', 'mailgun_message_id', fakeKnex, {
-          algorithm: 'instant',
-        }),
+        commands.renameColumn(
+          'email_batches',
+          'provider_id',
+          'mailgun_message_id',
+          asKnex(fakeKnex),
+          {
+            algorithm: 'instant',
+          },
+        ),
         /doesn't exist/,
       );
 

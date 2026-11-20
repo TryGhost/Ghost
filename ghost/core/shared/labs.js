@@ -30,10 +30,11 @@ const messages = {
 // Admin no longer reads selfServeArchives or admin7EditorImprovements; they stay
 // enabled for older Admin builds during independent deployments.
 const GA_FEATURES = [
-  'automationsLifecycleTriggers',
   'selfServeArchives',
   'admin7EditorImprovements',
   'membersCustomFields',
+  'stripeCheckoutCollection',
+  'customFieldTypePhone',
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -53,17 +54,19 @@ const PRIVATE_FEATURES = [
   'importMemberTier',
   'csvContentImporter',
   'admin7Design',
+  'admin7Mobile',
   'admin7CustomizeFromViewSite',
   'emailUniqueid',
   'themeTranslation',
   'pictureImageFormats',
   'getHelperDeduplication',
-  'stripeCheckoutCollection',
   'paywallImprovements',
   'machinePayments',
   'apps',
   'inAppSupport',
-  'customFieldTypePhone',
+  'editorPresencePolling',
+  'editorPresence',
+  'commentsAnalytics',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
@@ -146,7 +149,7 @@ module.exports.enabledHelper = function enabledHelper(options, callback) {
 
   const { SafeString } = require('express-hbs');
   const errString = new SafeString(
-    `<script>console.error("${_.values(errDetails).join(' ')}");</script>`,
+    `<script>console.error("${Object.values(errDetails).join(' ')}");</script>`,
   );
 
   return errString;

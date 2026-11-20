@@ -159,8 +159,7 @@ module.exports = class LinkRedirectRepository {
    * @returns {Promise<string[]>} array of LinkRedirect IDs
    */
   async getFilteredIds(options) {
-    const linkRows = await this.#LinkRedirect
-      .getFilteredCollectionQuery(options)
+    const linkRows = await this.#LinkRedirect.getFilteredCollectionQuery(options)
       .select('redirects.id')
       .distinct();
     return linkRows.map((row) => row.id);

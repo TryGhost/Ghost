@@ -1,6 +1,7 @@
 import { page } from 'vitest/browser';
 import {
   adminSidebar,
+  createPostLink,
   appearanceMenuItem,
   darkAppearanceOption,
   ghostProLink,
@@ -57,6 +58,7 @@ export const sidebarScreen = {
   pinButton: () => sidebarScreen.shellNav().getByRole('button', { name: pinSidebarButton }),
   unpinButton: () => sidebarScreen.shellNav().getByRole('button', { name: unpinSidebarButton }),
   postsToggle: () => page.getByRole('button', { name: postsToggle }),
+  createPostLink: () => page.getByRole('link', { name: createPostLink }),
   networkBadge: () => page.getByTestId(networkNotificationBadge),
   userMenuTrigger: () => page.getByRole('button', { name: userMenuTrigger }),
   profileMenuItem: () => page.getByRole('menuitem', { name: profileMenuItem }),

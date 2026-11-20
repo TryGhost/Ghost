@@ -161,12 +161,11 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
                 {email}
               </a>
             )}
-            {!name &&
-              email && (
-                // In create mode only the email is filled at first; still show it so the
-                // sidebar visibly follows what the user has typed.
-                <span className="block truncate text-muted-foreground">{email}</span>
-              )}
+            {!name && email && (
+              // In create mode only the email is filled at first; still show it so the
+              // sidebar visibly follows what the user has typed.
+              <span className="block truncate text-muted-foreground">{email}</span>
+            )}
           </div>
         </div>
       )}

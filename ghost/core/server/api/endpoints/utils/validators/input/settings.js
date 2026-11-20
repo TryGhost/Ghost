@@ -40,7 +40,7 @@ function parseArraySettingValue(value) {
 
 function isValidNavigationUrl(value) {
   return (
-    _.isString(value) &&
+    typeof value === 'string' &&
     !value.match(/\s/) &&
     (validator.isURL(value, { require_protocol: true }) || value.match(navUrlRegex))
   );
@@ -60,7 +60,7 @@ function isLocalhostIconUrl(value) {
 
 function isValidNavigationIcon(value) {
   return (
-    _.isString(value) &&
+    typeof value === 'string' &&
     !value.match(/\s/) &&
     (validator.isURL(value, iconUrlOptions) ||
       value.match(iconUrlRegex) ||
@@ -72,7 +72,7 @@ function validateNavigationItems(setting, errors) {
   const navigationItems = parseArraySettingValue(setting.value);
 
   navigationItems.forEach((item) => {
-    if (!_.isObject(item) || _.isFunction(item)) {
+    if (!_.isObject(item) || typeof item === 'function') {
       errors.push(
         new ValidationError({
           message: tpl(messages.invalidNavigationItemValueReceived),
@@ -82,7 +82,7 @@ function validateNavigationItems(setting, errors) {
       return;
     }
 
-    if (_.isUndefined(item.url) || !isValidNavigationUrl(item.url)) {
+    if (item.url === undefined || !isValidNavigationUrl(item.url)) {
       errors.push(
         new ValidationError({
           message: tpl(messages.invalidNavigationItemValueReceived),
@@ -91,10 +91,10 @@ function validateNavigationItems(setting, errors) {
       );
     }
 
-    const hasLabel = _.isString(item.label) && !item.label.match(/^\s*$/);
-    const hasIcon = _.isString(item.icon) && !item.icon.match(/^\s*$/);
+    const hasLabel = typeof item.label === 'string' && !item.label.match(/^\s*$/);
+    const hasIcon = typeof item.icon === 'string' && !item.icon.match(/^\s*$/);
 
-    if (!_.isUndefined(item.label) && !_.isString(item.label)) {
+    if (item.label !== undefined && typeof item.label !== 'string') {
       errors.push(
         new ValidationError({
           message: tpl(messages.invalidNavigationItemValueReceived),
@@ -104,7 +104,7 @@ function validateNavigationItems(setting, errors) {
     }
 
     if (
-      !_.isUndefined(item.icon) &&
+      item.icon !== undefined &&
       item.icon !== null &&
       item.icon !== '' &&
       !isValidNavigationIcon(item.icon)
@@ -127,7 +127,7 @@ function validateNavigationItems(setting, errors) {
     }
 
     if (
-      !_.isUndefined(item.visibility) &&
+      item.visibility !== undefined &&
       !navigationItemVisibilityValues.includes(item.visibility)
     ) {
       errors.push(

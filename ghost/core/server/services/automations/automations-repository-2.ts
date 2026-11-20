@@ -36,6 +36,39 @@ export type RunToInsert = {
   member_email: string;
 };
 
+export type AutomatedEmailRecipientTrackingData = {
+  deliveredAt?: Date;
+  openedAt?: Date;
+  automationActionRevisionId: string;
+};
+
+export type RecordEmailSentOptions = Readonly<{
+  automationActionRevisionId: string;
+  automationRunStepId: string;
+  mailgunMessageId?: string;
+  memberEmail: string;
+  memberId: string;
+  memberName: string | null;
+  memberUuid: string;
+  trackClicks: boolean;
+  trackOpens: boolean;
+}>;
+
+export type EmailRecipientToInsert = {
+  id: string;
+  created_at: Date;
+  updated_at: Date;
+  member_id: string;
+  member_uuid: string;
+  member_email: string;
+  member_name: string | null;
+  automation_action_revision_id: string;
+  automation_run_step_id: string;
+  mailgun_message_id?: string;
+  track_clicks: boolean;
+  track_opens: boolean;
+};
+
 export type TrackEmailClickedOptions = ReadonlyDeep<{
   automationActionRevisionId: string;
   automationRunStepId: string;
@@ -66,6 +99,19 @@ export type AutomationsRepository2<Connection> = {
   /** Delete all trigger rules for an automation. */
   deleteTriggerRules: (connection: Connection, automationId: string) => Promisable<void>;
 
+  /** Fetch some member data and lock them for the rest of the connection. */
+  fetchAndLockMembers: (
+    connection: Connection,
+    memberIds: Iterable<string>,
+  ) => Promisable<Array<{ id: string; email: string }>>;
+
+  /** Find enrollments for some members in some automations. */
+  findAutomationMemberEnrollments: (
+    connection: Connection,
+    automationIds: ReadonlyArray<string>,
+    memberIds: ReadonlyArray<string>,
+  ) => Promisable<Array<{ automation_id: string; member_id: string }>>;
+
   /** Find (and lock) a recipient with click tracking enabled. */
   findEmailRecipientForClick: (
     connection: Connection,
@@ -87,26 +133,39 @@ export type AutomationsRepository2<Connection> = {
           memberTierIds: string[];
           previousMemberTierIds: string[];
         }
+      | {
+          eventName: 'label_added';
+          labelId: string;
+        }
     >,
   ) => Promisable<NextActionRevisionRow[]>;
 
   /** Get the count of all automations. */
   getNumberOfAutomations: (connection: Connection) => Promisable<number>;
 
-  /** Has this member ever entered this automation? */
-  hasMemberEnteredAutomation: (
-    connection: Connection,
-    automationId: string,
-    memberId: string,
-  ) => Promisable<boolean>;
-
   /** Increment the number of recipients that clicked this revision. */
   incrementEmailClickedCount: (connection: Connection, revisionId: string) => Promisable<void>;
+
+  /** Increment the number of recipients that opened this revision. */
+  incrementEmailOpenedCount: (
+    connection: Connection,
+    actionRevisionId: string,
+    count: number,
+  ) => Promisable<void>;
+
+  /** Increment the number of emails sent for this revision. */
+  incrementEmailSentCount: (connection: Connection, revisionId: string) => Promisable<void>;
 
   /** Insert automation actions. */
   insertActions: (
     connection: Connection,
     toInsert: ReadonlyArray<ActionToInsert>,
+  ) => Promisable<void>;
+
+  /** Insert an automated email recipient. */
+  insertEmailRecipient: (
+    connection: Connection,
+    toInsert: Readonly<EmailRecipientToInsert>,
   ) => Promisable<void>;
 
   /** Insert automation run steps. Typically coupled with the insertion of an equal number of runs. */
@@ -124,12 +183,6 @@ export type AutomationsRepository2<Connection> = {
     toInsert: ReadonlyArray<AutomationTriggerRule>,
   ) => Promisable<void>;
 
-  /** Is this run's automation active? */
-  isAutomationActiveForRun: (
-    connection: Connection,
-    automationRunId: string,
-  ) => Promisable<boolean>;
-
   /** Is this step's automation active? */
   isAutomationActiveForRunStep: (connection: Connection, runStepId: string) => Promisable<boolean>;
 
@@ -142,11 +195,11 @@ export type AutomationsRepository2<Connection> = {
    */
   lockActionRevisions: (connection: Connection, revisionIds: Iterable<string>) => Promisable<void>;
 
-  /**
-   * Lock a member for the lifetime of this transaction. Useful to make sure a
-   * member doesn't change during an operation.
-   */
-  lockMember: (connection: Connection, memberId: string) => Promisable<void>;
+  /** Lock recipients whose first open has not yet been recorded. */
+  lockNotYetOpenedEmailRecipients: (
+    connection: Connection,
+    automatedEmailRecipientIds: readonly string[],
+  ) => Promisable<Set<string>>;
 
   /**
    * Set the email's "clicked" timestamp. Returns whether a recipient was
@@ -157,6 +210,13 @@ export type AutomationsRepository2<Connection> = {
     recipientId: string,
     clickedAt: Readonly<Date>,
   ) => Promisable<boolean>;
+
+  /** Preserve the earliest delivery and open timestamps for a recipient. */
+  setEmailRecipientDeliveredAndOpenedAt: (
+    connection: Connection,
+    automatedEmailRecipientId: string,
+    events: ReadonlyDeep<Pick<AutomatedEmailRecipientTrackingData, 'deliveredAt' | 'openedAt'>>,
+  ) => Promisable<void>;
 
   /** Run a function within a repository connection. */
   withConnection: <ReturnT>(fn: (connection: Connection) => ReturnT) => ReturnT;

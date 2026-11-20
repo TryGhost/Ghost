@@ -523,7 +523,7 @@ describe('PostEmailHandler', function () {
         sinon.assert.notCalled(mockEmailService.retryEmail);
 
         if (status === 'failed') {
-          await assert.rejects(sendEmail(), error);
+          await assert.rejects(sendEmail(), (thrown) => thrown === error);
           sinon.assert.notCalled(model.set);
         } else {
           await sendEmail();
@@ -563,7 +563,7 @@ describe('PostEmailHandler', function () {
       mockEmailService.retryEmail.rejects(error);
       const sendEmail = await postEmailHandler.createOrRetryEmail(model);
       sinon.assert.notCalled(mockEmailService.retryEmail);
-      await assert.rejects(sendEmail(), error);
+      await assert.rejects(sendEmail(), (thrown) => thrown === error);
       sinon.assert.notCalled(model.set);
     });
 

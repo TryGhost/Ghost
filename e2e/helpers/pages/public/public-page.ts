@@ -132,6 +132,18 @@ export class PublicPage extends BasePage {
     });
   }
 
+  /** Waits until member attribution has recorded a visit to `path`, such as `/my-post/`. */
+  async waitForPathInMemberHistory(path: string): Promise<void> {
+    await this.page.waitForFunction((expectedPath) => {
+      try {
+        const history = JSON.parse(window.sessionStorage.getItem('ghost-history') ?? '[]');
+        return Array.isArray(history) && history.some((entry) => entry?.path === expectedPath);
+      } catch {
+        return false;
+      }
+    }, path);
+  }
+
   async openPortalViaSubscribeButton(): Promise<void> {
     await this.waitForMemberAttributionReady();
     await this.portal.clickLinkAndWaitForPopup(this.subscribeLink);

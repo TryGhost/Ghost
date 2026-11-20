@@ -6,18 +6,18 @@ import fs from 'node:fs';
 import { execSync } from 'node:child_process';
 import semver from 'semver';
 
-const MIGRATION_TEMPLATE = `const logging = require('@tryghost/logging');
+const MIGRATION_TEMPLATE = `import logging from '@tryghost/logging';
 
 // For DDL - schema changes
-// const {createNonTransactionalMigration} = require('../../utils');
+// import { createNonTransactionalMigration } from '../../utils';
 
 // For DML - data changes
-// const {createTransactionalMigration} = require('../../utils');
+// import { createTransactionalMigration } from '../../utils';
 
 // Or use a specific helper
-// const {addTable, createAddColumnMigration} = require('../../utils');
+// import { addTable, createAddColumnMigration } from '../../utils';
 
-module.exports = /**/;
+export default /**/;
 `;
 
 const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
@@ -109,7 +109,7 @@ function createMigration({ slug, coreDir, date, lastPublishedVersion }: Migratio
     .slice(0, 19)
     .replace('T', '-')
     .replaceAll(':', '-');
-  const filename = `${timestamp}-${slug}.js`;
+  const filename = `${timestamp}-${slug}.ts`;
   const migrationPath = path.join(versionDir, filename);
 
   fs.mkdirSync(versionDir, { recursive: true });

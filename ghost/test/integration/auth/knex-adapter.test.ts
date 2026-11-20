@@ -2,7 +2,6 @@ import { describe } from 'vitest';
 import {
   authFlowTestSuite,
   caseInsensitiveTestSuite,
-  joinsTestSuite,
   normalTestSuite,
   testAdapter,
   transactionsTestSuite,
@@ -19,9 +18,11 @@ import {
   ghostModelOptions,
   ghostVirtualColumns,
 } from '../../../core/server/auth/better-auth/ghost-models';
+import type { TableDefinition } from '../../../core/server/data/schema/types';
 
 const commands = require('../../../core/server/data/schema/commands');
-const schema = require('../../../core/server/data/schema/schema');
+const schema: Record<string, TableDefinition> =
+  require('../../../core/server/data/schema/schema').default;
 
 // Better Auth's adapter suite against MySQL (PLA-595). Tests that cannot pass
 // against Ghost's schema are skipped below with their cause; see
@@ -34,7 +35,7 @@ const schema = require('../../../core/server/data/schema/schema');
 //
 //  - `better-auth tables`: every model in Better Auth's own shape under Ghost's
 //    names. Isolates the adapter's query handling from Ghost's schema.
-//  - `ghost users`: every table schema.js defines (`users`, `user_accounts`,
+//  - `ghost users`: every table schema.ts defines (`users`, `user_accounts`,
 //    `user_sessions`, `verifications`) built from it, with the virtual
 //    `email_verified` column, as the instance will run.
 
@@ -98,7 +99,7 @@ const ghostUsersSkips = {
   'findOne - should join a model with modified field name': true,
 };
 
-// Some tests rename the user model, so point schema.js's `users.id` foreign
+// Some tests rename the user model, so point schema.ts's `users.id` foreign
 // keys at whatever table it is built as
 function referencingUserTable(tableSpec: Record<string, unknown>, userTable: string) {
   return Object.fromEntries(
@@ -193,7 +194,6 @@ function lane(name: string, { ghostUsers }: { ghostUsers: boolean }) {
     prefixTests: name,
     tests: [
       normalTestSuite({ disableTests: ghostUsers ? ghostUsersSkips : {} }),
-      joinsTestSuite({ disableTests: ghostUsers ? ghostUsersSkips : {} }),
       transactionsTestSuite(),
       caseInsensitiveTestSuite({ disableTests: collation }),
       // Expects a new user's emailVerified to be false; it is virtual and always true

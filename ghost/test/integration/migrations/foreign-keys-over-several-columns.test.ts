@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import type { Knex } from 'knex';
-// @ts-expect-error This module lacks type definitions.
 import * as commands from '../../../core/server/data/schema/commands';
 
 const testUtils = require('../../utils');

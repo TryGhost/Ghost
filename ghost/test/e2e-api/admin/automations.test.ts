@@ -10,7 +10,6 @@ import nock from 'nock';
 import TinybirdServiceWrapper from '../../../core/server/services/tinybird';
 import settingsCache from '../../../core/shared/settings-cache';
 import configUtils from '../../utils/config-utils';
-// @ts-expect-error Module has no type declarations.
 import domainEvents from '@tryghost/domain-events';
 import ObjectId from 'bson-objectid';
 // @ts-expect-error Module has no type declarations.
@@ -201,6 +200,7 @@ describe('Automations API', function () {
   });
 
   beforeEach(async function () {
+    mockManager.mockLabsEnabled('automationsLeadMagnets');
     await setupAutomationsFixture();
   });
 
@@ -223,9 +223,16 @@ describe('Automations API', function () {
       ],
     };
     const tierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
+    const labelIds = [ObjectId().toHexString(), ObjectId().toHexString()];
+    const labelRules = (label_id: string) => [
+      { trigger_type: 'label_added', label_id, scope: null, product_id: null, direction: null },
+    ];
 
     beforeEach(async function () {
       mockManager.mockLabsEnabled('automations');
+      await models.Base.knex('labels').insert(
+        labelIds.map((id) => ({ id, name: id, slug: id, created_at: new Date() })),
+      );
       await models.Base.knex('products').insert(
         tierIds.map((id) => ({
           id,
@@ -254,6 +261,7 @@ describe('Automations API', function () {
       await models.Base.knex('automation_actions').whereIn('id', actionIds).delete();
       await models.Base.knex('automations').whereNull('slug').delete();
       await models.Base.knex('products').whereIn('id', tierIds).delete();
+      await models.Base.knex('labels').whereIn('id', labelIds).delete();
     });
 
     for (const role of ['Owner', 'Admin'] satisfies ('Owner' | 'Admin')[]) {
@@ -411,6 +419,50 @@ describe('Automations API', function () {
         ).sort(),
         [...tierIds].sort(),
       );
+    });
+
+    it('adds, replaces, preserves, and reads label rules', async function () {
+      const { body } = await agent
+        .post('automations')
+        .body({
+          automations: [{ ...payload, trigger_rules: labelRules(labelIds[0]) }],
+        })
+        .expectStatus(201);
+      const created = body.automations[0];
+      assert.deepEqual(created.trigger_rules, labelRules(labelIds[0]));
+
+      const { body: edited } = await agent
+        .put(`automations/${created.id}`)
+        .body({
+          automations: [{ ...payload, trigger_rules: labelRules(labelIds[1]) }],
+        })
+        .expectStatus(200);
+      assert.deepEqual(edited.automations[0].trigger_rules, labelRules(labelIds[1]));
+      const savedRules = await models.Base.knex('automation_trigger_rules').where(
+        'automation_id',
+        created.id,
+      );
+      assert.equal(savedRules.length, 1);
+      assert.equal(savedRules[0].label_id, labelIds[1]);
+
+      const { trigger_rules: _rules, ...withoutRules } = payload;
+      const { body: preserved } = await agent
+        .put(`automations/${created.id}`)
+        .body({
+          automations: [withoutRules],
+        })
+        .expectStatus(200);
+      assert.deepEqual(preserved.automations[0].trigger_rules, labelRules(labelIds[1]));
+      const { body: read } = await agent.get(`automations/${created.id}`).expectStatus(200);
+      assert.deepEqual(read.automations[0], preserved.automations[0]);
+
+      const { body: replaced } = await agent
+        .put(`automations/${created.id}`)
+        .body({
+          automations: [payload],
+        })
+        .expectStatus(200);
+      assert.deepEqual(replaced.automations[0].trigger_rules, payload.trigger_rules);
     });
 
     it('trims name and description before saving', async function () {
@@ -574,6 +626,58 @@ describe('Automations API', function () {
         await models.Base.knex('automations').where({ name: payload.name }).first(),
         undefined,
       );
+    });
+
+    it('rejects missing labels atomically on add and edit', async function () {
+      const invalid = { ...payload, trigger_rules: labelRules(ObjectId().toHexString()) };
+      const { body: rejectedAdd } = await agent
+        .post('automations')
+        .body({ automations: [invalid] })
+        .expectStatus(422);
+      assert.equal(rejectedAdd.errors[0].property, 'trigger_rules');
+      assert.equal(
+        await models.Base.knex('automations').where('name', payload.name).first(),
+        undefined,
+      );
+
+      const { body } = await agent
+        .post('automations')
+        .body({ automations: [payload] })
+        .expectStatus(201);
+      const created = body.automations[0];
+      const { body: rejectedEdit } = await agent
+        .put(`automations/${created.id}`)
+        .body({ automations: [{ ...invalid, name: 'Rejected edit' }] })
+        .expectStatus(422);
+      assert.equal(rejectedEdit.errors[0].property, 'trigger_rules');
+      const { body: read } = await agent.get(`automations/${created.id}`).expectStatus(200);
+      assert.deepEqual(read.automations[0], created);
+    });
+
+    it('rejects "label added" triggers when automationsLeadMagnets is disabled', async function () {
+      const request = { ...payload, trigger_rules: labelRules(labelIds[0]) };
+      const { body } = await agent
+        .post('automations')
+        .body({ automations: [request] })
+        .expectStatus(201);
+
+      mockManager.mockLabsDisabled('automationsLeadMagnets');
+      for (const response of [
+        await agent
+          .post('automations')
+          .body({ automations: [request] })
+          .expectStatus(422),
+        await agent
+          .put(`automations/${body.automations[0].id}`)
+          .body({ automations: [request] })
+          .expectStatus(422),
+      ]) {
+        assert.equal(response.body.errors[0].property, 'trigger_rules');
+        assert.equal(
+          response.body.errors[0].context,
+          'Label added triggers require automationsLeadMagnets to be enabled.',
+        );
+      }
     });
 
     it('returns 404 when automations is disabled', async function () {

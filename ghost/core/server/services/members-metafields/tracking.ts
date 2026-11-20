@@ -1,7 +1,7 @@
 import type { FieldType } from '@tryghost/metafield-types';
 import type { Meter } from '../../lib/tracing/meter';
 import type { Tracer } from '../../lib/tracing/tracer';
-import type { MetafieldVerb } from './actions';
+import type { MetafieldVerb } from './field-actions';
 import type { SingleWriteOrigin } from './schema';
 
 // The spans the custom fields commands record, and the counts the custom fields services keep, in

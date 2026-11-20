@@ -136,6 +136,9 @@
   --font-mono: Consolas, Liberation Mono, Menlo, Courier, monospace;
   --font-inherit: inherit;
   --font-weight-title: 540;
+  --font-weight-settings-heading: 540;
+  --tracking-section-heading: -0.01em;
+  --tracking-settings-heading: -0.01em;
   --tracking-tightest: -0.05em;
   --tracking-tighter: -0.025em;
   --tracking-tight: -0.01em;
@@ -369,6 +372,8 @@
   --color-badge-warning: var(--badge-warning);
   --color-badge-warning-hover: var(--badge-warning-hover);
   --color-badge-warning-foreground: var(--badge-warning-foreground);
+  --color-badge-purple: var(--badge-purple);
+  --color-badge-purple-foreground: var(--badge-purple-foreground);
   --color-interactive-hover: var(--interactive-hover);
   --color-filter-bar-background: var(--filter-bar-background);
   --color-filter-bar-item-hover: var(--filter-bar-item-hover);

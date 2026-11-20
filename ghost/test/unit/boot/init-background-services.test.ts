@@ -18,6 +18,7 @@ function createBackgroundHarness(environment = 'production') {
   const tinybirdSync = { scheduleJob: sinon.stub().resolves() };
   const milestones = { initAndRun: sinon.stub() };
   const signingKeys = { extras: { scheduleCheckJob: sinon.stub().resolves() } };
+  const authCleanup = { scheduleClearExpiredJob: sinon.stub().resolves() };
   const jobsInstance = {};
   const initBackgroundServices = loadBootFunction(
     'initBackgroundServices',
@@ -36,6 +37,7 @@ function createBackgroundHarness(environment = 'production') {
         scheduleExpiredCompCleanupJob: async () => {},
       },
       './server/services/signing-keys': { default: signingKeys },
+      './server/auth/better-auth/cleanup': authCleanup,
       './server/services/jobs-service': { getInstance: () => jobsInstance },
       './server/services/activitypub': { init: activity },
       './server/services/tinybird-sync': tinybirdSync,
@@ -57,6 +59,7 @@ function createBackgroundHarness(environment = 'production') {
     tinybirdSync,
     milestones,
     signingKeys,
+    authCleanup,
     jobsInstance,
   };
 }
@@ -182,4 +185,26 @@ it('logs signing-key job registration failures and continues background startup'
     sinon.match.same(boot.jobsInstance),
   );
   sinon.assert.calledOnce(boot.milestones.initAndRun);
+});
+
+it('schedules the expired auth row cleanup on the shared jobs instance', async function () {
+  const boot = createBackgroundHarness();
+
+  await boot.init();
+
+  sinon.assert.calledOnceWithExactly(
+    boot.authCleanup.scheduleClearExpiredJob,
+    sinon.match.same(boot.jobsInstance),
+  );
+});
+
+it('logs a failed auth cleanup schedule and continues background startup', async function () {
+  const boot = createBackgroundHarness();
+  const failure = new Error('auth cleanup registration failed');
+  boot.authCleanup.scheduleClearExpiredJob.rejects(failure);
+
+  await boot.init();
+
+  sinon.assert.calledOnceWithExactly(boot.logging.error, failure);
+  sinon.assert.calledOnce(boot.activity);
 });

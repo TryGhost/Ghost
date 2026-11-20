@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-const ghostVersion = require('@tryghost/version');
+import ghostVersion from '@tryghost/version';
 
 const REQUEST_TIMEOUT_MS = 30_000;
 

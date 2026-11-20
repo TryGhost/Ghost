@@ -1,4 +1,9 @@
-import { type FakeMailgunServer, type SentMessage } from './fake-mailgun-server';
+import {
+  type FakeMailgunBehavior,
+  type FakeMailgunServer,
+  type MailgunEvent,
+  type SentMessage,
+} from './fake-mailgun-server';
 
 export class MailgunTestService {
   private readonly server: FakeMailgunServer;
@@ -44,5 +49,17 @@ export class MailgunTestService {
 
   clearMessages(): void {
     this.server.clearMessages();
+  }
+
+  getEvents(): MailgunEvent[] {
+    return this.server.events;
+  }
+
+  addEvent(event: Parameters<FakeMailgunServer['addEvent']>[0]): MailgunEvent {
+    return this.server.addEvent(event);
+  }
+
+  configure(behavior: Partial<FakeMailgunBehavior>): FakeMailgunBehavior {
+    return this.server.configure(behavior);
   }
 }

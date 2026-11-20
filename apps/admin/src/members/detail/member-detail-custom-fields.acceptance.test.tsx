@@ -261,6 +261,21 @@ describe('Member detail custom fields', () => {
     await expect.element(memberDetailScreen.fieldValue('+442079460000')).toBeVisible();
   });
 
+  // A letter is never valid in a phone number, so staff see the error without having to save.
+  it('shows an error while typing an invalid character in a phone number', async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    fakeMemberDetailWorld(m, {}, [...FIELDS, MOBILE]);
+    await renderAdminApp(`/members/${m.id}`);
+    const mistyped = 'Enter the phone number using only digits, spaces and symbols like + - ( ).';
+
+    await memberDetailScreen.editFieldButton('Mobile').click();
+    await modal().getByLabelText('Mobile').fill('+44 20 7946 000o');
+    await expect.element(modal().getByText(mistyped)).toBeVisible();
+
+    await modal().getByLabelText('Mobile').fill('+44 (20) 7946-0000');
+    await expect.element(modal().getByText(mistyped)).not.toBeInTheDocument();
+  });
+
   // As Portal and Stripe Checkout ask for one: written as it is dialled at home, beside the
   // country it is from.
   it("puts the picked country's code in front of a number written as at home", async () => {
@@ -281,7 +296,7 @@ describe('Member detail custom fields', () => {
     const listWidth = list.element().getBoundingClientRect().width;
     expect(Math.abs(listWidth - (phoneInputWidth ?? 0))).toBeLessThanOrEqual(2);
     await page.getByPlaceholder('Search countries...').fill('United Kingdom');
-    await page.getByRole('option', { name: 'United Kingdom +44' }).click();
+    await page.getByRole('option', { name: 'United Kingdom (+44)' }).click();
     await expect
       .element(modal().getByRole('combobox', { name: 'Country code' }))
       .toHaveTextContent('+44');
@@ -290,7 +305,7 @@ describe('Member detail custom fields', () => {
     await modal().getByLabelText('Mobile').fill('020 7946 000');
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
     await expect
-      .element(modal().getByText('Enter a valid phone number, like +44 20 7946 0000.'))
+      .element(modal().getByText('Enter a valid phone number, like +44 7400 123456.'))
       .toBeVisible();
     expect(editApi.requests).toHaveLength(0);
 

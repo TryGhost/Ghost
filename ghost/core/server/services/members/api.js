@@ -29,6 +29,7 @@ const { t } = require('../../../shared/i18n');
 const sentry = require('../../../shared/sentry');
 const { tracer, meter } = require('../../lib/tracing');
 const { stripeTracking } = require('../stripe/tracking');
+const { membersTracking } = require('./tracking');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
@@ -297,6 +298,7 @@ function createApiInstance(config) {
     // initCore, so its guarded service is ready when the members API is built.
     checkouts: stripeCheckoutConfig.service.checkouts,
     tracking: stripeTracking({ tracer, meter }),
+    membersTracking: membersTracking({ tracer }),
   });
 
   return membersApiInstance;

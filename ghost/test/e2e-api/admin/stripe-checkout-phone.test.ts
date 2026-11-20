@@ -55,8 +55,6 @@ describe('Stripe Checkout phone number collection', function () {
   });
 
   beforeEach(async function () {
-    mockManager.mockLabsEnabled('stripeCheckoutCollection');
-    mockManager.mockLabsEnabled('customFieldTypePhone');
     await createField('Contact phone', 'phone');
     await createField('Delivery address', 'address');
   });

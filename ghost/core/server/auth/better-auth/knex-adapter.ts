@@ -3,7 +3,6 @@ import {
   type AdapterFactoryConfig,
   type AdapterFactoryCustomizeAdapterCreator,
   type CleanedWhere,
-  type JoinConfig,
 } from 'better-auth/adapters';
 import type { BetterAuthOptions } from 'better-auth/types';
 import errors from '@tryghost/errors';
@@ -32,12 +31,7 @@ export type KnexAdapterOptions = {
 };
 
 type Row = Record<string, unknown>;
-type Executor = Knex | Knex.Transaction;
 type QB = Knex.QueryBuilder;
-
-const PRIMARY = 'primary';
-const joinAlias = (model: string) => `join_${model}`;
-const joinColumnAlias = (model: string, column: string) => `_joined_${model}_${column}`;
 
 // MySQL LIKE treats % and _ as wildcards and \ as the escape character
 const escapeLike = (value: string) => value.replace(/[\\%_]/g, (c) => `\\${c}`);
@@ -48,7 +42,7 @@ const toCount = (value: unknown) => {
 };
 
 function createCustomAdapter(
-  db: Executor,
+  db: Knex,
   { virtualColumns = {}, createDefaults = {} }: KnexAdapterOptions,
   inTransaction: boolean,
 ): AdapterFactoryCustomizeAdapterCreator {
@@ -72,7 +66,7 @@ function createCustomAdapter(
       return Object.fromEntries(Object.entries(virtuals).filter(([column]) => columns.has(column)));
     };
 
-    const withTransaction = <T>(fn: (trx: Executor) => Promise<T>): Promise<T> =>
+    const withTransaction = <T>(fn: (trx: Knex) => Promise<T>): Promise<T> =>
       inTransaction ? fn(db) : db.transaction((trx) => fn(trx));
 
     // A column of `table` (aliased as `alias`), or its SQL expression when virtual
@@ -174,112 +168,26 @@ function createCustomAdapter(
       return qb;
     };
 
-    const findById = (executor: Executor, model: string, modelKey: string, id: unknown) =>
+    const findById = (executor: Knex, model: string, modelKey: string, id: unknown) =>
       executor
         .from(model)
         .select(selectColumns(model, model))
         .where(`${model}.${fieldColumn(modelKey, 'id')}`, id as never)
         .first() as Promise<Row | undefined>;
 
-    // Primary rows go in a subquery so limit/offset apply before joins fan out
-    const selectWithJoins = (
-      model: string,
-      modelKey: string,
-      build: (qb: QB) => QB,
-      select: string[] | undefined,
-      join: JoinConfig | undefined,
-    ) => {
-      const inner = build(
-        db.from(model).select(
-          selectColumns(
-            model,
-            model,
-            select?.map((f) => fieldColumn(modelKey, f)),
-          ),
+    // No native joins: createKnexAdapter rejects advanced.database.joins, so
+    // Better Auth never passes `join` here and fetches relations separately.
+    // To add them, drop that guard, restore the removed implementation (last
+    // fixed in #33055), apply the join-alias fix from #33116, then re-enable
+    // joinsTestSuite.
+    const selectRows = (model: string, modelKey: string, select: string[] | undefined) =>
+      db.from(model).select(
+        selectColumns(
+          model,
+          model,
+          select?.map((f) => fieldColumn(modelKey, f)),
         ),
       );
-      if (!join || !Object.keys(join).length) {
-        return { query: inner, joined: [] };
-      }
-
-      const query = db.from(inner.as(PRIMARY)).select(`${PRIMARY}.*`);
-      const joined: { joinModel: string; column: string }[] = [];
-
-      for (const [joinModel, config] of Object.entries(join)) {
-        const joinKey = config.modelKey ?? getDefaultModelName(joinModel);
-        const alias = joinAlias(joinModel);
-        query.leftJoin(
-          `${joinModel} as ${alias}`,
-          `${alias}.${config.on.to}`,
-          `${PRIMARY}.${config.on.from}`,
-        );
-
-        const fields = schema[joinKey]?.fields ?? {};
-        const columns = [
-          'id',
-          ...Object.entries(fields).map(([field, attr]) => attr.fieldName ?? field),
-        ];
-        for (const column of new Set(columns)) {
-          query.select(
-            db.raw('? as ??', [
-              columnRef(joinModel, alias, column),
-              joinColumnAlias(joinModel, column),
-            ]),
-          );
-          joined.push({ joinModel, column });
-        }
-      }
-      return { query, joined };
-    };
-
-    const groupJoinedRows = (
-      rows: Row[],
-      modelKey: string,
-      join: JoinConfig,
-      joined: { joinModel: string; column: string }[],
-    ) => {
-      const idColumn = fieldColumn(modelKey, 'id');
-      const grouped = new Map<unknown, Row>();
-
-      for (const row of rows) {
-        const base: Row = { ...row };
-        const related: Record<string, Row> = {};
-        for (const { joinModel, column } of joined) {
-          const key = joinColumnAlias(joinModel, column);
-          (related[joinModel] ??= {})[column] = row[key];
-          delete base[key];
-        }
-
-        const id = base[idColumn];
-        if (!grouped.has(id)) {
-          for (const [joinModel, config] of Object.entries(join)) {
-            base[joinModel] = config.relation === 'one-to-one' ? null : [];
-          }
-          grouped.set(id, base);
-        }
-        const entry = grouped.get(id)!;
-
-        for (const [joinModel, config] of Object.entries(join)) {
-          const item = related[joinModel];
-          if (!item || !Object.values(item).some((v) => v !== null && v !== undefined)) {
-            continue;
-          }
-          if (config.relation === 'one-to-one') {
-            entry[joinModel] = item;
-            continue;
-          }
-          const list = entry[joinModel] as Row[];
-          const joinIdColumn = fieldColumn(config.modelKey ?? getDefaultModelName(joinModel), 'id');
-          if (
-            list.length < (config.limit ?? 100) &&
-            !list.some((r) => r[joinIdColumn] === item[joinIdColumn])
-          ) {
-            list.push(item);
-          }
-        }
-      }
-      return [...grouped.values()];
-    };
 
     const countRows = async (model: string, where: CleanedWhere[] | undefined) => {
       const row = await applyWhere(db.from(model).count({ count: '*' }), model, where).first();
@@ -301,55 +209,30 @@ function createCustomAdapter(
         return (await findById(db, model, modelKey, id)) as never;
       },
 
-      async findOne({ model, modelKey = model, where, select, join }) {
-        const { query, joined } = selectWithJoins(
-          model,
-          modelKey,
-          (qb) => applyWhere(qb, model, where).limit(1),
-          select,
-          join,
-        );
-        const rows: Row[] = await query;
-        if (!rows.length) {
-          return null;
-        }
-        return (
-          join && joined.length ? groupJoinedRows(rows, modelKey, join, joined)[0] : rows[0]
-        ) as never;
+      async findOne({ model, modelKey = model, where, select }) {
+        const row = await applyWhere(selectRows(model, modelKey, select), model, where).first();
+        return (row ?? null) as never;
       },
 
-      async findMany({ model, modelKey = model, where, limit, select, sortBy, offset, join }) {
-        const sort = sortBy && columnRef(model, model, fieldColumn(modelKey, sortBy.field));
-        const { query, joined } = selectWithJoins(
-          model,
-          modelKey,
-          (qb) => {
-            applyWhere(qb, model, where);
-            if (sort) {
-              qb.orderBy(sort as never, sortBy!.direction);
-            }
-            if (limit !== undefined) {
-              qb.limit(limit);
-            }
-            if (offset !== undefined) {
-              // MySQL requires a LIMIT alongside OFFSET
-              if (limit === undefined) {
-                qb.limit(Number.MAX_SAFE_INTEGER);
-              }
-              qb.offset(offset);
-            }
-            return qb;
-          },
-          select,
-          join,
-        );
-        if (sort && joined.length) {
-          query.orderBy(`${PRIMARY}.${fieldColumn(modelKey, sortBy!.field)}`, sortBy!.direction);
+      async findMany({ model, modelKey = model, where, limit, select, sortBy, offset }) {
+        const qb = applyWhere(selectRows(model, modelKey, select), model, where);
+        if (sortBy) {
+          qb.orderBy(
+            columnRef(model, model, fieldColumn(modelKey, sortBy.field)) as never,
+            sortBy.direction,
+          );
         }
-        const rows: Row[] = await query;
-        return (
-          join && joined.length ? groupJoinedRows(rows, modelKey, join, joined) : rows
-        ) as never;
+        if (limit !== undefined) {
+          qb.limit(limit);
+        }
+        if (offset !== undefined) {
+          // MySQL requires a LIMIT alongside OFFSET
+          if (limit === undefined) {
+            qb.limit(Number.MAX_SAFE_INTEGER);
+          }
+          qb.offset(offset);
+        }
+        return (await qb) as never;
       },
 
       async update({ model, modelKey = model, where, update }) {
@@ -488,6 +371,11 @@ export function createKnexAdapter(options: KnexAdapterOptions) {
   });
 
   return (opts: BetterAuthOptions) => {
+    if (opts.advanced?.database?.joins) {
+      throw new errors.IncorrectUsageError({
+        message: 'The Ghost Knex adapter does not support native joins (advanced.database.joins).',
+      });
+    }
     lazyOptions = opts;
     return adapter(opts);
   };

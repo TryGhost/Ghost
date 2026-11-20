@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import type { Knex } from 'knex';
 import {
-  assertDatabaseSupported,
   createAuth,
   type CreateAuthDeps,
 } from '../../../../../core/server/auth/better-auth/create-auth';
@@ -13,7 +12,15 @@ const fakeKnex = () => ({}) as Knex;
 
 // Never blocks; the rate limits have their own tests
 const allow = () => ({ consume: async () => ({ allowed: true as const }), reset: async () => {} });
-const limiters = { globalBlock: allow, globalReset: allow, userLogin: allow, userReset: allow };
+const limiters = {
+  globalBlock: allow,
+  globalReset: allow,
+  userLogin: allow,
+  userReset: allow,
+  sendVerificationCode: allow,
+  userVerification: allow,
+  verificationEmail: allow,
+};
 
 function deps({
   siteUrl = 'https://example.com/',
@@ -25,8 +32,7 @@ function deps({
     secret: 'a'.repeat(64),
     sessionMaxAgeMs: SESSION_MAX_AGE_MS,
     urlUtils: {
-      getAdminUrl: () => adminUrl,
-      getSiteUrl: () => siteUrl,
+      getAdminOrigin: () => new URL(adminUrl ?? siteUrl).origin,
       getSubdir: () => subdir,
       isSSL: (url) => url.startsWith('https://'),
     },
@@ -36,6 +42,11 @@ function deps({
     },
     logger: { debug() {}, info() {}, warn() {}, error() {} },
     limiters,
+    sendPasswordResetEmail: async () => {},
+    isStaffDeviceVerificationEnabled: () => true,
+    isEmailMfaRequired: () => false,
+    sendDeviceVerificationCode: async () => {},
+    getRequestOrigin: (headers) => headers.get('origin'),
   };
 }
 
@@ -130,7 +141,7 @@ describe('createAuth', function () {
     assert.equal(context.options.session?.disableSessionRefresh, true);
   });
 
-  it('disables sign-up, account and password changes, social sign-in and telemetry', async function () {
+  it('disables sign-up, account changes, social sign-in and telemetry', async function () {
     const { options } = await createAuth(deps()).$context;
 
     assert.equal(options.emailAndPassword?.disableSignUp, true);
@@ -141,7 +152,6 @@ describe('createAuth', function () {
       '/change-email',
       '/delete-user',
       '/sign-in/social',
-      '/change-password',
     ]);
     assert.equal(options.telemetry?.enabled, false);
   });
@@ -204,27 +214,5 @@ describe('createAuth', function () {
   it('generates ObjectIds', async function () {
     const context = await createAuth(deps()).$context;
     assert.match(context.generateId({ model: 'session' }) as string, /^[0-9a-f]{24}$/);
-  });
-});
-
-describe('assertDatabaseSupported', function () {
-  it('accepts MySQL with the in-development tables', function () {
-    assertDatabaseSupported({ client: 'mysql2', inDevelopmentTables: true });
-  });
-
-  for (const client of ['sqlite3', 'better-sqlite3']) {
-    it(`refuses ${client}`, function () {
-      assert.throws(() => assertDatabaseSupported({ client, inDevelopmentTables: true }), {
-        name: 'IncorrectUsageError',
-        message: 'auth:engine better-auth requires MySQL; SQLite is not supported.',
-      });
-    });
-  }
-
-  it('refuses a database without the in-development tables', function () {
-    assert.throws(() => assertDatabaseSupported({ client: 'mysql2', inDevelopmentTables: false }), {
-      name: 'IncorrectUsageError',
-      message: /requires the in-development auth tables/,
-    });
   });
 });

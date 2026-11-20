@@ -130,6 +130,7 @@
     "Enjoy {months} free months on us.": "Retention offer message in Portal for multi-month free offers during subscription cancellation",
     "Enjoy {months} free months on us. You won't be charged until {newBillingDate}.": "Retention offer message in Portal for multi-month free offers, with the next billing date",
     "Enter code above": "Portal - error message when OTC code isn't filled in",
+    "Enter the phone number using only digits, spaces and symbols like + - ( ).": "Shown under a phone number custom field in Portal while the member types a character a phone number can't contain, such as a letter",
     "Enter the recipient's email address": "Validation error when an emailed gift is missing the intended recipient's email",
     "Enter your email address": "Error message when an email address is missing",
     "Enter your name": "Placeholder input when editing your name in the comments app in the expertise dialog",

@@ -5,8 +5,7 @@ const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const models = require('../../../../core/server/models');
 const ghostBookshelf = require('../../../../core/server/models/base');
-const permissions = require('../../../../core/server/services/permissions');
-const schema = require('../../../../core/server/data/schema');
+const permissions = require('../../../../core/server/auth/permissions');
 const security = require('@tryghost/security');
 const testUtils = require('../../../utils');
 
@@ -382,14 +381,20 @@ describe('Unit: models/user', function () {
       sinon
         .stub(security.password, 'hash')
         .resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
+
+      // A Knex stand-in for the credential row check() reads the hash from
+      const query = {
+        where: () => query,
+        first: () => query,
+        then: (resolve) => resolve({ password: '$2a$10$hash' }),
+      };
+      sinon.stub(ghostBookshelf, 'knex').value(() => query);
     });
 
     it('user status is warn', function () {
       sinon.stub(security.password, 'compare').resolves(true);
 
       // NOTE: Add a user with a broken field to ensure we only validate changed fields on login
-      sinon.stub(schema, 'validate').resolves();
-
       const user = models.User.forge(
         testUtils.DataGenerator.forKnex.createUser({
           status: 'warn-1',
@@ -1235,6 +1240,15 @@ describe('Unit: models/user', function () {
   });
 
   describe('ownerIdCache', function () {
+    // The cache lives on the shared User model, so start and end each test empty
+    beforeEach(function () {
+      models.User.ownerIdCache.clear();
+    });
+
+    afterEach(function () {
+      models.User.ownerIdCache.clear();
+    });
+
     it('should return null initially', function () {
       assert.equal(models.User.ownerIdCache.get(), null);
     });

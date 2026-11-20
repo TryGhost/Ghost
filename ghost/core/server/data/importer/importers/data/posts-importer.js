@@ -2,11 +2,11 @@ const debug = require('@tryghost/debug')('importer:posts');
 const _ = require('lodash');
 const crypto = require('crypto');
 const BaseImporter = require('./base');
-const mobiledocLib = require('../../../../lib/mobiledoc');
+const { mobiledoc: mobiledocLib } = require('../../../../lib/mobiledoc');
 const lexicalLib = require('../../../../lib/lexical');
 const validator = require('@tryghost/validator');
 const postsMetaSchema = require('../../../schema').tables.posts_meta;
-const metaAttrs = _.keys(_.omit(postsMetaSchema, ['id']));
+const metaAttrs = Object.keys(_.omit(postsMetaSchema, ['id']));
 
 class PostsImporter extends BaseImporter {
   constructor(allDataFromFile) {
@@ -67,7 +67,7 @@ class PostsImporter extends BaseImporter {
       postsMetaFromFile,
     );
     model.posts_meta = postsMetaData;
-    _.each(metaAttrs, (attr) => {
+    metaAttrs.forEach((attr) => {
       delete model[attr];
     });
   }

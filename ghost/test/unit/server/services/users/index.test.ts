@@ -189,7 +189,7 @@ describe('Users service', function () {
       await root.init();
       const resetAuthentication = sandbox.stub().resolves({ apiKeysRotated: 1, usersLocked: 2 });
       sandbox.stub(auth, 'resetAuthentication').get(() => resetAuthentication);
-      const endpoint = require(AUTHENTICATION_ENDPOINT_PATH);
+      const endpoint = require(AUTHENTICATION_ENDPOINT_PATH).default;
       const options = { context: { user: 'actor' } };
 
       const result = await endpoint.reset.query({ options, original: {} });
@@ -214,7 +214,10 @@ describe('Users service', function () {
       sandbox.stub(auth, 'resetAuthentication').get(() => resetAuthentication);
 
       await require(USERS_ENDPOINT_PATH).destroy.query({ options: { id: 'user-id' } });
-      await require(AUTHENTICATION_ENDPOINT_PATH).reset.query({ options: {}, original: {} });
+      await require(AUTHENTICATION_ENDPOINT_PATH).default.reset.query({
+        options: {},
+        original: {},
+      });
 
       assert.equal(
         destroyUser.firstCall.thisValue,
@@ -528,7 +531,10 @@ describe('Users service', function () {
       fakes.Post.reassignByAuthor.rejects(failure);
       const service = createService(fakes);
 
-      await assert.rejects(service.destroyUser({ id: 'user-id', context }), failure);
+      await assert.rejects(
+        service.destroyUser({ id: 'user-id', context }),
+        (thrown) => thrown === failure,
+      );
 
       sinon.assert.calledOnce(dispatch);
       sinon.assert.notCalled(fakes.ApiKey.destroy);
@@ -551,7 +557,10 @@ describe('Users service', function () {
       fakes.ApiKey.destroy.rejects(failure);
       const service = createService(fakes);
 
-      await assert.rejects(service.destroyUser({ id: 'user-id', context }), failure);
+      await assert.rejects(
+        service.destroyUser({ id: 'user-id', context }),
+        (thrown) => thrown === failure,
+      );
 
       sinon.assert.notCalled(fakes.User.destroy);
     });

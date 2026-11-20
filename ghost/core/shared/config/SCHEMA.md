@@ -20,7 +20,7 @@ nconf's own reset-then-reapply rebuild was not.
 ## Where a schema belongs
 
 Every key belongs in the central schema, the same way every table belongs in
-`schema.js` however many models read it. Config is grouped by who sets it —
+`schema.ts` however many models read it. Config is grouped by who sets it —
 Ghost(Pro), a self-hoster, a feature's deployment knobs — not by which code
 reads it, and most keys have readers in more than one place: `hostSettings`,
 `tinybird:stats`, `apps` and `explore` all do. A schema owned by one of those
@@ -32,7 +32,9 @@ reference for self-hosters generated from `configSchema` alone.
 
 The schema knows feature names, but not feature code: the files hold shapes,
 import `zod` and pure helpers from this directory such as `makePathsAbsolute`, and
-never a feature module. That is the same trade `schema.js` makes.
+never a feature module. That is the same trade `schema.ts` makes. Files in
+[`schema/`](schema/) go further and import only `zod` and each other; the
+`config-schema-zod-only` boundary rule enforces it.
 
 Organise it by area:
 
@@ -45,17 +47,21 @@ Organise it by area:
   top-level key it describes and composed into `configSchema` in `schema.ts`.
   [`schema/auth.ts`](schema/auth.ts) and [`schema/explore.ts`](schema/explore.ts)
   are the first. An area file may export named types for its values, such as
-  `AuthEngine`, so code that passes a value around imports it rather than
+  `AuthConfig` and `AuthEngine`, so code that passes a value around imports it rather than
   restating it.
 - **Field types more than one area uses**, such as `httpUrl()`, are in
-  [`schema/primitives.ts`](schema/primitives.ts).
+  [`schema/primitives.ts`](schema/primitives.ts). A shape several areas embed
+  gets its own file instead: [`schema/redis.ts`](schema/redis.ts) is the one
+  Redis connection block. Its keys are ioredis option names, so the parsed value
+  is the client's options, and it is loose, like `database:connection` for
+  mysql2, so any other ioredis option passes through.
 
 An area file is reviewed by the people who own the code that reads it, in the
 same change as that code.
 
 Two alternatives were tried and rejected. Self-registration
 (`registerConfigSection()` at import time) cannot work: config is the first thing
-loaded — `loggingrc.js` and `MigratorConfig.js` require it before any feature
+loaded — `loggingrc.js` and `MigratorConfig.mts` load it before any feature
 module exists — so which keys got validated would depend on import order. A
 schema per feature, parsed by the feature at init, was built and dropped: no
 migrated service turned out to own a top-level key outright, and a feature
@@ -125,6 +131,10 @@ a number, or assumed a key is always present, stops compiling.
   `GHOST_CONFIG_SCHEMA_STRICT` says. `url` is the only one today; it replaced a
   loader check that had always thrown.
 
+- **Some keys are hidden.** Mark a key `.meta({hidden: true})` when it is for
+  developing Ghost rather than running it, such as a switch for in-development
+  work. A generated reference for self-hosters must leave hidden keys out; the
+  key is still validated like any other.
 - **Nothing may be stricter than the loader already was.** Tightening beyond
   that is its own change, with its own release note.
 - **Adding a key reorders its parent's keys.** `z.looseObject` emits the keys the
@@ -178,6 +188,42 @@ unknown key drops that section back to raw and logs it, the rest of the tree
 stays validated, and strict environments still throw. See
 [One bad key costs only that key](#rules).
 
+### Choosing how a closed section treats unknown keys
+
+Ghost never reads a key the schema doesn't name, so an unknown key changes
+nothing at runtime. The risk is that whoever wrote it thinks a setting applies
+when it doesn't. A closed section has three options:
+
+- **`z.object()` strips unknown keys without saying anything.** Use it where every
+  reader is in this repo and a stray key is unlikely, as in `paths`.
+- **`knownKeys(name, shape)`, from [`schema/primitives.ts`](schema/primitives.ts),
+  reports each unknown key, then strips it.** The warning names the key path,
+  such as `spam:user_logn`, and goes through `reportUnknownKeys` in
+  [`report.ts`](report.ts). Under `test*` an unknown key fails the parse, because
+  there it's a mistake in this repo's own config. Everywhere else it only warns,
+  even with `GHOST_CONFIG_SCHEMA_STRICT` set. Use it for sections that self-hosters
+  write by hand, where a typo or a key from another Ghost version is likely. A
+  failed boot over a key Ghost ignores would make every key removal or rename a
+  breaking change. `spam` is the example. Only the section's top-level keys are
+  checked: a nested `z.object()` inside it, such as one limiter block, still
+  strips without a warning.
+- **`z.strictObject()` rejects an unknown key.** Strict environments throw, and
+  everywhere else the section falls back to raw. Use it only where an unknown key
+  must be an error.
+
+### Keys that only apply to one mode
+
+When a section's other keys depend on one of its values, make it a
+`z.discriminatedUnion` on that value, with each option naming only the keys
+that mode reads. `auth` is the example: options specific to Better Auth go in
+its `better-auth` option, so they exist only under `engine: 'better-auth'`.
+Each option is a `knownKeys()` object, so a Better Auth key under
+`engine: 'legacy'` is reported and stripped like any other unknown key.
+
+`config.get()` types a path through a union per option: a key that one option
+lacks resolves to `undefined` for it, so `config.get('auth:sso')` would be
+`... | undefined` until the caller narrows on `auth:engine`.
+
 ## Don't mutate what `get()` returns
 
 In `development` and under test a write throws, naming the key path:
@@ -207,8 +253,8 @@ a derived object instead. Three places got this wrong, each writing through into
 config for every later reader:
 [`configure-knex.ts`](../../server/data/db/configure-knex.ts) assembling knex's
 options, `AdapterCacheRedis` folding `ttl` into `clusterConfig`, and
-[`MigratorConfig.js`](../../../MigratorConfig.js) handing the `database` subtree
-to knex-migrator, which mutates what it is given.
+`MigratorConfig` handing the `database` subtree to knex-migrator before 6.4,
+which mutated what it was given.
 
 The last one is the case to watch for: when a dependency assembles its own options
 from what you pass it, give it a copy. `_.cloneDeep` rather than

@@ -1,7 +1,7 @@
 # Database Structure
 
 Ghost's database schema is defined in
-[`schema.js`](../../ghost/core/server/data/schema/schema.js). It is the
+[`schema.ts`](../../ghost/core/server/data/schema/schema.ts). It is the
 current shape expected after every migration has run. Bookshelf models in
 [`models/`](../../ghost/core/server/models/) define relationships and
 application behavior; do not infer those rules from the table shape alone.
@@ -130,7 +130,7 @@ tables. A foreign key needs both of its columns to share a collation, so a new
 table with the wrong one fails with `ER_FK_INCOMPATIBLE_COLUMNS`.
 
 `createTable` in
-[`commands.js`](../../ghost/core/server/data/schema/commands.js) avoids this by
+[`commands.ts`](../../ghost/core/server/data/schema/commands.ts) avoids this by
 reading the collation of each column a new table's foreign keys reference and
 giving the foreign key columns the same one. Use it, or the table helpers in
 the migration utils that call it, rather than creating tables with knex
@@ -138,7 +138,8 @@ directly.
 
 To choose a collation instead, set `database__connection__collate` (for
 example `utf8mb4_general_ci`). Knex then creates every table with it, and Ghost
-no longer matches the referenced columns.
+no longer matches the referenced columns, so pick one that is compatible with
+the existing tables or leave it unset.
 
 ## Row locking
 
@@ -157,7 +158,7 @@ too. This includes writes to link tables like `posts_tags` or
   which locks them in id order so overlapping writers can't deadlock.
 - When the parents are found through the link table itself, such as the posts
   of a tag being deleted, use `lockLinkedForUpdate(linkTable, foreignKey,
-where, {transacting})` inside `Model.transactionLockingLinked(fn)`. It starts
+  where, {transacting})` inside `Model.transactionLockingLinked(fn)`. It starts
   the transaction again if a record is linked while it runs.
 - Once the locks are held, reads that decide what to write must be locking
   reads (`.forUpdate()`). Plain reads come from the transaction's snapshot,

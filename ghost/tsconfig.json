@@ -10,6 +10,10 @@
     // "disableReferencedProjectLoad": true,             /* Reduce the number of projects loaded automatically by TypeScript. */
     /* Language and Environment */
     "target": "es2024" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
+    "lib": [
+      "es2024",
+      "esnext.collection"
+    ] /* es2024 plus the Set union, intersection and difference methods Node 22 ships */,
     // "lib": ["es2019"],                                      /* Specify a set of bundled library declaration files that describe the target runtime environment. */
     // "jsx": "preserve",                                /* Specify what JSX code is generated. */
     // "experimentalDecorators": true,                   /* Enable experimental support for legacy experimental decorators. */
@@ -101,5 +105,5 @@
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true /* Skip type checking all .d.ts files. */
   },
-  "include": ["bin/**/*.ts", "core/**/*.ts", "types/**/*.d.ts"]
+  "include": ["MigratorConfig.mts", "bin/**/*.ts", "core/**/*.ts", "types/**/*.d.ts"]
 }

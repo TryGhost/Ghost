@@ -35,6 +35,7 @@ const PhoneSettings: React.FC<{
         error={errors.phoneField}
         fields={fields}
         label="Save phone as"
+        suggestedName="Phone"
         type={PORT_FIELD[CHECKOUT_PORT.phone].type}
         value={state.fieldKey}
         onChange={(fieldKey) => set({ fieldKey })}

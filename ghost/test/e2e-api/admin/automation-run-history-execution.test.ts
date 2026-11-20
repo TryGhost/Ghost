@@ -26,6 +26,7 @@ describe('Automation run history from the execution', function () {
   let agent: Awaited<ReturnType<typeof agentProvider.getAdminAPIAgent>>;
   let clock: sinon.SinonFakeTimers;
   let repository: ReturnType<typeof createDatabaseAutomationsRepository>;
+  let automationsApi2: ReturnType<typeof createAutomationsApi2<Knex | Knex.Transaction>>;
   let member: {
     id: string;
     name: string;
@@ -38,7 +39,7 @@ describe('Automation run history from the execution', function () {
   };
   let run: { id: string; automation_id: string };
   let pollOptions: {
-    automationsApi: typeof repository;
+    automationsApi: Parameters<typeof poll>[0]['automationsApi'];
     enqueueAnotherPollAt: sinon.SinonStub;
     scheduleAutomationEmailAnalyticsJob: sinon.SinonStub;
     memberWelcomeEmailService: { sendAutomationEmail: sinon.SinonStub };
@@ -66,14 +67,14 @@ describe('Automation run history from the execution', function () {
     };
     await db('members').insert(member);
     repository = createDatabaseAutomationsRepository({ knex: db, fakeWaitHoursMultiplier: null });
-    const automationsApi2 = createAutomationsApi2({
+    automationsApi2 = createAutomationsApi2({
       repository: createDatabaseAutomationsRepository2({ knex: db }),
       fakeWaitHoursMultiplier: null,
       labs: { isSet: () => true },
       domainEvents: { dispatch: () => {} },
     });
     pollOptions = {
-      automationsApi: repository,
+      automationsApi: { ...repository, recordEmailSent: automationsApi2.recordEmailSent },
       enqueueAnotherPollAt: sinon.stub(),
       scheduleAutomationEmailAnalyticsJob: sinon.stub().resolves(),
       memberWelcomeEmailService: {
@@ -84,7 +85,6 @@ describe('Automation run history from the execution', function () {
       eventName: 'membership_started',
       source: 'member' as const,
       memberId: member.id,
-      memberEmail: member.email,
       memberStatus: 'free',
       previousMemberStatus: null,
       memberTierIds: [],
@@ -149,7 +149,7 @@ describe('Automation run history from the execution', function () {
       .where('automation_run_step_id', email.id)
       .first();
     clock.setSystemTime(new Date('2026-09-16T12:00:04Z'));
-    await repository.trackEmailDeliveredAndOpened(
+    await automationsApi2.trackEmailDeliveredAndOpened(
       new Map([
         [
           recipient.id,
@@ -185,7 +185,7 @@ describe('Automation run history from the execution', function () {
     await db('automation_run_steps')
       .where('id', pendingEmail.id)
       .update({ step_attempts: MAX_ATTEMPTS - 1 });
-    sinon.stub(repository, 'finishStepAndEnqueueNext').callsFake(async () => {
+    sinon.stub(pollOptions.automationsApi, 'finishStepAndEnqueueNext').callsFake(async () => {
       clock.setSystemTime(new Date('2026-09-16T12:00:06Z'));
       throw new Error('Could not enqueue the next action');
     });

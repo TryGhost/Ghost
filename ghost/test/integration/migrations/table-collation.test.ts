@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import type { Knex } from 'knex';
-// @ts-expect-error This module lacks type definitions.
 import * as commands from '../../../core/server/data/schema/commands';
 
 const testUtils = require('../../utils');
@@ -13,7 +12,7 @@ const CHILD = 'test_collation_children';
 // place holds its tables in the one they were created with.
 const PARENT_COLLATION = 'utf8mb4_unicode_ci';
 
-const id = { type: 'string', maxlength: 24, nullable: false };
+const id = { type: 'string', maxlength: 24, nullable: false } as const;
 
 describe('A table created on a database whose tables use another collation', function () {
   const collationOf = async (table: string, column: string) => {

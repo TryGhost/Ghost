@@ -30,7 +30,7 @@ const parseYaml = require('../../../../../core/server/services/route-settings/ya
  * 2. A blog get's updated from a lower Ghost version and the database looks correct and complete.
  *
  * Typical cases:
- * Permissions are defined in core/server/services/permissions/permissions-data.ts
+ * Permissions are defined in core/server/auth/permissions/permissions-data.ts
  * and changing them needs no migration.
  * You have to add a migration script if you've added new settings to populate group/flags column.
  */

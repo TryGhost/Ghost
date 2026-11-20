@@ -107,9 +107,6 @@ async function assertCommitOnPublishBranch() {
 await assertCommitOnPublishBranch();
 
 const workspace = await getWorkspace();
-if (!workspace) {
-  throw new Error('Could not load workspace manifest');
-}
 let packages = await getPublishablePackages(workspace);
 
 if (packageFilter.length > 0) {

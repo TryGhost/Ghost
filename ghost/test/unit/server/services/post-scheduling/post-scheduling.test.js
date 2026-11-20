@@ -82,6 +82,28 @@ describe('PostScheduling', function () {
   });
 
   describe('constructor', function () {
+    // The constructor wires its handlers onto the shared events emitter, so
+    // take off the ones it added, and the scheduler mocks it never reached
+    const scheduleEvents = ['post', 'page'].flatMap((resource) =>
+      ['scheduled', 'rescheduled', 'unscheduled'].map((event) => `${resource}.${event}`),
+    );
+    let listenersBefore;
+
+    beforeEach(function () {
+      listenersBefore = new Map(scheduleEvents.map((event) => [event, events.listeners(event)]));
+    });
+
+    afterEach(function () {
+      for (const event of scheduleEvents) {
+        for (const listener of events.listeners(event)) {
+          if (!listenersBefore.get(event).includes(listener)) {
+            events.removeListener(event, listener);
+          }
+        }
+      }
+      nock.cleanAll();
+    });
+
     it('wires event handlers and starts the adapter', async function () {
       const post = Post.forge(
         testUtils.DataGenerator.forKnex.createPost({

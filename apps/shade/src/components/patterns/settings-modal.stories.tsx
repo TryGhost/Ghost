@@ -4,6 +4,17 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from '@/components/ui/button';
 import { Box } from '@/components/primitives/box';
 import { SettingsModal, type SettingsModalProps } from '@/components/patterns/settings-modal';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const SettingsModalStory = (props: Omit<SettingsModalProps, 'onClose'>) => {
   const [open, setOpen] = useState(false);
@@ -17,14 +28,14 @@ const SettingsModalStory = (props: Omit<SettingsModalProps, 'onClose'>) => {
 };
 
 const meta = {
-  title: 'Patterns / Settings Modal',
+  title: 'Deprecated / Settings Modal',
   component: SettingsModalStory,
   tags: ['autodocs'],
   parameters: {
     docs: {
       description: {
         component:
-          'Consumer-controlled shell for the legacy full-page settings dialogs. New modal flows should use Shade Dialog primitives directly.',
+          "Deprecated. Consumer-controlled shell for Admin's legacy full-page settings dialogs. It doesn't trap focus or announce itself to screen readers, so new modals should use `Dialog` instead.",
       },
     },
   },
@@ -153,5 +164,41 @@ export const BackgroundInteraction: Story = {
     backDropClick: false,
     footer: false,
     children: <Box className="py-4">The page behind this drawer remains interactive.</Box>,
+  },
+};
+
+export const AlertAboveSettings: Story = {
+  args: {
+    title: 'Newsletter settings',
+    children: (
+      <Box paddingY="xl">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive">Delete newsletter</Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete this newsletter?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This confirmation should appear above the settings modal, with its own backdrop.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Keep newsletter</AlertDialogCancel>
+              <AlertDialogAction variant="destructive">Delete newsletter</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </Box>
+    ),
+    onOk: () => undefined,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Open settings, then Delete newsletter: a plain AlertDialog without z-index overrides should appear above SettingsModal and return focus to its trigger when dismissed.',
+      },
+    },
   },
 };

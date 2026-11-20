@@ -105,7 +105,7 @@ describe('gx/create-migration', function () {
 
       assert.ok(fs.existsSync(result.migrationPath));
       assert.ok(result.migrationPath.includes(path.join('versions', '6.35')));
-      assert.ok(result.migrationPath.endsWith('2026-02-23-10-30-00-add-column.js'));
+      assert.ok(result.migrationPath.endsWith('2026-02-23-10-30-00-add-column.ts'));
     });
 
     it('writes the migration template', function () {
@@ -119,10 +119,10 @@ describe('gx/create-migration', function () {
       });
 
       const content = fs.readFileSync(migrationPath, 'utf8');
-      assert.ok(content.includes("require('@tryghost/logging')"));
+      assert.ok(content.includes("import logging from '@tryghost/logging'"));
       assert.ok(content.includes('createNonTransactionalMigration'));
       assert.ok(content.includes('createTransactionalMigration'));
-      assert.ok(content.includes('module.exports = /**/;'));
+      assert.ok(content.includes('export default /**/;'));
     });
 
     it('creates the version directory if it does not exist', function () {
@@ -288,7 +288,7 @@ test('gx migration uses stable tags and writes into its checkout from another di
     const folder = path.join(root, 'ghost/core/server/data/migrations/versions/6.35');
     assert.match(
       fs.readdirSync(folder)[0] ?? '',
-      /^\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}-add-example\.js$/,
+      /^\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}-add-example\.ts$/,
     );
     assert.equal(
       JSON.parse(fs.readFileSync(path.join(root, 'ghost/package.json'), 'utf8')).version,

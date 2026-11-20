@@ -177,7 +177,7 @@ describe('Media inliner service root', function () {
     registerJobHandlers({
       jobsService,
       gifts: { startFetch: sinon.stub().resolves() },
-      automations: { startFetch: sinon.stub().resolves() },
+      automationAnalytics: { startFetch: sinon.stub().resolves() },
       newsletters: { startFetch: sinon.stub().resolves() },
       memberJobs: { cleanTokens: sinon.stub().resolves(0), cleanExpiredComped: sinon.stub() },
       giftService: {} as never,
@@ -188,6 +188,10 @@ describe('Media inliner service root', function () {
       emailService: {} as never,
       siteImporter: { executeImport: sinon.stub().resolves() },
       tinybirdSync: { sync: sinon.stub().resolves() },
+      contentImport: { handleJob: sinon.stub().resolves() },
+      updateCheck: sinon.stub().resolves(),
+      signingKeys: { check: sinon.stub().resolves() },
+      authCleanup: { clearExpired: sinon.stub().resolves() },
     });
     const registration = jobsService.handle
       .getCalls()
