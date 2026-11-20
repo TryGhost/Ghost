@@ -2219,6 +2219,32 @@ describe('automations repository', function () {
       ]);
     });
 
+    it('locks higher-priority steps before lower-priority steps that were ready earlier', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const lowPriorityStep = await insertStep(run.id, action.revision_id, {
+        ready_at: new Date('2024-01-01T00:00:00.000Z'),
+        priority: AUTOMATION_RUN_STEP_PRIORITY_LOW,
+      });
+      const highPriorityStep = await insertStep(run.id, action.revision_id, {
+        ready_at: new Date('2024-01-02T00:00:00.000Z'),
+        priority: AUTOMATION_RUN_STEP_PRIORITY_HIGH,
+      });
+
+      const first = await repo.fetchAndLockSteps(1);
+      const second = await repo.fetchAndLockSteps(1);
+
+      assert.deepEqual(
+        first.steps.map((step) => [step.id, step.priority]),
+        [[highPriorityStep.id, AUTOMATION_RUN_STEP_PRIORITY_HIGH]],
+      );
+      assert.deepEqual(
+        second.steps.map((step) => [step.id, step.priority]),
+        [[lowPriorityStep.id, AUTOMATION_RUN_STEP_PRIORITY_LOW]],
+      );
+    });
+
     it.each(['unsupported', 'missing product'])(
       'rejects %s trigger rules and rolls back step locks',
       async function (invalidRules) {

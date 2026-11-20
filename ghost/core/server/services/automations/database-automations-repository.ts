@@ -879,7 +879,7 @@ async function fetchAndLockSteps(
     .where((builder) => {
       builder.whereNull('locked_by').orWhere('locked_at', '<', staleLockCutoffString);
     })
-    .orderBy(['ready_at', 'created_at', 'id'])
+    .orderBy(['priority', 'ready_at', 'created_at', 'id'])
     .limit(limit);
   if (candidates.length === 0) {
     return {
@@ -937,7 +937,7 @@ async function fetchAndLockSteps(
     .innerJoin('automation_actions as action', 'action.id', 'revision.action_id')
     .whereIn('step.id', candidateIds)
     .where('step.locked_by', lockId)
-    .orderBy(['step.ready_at', 'step.created_at', 'step.id']);
+    .orderBy(['step.priority', 'step.ready_at', 'step.created_at', 'step.id']);
 
   const rulesByAutomation = await getRulesByAutomation(trx, rows);
 
