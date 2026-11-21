@@ -13,8 +13,7 @@ and `unschedule`, and inherit a registry of reschedulers from
   their jobs at boot. External adapters with a persistent queue opt out.
 - `error-capture.ts` — `withErrorCapture(adapter)` decorates the resolved
   adapter so `schedule`/`unschedule` failures are reported (Sentry and logs)
-  instead of propagated; no caller awaits these calls. Boot and post
-  scheduling both wrap the adapter from `adapter-manager` with it.
+  before the returned promise rejects.
 - `utils.ts` — `getSignedAdminToken`, which signs a short-lived admin JWT for
   a job's fire time.
 - `build-signed-job.ts` — builds an adapter job whose callback URL carries

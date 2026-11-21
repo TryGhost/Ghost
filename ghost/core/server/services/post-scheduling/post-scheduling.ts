@@ -1,5 +1,6 @@
 import moment from 'moment';
 import logging from '@tryghost/logging';
+import { fireAndForget } from '../../../shared/fire-and-forget';
 import type { SchedulerJob } from '@tryghost/adapter-base-scheduling';
 import type { InternalApiKey, InternalKeys } from '../internal-keys';
 import { buildSignedJob } from '../../adapters/scheduling/build-signed-job';
@@ -36,11 +37,13 @@ export default class PostScheduling {
     this.#adapter = adapter!;
     this.#internalKeys = internalKeys;
 
+    // Fire and forget scheduler adapter calls, which should report rejections.
     SCHEDULED_RESOURCES.forEach((resource) => {
       events.on(`${resource}.scheduled`, async (model: any) => {
         try {
           const key = await internalKeys.get('ghost-scheduler');
-          this.#adapter.schedule(this.#normalize({ model, key, resourceType: resource }));
+          const job = this.#normalize({ model, key, resourceType: resource });
+          fireAndForget(() => this.#adapter.schedule(job));
         } catch (err) {
           logging.error(
             {
@@ -59,10 +62,10 @@ export default class PostScheduling {
       events.on(`${resource}.rescheduled`, async (model: any) => {
         try {
           const key = await internalKeys.get('ghost-scheduler');
-          this.#adapter.unschedule(
-            this.#normalize({ model, key, resourceType: resource }, 'unscheduled'),
-          );
-          this.#adapter.schedule(this.#normalize({ model, key, resourceType: resource }));
+          const staleJob = this.#normalize({ model, key, resourceType: resource }, 'unscheduled');
+          const job = this.#normalize({ model, key, resourceType: resource });
+          fireAndForget(() => this.#adapter.unschedule(staleJob));
+          fireAndForget(() => this.#adapter.schedule(job));
         } catch (err) {
           logging.error(
             {
@@ -79,9 +82,8 @@ export default class PostScheduling {
       events.on(`${resource}.unscheduled`, async (model: any) => {
         try {
           const key = await internalKeys.get('ghost-scheduler');
-          this.#adapter.unschedule(
-            this.#normalize({ model, key, resourceType: resource }, 'unscheduled'),
-          );
+          const job = this.#normalize({ model, key, resourceType: resource }, 'unscheduled');
+          fireAndForget(() => this.#adapter.unschedule(job));
         } catch (err) {
           logging.error(
             {
@@ -134,11 +136,11 @@ export default class PostScheduling {
     for (const resourceType of Object.keys(scheduledResources) as ScheduledResource[]) {
       for (const model of scheduledResources[resourceType]) {
         if (!skipUnschedule) {
-          this.#adapter.unschedule(this.#normalize({ model, key: unscheduleKey, resourceType }), {
-            bootstrap,
-          });
+          const staleJob = this.#normalize({ model, key: unscheduleKey, resourceType });
+          fireAndForget(() => this.#adapter.unschedule(staleJob, { bootstrap }));
         }
-        this.#adapter.schedule(this.#normalize({ model, key: currentKey, resourceType }));
+        const job = this.#normalize({ model, key: currentKey, resourceType });
+        fireAndForget(() => this.#adapter.schedule(job));
       }
     }
   }

@@ -1,5 +1,6 @@
 import logging from '@tryghost/logging';
 import type { SchedulerAdapter, SchedulerJob } from '@tryghost/adapter-base-scheduling';
+import { fireAndForget } from '../../../shared/fire-and-forget';
 import type { InternalApiKey, InternalKeys } from '../../services/internal-keys';
 import { buildSignedJob } from './build-signed-job';
 
@@ -97,15 +98,13 @@ export class SignedFlushScheduler {
       const job = this.#buildJob(time, key);
       this.#scheduledTimes.add(time);
 
-      // schedule() captures asynchronous failures instead of throwing, so a
-      // silent failure leaves the time marked armed; the daily recovery pass
-      // sends the work at most a day late.
-      this.#adapter.schedule(job);
+      // Silently fail. This can leave the time marked armed. The daily
+      // recovery pass will handle work whose flush never ran.
+      fireAndForget(() => this.#adapter.schedule(job));
     } catch (err) {
-      // A synchronous key, job-construction, or adapter failure must not escape
-      // into the caller. Remove any marker so a later call can retry; the
-      // caller's recovery pass handles the work if it does not.
-      this.#scheduledTimes.delete(time);
+      // Key and job-construction failures bust not escape into the caller.
+      // Remove any marker so a later call can retry; the caller's recovery
+      // pass handles the work if it does not.
       logging.error(
         {
           event: { name: `${this.#name}_scheduler.schedule.failed` },
@@ -141,15 +140,16 @@ export class SignedFlushScheduler {
       // Reuse the boot job so correctness doesn't depend on token
       // signing being deterministic.
       const staleJob = previousKey ? this.#buildJob(time, previousKey) : job;
-      this.#adapter.unschedule(staleJob, { bootstrap });
+      fireAndForget(() => this.#adapter.unschedule(staleJob, { bootstrap }));
 
       if (previousKey) {
         for (const delayMs of this.#legacyDelaysMs) {
-          this.#adapter.unschedule(this.#buildJob(time, previousKey, delayMs), { bootstrap });
+          const legacyJob = this.#buildJob(time, previousKey, delayMs);
+          fireAndForget(() => this.#adapter.unschedule(legacyJob, { bootstrap }));
         }
       }
 
-      this.#adapter.schedule(job);
+      fireAndForget(() => this.#adapter.schedule(job));
       this.#scheduledTimes.add(time);
     }
   }

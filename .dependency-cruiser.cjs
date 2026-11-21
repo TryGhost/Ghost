@@ -77,6 +77,7 @@ const serviceDependencyAllowlist = [
   '^ghost/core/shared/errify\\.ts$', // Turns any thrown value into an Error.
   '^ghost/core/shared/timing-safe-string-equal\\.ts$', // Constant-time string comparison.
   '^ghost/core/shared/one-at-a-time\\.ts$', // Wraps a caller's function so calls do not overlap.
+  '^ghost/core/shared/fire-and-forget\\.ts$', // Runs a caller's function and discards its result or error.
   '^ghost/core/shared/machine-payments\\.ts$', // Machine payment predicates over supplied data.
   '^ghost/core/server/adapters/scheduling/get-scheduler-idempotency-key\\.ts$', // Derives a scheduler job's idempotency key from the values the caller passes.
   '^@tryghost/kg-default-nodes$|^koenig/kg-default-nodes/(src/index\\.ts|build/(cjs|esm)/index\\.js)$', // Whole Koenig default-nodes entry (node classes, renderers and the replacement-string helpers welcome emails use); the package has no narrower export and holds no application instances.
