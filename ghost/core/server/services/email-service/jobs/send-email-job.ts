@@ -2,9 +2,10 @@ import { Job } from '../../jobs-service/job';
 
 export default class SendEmailJob extends Job {
   static type = 'send-email';
-  // The newsletter boot scan recovers interrupted sends after checking their
-  // age and post. A replayed job would skip those checks and race the scan.
-  static replayAfterRestart = false;
+  // A replay is safe: the send job checks the email's post and age itself, the
+  // status lock only takes a `pending` email, and the boot scan leaves alone
+  // any email whose send job is still in the outbox.
+  static replayAfterRestart = true;
 
   readonly emailId: string;
   // When the publisher asked for this send, as an ISO date. A replay keeps it
