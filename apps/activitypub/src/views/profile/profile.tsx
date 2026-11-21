@@ -13,13 +13,19 @@ import {
 } from '@hooks/use-activity-pub-queries';
 import { useParams } from '@tryghost/admin-x-framework';
 
-export type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
+export type ProfileTab = 'posts' | 'with-replies' | 'likes' | 'following' | 'followers';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface ProfileProps {}
 
-const PostsTab: React.FC<{ handle: string }> = ({ handle }) => {
-  const { postsByAccountQuery } = usePostsByAccount(handle ? handle : 'me', { enabled: true });
+const PostsTab: React.FC<{ handle: string; includeReplies?: boolean }> = ({
+  handle,
+  includeReplies = false,
+}) => {
+  const { postsByAccountQuery } = usePostsByAccount(handle ? handle : 'me', {
+    enabled: true,
+    includeReplies,
+  });
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = postsByAccountQuery;
 
@@ -164,6 +170,7 @@ const Profile: React.FC<ProfileProps> = () => {
     }) || [];
 
   const postsTab = <PostsTab handle={params.handle || ''} />;
+  const postsWithRepliesTab = <PostsTab handle={params.handle || ''} includeReplies />;
   const likesTab = <LikesTab />;
   const followingTab = <FollowingTab handle={params.handle || ''} />;
   const followersTab = <FollowersTab handle={params.handle || ''} />;
@@ -177,6 +184,7 @@ const Profile: React.FC<ProfileProps> = () => {
       isLoadingAccount={isLoadingAccount}
       likesTab={likesTab}
       postsTab={postsTab}
+      postsWithRepliesTab={postsWithRepliesTab}
     />
   );
 };
