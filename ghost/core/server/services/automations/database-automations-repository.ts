@@ -666,6 +666,7 @@ function getRunHistoryStatus(steps: AutomationRunHistoryStep[]): AutomationRunHi
       case 'failed':
       case 'member changed status':
       case 'member changed tier':
+      case 'member label removed':
       case 'member unsubscribed':
         if (status !== 'in_progress') {
           status = 'exited_early';

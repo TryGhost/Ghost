@@ -1,3 +1,8 @@
+- name: counts_trigger_label_removal_as_an_early_exit
+  parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=case-trigger_label_removed&current_time=2020-01-01T00:00:00Z
+  expected_result: |
+    {"date":"2020-01-01T00:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":1,"invalid_run_count":0}
+
 - name: recorded_outcomes_and_latest_versions
   parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&current_time=2020-01-01T12:00:00Z
   expected_result: |

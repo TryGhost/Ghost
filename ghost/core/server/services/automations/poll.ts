@@ -37,7 +37,7 @@ type MemberModel = {
   related(key: 'newsletters'): {
     models: unknown[];
   };
-  related(key: 'products'): {
+  related(key: 'products' | 'labels'): {
     models: { id: string }[];
   };
 };
@@ -220,6 +220,7 @@ const processStep = async ({
   // For paid_subscription_changed triggers, only the destination rules determine whether the run continues.
   // Other trigger types have no 'from' rules, so this filter leaves them unchanged.
   const rulesToCheck = step.automation_trigger_rules.filter((rule) => rule.direction !== 'from');
+  const labelRule = rulesToCheck.find((rule) => rule.trigger_type === 'label_added');
 
   const memberRelationsToLoad: string[] = [];
   if (step.type === 'send_email') {
@@ -227,6 +228,9 @@ const processStep = async ({
   }
   if (rulesToCheck.some((rule) => rule.scope === 'specific_paid_tier')) {
     memberRelationsToLoad.push('products');
+  }
+  if (labelRule) {
+    memberRelationsToLoad.push('labels');
   }
   const member = (await Member.findOne(
     { id: step.member_id },
@@ -251,6 +255,14 @@ const processStep = async ({
   }
 
   // The member exists, but do they still match the trigger rules for this automation?
+  if (
+    labelRule &&
+    !member.related('labels').models.some((label) => label.id === labelRule.label_id)
+  ) {
+    await automationsApi.markStepTerminal(step, 'member label removed');
+    return null;
+  }
+
   let matchingRule: (typeof rulesToCheck)[number] | undefined;
   let stillMatchesStatus = false;
   for (const rule of rulesToCheck) {

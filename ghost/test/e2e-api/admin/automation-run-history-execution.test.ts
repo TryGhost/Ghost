@@ -37,7 +37,9 @@ describe('Automation run history from the execution', function () {
     enable_updates_and_announcements: boolean;
     created_at: Date;
   };
-  let run: { id: string; automation_id: string };
+  let automationId: string;
+  let runId: string;
+  let labelId: string | undefined;
   let pollOptions: {
     automationsApi: Parameters<typeof poll>[0]['automationsApi'];
     enqueueAnotherPollAt: sinon.SinonStub;
@@ -53,6 +55,7 @@ describe('Automation run history from the execution', function () {
 
   beforeEach(async function () {
     await setupAutomationsFixture();
+    labelId = undefined;
     sinon.stub(logging, 'error');
     clock = sinon.useFakeTimers({ now: new Date('2026-09-14T12:00:00Z'), toFake: ['Date'] });
     member = {
@@ -81,6 +84,13 @@ describe('Automation run history from the execution', function () {
         sendAutomationEmail: sinon.stub().resolves({ id: '<history@example.com>' }),
       },
     };
+    const automation = await db('automations')
+      .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
+      .first();
+    automationId = automation.id;
+  });
+
+  async function enrollFreeMember() {
     await automationsApi2.notify({
       eventName: 'membership_started',
       source: 'member' as const,
@@ -89,13 +99,16 @@ describe('Automation run history from the execution', function () {
       previousMemberStatus: null,
       memberTierIds: [],
     });
-    const automation = await db('automations')
-      .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
+    await loadRun();
+  }
+
+  async function loadRun() {
+    const run = await db('automation_runs')
+      .where({ automation_id: automationId, member_id: member.id })
       .first();
-    run = await db('automation_runs')
-      .where({ automation_id: automation.id, member_id: member.id })
-      .first();
-  });
+    assert.ok(run);
+    runId = run.id;
+  }
 
   afterEach(async function () {
     clock.restore();
@@ -103,12 +116,13 @@ describe('Automation run history from the execution', function () {
     mockManager.restore();
     await cleanupAutomationsFixture();
     await db('members').where('id', member.id).del();
+    if (labelId) {
+      await db('labels').where('id', labelId).del();
+    }
   });
 
   async function readHistory(): Promise<AutomationRunHistory> {
-    const { body } = await agent
-      .get(`automations/${run.automation_id}/runs/${run.id}`)
-      .expectStatus(200);
+    const { body } = await agent.get(`automations/${automationId}/runs/${runId}`).expectStatus(200);
     return body.automation_run_history[0];
   }
 
@@ -118,6 +132,7 @@ describe('Automation run history from the execution', function () {
   }
 
   it('exposes queued waits, successful sends and later delivery as a run progresses to completion', async function () {
+    await enrollFreeMember();
     const queued = await readHistory();
     assert.equal(queued.status, 'in_progress');
     assert.equal(queued.steps.length, 1);
@@ -178,6 +193,7 @@ describe('Automation run history from the execution', function () {
   });
 
   it('preserves the send timestamp and later failure timestamp when advancing the run fails', async function () {
+    await enrollFreeMember();
     await pollAt('2026-09-16T12:00:00Z');
     const pendingEmail = (await readHistory()).steps[1];
     // Start at the final allowed attempt; the poller still acquires the lock
@@ -203,6 +219,7 @@ describe('Automation run history from the execution', function () {
   });
 
   it('retains a deleted member’s pending run and then exposes the poller’s exit without sending', async function () {
+    await enrollFreeMember();
     await db('members').where('id', member.id).del();
     const pending = await readHistory();
     assert.equal(pending.member, null);
@@ -215,6 +232,43 @@ describe('Automation run history from the execution', function () {
     assert.equal(stopped.failed, false);
     assert.equal(stopped.steps.length, 1);
     assert.equal(stopped.steps[0].status, 'member unsubscribed');
+    assert.equal(stopped.steps[0].finished_at, '2026-09-16T12:00:00.000Z');
+    sinon.assert.notCalled(pollOptions.memberWelcomeEmailService.sendAutomationEmail);
+  });
+
+  it('records an early exit when the trigger label is removed during a wait', async function () {
+    const label = await models.Label.add({ name: 'Execution trigger label' });
+    labelId = label.id;
+    await db('automation_trigger_rules')
+      .where('automation_id', automationId)
+      .update({ trigger_type: 'label_added', label_id: label.id });
+    await agent
+      .put(`members/${member.id}/`)
+      .body({ members: [{ labels: [{ id: label.id, name: label.get('name') }] }] })
+      .expectStatus(200);
+    await automationsApi2.notify({
+      eventName: 'label_added',
+      labelId: label.id,
+      memberIds: [member.id],
+    });
+    await loadRun();
+    const waiting = await readHistory();
+    assert.equal(waiting.status, 'in_progress');
+    assert.equal(waiting.steps[0].status, 'pending');
+
+    clock.setSystemTime(new Date('2026-09-15T12:00:00Z'));
+    await agent
+      .put(`members/${member.id}/`)
+      .body({ members: [{ labels: [] }] })
+      .expectStatus(200);
+    await pollAt('2026-09-16T12:00:00Z');
+    await pollAt('2026-09-16T12:00:01Z');
+
+    const stopped = await readHistory();
+    assert.equal(stopped.status, 'exited_early');
+    assert.equal(stopped.failed, false);
+    assert.equal(stopped.steps.length, 1);
+    assert.equal(stopped.steps[0].status, 'member label removed');
     assert.equal(stopped.steps[0].finished_at, '2026-09-16T12:00:00.000Z');
     sinon.assert.notCalled(pollOptions.memberWelcomeEmailService.sendAutomationEmail);
   });
