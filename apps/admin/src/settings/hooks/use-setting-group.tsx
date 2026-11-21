@@ -82,12 +82,12 @@ const useSettingGroup = ({
     }
   }, [isEditing]);
 
-  // reset the local state when there's a new settings API response, unless currently editing
+  // A save response may arrive after another edit. Keep the draft until editing ends.
   useEffect(() => {
-    if (!isEditing || saveState === 'saving') {
+    if (!isEditing) {
       setFormState(() => settings);
     }
-  }, [settings]);
+  }, [settings, isEditing, setFormState]);
 
   const changedSettings = () => {
     return localSettings
