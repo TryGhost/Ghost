@@ -590,7 +590,7 @@ module.exports = class MemberBREADService {
       const isStripeLinkingError =
         error.message && error.message.match(/customer|plan|subscription/g);
       if (isStripeLinkingError) {
-        if (error.message.indexOf('customer') && error.code === 'resource_missing') {
+        if (error.message.includes('customer') && error.code === 'resource_missing') {
           error.message = `Member not imported. ${error.message}`;
           error.context = 'Missing Stripe Customer';
           error.help = "Make sure you're connected to the correct Stripe Account";
