@@ -327,8 +327,8 @@ catalogs:
       specifier: 4.3.3
       version: 4.3.3
     '@tanstack/react-query':
-      specifier: 5.105.1
-      version: 5.105.1
+      specifier: 5.108.0
+      version: 5.108.0
     '@tanstack/react-virtual':
       specifier: 3.14.13
       version: 3.14.13
@@ -935,7 +935,7 @@ importers:
         version: 0.1.11(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.105.1(@types/react@18.3.31)(react@18.3.1)
+        version: 5.108.0(@types/react@18.3.31)(react@18.3.1)
       '@tryghost/admin-x-framework':
         specifier: workspace:*
         version: link:../admin-x-framework
@@ -1071,7 +1071,7 @@ importers:
         version: 2.0.0
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.105.1(@types/react@18.3.31)(react@18.3.1)
+        version: 5.108.0(@types/react@18.3.31)(react@18.3.1)
       '@tanstack/react-virtual':
         specifier: 'catalog:'
         version: 3.14.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1346,7 +1346,7 @@ importers:
         version: 7.120.4(@types/react@18.3.31)(react@18.3.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.105.1(@types/react@18.3.31)(react@18.3.1)
+        version: 5.108.0(@types/react@18.3.31)(react@18.3.1)
       '@tryghost/adapter-base-upgrade':
         specifier: workspace:*
         version: link:../../packages/adapters/upgrade-base
@@ -8673,11 +8673,11 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7 || ^8
 
-  '@tanstack/query-core@5.105.1':
-    resolution: {integrity: sha512-B/rNlZoZ54w1dlddiUt9oEe1SLM+37c00SKLJEg9YH+7as3Y54P81o9Fh+2ujZ36tXPnQJ5oVe7AcyEWkyFhPg==}
+  '@tanstack/query-core@5.108.0':
+    resolution: {integrity: sha512-X9zJUtEV/0D2q9pmGS/Bza8S4bNovSBhZOtdhtu0fzsHwizC6C+Eh/q5CX3MQBchsRMrirWVQmv7Fp4OStzV9g==}
 
-  '@tanstack/react-query@5.105.1':
-    resolution: {integrity: sha512-qcu+/+PtBOjW8qU4/0l47QVmNG7hPOWsCLzP0bTRhE1X7HYa757C4732wXTUH0QhCjTV1yedX8onsCiEwlNYrA==}
+  '@tanstack/react-query@5.108.0':
+    resolution: {integrity: sha512-DpMbB8pVorEZcsHRa0Z13KQGfmndqvJbuLy9h+xfP8XpuEZBOxzq+QfXGonQ0fAgRSWhc+QsfoRETSTWxAEAVw==}
     peerDependencies:
       '@types/react': ^18 || ^19
       react: ^18 || ^19
@@ -20518,11 +20518,11 @@ snapshots:
       tailwindcss: 4.3.3
       vite: 8.1.6(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0)
 
-  '@tanstack/query-core@5.105.1': {}
+  '@tanstack/query-core@5.108.0': {}
 
-  '@tanstack/react-query@5.105.1(@types/react@18.3.31)(react@18.3.1)':
+  '@tanstack/react-query@5.108.0(@types/react@18.3.31)(react@18.3.1)':
     dependencies:
-      '@tanstack/query-core': 5.105.1
+      '@tanstack/query-core': 5.108.0
       react: 18.3.1
     optionalDependencies:
       '@types/react': 18.3.31
