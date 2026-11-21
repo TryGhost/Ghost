@@ -196,6 +196,38 @@ describe('Themes', function () {
       assert.deepEqual(checkedTheme, { errors: [{ hello: 'world' }], warnings: [] });
     });
 
+    it('Keeps the result of the installed theme when a zip with the same name fails validation', async function () {
+      checkStub.resolves({});
+      formatStub.returns({ results: { error: [] } });
+      await validate.getThemeErrors(testTheme.name);
+
+      checkZipStub.resolves({});
+      formatStub.returns({
+        results: { error: [{ fatal: true, code: 'GS005-TPL-ERR' }], hasFatalErrors: true },
+      });
+      await validate.check(testTheme.name, testTheme, { isZip: true });
+      checkStub.resetHistory();
+
+      const checkedTheme = await validate.getThemeErrors(testTheme.name);
+      sinon.assert.notCalled(checkStub);
+      assert.deepEqual(checkedTheme, { errors: [], warnings: [] });
+    });
+
+    it('Replaces the result of the installed theme when a zip with the same name passes validation', async function () {
+      checkStub.resolves({});
+      formatStub.returns({ results: { error: [{ hello: 'world' }] } });
+      await validate.getThemeErrors(testTheme.name);
+
+      checkZipStub.resolves({});
+      formatStub.returns({ results: { error: [] } });
+      await validate.check(testTheme.name, testTheme, { isZip: true });
+      checkStub.resetHistory();
+
+      const checkedTheme = await validate.getThemeErrors(testTheme.name);
+      sinon.assert.notCalled(checkStub);
+      assert.deepEqual(checkedTheme, { errors: [], warnings: [] });
+    });
+
     it('Throws for invalid theme names', async function () {
       await assert.rejects(
         validate.getThemeErrors('invalid-theme-name'),
