@@ -68,7 +68,7 @@ const CTABox: React.FC<Props> = ({ isFirst, isPaid, commentId }) => {
       </button>
       {!member && (
         <p className="text-center font-sans text-md text-[rgba(0,0,0,0.4)] dark:text-[rgba(255,255,255,0.5)]">
-          <span className="mr-1 inline-block text-[15px]">{t('Already a member?')}</span>
+          <span className="me-1 inline-block text-[15px]">{t('Already a member?')}</span>
           <button
             className="rounded-md text-sm font-semibold transition-all hover:opacity-90"
             data-testid="signin-button"
