@@ -92,7 +92,7 @@ function TagsList({
                 )}
                 data-testid="tag-list-row"
               >
-                <TableCell className="relative col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 lg:table-cell lg:w-1/2 lg:p-4 xl:w-3/5">
+                <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 lg:table-cell lg:w-1/2 lg:p-4 xl:w-3/5">
                   <RowPrimaryAction asChild>
                     <AdminLink to={`/tags/${item.slug}`}>
                       <span className="block truncate text-base text-md font-semibold">

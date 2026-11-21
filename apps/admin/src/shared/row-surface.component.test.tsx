@@ -7,6 +7,11 @@ import {
   ListItemActions,
   ListItemContent,
   Button,
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogTitle,
+  DialogClose,
   RowPrimaryAction,
   Table,
   TableBody,
@@ -53,7 +58,7 @@ async function renderRows(admin7Design = true) {
             </ListItemActions>
           </ListItem>
         ))}
-        <ListItem hover={false} role="listitem">
+        <ListItem role="listitem">
           <ListItemContent className="py-4">Static information</ListItemContent>
         </ListItem>
       </List>
@@ -162,9 +167,12 @@ describe('shared content row surfaces in the browser', () => {
 
   it('retains individual selection shapes and suppresses ordinary fill while dragging', async () => {
     await renderRows();
+    await page.getByRole('button', { name: 'Open Second' }).hover();
+    const hoverColor = fill(row(1)).backgroundColor;
     row(0).setAttribute('data-state', 'selected');
     row(1).setAttribute('data-state', 'selected');
     const selectionColor = fill(row(1)).backgroundColor;
+    expect(selectionColor).not.toBe(hoverColor);
     await page.getByRole('button', { name: 'Open Second' }).hover();
     expect(fill(row(1)).backgroundColor).toBe(selectionColor);
     expect(fill(row(0)).opacity).toBe('1');
@@ -255,4 +263,96 @@ describe('shared content row surfaces in the browser', () => {
     expect(edit).toHaveBeenCalledTimes(1);
     expect(open).toHaveBeenCalledTimes(1);
   });
+});
+
+it('keeps action-slot whitespace clickable while respecting modal pointer blocking', async () => {
+  const open = vi.fn();
+  const edit = vi.fn();
+  await renderInApp(
+    <Dialog>
+      <Box className="w-[480px]" padding="lg">
+        <ListItem>
+          <ListItemContent asChild>
+            <button type="button" onClick={open}>
+              Open entry
+            </button>
+          </ListItemContent>
+          <ListItemActions data-testid="row-actions">
+            <button type="button" onClick={edit}>
+              Edit entry
+            </button>
+          </ListItemActions>
+        </ListItem>
+        <DialogTrigger asChild>
+          <Button>Open dialog</Button>
+        </DialogTrigger>
+      </Box>
+      <DialogContent>
+        <DialogTitle>Example dialog</DialogTitle>
+        <DialogClose asChild>
+          <Button>Close example</Button>
+        </DialogClose>
+      </DialogContent>
+    </Dialog>,
+  );
+  const primary = page.getByRole('button', { name: 'Open entry' });
+  const secondary = page.getByRole('button', { name: 'Edit entry' });
+  const bounds = page.getByTestId('row-actions').element().getBoundingClientRect();
+  expect(
+    document.elementFromPoint(bounds.left + bounds.width / 2, bounds.top + 2)?.closest('button'),
+  ).toBe(primary.element());
+  await page
+    .getByTestId('row-actions')
+    .click({ position: { x: bounds.width / 2, y: 2 }, force: true });
+  expect(open).toHaveBeenCalledOnce();
+  await secondary.click();
+  expect(edit).toHaveBeenCalledOnce();
+  const primaryElement = primary.element();
+  const secondaryElement = secondary.element();
+  await page.getByRole('button', { name: 'Open dialog' }).click();
+  await expect.element(page.getByRole('dialog')).toBeVisible();
+  await expect.poll(() => getComputedStyle(secondaryElement).pointerEvents).toBe('none');
+  expect(getComputedStyle(primaryElement, '::after').pointerEvents).toBe('none');
+  await page.getByRole('button', { name: 'Close example' }).click();
+  await expect.poll(() => getComputedStyle(secondaryElement).pointerEvents).not.toBe('none');
+  await secondary.click();
+  expect(edit).toHaveBeenCalledTimes(2);
+  expect(open).toHaveBeenCalledOnce();
+});
+
+it('does not expand static, disabled or layout-only content into a row action', async () => {
+  const action = vi.fn();
+  await renderInApp(
+    <Box className="w-[480px]" padding="lg">
+      <ListItem data-testid="static-row" hover={false}>
+        <ListItemContent asChild>
+          <button type="button" onClick={action}>
+            Static action
+          </button>
+        </ListItemContent>
+      </ListItem>
+      <ListItem>
+        <RowPrimaryAction aria-disabled="true" onClick={action}>
+          Unavailable action
+        </RowPrimaryAction>
+      </ListItem>
+      <ListItem data-testid="layout-row">
+        <ListItemContent asChild>
+          <Box>Information only</Box>
+        </ListItemContent>
+      </ListItem>
+    </Box>,
+  );
+  for (const name of ['Static action', 'Unavailable action']) {
+    const control = page.getByRole('button', { name }).element();
+    expect(getComputedStyle(control, '::after').content).toBe('none');
+  }
+  const layout = page.getByTestId('layout-row');
+  expect(layout.element().querySelector('.shade-row-primary')).toBeNull();
+  await layout.hover();
+  expect(fill(layout.element()).opacity).toBe('0');
+  await page.getByTestId('static-row').click({ position: { x: -8, y: 12 }, force: true });
+  expect(action).not.toHaveBeenCalled();
+  await page.getByRole('button', { name: 'Static action' }).click();
+  expect(action).toHaveBeenCalledOnce();
 });

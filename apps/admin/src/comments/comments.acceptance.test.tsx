@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { page, userEvent } from 'vitest/browser';
 
 import {
   browseResponse,
@@ -36,7 +37,10 @@ describe('Static comment rows', () => {
       expect(getComputedStyle(row.element(), '::before').opacity).toBe('0');
       expect(getComputedStyle(row.element()).borderBottomColor).toBe(separator);
       const hide = row.getByRole('button', { name: 'Hide', exact: true });
-      hide.element().focus();
+      await page.getByRole('heading', { name: 'Comments', exact: true }).hover({ force: true });
+      for (let tab = 0; tab < 50 && document.activeElement !== hide.element(); tab += 1) {
+        await userEvent.tab();
+      }
       await expect.element(hide).toHaveFocus();
       expect(getComputedStyle(row.element()).backgroundColor).toBe(background);
       expect(getComputedStyle(row.element(), '::before').opacity).toBe('0');

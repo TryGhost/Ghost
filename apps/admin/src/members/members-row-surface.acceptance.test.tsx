@@ -98,19 +98,23 @@ describe('Members row surfaces', () => {
       const pinnedCell = grace.getByRole('cell').elements()[0];
       const originalBackground = getComputedStyle(pinnedCell).backgroundColor;
       const headerBackground = getComputedStyle(memberHeader).backgroundColor;
-      const headerLeft = memberHeader.getBoundingClientRect().left;
       const scroller = membersScreen.horizontalScrollElement()!;
       expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth);
 
       scroller.scrollLeft = 160;
       await expect.poll(() => scroller.scrollLeft).toBeGreaterThan(0);
       await expect
-        .poll(() => Math.abs(pinnedCell.getBoundingClientRect().left - headerLeft))
+        .poll(() =>
+          Math.abs(
+            pinnedCell.getBoundingClientRect().left - memberHeader.getBoundingClientRect().left,
+          ),
+        )
         .toBeLessThanOrEqual(1);
       membersScreen.link('Ada Lovelace').element().focus();
       await userEvent.keyboard('{Tab}');
 
       await expect.element(membersScreen.link('Grace Hopper')).toHaveFocus();
+      expect(scroller.scrollLeft).toBeGreaterThan(0);
       await expect
         .poll(() => getComputedStyle(pinnedCell).backgroundColor)
         .not.toBe(originalBackground);

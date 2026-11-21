@@ -85,6 +85,7 @@ export function PresenceAvatars({
           data-testid="presence-avatars"
           gap="none"
           tabIndex={0}
+          data-row-secondary
         >
           {users.length > 1 ? (
             <UserAvatar className="sm:hidden" count={users.length} label={everyone} user={first} />

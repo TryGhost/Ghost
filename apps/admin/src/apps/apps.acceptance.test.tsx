@@ -1523,7 +1523,8 @@ describe('Managing apps', () => {
       // Observe native activation without opening another Vitest runner in a popup.
       event.preventDefault();
     };
-    link.element().addEventListener('click', capture);
+    const linkElement = link.element();
+    linkElement.addEventListener('click', capture);
     try {
       await appsScreen
         .row('Podcast')
@@ -1533,7 +1534,7 @@ describe('Managing apps', () => {
       await expect.element(link).toHaveAttribute('href', '#/apps/installation-1');
       await expect.poll(currentRoute).toBe('/apps');
     } finally {
-      link.element().removeEventListener('click', capture);
+      linkElement.removeEventListener('click', capture);
     }
   });
 

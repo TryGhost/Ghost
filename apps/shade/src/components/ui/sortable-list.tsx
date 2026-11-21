@@ -183,10 +183,13 @@ export const SortableList = <Item extends { id: string }>({
         collisionDetection={closestCenter}
         onDragCancel={() => setDraggingId(null)}
         onDragEnd={(event) => {
-          if (event.over) {
-            onMove(String(event.active.id), String(event.over.id));
+          try {
+            if (event.over) {
+              onMove(String(event.active.id), String(event.over.id));
+            }
+          } finally {
+            setDraggingId(null);
           }
-          setDraggingId(null);
         }}
         onDragStart={(event) => setDraggingId(String(event.active.id))}
       >

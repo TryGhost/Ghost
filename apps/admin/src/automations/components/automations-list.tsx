@@ -39,18 +39,6 @@ const AUTOMATION_STAT_COLUMNS = [
   },
 ] as const;
 
-const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
-  if (
-    event.defaultPrevented ||
-    !(event.target instanceof Element) ||
-    event.target.closest('a, button, input, select, textarea')
-  ) {
-    return;
-  }
-
-  event.currentTarget.querySelector('a')?.click();
-};
-
 export type AutomationsToShow = 'non-archived' | 'archived' | 'all';
 
 const EMPTY_COPY = {
@@ -220,10 +208,9 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
                   : 'grid-cols-[repeat(3,minmax(0,1fr))_auto]',
               )}
               data-testid="automation-list-row"
-              onClick={handleRowClick}
             >
               <TableHead
-                className="col-span-3 row-start-1 h-auto min-w-0 p-0 text-left text-base font-normal tracking-normal text-foreground lg:table-cell lg:max-w-0 lg:p-4"
+                className="static col-span-3 row-start-1 h-auto min-w-0 p-0 text-left text-base font-normal tracking-normal text-foreground lg:table-cell lg:max-w-0 lg:p-4"
                 scope="row"
               >
                 <RowPrimaryAction asChild>
@@ -269,10 +256,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({
                 <AutomationStatusBadge status={automation.status} />
               </TableCell>
               {canManage && (
-                <TableCell
-                  className="col-start-5 row-start-1 w-auto p-0 text-right lg:table-cell lg:w-16 lg:p-4"
-                  onClick={(event) => event.stopPropagation()}
-                >
+                <TableCell className="col-start-5 row-start-1 w-auto p-0 text-right lg:table-cell lg:w-16 lg:p-4">
                   <AutomationListActions automation={automation} />
                 </TableCell>
               )}

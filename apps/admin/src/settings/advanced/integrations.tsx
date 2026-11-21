@@ -249,7 +249,10 @@ const CustomIntegrations: React.FC<{ integrations: Integration[] }> = ({ integra
             action={() => updateRoute({ route: `integrations/${integration.id}` })}
             detail={
               <div className="line-clamp-2 break-words">
-                <span title={`${integration.name}: ${integration.description || 'No description'}`}>
+                <span
+                  className="relative z-10"
+                  title={`${integration.name}: ${integration.description || 'No description'}`}
+                >
                   {integration.description || 'No description'}
                 </span>
               </div>

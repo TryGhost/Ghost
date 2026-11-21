@@ -234,7 +234,6 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
         )}
         data-presence-id={post.id}
         data-selected={isSelected ? 'true' : undefined}
-        data-state={isSelected ? 'selected' : undefined}
         data-testid="posts-list-item"
         onClickCapture={onSelectClick}
         onMouseDownCapture={(event) => {
@@ -279,7 +278,12 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                   // a long author-and-tag line runs to three lines on
                   // a narrow window and drives the row's height,
                   // which reads as the metrics squashing it.
-                  <Text className="truncate" size="sm" title={dateTooltip} tone="secondary">
+                  <Text
+                    className="relative z-10 truncate"
+                    size="sm"
+                    title={dateTooltip}
+                    tone="secondary"
+                  >
                     {metaParts.join(' - ')}
                   </Text>
                 )}

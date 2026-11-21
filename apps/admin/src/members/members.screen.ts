@@ -20,9 +20,11 @@ export const membersScreen = {
   memberRow: (name: string) => page.getByTestId(membersListItem).filter({ hasText: name }),
   // The visual pinned-header clone is aria-hidden; the accessible original is height zero.
   pinnedHeaderCell: (name: string) =>
-    Array.from(document.querySelectorAll<HTMLTableCellElement>('thead th')).find(
-      (cell) => cell.textContent === name && cell.getBoundingClientRect().height > 0,
-    ),
+    Array.from(
+      document.querySelectorAll<HTMLTableCellElement>(
+        '[data-testid="members-pinned-header"] thead th',
+      ),
+    ).find((cell) => cell.textContent === name && cell.getBoundingClientRect().height > 0),
   link: (name: string) => page.getByRole('link', { name, exact: true }),
   newMemberLink: () => page.getByRole('link', { name: newMemberLink }),
   searchInput: () => page.getByLabelText(searchLabel),

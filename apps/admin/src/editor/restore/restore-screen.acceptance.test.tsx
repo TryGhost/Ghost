@@ -137,10 +137,13 @@ describe('Restore posts', () => {
       const otherBackgrounds = otherCells.map(background);
       const cells = row.getByRole('cell').elements();
       const originalBackground = background(cells[0]);
+      const rowLayers = () => cells.map((cell) => getComputedStyle(cell, '::before').opacity);
+      expect(rowLayers()).toEqual(cells.map(() => '0'));
 
       await row.hover();
 
       await expect.poll(() => background(cells[0])).toBe(originalBackground);
+      expect(rowLayers()).toEqual(cells.map(() => '0'));
       expect(cells.map(background)).toEqual(cells.map(() => background(cells[0])));
       expect(headers.map(background)).toEqual(headerBackgrounds);
       expect(otherCells.map(background)).toEqual(otherBackgrounds);

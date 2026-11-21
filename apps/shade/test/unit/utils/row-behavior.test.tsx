@@ -1,9 +1,9 @@
-import { createRef } from 'react';
+import { createRef, forwardRef } from 'react';
 import { createPortal } from 'react-dom';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import ShadeApp from '../../../src/shade-app';
-import { ListItem } from '../../../src/components/ui/list';
+import { ListItem, ListItemContent } from '../../../src/components/ui/list';
 import { RowPrimaryAction, TableRowAction } from '../../../src/components/ui/row-primary-action';
 import { TableCell, TableRow } from '../../../src/components/ui/table';
 
@@ -214,7 +214,9 @@ describe.each([false, true])('shared rows with admin7Design=%s', (flag) => {
     expect(control.tagName).toBe('DIV');
     expect(control.tabIndex).toBe(0);
     fireEvent.keyDown(control, { key: 'Enter' });
+    expect(action).toHaveBeenCalledTimes(1);
     fireEvent.keyDown(control, { key: ' ' });
+    expect(action).toHaveBeenCalledTimes(1);
     fireEvent.keyUp(control, { key: ' ' });
     expect(action).toHaveBeenCalledTimes(2);
   });
@@ -267,12 +269,15 @@ describe.each([false, true])('shared rows with admin7Design=%s', (flag) => {
   it('preserves auxiliary navigation and ignores independent secondary regions', () => {
     const open = vi.spyOn(window, 'open').mockReturnValue(null);
     const secondary = vi.fn();
+    const primary = vi.fn((event: React.MouseEvent) => event.preventDefault());
     inShade(
       flag,
       <ListItem asChild>
         <div data-testid="row">
           <RowPrimaryAction asChild>
-            <a href="https://example.com/entry">Entry</a>
+            <a href="https://example.com/entry" onClick={primary}>
+              Entry
+            </a>
           </RowPrimaryAction>
           <div data-row-secondary onClick={secondary}>
             Metrics
@@ -282,6 +287,7 @@ describe.each([false, true])('shared rows with admin7Design=%s', (flag) => {
     );
     fireEvent.click(screen.getByText('Metrics'));
     expect(secondary).toHaveBeenCalledOnce();
+    expect(primary).not.toHaveBeenCalled();
     fireEvent(
       screen.getByTestId('row'),
       new MouseEvent('auxclick', { bubbles: true, cancelable: true, button: 1 }),
@@ -292,4 +298,209 @@ describe.each([false, true])('shared rows with admin7Design=%s', (flag) => {
       'noopener,noreferrer',
     );
   });
+});
+
+describe.each([false, true])('row review regressions with admin7Design=%s', (flag) => {
+  it('keeps checkbox labels independent and ignores secondary markers outside the row', () => {
+    const action = vi.fn();
+    inShade(
+      flag,
+      <div data-row-secondary>
+        <ListItem data-testid="row">
+          <RowPrimaryAction onClick={action}>Open</RowPrimaryAction>
+          <label htmlFor="include-entry">Include entry</label>
+          <input id="include-entry" type="checkbox" />
+          <span>Empty row space</span>
+        </ListItem>
+      </div>,
+    );
+    fireEvent.click(screen.getByText('Include entry'));
+    expect((screen.getByRole('checkbox') as HTMLInputElement).checked).toBe(true);
+    expect(action).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByText('Empty row space'));
+    expect(action).toHaveBeenCalledOnce();
+  });
+
+  it('keeps a text selection when a drag ends in empty row space', () => {
+    const action = vi.fn();
+    inShade(
+      flag,
+      <ListItem data-testid="row">
+        <RowPrimaryAction onClick={action}>Open</RowPrimaryAction>
+        <span>Selectable text</span>
+      </ListItem>,
+    );
+    const selection = window.getSelection()!;
+    const range = document.createRange();
+    range.selectNodeContents(screen.getByText('Selectable text'));
+    selection.addRange(range);
+    try {
+      fireEvent.click(screen.getByTestId('row'));
+      expect(action).not.toHaveBeenCalled();
+      expect(selection.toString()).toBe('Selectable text');
+      selection.collapseToEnd();
+      fireEvent.click(screen.getByTestId('row'));
+      expect(action).toHaveBeenCalledOnce();
+    } finally {
+      selection.removeAllRanges();
+    }
+  });
+
+  it.each([undefined, '/entry', '#entry'])(
+    'respects aux-click cancellation and requires a destination (%s)',
+    (href) => {
+      const open = vi.spyOn(window, 'open').mockReturnValue(null);
+      const cancel = vi.fn((event: React.MouseEvent) => event.preventDefault());
+      inShade(
+        flag,
+        <ListItem data-testid="row">
+          <RowPrimaryAction asChild>
+            <a href={href} onAuxClick={cancel}>
+              Entry
+            </a>
+          </RowPrimaryAction>
+        </ListItem>,
+      );
+      fireEvent(
+        screen.getByTestId('row'),
+        new MouseEvent('auxclick', { bubbles: true, cancelable: true, button: 1 }),
+      );
+      expect(open).not.toHaveBeenCalled();
+      expect(cancel).toHaveBeenCalledTimes(href === undefined ? 0 : 1);
+    },
+  );
+
+  it.each([false, true])(
+    'handles a wrapper callback and effective aria-disabled (%s)',
+    (disabled) => {
+      const action = vi.fn();
+      inShade(
+        flag,
+        <RowPrimaryAction aria-disabled={disabled} asChild onClick={action}>
+          <div>Run action</div>
+        </RowPrimaryAction>,
+      );
+      const control = screen.getByText('Run action');
+      expect(control.tabIndex).toBe(disabled ? -1 : 0);
+      fireEvent.keyDown(control, { key: 'Enter' });
+      expect(action).toHaveBeenCalledTimes(disabled ? 0 : 1);
+      fireEvent.keyDown(control, { key: ' ' });
+      expect(action).toHaveBeenCalledTimes(disabled ? 0 : 1);
+      fireEvent.keyUp(control, { key: ' ' });
+      expect(action).toHaveBeenCalledTimes(disabled ? 0 : 2);
+    },
+  );
+
+  it('preserves a slotted native callback after capture cancels navigation', () => {
+    const click = vi.fn();
+    inShade(
+      flag,
+      <div onClickCapture={(event) => event.preventDefault()}>
+        <ListItem asChild>
+          <a href="/entry" onClick={click}>
+            Entry
+          </a>
+        </ListItem>
+      </div>,
+    );
+    fireEvent.click(screen.getByText('Entry'));
+    expect(click).toHaveBeenCalledOnce();
+    expect(click.mock.calls[0][0].defaultPrevented).toBe(true);
+  });
+
+  it('keeps secondary controls independent when capture cancels the default action', () => {
+    const action = vi.fn();
+    const secondary = vi.fn();
+    inShade(
+      flag,
+      <div onClickCapture={(event) => event.preventDefault()}>
+        <ListItem asChild>
+          <div onClick={action}>
+            <button type="button" onClick={secondary}>
+              Secondary
+            </button>
+          </div>
+        </ListItem>
+      </div>,
+    );
+    fireEvent.click(screen.getByText('Secondary'));
+    expect(secondary).toHaveBeenCalledOnce();
+    expect(action).not.toHaveBeenCalled();
+  });
+
+  it('does not start press feedback from a portaled touch', () => {
+    const pointer = vi.fn();
+    inShade(
+      flag,
+      <ListItem data-testid="row" onPointerDown={pointer}>
+        <RowPrimaryAction>Open</RowPrimaryAction>
+        {createPortal(<span>Portaled item</span>, document.body)}
+      </ListItem>,
+    );
+    const event = new Event('pointerdown', { bubbles: true });
+    Object.assign(event, { pointerType: 'touch', pointerId: 1, isPrimary: true });
+    fireEvent(screen.getByText('Portaled item'), event);
+    expect(pointer).toHaveBeenCalledOnce();
+    expect(screen.getByTestId('row').hasAttribute('data-row-pressed')).toBe(false);
+  });
+});
+
+it('recognizes the native control rendered by a composed router link or submit button', () => {
+  const navigate = vi.fn((event: React.MouseEvent) => event.preventDefault());
+  const submit = vi.fn((event: React.FormEvent) => event.preventDefault());
+  const RouterLink = forwardRef<HTMLAnchorElement, { to: string; className?: string }>(
+    ({ to, ...props }, ref) => (
+      <a {...props} ref={ref} href={to} onClick={navigate}>
+        Entry
+      </a>
+    ),
+  );
+  const SubmitButton = forwardRef<HTMLButtonElement, { className?: string }>((props, ref) => (
+    <button {...props} ref={ref} type="submit">
+      Save
+    </button>
+  ));
+  render(
+    <form onSubmit={submit}>
+      <ListItem data-testid="link-row">
+        <ListItemContent asChild>
+          <RouterLink to="/entry" />
+        </ListItemContent>
+      </ListItem>
+      <ListItem data-testid="submit-row">
+        <ListItemContent asChild>
+          <SubmitButton />
+        </ListItemContent>
+      </ListItem>
+    </form>,
+  );
+  expect(screen.getByRole('link').classList.contains('shade-row-primary')).toBe(true);
+  expect(screen.getByRole('button').classList.contains('shade-row-primary')).toBe(true);
+  fireEvent.click(screen.getByTestId('link-row'));
+  expect(navigate).toHaveBeenCalledOnce();
+  fireEvent.click(screen.getByTestId('submit-row'));
+  expect(submit).toHaveBeenCalledOnce();
+});
+
+it('does not invoke a slotted native root for canceled clicks from a portal', () => {
+  const action = vi.fn();
+  const secondary = vi.fn();
+  render(
+    <div onClickCapture={(event) => event.preventDefault()}>
+      <ListItem asChild>
+        <button type="button" onClick={action}>
+          Open
+          {createPortal(
+            <button type="button" onClick={secondary}>
+              Portaled secondary
+            </button>,
+            document.body,
+          )}
+        </button>
+      </ListItem>
+    </div>,
+  );
+  fireEvent.click(screen.getByText('Portaled secondary'));
+  expect(secondary).toHaveBeenCalledOnce();
+  expect(action).not.toHaveBeenCalled();
 });

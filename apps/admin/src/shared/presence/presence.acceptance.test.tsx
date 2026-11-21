@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import {
   fakeAdminEndpoint,
   fakeAdminStats,
@@ -160,8 +160,14 @@ describe('presence polling', () => {
       await expect
         .element(page.getByRole('tooltip', { name: 'Alex Smith has this post open' }))
         .toBeVisible();
-      avatars.element().focus();
+      page
+        .getByRole('link', { name: /Presence example/ })
+        .element()
+        .focus();
+      await userEvent.tab();
       await expect.element(avatars).toHaveFocus();
+      await avatars.click();
+      await expect.element(page.getByRole('link', { name: /Presence example/ })).toBeVisible();
     },
   );
 

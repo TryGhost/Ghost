@@ -14,6 +14,7 @@ function pointer(type: string, values: Record<string, unknown> = {}) {
   Object.assign(event, {
     pointerType: 'touch',
     isPrimary: true,
+    pointerId: 1,
     clientX: 20,
     clientY: 20,
     ...values,
@@ -77,4 +78,25 @@ it.each([false, true])('provides touch feedback with admin7Design=%s', (flag) =>
   pointer('pointerdown');
   expect(onPointerDown).toHaveBeenCalledOnce();
   expect(screen.getByTestId('row').getAttribute('data-row-pressed')).toBe('true');
+});
+
+it('keeps the initiating finger pressed when a second finger moves or releases', () => {
+  const onPointerUp = vi.fn();
+  render(<Row onPointerUp={onPointerUp} />);
+  pointer('pointerdown');
+  pointer('pointerdown', { pointerId: 2, isPrimary: false });
+  pointer('pointermove', { pointerId: 2, clientY: 50 });
+  pointer('pointerup', { pointerId: 2 });
+  expect(screen.getByTestId('row').getAttribute('data-row-pressed')).toBe('true');
+  expect(onPointerUp).toHaveBeenCalledOnce();
+  pointer('pointerup');
+  expect(screen.getByTestId('row').hasAttribute('data-row-pressed')).toBe(false);
+});
+
+it('clears a press when interactivity is removed and restored', () => {
+  const { rerender } = render(<Row />);
+  pointer('pointerdown');
+  rerender(<Row enabled={false} />);
+  rerender(<Row enabled />);
+  expect(screen.getByTestId('row').hasAttribute('data-row-pressed')).toBe(false);
 });

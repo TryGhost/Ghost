@@ -1,20 +1,36 @@
-import { useRef, useState, type HTMLAttributes, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type HTMLAttributes, type PointerEvent } from 'react';
 
 /** Touch feedback for a row, without capturing pointers or blocking scrolling. */
 export function useRowPress<Element extends HTMLElement>(
   props: HTMLAttributes<Element> = {},
   enabled = true,
 ) {
-  const origin = useRef<{ x: number; y: number } | null>(null);
-  const [pressed, setPressed] = useState(false);
+  const origin = useRef<{ x: number; y: number; pointerId: number } | null>(null);
+  const [state, setState] = useState({ enabled, pressed: false });
+
+  if (state.enabled !== enabled) {
+    setState({ enabled, pressed: false });
+  }
 
   const clear = () => {
     origin.current = null;
-    setPressed(false);
+    setState((current) => ({ ...current, pressed: false }));
+  };
+
+  useEffect(() => {
+    if (!enabled) {
+      origin.current = null;
+    }
+  }, [enabled]);
+
+  const release = (event: PointerEvent<Element>) => {
+    if (origin.current?.pointerId === event.pointerId) {
+      clear();
+    }
   };
 
   return {
-    'data-row-pressed': enabled && pressed ? 'true' : undefined,
+    'data-row-pressed': enabled && state.pressed ? 'true' : undefined,
     onPointerDown(event: PointerEvent<Element>) {
       props.onPointerDown?.(event);
       if (
@@ -25,13 +41,14 @@ export function useRowPress<Element extends HTMLElement>(
       ) {
         return;
       }
-      origin.current = { x: event.clientX, y: event.clientY };
-      setPressed(true);
+      origin.current = { x: event.clientX, y: event.clientY, pointerId: event.pointerId };
+      setState({ enabled, pressed: true });
     },
     onPointerMove(event: PointerEvent<Element>) {
       props.onPointerMove?.(event);
       if (
         origin.current &&
+        origin.current.pointerId === event.pointerId &&
         Math.hypot(event.clientX - origin.current.x, event.clientY - origin.current.y) > 8
       ) {
         clear();
@@ -39,15 +56,15 @@ export function useRowPress<Element extends HTMLElement>(
     },
     onPointerUp(event: PointerEvent<Element>) {
       props.onPointerUp?.(event);
-      clear();
+      release(event);
     },
     onPointerCancel(event: PointerEvent<Element>) {
       props.onPointerCancel?.(event);
-      clear();
+      release(event);
     },
     onPointerLeave(event: PointerEvent<Element>) {
       props.onPointerLeave?.(event);
-      clear();
+      release(event);
     },
   };
 }

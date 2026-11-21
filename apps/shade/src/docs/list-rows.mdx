@@ -34,8 +34,8 @@ buttons in `ListItemActions`. Shade makes the whole row, including its
 highlighted edges, activate the main link or button.
 
 Use `hover={false}` on `ListItem` when only the individual controls
-should look clickable. This hides the row highlight; its buttons and links
-still work normally.
+should look clickable. This hides the row highlight and stops empty row space from activating the
+main control. Its buttons and links still work normally when clicked directly.
 
 ### Custom rows
 
@@ -86,6 +86,10 @@ on or off. `TableRow` and `ListItem` handle highlighting, touch presses,
 and clicks on the empty space around the main link. You do not need to repeat
 that code in each screen. Your screen still decides where a link goes, what a
 button does, and who is allowed to use it.
+
+A row’s own `onClick` takes precedence over forwarding to its main control.
+Remove handlers that only click the main link; Shade already does that and
+preserves modifier keys. Keep handlers that perform a different row action.
 
 ## Spacing and dividing lines
 
