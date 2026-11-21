@@ -1,5 +1,6 @@
 import {$isLinkNode} from '@lexical/link';
 import {$isTextNode, $isLineBreakNode, TextNode} from 'lexical';
+import {$isInlineDecorator} from './inline-decorator.js';
 import type {LinkNode} from '@lexical/link';
 import type {ElementNode, LexicalNode, TextFormatType} from 'lexical';
 import type {RendererOptions} from '../types.js';
@@ -61,6 +62,14 @@ export default class TextContent {
 
             if ($isLineBreakNode(node)) {
                 currentNode.append(document.createElement('BR'));
+                continue;
+            }
+
+            if ($isInlineDecorator(node)) {
+                const {element} = node.exportDOM(null, this.options);
+                if (element) {
+                    currentNode.append(element);
+                }
                 continue;
             }
 
