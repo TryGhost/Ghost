@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import type { AccessChange } from '@tryghost/app-contracts';
 import {
   Badge,
   Banner,
@@ -33,7 +34,12 @@ import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { NotFound } from '@/shared/not-found';
-import { AccessIndicator, OPENED_APP_ACCESS_INTRO } from './components/access-indicator';
+import {
+  AccessChanges,
+  AccessIndicator,
+  OPENED_APP_ACCESS_INTRO,
+} from './components/access-indicator';
+import { describeAccessChanges, historyAccessChanges } from './lib/access-changes';
 import { AppIcon } from './components/app-icon';
 import { AppsGate } from './components/apps-gate';
 import { PinMenuItem } from './components/pin-menu-item';
@@ -88,32 +94,51 @@ const StatusBadges: React.FC<{ installation: AppInstallation }> = ({ installatio
   </>
 );
 
+/**
+ * What an entry changed in the app's access, in the review screen's words. A suspension's are
+ * what it asked for.
+ */
+const EntryAccessChanges: React.FC<{
+  entry: AppInstallationHistoryEntry;
+  changes: AccessChange[];
+}> = ({ entry, changes }) => {
+  const groups = describeAccessChanges(changes, { pending: entry.event === 'suspended' });
+  return groups.length > 0 ? <AccessChanges groups={groups} /> : null;
+};
+
 const History: React.FC<{ entries: AppInstallationHistoryEntry[]; timezone: string }> = ({
   entries,
   timezone,
-}) => (
-  <ol className="m-0 list-none divide-y divide-border p-0">
-    {entries.map((entry) => (
-      <li
-        key={entry.id}
-        className="py-3 in-data-[admin7-design=true]:py-4 in-data-[admin7-design=true]:first:pt-0"
-        data-testid="app-history-entry"
-      >
-        <Inline align="baseline" gap="md" justify="between">
-          <span className="text-sm in-data-[admin7-design=true]:text-md">
-            {historyTitle(entry)}
-            {entry.actor?.name && (
-              <span className="text-muted-foreground"> by {entry.actor.name}</span>
-            )}
-          </span>
-          <span className="shrink-0 text-xs text-muted-foreground in-data-[admin7-design=true]:text-base">
-            {formatDisplayDate(entry.created_at, timezone)}
-          </span>
-        </Inline>
-      </li>
-    ))}
-  </ol>
-);
+}) => {
+  // Each change is shown once: an approval shows what it granted, not the suspension too.
+  const accessChanges = historyAccessChanges(entries);
+  return (
+    <ol className="m-0 list-none divide-y divide-border p-0">
+      {entries.map((entry, index) => (
+        <li
+          key={entry.id}
+          className="py-3 in-data-[admin7-design=true]:py-4 in-data-[admin7-design=true]:first:pt-0"
+          data-testid="app-history-entry"
+        >
+          <Stack gap="sm">
+            <Inline align="baseline" gap="md" justify="between">
+              <span className="text-sm in-data-[admin7-design=true]:text-md">
+                {historyTitle(entry)}
+                {entry.actor?.name && (
+                  <span className="text-muted-foreground"> by {entry.actor.name}</span>
+                )}
+              </span>
+              <span className="shrink-0 text-xs text-muted-foreground in-data-[admin7-design=true]:text-base">
+                {formatDisplayDate(entry.created_at, timezone)}
+              </span>
+            </Inline>
+            <EntryAccessChanges changes={accessChanges[index]} entry={entry} />
+          </Stack>
+        </li>
+      ))}
+    </ol>
+  );
+};
 
 interface SidebarProps {
   installation: AppInstallation;
@@ -240,7 +265,7 @@ const Details: React.FC<{
 
         {status !== 'uninstalled' && (
           <Section
-            description={OPENED_APP_ACCESS_INTRO}
+            description={manifest.access.length > 0 ? OPENED_APP_ACCESS_INTRO : undefined}
             id="app-permissions-heading"
             title="Permissions"
           >

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, DialogFooter } from '@tryghost/shade/components';
 import { Stack } from '@tryghost/shade/primitives';
-import { isFieldChange } from '@tryghost/app-contracts';
+import { splitChanges } from '@tryghost/app-contracts';
 import type { AppInstallationPreview } from '@tryghost/admin-x-framework/api/app-installations';
 import { NoticeBanner, ReviewHeader, ReviewSeparator } from './review-header';
 import { AccessIndicator } from '@/apps/components/access-indicator';
@@ -31,10 +31,9 @@ export const Review: React.FC<ReviewProps> = ({
 }) => {
   const { manifest, installation } = preview;
   const name = installation?.manifest.name;
-  // Only field changes are listed here: access changes aren't fields.
-  const rows = installation
-    ? describeChanges(installation, preview, installation.changes.filter(isFieldChange))
-    : [];
+  // Access changes are marked in the access list, not rows among the fields.
+  const { fields, access } = splitChanges(installation?.changes ?? []);
+  const rows = installation ? describeChanges(installation, preview, fields) : [];
   return (
     <>
       <ReviewHeader
@@ -55,7 +54,7 @@ export const Review: React.FC<ReviewProps> = ({
           <ManifestChanges rows={rows} />
         </Stack>
       )}
-      <AccessIndicator manifest={manifest} />
+      <AccessIndicator changes={access} manifest={manifest} />
       <DialogFooter>
         <Button variant="outline" onClick={onClose}>
           Cancel
