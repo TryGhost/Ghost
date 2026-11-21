@@ -3139,6 +3139,26 @@ describe('Members API', function () {
       }
     });
 
+    it('Can re-enable email for a member with no suppression record', async function () {
+      const suppressedMember = await models.Member.add({
+        email: 'suppression-no-record-test@email.com',
+        name: 'Suppression No Record Test',
+        email_disabled: true,
+      });
+
+      try {
+        await agent
+          .delete(`/members/${suppressedMember.id}/suppression`)
+          .expectStatus(204)
+          .expectEmptyBody();
+
+        await suppressedMember.refresh();
+        assert.equal(suppressedMember.get('email_disabled'), false);
+      } finally {
+        await models.Member.destroy({ id: suppressedMember.id });
+      }
+    });
+
     it('Returns 404 for non-existent member', async function () {
       await agent
         .delete('/members/abcd1234abcd1234abcd1234/suppression')
