@@ -64,7 +64,7 @@ function GalleryImage({image, deleteImage, position, isDragging}) {
             />
 
             {isDragging ? null : (
-                <div className={`pointer-events-none invisible absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 p-3 opacity-0 transition-all group-hover/image:visible group-hover/image:opacity-100 ${overlayClasses.join(' ')}`}>
+                <div className={`pointer-events-none invisible absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 p-3 opacity-0 transition-all group-hover/image:visible group-hover/image:opacity-100 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:visible [@media(hover:none)]:opacity-100 ${overlayClasses.join(' ')}`}>
                     <div className="flex flex-row-reverse">
                         <IconButton Icon={DeleteIcon} label="Delete" onClick={() => deleteImage(image)} />
                     </div>
