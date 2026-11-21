@@ -63,7 +63,7 @@ test.describe('My Profile', async () => {
       const thirdItem = profileItems.nth(2);
       const thirdItemText = await thirdItem.textContent();
 
-      expect(thirdItemText).toContain(`${repostedPost.repostedBy?.name}reposted`);
+      expect(thirdItemText).toContain(`${repostedPost.repostedBy?.name} reposted`);
       expect(thirdItemText).toContain(repostedPost.title);
     });
 
@@ -206,7 +206,7 @@ test.describe('My Profile', async () => {
       const secondItemText = await secondItem.textContent();
 
       expect(secondItemText).toContain(repostedPost.author.name);
-      expect(secondItemText).toContain(`${repostedPost.repostedBy?.name}reposted`);
+      expect(secondItemText).toContain(`${repostedPost.repostedBy?.name} reposted`);
     });
   });
 

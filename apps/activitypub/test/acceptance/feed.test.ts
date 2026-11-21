@@ -576,4 +576,54 @@ test.describe('Feed', async () => {
       content: 'This is a test reply to a feed post',
     });
   });
+
+  test('Reposts of the same note are shown once, naming everyone who reposted it', async ({
+    page,
+  }) => {
+    const reposter = (name: string) => ({
+      id: `reposter-${name}`,
+      handle: `@${name.toLowerCase()}@test.instance`,
+      name,
+      url: `https://test.instance/@${name.toLowerCase()}`,
+      avatarUrl: '',
+      followedByMe: true,
+    });
+    const [first, second, ...rest] = feedFixture.posts;
+
+    await mockApi({
+      page,
+      requests: {
+        getFeed: {
+          method: 'GET',
+          path: '/v1/feed/notes',
+          response: {
+            ...feedFixture,
+            posts: [
+              { ...first, repostedBy: reposter('Ana') },
+              { ...second, repostedBy: reposter('Dora') },
+              { ...first, repostedBy: reposter('Ben') },
+              { ...second, repostedBy: reposter('Eli') },
+              { ...first, repostedBy: reposter('Cleo') },
+              ...rest,
+            ],
+          },
+        },
+      },
+      options: { useActivityPub: true },
+    });
+
+    await page.goto('#/notes');
+
+    const feedItems = page.getByTestId('feed-item');
+    await expect(feedItems).toHaveCount(2 + rest.length);
+    await expect(feedItems.nth(0)).toContainText('Ana and 2 others reposted');
+    await expect(feedItems.nth(1)).toContainText('Dora and Eli reposted');
+
+    await feedItems.nth(0).getByRole('button', { name: '2 others' }).click();
+
+    const others = page.getByRole('dialog');
+    await expect(others.getByRole('button')).toHaveText(['Ben', 'Cleo']);
+    // Opening the list must not open the note underneath
+    await expect(page).toHaveURL(/#\/notes$/);
+  });
 });

@@ -15,6 +15,7 @@ import {
   Separator,
 } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
+import { groupReposts } from '@src/utils/group-reposts';
 import { isPendingActivity } from '@src/utils/pending-activity';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigateWithBasePath } from '@src/hooks/use-navigate-with-base-path';
@@ -82,8 +83,9 @@ const InboxList: React.FC<InboxListProps> = ({
     };
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  const items = groupReposts(activities);
   // Calculate the index at which to place the loadMoreRef - This will place it ~75% through the list
-  const loadMoreIndex = Math.max(0, Math.floor(activities.length * 0.75) - 1);
+  const loadMoreIndex = Math.max(0, Math.floor(items.length * 0.75) - 1);
 
   return (
     <Layout>
@@ -96,19 +98,14 @@ const InboxList: React.FC<InboxListProps> = ({
       )}
       <div className="flex w-full flex-col">
         <div className="w-full">
-          {activities.length > 0 ? (
+          {items.length > 0 ? (
             <div className="my-4">
               <div className="mx-auto flex min-h-[calc(100dvh_-_117px)] items-start gap-11">
                 <div className="flex w-full min-w-0 flex-col items-center">
                   <div className="flex w-full min-w-0 flex-col items-start">
                     <ul className="mx-auto flex w-full flex-col" data-testid="inbox-list">
-                      {activities.map((activity, index) => (
-                        <li
-                          // eslint-disable-next-line react/no-array-index-key
-                          key={`${activity.id}-${activity.type}-${index}`} // We are using index here as activity.id is cannot be guaranteed to be unique at the moment
-                          data-testid="inbox-item"
-                          data-test-view-article
-                        >
+                      {items.map(({ activity, reposters }, index) => (
+                        <li key={activity.id} data-testid="inbox-item" data-test-view-article>
                           <FeedItem
                             actor={activity.actor}
                             allowDelete={activity.object.authored}
@@ -119,12 +116,13 @@ const InboxList: React.FC<InboxListProps> = ({
                             likeCount={activity.object.likeCount ?? 0}
                             object={activity.object}
                             repostCount={activity.object.repostCount ?? 0}
+                            reposters={reposters}
                             type={activity.type}
                             onClick={() => {
                               navigate(`/reader/${encodeURIComponent(activity.id)}`);
                             }}
                           />
-                          {index < activities.length - 1 && <Separator />}
+                          {index < items.length - 1 && <Separator />}
                           {index === loadMoreIndex && <div ref={loadMoreRef} className="h-1"></div>}
                         </li>
                       ))}

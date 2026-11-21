@@ -8,6 +8,7 @@ import { ActorProperties } from '@tryghost/admin-x-framework/api/activitypub';
 import { Button, LoadingIndicator, Separator } from '@tryghost/shade/components';
 import { EmptyViewIcon, EmptyViewIndicator } from '@src/components/global/empty-view-indicator';
 import { LucideIcon } from '@tryghost/shade/utils';
+import { groupReposts } from '@src/utils/group-reposts';
 import { isPendingActivity } from '@src/utils/pending-activity';
 import { useEffect, useRef } from 'react';
 import { useNavigateWithBasePath } from '@src/hooks/use-navigate-with-base-path';
@@ -61,13 +62,14 @@ const FeedList: React.FC<FeedListProps> = ({
     };
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const loadMoreIndex = Math.max(0, Math.floor(activities.length * 0.75) - 1);
+  const items = groupReposts(activities);
+  const loadMoreIndex = Math.max(0, Math.floor(items.length * 0.75) - 1);
 
   return (
     <Layout>
       <div className="flex w-full flex-col">
         <div className="w-full">
-          {activities.length > 0 ? (
+          {items.length > 0 ? (
             <div className="my-4">
               <div className="mx-auto flex items-start gap-11">
                 <div className="flex w-full min-w-0 flex-col items-center">
@@ -77,13 +79,8 @@ const FeedList: React.FC<FeedListProps> = ({
                       className="mx-auto flex w-full flex-col px-4 max-lg:px-0"
                       data-testid="feed-list"
                     >
-                      {activities.map((activity, index) => (
-                        <li
-                          // eslint-disable-next-line react/no-array-index-key
-                          key={`${activity.id}-${activity.type}-${index}`} // We are using index here as activity.id is cannot be guaranteed to be unique at the moment
-                          data-testid="feed-item"
-                          data-test-view-article
-                        >
+                      {items.map(({ activity, reposters }, index) => (
+                        <li key={activity.id} data-testid="feed-item" data-test-view-article>
                           <FeedItem
                             actor={activity.actor}
                             allowDelete={activity.object.authored}
@@ -94,12 +91,13 @@ const FeedList: React.FC<FeedListProps> = ({
                             likeCount={activity.object.likeCount ?? 0}
                             object={activity.object}
                             repostCount={activity.object.repostCount ?? 0}
+                            reposters={reposters}
                             type={activity.type}
                             onClick={() => {
                               navigate(`/notes/${encodeURIComponent(activity.id)}`);
                             }}
                           />
-                          {index < activities.length - 1 && <Separator />}
+                          {index < items.length - 1 && <Separator />}
                           {index === 3 && <SuggestedProfiles />}
                           {index === loadMoreIndex && <div ref={loadMoreRef} className="h-1"></div>}
                         </li>
