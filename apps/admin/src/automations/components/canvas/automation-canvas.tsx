@@ -34,9 +34,9 @@ import type { AutomationFlowNode, CanvasAnchor, NodeContextMenuEntry } from './n
 import { Background, BackgroundVariant, ReactFlow } from '@xyflow/react';
 import type { Edge, NodeChange } from '@xyflow/react';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
-import { Box, Inline } from '@tryghost/shade/primitives';
+import { Box, Inline, Stack } from '@tryghost/shade/primitives';
 import { RunHistory } from './run-history';
-import { canvasBackground } from './canvas-background';
+import { canvasBackground, canvasColorClass } from './canvas-background';
 import { AutomationSidebar } from './automation-sidebar';
 import type { TriggerData } from './trigger-card';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
@@ -44,7 +44,9 @@ import { type StepPickerType } from './step-picker';
 import { isEmptyEmailLexical } from '@/automations/utils';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useLocation, useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
-import type { EmailModalMode } from '@/automations/components/types';
+import type { EditorChrome, EmailModalMode } from '@/automations/components/types';
+// SHAPING PROTOTYPE ONLY — never merge (see src/shaping/README.md).
+import { useEditorChromeVariant } from '@/shaping/variants';
 import { CANVAS_ZOOM_CONFIG, useCanvasViewport } from './use-canvas-viewport';
 import type { CanvasContentBounds } from './use-canvas-viewport';
 
@@ -66,6 +68,7 @@ const INITIAL_VIEWPORT_Y = 40;
 // reveals canvas rather than an empty band.
 const HEADER_UNDERLAP_Y = 56;
 const NODE_ENTER_ANIMATION_DURATION = 250;
+const FLOATING_SIDEBAR_WIDTH = 480;
 const DISABLED_REASON = 'Maximum steps added';
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
 const EMAIL_STEP_QUERY_PARAM = 'emailStep';
@@ -253,6 +256,7 @@ const buildGraph = ({
           onUpdate: (trigger) => onChange({ ...automation, ...trigger }),
         },
         errorMessage: canvasErrors[TRIGGER_CANVAS_ID],
+        startExpanded: connectIn,
         onInteract: () => onInteract(TRIGGER_CANVAS_ID),
       },
       ...nodeProps(TRIGGER_CANVAS_ID),
@@ -393,7 +397,22 @@ const getInitialViewport = (
   zoom: 1,
 });
 
+export type AutomationEditorChrome = {
+  chrome: EditorChrome;
+  sidebar: { available: boolean; open: boolean; animated: boolean };
+  run?: { id: string; memberName: string; onClose: () => void };
+};
+
+// Renders the header as an element, so its layout, callbacks included, passes as props.
+const EditorHeader: React.FC<{
+  layout: AutomationEditorChrome;
+  render: (layout: AutomationEditorChrome) => React.ReactNode;
+}> = ({ layout, render }) => render(layout);
+
 type AutomationCanvasProps = {
+  // The editor's header, laid out in the canvas's column so the sidebar can run
+  // full height beside it.
+  renderHeader: (layout: AutomationEditorChrome) => React.ReactNode;
   initialSidebar: 'unknown' | 'closed' | 'settings' | 'performance';
   // Set when a trigger was just picked: the canvas opens with the trigger where the
   // picker's card was, and the flow below it plays in.
@@ -424,6 +443,7 @@ const hasAutomationEmailModalState = (state: unknown): state is { automationEmai
   typeof state.automationEmailModal === 'boolean';
 
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
+  renderHeader,
   initialSidebar,
   initialTriggerTop,
   canvasErrors = {},
@@ -650,9 +670,27 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       tab: current.tab === 'unknown' ? 'settings' : current.tab,
     }));
   }, []);
+  const isAutomationSidebarOpen = sidebar.open;
+  // SHAPING PROTOTYPE ONLY — never merge: the design option picked in the prototype menu.
+  const chrome: EditorChrome = useEditorChromeVariant();
+  const floating = chrome === 'floating';
+  // Animate the sidebar only once it has drawn at its starting width.
+  const [sidebarAnimated, setSidebarAnimated] = useState(false);
+  const sidebarResolved = sidebar.tab !== 'unknown' && Boolean(automation);
+  useEffect(() => {
+    if (!sidebarResolved) {
+      return;
+    }
+    // A frame later, the sidebar has painted at its starting width.
+    const frame = requestAnimationFrame(() => setSidebarAnimated(true));
+    return () => cancelAnimationFrame(frame);
+  }, [sidebarResolved]);
   const initialViewport = getInitialViewport(
-    window.innerWidth - (sidebar.open && window.innerWidth >= 960 ? 480 : 0),
-    initialTriggerTop,
+    window.innerWidth - (isAutomationSidebarOpen && window.innerWidth >= 960 ? 480 : 0),
+    // The picker measures from its canvas, which a floating header doesn't push down.
+    initialTriggerTop !== undefined && floating
+      ? initialTriggerTop - HEADER_UNDERLAP_Y
+      : initialTriggerTop,
   );
   const isHistoryOpen = selectedRunId !== null;
 
@@ -676,6 +714,30 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     onSelectRun(null);
     requestAnimationFrame(() => editingCanvasRef.current?.focus());
   };
+
+  const header = (
+    <EditorHeader
+      layout={{
+        chrome,
+        sidebar: {
+          available: true,
+          open: isAutomationSidebarOpen,
+          animated: sidebarAnimated,
+        },
+        // SHAPING PROTOTYPE ONLY: Docked and Floating put the run's member in the header.
+        run:
+          selectedRunId !== null && chrome !== 'current'
+            ? {
+                id: selectedRunId,
+                memberName:
+                  selectedMember?.runId === selectedRunId ? selectedMember.name : 'Member',
+                onClose: handleCloseHistory,
+              }
+            : undefined,
+      }}
+      render={renderHeader}
+    />
+  );
 
   // Only for the edges and card that first appear; later ones arrive as usual.
   const [connecting, setConnecting] = useState(initialTriggerTop !== undefined);
@@ -738,10 +800,11 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const viewport = useCanvasViewport<AutomationFlowNode, Edge>({
     contentBounds: graph?.contentBounds,
     initialViewport,
+    rightInset: floating && isAutomationSidebarOpen ? FLOATING_SIDEBAR_WIDTH : 0,
   });
 
   useEffect(() => {
-    if (emailModalAction || deleteConfirmationAction || !sidebar.open) {
+    if (emailModalAction || deleteConfirmationAction || !isAutomationSidebarOpen) {
       return;
     }
     const onKeyDown = (event: KeyboardEvent) => {
@@ -752,7 +815,12 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     // Menus, popovers, and search consume Escape before it reaches window.
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [deleteConfirmationAction, emailModalAction, sidebar.open, setAutomationSidebarOpen]);
+  }, [
+    deleteConfirmationAction,
+    emailModalAction,
+    isAutomationSidebarOpen,
+    setAutomationSidebarOpen,
+  ]);
 
   // While the email editor is open, hide the flow and controls and close the sidebar,
   // restoring it as the editor starts to close.
@@ -824,123 +892,238 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
 
   if (isLoading) {
     return (
-      <div
-        className="-mt-14 flex flex-1 items-center justify-center bg-surface-page pt-14"
-        data-testid="automation-canvas-loading"
-      >
-        <div className="delayed-fade-in">
-          <LoadingIndicator size="lg" />
+      <Stack className="relative min-h-0 flex-1" gap="none">
+        {header}
+        <div
+          className={cn(
+            'flex flex-1 items-center justify-center bg-surface-page',
+            !floating && '-mt-14 pt-14',
+          )}
+          data-testid="automation-canvas-loading"
+        >
+          <div className="delayed-fade-in">
+            <LoadingIndicator size="lg" />
+          </div>
         </div>
-      </div>
+      </Stack>
     );
   }
 
   if (isError || !automation || !graph) {
     return (
-      <div className="flex flex-1 items-start justify-center bg-surface-page px-4 py-8">
-        <Banner className="max-w-md" role="alert" variant="destructive">
-          <div className="flex items-start gap-3">
-            <LucideIcon.CircleAlert className="mt-0.5 size-5 text-red" />
-            <div>
-              <strong className="block">Couldn&apos;t load automation</strong>
-              <p className="text-sm text-muted-foreground">Try refreshing the page.</p>
+      <Stack className="relative min-h-0 flex-1" gap="none">
+        {header}
+        <div
+          className={cn(
+            'flex flex-1 items-start justify-center bg-surface-page px-4 py-8',
+            floating && 'pt-20',
+          )}
+        >
+          <Banner className="max-w-md" role="alert" variant="destructive">
+            <div className="flex items-start gap-3">
+              <LucideIcon.CircleAlert className="mt-0.5 size-5 text-red" />
+              <div>
+                <strong className="block">Couldn&apos;t load automation</strong>
+                <p className="text-sm text-muted-foreground">Try refreshing the page.</p>
+              </div>
             </div>
-          </div>
-        </Banner>
-      </div>
+          </Banner>
+        </div>
+      </Stack>
+    );
+  }
+
+  const canvasRegion = (
+    <Box
+      ref={viewport.measureCanvas}
+      className={cn(
+        'relative min-h-0 min-w-0 flex-1',
+        !floating && isAutomationSidebarOpen && '@max-[960px]/automation:invisible',
+      )}
+    >
+      <Box
+        ref={(element) => {
+          editingCanvasRef.current = element;
+          if (element) {
+            element.inert = isHistoryOpen;
+          }
+        }}
+        aria-hidden={isHistoryOpen}
+        aria-label="Editing canvas"
+        className={isHistoryOpen ? 'invisible absolute inset-0' : 'absolute inset-0'}
+        role="region"
+        tabIndex={-1}
+      >
+        {/* Only the pane reaches up behind a docked header; the region keeps the visible bounds */}
+        <Box
+          className={cn(
+            floating ? 'absolute inset-0' : 'absolute inset-x-0 -top-14 bottom-0',
+            // The flow fades while the email editor clears the canvas.
+            // String.raw keeps the \_ escapes Tailwind needs for the class's underscores.
+            String.raw`[&_.react-flow\_\_viewport]:transition-opacity [&_.react-flow\_\_viewport]:duration-200 [&_.react-flow\_\_viewport]:ease-in-out data-cleared:[&_.react-flow\_\_viewport]:opacity-0 motion-reduce:[&_.react-flow\_\_viewport]:transition-none`,
+          )}
+          data-cleared={isCanvasCleared || undefined}
+        >
+          <ReactFlow
+            className={cn(
+              '[--xy-edge-stroke:var(--border-default)]',
+              // SHAPING PROTOTYPE ONLY: the canvas colour for the picked concept.
+              canvasColorClass(chrome),
+            )}
+            defaultViewport={initialViewport}
+            edges={graph.edges}
+            edgesFocusable={false}
+            edgeTypes={edgeTypes}
+            maxZoom={CANVAS_ZOOM_CONFIG.maxZoom}
+            minZoom={CANVAS_ZOOM_CONFIG.minZoom}
+            nodes={graph.nodes}
+            nodesConnectable={false}
+            nodesDraggable={false}
+            nodesFocusable={false}
+            nodeTypes={nodeTypes}
+            proOptions={{ hideAttribution: true }}
+            translateExtent={viewport.translateExtent}
+            zoomOnDoubleClick={false}
+            zoomOnScroll={false}
+            panOnScroll
+            onInit={viewport.onInit}
+            onMove={viewport.onMove}
+            onNodeDoubleClick={handleNodeDoubleClick}
+            onNodesChange={handleNodesChange}
+          >
+            <Background {...canvasBackground} variant={BackgroundVariant.Dots} />
+            <AutomationCanvasControls isHidden={isCanvasCleared} />
+          </ReactFlow>
+        </Box>
+      </Box>
+      {isHistoryOpen && (
+        <RunHistory
+          key={selectedRunId}
+          automationId={automation.id}
+          automationSlug={automation.slug}
+          chrome={chrome}
+          isAutomationSidebarOpen={isAutomationSidebarOpen}
+          memberName={selectedMember?.runId === selectedRunId ? selectedMember.name : undefined}
+          rightInset={floating && isAutomationSidebarOpen ? FLOATING_SIDEBAR_WIDTH : 0}
+          runId={selectedRunId}
+          onClose={handleCloseHistory}
+          onMemberNameChange={(name) =>
+            setSelectedMember((current) =>
+              current?.runId === selectedRunId && current.name === name
+                ? current
+                : { runId: selectedRunId, name },
+            )
+          }
+        />
+      )}
+    </Box>
+  );
+
+  const sidebarPanel = (
+    <AutomationSidebar
+      animated={sidebarAnimated}
+      automationId={automation.id}
+      chrome={chrome}
+      description={automation.description}
+      isOpen={isAutomationSidebarOpen}
+      isRunSelectionDisabled={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
+      isToggleHidden={isCanvasCleared}
+      metadata={isHistoryOpen ? 'readonly' : 'editable'}
+      performanceEnabled={isPerformanceEnabled}
+      selectedRunId={selectedRunId}
+      selectedTab={sidebar.tab === 'unknown' ? 'settings' : sidebar.tab}
+      tiers={tierData?.tiers ?? []}
+      triggerRules={automation.trigger_rules}
+      onDescriptionChange={(description) => onChange({ ...automation, description })}
+      onOpenChange={setAutomationSidebarOpen}
+      onSelectRun={handleSelectRun}
+      onTabChange={(tab) => setSidebar((current) => ({ ...current, tab }))}
+    />
+  );
+
+  const layoutProps = {
+    ref: layoutRef,
+    align: 'stretch' as const,
+    className: '@container/automation relative min-h-0 flex-1 overflow-x-clip bg-background',
+    'data-testid': 'automation-canvas',
+    gap: 'none' as const,
+  };
+
+  // The current build: a full-width header over a left-hand sidebar.
+  if (chrome === 'current') {
+    return (
+      <Stack className="relative min-h-0 flex-1" gap="none">
+        {header}
+        <Inline {...layoutProps}>
+          {sidebarPanel}
+          {canvasRegion}
+          {emailModalAction && automation && (
+            <EmailContentModal
+              key={emailModalAction.id}
+              automationId={automation.id}
+              emailDraft={{
+                subject: emailModalAction.data.email_subject,
+                lexical: emailModalAction.data.email_lexical,
+              }}
+              getEmailCardElement={getEmailCardElement}
+              initialMode={emailModalMode}
+              onChange={({ subject, lexical }) => {
+                onChange(
+                  updateSendEmailAction({
+                    detail: automation,
+                    actionId: emailModalAction.id,
+                    emailSubject: subject,
+                    emailLexical: lexical,
+                  }),
+                );
+              }}
+              onClose={closeEmailModal}
+              onCloseStart={handleEmailModalCloseStart}
+            />
+          )}
+          <AlertDialog
+            open={Boolean(deleteConfirmationAction)}
+            onOpenChange={(open) => {
+              if (!open) {
+                setDeleteConfirmationActionId(null);
+              }
+            }}
+          >
+            <AlertDialogContent onEscapeKeyDown={(event) => event.stopPropagation()}>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this email?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This email will be removed from the automation. Save or publish the automation to
+                  apply this change.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    if (deleteConfirmationAction) {
+                      handleDelete(deleteConfirmationAction.id);
+                    }
+                  }}
+                >
+                  Delete email
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </Inline>
+      </Stack>
     );
   }
 
   return (
-    <Inline
-      ref={layoutRef}
-      align="stretch"
-      className="@container/automation relative min-h-0 flex-1 overflow-x-clip bg-background"
-      data-testid="automation-canvas"
-      gap="none"
-    >
-      <AutomationSidebar
-        automationId={automation.id}
-        description={automation.description}
-        isOpen={sidebar.open}
-        isRunSelectionDisabled={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
-        isToggleHidden={isCanvasCleared}
-        metadata={isHistoryOpen ? 'readonly' : 'editable'}
-        performanceEnabled={isPerformanceEnabled}
-        selectedRunId={selectedRunId}
-        selectedTab={sidebar.tab === 'unknown' ? 'settings' : sidebar.tab}
-        tiers={tierData?.tiers ?? []}
-        triggerRules={automation.trigger_rules}
-        onDescriptionChange={(description) => onChange({ ...automation, description })}
-        onOpenChange={setAutomationSidebarOpen}
-        onSelectRun={handleSelectRun}
-        onTabChange={(tab) => setSidebar((current) => ({ ...current, tab }))}
-      />
-      <Box
-        ref={viewport.measureCanvas}
-        className={cn(
-          'relative min-w-0 flex-1',
-          sidebar.open && '@max-[960px]/automation:invisible',
-        )}
-      >
-        <Box
-          ref={(element) => {
-            editingCanvasRef.current = element;
-            if (element) {
-              element.inert = isHistoryOpen;
-            }
-          }}
-          aria-hidden={isHistoryOpen}
-          aria-label="Editing canvas"
-          className={isHistoryOpen ? 'invisible absolute inset-0' : 'absolute inset-0'}
-          role="region"
-          tabIndex={-1}
-        >
-          {/* Only the pane reaches up behind the header; the region keeps the visible bounds */}
-          <Box
-            className="absolute inset-x-0 -top-14 bottom-0 [&_.react-flow\_\_viewport]:transition-opacity [&_.react-flow\_\_viewport]:duration-200 [&_.react-flow\_\_viewport]:ease-in-out data-cleared:[&_.react-flow\_\_viewport]:opacity-0 motion-reduce:[&_.react-flow\_\_viewport]:transition-none"
-            data-cleared={isCanvasCleared || undefined}
-          >
-            <ReactFlow
-              className="[--xy-background-color:var(--preview-canvas)] [--xy-edge-stroke:var(--border-default)]"
-              defaultViewport={initialViewport}
-              edges={graph.edges}
-              edgesFocusable={false}
-              edgeTypes={edgeTypes}
-              maxZoom={CANVAS_ZOOM_CONFIG.maxZoom}
-              minZoom={CANVAS_ZOOM_CONFIG.minZoom}
-              nodes={graph.nodes}
-              nodesConnectable={false}
-              nodesDraggable={false}
-              nodesFocusable={false}
-              nodeTypes={nodeTypes}
-              proOptions={{ hideAttribution: true }}
-              translateExtent={viewport.translateExtent}
-              zoomOnDoubleClick={false}
-              zoomOnScroll={false}
-              panOnScroll
-              onInit={viewport.onInit}
-              onMove={viewport.onMove}
-              onNodeDoubleClick={handleNodeDoubleClick}
-              onNodesChange={handleNodesChange}
-            >
-              <Background {...canvasBackground} variant={BackgroundVariant.Dots} />
-              <AutomationCanvasControls isHidden={isCanvasCleared} />
-            </ReactFlow>
-          </Box>
-        </Box>
-        {isHistoryOpen && (
-          <RunHistory
-            key={selectedRunId}
-            automationId={automation.id}
-            automationSlug={automation.slug}
-            isAutomationSidebarOpen={sidebar.open}
-            memberName={selectedMember?.runId === selectedRunId ? selectedMember.name : undefined}
-            runId={selectedRunId}
-            onClose={handleCloseHistory}
-          />
-        )}
-      </Box>
+    <Inline {...layoutProps}>
+      <Stack className="relative min-h-0 min-w-0 flex-1" gap="none">
+        {header}
+        {canvasRegion}
+      </Stack>
+      {sidebarPanel}
       {emailModalAction && automation && (
         <EmailContentModal
           key={emailModalAction.id}

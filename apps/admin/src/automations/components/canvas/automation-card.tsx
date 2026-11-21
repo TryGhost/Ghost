@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
+import { EmailCardCollapse } from './email-card-analytics';
 
 // State, timestamps and editing controls belong to the caller. Both canvases
 // compose this surface and header without importing one another's state model.
@@ -22,7 +23,7 @@ export const AutomationCard = React.forwardRef<HTMLDivElement, React.ComponentPr
 );
 
 export const AutomationCardHeader: React.FC<{
-  title: string;
+  title: React.ReactNode;
   icon: React.ReactNode;
   iconClassName?: string;
   description?: React.ReactNode;
@@ -47,4 +48,15 @@ export const AutomationCardHeader: React.FC<{
     {actions}
     {metadata}
   </Inline>
+);
+
+// The part of a card that only shows while it's open. Carries the space under the header,
+// so a collapsed card is just its header.
+export const CollapsibleCardBody: React.FC<{ collapsed: boolean; children: React.ReactNode }> = ({
+  collapsed,
+  children,
+}) => (
+  <EmailCardCollapse open={!collapsed}>
+    <div className="pt-6">{children}</div>
+  </EmailCardCollapse>
 );

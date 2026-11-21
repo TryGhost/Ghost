@@ -16,11 +16,12 @@ import {
 export const PerformanceDateFilter: React.FC<{
   value: PerformanceRange;
   onChange: (value: PerformanceRange) => void;
-}> = ({ value, onChange }) => (
+  icon?: typeof LucideIcon.ListFilter;
+}> = ({ value, onChange, icon: Icon = LucideIcon.ListFilter }) => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <Button aria-label="Filter performance" size="icon" type="button" variant="ghost">
-        <LucideIcon.Funnel strokeWidth={2} />
+        <Icon strokeWidth={2} />
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end">
