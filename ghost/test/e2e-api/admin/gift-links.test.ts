@@ -175,6 +175,16 @@ describe('Gift Links Admin API', function () {
       assert.equal(actionNameOf(reset), 'reset');
     });
 
+    it('records an "added" action when a link is created for a post that had none', async function () {
+      await agent.post(`posts/${postId}/gift_links/`).expectStatus(200);
+
+      const actions = await giftLinkActions();
+      assert.equal(actions.length, 1);
+      assert.equal(actions[0].event, 'added');
+      assert.equal(actions[0].resource_id, postId);
+      assert.equal(actionNameOf(actions[0]), undefined);
+    });
+
     // Admin's history view asks for each entry's resource.
     it('lists its actions with the post they belong to', async function () {
       await agent.put(`posts/${postId}/gift_links/`).expectStatus(200);
