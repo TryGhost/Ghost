@@ -8,6 +8,7 @@ import {
   ActivityPubCollectionResponse,
   type ExploreAccount,
   type GetAccountFollowsResponse,
+  type NoteImage,
   type Notification,
   type Post,
   type Preferences,
@@ -1643,19 +1644,16 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
     async mutationFn({
       inReplyTo,
       content,
-      imageUrl,
-      altText,
+      images,
     }: {
       inReplyTo: string;
       content: string;
-      imageUrl?: string;
-      altText?: string;
+      images?: NoteImage[];
     }) {
       const siteUrl = await getSiteUrl();
       const api = createActivityPubAPI(handle, siteUrl);
 
-      const image = imageUrl ? { url: imageUrl, altText } : undefined;
-      return api.reply(inReplyTo, content, image);
+      return api.reply(inReplyTo, content, images);
     },
     onMutate: ({ inReplyTo }) => {
       if (!actorProps) {
@@ -1719,22 +1717,13 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
   const queryKeyPostsByAccount = QUERY_KEYS.profilePosts('index');
 
   return useMutation({
-    async mutationFn({
-      content,
-      imageUrl,
-      altText,
-    }: {
-      content: string;
-      imageUrl?: string;
-      altText?: string;
-    }) {
+    async mutationFn({ content, images }: { content: string; images?: NoteImage[] }) {
       const siteUrl = await getSiteUrl();
       const api = createActivityPubAPI(handle, siteUrl);
 
-      const image = imageUrl ? { url: imageUrl, altText } : undefined;
-      return api.note(content, image);
+      return api.note(content, images);
     },
-    onMutate: ({ content, imageUrl }) => {
+    onMutate: ({ content, images }) => {
       if (!actorProps) {
         throw new Error('Cannot create note without actor props');
       }
@@ -1742,7 +1731,7 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
       const formattedContent = formatPendingActivityContent(content);
 
       const id = generatePendingActivityId();
-      const activity = generatePendingActivity(actorProps, id, formattedContent, imageUrl);
+      const activity = generatePendingActivity(actorProps, id, formattedContent, images);
 
       prependActivityToPaginatedCollection(queryClient, queryKeyFeed, 'posts', activity);
       prependActivityToPaginatedCollection(queryClient, queryKeyOutbox, 'data', activity);

@@ -1,4 +1,5 @@
 import { Activity, ActorProperties } from '@tryghost/admin-x-framework/api/activitypub';
+import { type NoteImage } from '../api/activitypub';
 
 export const PENDING_ACTIVITY_PREFIX = 'pending-';
 
@@ -14,7 +15,7 @@ export function generatePendingActivity(
   actorProps: ActorProperties,
   id: string,
   content: string,
-  imageUrl?: string,
+  images: NoteImage[] = [],
 ): Activity {
   const actor: ActorProperties = {
     id: actorProps.url,
@@ -53,9 +54,9 @@ export function generatePendingActivity(
       summary: null,
       url: '',
       attributedTo: actor,
-      image: imageUrl || '',
+      image: '',
       published: new Date().toISOString(),
-      attachment: [],
+      attachment: images.map((image) => ({ type: 'Image', url: image.url, name: image.altText })),
       preview: {
         type: 'Note',
         content: content,

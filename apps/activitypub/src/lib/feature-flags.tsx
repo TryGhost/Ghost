@@ -3,7 +3,7 @@ import { useLocation } from '@tryghost/admin-x-framework';
 
 // Define all available feature flags as string here, e.g. ['flag-1', 'flag-2']
 // Defaults off. Enable in the URL with ?outboundMove=ON (persists in localStorage).
-export const FEATURE_FLAGS = ['outboundMove'] as const;
+export const FEATURE_FLAGS = ['outboundMove', 'noteImages'] as const;
 
 // ---
 export type FeatureFlag = (typeof FEATURE_FLAGS)[number] | string;

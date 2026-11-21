@@ -317,6 +317,24 @@ export const isApiError = (error: unknown): error is ApiError => {
   );
 };
 
+export interface NoteImage {
+  url: string;
+  altText?: string;
+}
+
+export const MAX_NOTE_IMAGES = 4;
+
+// A single image keeps using `image`, which ActivityPub services without `images` support accept too
+function imagesBody(images: NoteImage[]): { image?: NoteImage; images?: NoteImage[] } {
+  if (images.length === 1) {
+    return { image: images[0] };
+  }
+  if (images.length > 1) {
+    return { images };
+  }
+  return {};
+}
+
 export class ActivityPubAPI {
   private readonly apiUrl: URL;
   private readonly authApiUrl: URL;
@@ -476,30 +494,18 @@ export class ActivityPubAPI {
     await this.fetchJSON(url, 'POST');
   }
 
-  async reply(
-    id: string,
-    content: string,
-    image?: { url: string; altText?: string },
-  ): Promise<Activity> {
+  async reply(id: string, content: string, images: NoteImage[] = []): Promise<Activity> {
     const url = new URL(
       `.ghost/activitypub/v1/actions/reply/${encodeURIComponent(id)}`,
       this.apiUrl,
     );
-    const body: { content: string; image?: { url: string; altText?: string } } = { content };
-    if (image) {
-      body.image = image;
-    }
-    const response = await this.fetchJSON(url, 'POST', body);
+    const response = await this.fetchJSON(url, 'POST', { content, ...imagesBody(images) });
     return response;
   }
 
-  async note(content: string, image?: { url: string; altText?: string }): Promise<Post> {
+  async note(content: string, images: NoteImage[] = []): Promise<Post> {
     const url = new URL('.ghost/activitypub/v1/actions/note', this.apiUrl);
-    const body: { content: string; image?: { url: string; altText?: string } } = { content };
-    if (image) {
-      body.image = image;
-    }
-    const response = await this.fetchJSON(url, 'POST', body);
+    const response = await this.fetchJSON(url, 'POST', { content, ...imagesBody(images) });
     return (response as { post: Post }).post;
   }
 
