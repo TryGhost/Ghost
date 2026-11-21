@@ -223,6 +223,12 @@ function optimiseFilterCacheability(resource, options) {
     return noOptimisation;
   }
 
+  // Rewriting the filter and limit changes page offsets and pagination totals.
+  // Let the API apply the exclusion for explicitly requested pages, including page 1.
+  if (options.page !== undefined) {
+    return noOptimisation;
+  }
+
   // Themes can pass a SafeString here, e.g. `filter=(concat "id:-" id)`
   const originalFilter = String(options.filter);
 
