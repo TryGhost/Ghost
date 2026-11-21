@@ -2,7 +2,12 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  type DialogContentProps,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { type DialogProps } from '@radix-ui/react-dialog';
 import { Command as CommandPrimitive } from 'cmdk';
 import { Check, LucideIcon, Search } from 'lucide-react';
@@ -19,13 +24,91 @@ function Command({ className, ...props }: React.ComponentProps<typeof CommandPri
   );
 }
 
-type CommandDialogProps = DialogProps & { className?: string };
+type CommandDialogProps = Pick<DialogProps, 'open' | 'defaultOpen' | 'onOpenChange' | 'modal'> &
+  // The palette owns what the content renders and when it mounts.
+  Omit<DialogContentProps, 'title' | 'asChild' | 'forceMount'> & {
+    /** The dialog's name for screen readers. It isn't shown. */
+    title?: string;
+  };
 
-const CommandDialog = ({ children, className, ...props }: CommandDialogProps) => {
+// Where the focus can go back to when a CommandDialog closes, best first: the element that had it
+// when the dialog opened, then, as a menu item unmounts with its menu, the button that opened the
+// menu, which labels it. A submenu is labelled by an item of its parent menu, so this walks up.
+function returnFocusCandidates(element: Element | null): HTMLElement[] {
+  const candidates: HTMLElement[] = [];
+  let candidate = element;
+  while (
+    candidate instanceof HTMLElement &&
+    candidate !== candidate.ownerDocument.body &&
+    !candidates.includes(candidate) &&
+    candidates.length < 5
+  ) {
+    candidates.push(candidate);
+    const menuButtonId = candidate.closest('[role="menu"]')?.getAttribute('aria-labelledby');
+    candidate = menuButtonId ? candidate.ownerDocument.getElementById(menuButtonId) : null;
+  }
+  return candidates;
+}
+
+const CommandDialog = ({
+  children,
+  className,
+  title = 'Command palette',
+  open,
+  defaultOpen,
+  onOpenChange,
+  modal,
+  onOpenAutoFocus,
+  onCloseAutoFocus,
+  ...props
+}: CommandDialogProps) => {
+  // There's never a DialogTrigger, so Radix would leave the focus on the page body.
+  const returnFocusRef = React.useRef<{
+    content: EventTarget | null;
+    candidates: HTMLElement[];
+  } | null>(null);
+
   return (
-    <Dialog {...props}>
-      <DialogContent className={cn('overflow-hidden p-0 shadow-lg', className)}>
-        <DialogTitle className="hidden" />
+    <Dialog defaultOpen={defaultOpen} modal={modal} open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        // The palette has no description. Radix would point at one that isn't there.
+        aria-describedby={undefined}
+        className={cn('overflow-hidden p-0 shadow-lg', className)}
+        onCloseAutoFocus={(event) => {
+          // Only what this content saved when it opened. A palette reopened by now saved its own.
+          const saved =
+            returnFocusRef.current?.content === event.target ? returnFocusRef.current : null;
+          if (saved) {
+            returnFocusRef.current = null;
+          }
+          onCloseAutoFocus?.(event);
+          if (event.defaultPrevented) {
+            return;
+          }
+          event.preventDefault();
+          // Leave the focus alone if something else has taken it.
+          if (document.activeElement && document.activeElement !== document.body) {
+            return;
+          }
+          // A candidate that's gone, or can't take the focus, doesn't.
+          for (const candidate of saved?.candidates ?? []) {
+            candidate.focus({ preventScroll: true });
+            if (document.activeElement === candidate) {
+              break;
+            }
+          }
+        }}
+        onOpenAutoFocus={(event) => {
+          // This runs before the dialog moves the focus inside.
+          returnFocusRef.current = {
+            content: event.target,
+            candidates: returnFocusCandidates(document.activeElement),
+          };
+          onOpenAutoFocus?.(event);
+        }}
+        {...props}
+      >
+        <DialogTitle className="sr-only">{title}</DialogTitle>
         <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:size-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:size-5">
           {children}
         </Command>
