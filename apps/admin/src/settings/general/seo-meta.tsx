@@ -10,6 +10,7 @@ import {
   FieldLabel,
   GoogleLogo,
   Input,
+  LoadingIndicator,
   Switch,
   Tabs,
   TabsContent,
@@ -135,6 +136,11 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   // Tab management
   const [selectedTab, setSelectedTab] = useState('metadata');
 
+  // Save stays blocked while an upload is in flight, otherwise it would go out
+  // without the image and the image would land after the save.
+  const [uploadingSettings, setUploadingSettings] = useState<ReadonlySet<string>>(new Set());
+  const isUploading = (settingKey: string) => uploadingSettings.has(settingKey);
+
   const createSettingHandler = (settingKey: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     updateSetting(settingKey, e.target.value);
     if (!isEditing) {
@@ -143,18 +149,23 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   };
 
   const createImageUploadHandler = (settingKey: string) => async (file: File) => {
+    setUploadingSettings((keys) => new Set(keys).add(settingKey));
     try {
       const imageUrl = getImageUrl(await uploadImage({ file }));
       updateSetting(settingKey, imageUrl);
-      if (!isEditing) {
-        handleEditingChange(true);
-      }
+      handleEditingChange(true);
     } catch (e) {
       const error = e as APIError;
       if (error.response!.status === 415) {
         error.message = 'Unsupported file type';
       }
       handleError(error);
+    } finally {
+      setUploadingSettings((keys) => {
+        const remaining = new Set(keys);
+        remaining.delete(settingKey);
+        return remaining;
+      });
     }
   };
 
@@ -259,13 +270,11 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
                   {editor.isEnabled && (
                     <ImageUploadAction
                       aria-label="Edit Facebook image"
+                      disabled={isUploading('og_image')}
                       onClick={() =>
                         editor.openEditor({
                           image: facebookImage,
-                          handleSave: async (file: File) => {
-                            const imageUrl = getImageUrl(await uploadImage({ file }));
-                            updateSetting('og_image', imageUrl);
-                          },
+                          handleSave: handleFacebookImageUpload,
                         })
                       }
                     >
@@ -275,6 +284,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
                   <ImageUploadAction
                     aria-label="Remove Facebook image"
                     data-testid="image-delete-button"
+                    disabled={isUploading('og_image')}
                     onClick={handleFacebookImageDelete}
                   >
                     <Trash2 />
@@ -284,11 +294,12 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
             ) : (
               <ImageUploadDropzone
                 className="rounded-b-none"
+                disabled={isUploading('og_image')}
                 inputAriaLabel="Upload Facebook image"
                 inputId="facebook-image"
                 onDropAccepted={(files) => void handleFacebookImageUpload(files[0])}
               >
-                Upload Facebook image
+                {isUploading('og_image') ? <LoadingIndicator size="sm" /> : 'Upload Facebook image'}
               </ImageUploadDropzone>
             )}
           </ImageUpload>
@@ -340,13 +351,11 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
                   {editor.isEnabled && (
                     <ImageUploadAction
                       aria-label="Edit X image"
+                      disabled={isUploading('twitter_image')}
                       onClick={() =>
                         editor.openEditor({
                           image: twitterImage,
-                          handleSave: async (file: File) => {
-                            const imageUrl = getImageUrl(await uploadImage({ file }));
-                            updateSetting('twitter_image', imageUrl);
-                          },
+                          handleSave: handleTwitterImageUpload,
                         })
                       }
                     >
@@ -356,6 +365,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
                   <ImageUploadAction
                     aria-label="Remove X image"
                     data-testid="image-delete-button"
+                    disabled={isUploading('twitter_image')}
                     onClick={handleTwitterImageDelete}
                   >
                     <Trash2 />
@@ -365,11 +375,12 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
             ) : (
               <ImageUploadDropzone
                 className="rounded-b-none"
+                disabled={isUploading('twitter_image')}
                 inputAriaLabel="Upload X image"
                 inputId="twitter-image"
                 onDropAccepted={(files) => void handleTwitterImageUpload(files[0])}
               >
-                Upload X image
+                {isUploading('twitter_image') ? <LoadingIndicator size="sm" /> : 'Upload X image'}
               </ImageUploadDropzone>
             )}
           </ImageUpload>
@@ -406,6 +417,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       isEditing={isEditing}
       keywords={keywords}
       navid="metadata"
+      saveDisabled={uploadingSettings.size > 0}
       saveState={saveState}
       testId="seometa"
       title="Meta data"
