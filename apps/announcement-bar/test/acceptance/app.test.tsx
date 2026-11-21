@@ -143,6 +143,21 @@ describe('Announcement bar', () => {
     expect(el.textContent).toBe('Even bigger news');
   });
 
+  test('shows and dismisses the bar when session storage is blocked', async () => {
+    const blocked = () => {
+      throw new DOMException('The operation is insecure.', 'SecurityError');
+    };
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(blocked);
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(blocked);
+    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(blocked);
+
+    mountApp();
+
+    await userEvent.click((await shownBar()).querySelector('button')!);
+
+    expect(bar()).toBeNull();
+  });
+
   test('renders preview data without fetching', async () => {
     mountApp({
       previewData: { announcement: '<p>Preview text</p>', announcement_background: 'light' },
