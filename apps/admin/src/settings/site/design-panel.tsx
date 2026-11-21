@@ -1,4 +1,12 @@
 import DesignSidebar from './design-and-branding/design-sidebar';
+import ThemeVariantPicker from './design-and-branding/theme-variant-picker';
+import { useThemeVariants } from './design-and-branding/use-theme-variants';
+import ThemePicker from './design-and-branding/theme-picker';
+import ThemePreviewStatus from './design-and-branding/theme-preview-status';
+import { ActivateThemeDialog, ActivateThemeErrors } from './design-and-branding/activate-theme';
+import { getThemeDisplayName } from './design-and-branding/theme-names';
+import { useThemePreview } from './design-and-branding/use-theme-preview';
+import { useActivatePreviewTheme } from './design-and-branding/use-activate-preview-theme';
 import GlobalDataProvider from '@/settings/providers/global-data-provider';
 import { useEffect, useRef, useState } from 'react';
 import ThemePreview from './design-and-branding/theme-preview';
@@ -7,6 +15,7 @@ import { DirtyConfirmDialog, PageHeader, useDirtyConfirmation } from '@tryghost/
 import { cn } from '@tryghost/shade/utils';
 import { useDesignForm } from './design-and-branding/use-design-form';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
+import { useNavigate } from '@tryghost/admin-x-framework';
 
 export interface DesignPanelProps {
   /** The site page to preview the design on, over whatever the panel floats above. */
@@ -32,6 +41,19 @@ function DesignPanelContent({
   onSaved,
 }: DesignPanelProps) {
   const {
+    enabled: themePreviewEnabled,
+    pickableThemes,
+    activeTheme,
+    previewTheme,
+    previewToken,
+    previewTokenError,
+    resolving,
+    setPreviewTheme,
+    holdPreviewTheme,
+    refreshPreviewToken,
+  } = useThemePreview();
+  const navigate = useNavigate();
+  const {
     globalSettings,
     themeSettingSections,
     previewSettings,
@@ -40,7 +62,48 @@ function DesignPanelContent({
     dirty,
     okProps,
     handleSave,
-  } = useDesignForm();
+    activatePreviewTheme,
+    formDirty,
+    themeSettingsLoading,
+    themeSettingsError,
+    retryThemeSettings,
+    editsDirty,
+    applyThemeSettingValues,
+    currentThemeSettings,
+  } = useDesignForm({ previewTheme, previewToken, resolving });
+  // An official theme's variants (Source: News, Magazine, Newsletter), to start its settings from
+  const {
+    variants: themeVariants,
+    selected: selectedVariant,
+    choose: chooseVariant,
+  } = useThemeVariants({
+    theme: themePreviewEnabled && !resolving ? previewTheme || activeTheme : undefined,
+    settings: themeSettingsLoading ? undefined : currentThemeSettings,
+    applySettings: applyThemeSettingValues,
+  });
+  const themeVariantPicker =
+    themePreviewEnabled && themeVariants.length && currentThemeSettings ? (
+      <ThemeVariantPicker
+        selected={selectedVariant}
+        variants={themeVariants}
+        onChoose={chooseVariant}
+      />
+    ) : undefined;
+  const previewUnavailable = Boolean(previewTheme) && (themeSettingsError || previewTokenError);
+  const previewLoading =
+    !previewUnavailable &&
+    (resolving || (Boolean(previewTheme) && (themeSettingsLoading || !previewToken)));
+  const activation = useActivatePreviewTheme({
+    previewTheme,
+    activeTheme,
+    activatePreviewTheme,
+    holdPreviewTheme,
+    onActivated: () => {
+      setPreviewTheme(null);
+      // Under the preview, the site catches up with the new theme
+      onSaved?.(pageUrl);
+    },
+  });
   const { confirm, dialogProps } = useDirtyConfirmation();
 
   // The preview takes over from the first change until the panel closes (a
@@ -48,7 +111,8 @@ function DesignPanelContent({
   // underneath had got to; from there, it's browsed in its own right
   const [previewing, setPreviewing] = useState(false);
   const [pageUrl, setPageUrl] = useState(initialPageUrl);
-  if (dirty && !previewing) {
+  // Another theme is previewed from the start: the site underneath is still the active one
+  if ((dirty || previewTheme || resolving) && !previewing) {
     setPreviewing(true);
     const livePage = livePageUrl?.();
     if (livePage && livePage !== pageUrl) {
@@ -69,6 +133,18 @@ function DesignPanelContent({
       !new URLSearchParams(nextLocation.search).has(openParam),
   });
 
+  // Leaving while only previewing another theme (nothing edited) loses just the
+  // preview: the confirmations say so, rather than speak of unsaved changes
+  const leavingPreviewOnly = Boolean(previewTheme) && !editsDirty;
+  const leaveTitle =
+    leavingPreviewOnly && previewTheme
+      ? `Leave the preview of ${getThemeDisplayName(previewTheme)}?`
+      : undefined;
+  const leaveDescription =
+    leavingPreviewOnly && activeTheme
+      ? `Your site keeps ${getThemeDisplayName(activeTheme)}.`
+      : undefined;
+
   const close = () =>
     confirm(dirty, () => {
       guard.bypassNextNavigation();
@@ -76,6 +152,10 @@ function DesignPanelContent({
     });
 
   const save = async () => {
+    if (previewTheme) {
+      activation.requestActivation();
+      return;
+    }
     // Saving without changes reports success, but leaves the site as it was
     const changed = dirtyRef.current;
     if ((await handleSave({ fakeWhenUnchanged: true })) && changed) {
@@ -83,9 +163,10 @@ function DesignPanelContent({
     }
   };
 
-  // ⌘S / Ctrl+S saves, as in the Design modal
+  // ⌘S / Ctrl+S saves, as in the Design modal; while previewing another theme
+  // there's nothing to save, and it mustn't activate
   const saveRef = useRef(save);
-  saveRef.current = save;
+  saveRef.current = previewTheme ? async () => {} : save;
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key === 's') {
@@ -115,7 +196,20 @@ function DesignPanelContent({
           settings={previewSettings}
           url={pageUrl}
           onNavigate={setPageUrl}
+          onThemeTokenRejected={refreshPreviewToken}
         />
+        {(previewLoading || previewUnavailable) && (
+          <ThemePreviewStatus
+            // Centred in what the panel leaves of the page: it is 400px wide, 12px in
+            className="pr-[412px]"
+            theme={previewTheme}
+            unavailable={previewUnavailable}
+            onRetry={() => {
+              refreshPreviewToken();
+              retryThemeSettings();
+            }}
+          />
+        )}
       </div>
       <aside
         aria-label="Design"
@@ -128,28 +222,63 @@ function DesignPanelContent({
               Close
             </PageHeader.Action>
             <Button
-              disabled={okProps.disabled}
+              disabled={
+                okProps.disabled ||
+                activation.activating ||
+                (Boolean(previewTheme) && (previewLoading || previewUnavailable))
+              }
               type="button"
-              variant={okProps.variant}
+              variant={previewTheme ? 'default' : okProps.variant}
               onClick={() => void save()}
             >
-              {okProps.label || 'Save'}
+              {previewTheme
+                ? `Activate ${getThemeDisplayName(previewTheme)}`
+                : okProps.label || 'Save'}
             </Button>
           </div>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto">
           <DesignSidebar
+            activeTheme={activeTheme}
             globalSettings={globalSettings}
+            previewTheme={previewTheme}
+            themePicker={
+              themePreviewEnabled && activeTheme ? (
+                <ThemePicker
+                  activeTheme={activeTheme}
+                  themes={pickableThemes}
+                  value={previewTheme?.name || activeTheme.name}
+                  // Leaving for Themes is held by the unsaved changes guard; Themes comes back here
+                  onBrowseThemes={() => navigate('/settings/design/change-theme?from=customize')}
+                  onChange={(name) => setPreviewTheme(name)}
+                />
+              ) : undefined
+            }
             themeSettingSections={themeSettingSections}
+            themeSettingsError={themeSettingsError}
+            themeSettingsLoading={themeSettingsLoading}
+            themeVariantPicker={themeVariantPicker}
             updateGlobalSetting={updateGlobalSetting}
             updateThemeSetting={updateThemeSetting}
           />
         </div>
       </aside>
-      <DirtyConfirmDialog {...dialogProps} />
-      <DirtyConfirmDialog {...guard.dialogProps} />
+      <ActivateThemeDialog saveOtherChanges={formDirty} {...activation.dialogProps} />
+      <ActivateThemeErrors
+        fatalErrors={activation.fatalErrors}
+        onClose={activation.dismissFatalErrors}
+        onRetry={activation.retry}
+      />
+      <DirtyConfirmDialog {...dialogProps} description={leaveDescription} title={leaveTitle} />
       <DirtyConfirmDialog
+        {...guard.dialogProps}
+        description={leaveDescription}
+        title={leaveTitle}
+      />
+      <DirtyConfirmDialog
+        description={leaveDescription}
         open={interceptedNavigation.isBlocked}
+        title={leaveTitle}
         onConfirm={interceptedNavigation.proceed}
         onOpenChange={(open) => {
           if (!open && interceptedNavigation.isBlocked) {

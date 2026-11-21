@@ -5,6 +5,11 @@ import React, { useEffect, useState } from 'react';
 import ThemeInstalledModal, { type ThemeInstalledModalProps } from './theme/theme-installed-modal';
 import ThemePreview from './theme/theme-preview';
 import {
+  useCloseThemes,
+  useInitialThemesView,
+  useOpenThemePreview,
+} from './theme/use-themes-navigation';
+import {
   Button,
   Dropzone,
   Link,
@@ -24,7 +29,7 @@ import {
   useUploadTheme,
 } from '@tryghost/admin-x-framework/api/themes';
 import { JSONError } from '@tryghost/admin-x-framework/errors';
-import { type OfficialTheme } from '@/settings/providers/settings-app-context';
+import { type OfficialTheme, useOfficialThemes } from '@/settings/providers/settings-app-context';
 import { PageHeader, SettingsModal } from '@tryghost/shade/patterns';
 import { toast } from 'sonner';
 import { useCheckThemeLimitError } from '@/settings/hooks/use-check-theme-limit-error';
@@ -68,7 +73,6 @@ const UploadModalContent: React.FC<{ onUpload: (file: File) => void }> = ({ onUp
 };
 
 const ThemeToolbar: React.FC<ThemeToolbarProps> = ({ currentTab, setCurrentTab, themes }) => {
-  const { updateRoute } = useSettingsNavigation();
   const upgradeRoute = useUpgradeRoute();
   const { mutateAsync: uploadTheme } = useUploadTheme();
   const { checkThemeLimitError, isThemeLimited } = useCheckThemeLimitError();
@@ -103,9 +107,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({ currentTab, setCurrentTab, 
     void checkUploadLimit();
   }, [checkThemeLimitError, isThemeLimited]);
 
-  const onClose = () => {
-    updateRoute('/');
-  };
+  const onClose = useCloseThemes();
 
   const onThemeUpload = (file: File) => {
     const themeFileName = file?.name.replace(/\.zip$/, '');
@@ -316,15 +318,28 @@ type ChangeThemeModalProps = {
 };
 
 const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef }) => {
-  const [currentTab, setCurrentTab] = useState('official');
-  const [selectedTheme, setSelectedTheme] = useState<OfficialTheme | null>(null);
+  // Opened at the view a preview came back from, if any (see use-themes-navigation)
+  const initialView = useInitialThemesView();
+  const officialThemes = useOfficialThemes();
+  const [currentTab, setCurrentTab] = useState(
+    initialView === 'installed' ? 'installed' : 'official',
+  );
+  const [selectedTheme, setSelectedTheme] = useState<OfficialTheme | null>(() =>
+    initialView && initialView !== 'installed'
+      ? officialThemes.find(
+          ({ name }) => name.toLowerCase() === initialView.officialTheme.toLowerCase(),
+        ) || null
+      : null,
+  );
   const [previewMode, setPreviewMode] = useState('desktop');
   const [isInstalling, setInstalling] = useState(false);
   const [installedFromMarketplace, setInstalledFromMarketplace] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [installedModal, setInstalledModal] = useState<ThemeInstalledModalProps | null>(null);
   const { updateRoute } = useSettingsNavigation();
+  const openThemePreview = useOpenThemePreview();
   const upgradeRoute = useUpgradeRoute();
+  const closeThemes = useCloseThemes();
 
   const { data: { themes } = {} } = useBrowseThemes();
   const { mutateAsync: installTheme } = useInstallTheme();
@@ -440,6 +455,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef })
 
   let installedTheme: Theme | InstalledTheme | undefined;
   let onInstall;
+  let onPreview;
   if (selectedTheme) {
     installedTheme = themes.find(
       (theme) => theme.name.toLowerCase() === selectedTheme.name.toLowerCase(),
@@ -483,6 +499,49 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef })
       } else {
         return performInstallation();
       }
+    };
+
+    // To the Design settings, with the theme on the site's own content: installed
+    // first if it isn't yet, and only on a plan that allows it
+    onPreview = async (variant?: string) => {
+      // Customizing the site's own theme needs no plan check
+      const limitError = installedTheme?.active
+        ? null
+        : await checkThemeLimitError(selectedTheme.name);
+      if (limitError) {
+        showLimit({
+          prompt: limitError,
+          onOk: () => {
+            navigateTo(upgradeRoute);
+          },
+        });
+        return;
+      }
+
+      // Not installed yet: install it and stay on its demo, so installing is never
+      // mistaken for applying it; previewing on the site is the next click
+      if (!installedTheme) {
+        setInstalling(true);
+        try {
+          const data = await installTheme(selectedTheme.ref);
+          if (data?.themes[0]) {
+            toast.success(`${selectedTheme.name} installed`, {
+              description: 'Your site keeps its theme. Preview this one on your site next.',
+            });
+          }
+        } catch (e) {
+          handleError(e);
+        } finally {
+          setInstalling(false);
+        }
+        return;
+      }
+
+      openThemePreview({
+        theme: installedTheme.active ? undefined : installedTheme.name,
+        preset: variant,
+        view: { officialTheme: selectedTheme.name },
+      });
     };
 
     const performInstallation = async () => {
@@ -538,12 +597,8 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef })
       testId="theme-modal"
       title=""
       scrolling
-      onCancel={() => {
-        updateRoute('');
-      }}
-      onClose={() => {
-        updateRoute('');
-      }}
+      onCancel={closeThemes}
+      onClose={closeThemes}
     >
       <div className="flex h-full justify-between">
         <div className="grow">
@@ -559,6 +614,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef })
                 updateRoute('');
               }}
               onInstall={onInstall}
+              onPreview={onPreview}
             />
           )}
           <ThemeToolbar

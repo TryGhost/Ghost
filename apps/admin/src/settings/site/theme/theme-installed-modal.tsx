@@ -12,7 +12,8 @@ import {
 import { getHomepageUrl, useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { Link } from '@tryghost/shade/components';
 import { toast } from 'sonner';
-import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useFeatureFlag, useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useOpenThemePreview } from './use-themes-navigation';
 
 export type ThemeInstalledModalProps = {
   title: string;
@@ -42,11 +43,19 @@ const ThemeInstalledModal: React.FC<ThemeInstalledModalProps & { onClose: () => 
   const problems = getIssuesFromInstalledTheme(installedTheme);
   const homepageUrl = siteData?.site ? getHomepageUrl(siteData.site) : undefined;
 
+  // With theme previews, an inactive theme is tried in the Design settings first,
+  // and activated there
+  const themePreviewEnabled = useFeatureFlag('themePreview');
+  const openThemePreview = useOpenThemePreview();
+  const previewFirst = themePreviewEnabled && !installedTheme.active;
+
   const okLabel = installedTheme.active
     ? 'OK'
-    : hasErrorProblem(problems)
-      ? 'Activate with errors'
-      : 'Activate theme';
+    : previewFirst
+      ? 'Preview'
+      : hasErrorProblem(problems)
+        ? 'Activate with errors'
+        : 'Activate theme';
   const modalTitle = installedTheme.active ? (
     <span className="text-green">It&apos;s live!</span>
   ) : (
@@ -75,8 +84,10 @@ const ThemeInstalledModal: React.FC<ThemeInstalledModalProps & { onClose: () => 
   } else {
     status = (
       <>
-        <strong>{installedTheme.name}</strong> was {describeThemeOutcome(action, problems)}. Do you
-        want to activate it?
+        <strong>{installedTheme.name}</strong> was {describeThemeOutcome(action, problems)}.{' '}
+        {previewFirst
+          ? 'Preview it with your own content and settings before you make it live.'
+          : 'Do you want to activate it?'}
       </>
     );
   }
@@ -97,6 +108,11 @@ const ThemeInstalledModal: React.FC<ThemeInstalledModalProps & { onClose: () => 
       stickyFooter={true}
       title={modalTitle}
       onOk={async (activateModal) => {
+        if (previewFirst) {
+          activateModal?.remove();
+          openThemePreview({ theme: installedTheme.name, view: 'installed' });
+          return;
+        }
         if (!installedTheme.active) {
           try {
             const resData = await activateTheme(installedTheme.name);

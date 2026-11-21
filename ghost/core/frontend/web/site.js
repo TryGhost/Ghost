@@ -139,6 +139,9 @@ module.exports = function setupSiteApp(routerConfig) {
   // Activates the staff toolbar on the frontend domain and marks eligible requests
   siteApp.use(mw.adminToolbar);
 
+  // A request previewing a theme other than the active one (Ghost Admin's Design settings)
+  siteApp.use(themeEngine.previewMiddleware);
+
   // Theme static assets/files
   siteApp.use(mw.staticTheme());
 

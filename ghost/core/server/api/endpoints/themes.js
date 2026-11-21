@@ -1,6 +1,8 @@
 const themeService = require('../../services/themes');
+const permissionsService = require('../../services/permissions');
 const { limitService } = require('../../services/limits');
 const models = require('../../models');
+const themePreview = require('../../services/themes/preview');
 
 // Used to emit theme.uploaded which is used in core/server/analytics-events
 const events = require('../../lib/common/events');
@@ -32,6 +34,28 @@ const controller = {
     },
   },
 
+  // A token to preview the theme on the site without activating it (Admin's Design
+  // settings): for staff who may activate themes, short-lived, for this theme only
+  previewToken: {
+    headers: {
+      cacheInvalidate: false,
+    },
+    options: ['name'],
+    validation: {
+      options: {
+        name: {
+          required: true,
+        },
+      },
+    },
+    permissions: {
+      method: 'activate',
+    },
+    query(frame) {
+      return { theme_previews: [themePreview.createPreviewToken(frame.options.name)] };
+    },
+  },
+
   activate: {
     headers: {
       cacheInvalidate: true,
@@ -51,6 +75,16 @@ const controller = {
       if (limitService.isLimited('customThemes')) {
         await limitService.errorIfWouldGoOverLimit('customThemes', { value: themeName });
       }
+
+      // Settings chosen while previewing the theme (Admin's Design settings)
+      await themePreview.storeSettingsBeforeActivation(
+        themeName,
+        frame.data?.custom_theme_settings,
+        {
+          checkPermission: () =>
+            permissionsService.canThis(frame.options.context).edit.custom_theme_setting(),
+        },
+      );
 
       const newSettings = [
         {

@@ -48,7 +48,7 @@ export function getSettingsSections(visibility: SettingsSectionVisibility): Sett
     },
     { navid: 'analytics', title: 'Analytics', keywords: generalSearchKeywords.analytics },
     { navid: 'design', title: 'Design & branding', keywords: siteSearchKeywords.design },
-    { navid: 'theme', title: 'Theme', keywords: siteSearchKeywords.theme },
+    { navid: 'theme', title: visibility.themesTitle, keywords: siteSearchKeywords.theme },
     { navid: 'navigation', title: 'Navigation', keywords: siteSearchKeywords.navigation },
     {
       navid: 'announcement-bar',

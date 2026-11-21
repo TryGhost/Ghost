@@ -5,6 +5,8 @@ const urlUtils = require('../../shared/url-utils').default;
 const { SafeString } = require('../services/handlebars');
 const assetHash = require('../services/asset-hash');
 const themeEngine = require('../services/theme-engine');
+const preview = require('../services/theme-engine/preview');
+const previewContext = require('../services/theme-engine/preview-context');
 const { cardAssets } = require('../services/assets-minification');
 
 /**
@@ -128,6 +130,24 @@ function getAssetUrl(assetPath, hasMinFile) {
   // Optionally add /assets/
   if (isThemeAsset && !hasAssetsPrefix) {
     output = urlUtils.urlJoin(output, 'assets/');
+  }
+
+  // A previewed theme's assets come from that theme, never a CDN, under the
+  // preview's asset token (/assets/_preview/<token>/...), which also holds the files
+  // its stylesheets load by relative path
+  const previewTheme = themeEngine.getActive();
+  const previewToken = previewContext.getToken();
+  if (isThemeAsset && previewTheme && previewTheme.isPreview && previewToken) {
+    output = urlUtils.urlJoin(
+      urlUtils.getSubdir(),
+      preview.PREVIEW_ASSETS_PREFIX,
+      previewToken,
+      '/',
+    );
+    if (hasAssetsPrefix) {
+      // The caller spelled assets/ itself; under the prefix, the path continues after it
+      assetPath = assetPath.replace(/^assets\//, '');
+    }
   }
 
   // replace ".foo" with ".min.foo" if configured

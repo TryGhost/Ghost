@@ -26,6 +26,7 @@ module.exports = {
       'auth',
       'exploreTestimonialsUrl',
       'featurebase',
+      'themePreview',
     ];
 
     frame.response = {

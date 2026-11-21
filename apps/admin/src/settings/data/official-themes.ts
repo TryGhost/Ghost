@@ -29,16 +29,53 @@ export const officialThemes: OfficialTheme[] = [
     previewUrl: 'https://source.ghost.io/',
     ref: 'default',
     image: SourceImage,
+    // How Source's demo sites are set up (Source 1.7.6), as their pages show it: each
+    // setting renders recognisable markup (e.g. post_feed_style "Grid" gives
+    // gh-container is-grid). A theme can also declare its own presets in its
+    // package.json (config.presets), which take the place of these.
+    settings: {
+      navigation_layout: 'Stacked',
+      header_style: 'Highlight',
+      show_featured_posts: true,
+      post_feed_style: 'List',
+      show_publication_info_sidebar: true,
+      show_images_in_feed: true,
+      header_and_footer_color: 'Background color',
+      title_font: 'Modern sans-serif',
+      body_font: 'Modern sans-serif',
+    },
     variants: [
       {
         category: 'Magazine',
         previewUrl: 'https://source-magazine.ghost.io/',
         image: SourceMagazineImage,
+        settings: {
+          navigation_layout: 'Logo in the middle',
+          header_style: 'Magazine',
+          show_featured_posts: true,
+          post_feed_style: 'Grid',
+          show_publication_info_sidebar: false,
+          show_images_in_feed: true,
+          header_and_footer_color: 'Background color',
+          title_font: 'Elegant serif',
+          body_font: 'Modern sans-serif',
+        },
       },
       {
         category: 'Newsletter',
         previewUrl: 'https://source-newsletter.ghost.io/',
         image: SourceNewsletterImage,
+        settings: {
+          navigation_layout: 'Logo in the middle',
+          header_style: 'Landing',
+          show_featured_posts: false,
+          post_feed_style: 'Grid',
+          show_publication_info_sidebar: false,
+          show_images_in_feed: true,
+          header_and_footer_color: 'Background color',
+          title_font: 'Consistent mono',
+          body_font: 'Modern sans-serif',
+        },
       },
     ],
   },
