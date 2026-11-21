@@ -9,7 +9,26 @@ import {
   useEditSettings,
 } from '@tryghost/admin-x-framework/api/settings';
 import { SettingGroupContent } from '@tryghost/shade/patterns';
-import { Link, Switch } from '@tryghost/shade/components';
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldLabel,
+  Link,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Separator,
+  Switch,
+} from '@tryghost/shade/components';
+import {
+  DEFAULT_SOCIAL_WEB_SHARE,
+  SOCIAL_WEB_SHARE_OPTIONS,
+  isSocialWebShare,
+  socialWebShareLabel,
+} from '@/shared/social-web-share';
 import { getGhostPaths } from '@tryghost/admin-x-framework/helpers';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
@@ -48,15 +67,23 @@ const Network: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const [socialWebSetting] = getSettingValues<boolean>(settings, ['social_web']);
   const isChecked = !!socialWebSetting && !isDisabled;
 
-  // Handle toggle change
-  const toggleSocialWebSetting = async (checked: boolean) => {
-    const updatedSetting: Setting[] = [{ key: 'social_web', value: checked }];
+  // How new posts are shared by default. Older servers don't have the
+  // setting, so the field only shows when it is returned.
+  const shareSetting = settings.find((setting) => setting.key === 'default_social_web_share');
+  const shareValue = shareSetting?.value;
+  const defaultShare = isSocialWebShare(shareValue) ? shareValue : DEFAULT_SOCIAL_WEB_SHARE;
 
+  const saveSettings = async (updatedSettings: Setting[]) => {
     try {
-      await editSettings(updatedSetting);
+      await editSettings(updatedSettings);
     } catch (error) {
       handleError(error);
     }
+  };
+
+  // Handle toggle change
+  const toggleSocialWebSetting = async (checked: boolean) => {
+    await saveSettings([{ key: 'social_web', value: checked }]);
   };
 
   return (
@@ -77,6 +104,41 @@ const Network: React.FC<{ keywords: string[] }> = ({ keywords }) => {
     >
       <>
         <SettingGroupContent columns={1}>
+          {isChecked && shareSetting ? (
+            <>
+              <Separator />
+              <Field orientation="horizontal">
+                <FieldContent>
+                  <FieldLabel htmlFor="default-social-web-share">Share new posts as</FieldLabel>
+                  <FieldDescription>
+                    How published posts appear on the social web. You can change it for each post in
+                    post settings.
+                  </FieldDescription>
+                </FieldContent>
+                <Select
+                  value={defaultShare}
+                  onValueChange={(value) =>
+                    void saveSettings([{ key: 'default_social_web_share', value }])
+                  }
+                >
+                  <SelectTrigger
+                    className="w-44 shrink-0"
+                    data-testid="default-social-web-share-select"
+                    id="default-social-web-share"
+                  >
+                    <SelectValue>{socialWebShareLabel(defaultShare)}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SOCIAL_WEB_SHARE_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            </>
+          ) : null}
           {isDisabled && (
             <div className="flex w-full gap-1.5 rounded-md border border-border-default bg-muted p-3">
               <LucideIcon.Info className="size-4" />

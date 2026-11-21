@@ -58,6 +58,10 @@ export interface Post {
   custom_template: string | null;
   /** Pages only: whether the page renders its own title and feature image. */
   show_title_and_feature_image?: boolean;
+  /** Posts only, on servers that support it: how the post is shared on the social web. */
+  social_web_share?: 'article' | 'note' | 'none';
+  /** Posts only: custom text for a post shared as a note. */
+  social_web_note?: string | null;
   canonical_url: string | null;
   og_image: string | null;
   og_title: string | null;

@@ -1,4 +1,5 @@
 import isLength from 'validator/es/lib/isLength.js';
+import type { PostSocialWebShare } from '@tryghost/admin-x-framework/api/content-types';
 import type { EditablePostProjection } from '@/editor/engine/change-tracker';
 import { pick } from '@/editor/engine/pick';
 import type { PostStatus } from '@/editor/engine/save-engine';
@@ -31,6 +32,8 @@ export const SETTINGS_FIELD_KEYS = [
   'twitter_title',
   'twitter_description',
   'show_title_and_feature_image',
+  'social_web_share',
+  'social_web_note',
 ] as const;
 
 export type SettingsFieldKey = (typeof SETTINGS_FIELD_KEYS)[number];
@@ -38,9 +41,10 @@ export type SettingsFieldKey = (typeof SETTINGS_FIELD_KEYS)[number];
 export type EditorSettingsFields = Pick<EditablePostProjection, SettingsFieldKey>;
 
 export type EditorSettingsPatch = Partial<
-  Omit<EditorSettingsFields, 'show_title_and_feature_image'>
+  Omit<EditorSettingsFields, 'show_title_and_feature_image' | 'social_web_share'>
 > & {
   show_title_and_feature_image?: boolean;
+  social_web_share?: PostSocialWebShare;
 };
 
 export const TIERS_REQUIRED = 'Please select at least one tier.';
@@ -75,6 +79,11 @@ export function identityFor(
   if (key === 'show_title_and_feature_image') {
     return fields.show_title_and_feature_image ?? undefined;
   }
+  // Null is a post the server has not given a share setting (an older server,
+  // or a post not created yet), never a write.
+  if (key === 'social_web_share') {
+    return fields.social_web_share ?? undefined;
+  }
   return fields[key];
 }
 
@@ -90,6 +99,7 @@ export const OG_TITLE_MAX = 300;
 export const OG_DESCRIPTION_MAX = 500;
 export const X_TITLE_MAX = 300;
 export const X_DESCRIPTION_MAX = 500;
+export const SOCIAL_WEB_NOTE_MAX = 2000;
 
 export const TITLE_TOO_LONG = `Title cannot be longer than ${TITLE_MAX} characters.`;
 export const EXCERPT_TOO_LONG = `Excerpt cannot be longer than ${EXCERPT_MAX} characters.`;
@@ -103,6 +113,7 @@ export const OG_TITLE_TOO_LONG = `Facebook title cannot be longer than ${OG_TITL
 export const OG_DESCRIPTION_TOO_LONG = `Facebook description cannot be longer than ${OG_DESCRIPTION_MAX} characters.`;
 export const X_TITLE_TOO_LONG = `X title cannot be longer than ${X_TITLE_MAX} characters.`;
 export const X_DESCRIPTION_TOO_LONG = `X description cannot be longer than ${X_DESCRIPTION_MAX} characters.`;
+export const SOCIAL_WEB_NOTE_TOO_LONG = `Note text cannot be longer than ${SOCIAL_WEB_NOTE_MAX} characters.`;
 
 /** Counted as Core's model validator counts: trimmed, and an emoji with its presentation selector once. */
 export function titleError(title: string): string | null {
@@ -151,6 +162,7 @@ export const VALIDATED_SETTINGS_FIELD_KEYS = [
   'og_description',
   'twitter_title',
   'twitter_description',
+  'social_web_note',
 ] as const;
 
 export type ValidatedSettingsFieldKey = (typeof VALIDATED_SETTINGS_FIELD_KEYS)[number];
@@ -178,6 +190,7 @@ const LENGTH_RULES: Record<
   og_description: { max: OG_DESCRIPTION_MAX, message: OG_DESCRIPTION_TOO_LONG },
   twitter_title: { max: X_TITLE_MAX, message: X_TITLE_TOO_LONG },
   twitter_description: { max: X_DESCRIPTION_MAX, message: X_DESCRIPTION_TOO_LONG },
+  social_web_note: { max: SOCIAL_WEB_NOTE_MAX, message: SOCIAL_WEB_NOTE_TOO_LONG },
 };
 
 /** The rule one settings field breaks, worded as the save-time validator words it. */

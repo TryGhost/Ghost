@@ -52,6 +52,7 @@ import {
 import { SettingsSection } from './settings-section';
 import { SubviewContext, useSubviewController } from './settings-subview-context';
 import { ShowTitleSection } from './show-title-section';
+import { SocialWebSection } from './social-web-section';
 import { TagsSection } from './tags-section';
 import { TemplateSection } from './template-section';
 import { UrlSection } from './url-section';
@@ -65,6 +66,7 @@ const MemoMetaDataTabsSection = memo(MetaDataTabsSection);
 const MemoPostHistorySection = memo(PostHistorySection);
 const MemoPublishDateSection = memo(PublishDateSection);
 const MemoShowTitleSection = memo(ShowTitleSection);
+const MemoSocialWebSection = memo(SocialWebSection);
 const MemoTagsSection = memo(TagsSection);
 const MemoTemplateSection = memo(TemplateSection);
 const MemoUrlSection = memo(UrlSection);
@@ -235,6 +237,10 @@ export function PostSettingsSidebar({
     'publish-date': <MemoPublishDateSection session={session} />,
     tags: canTag ? <MemoTagsSection disabled={locked && lockShown} session={session} /> : null,
     excerpt: hasInlineExcerpt ? null : <ExcerptSection session={session} />,
+    // Pages are not shared on the social web. The section decides for itself
+    // whether the site and the server support it.
+    'social-web':
+      postType === 'post' ? <MemoSocialWebSection session={session} siteUrl={siteUrl} /> : null,
     featured: canManagePost ? <FeaturedSection postType={postType} session={session} /> : null,
     access: canManagePost ? (
       <MemoAccessSection disabled={locked && lockShown} postType={postType} session={session} />

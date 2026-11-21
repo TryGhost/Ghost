@@ -111,6 +111,9 @@ import {
   settingsTagsInput,
   settingsTagsList,
   settingsTagsToken,
+  settingsSocialWebNoteCount,
+  settingsSocialWebNoteInput,
+  settingsSocialWebShareSelect,
   settingsTemplateSelect,
   settingsTemplateSlugMatch,
   settingsTiersError,
@@ -332,6 +335,11 @@ export const editorScreen = {
   settingsTemplateOption: (label: string) =>
     page.getByRole('listbox').getByRole('option', { name: label, exact: true }),
   settingsTemplateSlugMatch: () => page.getByTestId(settingsTemplateSlugMatch),
+  settingsSocialWebShare: () => page.getByTestId(settingsSocialWebShareSelect),
+  settingsSocialWebShareOption: (label: string) =>
+    page.getByRole('listbox').getByRole('option', { name: label, exact: true }),
+  settingsSocialWebNote: () => page.getByTestId(settingsSocialWebNoteInput),
+  settingsSocialWebNoteCount: () => page.getByTestId(settingsSocialWebNoteCount),
   settingsPublishDate: () => page.getByTestId(settingsPublishDate),
   settingsPublishDateCalendarButton: () =>
     page

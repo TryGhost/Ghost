@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { page } from 'vitest/browser';
 
 import {
   configResponse,
@@ -83,5 +84,61 @@ describe('Network settings', () => {
 
     await toggle.click();
     await expect(settingsApi).toHaveEditedSettings([{ key: 'social_web', value: true }]);
+  });
+
+  it('sets how new posts are shared', async () => {
+    fakeSettingsScreens();
+    const settingsApi = fakeEditSettings();
+    await renderAdminApp('/settings', {
+      boot: {
+        browseSettings: {
+          response: settingsResponse({
+            settings: { social_web: true, default_social_web_share: 'article' },
+          }),
+        },
+      },
+    });
+
+    const section = settingsScreen.network();
+    const select = section.getByTestId('default-social-web-share-select');
+    await expect.element(select).toHaveTextContent('Full article');
+
+    await select.click();
+    await page
+      .getByRole('listbox')
+      .getByRole('option', { name: 'Short note', exact: true })
+      .click();
+
+    await expect(settingsApi).toHaveEditedSettings([
+      { key: 'default_social_web_share', value: 'note' },
+    ]);
+  });
+
+  it('leaves out how new posts are shared while Network is off', async () => {
+    fakeSettingsScreens();
+    await renderAdminApp('/settings', {
+      boot: {
+        browseSettings: {
+          response: settingsResponse({
+            settings: { social_web: false, default_social_web_share: 'article' },
+          }),
+        },
+      },
+    });
+
+    const section = settingsScreen.network();
+    await expect.element(section.getByRole('switch')).not.toBeChecked();
+    await expect(section.getByTestId('default-social-web-share-select')).toHaveCount(0);
+  });
+
+  it('leaves out how new posts are shared when the server does not support it', async () => {
+    fakeSettingsScreens();
+    await renderAdminApp('/settings', {
+      boot: { browseSettings: { response: settingsResponse({ settings: { social_web: true } }) } },
+    });
+
+    const section = settingsScreen.network();
+    await expect.element(section.getByRole('switch')).toBeChecked();
+    await expect(section.getByTestId('default-social-web-share-select')).toHaveCount(0);
   });
 });

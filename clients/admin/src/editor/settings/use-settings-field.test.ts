@@ -24,6 +24,7 @@ const SETTINGS: ValidatedSettingsFields = {
   og_description: null,
   twitter_title: null,
   twitter_description: null,
+  social_web_note: null,
 };
 
 function fakeSession(settings: Partial<ValidatedSettingsFields> = {}) {

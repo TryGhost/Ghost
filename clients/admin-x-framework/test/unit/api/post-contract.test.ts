@@ -69,7 +69,12 @@ const sharedTypeAssertions: [
   Assert<
     Equal<
       keyof PostEditableData,
-      ExpectedContentEditableKey | 'status' | 'email_subject' | 'email_only'
+      | ExpectedContentEditableKey
+      | 'status'
+      | 'email_subject'
+      | 'email_only'
+      | 'social_web_share'
+      | 'social_web_note'
     >
   >,
   Assert<
@@ -453,6 +458,13 @@ describe('post request contract', () => {
           'page',
         ),
       ).toEqual({ title: 'Hello' });
+    });
+
+    it('strips social web fields from page payloads but keeps them for posts', () => {
+      const data = { title: 'Hello', social_web_share: 'note', social_web_note: 'Read it' };
+
+      expect(serializePostPayload(data, 'page')).toEqual({ title: 'Hello' });
+      expect(serializePostPayload(data)).toEqual(data);
     });
 
     it('drops visibility, filter and tiers when visibility is null', () => {

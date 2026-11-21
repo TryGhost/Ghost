@@ -48,6 +48,7 @@ const VALID = {
   og_description: null,
   twitter_title: null,
   twitter_description: null,
+  social_web_note: null,
 };
 
 describe('overLength', () => {
