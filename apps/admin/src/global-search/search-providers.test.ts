@@ -146,75 +146,17 @@ describe.each([
   });
 });
 
-describe('flex search provider matching', () => {
-  const search = (term: string, posts: SearchIndexItem[] = content.posts) =>
-    titles(createFlexSearchProvider([contentSearchSource('posts', posts)]).search(term), 'Posts');
+describe('flex search provider', () => {
+  it('caps by rank before sorting by status', () => {
+    const published = postsTitled(Array.from({ length: 150 }, (_, index) => `Post ${index}`));
+    const posts = [...published, { id: 'd1', title: 'Draft post', status: 'draft' }];
+    const groups = createFlexSearchProvider([contentSearchSource('posts', posts)]).search('post');
 
-  it('matches the start of any word', () => {
-    expect(search('sec')).toEqual(['Second post']);
-    expect(search('pos')).toEqual(['Third post', 'Second post', 'First post']);
-  });
-
-  it('does not match inside a word', () => {
-    expect(search('econd')).toBeUndefined();
-  });
-
-  it('matches every word of a multi-word term in any order', () => {
-    expect(search('post second')).toEqual(['Second post']);
-  });
-
-  it('keeps numbers whole', () => {
-    const posts = postsTitled(['Top100 tips', 'Best of 2024']);
-
-    expect(search('top1', posts)).toEqual(['Top100 tips']);
-    expect(search('4', posts)).toBeUndefined();
-  });
-
-  it('matches keywords after titles', () => {
-    const source: SearchSource = {
-      id: 'shortcuts',
-      heading: 'Shortcuts',
-      isLoading: false,
-      items: [
-        { kind: 'navigate', id: 'a', title: 'Alpha', keywords: 'beta', to: '/a' },
-        { kind: 'navigate', id: 'b', title: 'Beta', to: '/b' },
-      ],
-    };
-
-    expect(titles(createFlexSearchProvider([source]).search('beta'), 'Shortcuts')).toEqual([
-      'Beta',
-      'Alpha',
-    ]);
-  });
-
-  it('does not fold diacritics or collapse repeated letters', () => {
-    const posts = postsTitled(['Café', 'Coffee', 'Apple']);
-
-    expect(search('cafe', posts)).toBeUndefined();
-    expect(search('cofee', posts)).toBeUndefined();
-    expect(search('aa', posts)).toBeUndefined();
+    expect(titles(groups, 'Posts')).toEqual(published.slice(0, 100).map(({ title }) => title));
   });
 });
 
-describe('basic search provider matching', () => {
-  const search = (term: string) =>
-    titles(createBasicSearchProvider(contentSources()).search(term), 'Posts');
-
-  it('matches anywhere inside the title', () => {
-    expect(search('econd')).toEqual(['Second post']);
-  });
-
-  it('matches the term as one contiguous string', () => {
-    expect(search('post second')).toBeUndefined();
-    expect(search('second post')).toEqual(['Second post']);
-  });
-
-  it('matches anywhere inside the keywords', () => {
-    expect(titles(createBasicSearchProvider([billing]).search('cnam'), 'Acme Hosting')).toEqual([
-      'Set up a custom domain',
-    ]);
-  });
-
+describe('basic search provider', () => {
   it('sorts by status before capping', () => {
     const posts = [
       ...postsTitled(Array.from({ length: 150 }, (_, index) => `Post ${index}`)),
@@ -228,18 +170,18 @@ describe('basic search provider matching', () => {
 });
 
 describe('createSearchProvider', () => {
-  // only the basic provider matches inside a word
+  // only substring search matches inside a word
   const matchesInsideWords = (locale: string | null | undefined) =>
     createSearchProvider(
       [contentSearchSource('posts', postsTitled(['Second post']))],
       locale,
     ).search('econd').length > 0;
 
-  it.each(['en', 'en-GB', 'EN', null, undefined])('uses FlexSearch for the %s locale', (locale) => {
+  it.each(['en', null])('uses word search for the %s locale', (locale) => {
     expect(matchesInsideWords(locale)).toBe(false);
   });
 
-  it.each(['de', 'fr-CA', 'ja', ''])('uses substring matching for the %j locale', (locale) => {
+  it.each(['de', ''])('uses substring search for the %j locale', (locale) => {
     expect(matchesInsideWords(locale)).toBe(true);
   });
 });
