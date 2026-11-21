@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react';
 import { LucideIcon } from '@tryghost/shade/utils';
+import { isLinkablePost, isLinkableUrl, matchesWords } from '@/shared/link-search';
 
 export interface LinkSearchItem {
   id: string;
@@ -98,22 +99,16 @@ export function filterLinkSearchResults(
   const filteredResults: LinkSearchGroup[] = [];
 
   results.forEach((group) => {
-    // only content with a public URL is linkable
-    let items = group.options.filter((item) => item.url);
-
-    if (group.groupName === 'Posts' || group.groupName === 'Pages') {
-      items = items.filter((item) => item.status === 'published');
-    }
-
-    if (group.groupName === 'Staff') {
-      items = items.filter((item) => !/\/404\//.test(item.url ?? ''));
-    }
+    const isPostGroup = group.groupName === 'Posts' || group.groupName === 'Pages';
+    let items = group.options.filter((item) =>
+      isPostGroup ? isLinkablePost(item) : isLinkableUrl(item.url),
+    );
 
     if (items.length === 0) {
       return;
     }
 
-    if (group.groupName === 'Posts' || group.groupName === 'Pages') {
+    if (isPostGroup) {
       items = items.map((item) => decoratePostSearchResult(item, settings));
     }
 
@@ -180,14 +175,9 @@ export function searchIndexEntitiesGroup(
 }
 
 function matchTerm<Entry>(entries: Entry[], term: string, text: (entry: Entry) => string) {
-  const needle = term.trim().toLowerCase();
-  if (!needle) {
+  if (!term.trim()) {
     return [];
   }
 
-  const words = needle.split(/\s+/);
-  return entries.filter((entry) => {
-    const haystack = text(entry).toLowerCase();
-    return words.every((word) => haystack.includes(word));
-  });
+  return entries.filter((entry) => matchesWords(text(entry), term));
 }

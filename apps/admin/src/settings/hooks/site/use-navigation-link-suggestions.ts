@@ -1,11 +1,13 @@
 import { checkStripeEnabled, getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
 import { useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
-import { useCallback, useMemo, useRef } from 'react';
-import { apiUrl } from '@tryghost/admin-x-framework/helpers';
+import { useCallback, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { buildAutocompleteLinks, buildOfferLinks } from '@/shared/autocomplete-links';
+import { isLinkablePost, matchesWords } from '@/shared/link-search';
+import { type SearchIndexItem, searchIndexQueryOptions } from '@/shared/search-index';
 import {
   type Suggestion,
   type SuggestionGroup,
@@ -13,19 +15,6 @@ import {
 
 // Per group, so the dropdown stays short enough to scan
 const CONTENT_LIMIT = 5;
-
-type SearchIndexKey = 'pages' | 'posts';
-
-type SearchIndexPost = {
-  id: string;
-  title: string;
-  url: string;
-  status: string;
-};
-
-// Unpublished content gets a /404/ URL (`notFoundUrl` in the server's
-// lazy-url-service.ts), so it's never somewhere to link to
-const isRoutable = (url?: string) => Boolean(url) && !url!.endsWith('/404/');
 
 const toPath = (url: string) => {
   try {
@@ -36,13 +25,8 @@ const toPath = (url: string) => {
   }
 };
 
-const matches = (suggestion: Suggestion, term: string) => {
-  const needle = term.toLowerCase();
-  return (
-    suggestion.label.toLowerCase().includes(needle) ||
-    suggestion.value.toLowerCase().includes(needle)
-  );
-};
+const matches = (suggestion: Suggestion, term: string) =>
+  matchesWords(suggestion.label, term) || matchesWords(suggestion.value, term);
 
 const useNavigationLinkSuggestions = () => {
   const { config, settings, siteData } = useGlobalData();
@@ -68,31 +52,17 @@ const useNavigationLinkSuggestions = () => {
   });
 
   const fetchApi = useFetchApi();
-  const searchIndex = useRef<Partial<Record<SearchIndexKey, Promise<SearchIndexPost[]>>>>({});
+  const queryClient = useQueryClient();
 
   // The search-index endpoints ignore `filter` and `limit` and return
-  // everything (up to 10k rows). So each index is downloaded once per modal
-  // and filtered here, and searches made while it's downloading wait for the
-  // same request.
+  // everything (up to 10k rows), so the lists are shared with global search
+  // and the editor and filtered here
   const loadIndex = useCallback(
-    (key: SearchIndexKey) => {
-      const cached = searchIndex.current[key];
-      if (cached) {
-        return cached;
-      }
-
-      const request = fetchApi<Partial<Record<SearchIndexKey, SearchIndexPost[]>>>(
-        apiUrl(`/search-index/${key}/`),
-      )
-        .then((response) => response[key] ?? [])
-        .catch((error: unknown) => {
-          delete searchIndex.current[key];
-          throw error;
-        });
-      searchIndex.current[key] = request;
-      return request;
+    async (key: 'pages' | 'posts'): Promise<SearchIndexItem[]> => {
+      const response = await queryClient.fetchQuery(searchIndexQueryOptions(key, fetchApi));
+      return response[key] ?? [];
     },
-    [fetchApi],
+    [fetchApi, queryClient],
   );
 
   const staticGroups = useMemo<SuggestionGroup[]>(() => {
@@ -143,19 +113,18 @@ const useNavigationLinkSuggestions = () => {
       // Paths too, because people type them, and ArrowDown on a filled field
       // searches with its full URL. Not full URLs, or typing the site's
       // domain would match every post.
-      const needle = term.toLowerCase();
-      const pathNeedle = toPath(term).toLowerCase();
-      const isMatch = (result: SearchIndexPost) =>
-        result.title.toLowerCase().includes(needle) ||
-        toPath(result.url).toLowerCase().includes(pathNeedle);
+      const pathTerm = toPath(term);
 
-      const toItems = (results: SearchIndexPost[]): Suggestion[] =>
+      const toItems = (results: SearchIndexItem[]): Suggestion[] =>
         results
-          .filter((result) => result.status === 'published' && isRoutable(result.url))
-          .filter((result) => !term || isMatch(result))
+          .filter(isLinkablePost)
+          .filter(
+            (result) =>
+              matchesWords(result.title ?? '', term) || matchesWords(toPath(result.url), pathTerm),
+          )
           .slice(0, CONTENT_LIMIT)
           .map((result) => ({
-            label: result.title,
+            label: result.title ?? '',
             value: result.url,
             description: toPath(result.url),
           }));
