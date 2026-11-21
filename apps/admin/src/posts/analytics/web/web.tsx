@@ -153,33 +153,27 @@ const Web: React.FC = () => {
     [handleFilterClick],
   );
 
-  // Get params
-  const params = useMemo(() => {
-    const baseParams = {
+  // Every query is scoped to the post, so none runs until it has loaded:
+  // without its uuid and published date they would query the whole site.
+  const params = useMemo(
+    () => ({
       site_uuid: statsConfig?.id || '',
       date_from: formatQueryDate(startDate),
       date_to: formatQueryDate(endDate),
       timezone: timezone,
       member_status: getAudienceQueryParam(audience),
-      post_uuid: '',
       ...filterParams,
-    };
-
-    if (!isPostLoading && post?.uuid) {
-      return {
-        ...baseParams,
-        post_uuid: post.uuid,
-      };
-    }
-
-    return baseParams;
-  }, [isPostLoading, post, statsConfig?.id, startDate, endDate, timezone, audience, filterParams]);
+      post_uuid: post?.uuid || '',
+    }),
+    [post?.uuid, statsConfig?.id, startDate, endDate, timezone, audience, filterParams],
+  );
 
   // Get web kpi data
   const { data: kpiData, loading: isKpisLoading } = useTinybirdQuery({
     endpoint: 'api_kpis',
     statsConfig,
     params: params,
+    enabled: Boolean(post?.uuid),
   });
 
   // Get locations data
@@ -187,6 +181,7 @@ const Web: React.FC = () => {
     endpoint: 'api_top_locations',
     statsConfig,
     params: params,
+    enabled: Boolean(post?.uuid),
   });
 
   // Get sources data
@@ -194,6 +189,7 @@ const Web: React.FC = () => {
     endpoint: 'api_top_sources',
     statsConfig,
     params: params,
+    enabled: Boolean(post?.uuid),
   });
 
   // Calculate total visits for percentage calculation
@@ -270,12 +266,15 @@ const Web: React.FC = () => {
         <NavbarActions
           className={`${hasFilters ? 'mt-0! [grid-area:subactions] lg:mt-[25px]!' : '[grid-area:actions]'}`}
         >
-          <StatsFilter
-            filters={analyticsFilters}
-            postUuid={post?.uuid}
-            range={range}
-            onChange={setAnalyticsFilters}
-          />
+          {/* Its options are scoped to the post too */}
+          {post && (
+            <StatsFilter
+              filters={analyticsFilters}
+              postUuid={post.uuid}
+              range={range}
+              onChange={setAnalyticsFilters}
+            />
+          )}
           {!hasFilters && <DateRangeSelect range={range} onRangeChange={setRange} />}
         </NavbarActions>
       </PostAnalyticsHeader>
