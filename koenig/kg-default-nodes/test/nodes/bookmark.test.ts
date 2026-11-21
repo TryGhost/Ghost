@@ -1,3 +1,4 @@
+import {buildDefaultVisibility} from '../../src/utils/visibility.js';
 import {assertPrettifiesTo, createDocument, dom, html} from '../test-utils/index.js';
 import {$getRoot} from 'lexical';
 import type {LexicalEditor} from 'lexical';
@@ -108,7 +109,8 @@ describe('BookmarkNode', function () {
             const bookmarkNodeDataset = bookmarkNode.getDataset();
 
             expect(bookmarkNodeDataset).toEqual({
-                ...dataset
+                ...dataset,
+                visibility: buildDefaultVisibility()
             });
         }));
     });
@@ -209,6 +211,7 @@ describe('BookmarkNode', function () {
             const metadata = dataset.metadata as Record<string, unknown>;
 
             expect(json).toEqual({
+                visibility: buildDefaultVisibility(),
                 type: 'bookmark',
                 version: 1,
                 url: dataset.url,

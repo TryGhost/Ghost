@@ -1,8 +1,10 @@
+import {renderWithVisibility, type Visibility} from '../../utils/visibility.js';
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
 import {cleanDOM} from '../../utils/clean-dom.js';
 
 interface CalloutNodeData {
+    visibility?: Visibility;
     backgroundColor: string;
     calloutEmoji: string;
     calloutText: string;
@@ -43,5 +45,5 @@ export function renderCalloutNode(node: CalloutNodeData, options: RenderOptions 
     textElement.innerHTML = temporaryContainer.innerHTML;
     element.appendChild(textElement);
 
-    return {element, type: 'outer' as const};
+    return renderWithVisibility({element, type: 'outer' as const}, node.visibility, options);
 }

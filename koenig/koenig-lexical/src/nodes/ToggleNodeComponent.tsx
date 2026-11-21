@@ -2,6 +2,7 @@ import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React from 'react';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
+import {CardSettingsPanel} from '../components/CardSettingsPanel';
 import {EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToggleCard} from '../components/ui/cards/ToggleCard';
@@ -37,6 +38,8 @@ export function ToggleNodeComponent({nodeKey, headingEditor, headingEditorInitia
                 headingPlaceholder={'Toggle header'}
                 isEditing={isEditing}
             />
+
+            <CardSettingsPanel />
 
             <ActionToolbar
                 data-kg-card-toolbar="toggle"

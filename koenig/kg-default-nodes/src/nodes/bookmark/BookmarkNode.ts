@@ -1,3 +1,4 @@
+import type {Visibility} from '../../utils/visibility.js';
 import {generateDecoratorNode, type DecoratorNodePropertyMap} from '../../generate-decorator-node.js';
 import {parseBookmarkNode} from './bookmark-parser.js';
 import {renderBookmarkNode} from './bookmark-renderer.js';
@@ -12,6 +13,7 @@ interface BookmarkMetadata {
 }
 
 export interface BookmarkData {
+    visibility?: Visibility;
     url?: string;
     metadata?: BookmarkMetadata;
     caption?: string;
@@ -30,6 +32,7 @@ const bookmarkProperties = {
 
 export class BookmarkNode extends generateDecoratorNode({
     nodeType: 'bookmark',
+    hasVisibility: true,
     properties: bookmarkProperties,
     defaultRenderFn: renderBookmarkNode
 }) {
@@ -38,8 +41,8 @@ export class BookmarkNode extends generateDecoratorNode({
     }
 
     /* override */
-    constructor({url, metadata, caption}: BookmarkData = {}, key?: string) {
-        super({}, key);
+    constructor({url, metadata, caption, visibility}: BookmarkData = {}, key?: string) {
+        super({visibility}, key);
         this.__url = url || '';
         this.__icon = metadata?.icon || '';
         this.__title = metadata?.title || '';
@@ -63,17 +66,19 @@ export class BookmarkNode extends generateDecoratorNode({
                 publisher: self.publisher,
                 thumbnail: self.thumbnail
             },
-            caption: self.caption
+            caption: self.caption,
+            visibility: self.visibility
         };
     }
 
     /* @override */
     static importJSON(serializedNode: Record<string, unknown>) {
-        const {url, metadata, caption} = serializedNode as BookmarkData;
+        const {url, metadata, caption, visibility} = serializedNode as BookmarkData;
         const node = new this({
             url,
             metadata,
-            caption
+            caption,
+            visibility
         });
         return node;
     }
@@ -92,7 +97,8 @@ export class BookmarkNode extends generateDecoratorNode({
                 publisher: this.publisher,
                 thumbnail: this.thumbnail
             },
-            caption: this.caption
+            caption: this.caption,
+            visibility: this.visibility
         };
         return dataset;
     }

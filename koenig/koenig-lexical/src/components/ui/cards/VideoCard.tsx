@@ -26,6 +26,8 @@ function PopulatedVideoCard({
     isEditing,
     thumbnailMimeTypes,
     thumbnailDragHandler = {},
+    visibilitySettings,
+    showVisibilitySettings = false,
     onPickCustomThumbnail
 }) {
     const progressStyle = {
@@ -49,6 +51,42 @@ function PopulatedVideoCard({
             Icon: ImgFullIcon
         }
     ];
+
+    const designSettings = (
+        <>
+            <ButtonGroupSetting
+                buttons={buttonGroupChildren}
+                label="Video width"
+                selectedName={cardWidth}
+                onClick={onCardWidthChange}
+            />
+            <ToggleSetting
+                dataTestId="loop-video"
+                description='Autoplay your video on a loop without sound.'
+                isChecked={isLoopChecked}
+                label='Loop'
+                onChange={onLoopChange}
+            />
+            <MediaUploadSetting
+                alt='Custom thumbnail'
+                borderStyle={'rounded'}
+                dataTestId="custom-thumbnail-replace"
+                errors={customThumbnailUploader.errors}
+                filePicker={onPickCustomThumbnail}
+                icon='file'
+                isDraggedOver={thumbnailDragHandler.isDraggedOver}
+                isLoading={customThumbnailUploader.isLoading}
+                label='Custom thumbnail'
+                mimeTypes={thumbnailMimeTypes}
+                placeholderRef={thumbnailDragHandler.setRef}
+                progress={customThumbnailUploader.progress}
+                size='xsmall'
+                src={customThumbnail}
+                onFileChange={onCustomThumbnailChange}
+                onRemoveMedia={onRemoveCustomThumbnail}
+            />
+        </>
+    );
 
     return (
         <>
@@ -80,38 +118,11 @@ function PopulatedVideoCard({
 
             {
                 !!thumbnail && !videoUploader.isLoading && isEditing && (
-                    <SettingsPanel>
-                        <ButtonGroupSetting
-                            buttons={buttonGroupChildren}
-                            label="Video width"
-                            selectedName={cardWidth}
-                            onClick={onCardWidthChange}
-                        />
-                        <ToggleSetting
-                            dataTestId="loop-video"
-                            description='Autoplay your video on a loop without sound.'
-                            isChecked={isLoopChecked}
-                            label='Loop'
-                            onChange={onLoopChange}
-                        />
-                        <MediaUploadSetting
-                            alt='Custom thumbnail'
-                            borderStyle={'rounded'}
-                            dataTestId="custom-thumbnail-replace"
-                            errors={customThumbnailUploader.errors}
-                            filePicker={onPickCustomThumbnail}
-                            icon='file'
-                            isDraggedOver={thumbnailDragHandler.isDraggedOver}
-                            isLoading={customThumbnailUploader.isLoading}
-                            label='Custom thumbnail'
-                            mimeTypes={thumbnailMimeTypes}
-                            placeholderRef={thumbnailDragHandler.setRef}
-                            progress={customThumbnailUploader.progress}
-                            size='xsmall'
-                            src={customThumbnail}
-                            onFileChange={onCustomThumbnailChange}
-                            onRemoveMedia={onRemoveCustomThumbnail}
-                        />
+                    <SettingsPanel
+                        defaultTab={showVisibilitySettings ? 'visibility' : 'design'}
+                        tabs={visibilitySettings ? [{id: 'design', label: 'Design'}, {id: 'visibility', label: 'Visibility'}] : undefined}
+                    >
+                        {visibilitySettings ? {design: designSettings, visibility: visibilitySettings} : designSettings}
                     </SettingsPanel>
                 )
             }
@@ -213,6 +224,8 @@ PopulatedVideoCard.propTypes = {
     isEditing: PropTypes.bool,
     thumbnailMimeTypes: PropTypes.array,
     thumbnailDragHandler: PropTypes.object,
+    visibilitySettings: PropTypes.node,
+    showVisibilitySettings: PropTypes.bool,
     onPickCustomThumbnail: PropTypes.func
 };
 
