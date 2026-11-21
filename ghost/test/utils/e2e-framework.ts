@@ -19,6 +19,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import * as crypto from 'node:crypto';
 import assert from 'node:assert/strict';
+import { z } from 'zod';
 // @ts-expect-error This module lacks type definitions.
 import fixtureUtils from './fixture-utils';
 import { cacheRules } from './fixtures/cache-rules';
@@ -631,7 +632,18 @@ export const matchers = {
   stringMatching,
 };
 
+/**
+ * Assert that the response body matches a response contract
+ */
+function bodyMatchesSchema(schema: z.ZodType) {
+  return ({ body }: { body: unknown }) => {
+    const result = schema.safeParse(body);
+    assert.ok(result.success, result.error && z.prettifyError(result.error));
+  };
+}
+
 export const assertions = {
+  bodyMatchesSchema,
   cacheInvalidateHeaderNotSet,
   cacheInvalidateHeaderSetToWildcard,
 };
