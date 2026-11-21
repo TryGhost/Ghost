@@ -17,8 +17,11 @@ import { z } from 'zod';
 
 /**
  * Member views read and written through the `shared_views` setting, which stores them in the
- * same array as the posts views. The stored shape stays in this module; the rest of Admin works
- * with `MemberView`.
+ * same array as the posts views.
+ *
+ * Admin can be deployed ahead of Ghost, so a server from before the segments API still needs
+ * member views to work through this setting. Delete this module, and the `settings` source in
+ * `use-member-views.ts` that selects it, once every server Admin supports has the segments API.
  */
 
 // The filter record may hold other nullable keys beside the required, non-empty `filter`.
@@ -133,8 +136,11 @@ function getSharedViewsJSON(settingsData: SettingsResponseType | undefined): str
   return getSettingValue<string>(settingsData?.settings ?? null, 'shared_views') ?? '[]';
 }
 
-/** The member views in the cached settings. An unreadable setting is reported once per value. */
-export function useMemberViewsFromSettings(): MemberView[] {
+/**
+ * The member views in the cached settings. An unreadable setting is reported once per value, and
+ * only while `reportInvalid` is true.
+ */
+export function useMemberViewsFromSettings(reportInvalid: boolean): MemberView[] {
   const { data: settingsData } = useBrowseSettings();
   const handleError = useHandleError();
   const sharedViewsJson = getSharedViewsJSON(settingsData);
@@ -145,13 +151,17 @@ export function useMemberViewsFromSettings(): MemberView[] {
   }, [sharedViewsJson]);
 
   useEffect(() => {
-    if (parsedMemberViews.ok || lastReportedInvalidPayload.current === sharedViewsJson) {
+    if (
+      !reportInvalid ||
+      parsedMemberViews.ok ||
+      lastReportedInvalidPayload.current === sharedViewsJson
+    ) {
       return;
     }
 
     lastReportedInvalidPayload.current = sharedViewsJson;
     handleError(parsedMemberViews.error, { withToast: false });
-  }, [handleError, parsedMemberViews, sharedViewsJson]);
+  }, [handleError, parsedMemberViews, reportInvalid, sharedViewsJson]);
 
   return useMemo(() => {
     if (!parsedMemberViews.ok) {
