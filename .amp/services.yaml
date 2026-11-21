@@ -22,4 +22,4 @@ services:
     port: 2370
     portal:
       title: Ghost development
-      description: Full source environment with Admin HMR, backend reloads, MySQL, Redis, and Mailpit.
+      description: Full source environment with Admin HMR, backend reloads, MySQL, Redis, and Mailpit, or Mailgun when MAILGUN_API_KEY and MAILGUN_DOMAIN are set.

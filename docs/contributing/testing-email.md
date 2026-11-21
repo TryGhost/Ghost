@@ -14,7 +14,8 @@ development environment connects Ghost to Mailpit automatically.
 
 Use Mailpit for ordinary local work. It is quick, keeps test messages on your
 machine, and does not require provider credentials. It does not exercise the
-Mailgun API used for newsletters and other bulk email.
+Mailgun API used for newsletters and other bulk email. If Mailgun credentials
+are set, Ghost uses Mailgun instead; see [Test with Mailgun](#test-with-mailgun).
 
 ## Capture bulk email in Mailpit
 
@@ -56,28 +57,47 @@ development variant at a time.
 
 ## Test with Mailgun
 
-Use the Mailgun development variant when the provider interaction is part of
-the behaviour you need to test. It routes transactional, newsletter, and
-automation email through the Mailgun API:
+Use Mailgun when the provider interaction is part of the behaviour you need to
+test. Add a test Mailgun domain and API key to `.env` (copy
+[`.env.example`](../../.env.example)), or export them in your shell:
 
 ```bash
-pnpm dev:mailgun
+export MAILGUN_API_KEY=...
+export MAILGUN_DOMAIN=sandbox123.mailgun.org
 ```
 
-Copy [`.env.example`](../../.env.example) to `.env` and provide a test Mailgun
-domain and API key. The example also documents the optional sender and the
-different API URLs required by EU domains. Never commit `.env` or provider
-credentials.
+With both set, `pnpm dev`, `pnpm dev:up` and the other host development
+variants send transactional, newsletter, and automation email through the
+Mailgun API instead of Mailpit. On startup they print
+`Email: all email is sent through Mailgun`; `pnpm dev:up` writes it to the log
+file it names. Without credentials, those variants capture transactional email
+in Mailpit and cannot send newsletters, as described above.
+`pnpm dev:mailgun` always selects Mailgun, and
+`pnpm dev:fake-mailgun` keeps using the fake Mailgun server even when
+credentials are set. To use Mailpit for one run while credentials are set,
+clear the key:
 
-The development variant supplies Ghost's Mailgun configuration for you. Do not
-add SMTP credentials or Mailgun settings to `config.local.json`.
+```bash
+MAILGUN_API_KEY= pnpm dev
+```
+
+The example `.env` also documents the optional sender (`MAILGUN_FROM`) and the
+API URLs EU domains need: set both `MAILGUN_API_URL`, used for transactional
+email, and `MAILGUN_BASE_URL`, used for bulk email. Never commit `.env` or
+provider credentials.
+
+The development environment supplies Ghost's Mailgun configuration for you. Do
+not add SMTP credentials or Mailgun settings to `config.local.json`. The
+development command chooses Mailgun or Mailpit when it starts, and Ghost's
+automatic reloads keep that choice. After setting or clearing the credentials,
+stop and rerun `pnpm dev`, or run `pnpm dev:down` and then `pnpm dev:up`.
 
 If you use a Mailgun sandbox domain, add and verify each intended recipient in
 Mailgun before testing delivery.
 
 This sends real email through an external service. Use test addresses and the
-smallest useful recipient list. Return to `pnpm dev` when provider behaviour is
-not under test.
+smallest useful recipient list. Remove the credentials when provider behaviour
+is not under test.
 
 ## Automated tests
 
