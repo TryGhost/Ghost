@@ -160,7 +160,7 @@ export const CallToActionNodeComponent = ({
     React.useEffect(() => {
         htmlEditor.setEditable(isEditing);
     }, [isEditing, htmlEditor]);
-    useEditModeAfterReadOnly(isEditing, htmlEditor);
+    useEditModeAfterReadOnly(isEditing, htmlEditor, sponsorLabelHtmlEditor);
 
     return (
         <>

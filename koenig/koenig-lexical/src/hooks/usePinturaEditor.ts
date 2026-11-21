@@ -1,5 +1,7 @@
 import trackEvent from '../utils/analytics';
+import {isDocumentEditable} from './useIsDocumentEditable';
 import {useCallback, useEffect, useRef, useState} from 'react';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export default function usePinturaEditor({
     config, disabled = false
@@ -7,6 +9,7 @@ export default function usePinturaEditor({
     const [scriptLoaded, setScriptLoaded] = useState(false);
     const [cssLoaded, setCssLoaded] = useState(false);
     const allowClose = useRef(false);
+    const [lexicalEditor] = useLexicalComposerContext();
 
     const isEnabled = !disabled && scriptLoaded && cssLoaded;
 
@@ -138,12 +141,17 @@ export default function usePinturaEditor({
             });
 
             editor.on('process', (result) => {
+                // the image editor is its own window, and can outlast an editable document
+                if (!isDocumentEditable(lexicalEditor)) {
+                    return;
+                }
+
                 // save edited image
                 handleSave(result.dest);
                 trackEvent('Image Edit Saved', {location: 'editor'});
             });
         }
-    }, [isEnabled]);
+    }, [isEnabled, lexicalEditor]);
 
     useEffect(() => {
         const handleCloseClick = (event) => {

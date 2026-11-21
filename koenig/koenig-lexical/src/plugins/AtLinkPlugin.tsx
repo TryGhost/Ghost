@@ -29,8 +29,8 @@ import {
 } from 'lexical';
 import {$insertFirst, mergeRegister} from '@lexical/utils';
 import {AtLinkResultsPopup} from '../components/ui/AtLinkResultsPopup';
+import {isDocumentEditable, useIsDocumentEditable} from '../hooks/useIsDocumentEditable';
 import {isInternalUrl} from '../utils/isInternalUrl';
-import {useIsDocumentEditable} from '../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useSearchLinks} from '../hooks/useSearchLinks';
 
@@ -194,6 +194,11 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
         return editor.registerUpdateListener(() => {
             // do nothing if we're in the middle of composing text
             if (editor.isComposing()) {
+                return;
+            }
+
+            // a selection change is an update too, and a read-only document keeps its unfinished search
+            if (!isDocumentEditable(editor)) {
                 return;
             }
 

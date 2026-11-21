@@ -26,6 +26,10 @@ const paragraph = (...children) => ({children: children.map(child => (typeof chi
 const withContent = children => `/#/?content=${encodeURIComponent(JSON.stringify({root: {children, direction: null, format: '', indent: 0, type: 'root', version: 1}}))}`;
 const SVG = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><rect width="600" height="400" fill="teal"/></svg>';
 const PNG = `http://localhost:${E2E_PORT}/Koenig-editor-1.png`;
+const imageCard = (fields = {}) => ({type: 'image', version: 1, src: PNG, width: 600, height: 300, title: '', alt: '', caption: '', cardWidth: 'regular', href: '', ...fields});
+const signupCard = {type: 'signup', version: 1, alignment: 'left', backgroundColor: 'accent', backgroundImageSrc: SVG, buttonColor: '#ffffff', buttonText: '', buttonTextColor: '#000000', disclaimer: '<span>Disclaimer</span>', header: '<span>Header</span>', labels: [], layout: 'split', subheader: '<span>Subheader</span>', textColor: '#FFFFFF', swaped: false};
+const headerCard = {type: 'header', version: 2, size: 'small', style: 'dark', buttonEnabled: false, buttonUrl: '', buttonText: '', header: '<span>Header</span>', subheader: '<span>Sub</span>', backgroundImageSrc: SVG, alignment: 'center', backgroundColor: '#000000', backgroundSize: 'cover', textColor: '#FFFFFF', buttonColor: '#ffffff', buttonTextColor: '#000000', layout: 'split', swapped: false};
+const callToActionCard = {type: 'call-to-action', version: 1, backgroundColor: 'green', buttonColor: '#F0F0F0', buttonText: 'Get access now', buttonTextColor: '#000000', buttonUrl: 'http://someblog.com/somepost', hasImage: false, hasSponsorLabel: true, sponsorLabel: '<p><span style="white-space: pre-wrap;">SPONSORED</span></p>', imageUrl: '', layout: 'minimal', showButton: true, showDividers: true, textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>'};
 
 // a press and release where the pointer is, which is what reaches a control the
 // page says takes no pointer input
@@ -40,7 +44,7 @@ async function pressAt(page, locator) {
 function calloutText(page) {
     return page.evaluate(() => {
         const callout = window.lexicalEditor.getEditorState().toJSON().root.children.find(child => child.type === 'callout');
-        return callout.calloutText.replace(/<[^>]+>/g, '');
+        return new DOMParser().parseFromString(callout.calloutText, 'text/html').body.textContent;
     });
 }
 
@@ -319,13 +323,42 @@ test.describe('Read-only and back', () => {
         await expect(card.locator('[data-lexical-editor]')).toHaveAttribute('contenteditable', 'false');
     });
 
-    test('shows a card’s toolbar again after the editor went read-only in the middle of a drag', async ({page}) => {
-        await initialize({page, uri: withContent([{type: 'image', version: 1, src: PNG, width: 600, height: 300, title: '', alt: '', caption: '', cardWidth: 'regular', href: ''}, {type: 'horizontalrule', version: 1}, paragraph('This is some text')])});
+    test('leaves both nested editors of a closed call to action card closed once editable again', async ({page}) => {
+        await initialize({page, uri: withContent([callToActionCard, paragraph('After')])});
+        const card = page.locator('[data-kg-card="call-to-action"]');
+        await expect(card.locator('[data-lexical-editor]')).toHaveCount(2);
+        await expect(card.locator('[data-lexical-editor][contenteditable="true"]')).toHaveCount(0);
+
+        await setEditableAndRender(page, false);
+        await setEditableAndRender(page, true);
+        await page.waitForTimeout(300);
+
+        await expect(card.locator('[data-lexical-editor][contenteditable="true"]')).toHaveCount(0);
+    });
+
+    test('does not bring a card’s snippet name field back once editable again', async ({page}) => {
+        await initialize({page, uri: withContent([imageCard(), paragraph('After')])});
+        await page.locator('[data-kg-card="image"] img').click();
+        await page.getByTestId('create-snippet').click();
+        await expect(page.getByTestId('snippet-name')).toBeVisible();
+
+        await setEditableAndRender(page, false);
+        await setEditableAndRender(page, true);
+        await page.waitForTimeout(300);
+
+        await expect(page.getByTestId('snippet-name')).toHaveCount(0);
+    });
+
+    test('drops nothing, and shows a card’s toolbar again, after going read-only in the middle of a drag', async ({page}) => {
+        await initialize({page, uri: withContent([imageCard(), {type: 'horizontalrule', version: 1}, paragraph('This is some text')])});
         const card = page.locator('[data-kg-card="image"]');
         await expect(card.locator('img')).toBeVisible();
+        const before = await documentJson(page);
         await dragMouse(page, await card.boundingBox(), await page.locator('p:not(figure p)').boundingBox(), 'start', 'start', false, 100, 100);
         await setEditableAndRender(page, false);
         await page.mouse.up();
+        await page.waitForTimeout(300);
+        expect(await documentJson(page)).toBe(before);
         await setEditableAndRender(page, true);
 
         await page.locator('p:not(figure p)').click();
@@ -362,25 +395,25 @@ test.describe('Read-only document', () => {
         await initialize({page, uri: withContent([paragraph('Para one')])});
         await setEditableAndRender(page, false);
         const before = await documentJson(page);
-        const dataTransfer = await page.evaluateHandle(() => {
-            const data = new DataTransfer();
-            data.setData('text/html', '<p>DROPPED</p>');
-            return data;
-        });
 
-        await page.dispatchEvent('[data-lexical-editor] > p', 'drop', {dataTransfer});
+        const refused = await page.evaluate(() => {
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', '<p>DROPPED</p>');
+            const drop = new DragEvent('drop', {dataTransfer, bubbles: true, cancelable: true});
+            document.querySelector('[data-lexical-editor] > p').dispatchEvent(drop);
+            return drop.defaultPrevented;
+        });
         await page.waitForTimeout(300);
 
         expect(await documentJson(page)).toBe(before);
+        // or the browser would open what was dropped
+        expect(refused).toBe(true);
     });
 
     // these buttons ask for pointer input themselves, over what their card says
     for (const [cardName, testId, changed] of [['signup', 'media-upload-remove', 'backgroundImageSrc'], ['header', 'media-upload-size', 'backgroundSize']]) {
         test(`is not changed by the image button of a ${cardName} card`, async ({page}) => {
-            const node = cardName === 'signup'
-                ? {type: 'signup', version: 1, alignment: 'left', backgroundColor: 'accent', backgroundImageSrc: SVG, buttonColor: '#ffffff', buttonText: '', buttonTextColor: '#000000', disclaimer: '<span>Disclaimer</span>', header: '<span>Header</span>', labels: [], layout: 'split', subheader: '<span>Subheader</span>', textColor: '#FFFFFF', swaped: false}
-                : {type: 'header', version: 2, size: 'small', style: 'dark', buttonEnabled: false, buttonUrl: '', buttonText: '', header: '<span>Header</span>', subheader: '<span>Sub</span>', backgroundImageSrc: SVG, alignment: 'center', backgroundColor: '#000000', backgroundSize: 'cover', textColor: '#FFFFFF', buttonColor: '#ffffff', buttonTextColor: '#000000', layout: 'split', swapped: false};
-            await initialize({page, uri: withContent([node, paragraph('After')])});
+            await initialize({page, uri: withContent([cardName === 'signup' ? signupCard : headerCard, paragraph('After')])});
             await setEditableAndRender(page, false);
             const card = page.locator(`[data-kg-card="${cardName}"]`);
             await expect(card).toHaveCSS('pointer-events', 'none');
@@ -427,8 +460,8 @@ test.describe('Read-only document', () => {
         await focusEditor(page);
         await page.keyboard.type('Hi :smil');
         await expect(page.getByTestId('emoji-menu')).toBeVisible();
-        await setEditableAndRender(page, false);
         const before = await documentJson(page);
+        await setEditableAndRender(page, false);
 
         await expect(page.getByTestId('emoji-menu')).toHaveCount(0);
         expect(await documentJson(page)).toBe(before);
@@ -439,11 +472,16 @@ test.describe('Read-only document', () => {
         await focusEditor(page);
         await page.keyboard.type('@');
         await expect(page.getByTestId('at-link-popup').locator('li[role="option"]').first()).toBeVisible();
+        const before = await documentJson(page);
         await setEditableAndRender(page, false);
-        const before = await documentTypes(page);
 
         await expect(page.getByTestId('at-link-popup')).toHaveCount(0);
-        expect(await documentTypes(page)).toBe(before);
+        expect(await documentJson(page)).toBe(before);
+
+        // moving the selection away ends a search, which rewrites it as text
+        await page.locator('[data-lexical-editor]').first().locator('> p').first().click();
+        await page.waitForTimeout(300);
+        expect(await documentJson(page)).toBe(before);
     });
 
     test('closes an image selector that was open, and keeps its card', async ({page}) => {
@@ -455,8 +493,8 @@ test.describe('Read-only document', () => {
         await page.click('[data-kg-plus-button]');
         await page.click('button[data-kg-card-menu-item="Unsplash"]');
         await expect(page.locator('[data-kg-modal="unsplash"]')).toBeVisible();
-        await setEditableAndRender(page, false);
         const before = await documentTypes(page);
+        await setEditableAndRender(page, false);
 
         await expect(page.locator('[data-kg-modal="unsplash"]')).toHaveCount(0);
         expect(await documentTypes(page)).toBe(before);
@@ -475,6 +513,70 @@ test.describe('Read-only document', () => {
         const before = await documentJson(page);
 
         await setEditableAndRender(page, false);
+        await page.waitForTimeout(300);
+
+        expect(await documentJson(page)).toBe(before);
+    });
+
+    test('is not changed by dragging a card', async ({page}) => {
+        await initialize({page, uri: withContent([imageCard(), {type: 'horizontalrule', version: 1}, paragraph('This is some text')])});
+        const card = page.locator('[data-kg-card="image"]');
+        await expect(card.locator('img')).toBeVisible();
+        await setEditableAndRender(page, false);
+        const before = await documentJson(page);
+
+        await dragMouse(page, await card.boundingBox(), await page.locator('p:not(figure p)').boundingBox(), 'start', 'start', true, 100, 100);
+        await page.waitForTimeout(300);
+
+        expect(await documentJson(page)).toBe(before);
+    });
+
+    // placing the cursor is an update too, and these shortcuts rewrite the text it lands in
+    test('is not changed by a click in text that reads as a shortcut', async ({page}) => {
+        await initialize({page, uri: withContent([paragraph('alpha -- beta'), paragraph('gamma---delta'), paragraph('---'), paragraph('==='), paragraph('Last')])});
+        await setEditableAndRender(page, false);
+        const before = await documentJson(page);
+        expect(await documentTypes(page)).toBe('paragraph,paragraph,paragraph,paragraph,paragraph');
+
+        for (const index of [0, 1, 2, 3]) {
+            await page.locator('[data-lexical-editor]').first().locator('> *').nth(index).click();
+            await page.waitForTimeout(200);
+        }
+
+        expect(await documentJson(page)).toBe(before);
+    });
+
+    for (const [cardName, menuItem] of [['bookmark', 'Bookmark'], ['embed', 'Other...']]) {
+        test(`is not changed by Enter in the URL field of a ${cardName} card`, async ({page}) => {
+            await initialize({page});
+            await focusEditor(page);
+            await page.keyboard.type('Para');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type(`/${cardName}`);
+            await expect(page.locator(`[data-kg-card-menu-item="${menuItem}"][data-kg-cardmenu-selected="true"]`)).toBeVisible();
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('https://ghost.org/');
+            await expect(page.getByTestId(`${cardName}-url`)).toHaveValue('https://ghost.org/');
+            const before = await documentJson(page);
+            await setEditableAndRender(page, false);
+
+            await page.keyboard.press('Enter');
+            await page.waitForTimeout(1500);
+
+            expect(await documentJson(page)).toBe(before);
+        });
+    }
+
+    test('is not changed by a key on a card button that already had focus', async ({page}) => {
+        await initialize({page, uri: withContent([headerCard, paragraph('After')])});
+        const button = page.locator('[data-kg-card="header"]').getByTestId('media-upload-size');
+        await button.focus();
+        await expect(button).toBeFocused();
+        await setEditableAndRender(page, false);
+        const before = await documentJson(page);
+
+        await page.keyboard.press('Enter');
+        await page.keyboard.press('Space');
         await page.waitForTimeout(300);
 
         expect(await documentJson(page)).toBe(before);

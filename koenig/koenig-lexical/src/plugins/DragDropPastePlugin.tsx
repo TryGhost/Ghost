@@ -115,8 +115,10 @@ function DragDropPastePlugin() {
         };
 
         const handleDrop = (event) => {
-            // a listener of our own, so not behind the flag as Lexical's events are
+            // a listener of our own, so not behind the flag as Lexical's events are.
+            // Refused rather than left to the browser, which would open a dropped link or file
             if (!isDocumentEditable(editor)) {
+                event.preventDefault();
                 return;
             }
 

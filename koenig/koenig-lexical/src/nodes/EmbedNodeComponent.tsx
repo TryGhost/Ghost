@@ -36,7 +36,7 @@ export function EmbedNodeComponent({nodeKey, url, html, createdWithUrl, embedTyp
     };
 
     const handleUrlSubmit = async (event) => {
-        if (event.key === 'Enter') {
+        if (event.key === 'Enter' && isDocumentEditable(editor)) {
             fetchMetadata(event.target.value);
         }
     };

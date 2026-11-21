@@ -6,8 +6,8 @@ import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {CardWrapper} from './ui/CardWrapper';
 import {EDIT_CARD_COMMAND, SELECT_CARD_COMMAND, SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {VISIBILITY_SETTINGS} from '../utils/visibility';
+import {isDocumentEditable, useIsDocumentEditable} from '../hooks/useIsDocumentEditable';
 import {mergeRegister} from '@lexical/utils';
-import {useIsDocumentEditable} from '../hooks/useIsDocumentEditable';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import type {CardWidth} from '@tryghost/kg-default-nodes';
@@ -42,6 +42,20 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     const refuseFocus = React.useCallback((event) => {
         event.target.blur?.();
     }, []);
+
+    // a control that had focus keeps it, so its keys and the clicks they make are refused, rendered
+    // or not yet. Shortcuts and Tab stay with the browser: text can be copied, focus can leave
+    const refuseInput = React.useCallback((event) => {
+        if (isDocumentEditable(editor) || !event.currentTarget.contains(event.target)) {
+            return;
+        }
+
+        event.stopPropagation();
+
+        if (event.type === 'click' || !(event.ctrlKey || event.metaKey || event.key === 'Tab')) {
+            event.preventDefault();
+        }
+    }, [editor]);
 
     const handleVisibilityToggle = React.useCallback((event) => {
         event.preventDefault();
@@ -189,8 +203,11 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                 isSelected={isSelected}
                 isVisibilityActive={isVisibilityActive}
                 wrapperStyle={wrapperStyle}
+                onClickCapture={refuseInput}
                 onFocusCapture={isReadOnly ? refuseFocus : undefined}
                 onIndicatorClick={handleVisibilityToggle}
+                onKeyDownCapture={refuseInput}
+                onKeyUpCapture={refuseInput}
             >
                 {children}
             </CardWrapper>

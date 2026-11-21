@@ -32,7 +32,8 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
     };
 
     const handleUrlSubmit = async (eventOrUrl, type) => {
-        if (!eventOrUrl) {
+        // reached from a window-level key listener too, when a result is picked from the search list
+        if (!eventOrUrl || !isDocumentEditable(editor)) {
             return;
         }
 
