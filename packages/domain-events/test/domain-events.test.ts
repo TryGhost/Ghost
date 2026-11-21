@@ -1,13 +1,18 @@
-const DomainEvents = require('../');
-const assert = require('assert/strict');
-const sinon = require('sinon');
-const logging = require('@tryghost/logging');
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import logging from '@tryghost/logging';
+import sinon from 'sinon';
+import { afterEach, describe, it, vi } from 'vitest';
+import DomainEvents, { DomainEvents as namedDomainEvents } from '../src/index.ts';
+import type { IEvent } from '../src/index.ts';
 
-class TestEvent {
-  /**
-   * @param {string} message
-   */
-  constructor(message) {
+const require = createRequire(import.meta.url);
+
+class TestEvent implements IEvent<{ message: string }> {
+  timestamp: Date;
+  data: { message: string };
+
+  constructor(message: string) {
     this.timestamp = new Date();
     this.data = {
       message,
@@ -15,8 +20,8 @@ class TestEvent {
   }
 }
 
-const sleep = (ms) =>
-  new Promise((resolve) => {
+const sleep = (ms: number) =>
+  new Promise<void>((resolve) => {
     setTimeout(resolve, ms);
   });
 
@@ -25,26 +30,20 @@ describe('DomainEvents', function () {
     sinon.restore();
     DomainEvents.ee.removeAllListeners();
     DomainEvents.resetTrackingStateForTest();
-    DomainEvents.setTrackingEnabledForTest(process.env.NODE_ENV?.startsWith('test'));
+    DomainEvents.setTrackingEnabledForTest(process.env.NODE_ENV?.startsWith('test') ?? false);
   });
 
   it('Will call multiple subscribers with the event when it is dispatched', async function () {
     const event = new TestEvent('Hello, world!');
 
-    const events = [];
+    const events: TestEvent[] = [];
 
-    /**
-     * @param {TestEvent} receivedEvent
-     */
-    function handler1(receivedEvent) {
+    function handler1(receivedEvent: TestEvent) {
       // Do not add assertions here, they are caught by DomainEvents
       events.push(receivedEvent);
     }
 
-    /**
-     * @param {TestEvent} receivedEvent
-     */
-    function handler2(receivedEvent) {
+    function handler2(receivedEvent: TestEvent) {
       // Do not add assertions here, they are caught by DomainEvents
       events.push(receivedEvent);
     }
@@ -65,9 +64,6 @@ describe('DomainEvents', function () {
 
     const stub = sinon.stub(logging, 'error').returns();
 
-    /**
-     * @param {TestEvent} receivedEvent
-     */
     async function handler1() {
       await sleep(10);
       throw new Error('Test error');
@@ -121,19 +117,14 @@ describe('DomainEvents', function () {
     });
 
     it('waits for every tracked listener before resolving', async function () {
-      let resolveFirst;
-      let resolveSecond;
+      const resolvers: Array<() => void> = [];
+      const pending = () =>
+        new Promise<void>((resolve) => {
+          resolvers.push(resolve);
+        });
 
-      DomainEvents.subscribe(TestEvent, () => {
-        return new Promise((resolve) => {
-          resolveFirst = resolve;
-        });
-      });
-      DomainEvents.subscribe(TestEvent, () => {
-        return new Promise((resolve) => {
-          resolveSecond = resolve;
-        });
-      });
+      DomainEvents.subscribe(TestEvent, pending);
+      DomainEvents.subscribe(TestEvent, pending);
 
       DomainEvents.dispatch(new TestEvent('Hello, world!'));
 
@@ -145,6 +136,10 @@ describe('DomainEvents', function () {
       await sleep(0);
       assert.equal(settled, false);
 
+      const [resolveFirst, resolveSecond] = resolvers;
+      assert.ok(resolveFirst);
+      assert.ok(resolveSecond);
+
       resolveFirst();
       await sleep(0);
       assert.equal(settled, false);
@@ -152,6 +147,27 @@ describe('DomainEvents', function () {
       resolveSecond();
       await allSettled;
       assert.equal(settled, true);
+    });
+  });
+
+  describe('module contract', function () {
+    it('exports the event bus as the default and as a named export', function () {
+      assert.equal(namedDomainEvents, DomainEvents);
+      assert.equal(typeof DomainEvents.subscribe, 'function');
+      assert.equal(typeof DomainEvents.dispatch, 'function');
+    });
+
+    it('gives CommonJS consumers the event bus itself from the compiled package', function () {
+      const compiledDomainEvents: unknown = require('@tryghost/domain-events');
+
+      assert.equal(compiledDomainEvents, DomainEvents);
+    });
+
+    it('hands out the same event bus when the module is loaded again', async function () {
+      vi.resetModules();
+      const reloaded = await import('../src/index.ts');
+
+      assert.equal(reloaded.default, DomainEvents);
     });
   });
 });

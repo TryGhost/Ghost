@@ -1,16 +1,14 @@
 import { nodeLibConfig } from '@internal/cfg-eslint';
 
-// The imported files keep their PascalCase names (src/DomainEvents.js and its
-// test) because Ghost deep-imports `@tryghost/domain-events/lib/DomainEvents`.
-// Renaming belongs to the modernization follow-up, so the filename rule is off
-// until then.
-const legacyFilenames = { 'ghost/filenames/match-regex': 'off' };
-
 export default nodeLibConfig({
-  typescript: false,
-  commonjs: true,
-  srcGlobs: ['index.js', 'src/**/*.js'],
-  testGlobs: ['test/**/*.js'],
-  extraSrcRules: legacyFilenames,
-  extraTestRules: legacyFilenames,
+  extraBlocks: [
+    {
+      // The entry point declares the event bus and its type under one name,
+      // which is what lets `DomainEvents` be used as a value and as a type.
+      // ESLint reads that as a redeclaration. TypeScript still rejects real
+      // ones, so the rule is off for this one file only.
+      files: ['src/index.ts'],
+      rules: { 'no-redeclare': 'off' },
+    },
+  ],
 });
