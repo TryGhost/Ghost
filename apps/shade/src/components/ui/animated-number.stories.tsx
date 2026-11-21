@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
+import { Stack } from '@/components/primitives';
 import { Button } from './button';
 import { AnimatedNumber } from './animated-number';
 
@@ -139,5 +140,34 @@ export const CompactNotation: Story = {
     };
 
     return <CompactExample />;
+  },
+};
+
+export const InHeading: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Screen readers read the whole number, not its digits one by one: this heading is read as "Comments 12".',
+      },
+    },
+  },
+  render: () => {
+    const HeadingExample = () => {
+      const [count, setCount] = useState(12);
+
+      return (
+        <Stack align="start">
+          <h1 className="text-2xl font-semibold">
+            Comments <AnimatedNumber className="text-muted-foreground" value={count} />
+          </h1>
+          <Button size="sm" onClick={() => setCount(count + 1)}>
+            +1
+          </Button>
+        </Stack>
+      );
+    };
+
+    return <HeadingExample />;
   },
 };
