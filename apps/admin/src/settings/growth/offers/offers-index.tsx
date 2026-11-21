@@ -16,6 +16,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  RowPrimaryAction,
 } from '@tryghost/shade/components';
 import { Inline, Stack } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
@@ -106,17 +107,19 @@ const RetentionOfferRow: React.FC<{
 
   return (
     <TableRow data-testid="retention-offer-item">
-      <TableCell className="sticky left-0 z-10 bg-background p-0">
-        <button
-          className="block w-full cursor-pointer p-5 text-left"
-          type="button"
-          onClick={onClick}
-        >
-          <Stack gap="none">
-            <span className="font-semibold">{offer.name}</span>
-            <span className="text-muted-foreground">{offer.description}</span>
-          </Stack>
-        </button>
+      <TableCell className="sticky left-0 z-10 bg-background p-0" data-row-pinned>
+        <RowPrimaryAction asChild>
+          <button
+            className="block w-full cursor-pointer py-5 pr-5 pl-0 text-left"
+            type="button"
+            onClick={onClick}
+          >
+            <Stack gap="none">
+              <span className="font-semibold">{offer.name}</span>
+              <span className="text-muted-foreground">{offer.description}</span>
+            </Stack>
+          </button>
+        </RowPrimaryAction>
       </TableCell>
       <TableCell className="p-0 whitespace-nowrap">
         <button
@@ -165,7 +168,7 @@ const RetentionOfferRow: React.FC<{
       </TableCell>
       <TableCell className="p-0 whitespace-nowrap">
         <button
-          className="block w-full cursor-pointer p-5 text-left"
+          className="block w-full cursor-pointer py-5 pr-0 pl-5 text-left"
           type="button"
           onClick={onClick}
         >
@@ -200,19 +203,21 @@ const SignupOfferRow: React.FC<{
 
   return (
     <TableRow className={archived ? 'opacity-60' : undefined} data-testid="offer-item">
-      <TableCell className="sticky left-0 z-10 bg-background p-0">
-        <button
-          className="block w-full cursor-pointer p-5 text-left"
-          type="button"
-          onClick={onClick}
-        >
-          <Stack gap="none">
-            <span className="font-semibold">{offer.name}</span>
-            <span className="text-muted-foreground">
-              {tier.name} {getOfferCadence(offer.cadence)}
-            </span>
-          </Stack>
-        </button>
+      <TableCell className="sticky left-0 z-10 bg-background p-0" data-row-pinned>
+        <RowPrimaryAction asChild>
+          <button
+            className="block w-full cursor-pointer py-5 pr-5 pl-0 text-left"
+            type="button"
+            onClick={onClick}
+          >
+            <Stack gap="none">
+              <span className="font-semibold">{offer.name}</span>
+              <span className="text-muted-foreground">
+                {tier.name} {getOfferCadence(offer.cadence)}
+              </span>
+            </Stack>
+          </button>
+        </RowPrimaryAction>
       </TableCell>
       <TableCell className="p-0 whitespace-nowrap">
         <button
@@ -262,7 +267,7 @@ const SignupOfferRow: React.FC<{
       </TableCell>
       <TableCell className="p-0 whitespace-nowrap">
         <button
-          className="block w-full cursor-pointer p-5 text-left"
+          className="block w-full cursor-pointer py-5 pr-0 pl-5 text-left"
           type="button"
           onClick={onClick}
         >
@@ -437,7 +442,7 @@ export const OffersIndexModal: React.FC = () => {
   );
 
   const listLayoutOutput = (
-    <div className="overflow-x-auto">
+    <div className="-mx-4 overflow-x-auto px-4">
       <Table className="m-0 min-w-[900px]">
         <colgroup>
           <col className="w-[25%]" />

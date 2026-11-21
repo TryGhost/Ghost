@@ -133,7 +133,7 @@ Adding a new screen:
 
 Reach for it when the behaviour under test is a component's own — a modal's steps, a hook's loading boundary — and going through the app would only add route setup. A component spec **must not boot the app or depend on a route**: no `renderAdminApp`, no URL assertions, no navigation between screens. Behaviour that needs the shell, a route, or a second screen is an acceptance spec.
 
-Specs never build their own QueryClient or framework props. The stack comes from the harness, so the caching and retry behaviour under test is the app's own. Boot overrides and labs flags have no seam in this tier; a component that needs one belongs in an acceptance spec.
+Specs never build their own QueryClient or framework props. The stack comes from the harness, so the caching and retry behaviour under test is the app's own. Pass Labs flags through `renderInApp(subject, {labs: {admin7Design: false}})` when a component needs a particular presentation. Without an override, Shade keeps its standalone defaults. Row contract tests cover both presentations. Test Admin's routing and Labs wiring through `renderAdminApp` with an explicit `labs` override.
 
 ## Running
 

@@ -25,6 +25,8 @@ instead. Fetch web pages with `curl -s`.
    [Spacing scale](https://shade.ghost.org/docs/primitives-guide.md#spacing-scale).
 4. Reserve `className` for what
    [the props don't cover](https://shade.ghost.org/docs/primitives-guide.md#classname).
+5. When laying out content lists or table rows, follow
+   [Lists and tables](https://shade.ghost.org/docs/list-rows.md).
 
 ## Self-check
 

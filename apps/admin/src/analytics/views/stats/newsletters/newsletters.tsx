@@ -23,6 +23,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  RowPrimaryAction,
 } from '@tryghost/shade/components';
 import {
   LucideIcon,
@@ -124,16 +125,18 @@ const NewsletterTableRows: React.FC<{
             <TableCell className="font-medium">
               <div className="group/link inline-flex items-center gap-2">
                 {post.post_id ? (
-                  <Button
-                    className="h-auto p-0 text-left whitespace-normal hover:underline!"
-                    title="View post analytics"
-                    variant="link"
-                    onClick={() => {
-                      navigate(`/posts/analytics/${post.post_id}/`);
-                    }}
-                  >
-                    {post.post_title}
-                  </Button>
+                  <RowPrimaryAction asChild>
+                    <Button
+                      className="h-auto p-0 text-left whitespace-normal hover:underline!"
+                      title="View post analytics"
+                      variant="link"
+                      onClick={() => {
+                        navigate(`/posts/analytics/${post.post_id}/`);
+                      }}
+                    >
+                      {post.post_title}
+                    </Button>
+                  </RowPrimaryAction>
                 ) : (
                   <>{post.post_title}</>
                 )}
