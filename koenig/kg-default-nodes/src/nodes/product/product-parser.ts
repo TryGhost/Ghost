@@ -49,7 +49,7 @@ export function parseProductNode(ProductNode: new (data: Record<string, unknown>
                             payload.productStarRating = stars;
                         }
 
-                        const button = domNode.querySelector('a');
+                        const button = domNode.querySelector<HTMLAnchorElement>('a.kg-product-card-button');
 
                         if (button) {
                             const buttonUrl = button.getAttribute('href');

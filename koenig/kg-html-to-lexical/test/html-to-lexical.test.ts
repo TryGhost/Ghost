@@ -1,4 +1,8 @@
 import assert from 'assert/strict';
+import { createHeadlessEditor } from '@lexical/headless';
+import { $createProductNode, $isProductNode, ProductNode } from '@tryghost/kg-default-nodes';
+import { JSDOM } from 'jsdom';
+import { $getRoot } from 'lexical';
 import * as converter from '../src/index.js';
 import type { SerializedEditorState, SerializedElementNode } from 'lexical';
 
@@ -660,6 +664,84 @@ describe('HTMLtoLexical', function () {
   });
 
   describe('HTML from Lexical cards', function () {
+    for (const { name, description, buttonEnabled } of [
+      {
+        name: 'linked description and button',
+        description: '<p>Read <a href="/guide">the guide</a> for <strong>details</strong></p>',
+        buttonEnabled: true,
+      },
+      {
+        name: 'linked description and no button',
+        description: '<p>Read <a href="/guide">the guide</a> for <strong>details</strong></p>',
+        buttonEnabled: false,
+      },
+      {
+        name: 'plain description and button',
+        description: '<p>Read the guide</p>',
+        buttonEnabled: true,
+      },
+      {
+        name: 'plain description and no button',
+        description: '<p>Read the guide</p>',
+        buttonEnabled: false,
+      },
+    ]) {
+      it(`roundtrips a product card with ${name}`, function () {
+        const dom = new JSDOM();
+        try {
+          const editor = createHeadlessEditor({
+            nodes: [ProductNode],
+            onError: (error) => {
+              throw error;
+            },
+          });
+          let rendered = '';
+          editor.update(
+            () => {
+              const node = $createProductNode({
+                productTitle: 'Camera',
+                productDescription: description,
+                productButtonEnabled: buttonEnabled,
+                productButton: buttonEnabled ? 'Buy' : '',
+                productUrl: buttonEnabled ? '/buy' : '',
+              });
+              const { element } = node.exportDOM(editor, { dom });
+              assert.ok(element);
+              rendered = element.outerHTML;
+            },
+            { discrete: true },
+          );
+
+          const lexical = htmlToLexical(rendered, options);
+          assert.equal(lexical.root.children.length, 1);
+          const product = lexical.root.children[0];
+          assert.equal(product.type, 'product');
+          assert.equal(product.productDescription, description);
+          assert.equal(product.productButtonEnabled, buttonEnabled);
+          assert.equal(product.productButton, buttonEnabled ? 'Buy' : '');
+          assert.equal(product.productUrl, buttonEnabled ? '/buy' : '');
+
+          editor.parseEditorState(JSON.stringify(lexical)).read(() => {
+            const imported = $getRoot().getFirstChild();
+            assert.ok($isProductNode(imported));
+            const { element } = imported.exportDOM(editor, { dom });
+            assert.ok(element);
+            rendered = element.outerHTML;
+          });
+          const document = new dom.window.DOMParser().parseFromString(rendered, 'text/html');
+          assert.equal(
+            document.querySelector('.kg-product-card-description')?.innerHTML,
+            description,
+          );
+          const button = document.querySelector('a.kg-product-card-button');
+          assert.equal(button?.getAttribute('href') ?? null, buttonEnabled ? '/buy' : null);
+          assert.equal(button?.textContent ?? null, buttonEnabled ? 'Buy' : null);
+        } finally {
+          dom.window.close();
+        }
+      });
+    }
+
     // note: some cards are not intended to convert from html: markdown and email-only cards
     //  this test is to make sure our parser methods do not intercept the cards they are not intended to handle
     it('can convert a post containing one of each card type', function () {
