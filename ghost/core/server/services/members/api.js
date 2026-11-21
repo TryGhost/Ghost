@@ -86,7 +86,8 @@ function createApiInstance(config) {
           }
           const msg = Object.assign(
             {
-              from: config.getEmailSupportAddress(),
+              from: config.getEmailTransactionalAddress(),
+              replyTo: config.getEmailSupportAddress(),
               subject: 'Signin',
               forceTextContent: true,
             },

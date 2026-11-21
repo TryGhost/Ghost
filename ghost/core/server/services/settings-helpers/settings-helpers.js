@@ -170,6 +170,23 @@ class SettingsHelpers {
     };
   }
 
+  getTransactionalEmailAddress() {
+    const configAddress = this.config.get('mail:transactional_from');
+    const parsed = parseMailbox(configAddress);
+
+    if (parsed) {
+      return formatAddressForDelivery(parsed);
+    }
+
+    if (configAddress) {
+      logging.warn(
+        'Invalid mail.transactional_from config, falling back to mail.from',
+      );
+    }
+
+    return formatAddressForDelivery(this.getDefaultEmail());
+  }
+
   /**
    * @deprecated
    * Please start using the new EmailAddressService
