@@ -33,6 +33,20 @@ const newsletterBasicCache = {
   },
 };
 
+// Moderation can change a filtered set (for example Status=Published) without
+// changing the overall number of comments. Those queries must reflect the
+// refetch Admin triggers after moderation rather than an older host-cache entry.
+const commentsStatsCache = {
+  get(key, getResponse) {
+    return JSON.parse(key).options.filter ? undefined : statsCache.get(key, getResponse);
+  },
+  set(key, response) {
+    if (!JSON.parse(key).options.filter) {
+      return statsCache.set(key, response);
+    }
+  },
+};
+
 /**
  * A comments stats method; its cache key covers exactly the options it accepts
  * @param {string} method
@@ -40,7 +54,7 @@ const newsletterBasicCache = {
  * @param {string[]} [extraOptions]
  */
 function commentsStatsEndpoint(method, serviceMethod, extraOptions = []) {
-  const options = ['date_from', 'date_to', 'timezone', ...extraOptions];
+  const options = ['date_from', 'date_to', 'timezone', 'filter', ...extraOptions];
   return {
     headers: {
       cacheInvalidate: false,
@@ -50,15 +64,21 @@ function commentsStatsEndpoint(method, serviceMethod, extraOptions = []) {
       docName: 'comments',
       method: 'browse',
     },
-    cache: statsCache,
+    cache: commentsStatsCache,
     generateCacheKeyData(frame) {
       return {
         method,
+        filters: true,
         options: Object.fromEntries(options.map((option) => [option, frame.options[option]])),
       };
     },
     async query(frame) {
-      return await statsService.service.api[serviceMethod](frame.options);
+      const result = await statsService.service.api[serviceMethod](frame.options);
+      return {
+        data: result.data ?? [result],
+        // Admin must detect support: older endpoints silently ignore filter.
+        meta: { filters: true },
+      };
     },
   };
 }

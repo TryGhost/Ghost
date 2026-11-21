@@ -1,62 +1,19 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
+import { Box, Stack } from '@tryghost/shade/primitives';
 
-function getScrollParent(element: HTMLElement): HTMLElement {
-  for (let parent = element.parentElement; parent; parent = parent.parentElement) {
-    if (/(auto|scroll)/.test(getComputedStyle(parent).overflowY)) {
-      return parent;
-    }
-  }
-  return document.documentElement;
-}
-
-// A rail taller than the scrollport moves with the page until its bottom (scrolling
-// down) or top (scrolling up) is in view, then sticks, so the page keeps one scrollbar.
-function useStickyRail() {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const rail = ref.current;
-    if (!rail) {
-      return;
-    }
-    const scroller = getScrollParent(rail);
-    const scrollTarget = scroller === document.documentElement ? window : scroller;
-    let top = 0;
-    let lastScroll = scroller.scrollTop;
-
-    const update = () => {
-      const minTop = Math.min(0, scroller.clientHeight - rail.offsetHeight);
-      const scroll = scroller.scrollTop;
-      top = Math.min(0, Math.max(minTop, top - (scroll - lastScroll)));
-      lastScroll = scroll;
-      rail.style.top = `${top}px`;
-    };
-
-    scrollTarget.addEventListener('scroll', update, { passive: true });
-    const observer = new ResizeObserver(update);
-    observer.observe(rail);
-    observer.observe(scroller);
-    update();
-
-    return () => {
-      scrollTarget.removeEventListener('scroll', update);
-      observer.disconnect();
-    };
-  }, []);
-
-  return ref;
-}
-
-const CommentsAnalyticsRail: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const ref = useStickyRail();
-
-  return (
-    <aside className="w-[400px] shrink-0 border-l border-border">
-      <div ref={ref} className="sticky top-0 p-6">
+// End alignment lets bottom-sticky content start at the top of its containing
+// column, scroll naturally, and stick once its bottom reaches the viewport.
+const CommentsAnalyticsRail: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <aside aria-label="Comment analytics" className="w-[420px] shrink-0">
+    <Stack className="h-full" gap="none" justify="end">
+      <Box
+        className="sticky bottom-0 min-h-[calc(100dvh-var(--list-page-header-height,5rem))] shrink-0 pt-0 pr-0"
+        padding="xl"
+      >
         {children}
-      </div>
-    </aside>
-  );
-};
+      </Box>
+    </Stack>
+  </aside>
+);
 
 export default CommentsAnalyticsRail;

@@ -186,6 +186,7 @@ describe('CommentsAnalyticsService', function () {
       table.string('post_id');
       table.string('member_id').nullable();
       table.string('status');
+      table.text('html').defaultTo('<p>A comment</p>');
       table.dateTime('created_at');
     });
     await db.schema.createTable('comment_reports', (table) => {
@@ -220,7 +221,11 @@ describe('CommentsAnalyticsService', function () {
       { id: 'r5', comment_id: 'c7' },
     ]);
 
-    service = new CommentsAnalyticsService({ knex: db });
+    service = new CommentsAnalyticsService({
+      knex: db,
+      memberAvatarImage: (email) =>
+        email === 'ann@example.com' ? 'https://example.com/ann.png' : null,
+    });
   });
 
   afterEach(async function () {
@@ -241,6 +246,119 @@ describe('CommentsAnalyticsService', function () {
       ],
     });
   });
+
+  it('applies the same combined filter to totals, comparisons, series and both rankings', async function () {
+    const options = {
+      ...range('2026-11-01', '2026-11-03'),
+      filter: 'post_id:post_b+member_id:member_2+status:published+count.reports:>0',
+    };
+    const overview = await service.getOverview(options);
+
+    assert.deepEqual(overview.totals, { comments: 0, commenters: 0, reported: 0 });
+    assert.deepEqual(overview.previous_totals, { comments: 1, commenters: 1, reported: 1 });
+    assert.ok(
+      overview.series.every(
+        ({ comments, commenters, reported }) =>
+          comments === 0 && commenters === 0 && reported === 0,
+      ),
+    );
+    assert.deepEqual((await service.getTopPosts(options)).data, []);
+    assert.deepEqual((await service.getTopCommenters(options)).data, []);
+
+    const matching = { ...options, filter: 'post_id:post_a+member_id:member_2+count.reports:>0' };
+    assert.deepEqual((await service.getOverview(matching)).totals, {
+      comments: 1,
+      commenters: 1,
+      reported: 1,
+    });
+    assert.deepEqual((await service.getTopPosts(matching)).data, [
+      { post_id: 'post_a', title: 'Post A', comments: 1 },
+    ]);
+    assert.deepEqual((await service.getTopCommenters(matching)).data, [
+      { member_id: 'member_2', name: null, avatar_image: null, comments: 1 },
+    ]);
+  });
+
+  it('preserves grouped OR filters without allowing deleted comments or dates outside the range', async function () {
+    const overview = await service.getOverview({
+      ...range('2026-11-01', '2026-11-03'),
+      filter: '(post_id:post_a+status:hidden),member_id:member_1',
+    });
+
+    assert.deepEqual(overview.totals, { comments: 3, commenters: 2, reported: 1 });
+    assert.deepEqual(overview.previous_totals, { comments: 0, commenters: 0, reported: 0 });
+    assert.deepEqual(
+      overview.series.map(({ comments }) => comments),
+      [2, 0, 1],
+    );
+  });
+
+  it('supports negative post/author filters and comments with no reports', async function () {
+    const options = {
+      ...range('2026-11-01', '2026-11-03'),
+      filter: 'post_id:-post_a+member_id:-member_2+count.reports:0',
+    };
+    assert.deepEqual((await service.getOverview(options)).totals, {
+      comments: 1,
+      commenters: 1,
+      reported: 0,
+    });
+    assert.deepEqual((await service.getTopPosts(options)).data, [
+      { post_id: 'post_b', title: 'Post B', comments: 1 },
+    ]);
+  });
+
+  it('uses the comments list NQL text matching semantics, including literal wildcard characters', async function () {
+    await db('comments').where('id', 'c1').update({ html: '<p>100%_done</p>' });
+    await db('comments').where('id', 'c4').update({ html: '<p>100xxdone</p>' });
+    const options = { ...range('2026-11-01', '2026-11-03'), filter: "html:~'100%_done'" };
+
+    assert.deepEqual((await service.getOverview(options)).totals, {
+      comments: 1,
+      commenters: 1,
+      reported: 0,
+    });
+    assert.deepEqual((await service.getTopCommenters(options)).data, [
+      {
+        member_id: 'member_1',
+        name: 'Ann',
+        avatar_image: 'https://example.com/ann.png',
+        comments: 1,
+      },
+    ]);
+  });
+
+  it('starts All time on the first matching comment and returns one zero bucket when none match', async function () {
+    const overview = await service.getOverview({ date_to: '2026-11-03', filter: 'status:hidden' });
+    assert.equal(overview.series[0].date, '2026-11-01');
+    assert.deepEqual(overview.totals, { comments: 1, commenters: 1, reported: 1 });
+
+    const empty = await service.getOverview({ date_to: '2026-11-03', filter: 'post_id:missing' });
+    assert.deepEqual(empty.series, [
+      { date: '2026-11-03', comments: 0, commenters: 0, reported: 0 },
+    ]);
+  });
+
+  for (const filter of [
+    'members.email:~secret',
+    'id:c1',
+    '(post_id:post_a),unknown:value',
+    'count.reports:~hello',
+    'post_id:(',
+  ]) {
+    it(`rejects unsupported or malformed filter ${filter}`, async function () {
+      const options = { ...range('2026-11-01', '2026-11-03'), filter };
+      for (const query of [
+        () => service.getOverview(options),
+        () => service.getTopPosts(options),
+        () => service.getTopCommenters(options),
+      ]) {
+        await assert.rejects(async () => query(), {
+          errorType: 'ValidationError',
+        });
+      }
+    });
+  }
 
   it('compares a running range with the same part of the previous period', async function () {
     await db('comment_reports').insert({ id: 'r6', comment_id: 'c4' });
@@ -327,9 +445,14 @@ describe('CommentsAnalyticsService', function () {
     const { data } = await service.getTopCommenters({ date_to: '2026-11-03' });
 
     assert.deepEqual(data, [
-      { member_id: 'member_1', name: 'Ann', comments: 2 },
-      { member_id: 'member_2', name: null, comments: 2 },
-      { member_id: 'member_3', name: 'Cal', comments: 1 },
+      {
+        member_id: 'member_1',
+        name: 'Ann',
+        avatar_image: 'https://example.com/ann.png',
+        comments: 2,
+      },
+      { member_id: 'member_2', name: null, avatar_image: null, comments: 2 },
+      { member_id: 'member_3', name: 'Cal', avatar_image: null, comments: 1 },
     ]);
   });
 
@@ -346,8 +469,13 @@ describe('CommentsAnalyticsService', function () {
     const { data } = await service.getTopCommenters(range('2026-11-01', '2026-11-03'));
 
     assert.deepEqual(data, [
-      { member_id: 'member_1', name: 'Ann', comments: 2 },
-      { member_id: 'member_2', name: null, comments: 1 },
+      {
+        member_id: 'member_1',
+        name: 'Ann',
+        avatar_image: 'https://example.com/ann.png',
+        comments: 2,
+      },
+      { member_id: 'member_2', name: null, avatar_image: null, comments: 1 },
     ]);
   });
 

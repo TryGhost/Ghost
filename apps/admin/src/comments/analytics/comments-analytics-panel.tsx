@@ -1,9 +1,8 @@
 import CommentsKpis from './comments-kpis';
 import CommentsTopList from './comments-top-list';
-import DateRangeSelect from '@/shared/analytics/date-range-select';
 import React, { useMemo } from 'react';
 import { Button, Card } from '@tryghost/shade/components';
-import { Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { Stack, Text } from '@tryghost/shade/primitives';
 import { getPeriodText } from '@/shared/analytics/chart-helpers';
 import type { CommentsAnalytics } from './use-comments-analytics';
 
@@ -11,9 +10,26 @@ const CommentsAnalyticsPanel: React.FC<{
   analytics: CommentsAnalytics;
   onFilter: (field: 'post' | 'author', id: string) => void;
 }> = ({ analytics, onFilter }) => {
-  const { range, setRange, tab, setTab, overview, topPosts, topCommenters } = analytics;
-  const period = getPeriodText(range);
-  const queries = [overview, topPosts, topCommenters];
+  const {
+    range,
+    customRange,
+    tab,
+    setTab,
+    overview,
+    topPosts,
+    topCommenters,
+    postFiltered,
+    commenterFiltered,
+  } = analytics;
+  const period = customRange ? 'in the selected period' : getPeriodText(range);
+  const comparisonDays = customRange
+    ? (Date.parse(customRange.to) - Date.parse(customRange.from)) / 86400000 + 1
+    : undefined;
+  const queries = [
+    overview,
+    ...(!postFiltered ? [topPosts] : []),
+    ...(!commenterFiltered ? [topCommenters] : []),
+  ];
   const failed = queries.some(({ isError }) => isError);
 
   const postRows = useMemo(
@@ -27,22 +43,23 @@ const CommentsAnalyticsPanel: React.FC<{
   );
   const commenterRows = useMemo(
     () =>
-      topCommenters.data?.stats.map(({ member_id: id, name, comments }) => ({
-        id,
-        label: name || 'Unknown member',
-        comments,
-      })),
+      topCommenters.data?.stats.map(
+        ({ member_id: id, name, avatar_image: avatarImage, comments }) => ({
+          id,
+          label: name || 'Unknown member',
+          avatar: { name, src: avatarImage },
+          comments,
+        }),
+      ),
     [topCommenters.data],
   );
 
   return (
-    <Stack data-testid="comments-analytics" gap="lg">
-      <Inline justify="between">
-        <Text as="h2" size="lg" weight="semibold">
-          Analytics
-        </Text>
-        <DateRangeSelect range={range} onRangeChange={setRange} />
-      </Inline>
+    <Stack
+      aria-busy={queries.some(({ isFetching }) => isFetching)}
+      data-testid="comments-analytics"
+      gap="lg"
+    >
       {failed ? (
         <Stack align="center" className="py-10 text-center" gap="md">
           <Text size="sm" tone="secondary">
@@ -59,29 +76,35 @@ const CommentsAnalyticsPanel: React.FC<{
         <>
           <Card className="overflow-hidden pb-4">
             <CommentsKpis
+              comparisonDays={comparisonDays}
               isLoading={overview.isLoading}
               range={range}
+              showCommenters={!commenterFiltered}
               stats={overview.data?.stats[0]}
               tab={tab}
               onTabChange={setTab}
             />
           </Card>
-          <CommentsTopList
-            data-testid="comments-analytics-top-posts"
-            description={`Posts with the most comments ${period}`}
-            isLoading={topPosts.isLoading}
-            rows={postRows}
-            title="Top posts"
-            onSelect={({ id }) => onFilter('post', id)}
-          />
-          <CommentsTopList
-            data-testid="comments-analytics-top-commenters"
-            description={`Members who commented most ${period}`}
-            isLoading={topCommenters.isLoading}
-            rows={commenterRows}
-            title="Top commenters"
-            onSelect={({ id }) => onFilter('author', id)}
-          />
+          {!postFiltered && (
+            <CommentsTopList
+              data-testid="comments-analytics-top-posts"
+              description={`Posts with the most comments ${period}`}
+              isLoading={topPosts.isLoading}
+              rows={postRows}
+              title="Top posts"
+              onSelect={({ id }) => onFilter('post', id)}
+            />
+          )}
+          {!commenterFiltered && (
+            <CommentsTopList
+              data-testid="comments-analytics-top-commenters"
+              description={`Members who commented most ${period}`}
+              isLoading={topCommenters.isLoading}
+              rows={commenterRows}
+              title="Top commenters"
+              onSelect={({ id }) => onFilter('author', id)}
+            />
+          )}
         </>
       )}
     </Stack>

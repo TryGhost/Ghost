@@ -7,12 +7,14 @@ import { useMemberValueSource, usePostResourceValueSource } from '@/shared/filte
 interface CommentsFiltersProps {
   filters: Filter[];
   siteTimezone: string;
+  includeDateFilter?: boolean;
   onFiltersChange: (filters: Filter[]) => void;
 }
 
 const CommentsFilters: React.FC<CommentsFiltersProps> = ({
   filters,
   siteTimezone,
+  includeDateFilter = true,
   onFiltersChange,
 }) => {
   const postValueSource = usePostResourceValueSource();
@@ -21,6 +23,7 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
     memberValueSource,
     postValueSource,
     siteTimezone,
+    includeDateFilter,
   });
 
   const hasFilters = filters.length > 0;

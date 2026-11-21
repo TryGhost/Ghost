@@ -36,7 +36,7 @@ const TABS: Record<CommentsAnalyticsTab, { label: string; color: string; inverte
 // A rail tab is ~78px: past the trend arrow there is room for "999", "9.9k" or "99k"
 const formatKpi = (value: number) => {
   if (value >= 10000 && value < 999500) {
-    return `${Math.round(value / 1000)}k`;
+    return `${formatNumber(Math.round(value / 1000))}k`;
   }
   return value >= 1000 ? abbreviateNumber(value) : formatNumber(value);
 };
@@ -44,10 +44,13 @@ const formatKpi = (value: number) => {
 const CommentsKpis: React.FC<{
   stats: CommentsOverviewStats | undefined;
   range: number;
+  comparisonDays?: number;
   tab: CommentsAnalyticsTab;
   isLoading: boolean;
+  showCommenters?: boolean;
   onTabChange: (tab: CommentsAnalyticsTab) => void;
-}> = ({ stats, range, tab, isLoading, onTabChange }) => {
+}> = ({ stats, range, comparisonDays, tab, isLoading, showCommenters = true, onTabChange }) => {
+  const tabs = COMMENTS_ANALYTICS_TABS.filter((key) => showCommenters || key !== 'commenters');
   const { label, color } = TABS[tab];
   // admin7Design charts are flat, like the newsletter analytics bars
   const { admin7Design } = useShade();
@@ -76,8 +79,8 @@ const CommentsKpis: React.FC<{
       variant="kpis"
       onValueChange={(value) => onTabChange(value as CommentsAnalyticsTab)}
     >
-      <TabsList className="grid grid-cols-3">
-        {COMMENTS_ANALYTICS_TABS.map((key) => {
+      <TabsList className={showCommenters ? 'grid grid-cols-3' : 'grid grid-cols-2'}>
+        {tabs.map((key) => {
           const trend = stats
             ? getTrend(stats.totals[key], stats.previous_totals[key], range)
             : { direction: 'hidden' as const, value: '' };
@@ -87,7 +90,7 @@ const CommentsKpis: React.FC<{
                 data-testid={`comments-analytics-kpi-${key}`}
                 diffDirection={trend.direction}
                 diffInverted={TABS[key].inverted}
-                diffTooltip={getComparisonText(trend.value, range)}
+                diffTooltip={getComparisonText(trend.value, comparisonDays ?? range)}
                 diffValue=""
                 label={TABS[key].label}
                 value={stats ? formatKpi(stats.totals[key]) : '–'}

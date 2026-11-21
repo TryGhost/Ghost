@@ -6,6 +6,8 @@ import { Link, useSearchParams } from '@tryghost/admin-x-framework';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tryghost/shade/components';
 import { useState } from 'react';
+import { Inline } from '@tryghost/shade/primitives';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
 interface MetricProps {
   icon: React.ReactNode;
@@ -72,6 +74,7 @@ interface CommentMetricsProps {
 }
 
 export function CommentMetrics({ comment, dislikesEnabled, className }: CommentMetricsProps) {
+  const uniformSpacing = useFeatureFlag('commentsAnalytics');
   const [searchParams] = useSearchParams();
   const [likesModalOpen, setLikesModalOpen] = useState(false);
   const [likesModalDefaultTab, setLikesModalDefaultTab] = useState<'likes' | 'dislikes'>('likes');
@@ -89,7 +92,7 @@ export function CommentMetrics({ comment, dislikesEnabled, className }: CommentM
 
   return (
     <>
-      <div className={cn('flex items-center gap-6', className)}>
+      <Inline className={className} gap="xl">
         <Metric
           count={repliesCount}
           icon={<LucideIcon.Reply size={16} strokeWidth={1.5} />}
@@ -98,7 +101,7 @@ export function CommentMetrics({ comment, dislikesEnabled, className }: CommentM
           to={hasReplies ? repliesLink : undefined}
         />
         {dislikesEnabled ? (
-          <div className="flex items-center gap-3">
+          <Inline gap={uniformSpacing ? 'xl' : 'md'}>
             <Metric
               count={likesCount}
               icon={<LucideIcon.ThumbsUp size={16} strokeWidth={1.5} />}
@@ -127,7 +130,7 @@ export function CommentMetrics({ comment, dislikesEnabled, className }: CommentM
                   : undefined
               }
             />
-          </div>
+          </Inline>
         ) : (
           <Metric
             count={likesCount}
@@ -143,7 +146,7 @@ export function CommentMetrics({ comment, dislikesEnabled, className }: CommentM
           label="Reports"
           onClick={hasReports ? () => setReportsModalOpen(true) : undefined}
         />
-      </div>
+      </Inline>
       <CommentLikesModal
         comment={comment}
         defaultTab={likesModalDefaultTab}

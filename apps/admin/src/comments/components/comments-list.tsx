@@ -21,6 +21,8 @@ import {
 } from '@/shared/virtual-list';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { forwardRef, useEffect, useRef, useState } from 'react';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
+import { Stack } from '@tryghost/shade/primitives';
 
 const SpacerRow = ({ height }: { height: number }) => (
   <div aria-hidden="true" className="flex">
@@ -61,6 +63,7 @@ function CommentsList({
   dislikesEnabled: boolean;
 }) {
   const parentRef = useRef<HTMLDivElement>(null);
+  const compactComments = useFeatureFlag('commentsAnalytics');
   const { visibleItemCount, canLoadMore, loadMore } = useVirtualListWindow(totalItems, {
     resetKey,
   });
@@ -133,7 +136,10 @@ function CommentsList({
                 <div
                   key={key}
                   {...props}
-                  className="group/comment grid w-full grid-cols-1 items-start justify-between gap-4 border-b p-3 hover:bg-table-row-hover md:p-5 lg:grid-cols-[minmax(0,1fr)_144px]"
+                  className={cn(
+                    'group/comment grid w-full grid-cols-1 items-start justify-between gap-4 border-b lg:grid-cols-[minmax(0,1fr)_144px]',
+                    compactComments ? 'py-3 md:py-5' : 'p-3 hover:bg-table-row-hover md:p-5',
+                  )}
                   data-testid="comment-list-row"
                   onClick={() => {
                     // Close sidebar when clicking on a comment in the main list
@@ -152,52 +158,57 @@ function CommentsList({
                       src={item.member?.avatar_image}
                     />
 
-                    <div className="flex min-w-0 flex-col gap-3">
-                      <div>
-                        <CommentHeader
-                          canComment={item.member?.can_comment}
-                          createdAt={item.created_at}
-                          isHidden={item.status === 'hidden'}
-                          isPinned={item.pinned}
-                          memberId={item.member?.id}
-                          memberName={item.member?.name}
-                          postTitle={item.post?.title}
-                          onAuthorClick={
-                            item.member?.id
-                              ? () => onAddFilter('author', item.member!.id)
-                              : undefined
-                          }
-                          onPostClick={
-                            item.post?.id ? () => onAddFilter('post', item.post!.id) : undefined
-                          }
-                          onUnpinClick={() => unpinComment({ id: item.id })}
-                        />
+                    <Stack className="min-w-0" gap="md">
+                      <Stack gap={compactComments ? 'xs' : 'md'}>
+                        <div>
+                          <CommentHeader
+                            canComment={item.member?.can_comment}
+                            createdAt={item.created_at}
+                            isHidden={item.status === 'hidden'}
+                            isPinned={item.pinned}
+                            memberId={item.member?.id}
+                            memberName={item.member?.name}
+                            postTitle={item.post?.title}
+                            onAuthorClick={
+                              item.member?.id
+                                ? () => onAddFilter('author', item.member!.id)
+                                : undefined
+                            }
+                            onPostClick={
+                              item.post?.id ? () => onAddFilter('post', item.post!.id) : undefined
+                            }
+                            onUnpinClick={() => unpinComment({ id: item.id })}
+                          />
 
-                        {item.in_reply_to_snippet && (
-                          <div
-                            className={`mb-1 line-clamp-1 max-w-3xl ${item.status === 'hidden' && 'opacity-50'}`}
-                          >
-                            <span className="text-muted-foreground">Replied to:</span>&nbsp;
-                            <Link
-                              className="text-sm font-normal text-muted-foreground hover:text-foreground"
-                              data-testid="replied-to-link"
-                              to={
-                                buildThreadLink(
-                                  searchParams,
-                                  item.in_reply_to_id || item.parent_id,
-                                ) || ''
-                              }
-                              onClick={(e) => {
-                                e.stopPropagation();
-                              }}
+                          {item.in_reply_to_snippet && (
+                            <div
+                              className={`mb-1 line-clamp-1 max-w-3xl ${item.status === 'hidden' && 'opacity-50'}`}
                             >
-                              {item.in_reply_to_snippet}
-                            </Link>
-                          </div>
-                        )}
-                      </div>
+                              <span className="text-muted-foreground">Replied to:</span>&nbsp;
+                              <Link
+                                className={cn(
+                                  'font-normal text-muted-foreground hover:text-foreground',
+                                  compactComments ? 'text-base' : 'text-sm',
+                                )}
+                                data-testid="replied-to-link"
+                                to={
+                                  buildThreadLink(
+                                    searchParams,
+                                    item.in_reply_to_id || item.parent_id,
+                                  ) || ''
+                                }
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                }}
+                              >
+                                {item.in_reply_to_snippet}
+                              </Link>
+                            </div>
+                          )}
+                        </div>
 
-                      <CommentContent item={item} />
+                        <CommentContent compact={compactComments} item={item} />
+                      </Stack>
 
                       <div className="flex flex-row flex-nowrap items-center gap-3">
                         {item.status === 'published' && (
@@ -229,7 +240,7 @@ function CommentsList({
                         />
                         <CommentMenu comment={item} />
                       </div>
-                    </div>
+                    </Stack>
                   </div>
 
                   <div>
