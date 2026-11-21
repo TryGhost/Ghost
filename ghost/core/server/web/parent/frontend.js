@@ -1,6 +1,7 @@
 const debug = require('@tryghost/debug')('frontend');
 const express = require('../../../shared/express');
 const shared = require('../shared');
+const mw = require('./middleware');
 
 /**
  *
@@ -19,6 +20,11 @@ module.exports = (routerConfig) => {
 
   frontendApp.lazyUse('/members', require('../members'));
   frontendApp.lazyUse('/webmentions', require('../webmentions'));
+
+  // Where switched on, other sites can't frame the site's pages and files while it shares Admin's
+  // host. The APIs above answer with data and redirects only, which run nothing when framed.
+  frontendApp.use(mw.createSiteFrameProtection());
+
   frontendApp.lazyUse('/gift', require('../gift-preview'));
   frontendApp.use('/', require('../../../frontend/web')(routerConfig));
 
