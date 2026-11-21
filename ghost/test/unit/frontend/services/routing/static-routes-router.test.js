@@ -117,6 +117,30 @@ describe('services/routing/StaticRoutesRouter', function () {
       assert('contentType' in res.routerOptions);
       assert.equal(res.locals.slug, undefined);
     });
+
+    it('mounts <route>.md when data reads a single post or page', function () {
+      new StaticRoutesRouter('/about/', { data: 'page.contact' }, routerCreatedSpy);
+      new StaticRoutesRouter('/', { data: 'post.welcome' }, routerCreatedSpy);
+
+      assert.deepEqual(
+        mountRouteSpy.args.map(([path]) => path),
+        ['/about/', '/about.md', '/', '/index.md'],
+      );
+    });
+
+    it('does not mount <route>.md for other data', function () {
+      new StaticRoutesRouter('/kitchen/', { data: 'tag.kitchen' }, routerCreatedSpy);
+      new StaticRoutesRouter(
+        '/multi/',
+        { data: { a: 'page.one', b: 'page.two' } },
+        routerCreatedSpy,
+      );
+
+      assert.deepEqual(
+        mountRouteSpy.args.map(([path]) => path),
+        ['/kitchen/', '/multi/'],
+      );
+    });
   });
 
   describe('channels', function () {
@@ -182,6 +206,22 @@ describe('services/routing/StaticRoutesRouter', function () {
         // pagination feature
         assert.equal(mountRouteSpy.args[1][0], '/channel/page/:page(\\d+)');
         assert.equal(mountRouteSpy.args[1][1], controllers.channel);
+      });
+
+      it('initialize with controller+page data mounts <route>.md', function () {
+        new StaticRoutesRouter(
+          '/channel/',
+          {
+            type: 'channel',
+            data: 'page.channel-intro',
+          },
+          routerCreatedSpy,
+        );
+
+        assert.deepEqual(
+          mountRouteSpy.args.map(([path]) => path),
+          ['/channel/', '/channel.md', '/channel/page/:page(\\d+)'],
+        );
       });
 
       it('initialize with controller+data', function () {
