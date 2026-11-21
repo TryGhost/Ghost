@@ -12,10 +12,13 @@ import {
   NoValueLabelIcon,
 } from '@tryghost/shade/components';
 import { H4 } from '@tryghost/shade/primitives';
+import { type HashtagSearchResult } from '@src/api/activitypub';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { SuggestedProfiles } from '../global/suggested-profiles';
+import { getHashtagPath, normalizeHashtag, parseHashtagQuery } from '@src/utils/hashtags';
 import {
   useAccountForUser,
+  useHashtagSupportForUser,
   useSearchForUser,
   useSuggestedProfilesForUser,
   useTopicsForUser,
@@ -40,6 +43,7 @@ interface TopicSearchResult {
 
 type SearchResult =
   | { type: 'topic'; data: TopicSearchResult }
+  | { type: 'hashtag'; data: HashtagSearchResult }
   | { type: 'account'; data: AccountSearchResult };
 
 interface SearchProps {
@@ -79,7 +83,9 @@ const Search: React.FC<SearchProps> = ({ onOpenChange, query, setQuery }) => {
   const currentAccountQuery = useAccountForUser('index', 'me');
   const { data: currentUser } = currentAccountQuery;
 
+  const hashtagsSupported = useHashtagSupportForUser();
   const [displayResults, setDisplayResults] = useState<AccountSearchResult[]>([]);
+  const [displayHashtags, setDisplayHashtags] = useState<HashtagSearchResult[]>([]);
   const [lastResultState, setLastResultState] = useState<'results' | 'none' | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -105,18 +111,36 @@ const Search: React.FC<SearchProps> = ({ onOpenChange, query, setQuery }) => {
     });
   }, [query, shouldSearch, topicsData?.topics]);
 
-  // Merge topics and accounts into a single list
+  // A query like "#foo" can always be opened as a hashtag, even when the
+  // server didn't return it, unless the service has no hashtag support. It's
+  // listed first, followed by the server's hashtag results.
+  const matchingHashtags = useMemo(() => {
+    const typedHashtag = shouldSearch && hashtagsSupported ? parseHashtagQuery(query) : null;
+
+    if (!typedHashtag) {
+      return displayHashtags;
+    }
+
+    return [
+      { name: typedHashtag },
+      ...displayHashtags.filter((hashtag) => normalizeHashtag(hashtag.name) !== typedHashtag),
+    ];
+  }, [displayHashtags, hashtagsSupported, query, shouldSearch]);
+
+  // Merge hashtags, topics and accounts into a single list
   const searchResults: SearchResult[] = useMemo(
     () => [
+      ...matchingHashtags.map((hashtag) => ({ type: 'hashtag' as const, data: hashtag })),
       ...matchingTopics.map((topic) => ({ type: 'topic' as const, data: topic })),
       ...displayResults.map((account) => ({ type: 'account' as const, data: account })),
     ],
-    [matchingTopics, displayResults],
+    [matchingHashtags, matchingTopics, displayResults],
   );
 
   useEffect(() => {
     if (!shouldSearch) {
       setDisplayResults([]);
+      setDisplayHashtags([]);
       setLastResultState(null);
       return;
     }
@@ -125,23 +149,30 @@ const Search: React.FC<SearchProps> = ({ onOpenChange, query, setQuery }) => {
       return;
     }
 
-    if (data?.accounts && data.accounts.length > 0) {
-      setDisplayResults(data.accounts);
-      setLastResultState('results');
-      setSelectedIndex(0);
-    } else {
-      setDisplayResults([]);
-      setLastResultState('none');
-      setSelectedIndex(0);
-    }
-  }, [data?.accounts, isFetched, shouldSearch]);
+    const accounts = data?.accounts ?? [];
+    const hashtags = data?.hashtags ?? [];
+
+    setDisplayResults(accounts);
+    setDisplayHashtags(hashtags);
+    setLastResultState(accounts.length > 0 || hashtags.length > 0 ? 'results' : 'none');
+    setSelectedIndex(0);
+  }, [data?.accounts, data?.hashtags, isFetched, shouldSearch]);
 
   const showLoading = isFetching && shouldSearch;
   const showSuggested =
-    query.length < 2 || (!lastResultState && shouldSearch && matchingTopics.length === 0);
-  const showNoResults = !showSuggested && lastResultState === 'none' && matchingTopics.length === 0;
+    query.length < 2 ||
+    (!lastResultState &&
+      shouldSearch &&
+      matchingTopics.length === 0 &&
+      matchingHashtags.length === 0);
+  const showNoResults =
+    !showSuggested &&
+    lastResultState === 'none' &&
+    matchingTopics.length === 0 &&
+    matchingHashtags.length === 0;
   const showSearchResults =
-    !showSuggested && (displayResults.length > 0 || matchingTopics.length > 0);
+    !showSuggested &&
+    (displayResults.length > 0 || matchingTopics.length > 0 || matchingHashtags.length > 0);
 
   // Focus input on mount
   useEffect(() => {
@@ -211,6 +242,8 @@ const Search: React.FC<SearchProps> = ({ onOpenChange, query, setQuery }) => {
 
       if (item.type === 'topic') {
         navigate(`/explore/${item.data.slug}`);
+      } else if (item.type === 'hashtag') {
+        navigate(getHashtagPath(item.data.name));
       } else {
         navigate(`/profile/${item.data.handle}`);
       }
@@ -251,6 +284,37 @@ const Search: React.FC<SearchProps> = ({ onOpenChange, query, setQuery }) => {
           <div className="mt-[-14px] pb-2">
             {searchResults.map((item, index) => {
               const isSelected = index === selectedIndex;
+
+              if (item.type === 'hashtag') {
+                return (
+                  <div
+                    key={`hashtag-${item.data.name}`}
+                    ref={(el) => (itemRefs.current[index] = el)}
+                  >
+                    <ActivityItem
+                      isSelected={isSelected}
+                      onClick={() => {
+                        onOpenChange?.(false);
+                        navigate(getHashtagPath(item.data.name));
+                      }}
+                    >
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-900">
+                        <LucideIcon.Hash
+                          className="text-gray-700 dark:text-gray-500"
+                          size={18}
+                          strokeWidth={1.5}
+                        />
+                      </div>
+                      <div className="break-anywhere flex flex-col">
+                        <span className="line-clamp-1 font-semibold text-black dark:text-white">
+                          #{item.data.name}
+                        </span>
+                        <span className="text-sm text-gray-700 dark:text-gray-600">Hashtag</span>
+                      </div>
+                    </ActivityItem>
+                  </div>
+                );
+              }
 
               if (item.type === 'topic') {
                 return (

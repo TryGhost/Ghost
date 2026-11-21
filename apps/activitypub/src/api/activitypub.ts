@@ -54,8 +54,13 @@ export interface GetRecommendationsResponse {
   accounts: ExploreAccount[];
 }
 
+export type HashtagSearchResult = {
+  name: string;
+};
+
 export interface SearchResults {
   accounts: AccountSearchResult[];
+  hashtags: HashtagSearchResult[];
 }
 
 export interface Thread {
@@ -529,11 +534,15 @@ export class ActivityPubAPI {
     const json = await this.fetchJSON(url, 'GET');
 
     if (json && 'accounts' in json) {
-      return json as SearchResults;
+      // Servers without hashtag search omit the field
+      const hashtags = 'hashtags' in json && Array.isArray(json.hashtags) ? json.hashtags : [];
+
+      return { ...(json as SearchResults), hashtags };
     }
 
     return {
       accounts: [],
+      hashtags: [],
     };
   }
 
@@ -652,6 +661,30 @@ export class ActivityPubAPI {
   async getDiscoveryFeed(topic: string, next?: string): Promise<PaginatedPostsResponse> {
     const endpoint = `.ghost/activitypub/v1/feed/discover/${topic}`;
     return this.getPaginatedPosts(endpoint, next);
+  }
+
+  async getHashtagFeed(hashtag: string, next?: string): Promise<PaginatedPostsResponse> {
+    const endpoint = `.ghost/activitypub/v1/feed/hashtag/${encodeURIComponent(hashtag)}`;
+    return this.getPaginatedPosts(endpoint, next);
+  }
+
+  // Older ActivityPub services don't have the hashtag feed route, so this asks
+  // for a hashtag that can't exist: services with hashtag support reject it as
+  // invalid (400) without doing any work, older ones don't know the route (404)
+  async supportsHashtags(): Promise<boolean> {
+    const url = new URL('.ghost/activitypub/v1/feed/hashtag/_', this.apiUrl);
+
+    try {
+      await this.fetchJSON(url);
+
+      return true;
+    } catch (error) {
+      if (isApiError(error) && (error.statusCode === 400 || error.statusCode === 404)) {
+        return error.statusCode === 400;
+      }
+
+      throw error;
+    }
   }
 
   async getExploreAccounts(

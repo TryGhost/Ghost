@@ -1,4 +1,5 @@
 import DOMPurify from 'dompurify';
+import { getHashtagFromLink } from './hashtags';
 
 const SAFE_URL_PROTOCOLS = ['http:', 'https:', 'mailto:'];
 
@@ -213,7 +214,12 @@ export const formatArticle = (content: string, postUrl?: string) => {
   return template.innerHTML;
 };
 
-export const openLinksInNewTab = (content: string) => {
+// Callers that open hashtag links in-app pass keepHashtagLinks to leave them
+// alone instead of forcing a new tab
+export const openLinksInNewTab = (
+  content: string,
+  { keepHashtagLinks = false }: { keepHashtagLinks?: boolean } = {},
+) => {
   const template = parseHtml(content);
 
   // Find all anchor tags
@@ -225,6 +231,9 @@ export const openLinksInNewTab = (content: string) => {
     // Block javascript:, data:, and other dangerous protocols
     if (href.match(/^\s*(javascript|data|vbscript):/i)) {
       links[i].removeAttribute('href');
+    }
+    if (keepHashtagLinks && getHashtagFromLink(links[i])) {
+      continue;
     }
     links[i].setAttribute('target', '_blank');
     links[i].setAttribute('rel', 'noopener noreferrer');

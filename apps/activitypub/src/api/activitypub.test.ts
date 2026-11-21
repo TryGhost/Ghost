@@ -527,6 +527,7 @@ describe('ActivityPubAPI', function () {
             name: 'Foo Bar',
           },
         ],
+        hashtags: [],
       };
 
       expect(actual).toEqual(expected);
@@ -561,9 +562,73 @@ describe('ActivityPubAPI', function () {
       const actual = await api.search(handle);
       const expected = {
         accounts: [],
+        hashtags: [],
       };
 
       expect(actual).toEqual(expected);
+    });
+
+    test('It returns hashtags when the response includes them', async function () {
+      const fakeFetch = Fetch({
+        'https://auth.api/': {
+          response: JSONResponse({
+            identities: [
+              {
+                token: 'fake-token',
+              },
+            ],
+          }),
+        },
+        'https://activitypub.api/.ghost/activitypub/v1/actions/search?query=foo': {
+          response: JSONResponse({
+            accounts: [],
+            hashtags: [{ name: 'foo' }, { name: 'foobar' }],
+          }),
+        },
+      });
+
+      const api = new ActivityPubAPI(
+        new URL('https://activitypub.api'),
+        new URL('https://auth.api'),
+        'index',
+        fakeFetch,
+      );
+
+      expect(await api.search('foo')).toEqual({
+        accounts: [],
+        hashtags: [{ name: 'foo' }, { name: 'foobar' }],
+      });
+    });
+
+    test('It defaults hashtags to an empty array for servers that do not return them', async function () {
+      const fakeFetch = Fetch({
+        'https://auth.api/': {
+          response: JSONResponse({
+            identities: [
+              {
+                token: 'fake-token',
+              },
+            ],
+          }),
+        },
+        'https://activitypub.api/.ghost/activitypub/v1/actions/search?query=foo': {
+          response: JSONResponse({
+            accounts: [{ handle: '@foo@bar.baz', name: 'Foo Bar' }],
+          }),
+        },
+      });
+
+      const api = new ActivityPubAPI(
+        new URL('https://activitypub.api'),
+        new URL('https://auth.api'),
+        'index',
+        fakeFetch,
+      );
+
+      expect(await api.search('foo')).toEqual({
+        accounts: [{ handle: '@foo@bar.baz', name: 'Foo Bar' }],
+        hashtags: [],
+      });
     });
   });
 
@@ -1036,6 +1101,109 @@ describe('ActivityPubAPI', function () {
       const actual = await api.getInbox();
 
       expect(actual.posts).toEqual([]);
+    });
+  });
+
+  describe('getHashtagFeed', function () {
+    test('It returns an array of posts and the next cursor', async function () {
+      const fakeFetch = Fetch({
+        'https://auth.api/': {
+          response: JSONResponse({
+            identities: [
+              {
+                token: 'fake-token',
+              },
+            ],
+          }),
+        },
+        'https://activitypub.api/.ghost/activitypub/v1/feed/hashtag/ghost': {
+          response: JSONResponse({
+            posts: [
+              {
+                id: 'https://example.com/posts/abc123',
+              },
+            ],
+            next: 'cursor-1',
+          }),
+        },
+      });
+
+      const api = new ActivityPubAPI(
+        new URL('https://activitypub.api'),
+        new URL('https://auth.api'),
+        'index',
+        fakeFetch,
+      );
+
+      expect(await api.getHashtagFeed('ghost')).toEqual({
+        posts: [
+          {
+            id: 'https://example.com/posts/abc123',
+          },
+        ],
+        next: 'cursor-1',
+      });
+    });
+
+    test('It encodes the hashtag and passes the next cursor', async function () {
+      const fakeFetch = Fetch({
+        'https://auth.api/': {
+          response: JSONResponse({
+            identities: [
+              {
+                token: 'fake-token',
+              },
+            ],
+          }),
+        },
+        'https://activitypub.api/.ghost/activitypub/v1/feed/hashtag/caf%C3%A9?next=cursor-1': {
+          response: JSONResponse({
+            posts: [],
+            next: null,
+          }),
+        },
+      });
+
+      const api = new ActivityPubAPI(
+        new URL('https://activitypub.api'),
+        new URL('https://auth.api'),
+        'index',
+        fakeFetch,
+      );
+
+      expect(await api.getHashtagFeed('café', 'cursor-1')).toEqual({
+        posts: [],
+        next: null,
+      });
+    });
+
+    test('It returns a default return value when the response is null', async function () {
+      const fakeFetch = Fetch({
+        'https://auth.api/': {
+          response: JSONResponse({
+            identities: [
+              {
+                token: 'fake-token',
+              },
+            ],
+          }),
+        },
+        'https://activitypub.api/.ghost/activitypub/v1/feed/hashtag/ghost': {
+          response: JSONResponse(null),
+        },
+      });
+
+      const api = new ActivityPubAPI(
+        new URL('https://activitypub.api'),
+        new URL('https://auth.api'),
+        'index',
+        fakeFetch,
+      );
+
+      expect(await api.getHashtagFeed('ghost')).toEqual({
+        posts: [],
+        next: null,
+      });
     });
   });
 
