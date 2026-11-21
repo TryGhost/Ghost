@@ -12,6 +12,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -149,16 +150,59 @@ export const ColorPickerTrigger = forwardRef<HTMLButtonElement, ColorPickerTrigg
 
 ColorPickerTrigger.displayName = 'ColorPickerTrigger';
 
-interface ColorPickerContextValue {
+interface HslaColor {
   hue: number;
   saturation: number;
   lightness: number;
   alpha: number;
+}
+
+const toHsla = (input: Parameters<typeof Color>[0]): HslaColor => {
+  const color = Color(input);
+  return {
+    hue: color.hue(),
+    saturation: color.saturationl(),
+    lightness: color.lightness(),
+    alpha: color.alpha() * 100,
+  };
+};
+
+const toColor = ({ hue, saturation, lightness, alpha }: HslaColor) =>
+  Color.hsl(hue, saturation, lightness).alpha(alpha / 100);
+
+// How a value reads when compared with a reported hex. A string is compared as written, so
+// hsl() black with a different hue doesn't count as #000000. Of other values, only an opaque
+// RGB one carries no more than a report does: an HSL object has a hue, and an alpha is lost.
+const echoKey = (value: Parameters<typeof Color>[0]) => {
+  if (typeof value === 'string') {
+    return value.toUpperCase();
+  }
+  const isRgb =
+    typeof value === 'number' ||
+    Array.isArray(value) ||
+    (typeof value === 'object' && value !== null && 'r' in value);
+  if (!isRgb) {
+    return null;
+  }
+  const color = Color(value);
+  return color.alpha() === 1 ? color.hex() : null;
+};
+
+// A control can change a channel without changing the colour, e.g. saturation on black. That
+// still counts: a caller that showed transparent as #00000000 needs to hear about #000000.
+const isSameHsla = (a: HslaColor, b: HslaColor) =>
+  a.hue === b.hue &&
+  a.saturation === b.saturation &&
+  a.lightness === b.lightness &&
+  a.alpha === b.alpha;
+
+// A change to some channels, or a function that works one out from the latest colour.
+type ColorChange = Partial<HslaColor> | ((current: HslaColor) => Partial<HslaColor>);
+
+interface ColorPickerContextValue extends HslaColor {
   mode: string;
-  setHue: (hue: number) => void;
-  setSaturation: (saturation: number) => void;
-  setLightness: (lightness: number) => void;
-  setAlpha: (alpha: number) => void;
+  // Applies a change made in the picker and reports it through onChange.
+  setColor: (change: ColorChange) => void;
   setMode: (mode: string) => void;
 }
 
@@ -177,6 +221,12 @@ const useColorPicker = () => {
 export type ColorPickerProps = Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> & {
   value?: Parameters<typeof Color>[0];
   defaultValue?: Parameters<typeof Color>[0];
+  /**
+   * Called with the new colour as upper-case `#RRGGBB` when someone changes it in the picker,
+   * never on mount or when `value` changes. It's called from the input event, so it can run
+   * more than once before your component re-renders: compare with the last colour you stored,
+   * not with `value`.
+   */
   onChange?: (value: string) => void;
 };
 
@@ -187,49 +237,67 @@ export const ColorPickerRoot = ({
   className,
   ...props
 }: ColorPickerProps) => {
-  const initialColor = Color(value ?? defaultValue);
-
-  const [hue, setHue] = useState(initialColor.hue());
-  const [saturation, setSaturation] = useState(initialColor.saturationl());
-  const [lightness, setLightness] = useState(initialColor.lightness());
-  const [alpha, setAlpha] = useState(initialColor.alpha() * 100);
+  const [color, setColorState] = useState(() => toHsla(value ?? defaultValue));
   const [mode, setMode] = useState('hex');
+  // Several changes can land before a re-render, so each one builds on the latest colour.
+  const colorRef = useRef(color);
+  // The hex last reported through onChange, to recognise the parent echoing it back.
+  const lastReportedRef = useRef<string | null>(null);
+  // An eye dropper pick resolves later, so it reports to the latest onChange.
+  const onChangeRef = useRef(onChange);
 
-  // Update color when controlled value changes
-  useEffect(() => {
-    if (value) {
-      const color = Color(value);
-      setHue(color.hue());
-      setSaturation(color.saturationl());
-      setLightness(color.lightness());
-      setAlpha(color.alpha() * 100);
+  useLayoutEffect(() => {
+    onChangeRef.current = onChange;
+  });
+
+  // Follow a controlled value without reporting it back through onChange. A layout effect
+  // runs in the same task as the commit, so no change can land before the sync and be undone.
+  useLayoutEffect(() => {
+    // 0 is black, so only a missing or empty value is skipped.
+    if (value === undefined || value === null || value === '') {
+      return;
+    }
+    // The parent echoing the last report: keep the picker's own channels, which a hex can't
+    // always carry (e.g. the hue of a grey). A report has no alpha, so it only stands for an
+    // opaque colour. Anything else is adopted in full, including an earlier colour, another
+    // way of writing this one, or the same hex with an alpha. A parent that echoes an older
+    // report late therefore briefly shows it, then lands on the latest.
+    if (
+      lastReportedRef.current !== null &&
+      colorRef.current.alpha === 100 &&
+      echoKey(value) === lastReportedRef.current
+    ) {
+      return;
+    }
+    lastReportedRef.current = null;
+    const next = toHsla(value);
+    if (!isSameHsla(next, colorRef.current)) {
+      colorRef.current = next;
+      setColorState(next);
     }
   }, [value]);
 
-  // Notify parent of changes
-  useEffect(() => {
-    if (onChange) {
-      const color = Color.hsl(hue, saturation, lightness).alpha(alpha / 100);
-      const hex = color.hex();
-      onChange(hex);
+  const setColor = useCallback((change: ColorChange) => {
+    const previous = colorRef.current;
+    const next = { ...previous, ...(typeof change === 'function' ? change(previous) : change) };
+    if (isSameHsla(next, previous)) {
+      return;
     }
-  }, [hue, saturation, lightness, alpha, onChange]);
+    colorRef.current = next;
+    setColorState(next);
+
+    const report = onChangeRef.current;
+    const hex = report ? toColor(next).hex() : null;
+    // Without an onChange this change isn't reported, so an earlier report is no longer the
+    // colour shown and can't be echoed.
+    lastReportedRef.current = hex;
+    if (report && hex) {
+      report(hex);
+    }
+  }, []);
 
   return (
-    <ColorPickerContext.Provider
-      value={{
-        hue,
-        saturation,
-        lightness,
-        alpha,
-        mode,
-        setHue,
-        setSaturation,
-        setLightness,
-        setAlpha,
-        setMode,
-      }}
-    >
+    <ColorPickerContext.Provider value={{ ...color, mode, setColor, setMode }}>
       <div className={cn('flex size-full flex-col gap-4', className)} {...props} />
     </ColorPickerContext.Provider>
   );
@@ -242,7 +310,7 @@ export const ColorPickerSelection = memo(({ className, ...props }: ColorPickerSe
   const activePointerId = useRef<number | null>(null);
   const [positionX, setPositionX] = useState(0);
   const [positionY, setPositionY] = useState(0);
-  const { hue, saturation, lightness, setSaturation, setLightness } = useColorPicker();
+  const { hue, saturation, lightness, setColor } = useColorPicker();
 
   const backgroundGradient = useMemo(() => {
     return `linear-gradient(0deg, rgba(0,0,0,1), rgba(0,0,0,0)),
@@ -270,13 +338,11 @@ export const ColorPickerSelection = memo(({ className, ...props }: ColorPickerSe
       const y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
       setPositionX(x);
       setPositionY(y);
-      setSaturation(x * 100);
       const topLightness = x < 0.01 ? 100 : 50 + 50 * (1 - x);
-      const newLightness = topLightness * (1 - y);
 
-      setLightness(newLightness);
+      setColor({ saturation: x * 100, lightness: topLightness * (1 - y) });
     },
-    [setSaturation, setLightness],
+    [setColor],
   );
 
   return (
@@ -327,7 +393,7 @@ ColorPickerSelection.displayName = 'ColorPickerSelection';
 export type ColorPickerHueProps = ComponentProps<typeof Slider.Root>;
 
 export const ColorPickerHue = ({ className, ...props }: ColorPickerHueProps) => {
-  const { hue, setHue } = useColorPicker();
+  const { hue, setColor } = useColorPicker();
 
   return (
     <Slider.Root
@@ -335,7 +401,7 @@ export const ColorPickerHue = ({ className, ...props }: ColorPickerHueProps) => 
       max={360}
       step={1}
       value={[hue]}
-      onValueChange={([value]) => setHue(value)}
+      onValueChange={([value]) => setColor({ hue: value })}
       {...props}
     >
       <Slider.Track className="relative my-0.5 h-3 w-full grow rounded-full bg-[linear-gradient(90deg,red,yellow,lime,aqua,blue,magenta,red)]">
@@ -349,7 +415,7 @@ export const ColorPickerHue = ({ className, ...props }: ColorPickerHueProps) => 
 export type ColorPickerAlphaProps = ComponentProps<typeof Slider.Root>;
 
 export const ColorPickerAlpha = ({ className, ...props }: ColorPickerAlphaProps) => {
-  const { alpha, setAlpha } = useColorPicker();
+  const { alpha, setColor } = useColorPicker();
 
   return (
     <Slider.Root
@@ -357,7 +423,7 @@ export const ColorPickerAlpha = ({ className, ...props }: ColorPickerAlphaProps)
       max={100}
       step={1}
       value={[alpha]}
-      onValueChange={([value]) => setAlpha(value)}
+      onValueChange={([value]) => setColor({ alpha: value })}
       {...props}
     >
       <Slider.Track className="relative my-0.5 h-3 w-full grow rounded-full bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMUlEQVQ4T2NkYGAQYcAP3uCTZhw1gGGYhAGBZIA/nYDCgBDAm9BGDWAAJyRCgLaBCAAgXwixzAS0pgAAAABJRU5ErkJggg==')] bg-center bg-repeat-x dark:bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAALklEQVR4nGP8+vWrCAMewM3N/QafPBM+SWLAqAGDwQBGQgoIpZOB98KoAVQwAADxzQcSVIRCfQAAAABJRU5ErkJggg==')]">
@@ -372,7 +438,12 @@ export const ColorPickerAlpha = ({ className, ...props }: ColorPickerAlphaProps)
 export type ColorPickerEyeDropperProps = ComponentProps<typeof Button>;
 
 export const ColorPickerEyeDropper = ({ className, ...props }: ColorPickerEyeDropperProps) => {
-  const { setHue, setSaturation, setLightness, setAlpha } = useColorPicker();
+  const { setColor } = useColorPicker();
+  const pendingPick = useRef<AbortController | null>(null);
+
+  // A pick still open when the picker goes away must not report a colour. A layout effect
+  // aborts it as the picker is removed, before a pick resolving in between can report.
+  useLayoutEffect(() => () => pendingPick.current?.abort(), []);
 
   // Check if EyeDropper API is supported
   const isSupported = typeof window !== 'undefined' && 'EyeDropper' in window;
@@ -381,21 +452,30 @@ export const ColorPickerEyeDropper = ({ className, ...props }: ColorPickerEyeDro
   }
 
   const handleEyeDropper = async () => {
+    pendingPick.current?.abort();
+    const controller = new AbortController();
+    pendingPick.current = controller;
+
+    let picked: number[];
     try {
       // @ts-expect-error - EyeDropper API is experimental
       const eyeDropper = new EyeDropper();
-      const result = await eyeDropper.open();
-      const color = Color(result.sRGBHex);
-      const [h, s, l] = color.hsl().array();
-
-      setHue(h);
-      setSaturation(s);
-      setLightness(l);
-      setAlpha(100);
+      const result = await eyeDropper.open({ signal: controller.signal });
+      picked = Color(result.sRGBHex).hsl().array();
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('EyeDropper failed:', error);
+      if (!controller.signal.aborted) {
+        // eslint-disable-next-line no-console
+        console.error('EyeDropper failed:', error);
+      }
+      return;
     }
+    if (controller.signal.aborted) {
+      return;
+    }
+
+    // Outside the try, so an error thrown by onChange reaches the caller.
+    const [hue, saturation, lightness] = picked;
+    setColor({ hue, saturation, lightness, alpha: 100 });
   };
 
   return (
@@ -438,31 +518,42 @@ export const ColorPickerOutput = ({ ...props }: ColorPickerOutputProps) => {
 export type ColorPickerFormatProps = HTMLAttributes<HTMLDivElement>;
 
 export const ColorPickerFormat = ({ className, ...props }: ColorPickerFormatProps) => {
-  const { hue, saturation, lightness, mode, setHue, setSaturation, setLightness, setAlpha } =
-    useColorPicker();
+  const { hue, saturation, lightness, mode, setColor } = useColorPicker();
   const color = Color.hsl(hue, saturation, lightness);
   const [inputValue, setInputValue] = useState<string | null>(null);
 
+  // Only parsing sits inside a try, so an error thrown by onChange reaches the caller.
   const handleInputChange = (value: string, index?: number) => {
-    try {
-      if (mode === 'hex') {
-        const newColor = Color(value);
-        setHue(newColor.hue());
-        setSaturation(newColor.saturationl());
-        setLightness(newColor.lightness());
-        setAlpha(newColor.alpha() * 100);
-      } else if ((mode === 'rgb' || mode === 'hsl') && index !== undefined) {
-        const values = color[mode]()
+    if (mode === 'hex') {
+      let next: HslaColor;
+      try {
+        next = toHsla(value);
+      } catch {
+        // Invalid color, ignore
+        return;
+      }
+      // Another spelling of the hex shown, such as lower case, parses to slightly different
+      // channels; it isn't a change. Other formats, such as hsl(), can carry a hue a hex can't.
+      const isHex = value.trim().startsWith('#');
+      setColor((current) =>
+        isHex && toColor(current).hexa() === toColor(next).hexa() ? {} : next,
+      );
+    } else if ((mode === 'rgb' || mode === 'hsl') && index !== undefined) {
+      // Built from the latest colour, which may be newer than this render's. The color
+      // library clamps out-of-range channels, so this can't throw.
+      setColor((current) => {
+        const values = Color.hsl(current.hue, current.saturation, current.lightness)
+          [mode]()
           .array()
           .map((v) => Math.round(v));
         values[index] = parseInt(value, 10) || 0;
-        const newColor = Color[mode](values[0], values[1], values[2]);
-        setHue(newColor.hue());
-        setSaturation(newColor.saturationl());
-        setLightness(newColor.lightness());
-      }
-    } catch {
-      // Invalid color, ignore
+        const newColor = toHsla(Color[mode](values[0], values[1], values[2]));
+        return {
+          hue: newColor.hue,
+          saturation: newColor.saturation,
+          lightness: newColor.lightness,
+        };
+      });
     }
   };
 
