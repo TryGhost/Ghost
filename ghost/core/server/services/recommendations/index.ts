@@ -15,7 +15,7 @@ export type RecommendationsService = {
   incomingRecommendationController: IncomingRecommendationController;
 };
 
-// Boot awaits Mentions before this root, so the facade is ready here. Every
+// Boot awaits oEmbed and Mentions before this root, so both are ready here. Every
 // construction failure happens before the detached refreshes, the mentions mapper
 // and the event subscription, so a failed attempt leaves nothing to release.
 export default defineService('Recommendations', (): RecommendationsService => {
@@ -42,7 +42,7 @@ export default defineService('Recommendations', (): RecommendationsService => {
   const DomainEvents = require('@tryghost/domain-events');
   const MentionCreatedEvent = require('../mentions/mention-created-event');
   const mentions = require('../mentions').default;
-  const oembedService = require('../oembed');
+  const oembedService = require('../oembed').default.service;
   const settings = require('../settings');
   const staff = require('../staff').default;
   // The renderer reads the ready Staff service for each email.

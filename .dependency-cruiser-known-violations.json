@@ -800,46 +800,6 @@
     "to": "moment-timezone"
   },
   {
-    "rule": "specialist-dependencies",
-    "from": "ghost/core/server/services/oembed/oembed-service.js",
-    "to": "@extractus/oembed-extractor"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/oembed/oembed-service.js",
-    "to": "@tryghost/logging"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/oembed/oembed-service.js",
-    "to": "lodash"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/oembed/oembed-service.js",
-    "to": "packages/image-transform/src/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/oembed/service.js",
-    "to": "ghost/core/server/lib/request-external.js"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/oembed/service.js",
-    "to": "ghost/core/server/services/adapter-manager/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/oembed/service.js",
-    "to": "ghost/core/shared/config/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/oembed/twitter-oembed-provider.js",
-    "to": "@tryghost/logging"
-  },
-  {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/offers/application/offers-api.js",
     "to": "@tryghost/logging"

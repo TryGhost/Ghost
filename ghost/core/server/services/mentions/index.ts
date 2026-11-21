@@ -1,5 +1,6 @@
 import { defineService } from '../../../kernel/define-service';
 
+// Boot initializes oEmbed before this root, which reads its ready instance.
 export default defineService('Mentions', () => {
   const MentionController = require('./mention-controller');
   const WebmentionMetadata = require('./webmention-metadata');
@@ -19,7 +20,7 @@ export default defineService('Mentions', () => {
   const urlUtils = require('../../../shared/url-utils').default;
   const settingsCache = require('../../../shared/settings-cache');
   const urlService = require('../url');
-  const oembedService = require('../oembed');
+  const oembedService = require('../oembed').default.service;
   const jobsService = require('../jobs-service').getInstance();
 
   const repository = new BookshelfMentionRepository({
