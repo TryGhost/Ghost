@@ -91,6 +91,71 @@ describe('AutomationEmailAnalyticsBatchProcessor', function () {
       );
     });
 
+    it('ignores opened events from generic bots', async function () {
+      const automationsApi = buildAutomationsApi([buildRecipient()]);
+      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const result = new EventProcessingResult();
+      const fetchData: { lastEventTimestamp?: Date } = {};
+
+      await processor.processBatch(
+        [
+          {
+            type: 'opened',
+            providerId: 'message-1',
+            timestamp: new Date(1),
+            bot: 'generic',
+          },
+        ],
+        result,
+        fetchData,
+      );
+
+      assert.deepEqual(result, new EventProcessingResult({ unprocessable: 1 }));
+      assert.deepEqual(fetchData, { lastEventTimestamp: new Date(1) });
+
+      sinon.assert.calledOnceWithExactly(automationsApi.trackEmailDeliveredAndOpened, new Map());
+    });
+
+    it('counts opened events from apple and gmail bots', async function () {
+      const automationsApi = buildAutomationsApi([
+        buildRecipient({ id: 'recipient-1', mailgun_message_id: 'message-1' }),
+        buildRecipient({ id: 'recipient-2', mailgun_message_id: 'message-2' }),
+      ]);
+      const processor = new AutomationEmailAnalyticsBatchProcessor({ automationsApi });
+      const result = new EventProcessingResult();
+      const fetchData: { lastEventTimestamp?: Date } = {};
+
+      await processor.processBatch(
+        [
+          {
+            type: 'opened',
+            providerId: 'message-1',
+            timestamp: new Date(1),
+            bot: 'apple',
+          },
+          {
+            type: 'opened',
+            providerId: 'message-2',
+            timestamp: new Date(2),
+            bot: 'gmail',
+          },
+        ],
+        result,
+        fetchData,
+      );
+
+      assert.deepEqual(result, new EventProcessingResult({ opened: 2 }));
+      assert.deepEqual(fetchData, { lastEventTimestamp: new Date(2) });
+
+      sinon.assert.calledOnceWithExactly(
+        automationsApi.trackEmailDeliveredAndOpened,
+        new Map([
+          ['recipient-1', { openedAt: new Date(1), automationActionRevisionId: 'revision-1' }],
+          ['recipient-2', { openedAt: new Date(2), automationActionRevisionId: 'revision-1' }],
+        ]),
+      );
+    });
+
     it('handles a mix of events for several recipients', async function () {
       const automationsApi = buildAutomationsApi([
         buildRecipient({ id: 'recipient-1', mailgun_message_id: 'message-1' }),
