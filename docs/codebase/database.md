@@ -120,6 +120,27 @@ schema definition, migration, exporter table lists, and integrity tests in sync.
 For initial data and settings defaults, see the
 [schema and default data guide](../../ghost/core/server/data/schema/README.md).
 
+## Table collation
+
+Tables are created with the `utf8mb4` character set but no collation of their
+own, so MySQL gives them the server's default for that set. That default is not
+the same everywhere: it changed between MySQL 5.7 and 8 and differs again on
+MariaDB, and a database upgraded in place keeps the collation of its existing
+tables. A foreign key needs both of its columns to share a collation, so a new
+table with the wrong one fails with `ER_FK_INCOMPATIBLE_COLUMNS`.
+
+`createTable` in
+[`commands.ts`](../../ghost/core/server/data/schema/commands.ts) avoids this by
+reading the collation of each column a new table's foreign keys reference and
+giving the foreign key columns the same one. Use it, or the table helpers in
+the migration utils that call it, rather than creating tables with knex
+directly.
+
+To choose a collation instead, set `database__connection__collate` (for
+example `utf8mb4_general_ci`). Knex then creates every table with it, and Ghost
+no longer matches the referenced columns, so pick one that is compatible with
+the existing tables or leave it unset.
+
 ## Row locking
 
 Inside a transaction (`options.transacting`), `Model.edit` and

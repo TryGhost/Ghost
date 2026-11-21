@@ -45,12 +45,15 @@ const messages = {
  * Adds a column to a table being built. A `references` on the column is built by
  * `addForeignKey`, like any other foreign key, and a `pattern` by the caller, as a check on
  * the table.
+ *
+ * @param [collation] - collation to give a string column, instead of the table's default
  */
 function addTableColumn(
   tableName: string,
   tableBuilder: TableBuilder,
   columnName: string,
   columnSpec: ColumnDefinition = tables[tableName]![columnName] as ColumnDefinition,
+  collation?: string,
 ) {
   let column: LooseColumnBuilder;
   const columnMethod = (type: ColumnDefinition['type']) =>
@@ -74,6 +77,10 @@ function addTableColumn(
     column = tableBuilder.dateTime(columnName, { precision: columnSpec.precision });
   } else {
     column = columnMethod(columnSpec.type)(columnName);
+  }
+
+  if (collation && columnSpec.type === 'string') {
+    column.collate(collation);
   }
 
   if (Object.hasOwn(columnSpec, 'nullable') && columnSpec.nullable === true) {
@@ -703,24 +710,85 @@ async function addPrimaryKey(
 }
 
 /**
- * Adds a table according to the provided spec, or falls back to the current schema
+ * The collation MySQL gives each column of a table's foreign keys, read from the columns they
+ * reference. A foreign key needs both columns to share a collation, but a table created
+ * without one takes the server's default for its character set, and that is not always what
+ * the existing tables were created with: the default changed between MySQL 5.7 and 8, and
+ * differs again on MariaDB. Creating the table with the collation of the columns it
+ * references keeps it compatible, whatever the default.
  *
- * NOTE: this function does NOT check if the table already exists - use the migration
- * utils if you want that
+ * Empty on SQLite, and when `database.connection.collate` is set: knex then creates every
+ * table with that collation, so the operator has chosen it.
+ *
+ * @param tableSpec - table schema the table is created with
+ * @param transaction - connection to the DB
+ * @returns the collation to give each foreign key column, by column name
+ */
+async function getForeignKeyCollations(
+  tableSpec: TableDefinition,
+  transaction: Knex,
+): Promise<Record<string, string>> {
+  const connectionSettings = (transaction.client as { connectionSettings?: { collate?: string } })
+    .connectionSettings;
+  if (!DatabaseInfo.isMySQL(transaction) || connectionSettings?.collate) {
+    return {};
+  }
+
+  // Each column of a key over several is paired with the column it references at the same
+  // position. A column in more than one key takes the collation of the last.
+  const referencedBy = new Map<string, { table: string; column: string }>();
+  foreignKeySpecsOf(tableSpec).forEach(({ columns, references }) => {
+    columns.forEach((column, index) => {
+      referencedBy.set(column, { table: references.table, column: references.columns[index]! });
+    });
+  });
+
+  if (referencedBy.size === 0) {
+    return {};
+  }
+
+  const referenced = [...referencedBy.values()];
+  const [rows] = (await transaction.raw(
+    `SELECT TABLE_NAME AS tableName, COLUMN_NAME AS columnName, COLLATION_NAME AS collation
+     FROM information_schema.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE()
+       AND COLLATION_NAME IS NOT NULL
+       AND (TABLE_NAME, COLUMN_NAME) IN (${referenced.map(() => '(?, ?)').join(', ')})`,
+    referenced.flatMap(({ table, column }) => [table, column]),
+  )) as [{ tableName: string; columnName: string; collation: string }[]];
+
+  const collations: Record<string, string> = {};
+  for (const [column, reference] of referencedBy) {
+    const match = rows.find(
+      (row) => row.tableName === reference.table && row.columnName === reference.column,
+    );
+    if (match) {
+      collations[column] = match.collation;
+    }
+  }
+  return collations;
+}
+
+/**
+ * Builds the statement that adds a table according to the provided spec, without running it
  *
  * @param table - name of the table to create
- * @param [transaction] - connection to the DB
- * @param [tableSpec] - table schema to generate table with
+ * @param transaction - connection to the DB
+ * @param tableSpec - table schema to generate table with
+ * @param [collations] - the collation to give each string column, by column name
  */
-function createTable(
+function buildTable(
   table: string,
-  transaction: Knex = db.knex,
-  tableSpec: TableDefinition = tables[table]!,
+  transaction: Knex,
+  tableSpec: TableDefinition,
+  collations: Record<string, string> = {},
 ) {
   return transaction.schema.createTable(table, function (t) {
     Object.keys(tableSpec)
       .filter((column) => !column.startsWith('@@'))
-      .forEach((column) => addTableColumn(table, t, column, tableSpec[column] as ColumnDefinition));
+      .forEach((column) =>
+        addTableColumn(table, t, column, tableSpec[column] as ColumnDefinition, collations[column]),
+      );
 
     if (tableSpec['@@INDEXES@@']) {
       tableSpec['@@INDEXES@@'].forEach((index: IndexDefinition) => {
@@ -761,6 +829,25 @@ function createTable(
       t.check('?? REGEXP ?', [check.column, check.pattern], check.constraintName),
     );
   });
+}
+
+/**
+ * Adds a table according to the provided spec, or falls back to the current schema
+ *
+ * NOTE: this function does NOT check if the table already exists - use the migration
+ * utils if you want that
+ *
+ * @param table - name of the table to create
+ * @param [transaction] - connection to the DB
+ * @param [tableSpec] - table schema to generate table with
+ */
+async function createTable(
+  table: string,
+  transaction: Knex = db.knex,
+  tableSpec: TableDefinition = tables[table]!,
+) {
+  const collations = await getForeignKeyCollations(tableSpec, transaction);
+  return buildTable(table, transaction, tableSpec, collations);
 }
 
 /**
@@ -920,6 +1007,8 @@ export {
   getColumns,
   createColumnMigration,
   // NOTE: below are exposed for testing purposes only
+  buildTable as _buildTable,
+  getForeignKeyCollations as _getForeignKeyCollations,
   hasForeignSQLite as _hasForeignSQLite,
   hasPrimaryKeySQLite as _hasPrimaryKeySQLite,
 };
