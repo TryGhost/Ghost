@@ -51,6 +51,8 @@ Object {
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "reading_time": 0,
       "slug": "scheduled-post",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "scheduled",
       "tags": Any<Array>,
       "tiers": Array [
@@ -140,6 +142,8 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "reading_time": 1,
       "slug": "unfinished",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "draft",
       "tags": Any<Array>,
       "tiers": Array [
@@ -197,7 +201,7 @@ exports[`Posts API Can browse 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "11582",
+  "content-length": "11686",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -600,6 +604,8 @@ Object {
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "reading_time": 0,
       "slug": "scheduled-post",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "scheduled",
       "tags": Any<Array>,
       "tiers": Array [
@@ -709,6 +715,8 @@ Header Level 3
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "reading_time": 1,
       "slug": "unfinished",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "draft",
       "tags": Any<Array>,
       "tiers": Array [
@@ -766,7 +774,7 @@ exports[`Posts API Can browse with formats 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "14264",
+  "content-length": "14368",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -826,6 +834,8 @@ Object {
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "reading_time": 0,
       "slug": "scheduled-post",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "scheduled",
       "tags": Any<Array>,
       "tiers": Array [
@@ -915,6 +925,8 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "reading_time": 1,
       "slug": "unfinished",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "draft",
       "tags": Any<Array>,
       "tiers": Array [
@@ -972,7 +984,7 @@ exports[`Posts API Can browse with restricted filter fields 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "11582",
+  "content-length": "11686",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1023,6 +1035,8 @@ Object {
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "reading_time": 0,
       "slug": "test-post-2",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "published",
       "tags": Any<Array>,
       "tiers": Array [
@@ -1080,7 +1094,7 @@ exports[`Posts API Convert can convert a mobiledoc post to lexical 2: [headers] 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4498",
+  "content-length": "4550",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1132,6 +1146,8 @@ Object {
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "reading_time": 0,
       "slug": "test-post-2",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "published",
       "tags": Any<Array>,
       "tiers": Array [
@@ -1189,7 +1205,7 @@ exports[`Posts API Convert can convert a mobiledoc post to lexical 4: [headers] 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4498",
+  "content-length": "4550",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1238,6 +1254,8 @@ Object {
       "primary_tag": Any<Object>,
       "published_at": null,
       "slug": "test-post-copy",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "draft",
       "tags": Any<Array>,
       "tiers": Array [
@@ -1295,7 +1313,7 @@ exports[`Posts API Copy Can copy a post 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4282",
+  "content-length": "4334",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1347,6 +1365,8 @@ Object {
       "published_at": null,
       "reading_time": 0,
       "slug": "html-test",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "draft",
       "tags": Any<Array>,
       "tiers": Array [
@@ -1404,7 +1424,7 @@ exports[`Posts API Create Can create a post with html 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4512",
+  "content-length": "4564",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1456,6 +1476,8 @@ Object {
       "published_at": null,
       "reading_time": 0,
       "slug": "lexical-test",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "draft",
       "tags": Any<Array>,
       "tiers": Array [
@@ -1513,7 +1535,7 @@ exports[`Posts API Create Can create a post with lexical 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4524",
+  "content-length": "4576",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1565,6 +1587,8 @@ Object {
       "published_at": null,
       "reading_time": 0,
       "slug": "mobiledoc-test",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "draft",
       "tags": Any<Array>,
       "tiers": Array [
@@ -1622,7 +1646,7 @@ exports[`Posts API Create Can create a post with mobiledoc 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4534",
+  "content-length": "4586",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1730,7 +1754,7 @@ exports[`Posts API Create invalidates preview cache when updating a draft post 1
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4310",
+  "content-length": "4362",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2306,6 +2330,8 @@ Object {
       "primary_tag": Any<Object>,
       "published_at": null,
       "slug": "test-page",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "draft",
       "tags": Any<Array>,
       "tiers": Array [
@@ -2345,7 +2371,7 @@ exports[`Posts API Update Access Visibility is set to tiers Saves only paid tier
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3915",
+  "content-length": "3967",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2397,6 +2423,8 @@ Object {
       "published_at": null,
       "reading_time": 0,
       "slug": "lexical-update-test",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "draft",
       "tags": Any<Array>,
       "tiers": Array [
@@ -2454,7 +2482,7 @@ exports[`Posts API Update Can update a post with lexical 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4475",
+  "content-length": "4527",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2506,6 +2534,8 @@ Object {
       "published_at": null,
       "reading_time": 0,
       "slug": "lexical-update-test",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "draft",
       "tags": Any<Array>,
       "tiers": Array [
@@ -2563,7 +2593,7 @@ exports[`Posts API Update Can update a post with lexical 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4472",
+  "content-length": "4524",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2615,6 +2645,8 @@ Object {
       "published_at": null,
       "reading_time": 0,
       "slug": "mobiledoc-update-test",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "draft",
       "tags": Any<Array>,
       "tiers": Array [
@@ -2672,7 +2704,7 @@ exports[`Posts API Update Can update a post with mobiledoc 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4479",
+  "content-length": "4531",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2724,6 +2756,8 @@ Object {
       "published_at": null,
       "reading_time": 0,
       "slug": "mobiledoc-update-test",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "draft",
       "tags": Any<Array>,
       "tiers": Array [
@@ -2781,7 +2815,7 @@ exports[`Posts API Update Can update a post with mobiledoc 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4476",
+  "content-length": "4528",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2831,6 +2865,8 @@ Object {
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "reading_time": 0,
       "slug": "integration-auth-test-post",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "published",
       "tags": Any<Array>,
       "tiers": Array [

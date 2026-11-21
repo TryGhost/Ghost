@@ -122,6 +122,8 @@ Object {
       "primary_tag": null,
       "published_at": null,
       "slug": "testing-post-added-webhook",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "draft",
       "tags": Array [],
       "tiers": Array [
@@ -256,6 +258,7 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "published_at": null,
       "slug": "testing-post-deleted-webhook",
+      "social_web_share": "article",
       "status": "draft",
       "title": "testing post.deleted webhook",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -411,6 +414,8 @@ Object {
       "primary_tag": null,
       "published_at": null,
       "slug": "testing-post-edited-webhook",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "draft",
       "tags": Array [],
       "tiers": Array [
@@ -673,6 +678,8 @@ Header Level 3
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "reading_time": 1,
       "slug": "webhookz",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "published",
       "tags": Array [],
       "tiers": Array [
@@ -914,6 +921,8 @@ Object {
       "primary_tag": null,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "slug": "testing-post-published-edited-webhook",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "published",
       "tags": Array [],
       "tiers": Array [
@@ -1154,6 +1163,8 @@ Object {
       "primary_tag": null,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "slug": "testing-post-rescheduled-webhook",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "scheduled",
       "tags": Array [],
       "tiers": Array [
@@ -1394,6 +1405,8 @@ Object {
       "primary_tag": null,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "slug": "testing-post-scheduled-webhook",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "scheduled",
       "tags": Array [],
       "tiers": Array [
@@ -1679,6 +1692,8 @@ Header Level 3
       "published_at": null,
       "reading_time": 1,
       "slug": "test-post-tag-attached-webhook",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "draft",
       "tags": Array [
         Object {
@@ -1964,6 +1979,8 @@ Header Level 3
       "published_at": null,
       "reading_time": 1,
       "slug": "test-post-tag-detached-webhook",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "draft",
       "tags": Array [],
       "tiers": Array [
@@ -2211,6 +2228,8 @@ Header Level 3
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "reading_time": 1,
       "slug": "webhookz-unpublished",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "draft",
       "tags": Array [],
       "tiers": Array [
@@ -2451,6 +2470,8 @@ Object {
       "primary_tag": null,
       "published_at": null,
       "slug": "testing-post-unscheduled-webhook",
+      "social_web_note": null,
+      "social_web_share": "article",
       "status": "draft",
       "tags": Array [],
       "tiers": Array [
