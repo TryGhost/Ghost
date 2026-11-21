@@ -2,8 +2,6 @@ import { useMemo } from 'react';
 import { parseAllSharedViewsJSON } from '@/members/api';
 import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 
-export type { SharedView } from '@/members/api';
-
 // Palette variables so the dots follow the admin7Design palette; flag off they
 // resolve to the previous hex values. Teal has no palette family and orange is
 // off the previous orange ramp, so both stay literal.

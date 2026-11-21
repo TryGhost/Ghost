@@ -1,7 +1,7 @@
 import { defineService } from '../../../kernel/define-service';
 import urlUtils from '../../../shared/url-utils';
 const urlService = require('../url');
-const permissions = require('../permissions');
+const permissions = require('../../auth/permissions');
 const AudienceFeedbackService = require('./audience-feedback-service');
 const AudienceFeedbackController = require('./audience-feedback-controller');
 const Feedback = require('./feedback');

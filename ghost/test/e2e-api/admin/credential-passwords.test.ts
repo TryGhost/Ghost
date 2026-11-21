@@ -38,7 +38,20 @@ function betterAuth() {
     urlUtils,
     password: security.password,
     logger: { debug() {}, info() {}, warn() {}, error() {} },
-    limiters: { globalBlock: allow, globalReset: allow, userLogin: allow, userReset: allow },
+    limiters: {
+      globalBlock: allow,
+      globalReset: allow,
+      userLogin: allow,
+      userReset: allow,
+      sendVerificationCode: allow,
+      userVerification: allow,
+      verificationEmail: allow,
+    },
+    sendPasswordResetEmail: async () => {},
+    isStaffDeviceVerificationEnabled: () => false,
+    isEmailMfaRequired: () => false,
+    sendDeviceVerificationCode: async () => {},
+    getRequestOrigin: (headers) => headers.get('origin'),
   });
   const origin = urlUtils.getAdminOrigin();
 

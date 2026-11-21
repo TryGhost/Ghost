@@ -160,6 +160,36 @@ Settings, the editor, the automation editor, mobile and pages without a
 navigation inside the same sidebar, pinned without changing the stored mode. Mobile keeps the sidebar sheet, and the flag-off path
 preserves the docked sidebar and the separate Settings sidebar.
 
+With `admin7Design` on, spacing separates the sidebar's navigation groups;
+Content, Audience and Apps keep their headings when apps are enabled.
+Ghost(Pro) and Settings follow the last group in the scrolling navigation.
+The active banner stays above the bottom account avatar, with a gradient upgrade
+banner and a flat What's New banner. The account trigger shows only the avatar. Private sites
+show a 14px title at the shared title weight above a compact purple badge,
+linking to Access settings, with 1px vertical and 5px horizontal padding and a
+2px gap below the title. Site icons are 32px for private and public sites. Settings'
+Access navigation uses the same borderless purple badge. The sidebar omits the member count
+already shown in the top bar. The Posts create action appears on sidebar hover
+or keyboard focus and stays visible on touch devices.
+
+The floating panel is 269px wide in both the main navigation and Settings.
+Main and Settings navigation use 12px side insets. Main navigation uses 4px
+item corners, 24px group gaps and an extra 8px above the first menu group;
+group labels use 10px medium text with 0.04em tracking. The Posts create action
+shares the pin control's hover intent and transition timing. Submenus retain
+their rows during collapse, immediately make them inert and hidden from
+assistive technology, and stagger their entrances like the Settings navigation.
+Reduced motion skips the submenu transitions and stagger.
+Submenu entries use variable-font weight 425. Their expansion follows the active
+navigation section automatically, with only one open at a time and no manual
+arrow controls. The flag-off sidebar keeps its saved expansion preferences.
+The account avatar uses the full sidebar accent fill on hover. The glass
+outline is slightly stronger in both themes; flag-off surfaces retain their
+previous border and shadow values.
+The footer overlaps scrolling navigation with a 24px background gradient; matching
+top padding keeps the banner and avatar in place, while navigation bottom padding
+lets its final item scroll clear of the fade.
+
 The `admin7Design` milestone also sets column headers in a small uppercase label
 style. Section headings on member details, tag details and Settings share one
 style, and member stats and list text follow the prototype. Settings sidebar
@@ -225,6 +255,20 @@ focusable and takes no pointer input while hidden. The milestone also trims the
 chrome itself: the back link shows its arrow alone, the editor font and the
 guide to the editor leave the footer for the settings panel, and the meta data
 and social cards share one pane with a tab each.
+
+### Mobile hardening
+
+`admin7Mobile` is an opt-in private flag, independent of `admin7Design`.
+Admin passes it to ShadeApp; shared components read `useShade().admin7Mobile`,
+and ShadeApp and portal scopes carry `data-admin7-mobile`. It defaults off in
+standalone Shade consumers too. Available width selects the responsive layout;
+the flag only enables the improvements. Keep changes at their owning component
+or layout boundary and reuse data and interaction logic.
+
+Use [Admin session overrides](#admin-session-overrides) to preview the flag.
+Network, Automations/Apps, and the editor are outside this project's scope.
+Remove the old branches and this switch when the responsive behavior becomes
+the default.
 
 ## How values are resolved
 

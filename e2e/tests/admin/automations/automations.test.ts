@@ -1,4 +1,9 @@
-import { AutomationEditorPage, AutomationsPage } from '@/admin-pages';
+import {
+  AutomationEditorPage,
+  AutomationsPage,
+  MemberDetailsPage,
+  MembersListPage,
+} from '@/admin-pages';
 import { HomePage, PublicPage } from '@/public-pages';
 import { MailPit } from '@/helpers/services/email/mail-pit';
 import {
@@ -145,6 +150,55 @@ test.describe('Ghost Admin - Automations', () => {
 
           await expectAutomationEmail(emailAddress, subject, body);
         });
+      });
+    });
+  });
+
+  test.describe('label added', () => {
+    test.use({ labs: { automations: true, automationsLeadMagnets: true } });
+
+    test('label added to a member sends the published automation email', async ({
+      page,
+      browser,
+      baseURL,
+      emailClient,
+    }) => {
+      const subject = 'Your label automation';
+      const body = 'Your label has been added.';
+      const label = 'Automation label';
+
+      await new AutomationsPage(page).goto();
+      await page.getByRole('button', { name: 'New automation', exact: true }).click();
+      await page.getByRole('button').getByText('Label added', { exact: true }).click();
+      await page
+        .getByRole('combobox', { name: 'Triggered when this label is added to a member:' })
+        .click();
+      await page.getByRole('combobox', { name: 'Search labels' }).fill(label);
+      await page.getByRole('option', { name: `Create “${label}”` }).click();
+
+      const editor = new AutomationEditorPage(page);
+      await editor.nameInput.fill('Label welcome');
+      await editor.addEmail(subject, body);
+      await editor.publish();
+      await expect(editor.publishedButton).toBeVisible();
+
+      await withIsolatedPage(browser, { baseURL }, async ({ page: memberPage }) => {
+        const { emailAddress } = await signupViaPortal(memberPage);
+        const signupMessages = await emailClient.searchByRecipient(emailAddress);
+        const signupEmail = await emailClient.getMessageDetailed(signupMessages[0]);
+        await new PublicPage(memberPage).goto(extractMagicLink(signupEmail.Text));
+        await expect(new HomePage(memberPage).accountButton).toBeVisible();
+
+        const members = new MembersListPage(page);
+        await members.goto();
+        await members.clickMemberByEmail(emailAddress);
+        const memberDetails = new MemberDetailsPage(page);
+        await memberDetails.labelsInput.click();
+        await page.getByRole('combobox', { name: 'Labels' }).fill(label);
+        await page.getByRole('option', { name: `${label} Edit label ${label}` }).click();
+        await memberDetails.save();
+
+        await expectAutomationEmail(emailAddress, subject, body);
       });
     });
   });

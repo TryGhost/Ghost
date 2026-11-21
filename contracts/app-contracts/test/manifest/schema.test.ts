@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import { AppManifestSchema } from '../../src/manifest/index.ts';
+import { URL_MAX_LENGTH } from '../../src/manifest/limits.ts';
 import { devManifest, devOptions, errorsOf, manifest, manifestOf } from './helpers.ts';
 
 describe('shape', () => {
@@ -179,6 +180,58 @@ describe('author', () => {
     expect(
       errorsOf(manifest({ author: { name: 'A', url: 'http://localhost:3000' } }))[0]?.path,
     ).toBe('author.url');
+  });
+
+  it('may be a mailto: link to one address, which reads back as it was accepted', () => {
+    const accepted = manifestOf(
+      manifest({ author: { name: 'A', url: 'MAILTO:support@example.com' } }),
+    );
+    expect(accepted.author.url).toBe('mailto:support@example.com');
+    expect(AppManifestSchema.parse(accepted).author.url).toBe('mailto:support@example.com');
+    expect(
+      manifestOf(manifest({ author: { name: 'A', url: ' mailto:support@example.com' } })).author
+        .url,
+    ).toBe('mailto:support@example.com');
+    expect(
+      manifestOf(manifest({ author: { name: 'A', url: 'mailto:josé+apps@example.co.uk' } })).author
+        .url,
+    ).toBe('mailto:jos%C3%A9+apps@example.co.uk');
+
+    for (const url of [
+      'mailto:',
+      'mailto:support',
+      'mailto:support@example.com,other@example.com',
+      'mailto:support@example.com?subject=Hi',
+      'mailto:support@example.com?cc=other@example.com',
+      'mailto:support@example.com#x',
+      'mailto:support@example.com?',
+      'mailto:support@example.com#',
+      'mailto:a%40example.com%2Cb@example.com',
+      'mailto:support@example.com%3Fsubject%3DHi',
+      'mailto:%20support@example.com',
+      'mailto:support%ZZ@example.com',
+      'mailto://first@example.com,/second@example.com',
+      'mailto://first@example.com%2C/second@example.com',
+      'mailto://support@example.com',
+      'mailto:support@example.com%00',
+      'mailto:sup%01port@example.com',
+      'mailto:support@example.com%E2%80%AE',
+      'mailto:support@example.com%E1%85%9F',
+      'mailto:sup%E2%A0%80port@example.com',
+      `mailto:${'a'.repeat(URL_MAX_LENGTH)}@example.com`,
+    ]) {
+      expect(errorsOf(manifest({ author: { name: 'A', url } }))).toEqual([
+        { path: 'author.url', message: 'Expected a mailto: link to one email address' },
+      ]);
+    }
+  });
+
+  it('keeps mailto: to the author, never the manifest URL', () => {
+    expect(
+      errorsOf(manifest({ manifest_url: 'mailto:support@example.com' })).some(
+        ({ path }) => path === 'manifest_url',
+      ),
+    ).toBe(true);
   });
 
   it('may link to the site itself, since the link is never loaded by Ghost', () => {

@@ -134,6 +134,7 @@ class EmailServiceWrapper {
       db,
       sentry,
       getRequiredUrlRelations,
+      resumeMaxAgeMs: configService.get('bulkEmail:resumeMaxAgeMs'),
       batchCreationConcurrency,
     });
     const sendingStatusService = new SendingStatusService({ knex: db.knex });

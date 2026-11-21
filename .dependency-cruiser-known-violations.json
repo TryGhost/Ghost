@@ -131,11 +131,6 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/custom-redirects/validation.js",
-    "to": "lodash"
-  },
-  {
-    "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-address/email-address-service-wrapper.js",
     "to": "ghost/core/server/services/settings-helpers/index.js"
   },
@@ -392,7 +387,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/email-suppression-list/mailgun-email-suppression-list.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -442,7 +437,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/gifts/gift-delivery-service.ts",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -483,6 +478,11 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/identity-tokens/identity-token-service-wrapper.js",
     "to": "ghost/core/shared/url-utils.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
+    "to": "ghost/core/server/auth/better-auth/clear-expired-auth-rows-job.ts"
   },
   {
     "rule": "service-dependencies",
@@ -732,7 +732,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/milestones/service.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -762,7 +762,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/milestones/slack-notifications/service.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -852,7 +852,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/offers/offer-bookshelf-repository.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -872,7 +872,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/offers/offers-module.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -893,31 +893,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/offers/service.js",
     "to": "ghost/core/shared/url-utils.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/permissions/actions-map-cache.js",
-    "to": "lodash"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/permissions/can-this.js",
-    "to": "ghost/core/server/models/index.js"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/permissions/can-this.js",
-    "to": "ghost/core/server/models/role-utils.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/permissions/can-this.js",
-    "to": "lodash"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/permissions/providers.js",
-    "to": "ghost/core/server/models/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -1022,7 +997,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/posts/posts-service.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -1166,12 +1141,12 @@
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/settings/settings-utils.js",
+    "from": "ghost/core/server/services/settings/settings-utils.ts",
     "to": "@tryghost/logging"
   },
   {
     "rule": "service-dependencies",
-    "from": "ghost/core/server/services/settings/settings-utils.js",
+    "from": "ghost/core/server/services/settings/settings-utils.ts",
     "to": "ghost/core/shared/config/index.ts"
   },
   {
@@ -1362,11 +1337,6 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/update-check/update-check-service.js",
-    "to": "lodash"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/update-check/update-check-service.js",
     "to": "moment"
   },
   {
@@ -1387,7 +1357,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/url/routable-resources.js",
-    "to": "ghost/core/server/data/schema/index.js"
+    "to": "ghost/core/server/data/schema/index.ts"
   },
   {
     "rule": "service-dependencies",
@@ -1402,7 +1372,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/verification-trigger.js",
-    "to": "@tryghost/domain-events"
+    "to": "packages/domain-events/index.js"
   },
   {
     "rule": "service-dependencies",
@@ -1423,11 +1393,6 @@
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/verification/verification-webhook-service.ts",
     "to": "ghost/core/shared/config/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/webhooks/listen.js",
-    "to": "lodash"
   },
   {
     "rule": "service-dependencies",

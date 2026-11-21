@@ -1,7 +1,5 @@
-import type {
-  AppManifest,
-  AppManifestChange,
-} from '@tryghost/admin-x-framework/api/app-installations';
+import type { FieldChange } from '@tryghost/app-contracts';
+import type { AppManifest } from '@tryghost/admin-x-framework/api/app-installations';
 
 /** A manifest and where it was read from: what was approved, or what is being reviewed. */
 export interface ManifestVersion {
@@ -29,7 +27,7 @@ const FIELDS: Field[] = [
   { field: 'name', label: 'Name', value: (m) => m.name },
   { field: 'description', label: 'Description', value: (m) => m.description },
   { field: 'author.name', label: 'Developer', value: (m) => m.author.name },
-  { field: 'author.url', label: 'Developer’s website', value: (m) => m.author.url },
+  { field: 'author.url', label: 'Developer’s support link', value: (m) => m.author.url },
   { field: 'accent_color', label: 'Accent color', value: (m) => m.accent_color },
   // A publisher reads the icon as one thing, named or served by the app.
   { field: 'icon', label: 'Icon', value: (m) => ('url' in m.icon ? m.icon.url : m.icon.name) },
@@ -69,7 +67,7 @@ function surfaceFields(approved: AppManifest, reviewed: AppManifest): Field[] {
 const topOf = (path: string) => path.split(/[.[]/, 1)[0];
 
 /** Whether a change is to this field, or to something inside it. */
-const within = (change: AppManifestChange, field: string) =>
+const within = (change: FieldChange, field: string) =>
   change.path === field || change.path.startsWith(`${field}.`);
 
 /**
@@ -80,7 +78,7 @@ const within = (change: AppManifestChange, field: string) =>
 export function describeChanges(
   approved: ManifestVersion,
   reviewed: ManifestVersion,
-  changes: AppManifestChange[],
+  changes: FieldChange[],
 ): ChangeRow[] {
   const fields = [...FIELDS, ...surfaceFields(approved.manifest, reviewed.manifest)];
   const rows: ChangeRow[] = [];

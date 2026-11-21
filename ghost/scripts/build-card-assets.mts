@@ -31,7 +31,7 @@ const destFile = path.join(projectRoot, 'core/frontend/public/cards.manifest.jso
 const LOADERS = {
   css: { loader: 'css' },
   js: { loader: 'js', target: ['es2020'] },
-} as const;
+} satisfies Record<CardType, esbuild.TransformOptions>;
 
 // header_v2.css is a second stylesheet for the public `header` card, not a
 // separate configurable card. This exact path override is intentional — `_vN`

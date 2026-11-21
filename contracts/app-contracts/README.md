@@ -53,9 +53,12 @@ An app describes itself to Ghost in a JSON manifest, which it serves as a
 - `id` is chosen by the developer, in reverse-domain style. It names the app: a
   site has at most one current installation per ID. It proves nothing about who
   made the app; `identity_key` does.
-- `name`, `description` and `author` are all required. The author's `url` is only
-  ever linked to, and nothing checks who the author is, so Admin's install review
-  and app details mark them as an unverified developer.
+- `name`, `description` and `author` are all required. The author's `url` is
+  where publishers reach the developer for support: a web page, held to the
+  same rules as the manifest's other URLs, or a `mailto:` link to one address,
+  with no query or fragment. It is only ever linked to, and nothing checks who
+  the author is, so Admin's install review and app details mark them as an
+  unverified developer.
 - Text is one line of plain text. Characters that show nothing, as a reader sees
   them, are taken off both ends, such as spaces, Hangul fillers and the blank
   Braille pattern standing alone, with any marks on them. Text with nothing
@@ -197,10 +200,13 @@ field added to the manifest later until it is listed as silent. That includes
 ```ts
 compareManifests(approved, next);
 // {
-//   changes: [{ path: 'surfaces[0].url', requiresApproval: true }],
+//   changes: [{ kind: 'field', path: 'surfaces[0].url', requires_approval: true }],
 //   requiresApproval: true,
 // }
 ```
+
+Each change has a `kind`, which is `field`, and its path. Ghost serves changes
+in this shape: `ManifestChangeSchema`, from `/manifest`, reads one back.
 
 ## Identity
 
@@ -318,12 +324,14 @@ sides read a path, a header or a refusal the same way.
 
 `fetch` takes an Admin API path, never a URL. Admin checks the request with
 `checkAdminApiRequest({ path, method, body }, apiRoot)`, which resolves the path
-against the Admin API root and returns the URL to request and the scope that
-allows it, or `invalid_path` for anything that leaves the root and `blocked`
-for anything else it refuses, with a `detail` naming the method and path or
-what was refused. `ADMIN_API_ALLOWLIST` lists the routes apps can reach, by
-method, under the scope names Permissions and auth will use; its header
-comment says what the security review (BER-3992) must look at. Writes of
+against the Admin API root and returns the URL to request and the allowlist
+group that allows it, or `invalid_path` for anything that leaves the root and
+`blocked` for anything else it refuses, with a `detail` naming the method and
+path or what was refused. `ADMIN_API_ALLOWLIST` lists the routes apps can
+reach, by method, grouped by resource and then under the scope registry's
+names; its header comment says what the security review (BER-3992) must look
+at. The scopes, their resources and the words Admin shows for them are in the
+scope registry, `src/scopes.ts`, which the root entry point exports. Writes of
 posts, pages and tags are also checked for code injection and mobiledoc
 (`content.ts`). It all stands in for apps' own token.
 
@@ -332,7 +340,7 @@ import { checkAdminApiRequest } from '@tryghost/app-contracts/bridge';
 
 const root = new URL('https://site.example/ghost/api/admin/');
 checkAdminApiRequest({ path: '/posts/?limit=5' }, root);
-// { url: …/ghost/api/admin/posts/?limit=5, pathname: '/posts/', scope: { name: 'posts:read', … } }
+// { url: …/ghost/api/admin/posts/?limit=5, pathname: '/posts/', group: { scope: 'post:browse', … } }
 checkAdminApiRequest({ path: '/../content/' }, root); // { problem: 'invalid_path' }
 checkAdminApiRequest({ path: '/db/' }, root);
 // { problem: 'blocked', pathname: '/db/', detail: "Apps can't use GET /db/" }

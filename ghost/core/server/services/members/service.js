@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const MembersSSR = require('./members-ssr');
@@ -123,14 +122,11 @@ const countRemovedEmailRecipients = async (since, limit) => {
 
 const initVerificationTrigger = () => {
   return new VerificationTrigger({
-    getApiTriggerThreshold: () =>
-      _.get(config.get('hostSettings'), 'emailVerification.apiThreshold'),
-    getAdminTriggerThreshold: () =>
-      _.get(config.get('hostSettings'), 'emailVerification.adminThreshold'),
-    getImportTriggerThreshold: () =>
-      _.get(config.get('hostSettings'), 'emailVerification.importThreshold'),
+    getApiTriggerThreshold: () => config.get('hostSettings')?.emailVerification?.apiThreshold,
+    getAdminTriggerThreshold: () => config.get('hostSettings')?.emailVerification?.adminThreshold,
+    getImportTriggerThreshold: () => config.get('hostSettings')?.emailVerification?.importThreshold,
     getRemovedRecipientsThreshold: () =>
-      _.get(config.get('hostSettings'), 'emailVerification.removedRecipientsThreshold'),
+      config.get('hostSettings')?.emailVerification?.removedRecipientsThreshold,
     isVerified: () => config.get('hostSettings:emailVerification:verified') === true,
     isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
     setVerificationRequired: (value) => settingsCache.set('email_verification_required', { value }),

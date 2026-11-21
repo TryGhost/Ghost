@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import type { Knex } from 'knex';
 import {
-  assertDatabaseSupported,
   createAuth,
   type CreateAuthDeps,
 } from '../../../../../core/server/auth/better-auth/create-auth';
@@ -13,7 +12,15 @@ const fakeKnex = () => ({}) as Knex;
 
 // Never blocks; the rate limits have their own tests
 const allow = () => ({ consume: async () => ({ allowed: true as const }), reset: async () => {} });
-const limiters = { globalBlock: allow, globalReset: allow, userLogin: allow, userReset: allow };
+const limiters = {
+  globalBlock: allow,
+  globalReset: allow,
+  userLogin: allow,
+  userReset: allow,
+  sendVerificationCode: allow,
+  userVerification: allow,
+  verificationEmail: allow,
+};
 
 function deps({
   siteUrl = 'https://example.com/',
@@ -35,6 +42,11 @@ function deps({
     },
     logger: { debug() {}, info() {}, warn() {}, error() {} },
     limiters,
+    sendPasswordResetEmail: async () => {},
+    isStaffDeviceVerificationEnabled: () => true,
+    isEmailMfaRequired: () => false,
+    sendDeviceVerificationCode: async () => {},
+    getRequestOrigin: (headers) => headers.get('origin'),
   };
 }
 
@@ -202,27 +214,5 @@ describe('createAuth', function () {
   it('generates ObjectIds', async function () {
     const context = await createAuth(deps()).$context;
     assert.match(context.generateId({ model: 'session' }) as string, /^[0-9a-f]{24}$/);
-  });
-});
-
-describe('assertDatabaseSupported', function () {
-  it('accepts MySQL with auth:betterAuthDev', function () {
-    assertDatabaseSupported({ client: 'mysql2', usesBetterAuth: true });
-  });
-
-  for (const client of ['sqlite3', 'better-sqlite3']) {
-    it(`refuses ${client}`, function () {
-      assert.throws(() => assertDatabaseSupported({ client, usesBetterAuth: true }), {
-        name: 'IncorrectUsageError',
-        message: 'auth:engine better-auth requires MySQL; SQLite is not supported.',
-      });
-    });
-  }
-
-  it('refuses a database without auth:betterAuthDev', function () {
-    assert.throws(() => assertDatabaseSupported({ client: 'mysql2', usesBetterAuth: false }), {
-      name: 'IncorrectUsageError',
-      message: /requires auth:betterAuthDev/,
-    });
   });
 });

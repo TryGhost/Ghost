@@ -18,7 +18,7 @@ import { MemberAccessSchema } from './access';
 import type { ValueColumn, ValueColumns } from './storage';
 import { KeySchema, NamespaceSchema } from '@tryghost/metafield-types/identity';
 
-// schema.js lists the same statuses in its `isIn`, because static schema config can't import this.
+// schema.ts lists the same statuses in its `isIn`, because the schema stays static config and does not import this.
 // Re-exported so the service reads every column's vocabulary from this module.
 export { FIELD_STATUS, FieldStatusSchema, type FieldStatus };
 

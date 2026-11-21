@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const {
@@ -402,17 +401,18 @@ module.exports = class CheckoutSessionEventService {
     // still created by this checkout, so only one created before it started counts.
     const memberPreexisted =
       Boolean(member) && !(session.created && member.get('created_at') >= session.created * 1000);
-    const checkoutType = _.get(session, 'metadata.checkoutType');
-    // Typing an email address into a checkout doesn't prove owning it, so an unverified
-    // checkout can link a subscription to an existing member but not edit their details.
-    const canUpdateMember =
+    const checkoutType = session.metadata?.checkoutType;
+    // Typing an email address into a checkout doesn't prove owning it, so a checkout an existing
+    // member didn't start signed in links their subscription and saves what it collected into
+    // custom fields, but can't change their name.
+    const buyerVerified =
       !memberPreexisted ||
       session.metadata?.ghostSignupContext === SIGNUP_CONTEXTS.ALREADY_AUTHENTICATED;
-    attempt.buying({ existing: memberPreexisted, verified: canUpdateMember });
+    attempt.buying({ existing: memberPreexisted, verified: buyerVerified });
 
     if (!member) {
-      const metadataName = _.get(session, 'metadata.name');
-      const metadataNewsletters = _.get(session, 'metadata.newsletters');
+      const metadataName = session.metadata?.name;
+      const metadataNewsletters = session.metadata?.newsletters;
       const attribution = {
         id: session.metadata?.attribution_id ?? null,
         url: session.metadata?.attribution_url ?? null,
@@ -422,10 +422,8 @@ module.exports = class CheckoutSessionEventService {
         referrerUrl: session.metadata?.referrer_url ?? null,
       };
 
-      const payerName = _.get(
-        customer,
-        'subscriptions.data[0].default_payment_method.billing_details.name',
-      );
+      const payerName =
+        customer.subscriptions?.data?.[0]?.default_payment_method?.billing_details?.name;
       const name = metadataName || payerName || null;
 
       const memberData = { email: customer.email, name, attribution };
@@ -450,10 +448,8 @@ module.exports = class CheckoutSessionEventService {
       };
       member = await memberRepository.create(memberDataWithStripeCustomer);
     } else {
-      const payerName = _.get(
-        customer,
-        'subscriptions.data[0].default_payment_method.billing_details.name',
-      );
+      const payerName =
+        customer.subscriptions?.data?.[0]?.default_payment_method?.billing_details?.name;
       const attribution = {
         id: session.metadata?.attribution_id ?? null,
         url: session.metadata?.attribution_url ?? null,
@@ -463,7 +459,7 @@ module.exports = class CheckoutSessionEventService {
         referrerUrl: session.metadata?.referrer_url ?? null,
       };
 
-      if (canUpdateMember && payerName && !member.get('name')) {
+      if (buyerVerified && payerName && !member.get('name')) {
         await memberRepository.update({ name: payerName }, { id: member.get('id') });
       }
 
@@ -504,7 +500,6 @@ module.exports = class CheckoutSessionEventService {
     // After the subscription work and apart from it: a throw here would fail the webhook, and
     // Stripe's retry could repeat the payment work.
     await this.saveCollected(member.id, session, {
-      canUpdateMember,
       wallet: walletOf(customer, session),
       attempt,
     });
@@ -530,17 +525,19 @@ module.exports = class CheckoutSessionEventService {
 
   /**
    * Saves what a checkout asked the buyer for into the custom fields the site's config names.
+   * They're saved for every buyer, including an existing member who checked out without signing
+   * in: what the checkout collected only ever goes into custom fields, and never changes the
+   * member's name or email.
    *
    * Never throws: a failed webhook makes Stripe retry it, which could repeat the payment work.
    *
    * @param {string} memberId
    * @param {import('stripe').Stripe.Checkout.Session} session
    * @param {object} options
-   * @param {boolean} options.canUpdateMember Whether this checkout may write to the member's record
    * @param {import('../../tracking').CheckoutWallet} options.wallet The wallet the buyer paid with
    * @param {CheckoutCompletionAttempt} options.attempt
    */
-  async saveCollected(memberId, session, { canUpdateMember, wallet, attempt }) {
+  async saveCollected(memberId, session, { wallet, attempt }) {
     try {
       if (!this.deps.labs.isSet(COLLECTION_FLAG)) {
         return;
@@ -550,29 +547,6 @@ module.exports = class CheckoutSessionEventService {
         return;
       }
       attempt.collecting(collected);
-      // Counted so how often a wallet's number needs a country to be read, and what then becomes
-      // of it, can be watched.
-      /** @param {import('../../tracking').CollectedPhoneOutcome} outcome */
-      const countPhone = (outcome) => {
-        if (phone) {
-          this.deps.tracking.collectedPhone({ wallet, phone, outcome });
-        }
-      };
-
-      if (!canUpdateMember) {
-        attempt.skipping();
-        logging.warn(
-          {
-            event: { name: 'stripe_checkout.collection.save_skipped' },
-            member_id: memberId,
-            session_id: session.id,
-          },
-          'Skipped saving what an unverified checkout collected for an existing member',
-        );
-        countPhone('skipped');
-        return;
-      }
-
       // Each value recorded against the binding that routed it, and what a field refuses is
       // logged rather than thrown, as the money is already taken: the rest are still saved.
       const { plans, refused, kept } = await this.deps.metafieldBindings.planThrough(collected, {
@@ -606,7 +580,11 @@ module.exports = class CheckoutSessionEventService {
           'Saved what a checkout collected, apart from what its custom fields refused',
         );
       }
-      countPhone(phoneOutcome(kept, refused));
+      // Counted so how often a wallet's number needs a country to be read, and what then becomes
+      // of it, can be watched.
+      if (phone) {
+        this.deps.tracking.collectedPhone({ wallet, phone, outcome: phoneOutcome(kept, refused) });
+      }
     } catch (err) {
       attempt.failing();
       logging.error(

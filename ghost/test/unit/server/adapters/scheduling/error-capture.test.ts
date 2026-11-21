@@ -1,11 +1,8 @@
 import sinon from 'sinon';
 import logging from '@tryghost/logging';
 import { withErrorCapture } from '../../../../../core/server/adapters/scheduling/error-capture';
-// sentry is a CJS module without types. It must be `require`d, not `import`ed:
-// the adapter under test also `require`s it, and tsx's ESM interop hands a
-// default import a different wrapper object than require() returns — stubbing
-// the import wouldn't patch the object the adapter actually calls.
-const sentry = require('../../../../../core/shared/sentry');
+// @ts-expect-error This module lacks type definitions.
+import sentry from '../../../../../core/shared/sentry';
 import type { SchedulingAdapter } from '../../../../../core/server/adapters/scheduling/error-capture';
 
 describe('Scheduling Adapter Error Capture', function () {

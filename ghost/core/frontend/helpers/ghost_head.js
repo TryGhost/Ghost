@@ -23,7 +23,6 @@ const { cardAssets } = require('../services/assets-minification');
 
 const logging = require('@tryghost/logging');
 const _ = require('lodash');
-const cssParser = require('css-tree');
 const debug = require('@tryghost/debug')('ghost_head');
 const { styles: templateStyles } = require('./tpl/styles');
 const { getFrontendAppConfig, getDataAttributes } = require('../utils/frontend-apps');
@@ -47,7 +46,14 @@ const serializeAccentColor = memoize(
       return null;
     }
 
+    // Hex is the common case and safe verbatim; skip loading css-tree for it.
+    if (/^#[0-9a-f]{3,8}$/i.test(value)) {
+      return `--ghost-accent-color:${value}`;
+    }
+
     try {
+      // Lazy: css-tree is heavy and only needed for non-hex values.
+      const cssParser = require('css-tree');
       const declaration = cssParser.parse(`--ghost-accent-color:${value}`, {
         context: 'declaration',
         parseCustomProperty: true,
@@ -336,21 +342,20 @@ function getTinybirdTrackerScript(dataRoot) {
   const token = localEnabled ? localConfig.token : statsConfig.token;
   const datasource = localEnabled ? localConfig.datasource : statsConfig.datasource;
 
-  const tbParams = _.map(
-    {
-      site_uuid: settingsCache.get('site_uuid'),
-      post_uuid: dataRoot.post?.uuid,
-      post_type: dataRoot.context?.includes('post')
-        ? 'post'
-        : dataRoot.context?.includes('page')
-          ? 'page'
-          : null,
-      member_uuid: dataRoot.member?.uuid,
-      member_status: dataRoot.member?.status,
-      gift_link: dataRoot._giftLink || '',
-    },
-    (value, key) => `tb_${key}="${value}"`,
-  ).join(' ');
+  const tbParams = Object.entries({
+    site_uuid: settingsCache.get('site_uuid'),
+    post_uuid: dataRoot.post?.uuid,
+    post_type: dataRoot.context?.includes('post')
+      ? 'post'
+      : dataRoot.context?.includes('page')
+        ? 'page'
+        : null,
+    member_uuid: dataRoot.member?.uuid,
+    member_status: dataRoot.member?.status,
+    gift_link: dataRoot._giftLink || '',
+  })
+    .map(([key, value]) => `tb_${key}="${value}"`)
+    .join(' ');
 
   return `<script defer src="${src}" data-stringify-payload="false" ${datasource ? `data-datasource="${datasource}"` : ''} data-storage="localStorage" data-host="${endpoint}" ${token && env !== 'production' ? `data-token="${token}"` : ''} ${tbParams}></script>`;
 }

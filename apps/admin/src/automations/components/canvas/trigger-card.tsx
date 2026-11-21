@@ -1,5 +1,6 @@
 import {
   buildTriggerRules,
+  getTriggerLabelId,
   getTriggerTierIds,
   subscriptionChangedSelectionFromRules,
 } from '@/automations/utils/trigger-rules';
@@ -22,16 +23,19 @@ import {
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { AutomationCard, AutomationCardHeader } from './automation-card';
+import { LabelTriggerPicker, type SelectedTriggerLabel } from './label-trigger-picker';
 import { TierScopePicker } from './tier-scope-picker';
 import { ChipPicker } from '@/shared/pickers/chip-picker';
 import type { TierSelection } from '@/automations/types';
 import { isTierSelectionEmpty, updateFromSelection } from '@/automations/utils/tier-selection';
 
 export type TriggerData = {
+  isActive: boolean;
   tierQuery: Pick<ReturnType<typeof useBrowseTiers>, 'data' | 'isLoading' | 'isError' | 'refetch'>;
   triggerType: AutomationTriggerRule['trigger_type'];
   rules: readonly AutomationTriggerRule[];
   savedTierIds: readonly string[];
+  selectedTriggerLabel?: SelectedTriggerLabel;
   onUpdate: (trigger: AutomationTrigger) => void;
 };
 
@@ -268,6 +272,24 @@ function getTriggerPresentation(trigger: TriggerData, errorMessage?: string) {
           </Text>
         ),
       };
+    case 'label_added':
+      return {
+        title: 'Label added',
+        Icon: LucideIcon.Tag,
+        content: (
+          <LabelTriggerPicker
+            disabled={trigger.isActive}
+            errorMessage={errorMessage}
+            labelId={getTriggerLabelId(trigger.rules)}
+            selectedLabel={trigger.selectedTriggerLabel}
+            onChange={(labelId) =>
+              trigger.onUpdate({
+                trigger_rules: buildTriggerRules({ triggerType: 'label_added', labelId }),
+              })
+            }
+          />
+        ),
+      };
     default: {
       const _exhaustive: never = trigger.triggerType;
       throw new Error(`Unknown automation trigger type: ${String(_exhaustive)}`);
@@ -288,7 +310,6 @@ export const TriggerCard: React.FC<
       aria-label={title}
       className="nodrag nopan w-[400px]"
       gap="xl"
-      onClick={(event) => event.stopPropagation()}
       onDoubleClick={(event) => event.stopPropagation()}
       onFocusCapture={onInteract}
       onPointerDownCapture={onInteract}

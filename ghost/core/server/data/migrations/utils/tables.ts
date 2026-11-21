@@ -8,11 +8,10 @@ import {
   type Migration,
   type MigrationFunction,
 } from './migrations';
+import type { TableDefinition } from '../../schema/types';
+import { commands } from '../../schema';
 
 const DatabaseInfo = require('@tryghost/database-info');
-const { commands } = require('../../schema');
-
-type TableSpec = Record<string, unknown>;
 
 function isDevelopmentOrTesting() {
   const env = config.get('env');
@@ -70,9 +69,9 @@ async function dropDevelopmentCopy(
 }
 
 /**
- * Creates a migrations which will add a new table from schema.js to the database
+ * Creates a migrations which will add a new table from schema.ts to the database
  * @param name - table name
- * @param tableSpec - copy of table schema definition as defined in schema.js at the moment of writing the migration, this parameter MUST be present
+ * @param tableSpec - copy of table schema definition as defined in schema.ts at the moment of writing the migration, this parameter MUST be present
  * @param options.replaceDevelopmentCopy - set when finalising a table that was in development (see
  *   schema/in-development.ts). Development and testing databases already have a copy built from an earlier
  *   definition, so there an existing table is replaced, discarding its data and dropping the tables that reference
@@ -80,7 +79,7 @@ async function dropDevelopmentCopy(
  */
 export function addTable(
   name: string,
-  tableSpec: TableSpec,
+  tableSpec: TableDefinition,
   { replaceDevelopmentCopy = false }: { replaceDevelopmentCopy?: boolean } = {},
 ): Migration {
   return createNonTransactionalMigration(
@@ -123,9 +122,12 @@ export function addTable(
  * feature flag.
  *
  * @param names - names of the tables to drop, each before any table it references
- * @param tableSpecs - copy of each table's schema definition as defined in schema.js at the moment of writing the migration, keyed by table name
+ * @param tableSpecs - copy of each table's schema definition as defined in schema.ts at the moment of writing the migration, keyed by table name
  */
-export function dropTables(names: string[], tableSpecs?: Record<string, TableSpec>): Migration {
+export function dropTables(
+  names: string[],
+  tableSpecs?: Record<string, TableDefinition>,
+): Migration {
   const up: MigrationFunction = async function up(connection) {
     for (const name of names) {
       const exists = await connection.schema.hasTable(name);
@@ -167,9 +169,9 @@ export function dropTables(names: string[], tableSpecs?: Record<string, TableSpe
 /**
  * Creates a migration which will drop an existing table and then re-add a new table based on provided spec
  * @param name - table name
- * @param tableSpec - copy of table schema definition as defined in schema.js at the moment of writing the migration, this parameter MUST be present
+ * @param tableSpec - copy of table schema definition as defined in schema.ts at the moment of writing the migration, this parameter MUST be present
  */
-export function recreateTable(name: string, tableSpec: TableSpec): Migration {
+export function recreateTable(name: string, tableSpec: TableDefinition): Migration {
   return createNonTransactionalMigration(
     async function up(connection) {
       const exists = await connection.schema.hasTable(name);

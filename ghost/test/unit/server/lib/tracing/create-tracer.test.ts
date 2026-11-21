@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { ValidationError } from '@tryghost/errors';
 import { z } from 'zod';
 import { createTracer } from '../../../../../core/server/lib/tracing/create-tracer';
+import type { Span } from '../../../../../core/server/lib/tracing/tracer';
 
 const LogFields = z.object({ event: z.object({ name: z.string() }) });
 
@@ -100,6 +101,33 @@ describe('createTracer', function () {
         },
       ],
     ]);
+  });
+
+  it('leaves attribute groups the span has nothing in off the exception line', async function () {
+    const { tracer, lines } = recording();
+
+    for (const setAttributes of [
+      () => {},
+      (span: Span) => span.setAttribute('design', 'applied'),
+      (span: Span) => span.setAttribute('rows', 3),
+    ]) {
+      await assert.rejects(
+        tracer.track('test.operation', async (span) => {
+          setAttributes(span);
+          throw new Error('Lost the connection');
+        }),
+      );
+    }
+
+    const Logged = z.array(z.tuple([z.record(z.string(), z.unknown())]));
+    assert.deepEqual(
+      Logged.parse(lines).map(([line]) =>
+        Object.fromEntries(
+          ['labels', 'numeric_labels'].filter((key) => key in line).map((key) => [key, line[key]]),
+        ),
+      ),
+      [{}, { labels: { design: 'applied' } }, { numeric_labels: { rows: 3 } }],
+    );
   });
 
   it('logs what was thrown as the line’s message when it isn’t an error', async function () {

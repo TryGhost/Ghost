@@ -1,7 +1,7 @@
 # Better Auth migration plan
 
-Status: Phase 0 done (go for Phase 2). Findings and settled decisions are in
-the [Better Auth README](../../ghost/core/server/auth/better-auth/README.md#phase-0-findings).
+Status: Phases 0 and 1 done; Phase 2 next. Findings and settled decisions are
+in the [Better Auth README](../../ghost/core/server/auth/better-auth/README.md#phase-0-findings).
 
 This plan moves Ghost's staff authentication onto
 [Better Auth](https://www.better-auth.com) without changing the wire contract of
@@ -79,10 +79,12 @@ Design rules:
   plugins (`magicLink`, `passkey`, `twoFactor`, `apiKey`, `sso`,
   `oauthProvider`). Not `bearer`: the session token stays in its httpOnly
   cookie, and is stripped from native responses (§10).
-- **Authorization stays in Ghost.** `canThis`, the code-defined role grants and
-  model `permissible` hooks are unchanged. Every credential resolves to one
-  `Principal`, from which `frame.options.context` is derived; token policy
-  (scopes, staff-token blocklist, integration allowlist) sits at that seam.
+- **Authorization stays in Ghost.** Every credential resolves to one
+  `Principal`, from which `frame.options.context` is derived. Access is
+  decided by `auth/policy/` from the principal: code-defined role grants and
+  row rules moved out of model `permissible` hooks, capped by token and app
+  scopes. `canThis` becomes an adapter over it (§3.6), and token policy
+  (scopes, staff-token blocklist, integration allowlist) lives there.
 - **Wire contracts are preserved** for older Admin builds (Admin and Core
   deploy independently), the comments moderation iframe, integrations and the
   Admin API SDK.
@@ -148,7 +150,7 @@ Any scheme other than `Ghost` is rejected with `INVALID_AUTH_HEADER`, so Bearer
 needs an explicit pass-through. Internal keys (`ghost-scheduler`,
 `ghost-internal-frontend`) are used in-process via `services/internal-keys`.
 
-**Permissions.** Role grants are code (`services/permissions/permissions-data.ts`,
+**Permissions.** Role grants are code (`auth/permissions/permissions-data.ts`,
 `role-permissions.ts`); Owner bypasses `canThis`. The `permissions`,
 `permissions_roles` and `permissions_users` tables are unused and unseeded and
 go in 7.0. `roles`, `roles_users` and `api_keys.role_id` remain.
@@ -187,8 +189,8 @@ the `rate_limits` table, `shared.middleware.rateLimiting`) with success resets. 
   content keys, cookies   │  → frame.options.context (same shape)        │ │  passkey, twoFactor,   │
                           └──────────────────────────────────────────────┘ │  apiKey, sso, oauth    │
                           ┌──────────────────────────────────────────────┐ │  Ghost plugins (§3.3)  │
-                          │  Authorization (unchanged): canThis + token  │ │  adapter: Knex         │
-                          │  policy (scopes, blocklist, allowlist)       │ └────────────────────────┘
+                          │  Authorization: auth/policy (capabilities,   │ │  adapter: Knex         │
+                          │  scopes, row rules); canThis as adapter      │ └────────────────────────┘
                           └──────────────────────────────────────────────┘
 ```
 
@@ -219,14 +221,14 @@ not, so legacy boot works without the tables until `user_accounts` graduates
 
 Built-in plugins:
 
-| Plugin          | Package                       | Use                                                                                                                                                                     | Table                 | Phase       |
-| --------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | ----------- |
-| `apiKey`        | `@better-auth/api-key`        | Personal Access Tokens and site tokens: hashed, scoped, expiring                                                                                                        | `api_tokens`          | 4           |
-| `magicLink`     | `better-auth/plugins`         | Staff magic links, `disableSignUp`, Ghost mail                                                                                                                          | `verifications`       | 5           |
-| `passkey`       | `@better-auth/passkey`        | WebAuthn; `rpID`/origin from admin URL                                                                                                                                  | `user_passkeys`       | 5 (stretch) |
-| `twoFactor`     | `better-auth/plugins`         | Authenticator app + backup codes, per-user opt-in; not `otpOptions` (Ghost has its own email codes, and OTP enrolment leaves no row for the virtual `twoFactorEnabled`) | `user_two_factors`    | 5 (stretch) |
-| `sso`           | `@better-auth/sso`            | OIDC/SAML for teams                                                                                                                                                     | `sso_providers`       | 8           |
-| `oauthProvider` | `@better-auth/oauth-provider` | Installed apps and third-party clients as OAuth clients with scopes                                                                                                     | four `oauth_*` tables | 4b          |
+| Plugin          | Package                       | Use                                                                                                                                                                     | Table                 | Phase         |
+| --------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | ------------- |
+| `apiKey`        | `@better-auth/api-key`        | Personal Access Tokens and site tokens: hashed, scoped, expiring                                                                                                        | `api_tokens`          | 4             |
+| `magicLink`     | `better-auth/plugins`         | Staff magic links, `disableSignUp`, Ghost mail                                                                                                                          | `verifications`       | 5             |
+| `passkey`       | `@better-auth/passkey`        | WebAuthn; `rpID`/origin from admin URL                                                                                                                                  | `user_passkeys`       | 5 (follow-on) |
+| `twoFactor`     | `better-auth/plugins`         | Authenticator app + backup codes, per-user opt-in; not `otpOptions` (Ghost has its own email codes, and OTP enrolment leaves no row for the virtual `twoFactorEnabled`) | `user_two_factors`    | 5 (follow-on) |
+| `sso`           | `@better-auth/sso`            | OIDC/SAML for teams                                                                                                                                                     | `sso_providers`       | 8             |
+| `oauthProvider` | `@better-auth/oauth-provider` | Installed apps and third-party clients as OAuth clients with scopes                                                                                                     | four `oauth_*` tables | 4b            |
 
 ### 3.2 The Knex adapter
 
@@ -243,8 +245,9 @@ or an upstream contribution later (Better Auth has no Knex adapter).
 - No `createSchema`: Ghost migrations own DDL.
 - Tested with Better Auth's adapter suite (`@better-auth/test-utils/adapter`)
   against MySQL in the database CI lane, plus ObjectId and date cases.
-- `create-auth.ts` refuses any `auth:engine` other than `legacy` on SQLite, or
-  when the tables it needs do not exist, with one clear boot error.
+- On SQLite the config schema turns `auth:engine=better-auth` into `legacy`
+  and warns, so flipping the default (Phase 9) leaves SQLite installs on
+  legacy until 7.0.
 
 ### 3.3 Ghost plugins
 
@@ -270,19 +273,27 @@ the session (Phase 2), so they create a Better Auth session directly.
 **`ghostStaffLifecycle`** (Phase 2). Ghost's status rules layered on Better
 Auth core.
 
-- Before `/sign-in/email`: `locked` sends the reset email and throws
-  `PASSWORD_RESET_REQUIRED`; `inactive` throws `ACCOUNT_SUSPENDED`; unknown
-  email and wrong password map to today's messages (§5.3).
+- `/sign-in/email` does not enumerate staff (§5.3): an unknown email and a
+  wrong password are both `INVALID_EMAIL_OR_PASSWORD`. A failed attempt for a
+  `locked` user still sends the reset email, without changing the response.
 - Before magic-link, passkey and SSO sign-in: refuse `inactive`, and set a
   `locked` user's `status` to `active` (as reset does today). This runs before
-  the session is created, so the session guard below admits them.
-- After every sign-in: set `last_seen`, set `status` to `active`.
+  the session is created, so the session guard below admits them. The unlock
+  only matches a `locked` user, and a user suspended in the meantime is refused.
+- A successful `/reset-password` sets a `locked` user `active`, as legacy
+  `doReset` does, so the user can sign in afterwards (step 8, PLA-620). It
+  refuses an `inactive` user's token before changing the password.
+- After every sign-in: set `last_seen`, and set a `warn-*` status to `active`.
+  Both are bookkeeping, so a failure is logged and the sign-in stands.
 - `databaseHooks.session.create.before`: refuse non-active users on every path.
   It runs after the before-hooks above, so only users still non-active by then
   are refused.
 - Server-only: `setupOwner`, `acceptInvitation` (user + credential account +
-  role in one transaction), `createVerifiedSession`, `revokeUserSessions`,
-  `revokeAllSessions`, `lockAllUsers`.
+  role in one transaction), `createVerifiedSession` (the admin origin is
+  required, since a session without one is anonymous), `revokeUserSessions`,
+  `revokeAllSessions`. Authentication reset keeps legacy `lockAll`, which
+  locks users and replaces their credentials in the same transaction as the
+  key rotation and audit row, and calls `revokeAllSessions` after the commit.
 
 **`ghostDeviceVerification`** (Phase 3). `twoFactor` and `emailOTP` are per-user
 opt-in; Ghost's rule is "every staff user, trusted browser, satisfied by any
@@ -299,7 +310,8 @@ and hooks. It is replaced by `twoFactor` if Ghost moves to opt-in 2FA.
   a valid device-trust cookie when `require_email_mfa` is off. Otherwise email
   a code and respond 403 with `2FA_TOKEN_REQUIRED` or
   `2FA_NEW_DEVICE_DETECTED`.
-- A global before-hook refuses unverified sessions on every session-protected
+- A global before-hook (`ghostSessionGate`, which also refuses sessions of
+  non-active users) refuses unverified sessions on every session-protected
   Better Auth endpoint except `/device-verification/*` and `/sign-out`.
   Without it, `/change-password` would accept a session Ghost treats as
   anonymous.
@@ -307,12 +319,15 @@ and hooks. It is replaced by `twoFactor` if Ghost moves to opt-in 2FA.
   stored hashed in `verifications` (`device-verification:<sessionId>`, 5-minute
   expiry). Attempts are an `attempts` field on `verifications`, incremented
   with `incrementOne` guarded by `attempts < 5`, so concurrent wrong codes
-  cannot pass the limit; an exhausted code is deleted and a new one must be
-  sent. The `spam` limiters still apply on top. Success sets `verified` and, unless
+  cannot pass the limit. An exhausted code refuses every later try with 429,
+  including an inline sign-in, which sends no new code, until an explicit
+  resend replaces it or it expires (legacy caps a challenge the same way).
+  The `spam` limiters still apply on top. Success sets `verified` and, unless
   `require_email_mfa` is on, a signed `ghost-admin-device` cookie bound to the
   user. Sign-out clears it when `require_email_mfa` is on.
-- Reuses `auth/session/emails/signin.js` and the device-details helper, with an
-  injectable geolocation lookup.
+- Sends through `auth/emails/sign-in-code.ts`, the email both engines share:
+  the legacy template and subject and the device details, with an injectable
+  geolocation lookup.
 
 **`ghostApiKeys`** (Phase 7 to Ghost 8.0). Better Auth's `apiKey` cannot host
 recoverable signing secrets or integration-bound keys, so this plugin maps the
@@ -335,9 +350,9 @@ with `overrideAll`, so `verified` is not reset to its default. Team SSO uses
   (`object_type:action` or `object_type:*`), so "user permissions ∩ token
   scopes" is a set intersection. Where one permission covers more than one
   capability, a finer scope splits it (for example sending a newsletter is
-  `post:edit` today; a token also needs `post:send_newsletter`). The
-  permissions engine is unchanged; finer scopes are extra checks at the
-  token policy. `scopes.ts` adds the coarse presets the UI offers.
+  `post:edit` today; a token also needs `post:send_newsletter`). `scopes.ts`
+  maps each finer scope to its base key, and `authorize` checks both (§3.6).
+  `scopes.ts` also adds the coarse presets the UI offers.
 - Scopes apply to everything a request reads, not only its endpoint:
   includes, relations and relation filters (for example
   `posts?include=authors`, or a filter on `tags`) are checked against the
@@ -380,8 +395,10 @@ are its whole authority. Audit attribution records the app and, when present,
 the user. The shape lands with `resolvePrincipal` in Phase 2, before anything
 switches on it, so Phase 4b adds no new kind.
 
-`req.user`, `req.api_key` and `frame.options.context` are derived from
-`req.auth`, loading Bookshelf models by id during the transition, so
+`req.auth` is frozen and holds plain views of the user, key and integration,
+never Bookshelf models, passwords or key secrets. During the transition
+`req.user` and `req.api_key` keep the Bookshelf models the principal was
+built from, and `frame.options.context` is derived from them, so
 `authorizeAdminApi`, `canThis`, `permissible` hooks and audit attribution keep
 working unchanged.
 
@@ -399,7 +416,104 @@ if (config.get('auth:engine') === 'better-auth') {
 
 Compatibility routes stay in `routes.js` with their rate-limiting
 middleware. `mw.authAdminApi` uses `resolvePrincipal` when `auth:engine` is
-`better-auth`.
+`better-auth`. Under `legacy`, the existing key and session middleware run as
+before and the chain ends by building the same `Principal` from `req.user` and
+`req.api_key`, so both engines set `req.auth`. The API framework passes it as
+`frame.options.context.principal`, and `parseContext` carries it whole; a
+request with a principal is public only when it is anonymous or uses a
+content key.
+
+### 3.6 Authorization policy
+
+Role grants are code (§2), so a principal's grants no longer need a
+permissions query per check. `canThis` predates that and hard-codes two actors.
+It loads the user and the API key with their roles through `providers.ts`,
+computes `hasUserPermission` and `hasApiKeyPermission`, and passes both flags,
+with the loaded roles, to the `permissible` hooks on `Post` (with
+`relations/authors.js`), `User`, `Role`, `Invite` and `Integration`. The core
+settings guard sits in `services/settings/settings-bread-service.js` instead.
+The hooks make the final decision:
+
+- They narrow a grant: an Author edits only posts they co-author, and Owner
+  cannot be destroyed, invited or set inactive.
+- They widen one: a user edits their own profile, and an Author is allowed
+  `publish` on a post they are primary author of, which the role lacks.
+- They load the resource and throw errors callers rely on: `NotFoundError`
+  for a missing resource (the scheduler endpoint treats it as a no-op), limit
+  errors from the members, staff and custom-integrations limit checks, and
+  `NoPermissionError`.
+- They return `excludedAttrs`, which the endpoint strips before the write
+  (`api/endpoints/utils/permissions.js`).
+
+Token scopes and the `app` principal would be a third and fourth flag through
+every hook. Instead, `auth/policy/` grows into the one place that decides
+access, and `canThis` becomes an adapter over it.
+
+- **Grants and scopes.** `capabilities(principal)` returns two sets of
+  `object_type:action` keys, computed once per request from
+  `permissions-data.ts` and `role-permissions.ts`. The principal's user and
+  key views gain their role names for this; today they carry none, and the
+  roles are loaded in `providers.ts`.
+  - `granted`: the role's grants. Owner is granted every key. A staff token or
+    an app acting for a user takes the user's grants (a staff token's key
+    role is ignored, as `canThis` ignores it today). A legacy Admin API key
+    takes its integration role's grants. An app with no user, or a Phase 4
+    site token, is granted exactly its scopes.
+  - `scopes`: the token's and the app's scopes intersected, or unlimited when
+    the principal has neither (a session, a legacy key). Wildcards
+    (`post:*`) are expanded to every action of that type in
+    `permissions-data.ts` and every finer scope of that type in `scopes.ts`
+    when the set is built, so every check is an exact key match.
+
+  Owner is granted every key, but row rules still narrow it as the hooks do
+  today; a scoped Owner token is also capped by its scopes.
+
+- **Decisions.** `authorize(principal, action, objectType, {resource, attrs})`
+  resolves to `{excludedAttrs?}` when allowed and throws otherwise, with the
+  same errors as today: `NoPermissionError`, `NotFoundError`, limit errors,
+  and `UnauthorizedError` for an inactive user. `attrs` is the `unsafeAttrs`
+  `canThis` receives today. Without a row rule for the type, the request is
+  allowed when the key is in `granted` and in `scopes`. With one, the rule
+  receives the principal, whether the key is granted, the resource and
+  `attrs`, and decides, so it can narrow or widen as the hook does today. A
+  rule is reached only when the key is in `scopes`, so a widening rule never
+  lets a scoped principal past a key its scopes lack. Internal requests (an
+  `internal` context or principal) bypass the check, as in `canThis` today.
+- **Finer scopes.** Where one key covers more than one capability, a fixed
+  map in `scopes.ts` names the extra scope, and it applies only to scoped
+  principals. The check runs at every point that performs the extra action,
+  not only at the endpoint, so a scoped principal cannot reach the action by
+  another route. For `post:send_newsletter`, every path that sends,
+  schedules or retries a newsletter email requires it: a post edit that
+  sends, a post edit that schedules a post with a newsletter, and the email
+  retry endpoint. The scheduler's publish route (`schedules.js`) is closed
+  to scoped principals; only the scheduler's own key calls it. Publishing
+  without a send needs only `post:edit`. Phase 4 (PLA-639) places and tests
+  each check point.
+- **Row rules.** Per-type rules in `auth/policy/rules/` replace the
+  `permissible` hooks, one model at a time. Each keeps its hook's narrowing,
+  widening, errors, limit checks and `excludedAttrs`, and the endpoint keeps
+  stripping `excludedAttrs` before the write. Rules are async, since they load
+  the resource as the hooks do.
+- **Relations.** Includes and relation filters check the related type's key
+  against `scopes` (§3.3). The check runs where the API resolves includes and
+  filters, which the Phase 4 spike locates, and reads `scopes` from
+  `capabilities`. It does not run the related type's row rule, and role
+  grants are not checked on includes, as today.
+- **Unchanged.** Endpoint `permissions` configs and `unsafeAttrs` in
+  `api/endpoints/`, `frame.options.context` (internal callers still pass
+  `{internal: true}`), and the `canThis(context).edit.post(id, attrs)` call
+  shape stay while callers move over.
+
+Order: Phase 4 builds `capabilities` and `authorize` with scopes and finer
+scopes. `canThis` uses them for its grant flags while the hooks still decide,
+and refuses a scoped principal whose scopes lack the key before any hook runs,
+so scopes cap hooks the same way they will cap row rules. Each hook then moves
+to a row rule in its own pull request, behind characterization tests for its
+narrowing, widening, errors, limit checks and `excludedAttrs`;
+`posts`/`authors` is the largest and goes last. `canThis` call sites move to
+`authorize` directly in Phase 7. These steps keep every response for an
+unscoped principal; scopes only restrict tokens and apps.
 
 ## 4. Data model
 
@@ -410,12 +524,13 @@ Ghost's tables to fit it. This keeps the adapter mapping thin, keeps Better
 Auth upgrades (which change plugin schemas) cheap, and avoids nullable-column
 migrations and legacy-row filters on live tables.
 
-- Each table is defined in `schema.js` and listed in `IN_DEVELOPMENT_TABLES`
+- Each table is defined in `schema.ts` and listed in `IN_DEVELOPMENT_TABLES`
   (`data/schema/in-development.ts`): created only in development and testing,
   outside the integrity hash, free to change.
 - A table graduates (removed from the list, versioned migration added) when
   the feature using it first ships to internal Ghost(Pro) sites. Until then,
-  code using it stays dormant where the table is absent (§3.2 boot check).
+  only development and testing have it, so code using it stays off
+  elsewhere. A graduated table exists wherever its migration has run.
 - Existing tables keep their schema: `users` (identity) and `api_keys` (legacy
   keys) are mapped as they are; `sessions` is left to the legacy engine,
   except that revocation deletes a user's rows (Phase 2, step 7), and is
@@ -474,9 +589,9 @@ store `emailVerified: false`, so they stay.
 ### 4.4 Credential seeding
 
 Each user needs a `credential` row in `user_accounts` with the hash from
-`users.password`. While the table is in development a dev/test boot seeder
-creates them; on graduation a transactional, idempotent migration in the same
-version folder backfills them.
+`users.password`. While the table was in development a dev/test boot seeder
+created them. The tables graduated in 6.79, where a transactional, idempotent
+migration backfills them and the seeder is gone.
 
 ### 4.5 Passwords
 
@@ -564,19 +679,28 @@ compatibility.
 Compatibility controllers map Better Auth `APIError`s to `@tryghost/errors`
 with today's messages, so older Admin builds keep working:
 
-| Better Auth                              | Ghost error                                                          |
-| ---------------------------------------- | -------------------------------------------------------------------- |
-| `USER_NOT_FOUND`                         | `NotFoundError` `There is no user with that email address.`          |
-| `INVALID_EMAIL_OR_PASSWORD` (known user) | `ValidationError` `PASSWORD_INCORRECT` `Your password is incorrect.` |
-| `PASSWORD_RESET_REQUIRED`                | `PasswordResetRequiredError`                                         |
-| `ACCOUNT_SUSPENDED`                      | `NoPermissionError` `This account has been suspended.`               |
-| `DEVICE_VERIFICATION_REQUIRED`           | `NoPermissionError`, `Needs2FAError`, `2FA_*` code                   |
-| `INVALID_TOKEN` / expired                | existing reset-token messages                                        |
-| `TOO_MANY_REQUESTS`                      | `TooManyRequestsError`                                               |
+| Better Auth                    | Ghost error                                              |
+| ------------------------------ | -------------------------------------------------------- |
+| `INVALID_EMAIL_OR_PASSWORD`    | `ValidationError` `Your email or password is incorrect.` |
+| `PASSWORD_RESET_REQUIRED`      | `PasswordResetRequiredError`                             |
+| `ACCOUNT_SUSPENDED`            | `NoPermissionError` `This account has been suspended.`   |
+| `DEVICE_VERIFICATION_REQUIRED` | `NoPermissionError`, `Needs2FAError`, `2FA_*` code       |
+| `INVALID_TOKEN` / expired      | existing reset-token messages                            |
+| `TOO_MANY_REQUESTS`            | `TooManyRequestsError`                                   |
 
-The native endpoints emit the codes the React `AuthClient` already expects
-(`USER_NOT_FOUND`, `INVALID_PASSWORD`, `PASSWORD_RESET_REQUIRED`,
-`INVALID_CODE`, `twoFactorRedirect` + `twoFactorReason`).
+The native endpoints emit the codes the React `AuthClient` expects
+(`PASSWORD_RESET_REQUIRED`, `INVALID_CODE`, `twoFactorRedirect` +
+`twoFactorReason`), except that sign-in does not enumerate staff: an unknown
+email, a wrong password and a wrong password on a suspended account are all
+Better Auth's `INVALID_EMAIL_OR_PASSWORD`, so `USER_NOT_FOUND` and
+`INVALID_PASSWORD` are not used. Admin's sign-in form keys on those two codes
+to mark the email or password field, so its native client must treat
+`INVALID_EMAIL_OR_PASSWORD` as one error for both fields. Suspension and
+`PASSWORD_RESET_REQUIRED` only show after a matching password. The
+compatibility `POST /session` does the same (SC-90): it answers
+`INVALID_EMAIL_OR_PASSWORD` with one generic `ValidationError` (422, no `code`),
+so Admin shows the message without marking either field. Legacy sign-in keeps
+today's messages.
 
 ### 5.4 Behaviour
 
@@ -604,9 +728,27 @@ Every phase ends with `pnpm check` green, the e2e API suite green under each
 engine setting it touches, and an update to
 [authentication.md](../codebase/authentication.md). Sizes are rough, for one
 engineer. Phase 4b (OAuth clients for apps) runs alongside Phase 5. The
-Linear project "BetterAuth Migration" covers Phases 0–5; Phases
+Linear project "BetterAuth Migration" covers Phases 0–5 and 4b; Phases
 6 and 7 are a follow-on project, and Phase 8 overlaps Berlin's "Permissions
 and auth" project.
+
+The Linear project has six weeks, 4 November to 18 December, skipping
+Thanksgiving week:
+
+| Milestone | Target | Phases                                                         |
+| --------- | ------ | -------------------------------------------------------------- |
+| Weeks 1–2 | 13 Nov | 0 and 1 (done 11 Nov)                                          |
+| Week 3    | 20 Nov | 2 (started 12 Nov)                                             |
+| Week 4    | 4 Dec  | 3, plus Phase 4's spike, scope vocabulary and site-token owner |
+| Week 5    | 11 Dec | 4                                                              |
+| 4b        | 18 Dec | 4b, across weeks 5 and 6 once Phase 4's token policy lands     |
+| Week 6    | 18 Dec | 5, without passkeys and authenticator apps                     |
+
+Sessions, verification and Bearer tokens are the core. Magic link is the first
+thing to drop if a phase runs over, and drops before 4b. Passkeys and
+authenticator apps move to the follow-on project. Berlin's project starts on
+7 December against the agreed scope vocabulary, with the token store landing
+in its first week.
 
 ### Phase 0: Spikes (S)
 
@@ -646,7 +788,8 @@ Exit: merged to main; full e2e API suite green under `legacy`.
 
 1. The handler is already mounted under `better-auth` (Phase 1, item 6).
 2. Better Auth issues `ghost-admin-api-session` from `user_sessions`; the
-   legacy `sessions` table is left untouched for rollback. Legacy cookies are
+   legacy `sessions` table stays in place for rollback (only revocation in
+   step 7 deletes from it). Legacy cookies are
    not recognised, so staff sign in again once.
 3. `ghostStaffLifecycle` (§3.3).
 4. `Principal` and `resolvePrincipal` wired into `mw.authAdminApi`,
@@ -662,7 +805,9 @@ Exit: merged to main; full e2e API suite green under `legacy`.
    Until 7.0 drops `sessions`, both also delete the user's legacy `sessions`
    rows, so a rollback (§8) cannot revive a session a security event revoked.
 8. `PUT /users/password` and `PUT /authentication/password_reset` use
-   `createVerifiedSession`.
+   `createVerifiedSession`. `ghostStaffLifecycle` sets a `locked` user
+   `active` on a successful `/reset-password`, or `createVerifiedSession`
+   refuses the user it just reset.
 9. Cleanup job (§4.6).
 10. Run `session`, `session-invalidation`, `users`, `api-tokens`,
     `key-authentication`, `sso` e2e API tests and `e2e/tests/admin/signin.test.ts`
@@ -676,13 +821,15 @@ upgrade test (§7) passes.
 1. `ghostDeviceVerification` (§3.3), including the unverified-session gate and
    device-trust cookie.
 2. Compatibility controllers for `/session/verify` and the inline `token`.
-3. Move the email template and device-details helper into the plugin; keep the
-   subject `<code> is your Ghost sign in verification code`.
+3. Share the email template and device-details helper between both engines
+   (`auth/emails`); keep the subject `<code> is your Ghost sign in
+   verification code`.
 4. Run the Staff 2FA block of `session.test.js`, `rate-limiting.test.js` and
    `e2e/tests/admin/two-factor-auth.test.ts` with verification on.
 5. Graduate `user_accounts`, `verifications` and `user_sessions` (versioned
    migrations, password copy into `user_accounts`, §4.5), then switch
-   internal Ghost(Pro) sites to `better-auth`.
+   internal Ghost(Pro) sites to `better-auth`, telling staff to expect one
+   sign-in and one code.
 
 Exit: identical client experience for new-device verification and
 `require_email_mfa` on internal sites.
@@ -690,14 +837,18 @@ Exit: identical client experience for new-device verification and
 ### Phase 4: Bearer tokens with scopes (M)
 
 1. In-development `api_tokens`; `apiKey` plugin reading `Bearer`,
-   `enableSessionForAPIKeys` left off, `ghost_pat_` prefix, expiry limits, scopes from
-   `auth/policy/scopes.ts`. No `bearer` plugin (§10).
+   `enableSessionForAPIKeys` left off, `ghost_pat_` prefix, expiry limits, a
+   per-key rate limit, scopes from `auth/policy/scopes.ts`. No `bearer`
+   plugin (§10). Agree the scope vocabulary with Berlin before their project
+   starts on 7 December.
 2. `resolvePrincipal` (and `api-key/admin.js` under `legacy`) passes `Bearer`
    to `verifyApiKey` instead of returning `INVALID_AUTH_HEADER`;
-   `tokenPermissionCheck` enforces scopes, including the finer scopes and
-   includes/relations (§3.3). A spike before this phase maps where the API
-   resolves includes and relation filters, since that check reaches into the
-   API layer rather than staying in auth.
+   `auth/policy/` gains `capabilities` and `authorize` (§3.6), which
+   `canThis` uses for its grant flags; scopes and finer scopes are enforced
+   there, and includes/relations are checked against the same scopes (§3.3).
+   A spike before this phase maps where the API resolves includes and
+   relation filters, since that check runs in the API layer rather than in
+   auth.
 3. Reset revokes all tokens; suspension and deletion revoke the user's.
 4. Tests: success, missing scope, expired, revoked, role ceiling, audit
    attribution; `key-authentication.test.js` unchanged.
@@ -729,11 +880,13 @@ Runs alongside Phase 5, after Phase 4's token policy and scopes.
    Integrations settings, Administrators only. Document Bearer as the
    recommended Admin API method.
 3. Graduate `api_tokens`; run `better-auth` on a Ghost(Pro) cohort.
-4. Stretch: `passkey` and `twoFactor` with in-development `user_passkeys` and
+4. Follow-on project, not the Linear project's week six: `passkey` and
+   `twoFactor` with in-development `user_passkeys` and
    `user_two_factors`, enrolment in profile settings and sign-in options
    behind `staffPasskeys` and `staffAuthenticatorApp`.
 5. Tests: e2e for each method creating a verified session; browser tests for
    magic link (MailPit) and the token UI.
+6. Handoff note for Phases 6 and 7 and for Berlin.
 
 ### Phase 6: Passwords, setup, invitations (M)
 
@@ -756,8 +909,12 @@ Runs alongside Phase 5, after Phase 4's token policy and scopes.
 4. `ghostSso` replaces the `session-from-token.ts` wiring; verify `sso.test.js`
    and a Ghost(Pro) support-access smoke test.
 5. Readers of `req.user`, `req.api_key`, `frame.user` and
-   `frame.original.session` read the principal.
-6. Run `api-tokens`, `key-authentication` (admin and content), `integrations`,
+   `frame.original.session` read the principal. `frame.options.context`
+   stays, derived from it.
+6. The remaining model `permissible` hooks are row rules in `auth/policy/`,
+   keeping their narrowing, widening, errors, limit checks and
+   `excludedAttrs` (§3.6), and `canThis` call sites use `authorize`.
+7. Run `api-tokens`, `key-authentication` (admin and content), `integrations`,
    `test/unit/server/web/api/admin/middleware.test.js` and scheduler tests.
 
 Exit: nothing outside the plugin reads `api_keys`, except Bookshelf reads for
@@ -855,6 +1012,37 @@ integration API responses.
   sign in again; passwords keep working because both engines use
   `user_accounts` (§4.5). Magic links and Bearer
   tokens stop until the engine is switched back.
+- Rollback to a release from before the tables graduated (Phase 3, step 5)
+  is different: that release reads `users.password` again, and ignores
+  `user_accounts`. The graduation backfill copies hashes into
+  `user_accounts` and leaves `users.password` as it is, so staff whose
+  password hasn't changed since the upgrade still sign in. Anyone whose
+  password changed since then (through either engine, including a reset,
+  setup or an accepted invitation) has the `!` placeholder or their old hash
+  in `users.password`, so they can't sign in, or sign in with the old
+  password. Also, that release refuses to boot with `auth:engine` set to
+  `better-auth`, since it still needs `auth:betterAuthDev`.
+  - Rolling the migrations back too (`ghost update --rollback`, or
+    `knex-migrator rollback --v <version> --force` by hand) is safe: the
+    backfill's `down` copies every changed hash back into `users.password`
+    before the tables are dropped. That order relies on knex-migrator
+    undoing migrations in reverse of the order the `migrations` table
+    returns them, which is insertion order in practice but not guaranteed by
+    the query. If the tables go first, the `down` finds no `user_accounts`
+    and staff whose password changed reset it by email.
+  - Rolling back the code alone leaves the tables and their rows in place.
+    The operator sets `auth:engine` to `legacy` and copies the hashes back
+    by hand before staff sign in:
+    `UPDATE users u JOIN user_accounts a ON a.user_id = u.id AND a.provider_id = 'credential' SET u.password = a.password WHERE a.password IS NOT NULL AND a.password <> '!' AND a.password <> u.password;`.
+    On SQLite:
+    `UPDATE users SET password = (SELECT a.password FROM user_accounts a WHERE a.user_id = users.id AND a.provider_id = 'credential') WHERE EXISTS (SELECT 1 FROM user_accounts a WHERE a.user_id = users.id AND a.provider_id = 'credential' AND a.password IS NOT NULL AND a.password <> '!' AND a.password <> users.password);`.
+    Without that, affected staff reset their passwords by email. Upgrading
+    again later doesn't rerun the backfill, so a password changed while
+    rolled back is lost, and staff added meanwhile have no credential row.
+    The rolled-back release signed staff in against `users.password`, so it
+    holds their current hashes: copy each real one (not `!`) into its
+    credential row first, inserting missing rows, or have them reset their
+    passwords.
 - Monitor sign-in outcomes by method, verification sends and failures, Bearer
   verifications and scope denials, `Ghost` scheme usage per key and
   `onAPIError`.
@@ -864,8 +1052,8 @@ integration API responses.
 | Risk                                                           | Mitigation                                                                                          |
 | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | Table count on Ghost(Pro)                                      | In-development until shipped; migration review; Redis secondary storage for high-churn tables later |
-| SQLite cannot run Better Auth                                  | Boot refuses the new engine on SQLite; legacy until 7.0                                             |
-| Unverified sessions accepted by Better Auth endpoints          | Global before-hook in `ghostDeviceVerification`; e2e test                                           |
+| SQLite cannot run Better Auth                                  | SQLite falls back to legacy with a warning; legacy until 7.0                                        |
+| Unverified sessions accepted by Better Auth endpoints          | Global before-hook in `ghostSessionGate`; e2e test                                                  |
 | Bearer tokens widen attack surface                             | Hashed, scoped, expiring, revocable, role-capped, rate-limited, shown once; reset revokes all       |
 | Better Auth's rate limiter lacks success reset                 | `customStorage` over the `spam` limiters; an after-hook clears `userLogin` on success               |
 | Plugin schema changes on upgrade                               | Tables in development until shipped; pinned catalog version; adapter and plugin suites in CI        |
@@ -894,8 +1082,8 @@ Decided:
   tokens in JSON: a top-level `token` from `/sign-in/email` and
   `/change-password`, `session.token` from `/get-session`, and a `token` on
   each session from `/list-sessions`. A global after-hook removes them from
-  every native response, with a test per shape, before the handler is mounted
-  (Phase 2). Revoking one session therefore goes through a Ghost endpoint that
+  every native response, with a test per shape; it landed with the handler
+  mount in Phase 1. Revoking one session therefore goes through a Ghost endpoint that
   takes a session id, checks it belongs to the user and resolves the token
   server-side (Phase 8), not `revokeSession`.
 - Installed apps are OAuth clients (Phase 4b) with an `app` principal, not
@@ -911,6 +1099,12 @@ Decided:
 - Scopes are the `object_type:action` permission keys, plus finer scopes
   where one key covers more than one capability, checked on includes and
   relations too (§3.3), with UI presets on top. Phase 4 starts with a spike.
+- Access is decided in `auth/policy/` from the principal: role grants
+  (Owner granted every key) and per-type row rules that replace model
+  `permissible` hooks and may narrow or widen a grant, with the result capped
+  by token and app scopes. `canThis` is an adapter over it, not extended with
+  more actor flags (§3.6). Endpoint permission configs, `excludedAttrs` and
+  `frame.options.context` stay.
 - `user_accounts` is the only password store: the legacy engine moves to it in
   Phase 2 wherever it exists, and the migration that graduates it copies
   `users.password`. No dual write (§4.5).
@@ -923,7 +1117,7 @@ Open:
    way.
 2. Whether credential rows join content exports in 7.0. Decide in Phase 10.
 3. Who owns a site token: `apiKey` references only a `user` or an
-   `organization`. Decide before Phase 4.
+   `organization`. Decide in Week 4, before Berlin starts on 7 December.
 
 ## 11. Out of scope and later extensions
 
@@ -947,7 +1141,8 @@ New (under `ghost/core/server` unless stated):
 - `auth/better-auth/plugins/staff-lifecycle.ts`, `device-verification.ts`,
   `api-keys.ts`, `sso.ts`
 - `auth/principal.ts`, `auth/resolve-principal.ts`
-- `auth/policy/scopes.ts`, `token-policy.ts`
+- `auth/policy/scopes.ts`, `token-policy.ts`, `capabilities.ts`,
+  `authorize.ts`, `rules/`
 - `data/migrations/versions/<next>/…` as tables graduate
 - `apps/admin-x-framework/src/auth/`, `src/api/personal-access-tokens.ts`
 - `apps/admin/src/auth/client/better-auth-client.ts`
@@ -967,7 +1162,7 @@ Changed:
 - `services/invites/accept.ts`, `services/integrations/integrations-service.js`,
   `services/internal-keys/index.ts`, `services/users`
 - `models/user.js`, `models/api-key.js`
-- `data/schema/schema.js`, `data/schema/in-development.ts`,
+- `data/schema/schema.ts`, `data/schema/in-development.ts`,
   `data/exporter/table-lists.js`, `ghost/test/unit/server/data/schema/integrity.test.ts`
 - `ghost/core/shared/config/defaults.json`, `ghost/core/shared/labs.js`
 - `apps/admin/src/auth/`, `apps/admin-x-framework/src/api/session.ts`

@@ -62,6 +62,11 @@ describe('Member Welcome Email Renderer Snapshots', function () {
     };
   }
 
+  // Renders the template and personalizes it for one recipient, as every send does.
+  async function renderFor({ member, ...options }) {
+    return renderer.personalize(await renderer.render(options), { member });
+  }
+
   const defaultMember = {
     name: 'Jamie Larson',
     email: 'jamie@example.com',
@@ -75,7 +80,7 @@ describe('Member Welcome Email Renderer Snapshots', function () {
   };
 
   it('renders a simple paragraph welcome email', async function () {
-    const result = await renderer.render({
+    const result = await renderFor({
       lexical: makeLexical([makeParagraph('Welcome to our site!')]),
       subject: 'Welcome to Test Site',
       member: defaultMember,
@@ -89,7 +94,7 @@ describe('Member Welcome Email Renderer Snapshots', function () {
   });
 
   it('renders template variable replacements', async function () {
-    const result = await renderer.render({
+    const result = await renderFor({
       lexical: makeLexical([
         makeParagraph('Hello {first_name}, welcome to {site_title}! Your email is {email}.'),
       ]),
@@ -106,7 +111,7 @@ describe('Member Welcome Email Renderer Snapshots', function () {
   });
 
   it('renders fallback values when member has no name', async function () {
-    const result = await renderer.render({
+    const result = await renderFor({
       lexical: makeLexical([makeParagraph('Hello {first_name, "friend"}, welcome!')]),
       subject: 'Welcome!',
       member: {
@@ -124,7 +129,7 @@ describe('Member Welcome Email Renderer Snapshots', function () {
   });
 
   it('renders with a custom accent color', async function () {
-    const result = await renderer.render({
+    const result = await renderFor({
       lexical: makeLexical([makeParagraph('Welcome!')]),
       subject: 'Welcome',
       member: defaultMember,

@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const { getImageWithSize } = require('../utils/images');
 const config = require('../../shared/config');
 const imageSizeCache = require('../services/proxy').cachedImageSizeFromUrl;
@@ -37,15 +36,15 @@ async function getImageDimensions(metaData) {
     logo,
   };
 
-  _.forEach(imageObj, function (key, value) {
-    if (_.has(key, 'width') && _.has(key, 'height')) {
+  for (const [value, key] of Object.entries(imageObj)) {
+    if (key && Object.hasOwn(key, 'width') && Object.hasOwn(key, 'height')) {
       // We have some restrictions for publisher.logo:
       // The image needs to be <=600px wide and <=60px high (ideally exactly 600px x 60px).
       // Unless we have proper image-handling (see https://github.com/TryGhost/Ghost/issues/4453),
       // we will fake it in some cases or not produce an imageObject at all.
       if (value === 'logo') {
         if (key.height <= 60 && key.width <= 600) {
-          _.assign(metaData.site[value], {
+          Object.assign(metaData.site[value], {
             dimensions: {
               width: key.width,
               height: key.height,
@@ -53,7 +52,7 @@ async function getImageDimensions(metaData) {
           });
         } else if (key.width === key.height) {
           // CASE: the logo is too large, but it is a square. We fake it...
-          _.assign(metaData.site[value], {
+          Object.assign(metaData.site[value], {
             dimensions: {
               width: 60,
               height: 60,
@@ -76,12 +75,12 @@ async function getImageDimensions(metaData) {
             metaData[value] = url;
           } else {
             const url = getImageWithSize(metaData[value].url, sizeOptions);
-            _.assign(metaData[value], { url });
+            Object.assign(metaData[value], { url });
           }
         }
 
         if (typeof metaData[value] === 'object') {
-          _.assign(metaData[value], {
+          Object.assign(metaData[value], {
             dimensions: {
               width: key.width,
               height: key.height,
@@ -90,7 +89,7 @@ async function getImageDimensions(metaData) {
         }
       }
     }
-  });
+  }
 
   return metaData;
 }

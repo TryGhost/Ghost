@@ -85,8 +85,8 @@ function parseDefaultSettings() {
     indexnow_api_key: () => crypto.randomBytes(16).toString('hex'),
   };
 
-  _.each(defaultSettingsInCategories, function each(settings, categoryName) {
-    _.each(settings, function eachSetting(setting, settingName) {
+  for (const [categoryName, settings] of Object.entries(defaultSettingsInCategories)) {
+    for (const [settingName, setting] of Object.entries(settings)) {
       setting.group = categoryName;
       setting.key = settingName;
 
@@ -100,8 +100,8 @@ function parseDefaultSettings() {
       };
 
       defaultSettingsFlattened[settingName] = setting;
-    });
-  });
+    }
+  }
 
   return defaultSettingsFlattened;
 }
@@ -121,7 +121,7 @@ function transformNavigationIconUrls(value, transformUrl) {
 
   let navigationItems;
   try {
-    navigationItems = _.isString(value) ? JSON.parse(value) : value;
+    navigationItems = typeof value === 'string' ? JSON.parse(value) : value;
   } catch (e) {
     return value;
   }
@@ -131,7 +131,7 @@ function transformNavigationIconUrls(value, transformUrl) {
   }
 
   const transformed = navigationItems.map((item) => {
-    if (!_.isObject(item) || _.isFunction(item) || !item.icon) {
+    if (!_.isObject(item) || typeof item === 'function' || !item.icon) {
       return item;
     }
 
@@ -141,7 +141,7 @@ function transformNavigationIconUrls(value, transformUrl) {
     };
   });
 
-  return _.isString(value) ? JSON.stringify(transformed) : transformed;
+  return typeof value === 'string' ? JSON.stringify(transformed) : transformed;
 }
 
 // Each setting is saved as a separate row in the database,
@@ -211,7 +211,7 @@ const Settings = ghostBookshelf.Model.extend(
           attrs.value = JSON.parse(attrs.value);
         }
 
-        if (_.isBoolean(attrs.value)) {
+        if (typeof attrs.value === 'boolean') {
           attrs.value = attrs.value.toString();
         }
       }
@@ -290,7 +290,7 @@ const Settings = ghostBookshelf.Model.extend(
         if (item.toJSON) {
           item = item.toJSON();
         }
-        if (!(_.isString(item.key) && item.key.length > 0)) {
+        if (!(typeof item.key === 'string' && item.key.length > 0)) {
           return Promise.reject(
             new errors.ValidationError({ message: tpl(messages.valueCannotBeBlank) }),
           );
@@ -359,13 +359,13 @@ const Settings = ghostBookshelf.Model.extend(
 
       const settingsToInsert = [];
 
-      _.each(getDefaultSettings(), function forEachDefault(defaultSetting, defaultSettingKey) {
+      for (const [defaultSettingKey, defaultSetting] of Object.entries(getDefaultSettings())) {
         const isMissingFromDB = usedKeys.indexOf(defaultSettingKey) === -1;
         if (isMissingFromDB) {
           defaultSetting.value = defaultSetting.getDefaultValue();
           settingsToInsert.push(defaultSetting);
         }
-      });
+      }
 
       if (settingsToInsert.length > 0) {
         // fetch available columns to avoid populating columns not yet created by migrations

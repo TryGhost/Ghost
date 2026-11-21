@@ -20,6 +20,7 @@ const tpl = require('@tryghost/tpl');
 const EmailRenderer = require('./email-renderer');
 const EmailSegmenter = require('./email-segmenter');
 const SendingService = require('./sending-service');
+const { isSendablePostStatus } = require('./send-eligibility');
 const logging = require('@tryghost/logging');
 
 const messages = {
@@ -31,12 +32,6 @@ const messages = {
   retryEmailUnknownOutcome: 'Cannot retry email because the delivery outcome is unknown',
   postChangedWhilePublishing: 'The post was changed while it was being published, please try again',
 };
-
-// Resume scanner won't pick up `pending` or `submitting` rows older than this. Rows beyond
-// the cutoff are flipped to `failed` on first boot so they surface in admin UI for operator
-// review rather than being silently resumed (and sending stale newsletters to current members).
-// Override via `bulkEmail:resumeMaxAgeMs` in config.
-const DEFAULT_RESUME_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 // Non-terminal email statuses, both of which the boot scanner recovers.
 const RESUMABLE_EMAIL_STATUSES = ['pending', 'submitting'];
@@ -251,15 +246,17 @@ class EmailService {
   /**
    * Boot-time scanner: recovers newsletter emails a previous container left without work.
    * Two shapes, both resumed through the normal emailJob path:
-   *   - `submitting` — the send was cut off mid-flight.
-   *   - `pending` — dispatch was dropped from the in-memory job queue before the job ever
-   *     started, so no batch work exists and nothing else will ever pick the row up.
+   *   - `submitting` — the send was cut off mid-flight; batches may be in any state.
+   *   - `pending` — either dispatch was dropped from the in-memory job queue before the job
+   *     ever started, so no batch work exists, or shutdown stopped the send partway and
+   *     returned it to `pending`, so batches may already be submitted, failed or left
+   *     `submitting`. Integrity failures are never returned to `pending`; they fail the email.
    * Iterates sequentially; one failure does not skip others. Rows older than the configured
    * max-age are flipped to `failed` (not resumed) so stale content does not get sent to
    * current members.
    */
   async resumeInterruptedSends() {
-    const maxAgeMs = this.#config?.get?.('bulkEmail:resumeMaxAgeMs') ?? DEFAULT_RESUME_MAX_AGE_MS;
+    const maxAgeMs = this.#config.get('bulkEmail:resumeMaxAgeMs');
     const cutoffIso = new Date(Date.now() - maxAgeMs).toISOString();
 
     // Stale rows: too old to safely resume. Flip to `failed` so they surface in admin UI
@@ -315,7 +312,7 @@ class EmailService {
     const status = email.get('status');
     const post = await email.getLazyRelation('post');
     const postStatus = post ? post.get('status') : null;
-    const sendable = postStatus === 'published' || postStatus === 'sent';
+    const sendable = isSendablePostStatus(postStatus);
 
     if (!sendable) {
       // Parent post was unpublished or deleted while the email was in flight.
@@ -356,8 +353,11 @@ class EmailService {
     const breadcrumb = await this.#buildResumeBreadcrumb(email);
     logging.warn(`Email resume: scheduling ${email.id} for re-send ${JSON.stringify(breadcrumb)}`);
 
-    // Skip checkLimits — this email already passed limits when first sent.
-    await this.#batchSendingService.scheduleEmail(email);
+    // Skip checkLimits — this email already passed limits when first sent. The job keeps
+    // the email's original request time, so it measures the same age the scan just checked.
+    await this.#batchSendingService.scheduleEmail(email, {
+      requestedAt: new Date(email.get('created_at')),
+    });
   }
 
   async #buildResumeBreadcrumb(email) {
@@ -397,7 +397,7 @@ class EmailService {
   async retryEmail(email) {
     // Block accidentaly retrying non-published posts (can happen due to bugs in frontend)
     const post = await email.getLazyRelation('post');
-    if (post.get('status') !== 'published' && post.get('status') !== 'sent') {
+    if (!isSendablePostStatus(post.get('status'))) {
       throw new errors.IncorrectUsageError({
         message: tpl(messages.retryEmailStatusError),
       });
@@ -459,8 +459,14 @@ class EmailService {
   /**
    * @param {import('./jobs/send-email-job').default} job
    */
+  /**
+   * @returns {Promise<void | 'interrupted'>} 'interrupted' when shutdown stopped the send
+   */
   async handleSendEmailJob(job) {
-    await this.#batchSendingService.emailJob({ emailId: job.emailId });
+    return this.#batchSendingService.emailJob({
+      emailId: job.emailId,
+      requestedAt: job.requestedAt,
+    });
   }
 
   /**

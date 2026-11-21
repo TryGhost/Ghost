@@ -1,13 +1,11 @@
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
 import config from '../../../shared/config';
-// @ts-expect-error This module lacks type definitions.
-import commands from './commands';
-// @ts-expect-error This module lacks type definitions.
+import * as commands from './commands';
 import schema from './schema';
 
 /**
- * Tables listed here are defined in `schema.js` but are still being iterated on.
+ * Tables listed here are defined in `schema.ts` but are still being iterated on.
  *
  * - `knex-migrator init` only creates them in the development and testing
  *   environments, and only while `createInDevelopmentTables` is enabled in
@@ -22,12 +20,7 @@ import schema from './schema';
  * Code that reads or writes these tables must stay dormant wherever the tables
  * are not created.
  */
-export const IN_DEVELOPMENT_TABLES: string[] = [
-  'user_accounts',
-  'user_sessions',
-  'verifications',
-  'user_two_factors',
-];
+export const IN_DEVELOPMENT_TABLES: string[] = ['user_two_factors'];
 
 export function isInDevelopmentTable(tableName: string): boolean {
   return IN_DEVELOPMENT_TABLES.includes(tableName);
@@ -45,7 +38,7 @@ export function shouldCreateInDevelopmentTables(): boolean {
 }
 
 /**
- * The in-development tables, in the order they appear in `schema.js`
+ * The in-development tables, in the order they appear in `schema.ts`
  */
 export function getInDevelopmentTables(): string[] {
   return Object.keys(schema).filter(isInDevelopmentTable);
@@ -86,7 +79,7 @@ export async function createMissingInDevelopmentTables(knex: Knex): Promise<void
 
 /**
  * Drops and recreates every in-development table, discarding its data, so the
- * database picks up changes to their definitions in `schema.js`
+ * database picks up changes to their definitions in `schema.ts`
  */
 export async function rebuildInDevelopmentTables(knex: Knex): Promise<void> {
   if (!shouldCreateInDevelopmentTables()) {
@@ -98,7 +91,7 @@ export async function rebuildInDevelopmentTables(knex: Knex): Promise<void> {
 
   const tables = getInDevelopmentTables();
 
-  // schema.js lists each table after the tables it references, so drop in
+  // schema.ts lists each table after the tables it references, so drop in
   // reverse to remove referencing tables before the tables they point to
   for (const tableName of tables.toReversed()) {
     logging.info(`Dropping in-development table: ${tableName}`);

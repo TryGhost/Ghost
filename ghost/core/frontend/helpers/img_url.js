@@ -14,7 +14,6 @@ const {
   detectUnsplashImage,
 } = require('../utils/images');
 
-const _ = require('lodash');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 
@@ -75,7 +74,7 @@ module.exports = function imgUrl(requestedImageUrl, options) {
   }
 
   // CASE: only make paths relative if we didn't get a request for an absolute url
-  const maybeEnsureRelativePath = !absoluteUrlRequested ? ensureRelativePath : _.identity;
+  const maybeEnsureRelativePath = !absoluteUrlRequested ? ensureRelativePath : (url) => url;
 
   return maybeEnsureRelativePath(getImageUrl(applyImageSizes(requestedImageUrl)));
 };

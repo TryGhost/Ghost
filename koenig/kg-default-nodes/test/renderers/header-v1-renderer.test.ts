@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {assertPrettifiesTo, callRenderer, html} from '../test-utils/index.js';
+import {assertPrettifiesTo, callRenderer, createDocument, html} from '../test-utils/index.js';
 
 describe('renderers/header-v1-renderer', function () {
     function getTestData(overrides = {}) {
@@ -16,6 +16,12 @@ describe('renderers/header-v1-renderer', function () {
             ...overrides
         };
     }
+
+    // Values containing characters that are special in HTML and in CSS
+    const badText = 'Go <b>now</b> & "save"';
+    const badUrl = 'https://example.org/a"b>c?x=1&y=<2>';
+    const badImage = 'https://example.org/it\'s "a" (header).jpg';
+    const encodedBadImage = 'https://example.org/it%27s%20%22a%22%20(header).jpg';
 
     function renderForWeb(data: Record<string, unknown>, options?: Record<string, unknown>) {
         return callRenderer('header', data, options);
@@ -35,7 +41,7 @@ describe('renderers/header-v1-renderer', function () {
                 <div
                     class="kg-card kg-header-card kg-width-full kg-size-small kg-style-image"
                     data-kg-background-image="https://example.com/image.jpg"
-                    style="background-image: url(https://example.com/image.jpg)">
+                    style="background-image: url('https://example.com/image.jpg')">
                     <h2 class="kg-header-card-header" id="this-is-the-header-card">
                         This is the header card
                     </h2>
@@ -100,6 +106,38 @@ describe('renderers/header-v1-renderer', function () {
                 </div>
             `);
         });
+
+        it('writes button text as text', function () {
+            const result = renderForWeb(getTestData({buttonText: badText}));
+            const link = createDocument(result.html).querySelector('.kg-header-card-button');
+
+            assert.equal(link?.textContent?.trim(), badText);
+            assert.equal(link?.children.length, 0);
+        });
+
+        it('renders a button URL, background image and size containing special characters', function () {
+            const result = renderForWeb(getTestData({buttonUrl: badUrl, backgroundImageSrc: badImage, size: 'small" x="<y>'}));
+            const document = createDocument(result.html);
+            const card = document.querySelector('.kg-header-card');
+
+            assert.equal(document.body.children.length, 1);
+            assert.deepEqual(card?.getAttributeNames(), ['class', 'data-kg-background-image', 'style']);
+            assert.equal(card?.getAttribute('class'), 'kg-card kg-header-card kg-width-full kg-size-small" x="<y> kg-style-image');
+            assert.equal(card?.getAttribute('data-kg-background-image'), badImage);
+            assert.equal(card?.getAttribute('style'), `background-image: url('${encodedBadImage}')`);
+            assert.equal(document.querySelector('.kg-header-card-button')?.getAttribute('href'), badUrl);
+        });
+
+        it('renders a style containing special characters', function () {
+            const result = renderForWeb(getTestData({style: 'dark" x="<y>'}));
+            const document = createDocument(result.html);
+            const card = document.querySelector('.kg-header-card');
+
+            assert.equal(document.body.children.length, 1);
+            assert.deepEqual(card?.getAttributeNames(), ['class', 'data-kg-background-image', 'style']);
+            assert.equal(card?.getAttribute('class'), 'kg-card kg-header-card kg-width-full kg-size-small kg-style-dark" x="<y>');
+            assert.equal(card?.getAttribute('style'), '');
+        });
     });
 
     describe('email', function () {
@@ -112,7 +150,7 @@ describe('renderers/header-v1-renderer', function () {
                 <div
                     class="kg-card kg-header-card kg-width-full kg-size-small kg-style-image"
                     data-kg-background-image="https://example.com/image.jpg"
-                    style="background-image: url(https://example.com/image.jpg)">
+                    style="background-image: url('https://example.com/image.jpg')">
                     <h2 class="kg-header-card-header" id="this-is-the-header-card">
                         This is the header card
                     </h2>
@@ -120,6 +158,38 @@ describe('renderers/header-v1-renderer', function () {
                     <a class="kg-header-card-button" href="https://example.com/">The button</a>
                 </div>
             `);
+        });
+
+        it('writes button text as text', function () {
+            const result = renderForEmail(getTestData({buttonText: badText}));
+            const link = createDocument(result.html).querySelector('.kg-header-card-button');
+
+            assert.equal(link?.textContent?.trim(), badText);
+            assert.equal(link?.children.length, 0);
+        });
+
+        it('renders a button URL, background image and size containing special characters', function () {
+            const result = renderForEmail(getTestData({buttonUrl: badUrl, backgroundImageSrc: badImage, size: 'small" x="<y>'}));
+            const document = createDocument(result.html);
+            const card = document.querySelector('.kg-header-card');
+
+            assert.equal(document.body.children.length, 1);
+            assert.deepEqual(card?.getAttributeNames(), ['class', 'data-kg-background-image', 'style']);
+            assert.equal(card?.getAttribute('class'), 'kg-card kg-header-card kg-width-full kg-size-small" x="<y> kg-style-image');
+            assert.equal(card?.getAttribute('data-kg-background-image'), badImage);
+            assert.equal(card?.getAttribute('style'), `background-image: url('${encodedBadImage}')`);
+            assert.equal(document.querySelector('.kg-header-card-button')?.getAttribute('href'), badUrl);
+        });
+
+        it('renders a style containing special characters', function () {
+            const result = renderForEmail(getTestData({style: 'dark" x="<y>'}));
+            const document = createDocument(result.html);
+            const card = document.querySelector('.kg-header-card');
+
+            assert.equal(document.body.children.length, 1);
+            assert.deepEqual(card?.getAttributeNames(), ['class', 'data-kg-background-image', 'style']);
+            assert.equal(card?.getAttribute('class'), 'kg-card kg-header-card kg-width-full kg-size-small kg-style-dark" x="<y>');
+            assert.equal(card?.getAttribute('style'), '');
         });
     });
 });

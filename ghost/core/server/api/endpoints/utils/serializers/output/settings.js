@@ -15,7 +15,7 @@ function settingsFilter(settings, filter) {
   const filteredGroups = filter ? filter.split(',') : [];
   return _.filter(settings, (setting) => {
     if (filteredGroups.length > 0) {
-      return _.includes(filteredGroups, setting.group);
+      return filteredGroups.includes(setting.group);
     }
 
     return true;
@@ -45,7 +45,7 @@ function serializeSettings(models, apiConfig, frame) {
       );
     }
   } else {
-    filteredSettings = _.values(settingsFilter(models, frame.options.group));
+    filteredSettings = Object.values(settingsFilter(models, frame.options.group));
 
     // Change the returned icon location to use a resized version, to prevent serving giant icon files
     // in admin

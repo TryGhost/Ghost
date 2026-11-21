@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 
 const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
 const { stripeMocker } = require('../../utils/e2e-framework-mock-manager');
-const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
+const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
 const nock = require('nock');
 const sinon = require('sinon');
@@ -134,8 +134,6 @@ describe('Member answers by port', function () {
   beforeEach(async function () {
     mockManager.mockMail();
     mockManager.mockStripe();
-    mockManager.mockLabsEnabled('stripeCheckoutCollection');
-    mockManager.mockLabsEnabled('customFieldTypePhone');
     addressKey = await defineField('Delivery address', 'address');
     recipientKey = await defineField('Recipient name', 'short_text');
     phoneKey = await defineField('Contact phone', 'phone');

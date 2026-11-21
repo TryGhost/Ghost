@@ -76,6 +76,8 @@ export interface PostEditorProps {
   writingFocus?: WritingFocus;
   /** The font the writer reads the post in, set on the canvas as `data-editor-font`. */
   font?: EditorFont;
+  /** Another tab holds the document: it can be read, selected and scrolled, and nothing in it can be changed. */
+  readOnly?: boolean;
 }
 
 export interface PostEditorHandle {
@@ -84,6 +86,13 @@ export interface PostEditorHandle {
 }
 
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
+
+type LexicalEditable = { setEditable: (editable: boolean) => void };
+
+/** Lexical's own flag: the body can still be read, selected and copied. */
+function setBodyEditable(api: KoenigInstance | null, editable: boolean): void {
+  (api?.editorInstance as LexicalEditable | undefined)?.setEditable(editable);
+}
 
 // Admin's element styles give textareas a min-height and a 250–500px width; the
 // fields opt out of both so they span the writing column and grow from one line.
@@ -208,16 +217,28 @@ export function PostEditor({
   settingsMoving = false,
   writingFocus,
   font,
+  readOnly = false,
 }: PostEditorProps) {
   const { darkMode } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
   const scrollPaneRef = useRef<HTMLDivElement>(null);
   const writingAreaRef = useRef<HTMLDivElement>(null);
+  const featureImageRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const excerptRef = useRef<HTMLTextAreaElement>(null);
   const titleErrorId = useId();
   const excerptErrorId = useId();
   const editorApiRef = useRef<KoenigInstance | null>(null);
+  const readOnlyRef = useRef(readOnly);
+  // The feature image's controls have no read-only state of their own. Through a ref
+  // because React 18 has no inert prop.
+  useEffect(() => {
+    readOnlyRef.current = readOnly;
+    setBodyEditable(editorApiRef.current, !readOnly);
+    if (featureImageRef.current) {
+      featureImageRef.current.inert = readOnly;
+    }
+  }, [readOnly]);
   const skipFocusEditorRef = useRef(false);
   const [wordCount, setWordCount] = useState(0);
   const [selectionWordCount, setSelectionWordCount] = useState<number | null>(null);
@@ -322,6 +343,8 @@ export function PostEditor({
   const registerApi = useCallback(
     (api: KoenigInstance | null) => {
       editorApiRef.current = api;
+      // A reload mounts a new instance, which starts out editable.
+      setBodyEditable(api, !readOnlyRef.current);
       registerEditorApi?.(api);
     },
     [registerEditorApi],
@@ -446,16 +469,21 @@ export function PostEditor({
           className={cn(
             'min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] [--kg-breakout-adjustment:var(--editor-breakout-inset,0px)] max-[500px]:px-8 lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))] lg:[--kg-breakout-adjustment:calc(var(--editor-breakout-inset,0px)+(var(--editor-settings-width,0px)+var(--spacing)*3)*var(--editor-settings-progress,0))]',
             chromeEntrance && 'screen-enter-rise',
+            // Not every Koenig build closes its cards to input with Lexical's flag.
+            readOnly && '[&_[data-kg-card]]:pointer-events-none',
           )}
           gap="none"
           onDragOver={(event) => event.preventDefault()}
-          onDrop={onPaneDrop}
+          onDrop={readOnly ? undefined : onPaneDrop}
           onMouseDown={trackMouseDown}
-          onMouseUp={focusEditorOnPaneClick}
+          onMouseUp={readOnly ? undefined : focusEditorOnPaneClick}
         >
           <div className="relative mx-auto w-full max-w-[740px]">
             {/* Only the bar offering an image is chrome; an image is the post's own. */}
-            <div data-writing-focus={hasFeatureImage ? undefined : writingFocus}>
+            <div
+              ref={featureImageRef}
+              data-writing-focus={hasFeatureImage ? undefined : writingFocus}
+            >
               <FeatureImage
                 alt={featureImage.featureImageAlt}
                 caption={featureImage.featureImageCaption}
@@ -509,12 +537,13 @@ export function PostEditor({
                 )}
                 data-testid={editorTitleInput}
                 placeholder={`${capitalize(postType)} title`}
+                readOnly={readOnly}
                 rows={1}
                 value={title}
                 onBlur={onTitleBlur}
                 onChange={(event) => onTitleChange(event.target.value)}
-                onKeyDown={onTitleKeyDown}
-                onPaste={cleanPastedTitle}
+                onKeyDown={readOnly ? undefined : onTitleKeyDown}
+                onPaste={readOnly ? undefined : cleanPastedTitle}
               />
             </div>
             {titleError ? (
@@ -542,11 +571,12 @@ export function PostEditor({
                   )}
                   data-testid={editorExcerptInput}
                   placeholder="Add an excerpt"
+                  readOnly={readOnly}
                   rows={1}
                   value={excerpt}
                   onBlur={onExcerptBlur}
                   onChange={(event) => onExcerptChange(event.target.value)}
-                  onKeyDown={onExcerptKeyDown}
+                  onKeyDown={readOnly ? undefined : onExcerptKeyDown}
                 />
                 <hr
                   className={cn(

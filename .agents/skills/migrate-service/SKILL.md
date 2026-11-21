@@ -146,9 +146,17 @@ redesign or broad boot orchestration, record the concrete mismatch and separate
 that decision from the small migration. Do not silently expand its scope.
 
 Migration tests may receive mechanical import/type/stub and initializer-await
-adaptations. New behavioral assertions or substantial harness changes return to
-preparation. The only new cases permitted in the migration commit are boundary
-regressions for new exact dependency allowances. Never weaken assertions,
+adaptations. New assertions about behavior the old implementation already has,
+and substantial harness changes, return to preparation. The migration commit
+adds new cases only for what cannot be tested before the root exists:
+
+- Boundary regressions for new exact dependency allowances.
+- Boot order, where another root reads this one: boot finishes this root's
+  `init()` before it starts theirs.
+- Readiness: a consumer's `init()` fails until this root is ready, and a
+  consumer loaded before `init()` reads the instance on use.
+
+Each must fail under a change you can name. Never weaken assertions,
 coverage gates, lint or types to make the refactor pass.
 
 ## 5. Update the inventory and verify
@@ -163,6 +171,8 @@ A migrated service is no longer legacy:
   the inventory's `followUps` section. A suggested future home, and
   notes on what `defineService` does not do for the service yet, go there too.
   That entry holds nothing else; leave it out when nothing is open.
+- Move any bug the entry's `blockers` describe to the inventory's `knownBugs`
+  section, so deleting the entry does not lose it.
 - Repair affected file references and startup-order descriptions in other
   legacy entries mechanically, without changing their unrelated assessments.
   An audit SHA you add must be a commit on main: a branch commit disappears on
@@ -189,7 +199,7 @@ main. Keep unrelated fixes out of the migration.
 
 Review the final diff: one service, unchanged operation behavior, no hidden
 composition, and only justified metadata/enforcement changes. New test cases
-are limited to boundary regressions for new exact dependency allowances.
+are limited to those step 4 allows.
 Use the repository commit skill and make **one commit for this service**.
 Keep unrelated tooling/skill changes on their own branch. Report the branch,
 commit, validation and unresolved prerequisites. Push/open a PR only within the

@@ -1,4 +1,11 @@
 import {DateTime} from 'luxon';
+import {escapeHtml} from '../../../utils/escape-html.js';
+
+// Tweet text as HTML: escaped, with its line breaks kept. Twitter sends its text with `&`, `<`
+// and `>` already encoded, which escapeHtml decodes first, so they aren't encoded twice.
+function textToHtml(text: string) {
+    return escapeHtml(text).replace(/\n/g, '<br>');
+}
 
 interface TweetPublicMetrics {
     retweet_count: number;
@@ -69,7 +76,8 @@ export default function render(node: TwitterNode, document: Document, options: R
     const isEmail = options.target === 'email';
 
     if (tweetData && isEmail && tweetData.id) {
-        const tweetId = tweetData.id;
+        // Each value from the tweet goes into the email as text or an attribute, escaped
+        const tweetId = encodeURIComponent(String(tweetData.id));
         const numberFormatter = new Intl.NumberFormat('en-US', {
             style: 'decimal',
             notation: 'compact',
@@ -100,15 +108,16 @@ export default function render(node: TwitterNode, document: Document, options: R
             const content = Array.from(tweetContent ?? '');
             for (const entity of entities) {
                 let type = 'text';
-                let data = content.slice(entity.start, entity.end + 1).join('').replace(/\n/g, '<br>');
+                let text = content.slice(entity.start, entity.end + 1).join('');
                 if (entity.url) {
                     if (!entity.display_url || entity.display_url.startsWith('pic.twitter.com')) {
                         type = 'img_url';
                     } else {
                         type = 'url';
-                        data = data.replace(entity.url, entity.display_url);
+                        text = text.replace(entity.url, entity.display_url);
                     }
                 }
+                const data = textToHtml(text);
                 if (entity.username) {
                     type = 'mention';
                 }
@@ -117,7 +126,7 @@ export default function render(node: TwitterNode, document: Document, options: R
                 }
                 parts.push({
                     type: 'text',
-                    data: content.slice(last, entity.start).join('').replace(/\n/g, '<br>')
+                    data: textToHtml(content.slice(last, entity.start).join(''))
                 });
                 parts.push({
                     type: type,
@@ -127,7 +136,7 @@ export default function render(node: TwitterNode, document: Document, options: R
             }
             parts.push({
                 type: 'text',
-                data: content.slice(last, content.length).join('').replace(/\n/g, '<br>')
+                data: textToHtml(content.slice(last, content.length).join(''))
             });
 
             tweetContent = parts.reduce((partContent, part) => {
@@ -155,11 +164,11 @@ export default function render(node: TwitterNode, document: Document, options: R
                         ${authorUser ? `
                             <tr>
                                 ${authorUser.profile_image_url ? `<td width="48" style="width: 48px;">
-                                    <a href="https://twitter.com/twitter/status/${tweetId}" class="kg-twitter-link" style="padding-left: 16px; padding-top: 16px;"><img src="${authorUser.profile_image_url}" style="max-width: 512px; border: none; width: 48px; height: 48px; border-radius: 999px;" border="0"></a>
+                                    <a href="https://twitter.com/twitter/status/${tweetId}" class="kg-twitter-link" style="padding-left: 16px; padding-top: 16px;"><img src="${escapeHtml(authorUser.profile_image_url)}" style="max-width: 512px; border: none; width: 48px; height: 48px; border-radius: 999px;" border="0"></a>
                                 </td>` : ''}
                                 ${authorUser.name ? `
                                 <td style="line-height: 1.3em; width: 100%;">
-                                    <a href="https://twitter.com/twitter/status/${tweetId}" class="kg-twitter-link" style="font-size: 15px !important; font-weight: 600; width: 100%; padding-top: 20px; padding-bottom: 18px;">${authorUser.name} <br> <span style="color: #ABB4BE; font-size: 14px; font-weight: 500;">@${authorUser.username}</span></a>
+                                    <a href="https://twitter.com/twitter/status/${tweetId}" class="kg-twitter-link" style="font-size: 15px !important; font-weight: 600; width: 100%; padding-top: 20px; padding-bottom: 18px;">${escapeHtml(authorUser.name)} <br> <span style="color: #ABB4BE; font-size: 14px; font-weight: 500;">@${escapeHtml(authorUser.username)}</span></a>
                                 </td>` : ''}
                                 <td align="right" width="24" style="width: 24px;">
                                     <a href="https://twitter.com/twitter/status/${tweetId}" class="kg-twitter-link" style="padding-right: 16px; padding-top: 20px; width: 24px; height: 38px;"><img src="https://static.ghost.org/v4.0.0/images/twitter-logo-small.png" width="24" border="0"></a>
@@ -175,7 +184,7 @@ export default function render(node: TwitterNode, document: Document, options: R
                         </tr>
                         ${hasImageOrVideo ? `<tr>
                             <td colspan="3" align="center" style="width: 100%;">
-                                <a href="https://twitter.com/twitter/status/${tweetId}" style="display: block; padding-top: 0; padding-left: 16px; padding-right: 16px; padding-bottom: 0;"><img src="${tweetImageUrl}" style="width: 100%; border: 1px solid #E9E9E9; max-width: 528px; border-radius: 10px;" border="0"></a>
+                                <a href="https://twitter.com/twitter/status/${tweetId}" style="display: block; padding-top: 0; padding-left: 16px; padding-right: 16px; padding-bottom: 0;"><img src="${escapeHtml(tweetImageUrl)}" style="width: 100%; border: 1px solid #E9E9E9; max-width: 528px; border-radius: 10px;" border="0"></a>
                             </td>
                         </tr>` : ''}
                         <tr>

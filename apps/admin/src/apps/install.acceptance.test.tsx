@@ -120,18 +120,25 @@ describe('Installing an app', () => {
     await expect
       .element(appsScreen.accessIndicator())
       .toHaveTextContent('The app acts as whoever opens it, within their role.');
+    // One line per resource in the scope registry, in Ghost's words.
     await expect(appsScreen.accessItems()).toHaveCount(6);
     await expect
       .element(appsScreen.accessItems().first())
-      .toHaveTextContent('View, create, edit, publish and delete posts and pages');
-    // What the app does: where it appears, and where what it reads can go.
-    await expect(appsScreen.capabilities()).toHaveCount(2);
+      .toHaveTextContent(
+        'Posts and pagesList, search and read every post and page, drafts included.Read any post or page.',
+      );
+    // Where the app's data goes closes the box, but isn't one of the permissions.
+    await expect(
+      appsScreen.accessIndicator().getByRole('listitem').filter({ hasText: 'Data accessed by' }),
+    ).toHaveCount(0);
+    // What the app does: where it appears, and, with its permissions, where what it reads goes.
+    await expect(appsScreen.capabilities()).toHaveCount(1);
     await expect
       .element(appsScreen.capabilities().first())
       .toHaveTextContent('A dedicated page in Admin');
     await expect
-      .element(appsScreen.capabilities().last())
-      .toHaveTextContent('Read and write data to podcast.example.com');
+      .element(appsScreen.accessIndicator().getByTestId('app-data-accessed-by'))
+      .toHaveTextContent(/Data accessed by\s*podcast\.example\.com/);
     expect(previewApi.requests.map(({ body }) => body)).toEqual([
       { app_installation_previews: [{ manifest_url: MANIFEST_URL }] },
     ]);
@@ -196,8 +203,8 @@ describe('Installing an app', () => {
     });
 
     await expect
-      .element(appsScreen.capabilities().last())
-      .toHaveTextContent('Read and write data to my-app.localhost:5173');
+      .element(appsScreen.dataAccessedBy())
+      .toHaveTextContent(/Data accessed by\s*my-app\.localhost:5173/);
     await expect.element(appsScreen.developmentBadge()).not.toBeInTheDocument();
   });
 
@@ -240,8 +247,8 @@ describe('Installing an app', () => {
           manifest: renamed,
           digest: 'digest-2',
           installation: existing([
-            { path: 'description', requires_approval: false },
-            { path: 'name', requires_approval: true },
+            { kind: 'field', path: 'description', requires_approval: false },
+            { kind: 'field', path: 'name', requires_approval: true },
           ]),
         }),
       ),
@@ -282,8 +289,8 @@ describe('Installing an app', () => {
           digest: 'digest-2',
           trusted_origins: ['https://audio.example.org'],
           installation: existing([
-            { path: 'manifest_url', requires_approval: true },
-            { path: 'surfaces[0].url', requires_approval: true },
+            { kind: 'field', path: 'manifest_url', requires_approval: true },
+            { kind: 'field', path: 'surfaces[0].url', requires_approval: true },
           ]),
         }),
       ),
@@ -430,7 +437,7 @@ describe('Installing an app', () => {
         previews === 1
           ? preview()
           : preview({
-              installation: existing([{ path: 'name', requires_approval: true }]),
+              installation: existing([{ kind: 'field', path: 'name', requires_approval: true }]),
               manifest: manifest({ name: 'Podcasts' }),
             }),
       );
@@ -454,7 +461,7 @@ describe('Installing an app', () => {
         preview({
           manifest: manifest({ name: 'Podcasts' }),
           digest: 'digest-2',
-          installation: existing([{ path: 'name', requires_approval: true }]),
+          installation: existing([{ kind: 'field', path: 'name', requires_approval: true }]),
         }),
       ),
     );
@@ -464,9 +471,9 @@ describe('Installing an app', () => {
       digest: 'digest-2',
       installation: {
         ...existing([
-          { path: 'manifest_url', requires_approval: true },
-          { path: 'name', requires_approval: true },
-          { path: 'surfaces[0].url', requires_approval: true },
+          { kind: 'field', path: 'manifest_url', requires_approval: true },
+          { kind: 'field', path: 'name', requires_approval: true },
+          { kind: 'field', path: 'surfaces[0].url', requires_approval: true },
         ]),
         revision: 1,
         manifest_url: 'https://new.example.com/ghost-app.json',
@@ -500,7 +507,7 @@ describe('Installing an app', () => {
         preview({
           manifest: manifest({ name: 'Podcasts' }),
           digest: 'digest-2',
-          installation: existing([{ path: 'name', requires_approval: true }]),
+          installation: existing([{ kind: 'field', path: 'name', requires_approval: true }]),
         }),
       );
     });
@@ -522,7 +529,9 @@ describe('Installing an app', () => {
       previews += 1;
       return previewResponse(
         previews === 1
-          ? preview({ installation: existing([{ path: 'name', requires_approval: true }]) })
+          ? preview({
+              installation: existing([{ kind: 'field', path: 'name', requires_approval: true }]),
+            })
           : preview(),
       );
     });
@@ -544,7 +553,7 @@ describe('Installing an app', () => {
         preview({
           manifest: manifest({ name: 'Podcasts' }),
           digest: 'digest-2',
-          installation: existing([{ path: 'name', requires_approval: true }]),
+          installation: existing([{ kind: 'field', path: 'name', requires_approval: true }]),
         }),
       ),
     );

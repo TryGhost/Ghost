@@ -1,3 +1,5 @@
+/** @import { ChangeEvent, FocusEvent, KeyboardEvent } from 'react' */
+
 import { useEffect, useRef } from 'react';
 import { hasMode } from '../../utils/check-mode';
 import { isCookiesDisabled } from '../../utils/helpers';
@@ -176,6 +178,29 @@ function InputError({ message, style }) {
   );
 }
 
+/** @param {{
+ *   name: string,
+ *   id?: string,
+ *   hidden?: boolean,
+ *   label: string,
+ *   hideLabel?: boolean,
+ *   type?: string,
+ *   autoComplete?: string,
+ *   value?: string | number | readonly string[],
+ *   placeholder?: string,
+ *   disabled?: boolean,
+ *   readOnly?: boolean,
+ *   options?: { value: string, label: string }[],
+ *   onChange?: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>, name: string) => void,
+ *   onBlur?: (event: FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>, name: string) => void,
+ *   onKeyDown?: (event: KeyboardEvent<HTMLInputElement>, name: string) => void,
+ *   tabIndex?: number,
+ *   maxLength?: number,
+ *   autoFocus?: boolean,
+ *   errorMessage?: string | null,
+ *   invalid?: boolean,
+ *   describedBy?: string,
+ * }} props */
 function InputField({
   name,
   id,

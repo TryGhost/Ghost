@@ -33,6 +33,47 @@ body {
   margin: 0;
 }
 
+/* A single diagonal reflection on interaction. Paint only the decoration inside
+   the rounded card; clipping the banner itself would crop its outer glow. */
+.sidebar-whats-new-banner::after {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    135deg,
+    transparent 35%,
+    color-mix(in oklab, var(--color-white) 18%, transparent) 50%,
+    transparent 65%
+  );
+  background-size: 300% 300%;
+  background-position: 100% 100%;
+  opacity: 0;
+  pointer-events: none;
+  content: '';
+}
+
+@keyframes sidebar-banner-shine {
+  0% {
+    background-position: 100% 100%;
+    opacity: 0;
+  }
+  20%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    background-position: 0% 0%;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sidebar-whats-new-banner:is(:hover, :focus-within)::after {
+    animation: sidebar-banner-shine 900ms var(--ease-standard) both;
+  }
+}
+
 /* The editor settings panel's motion. `--editor-settings-progress` on the editor
    shell is only ever 0 or 1; each element that moves with the panel transitions
    its own property, named in brackets (`editor-settings-motion-[width]`), on this
@@ -674,5 +715,12 @@ html[data-screen-transition='return']::view-transition-new(admin-mobile-nav):onl
 @keyframes screen-transition-mobile-nav-in {
   from {
     transform: translateY(100%);
+  }
+}
+
+/* Mobile hardening shares the page gutter without changing excluded surfaces. */
+@media (width < 1024px) {
+  [data-admin7-mobile='true'] .mobile-page-spacing {
+    --page-gutter: 16px;
   }
 }

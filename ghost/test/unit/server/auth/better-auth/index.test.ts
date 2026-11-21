@@ -19,7 +19,6 @@ describe('Better Auth service root', function () {
   beforeEach(function () {
     cachedRoot = require.cache[rootPath];
     configUtils.set('database:client', 'mysql2');
-    configUtils.set('createInDevelopmentTables', true);
   });
 
   afterEach(async function () {

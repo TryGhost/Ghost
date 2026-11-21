@@ -2,6 +2,7 @@
 # Every service check applies to every service that is not listed under `services`.
 # That list only shrinks: migrating a service deletes its entry.
 # `followUps` records what is still open for services that already use defineService.
+# `knownBugs` records bugs found while auditing or migrating a service, until they are fixed.
 # Entry points are relative to this directory; evidence paths are relative to ghost.
 # An unverified facet is an open audit question, not an empty/no-op contract.
 services:
@@ -308,7 +309,7 @@ services:
           - core/server/lib/image/index.js
           - core/server/lib/lexical.js
           - core/server/lib/mobiledoc.ts
-          - core/server/api/endpoints/authentication.js
+          - core/server/api/endpoints/authentication.ts
           - core/server/api/endpoints/images.js
           - core/server/api/endpoints/media.js
           - core/server/api/endpoints/files.js
@@ -350,7 +351,7 @@ services:
           - core/kernel/adapter-manager/adapter-manager.ts
           - core/kernel/adapter-manager/options.ts
           - core/server/services/post-scheduling/index.ts
-          - core/server/api/endpoints/authentication.js
+          - core/server/api/endpoints/authentication.ts
           - core/server/lib/image/index.js
         tests:
           - test/unit/kernel/adapter-manager/adapter-manager.test.ts
@@ -368,7 +369,7 @@ services:
           - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/lib/image/index.js
           - core/server/services/jobs-service/index.ts
-          - core/server/adapters/lib/redis/redis-store-factory.js
+          - core/server/adapters/lib/redis/redis-store-factory.ts
           - core/server/ghost-server.ts
         tests:
           - test/unit/kernel/adapter-manager/adapter-manager.test.ts
@@ -410,8 +411,8 @@ services:
           - core/kernel/adapter-manager/types.ts
           - core/server/adapters/cache/MemoryCache.js
           - core/server/adapters/cache/AdapterCacheMemoryTTL.js
-          - core/server/adapters/lib/redis/AdapterCacheRedis.js
-          - core/server/adapters/lib/redis/redis-store-factory.js
+          - core/server/adapters/lib/redis/AdapterCacheRedis.ts
+          - core/server/adapters/lib/redis/redis-store-factory.ts
           - core/server/adapters/storage/LocalStorageBase.ts
           - core/server/adapters/storage/S3Storage.ts
           - core/server/adapters/route-settings/S3RouteSettingsStore.ts
@@ -2324,7 +2325,7 @@ services:
           - core/server/services/email-suppression-list/service.js
           - core/server/services/email-suppression-list/mailgun-email-suppression-list.js
           - core/server/models/suppression.js
-          - core/server/data/schema/schema.js
+          - core/server/data/schema/schema.ts
         tests:
           - test/integration/services/mailgun-email-suppression-list.test.js
           - test/unit/server/services/email-suppression-list/mailgun-email-suppression-list.test.ts
@@ -2661,7 +2662,7 @@ services:
           - core/server/services/gifts/gift-bookshelf-repository.ts
           - core/server/services/gifts/gift-email-service.ts
           - core/server/services/gifts/index.ts
-          - core/server/data/schema/schema.js
+          - core/server/data/schema/schema.ts
         tests:
           - test/unit/server/services/gifts/gift-service-interface.test.ts
           - test/unit/server/services/gifts/gift-service.test.ts
@@ -3198,8 +3199,8 @@ services:
           - core/server/models/invite.js
           - core/server/models/integration.js
           - core/server/data/importer/importers/data/users-importer.js
-          - core/server/auth/api-key/admin.js
-          - core/server/auth/api-key/content.js
+          - core/server/auth/api-key/admin.ts
+          - core/server/auth/api-key/content.ts
           - core/server/services/webhooks/index.js
           - core/server/services/webhooks/webhook-trigger.js
           - core/server/services/newsletters/index.ts
@@ -3314,7 +3315,7 @@ services:
         sources:
           - core/server/services/limits.ts
           - core/server/services/webhooks/webhook-trigger.js
-          - core/server/auth/api-key/content.js
+          - core/server/auth/api-key/content.ts
           - core/server/api/endpoints/newsletters.js
           - core/server/api/endpoints/settings.js
         tests:
@@ -3827,7 +3828,7 @@ services:
           - core/server/services/machine-payments/stripe/payment-recorder.ts
           - core/server/services/machine-payments/events/machine-payment-event-repository.ts
           - core/server/models/machine-payment-event.js
-          - core/server/data/schema/schema.js
+          - core/server/data/schema/schema.ts
           - core/server/data/exporter/table-lists.js
           - core/boot.js
         tests:
@@ -4025,7 +4026,7 @@ services:
           - core/server/web/members/app.js
           - core/server/web/members/account/routes.ts
           - core/server/web/comments/routes.js
-          - core/server/auth/members/index.js
+          - core/server/auth/members/index.ts
           - core/server/services/stripe/stripe-service.js
           - core/server/services/gifts/index.ts
           - core/server/services/members-events/index.js
@@ -4160,7 +4161,6 @@ services:
           - core/server/services/members/single-use-token-provider.js
           - core/server/services/members/members-api/repositories/member-repository.js
           - core/server/lib/after-commit.ts
-          - core/server/services/members/members-api/services/geolocation-service.js
           - core/server/services/members/import-export/import/importer.ts
           - core/server/services/members/import-export/import/spool.ts
           - core/server/services/members/import-export/csv/parse.ts
@@ -4535,7 +4535,7 @@ services:
       exports:
         summary: >-
           Named runtime exports are synchronous init, mutable namespaces/fields/definitions/values/bindings,
-          audience/access constants, canWrite, actingContext and adminWriteOrigin. fields is the
+          audience/access constants, canWrite and adminWriteOrigin. fields is the
           field source every read of a field goes through, reading a field in an unavailable
           namespace as archived. Service
           bindings are undefined before init; class methods depend on their receiver. Namespaces
@@ -4548,7 +4548,7 @@ services:
         sources:
           - core/server/services/members-metafields/index.ts
           - core/server/services/members-metafields/access.ts
-          - core/server/services/members-metafields/actions.ts
+          - core/server/services/members-metafields/write-origin.ts
           - core/server/services/members-metafields/namespaces.ts
           - core/server/services/members-metafields/definitions-service.ts
           - core/server/services/members-metafields/values-service.ts
@@ -4558,11 +4558,11 @@ services:
           - test/e2e-api/members/custom-fields.test.ts
       construction:
         summary: >-
-          Init obtains the shared Knex getter, models and config, then publishes namespaces,
+          Init obtains the shared Knex getter and config, then publishes namespaces,
           fields, definitions, values and bindings sequentially; bindings retains that values instance.
           Namespaces is built from custom fields' policy, which holds the host limit service and a
           ceiling callback, both asked on each use.
-          Definitions receives an action-recording closure over models.Action and the namespaces;
+          Definitions receives the shared ActionLog and the namespaces;
           values receives the ceiling callback; all three receive the field source. Constructors
           store dependencies without querying or starting work.
           The shared DB getter can create the module-cached Knex client if not already loaded.
@@ -4654,7 +4654,7 @@ services:
           - core/server/services/members-metafields/values-service.ts
           - core/server/services/members-metafields/bindings-service.ts
           - core/server/services/members/service.js
-          - core/server/data/schema/schema.js
+          - core/server/data/schema/schema.ts
         tests:
           - test/e2e-api/admin/member-custom-fields.test.ts
           - test/e2e-api/members/custom-fields.test.ts
@@ -4685,18 +4685,19 @@ services:
           opening one.
           Value changes and their history rows share a transaction; the members service
           composes larger writes around it, and CSV import uses per-row transactions. Definition actions
-          are written inside the command's transaction. Real HTTP proves batch rollback on a later name conflict,
+          are written inside the command's transaction through the shared action log. Real HTTP proves batch rollback on a later name conflict,
           successful value/history writes and cascades; validation refusals do not prove rollback
           after a value/history write fails. Import failure units use fake commit/rollback.
         sources:
           - core/server/services/members-metafields/definitions-service.ts
           - core/server/services/members-metafields/values-service.ts
           - core/server/services/members-metafields/bindings-service.ts
-          - core/server/services/members-metafields/actions.ts
+          - core/server/services/members-metafields/field-actions.ts
+          - core/server/lib/action-log/action-log.ts
           - core/server/services/members/members-api/services/member-bread-service.js
           - core/server/services/members/import-export/import/importer.ts
           - core/server/data/db/connection.ts
-          - core/server/data/schema/schema.js
+          - core/server/data/schema/schema.ts
         tests:
           - test/e2e-api/admin/member-custom-fields.test.ts
           - test/e2e-api/members/custom-fields.test.ts
@@ -4707,7 +4708,7 @@ services:
           Invalid plans reject before writes; malformed value leaves are logged/omitted and
           malformed history field lists become empty, while invalid definition decoding rejects
           the read. Bindings skip unresolved/invalid rows, and return the plans for the values
-          accepted, one per writer, beside every refusal named by port; a failed lookup rejects. Definition action failures are logged and fail the command, rolling its writes back. Multi-property definition edits are atomic; limit
+          accepted, one per writer, beside every refusal named by port; a failed lookup rejects. A failed definition action write fails the command, rolling its writes back. Multi-property definition edits are atomic; limit
           counting deliberately permits concurrent overshoot, and applying a plan does not
           revalidate its captured definition. HTTP asserts selected refusals/corrupt reads and
           successful actions; webhook HTTP and fake import tests assert continuation/reporting.
@@ -4716,7 +4717,8 @@ services:
           - core/server/services/members-metafields/definitions-service.ts
           - core/server/services/members-metafields/values-service.ts
           - core/server/services/members-metafields/bindings-service.ts
-          - core/server/services/members-metafields/actions.ts
+          - core/server/services/members-metafields/field-actions.ts
+          - core/server/lib/action-log/action-log.ts
           - core/server/services/members/import-export/import/importer.ts
         tests:
           - test/e2e-api/admin/member-custom-fields.test.ts
@@ -5079,7 +5081,7 @@ services:
         sources:
           - core/server/api/endpoints/notifications.js
           - core/server/web/api/endpoints/admin/routes.js
-          - core/server/api/endpoints/utils/serializers/output/notifications.js
+          - core/server/api/endpoints/utils/serializers/output/notifications.ts
           - core/server/api/endpoints/mail.js
           - core/server/services/update-check/index.js
           - core/server/services/update-check/update-check-service.js
@@ -5414,7 +5416,8 @@ services:
           or production retry policy. Root units pin credentials copied at import: a later
           config value is not sent. Provider units pin the NFT asset request with its optional
           key header, and the Twitter API request, query fields, bearer header, tweet_data and
-          x.com rewrite, with the provider endpoint fetched through the injected client.
+          x.com rewrite, with the provider endpoint fetched through the injected client. Root
+          units pin the upload extension allowlist read again for each image operation.
         sources:
           - core/server/services/oembed/service.js
           - core/server/services/oembed/oembed-service.js
@@ -5443,6 +5446,8 @@ services:
           probe fixture does not prove early cancellation of a large/chunked response. HTTP tests
           restore real image fetching for private-address and nonimage cases, not successful
           persistence through real storage. Nested client/native cleanup remains uncharacterized.
+          Root units pin an SVG converted to PNG and written through the captured adapter's fake
+          saveRaw.
         sources:
           - core/server/services/oembed/oembed-service.js
           - core/server/lib/request-external.js
@@ -5453,6 +5458,7 @@ services:
           - package.json
         tests:
           - test/unit/server/services/oembed/oembed-service.test.js
+          - test/unit/server/services/oembed/index.test.ts
           - test/e2e-api/admin/oembed.test.js
       failures:
         summary: >-
@@ -5468,7 +5474,11 @@ services:
           failures. Root units pin a mention page without a content type becoming an
           unknown-provider rejection with the TypeError logged, and a plain-text mention page
           failing for insufficient metadata. NFT units pin API failure propagation; its parsed
-          response assumption remains a source risk without a reproduction.
+          response assumption remains a source risk without a reproduction. Root units pin a
+          failed Twitter API request logged through the application logger with the base embed
+          kept. Class units pin the logged error and fallback for a page decode failure, a failed
+          mention icon check and failed bookmark icon and thumbnail stores, and the logged message
+          for a metadata extraction failure.
         sources:
           - core/server/services/oembed/oembed-service.js
           - core/server/services/oembed/extract-oembed.ts
@@ -5668,7 +5678,7 @@ services:
           - core/server/services/offers/application/offers-api.js
           - core/server/services/offers/offer-bookshelf-repository.js
           - core/server/services/offers/domain/models/offer.js
-          - core/server/data/schema/schema.js
+          - core/server/data/schema/schema.ts
           - core/frontend/web/site.js
           - core/server/services/members/api.js
         tests:
@@ -5785,238 +5795,6 @@ services:
         count-query/reporting errors and consumer fallbacks.
         Keep supplied-transaction reuse separate from operations that always open a transaction,
         and preserve the distinction between durable offer creation and later coupon provisioning.
-  permissions:
-    kind: directory
-    disposition: migrate
-    futureHome: core/server/auth/permissions
-    status: audited
-    auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
-    migration:
-      complexity: straightforward
-      modelImpact: fits
-      reason: >-
-        Boot already awaits one action-map load and runtime callers then use
-        canThis/parseContext. A facade can own the loaded map while each authorization check
-        keeps its existing request-specific permission snapshot. Preserve the User model's
-        deferred import, empty-map behavior and any explicit test reload path instead of
-        treating repeated init as ordinary operation.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
-      sources:
-        - core/server/services/permissions/index.js
-        - core/server/services/permissions/actions-map-cache.js
-        - core/server/services/permissions/can-this.js
-        - core/server/models/user.js
-        - core/boot.js
-      dependencies:
-        complexity: complex
-        reason: >-
-          canThis and its providers load the model registry directly while User.permissible calls
-          back into permissions through a deliberately deferred import. The action map is a
-          module global. Dependency injection needs an explicit shared
-          authorization graph without turning the existing model/permissions cycle into eager
-          construction.
-        preparation:
-          - >-
-            Create providers and canThis from injected models and model-rule helpers, sharing one
-            owned action map.
-          - >-
-            Keep the User model callback deferred until authorization runs; cover both model-first
-            and permission-first loading before switching consumers to a guarded service getter.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
-        sources:
-          - core/server/services/permissions/index.js
-          - core/server/services/permissions/can-this.js
-          - core/server/services/permissions/providers.js
-          - core/server/services/permissions/actions-map-cache.js
-          - core/server/models/user.js
-          - core/server/api/endpoints/utils/permissions.js
-    entryPoints:
-      - permissions/index.js
-    notes: >-
-      Suggested future home after this migration: server/auth/permissions; action maps, actor context and staff/API-key
-      roles belong with the existing authorization owner. This remains configured application
-      policy, not Kernel machinery. Boot still owns readiness; no source has moved. Preserve
-      boot-loaded action definitions, per-check permission loading and model overrides. Returned
-      maps and retained checks have different lifetimes; reload, early calls and failures still
-      need focused contracts before changing initialization. can-this.js imports the role checks
-      in models/role-utils.ts; that dependency violation stays until this move settles where role
-      checks live.
-    contracts:
-      exports:
-        summary: >-
-          CommonJS exports receiver-independent init, canThis and parseContext. Init returns a
-          promise for the actual mutable action map. canThis synchronously builds a fresh chained
-          result with nonenumerable, nonwritable action properties and object-type functions;
-          invoking a handler returns a promise and may return a model override's result, including
-          excludedAttrs. parseContext returns a new normalized object, retaining supplied user,
-          key and member references, and integration only when api_key is supplied. Units pin chain methods and selected result/error
-          shapes, not descriptors, detached exports or returned-map mutation.
-        sources:
-          - core/server/services/permissions/index.js
-          - core/server/services/permissions/can-this.js
-          - core/server/services/permissions/parse-context.js
-          - core/server/services/permissions/actions-map-cache.js
-          - core/server/models/post.js
-        tests:
-          - test/unit/server/services/permissions/index.test.js
-          - test/unit/server/services/permissions/can-this.test.js
-          - test/unit/server/services/permissions/parse-context.test.ts
-      construction:
-        summary: >-
-          Import loads shared models, providers and one module-level empty actions cache without
-          querying permissions or constructing a service class. Every init rebuilds the map from
-          the permissions defined in code (role-permissions all()); it does no I/O.
-          Action/object pairs are deduplicated. canThis starts
-          user/key loads and builds handlers against a cloned action map and model references at
-          check creation. Units assert the map built from the static data; import purity and
-          provider-query timing are source-only.
-        sources:
-          - core/server/services/permissions/index.js
-          - core/server/services/permissions/actions-map-cache.js
-          - core/server/services/permissions/can-this.js
-          - core/server/services/permissions/providers.js
-          - core/server/services/permissions/role-permissions.ts
-        tests:
-          - test/unit/server/services/permissions/index.test.js
-          - test/unit/server/services/permissions/can-this.test.js
-      consumers:
-        summary: >-
-          Boot initializes the root. The API permission stage normalizes context, bypasses public
-          requests, invokes dynamically selected checks and removes returned excludedAttrs.
-          Schedules, ownership transfer, member-field definitions, gift links and audience feedback
-          call checks directly. Role serialization retains canThis and suppresses failed assignment
-          checks; User.permissible requires the root lazily to avoid a model import cycle and checks
-          role changes. Real HTTP tests pin selected token/session role outcomes, persisted user-role
-          changes, assignable-role snapshots and gift browse denials. They do not establish every
-          model/endpoint override, early caller, serializer failure or retained check after reload.
-        sources:
-          - core/boot.js
-          - core/server/api/endpoints/utils/permissions.js
-          - core/server/api/endpoints/schedules.js
-          - core/server/api/endpoints/users.js
-          - core/server/api/endpoints/member-metafields.ts
-          - core/server/api/endpoints/gift-links.ts
-          - core/server/services/audience-feedback/audience-feedback-controller.js
-          - core/server/api/endpoints/utils/serializers/output/roles.js
-          - core/server/models/user.js
-        tests:
-          - test/e2e-api/admin/api-tokens.test.js
-          - test/e2e-api/admin/users.test.js
-          - test/e2e-api/admin/roles.test.js
-          - test/e2e-api/admin/gift-links.test.ts
-      startup:
-        summary: >-
-          Boot awaits init in its main service Promise.all after database setup, before readiness;
-          imports and parseContext need no populated map. canThis throws synchronously when the
-          map is empty, including internal requests. Init builds the map from static data, so a
-          successful init populates it; it is also empty before init, after a rebuild that throws
-          (see failures), or if a caller empties the mutable map init returns (see lifetime). No
-          explicit ready flag is set. The pre-init unit
-          stubs empty() rather than loading a fresh root. Booted HTTP suites establish successful
-          composition, not empty data, init rejection, frontend-disabled ordering or the absence
-          of authorization calls from other concurrently initializing services.
-        sources:
-          - core/boot.js
-          - core/server/services/permissions/index.js
-          - core/server/services/permissions/can-this.js
-          - core/server/services/permissions/actions-map-cache.js
-        tests:
-          - test/unit/server/services/permissions/index.test.js
-          - test/e2e-api/admin/api-tokens.test.js
-      lifetime:
-        summary: >-
-          There is no init guard, in-flight sharing, invalidation subscription or stop/reset hook.
-          Each init replaces the cache synchronously.
-          getAll clones it, but init returns its mutable object directly. Existing checks retain
-          their handler set and one user/key permissions promise; calling a handler again does not
-          reload authorization. New checks load fresh user/key data, while action definitions stay
-          unchanged until init. These retention, mutation, concurrent reload and repeated-boot
-          contracts are source-only; current units recreate checks against fixture maps.
-        sources:
-          - core/server/services/permissions/index.js
-          - core/server/services/permissions/actions-map-cache.js
-          - core/server/services/permissions/can-this.js
-          - core/server/services/permissions/providers.js
-        tests: []
-      configuration:
-        summary: >-
-          No config/settings/URL values are read by the root; permissions-data.ts defines available
-          chains. User providers require active status and take the deduplicated union of their
-          roles' permissions from code; API-key providers use their single role, and content keys
-          (no role) get none. Authorization matches
-          action/object, with model-specific rules responsible for resource restrictions. Owner
-          user roles bypass the generic user-permission check. When both user and key exist, user
-          permissions win and model overrides receive apiKey:null, although both providers load.
-          parseContext assigns public from key type after user/internal handling and copies member
-          without making it nonpublic. Units pin ordinary normalization, inactive users, dedup and
-          staff-key precedence; mixed internal/content-key contexts and every model rule are untested.
-        sources:
-          - core/server/services/permissions/parse-context.js
-          - core/server/services/permissions/providers.js
-          - core/server/services/permissions/can-this.js
-          - core/server/models/role-utils.ts
-          - core/server/models/role.js
-          - core/server/models/relations/authors.js
-          - core/server/models/post.js
-        tests:
-          - test/unit/server/services/permissions/parse-context.test.ts
-          - test/unit/server/services/permissions/providers.test.ts
-          - test/unit/server/services/permissions/can-this.test.js
-          - test/e2e-api/admin/api-tokens.test.js
-      resources:
-        summary: >-
-          Owns the action map and per-check handlers/promises; models borrow the shared database
-          pool. No client, timer, worker, listener, transaction, drain or cleanup registration is
-          created here. User and key reads begin independently and have no shared transaction or
-          cancellation; a model override can perform further reads. Internal handlers immediately
-          resolve without awaiting those already-started provider promises when an internal context
-          also contains a user/key. Pending-query shutdown, unused checks and rejection handling in
-          that mixed internal path have no focused coverage.
-        sources:
-          - core/server/services/permissions/can-this.js
-          - core/server/services/permissions/providers.js
-          - core/server/data/db/connection.ts
-          - core/server/ghost-server.ts
-          - core/server/models/relations/authors.js
-          - core/server/models/user.js
-        tests: []
-      failures:
-        summary: >-
-          Init reads no data, so it cannot fail on I/O; a throwing rebuild can leave an
-          empty/partial replacement. Missing users/keys and inactive
-          users reject, as do denied checks; model override errors/results propagate. API support
-          rewrites NoPermission messages, preserves Ghost errors and wraps other failures; role
-          serialization instead omits roles on any check failure. Provider and canThis units pin
-          selected missing/inactive/denied and override errors with fake queries, not DB failures,
-          partial rebuild, return-map corruption or recovery after a failed boot/reload.
-        sources:
-          - core/server/services/permissions/index.js
-          - core/server/services/permissions/actions-map-cache.js
-          - core/server/services/permissions/providers.js
-          - core/server/services/permissions/can-this.js
-          - core/server/api/endpoints/utils/permissions.js
-          - core/server/api/endpoints/utils/serializers/output/roles.js
-        tests:
-          - test/unit/server/services/permissions/providers.test.ts
-          - test/unit/server/services/permissions/can-this.test.js
-    unverified: []
-    blockers:
-      - >-
-        Pin real uninitialized-root behavior, boot
-        failure/recovery and authorization ordering against other boot tasks. The current pre-init
-        test stubs cache.empty and does not establish a fresh module's state or readiness gate.
-      - >-
-        Characterize repeated/overlapping init, retained chains, per-check permission snapshots,
-        returned-map mutation and partial rebuild errors. Preserve module import-cycle behavior;
-        User.permissible deliberately loads permissions only when needed.
-      - >-
-        Extend real consumer contracts for excludedAttrs, model overrides, direct endpoint calls
-        and role serializer failure policy. Existing token/role HTTP tests cover selected routes,
-        not all authorization paths or changing roles/keys during a retained check.
-      - >-
-        Cover failed and unused provider promises, internal contexts also containing user/key,
-        malformed/mixed context and pending database shutdown. Internal handlers bypass awaiting
-        provider loads already started by canThis; no cancellation or root drain is present.
   post-scheduling:
     kind: directory
     disposition: migrate
@@ -6096,7 +5874,7 @@ services:
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/adapters/scheduling/error-capture.ts
-          - core/server/api/endpoints/authentication.js
+          - core/server/api/endpoints/authentication.ts
           - core/boot.js
         tests:
           - test/unit/server/services/post-scheduling/post-scheduling.test.js
@@ -6118,7 +5896,7 @@ services:
           - core/server/models/base/plugins/events.js
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/server/auth/reset-authentication.ts
-          - core/server/api/endpoints/authentication.js
+          - core/server/api/endpoints/authentication.ts
           - core/server/web/api/endpoints/admin/routes.js
           - core/server/api/endpoints/schedules.js
           - core/server/services/posts/post-scheduling.js
@@ -6382,7 +6160,7 @@ services:
           - core/server/lib/lexical.js
           - core/server/api/endpoints/schedules.js
         tests:
-          - test/unit/api/endpoints/search-index.test.js
+          - test/unit/api/endpoints/search-index.test.ts
           - test/unit/api/endpoints/search-index-public.test.js
           - test/e2e-api/admin/search-index.test.js
           - test/e2e-api/content/search-index.test.js
@@ -7091,11 +6869,11 @@ services:
         sources:
           - core/server/services/settings/settings-service.js
           - core/server/services/settings/settings-bread-service.js
-          - core/server/services/settings/settings-utils.js
+          - core/server/services/settings/settings-utils.ts
           - core/server/services/settings-helpers/index.js
           - core/server/models/settings.js
           - >-
-            core/server/data/migrations/versions/5.124/2025-06-06-23-12-11-create-site-uuid-setting.js
+            core/server/data/migrations/versions/5.124/2025-06-06-23-12-11-create-site-uuid-setting.ts
           - core/server/api/endpoints/settings.js
           - core/boot.js
     entryPoints:
@@ -7125,7 +6903,7 @@ services:
           - core/server/services/settings/index.js
           - core/server/services/settings/settings-service.js
           - core/server/services/settings/settings-bread-service.js
-          - core/server/services/settings/settings-utils.js
+          - core/server/services/settings/settings-utils.ts
         tests:
           - test/unit/server/services/settings/settings-bread-service.test.js
           - test/unit/server/services/settings/settings-service.test.js
@@ -7141,13 +6919,13 @@ services:
         sources:
           - core/server/services/settings/settings-service.js
           - core/server/services/settings/settings-bread-service.js
-          - core/server/services/settings/settings-utils.js
+          - core/server/services/settings/settings-utils.ts
           - core/server/api/endpoints/settings.js
           - core/server/api/endpoints/notifications.js
           - core/server/api/endpoints/index.js
           - core/server/services/recommendations/index.ts
           - core/server/models/settings.js
-          - core/server/data/migrations/versions/5.124/2025-06-06-23-12-11-create-site-uuid-setting.js
+          - core/server/data/migrations/versions/5.124/2025-06-06-23-12-11-create-site-uuid-setting.ts
         tests:
           - test/unit/server/services/settings/settings-bread-service.test.js
           - test/e2e-api/admin/settings.test.js
@@ -8261,7 +8039,7 @@ services:
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/services/tinybird/tinybird-service.js
           - core/server/api/endpoints/tinybird.js
-          - core/server/api/endpoints/utils/serializers/output/tinybird.js
+          - core/server/api/endpoints/utils/serializers/output/tinybird.ts
         tests:
           - test/unit/server/services/tinybird/tinybird-service.test.js
           - test/e2e-api/admin/tinybird.test.js
@@ -8300,7 +8078,7 @@ services:
         sources:
           - core/server/api/endpoints/tinybird.js
           - core/server/web/api/endpoints/admin/routes.js
-          - core/server/api/endpoints/utils/serializers/output/tinybird.js
+          - core/server/api/endpoints/utils/serializers/output/tinybird.ts
           - core/server/services/stats/index.ts
           - core/server/services/stats/utils/tinybird.ts
           - core/server/services/stats/posts-stats-service.js
@@ -8595,7 +8373,7 @@ services:
           - core/server/services/jobs-service/index.ts
           - core/server/services/jobs-service/jobs-service.ts
           - core/server/adapters/jobs/InMemoryJobsBackend.ts
-          - core/server/data/schema/schema.js
+          - core/server/data/schema/schema.ts
         tests:
           - test/unit/server/services/tinybird-sync/index.test.ts
           - test/unit/server/services/tinybird-sync/sync-table-to-tinybird.test.ts
@@ -9348,10 +9126,9 @@ services:
       resources:
         summary: >-
           Each send awaits shared HTTP infrastructure with a 30-second request timeout and
-          retry.limit zero in test environments or five elsewhere. The installed request/got
-          defaults exclude POST from normal retries, so that option alone does not establish
-          retry delivery. The request module owns a shared DNS cache/resolver and unref'd
-          housekeeping timers; this root owns no dedicated transport, timer or listener.
+          sets no retries; got never retries a POST. The request module owns a shared DNS
+          cache/resolver and unref'd housekeeping timers; this root owns no dedicated
+          transport, timer or listener.
           It exposes no abort, outstanding-request tracking or shutdown drain. Trigger event
           subscriptions and database work belong to its consumer. Existing tests intercept
           successful HTTP or inject a rejection; they do not exercise timeout/retry/drain.
@@ -9805,9 +9582,8 @@ services:
           members API are read during serialization. Every delivery reads stored target/secret,
           sends current Ghost Content-Version rather than stored api_version, and optionally
           signs JSON body plus timestamp with HMAC-SHA256. Request options ask for two seconds
-          and retry limit five outside tests, zero in tests; installed Got excludes POST from
-          retry methods, so the limit alone does not enable retries. Units assert transport,
-          exact request options and retry limits, body/headers and exact signature; root units
+          and set no retries; got never retries a POST. Units assert transport,
+          exact request options, body/headers and exact signature; root units
           assert each transport's user agent and the safe-version Content-Version on the wire;
           the integration suite shows @tryghost/request abandoning a target slower than two
           seconds and not retrying a POST outside tests. request-external's test-only init hook
@@ -9844,7 +9620,7 @@ services:
           - core/server/lib/common/events.js
           - core/server/lib/request-external.js
           - core/server/models/base/plugins/events.js
-          - core/server/data/schema/schema.js
+          - core/server/data/schema/schema.ts
         tests:
           - test/integration/services/webhook-request.test.ts
       failures:
@@ -9870,7 +9646,7 @@ services:
           - core/server/services/webhooks/webhooks-service.js
           - core/server/models/webhook.js
           - core/server/lib/request-external.js
-          - core/server/data/schema/schema.js
+          - core/server/data/schema/schema.ts
           - core/server/api/endpoints/webhooks.js
         tests:
           - test/unit/server/services/webhooks/trigger.test.js
@@ -9897,16 +9673,6 @@ services:
         Cover synchronous/post-preparation exceptions and concurrent duplicate creation. Define delivery/replay and disposal ownership
         before adding a lifecycle; existing code has no durable queue or drain.
 followUps:
-  app-installations:
-    extras:
-      actingContext:
-        purpose: Convert API authentication context into the staff actor recorded in installation history.
-        callers:
-          - core/server/api/endpoints/app-installations.ts
-        timing: Pure conversion when an API command runs; it does not require initialization.
-        dependencies: []
-        failurePolicy: A missing staff user or an integration yields a null actor; permission checks remain with the API.
-        destination: A normalized request actor supplied by the API framework Frame, with actor policy owned by the application.
   comments:
     lifecycle:
       - >-
@@ -9929,9 +9695,10 @@ followUps:
     lifecycle:
       - >-
         Establish pending-delivery and shared transport ownership before adding disposal.
-        Retry limit zero is asserted, but actual timeout, redirect and shutdown behavior is
-        not. The installed transport follows redirects; zero retries alone is not proof of
-        one outbound request or safe cancellation after a lost response.
+        A unit sends through the real request client and shows a failed delivery is not
+        retried; actual timeout, redirect and shutdown behavior is not asserted. The client
+        follows redirects, and one attempt is no proof of safe cancellation after a lost
+        response.
   gift-links:
     lifecycle:
       - >-
@@ -10107,16 +9874,6 @@ followUps:
         Establish ownership and limits for optional cache/HTTP resources, in-flight queries,
         unbounded date ranges and lookup fan-out. A stopped shared database or replaced token
         root does not reset this graph; no cancellation or cache/client disposal is exposed.
-  stripe-checkout-config:
-    extras:
-      actingContext:
-        purpose: Convert API authentication context into the staff actor recorded in the config's history.
-        callers:
-          - core/server/api/endpoints/stripe-checkout-config.ts
-        timing: Pure conversion when an API command runs; it does not require initialization.
-        dependencies: []
-        failurePolicy: A missing staff user or an integration yields a null actor; permission checks remain with the API.
-        destination: A normalized request actor supplied by the API framework Frame, with actor policy owned by the application.
   tags-public:
     futureHome: core/server/api/endpoints/utils/public-response-cache
     lifecycle:
@@ -10131,3 +9888,34 @@ followUps:
         Test repeated boot for the shared composition. Units pin one retained instance across
         both endpoints within a single module instance, not module reload or same-process
         reboot.
+knownBugs:
+  notifications:
+    - summary: >-
+        The notifications unit tests stub the Ghost version and never restore it. A test file
+        that runs after them in the same worker reads the stubbed version, so the Explore ping
+        root test then fails on the version in its expected payload.
+      sources:
+        - test/unit/server/services/notifications/notifications.test.js
+      tests:
+        - test/unit/server/services/explore-ping/index.test.ts
+  oembed:
+    - summary: >-
+        Custom providers run before mention and bookmark dispatch, and their results need not
+        carry metadata. WebmentionMetadata reads the metadata without a guard, so a mention of a
+        URL a custom provider handles throws a TypeError. Recommendations falls back to null
+        fields for the same result. Root units pin both as current behaviour; whether mention
+        requests should skip custom providers is undecided.
+      sources:
+        - core/server/services/oembed/oembed-service.js
+        - core/server/services/mentions/webmention-metadata.js
+      tests:
+        - test/unit/server/services/oembed/index.test.ts
+    - summary: >-
+        The NFT provider calls json() on the request and then reads body from the result,
+        although json() already returns the parsed body. A successful OpenSea response therefore
+        throws a TypeError. Units pin the request and failure propagation, not a successful
+        payload.
+      sources:
+        - core/server/services/oembed/nft-oembed-provider.js
+      tests:
+        - test/unit/server/services/oembed/nft-oembed.test.ts

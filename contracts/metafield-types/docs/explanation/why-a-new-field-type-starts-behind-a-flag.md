@@ -36,9 +36,11 @@ it. That is why releasing a type waits for the rollout.
 
 ## A type without a flag is released
 
-`FIELD_TYPE_FLAGS` lists only the types still in development, so releasing a type is removing
-its entry. That also means a type added without an entry is released straight away, so giving it
-a flag is the first step in adding one.
+`FIELD_TYPE_FLAGS` lists only the types still behind a flag, and a type it doesn't list can be
+created whatever any flag says. So a type added without an entry is released straight away, and
+giving it a flag is the first step in adding one. Releasing a type moves its flag to Ghost's
+released list first, so the remote flags manifest can still take it back on Ghost(Pro), and
+removes its entry once it has settled in.
 
 ## A released type doesn't change
 

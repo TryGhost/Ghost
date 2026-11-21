@@ -1,4 +1,3 @@
-import errors from '@tryghost/errors';
 import ObjectId from 'bson-objectid';
 import { noop } from 'lodash';
 import { createAutomationsApi2 } from '../../../../../core/server/services/automations/automations-api-2';
@@ -23,11 +22,9 @@ describe('automations API', function () {
       throw new Error('domainEvents.dispatch should not be called');
     },
   });
-  const createFakeLabs = (isAutomationsEnabled: boolean) => ({
-    isSet: (flag: string) => {
-      expect(flag).toBe('automations');
-      return isAutomationsEnabled;
-    },
+  const createFakeLabs = (isAutomationsEnabled: boolean, isLeadMagnetsEnabled = true) => ({
+    isSet: (flag: 'automations' | 'automationsLeadMagnets') =>
+      flag === 'automations' ? isAutomationsEnabled : isLeadMagnetsEnabled,
   });
   const createApi = (
     overrides: Partial<
@@ -69,7 +66,10 @@ describe('automations API', function () {
 
     let repository: ReturnType<typeof createTestAutomationsRepository2>;
     let domainEvents: { dispatch: ReturnType<typeof vi.fn<(event: unknown) => unknown>> };
-    let event: Parameters<ReturnType<typeof createApi>['notify']>[0];
+    let event: Extract<
+      Parameters<ReturnType<typeof createApi>['notify']>[0],
+      { eventName: 'membership_started' }
+    >;
     let firstActions: FirstAction[];
     let runs: Array<Pick<RunToInsert, 'id' | 'automation_id' | 'member_id'>>;
     let steps: RunStepToInsert[];
@@ -95,7 +95,6 @@ describe('automations API', function () {
       event = {
         eventName: 'membership_started',
         source: 'member',
-        memberEmail: 'member@example.com',
         memberId: ObjectId().toHexString(),
         memberStatus: 'free',
         previousMemberStatus: null,
@@ -103,10 +102,12 @@ describe('automations API', function () {
       };
 
       repository = createTestAutomationsRepository2({
-        lockMember: noop,
+        fetchAndLockMembers: () => [{ id: event.memberId, email: 'stored@example.com' }],
+        findAutomationMemberEnrollments: (_connection, automationIds, memberIds) =>
+          runs.filter(
+            (run) => automationIds.includes(run.automation_id) && memberIds.includes(run.member_id),
+          ),
         findFirstActionRevisions: () => firstActions,
-        hasMemberEnteredAutomation: (_connection, automationId, memberId) =>
-          runs.some((run) => run.automation_id === automationId && run.member_id === memberId),
         insertRuns: (_connection, toInsert) => {
           runs.push(...toInsert);
         },
@@ -118,30 +119,6 @@ describe('automations API', function () {
 
     afterEach(function () {
       vi.useRealTimers();
-    });
-
-    it('fails if called with an unexpected `eventName`', async function () {
-      const withTransaction = vi.fn();
-      const api = createApi({ repository: { ...repository, withTransaction } });
-
-      const eventNames = [undefined, 'invalid', 'membership_ended', 'membership_did_start'];
-      await Promise.all(
-        eventNames.map(async (eventName) => {
-          await expect(() =>
-            api.notify({
-              ...event,
-              eventName: eventName as any,
-              memberEmail: 'foo@example.com',
-              memberId: 'abc',
-              memberStatus: 'free',
-              memberTierIds: [],
-            }),
-          ).rejects.toThrow(errors.IncorrectUsageError);
-        }),
-      );
-
-      expect(withTransaction).not.toHaveBeenCalled();
-      expect(domainEvents.dispatch).not.toHaveBeenCalled();
     });
 
     it('does nothing if the labs flag is disabled', async function () {
@@ -159,9 +136,46 @@ describe('automations API', function () {
         previousMemberStatus: 'paid',
         previousMemberTierIds: ['basic'],
       });
+      await api.notify({
+        eventName: 'label_added',
+        labelId: 'label',
+        memberIds: ['member'],
+      });
 
       expect(withTransaction).not.toHaveBeenCalled();
       expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('ignores label additions before opening a transaction when lead magnets are disabled', async function () {
+      const withTransaction = vi.fn();
+      const api = createApi({
+        labs: createFakeLabs(true, false),
+        repository: { ...repository, withTransaction },
+        domainEvents,
+      });
+
+      await api.notify({ eventName: 'label_added', labelId: 'label', memberIds: ['member'] });
+
+      expect(withTransaction).not.toHaveBeenCalled();
+      expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('still processes membership events when only lead magnets are disabled', async function () {
+      const withTransaction = vi.fn().mockResolvedValue(false);
+      const api = createApi({
+        labs: createFakeLabs(true, false),
+        repository: { ...repository, withTransaction },
+      });
+
+      await api.notify(event);
+      await api.notify({
+        ...event,
+        eventName: 'paid_subscription_changed',
+        previousMemberStatus: 'paid',
+        previousMemberTierIds: ['basic'],
+      });
+
+      expect(withTransaction).toHaveBeenCalledTimes(2);
     });
 
     it.each(['admin', 'api', 'import', 'system'] as const)(
@@ -257,30 +271,29 @@ describe('automations API', function () {
       });
     });
 
-    it('locks the member before any other repository operation', async function () {
-      const lockMember = vi.fn();
-      const findFirstActionRevisions = vi.fn().mockReturnValue([createFirstAction()]);
-      const hasMemberEnteredAutomation = vi.fn().mockReturnValue(false);
+    it('locks the members before any other repository operation', async function () {
+      firstActions = [createFirstAction()];
+      const findFirstActionRevisions = vi.fn(repository.findFirstActionRevisions);
+      const fetchAndLockMembers = vi.fn(repository.fetchAndLockMembers);
+      const findAutomationMemberEnrollments = vi.fn(repository.findAutomationMemberEnrollments);
       const insertRuns = vi.fn();
       const insertRunSteps = vi.fn();
-
       const api = createApi({
-        repository: createTestAutomationsRepository2({
-          lockMember,
+        repository: {
+          ...repository,
+          findAutomationMemberEnrollments,
+          fetchAndLockMembers,
           findFirstActionRevisions,
-          hasMemberEnteredAutomation,
           insertRuns,
           insertRunSteps,
-        }),
+        },
         domainEvents,
       });
-
       await api.notify(event);
-
-      expect(lockMember).toHaveBeenCalledBefore(findFirstActionRevisions);
-      expect(lockMember).toHaveBeenCalledBefore(hasMemberEnteredAutomation);
-      expect(lockMember).toHaveBeenCalledBefore(insertRunSteps);
-      expect(lockMember).toHaveBeenCalledBefore(insertRuns);
+      expect(fetchAndLockMembers).toHaveBeenCalledBefore(findFirstActionRevisions);
+      expect(fetchAndLockMembers).toHaveBeenCalledBefore(findAutomationMemberEnrollments);
+      expect(fetchAndLockMembers).toHaveBeenCalledBefore(insertRuns);
+      expect(fetchAndLockMembers).toHaveBeenCalledBefore(insertRunSteps);
     });
 
     it('enrolls the member in matching automations and queues their first actions', async function () {
@@ -296,7 +309,7 @@ describe('automations API', function () {
           id: expect.any(String),
           automation_id: action.automation_id,
           member_id: event.memberId,
-          member_email: event.memberEmail,
+          member_email: 'stored@example.com',
           created_at: now,
           updated_at: now,
         })),
@@ -323,6 +336,143 @@ describe('automations API', function () {
       expect(domainEvents.dispatch).toHaveBeenCalledExactlyOnceWith(
         expect.any(StartAutomationsPollEvent),
       );
+    });
+
+    it.each(['membership_started', 'paid_subscription_changed'] as const)(
+      'reads the member email for %s events',
+      async function (eventName) {
+        firstActions = [createFirstAction()];
+        const api = createApi({ repository, domainEvents });
+        await api.notify({
+          ...event,
+          eventName,
+          previousMemberStatus: 'paid',
+          previousMemberTierIds: ['previous-tier'],
+        });
+        expect(runs).toEqual([expect.objectContaining({ member_email: 'stored@example.com' })]);
+      },
+    );
+
+    it.each(['member', 'admin', 'api', 'import', 'system'] as const)(
+      'enrolls labeled members from %s events',
+      async function (source) {
+        const members = [
+          { id: 'member-1', email: 'first@example.com' },
+          { id: 'member-2', email: 'second@example.com' },
+        ];
+        const wait = createFirstAction();
+        const email: FirstAction = { ...createFirstAction(), type: 'send_email' };
+        firstActions = [wait, email];
+        const findAutomationMemberEnrollments = vi.fn(repository.findAutomationMemberEnrollments);
+        const findFirstActionRevisions = vi.fn(() => firstActions);
+        const api = createApi({
+          repository: {
+            ...repository,
+            findAutomationMemberEnrollments,
+            fetchAndLockMembers: () => members,
+            findFirstActionRevisions,
+          },
+          domainEvents,
+        });
+
+        await api.notify({
+          eventName: 'label_added',
+          labelId: 'label',
+          memberIds: members.map(({ id }) => id),
+        });
+
+        expect(findAutomationMemberEnrollments).toHaveBeenCalledExactlyOnceWith(
+          expect.anything(),
+          firstActions.map((action) => action.automation_id),
+          ['member-1', 'member-2'],
+        );
+        expect(findFirstActionRevisions).toHaveBeenCalledExactlyOnceWith(expect.anything(), {
+          eventName: 'label_added',
+          labelId: 'label',
+        });
+        expect(runs).toEqual(
+          members.flatMap((member) =>
+            firstActions.map((action) => ({
+              id: expect.any(String),
+              automation_id: action.automation_id,
+              member_id: member.id,
+              member_email: member.email,
+              created_at: now,
+              updated_at: now,
+            })),
+          ),
+        );
+        expect(steps).toEqual(
+          runs.map((run) => ({
+            id: expect.any(String),
+            automation_run_id: run.id,
+            automation_action_revision_id:
+              run.automation_id === wait.automation_id
+                ? wait.automation_action_revision_id
+                : email.automation_action_revision_id,
+            created_at: now,
+            updated_at: now,
+            ready_at:
+              run.automation_id === wait.automation_id ? new Date('2026-01-02T05:04:05Z') : now,
+          })),
+        );
+        expect(domainEvents.dispatch).toHaveBeenCalledExactlyOnceWith(
+          expect.any(StartAutomationsPollEvent),
+        );
+      },
+    );
+
+    it('does nothing for an empty label event', async function () {
+      const withTransaction = vi.fn(() => {
+        throw new Error('withTransaction should not be called');
+      });
+      const api = createApi({
+        repository: { ...repository, withTransaction },
+        domainEvents,
+      });
+      await api.notify({
+        eventName: 'label_added',
+        labelId: 'label',
+        memberIds: [],
+      });
+
+      expect(withTransaction).not.toHaveBeenCalled();
+      expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('does not trigger when label has no matching automations', async function () {
+      firstActions = [];
+      const api = createApi({
+        repository: {
+          ...repository,
+          fetchAndLockMembers: () => [{ id: 'member', email: 'member@example.com' }],
+        },
+        domainEvents,
+      });
+      await api.notify({
+        eventName: 'label_added',
+        labelId: 'label',
+        memberIds: ['member'],
+      });
+      expect(runs).toEqual([]);
+      expect(steps).toEqual([]);
+      expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('does not trigger when label members are missing', async function () {
+      firstActions = [createFirstAction()];
+      const api = createApi({
+        repository: { ...repository, fetchAndLockMembers: () => [] },
+        domainEvents,
+      });
+      await api.notify({
+        eventName: 'label_added',
+        labelId: 'label',
+        memberIds: ['member'],
+      });
+      expect(runs).toEqual([]);
+      expect(steps).toEqual([]);
+      expect(domainEvents.dispatch).not.toHaveBeenCalled();
     });
 
     it.each(['free', 'paid'] as const)(
@@ -419,11 +569,11 @@ describe('automations API', function () {
     });
 
     it.each([
-      'lockMember',
+      'fetchAndLockMembers',
+      'findAutomationMemberEnrollments',
       'findFirstActionRevisions',
-      'hasMemberEnteredAutomation',
-      'insertRuns',
       'insertRunSteps',
+      'insertRuns',
     ] as const)('propagates %s failures without requesting a poll', async function (method) {
       firstActions = [createFirstAction()];
       const failure = new Error(`${method} failed`);
@@ -440,6 +590,112 @@ describe('automations API', function () {
       await expect(api.notify(event)).rejects.toBe(failure);
 
       expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+  });
+
+  alphabeticalDescribe('recordEmailSent', function () {
+    const now = new Date('2026-01-02T03:04:05Z');
+    const options = {
+      automationActionRevisionId: 'revision-id',
+      automationRunStepId: 'step-id',
+      mailgunMessageId: 'mailgun-message-id',
+      memberEmail: 'member@example.com',
+      memberId: 'member-id',
+      memberName: 'Test Member',
+      memberUuid: '00000000-0000-4000-8000-000000000001',
+      trackClicks: true,
+      trackOpens: false,
+    };
+
+    let repository: ReturnType<typeof createTestAutomationsRepository2>;
+    let calls: string[];
+
+    beforeEach(function () {
+      vi.useFakeTimers();
+      vi.setSystemTime(now);
+      calls = [];
+      repository = createTestAutomationsRepository2({
+        incrementEmailSentCount: vi.fn<Repository['incrementEmailSentCount']>(() => {
+          calls.push('incrementEmailSentCount');
+        }),
+        insertEmailRecipient: vi.fn<Repository['insertEmailRecipient']>(() => {
+          calls.push('insertEmailRecipient');
+        }),
+        withTransaction: async (fn) => {
+          calls.push('begin');
+          const result = await createTestAutomationsRepository2().withTransaction(fn);
+          calls.push('commit');
+          return result;
+        },
+      });
+    });
+
+    afterEach(function () {
+      vi.useRealTimers();
+    });
+
+    it('counts the send before recording its recipient in one transaction', async function () {
+      await createApi({ repository }).recordEmailSent(options);
+
+      expect(calls).toEqual(['begin', 'incrementEmailSentCount', 'insertEmailRecipient', 'commit']);
+      const [connection, revisionId] = vi.mocked(repository.incrementEmailSentCount).mock.calls[0];
+      expect(revisionId).toBe('revision-id');
+      const [insertConnection, recipient] = vi.mocked(repository.insertEmailRecipient).mock
+        .calls[0];
+      expect(insertConnection).toBe(connection);
+      expect(recipient).toEqual({
+        id: expect.any(String),
+        created_at: now,
+        updated_at: now,
+        member_id: 'member-id',
+        member_uuid: '00000000-0000-4000-8000-000000000001',
+        member_email: 'member@example.com',
+        member_name: 'Test Member',
+        automation_action_revision_id: 'revision-id',
+        automation_run_step_id: 'step-id',
+        mailgun_message_id: 'mailgun-message-id',
+        track_clicks: true,
+        track_opens: false,
+      });
+      expect(ObjectId.isValid(recipient.id)).toBe(true);
+    });
+
+    it('waits for the sent count update before inserting the recipient', async function () {
+      const count = Promise.withResolvers<void>();
+      const countStarted = Promise.withResolvers<void>();
+      vi.mocked(repository.incrementEmailSentCount).mockImplementation(() => {
+        countStarted.resolve();
+        return count.promise;
+      });
+
+      const pending = createApi({ repository }).recordEmailSent(options);
+      try {
+        await countStarted.promise;
+        await vi.advanceTimersByTimeAsync(0);
+        expect(repository.insertEmailRecipient).not.toHaveBeenCalled();
+      } finally {
+        count.resolve();
+      }
+      await pending;
+      expect(repository.insertEmailRecipient).toHaveBeenCalledOnce();
+    });
+
+    it('records recipients without a Mailgun message ID or member name', async function () {
+      const { mailgunMessageId: _mailgunMessageId, ...withoutMailgunId } = options;
+
+      await createApi({ repository }).recordEmailSent({ ...withoutMailgunId, memberName: null });
+
+      const recipient = vi.mocked(repository.insertEmailRecipient).mock.calls[0][1];
+      expect(recipient).not.toHaveProperty('mailgun_message_id');
+      expect(recipient.member_name).toBeNull();
+    });
+
+    it('rejects when the recipient cannot be recorded', async function () {
+      const failure = new Error('Could not record recipient');
+      vi.mocked(repository.insertEmailRecipient).mockRejectedValue(failure);
+
+      await expect(createApi({ repository }).recordEmailSent(options)).rejects.toBe(failure);
+      expect(calls).not.toContain('commit');
     });
   });
 

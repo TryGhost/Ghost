@@ -20,9 +20,10 @@ function getTitle(data, root, options = {}) {
   let pageString = '';
 
   if (pagination && pagination.total > 1) {
-    pageString = _.has(options.hash, 'page')
-      ? options.hash.page.replace('%', pagination.page)
-      : ' (Page ' + pagination.page + ')';
+    pageString =
+      options.hash && Object.hasOwn(options.hash, 'page')
+        ? options.hash.page.replace('%', pagination.page)
+        : ' (Page ' + pagination.page + ')';
   }
 
   const dashSiteTitle = optionalString(siteTitle, ' - ' + siteTitle);
