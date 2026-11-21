@@ -1515,16 +1515,20 @@ describe('Managing apps', () => {
     const link = appsScreen.row('Podcast').getByRole('link', { name: 'Podcast', exact: true });
     await expect.element(link).toBeVisible();
     const activation = vi.fn<(event: { modified: boolean; prevented: boolean }) => void>();
-    const capture = (event: Event) => {
-      if (!(event instanceof MouseEvent)) {
+    const linkElement = link.element();
+    const observeActivation = (event: Event) => {
+      if (
+        !(event instanceof MouseEvent) ||
+        !(event.target instanceof Node) ||
+        !linkElement.contains(event.target)
+      ) {
         return;
       }
       activation({ modified: event.ctrlKey || event.metaKey, prevented: event.defaultPrevented });
-      // Observe native activation without opening another Vitest runner in a popup.
+      // Observe the app's result, then prevent a popup from opening another test runner.
       event.preventDefault();
     };
-    const linkElement = link.element();
-    linkElement.addEventListener('click', capture);
+    document.addEventListener('click', observeActivation);
     try {
       await appsScreen
         .row('Podcast')
@@ -1534,7 +1538,7 @@ describe('Managing apps', () => {
       await expect.element(link).toHaveAttribute('href', '#/apps/installation-1');
       await expect.poll(currentRoute).toBe('/apps');
     } finally {
-      linkElement.removeEventListener('click', capture);
+      document.removeEventListener('click', observeActivation);
     }
   });
 

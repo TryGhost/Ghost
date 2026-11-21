@@ -356,3 +356,79 @@ it('does not expand static, disabled or layout-only content into a row action', 
   await page.getByRole('button', { name: 'Static action' }).click();
   expect(action).toHaveBeenCalledOnce();
 });
+
+it.each([false, true])(
+  'keeps unmarked controls and labels above the row target with admin7Design %s',
+  async (admin7Design) => {
+    const open = vi.fn();
+    const edit = vi.fn();
+    await renderInApp(
+      <Dialog>
+        <Box className="w-[480px]" padding="lg">
+          <ListItem data-testid="native-controls-row">
+            <RowPrimaryAction onClick={open}>Open entry</RowPrimaryAction>
+            <div>
+              <label htmlFor="include-entry">Include entry</label>
+              <input id="include-entry" type="checkbox" />
+              <button type="button" onClick={edit}>
+                Edit entry
+              </button>
+              <button className="sm:absolute sm:right-0" type="button">
+                Positioned action
+              </button>
+              <button className="sm:sr-only" type="button">
+                Hidden action
+              </button>
+            </div>
+          </ListItem>
+          <DialogTrigger asChild>
+            <Button>Open control dialog</Button>
+          </DialogTrigger>
+        </Box>
+        <DialogContent>
+          <DialogTitle>Controls example</DialogTitle>
+          <DialogClose asChild>
+            <Button>Close control dialog</Button>
+          </DialogClose>
+        </DialogContent>
+      </Dialog>,
+      { labs: { admin7Design } },
+    );
+    const label = page.getByText('Include entry', { exact: true });
+    const checkbox = page.getByRole('checkbox', { name: 'Include entry' });
+    const secondary = page.getByRole('button', { name: 'Edit entry' });
+    const elements = [label.element(), checkbox.element(), secondary.element()];
+    expect(
+      getComputedStyle(page.getByRole('button', { name: 'Positioned action' }).element()).position,
+    ).toBe('absolute');
+    expect(
+      getComputedStyle(page.getByRole('button', { name: 'Hidden action' }).element()).position,
+    ).toBe('absolute');
+    for (const element of elements) {
+      const bounds = element.getBoundingClientRect();
+      expect(
+        element.contains(
+          document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2),
+        ),
+      ).toBe(true);
+    }
+    await label.click();
+    await expect.element(checkbox).toBeChecked();
+    await checkbox.click();
+    await expect.element(checkbox).not.toBeChecked();
+    await secondary.click();
+    expect(edit).toHaveBeenCalledOnce();
+    expect(open).not.toHaveBeenCalled();
+    await page.getByTestId('native-controls-row').click({ position: { x: -8, y: 12 } });
+    expect(open).toHaveBeenCalledOnce();
+    await page.getByRole('button', { name: 'Open control dialog' }).click();
+    await expect.element(page.getByRole('dialog')).toBeVisible();
+    for (const element of elements) {
+      expect(getComputedStyle(element).pointerEvents).toBe('none');
+    }
+    await page.getByRole('button', { name: 'Close control dialog' }).click();
+    await secondary.click();
+    expect(edit).toHaveBeenCalledTimes(2);
+    expect(open).toHaveBeenCalledOnce();
+  },
+);

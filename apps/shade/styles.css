@@ -730,3 +730,16 @@ tr.shade-row:is([data-state='selected'], [data-selected='true']) > :is(td, th)::
   position: relative;
   z-index: 10;
 }
+
+/* Explicit positioning utilities take precedence over these control defaults. */
+@layer base {
+  .shade-row:is(.shade-row-interactive, .shade-row-auto):has(
+      .shade-row-primary:not(:disabled, [aria-disabled='true'])
+    )
+    :is(a, button, input, select, textarea, label, [role='checkbox'], [role='button']):not(
+      .shade-row-primary
+    ) {
+    position: relative;
+    z-index: 10;
+  }
+}

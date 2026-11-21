@@ -27,6 +27,11 @@ A row's **main action** is what happens when someone clicks it: for example,
 opening a post. Other controls, such as an Edit button, checkbox, or drag handle,
 keep their own actions. Clicking one of those controls must not also open the row.
 
+Shade keeps standard links, buttons, form controls and their labels above the
+row's clickable area automatically. Mark a custom control with
+`data-row-secondary` so it gets the same treatment. Put the marker on the
+control itself, so gaps around it still open the row.
+
 ### Lists
 
 Put the main link or button in `ListItemContent asChild`. Put other
@@ -126,8 +131,8 @@ settings help keep its rows working the same way:
 - Set `data-state="selected"` on selected rows.
 - Keep elements between the main link and the row at `position: static` so the
   link's clickable area can cover the row. This is why the table example uses
-  `className="static"` on its first cell. Give other controls `relative z-10`
-  so they remain above that clickable area.
+  `className="static"` on its first cell. Standard controls already stay above
+  that clickable area; use `data-row-secondary` for a custom control.
 - Use `rowSurfaceClasses.inset` when a scrolling container has no room for a
   highlight outside its edges. The highlight will stay inside the row.
 - When columns disappear on smaller screens, add `max-sm:shade-row-end` or a
