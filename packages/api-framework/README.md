@@ -190,6 +190,29 @@ const read = defineMethod({
 type ReadFrame = InferMethodFrame<typeof read>;
 ```
 
+Group methods with `defineController()`. It checks schema methods against their
+schemas and other methods as legacy `ControllerMethod`s, without restating each
+method's frame type, and returns the controller unchanged:
+
+```ts
+import { defineController } from '@tryghost/api-framework';
+
+const controller = defineController({
+  docName: 'widgets',
+  read,
+  browse: {
+    options: ['limit'],
+    permissions: true,
+    query(frame) {
+      return models.Widget.findPage(frame.options);
+    },
+  },
+});
+```
+
+Declare schema methods with `defineMethod()`; an inline object with a `schema`
+gets no inferred callback types.
+
 Schema-aware definitions reuse `ControllerMethod<ReadFrame>` for their callback
 types. They can also be checked with the shared generic controller contract:
 
@@ -202,6 +225,13 @@ const controller = {
 const api = pipeline(controller, apiUtils);
 await api.read({ id: 'widget-id', page: '2' });
 ```
+
+Declare `schema.options`, `schema.body`, or both. `pipeline()` compiles each
+schema with `z.compile()` and parses it synchronously, so requests use Zod's
+generated fast path. A schema the compiler can't model falls back to Zod's
+runtime parser. Set `schema.async: true` when a schema has async refinements or
+transforms; async schemas are not compiled. Without the flag, parsing an async
+schema rejects with Zod's `$ZodAsyncError`.
 
 Declare `schema.options`, `schema.body`, or both. Only declared channels appear
 in `frame.validated`. Callbacks for `validation`, `permissions`,
@@ -265,35 +295,13 @@ context, but their unused results are not serialized.
 #### Resource bodies
 
 Admin API writes send one resource in an array under a root key, such as
-`{labels: [{name: 'News'}]}`. `resourceBody()` builds the schema for that body
-and parses it to the resource, so callbacks do not unwrap it themselves:
-
-```ts
-import { defineMethod, resourceBody } from '@tryghost/api-framework';
-import { z } from 'zod';
-
-const label = z.object({ name: z.string() });
-
-const add = defineMethod({
-  schema: { body: resourceBody('labels', label) },
-  permissions: true,
-  query(frame) {
-    // The label itself, not {labels: [label]}.
-    return frame.validated.body.name;
-  },
-});
-```
-
-The body must hold exactly one resource. Validation issues keep their path in
-the body as sent, such as `body.labels.0.name`, and `z.input` of the schema is
-still that body. `frame.data` is unchanged, so serializers and legacy helpers
-continue to read `frame.data.labels[0]`.
-
-The result is not a `z.object()`, so it has no `.extend()` or `.pick()`. Compose
-the resource schema first, then wrap it.
+`{labels: [{name: 'News'}]}`. Build those body schemas with `resourceBody()`
+from `@tryghost/api-contracts`, which parses the body to the resource itself.
+`frame.data` is unchanged, so serializers and legacy helpers continue to read
+`frame.data.labels[0]`.
 
 `defineMethod()` preserves the supplied configuration, schemas, and callbacks by
-reference. It does not parse requests or invoke callbacks itself; the pipeline
+reference; `pipeline()` compiles its own copies of sync schemas. It does not parse requests or invoke callbacks itself; the pipeline
 provides that behavior. Existing controllers without schemas continue to use
 `Controller` and `ControllerMethod` with their existing validation and cache
 behavior.

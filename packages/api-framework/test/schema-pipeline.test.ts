@@ -237,8 +237,9 @@ describe('schema-aware pipeline', function () {
     });
     const controller = pipeline({ docName: 'widgets', add: method }, apiUtils);
 
-    assert.equal(controller.add.schema, schema);
-    assert.equal(controller.add.schema.options, schema.options);
+    // The pipeline compiles its own copy; the definition keeps the originals.
+    assert.equal(method.schema, schema);
+    assert.notEqual(controller.add.schema.options, schema.options);
     assert.deepEqual(
       await controller.add(
         { title: 'New', extra: 'stripped' },
@@ -421,6 +422,7 @@ describe('schema-aware pipeline', function () {
       {
         read: defineMethod({
           schema: {
+            async: true,
             options: z.object({
               id: z.string().transform(async (id) => {
                 calls.push('parse');
@@ -689,6 +691,7 @@ describe('schema-aware pipeline', function () {
       {
         add: defineMethod({
           schema: {
+            async: true,
             body: z.object({
               title: z
                 .string()
@@ -717,6 +720,62 @@ describe('schema-aware pipeline', function () {
     assert.equal(await controller.add({ title: 'title' }, {}), 'TITLE');
     assert.deepEqual(calls, ['refine', 'transform', 'permissions', 'query']);
     await assert.rejects(controller.add({ title: '' }, {}), errors.ValidationError);
+  });
+
+  it('rejects async checks in schemas not marked async', async function () {
+    const controller = pipeline(
+      {
+        add: defineMethod({
+          schema: {
+            body: z.object({ title: z.string().refine(async () => true) }),
+          },
+          permissions: false,
+          query() {},
+        }),
+      },
+      apiUtils,
+    );
+    await assert.rejects(controller.add({ title: 'title' }, {}), z.core.$ZodAsyncError);
+  });
+
+  it('compiles sync schemas and parses them without the async path', async function () {
+    const options = z.object({ id: z.string() });
+    const body = z.object({ title: z.string() });
+    const controller = pipeline(
+      {
+        add: defineMethod({
+          schema: { options, body },
+          permissions: false,
+          query(frame) {
+            return frame.validated.body.title;
+          },
+        }),
+      },
+      apiUtils,
+    );
+    const compiled = controller.add.schema;
+    assert.notEqual(compiled.options, options);
+    assert.notEqual(compiled.body, body);
+    const safeParseAsync = sinon.spy(compiled.body, 'safeParseAsync');
+
+    assert.equal(await controller.add({ title: 'title' }, { id: 'one' }), 'title');
+    sinon.assert.notCalled(safeParseAsync);
+    await assert.rejects(controller.add({ title: 1 }, { id: 'one' }), errors.ValidationError);
+  });
+
+  it('leaves async schemas uncompiled', function () {
+    const body = z.object({ title: z.string().refine(async () => true) });
+    const controller = pipeline(
+      {
+        add: defineMethod({
+          schema: { body, async: true },
+          permissions: false,
+          query() {},
+        }),
+      },
+      apiUtils,
+    );
+    assert.equal(controller.add.schema.body, body);
   });
 
   it('preserves unexpected refinement errors rather than reporting them as invalid input', async function () {

@@ -10,6 +10,7 @@ validation only: no application instances, configuration or I/O.
 
 | Package                              | Defines                                                             |
 | ------------------------------------ | ------------------------------------------------------------------- |
+| [`api-contracts`](api-contracts)     | Admin and Content API request schemas and shared building blocks    |
 | [`app-contracts`](app-contracts)     | Manifests, identity and the bridge between Ghost and installed apps |
 | [`metafield-types`](metafield-types) | Member custom field types and how a value of each is validated      |
 
