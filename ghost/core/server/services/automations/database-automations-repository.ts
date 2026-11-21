@@ -190,6 +190,7 @@ type StepToRunRow = {
   automation_action_revision_id: string;
   type: string;
   ready_at: DatabaseDate;
+  priority: number;
   step_attempts: number;
   wait_hours: number | null;
   email_subject: string | null;
@@ -878,7 +879,7 @@ async function fetchAndLockSteps(
     .where((builder) => {
       builder.whereNull('locked_by').orWhere('locked_at', '<', staleLockCutoffString);
     })
-    .orderBy(['ready_at', 'created_at', 'id'])
+    .orderBy(['priority', 'ready_at', 'created_at', 'id'])
     .limit(limit);
   if (candidates.length === 0) {
     return {
@@ -919,6 +920,7 @@ async function fetchAndLockSteps(
       'revision.id as automation_action_revision_id',
       'action.type as type',
       'step.ready_at as ready_at',
+      'step.priority as priority',
       'step.step_attempts as step_attempts',
       'revision.wait_hours as wait_hours',
       'revision.email_subject as email_subject',
@@ -935,7 +937,7 @@ async function fetchAndLockSteps(
     .innerJoin('automation_actions as action', 'action.id', 'revision.action_id')
     .whereIn('step.id', candidateIds)
     .where('step.locked_by', lockId)
-    .orderBy(['step.ready_at', 'step.created_at', 'step.id']);
+    .orderBy(['step.priority', 'step.ready_at', 'step.created_at', 'step.id']);
 
   const rulesByAutomation = await getRulesByAutomation(trx, rows);
 
@@ -998,6 +1000,7 @@ function buildStepToRun(
     id: row.id,
     step_attempts: row.step_attempts,
     ready_at: fromDatabaseDate(row.ready_at),
+    priority: row.priority,
     locked_by: row.locked_by,
     automation_run_id: row.automation_run_id,
     automation_id: row.automation_id,
@@ -1035,7 +1038,10 @@ async function finishStepAndEnqueueNext(
   repository2: AutomationsRepository2<Knex | Knex.Transaction>,
   trx: Knex.Transaction,
   options: Readonly<{
-    step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>;
+    step: Pick<
+      AutomationStepToRun,
+      'id' | 'locked_by' | 'action_id' | 'automation_run_id' | 'priority'
+    >;
     fakeWaitHoursMultiplier: number | null;
   }>,
 ): Promise<Date | null> {
@@ -1063,6 +1069,7 @@ async function finishStepAndEnqueueNext(
       automation_run_id: step.automation_run_id,
       automation_action_revision_id: next.automation_action_revision_id,
       ready_at: nextReadyAt,
+      priority: step.priority,
     },
   ]);
 

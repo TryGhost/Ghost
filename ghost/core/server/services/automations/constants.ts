@@ -3,3 +3,8 @@ export const MAX_AUTOMATIONS = 50;
 export const MAX_ATTEMPTS = 10;
 export const MAX_STEPS_PER_BATCH = 100;
 export const RETRY_DELAY_MS = 10 * 60 * 1000;
+
+export const AUTOMATION_RUN_STEP_PRIORITY_HIGH = 10;
+export const AUTOMATION_RUN_STEP_PRIORITY_LOW = 20;
+
+export const LOW_PRIORITY_RUN_THRESHOLD = 10;
