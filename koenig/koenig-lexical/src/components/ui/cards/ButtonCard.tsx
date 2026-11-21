@@ -13,7 +13,9 @@ export function ButtonCard({
     handleAlignmentChange,
     handleButtonTextChange,
     handleButtonUrlChange,
-    isEditing
+    isEditing,
+    visibilitySettings = null,
+    showVisibilitySettings = false
 }) {
     const buttonGroupChildren = [
         {
@@ -30,6 +32,30 @@ export function ButtonCard({
         }
     ];
 
+    const contentSettings = (
+        <>
+            <ButtonGroupSetting
+                buttons={buttonGroupChildren}
+                label="Content alignment"
+                selectedName={alignment}
+                onClick={handleAlignmentChange}
+            />
+            <InputSetting
+                dataTestId="button-input-text"
+                label='Button text'
+                placeholder='Add button text'
+                value={buttonText}
+                onChange={handleButtonTextChange}
+            />
+            <InputUrlSetting
+                dataTestId="button-input-url"
+                label='Button URL'
+                value={buttonUrl}
+                onChange={handleButtonUrlChange}
+            />
+        </>
+    );
+
     return (
         <>
             <div className="inline-block w-full">
@@ -39,26 +65,11 @@ export function ButtonCard({
             </div>
             <ReadOnlyOverlay />
             {isEditing && (
-                <SettingsPanel>
-                    <ButtonGroupSetting
-                        buttons={buttonGroupChildren}
-                        label="Content alignment"
-                        selectedName={alignment}
-                        onClick={handleAlignmentChange}
-                    />
-                    <InputSetting
-                        dataTestId="button-input-text"
-                        label='Button text'
-                        placeholder='Add button text'
-                        value={buttonText}
-                        onChange={handleButtonTextChange}
-                    />
-                    <InputUrlSetting
-                        dataTestId="button-input-url"
-                        label='Button URL'
-                        value={buttonUrl}
-                        onChange={handleButtonUrlChange}
-                    />
+                <SettingsPanel
+                    defaultTab={showVisibilitySettings && visibilitySettings ? 'visibility' : 'content'}
+                    tabs={[{id: 'content', label: 'Content'}, ...(visibilitySettings ? [{id: 'visibility', label: 'Visibility'}] : [])]}
+                >
+                    {{content: contentSettings, visibility: visibilitySettings}}
                 </SettingsPanel>
             )}
         </>
@@ -76,6 +87,8 @@ ButtonCard.propTypes = {
     handleButtonUrlFocus: PropTypes.func,
     handleOptionClick: PropTypes.func,
     isEditing: PropTypes.bool,
+    visibilitySettings: PropTypes.node,
+    showVisibilitySettings: PropTypes.bool,
     suggestedUrls: PropTypes.array,
     suggestedUrlVisibility: PropTypes.bool
 };

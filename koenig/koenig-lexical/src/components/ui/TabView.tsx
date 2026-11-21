@@ -1,8 +1,15 @@
 import PropTypes from 'prop-types';
 import {useState} from 'react';
 
-const TabView = ({tabs, defaultTab, tabContent}) => {
+const TabView = ({tabs, defaultTab, defaultTabKey, tabContent}) => {
     const [activeTab, setActiveTab] = useState(defaultTab || tabs[0].id);
+    const [previousDefault, setPreviousDefault] = useState({tab: defaultTab, key: defaultTabKey});
+
+    // A new request can select the same default again after a manual tab switch.
+    if (defaultTab !== previousDefault.tab || defaultTabKey !== previousDefault.key) {
+        setPreviousDefault({tab: defaultTab, key: defaultTabKey});
+        setActiveTab(defaultTab || tabs[0].id);
+    }
 
     const handleTabChange = (tabId) => {
         setActiveTab(tabId);
@@ -44,6 +51,7 @@ TabView.propTypes = {
         })
     ).isRequired,
     defaultTab: PropTypes.string,
+    defaultTabKey: PropTypes.number,
     tabContent: PropTypes.objectOf(PropTypes.node).isRequired
 };
 

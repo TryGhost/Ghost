@@ -6,10 +6,12 @@ import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {ButtonCard} from '../components/ui/cards/ButtonCard';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
+import {useCardVisibilitySettings} from '../hooks/useCardVisibilitySettings';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey}) {
     const [editor] = useLexicalComposerContext();
+    const {visibilitySettings, showVisibilitySettings} = useCardVisibilitySettings(nodeKey);
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
@@ -52,6 +54,8 @@ export function ButtonNodeComponent({alignment, buttonText, buttonUrl, nodeKey})
                 handleButtonTextChange={handleButtonTextChange}
                 handleButtonUrlChange={handleButtonUrlChange}
                 isEditing={isEditing}
+                showVisibilitySettings={showVisibilitySettings}
+                visibilitySettings={visibilitySettings}
             />
             <ActionToolbar
                 data-kg-card-toolbar="button"

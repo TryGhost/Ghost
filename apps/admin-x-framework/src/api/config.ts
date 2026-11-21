@@ -26,6 +26,9 @@ export type Config = {
     id?: string;
   };
   emailAnalytics?: boolean;
+  // Cards whose web/email visibility the server supports. Missing on servers
+  // older than the media card visibility release.
+  cardVisibility?: string[];
   klipy?: {
     apiKey?: string | null;
     contentFilter?: string;

@@ -6,8 +6,10 @@ import {$createLinkNode} from '@lexical/link';
 import {$createParagraphNode, $createTextNode, $getNodeByKey, $isParagraphNode} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {BookmarkCard} from '../components/ui/cards/BookmarkCard.jsx';
+import {CardSettingsPanel} from '../components/CardSettingsPanel';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
-import {ToolbarMenu, ToolbarMenuItem} from '../components/ui/ToolbarMenu.jsx';
+import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
+import {isCardVisibilityAvailable} from '../utils/visibility';
 import {isInternalUrl} from '../utils/isInternalUrl.js';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -15,11 +17,18 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
     const [editor] = useLexicalComposerContext();
 
     const {cardConfig} = React.useContext(KoenigComposerContext);
-    const {isSelected} = React.useContext(CardContext);
+    const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
+    const canEditVisibility = isCardVisibilityAvailable('bookmark', cardConfig);
     const [urlInputValue, setUrlInputValue] = React.useState(url);
     const [loading, setLoading] = React.useState(false);
     const [urlError, setUrlError] = React.useState(false);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
+
+    const handleToolbarEdit = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setEditing(true);
+    };
 
     const handleUrlChange = (eventOrUrl) => {
         // TODO: change this so we only get given URL strings - child components should handle their own events
@@ -84,6 +93,14 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
     }, [editor, nodeKey]);
 
     const fetchMetadata = async (href) => {
+        // A submitted URL is content even while its preview is loading. Keep it
+        // before moving focus so deselection does not remove an "empty" card.
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            if (node?.isAttached()) {
+                node.url = href;
+            }
+        });
         editor.getRootElement().focus({preventScroll: true}); // focus editor before causing the input element to dismount
         setLoading(true);
         let response;
@@ -97,6 +114,9 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
         }
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
+            if (!node?.isAttached()) {
+                return;
+            }
             node.url = href;
             node.author = response.metadata.author;
             node.icon = response.metadata.icon;
@@ -121,6 +141,9 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
         }
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
+            if (!node?.isAttached()) {
+                return;
+            }
             node.url = response.url;
             node.author = response.metadata.author;
             node.icon = response.metadata.icon;
@@ -183,6 +206,8 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
                 urlPlaceholder={searchEnabled ? `Paste URL or search posts and pages...` : `Paste URL to add bookmark content...`}
             />
 
+            {title && <CardSettingsPanel />}
+
             <ActionToolbar
                 data-kg-card-toolbar="bookmark"
                 isVisible={showSnippetToolbar}
@@ -192,9 +217,11 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
 
             <ActionToolbar
                 data-kg-card-toolbar="bookmark"
-                isVisible={title && isSelected && !showSnippetToolbar && cardConfig.createSnippet}
+                isVisible={title && isSelected && !isEditing && !showSnippetToolbar && (canEditVisibility || cardConfig.createSnippet)}
             >
                 <ToolbarMenu>
+                    <ToolbarMenuItem dataTestId="edit-bookmark-card" hide={!canEditVisibility} icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
+                    <ToolbarMenuSeparator hide={!canEditVisibility || !cardConfig.createSnippet} />
                     <ToolbarMenuItem
                         dataTestId="create-snippet"
                         hide={!cardConfig.createSnippet}

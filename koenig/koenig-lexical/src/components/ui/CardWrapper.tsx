@@ -71,8 +71,90 @@ export const CardWrapper = React.forwardRef<HTMLDivElement, CardWrapperProps>(({
         ...(cardType === 'call-to-action' && {top: '1.4rem'})
     };
 
+    // a wide or full-width card covers the margin, so its visibility indicator
+    // sits inside the card instead, following the page while it scrolls
+    const isBreakoutCard = cardWidth === 'wide' || cardWidth === 'full';
+    const showInsideIndicator = isVisibilityActive && isBreakoutCard;
+
+    // keep the inside indicator over the media itself, clear of any space
+    // around it and of the caption below it
+    const cardRef = React.useRef<HTMLDivElement | null>(null);
+    const [mediaInsets, setMediaInsets] = React.useState({top: 0, right: 0, bottom: 0, left: 0});
+    React.useLayoutEffect(() => {
+        const card = cardRef.current;
+        if (!showInsideIndicator || !card) {
+            return;
+        }
+
+        const measure = () => {
+            const figure = card.querySelector('figure');
+            if (!figure) {
+                return;
+            }
+
+            // media can be narrower than a wide card (e.g. a portrait image is centred),
+            // so use the area covered by the card's images: one image, a video thumbnail
+            // or every image of a gallery
+            const rects = [...figure.querySelectorAll('img')]
+                .map(img => img.getBoundingClientRect())
+                .filter(rect => rect.width > 0 && rect.height > 0);
+            if (rects.length === 0 && figure.firstElementChild) {
+                rects.push(figure.firstElementChild.getBoundingClientRect());
+            }
+            if (rects.length === 0) {
+                return;
+            }
+
+            const cardRect = card.getBoundingClientRect();
+            // insets are measured inside the card's border, where the indicator is positioned
+            setMediaInsets({
+                top: Math.min(...rects.map(rect => rect.top)) - cardRect.top - card.clientTop,
+                right: cardRect.right - Math.max(...rects.map(rect => rect.right)) - card.clientLeft,
+                bottom: cardRect.bottom - Math.max(...rects.map(rect => rect.bottom)) - card.clientTop,
+                left: Math.min(...rects.map(rect => rect.left)) - cardRect.left - card.clientLeft
+            });
+        };
+        measure();
+
+        // images change size when they finish loading
+        card.addEventListener('load', measure, true);
+        const observer = new ResizeObserver(measure);
+        observer.observe(card);
+        return () => {
+            card.removeEventListener('load', measure, true);
+            observer.disconnect();
+        };
+    }, [showInsideIndicator]);
+
+    const setRefs = (node: HTMLDivElement | null) => {
+        cardRef.current = node;
+        if (typeof ref === 'function') {
+            ref(node);
+        } else if (ref) {
+            ref.current = node;
+        }
+    };
+
     let indicatorIcon;
-    if (isVisibilityActive) {
+    let insideIndicatorIcon;
+    if (showInsideIndicator) {
+        insideIndicatorIcon = (
+            <div className="pointer-events-none absolute z-50" style={mediaInsets}>
+                {/* the host can set --kg-indicator-sticky-top to keep the indicator clear of its own header */}
+                <div className="sticky top-[calc(var(--kg-indicator-sticky-top,theme(spacing.4))-theme(spacing.4))] p-4">
+                    <button
+                        aria-label="Card is hidden for select audiences"
+                        className="pointer-events-auto flex size-8 items-center justify-center rounded-full bg-white/80 text-grey-900 backdrop-blur-sm dark:bg-grey-950/80 dark:text-grey-100"
+                        data-testid="visibility-indicator"
+                        type="button"
+                        onClick={onIndicatorClick}
+                    >
+                        <VisibilityIndicator className="size-4" />
+                    </button>
+                </div>
+            </div>
+        );
+    } else if (isVisibilityActive) {
         indicatorIcon = (
             <div className="sticky top-0 lg:top-8">
                 <VisibilityIndicator
@@ -106,7 +188,7 @@ export const CardWrapper = React.forwardRef<HTMLDivElement, CardWrapperProps>(({
         <>
             {indicatorIcon}
             <div
-                ref={ref}
+                ref={setRefs}
                 className={className}
                 data-kg-card={cardType}
                 data-kg-card-editing={isEditing}
@@ -114,6 +196,8 @@ export const CardWrapper = React.forwardRef<HTMLDivElement, CardWrapperProps>(({
                 {...props}
             >
                 {children}
+                {/* after the card's content, so it doesn't add spacing before the figure */}
+                {insideIndicatorIcon}
             </div>
         </>
     );
