@@ -561,8 +561,8 @@ catalogs:
       specifier: 7.1.1
       version: 7.1.1
     eslint-plugin-react-refresh:
-      specifier: 0.5.7
-      version: 0.5.7
+      specifier: 0.5.8
+      version: 0.5.8
     eslint-plugin-storybook:
       specifier: 10.6.6
       version: 10.6.6
@@ -3353,7 +3353,7 @@ importers:
         version: 7.1.1(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
-        version: 0.5.7(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))
+        version: 0.5.8(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-tailwindcss:
         specifier: catalog:tailwind3
         version: 3.18.3(tailwindcss@3.4.19(tsx@4.23.15)(yaml@2.9.0))
@@ -4498,7 +4498,7 @@ importers:
         version: 7.1.1(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
-        version: 0.5.7(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))
+        version: 0.5.8(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-storybook:
         specifier: 'catalog:'
         version: 10.6.6(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
@@ -11498,8 +11498,8 @@ packages:
     peerDependencies:
       eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0 || ^10.0.0
 
-  eslint-plugin-react-refresh@0.5.7:
-    resolution: {integrity: sha512-XhJSzLljuYD4UjNuFGJu2v7aD3sqNVK12w5/DCUfrNfHWegZo2+TsavNx8MuxMwEquuFAzNbNfXKU0WoZ+YUIg==}
+  eslint-plugin-react-refresh@0.5.8:
+    resolution: {integrity: sha512-VYgz1iCC5LxeAd6YRz5ATfg8WKrNb1ulHMpCe4pQpn3CS9DiYpZi5wcag73O8iChLhrl/CmlGMmzA6eXZ2cX4Q==}
     peerDependencies:
       eslint: ^9 || ^10
 
@@ -23777,7 +23777,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-react-refresh@0.5.7(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2)):
+  eslint-plugin-react-refresh@0.5.8(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2)):
     dependencies:
       eslint: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
 
