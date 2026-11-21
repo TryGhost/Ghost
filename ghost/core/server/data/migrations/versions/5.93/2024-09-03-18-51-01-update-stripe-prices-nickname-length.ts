@@ -1,0 +1,19 @@
+import logging from '@tryghost/logging';
+import { createNonTransactionalMigration } from '../../utils';
+import DatabaseInfo from '@tryghost/database-info';
+
+export default createNonTransactionalMigration(
+  async function up(knex) {
+    if (DatabaseInfo.isSQLite(knex)) {
+      logging.warn('Skipping migration for SQLite3');
+      return;
+    }
+    logging.info('Changing stripe_prices.nickname column from VARCHAR(50) to VARCHAR(255)');
+    await knex.schema.alterTable('stripe_prices', function (table) {
+      table.string('nickname', 255).alter();
+    });
+  },
+  async function down() {
+    logging.warn('Not changing stripe_prices.nickname column');
+  },
+);

@@ -9,6 +9,11 @@ export class FakeRedisClient implements RedisPresenceClient {
   readonly ttls = new Map<string, number>();
   readonly commands: string[] = [];
   failNext: Error | null = null;
+  /** Called when a pipeline is about to run; a test awaits here to hold it back while others run. */
+  beforeExec: ((nth: number) => Promise<void> | void) | null = null;
+  /** Called once a pipeline has run; a test throws here for a reply that never arrived. */
+  afterExec: ((nth: number) => void) | null = null;
+  private pipelines = 0;
 
   private set(key: string): Map<string, number> {
     let set = this.sets.get(key);
@@ -22,9 +27,28 @@ export class FakeRedisClient implements RedisPresenceClient {
   pipeline(): RedisPresencePipeline {
     const queue: Array<() => unknown> = [];
     const pipeline: RedisPresencePipeline = {
-      zadd: (key, score, member) => {
-        this.commands.push('zadd');
-        queue.push(() => this.set(key).set(member, score));
+      zadd: (key: string, ...rest: [number, string] | ['NX' | 'XX', number, string]) => {
+        const flag = typeof rest[0] === 'string' ? rest[0] : undefined;
+        const [score, member] = (flag ? rest.slice(1) : rest) as [number, string];
+        this.commands.push(flag ? `zadd ${flag.toLowerCase()}` : 'zadd');
+        queue.push(() => {
+          const set = this.set(key);
+          if (!flag || (flag === 'NX') !== set.has(member)) {
+            set.set(member, score);
+            return 1;
+          }
+          return 0;
+        });
+        return pipeline;
+      },
+      zrem: (key, ...members) => {
+        this.commands.push('zrem');
+        queue.push(() => {
+          const set = this.set(key);
+          for (const member of members) {
+            set.delete(member);
+          }
+        });
         return pipeline;
       },
       pexpire: (key, milliseconds) => {
@@ -46,13 +70,23 @@ export class FakeRedisClient implements RedisPresenceClient {
         });
         return pipeline;
       },
+      zrangebyscore: (key, min, max) => {
+        this.commands.push('zrangebyscore');
+        queue.push(() => this.range(key, min, max));
+        return pipeline;
+      },
       exec: async () => {
+        this.pipelines += 1;
+        const nth = this.pipelines;
+        await this.beforeExec?.(nth);
         if (this.failNext) {
           const error = this.failNext;
           this.failNext = null;
           return [[error, null]];
         }
-        return queue.map((command) => [null, command()] as [Error | null, unknown]);
+        const results = queue.map((command) => [null, command()] as [Error | null, unknown]);
+        this.afterExec?.(nth);
+        return results;
       },
     };
     return pipeline;
@@ -69,6 +103,10 @@ export class FakeRedisClient implements RedisPresenceClient {
       this.failNext = null;
       throw error;
     }
+    return this.range(key, min, max);
+  }
+
+  private range(key: string, min: number | string, max: number | string): string[] {
     const lower = min === '-inf' ? -Infinity : Number(min);
     const upper = max === '+inf' ? Infinity : Number(max);
     const flat: string[] = [];

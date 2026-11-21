@@ -69,7 +69,12 @@ class ImportManager {
    * @returns {string[]}
    */
   getExtensions() {
-    return _.union(_.flatMap(this.handlers, 'extensions'), defaults.extensions);
+    return [
+      ...new Set([
+        ...this.handlers.flatMap((handler) => handler.extensions),
+        ...defaults.extensions,
+      ]),
+    ];
   }
 
   /**
@@ -77,7 +82,12 @@ class ImportManager {
    * @returns {string[]}
    */
   getContentTypes() {
-    return _.union(_.flatMap(this.handlers, 'contentTypes'), defaults.contentTypes);
+    return [
+      ...new Set([
+        ...this.handlers.flatMap((handler) => handler.contentTypes),
+        ...defaults.contentTypes,
+      ]),
+    ];
   }
 
   /**
@@ -85,7 +95,12 @@ class ImportManager {
    * @returns {string[]}
    */
   getDirectories() {
-    return _.union(_.flatMap(this.handlers, 'directories'), defaults.directories);
+    return [
+      ...new Set([
+        ...this.handlers.flatMap((handler) => handler.directories),
+        ...defaults.directories,
+      ]),
+    ];
   }
 
   /**
@@ -121,7 +136,7 @@ class ImportManager {
    * @returns Boolean
    */
   isZip(ext) {
-    return _.includes(defaults.extensions, ext);
+    return defaults.extensions.includes(ext);
   }
 
   /**
@@ -247,13 +262,13 @@ class ImportManager {
    * @returns {Promise<ImportData>}
    */
   async processFile(file, ext) {
-    const fileHandlers = _.filter(this.handlers, function (handler) {
-      let match = _.includes(handler.extensions, ext);
+    const fileHandlers = this.handlers.filter(function (handler) {
+      let match = handler.extensions.includes(ext);
 
       // CASE: content file handlers should ignore files in the root directory
       if (match && handler.directories && handler.directories.length) {
         const dir = path.dirname(file.path)?.split('/')[1];
-        match = _.includes(handler.directories, dir);
+        match = handler.directories.includes(dir);
       }
 
       return match;

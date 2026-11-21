@@ -18,7 +18,7 @@ development" in the guide.
 
 1. Create a new, empty migration file: `pnpm gx generate migration <kebab-case-slug>` from the repository root. IMPORTANT: do not create the migration file manually; always use this script to create the initial empty migration file. The slug must be kebab-case (e.g. `add-column-to-posts`).
 2. The above command will create a new directory in `ghost/core/server/data/migrations/versions` if needed, create the empty TypeScript migration file with the appropriate name, and bump the core and admin package versions to RC if this is the first migration after a release.
-3. Update the migration file with the changes you want to make in the database, following the existing patterns in the codebase. Where appropriate, prefer to use the utility functions in `ghost/core/server/data/migrations/utils/*`. Write new migrations in TypeScript; existing JavaScript migrations are frozen and stay as they are.
+3. Update the migration file with the changes you want to make in the database, following the existing patterns in the codebase. Where appropriate, prefer to use the utility functions in `ghost/core/server/data/migrations/utils/*`. Write new migrations in TypeScript. All existing migrations, including `init/`, are TypeScript too.
 4. Update the schema definition file in `ghost/core/server/data/schema/schema.ts`, and make sure it aligns with the latest changes from the migration.
 5. Test the migration manually from the repository root: `pnpm knex-migrator migrate --v {version directory} --force`
 6. Roll the migration back to test `down()`: `pnpm knex-migrator rollback --v {previous version} --force`, then migrate forward again.

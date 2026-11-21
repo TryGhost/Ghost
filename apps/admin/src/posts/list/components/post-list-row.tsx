@@ -219,7 +219,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
         ref={ref}
         {...rest}
         className={cn(
-          'group border-b border-border-default',
+          'group border-b border-border-default in-data-[admin7-mobile=true]:max-lg:border-b-border in-data-[admin7-mobile=true]:max-lg:[--table-row-hover:transparent]',
           // A light blue rather than a grey: selection is a different
           // kind of state from hover, and two greys a step apart read as
           // degrees of the same thing.

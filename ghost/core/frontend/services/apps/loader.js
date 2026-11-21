@@ -1,5 +1,4 @@
 const path = require('path');
-const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const config = require('../../../shared/config');
@@ -24,7 +23,7 @@ function getAppByName(name) {
   const proxy = Proxy.getInstance();
 
   // Check for an actual class, otherwise just use whatever was returned
-  const app = _.isFunction(AppClass) ? new AppClass(proxy) : AppClass;
+  const app = typeof AppClass === 'function' ? new AppClass(proxy) : AppClass;
 
   return {
     app,
@@ -38,7 +37,7 @@ module.exports = {
     const { app, proxy } = getAppByName(name);
 
     // Check for an activate() method on the app.
-    if (!_.isFunction(app.activate)) {
+    if (typeof app.activate !== 'function') {
       return Promise.reject(
         new errors.IncorrectUsageError({
           message: tpl(messages.noActivateMethodLoadingAppError, { name: name }),

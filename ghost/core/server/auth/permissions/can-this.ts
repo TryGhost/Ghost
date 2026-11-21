@@ -1,21 +1,23 @@
-import _ from 'lodash';
 import errors from '@tryghost/errors';
-import tpl from '@tryghost/tpl';
-import providers, { type LoadedPermissions } from './providers';
-import { actionsMap, type Permission } from './role-permissions';
-import { setIsRoles } from '../../models/role-utils';
+import { actionsMap, forRoles, type Permission } from './role-permissions';
+import { ANONYMOUS, type Principal, type RoleView, type UserView } from '../principal';
+import { authorize, noPermission, type Allowed } from '../policy/authorize';
+import { capabilities, capabilityKey } from '../policy/capabilities';
+import { scopesAllow } from '../policy/scopes';
 import parseContext, { type ParsedContext } from './parse-context';
 
 const models = require('../../models');
 
-const messages = {
-  noPermissionToAction: 'You do not have permission to perform this action',
-};
+/** What canThis needs to grant or deny for one actor */
+export interface LoadedPermissions {
+  permissions: Permission[];
+  roles: Array<{ id: string; name: string }>;
+}
 
 /** User and API key permissions, each null when that actor is absent */
 interface LoadedActors {
   user: LoadedPermissions | null;
-  apiKey: Awaited<ReturnType<typeof providers.apiKey>> | null;
+  apiKey: LoadedPermissions | null;
 }
 
 /** canThis(context).edit.post(idOrModel, unsafeAttrs) */
@@ -27,47 +29,84 @@ type ObjectTypeHandler = (
 export type CanThisResult = Record<string, Record<string, ObjectTypeHandler>>;
 
 /**
- * Calculates grants without performing I/O or running model-specific rules.
+ * What a check resolves to: the endpoint filter strips `excludedAttrs` when
+ * present, as it does for the hooks' results, and an allowed check is otherwise undefined.
  */
-function getGrantFlags(loadedPermissions: LoadedActors, actType: string, objType: string) {
-  // Iterate through the user permissions looking for an affirmation
-  const userPermissions = loadedPermissions.user ? loadedPermissions.user.permissions : null;
-  const apiKeyPermissions = loadedPermissions.apiKey ? loadedPermissions.apiKey.permissions : null;
+export function toCheckResult({ excludedAttrs }: Allowed): Allowed | undefined {
+  return excludedAttrs ? { excludedAttrs } : undefined;
+}
 
-  let hasUserPermission: boolean | undefined;
-  let hasApiKeyPermission: boolean;
+/** The grant flags the model `permissible` hooks still take; they read them by truthiness. */
+export function getGrantFlags(principal: Principal, actType: string, objType: string) {
+  const granted = capabilities(principal).granted.has(capabilityKey(objType, actType));
 
-  const checkPermission = function (perm: Permission) {
-    // Look for a matching action type and object type first
-    if (perm.action_type !== actType || perm.object_type !== objType) {
-      return false;
-    }
+  // An integration key's grant is the key's flag; every other principal's is the user's
+  if (principal.kind === 'integration') {
+    return { hasUserPermission: true, hasApiKeyPermission: granted };
+  }
+  return { hasUserPermission: granted, hasApiKeyPermission: true };
+}
 
-    return true;
+function rolePermissions(roles: readonly RoleView[]): LoadedPermissions {
+  return {
+    permissions: forRoles(roles.map((role) => role.name)),
+    roles: roles.map(({ id, name }) => ({ id, name })),
   };
-  const { isOwner } = setIsRoles(loadedPermissions);
-  if (isOwner) {
-    hasUserPermission = true;
-  } else if (!_.isEmpty(userPermissions)) {
-    hasUserPermission = _.some(userPermissions, checkPermission);
+}
+
+const NO_ACTORS: LoadedActors = Object.freeze({ user: null, apiKey: null });
+
+function missingPrincipal() {
+  return new errors.IncorrectUsageError({
+    message: 'canThis needs the principal for the user or API key in its context.',
+  });
+}
+
+/**
+ * The actors from the roles authentication put on the principal. A context
+ * naming a user or key needs the principal for it, so a caller that drops or
+ * mismatches it fails loudly rather than checking as no one.
+ */
+function actorsFor(context: ParsedContext): LoadedActors | Error {
+  const principal = context.principal;
+  if (context.internal) {
+    return NO_ACTORS;
   }
 
-  // Check api key permissions if they were passed
-  hasApiKeyPermission = true;
-  if (!_.isNull(apiKeyPermissions)) {
-    if (loadedPermissions.user) {
-      // Staff API key scenario: both user and API key present
-      // Use USER permissions and ignore API key permissions
-      hasApiKeyPermission = true; // Allow API key check to pass
-    } else {
-      // Traditional API key scenario: API key only, no user
-      // Use API key permissions as before
-      hasUserPermission = true;
-      hasApiKeyPermission = _.some(apiKeyPermissions, checkPermission);
+  if (!principal) {
+    return context.user || context.api_key ? missingPrincipal() : NO_ACTORS;
+  }
+
+  // A staff token acts as its user, so its key's role is not needed
+  let user: UserView | null = null;
+  if (principal.kind === 'user') {
+    user = principal.user;
+  } else if (principal.kind === 'app') {
+    user = principal.actingFor;
+  }
+  if (user) {
+    return user.id === context.user
+      ? { user: rolePermissions(user.roles), apiKey: null }
+      : missingPrincipal();
+  }
+
+  if (principal.kind === 'integration') {
+    const matches = !context.user && principal.apiKey.id === context.api_key?.id;
+    if (!matches) {
+      return missingPrincipal();
     }
+    const role = principal.apiKey.role;
+    return { user: null, apiKey: rolePermissions(role ? [role] : []) };
   }
 
-  return { hasUserPermission, hasApiKeyPermission };
+  // An app with no user, or an anonymous request; the app is refused before the check
+  return context.user || (context.api_key && principal.kind !== 'app')
+    ? missingPrincipal()
+    : NO_ACTORS;
+}
+
+function isAppWithoutUser(context: ParsedContext) {
+  return context.principal?.kind === 'app' && !context.user;
 }
 
 class CanThisResultBuilder {
@@ -75,7 +114,7 @@ class CanThisResultBuilder {
     objTypes: readonly string[],
     actType: string,
     context: ParsedContext,
-    permissionLoad: Promise<LoadedActors>,
+    actors: LoadedActors | Error,
   ) {
     const objectTypeModelMap: Record<string, { permissible?: (...args: unknown[]) => unknown }> = {
       post: models.Post,
@@ -88,115 +127,93 @@ class CanThisResultBuilder {
     };
 
     // Iterate through the object types, i.e. ['post', 'tag', 'user']
-    return _.reduce(
-      objTypes,
-      function (objTypeHandlers: Record<string, ObjectTypeHandler>, objType) {
-        // Grab the TargetModel through the objectTypeModelMap
-        const TargetModel = objectTypeModelMap[objType];
+    return objTypes.reduce(function (objTypeHandlers: Record<string, ObjectTypeHandler>, objType) {
+      // Grab the TargetModel through the objectTypeModelMap
+      const TargetModel = objectTypeModelMap[objType];
 
-        // Create the 'handler' for the object type;
-        // the '.post()' in canThis(user).edit.post()
-        objTypeHandlers[objType] = function (modelOrId, unsafeAttrs) {
-          let modelId: string | number | undefined;
-          unsafeAttrs = unsafeAttrs || {};
+      // Create the 'handler' for the object type;
+      // the '.post()' in canThis(user).edit.post()
+      objTypeHandlers[objType] = function (modelOrId, unsafeAttrs) {
+        let modelId: string | number | undefined;
+        unsafeAttrs = unsafeAttrs || {};
 
-          // If it's an internal request, resolve immediately
-          if (context.internal) {
-            return Promise.resolve();
+        // If it's an internal request, resolve immediately
+        if (context.internal) {
+          return Promise.resolve();
+        }
+
+        // Until PLA-639, an app needs a user to act for, whatever its scopes
+        if (isAppWithoutUser(context)) {
+          return Promise.reject(noPermission());
+        }
+
+        if (typeof modelOrId === 'number' || typeof modelOrId === 'string') {
+          // It's an id already, do nothing
+          modelId = modelOrId;
+        } else if (modelOrId) {
+          // It's a model, get the id
+          modelId = modelOrId.id;
+        }
+        // A context missing its principal fails here, not when canThis is called
+        if (actors instanceof Error) {
+          return Promise.reject(actors);
+        }
+
+        // Only `context.internal` grants everything, never a principal claiming it
+        const principal =
+          !context.principal || context.principal.kind === 'internal'
+            ? ANONYMOUS
+            : context.principal;
+
+        return Promise.resolve(actors).then(function (loadedPermissions) {
+          // Scopes cap the hooks as they will cap row rules; unscoped principals pass
+          const { scopes } = capabilities(principal);
+          if (!scopesAllow(scopes, capabilityKey(objType, actType))) {
+            return Promise.reject(noPermission());
           }
 
-          if (_.isNumber(modelOrId) || _.isString(modelOrId)) {
-            // It's an id already, do nothing
-            modelId = modelOrId;
-          } else if (modelOrId) {
-            // It's a model, get the id
-            modelId = modelOrId.id;
-          }
-          // Wait for the user loading to finish
-          return permissionLoad.then(function (loadedPermissions) {
+          // Offer a chance for the TargetModel to override the results
+          if (TargetModel && typeof TargetModel.permissible === 'function') {
             const { hasUserPermission, hasApiKeyPermission } = getGrantFlags(
-              loadedPermissions,
+              principal,
               actType,
               objType,
             );
 
-            // Ensure permission decisions are based on the user's role if present, not their staff-token.
-            const permissionsForModel = loadedPermissions.user
-              ? { ...loadedPermissions, apiKey: null }
-              : loadedPermissions;
-
-            // Offer a chance for the TargetModel to override the results
-            if (TargetModel && _.isFunction(TargetModel.permissible)) {
-              return TargetModel.permissible(
-                modelId,
-                actType,
-                context,
-                unsafeAttrs,
-                permissionsForModel,
-                hasUserPermission,
-                hasApiKeyPermission,
-              );
-            }
-
-            if (hasUserPermission && hasApiKeyPermission) {
-              return;
-            }
-
-            return Promise.reject(
-              new errors.NoPermissionError({ message: tpl(messages.noPermissionToAction) }),
+            return TargetModel.permissible(
+              modelId,
+              actType,
+              context,
+              unsafeAttrs,
+              loadedPermissions,
+              hasUserPermission,
+              hasApiKeyPermission,
             );
-          });
-        };
+          }
 
-        return objTypeHandlers;
-      },
-      {},
-    );
+          return authorize(principal, actType, objType, {
+            resource: modelId,
+            attrs: unsafeAttrs,
+          }).then(toCheckResult);
+        });
+      };
+
+      return objTypeHandlers;
+    }, {});
   }
 
   beginCheck(rawContext: unknown): CanThisResult {
-    let userPermissionLoad: Promise<LoadedPermissions | null>;
-    let apiKeyPermissionLoad: Promise<LoadedActors['apiKey']>;
-
     // Get context.user, context.api_key and context.app
     const context = parseContext(rawContext);
+    return this.buildHandlers(context, actorsFor(context));
+  }
 
-    // Kick off loading of user permissions if necessary
-    if (context.user) {
-      userPermissionLoad = providers.user(context.user);
-    } else {
-      // Resolve null if no context.user to prevent db call
-      userPermissionLoad = Promise.resolve(null);
-    }
-
-    // Kick off loading of api key permissions if necessary
-    if (context.api_key) {
-      apiKeyPermissionLoad = providers.apiKey(context.api_key.id);
-    } else {
-      // Resolve null if no context.api_key
-      apiKeyPermissionLoad = Promise.resolve(null);
-    }
-
-    // Wait for both user and api key permissions to load
-    const permissionsLoad = Promise.all([userPermissionLoad, apiKeyPermissionLoad]).then(
-      function (result): LoadedActors {
-        return {
-          user: result[0],
-          apiKey: result[1],
-        };
-      },
-    );
-
+  buildHandlers(context: ParsedContext, actors: LoadedActors | Error): CanThisResult {
     // Iterate through the actions and their related object types
-    _.each(actionsMap, (objTypes, actType) => {
+    for (const [actType, objTypes] of Object.entries(actionsMap)) {
       // Build up the object type handlers;
       // the '.post()' parts in canThis(user).edit.post()
-      const objTypeHandlers = this.buildObjectTypeHandlers(
-        objTypes,
-        actType,
-        context,
-        permissionsLoad,
-      );
+      const objTypeHandlers = this.buildObjectTypeHandlers(objTypes, actType, context, actors);
 
       // Define a property for the action on the result;
       // the '.edit' in canThis(user).edit.post()
@@ -206,7 +223,7 @@ class CanThisResultBuilder {
         configurable: false,
         value: objTypeHandlers,
       });
-    });
+    }
 
     // Return this for chaining
     return this as unknown as CanThisResult;

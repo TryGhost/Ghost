@@ -6,7 +6,6 @@ const logging = require('@tryghost/logging');
 const membersService = require('../../services/members');
 
 const tpl = require('@tryghost/tpl');
-const _ = require('lodash');
 const { getCSVExportFileName } = require('./utils/csv-export-filename');
 const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 const { ADMIN } = require('../../services/members-metafields');
@@ -430,7 +429,7 @@ const controller = {
     },
     async query() {
       const memberStats = await membersService.api.events.getStatuses();
-      const last = _.last(memberStats);
+      const last = memberStats.at(-1);
       const totalMembers = last ? last.paid + last.free + last.comped + last.gift : 0;
 
       return {

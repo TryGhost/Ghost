@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.78.1-rc.0",
+  "version": "6.79.0-rc.0",
   "description": "The professional publishing platform",
   "keywords": [
     "blog",
@@ -41,7 +41,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "archive": "node scripts/pack.mjs",
+    "archive": "node scripts/pack.mts",
     "dev": "nodemon index.js",
     "build:assets": "pnpm run '/^build:assets:/'",
     "build:assets:js": "node scripts/minify-assets.mts",
@@ -99,7 +99,7 @@
     "@tryghost/custom-fonts": "catalog:",
     "@tryghost/database-info": "2.4.0",
     "@tryghost/debug": "catalog:",
-    "@tryghost/domain-events": "catalog:",
+    "@tryghost/domain-events": "workspace:*",
     "@tryghost/errors": "catalog:",
     "@tryghost/helpers": "catalog:",
     "@tryghost/html-to-plaintext": "1.0.17",
@@ -127,12 +127,12 @@
     "@tryghost/nql-lang": "catalog:",
     "@tryghost/nql-string": "workspace:*",
     "@tryghost/parse-email-address": "workspace:*",
-    "@tryghost/prometheus-metrics": "5.0.11",
-    "@tryghost/referrer-parser": "0.1.26",
+    "@tryghost/prometheus-metrics": "5.0.12",
+    "@tryghost/referrer-parser": "0.1.27",
     "@tryghost/request": "catalog:",
     "@tryghost/root-utils": "2.4.0",
     "@tryghost/security": "catalog:",
-    "@tryghost/social-urls": "0.1.67",
+    "@tryghost/social-urls": "0.1.68",
     "@tryghost/string": "catalog:",
     "@tryghost/tpl": "catalog:",
     "@tryghost/url-utils": "catalog:",

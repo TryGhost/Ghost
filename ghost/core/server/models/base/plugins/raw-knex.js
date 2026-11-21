@@ -114,7 +114,7 @@ module.exports = function (Bookshelf) {
           const props = {};
 
           if (!withRelated) {
-            return _.map(objects, (object) => {
+            return objects.map((object) => {
               object = bookshelfPrototype.toJSON.bind({
                 attributes: object,
                 related: function (key) {
@@ -139,7 +139,7 @@ module.exports = function (Bookshelf) {
               const relationQuery = Bookshelf.knex(relation.targetTable);
 
               // default fields to select
-              _.each(relation.select, (fieldToSelect) => {
+              relation.select.forEach((fieldToSelect) => {
                 relationQuery.select(fieldToSelect);
               });
 
@@ -155,7 +155,10 @@ module.exports = function (Bookshelf) {
                 relation.innerJoin.condition[2],
               );
 
-              relationQuery.whereIn(relation.whereIn, _.map(objects, 'id'));
+              relationQuery.whereIn(
+                relation.whereIn,
+                objects.map((object) => object.id),
+              );
               relationQuery.orderBy(relation.orderBy);
 
               const queryRelations = await relationQuery;
@@ -176,9 +179,11 @@ module.exports = function (Bookshelf) {
           debug('attaching relations to', modelName);
 
           const relationsToAttachArray = await Promise.all(Object.values(props));
-          const relationsToAttach = _.zipObject(_.keys(props), relationsToAttachArray);
+          const relationsToAttach = Object.fromEntries(
+            Object.keys(props).map((key, i) => [key, relationsToAttachArray[i]]),
+          );
 
-          objects = _.map(objects, (object) => {
+          objects = objects.map((object) => {
             for (const relation in relationsToAttach) {
               if (!relationsToAttach[relation][object.id]) {
                 object[relation] = [];

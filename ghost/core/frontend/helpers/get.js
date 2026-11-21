@@ -176,7 +176,7 @@ function resolvePaths(globals, data, value) {
 
     // Handle the case where the single data property we return is a Date
     // Data.toString() is not DB compatible, so use `toISOString()` instead
-    if (_.isDate(result[0])) {
+    if (result[0] instanceof Date) {
       result[0] = result[0].toISOString();
     }
 
@@ -196,7 +196,7 @@ function resolvePaths(globals, data, value) {
  * @returns {GetHelperAPIOptions}
  */
 function parseOptions(globals, data, options) {
-  if (_.isString(options.filter)) {
+  if (typeof options.filter === 'string') {
     options.filter = resolvePaths(globals, data, options.filter);
   }
 
@@ -436,7 +436,7 @@ module.exports = async function get(resource, options) {
 
   // {{url}} on the results reads the serializer-attached url, so a narrowed
   // fields list must still include it
-  if (['posts', 'pages', 'tags'].includes(resource) && _.isString(apiOptions.fields)) {
+  if (['posts', 'pages', 'tags'].includes(resource) && typeof apiOptions.fields === 'string') {
     const fields = apiOptions.fields.split(',').map((field) => field.trim());
     if (!fields.includes('url')) {
       apiOptions.fields = [...fields, 'url'].join(',');

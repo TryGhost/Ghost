@@ -2,7 +2,7 @@ import createDebug from '@tryghost/debug';
 import errors from '@tryghost/errors';
 import promiseUtils from '@tryghost/promise';
 import _ from 'lodash';
-import Frame from './frame.ts';
+import Frame, { withoutPrincipal } from './frame.ts';
 import type { Dictionary, FrameConfiguration } from './frame.ts';
 import type { MethodSchemas, SchemaControllerMethod } from './define-method.ts';
 import parseRequest from './parse-request.ts';
@@ -410,9 +410,10 @@ function pipeline(
       let cacheKey = '';
       // Legacy hooks also resolve gift access when response caching is disabled.
       if (apiImpl.cache || (!apiImpl.schema && apiImpl.generateCacheKeyData)) {
+        const keyOptions = withoutPrincipal(frame.options);
         let cacheKeyData: unknown = validatedRequest
-          ? { options: frame.options, validated: validatedRequest }
-          : frame.options;
+          ? { options: keyOptions, validated: validatedRequest }
+          : keyOptions;
         if (apiImpl.generateCacheKeyData) {
           cacheKeyData = await apiImpl.generateCacheKeyData(frame);
         }

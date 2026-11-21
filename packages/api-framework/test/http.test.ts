@@ -78,6 +78,7 @@ describe('HTTP', function () {
         integration: null,
         user: null,
         member: null,
+        principal: null,
       },
     });
   });
@@ -215,6 +216,17 @@ describe('HTTP', function () {
 
       shared.http(apiImpl)(req, res, next);
     });
+  });
+
+  it('passes the principal into the context', async function () {
+    const principal = { kind: 'user', user: { id: 'user-id' } };
+    req.auth = principal;
+    const apiImpl = sinon.stub().resolves({ ok: true });
+
+    await shared.http(apiImpl)(req, res, next);
+
+    assert.equal(next.called, false);
+    assert.equal(apiImpl.firstCall.firstArg.options.context.principal, principal);
   });
 
   it('supports async response format and statusCode function', async function () {

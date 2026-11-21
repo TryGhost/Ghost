@@ -57,6 +57,8 @@ function UserMenuHelp({ closeMenu }: { closeMenu: () => void }) {
   } = useFeaturebase();
   const { isMobile, setOpenMobile } = useSidebar();
   const showFeedback = currentUser && featurebaseAvailable && !isContributorUser(currentUser);
+  // On desktop, the frame's top bar has Help instead (see AdminFrameTopBar)
+  const helpInTopBar = inAppSupport && !isMobile;
 
   // Leaving the menu for another tab or the feedback widget also closes the mobile sheet
   const closeMobileSidebar = () => {
@@ -67,23 +69,25 @@ function UserMenuHelp({ closeMenu }: { closeMenu: () => void }) {
 
   return (
     <>
-      <UserMenuItem onSelect={closeMobileSidebar}>
-        <a
-          data-ghost-help={inAppSupport ? '' : undefined}
-          href="https://ghost.org/help?utm_source=admin&utm_campaign=help"
-          rel="noopener noreferrer"
-          target="_blank"
-          onClick={(event) => {
-            // Radix doesn't close the menu when a host script cancels the click
-            if (event.defaultPrevented) {
-              closeMenu();
-            }
-          }}
-        >
-          <LucideIcon.HelpCircle />
-          <UserMenuItem.Label>Help</UserMenuItem.Label>
-        </a>
-      </UserMenuItem>
+      {!helpInTopBar && (
+        <UserMenuItem onSelect={closeMobileSidebar}>
+          <a
+            data-ghost-help={inAppSupport ? '' : undefined}
+            href="https://ghost.org/help?utm_source=admin&utm_campaign=help"
+            rel="noopener noreferrer"
+            target="_blank"
+            onClick={(event) => {
+              // Radix doesn't close the menu when a host script cancels the click
+              if (event.defaultPrevented) {
+                closeMenu();
+              }
+            }}
+          >
+            <LucideIcon.HelpCircle />
+            <UserMenuItem.Label>Help</UserMenuItem.Label>
+          </a>
+        </UserMenuItem>
+      )}
       {showFeedback && (
         <UserMenuItem
           asChild={false}

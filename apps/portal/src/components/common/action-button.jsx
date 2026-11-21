@@ -1,3 +1,5 @@
+/** @import { CSSProperties, MouseEventHandler, ReactNode } from 'react' */
+
 import LoaderIcon from '../../images/icons/loader.svg?react';
 import { isCookiesDisabled } from '../../utils/helpers';
 
@@ -95,6 +97,20 @@ const Styles = ({ brandColor, disabled, style = {}, isPrimary }) => {
   };
 };
 
+/** @param {{
+ *   label: ReactNode,
+ *   onClick: MouseEventHandler<HTMLButtonElement>,
+ *   disabled?: boolean,
+ *   retry?: boolean,
+ *   brandColor?: string | undefined,
+ *   isRunning?: boolean,
+ *   isPrimary?: boolean,
+ *   isDestructive?: boolean,
+ *   classes?: string,
+ *   style?: CSSProperties,
+ *   tabIndex?: number,
+ *   dataTestId?: string,
+ * }} props */
 function ActionButton({
   label,
   onClick,

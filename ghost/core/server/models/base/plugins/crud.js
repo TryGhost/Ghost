@@ -83,7 +83,7 @@ module.exports = function (Bookshelf) {
 
         const result = await itemCollection.fetchAll(options);
         if (options.withRelated) {
-          _.each(result.models, function each(item) {
+          result.models.forEach(function each(item) {
             item.withRelated = options.withRelated;
           });
         }
@@ -132,7 +132,9 @@ module.exports = function (Bookshelf) {
         // and append default columns to fetch
         if (options.columns) {
           options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
-          options.columns = _.union(options.columns, this.prototype.defaultColumnsToFetch());
+          options.columns = [
+            ...new Set([...options.columns, ...this.prototype.defaultColumnsToFetch()]),
+          ];
         }
 
         if (options.order) {

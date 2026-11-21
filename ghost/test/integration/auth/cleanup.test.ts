@@ -2,12 +2,10 @@ import assert from 'node:assert/strict';
 import ObjectId from 'bson-objectid';
 
 const testUtils = require('../../utils');
-const configUtils = require('../../utils/config-utils');
 const db = require('../../../core/server/data/db');
 const { getInstance: getJobsService } = require('../../../core/server/services/jobs-service');
 const ClearExpiredAuthRowsJob =
   require('../../../core/server/auth/better-auth/clear-expired-auth-rows-job').default;
-// require, not import: cleanup must read the config instance configUtils sets
 const {
   clearExpiredAuthRows,
   clearExpired,
@@ -76,10 +74,6 @@ describe('Better Auth expired row cleanup', function () {
     await db.knex('verifications').del();
   });
 
-  afterEach(async function () {
-    await configUtils.restore();
-  });
-
   it('deletes expired sessions and verifications, in batches, and keeps the rest', async function () {
     const [liveSession] = await insertSessions([at(HOUR)]);
     await insertSessions([at(-HOUR), at(-2 * HOUR), at(-3 * HOUR), at(-4 * HOUR), at(-5 * HOUR)]);
@@ -104,20 +98,14 @@ describe('Better Auth expired row cleanup', function () {
     assert.equal((await ids('verifications')).length, 1);
   });
 
-  it('runs as the job handler only with auth:betterAuthDev', async function () {
+  it('runs as the job handler', async function () {
     await insertSessions([at(-HOUR)]);
 
-    configUtils.set('auth:betterAuthDev', false);
-    await clearExpired();
-    assert.equal((await ids('user_sessions')).length, 1);
-
-    configUtils.set('auth:betterAuthDev', true);
     await clearExpired();
     assert.equal((await ids('user_sessions')).length, 0);
   });
 
   it('clears expired rows when the job is dispatched', async function () {
-    configUtils.set('auth:betterAuthDev', true);
     const [liveSession] = await insertSessions([at(HOUR)]);
     await insertSessions([at(-HOUR)]);
 

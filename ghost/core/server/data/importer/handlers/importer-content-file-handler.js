@@ -38,25 +38,24 @@ class ImporterContentFileHandler {
   async loadFile(files, baseDir) {
     const baseDirRegex = baseDir ? new RegExp('^' + _.escapeRegExp(baseDir) + '/') : new RegExp('');
 
-    const contentFilesFolderRegexes = _.map(
-      this.storage.staticFileURLPrefix.split('/'),
-      function (dir) {
+    const contentFilesFolderRegexes = this.storage.staticFileURLPrefix
+      .split('/')
+      .map(function (dir) {
         return new RegExp('^' + _.escapeRegExp(dir) + '/');
-      },
-    );
+      });
 
     if (this.ignoreRootFolderFiles) {
-      files = _.filter(files, function (file) {
+      files = files.filter(function (file) {
         return file.name.indexOf('/') !== -1;
       });
     }
 
     // normalize the directory structure
-    files = _.map(files, function (file) {
+    files = files.map(function (file) {
       const noBaseDir = file.name.replace(baseDirRegex, '');
       let noGhostDirs = noBaseDir;
 
-      _.each(contentFilesFolderRegexes, function (regex) {
+      contentFilesFolderRegexes.forEach(function (regex) {
         noGhostDirs = noGhostDirs.replace(regex, '');
       });
 

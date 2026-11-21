@@ -9,9 +9,9 @@ import {
   type MigrationFunction,
 } from './migrations';
 import type { TableDefinition } from '../../schema/types';
+import { commands } from '../../schema';
 
 const DatabaseInfo = require('@tryghost/database-info');
-const { commands } = require('../../schema');
 
 function isDevelopmentOrTesting() {
   const env = config.get('env');

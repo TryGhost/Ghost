@@ -23,7 +23,12 @@
   * {
     @apply border-border;
   }
+
+  /* The body's reset sits here, not in preflight.css: preflight is scoped to
+     .shade, which is inside body. In this layer, an app's unlayered body styles,
+     or a later base-layer rule, win over it. */
   body {
+    margin: 0;
     @apply font-sans antialiased bg-background text-foreground;
   }
 }

@@ -883,11 +883,11 @@ describe('User API: permission includes', function () {
   // Pinned separately from the role map so that a change to the map, or to
   // where the API reads permissions from, has to update this too.
   const PERMISSION_COUNTS = {
-    Administrator: 146,
-    Editor: 54,
-    Author: 31,
-    Contributor: 22,
-    'Super Editor': 74,
+    Administrator: 151,
+    Editor: 56,
+    Author: 33,
+    Contributor: 24,
+    'Super Editor': 76,
   };
 
   const PERMISSION_KEYS = ['action_type', 'object_id', 'object_type'];

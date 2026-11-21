@@ -48,6 +48,7 @@ const ToasterPortal = () => {
 interface ShadeProviderProps {
   darkMode: boolean;
   admin7Design?: boolean;
+  admin7Mobile?: boolean;
   controlShape?: ControlShape;
   children: React.ReactNode;
 }
@@ -55,6 +56,7 @@ interface ShadeProviderProps {
 const ShadeProvider: React.FC<ShadeProviderProps> = ({
   darkMode,
   admin7Design = true,
+  admin7Mobile = false,
   controlShape,
   children,
 }) => {
@@ -71,6 +73,7 @@ const ShadeProvider: React.FC<ShadeProviderProps> = ({
         setFocusState,
         darkMode,
         admin7Design,
+        admin7Mobile,
         controlShape: controlShape ?? 'pill',
       }}
     >

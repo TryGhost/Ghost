@@ -1,0 +1,43 @@
+import logging from '@tryghost/logging';
+import ObjectID from 'bson-objectid';
+import { createTransactionalMigration } from '../../utils';
+
+const MIGRATION_USER = 1;
+
+export default createTransactionalMigration(
+  async function up(knex) {
+    logging.info('Creating "Self-Serve Migration Integration"');
+    const existingIntegration = await knex('integrations')
+      .where({
+        name: 'Self-Serve Migration Integration',
+        slug: 'self-serve-migration',
+      })
+      .first();
+
+    if (existingIntegration) {
+      logging.warn('Integration already exists, skipping');
+      return;
+    }
+
+    await knex('integrations').insert({
+      id: new ObjectID().toHexString(),
+      type: 'core',
+      name: 'Self-Serve Migration Integration',
+      description: 'Core Integration for the Self-Serve migration tool',
+      slug: 'self-serve-migration',
+      created_at: knex.raw('current_timestamp'),
+      created_by: MIGRATION_USER,
+    });
+  },
+  async function down(knex) {
+    logging.info('Deleting "Self-Serve Migration Integration"');
+
+    await knex('integrations')
+      .where({
+        type: 'core',
+        name: 'Self-Serve Migration Integration',
+        slug: 'self-serve-migration',
+      })
+      .del();
+  },
+);

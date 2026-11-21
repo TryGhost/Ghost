@@ -616,6 +616,7 @@ const AutomationEditorContent: React.FC<{
         isPending={isEditRequestActive}
         open={isConfirmPublishAlertOpen || isConfirmUnpublishAlertOpen}
         status={isConfirmUnpublishAlertOpen ? 'inactive' : 'active'}
+        triggerLabel={selectedLabelId ? { id: selectedLabelId, name: labelName } : undefined}
         onConfirm={() => void save(isConfirmUnpublishAlertOpen ? 'inactive' : 'active')}
         onOpenChange={
           isConfirmUnpublishAlertOpen ? onConfirmUnpublishOpenChange : onConfirmPublishOpenChange

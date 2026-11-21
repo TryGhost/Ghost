@@ -1,11 +1,14 @@
 const { agentProvider, fixtureManager, mockManager } = require('../../../utils/e2e-framework');
 const models = require('../../../../core/server/models');
+const db = require('../../../../core/server/data/db');
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
 const configUtils = require('../../../utils/config-utils');
 const emailService = require('../../../../core/server/services/email-service');
 const BatchSendingService = require('../../../../core/server/services/email-service/batch-sending-service');
+const SendEmailJob =
+  require('../../../../core/server/services/email-service/jobs/send-email-job').default;
 const {
   sendEmail,
   createPublishedPostEmail,
@@ -137,6 +140,94 @@ describe('Resume interrupted sends', function () {
       filter: `email_id:'${emailModel.id}'`,
     });
     assert.equal(recipients.models.length, 4);
+    sinon.assert.calledTwice(mailgunStub);
+  });
+
+  describe('a pending email reaching its send job', function () {
+    // A published post's email, left `pending` with no job run yet.
+    async function pendingEmail() {
+      const scheduleEmail = sinon.stub(BatchSendingService.prototype, 'scheduleEmail');
+      const emailModel = await createPublishedPostEmail(agent);
+      scheduleEmail.restore();
+      assert.equal(emailModel.get('status'), 'pending');
+      mockManager.getMailgunCreateMessageStub().resetHistory();
+      return emailModel;
+    }
+
+    // Runs the email's send job the way the jobs system delivers it.
+    async function runSendJob(emailModel, { requestedAt = new Date() } = {}) {
+      const job = new SendEmailJob({
+        emailId: emailModel.id,
+        requestedAt: requestedAt?.toISOString(),
+      });
+      await emailService.service.handleSendEmailJob(job);
+      await emailModel.refresh();
+    }
+
+    const minutesAgo = (minutes) => new Date(Date.now() - minutes * 60 * 1000);
+
+    it('is marked failed, not sent, when its post was unpublished before the job ran', async function () {
+      const emailModel = await pendingEmail();
+      await db
+        .knex('posts')
+        .where({ id: emailModel.get('post_id') })
+        .update({ status: 'draft' });
+
+      await runSendJob(emailModel);
+
+      assert.equal(emailModel.get('status'), 'failed');
+      sinon.assert.notCalled(mockManager.getMailgunCreateMessageStub());
+    });
+
+    it('stays failed, not sent, when a duplicate of its job runs after it was marked failed', async function () {
+      const emailModel = await pendingEmail();
+      await db
+        .knex('posts')
+        .where({ id: emailModel.get('post_id') })
+        .update({ status: 'draft' });
+
+      await runSendJob(emailModel);
+      await runSendJob(emailModel);
+
+      assert.equal(emailModel.get('status'), 'failed');
+      sinon.assert.notCalled(mockManager.getMailgunCreateMessageStub());
+    });
+
+    it('is marked failed, not sent, when its send was requested longer ago than the resume limit', async function () {
+      const emailModel = await pendingEmail();
+
+      await runSendJob(emailModel, { requestedAt: minutesAgo(24 * 60 + 1) });
+
+      assert.equal(emailModel.get('status'), 'failed');
+      sinon.assert.notCalled(mockManager.getMailgunCreateMessageStub());
+    });
+
+    it('is sent when its job came from before requests were timed', async function () {
+      const emailModel = await pendingEmail();
+
+      await runSendJob(emailModel, { requestedAt: null });
+
+      assert.equal(emailModel.get('status'), 'submitted');
+      sinon.assert.calledTwice(mockManager.getMailgunCreateMessageStub());
+    });
+  });
+
+  it('sends a retry of an email created longer ago than the resume limit', async function () {
+    const { emailModel } = await sendEmail(agent);
+    await emailModel.save({ status: 'failed' }, { patch: true, autoRefresh: false });
+    await db
+      .knex('emails')
+      .where({ id: emailModel.id })
+      .update({ created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) });
+    await db.knex('email_batches').where({ email_id: emailModel.id }).update({ status: 'failed' });
+    const mailgunStub = mockManager.getMailgunCreateMessageStub();
+    mailgunStub.resetHistory();
+
+    await emailService.service.retryEmail(await models.Email.findOne({ id: emailModel.id }));
+    await waitForEmailStatus(emailModel.id);
+
+    await emailModel.refresh();
+    assert.equal(emailModel.get('status'), 'submitted');
     sinon.assert.calledTwice(mailgunStub);
   });
 

@@ -33,6 +33,25 @@ export const membersScreen = {
   loadMoreButton: () => page.getByRole('button', { name: loadMoreButton }),
   dialog: () => page.getByRole('dialog'),
   menuItem: (name: string | RegExp) => page.getByRole('menuitem', { name }),
+  /** Reads "Save view", or "Edit view" while the filters match a saved view. */
+  manageViewButton: () => page.getByRole('button', { name: /^(Save|Edit) view$/ }),
+  viewNameInput: () => membersScreen.dialog().getByRole('textbox', { name: 'View name' }),
+  viewPopoverButton: (label: string) =>
+    membersScreen.dialog().getByRole('button', { name: label, exact: true }),
+
+  /** Save the current filters as a view or, on a saved view, rename it. */
+  async saveView(name: string): Promise<void> {
+    await membersScreen.manageViewButton().click();
+    await membersScreen.viewNameInput().fill(name);
+    await membersScreen.viewPopoverButton('Save').click();
+  },
+
+  /** Delete the saved view the list is on, through its edit popover. */
+  async deleteView(): Promise<void> {
+    await membersScreen.manageViewButton().click();
+    await membersScreen.viewPopoverButton('Delete').click();
+    await membersScreen.viewPopoverButton('Delete').click();
+  },
 
   /** Add a text filter through the filters UI: Filter button → field option → fill the value input. */
   async addFilter(field: keyof typeof textFilterFields, value: string): Promise<void> {

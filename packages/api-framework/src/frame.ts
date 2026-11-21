@@ -45,9 +45,21 @@ export interface FrameConfiguration {
 
 const debug = createDebug('frame');
 
+/**
+ * Options without `context.principal`, which holds session ids and staff
+ * details; the other context fields already identify the caller.
+ */
+export function withoutPrincipal(options: Dictionary): Dictionary {
+  const context = options.context as Dictionary | undefined;
+  if (!context?.principal) {
+    return options;
+  }
+  return { ...options, context: _.omit(context, 'principal') };
+}
+
 /** Holds all information associated with an API request. */
 export class Frame<TShape extends FrameShape = FrameShape> {
-  #headers: Record<string, string> = {};
+  #headers: Record<string, string | string[]> = {};
 
   original: FrameInput;
   options: FrameOptions<TShape> & { context?: Dictionary } = {} as FrameOptions<TShape> & {
@@ -128,12 +140,12 @@ export class Frame<TShape extends FrameShape = FrameShape> {
     this.user = this.original.user;
     this.file = this.original.file;
     this.files = this.original.files ?? [];
-    debug('original', this.original);
-    debug('options', this.options);
+    debug('original', withoutPrincipal(this.original));
+    debug('options', withoutPrincipal(this.options));
     debug('data', hasBody ? body : this.data);
   }
 
-  setHeader(header: string, value: string) {
+  setHeader(header: string, value: string | string[]) {
     this.#headers[header] = value;
   }
 

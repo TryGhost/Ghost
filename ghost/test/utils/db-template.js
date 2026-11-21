@@ -146,7 +146,7 @@ const restoreFromTemplate = async () => {
   // The table copy above only covers base tables; views are not in
   // getResetTables (the existing snapshot path relies on init() having created
   // them once). Recreate them here from the schema definitions, exactly as
-  // migrations/init/1-create-tables.js does — through commands.createViewOrReplace
+  // migrations/init/1-create-tables.ts does — through commands.createViewOrReplace
   // so the fork's views get the same SQL SECURITY INVOKER as a fully-migrated one
   // (a plain knex createViewOrReplace would default to DEFINER on MySQL).
   for (const [name, sql] of Object.entries(schemaViews)) {

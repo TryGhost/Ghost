@@ -58,7 +58,7 @@ async function renderRows(admin7Design = true) {
         </ListItem>
       </List>
     </Box>,
-    { admin7Design },
+    { labs: { admin7Design } },
   );
 }
 
@@ -85,7 +85,7 @@ describe('shared content row surfaces in the browser', () => {
             </ListItem>
           </ul>
         </Box>,
-        { admin7Design },
+        { labs: { admin7Design } },
       );
       const custom = page.getByRole('listitem');
       expect(custom.element().parentElement?.tagName).toBe('UL');
@@ -205,7 +205,7 @@ describe('shared content row surfaces in the browser', () => {
           </TableBody>
         </Table>
       </Box>,
-      { admin7Design },
+      { labs: { admin7Design } },
     );
     const header = page.getByRole('columnheader', { name: /name/i }).element();
     const cell = page.getByRole('cell', { name: 'Static entry' });
@@ -247,7 +247,7 @@ describe('shared content row surfaces in the browser', () => {
           </TableBody>
         </Table>
       </Box>,
-      { admin7Design: true },
+      { labs: { admin7Design: true } },
     );
     await page.getByRole('row').click({ position: { x: -8, y: 12 } });
     expect(open).toHaveBeenCalledTimes(1);

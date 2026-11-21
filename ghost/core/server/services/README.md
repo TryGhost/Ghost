@@ -150,7 +150,7 @@ A service that is not listed is standard. It must be:
 
 [IndexNow](indexnow-ping/index.ts) (`indexnow-ping`) is the example to follow.
 
-The inventory is temporary and boot never reads it. It has two sections:
+The inventory is temporary and boot never reads it. It has three sections:
 
 - `services` lists the legacy services with their audit record and migration
   assessment. It includes standalone files and supporting modules still awaiting
@@ -160,10 +160,14 @@ The inventory is temporary and boot never reads it. It has two sections:
   [standard root contract](#standard-root-contract)), `futureHome` and
   `lifecycle`, a list of notes on what `defineService` does not do for the
   service yet. A standard service with nothing open has no entry.
+- `knownBugs` records bugs found while auditing or migrating a service, legacy
+  or standard, so they outlive its `services` entry. Each has a `summary`, the
+  `sources` that show it and any `tests` that pin or reproduce it, as paths
+  relative to `ghost`. Remove a bug in the change that fixes it.
 
 Migrating a service means deleting its `services` entry and its known
 violations. Git history keeps the audit record. Move any extra it declares into
-the second section.
+`followUps`, and any bug its `blockers` describe into `knownBugs`.
 
 ### Roots outside this directory
 
@@ -455,13 +459,15 @@ list does not imply that every claim is tested: when coverage is partial, the
 summary must say what the cited tests assert and which claims are source-only. Keep established source facts
 under `contracts`; reserve `unverified` for questions the audit has not answered.
 
-Record missing coverage and known bugs in `blockers`. Before changing a service,
+Record missing coverage in `blockers` and a newly found bug under `knownBugs`.
+Older entries still describe some bugs in `blockers`. Before changing a service,
 address the gaps relevant to that change; neither `audited` nor a passing
 inventory check proves that its behavior is protected against regressions.
 
 The unit test checks the inventory's shape and paths, and the extras catalogue.
 It checks that every legacy entry exists, and that everything else in this
-directory is a directory with an `index.ts` root. It reads declared extras
+directory is a directory with an `index.ts` root. It checks that each known bug
+names a service and files that exist. It reads declared extras
 without importing services or driving initialization. Oxlint separately enforces
 the public root shape. `README.md` and the inventory itself are the only metadata
 exclusions. Retire the inventory after migration; keep the behavioral tests.

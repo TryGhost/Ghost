@@ -14,11 +14,13 @@ import useGlobalDirtyState from '@/hooks/use-global-dirty-state';
 import { cn } from '@/lib/utils';
 
 /**
- * Consumer-controlled settings modal shell. Legacy full-page settings dialogs
- * still render through it; new modal flows should use Shade Dialog primitives.
+ * @deprecated Only for Admin's legacy settings modals. Use `Dialog` from `@tryghost/shade/components` for new modals.
  */
 export type SettingsModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'bleed';
 
+/**
+ * @deprecated Only for Admin's legacy settings modals. Use `Dialog` from `@tryghost/shade/components` for new modals.
+ */
 export interface SettingsModalProps {
   'aria-label'?: string;
   className?: string;
@@ -89,6 +91,13 @@ const headerOffsets: Record<SettingsModalSize, string> = {
   bleed: '-inset-x-10',
 };
 
+/**
+ * Consumer-controlled settings modal shell. Admin's legacy full-page settings
+ * dialogs still render through it. It is not a real dialog: it doesn't trap
+ * focus or announce itself to screen readers.
+ *
+ * @deprecated Only for Admin's legacy settings modals. Use `Dialog` from `@tryghost/shade/components` for new modals.
+ */
 const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(
   (
     {

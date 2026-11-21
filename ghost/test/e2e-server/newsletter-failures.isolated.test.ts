@@ -96,7 +96,7 @@ describe('Newsletter sends under failure', function () {
     await ghostServer.stop();
 
     await email.refresh();
-    assert.equal(email.get('status'), 'submitting');
+    assert.equal(email.get('status'), 'pending');
     assert.deepEqual(await batchStatuses(email.id), [
       'pending',
       'pending',

@@ -32,7 +32,7 @@ module.exports = {
   },
 
   get authentication() {
-    return apiFramework.pipeline(require('./authentication'), localUtils);
+    return apiFramework.pipeline(require('./authentication').default, localUtils);
   },
 
   get db() {
@@ -370,6 +370,10 @@ module.exports = {
 
   get gifts() {
     return apiFramework.pipeline(require('./gifts'), localUtils);
+  },
+
+  get segments() {
+    return apiFramework.pipeline(require('./segments'), localUtils);
   },
 
   get recommendationsPublic() {

@@ -52,13 +52,13 @@ const Product = ghostBookshelf.Model.extend(
 
       let benefitsToSave = [];
 
-      if (_.isUndefined(this.get('benefits'))) {
+      if (this.get('benefits') === undefined) {
         this.unset('benefits');
         return;
       }
 
       // CASE: detect lowercase/uppercase label slugs
-      if (!_.isUndefined(this.get('benefits')) && !_.isNull(this.get('benefits'))) {
+      if (this.get('benefits') !== undefined && this.get('benefits') !== null) {
         benefitsToSave = [];
 
         //  and deduplicate upper/lowercase tags

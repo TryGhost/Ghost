@@ -7,6 +7,24 @@ import { httpUrl } from './schema/primitives';
 import { spam } from './schema/spam';
 import { makePathsAbsolute } from './utils';
 
+/** Better Auth needs MySQL, so SQLite stays on legacy whatever auth:engine says. */
+function legacyAuthOnSqlite<
+  T extends { auth?: { engine?: unknown }; database?: { client?: unknown } },
+>(config: T): T {
+  // the raw alias too: a lenient parse can fall back to the unparsed database
+  const client: unknown = config.database?.client;
+  if (
+    config.auth?.engine !== 'better-auth' ||
+    (client !== 'better-sqlite3' && client !== 'sqlite3')
+  ) {
+    return config;
+  }
+  // eslint-disable-next-line no-console
+  console.warn('auth:engine better-auth needs MySQL; using the legacy engine on SQLite.');
+  // only engine: Better Auth's own keys do not belong to the legacy option
+  return { ...config, auth: { engine: 'legacy' } };
+}
+
 /**
  * The validated shape of Ghost's config.
  *
@@ -25,7 +43,7 @@ import { makePathsAbsolute } from './utils';
  * 2. Nothing here may be stricter than what the loader already enforced.
  *    Tightening beyond that is its own change, with its own release note.
  */
-export const configSchema = z.looseObject({
+const configShape = z.looseObject({
   /**
    * Fatal in every environment, as boot has always refused a URL without a
    * protocol, and Ghost's URL helpers throw on one `new URL()` can't parse.
@@ -120,6 +138,8 @@ export const configSchema = z.looseObject({
   spam,
 });
 
+export const configSchema = configShape.transform(legacyAuthOnSqlite);
+
 export type ValidatedConfig = z.infer<typeof configSchema>;
 
 /**
@@ -147,14 +167,24 @@ export type ConfigPath<T = ValidatedConfig> = T extends object
 /** `undefined` when a section on the path may be absent, so its children may be too. */
 type Absent<T> = undefined extends T ? undefined : never;
 
+/** A key any option of a union names; `keyof` alone sees only the shared ones. */
+type AnyKey<T> = T extends unknown ? keyof Known<T> : never;
+
+/** `T[K]` per option of a union, `undefined` for an option without `K`. */
+type Member<T, K extends PropertyKey> = T extends unknown
+  ? K extends keyof Known<T>
+    ? Known<T>[K]
+    : undefined
+  : never;
+
 /** The value a key path resolves to, or `unknown` if the schema misses it. */
 export type ConfigAt<
   P extends string,
   T = ValidatedConfig,
 > = P extends `${infer Head}:${infer Rest}`
-  ? Head extends keyof Known<T>
-    ? ConfigAt<Rest, NonNullable<Known<T>[Head]>> | Absent<Known<T>[Head]>
+  ? Head extends AnyKey<T>
+    ? ConfigAt<Rest, NonNullable<Member<T, Head>>> | Absent<Member<T, Head>>
     : unknown
-  : P extends keyof Known<T>
-    ? Known<T>[P]
+  : P extends AnyKey<T>
+    ? Member<T, P>
     : unknown;

@@ -89,6 +89,26 @@ export default class App extends React.Component {
 
     this.setupCustomTriggerButton();
 
+    /** @type {{
+     *   site: object | null,
+     *   member: object | null,
+     *   customFields: unknown[],
+     *   offers: unknown[],
+     *   page: string,
+     *   showPopup: boolean,
+     *   action: string,
+     *   actionErrorMessage: string | null,
+     *   fieldErrors: object,
+     *   initStatus: string,
+     *   lastPage: string | null,
+     *   notification: object | null,
+     *   notificationSequence: number,
+     *   customSiteUrl: string | undefined,
+     *   locale: string | undefined,
+     *   scrollbarWidth: number,
+     *   reloadOnPopupClose?: boolean,
+     *   pageData?: object,
+     * }} */
     this.state = {
       site: null,
       member: null,

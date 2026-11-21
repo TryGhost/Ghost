@@ -1,0 +1,9 @@
+import { createDropColumnMigration } from '../../utils';
+
+// The phone number has nothing of Stripe's own to keep: which tiers ask for it is its tier
+// requirement.
+export default createDropColumnMigration('stripe_checkout_config', 'phone', {
+  type: 'text',
+  maxlength: 65535,
+  nullable: true,
+});

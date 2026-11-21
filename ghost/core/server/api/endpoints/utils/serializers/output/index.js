@@ -52,6 +52,10 @@ module.exports = {
     return require('./app-sessions');
   },
 
+  get segments() {
+    return require('./segments');
+  },
+
   get redirects() {
     return require('./redirects');
   },
