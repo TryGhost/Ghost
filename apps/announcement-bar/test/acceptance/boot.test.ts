@@ -1,13 +1,13 @@
 const SCRIPT_ATTRIBUTES = {
   'data-announcement-bar': 'https://site.test/',
   'data-api-url': 'https://site.test/members/api/announcement/',
-  'data-preview': 'true',
-  'data-announcement': '<p>Preview from the script tag</p>',
+  'data-announcement': '<p>Announcement from the script tag</p>',
   'data-announcement-background': 'accent',
 };
 
 test('boots from the script tag into a root prepended to the body', async () => {
   sessionStorage.clear();
+  const fetchSpy = vi.spyOn(window, 'fetch');
   document.body.appendChild(document.createElement('main'));
 
   const script = document.createElement('script');
@@ -28,9 +28,13 @@ test('boots from the script tag into a root prepended to the body', async () => 
     }
     return el;
   });
+  expect(
+    fetchSpy.mock.calls.filter(([url]) => String(url) === SCRIPT_ATTRIBUTES['data-api-url']),
+  ).toHaveLength(0);
+  fetchSpy.mockRestore();
   expect(bar.className).toBe('gh-announcement-bar accent');
   expect(bar.querySelector('.gh-announcement-bar-content')!.innerHTML).toBe(
-    '<p>Preview from the script tag</p>',
+    '<p>Announcement from the script tag</p>',
   );
   expect(bar.querySelector('button')!.getAttribute('aria-label')).toBe('close');
 });

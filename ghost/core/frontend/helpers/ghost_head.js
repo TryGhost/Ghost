@@ -8,6 +8,7 @@ const {
   blogIcon,
   urlUtils,
   getFrontendKey,
+  getAnnouncementForViewer,
   settingsHelpers,
 } = require('../services/proxy');
 const metaData = require('../meta');
@@ -234,11 +235,8 @@ function getSearchHelper(frontendKey) {
 
 function getAnnouncementBarHelper(data) {
   const preview = data?.site?._preview;
-  const isFilled =
-    settingsCache.get('announcement_content') &&
-    settingsCache.get('announcement_visibility').length;
-
-  if (!isFilled && !preview) {
+  const settings = preview ? null : getAnnouncementForViewer(data.member);
+  if (!preview && !settings) {
     return '';
   }
 
@@ -264,6 +262,9 @@ function getAnnouncementBarHelper(data) {
     attrs.announcement = escapeExpression(announcement);
     attrs['announcement-background'] = escapeExpression(announcementBackground);
     attrs.preview = true;
+  } else {
+    attrs.announcement = escapeExpression(settings.announcement);
+    attrs['announcement-background'] = escapeExpression(settings.announcement_background);
   }
 
   const dataAttrs = getDataAttributes(attrs);

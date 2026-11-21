@@ -6,7 +6,7 @@ const ROOT_DIV_ID = 'announcement-bar-root';
 
 type SiteData = {
   apiUrl?: string;
-  previewData?: AnnouncementSettings | null;
+  initialSettings?: AnnouncementSettings | null;
 };
 
 function addRootDiv() {
@@ -23,13 +23,13 @@ function getSiteData(): SiteData {
   const scriptTag = document.querySelector<HTMLElement>('script[data-announcement-bar]');
   if (scriptTag) {
     const apiUrl = scriptTag.dataset.apiUrl;
-    return { apiUrl, previewData: getPreviewData(scriptTag) };
+    return { apiUrl, initialSettings: getInitialSettings(scriptTag) };
   }
   return {};
 }
 
-function getPreviewData(scriptTag: HTMLElement): AnnouncementSettings | null {
-  if (scriptTag.dataset.preview) {
+function getInitialSettings(scriptTag: HTMLElement): AnnouncementSettings | null {
+  if (scriptTag.hasAttribute('data-announcement') || scriptTag.dataset.preview) {
     const announcement = scriptTag.dataset.announcement;
     const announcementBackground = scriptTag.dataset.announcementBackground;
 
@@ -44,12 +44,12 @@ function setup() {
 }
 
 function init() {
-  const { apiUrl, previewData } = getSiteData();
+  const { apiUrl, initialSettings } = getSiteData();
   setup();
   const root = document.getElementById(ROOT_DIV_ID)!;
   // Preact's render() keeps existing children, so clear anything a theme left in the root
   root.replaceChildren();
-  render(<App apiUrl={apiUrl} previewData={previewData} />, root);
+  render(<App apiUrl={apiUrl} initialSettings={initialSettings} />, root);
 }
 
 init();
