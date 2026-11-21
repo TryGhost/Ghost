@@ -1,3 +1,4 @@
+import {buildDefaultVisibility} from '../../src/utils/visibility.js';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$getRoot} from 'lexical';
 import type {LexicalEditor} from 'lexical';
@@ -71,7 +72,8 @@ describe('ToggleNode', function () {
             const toggleNodeDataset = toggleNode.getDataset();
 
             expect(toggleNodeDataset).toEqual({
-                ...dataset
+                ...dataset,
+                visibility: buildDefaultVisibility()
             });
         }));
     });
@@ -115,6 +117,7 @@ describe('ToggleNode', function () {
             const json = toggleNode.exportJSON();
 
             expect(json).toEqual({
+                visibility: buildDefaultVisibility(),
                 type: 'toggle',
                 version: 1,
                 heading: dataset.heading,

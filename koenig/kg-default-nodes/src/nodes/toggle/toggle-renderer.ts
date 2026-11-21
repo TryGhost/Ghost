@@ -1,9 +1,11 @@
+import {renderWithVisibility, type Visibility} from '../../utils/visibility.js';
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
 import {getFirstHtmlElement} from '../../utils/get-first-html-element.js';
 import {html} from '../../utils/tagged-template-fns.js';
 
 interface ToggleNodeData {
+    visibility?: Visibility;
     heading: string;
     content: string;
 }
@@ -62,5 +64,5 @@ export function renderToggleNode(node: ToggleNodeData, options: RenderOptions = 
     container.innerHTML = htmlString.trim();
 
     const element = getFirstHtmlElement(container, 'renderToggleNode');
-    return {element, type: 'outer' as const};
+    return renderWithVisibility({element, type: 'outer' as const}, node.visibility, options);
 }

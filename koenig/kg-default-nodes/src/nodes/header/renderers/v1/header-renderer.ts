@@ -5,6 +5,7 @@ import {escapeHtml} from '../../../../utils/escape-html.js';
 import {html} from '../../../../utils/tagged-template-fns.js';
 import {renderEmptyContainer} from '../../../../utils/render-empty-container.js';
 import {slugify} from '../../../../utils/slugify.js';
+import {renderWithVisibility, type Visibility} from '../../../../utils/visibility.js';
 
 interface HeaderV1NodeData {
     size: string;
@@ -15,6 +16,7 @@ interface HeaderV1NodeData {
     header: string;
     subheader: string;
     backgroundImageSrc: string;
+    visibility?: Visibility;
 }
 
 interface RenderOptions extends ExportDOMOptions {}
@@ -71,5 +73,5 @@ export function renderHeaderNodeV1(node: HeaderV1NodeData, options: RenderOption
     const div = document.createElement('div');
     div.innerHTML = headerHtml;
 
-    return {element: div, type: 'inner' as const};
+    return renderWithVisibility({element: div, type: 'inner' as const}, node.visibility, options);
 }

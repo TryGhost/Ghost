@@ -87,6 +87,26 @@ export function hasRestrictedCards(lexical: string | {root?: SerializedNode} | n
     return hasRestrictedNode(document?.root?.children);
 }
 
+export function isWebVisibilityRestricted(visibility: Visibility | undefined) {
+    if (!visibility) {
+        return false;
+    }
+
+    const web = migrateOldVisibilityFormat(visibility).web;
+    return web?.nonMember !== true || web?.memberSegment !== ALL_MEMBERS_SEGMENT;
+}
+
+// Email play/download links normally go to the post so readers get the full
+// player. When the card is hidden from some web visitors, an email recipient
+// can land on the post without it (not entitled on web, or not signed in), so
+// link straight to the media file instead.
+export function getEmailMediaHref(src: string, visibility: Visibility | undefined, postUrl?: string) {
+    if (isWebVisibilityRestricted(visibility)) {
+        return src;
+    }
+    return postUrl || src;
+}
+
 // old formats...
 //
 // "segment" only applies to email visibility

@@ -2,12 +2,14 @@ import {addCreateDocumentOption} from '../../utils/add-create-document-option.js
 import {escapeHtml} from '../../utils/escape-html.js';
 import type {ExportDOMOptions, ExportDOMOutput} from '../../export-dom.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
+import {getEmailMediaHref, renderWithVisibility, type Visibility} from '../../utils/visibility.js';
 
 interface AudioNodeData {
     src: string;
     title: string;
     thumbnailSrc: string;
     duration: number;
+    visibility?: Visibility;
 }
 
 interface RenderOptions extends ExportDOMOptions {}
@@ -28,11 +30,11 @@ export function renderAudioNode(node: AudioNodeData, options: AudioRenderOptions
     const thumbnailCls = getThumbnailCls(node);
     const emptyThumbnailCls = getEmptyThumbnailCls(node);
 
-    if (options.target === 'email') {
-        return emailTemplate(node, document, options, thumbnailCls, emptyThumbnailCls);
-    } else {
-        return frontendTemplate(node, document, thumbnailCls, emptyThumbnailCls);
-    }
+    const output = options.target === 'email'
+        ? emailTemplate(node, document, options, thumbnailCls, emptyThumbnailCls)
+        : frontendTemplate(node, document, thumbnailCls, emptyThumbnailCls);
+
+    return renderWithVisibility(output, node.visibility, options);
 }
 
 function frontendTemplate(node: AudioNodeData, document: Document, thumbnailCls: string, emptyThumbnailCls: string) {
@@ -183,7 +185,7 @@ function frontendTemplate(node: AudioNodeData, document: Document, thumbnailCls:
 }
 
 function emailTemplate(node: AudioNodeData, document: Document, options: AudioRenderOptions, thumbnailCls: string, emptyThumbnailCls: string) {
-    const postUrl = escapeHtml(options.postUrl || node.src);
+    const postUrl = escapeHtml(getEmailMediaHref(node.src, node.visibility, options.postUrl));
     const html = (`
         <table cellspacing="0" cellpadding="0" border="0" class="kg-audio-card">
                 <tr>
