@@ -1,19 +1,40 @@
-const { TableImporter } = require('./table-importer');
-const { faker } = require('@faker-js/faker');
-const { toDatabaseDate } = require('../../../lib/db-types/date');
+import { TableImporter } from './table-importer';
+import { faker } from '@faker-js/faker';
+import { toDatabaseDate } from '../../../lib/db-types/date';
+import type { Knex } from 'knex';
 
-class WebMentionsImporter extends TableImporter {
+type WebMention = {
+  id: string;
+  source: string;
+  source_title: string;
+  source_site_title: string;
+  source_excerpt: string;
+  source_author: string;
+  source_featured_image: string;
+  source_favicon: string;
+  target: string;
+  resource_id: null;
+  resource_type: null;
+  created_at: string;
+  payload: string;
+  deleted: number;
+  verified: number;
+};
+
+class WebMentionsImporter extends TableImporter<WebMention> {
   static table = 'mentions';
-  static dependencies = [];
+  static dependencies: string[] = [];
   defaultQuantity = 23;
 
-  constructor(knex, transaction, { baseUrl }) {
+  declare baseUrl: string;
+
+  constructor(knex: Knex, transaction: Knex.Transaction, { baseUrl }: { baseUrl: string }) {
     super(WebMentionsImporter.table, knex, transaction);
 
     this.baseUrl = baseUrl;
   }
 
-  generate() {
+  generate(): WebMention {
     const id = this.fastFakeObjectId();
 
     const author = `${faker.person.fullName()}`;
