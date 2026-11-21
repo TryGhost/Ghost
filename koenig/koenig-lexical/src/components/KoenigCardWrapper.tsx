@@ -7,6 +7,7 @@ import {CardWrapper} from './ui/CardWrapper';
 import {EDIT_CARD_COMMAND, SELECT_CARD_COMMAND, SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {VISIBILITY_SETTINGS} from '../utils/visibility';
 import {mergeRegister} from '@lexical/utils';
+import {useIsDocumentEditable} from '../hooks/useIsDocumentEditable';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import type {CardWidth} from '@tryghost/kg-default-nodes';
@@ -29,9 +30,18 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     const skipClick = React.useRef(false);
 
     const {selectedCardKey, isEditingCard, isDragging} = useKoenigSelectedCardContext();
+    const isReadOnly = !useIsDocumentEditable();
 
     const isSelected = selectedCardKey === nodeKey;
     const isEditing = isSelected && isEditingCard;
+
+    // a card's own controls change the document, so nothing in a read-only
+    // editor's card is clicked, dragged or keeps focus: the stylesheet takes the
+    // pointer from the card and everything in it. Not `inert`, which would also
+    // keep the card's text out of selections, find-in-page and screen readers
+    const refuseFocus = React.useCallback((event) => {
+        event.target.blur?.();
+    }, []);
 
     const handleVisibilityToggle = React.useCallback((event) => {
         event.preventDefault();
@@ -171,6 +181,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                 ref={containerRef}
                 cardType={cardType}
                 cardWidth={width}
+                data-kg-read-only={isReadOnly ? '' : undefined}
                 feature={cardConfig?.feature}
                 IndicatorIcon={IndicatorIcon}
                 isDragging={isDragging}
@@ -178,6 +189,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                 isSelected={isSelected}
                 isVisibilityActive={isVisibilityActive}
                 wrapperStyle={wrapperStyle}
+                onFocusCapture={isReadOnly ? refuseFocus : undefined}
                 onIndicatorClick={handleVisibilityToggle}
             >
                 {children}

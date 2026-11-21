@@ -5,6 +5,7 @@ import {$insertDataTransferForRichText} from '@lexical/clipboard';
 import {DRAG_DROP_PASTE} from '@lexical/rich-text';
 import {createCommand} from 'lexical';
 import {getEditorCardNodes} from '../utils/getEditorCardNodes';
+import {isDocumentEditable} from '../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export const INSERT_MEDIA_COMMAND = createCommand();
@@ -114,6 +115,11 @@ function DragDropPastePlugin() {
         };
 
         const handleDrop = (event) => {
+            // a listener of our own, so not behind the flag as Lexical's events are
+            if (!isDocumentEditable(editor)) {
+                return;
+            }
+
             // handle image drop from a browser window
             const html = event.dataTransfer.getData('text/html');
             if (html) {

@@ -80,7 +80,7 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenF
     }, [setToolbarType, toolbarItemType]);
 
     React.useEffect(() => {
-        editor.registerCommand(
+        return editor.registerCommand(
             KEY_MODIFIER_COMMAND,
             (event) => {
                 const {keyCode, ctrlKey, metaKey, shiftKey} = event;

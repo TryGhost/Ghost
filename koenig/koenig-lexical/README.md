@@ -54,6 +54,45 @@ The main module source. `/src/index.js` is the entry point for the exposed modul
 
 Used for developing/demoing the editor. Renders a blank editor with all features enabled.
 
+### Read-only
+
+Lexical's editable flag on the top-level editor is the one switch. An app makes
+the editor read-only with `setEditable(false)` on the editor instance it gets
+from `registerAPI`, and editable again with `setEditable(true)`. While the flag
+is off the document can be read, selected and copied, and nothing the reader
+does in the editor changes it:
+
+- typing, pasting and dropping do nothing. Lexical ignores its own input
+  events, and Koenig refuses the rest: input the browser would still apply in
+  the moment before the change is rendered, and HTML dropped on the document
+- the format and link toolbars, the plus and slash card menus, and the emoji,
+  link search, Unsplash and GIF pickers are not rendered, including one that
+  was open when the flag went off
+- no card is selected or in edit mode, and none can be selected, edited,
+  inserted, deleted or dragged. A card that was open is closed, and an empty
+  one is not removed, since that would change the document
+- a card takes no pointer input and nothing in it keeps focus, so its own
+  buttons, links, inputs and media controls do nothing. Its text is still part
+  of a selection drawn across it, of find-in-page and of the accessibility tree
+
+The flag does not cover:
+
+- updates the app makes itself, with `editor.update()` or the API it gets from
+  `registerAPI`. Lexical allows those in a read-only editor
+- work a card had already started, such as fetching a bookmark, which fills
+  the card in when it finishes
+- links in the text. They are ordinary links in a read-only document and open
+  when clicked
+
+A card's nested editor has an editable flag of its own, which in most cards
+follows the card's edit mode. Lexical copies the top-level flag to every nested
+editor when it changes, so those cards put their editors back once the editor
+is editable again: a card that is not being edited stays closed.
+
+The `readOnly` prop is a different, narrower thing: it only turns off drag
+reordering and adds a `readonly` attribute to the content element. It does not
+set the flag, and the editor can still be typed in.
+
 ### Styling
 
 **CSS**

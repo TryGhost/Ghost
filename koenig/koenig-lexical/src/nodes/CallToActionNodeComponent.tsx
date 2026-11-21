@@ -8,6 +8,7 @@ import {CallToActionCard} from '../components/ui/cards/CallToActionCard.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {getImageDimensions} from '../utils/getImageDimensions';
+import {useEditModeAfterReadOnly} from '../hooks/useIsDocumentEditable';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useVisibilityToggle} from '../hooks/useVisibilityToggle.js';
@@ -159,6 +160,7 @@ export const CallToActionNodeComponent = ({
     React.useEffect(() => {
         htmlEditor.setEditable(isEditing);
     }, [isEditing, htmlEditor]);
+    useEditModeAfterReadOnly(isEditing, htmlEditor);
 
     return (
         <>
