@@ -54,7 +54,7 @@ const NavigationEditForm: React.FC<{
       )}
       <SortableList
         dragHandleClass="translate-y-0.5"
-        getDragHandleLabel={(item) => `Reorder ${item.label || 'navigation item'}`}
+        getItemLabel={(item) => item.label.trim() || 'navigation item'}
         items={navigation.items}
         itemSeparator={false}
         renderItem={(item) => (

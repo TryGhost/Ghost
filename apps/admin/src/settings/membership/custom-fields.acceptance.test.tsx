@@ -660,9 +660,7 @@ describe('Custom fields', () => {
     const browsesBeforeDrag = browseApi.requests.length;
 
     // A real pointer drag of the handle onto the first row, which is what dnd-kit
-    // listens for. Note this cannot be driven from the keyboard: the sortable list
-    // does not wire dnd-kit's sortable coordinate getter, so arrow keys move a
-    // lifted item by a flat 25px and it never reaches the next row.
+    // listens for. The keyboard spec below covers the same move from the keyboard.
     await dragField('Nickname', rows.first());
 
     // The whole list goes up, in the order the drag left it, keys only — order is a
@@ -682,6 +680,44 @@ describe('Custom fields', () => {
     // succeeds when it named exactly the fields the site has, so its response says
     // everything a fetch would and the round-trip is not repeated.
     expect(browseApi.requests.length).toBe(browsesBeforeDrag);
+  });
+
+  it('reorders a field from the keyboard, one place per arrow press, announcing it by name', async () => {
+    fakeSettingsScreens();
+    const shirtField = { ...companyField, key: KeySchema.parse('shirt_size'), name: 'Shirt size' };
+    const nicknameField = { ...companyField, key: KeySchema.parse('nickname'), name: 'Nickname' };
+    let currentFields: MemberCustomField[] = [companyField, shirtField, nicknameField];
+    fakeMemberCustomFields(() => currentFields);
+    const reorderApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/', (request) => {
+      currentFields = reordered(request.body, currentFields);
+      return { members_metafields: currentFields };
+    });
+    await renderAdminApp('/settings');
+
+    const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
+    await expect(rows).toHaveCount(3);
+    await settleRequests();
+    // Settings has other sortable lists, each with its own live region.
+    const announcements = () =>
+      [...document.querySelectorAll('[role="status"][aria-live="assertive"]')].map(
+        (region) => region.textContent,
+      );
+
+    (
+      settingsScreen.customFields().getByLabelText('Reorder Nickname').element() as HTMLElement
+    ).focus();
+    await userEvent.keyboard(' ');
+    await expect.poll(announcements).toContain('Picked up Nickname, position 3 of 3.');
+    await userEvent.keyboard('{ArrowUp}');
+    await expect.poll(announcements).toContain('Nickname moved to position 2 of 3.');
+    await userEvent.keyboard(' ');
+    await expect.poll(announcements).toContain('Nickname dropped at position 2 of 3.');
+
+    await expect
+      .poll(() => reorderApi.lastRequest?.body)
+      .toEqual({
+        members_metafields: [{ key: 'company' }, { key: 'nickname' }, { key: 'shirt_size' }],
+      });
   });
 
   it('leaves the dragged field where it was dropped while the request is in flight', async () => {
