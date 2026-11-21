@@ -415,6 +415,7 @@ describe('Default Frontend routing', function () {
       await request
         .get('/assets/built/screen.css')
         .expect('Cache-Control', testUtils.cacheRules.year)
+        .expect('Access-Control-Allow-Origin', '*')
         .expect(200)
         .expect(assertCorrectFrontendHeaders);
     });

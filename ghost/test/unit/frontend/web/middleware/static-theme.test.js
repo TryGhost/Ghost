@@ -102,6 +102,30 @@ describe('staticTheme', function () {
     assert('maxAge' in options);
   });
 
+  it('lets other origins use theme files', async function () {
+    req.path = '/assets/fonts/inter.woff2';
+
+    await callStaticTheme();
+
+    const { setHeaders } = expressStaticStub.firstCall.args[1];
+    const response = { getHeader: sinon.stub(), setHeader: sinon.stub() };
+    setHeaders(response, 'my/fake/path/assets/fonts/inter.woff2');
+    sinon.assert.calledOnceWithExactly(response.setHeader, 'Access-Control-Allow-Origin', '*');
+  });
+
+  it("keeps the answer the site's CORS gave an origin it allows", async function () {
+    req.path = '/assets/fonts/inter.woff2';
+
+    await callStaticTheme();
+
+    const { setHeaders } = expressStaticStub.firstCall.args[1];
+    const getHeader = sinon.stub();
+    getHeader.withArgs('Access-Control-Allow-Origin').returns('https://admin.example');
+    const response = { getHeader, setHeader: sinon.stub() };
+    setHeaders(response, 'my/fake/path/assets/fonts/inter.woff2');
+    sinon.assert.notCalled(response.setHeader);
+  });
+
   it('should call express.static for .js file', async function () {
     req.path = 'myvalidfile.js';
 
@@ -369,8 +393,10 @@ describe('staticTheme', function () {
       assertExists(options.setHeaders);
 
       const setHeaderStub = sinon.stub();
-      options.setHeaders({ setHeader: setHeaderStub });
+      options.setHeaders({ getHeader: sinon.stub(), setHeader: setHeaderStub });
       sinon.assert.calledWith(setHeaderStub, 'Content-Type', 'application/json');
+      // Its own headers come on top of the CORS one, not instead of it
+      sinon.assert.calledWith(setHeaderStub, 'Access-Control-Allow-Origin', '*');
     });
 
     it('should fall through when request differs from exact path', async function () {
