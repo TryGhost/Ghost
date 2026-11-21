@@ -537,8 +537,8 @@ catalogs:
       specifier: 2.0.3
       version: 2.0.3
     dompurify:
-      specifier: 3.4.17
-      version: 3.4.17
+      specifier: 3.4.18
+      version: 3.4.18
     dotenv:
       specifier: 17.4.2
       version: 17.4.2
@@ -947,7 +947,7 @@ importers:
         version: 2.1.1
       dompurify:
         specifier: 'catalog:'
-        version: 3.4.17
+        version: 3.4.18
       html2canvas-pro:
         specifier: 2.2.1
         version: 2.2.1
@@ -1143,7 +1143,7 @@ importers:
         version: 2.0.3
       dompurify:
         specifier: 'catalog:'
-        version: 3.4.17
+        version: 3.4.18
       flexsearch:
         specifier: 'catalog:'
         version: 0.7.43
@@ -1671,7 +1671,7 @@ importers:
         version: 1.6.20(@types/react@17.0.93)(react@17.0.2)
       dompurify:
         specifier: 'catalog:'
-        version: 3.4.17
+        version: 3.4.18
       eslint:
         specifier: 'catalog:'
         version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
@@ -2462,7 +2462,7 @@ importers:
         version: 5.0.5
       dompurify:
         specifier: 'catalog:'
-        version: 3.4.17
+        version: 3.4.18
       downsize-cjs:
         specifier: 1.1.2
         version: 1.1.2
@@ -3585,7 +3585,7 @@ importers:
         version: 10.0.6
       dompurify:
         specifier: 'catalog:'
-        version: 3.4.17
+        version: 3.4.18
       dotenv:
         specifier: 'catalog:'
         version: 17.4.2
@@ -11188,8 +11188,8 @@ packages:
     resolution: {integrity: sha512-gYzvtM72ZtxQO0T048kd6HWSbbGCNOUwcnfQ01cqIJ4X2IYKFFHZ5mKvrQETcFXxsRObZulDaKmy//R7TPtsBg==}
     engines: {node: '>=20.19.0'}
 
-  dompurify@3.4.17:
-    resolution: {integrity: sha512-B/pSlYVHQ58kqISD/yDjuJ1yfzI34m1gF4lAod2bwSRhiN4K5Cl3H8Af7hqB2PmTL911tdEudnnXn5FnhRoz0w==}
+  dompurify@3.4.18:
+    resolution: {integrity: sha512-ofe3wI/uNm68HInABYFJYqQxRw1EaKAjNdrFVKqjUY+UZurvNd2L/HuQe097s/4RivWiZyP6tT7aoT8atjfhwg==}
 
   domutils@3.2.2:
     resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
@@ -23356,7 +23356,7 @@ snapshots:
     dependencies:
       domelementtype: 3.0.0
 
-  dompurify@3.4.17:
+  dompurify@3.4.18:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
