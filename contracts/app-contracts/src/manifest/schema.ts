@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { AppAccessSchema } from './access-schema.ts';
 import { iconField } from './icon.ts';
 import { APP_ID_MAX_LENGTH, isValidAppId } from './id.ts';
 import { publicKeyField } from './keys.ts';
@@ -72,6 +73,8 @@ function manifestShape(url: UrlField, text: typeof plainText, contact: UrlField)
           .toLowerCase(),
         icon: iconField(url),
         surfaces: surfacesField(url),
+        // The scopes the app needs, all of which the publisher approves at install.
+        access: AppAccessSchema,
         // Where the signed manifest is served from: the app's one origin, which every path
         // in it resolves against. Ghost fetches it server-side and never loads it as a page.
         manifest_url: url(true).refine((address) => !hasFragment(address), FRAGMENT_PROBLEM),

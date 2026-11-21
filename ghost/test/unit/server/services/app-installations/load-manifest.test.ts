@@ -41,6 +41,7 @@ function manifest(overrides: Record<string, unknown> = {}) {
     accent_color: '#ff5500',
     icon: { name: 'audio-lines' },
     surfaces: [{ type: 'admin_page', url: '/admin' }],
+    access: {},
     manifest_url: MANIFEST_URL,
     identity_key: keys.identity.publicJwk,
     backend_key: keys.backend.publicJwk,
@@ -173,7 +174,8 @@ describe('createManifestLoader', function () {
       assert.deepEqual(loaded.manifest.surfaces, [
         { type: 'admin_page', url: 'https://podcast.example.com/admin' },
       ]);
-      assert.deepEqual(JSON.parse(loaded.serialised), loaded.manifest);
+      // Stored as the developer wrote it, with access grouped by resource.
+      assert.deepEqual(JSON.parse(loaded.serialised), { ...loaded.manifest, access: {} });
       assert.equal(loaded.identityKeyThumbprint, await thumbprintOf(keys.identity.publicJwk));
       assert.equal(loaded.backendKeyThumbprint, await thumbprintOf(keys.backend.publicJwk));
     });

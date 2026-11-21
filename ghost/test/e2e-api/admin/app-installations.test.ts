@@ -36,6 +36,7 @@ function manifest(overrides: Record<string, unknown> = {}): Record<string, unkno
     accent_color: '#ff5500',
     icon: { name: 'audio-lines' },
     surfaces: [{ type: 'admin_page', url: '/admin' }],
+    access: {},
     identity_key: keys.identity.publicJwk,
     backend_key: keys.backend.publicJwk,
     development: false,
@@ -204,7 +205,8 @@ describe('App installations Admin API', function () {
       const [stored] = await manifestRows();
       assert.equal(stored.installation_id, installation.id);
       assert.equal(stored.manifest_url, MANIFEST_URL);
-      assert.deepEqual(JSON.parse(stored.manifest), installation.manifest);
+      // Stored with access grouped by resource, as the developer wrote it.
+      assert.deepEqual(JSON.parse(stored.manifest), { ...installation.manifest, access: {} });
       assert.equal(stored.digest, installation.digest);
       assert.equal(Boolean(stored.requires_approval), false);
 
@@ -741,6 +743,39 @@ describe('App installations Admin API', function () {
       const row = await installationRow(installed.id);
       assert.equal(row.pending_manifest_id, null);
       assert.equal(row.revision, 2);
+    });
+
+    it('reviews and records access changes by meaning, in the preview and the history', async function () {
+      const POST_READ = { post: { scopes: [{ permission_key: 'post:read', backend: true }] } };
+      const installed = await install({ access: POST_READ });
+      const widened = manifest({
+        access: { post: { scopes: [{ permission_key: 'post:edit' }, ...POST_READ.post.scopes] } },
+      });
+      serve(widened);
+
+      const reviewed = await preview();
+
+      const added = [{ kind: 'access', scope: 'post:edit', change: 'added', backend: false }];
+      assert.deepEqual(reviewed.installation.changes, added);
+
+      serve(widened);
+      await approve(
+        installed.id,
+        MANIFEST_URL,
+        reviewed.digest,
+        200,
+        reviewed.installation.revision,
+      );
+      const { body } = await agent
+        .get(`apps/installations/${installed.id}/?include=history`)
+        .expectStatus(200);
+      assert.deepEqual(
+        body.app_installations[0].history.map((entry: any) => [entry.event, entry.changes]),
+        [
+          ['changes_approved', added],
+          ['installed', [{ kind: 'access', scope: 'post:read', change: 'added', backend: true }]],
+        ],
+      );
     });
 
     it('records what each manifest version changed in the history', async function () {

@@ -271,7 +271,10 @@ export class AppInstallationsRepository {
     return new Set(retired.map((row) => z.decode(BackendKeyRow, row).backend_key_thumbprint));
   }
 
-  /** An installation's manifest rows and staff actions, oldest first. */
+  /**
+   * An installation's manifest rows and staff actions, oldest first. Manifest rows that no
+   * longer decode are left out.
+   */
   async historyRows(
     id: string,
   ): Promise<{ manifests: HistoryManifest[]; actions: HistoryAction[] }> {
@@ -338,6 +341,7 @@ export class AppInstallationsRepository {
   async insert(
     loaded: LoadedManifest,
     iconDataUrl: string | null,
+    changes: ManifestChange[],
     { transacting }: { transacting: Knex.Transaction },
   ): Promise<Installation> {
     const { manifest } = loaded;
@@ -384,8 +388,7 @@ export class AppInstallationsRepository {
       icon_data_url: iconDataUrl,
       source: 'install',
       requires_approval: false,
-      // An install has no approved manifest to differ from.
-      changes: z.encode(StoredChanges, []),
+      changes: z.encode(StoredChanges, changes),
       created_at: now,
     });
     return z.decode(InstallationRow, written);
