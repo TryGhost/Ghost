@@ -29,6 +29,7 @@ import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { upgradeRoute } from '@tryghost/admin-x-framework/api/config';
 import { useHostLimits } from '@tryghost/admin-x-framework/hooks';
 import { useNavigate } from '@tryghost/admin-x-framework';
+import { type SoleNewsletterSubscribers } from '@/analytics/hooks/use-sole-newsletter-subscribers';
 import { navigateTo } from '@/utils/navigation';
 
 interface OverviewKPICardProps {
@@ -160,6 +161,10 @@ interface OverviewKPIsProps {
   growthChartRange: number;
   currencySymbol: string;
   isLoading: boolean;
+  /** The MRR request failed, so there's no figure to show: not the same as $0. */
+  isMrrError?: boolean;
+  /** Set only when the site has no revenue and sends a single newsletter; replaces MRR. */
+  subscribers?: SoleNewsletterSubscribers | null;
 }
 
 const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
@@ -173,6 +178,8 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
   growthChartRange,
   currencySymbol,
   isLoading,
+  isMrrError = false,
+  subscribers,
 }) => {
   const navigate = useNavigate();
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
@@ -194,11 +201,18 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
   // Calculate number of cards being displayed
   const showWebAnalytics = webAnalyticsEnabled;
   const showUpgradeCTA = isWebAnalyticsLimited && !showWebAnalytics;
+  const showSubscribers = !!subscribers;
   const showMembers = true; // Always shown
-  const showMRR = paidMembersEnabled;
+  const showMRR = paidMembersEnabled && !showSubscribers;
 
   // Determine number of columns to display, 1, 2, or 3
-  const cardCount = [showWebAnalytics, showUpgradeCTA, showMembers, showMRR].filter(Boolean).length;
+  const cardCount = [
+    showWebAnalytics,
+    showUpgradeCTA,
+    showSubscribers,
+    showMembers,
+    showMRR,
+  ].filter(Boolean).length;
   let cols = 'lg:grid-cols-3';
   if (cardCount === 2) {
     cols = 'lg:grid-cols-2';
@@ -261,6 +275,33 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
         </Card>
       )}
 
+      {subscribers && (
+        <OverviewKPICard
+          description="How the number of newsletter subscribers changed over time"
+          diffDirection={subscribers.diffDirection}
+          diffValue={subscribers.diffValue}
+          formattedValue={formatNumber(subscribers.total)}
+          iconName="Mail"
+          linkto="/analytics/newsletters/"
+          title="Newsletter subscribers"
+          trendingFromValue={subscribers.trendingFromValue}
+          onClick={() => {
+            navigate('/analytics/newsletters/?tab=total-subscribers');
+          }}
+        >
+          <GhAreaChart
+            className={areaChartClassName}
+            color="var(--chart-purple)"
+            data={subscribers.chartData}
+            id="subscribers"
+            range={subscribers.chartRange}
+            showHorizontalLines={true}
+            showYAxisValues={false}
+            syncId="overview-charts"
+          />
+        </OverviewKPICard>
+      )}
+
       {showMembers && (
         <OverviewKPICard
           description="How number of members of your publication changed over time"
@@ -291,9 +332,11 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
       {showMRR && (
         <OverviewKPICard
           description="Monthly recurring revenue changes over time"
-          diffDirection={growthTotals.directions.mrr}
-          diffValue={growthTotals.percentChanges.mrr}
-          formattedValue={`${currencySymbol}${formatNumber(centsToDollars(growthTotals.mrr))}`}
+          diffDirection={isMrrError ? 'empty' : growthTotals.directions.mrr}
+          diffValue={isMrrError ? '' : growthTotals.percentChanges.mrr}
+          formattedValue={
+            isMrrError ? '—' : `${currencySymbol}${formatNumber(centsToDollars(growthTotals.mrr))}`
+          }
           iconName="Coins"
           linkto="/analytics/growth/"
           title="MRR"
