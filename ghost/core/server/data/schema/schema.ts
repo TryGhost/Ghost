@@ -203,6 +203,13 @@ const schema = {
     canonical_url: { type: 'text', maxlength: 2000, nullable: true },
     newsletter_id: { type: 'string', maxlength: 24, nullable: true, references: 'newsletters.id' },
     show_title_and_feature_image: { type: 'boolean', nullable: false, defaultTo: true },
+    social_web_share: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      defaultTo: 'article',
+      validations: { isIn: [['article', 'note', 'none']] },
+    },
     '@@INDEXES@@': [['type', 'status', 'updated_at']],
     '@@UNIQUE_CONSTRAINTS@@': [['slug', 'type']],
   },
@@ -243,6 +250,7 @@ const schema = {
     },
     feature_image_caption: { type: 'text', maxlength: 65535, nullable: true },
     email_only: { type: 'boolean', nullable: false, defaultTo: false },
+    social_web_note: { type: 'string', maxlength: 2000, nullable: true },
   },
   // Every gift link added to a post; replaced tokens remain as history. Liveness lives in post_gift_links.
   gift_links: {
