@@ -287,7 +287,7 @@ const NotificationPostPreview: React.FC<NotificationPostPreviewProps> = ({ post,
         stripTags={['a']}
       />
       {hasAttachments && (
-        <div className="relative mt-2.5 aspect-square w-[calc(20%-6.4px)] min-w-[96px] overflow-hidden rounded-md [&_img]:absolute [&_img]:inset-0 [&_img]:mt-0 [&_img]:size-full [&_img]:max-h-none [&_img]:max-w-none [&_img]:object-cover [&>.attachment-gallery]:absolute [&>.attachment-gallery]:inset-0 [&>.attachment-gallery]:mt-0 [&>.attachment-gallery]:grid [&>.attachment-gallery]:size-full">
+        <div className="relative mt-2.5 aspect-square w-[calc(20%-6.4px)] min-w-[96px] overflow-hidden rounded-md [&_img]:absolute [&_img]:inset-0 [&_img]:mt-0 [&_img]:size-full [&_img]:max-h-none [&_img]:max-w-none [&_img]:object-cover [&_video]:pointer-events-none [&_video]:size-full [&_video]:rounded-none [&>.attachment-gallery]:absolute [&>.attachment-gallery]:inset-0 [&>.attachment-gallery]:mt-0 [&>.attachment-gallery]:grid [&>.attachment-gallery]:size-full [&>.attachment-video]:absolute [&>.attachment-video]:inset-0 [&>.attachment-video]:m-0">
           {renderFeedAttachment({ type: 'Note', attachment: attachments })}
           {shouldHideSensitiveMedia && (
             <SensitiveMediaOverlay
