@@ -53,6 +53,11 @@ module.exports.Router = (name, options) => {
   return router;
 };
 
+// Express 4 types static files with send's pinned mime@1.6.0, which predates
+// AVIF and serves it as application/octet-stream. Safari and Firefox won't
+// render an image with that type.
+express.static.mime.define({ 'image/avif': ['avif'] });
+
 module.exports.serveStatic = express.static;
 
 // Export the OG module for testing based on the internals
