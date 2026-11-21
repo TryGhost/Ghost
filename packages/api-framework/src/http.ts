@@ -3,6 +3,7 @@ import { parse as parseUrl } from 'node:url';
 import Frame from './frame.ts';
 import headers from './headers.ts';
 import type { Dictionary } from './frame.ts';
+import { isSchemaMethod } from './define-method.ts';
 import type { ControllerMethod } from './pipeline.ts';
 
 const debug = createDebug('http');
@@ -52,10 +53,7 @@ export type HttpHandler = (
  * @return {HttpHandler}
  */
 const http = (
-  apiImpl: Pick<
-    ControllerMethod,
-    'schema' | 'options' | 'data' | 'headers' | 'statusCode' | 'response'
-  > &
+  apiImpl: Pick<ControllerMethod, 'options' | 'data' | 'headers' | 'statusCode' | 'response'> &
     ((frame: Frame) => unknown),
 ): HttpHandler => {
   /**
@@ -115,7 +113,7 @@ const http = (
         options: apiImpl.options,
         data: apiImpl.data,
       },
-      { deferBodyClone: Boolean(apiImpl.schema) },
+      { deferBodyClone: isSchemaMethod(apiImpl) },
     );
 
     try {
