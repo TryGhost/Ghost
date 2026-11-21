@@ -2,24 +2,21 @@ import SpinningOrb from '@/settings/assets/videos/logo-loader.mp4';
 import SpinningOrbDark from '@/settings/assets/videos/logo-loader-dark.mp4';
 import { GlobalDataContext } from './global-data-context';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode } from 'react';
 import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
+
+// The videos' flat backgrounds never exactly match the page; fading the corners
+// hides the square while keeping the orb, which reaches ~98% of the frame's radius.
+const orbMask = 'radial-gradient(circle closest-side, black 98%, transparent 100%)';
+const orbStyle = { width: '100px', height: '100px', maskImage: orbMask, WebkitMaskImage: orbMask };
 
 const GlobalDataProvider = ({ children }: { children: ReactNode }) => {
   const settings = useBrowseSettings();
   const site = useBrowseSite();
   const config = useBrowseConfig();
   const currentUser = useCurrentUser();
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  // Check for dark mode on mount
-  useEffect(() => {
-    // Check if document has dark class (set by Ghost admin)
-    setIsDarkMode(document.documentElement.classList.contains('dark'));
-  }, []);
-
   const requests = [settings, site, config, currentUser];
 
   const error = requests.map((request) => request.error).find(Boolean);
@@ -31,7 +28,6 @@ const GlobalDataProvider = ({ children }: { children: ReactNode }) => {
   if (requests.some((request) => request.isLoading)) {
     return (
       <div
-        className="gh-loading-orb-container"
         style={{
           width: '100vw',
           height: '100vh',
@@ -42,20 +38,34 @@ const GlobalDataProvider = ({ children }: { children: ReactNode }) => {
         }}
       >
         <video
+          aria-hidden="true"
           autoPlay={true}
-          className="gh-loading-orb"
+          className="dark:hidden"
           height="100"
           preload="metadata"
-          style={{
-            width: '100px',
-            height: '100px',
-          }}
+          style={orbStyle}
+          tabIndex={-1}
           width="100"
           loop
           muted
           playsInline
         >
-          <source src={isDarkMode ? SpinningOrbDark : SpinningOrb} type="video/mp4" />
+          <source src={SpinningOrb} type="video/mp4" />
+        </video>
+        <video
+          aria-hidden="true"
+          autoPlay={true}
+          className="hidden dark:block"
+          height="100"
+          preload="metadata"
+          style={orbStyle}
+          tabIndex={-1}
+          width="100"
+          loop
+          muted
+          playsInline
+        >
+          <source src={SpinningOrbDark} type="video/mp4" />
         </video>
       </div>
     );
