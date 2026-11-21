@@ -133,6 +133,34 @@ export interface AutomationDetailResponseType {
   automations: AutomationDetail[];
 }
 
+const AutomationReferenceSchema = z.object({
+  id: z.string().min(1),
+  name: z.string(),
+  status: z.enum(['active', 'inactive', 'archived']),
+});
+
+export const AutomationReferencesResponseSchema = z.object({
+  automations: z.array(AutomationReferenceSchema),
+});
+
+const AutomationTriggerReferenceSchema = z
+  .object({
+    trigger_type: z.string().min(1),
+    label_id: z.string().min(1).nullish(),
+  })
+  .refine((rule) => rule.trigger_type !== 'label_added' || typeof rule.label_id === 'string', {
+    message: 'Label triggers require a label ID',
+    path: ['label_id'],
+  });
+
+export const AutomationTriggerReferencesResponseSchema = z.object({
+  automations: z.array(
+    AutomationReferenceSchema.extend({
+      trigger_rules: z.array(AutomationTriggerReferenceSchema),
+    }),
+  ),
+});
+
 export type AutomationEmailPreview = {
   html: string;
   plaintext: string;

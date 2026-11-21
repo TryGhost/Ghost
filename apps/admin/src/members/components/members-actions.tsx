@@ -329,10 +329,9 @@ const MembersActions: React.FC<MembersActionsProps> = ({
         onOpenChange={handleImportModalOpenChange}
       />
       <AddLabelModal
-        isLoading={isBulkEditing}
         memberCount={memberCount}
         open={showAddLabelModal}
-        onConfirm={(labelIds) => void handleAddLabel(labelIds)}
+        onConfirm={handleAddLabel}
         onOpenChange={setShowAddLabelModal}
       />
       <RemoveLabelModal
