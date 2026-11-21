@@ -1,5 +1,5 @@
 import type { FetchRequest } from './fetch.ts';
-import type { FetchResponse, PathMove, Place, StartContext, Theme } from './rules.ts';
+import type { FetchResponse, Layout, PathMove, Place, StartContext, Theme } from './rules.ts';
 
 /**
  * The calls each side of the channel exposes to the other. Every call returns a promise,
@@ -49,4 +49,6 @@ export interface AppExports {
    * of Admin's own links. The page follows without adding a history entry.
    */
   pathChanged(path: string): Promise<void>;
+  /** Admin laid out the page's frame differently, such as when its navigation pins or unpins. */
+  layoutChanged(layout: Layout): Promise<void>;
 }

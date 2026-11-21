@@ -84,6 +84,10 @@ const pageChromeClassName = [
  * spare is unaffected and narrower viewports get symmetric padding that keeps
  * it centred. Below the desktop breakpoint the mobile layout takes over.
  * An app page's footer drops the margin that evens it up beside a pinned nav.
+ * An app's page has no gutter of its own to rely on, so its safe area starts
+ * past the circle's footprint, where hovering opens the navigation, and ends
+ * as far from the other edge, so it's centred as the page is:
+ * `--page-safe-start` and `--page-safe-end`, from the scrollport's edges.
  */
 const compactPageChromeClassName = [
   '[--compact-page-padding:max(0px,calc(var(--floating-sidebar-footprint)_-_var(--page-gutter)))]',
@@ -91,6 +95,8 @@ const compactPageChromeClassName = [
   '[&_[data-app-footer]]:mr-0',
   '[--page-bleed-start:var(--compact-page-padding)]',
   '[--page-bleed-end:var(--compact-page-padding)]',
+  '[--page-safe-start:var(--floating-sidebar-footprint)]',
+  '[--page-safe-end:var(--floating-sidebar-footprint)]',
 ].join(' ');
 
 /*

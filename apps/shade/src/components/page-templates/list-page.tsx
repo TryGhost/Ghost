@@ -88,7 +88,7 @@ function ListPageHeader({ className, children, style, ...rest }: ListPageProps) 
       ref={headerRef}
       className={cn(
         '-mx-4 px-4 lg:-mx-5 lg:px-5',
-        'sticky top-0 z-50',
+        'sticky top-[var(--ghost-safe-area-inset-top,0px)] z-50',
         'bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md',
         'py-5',
         className,

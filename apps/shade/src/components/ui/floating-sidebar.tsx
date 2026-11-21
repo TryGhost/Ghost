@@ -93,6 +93,10 @@ const SHADOW_FLOAT = 'var(--shadow-glass-floating)';
 /** Pinned: only a 1px outline; the other layers fade out so the panel reads as anchored. */
 const SHADOW_PINNED = 'var(--shadow-glass-docked)';
 
+// On the sidebar's outer element while frames beside it mustn't take the pointer (see
+// `setFrameGuard`).
+const FRAME_GUARD_ATTRIBUTE = 'data-floating-sidebar-frame-guard';
+
 // Popups opened from the panel render in portals: the panel stays open under
 // them, and the hot zone ignores the pointer over them.
 const POPUP_TRIGGER_SELECTOR = '[aria-haspopup][aria-expanded=true]';
@@ -358,11 +362,20 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
     const [waitsForRest] = React.useState(armHoverOnRest);
     const waitingForRest = React.useRef(waitsForRest);
     const restTimer = React.useRef<number | undefined>(undefined);
+    // Over a frame on another site, such as an app's page, the pointer's events go to the frame's
+    // document alone: this one isn't told that the pointer left the capsule or the hot zone. So
+    // while it's over them, frames in the content beside the sidebar don't take the pointer, by a
+    // rule in Shade's styles, and its first move over one reaches this document, which then lets
+    // them have it again. Frames over the sidebar, such as a dialog's, take it as ever.
+    const setFrameGuard = React.useCallback((on: boolean) => {
+      wrapperRef.current?.parentElement?.toggleAttribute(FRAME_GUARD_ATTRIBUTE, on);
+    }, []);
     const updateHover = React.useCallback(
       (parts: Partial<Record<'capsule' | 'zone', boolean>>) => {
         const state = hover.current;
         Object.assign(state, parts);
         const any = state.capsule || state.zone;
+        setFrameGuard(any);
         if (waitingForRest.current) {
           return;
         }
@@ -380,7 +393,7 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
           scheduleClose();
         }
       },
-      [scheduleClose, show],
+      [scheduleClose, setFrameGuard, show],
     );
 
     // The hot zone tracks the pointer rather than covering the page, so the
@@ -396,6 +409,14 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       const onPointerMove = (event: PointerEvent) => {
         if (event.pointerType === 'touch') {
           return;
+        }
+        // Coming into this document, out of a frame such as an app's page or from beyond the
+        // window, the pointer was outside the capsule, though this document never saw it there.
+        if (
+          event.type === 'pointerover' &&
+          (event.relatedTarget === null || event.relatedTarget instanceof HTMLIFrameElement)
+        ) {
+          hoverArmed.current = true;
         }
         const target = event.target instanceof Element ? event.target : null;
         // Popups opened from the panel (in portals) keep the capsule's hover as it was
@@ -423,14 +444,19 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       };
       const onPointerLeave = () => updateHover({ capsule: false, zone: false });
       document.addEventListener('pointermove', onPointerMove);
+      // The pointer moving into a frame, such as an app's page, is over it, though its moves
+      // there go to the frame's own document.
+      document.addEventListener('pointerover', onPointerMove);
       document.documentElement.addEventListener('pointerleave', onPointerLeave);
       return () => {
         document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerover', onPointerMove);
         document.documentElement.removeEventListener('pointerleave', onPointerLeave);
         window.clearTimeout(restTimer.current);
         hover.current.zone = false;
+        setFrameGuard(false);
       };
-    }, [disabled, hotZone, show, updateHover]);
+    }, [disabled, hotZone, setFrameGuard, show, updateHover]);
 
     // Escape closes the floating panel, returning focus to the circle.
     const restoringFocus = React.useRef(false);

@@ -555,7 +555,7 @@ const PageHeader: PageHeaderComponent = Object.assign(
       <header
         className={cn(
           'flex flex-col',
-          sticky && 'sticky top-0 z-50',
+          sticky && 'sticky top-[var(--ghost-safe-area-inset-top,0px)] z-50',
           blurredBackground &&
             'bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md',
           className,

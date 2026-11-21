@@ -4,6 +4,7 @@ import {
   encodeBridgeError,
   type AppErrorCode,
   isContainedPath,
+  isLayout,
   isRecord,
   isStartContext,
   isTheme,
@@ -23,6 +24,7 @@ import {
 } from './errors.ts';
 import { toFetchRequest, toResponse } from './fetch.ts';
 import { currentRoute, watchHistory, type HistoryWatch } from './history.ts';
+import { applySafeArea } from './safe-area.ts';
 import { watchTitle } from './title.ts';
 import type {
   Ghost,
@@ -135,6 +137,7 @@ export class Channel {
         start: async (context) => this.#start(context),
         themeChanged: async (theme) => this.#themeChanged(theme),
         pathChanged: async (path) => this.#pathChanged(path),
+        layoutChanged: async (layout) => this.#layoutChanged(layout),
       },
     });
     port.addEventListener('close', () => this.end(sessionEnded()));
@@ -160,6 +163,8 @@ export class Channel {
       session: Object.freeze({ ...context.session }),
     };
     this.#theme = Object.freeze({ ...context.theme });
+    // Before the app starts, so its first paint already keeps clear of Admin's chrome.
+    applySafeArea(document.documentElement, context.layout.safeArea);
     // Admin owns the history from here on. The page's own address is its route: Admin loads a
     // new frame at its own path, so the two differ only when the page's server redirected it or
     // a form or link loaded another page in place, and then Admin follows the page.
@@ -188,6 +193,14 @@ export class Channel {
     }
     this.#theme = Object.freeze({ ...theme });
     notify(this.#themeListeners, this.#theme);
+  }
+
+  #layoutChanged(layout: unknown) {
+    this.#assertStarted();
+    if (!isLayout(layout)) {
+      throw refusal('invalid_argument', "Ghost sent a layout this SDK doesn't understand");
+    }
+    applySafeArea(document.documentElement, layout.safeArea);
   }
 
   #pathChanged(path: unknown) {
