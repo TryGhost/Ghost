@@ -57,7 +57,7 @@ type Totals = {
     total: DiffDirection;
     free: DiffDirection;
     paid: DiffDirection;
-    mrr: DiffDirection;
+    mrr: DiffDirection | 'hidden';
   };
 };
 
@@ -150,12 +150,21 @@ const PaidMembersTooltipContent = ({
 
 const GrowthKPIs: React.FC<{
   chartData: ChartDataItem[];
+  mrrChartData: ChartDataItem[];
   totals: Totals;
   initialTab?: string;
   currencySymbol: string;
   isLoading: boolean;
   onTabChange?: (tab: KpiTab) => void;
-}> = ({ chartData: allChartData, totals, initialTab, currencySymbol, isLoading, onTabChange }) => {
+}> = ({
+  chartData: memberChartData,
+  mrrChartData,
+  totals,
+  initialTab,
+  currencySymbol,
+  isLoading,
+  onTabChange,
+}) => {
   const validatedInitialTab = isValidTab(initialTab) ? initialTab : 'total-members';
   const [currentTab, setCurrentTab] = useState<KpiTab>(validatedInitialTab);
   const { range } = useAnalytics();
@@ -183,6 +192,7 @@ const GrowthKPIs: React.FC<{
   const { totalMembers, freeMembers, paidMembers, mrr, percentChanges, directions } = totals;
 
   // Create chart data based on selected tab
+  const allChartData = currentTab === 'mrr' ? mrrChartData : memberChartData;
   const { chartData, chartRange } = useMemo(() => {
     if (!allChartData || allChartData.length === 0) {
       return { chartData: [], chartRange: range };
@@ -416,29 +426,38 @@ const GrowthKPIs: React.FC<{
         </DropdownMenu>
       )}
       <div className="my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500">
-        <GhAreaChart
-          className={areaChartClassname}
-          color={tabConfig[currentTab].color}
-          data={chartData}
-          dataFormatter={
-            currentTab === 'mrr'
-              ? (value: number) => {
-                  return `${currencySymbol}${formatNumber(value)}`;
-                }
-              : formatNumber
-          }
-          id={currentTab}
-          range={chartRange}
-          tooltipContent={
-            currentTab === 'paid-members' ? (
-              <PaidMembersTooltipContent
-                color={tabConfig['paid-members'].color}
-                range={chartRange}
-                showBreakdown={true}
-              />
-            ) : undefined
-          }
-        />
+        {currentTab === 'mrr' && directions.mrr === 'hidden' ? (
+          <div
+            className={`${areaChartClassname} grid place-items-center px-4 text-center text-sm text-muted-foreground`}
+            role="status"
+          >
+            Update Ghost to see today’s MRR trend.
+          </div>
+        ) : (
+          <GhAreaChart
+            className={areaChartClassname}
+            color={tabConfig[currentTab].color}
+            data={chartData}
+            dataFormatter={
+              currentTab === 'mrr'
+                ? (value: number) => {
+                    return `${currencySymbol}${formatNumber(value)}`;
+                  }
+                : formatNumber
+            }
+            id={currentTab}
+            range={chartRange}
+            tooltipContent={
+              currentTab === 'paid-members' ? (
+                <PaidMembersTooltipContent
+                  color={tabConfig['paid-members'].color}
+                  range={chartRange}
+                  showBreakdown={true}
+                />
+              ) : undefined
+            }
+          />
+        )}
       </div>
     </Tabs>
   );
