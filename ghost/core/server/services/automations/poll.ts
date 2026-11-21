@@ -1,5 +1,9 @@
 import type { AutomationTriggerRuleDefinition } from './trigger-rules';
-import type { AutomationStepToRun, AutomationsRepository } from './automations-repository';
+import type {
+  AutomationStepTerminalStatus,
+  AutomationStepToRun,
+  AutomationsRepository,
+} from './automations-repository';
 import type { RecordEmailSentOptions } from './automations-repository-2';
 import { getMailgunMessageId } from '../../lib/mailgun/mailgun-message-id';
 import { getMailgunError } from '../../lib/mailgun/mailgun-error';
@@ -45,8 +49,12 @@ type MemberModel = {
 type PollOptions = {
   automationsApi: Pick<
     AutomationsRepository,
-    'fetchAndLockSteps' | 'finishStepAndEnqueueNext' | 'markStepTerminal' | 'retryStep'
+    'fetchAndLockSteps' | 'finishStepAndEnqueueNext' | 'retryStep'
   > & {
+    markStepTerminal: (
+      step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
+      status: AutomationStepTerminalStatus,
+    ) => Promise<boolean>;
     recordEmailSent: (options: RecordEmailSentOptions) => Promise<void>;
   };
   enqueueAnotherPollAt: (date: Readonly<Date>) => unknown;

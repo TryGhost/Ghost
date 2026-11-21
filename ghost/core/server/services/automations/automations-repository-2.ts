@@ -1,3 +1,4 @@
+import type { AutomationStepStatus, AutomationStepToRun } from './automations-repository';
 import type { AutomationTriggerRule } from './trigger-rules';
 import type { Promisable, ReadonlyDeep } from 'type-fest';
 import type { z } from 'zod';
@@ -67,6 +68,14 @@ export type EmailRecipientToInsert = {
   mailgun_message_id?: string;
   track_clicks: boolean;
   track_opens: boolean;
+};
+
+export type LockedRunStepUpdate = {
+  status: AutomationStepStatus;
+  started_at?: null;
+  finished_at?: Date | null;
+  ready_at?: Date;
+  updated_at: Date;
 };
 
 export type TrackEmailClickedOptions = ReadonlyDeep<{
@@ -217,6 +226,20 @@ export type AutomationsRepository2<Connection> = {
     automatedEmailRecipientId: string,
     events: ReadonlyDeep<Pick<AutomatedEmailRecipientTrackingData, 'deliveredAt' | 'openedAt'>>,
   ) => Promisable<void>;
+
+  /**
+   * Update a step that is still pending and locked by this runner, clearing
+   * its lock. Returns whether the step was updated.
+   *
+   * The guard stops a runner that lost its lock from changing the step. For
+   * example: runner A locks a step, the lock goes stale, runner B reclaims it,
+   * and then runner A finishes. Runner A must not update the step.
+   */
+  updateLockedRunStep: (
+    connection: Connection,
+    step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
+    changes: Readonly<LockedRunStepUpdate>,
+  ) => Promisable<boolean>;
 
   /** Run a function within a repository connection. */
   withConnection: <ReturnT>(fn: (connection: Connection) => ReturnT) => ReturnT;
