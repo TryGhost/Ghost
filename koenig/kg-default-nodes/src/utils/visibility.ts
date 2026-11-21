@@ -22,6 +22,13 @@ function isNullish(value: unknown) {
     return value === null || value === undefined;
 }
 
+function withoutNullish(obj: Record<string, unknown> | undefined) {
+    if (!obj || typeof obj !== 'object') {
+        return {};
+    }
+    return Object.fromEntries(Object.entries(obj).filter(([, value]) => !isNullish(value)));
+}
+
 // ensure we always work with a deep copy to avoid accidental ref mutations
 export function buildDefaultVisibility(): typeof DEFAULT_VISIBILITY {
     return JSON.parse(JSON.stringify(DEFAULT_VISIBILITY));
@@ -54,6 +61,30 @@ export function isVisibilityRestricted(visibility: Visibility) {
     return visibility.web?.nonMember === false
         || visibility.web?.memberSegment !== ALL_MEMBERS_SEGMENT
         || visibility.email?.memberSegment !== ALL_MEMBERS_SEGMENT;
+}
+
+interface SerializedNode {
+    visibility?: Visibility;
+    children?: SerializedNode[];
+    [key: string]: unknown;
+}
+
+/**
+ * Whether any card in a serialized Lexical document has restricted visibility.
+ * Accepts the stored JSON string or the parsed document.
+ */
+export function hasRestrictedCards(lexical: string | {root?: SerializedNode} | null | undefined): boolean {
+    if (!lexical) {
+        return false;
+    }
+
+    const document = typeof lexical === 'string' ? JSON.parse(lexical) : lexical;
+
+    const hasRestrictedNode = (nodes: unknown): boolean => Array.isArray(nodes) && nodes.some((node: SerializedNode) => (
+        (node?.visibility && isVisibilityRestricted(node.visibility)) || hasRestrictedNode(node?.children)
+    ));
+
+    return hasRestrictedNode(document?.root?.children);
 }
 
 // old formats...
@@ -98,7 +129,8 @@ export function migrateOldVisibilityFormat(visibility: Visibility) {
 
     // convert web visibility, old formats only had on/off for web visibility rather than specific segments
     if (isNullish(visibility.showOnWeb) && isNullish(visibility.emailOnly)) {
-        newVisibility.web = buildDefaultVisibility().web;
+        // no legacy web keys, so keep any supplied new-format values and default the rest
+        newVisibility.web = {...buildDefaultVisibility().web, ...withoutNullish(visibility.web)};
     } else if (!isNullish(visibility.emailOnly)) {
         newVisibility.web.nonMember = !visibility.emailOnly;
         newVisibility.web.memberSegment = visibility.emailOnly ? NO_MEMBERS_SEGMENT : ALL_MEMBERS_SEGMENT;
@@ -109,7 +141,7 @@ export function migrateOldVisibilityFormat(visibility: Visibility) {
 
     // convert email visibility, taking into account the old (and sometimes incorrect) segment formats
     if (isNullish(visibility.showOnEmail) && isNullish(visibility.emailOnly)) {
-        newVisibility.email = buildDefaultVisibility().email;
+        newVisibility.email = {...buildDefaultVisibility().email, ...withoutNullish(visibility.email)};
     } else if (visibility.showOnEmail === false) {
         newVisibility.email.memberSegment = NO_MEMBERS_SEGMENT;
     } else if (visibility.segment === 'status:-free+status:-paid') {

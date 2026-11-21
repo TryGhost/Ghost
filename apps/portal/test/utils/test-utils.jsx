@@ -4,6 +4,14 @@ import i18n from '@tryghost/i18n/registry/portal';
 import AppContext from '../../src/app-context';
 import { testSite, member } from '../../src/utils/fixtures';
 
+/**
+ * @typedef {Object.<string, unknown> & {
+ *   site?: object;
+ *   member?: (Partial<typeof member.free> & { metafields?: object }) | null;
+ *   offers?: unknown[];
+ * }} ContextOverrides
+ */
+
 const setupProvider = (context) => {
   const Provider = ({ children }) => {
     return <AppContext.Provider value={context}>{children}</AppContext.Provider>;

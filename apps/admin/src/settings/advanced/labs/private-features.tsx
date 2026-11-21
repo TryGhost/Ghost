@@ -114,6 +114,12 @@ const features: Feature[] = [
     flag: 'editorPresence',
   },
   {
+    title: 'Editor lease',
+    description:
+      'Let one editor tab at a time edit a post or page. Others open it read-only and can take over. Needs editor presence polling.',
+    flag: 'editorLease',
+  },
+  {
     title: 'Comments analytics',
     description: 'Show comment volume, top posts and top commenters beside the comments list.',
     flag: 'commentsAnalytics',

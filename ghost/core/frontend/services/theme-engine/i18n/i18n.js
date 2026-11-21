@@ -3,10 +3,8 @@ const logging = require('@tryghost/logging');
 const fs = require('fs-extra');
 const path = require('path');
 const MessageFormat = require('intl-messageformat');
-const isString = require('lodash/isString');
 const isObject = require('lodash/isObject');
 const isEqual = require('lodash/isEqual');
-const isNil = require('lodash/isNil');
 const merge = require('lodash/merge');
 const get = require('lodash/get');
 const { memoize } = require('../../../../shared/memoize');
@@ -152,13 +150,13 @@ class I18n {
     let matchingString;
 
     // no path? no string
-    if (!msgPath || msgPath.length === 0 || !isString(msgPath)) {
+    if (!msgPath || msgPath.length === 0 || typeof msgPath !== 'string') {
       this._handleEmptyKeyError();
       return '';
     }
 
     // If not in memory, load translations for core
-    if (isNil(this._strings)) {
+    if (this._strings === null || this._strings === undefined) {
       this._handleUninitialisedError(msgPath);
     }
 

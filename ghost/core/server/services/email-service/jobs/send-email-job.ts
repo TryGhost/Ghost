@@ -7,9 +7,15 @@ export default class SendEmailJob extends Job {
   static replayAfterRestart = false;
 
   readonly emailId: string;
+  // When the publisher asked for this send, as an ISO date. A replay keeps it
+  // and a retry is a new job, so it says how stale the content would be.
+  declare readonly requestedAt?: string;
 
-  constructor({ emailId }: { emailId: string }) {
+  constructor({ emailId, requestedAt }: { emailId: string; requestedAt?: string }) {
     super();
     this.emailId = emailId;
+    if (requestedAt !== undefined) {
+      this.requestedAt = requestedAt;
+    }
   }
 }

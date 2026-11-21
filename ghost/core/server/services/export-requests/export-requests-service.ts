@@ -99,12 +99,11 @@ export class ExportRequestsService {
       requestedByUserId,
     };
 
+    // Sent once, as each delivery can schedule an export: got never retries a
+    // POST, only the GET that may follow a 303.
     const requestOptions = buildSignedWebhookRequest({
       payload,
       secret: webhookSecret,
-      // No retries: the request is not idempotent (each delivery can
-      // schedule an export)
-      retryLimit: 0,
     });
 
     const sanitizedUrl = sanitizeWebhookUrl(webhookUrl);

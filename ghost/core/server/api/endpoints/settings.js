@@ -122,7 +122,7 @@ const controller = {
         limit: 0,
         filter: 'status:paid',
       });
-      if (_.get(paidMembers, 'meta.pagination.total') !== 0) {
+      if (paidMembers?.meta?.pagination?.total !== 0) {
         throw new BadRequestError({
           message: 'Cannot disconnect Stripe whilst you have active subscriptions.',
         });

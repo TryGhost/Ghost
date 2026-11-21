@@ -428,22 +428,8 @@ describe('Webhook Service', function () {
             'Content-Version': `v${ghostVersion.safe}`,
           },
           timeout: { request: 2000 },
-          retry: { limit: 0 },
         },
       ]);
-    });
-
-    it('asks for five retries outside the test environment', async function () {
-      hooks(webhookFor(WEBHOOK_TARGET_URL));
-      const environment = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'production';
-      try {
-        await deliveryTrigger.trigger(WEBHOOK_EVENT, {});
-      } finally {
-        process.env.NODE_ENV = environment;
-      }
-
-      assert.deepEqual(request.args[0][1].retry, { limit: 5 });
     });
 
     it('records the status and time of a delivery without waiting for the write', async function () {

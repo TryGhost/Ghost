@@ -5081,7 +5081,7 @@ services:
         sources:
           - core/server/api/endpoints/notifications.js
           - core/server/web/api/endpoints/admin/routes.js
-          - core/server/api/endpoints/utils/serializers/output/notifications.js
+          - core/server/api/endpoints/utils/serializers/output/notifications.ts
           - core/server/api/endpoints/mail.js
           - core/server/services/update-check/index.js
           - core/server/services/update-check/update-check-service.js
@@ -6869,11 +6869,11 @@ services:
         sources:
           - core/server/services/settings/settings-service.js
           - core/server/services/settings/settings-bread-service.js
-          - core/server/services/settings/settings-utils.js
+          - core/server/services/settings/settings-utils.ts
           - core/server/services/settings-helpers/index.js
           - core/server/models/settings.js
           - >-
-            core/server/data/migrations/versions/5.124/2025-06-06-23-12-11-create-site-uuid-setting.js
+            core/server/data/migrations/versions/5.124/2025-06-06-23-12-11-create-site-uuid-setting.ts
           - core/server/api/endpoints/settings.js
           - core/boot.js
     entryPoints:
@@ -6903,7 +6903,7 @@ services:
           - core/server/services/settings/index.js
           - core/server/services/settings/settings-service.js
           - core/server/services/settings/settings-bread-service.js
-          - core/server/services/settings/settings-utils.js
+          - core/server/services/settings/settings-utils.ts
         tests:
           - test/unit/server/services/settings/settings-bread-service.test.js
           - test/unit/server/services/settings/settings-service.test.js
@@ -6919,13 +6919,13 @@ services:
         sources:
           - core/server/services/settings/settings-service.js
           - core/server/services/settings/settings-bread-service.js
-          - core/server/services/settings/settings-utils.js
+          - core/server/services/settings/settings-utils.ts
           - core/server/api/endpoints/settings.js
           - core/server/api/endpoints/notifications.js
           - core/server/api/endpoints/index.js
           - core/server/services/recommendations/index.ts
           - core/server/models/settings.js
-          - core/server/data/migrations/versions/5.124/2025-06-06-23-12-11-create-site-uuid-setting.js
+          - core/server/data/migrations/versions/5.124/2025-06-06-23-12-11-create-site-uuid-setting.ts
         tests:
           - test/unit/server/services/settings/settings-bread-service.test.js
           - test/e2e-api/admin/settings.test.js
@@ -8039,7 +8039,7 @@ services:
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/services/tinybird/tinybird-service.js
           - core/server/api/endpoints/tinybird.js
-          - core/server/api/endpoints/utils/serializers/output/tinybird.js
+          - core/server/api/endpoints/utils/serializers/output/tinybird.ts
         tests:
           - test/unit/server/services/tinybird/tinybird-service.test.js
           - test/e2e-api/admin/tinybird.test.js
@@ -8078,7 +8078,7 @@ services:
         sources:
           - core/server/api/endpoints/tinybird.js
           - core/server/web/api/endpoints/admin/routes.js
-          - core/server/api/endpoints/utils/serializers/output/tinybird.js
+          - core/server/api/endpoints/utils/serializers/output/tinybird.ts
           - core/server/services/stats/index.ts
           - core/server/services/stats/utils/tinybird.ts
           - core/server/services/stats/posts-stats-service.js
@@ -9126,10 +9126,9 @@ services:
       resources:
         summary: >-
           Each send awaits shared HTTP infrastructure with a 30-second request timeout and
-          retry.limit zero in test environments or five elsewhere. The installed request/got
-          defaults exclude POST from normal retries, so that option alone does not establish
-          retry delivery. The request module owns a shared DNS cache/resolver and unref'd
-          housekeeping timers; this root owns no dedicated transport, timer or listener.
+          sets no retries; got never retries a POST. The request module owns a shared DNS
+          cache/resolver and unref'd housekeeping timers; this root owns no dedicated
+          transport, timer or listener.
           It exposes no abort, outstanding-request tracking or shutdown drain. Trigger event
           subscriptions and database work belong to its consumer. Existing tests intercept
           successful HTTP or inject a rejection; they do not exercise timeout/retry/drain.
@@ -9583,9 +9582,8 @@ services:
           members API are read during serialization. Every delivery reads stored target/secret,
           sends current Ghost Content-Version rather than stored api_version, and optionally
           signs JSON body plus timestamp with HMAC-SHA256. Request options ask for two seconds
-          and retry limit five outside tests, zero in tests; installed Got excludes POST from
-          retry methods, so the limit alone does not enable retries. Units assert transport,
-          exact request options and retry limits, body/headers and exact signature; root units
+          and set no retries; got never retries a POST. Units assert transport,
+          exact request options, body/headers and exact signature; root units
           assert each transport's user agent and the safe-version Content-Version on the wire;
           the integration suite shows @tryghost/request abandoning a target slower than two
           seconds and not retrying a POST outside tests. request-external's test-only init hook
@@ -9697,9 +9695,10 @@ followUps:
     lifecycle:
       - >-
         Establish pending-delivery and shared transport ownership before adding disposal.
-        Retry limit zero is asserted, but actual timeout, redirect and shutdown behavior is
-        not. The installed transport follows redirects; zero retries alone is not proof of
-        one outbound request or safe cancellation after a lost response.
+        A unit sends through the real request client and shows a failed delivery is not
+        retried; actual timeout, redirect and shutdown behavior is not asserted. The client
+        follows redirects, and one attempt is no proof of safe cancellation after a lost
+        response.
   gift-links:
     lifecycle:
       - >-

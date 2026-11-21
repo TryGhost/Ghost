@@ -9,7 +9,7 @@
  *             `files` set + a resolved production node_modules). The COPY layer
  *             that follows is extracted single-threaded, once per CI E2E shard,
  *             and that cost scales with file count rather than bytes.
- *   archive — scripts/pack.mjs, against the extracted package/ dir. No
+ *   archive — scripts/pack.mts, against the extracted package/ dir. No
  *             node_modules there (the consumer installs its own), so only the
  *             source rules apply.
  *
@@ -19,8 +19,8 @@
  *
  *   node scripts/prune.mts . --profile=image
  *
- * Run directly by node (type stripping, no build step) — `scripts/` is outside
- * the tsconfig `include`, so nothing compiles this.
+ * Run directly by node (type stripping, no build step). Typechecked, not
+ * compiled, through scripts/tsconfig.json.
  *
  * The exclusions below are load-bearing — each is something a naive version of
  * the rule deleted and broke. Keep them, and prefer `--dry-run` over reasoning

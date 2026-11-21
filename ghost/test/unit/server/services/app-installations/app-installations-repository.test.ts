@@ -102,6 +102,7 @@ describe('AppInstallationsRepository insert', function () {
       icon_data_url: ICON_DATA_URL,
       source: 'install',
       requires_approval: false,
+      changes: '[]',
       created_at: insert.mock.calls[0][0].created_at,
     });
     assert.equal(installed.icon_data_url, ICON_DATA_URL);
@@ -238,6 +239,7 @@ describe('AppInstallationsRepository retiredBackendKeysOf', function () {
       table.string('backend_key_thumbprint');
       table.text('icon_data_url');
       table.boolean('requires_approval');
+      table.text('changes');
       table.dateTime('created_at');
     });
     // Only the columns the lookup reads, so not a row the table's type would accept.
@@ -270,6 +272,7 @@ describe('AppInstallationsRepository retiredBackendKeysOf', function () {
     icon_data_url: null,
     source: 'update' as const,
     requires_approval: false,
+    changes: '[]',
     created_at: createdAt,
   });
 

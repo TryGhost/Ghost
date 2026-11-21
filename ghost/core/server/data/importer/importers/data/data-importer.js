@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const ObjectId = require('bson-objectid').default;
 const semver = require('semver');
 const { IncorrectUsageError, DataImportError } = require('@tryghost/errors');
@@ -128,19 +127,19 @@ const DataImporter = {
     return models.Base.transaction(async function (transacting) {
       modelOptions.transacting = transacting;
 
-      _.each(importers, function (importer) {
+      Object.values(importers).forEach(function (importer) {
         ops.push(async function doModelImport() {
           await importer.fetchExisting(modelOptions, importOptions);
           await importer.beforeImport(modelOptions, importOptions);
 
           if (importer.options.requiredImportedData.length) {
-            _.each(importer.options.requiredImportedData, (key) => {
+            importer.options.requiredImportedData.forEach((key) => {
               importer.requiredImportedData[key] = importers[key].importedData;
             });
           }
 
           if (importer.options.requiredExistingData.length) {
-            _.each(importer.options.requiredExistingData, (key) => {
+            importer.options.requiredExistingData.forEach((key) => {
               importer.requiredExistingData[key] = importers[key].existingData;
             });
           }
@@ -171,11 +170,11 @@ const DataImporter = {
         const importedProducts = importers.products.importedData;
         const productOps = [];
 
-        _.forEach(importedProducts, (importedProduct) => {
-          return _.forEach(['monthly_price_id', 'yearly_price_id'], (field) => {
-            const mappedPrice = _.find(importedStripePrices, {
-              originalId: importedProduct[field],
-            });
+        importedProducts.forEach((importedProduct) => {
+          ['monthly_price_id', 'yearly_price_id'].forEach((field) => {
+            const mappedPrice = importedStripePrices.find(
+              (price) => price.originalId === importedProduct[field],
+            );
             if (mappedPrice) {
               productOps.push(() => {
                 return models.Product.edit(

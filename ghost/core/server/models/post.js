@@ -268,11 +268,10 @@ Post = ghostBookshelf.Model.extend(
       const keys = ghostBookshelf.Model.prototype.orderAttributes.apply(this, arguments);
 
       // extend ordered keys with post_meta keys
-      const postsMetaKeys = _.without(
-        ghostBookshelf.model('PostsMeta').prototype.orderAttributes(),
-        'posts_meta.id',
-        'posts_meta.post_id',
-      );
+      const postsMetaKeys = ghostBookshelf
+        .model('PostsMeta')
+        .prototype.orderAttributes()
+        .filter((key) => key !== 'posts_meta.id' && key !== 'posts_meta.post_id');
 
       return [...keys, ...postsMetaKeys];
     },
@@ -305,11 +304,10 @@ Post = ghostBookshelf.Model.extend(
     },
 
     filterExpansions: function filterExpansions() {
-      const postsMetaKeys = _.without(
-        ghostBookshelf.model('PostsMeta').prototype.orderAttributes(),
-        'posts_meta.id',
-        'posts_meta.post_id',
-      );
+      const postsMetaKeys = ghostBookshelf
+        .model('PostsMeta')
+        .prototype.orderAttributes()
+        .filter((key) => key !== 'posts_meta.id' && key !== 'posts_meta.post_id');
 
       const expansions = [
         {
@@ -662,7 +660,7 @@ Post = ghostBookshelf.Model.extend(
       }
 
       // CASE: detect lowercase/uppercase tag slugs
-      if (!_.isUndefined(this.get('tags')) && !_.isNull(this.get('tags'))) {
+      if (this.get('tags') !== undefined && this.get('tags') !== null) {
         tagsToSave = [];
 
         //  and deduplicate upper/lowercase tags
@@ -694,10 +692,10 @@ Post = ghostBookshelf.Model.extend(
        * CASE: Attach id to update existing posts_meta entry for a post
        * CASE: Don't create new posts_meta entry if post meta is empty
        */
-      if (!_.isUndefined(this.get('posts_meta')) && !_.isNull(this.get('posts_meta'))) {
+      if (this.get('posts_meta') !== undefined && this.get('posts_meta') !== null) {
         const postsMetaData = this.get('posts_meta');
         const relatedModelId = model.related('posts_meta').get('id');
-        const hasNoData = !_.values(postsMetaData).some((x) => !!x);
+        const hasNoData = !Object.values(postsMetaData).some((x) => !!x);
         if (relatedModelId && !_.isEmpty(postsMetaData)) {
           postsMetaData.id = relatedModelId;
           this.set('posts_meta', postsMetaData);
@@ -815,7 +813,7 @@ Post = ghostBookshelf.Model.extend(
       // disabling sanitization until we can implement a better version
       if (!options.importing) {
         title = this.get('title') || tpl(messages.untitled);
-        this.set('title', _.toString(title).trim());
+        this.set('title', String(title).trim());
       }
 
       // ### Business logic for published_at and published_by
@@ -889,7 +887,7 @@ Post = ghostBookshelf.Model.extend(
       // NOTE: this is a stopgap solution for email-only posts where their status is unchanged after publish
       //       but the usual publis/send newsletter flow continues
       const hasEmailOnlyFlag =
-        _.get(attrs, 'posts_meta.email_only') || model.related('posts_meta').get('email_only');
+        attrs?.posts_meta?.email_only || model.related('posts_meta').get('email_only');
 
       // Require newsletter reference for scheduled email-only posts
       if (
@@ -1160,7 +1158,7 @@ Post = ghostBookshelf.Model.extend(
       const formatsToKeep = options.formats || defaultFormats;
 
       // Iterate over all known formats, and if they are not in the keep list, remove them
-      _.each(Post.allowedFormats, function (format) {
+      Post.allowedFormats.forEach(function (format) {
         if (formatsToKeep.indexOf(format) === -1) {
           delete attrs[format];
         }
@@ -1232,7 +1230,7 @@ Post = ghostBookshelf.Model.extend(
 
       // CASE: "status" is passed, combine filters
       if (options.status && options.status !== 'all') {
-        options.status = _.includes(ALL_STATUSES, options.status) ? options.status : 'published';
+        options.status = ALL_STATUSES.includes(options.status) ? options.status : 'published';
 
         if (!filter) {
           filter = `status:${options.status}`;
@@ -1354,11 +1352,10 @@ Post = ghostBookshelf.Model.extend(
         !options.columns ||
         (options.columns &&
           _.intersection(
-            _.without(
-              ghostBookshelf.model('PostsMeta').prototype.permittedAttributes(),
-              'id',
-              'post_id',
-            ),
+            ghostBookshelf
+              .model('PostsMeta')
+              .prototype.permittedAttributes()
+              .filter((key) => key !== 'id' && key !== 'post_id'),
             options.columns,
           ).length)
       ) {

@@ -22,7 +22,7 @@ import type { PendingSave, SaveError, SaveEngineState } from '@/editor/engine/sa
 import { EDITOR_CONFIRM_DIALOG_LAYER } from '@/editor/layering';
 import { ErrorLine } from '@/editor/publish/components/failure-banner';
 import { reportShownAlert } from '@/editor/report-error';
-import { POST_DELETED, terminalSaveError } from './error-mapping';
+import { POST_DELETED, bannerSaveError, terminalSaveError } from './error-mapping';
 import type { ReloadOutcome } from './use-editor-session';
 
 const CONFLICT =
@@ -201,10 +201,7 @@ export function SessionBanners({
   onReload,
 }: SessionBannersProps) {
   const halt = terminalSaveError(state);
-  const conflict =
-    state.kind === 'conflict'
-      ? state.error
-      : (halt ?? (pendingSave?.blockedBy?.kind === 'conflict' ? pendingSave.blockedBy : null));
+  const conflict = bannerSaveError(state, pendingSave);
   if (conflict) {
     return (
       <ConflictBanner

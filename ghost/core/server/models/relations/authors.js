@@ -70,7 +70,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
       },
 
       onFetchedCollection: function (collection, attrs, options) {
-        _.each(collection.models, (model) => {
+        collection.models.forEach((model) => {
           model._originalOptions = collection._originalOptions;
         });
 
@@ -367,7 +367,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
 
         // If we passed in an id instead of a model, get the model
         // then check the permissions
-        if (_.isNumber(postModelOrId) || _.isString(postModelOrId)) {
+        if (typeof postModelOrId === 'number' || typeof postModelOrId === 'string') {
           // Grab the original args without the first one
           origArgs = _.toArray(arguments).slice(1);
 

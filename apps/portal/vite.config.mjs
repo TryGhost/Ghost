@@ -23,7 +23,7 @@ export default publicAppViteConfig({
       dedupe: ['@tryghost/debug'],
     },
     test: {
-      setupFiles: './test/setup-tests.js',
+      setupFiles: './test/setup-tests.ts',
       coverage: {
         reporter: ['cobertura', 'text-summary', 'html'],
       },

@@ -3,7 +3,8 @@ const testUtils = require('../../utils');
 const db = require('../../../core/server/data/db');
 const commands = require('../../../core/server/data/schema/commands');
 const views = require('../../../core/server/data/schema/views');
-const repairMigration = require('../../../core/server/data/migrations/versions/6.50/2026-06-30-09-00-00-set-members-resolved-subscription-view-security-invoker');
+const repairMigration =
+  require('../../../core/server/data/migrations/versions/6.50/2026-06-30-09-00-00-set-members-resolved-subscription-view-security-invoker').default;
 
 async function securityType(viewName) {
   const [rows] = await db.knex.raw(

@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const errors = require('@tryghost/errors');
 const BaseImporter = require('./base');
 const models = require('../../../../models');
 const debug = require('@tryghost/debug')('importer:products');
@@ -11,6 +12,13 @@ class ProductsImporter extends BaseImporter {
       requiredFromFile: ['stripe_prices'],
       requiredExistingData: ['stripe_prices', 'products'],
     });
+
+    if (!Array.isArray(this.dataToImport)) {
+      throw new errors.IncorrectUsageError({
+        message: 'Wrong importer structure. `products` must be an array.',
+        help: 'https://docs.ghost.org/migration/custom/',
+      });
+    }
   }
 
   fetchExisting(modelOptions) {
@@ -64,8 +72,8 @@ class ProductsImporter extends BaseImporter {
     // the stripe price either needs to exist in the current db,
     // or be imported as part of the same import
     const invalidProducts = [];
-    _.each(['monthly_price_id', 'yearly_price_id'], (field) => {
-      _.each(this.dataToImport, (objectInFile) => {
+    ['monthly_price_id', 'yearly_price_id'].forEach((field) => {
+      this.dataToImport.forEach((objectInFile) => {
         const importedObject = _.find(this.requiredFromFile.stripe_prices, {
           id: objectInFile[field],
         });
@@ -91,7 +99,7 @@ class ProductsImporter extends BaseImporter {
   preventDuplicates() {
     debug('preventDuplicates');
     const duplicateProducts = [];
-    _.each(this.dataToImport, (objectInFile) => {
+    this.dataToImport.forEach((objectInFile) => {
       const existingObject = _.find(this.requiredExistingData.products, {
         name: objectInFile.name,
         slug: objectInFile.slug,
@@ -115,7 +123,7 @@ class ProductsImporter extends BaseImporter {
 
   preventInvalidFree() {
     const invalidFreeProducts = [];
-    _.each(this.dataToImport, (product) => {
+    this.dataToImport.forEach((product) => {
       // A free product must not have any pricing data (otherwise it wouldn't be free, duh!)
       if (
         product.type === 'free' &&
