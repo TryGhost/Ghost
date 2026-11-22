@@ -10,11 +10,6 @@ const serviceImplementations = {
   pathNot: `^${servicesRoot}/[^/]+/index\\.(?:js|ts)$`,
 };
 
-// The service checks apply to the services directory only, so a defineService
-// root anywhere else gets none of them. Each root listed here is a reviewed
-// exception until the checks can follow a service to another home.
-const serviceRootsElsewhere = ['^ghost/core/server/auth/better-auth/index\\.ts$'];
-
 // Explicit code-library and contract allowances, not application instances.
 // Keep each package or file named individually and explain additions here.
 const serviceDependencyAllowlist = [
@@ -448,15 +443,11 @@ module.exports = {
     {
       name: 'service-roots-in-services',
       comment:
-        'A defineService root belongs in server/services/<name>/index.ts, where the service checks apply. A root elsewhere needs a reviewed entry in serviceRootsElsewhere.',
+        'A defineService root belongs in server/services/<name>/index.ts, where the service checks apply.',
       severity: 'error',
       from: {
         path: '^ghost/core/',
-        pathNot: [
-          `^${servicesRoot}/[^/]+/index\\.ts$`,
-          '^ghost/core/kernel/',
-          ...serviceRootsElsewhere,
-        ],
+        pathNot: [`^${servicesRoot}/[^/]+/index\\.ts$`, '^ghost/core/kernel/'],
       },
       to: {
         path: '^ghost/core/kernel/define-service\\.ts$',

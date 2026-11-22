@@ -81,7 +81,7 @@ export default function getStripeConnectState(): StripeConnectState {
     const betterAuth = require('./index').default;
 
     stripeConnectState = createStripeConnectState({
-      getContext: () => betterAuth.service.$context,
+      getContext: () => betterAuth.instance.$context,
     });
   }
   return stripeConnectState;

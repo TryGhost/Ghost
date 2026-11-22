@@ -24,7 +24,7 @@ function getBetterAuthSession(): BetterAuthSession {
     const { createSessionController } = require('../../auth/better-auth/session-controller');
 
     betterAuthSession = createSessionController({
-      getAuth: () => auth.betterAuth.service.api,
+      getAuth: () => auth.betterAuth.instance.api,
       getOriginOfRequest: auth.session.getOriginOfRequest,
       getAdminOrigin: () => urlUtils.getAdminOrigin(),
       resetUserLogin: (req: Request) => spamPrevention.userLogin().resetRequest(req),

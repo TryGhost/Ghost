@@ -165,7 +165,7 @@ async function initCore({ ghostServer, config }) {
   // Better Auth itself.
   if (require('./server/auth').isBetterAuth) {
     debug('Begin: Better Auth');
-    await require('./server/auth').betterAuth.init();
+    await require('./server/auth').betterAuth.start();
     debug('End: Better Auth');
   }
 

@@ -75,8 +75,8 @@ describe('Better Auth boot', function () {
 
     const app = await boot();
 
-    assert.throws(() => auth.betterAuth.service, {
-      message: 'Better Auth used before init(). Call init() from boot first.',
+    assert.throws(() => auth.betterAuth.instance, {
+      message: 'Better Auth used before start(). Boot starts it under auth:engine better-auth.',
     });
     await assertPasswordInCredentialRow(app, 'changed-under-legacy-1');
   });
@@ -88,7 +88,7 @@ describe('Better Auth boot', function () {
 
     await boot();
 
-    const instance: GhostAuth = auth.betterAuth.service;
+    const instance: GhostAuth = auth.betterAuth.instance;
     const context = await instance.$context;
     assert.equal(
       context.baseURL,

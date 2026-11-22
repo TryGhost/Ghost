@@ -10,7 +10,10 @@ for the design.
 `auth:engine` is `legacy` (default) or `better-auth`. Under `legacy` boot never
 loads Better Auth, but its tables are there and the legacy engine keeps
 passwords in `user_accounts` (see [Passwords](#passwords)). Under
-`better-auth` boot builds the instance after settings.
+`better-auth` boot starts it after settings: `index.ts` exports `start()`,
+which builds the instance and waits for Better Auth's own setup so that a bad
+setup fails boot, and `instance`, which its readers take synchronously and
+which throws before a successful start. It is not a `defineService` root.
 
 Better Auth needs MySQL. On SQLite the config schema
 ([`shared/config/schema.ts`](../../../shared/config/schema.ts)) turns
