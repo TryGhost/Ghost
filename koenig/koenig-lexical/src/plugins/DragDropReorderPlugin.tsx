@@ -240,14 +240,15 @@ function useDragDropReorder(editor) {
     }, [editor]);
 
     // Disable drag-drop-reorder when editing a card, and in a read-only document.
-    // The plugin stays mounted there: it is what stops the browser's own drags
+    // The plugin stays mounted there: it is what stops the browser's own drags.
+    // Run again with the container, which is made anew, enabled, whenever `koenig` changes
     React.useEffect(() => {
         if (isEditingCard || !isEditable) {
             cardContainer.current?.disableDrag();
         } else {
             cardContainer.current?.enableDrag();
         }
-    }, [isEditingCard, isEditable]);
+    }, [isEditingCard, isEditable, koenig]);
 
     // a drag under way when the document goes read-only is abandoned, not dropped
     React.useEffect(() => {

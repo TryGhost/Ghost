@@ -59,3 +59,20 @@ export function useEditModeAfterReadOnly(isEditing: boolean, ...editors: Lexical
         });
     }, [topLevel]);
 }
+
+// state in a card that only a later mousedown would close, such as an open
+// picker or name field, or it would be back once the editor is editable again
+export function useResetWhenReadOnly(reset: () => void): void {
+    const isEditable = useIsDocumentEditable();
+    const latest = React.useRef(reset);
+
+    React.useLayoutEffect(() => {
+        latest.current = reset;
+    });
+
+    React.useEffect(() => {
+        if (!isEditable) {
+            latest.current();
+        }
+    }, [isEditable]);
+}

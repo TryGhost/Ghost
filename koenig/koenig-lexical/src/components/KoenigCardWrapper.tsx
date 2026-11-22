@@ -44,15 +44,20 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     }, []);
 
     // a control that had focus keeps it, so its keys and the clicks they make are refused, rendered
-    // or not yet. Shortcuts and Tab stay with the browser: text can be copied, focus can leave
+    // or not yet. Shortcuts pass untouched, for the browser and the app, and Tab still moves focus
     const refuseInput = React.useCallback((event) => {
         if (isDocumentEditable(editor) || !event.currentTarget.contains(event.target)) {
             return;
         }
 
+        const isShortcut = event.ctrlKey || event.metaKey || ['Shift', 'Control', 'Alt', 'Meta'].includes(event.key);
+        if (event.type !== 'click' && isShortcut) {
+            return;
+        }
+
         event.stopPropagation();
 
-        if (event.type === 'click' || !(event.ctrlKey || event.metaKey || event.key === 'Tab')) {
+        if (event.key !== 'Tab') {
             event.preventDefault();
         }
     }, [editor]);

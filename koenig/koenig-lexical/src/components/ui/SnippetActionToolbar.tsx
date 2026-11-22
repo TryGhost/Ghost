@@ -4,23 +4,16 @@ import {$createNodeSelection, $getSelection} from 'lexical';
 import {$generateJSONFromSelectedNodes} from '@lexical/clipboard';
 import {SELECT_CARD_COMMAND} from '../../plugins/KoenigBehaviourPlugin.jsx';
 import {SnippetInput} from './SnippetInput';
-import {useIsDocumentEditable} from '../../hooks/useIsDocumentEditable';
 import {useKoenigSelectedCardContext} from '../../context/KoenigSelectedCardContext.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import {useResetWhenReadOnly} from '../../hooks/useIsDocumentEditable';
 
 export function SnippetActionToolbar({onClose, ...props}) {
     const {cardConfig: {snippets, createSnippet}, darkMode} = React.useContext(KoenigComposerContext);
     const [editor] = useLexicalComposerContext();
     const {selectedCardKey} = useKoenigSelectedCardContext();
     const [value, setValue] = React.useState('');
-    const isEditable = useIsDocumentEditable();
-
-    // or it would be back on a card that is no longer selected once the document is editable again
-    React.useEffect(() => {
-        if (!isEditable) {
-            onClose?.();
-        }
-    }, [isEditable, onClose]);
+    useResetWhenReadOnly(() => onClose?.());
 
     const handleChange = (event) => {
         setValue(event.target.value);

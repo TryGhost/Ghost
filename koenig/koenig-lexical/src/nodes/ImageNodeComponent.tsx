@@ -21,10 +21,12 @@ import {isCardWidth} from '@tryghost/kg-default-nodes';
 import {isGif} from '../utils/isGif';
 import {openFileSelection} from '../utils/openFileSelection';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+import {useResetWhenReadOnly} from '../hooks/useIsDocumentEditable';
 
 export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionEditor, captionEditorInitialState, triggerFileDialog, previewSrc, href}) {
     const [editor] = useLexicalComposerContext();
     const [showLink, setShowLink] = React.useState(false);
+    useResetWhenReadOnly(() => setShowLink(false));
     const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
     const {isSelected, cardWidth, setCardWidth} = React.useContext(CardContext);
     const fileInputRef = React.useRef();

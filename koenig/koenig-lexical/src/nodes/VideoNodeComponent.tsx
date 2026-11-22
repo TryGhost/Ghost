@@ -12,7 +12,7 @@ import {VideoThumbnailPicker} from '../components/ui/VideoThumbnailPicker';
 import {getImageDimensions} from '../utils/getImageDimensions';
 import {isCardWidth} from '@tryghost/kg-default-nodes';
 import {openFileSelection} from '../utils/openFileSelection';
-import {useIsDocumentEditable} from '../hooks/useIsDocumentEditable';
+import {useIsDocumentEditable, useResetWhenReadOnly} from '../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function VideoNodeComponent({
@@ -45,6 +45,7 @@ export function VideoNodeComponent({
     const [showSnippetToolbar, setShowSnippetToolbar] = useState(false);
     const [isPickingThumbnail, setPickingThumbnail] = useState(false);
     const isEditable = useIsDocumentEditable();
+    useResetWhenReadOnly(() => setPickingThumbnail(false));
 
     const videoMimeTypes = fileUploader.fileTypes.video?.mimeTypes || ['video/*'];
 

@@ -68,8 +68,8 @@ does in the editor changes it:
   document, which is also kept from the browser so a dropped link or file is
   not opened
 - placing the cursor rewrites nothing. The text shortcuts for dashes, dividers
-  and the paywall, and the tidying of an unfinished link search, wait until the
-  editor is editable again
+  and the paywall, and the tidying of an unfinished link search, wait for the
+  next change once the editor is editable again
 - the format and link toolbars, the plus and slash card menus, and the emoji,
   link search, Unsplash, GIF and video thumbnail pickers are not rendered,
   including one that was open when the flag went off. The image editor is a
@@ -80,9 +80,12 @@ does in the editor changes it:
   the document
 - a card takes no pointer input and no new focus, and a control in it that
   already had focus gets no keys or clicks, so its own buttons, links, inputs
-  and media controls do nothing. Shortcuts and Tab are left to the browser, so
-  text can be copied and focus can leave the card. A card's text is still part
-  of a selection drawn across it, of find-in-page and of the accessibility tree
+  and media controls do nothing. Shortcuts with Ctrl or Cmd pass untouched to
+  the browser and the app, and Tab still moves focus, so text can be copied and
+  focus can leave the card. A card's text is still part of a selection drawn
+  across it, of find-in-page and of the accessibility tree
+- a picker, link field or name field a card had open is closed for good, not
+  shown again when the editor is editable
 
 The flag does not cover:
 

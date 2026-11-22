@@ -197,8 +197,20 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
                 return;
             }
 
-            // a selection change is an update too, and a read-only document keeps its unfinished search
+            // a selection change is an update too. A read-only document keeps its unfinished
+            // search, and only stops offering results for one the cursor has left
             if (!isDocumentEditable(editor)) {
+                const isInSearch = editor.getEditorState().read(() => {
+                    const selection = $getSelection();
+                    const anchorNode = $isRangeSelection(selection) && selection.anchor.getNode();
+                    return !!anchorNode && ($isAtLinkNode(anchorNode) || $isAtLinkNode(anchorNode.getParent()));
+                });
+
+                if (!isInSearch) {
+                    setFocusedAtLinkNode(null);
+                    setQuery('');
+                }
+
                 return;
             }
 

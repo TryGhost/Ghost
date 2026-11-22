@@ -8,7 +8,7 @@ import {EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {sanitizeHtml} from '../utils/sanitize-html';
-import {useEditModeAfterReadOnly} from '../hooks/useIsDocumentEditable';
+import {useEditModeAfterReadOnly, useResetWhenReadOnly} from '../hooks/useIsDocumentEditable';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialState, backgroundColor, calloutEmoji}) {
@@ -17,6 +17,7 @@ export function CalloutNodeComponent({nodeKey, textEditor, textEditorInitialStat
     const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const [showEmojiPicker, setShowEmojiPicker] = React.useState(false);
+    useResetWhenReadOnly(() => setShowEmojiPicker(false));
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
     const [emoji, setEmoji] = React.useState(calloutEmoji);
     const [hasEmoji, setHasEmoji] = React.useState(calloutEmoji ? true : false);

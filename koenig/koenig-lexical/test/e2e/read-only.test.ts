@@ -336,6 +336,19 @@ test.describe('Read-only and back', () => {
         await expect(card.locator('[data-lexical-editor][contenteditable="true"]')).toHaveCount(0);
     });
 
+    test('does not bring an image card’s link field back once editable again', async ({page}) => {
+        await initialize({page, uri: withContent([imageCard(), paragraph('After')])});
+        await page.locator('[data-kg-card="image"] img').click();
+        await page.locator('[data-kg-card-toolbar="image"] [aria-label="Link"]').click();
+        await expect(page.getByTestId('link-input')).toBeVisible();
+
+        await setEditableAndRender(page, false);
+        await setEditableAndRender(page, true);
+        await page.waitForTimeout(300);
+
+        await expect(page.getByTestId('link-input')).toHaveCount(0);
+    });
+
     test('does not bring a card’s snippet name field back once editable again', async ({page}) => {
         await initialize({page, uri: withContent([imageCard(), paragraph('After')])});
         await page.locator('[data-kg-card="image"] img').click();
@@ -470,6 +483,8 @@ test.describe('Read-only document', () => {
     test('closes the link search results that were open, so nothing is picked from them', async ({page}) => {
         await initialize({page});
         await focusEditor(page);
+        await page.keyboard.type('First paragraph');
+        await page.keyboard.press('Enter');
         await page.keyboard.type('@');
         await expect(page.getByTestId('at-link-popup').locator('li[role="option"]').first()).toBeVisible();
         const before = await documentJson(page);
@@ -482,6 +497,11 @@ test.describe('Read-only document', () => {
         await page.locator('[data-lexical-editor]').first().locator('> p').first().click();
         await page.waitForTimeout(300);
         expect(await documentJson(page)).toBe(before);
+
+        // and the results are not offered again for a search the cursor has left
+        await setEditableAndRender(page, true);
+        await page.waitForTimeout(300);
+        await expect(page.getByTestId('at-link-popup')).toHaveCount(0);
     });
 
     test('closes an image selector that was open, and keeps its card', async ({page}) => {
@@ -527,7 +547,13 @@ test.describe('Read-only document', () => {
 
         await dragMouse(page, await card.boundingBox(), await page.locator('p:not(figure p)').boundingBox(), 'start', 'start', true, 100, 100);
         await page.waitForTimeout(300);
+        expect(await documentJson(page)).toBe(before);
 
+        // the app renders the editor again, which makes its drag container anew
+        await page.getByTestId('post-title').fill('A title');
+        await page.waitForTimeout(300);
+        await dragMouse(page, await card.boundingBox(), await page.locator('p:not(figure p)').boundingBox(), 'start', 'start', true, 100, 100);
+        await page.waitForTimeout(300);
         expect(await documentJson(page)).toBe(before);
     });
 
@@ -573,13 +599,22 @@ test.describe('Read-only document', () => {
         await button.focus();
         await expect(button).toBeFocused();
         await setEditableAndRender(page, false);
+        await expect(button).toBeFocused();
         const before = await documentJson(page);
 
         await page.keyboard.press('Enter');
         await page.keyboard.press('Space');
         await page.waitForTimeout(300);
-
         expect(await documentJson(page)).toBe(before);
+
+        // a click that is not the pointer's, as assistive technology makes
+        await button.evaluate(element => element.click());
+        await page.waitForTimeout(300);
+        expect(await documentJson(page)).toBe(before);
+
+        // Tab is left to the browser, so focus is not held in the card
+        await page.keyboard.press('Tab');
+        await expect(button).not.toBeFocused();
     });
 
     test('does not select again, once editable, a card that was selected when it went read-only', async ({page}) => {
