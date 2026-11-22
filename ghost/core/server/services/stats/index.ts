@@ -1,4 +1,4 @@
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '#kernel/define-service';
 
 type StatsAggregate = {
   // The stats services are JavaScript outside the TypeScript build, so their

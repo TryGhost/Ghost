@@ -1,6 +1,6 @@
 import { lastPeriodStart } from '@tryghost/limit-service';
 import config from '../../../shared/config';
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '#kernel/define-service';
 import { Invites } from './invites';
 import InvitationLimiter from './invitation-limiter';
 

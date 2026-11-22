@@ -1,4 +1,4 @@
-import type { AdapterConfig } from './types';
+import type { AdapterConfig } from './types.ts';
 
 export interface ResolvedAdapterOptions {
   /** The class to load, or undefined when the type has no adapter configured. */
@@ -27,7 +27,8 @@ function isInlineFeature(value: unknown): value is { adapter: string; [key: stri
  * feature-specific selection (`type:feature`).
  */
 export function resolveAdapterOptions(name: string, config: AdapterConfig): ResolvedAdapterOptions {
-  const [type, feature] = name.split(':');
+  // split() always returns a first part.
+  const [type, feature] = name.split(':') as [string, string?];
   const settings = config[type];
 
   const featureAdapter = feature ? settings?.[feature] : undefined;

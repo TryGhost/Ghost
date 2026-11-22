@@ -1,13 +1,13 @@
 import errors from '@tryghost/errors';
-import { loadAdapterClass } from './loader';
-import { getConfiguredFeatures, resolveAdapterOptions } from './options';
+import { loadAdapterClass } from './loader.ts';
+import { getConfiguredFeatures, resolveAdapterOptions } from './options.ts';
 import type {
   Adapter,
   AdapterConfig,
   AdapterConstructor,
   AdapterName,
   ResolvedAdapter,
-} from './types';
+} from './types.ts';
 
 /**
  * A map from an adapter type name (e.g. "storage") to the base class every
@@ -128,7 +128,8 @@ export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
     }
 
     const { Adapter, adapterConfig, adapterType, adapterClassName } = this.loadAdapter(name);
-    const adapterCache = this.instanceCache[adapterType];
+    // loadAdapter() has checked the type is registered, and every registered type has a cache.
+    const adapterCache = (this.instanceCache[adapterType] ??= {});
 
     // @NOTE: example cache key value 'email:newsletters:custom-newsletter-adapter'
     const adapterCacheKey = `${name}:${adapterClassName}`;
@@ -142,7 +143,7 @@ export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
     const adapter = new AdapterClass(adapterConfig);
 
     const BaseClass = this.baseClasses[adapterType];
-    if (!(adapter instanceof BaseClass)) {
+    if (BaseClass && !(adapter instanceof BaseClass)) {
       if (Object.getPrototypeOf(Adapter).name !== BaseClass.name) {
         throw new errors.IncorrectUsageError({
           message: `${adapterType} adapter ${adapterClassName} does not inherit from the base class.`,
@@ -157,7 +158,7 @@ export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
     }
 
     for (const requiredFn of adapter.requiredFns) {
-      if (typeof (adapter as any)[requiredFn] !== 'function') {
+      if (typeof (adapter as unknown as Record<string, unknown>)[requiredFn] !== 'function') {
         throw new errors.IncorrectUsageError({
           message: `${adapterType} adapter ${adapterClassName} is missing the ${requiredFn} method.`,
         });
@@ -186,7 +187,8 @@ export class AdapterManager<BaseClasses extends BaseClassMap = BaseClassMap> {
     // overrides) are reflected, matching the original JS implementation.
     const { adapterClassName, adapterConfig } = resolveAdapterOptions(name, this.getConfig());
 
-    const [adapterType] = name.split(':');
+    // split() always returns a first part.
+    const [adapterType] = name.split(':') as [string, ...string[]];
 
     if (!this.baseClasses[adapterType]) {
       throw new errors.NotFoundError({

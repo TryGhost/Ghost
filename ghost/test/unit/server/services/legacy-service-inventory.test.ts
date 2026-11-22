@@ -106,14 +106,31 @@ const inventorySchema = z
   })
   .strict();
 
+// The framework packages sit beside the ghost package, so evidence in them is written as
+// ../tbd/....
+const frameworkRoot = path.resolve(coreRoot, '../tbd');
+
 function assertFileWithin(root: string, relativePath: string) {
   const resolved = path.resolve(root, relativePath);
-  const relative = path.relative(root, resolved);
+  const within = (directory: string) => {
+    const relative = path.relative(directory, resolved);
+    return !relative.startsWith('..') && relative !== '';
+  };
   assert.ok(
-    !path.isAbsolute(relativePath) && !relative.startsWith('..') && relative !== '',
-    `Evidence must be inside ${root}: ${relativePath}`,
+    !path.isAbsolute(relativePath) && (within(root) || within(frameworkRoot)),
+    `Evidence must be inside ${root} or the framework packages: ${relativePath}`,
   );
   assert.ok(statSync(resolved).isFile(), `Expected a file: ${relativePath}`);
+}
+
+// A test is in Ghost's test folder, or in a framework package's own.
+function assertTestFile(test: string) {
+  if (/^\.\.\/tbd\/[^/]+\/test\//.test(test)) {
+    assertFileWithin(coreRoot, test);
+    return;
+  }
+  assert.ok(test.startsWith('test/'), `Expected a test path: ${test}`);
+  assertFileWithin(path.join(coreRoot, 'test'), test.slice('test/'.length));
 }
 
 // Extract catalogue names only. Oxlint separately enforces the root's source shape.
@@ -262,8 +279,7 @@ describe('legacy service inventory', function () {
           assertFileWithin(coreRoot, source);
         }
         for (const test of bug.tests ?? []) {
-          assert.ok(test.startsWith('test/'), `Expected a test path: ${test}`);
-          assertFileWithin(path.join(coreRoot, 'test'), test.slice('test/'.length));
+          assertTestFile(test);
         }
       }
     }
@@ -346,8 +362,7 @@ describe('legacy service inventory', function () {
           assertFileWithin(coreRoot, source);
         }
         for (const test of contract.tests) {
-          assert.ok(test.startsWith('test/'), `Expected a test path: ${test}`);
-          assertFileWithin(path.join(coreRoot, 'test'), test.slice('test/'.length));
+          assertTestFile(test);
         }
       }
 

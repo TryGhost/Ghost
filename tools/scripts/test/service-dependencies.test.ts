@@ -120,8 +120,8 @@ function fixture(t: TestContext, files: Record<string, string>) {
       mkdirSync(path.dirname(path.join(root, destination)), { recursive: true });
       symlinkSync(path.join(root, source), path.join(root, destination));
     },
-    graph(input = services): ICruiseResult {
-      const result = run('json', input);
+    graph(input = services, more: string[] = []): ICruiseResult {
+      const result = run('json', input, more);
       assert.equal(result.status, 0, result.stderr);
       const graph: ICruiseResult = JSON.parse(result.stdout);
       assert.ok(graph.modules.length > 0, 'The fixture must actually be analyzed');
@@ -346,7 +346,7 @@ it('matches external packages across stores without merging subpaths or workspac
 
 it('continues enforcing non-service boundaries in the same scan', (t) => {
   const f = fixture(t, {
-    'ghost/core/kernel/forbidden.ts': "import '../shared/config';",
+    'tbd/kernel/src/forbidden.ts': "import '../../../ghost/core/shared/config';",
   });
   const result = f.lint();
   assert.equal(result.status, 1, result.stderr);
@@ -354,9 +354,9 @@ it('continues enforcing non-service boundaries in the same scan', (t) => {
 });
 
 it('rejects a defineService root outside the services directory', (t) => {
-  const helper = 'ghost/core/kernel/define-service.ts';
+  const helper = 'tbd/kernel/src/define-service.ts';
   const use = (depth: number) =>
-    `import { defineService } from '${'../'.repeat(depth)}kernel/define-service'; export default defineService;`;
+    `import { defineService } from '${'../'.repeat(depth + 2)}tbd/kernel/src/define-service'; export default defineService;`;
   const outside = 'ghost/core/server/lib/capability/index.ts';
   const nested = `${alpha}/nested/index.ts`;
   const f = fixture(t, {
@@ -364,7 +364,7 @@ it('rejects a defineService root outside the services directory', (t) => {
     [`${alpha}/index.ts`]: use(3),
     // Types say nothing about where an instance is built.
     'ghost/core/server/web/consumer.ts':
-      "import type { defineService } from '../../kernel/define-service'; export type Root = typeof defineService;",
+      "import type { defineService } from '../../../../tbd/kernel/src/define-service'; export type Root = typeof defineService;",
   });
   const allowed = f.lint();
   assert.equal(allowed.status, 0, allowed.stderr);
@@ -394,7 +394,7 @@ it('allows same-service code, explicit types, approved libraries and root wiring
     'ghost/core/server/lib/db-types/date.ts': 'export const date = true;',
     'ghost/core/server/lib/db-types/boolean.ts': 'export const boolean = true;',
     'ghost/core/server/lib/db-types/json.ts': 'export const json = true;',
-    'ghost/core/kernel/clock.ts': 'export const getUnixTime = () => 0; export const moment = {};',
+    'tbd/kernel/src/clock.ts': 'export const getUnixTime = () => 0; export const moment = {};',
     'ghost/core/server/lib/public-jwk.ts': 'export const key = true;',
     [`${services}/jobs-service/job.ts`]: 'export class Job {}',
     [`${alpha}/implementation.ts`]: `
@@ -404,7 +404,7 @@ it('allows same-service code, explicit types, approved libraries and root wiring
       import 'node:crypto'; import 'util'; import 'bson-objectid';
       import '../../lib/db-types/date'; import '../../lib/db-types/boolean'; import '../../lib/db-types/json';
       import '../../lib/public-jwk'; import '../jobs-service/job';
-      import {getUnixTime, moment} from '../../../kernel/clock';
+      import {getUnixTime, moment} from '../../../../../tbd/kernel/src/clock';
     `,
   });
   for (const name of [
@@ -470,14 +470,16 @@ it('sees type-only imports and leaves them out of the runtime dependency rules',
 });
 
 it('applies a rule that does not exclude types to type-only imports', (t) => {
-  const kernel = 'ghost/core/kernel/primitive.ts';
+  const kernel = 'tbd/kernel/src/primitive.ts';
   const f = fixture(t, {
-    [kernel]: "import type { Config } from '../shared/config'; export type A = Config;",
+    [kernel]:
+      "import type { Config } from '../../../ghost/core/shared/config'; export type A = Config;",
     'ghost/core/shared/typed.ts':
       "import type { Model } from '../server/models/model'; export type B = Model;",
     'ghost/core/server/models/model.ts': 'export interface Model {}',
   });
-  const graph = f.graph('ghost/core');
+  // The kernel is outside Core, so the scan is given both, as the lint command gives it.
+  const graph = f.graph('ghost/core', ['tbd']);
   assert.ok(labels(graph, kernel, config)?.includes('type-only'));
   assert.deepEqual(violations(graph), [
     ['kernel-not-application', kernel, config],
@@ -1438,7 +1440,7 @@ it('rejects outside dependencies, own roots and unresolved imports without folde
     'package.ts': "import '@tryghost/errors-extra';",
     'security-package.ts': "import '@tryghost/security-extra';",
     'shared.ts': "import '../../lib/db-types/other';",
-    'kernel.ts': "import '../../../kernel/clock-extra';",
+    'kernel.ts': "import '../../../../../tbd/kernel/src/clock-extra';",
   };
   const f = fixture(t, {
     ...Object.fromEntries(
@@ -1450,7 +1452,7 @@ it('rejects outside dependencies, own roots and unresolved imports without folde
     [`${alpha}/implementation.ts`]: "import './test/helper';",
     [`${services}/alpha-extra/helper.ts`]: 'export {};',
     'ghost/core/server/lib/db-types/other.ts': 'export {};',
-    'ghost/core/kernel/clock-extra.ts': 'export {};',
+    'tbd/kernel/src/clock-extra.ts': 'export {};',
     'node_modules/@tryghost/errors-extra/package.json': '{"main":"index.js"}',
     'node_modules/@tryghost/errors-extra/index.js': 'module.exports = {};',
     'node_modules/@tryghost/security-extra/package.json': '{"main":"index.js"}',

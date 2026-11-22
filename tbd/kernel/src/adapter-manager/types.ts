@@ -13,6 +13,8 @@ export interface Adapter {
  * assertion signature (`asserts config is XOptions`) on its own static.
  */
 export type AdapterConstructor<T extends Adapter = Adapter> = (abstract new (
+  // Each adapter declares its own constructor arguments.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ...args: any[]
 ) => T) & {
   validate?(config?: object): void;

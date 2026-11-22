@@ -24,7 +24,7 @@ function templates(name: string) {
     .map((part) => part[0]!.toUpperCase() + part.slice(1))
     .join('')}Service`;
   return {
-    [`${SERVICES}/${name}/index.ts`]: `import { defineService } from '../../../kernel/define-service';
+    [`${SERVICES}/${name}/index.ts`]: `import { defineService } from '#kernel/define-service';
 import { ${className} } from './${name}-service';
 
 // Boot must initialize this root after any dependencies added below.
@@ -50,7 +50,7 @@ export default defineService('${className}', () => {
     [`${SERVICES}/${name}/${name}-service.ts`]: `import type { GhostLogger } from '@tryghost/logging';
 
 // Import allowlisted libraries directly here; inject application instances from index.ts.
-// For example: import { getUnixTime } from '../../../kernel/clock';
+// For example: import { getUnixTime } from '#kernel/clock';
 interface ${className}Deps {
   logging: GhostLogger;
 }

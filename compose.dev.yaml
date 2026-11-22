@@ -92,6 +92,7 @@ services:
       # verify-deps-before-run=false is set below as belt-and-suspenders in
       # case a future pnpm widens that check back to the whole workspace.
       - ./ghost:/home/ghost/ghost
+      - ./tbd:/home/ghost/tbd
       - ./koenig:/home/ghost/koenig
       - ./configs:/home/ghost/configs
       - ./packages:/home/ghost/packages

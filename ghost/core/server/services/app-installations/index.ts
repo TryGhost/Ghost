@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '#kernel/define-service';
 import config from '../../../shared/config';
 import urlUtils from '../../../shared/url-utils';
 import { ActionLog } from '../../lib/action-log/action-log';

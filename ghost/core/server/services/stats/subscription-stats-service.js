@@ -1,4 +1,4 @@
-const { moment } = require('../../../kernel/clock');
+const { moment } = require('#kernel/clock');
 
 class SubscriptionStatsService {
   /**

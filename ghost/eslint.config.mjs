@@ -88,7 +88,6 @@ export default tseslint.config(
   {
     files: [
       'core/server/**/*.js',
-      'core/kernel/**/*.js',
       'core/shared/**/*.js',
       'core/frontend/**/*.js',
       'core/*.js',

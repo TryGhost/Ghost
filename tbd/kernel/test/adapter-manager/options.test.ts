@@ -1,8 +1,6 @@
 import assert from 'node:assert/strict';
-import {
-  getConfiguredFeatures,
-  resolveAdapterOptions,
-} from '../../../../core/kernel/adapter-manager';
+import { describe, it } from 'vitest';
+import { getConfiguredFeatures, resolveAdapterOptions } from '../../src/adapter-manager/index.ts';
 
 describe('Adapter Manager: options', function () {
   describe('resolveAdapterOptions', function () {

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { afterEach, beforeEach, describe, it } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -7,8 +8,8 @@ import {
   AdapterManager,
   type AdapterManagerOptions,
   resolveAdapterEntryPoint,
-} from '../../../../core/kernel/adapter-manager';
-import type { Adapter, AdapterConfig } from '../../../../core/kernel/adapter-manager';
+} from '../../src/adapter-manager/index.ts';
+import type { Adapter, AdapterConfig } from '../../src/adapter-manager/index.ts';
 
 class BaseMailAdapter implements Adapter {
   readonly requiredFns: string[];

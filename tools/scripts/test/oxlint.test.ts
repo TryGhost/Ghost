@@ -474,10 +474,10 @@ test('reports direct allowlisted bindings and members passed to local service co
     "import tpl from '@tryghost/tpl';",
     "import {z as schema} from 'zod';",
     "import * as crypto from 'node:crypto';",
-    "import {getUnixTime as now} from '../../../kernel/clock.js';",
+    "import {getUnixTime as now} from '#kernel/clock';",
     "const errors = require('@tryghost/errors');",
     "const {promisify: promise} = require('node:util');",
-    "const legacy = require('../../../kernel/clock').moment;",
+    "const legacy = require('#kernel/clock').moment;",
     "const {OtherService} = require('./other-service');",
     'new Service({tpl});',
     'new Service(schema);',
@@ -527,7 +527,7 @@ test('allows local library use, computed values, injected application dependenci
     import OtherService from '../other/service';
     import errors from '@tryghost/errors';
     import {z} from 'zod';
-    import {getUnixTime} from '../../../kernel/clock';
+    import {getUnixTime} from '#kernel/clock';
     import tpl from '@tryghost/tpl';
     import logging from '@tryghost/logging';
     const schema = z.object({url: z.string()});
@@ -590,7 +590,7 @@ test('shares the dependency-cruiser allowlist, including exact local files and p
     import boolean from '../../lib/db-types/boolean';
     import json from '../../lib/db-types/json';
     import lookalike from '@tryghost/errors-extra';
-    import clock from '../../../kernel/clock-extra';
+    import clock from '#kernel/clock-extra';
     import os from 'node:os';
     new Service({errors, manifest, contracts, otherContract, objectId, boolean, json, lookalike, clock, os});
   `;
@@ -702,11 +702,11 @@ test('handles TypeScript require imports and literal dynamic imports', () => {
     `
     import Service = require('./service');
     import tpl = require('@tryghost/tpl');
-    const {getUnixTime} = await import('../../../kernel/clock');
+    const {getUnixTime} = await import('#kernel/clock');
     const {OtherService} = await import('./other-service');
     new Service({tpl});
     new OtherService({getUnixTime});
-    new Service({clock: await import('../../../kernel/clock')});
+    new Service({clock: await import('#kernel/clock')});
   `,
     serviceRoot,
   );

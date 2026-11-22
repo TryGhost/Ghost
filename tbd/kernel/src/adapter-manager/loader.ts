@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import errors from '@tryghost/errors';
-import type { AdapterConstructor } from './types';
+import type { AdapterConstructor } from './types.ts';
 
 /**
  * Whether `filePath` resolves to a location inside `directory`.
@@ -163,7 +163,7 @@ export function loadAdapterClass(
       // Catch missing dependencies BUT NOT missing adapter.
       // Only check the first line — Node appends a "Require stack"
       // that includes the adapter's own path, which would false-positive.
-      const firstLine = err.message.split('\n')[0];
+      const firstLine = err.message.split('\n')[0] ?? '';
       if (!firstLine.includes(pathToAdapter)) {
         // Name the unresolved module so the error is actionable, e.g.
         // "Cannot find module 'superagent'" -> 'superagent'.

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import type { RouteSettings } from '@tryghost/adapter-base-route-settings';
 import defaults from '../../../../../core/shared/config/defaults.json';
-import { resolveAdapterOptions } from '../../../../../core/kernel/adapter-manager';
+import { resolveAdapterOptions } from '#kernel/adapter-manager';
 import { normalizeAdapterConfig } from '../../../../../core/server/services/adapter-manager/config';
 
 // the adapter-manager is required via its `.default` export (so its methods stay

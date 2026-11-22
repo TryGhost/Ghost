@@ -190,6 +190,8 @@ jobs:
               - *shared
               - '!.github/CODEOWNERS'
               - 'ghost/**'
+              # The framework packages Ghost runs on: runtime dependencies of ghost.
+              - 'tbd/**'
               - '!ghost/core/server/data/tinybird/**'
               # Unit tests + vitest config are exercised only by job_unit-tests;
               # they never affect the acceptance / legacy / ghost-cli jobs.

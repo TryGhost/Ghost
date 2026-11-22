@@ -1,13 +1,7 @@
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { z } from 'zod';
-import {
-  addDays,
-  daysBetween,
-  localDateOf,
-  resolveTimeZone,
-  startOfLocalDay,
-} from '../../../kernel/clock';
+import { addDays, daysBetween, localDateOf, resolveTimeZone, startOfLocalDay } from '#kernel/clock';
 
 export type CommentsInterval = 'day' | 'week' | 'month';
 

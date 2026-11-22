@@ -1,4 +1,4 @@
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '#kernel/define-service';
 import { isRecommendationUrl, PATH_SUFFIX } from './recommendation-url';
 import type {
   IncomingRecommendationController,

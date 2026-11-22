@@ -94,7 +94,7 @@ Some libraries are allowed only in one form:
 
 - **Lodash:** import individual functions, such as `lodash/pick`. The whole
   `lodash` package is not allowed. Plain JavaScript is often simpler.
-- **Dates and times:** use the [kernel clock](../../ghost/core/kernel/clock.ts).
+- **Dates and times:** use the [kernel clock](../../tbd/kernel/src/clock.ts).
   Do not import Moment, Moment Timezone, Luxon or any other date library
   elsewhere. The clock's deprecated `moment` export keeps existing date logic
   working while it moves.

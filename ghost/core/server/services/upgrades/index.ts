@@ -1,5 +1,5 @@
 import logging from '@tryghost/logging';
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '#kernel/define-service';
 import adapterManager from '../adapter-manager';
 import { UpgradeService } from './upgrade-service';
 

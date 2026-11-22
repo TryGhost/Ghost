@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { IncorrectUsageError } from '@tryghost/errors';
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '#kernel/define-service';
 import { createStaffEmailTemplateFiles } from './email-template-files';
 
 const TEMPLATE_DIRECTORY = path.join(__dirname, 'email-templates');

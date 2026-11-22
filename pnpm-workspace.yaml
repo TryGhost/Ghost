@@ -1,5 +1,6 @@
 packages:
   - 'ghost'
+  - 'tbd/*'
   - 'apps/*'
   - 'e2e'
   - 'koenig/*'

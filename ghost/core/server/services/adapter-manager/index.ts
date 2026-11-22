@@ -1,4 +1,4 @@
-import { AdapterManager } from '../../../kernel/adapter-manager';
+import { AdapterManager } from '#kernel/adapter-manager';
 import { adapterPaths } from './adapter-paths';
 import { baseClasses } from './base-classes';
 import { normalizeAdapterConfig } from './config';

@@ -1,5 +1,5 @@
 import logging from '@tryghost/logging';
-import { defineService } from '../../../kernel/define-service';
+import { defineService } from '#kernel/define-service';
 import schema from '../../data/schema/schema';
 import { ActionLog } from '../../lib/action-log/action-log';
 import { recordSegmentChanges } from '../../lib/action-log/segments';

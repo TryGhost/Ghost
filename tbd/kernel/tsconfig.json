@@ -1,0 +1,9 @@
+{
+  "extends": "@internal/cfg-typescript/esm.json",
+  "compilerOptions": {
+    "target": "es2024",
+    "rootDir": "src",
+    "outDir": "build"
+  },
+  "include": ["src/**/*"]
+}

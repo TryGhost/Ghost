@@ -46,6 +46,7 @@ COPY patches patches
 # which is the signal to add that dir here.)
 COPY --parents \
     ghost/package.json \
+    tbd/*/package.json \
     koenig/*/package.json \
     tools/configs/*/package.json \
     packages/**/package.json \

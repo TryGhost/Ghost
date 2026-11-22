@@ -3,19 +3,20 @@
 The kernel contains application-independent framework primitives. It has no
 knowledge of Ghost's features, domain models, business rules or configuration.
 
-This directory is a temporary home for `defineService`. Its location may change;
-the contract below is the one migrated services rely on.
+It is a workspace package, `@tryghost/kernel`, under the placeholder folder
+`tbd/`. Ghost imports it as `#kernel/<module>`, a Node subpath import declared in
+`ghost/package.json`. Its tests are in [`test/`](test/) and run on their own.
 
 Application code depends on the kernel; the kernel does not depend on application
 code. Kernel modules may use one another and general-purpose dependencies, but
-must not import from elsewhere in the Ghost package, including `shared`.
+must not import from the Ghost package.
 
 Helpers specific to a feature stay with that feature. Shared use alone does not
 make a helper part of the kernel.
 
 ## Clock
 
-[`clock.ts`](clock.ts) exposes `getUnixTime()` for the current time in whole
+[`clock.ts`](src/clock.ts) exposes `getUnixTime()` for the current time in whole
 seconds. Services may import it directly. Its deprecated `moment` export keeps
 existing Moment Timezone operations available while services migrate; callers
 can change their import without rewriting date logic. It shares the existing
@@ -29,13 +30,13 @@ rules, so a day whose midnight is skipped starts at the transition.
 
 ## Adapter manager
 
-[`adapter-manager/`](adapter-manager/index.ts) loads, validates and caches
+[`adapter-manager/`](src/adapter-manager/index.ts) loads, validates and caches
 adapter instances by type. It knows nothing about which adapters exist, where
 they are installed or how they are configured: the application constructs
 `AdapterManager` with its base-class registry, search paths, module loader and
-a `getConfig` callback returning the [adapter configuration](adapter-manager/types.ts)
+a `getConfig` callback returning the [adapter configuration](src/adapter-manager/types.ts)
 keyed by type. Ghost's registry, search paths and configuration normalization
-live in [`server/services/adapter-manager`](../server/services/adapter-manager/index.ts),
+live in [`server/services/adapter-manager`](../../ghost/core/server/services/adapter-manager/index.ts),
 which exports the configured instance; `bin/validate-adapters.ts` shares the
 same loader and registry so a build-time check resolves adapters exactly as the
 server does.
@@ -61,13 +62,13 @@ server does.
   constructs afresh. It is not disposal: adapters own their resources, and
   consumers that retained an instance keep it.
 
-[`loadAdapterClass`](adapter-manager/loader.ts) and
-[`resolveAdapterOptions`](adapter-manager/options.ts) are exported for callers
+[`loadAdapterClass`](src/adapter-manager/loader.ts) and
+[`resolveAdapterOptions`](src/adapter-manager/options.ts) are exported for callers
 that need resolution without a manager, such as the validation CLI.
 
 ## Service initialization
 
-[`defineService(name, create)`](define-service.ts) gives a service root `init()`,
+[`defineService(name, create)`](src/define-service.ts) gives a service root `init()`,
 `stop()` and a `.service` getter. `name` identifies the service in the error raised
 when it is used before initialization. The `create` callback runs when `init()` is
 called, not when the service root is declared.
@@ -142,7 +143,7 @@ still starts the service.
 for example by registering `root.stop()` as a server cleanup task. Hooks run with
 no deadline of their own. A root without hooks has a `stop()` that does nothing.
 
-See the [service-author example](../server/services/README.md#initialization)
+See the [service-author example](../../ghost/core/server/services/README.md#initialization)
 for IndexNow's hooks and their tests. Background job registration remains with its
 existing owners; `defineService` does not provide that hook.
 
@@ -160,5 +161,5 @@ root exposes only `init`, `stop` and `service`. The helper never invokes extras 
 them lifecycle meaning. They do not change readiness, initialization retries or
 resource ownership; each caller must respect the extra's documented timing.
 
-This is a temporary migration interface. The [services guide](../server/services/README.md)
+This is a temporary migration interface. The [services guide](../../ghost/core/server/services/README.md)
 describes how to catalogue extras while their eventual ownership is established.

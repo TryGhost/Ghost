@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import { IncorrectUsageError } from '@tryghost/errors';
 import sinon from 'sinon';
-import { expectTypeOf } from 'vitest';
-import { defineService } from '../../../core/kernel/define-service';
+import { describe, expectTypeOf, it } from 'vitest';
+import { defineService } from '../src/define-service.ts';
 
 describe('defineService', function () {
   it('constructs only at init and reuses the ready instance', async function () {
