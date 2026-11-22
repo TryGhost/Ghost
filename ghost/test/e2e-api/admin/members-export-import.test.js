@@ -180,6 +180,9 @@ describe('Members export -> import round-trip', function () {
       type: 'paid',
       active: true,
       visibility: 'public',
+      currency: 'usd',
+      monthly_price: 500,
+      yearly_price: 5000,
     });
     tier = (await models.Product.findAll()).models.find((p) => p.get('slug') === 'round-trip-tier');
     newsletter = (await models.Newsletter.findAll({ filter: 'status:active' })).models[0];

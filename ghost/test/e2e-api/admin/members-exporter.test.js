@@ -87,6 +87,9 @@ describe('Members API — exportCSV', function () {
       type: 'paid',
       active: true,
       visibility: 'public',
+      currency: 'usd',
+      monthly_price: 500,
+      yearly_price: 5000,
     });
 
     tiers = (await models.Product.findAll()).models.filter((m) => m.get('type') === 'paid');
