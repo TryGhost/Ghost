@@ -2,11 +2,11 @@ import logging from '@tryghost/logging';
 import { defineService } from '../../../kernel/define-service';
 import { TierRequirements } from './requirements';
 
-// Publishes the API and the cached tiers behind it together, once the tiers have loaded.
-// Test fixtures reload the repository after inserting products. Boot sets up the custom fields
-// services first, as tier requirements read which ports are bound to a custom field, and which
-// field each names.
-export default defineService('Tiers', async () => {
+// Publishes the API and the cached tiers behind it together. The repository loads the tiers the
+// first time one is read or saved, so building this reads nothing. Test fixtures reload the
+// repository after inserting products. Boot sets up the custom fields services first, as tier
+// requirements read which ports are bound to a custom field, and which field each names.
+export default defineService('Tiers', () => {
   const DomainEvents = require('@tryghost/domain-events');
   const { knex } = require('../../data/db');
   const models = require('../../models');
@@ -34,8 +34,6 @@ export default defineService('Tiers', async () => {
       return models.Product.generateSlug(models.Product, input, {});
     },
   };
-
-  await repository.init();
 
   const api = new TiersAPI({
     repository,

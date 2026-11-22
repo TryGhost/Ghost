@@ -23,8 +23,6 @@ describe('TierRepository', function () {
       ProductModel,
     });
 
-    await repository.init();
-
     const tier = await Tier.create({
       name: 'Test',
       slug: 'test-tier',
@@ -37,6 +35,8 @@ describe('TierRepository', function () {
 
     await repository.save(tier);
 
+    // The first use loaded the tiers, before the new one was written.
+    sinon.assert.calledOnce(ProductModel.findAll);
     sinon.assert.calledOnce(ProductModel.add);
 
     const result = await repository.getById(tier.id);
@@ -50,5 +50,6 @@ describe('TierRepository', function () {
     await repository.save(tier);
 
     sinon.assert.calledOnce(ProductModel.edit);
+    sinon.assert.calledOnce(ProductModel.findAll);
   });
 });

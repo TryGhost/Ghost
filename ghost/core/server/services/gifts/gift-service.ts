@@ -92,7 +92,7 @@ type Tier = Omit<GiftCheckoutTier, 'currency'> & {
 
 interface TiersService {
   api: {
-    read(idString: string): Promise<Tier | null>;
+    read(idString: string, options?: { transacting?: Knex.Transaction }): Promise<Tier | null>;
   };
 }
 
@@ -1541,7 +1541,10 @@ export class GiftService {
       gift.token,
       options,
     );
-    const tier = await this.deps.tiersService.api.read(gift.tierId);
+    // A first read of the tiers goes through the transaction, as SQLite has one connection.
+    const tier = await this.deps.tiersService.api.read(gift.tierId, {
+      transacting: options.transacting,
+    });
 
     if (!tier) {
       throw new errors.InternalServerError({

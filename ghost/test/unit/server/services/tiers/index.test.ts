@@ -131,16 +131,17 @@ describe('Tiers root', function () {
     sinon.assert.notCalled(Product.findAll);
   });
 
-  it('publishes a primed repository and an API that reads through it', async function () {
+  it('publishes a repository that reads nothing until a tier is first read', async function () {
     const root = loadRoot();
 
     await root.init();
 
-    sinon.assert.calledOnceWithExactly(Product.findAll, { withRelated: ['benefits'] });
+    sinon.assert.notCalled(Product.findAll);
     assert.ok(root.service.repository instanceof TierRepository);
     assert.ok(root.service.api instanceof TiersAPI);
 
     const page = await root.service.api.browse();
+    sinon.assert.calledOnceWithExactly(Product.findAll, { withRelated: ['benefits'] });
     assert.deepEqual(
       page.data.map((tier: { name: string; benefits: string[] }) => [tier.name, tier.benefits]),
       [
@@ -148,6 +149,11 @@ describe('Tiers root', function () {
         ['Gold', ['Extra posts']],
       ],
     );
+
+    // Later reads are served from what the first one loaded.
+    await root.service.api.browse();
+    await root.service.api.read(PAID_ID);
+    sinon.assert.calledOnce(Product.findAll);
 
     // The API reads through the published repository, not a separate instance.
     const sentinel = { id: 'sentinel' };
@@ -157,44 +163,83 @@ describe('Tiers root', function () {
     assert.equal(getById.firstCall.args[0].toHexString(), PAID_ID);
   });
 
-  it('waits for priming before publishing the repository or the API', async function () {
+  it('shares one load between reads that overlap before the tiers have loaded', async function () {
     const loading = deferred<unknown[]>();
     Product.findAll.returns(loading.promise);
     const root = loadRoot();
+    await root.init();
 
-    const initialization = root.init();
-    // Drain runnable promise continuations while priming stays unresolved.
+    const first = root.service.api.browse();
+    const second = root.service.api.read(PAID_ID);
+    // Drain runnable promise continuations while the load stays unresolved.
     await setImmediate();
 
     sinon.assert.calledOnce(Product.findAll);
-    assert.throws(() => root.service, IncorrectUsageError);
 
     loading.resolve([paidRow]);
-    await initialization;
+    const [page, tier] = await Promise.all([first, second]);
 
-    assert.ok(root.service.repository);
-    const page = await root.service.api.browse();
     assert.deepEqual(
-      page.data.map((tier: { name: string }) => tier.name),
+      page.data.map((item: { name: string }) => item.name),
+      ['Gold'],
+    );
+    assert.equal(tier.name, 'Gold');
+    sinon.assert.calledOnce(Product.findAll);
+  });
+
+  it('fails the read whose load rejects, and loads again on the next read', async function () {
+    const failure = new Error('Products unavailable');
+    Product.findAll.onFirstCall().rejects(failure);
+    const root = loadRoot();
+    await root.init();
+
+    await assert.rejects(root.service.api.browse(), (error) => error === failure);
+
+    const page = await root.service.api.browse();
+
+    sinon.assert.calledTwice(Product.findAll);
+    assert.equal(page.data.length, 2);
+  });
+
+  it('reads the tiers again after the repository is told to reload', async function () {
+    const root = loadRoot();
+    await root.init();
+    await root.service.api.browse();
+    Product.findAll.resolves([paidRow]);
+
+    root.service.repository.reload();
+    // Reloading reads nothing by itself.
+    sinon.assert.calledOnce(Product.findAll);
+
+    const page = await root.service.api.browse();
+    sinon.assert.calledTwice(Product.findAll);
+    assert.deepEqual(
+      page.data.map((item: { name: string }) => item.name),
       ['Gold'],
     );
   });
 
-  it('publishes nothing when priming rejects, and loads again on the next init', async function () {
-    const failure = new Error('Products unavailable');
-    Product.findAll.onFirstCall().rejects(failure);
+  it('loads through the transaction of a first read made inside one, and keeps nothing from it', async function () {
     const root = loadRoot();
-
-    await assert.rejects(root.init(), (error) => error === failure);
-
-    assert.throws(() => root.service, IncorrectUsageError);
-
     await root.init();
+    const transacting = { id: 'transaction' };
 
+    const tier = await root.service.api.read(PAID_ID, { transacting });
+
+    assert.equal(tier.name, 'Gold');
+    sinon.assert.calledOnceWithExactly(Product.findAll, {
+      withRelated: ['benefits'],
+      transacting,
+    });
+
+    // What a transaction saw may be rolled back, so the next read loads for itself and is kept.
+    await root.service.api.browse();
     sinon.assert.calledTwice(Product.findAll);
-    assert.ok(root.service.repository instanceof TierRepository);
-    const page = await root.service.api.browse();
-    assert.equal(page.data.length, 2);
+    assert.deepEqual(Product.findAll.secondCall.args, [{ withRelated: ['benefits'] }]);
+
+    // Once loaded, a read inside a transaction is served from memory.
+    await root.service.api.read(PAID_ID, { transacting });
+    sinon.assert.calledTwice(Product.findAll);
   });
 
   it('publishes no API when its construction fails, and builds one on the next init', async function () {
@@ -225,7 +270,7 @@ describe('Tiers root', function () {
     assert.equal(construct.secondCall.args[0].repository, root.service.repository);
   });
 
-  it('keeps the same repository and API across later init calls without loading again', async function () {
+  it('keeps the same repository and API across later init calls, reading nothing', async function () {
     const root = loadRoot();
     await root.init();
     const { repository, api } = root.service;
@@ -234,27 +279,22 @@ describe('Tiers root', function () {
 
     assert.equal(root.service.repository, repository);
     assert.equal(root.service.api, api);
-    sinon.assert.calledOnce(Product.findAll);
+    sinon.assert.notCalled(Product.findAll);
   });
 
   it('settles overlapping init calls with an API reading through the published repository', async function () {
     // defineService shares one pending initialization between overlapping calls; its own
     // tests cover that. Boot calls init once, so only the settled state is pinned here.
-    const loading = deferred<unknown[]>();
-    Product.findAll.returns(loading.promise);
     const root = loadRoot();
 
-    const first = root.init();
-    const second = root.init();
-    loading.resolve([paidRow]);
-    await Promise.all([first, second]);
+    await Promise.all([root.init(), root.init()]);
 
     const sentinel = { id: 'sentinel' };
     sandbox.stub(root.service.repository, 'getById').resolves(sentinel);
     assert.equal(await root.service.api.read(PAID_ID), sentinel);
   });
 
-  it('generates slugs through the current Product model and saves through the one loaded at init', async function () {
+  it('generates slugs through the current Product model and saves through the one given at init', async function () {
     const root = loadRoot();
     await root.init();
     const tierData = {
@@ -275,7 +315,7 @@ describe('Tiers root', function () {
     assert.ok(dispatch.firstCall.args[0] instanceof TierCreatedEvent);
     assert.equal(dispatch.firstCall.args[0].data.tier.id.toHexString(), tier.id.toHexString());
 
-    // Slugs look the model up on each call; the repository keeps the model from init.
+    // Slugs look the model up on each call; the repository keeps the model it was built with.
     const replacement = fakeProductModel();
     replacement.generateSlug.resolves('replacement-slug');
     // Restored with the sandbox's replacement in afterEach.

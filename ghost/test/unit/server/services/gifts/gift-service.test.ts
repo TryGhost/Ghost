@@ -1790,7 +1790,12 @@ describe('GiftService', function () {
         { transacting },
       );
       sinon.assert.calledTwice(tiersService.api.read);
-      sinon.assert.alwaysCalledWithExactly(tiersService.api.read, 'tier_1');
+      // The read inside the redemption's transaction is handed it, as a first read of the tiers
+      // goes through the transaction.
+      sinon.assert.calledWithExactly(tiersService.api.read.firstCall, 'tier_1', {
+        transacting: 'trx',
+      });
+      sinon.assert.calledWithExactly(tiersService.api.read.secondCall, 'tier_1');
       sinon.assert.calledOnceWithExactly(staffServiceEmails.notifyGiftSubscriptionStarted, {
         memberId: 'member_1',
         memberEmail: 'member@example.com',

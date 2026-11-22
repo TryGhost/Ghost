@@ -6,13 +6,23 @@ const nql = require('@tryghost/nql');
  */
 
 /**
+ * @typedef {object} Cache
+ * @prop {import('./tier')[]} store
+ * @prop {Set<string>} ids
+ */
+
+/**
+ * Keeps every tier in memory, loaded from the database the first time a tier is read or saved
+ * and held from then on. Tiers are read on most requests, so a read costs no query.
+ *
  * @implements {ITierRepository}
  */
 module.exports = class TierRepository {
-  /** @type {import('./tier')[]} */
-  #store;
-  /** @type {Set<string>} */
-  #ids = new Set();
+  /**
+   * The loaded tiers, or the load in flight. Unset until first use, and after `reload()`.
+   * @type {Promise<Cache> | undefined}
+   */
+  #loading;
 
   /** @type {Object} */
   #ProductModel;
@@ -57,18 +67,62 @@ module.exports = class TierRepository {
     );
   }
 
-  async init() {
+  /**
+   * Reads every tier from the database.
+   *
+   * @param {import('knex').Knex.Transaction} [transacting]
+   * @returns {Promise<Cache>}
+   */
+  async #load(transacting) {
     const models = await this.#ProductModel.findAll({
       withRelated: ['benefits'],
+      ...(transacting ? { transacting } : {}),
     });
-    this.#ids.clear();
-    this.#store = await Promise.all(
+    const ids = new Set();
+    const store = await Promise.all(
       models.map(async (model) => {
         const tier = await Tier.create(this.mapToTier(model));
-        this.#ids.add(tier.id.toHexString());
+        ids.add(tier.id.toHexString());
         return tier;
       }),
     );
+    return { store, ids };
+  }
+
+  /**
+   * The loaded tiers, loading them on first use. Overlapping first uses share one load, and a
+   * failed load is not kept, so the next use loads again.
+   *
+   * A first use inside a transaction loads through it, as SQLite has a single connection that
+   * the transaction holds. What a transaction sees can be rolled back, so that load serves the
+   * one call and is not kept.
+   *
+   * @param {{transacting?: import('knex').Knex.Transaction}} [options]
+   * @returns {Promise<Cache>}
+   */
+  #cache(options = {}) {
+    if (this.#loading) {
+      return this.#loading;
+    }
+    if (options.transacting) {
+      return this.#load(options.transacting);
+    }
+    const loading = this.#load().catch((error) => {
+      if (this.#loading === loading) {
+        this.#loading = undefined;
+      }
+      throw error;
+    });
+    this.#loading = loading;
+    return loading;
+  }
+
+  /**
+   * Forgets the loaded tiers, so the next use reads them from the database again. For rows
+   * written to the database without going through `save`, as test fixtures do.
+   */
+  reload() {
+    this.#loading = undefined;
   }
 
   /**
@@ -113,10 +167,11 @@ module.exports = class TierRepository {
    * @returns {Promise<import('./tier')[]>}
    */
   async getAll(options = {}) {
+    const { store } = await this.#cache(options);
     const filter = nql();
     filter.filter = options.filter || {};
     return this.#copiesOf(
-      this.#store.filter((item) => {
+      store.filter((item) => {
         return filter.queryJSON(this.toPrimitive(item));
       }),
       options,
@@ -129,7 +184,8 @@ module.exports = class TierRepository {
    * @returns {Promise<import('./tier')>}
    */
   async getById(id, options = {}) {
-    const found = this.#store.find((item) => {
+    const { store } = await this.#cache(options);
+    const found = store.find((item) => {
       return item.id.equals(id);
     });
 
@@ -167,18 +223,20 @@ module.exports = class TierRepository {
     // Cached without requirements, which are read fresh whenever they're asked for.
     const toSave = await Tier.create({ ...tier.toJSON(), requirements: undefined });
 
-    if (this.#ids.has(tier.id.toHexString())) {
-      const existing = this.#store.findIndex((item) => {
-        return item.id.equals(tier.id);
-      });
+    const { store, ids } = await this.#cache();
+    if (ids.has(tier.id.toHexString())) {
       await this.#ProductModel.edit(data, {
         id: data.id,
       });
-      this.#store.splice(existing, 1, toSave);
+      // Looked up after the write, as another save may have changed the store meanwhile.
+      const existing = store.findIndex((item) => {
+        return item.id.equals(tier.id);
+      });
+      store.splice(existing, 1, toSave);
     } else {
       await this.#ProductModel.add(data);
-      this.#store.push(toSave);
-      this.#ids.add(tier.id.toHexString());
+      store.push(toSave);
+      ids.add(tier.id.toHexString());
     }
 
     for (const event of tier.events) {

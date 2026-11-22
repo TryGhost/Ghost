@@ -1080,13 +1080,13 @@ const getFixtureOps = (toDos) => {
     try {
       service = tiers.service;
     } catch (error) {
-      // Before Ghost boots there is no tier cache to reload; boot loads these rows itself.
+      // Before Ghost boots there is no tier cache to reload; the first read loads these rows.
       if (error instanceof IncorrectUsageError) {
         return;
       }
       throw error;
     }
-    return service.repository.init();
+    return service.repository.reload();
   });
 
   return fixtureOps;

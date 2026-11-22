@@ -136,7 +136,7 @@ describe('Stripe Checkout collected parts', function () {
    * Tiers are read into memory when Ghost boots, so after writing one straight to the database
    * they are read again, as the fixtures do.
    */
-  const reloadTiers = () => tiersService.service.repository.init();
+  const reloadTiers = () => tiersService.service.repository.reload();
 
   async function addPaidTier(id: string) {
     const [existing] = await models.Base.knex('products').where('id', paidTierId);

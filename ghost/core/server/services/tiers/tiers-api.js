@@ -5,6 +5,8 @@ const Tier = require('./tier');
 /**
  * @typedef {object} ReadOptions
  * @prop {boolean} [withRequirements] - Reads what each tier's members must give
+ * @prop {import('knex').Knex.Transaction} [transacting] - The transaction the caller holds, which
+ * a first read of the tiers goes through
  */
 
 /**
