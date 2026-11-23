@@ -7,8 +7,9 @@ for (const insertion of ['URL', 'dropdown']) {
         await page.route('**/demo/utils/fetchEmbed.ts', route => route.fulfill({
             contentType: 'text/javascript',
             body: `export async function fetchEmbed(url) {
-                return new Promise(resolve => {
+                return new Promise((resolve, reject) => {
                     window.finishBookmarkRequest = () => resolve({url, metadata: {title: 'Loaded bookmark'}});
+                    window.failBookmarkRequest = () => reject(new Error('Lookup failed'));
                 });
             }`
         }));
@@ -27,6 +28,13 @@ for (const insertion of ['URL', 'dropdown']) {
     async function finishRequest(page) {
         await page.evaluate(async () => {
             window.finishBookmarkRequest();
+            await new Promise(resolve => setTimeout(resolve, 0));
+        });
+    }
+
+    async function failRequest(page) {
+        await page.evaluate(async () => {
+            window.failBookmarkRequest();
             await new Promise(resolve => setTimeout(resolve, 0));
         });
     }
@@ -53,6 +61,13 @@ for (const insertion of ['URL', 'dropdown']) {
         await expect(page.locator('[data-kg-card="bookmark"]')).toHaveCount(0);
         await finishRequest(page);
         expect(errors).toEqual([]);
+        await expect(page.locator('[data-kg-card="bookmark"]')).toHaveCount(0);
+    });
+
+    test('removes a bookmark whose preview failed once the writer moves on', async ({page}) => {
+        await failRequest(page);
+        await expect(page.getByTestId('bookmark-url-error-message')).toBeVisible();
+        await page.keyboard.press('ArrowDown');
         await expect(page.locator('[data-kg-card="bookmark"]')).toHaveCount(0);
     });
 });

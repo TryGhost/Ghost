@@ -108,6 +108,13 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
             // set the test data return values in fetchEmbed.js
             response = await cardConfig.fetchEmbed(href, {type: 'bookmark'});
         } catch (e) {
+            // a URL without a preview renders as a blank bookmark, so let deselection remove the card
+            editor.update(() => {
+                const node = $getNodeByKey(nodeKey);
+                if (node?.isAttached() && !node.title) {
+                    node.url = '';
+                }
+            });
             setLoading(false);
             setUrlError(true);
             return;
