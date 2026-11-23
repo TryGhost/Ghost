@@ -404,7 +404,7 @@ describe('AppInstallationsRepository historyRows', function () {
     await knex.destroy();
   });
 
-  it('leaves out a manifest row that no longer decodes', async function () {
+  it('keeps a manifest row whose changes no longer decode, without its changes', async function () {
     const row = (id: string, changes: unknown[], minute: number) => ({
       id,
       installation_id: 'installation',
@@ -425,8 +425,11 @@ describe('AppInstallationsRepository historyRows', function () {
     const { manifests } = await new AppInstallationsRepository(knex).historyRows('installation');
 
     assert.deepEqual(
-      manifests.map(({ id }) => id),
-      ['readable'],
+      manifests.map(({ id, changes }) => [id, changes]),
+      [
+        ['readable', [{ kind: 'scope', scope: 'post:read', change: 'added' }]],
+        ['stale', []],
+      ],
     );
   });
 });

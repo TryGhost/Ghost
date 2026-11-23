@@ -272,8 +272,9 @@ export class AppInstallationsRepository {
   }
 
   /**
-   * An installation's manifest rows and staff actions, oldest first. Manifest rows that no
-   * longer decode are left out.
+   * An installation's manifest rows and staff actions, oldest first. A manifest row whose
+   * changes no longer decode keeps its entry without them, and one that doesn't decode at all
+   * is left out.
    */
   async historyRows(
     id: string,
@@ -307,7 +308,14 @@ export class AppInstallationsRepository {
     return {
       manifests: manifestData.flatMap((row) => {
         const decoded = HistoryManifestRow.safeDecode(row);
-        return decoded.success ? [decoded.data] : [];
+        if (decoded.success) {
+          return [decoded.data];
+        }
+        const withoutChanges = HistoryManifestRow.safeDecode({
+          ...row,
+          changes: z.encode(StoredChanges, []),
+        });
+        return withoutChanges.success ? [withoutChanges.data] : [];
       }),
       actions: actionData.map((row) => z.decode(HistoryActionRow, row)),
     };
