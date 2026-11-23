@@ -181,7 +181,6 @@ export function renderWithVisibility(originalRenderOutput: ExportDOMOutput, visi
     }
 
     const document = element.ownerDocument;
-    const content = _getRenderContent(originalRenderOutput);
 
     const migrated = migrateOldVisibilityFormat(visibility);
 
@@ -204,7 +203,7 @@ export function renderWithVisibility(originalRenderOutput: ExportDOMOutput, visi
             return originalRenderOutput;
         }
 
-        return _renderWithEmailVisibility(document, content, email as {memberSegment: string});
+        return _renderWithEmailVisibility(document, _getRenderContent(originalRenderOutput), email as {memberSegment: string});
     }
 
     const isNotVisibleOnWeb =
@@ -220,7 +219,7 @@ export function renderWithVisibility(originalRenderOutput: ExportDOMOutput, visi
         web.memberSegment !== ALL_MEMBERS_SEGMENT;
 
     if (hasWebVisibilityRestrictions) {
-        return _renderWithWebVisibility(document, content, web as {nonMember: boolean; memberSegment: string});
+        return _renderWithWebVisibility(document, _getRenderContent(originalRenderOutput), web as {nonMember: boolean; memberSegment: string});
     }
 
     return originalRenderOutput;
