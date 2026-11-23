@@ -86,6 +86,15 @@ export default defineConfig({
         // need `ssr.resolve.conditions` to resolve to src/*.ts. Matches
         // the runtime backend's `--conditions=source` (nodemon.json).
         ssr: { resolve: { conditions: ['source', 'node'] } },
+        // See test/utils/domain-events-bridge.ts for why this one is aliased.
+        resolve: {
+          alias: {
+            '@tryghost/domain-events': path.resolve(
+              __dirname,
+              'test/utils/domain-events-bridge.ts',
+            ),
+          },
+        },
         test: {
           ...unitConfig,
           name: 'unit',

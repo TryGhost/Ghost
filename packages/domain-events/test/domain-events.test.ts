@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import logging from '@tryghost/logging';
 import sinon from 'sinon';
-import { afterEach, describe, it, vi } from 'vitest';
+import { afterEach, describe, it } from 'vitest';
 import DomainEvents, { DomainEvents as namedDomainEvents } from '../src/index.ts';
 import type { IEvent } from '../src/index.ts';
 
@@ -158,16 +158,12 @@ describe('DomainEvents', function () {
     });
 
     it('gives CommonJS consumers the event bus itself from the compiled package', function () {
-      const compiledDomainEvents: unknown = require('@tryghost/domain-events');
+      const compiledDomainEvents: typeof DomainEvents = require('@tryghost/domain-events');
 
-      assert.equal(compiledDomainEvents, DomainEvents);
-    });
-
-    it('hands out the same event bus when the module is loaded again', async function () {
-      vi.resetModules();
-      const reloaded = await import('../src/index.ts');
-
-      assert.equal(reloaded.default, DomainEvents);
+      // The bus, not a module namespace that wraps it in a `default` property.
+      assert.equal(typeof compiledDomainEvents.subscribe, 'function');
+      assert.equal(typeof compiledDomainEvents.dispatch, 'function');
+      assert.equal('default' in compiledDomainEvents, false);
     });
   });
 });

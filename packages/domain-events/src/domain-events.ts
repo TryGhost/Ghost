@@ -72,89 +72,80 @@ interface AwaitQueueItem {
   resolve: () => void;
 }
 
-// The event bus is one per process. Ghost's test runner can load this module
-// twice, once through `require()` and once through `import`, and two copies
-// would each keep their own subscribers. Registering the bus under a global
-// symbol makes every copy of the module hand out the same one.
-const sharedKey: unique symbol = Symbol.for('@tryghost/domain-events');
-const shared: typeof globalThis & { [sharedKey]?: DomainEventsApi } = globalThis;
+class DomainEvents {
+  static ee = new EventEmitter();
 
-function createDomainEvents(): DomainEventsApi {
-  return class DomainEvents {
-    static ee = new EventEmitter();
-
-    static subscribe<EventClass extends IEvent<unknown>>(
-      Event: ConstructorOf<EventClass>,
-      handler: (event: EventClass) => Promise<void> | void,
-    ): void {
-      DomainEvents.ee.on(Event.name, async (event: EventClass) => {
-        try {
-          await handler(event);
-        } catch (e) {
-          logging.error('Unhandled error in event handler for event: ' + Event.name);
-          logging.error(e);
-        }
-        if (this.#trackingEnabled) {
-          this.#onProcessed();
-        } else {
-          // Tracking is disabled outside tests.
-        }
-      });
-    }
-
-    static dispatch<Data>(event: IEvent<Data>): void {
-      DomainEvents.dispatchRaw(event.constructor.name, event);
-    }
-
-    static dispatchRaw<Data>(name: string, data: Data): void {
+  static subscribe<EventClass extends IEvent<unknown>>(
+    Event: ConstructorOf<EventClass>,
+    handler: (event: EventClass) => Promise<void> | void,
+  ): void {
+    DomainEvents.ee.on(Event.name, async (event: EventClass) => {
+      try {
+        await handler(event);
+      } catch (e) {
+        logging.error('Unhandled error in event handler for event: ' + Event.name);
+        logging.error(e);
+      }
       if (this.#trackingEnabled) {
-        this.#dispatchCount += DomainEvents.ee.listenerCount(name);
+        this.#onProcessed();
       } else {
         // Tracking is disabled outside tests.
       }
-      DomainEvents.ee.emit(name, data);
+    });
+  }
+
+  static dispatch<Data>(event: IEvent<Data>): void {
+    DomainEvents.dispatchRaw(event.constructor.name, event);
+  }
+
+  static dispatchRaw<Data>(name: string, data: Data): void {
+    if (this.#trackingEnabled) {
+      this.#dispatchCount += DomainEvents.ee.listenerCount(name);
+    } else {
+      // Tracking is disabled outside tests.
     }
+    DomainEvents.ee.emit(name, data);
+  }
 
-    // Methods and properties below are only for testing purposes
-    static #awaitQueue: AwaitQueueItem[] = [];
-    static #dispatchCount = 0;
-    static #processedCount = 0;
-    static #trackingEnabled = process.env.NODE_ENV?.startsWith('test') ?? false;
+  // Methods and properties below are only for testing purposes
+  static #awaitQueue: AwaitQueueItem[] = [];
+  static #dispatchCount = 0;
+  static #processedCount = 0;
+  static #trackingEnabled = process.env.NODE_ENV?.startsWith('test') ?? false;
 
-    static allSettled(): Promise<void> {
-      return new Promise((resolve) => {
-        if (this.#processedCount >= this.#dispatchCount) {
-          // Resolve immediately if there are no events in the queue
-          resolve();
-          return;
-        } else {
-          this.#awaitQueue.push({ resolve });
-        }
-      });
-    }
-
-    static #onProcessed(): void {
-      this.#processedCount += 1;
+  static allSettled(): Promise<void> {
+    return new Promise((resolve) => {
       if (this.#processedCount >= this.#dispatchCount) {
-        for (const item of this.#awaitQueue) {
-          item.resolve();
-        }
-        this.#awaitQueue = [];
+        // Resolve immediately if there are no events in the queue
+        resolve();
+        return;
       } else {
-        // Wait for the remaining tracked listeners.
+        this.#awaitQueue.push({ resolve });
       }
-    }
+    });
+  }
 
-    static setTrackingEnabledForTest(enabled: boolean): void {
-      this.#trackingEnabled = enabled;
-    }
-
-    static resetTrackingStateForTest(): void {
+  static #onProcessed(): void {
+    this.#processedCount += 1;
+    if (this.#processedCount >= this.#dispatchCount) {
+      for (const item of this.#awaitQueue) {
+        item.resolve();
+      }
       this.#awaitQueue = [];
-      this.#dispatchCount = 0;
-      this.#processedCount = 0;
+    } else {
+      // Wait for the remaining tracked listeners.
     }
-  };
+  }
+
+  static setTrackingEnabledForTest(enabled: boolean): void {
+    this.#trackingEnabled = enabled;
+  }
+
+  static resetTrackingStateForTest(): void {
+    this.#awaitQueue = [];
+    this.#dispatchCount = 0;
+    this.#processedCount = 0;
+  }
 }
 
-export const domainEvents: DomainEventsApi = (shared[sharedKey] ??= createDomainEvents());
+export const domainEvents: DomainEventsApi = DomainEvents;

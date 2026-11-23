@@ -37,10 +37,13 @@ const DomainEvents = require('@tryghost/domain-events');
 
 ## One event bus per process
 
-The event bus is a singleton. The package registers it under a global symbol,
-so `import` and `require()` return the same bus even where the module is loaded
-more than once, as Ghost's test runner does. Subscribers and dispatched events
-are therefore shared by every consumer in the process.
+The event bus is a class with only static members, so there is one per loaded
+copy of the module. Node loads the package once, whether through `import` or
+`require()`, so every consumer in a process shares one bus.
+
+Ghost's test runners are the exception: they would load a second copy for
+tests that `import` the package. Ghost's vitest configs alias the package to
+`ghost/test/utils/domain-events-bridge.ts` to keep it to one.
 
 ## Develop
 
