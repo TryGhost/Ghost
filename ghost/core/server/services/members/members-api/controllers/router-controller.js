@@ -865,6 +865,15 @@ module.exports = class RouterController {
 
         let response;
         if (type === 'subscription') {
+          // A site without Stripe has no Stripe client to check out with, so refuse the way gift
+          // and donation checkouts do. This checks Stripe alone, not whether signups are open,
+          // so a site that has closed signups but kept Stripe still sells subscriptions.
+          if (!this._settingsHelpers.isStripeConnected()) {
+            throw new DisabledFeatureError({
+              message: tpl(messages.notConfigured),
+            });
+          }
+
           if (!membersEnabled) {
             throw new BadRequestError({
               message: tpl(messages.badRequest),
