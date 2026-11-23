@@ -702,8 +702,11 @@ what it means for this inventory:
   config moved out of boot (`25ce488` on `main`).
 
 Not rechecked on `main`: the line numbers in this document, which are this
-branch's; and the other 29 files that changed under the inventoried service
-folders, which are not start code by their names and were not read.
+branch's. 57 files changed under `ghost/core/server/services` on `main`
+since the branch was cut. Beyond the five root files, the diffs of the email
+service wrapper, the members service, mentions, tiers, the automations poll
+and the jobs service were read and change nothing that runs at start. The
+rest were not read.
 
 ## Reclassified against the appendix
 
