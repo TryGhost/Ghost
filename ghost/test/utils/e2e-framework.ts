@@ -50,6 +50,7 @@ import { stopGhost } from './e2e-utils';
 import adapterManager from '../../core/server/services/adapter-manager';
 import DomainEvents from '@tryghost/domain-events';
 import * as hostLimits from './host-limits-utils';
+import { services } from './services';
 // @ts-expect-error This module lacks type definitions.
 import urlUtils from './url-utils';
 
@@ -74,6 +75,11 @@ let totalBoots = 0;
 const startGhost = async (options = {}) => {
   await jobsService.shutdown();
   await DomainEvents.allSettled();
+
+  // A boot with no server has nothing that stops its services. Close them here, so that every
+  // boot in a test builds its own from the configuration and data it starts with, as a new
+  // process would.
+  await services.close();
 
   /**
    * We never use the root content folder for testing!

@@ -125,7 +125,9 @@ const _startGhost = async (options) => {
   await dbUtils.reset({ truncate: true });
 
   // Loading settings reads the limits, which the application builds on first use. Boot allows
-  // that itself; this load runs before boot does.
+  // that itself; this load runs before boot does. Services left open by a boot with no server
+  // are closed first, so that this boot builds its own.
+  await services.close();
   services.open();
   await settingsService.init();
 

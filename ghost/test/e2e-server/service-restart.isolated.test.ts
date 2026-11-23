@@ -40,11 +40,11 @@ describe('Service roots across boots in one process', function () {
     assert.notEqual(indexnow.service, indexnowService);
     assert.notEqual(slack.service, slackService);
 
-    // A boot with no server has nothing that stops its services, so the boot after it finds
-    // them still open and keeps them.
-    const kept = indexnow.service;
+    // A boot with no server has nothing that stops its services, so the test helper closes them
+    // before the next boot, which then builds its own and listens once.
+    const earlier = indexnow.service;
     await agentProvider.getAdminAPIAgent();
-    assert.equal(indexnow.service, kept);
+    assert.notEqual(indexnow.service, earlier);
     assert.deepEqual(listening(), whileBooted);
   });
 });
