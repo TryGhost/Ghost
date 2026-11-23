@@ -283,7 +283,33 @@ Node refuses that when it loads the file; the test runner and `tsx` accept it. F
 
 ## Checks
 
-The final results of the checks are added in the next commit, once the last MySQL run has finished.
+All **verified**, on `2d21d129bb` unless a commit is named.
+
+| Check                                                                                               | Result                                                                                                                                                                                      |
+| --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Format, oxlint, ESLint, boundaries, dependency lint, package lint, versioning, docs lint, typecheck | Pass                                                                                                                                                                                        |
+| Unit (Ghost, kernel, foundry, gx, scripts)                                                          | 12143 pass, 34 fail. The 34 are in `ghost-mailer`, `mailgun-client` and `mailgun-email-suppression-list` tests and fail the same way on untouched `main` in this container (outbound proxy) |
+| Integration, MySQL 8.4                                                                              | 81 files, 1109 tests pass                                                                                                                                                                   |
+| e2e, MySQL 8.4                                                                                      | 225 files, 3564 tests pass (6 expected failures, as on `main`)                                                                                                                              |
+| Legacy, MySQL 8.4                                                                                   | 35 files, 464 tests pass                                                                                                                                                                    |
+| Better Auth e2e, MySQL 8.4                                                                          | 186 files, 3143 tests pass                                                                                                                                                                  |
+
+Earlier stages on MySQL: stages 1 and 2 passed all suites when they were pushed, and stage 2
+passed Better Auth e2e (185 files then). One Better Auth run at stage 2 had 7 failures in
+`themes.test.js`; the file passed alone, the full rerun passed, and `main` passed, so it was
+treated as load-related. `9c19337199` (the first cut of stage 4) passed integration, e2e and
+legacy.
+
+What the last runs caught, in order:
+
+- `22c93ea6ce`: 21 integration files failed. Test helpers load settings without booting, and
+  loading settings now builds limits. Fixed in `35fd58e98e` (helpers allow building first).
+- `35fd58e98e`: 5 e2e files failed. A test boot with no server left the previous boot's services
+  open, so limits kept the previous configuration. Fixed in `2d21d129bb` (helpers close services
+  before each boot). `service-restart.isolated.test.ts` changed deliberately to say so.
+
+Both are test-helper fixes. The product change behind them is real and worth a decision: limits
+are read once per start, where `main` read them again on every boot call in the process.
 
 ## Rule wordings that turned out wrong
 
