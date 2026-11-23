@@ -1,33 +1,15 @@
+import CardContext from '../../context/CardContext';
 import CloseIcon from '../../assets/icons/kg-close.svg?react';
 import React from 'react';
-import {COMMAND_PRIORITY_LOW, KEY_ENTER_COMMAND} from 'lexical';
-import {mergeRegister} from '@lexical/utils';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-
-function UrlInputPlugin({value, onEnter}) {
-    const [editor] = useLexicalComposerContext();
-
-    React.useEffect(
-        () => {
-            return mergeRegister(
-                editor.registerCommand(
-                    KEY_ENTER_COMMAND,
-                    (event) => {
-                        onEnter(event);
-                        return false;
-                    },
-                    COMMAND_PRIORITY_LOW
-                )
-            );
-        },
-        [editor, onEnter, value]
-    );
-}
 
 export function UrlInput({dataTestId, value, placeholder, handleUrlChange, handleUrlSubmit, hasError, handlePasteAsLink, handleRetry, handleClose, isLoading}) {
+    const {isSelected} = React.useContext(CardContext);
+    const inputRef = React.useRef(null);
+
     React.useEffect(() => {
+        // window hears Escape from the whole page, and the error and loading states have no field to focus
         const handleKeyDown = (e) => {
-            if (e.key === 'Escape') {
+            if (e.key === 'Escape' && (isSelected || e.target === inputRef.current)) {
                 handleClose();
             }
         };
@@ -35,7 +17,7 @@ export function UrlInput({dataTestId, value, placeholder, handleUrlChange, handl
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [handleClose]);
+    }, [handleClose, isSelected]);
 
     if (isLoading) {
         return (
@@ -59,17 +41,15 @@ export function UrlInput({dataTestId, value, placeholder, handleUrlChange, handl
         );
     }
     return (
-        <>
-            <UrlInputPlugin value={value} onEnter={handleUrlSubmit} />
-            <input
-                autoFocus={true}
-                className="w-full rounded-md border border-grey-300 p-2 font-sans text-sm font-normal leading-snug text-grey-900 focus-visible:outline-none dark:border-grey-800 dark:bg-grey-950 dark:text-grey-100 dark:placeholder:text-grey-800"
-                data-testid={dataTestId}
-                placeholder={placeholder}
-                value={value}
-                onChange={handleUrlChange}
-                onKeyDown={handleUrlSubmit}
-            />
-        </>
+        <input
+            ref={inputRef}
+            autoFocus={true}
+            className="w-full rounded-md border border-grey-300 p-2 font-sans text-sm font-normal leading-snug text-grey-900 focus-visible:outline-none dark:border-grey-800 dark:bg-grey-950 dark:text-grey-100 dark:placeholder:text-grey-800"
+            data-testid={dataTestId}
+            placeholder={placeholder}
+            value={value}
+            onChange={handleUrlChange}
+            onKeyDown={handleUrlSubmit}
+        />
     );
 }

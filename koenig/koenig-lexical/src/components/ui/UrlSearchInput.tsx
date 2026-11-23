@@ -1,3 +1,4 @@
+import CardContext from '../../context/CardContext';
 import CloseIcon from '../../assets/icons/kg-close.svg?react';
 import React from 'react';
 import trackEvent from '../../utils/analytics';
@@ -7,6 +8,8 @@ import {useSearchLinks} from '../../hooks/useSearchLinks';
 
 export function UrlSearchInput({dataTestId, value, placeholder, handleUrlChange, handleUrlSubmit, hasError, handlePasteAsLink, handleRetry, handleClose, isLoading, searchLinks}) {
     const {isSearching, listOptions} = useSearchLinks(value, searchLinks);
+    const {isSelected} = React.useContext(CardContext);
+    const containerRef = React.useRef(null);
 
     React.useEffect(() => {
         if (!value) {
@@ -16,8 +19,9 @@ export function UrlSearchInput({dataTestId, value, placeholder, handleUrlChange,
     }, []);
 
     React.useEffect(() => {
+        // window hears Escape from the whole page, and the error and loading states have no field to focus
         const handleKeyDown = (e) => {
-            if (e.key === 'Escape') {
+            if (e.key === 'Escape' && (isSelected || containerRef.current?.contains(e.target))) {
                 handleClose();
             }
         };
@@ -25,7 +29,7 @@ export function UrlSearchInput({dataTestId, value, placeholder, handleUrlChange,
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [handleClose]);
+    }, [handleClose, isSelected]);
 
     if (isLoading) {
         return (
@@ -85,7 +89,7 @@ export function UrlSearchInput({dataTestId, value, placeholder, handleUrlChange,
     };
 
     return (
-        <div className="not-kg-prose" onKeyDown={handleKeyDown}>
+        <div ref={containerRef} className="not-kg-prose" onKeyDown={handleKeyDown}>
             <InputList
                 autoFocus={true}
                 dataTestId={dataTestId}
