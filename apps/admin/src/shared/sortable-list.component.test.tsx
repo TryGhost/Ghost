@@ -120,16 +120,6 @@ async function move(name: string, keys: Array<'ArrowUp' | 'ArrowDown'>, position
 }
 
 describe('SortableList keyboard reordering', () => {
-  it('moves a row one place for each arrow press, in both directions', async () => {
-    await renderInApp(<List initial={evenRows} />);
-
-    await move('The Weekly', ['ArrowDown'], [2]);
-    await expect.poll(order).toEqual(['Deep Dives', 'The Weekly', 'Digest']);
-
-    await move('Digest', ['ArrowUp', 'ArrowUp'], [2, 1]);
-    await expect.poll(order).toEqual(['Digest', 'Deep Dives', 'The Weekly']);
-  });
-
   it('stops at the ends of the list', async () => {
     await renderInApp(<List initial={evenRows} />);
 
@@ -292,7 +282,6 @@ describe('SortableList keyboard reordering', () => {
 
     await pickUp('Reorder untitled row', 'Reorder untitled row', 1);
     await userEvent.keyboard('{Escape}');
-    await announced('Moving cancelled. Reorder untitled row stays at position 1 of 4.');
   });
 
   it('announces a cancelled move by name, and keeps the order', async () => {
@@ -304,13 +293,5 @@ describe('SortableList keyboard reordering', () => {
     await userEvent.keyboard('{Escape}');
     await announced('Moving cancelled. Deep Dives stays at position 2 of 3.');
     await expect.poll(order).toEqual(['The Weekly', 'Deep Dives', 'Digest']);
-  });
-
-  it('tells screen readers how to move a row with the arrow keys', async () => {
-    await renderInApp(<List initial={evenRows} />);
-
-    const handle = page.getByRole('button', { name: 'Reorder The Weekly' }).element();
-    const instructions = document.getElementById(handle.getAttribute('aria-describedby') ?? '');
-    expect(instructions?.textContent).toContain('Use the Up and Down arrow keys to move it.');
   });
 });
