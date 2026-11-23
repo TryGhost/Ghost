@@ -86,10 +86,15 @@ function manifestShape(url: UrlField, text: typeof plainText, contact: UrlField)
         },
         {
           // `optional_scopes` is refused like any field Ghost doesn't know, with its own reason.
-          error: (issue) =>
-            issue.code === 'unrecognized_keys' && issue.keys.includes('optional_scopes')
+          error: (issue) => {
+            if (issue.code !== 'unrecognized_keys' || !issue.keys.includes('optional_scopes')) {
+              return undefined;
+            }
+            const others = issue.keys.filter((key) => key !== 'optional_scopes');
+            return others.length === 0
               ? OPTIONAL_SCOPES_REFUSED
-              : undefined,
+              : `${OPTIONAL_SCOPES_REFUSED}. Unrecognized key${others.length > 1 ? 's' : ''}: ${others.map((key) => JSON.stringify(key)).join(', ')}`;
+          },
         },
       )
       // A backend holds its key online. If it also signed manifests, whoever took over the

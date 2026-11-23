@@ -435,6 +435,15 @@ describe('scopes', () => {
     ]);
   });
 
+  it('still names any other unknown field alongside optional scopes', () => {
+    expect(errorsOf(manifest({ optional_scopes: ['post:edit'], permissions: [] }))).toEqual([
+      {
+        path: '',
+        message: 'Optional scopes aren’t supported yet. Unrecognized key: "permissions"',
+      },
+    ]);
+  });
+
   it('stores the same scopes the same way, however they were written', () => {
     const one = manifestOf(withScopes(['tag:edit', 'post:read']));
     const other = manifestOf(withScopes(['post:read', 'tag:edit']));
