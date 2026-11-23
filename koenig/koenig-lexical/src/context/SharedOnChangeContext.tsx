@@ -1,8 +1,10 @@
 import React from 'react';
 import type {SerializedEditorState} from 'lexical';
 
+export type SerializedEditorStateChangeHandler = (serializedState: SerializedEditorState) => void;
+
 export interface SharedOnChangeContextValue {
-    onChange?: (serializedState: SerializedEditorState) => void;
+    onChange?: SerializedEditorStateChangeHandler;
 }
 
 const Context = React.createContext<SharedOnChangeContextValue>({});
