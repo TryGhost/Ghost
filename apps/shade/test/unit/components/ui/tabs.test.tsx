@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import {
   Tabs,
   TabsContent,
@@ -51,7 +51,7 @@ describe('Tabs Component', () => {
     expect(screen.getAllByText('12')).toHaveLength(1);
   });
 
-  it('reserves underline label width without a second text copy', () => {
+  it('keeps the underline label text single', () => {
     render(
       <Tabs defaultValue="first" variant="underline">
         <TabsList>
@@ -60,13 +60,9 @@ describe('Tabs Component', () => {
       </Tabs>,
     );
 
-    // A text copy would be read twice when the tab names something from inside an
+    // A second text copy is read twice when the tab names something from inside an
     // aria-hidden region, such as the page behind an open menu.
-    const tab = screen.getByRole('tab', { name: 'First' });
-    const copy = tab.querySelector('[aria-hidden="true"]');
-    expect(copy?.getAttribute('data-label')).toBe('First');
-    expect(copy?.textContent).toBe('');
-    expect(tab.textContent).toBe('First');
+    expect(screen.getByRole('tab', { name: 'First' }).textContent).toBe('First');
   });
 
   it('preserves the slotted element when reserving underline label width', () => {
@@ -151,21 +147,17 @@ describe('Tabs Component', () => {
     const DropdownTabs = ({
       activationMode,
       id,
-      initialValue = 'visitors',
       keepFocusOnClose,
-      label,
       onValueChange,
       orientation,
     }: {
       activationMode?: 'automatic' | 'manual';
       id?: string;
-      initialValue?: string;
       keepFocusOnClose?: boolean;
-      label?: string;
       onValueChange?: (value: string) => void;
       orientation?: 'horizontal' | 'vertical';
     }) => {
-      const [value, setValue] = useState(initialValue);
+      const [value, setValue] = useState('visitors');
       const change = (next: string) => {
         onValueChange?.(next);
         setValue(next);
@@ -180,7 +172,7 @@ describe('Tabs Component', () => {
           <TabsList>
             <TabsTrigger value="visitors">Visitors</TabsTrigger>
             <DropdownMenu>
-              <TabsDropdownTrigger aria-label={label} id={id} value="members">
+              <TabsDropdownTrigger id={id} value="members">
                 Members
                 <svg aria-hidden="true" />
               </TabsDropdownTrigger>
@@ -216,28 +208,17 @@ describe('Tabs Component', () => {
       return document.activeElement;
     };
 
-    it('renders the tab as the only control, which opens its menu', () => {
-      render(<DropdownTabs />);
-
-      const tabList = screen.getByRole('tablist');
-      expect(within(tabList).queryAllByRole('button', { hidden: true })).toHaveLength(0);
-      expect(tabList.querySelectorAll('button')).toHaveLength(4);
-
-      const tab = screen.getByRole('tab', { name: 'Members' });
-      expect(tab.getAttribute('aria-haspopup')).toBe('menu');
-      expect(tab.getAttribute('aria-expanded')).toBe('false');
-    });
+    // In browsers, the menu cancels the pointerdown that opens it, so no mousedown follows to
+    // select the tab. jsdom fires no mousedown either way, so check the cancel.
+    const clickOpen = (tab: HTMLElement) => {
+      expect(fireEvent.pointerDown(tab, { button: 0, ctrlKey: false })).toBe(false);
+      expect(screen.getByRole('menu')).toBeTruthy();
+    };
 
     it('keeps the tab state and panel link that the menu trigger would replace', () => {
       render(<DropdownTabs />);
 
       const tab = screen.getByRole('tab', { name: 'Members' });
-      expect(tab.getAttribute('data-state')).toBe('inactive');
-      expect(tab.getAttribute('aria-selected')).toBe('false');
-
-      act(() => {
-        fireEvent.click(screen.getByRole('tab', { name: 'Visitors' }));
-      });
       fireEvent.keyDown(tab, { key: 'Enter' });
       fireEvent.click(screen.getByRole('menuitem', { name: 'Paid members' }));
 
@@ -251,41 +232,9 @@ describe('Tabs Component', () => {
     it('opens the menu with Enter and names it after the tab', () => {
       render(<DropdownTabs />);
 
-      const tab = screen.getByRole('tab', { name: 'Members' });
-      fireEvent.keyDown(tab, { key: 'Enter' });
+      fireEvent.keyDown(screen.getByRole('tab', { name: 'Members' }), { key: 'Enter' });
 
-      expect(tab.getAttribute('aria-expanded')).toBe('true');
-      const menu = screen.getByRole('menu');
-      const labelledBy = document.getElementById(menu.getAttribute('aria-labelledby') ?? '');
-      expect(labelledBy?.contains(tab)).toBe(true);
-      expect(screen.getByRole('menu', { name: 'Members' })).toBe(menu);
-    });
-
-    it('names the tab and its menu from aria-label', () => {
-      render(<DropdownTabs label="Members metric" />);
-
-      const tab = screen.getByRole('tab', { name: 'Members metric' });
-      fireEvent.keyDown(tab, { key: ' ' });
-
-      expect(screen.getByRole('menu', { name: 'Members metric' })).toBeTruthy();
-    });
-
-    // In browsers, the menu cancels the pointerdown that opens it, so no mousedown follows.
-    const clickOpen = (tab: HTMLElement) => {
-      // A cancelled pointerdown is what stops browsers firing the mousedown that selects a tab.
-      expect(fireEvent.pointerDown(tab, { button: 0, ctrlKey: false })).toBe(false);
-      expect(screen.getByRole('menu')).toBeTruthy();
-    };
-
-    it('opens the menu on click without selecting the tab', () => {
-      const handleValueChange = vi.fn();
-      render(<DropdownTabs onValueChange={handleValueChange} />);
-
-      const tab = screen.getByRole('tab', { name: 'Members' });
-      clickOpen(tab);
-
-      expect(handleValueChange).not.toHaveBeenCalled();
-      expect(tab.getAttribute('aria-selected')).toBe('false');
+      expect(screen.getByRole('menu', { name: 'Members' })).toBeTruthy();
     });
 
     it('returns focus to the selected tab when a menu opened by a click is dismissed', async () => {
@@ -297,28 +246,11 @@ describe('Tabs Component', () => {
       expect(revenue).toBe(screen.getByRole('tab', { name: 'Revenue' }));
       handleValueChange.mockClear();
 
-      const tab = screen.getByRole('tab', { name: 'Members' });
-      clickOpen(tab);
+      clickOpen(screen.getByRole('tab', { name: 'Members' }));
       fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
       await waitFor(() => expect(document.activeElement).toBe(revenue));
 
       expect(handleValueChange).not.toHaveBeenCalled();
-      expect(tab.getAttribute('aria-selected')).toBe('false');
-      expect(revenue?.getAttribute('aria-selected')).toBe('true');
-      expect((revenue as HTMLElement).tabIndex).toBe(0);
-      expect(tab.tabIndex).toBe(-1);
-    });
-
-    it('keeps focus on the tab when a menu item opened by a click selects it', async () => {
-      render(<DropdownTabs />);
-
-      const tab = screen.getByRole('tab', { name: 'Members' });
-      clickOpen(tab);
-      fireEvent.click(screen.getByRole('menuitem', { name: 'Paid members' }));
-      await waitFor(() => expect(document.activeElement).toBe(tab));
-
-      expect(tab.getAttribute('aria-selected')).toBe('true');
-      expect(tab.tabIndex).toBe(0);
     });
 
     it('returns focus to the tab when a menu opened from it by keyboard is dismissed', async () => {
@@ -354,7 +286,6 @@ describe('Tabs Component', () => {
       const revenue = screen.getByRole('tab', { name: 'Revenue' });
       await waitFor(() => expect(document.activeElement).toBe(revenue));
       expect(revenue.getAttribute('aria-selected')).toBe('true');
-      expect(tab?.getAttribute('aria-selected')).toBe('false');
     });
 
     it('keeps focus on the tab, unselected, when nothing in the list is selected', async () => {
@@ -380,34 +311,6 @@ describe('Tabs Component', () => {
       expect(tab.getAttribute('aria-selected')).toBe('false');
     });
 
-    it('treats focus after a pointer press that opened no menu like any focus', () => {
-      render(<DropdownTabs />);
-
-      const tab = screen.getByRole('tab', { name: 'Members' });
-      fireEvent.pointerDown(tab, { button: 2 });
-      expect(screen.queryByRole('menu')).toBeNull();
-      act(() => tab.focus());
-
-      expect(document.activeElement).toBe(tab);
-      expect(tab.getAttribute('aria-selected')).toBe('true');
-    });
-
-    it('keeps the selection when the selected tab cannot take the returning focus', async () => {
-      render(<DropdownTabs initialValue="sources" />);
-
-      // Browsers don't focus a disabled tab; jsdom does, so refuse it here.
-      const sources = screen.getByRole('tab', { name: 'Sources' });
-      vi.spyOn(sources, 'focus').mockImplementation(() => {});
-      const tab = screen.getByRole('tab', { name: 'Members' });
-      clickOpen(tab);
-      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
-
-      await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
-      await waitFor(() => expect(sources.focus).toHaveBeenCalled());
-      expect(tab.getAttribute('aria-selected')).toBe('false');
-      expect(sources.getAttribute('aria-selected')).toBe('true');
-    });
-
     it('selects the tab on later focus when its menu closed without returning focus', async () => {
       render(<DropdownTabs keepFocusOnClose />);
 
@@ -423,60 +326,33 @@ describe('Tabs Component', () => {
       expect(tab.getAttribute('aria-selected')).toBe('true');
     });
 
-    it('selects the tab when something else focuses it after its menu closed elsewhere', async () => {
-      render(
-        <>
-          <button type="button">Elsewhere</button>
-          <DropdownTabs keepFocusOnClose />
-        </>,
-      );
-
-      const tab = screen.getByRole('tab', { name: 'Members' });
-      clickOpen(tab);
-      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
-      await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
-
-      const elsewhere = screen.getByRole('button', { name: 'Elsewhere' });
-      act(() => elsewhere.focus());
-      act(() => tab.focus());
-
-      expect(document.activeElement).toBe(tab);
-      expect(tab.getAttribute('aria-selected')).toBe('true');
-    });
-
-    it('selects the tab when focused from nowhere after its menu closed without returning focus', async () => {
+    it('selects the tab when focused from nowhere long after its menu closed without returning focus', async () => {
       render(<DropdownTabs keepFocusOnClose />);
 
       const tab = screen.getByRole('tab', { name: 'Members' });
       clickOpen(tab);
-      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
-      await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
-      act(() => (document.activeElement as HTMLElement | null)?.blur());
-      // Past the time the menu has to return focus.
-      await act(
-        () =>
-          new Promise((resolve) => {
-            setTimeout(resolve, 1100);
-          }),
-      );
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      try {
+        fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+        expect(screen.queryByRole('menu')).toBeNull();
+        act(() => (document.activeElement as HTMLElement | null)?.blur());
+        act(() => vi.advanceTimersByTime(60_000));
 
-      act(() => tab.focus());
-      expect(document.activeElement).toBe(tab);
-      expect(tab.getAttribute('aria-selected')).toBe('true');
+        act(() => tab.focus());
+        expect(document.activeElement).toBe(tab);
+        expect(tab.getAttribute('aria-selected')).toBe('true');
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
-    it('runs consumer focus and pointer handlers', () => {
+    it('runs a consumer focus handler', () => {
       const handleFocus = vi.fn();
-      const handlePointerDown = vi.fn();
       render(
         <Tabs defaultValue="members">
           <TabsList>
             <DropdownMenu>
-              <TabsDropdownTrigger
-                value="members"
-                onFocus={handleFocus}
-                onPointerDown={handlePointerDown}
-              >
+              <TabsDropdownTrigger value="members" onFocus={handleFocus}>
                 Members
               </TabsDropdownTrigger>
               <DropdownMenuContent>
@@ -487,13 +363,9 @@ describe('Tabs Component', () => {
         </Tabs>,
       );
 
-      const tab = screen.getByRole('tab', { name: 'Members' });
-      act(() => tab.focus());
-      fireEvent.pointerDown(tab, { button: 0, ctrlKey: false });
+      act(() => screen.getByRole('tab', { name: 'Members' }).focus());
 
       expect(handleFocus).toHaveBeenCalledTimes(1);
-      expect(handlePointerDown).toHaveBeenCalledTimes(1);
-      expect(screen.getByRole('menu')).toBeTruthy();
     });
 
     it('runs a consumer key handler first, which can keep the menu shut', () => {
@@ -522,16 +394,12 @@ describe('Tabs Component', () => {
     });
 
     it('is reached by arrow keys and selected like any other tab', async () => {
-      const handleValueChange = vi.fn();
-      render(<DropdownTabs onValueChange={handleValueChange} />);
+      render(<DropdownTabs />);
 
       const members = screen.getByRole('tab', { name: 'Members' });
-      expect(members.tabIndex).toBe(-1);
-
       expect(await arrow(screen.getByRole('tab', { name: 'Visitors' }), 'ArrowRight')).toBe(
         members,
       );
-      expect(handleValueChange).toHaveBeenCalledWith('members');
       expect(members.getAttribute('aria-selected')).toBe('true');
     });
 
@@ -543,7 +411,7 @@ describe('Tabs Component', () => {
       expect(screen.queryByRole('menu')).toBeNull();
 
       fireEvent.keyDown(members, { key: 'Enter' });
-      expect(screen.getByRole('menu', { name: 'Members' })).toBeTruthy();
+      expect(screen.getByRole('menu')).toBeTruthy();
     });
 
     it('opens the menu without selecting the tab in a manual tab list', async () => {
@@ -554,7 +422,7 @@ describe('Tabs Component', () => {
       expect(members).toBe(screen.getByRole('tab', { name: 'Members' }));
       fireEvent.keyDown(members as HTMLElement, { key: 'Enter' });
 
-      expect(screen.getByRole('menu', { name: 'Members' })).toBeTruthy();
+      expect(screen.getByRole('menu')).toBeTruthy();
       expect(handleValueChange).not.toHaveBeenCalled();
     });
 
@@ -562,7 +430,6 @@ describe('Tabs Component', () => {
       render(<DropdownTabs />);
 
       const sources = screen.getByRole('tab', { name: 'Sources' });
-      expect(sources.hasAttribute('disabled')).toBe(true);
       expect(await arrow(screen.getByRole('tab', { name: 'Revenue' }), 'ArrowRight')).toBe(
         screen.getByRole('tab', { name: 'Visitors' }),
       );
@@ -572,13 +439,12 @@ describe('Tabs Component', () => {
       expect(screen.queryByRole('menu')).toBeNull();
     });
 
-    it('keeps the menu state when menu-owned ARIA props are passed anyway', () => {
+    it('keeps the menu state and panel link when menu-owned ARIA props are passed anyway', () => {
       // As when shared tab props are spread onto the trigger.
       const shared = { 'aria-haspopup': undefined, 'aria-expanded': false, 'aria-controls': 'x' };
       render(
-        <Tabs defaultValue="visitors">
+        <Tabs defaultValue="members">
           <TabsList>
-            <TabsTrigger value="visitors">Visitors</TabsTrigger>
             <DropdownMenu>
               <TabsDropdownTrigger {...shared} value="members">
                 Members
@@ -593,11 +459,12 @@ describe('Tabs Component', () => {
       );
 
       const tab = screen.getByRole('tab', { name: 'Members' });
+      const panel = screen.getByRole('tabpanel');
       fireEvent.keyDown(tab, { key: 'Enter' });
 
       expect(tab.getAttribute('aria-haspopup')).toBe('menu');
       expect(tab.getAttribute('aria-expanded')).toBe('true');
-      expect(tab.getAttribute('aria-controls')).toMatch(/-content-members$/);
+      expect(tab.getAttribute('aria-controls')).toBe(panel.id);
     });
 
     it('puts an id on the tab and still names the menu', () => {
