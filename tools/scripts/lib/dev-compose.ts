@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseEnv } from 'node:util';
 
@@ -36,7 +36,7 @@ const MAILGUN_OVERLAYS = new Set(['compose.dev.mailgun.yaml', 'compose.dev.fake-
  */
 export function overlayArgs(): string[] {
   const args = (process.env.DEV_COMPOSE_FILES ?? '').split(/\s+/).filter(Boolean);
-  if (!args.some((arg) => MAILGUN_OVERLAYS.has(arg)) && hasMailgunCredentials()) {
+  if (!args.some((arg) => MAILGUN_OVERLAYS.has(basename(arg))) && hasMailgunCredentials()) {
     args.push('-f', 'compose.dev.mailgun.yaml');
   }
   return args;

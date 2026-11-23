@@ -38,7 +38,11 @@ describe('overlayArgs', () => {
   });
 
   it('leaves an overlay that already configures Mailgun alone', () => {
-    for (const file of ['compose.dev.fake-mailgun.yaml', 'compose.dev.mailgun.yaml']) {
+    for (const file of [
+      'compose.dev.fake-mailgun.yaml',
+      'compose.dev.mailgun.yaml',
+      './compose.dev.fake-mailgun.yaml',
+    ]) {
       withEnv({ ...mailgun, DEV_COMPOSE_FILES: `-f ${file}` }, () => {
         assert.deepEqual(overlayArgs(), ['-f', file]);
       });
