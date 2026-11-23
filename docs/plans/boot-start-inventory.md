@@ -672,7 +672,8 @@ was compared, by reading `git diff` and `git show` output (verified), and
 what it means for this inventory:
 
 - **Main starts the same things.** `ghost/core/boot.js` on `main` starts
-  every one of the 94 things listed here, and nothing else. There is no
+  every one of the 94 things listed here; an outline of its `init`, `start`
+  and scheduling calls showed nothing that is not listed. There is no
   kernel, foundry or `ghost/bootstrap` on `main`.
 - **The order differs, as the spike document says.** On `main` 25 services
   start in one `Promise.all`, where this branch starts the standard roots one
