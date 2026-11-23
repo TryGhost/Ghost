@@ -6,6 +6,20 @@ const urlJoin = (...parts) => {
   return url.replace(/(^|[^:])\/\/+/g, '$1/');
 };
 
+// The router calls next() asynchronously when no route matches, so an assertion inside
+// the callback would run after the test has finished. Resolve with whether next() ran
+// (true) or the request was redirected instead (false).
+const handleRequestUntilNext = (manager, req, res) => {
+  return new Promise((resolve) => {
+    const redirect = res.redirect;
+    res.redirect = (...args) => {
+      redirect(...args);
+      resolve(false);
+    };
+    manager.handleRequest(req, res, () => resolve(true));
+  });
+};
+
 describe('DynamicRedirectManager', function () {
   let headers;
   let status;
@@ -61,38 +75,42 @@ describe('DynamicRedirectManager', function () {
       assert.equal(location, '/result?q=abc&lang=js');
     });
 
-    it('Allows redirects to be removed', function () {
+    it('Allows redirects to be removed', async function () {
       const id = manager.addRedirect('/test-params', '/result?q=abc', { permanent: true });
       manager.removeRedirect(id);
 
       req.url = '/test-params/?q=123&lang=js';
 
-      manager.handleRequest(req, res, function next() {
-        assert(true, 'next should have been called');
-      });
+      assert.equal(
+        await handleRequestUntilNext(manager, req, res),
+        true,
+        'next should have been called',
+      );
 
       assert.equal(headers, null);
       assert.equal(status, null);
       assert.equal(location, null);
     });
 
-    it('Can add same redirect multiple times and remove it once', function () {
+    it('Can add same redirect multiple times and remove it once', async function () {
       manager.addRedirect('/test-params', '/result?q=abc', { permanent: true });
       const id = manager.addRedirect('/test-params', '/result?q=abc', { permanent: true });
       manager.removeRedirect(id);
 
       req.url = '/test-params/?q=123&lang=js';
 
-      manager.handleRequest(req, res, function next() {
-        assert(true, 'next should have been called');
-      });
+      assert.equal(
+        await handleRequestUntilNext(manager, req, res),
+        true,
+        'next should have been called',
+      );
 
       assert.equal(headers, null);
       assert.equal(status, null);
       assert.equal(location, null);
     });
 
-    it('The routing works when passed an invalid regexp for the from parameter', function () {
+    it('The routing works when passed an invalid regexp for the from parameter', async function () {
       const from =
         '/invalid_regex/(/size/[a-zA-Z0-9_-.]*/[a-zA-Z0-9_-.]*/[0-9]*/[0-9]*/)([a-zA-Z0-9_-.]*)';
       const to = '/';
@@ -103,9 +121,11 @@ describe('DynamicRedirectManager', function () {
 
       req.url = '/test-params/';
 
-      manager.handleRequest(req, res, function next() {
-        assert(true, 'next should have been called');
-      });
+      assert.equal(
+        await handleRequestUntilNext(manager, req, res),
+        true,
+        'next should have been called',
+      );
 
       assert.equal(headers, null);
       assert.equal(status, null);
@@ -129,7 +149,7 @@ describe('DynamicRedirectManager', function () {
       }
     });
 
-    it('removes all redirects', function () {
+    it('removes all redirects', async function () {
       const from = '/redirect-me';
       const to = '/redirected';
 
@@ -140,9 +160,11 @@ describe('DynamicRedirectManager', function () {
       manager.removeAllRedirects();
       assert.deepEqual(manager.redirects, {});
 
-      manager.handleRequest(req, res, function next() {
-        assert(true, 'next should have been called');
-      });
+      assert.equal(
+        await handleRequestUntilNext(manager, req, res),
+        true,
+        'next should have been called',
+      );
     });
 
     describe('Substitution regex redirects', function () {
@@ -435,7 +457,7 @@ describe('DynamicRedirectManager', function () {
         assert.equal(location, '/redirected-default');
       });
 
-      it('should not redirect with case sensitive', function () {
+      it('should not redirect with case sensitive', async function () {
         const from = '^\\/Case-Sensitive';
         const to = '/redirected-insensitive';
 
@@ -443,16 +465,18 @@ describe('DynamicRedirectManager', function () {
 
         req.url = '/casE-sensitivE';
 
-        manager.handleRequest(req, res, function next() {
-          assert(true, 'next should have been called');
-        });
+        assert.equal(
+          await handleRequestUntilNext(manager, req, res),
+          true,
+          'next should have been called',
+        );
 
         assert.equal(headers, null);
         assert.equal(status, null);
         assert.equal(location, null);
       });
 
-      it('should not redirect with default case sensitive', function () {
+      it('should not redirect with default case sensitive', async function () {
         const from = '^\\/Default-Sensitive';
         const to = '/redirected-default';
 
@@ -460,9 +484,11 @@ describe('DynamicRedirectManager', function () {
 
         req.url = '/defaulT-sensitivE';
 
-        manager.handleRequest(req, res, function next() {
-          assert(true, 'next should have been called');
-        });
+        assert.equal(
+          await handleRequestUntilNext(manager, req, res),
+          true,
+          'next should have been called',
+        );
 
         assert.equal(headers, null);
         assert.equal(status, null);
