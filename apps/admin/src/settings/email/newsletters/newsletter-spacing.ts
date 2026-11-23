@@ -22,10 +22,10 @@ export interface LineSpacingStop {
 
 export const MARGIN_STOPS: MarginStop[] = [
   { desktop: 20, mobile: 20 }, // today
-  { desktop: 32, mobile: 22 },
-  { desktop: 44, mobile: 24 },
-  { desktop: 56, mobile: 26 },
-  { desktop: 72, mobile: 28 },
+  { desktop: 32, mobile: 25 },
+  { desktop: 44, mobile: 30 },
+  { desktop: 56, mobile: 35 },
+  { desktop: 72, mobile: 40 },
 ];
 
 export const LINE_SPACING_STOPS: LineSpacingStop[] = [

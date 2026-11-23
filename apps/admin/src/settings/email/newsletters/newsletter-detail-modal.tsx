@@ -3,6 +3,7 @@ import FormSection from '@/settings/components/form-section';
 import HeaderImageField from '@/settings/email-design/header-image-field';
 import HtmlField from '@/settings/components/html-field';
 import IconToggleGroup from '@/settings/components/icon-toggle-group';
+import NewsletterCardFields from './newsletter-card-fields';
 import NewsletterPreview from './newsletter-preview';
 import NewsletterSpacingFields from './newsletter-spacing-fields';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -63,6 +64,8 @@ import { renderReplyToEmail, renderSenderEmail } from '@/settings/utils/newslett
 import { textColorForBackgroundColor } from '@tryghost/color-utils';
 import { toast } from 'sonner';
 import { useGlobalData } from '@/settings/providers/global-data-context';
+import { DEFAULT_CARD_DESIGN, type NewsletterCardDesign } from './newsletter-card';
+import { DEFAULT_TITLE_META, type NewsletterTitleMeta } from './newsletter-title-meta';
 import { DEFAULT_SPACING, type NewsletterSpacing, type PreviewDevice } from './newsletter-spacing';
 import { navigateTo } from '@/utils/navigation';
 
@@ -130,6 +133,10 @@ const Sidebar: React.FC<{
   clearError: (field: string) => void;
   spacing: NewsletterSpacing;
   onSpacingChange: (spacing: NewsletterSpacing) => void;
+  card: NewsletterCardDesign;
+  onCardChange: (card: NewsletterCardDesign) => void;
+  titleMeta: NewsletterTitleMeta;
+  onTitleMetaChange: (titleMeta: NewsletterTitleMeta) => void;
 }> = ({
   newsletter,
   onlyOne,
@@ -139,6 +146,10 @@ const Sidebar: React.FC<{
   clearError,
   spacing,
   onSpacingChange,
+  card,
+  onCardChange,
+  titleMeta,
+  onTitleMetaChange,
 }) => {
   type FontOption = { value: string; label: string; className?: string };
   const upgradeRoute = useUpgradeRoute();
@@ -428,7 +439,7 @@ const Sidebar: React.FC<{
       title: 'Content',
       contents: (
         <>
-          <FormSection title="Header">
+          <FormSection title="Header" compact>
             <HeaderImageField
               inputId="newsletter-header-image"
               value={newsletter.header_image || ''}
@@ -463,7 +474,7 @@ const Sidebar: React.FC<{
             </Field>
           </FormSection>
 
-          <FormSection title="Title section">
+          <FormSection title="Title section" compact>
             <Field orientation="horizontal">
               <FieldLabel htmlFor="newsletter-show-post-title">Post title</FieldLabel>
               <Switch
@@ -484,6 +495,33 @@ const Sidebar: React.FC<{
                 />
               </Field>
             )}
+            {/* Prototype: preview only, not saved. */}
+            {newsletter.show_post_title_section && (
+              <Field orientation="horizontal">
+                <FieldLabel htmlFor="newsletter-show-byline">Byline</FieldLabel>
+                <Switch
+                  checked={titleMeta.showByline}
+                  id="newsletter-show-byline"
+                  onCheckedChange={(checked) =>
+                    onTitleMetaChange({ ...titleMeta, showByline: checked })
+                  }
+                />
+              </Field>
+            )}
+            {newsletter.show_post_title_section && (
+              <Field orientation="horizontal">
+                <FieldLabel htmlFor="newsletter-show-view-in-browser">
+                  View in browser link
+                </FieldLabel>
+                <Switch
+                  checked={titleMeta.showViewInBrowser}
+                  id="newsletter-show-view-in-browser"
+                  onCheckedChange={(checked) =>
+                    onTitleMetaChange({ ...titleMeta, showViewInBrowser: checked })
+                  }
+                />
+              </Field>
+            )}
             <Field orientation="horizontal">
               <FieldLabel htmlFor="newsletter-show-feature-image">Feature image</FieldLabel>
               <Switch
@@ -494,7 +532,7 @@ const Sidebar: React.FC<{
             </Field>
           </FormSection>
 
-          <FormSection title="Footer">
+          <FormSection title="Footer" compact>
             <Field orientation="horizontal">
               <FieldLabel htmlFor="newsletter-feedback-enabled">
                 Ask your readers for feedback
@@ -604,6 +642,7 @@ const Sidebar: React.FC<{
               value={newsletter.background_color || 'light'}
               onChange={(color) => updateNewsletter({ background_color: color! })}
             />
+            <NewsletterCardFields card={card} onChange={onCardChange} />
             <Inline className="w-full" gap="sm" justify="between">
               <FieldTitle className="shrink-0">Heading font</FieldTitle>
               <Field className="max-w-[200px]">
@@ -1006,14 +1045,22 @@ const NewsletterDetailModalContent: React.FC<{ newsletter: Newsletter; onlyOne: 
     setFormState(() => newsletter);
   }, [setFormState, newsletter]);
 
-  // Prototype: spacing and device only drive the preview; nothing is saved.
+  // Prototype: spacing, card and device only drive the preview; nothing is saved.
   const [spacing, setSpacing] = useState<NewsletterSpacing>(DEFAULT_SPACING);
+  const [card, setCard] = useState<NewsletterCardDesign>(DEFAULT_CARD_DESIGN);
+  const [titleMeta, setTitleMeta] = useState<NewsletterTitleMeta>(DEFAULT_TITLE_META);
   const [previewDevice, setPreviewDevice] = useState<PreviewDevice>('desktop');
 
   // The preview toolbar centres its content in a row; stretch so the preview keeps its full height.
   const preview = (
     <Stack className="size-full self-stretch" gap="none">
-      <NewsletterPreview device={previewDevice} newsletter={formState} spacing={spacing} />
+      <NewsletterPreview
+        card={card}
+        device={previewDevice}
+        newsletter={formState}
+        spacing={spacing}
+        titleMeta={titleMeta}
+      />
     </Stack>
   );
   const deviceSelector = (
@@ -1037,14 +1084,18 @@ const NewsletterDetailModalContent: React.FC<{ newsletter: Newsletter; onlyOne: 
   );
   const sidebar = (
     <Sidebar
+      card={card}
       clearError={clearError}
       errors={errors}
       newsletter={formState}
       onlyOne={onlyOne}
       spacing={spacing}
+      titleMeta={titleMeta}
       updateNewsletter={updateNewsletter}
       validate={validate}
+      onCardChange={setCard}
       onSpacingChange={setSpacing}
+      onTitleMetaChange={setTitleMeta}
     />
   );
 

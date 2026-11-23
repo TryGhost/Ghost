@@ -6,13 +6,25 @@ import { renderReplyToEmail, renderSenderEmail } from '@/settings/utils/newslett
 import { textColorForBackgroundColor } from '@tryghost/color-utils';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { DEFAULT_SPACING, type NewsletterSpacing, type PreviewDevice } from './newsletter-spacing';
+import { DEFAULT_CARD_DESIGN, type NewsletterCardDesign, hasCard } from './newsletter-card';
+import { DEFAULT_TITLE_META, type NewsletterTitleMeta } from './newsletter-title-meta';
 
 const NewsletterPreview: React.FC<{
   newsletter: Newsletter;
   /** Prototype: margin and line spacing stops, preview only. */
   spacing?: NewsletterSpacing;
   device?: PreviewDevice;
-}> = ({ newsletter, spacing = DEFAULT_SPACING, device = 'desktop' }) => {
+  /** Prototype: content background (card look) and its corners, preview only. */
+  card?: NewsletterCardDesign;
+  /** Prototype: byline and "View in browser" visibility, preview only. */
+  titleMeta?: NewsletterTitleMeta;
+}> = ({
+  newsletter,
+  spacing = DEFAULT_SPACING,
+  device = 'desktop',
+  card = DEFAULT_CARD_DESIGN,
+  titleMeta = DEFAULT_TITLE_META,
+}) => {
   const { currentUser, settings, siteData, config } = useGlobalData();
   const [title, icon, commentsEnabled, supportEmailAddress, defaultEmailAddress] =
     getSettingValues<string>(settings, [
@@ -65,6 +77,26 @@ const NewsletterPreview: React.FC<{
     return 'transparent';
   };
 
+  /** The card's colour when the card look is on, otherwise undefined (no card). */
+  const cardBackgroundColor = () => {
+    if (!hasCard(card)) {
+      return undefined;
+    }
+
+    const validHex = /#([0-9a-f]{3}){1,2}$/i;
+
+    if (validHex.test(card.contentBackground)) {
+      return card.contentBackground;
+    }
+
+    return '#ffffff';
+  };
+
+  // The colour the content sits on, so the one that text, links, buttons and titles derive from:
+  // the card when the card look is on, otherwise the email background. The page colour around
+  // the card never carries text.
+  const contentSurfaceColor = () => cardBackgroundColor() ?? backgroundColor();
+
   const buttonColor = () => {
     const value = newsletter.button_color;
 
@@ -75,7 +107,7 @@ const NewsletterPreview: React.FC<{
     }
 
     if (value === null) {
-      const bg = backgroundColor();
+      const bg = contentSurfaceColor();
       return textColorForBackgroundColor(bg).hex();
     }
 
@@ -106,7 +138,7 @@ const NewsletterPreview: React.FC<{
       return value;
     }
 
-    return textColorForBackgroundColor(backgroundColor()).hex();
+    return textColorForBackgroundColor(contentSurfaceColor()).hex();
   };
 
   const postTitleColor = () => {
@@ -123,7 +155,7 @@ const NewsletterPreview: React.FC<{
     }
 
     const headerBgColor = headerBackgroundColor();
-    const bgColor = headerBgColor === 'transparent' ? backgroundColor() : headerBgColor;
+    const bgColor = headerBgColor === 'transparent' ? contentSurfaceColor() : headerBgColor;
 
     return textColorForBackgroundColor(bgColor).hex();
   };
@@ -141,7 +173,7 @@ const NewsletterPreview: React.FC<{
       return siteData.accent_color;
     }
 
-    return textColorForBackgroundColor(backgroundColor()).hex();
+    return textColorForBackgroundColor(contentSurfaceColor()).hex();
   };
 
   const dividerColor = () => {
@@ -160,8 +192,10 @@ const NewsletterPreview: React.FC<{
     return '#e0e7eb';
   };
 
-  const textColor = textColorForBackgroundColor(backgroundColor()).hex();
-  const secondaryTextColor = textColorForBackgroundColor(backgroundColor()).alpha(0.5).toString();
+  const textColor = textColorForBackgroundColor(contentSurfaceColor()).hex();
+  const secondaryTextColor = textColorForBackgroundColor(contentSurfaceColor())
+    .alpha(0.5)
+    .toString();
 
   const headerTextColor =
     headerBackgroundColor() === 'transparent'
@@ -210,6 +244,8 @@ const NewsletterPreview: React.FC<{
       bodyFontCategory={newsletter.body_font_category}
       buttonCorners={newsletter.button_corners || 'rounded'}
       buttonStyle={newsletter.button_style || 'fill'}
+      cardBackgroundColor={cardBackgroundColor()}
+      cardCorners={card.contentCorners}
       device={device}
       dividerStyle={newsletter.divider_style || 'solid'}
       footerContent={newsletter.footer_content}
@@ -229,6 +265,7 @@ const NewsletterPreview: React.FC<{
         defaultEmailAddress,
       )}
       showBadge={newsletter.show_badge}
+      showByline={titleMeta.showByline}
       showCommentCta={showCommentCta}
       showExcerpt={newsletter.show_excerpt}
       showFeatureImage={newsletter.show_feature_image}
@@ -237,6 +274,7 @@ const NewsletterPreview: React.FC<{
       showPostTitleSection={newsletter.show_post_title_section}
       showShareButton={showShareButton}
       showSubscriptionDetails={newsletter.show_subscription_details}
+      showViewInBrowser={titleMeta.showViewInBrowser}
       siteTitle={title}
       spacing={spacing}
       titleAlignment={newsletter.title_alignment}
