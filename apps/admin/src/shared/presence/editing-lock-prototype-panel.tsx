@@ -15,6 +15,7 @@ import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import {
   resetEditingLockPrototype,
+  setEditingLockPrototypeVersion,
   setMultiplePeoplePrototype,
   simulatePersonOpeningPrototype,
   simulatePersonClosingPrototype,
@@ -25,10 +26,11 @@ import {
 
 // Research controls only: these stand in for actions in the other staff member's browser.
 export function EditingLockPrototypePanel() {
-  const { enabled, experience, phase, editorId, present, multiplePeople } =
+  const { enabled, version, experience, phase, editorId, present, multiplePeople } =
     useEditingLockPrototype();
   const [collapsed, setCollapsed] = useState(false);
   const [experienceOpen, setExperienceOpen] = useState(false);
+  const [versionOpen, setVersionOpen] = useState(false);
   if (!enabled) {
     return null;
   }
@@ -53,7 +55,7 @@ export function EditingLockPrototypePanel() {
           aria-label="Editing lock prototype controls"
           className={cn(
             'border border-border-default bg-surface-elevated shadow-md transition-opacity duration-150 motion-reduce:transition-none',
-            experienceOpen
+            experienceOpen || versionOpen
               ? 'visible opacity-100'
               : 'invisible opacity-0 group-hover/prototype:visible group-hover/prototype:opacity-100 group-has-[:focus-visible]/prototype:visible group-has-[:focus-visible]/prototype:opacity-100',
           )}
@@ -79,6 +81,32 @@ export function EditingLockPrototypePanel() {
             </Inline>
             {!collapsed && (
               <>
+                <Stack gap="xs">
+                  <Label className="text-base" htmlFor="editing-lock-prototype-version">
+                    Version
+                  </Label>
+                  <Select
+                    open={versionOpen}
+                    value={version}
+                    onOpenChange={setVersionOpen}
+                    onValueChange={(value) => {
+                      if (value === 'lock-avatar' || value === 'avatars-only') {
+                        setEditingLockPrototypeVersion(value);
+                      }
+                    }}
+                  >
+                    <SelectTrigger
+                      aria-label="Prototype version"
+                      id="editing-lock-prototype-version"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="lock-avatar">Lock + avatar</SelectItem>
+                      <SelectItem value="avatars-only">Avatars only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Stack>
                 <Select
                   open={experienceOpen}
                   value={experience}

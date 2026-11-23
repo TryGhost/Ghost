@@ -89,6 +89,7 @@ function PrototypeEditorPersonAvatar({
   const snapshot = useEditingLockPrototype(postId);
   const { phase } = snapshot;
   const isEditor = snapshot.editorId === person.id;
+  const showLock = snapshot.version === 'lock-avatar' && snapshot.locked && isEditor;
   const notice = snapshot.notice && isEditor;
   const editingMessage = `${person.name} is editing this post.`;
   const [open, setOpen] = useState(false);
@@ -142,6 +143,7 @@ function PrototypeEditorPersonAvatar({
           }
           className={cn(
             'pointer-events-auto shrink-0 rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-focus-ring',
+            showLock && 'bg-muted py-0.5 pr-0.5 pl-2 text-muted-foreground',
             !isEditor && 'opacity-50',
           )}
           data-editor={isEditor}
@@ -164,7 +166,16 @@ function PrototypeEditorPersonAvatar({
           }}
           onPointerLeave={leave}
         >
-          <DemoAvatar person={person} />
+          <Inline align="center" gap="xs">
+            {showLock && (
+              <LucideIcon.LockKeyhole
+                aria-hidden="true"
+                className="size-3.5 shrink-0"
+                data-testid="editing-lock-avatar-lock"
+              />
+            )}
+            <DemoAvatar person={person} />
+          </Inline>
         </button>
       </PopoverTrigger>
       <PopoverContent
@@ -242,13 +253,13 @@ export function EditingLockPrototypeAvatars({
   surface: 'editor' | 'list';
   className?: string;
 }) {
-  const { editorId, present } = useEditingLockPrototype(postId);
+  const { editorId, present, locked, version } = useEditingLockPrototype(postId);
   const { data: currentUser } = useCurrentUser();
   if (present.length === 0) {
     return null;
   }
   const people: PrototypePerson[] = [
-    ...(surface === 'editor'
+    ...(surface === 'editor' && (!locked || version === 'avatars-only')
       ? [{ id: 'you', name: currentUser?.name ?? 'You', image: currentUser?.profile_image }]
       : []),
     ...PROTOTYPE_STAFF.filter((person) => present.includes(person.id)),
@@ -268,7 +279,13 @@ export function EditingLockPrototypeAvatars({
       {ordered.map((person, index) => (
         <Box
           key={person.id}
-          className={cn('relative size-7 bg-background', index > 0 && '-ml-2')}
+          className={cn(
+            'relative shrink-0 bg-background',
+            surface === 'editor' && version === 'lock-avatar' && locked && person.id === editorId
+              ? 'h-8'
+              : 'size-7',
+            index > 0 && '-ml-2',
+          )}
           radius="full"
           style={{ zIndex: ordered.length - index }}
         >

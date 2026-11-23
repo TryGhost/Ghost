@@ -579,13 +579,6 @@ function EditorContent({
                     onOpenUpdateFlow={canPublish && !isLocked ? openUpdateFlow : undefined}
                     onRetrySave={session.retrySave}
                   />
-                  {editingLock.locked && (
-                    <LucideIcon.LockKeyhole
-                      aria-label="Editing locked"
-                      className="size-3.5 shrink-0 text-muted-foreground"
-                      role="img"
-                    />
-                  )}
                 </Inline>
               ) : null}
               {/* A tab that was typing when it was locked must see why at once, not once the chrome fades back in. */}

@@ -23,9 +23,12 @@ function demoPostId() {
   return sessionStorage.getItem(key);
 }
 const postId = demoPostId();
+const versionKey = 'ghost:editing-lock-prototype:version';
+const savedVersion = postId ? sessionStorage.getItem(versionKey) : null;
 
 type Phase = 'locked' | 'taking-over' | 'editing';
 export type EditingLockExperience = 'taking-over' | 'being-taken-over';
+export type EditingLockVersion = 'lock-avatar' | 'avatars-only';
 export const PROTOTYPE_STAFF = [
   { id: 'alex', name: 'Alex Smith' },
   { id: 'sam', name: 'Sam Lee' },
@@ -33,6 +36,7 @@ export const PROTOTYPE_STAFF = [
 ] as const;
 export type PrototypeStaffId = (typeof PROTOTYPE_STAFF)[number]['id'];
 type PrototypeState = {
+  version: EditingLockVersion;
   experience: EditingLockExperience;
   phase: Phase;
   editorId: PrototypeStaffId | 'you';
@@ -42,6 +46,7 @@ type PrototypeState = {
   revision: number;
 };
 let state: PrototypeState = {
+  version: savedVersion === 'avatars-only' ? 'avatars-only' : 'lock-avatar',
   experience: 'taking-over',
   phase: 'locked',
   editorId: 'alex',
@@ -87,6 +92,11 @@ export function resetEditingLockPrototype(
 
 export function setMultiplePeoplePrototype(enabled: boolean) {
   resetEditingLockPrototype(state.experience, enabled);
+}
+
+export function setEditingLockPrototypeVersion(version: EditingLockVersion) {
+  sessionStorage.setItem(versionKey, version);
+  update({ version });
 }
 
 export function simulatePersonOpeningPrototype(id: PrototypeStaffId) {
