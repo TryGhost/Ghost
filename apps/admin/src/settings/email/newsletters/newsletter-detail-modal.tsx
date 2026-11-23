@@ -4,6 +4,7 @@ import HeaderImageField from '@/settings/email-design/header-image-field';
 import HtmlField from '@/settings/components/html-field';
 import IconToggleGroup from '@/settings/components/icon-toggle-group';
 import NewsletterPreview from './newsletter-preview';
+import NewsletterSpacingFields from './newsletter-spacing-fields';
 import React, { useCallback, useEffect, useState } from 'react';
 import useSettingGroup from '@/settings/hooks/use-setting-group';
 import validator from 'validator';
@@ -29,6 +30,8 @@ import {
   TabsList,
   TabsTrigger,
   Textarea,
+  ToggleGroup,
+  ToggleGroupItem,
 } from '@tryghost/shade/components';
 import {
   type ErrorMessages,
@@ -38,7 +41,7 @@ import {
   useLimiter,
 } from '@tryghost/admin-x-framework/hooks';
 import { HostLimitError } from '@tryghost/admin-x-framework/errors';
-import { Inline } from '@tryghost/shade/primitives';
+import { Inline, Stack } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import {
   type Newsletter,
@@ -60,6 +63,7 @@ import { renderReplyToEmail, renderSenderEmail } from '@/settings/utils/newslett
 import { textColorForBackgroundColor } from '@tryghost/color-utils';
 import { toast } from 'sonner';
 import { useGlobalData } from '@/settings/providers/global-data-context';
+import { DEFAULT_SPACING, type NewsletterSpacing, type PreviewDevice } from './newsletter-spacing';
 import { navigateTo } from '@/utils/navigation';
 
 const ReplyToEmailField: React.FC<{
@@ -124,7 +128,18 @@ const Sidebar: React.FC<{
   validate: () => void;
   errors: ErrorMessages;
   clearError: (field: string) => void;
-}> = ({ newsletter, onlyOne, updateNewsletter, validate, errors, clearError }) => {
+  spacing: NewsletterSpacing;
+  onSpacingChange: (spacing: NewsletterSpacing) => void;
+}> = ({
+  newsletter,
+  onlyOne,
+  updateNewsletter,
+  validate,
+  errors,
+  clearError,
+  spacing,
+  onSpacingChange,
+}) => {
   type FontOption = { value: string; label: string; className?: string };
   const upgradeRoute = useUpgradeRoute();
   const { mutateAsync: editNewsletter } = useEditNewsletter();
@@ -652,6 +667,7 @@ const Sidebar: React.FC<{
                 </Select>
               </Field>
             </Inline>
+            <NewsletterSpacingFields spacing={spacing} onChange={onSpacingChange} />
           </FormSection>
           <FormSection title="Header">
             <ColorPickerField
@@ -990,15 +1006,45 @@ const NewsletterDetailModalContent: React.FC<{ newsletter: Newsletter; onlyOne: 
     setFormState(() => newsletter);
   }, [setFormState, newsletter]);
 
-  const preview = <NewsletterPreview newsletter={formState} />;
+  // Prototype: spacing and device only drive the preview; nothing is saved.
+  const [spacing, setSpacing] = useState<NewsletterSpacing>(DEFAULT_SPACING);
+  const [previewDevice, setPreviewDevice] = useState<PreviewDevice>('desktop');
+
+  // The preview toolbar centres its content in a row; stretch so the preview keeps its full height.
+  const preview = (
+    <Stack className="size-full self-stretch" gap="none">
+      <NewsletterPreview device={previewDevice} newsletter={formState} spacing={spacing} />
+    </Stack>
+  );
+  const deviceSelector = (
+    <ToggleGroup
+      size="default"
+      type="single"
+      value={previewDevice}
+      onValueChange={(value) => {
+        if (value === 'desktop' || value === 'mobile') {
+          setPreviewDevice(value);
+        }
+      }}
+    >
+      <ToggleGroupItem aria-label="Desktop" value="desktop">
+        <LucideIcon.Laptop />
+      </ToggleGroupItem>
+      <ToggleGroupItem aria-label="Mobile" value="mobile">
+        <LucideIcon.Smartphone />
+      </ToggleGroupItem>
+    </ToggleGroup>
+  );
   const sidebar = (
     <Sidebar
       clearError={clearError}
       errors={errors}
       newsletter={formState}
       onlyOne={onlyOne}
+      spacing={spacing}
       updateNewsletter={updateNewsletter}
       validate={validate}
+      onSpacingChange={setSpacing}
     />
   );
 
@@ -1006,12 +1052,12 @@ const NewsletterDetailModalContent: React.FC<{ newsletter: Newsletter; onlyOne: 
     <PreviewModalContent
       buttonsDisabled={okProps.disabled}
       cancelLabel="Close"
+      deviceSelector={deviceSelector}
       dirty={saveState === 'unsaved'}
       okLabel={okProps.label || 'Save'}
       okVariant={okProps.variant}
       preview={preview}
       previewBgColor={'grey'}
-      previewToolbar={false}
       sidebar={sidebar}
       sidebarPadding={false}
       testId="newsletter-modal"

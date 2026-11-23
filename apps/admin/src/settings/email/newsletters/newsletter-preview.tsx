@@ -5,8 +5,14 @@ import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { renderReplyToEmail, renderSenderEmail } from '@/settings/utils/newsletter-emails';
 import { textColorForBackgroundColor } from '@tryghost/color-utils';
 import { useGlobalData } from '@/settings/providers/global-data-context';
+import { DEFAULT_SPACING, type NewsletterSpacing, type PreviewDevice } from './newsletter-spacing';
 
-const NewsletterPreview: React.FC<{ newsletter: Newsletter }> = ({ newsletter }) => {
+const NewsletterPreview: React.FC<{
+  newsletter: Newsletter;
+  /** Prototype: margin and line spacing stops, preview only. */
+  spacing?: NewsletterSpacing;
+  device?: PreviewDevice;
+}> = ({ newsletter, spacing = DEFAULT_SPACING, device = 'desktop' }) => {
   const { currentUser, settings, siteData, config } = useGlobalData();
   const [title, icon, commentsEnabled, supportEmailAddress, defaultEmailAddress] =
     getSettingValues<string>(settings, [
@@ -204,6 +210,7 @@ const NewsletterPreview: React.FC<{ newsletter: Newsletter }> = ({ newsletter })
       bodyFontCategory={newsletter.body_font_category}
       buttonCorners={newsletter.button_corners || 'rounded'}
       buttonStyle={newsletter.button_style || 'fill'}
+      device={device}
       dividerStyle={newsletter.divider_style || 'solid'}
       footerContent={newsletter.footer_content}
       headerBackgroundColor={colors.headerBackgroundColor || 'transparent'}
@@ -231,6 +238,7 @@ const NewsletterPreview: React.FC<{ newsletter: Newsletter }> = ({ newsletter })
       showShareButton={showShareButton}
       showSubscriptionDetails={newsletter.show_subscription_details}
       siteTitle={title}
+      spacing={spacing}
       titleAlignment={newsletter.title_alignment}
       titleFontCategory={newsletter.title_font_category}
       titleFontWeight={newsletter.title_font_weight || 'bold'}
