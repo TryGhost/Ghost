@@ -4,6 +4,7 @@ import type {CardWidth} from '../../utils/card-widths.js';
 import {cssUrl} from '../../utils/css-url.js';
 import {escapeHtml} from '../../utils/escape-html.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
+import {getEmailMediaHref, renderWithVisibility, type Visibility} from '../../utils/visibility.js';
 
 interface VideoNodeData {
     src: string;
@@ -15,6 +16,7 @@ interface VideoNodeData {
     customThumbnailSrc: string;
     formattedDuration: string;
     cardWidth: CardWidth;
+    visibility?: Visibility;
 }
 
 interface BaseVideoRenderOptions extends ExportDOMOptions {}
@@ -62,7 +64,7 @@ export function renderVideoNode(node: VideoNodeData, options: VideoRenderOptions
     const element = document.createElement('div');
     element.innerHTML = htmlString.trim();
 
-    return {element: element.firstElementChild as HTMLElement, type: 'outer' as const};
+    return renderWithVisibility({element: element.firstElementChild as HTMLElement, type: 'outer' as const}, node.visibility, options);
 }
 
 function cardTemplate({node, cardClasses}: {node: VideoNodeData, cardClasses: string}) {
@@ -136,7 +138,7 @@ function cardTemplate({node, cardClasses}: {node: VideoNodeData, cardClasses: st
 
 function emailCardTemplate({node, options, cardClasses}: {node: VideoNodeData, options: VideoRenderOptions, cardClasses: string}) {
     const thumbnailSrc = node.customThumbnailSrc || node.thumbnailSrc;
-    const postUrl = escapeHtml(options.postUrl || node.src);
+    const postUrl = escapeHtml(getEmailMediaHref(node.src, node.visibility, options.postUrl));
     const emailTemplateMaxWidth = 600;
     const aspectRatio = node.width && node.height ? node.width / node.height : DEFAULT_EMAIL_ASPECT_RATIO;
     const emailSpacerWidth = Math.round(emailTemplateMaxWidth / 4);

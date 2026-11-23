@@ -4,6 +4,7 @@ export {
     NO_MEMBERS_SEGMENT,
     PAID_MEMBERS_SEGMENT,
     buildDefaultVisibility,
+    getRenderedVisibility,
     isOldVisibilityFormat,
     isVisibilityRestricted,
     migrateOldVisibilityFormat,

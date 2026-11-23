@@ -22,13 +22,6 @@ function isNullish(value: unknown) {
     return value === null || value === undefined;
 }
 
-function withoutNullish(obj: Record<string, unknown> | undefined) {
-    if (!obj || typeof obj !== 'object') {
-        return {};
-    }
-    return Object.fromEntries(Object.entries(obj).filter(([, value]) => !isNullish(value)));
-}
-
 // ensure we always work with a deep copy to avoid accidental ref mutations
 export function buildDefaultVisibility(): typeof DEFAULT_VISIBILITY {
     return JSON.parse(JSON.stringify(DEFAULT_VISIBILITY));
@@ -87,6 +80,26 @@ export function hasRestrictedCards(lexical: string | {root?: SerializedNode} | n
     return hasRestrictedNode(document?.root?.children);
 }
 
+export function isWebVisibilityRestricted(visibility: Visibility | undefined) {
+    if (!visibility) {
+        return false;
+    }
+
+    const web = migrateOldVisibilityFormat(visibility).web;
+    return web?.nonMember !== true || web?.memberSegment !== ALL_MEMBERS_SEGMENT;
+}
+
+// Email play/download links normally go to the post so readers get the full
+// player. When the card is hidden from some web visitors, an email recipient
+// can land on the post without it (not entitled on web, or not signed in), so
+// link straight to the media file instead.
+export function getEmailMediaHref(src: string, visibility: Visibility | undefined, postUrl?: string) {
+    if (isWebVisibilityRestricted(visibility)) {
+        return src;
+    }
+    return postUrl || src;
+}
+
 // old formats...
 //
 // "segment" only applies to email visibility
@@ -129,8 +142,7 @@ export function migrateOldVisibilityFormat(visibility: Visibility) {
 
     // convert web visibility, old formats only had on/off for web visibility rather than specific segments
     if (isNullish(visibility.showOnWeb) && isNullish(visibility.emailOnly)) {
-        // no legacy web keys, so keep any supplied new-format values and default the rest
-        newVisibility.web = {...buildDefaultVisibility().web, ...withoutNullish(visibility.web)};
+        newVisibility.web = buildDefaultVisibility().web;
     } else if (!isNullish(visibility.emailOnly)) {
         newVisibility.web.nonMember = !visibility.emailOnly;
         newVisibility.web.memberSegment = visibility.emailOnly ? NO_MEMBERS_SEGMENT : ALL_MEMBERS_SEGMENT;
@@ -141,7 +153,7 @@ export function migrateOldVisibilityFormat(visibility: Visibility) {
 
     // convert email visibility, taking into account the old (and sometimes incorrect) segment formats
     if (isNullish(visibility.showOnEmail) && isNullish(visibility.emailOnly)) {
-        newVisibility.email = {...buildDefaultVisibility().email, ...withoutNullish(visibility.email)};
+        newVisibility.email = buildDefaultVisibility().email;
     } else if (visibility.showOnEmail === false) {
         newVisibility.email.memberSegment = NO_MEMBERS_SEGMENT;
     } else if (visibility.segment === 'status:-free+status:-paid') {
@@ -157,6 +169,26 @@ export function migrateOldVisibilityFormat(visibility: Visibility) {
     return newVisibility;
 }
 
+// The audiences a card is rendered for. Only Ghost's own web segments and a
+// true or false visitor setting are valid; any other value hides the card on the web.
+export function getRenderedVisibility(visibility: Visibility | undefined) {
+    const migrated = visibility ? migrateOldVisibilityFormat(visibility) : buildDefaultVisibility();
+
+    const email = migrated.email ?? {memberSegment: ALL_MEMBERS_SEGMENT};
+    const storedWeb = migrated.web ?? {nonMember: true, memberSegment: ALL_MEMBERS_SEGMENT};
+    const validSegment = WEB_SEGMENTS.includes(storedWeb.memberSegment as string);
+
+    return {
+        web: {
+            nonMember: validSegment && storedWeb.nonMember === true,
+            memberSegment: validSegment ? storedWeb.memberSegment as string : NO_MEMBERS_SEGMENT
+        },
+        email: {
+            memberSegment: email.memberSegment as string
+        }
+    };
+}
+
 export function renderWithVisibility(originalRenderOutput: ExportDOMOutput, visibility: Visibility | undefined, options: {target?: string}) {
     if (!visibility) {
         return originalRenderOutput;
@@ -169,19 +201,8 @@ export function renderWithVisibility(originalRenderOutput: ExportDOMOutput, visi
     }
 
     const document = element.ownerDocument;
-    const content = _getRenderContent(originalRenderOutput);
 
-    const migrated = migrateOldVisibilityFormat(visibility);
-
-    const email = migrated.email ?? {memberSegment: ALL_MEMBERS_SEGMENT};
-    // Only Ghost's own member segments and a true or false visitor setting are valid;
-    // a card with any other value is hidden
-    const storedWeb = migrated.web ?? {nonMember: true, memberSegment: ALL_MEMBERS_SEGMENT};
-    const validSegment = WEB_SEGMENTS.includes(storedWeb.memberSegment as string);
-    const web = {
-        nonMember: validSegment && storedWeb.nonMember === true,
-        memberSegment: validSegment ? storedWeb.memberSegment as string : NO_MEMBERS_SEGMENT
-    };
+    const {web, email} = getRenderedVisibility(visibility);
 
     if (options.target === 'email') {
         if (email.memberSegment === NO_MEMBERS_SEGMENT) {
@@ -192,7 +213,7 @@ export function renderWithVisibility(originalRenderOutput: ExportDOMOutput, visi
             return originalRenderOutput;
         }
 
-        return _renderWithEmailVisibility(document, content, email as {memberSegment: string});
+        return _renderWithEmailVisibility(document, _getRenderContent(originalRenderOutput), email as {memberSegment: string});
     }
 
     const isNotVisibleOnWeb =
@@ -208,7 +229,7 @@ export function renderWithVisibility(originalRenderOutput: ExportDOMOutput, visi
         web.memberSegment !== ALL_MEMBERS_SEGMENT;
 
     if (hasWebVisibilityRestrictions) {
-        return _renderWithWebVisibility(document, content, web as {nonMember: boolean; memberSegment: string});
+        return _renderWithWebVisibility(document, _getRenderContent(originalRenderOutput), web as {nonMember: boolean; memberSegment: string});
     }
 
     return originalRenderOutput;

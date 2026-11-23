@@ -1,3 +1,4 @@
+import {buildDefaultVisibility} from '../../src/utils/visibility.js';
 import {assertPrettifiesTo, createDocument, dom, html} from '../test-utils/index.js';
 import {$getRoot} from 'lexical';
 import type {LexicalEditor} from 'lexical';
@@ -73,7 +74,8 @@ describe('ButtonNode', function () {
             const buttonNodeDataset = buttonNode.getDataset();
 
             expect(buttonNodeDataset).toEqual({
-                ...dataset
+                ...dataset,
+                visibility: buildDefaultVisibility()
             });
         }));
     });
@@ -156,6 +158,7 @@ describe('ButtonNode', function () {
             const json = buttonNode.exportJSON();
 
             expect(json).toEqual({
+                visibility: buildDefaultVisibility(),
                 type: 'button',
                 version: 1,
                 buttonUrl: dataset.buttonUrl,

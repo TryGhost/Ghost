@@ -7,6 +7,12 @@ const meta = {
   component: SortableList,
   parameters: {
     layout: 'centered',
+    docs: {
+      description: {
+        component:
+          'Use SortableList when people need to change the order of items, such as steps or settings. Each item has a drag handle, so people can reorder it without activating its other buttons or links.',
+      },
+    },
   },
   tags: ['autodocs'],
 } satisfies Meta<typeof SortableList>;
@@ -21,6 +27,14 @@ const initialItems = [
 ];
 
 export const Default: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Drag a handle to move an item. The rest of each row remains available for its content and other controls.',
+      },
+    },
+  },
   args: {
     items: [],
     renderItem: () => null,

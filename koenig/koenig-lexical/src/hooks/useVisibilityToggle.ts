@@ -1,15 +1,18 @@
 import {$getNodeByKey} from 'lexical';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
-import {VISIBILITY_SETTINGS, getVisibilityOptions, parseVisibilityToToggles, serializeOptionsToVisibility} from '../utils/visibility';
+import {VISIBILITY_SETTINGS, getVisibilityOptions, isCardVisibilityAvailable, parseVisibilityToToggles, serializeOptionsToVisibility} from '../utils/visibility';
 
-export const useVisibilityToggle = (editor, nodeKey, cardConfig) => {
+// Reads a card's visibility and builds its toggle options. A plain function, so
+// callers can skip the work when no settings are shown; useVisibilityToggle is
+// the same function for callers that always need it.
+export const getVisibilityToggle = (editor, nodeKey, cardConfig) => {
     const isStripeEnabled = cardConfig?.stripeEnabled;
     const visibilitySetting = cardConfig?.visibilitySettings ?? VISIBILITY_SETTINGS.WEB_AND_EMAIL;
-    const isVisibilityEnabled = visibilitySetting !== VISIBILITY_SETTINGS.NONE;
     const showWeb = visibilitySetting === VISIBILITY_SETTINGS.WEB_AND_EMAIL || visibilitySetting === VISIBILITY_SETTINGS.WEB_ONLY;
     const showEmail = visibilitySetting === VISIBILITY_SETTINGS.WEB_AND_EMAIL || visibilitySetting === VISIBILITY_SETTINGS.EMAIL_ONLY;
 
     let currentVisibility;
+    let visibilityEnabled = false;
 
     editor.getEditorState().read(() => {
         const node = $getNodeByKey(nodeKey);
@@ -17,13 +20,14 @@ export const useVisibilityToggle = (editor, nodeKey, cardConfig) => {
             return;
         }
         currentVisibility = node.visibility;
+        visibilityEnabled = isCardVisibilityAvailable(node.getType(), cardConfig);
     });
 
     const visibilityData = parseVisibilityToToggles(currentVisibility);
     const visibilityOptions = getVisibilityOptions(currentVisibility, {isStripeEnabled, showWeb, showEmail});
 
     return {
-        isVisibilityEnabled,
+        isVisibilityEnabled: visibilityEnabled,
         visibilityData,
         visibilityOptions,
         toggleVisibility: (type, key, value) => {
@@ -44,3 +48,5 @@ export const useVisibilityToggle = (editor, nodeKey, cardConfig) => {
         }
     };
 };
+
+export const useVisibilityToggle = getVisibilityToggle;

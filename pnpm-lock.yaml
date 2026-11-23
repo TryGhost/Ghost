@@ -3550,6 +3550,9 @@ importers:
       '@tryghost/kg-unsplash-selector':
         specifier: workspace:~
         version: link:../kg-unsplash-selector
+      '@types/lodash':
+        specifier: 'catalog:'
+        version: 4.17.27
       '@types/react':
         specifier: 'catalog:'
         version: 18.3.31
@@ -4171,12 +4174,21 @@ importers:
       '@internal/cfg-eslint':
         specifier: workspace:*
         version: link:../../tools/configs/eslint
+      '@internal/cfg-typescript':
+        specifier: workspace:*
+        version: link:../../tools/configs/typescript
       '@internal/cfg-vitest':
         specifier: workspace:*
         version: link:../../tools/configs/vitest
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.5
+      '@types/sinon':
+        specifier: 'catalog:'
+        version: 22.0.2
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.12(@vitest/browser@4.1.12)(vitest@4.1.12)
@@ -4186,6 +4198,9 @@ importers:
       sinon:
         specifier: 'catalog:'
         version: 22.1.0
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
       vitest:
         specifier: 'catalog:'
         version: 4.1.12(@opentelemetry/api@1.9.1)(@types/node@22.20.5)(@vitest/browser-playwright@4.1.12)(@vitest/coverage-v8@4.1.12)(@vitest/ui@4.1.12)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.5)(@typescript/typescript6@6.0.2))(vite@8.1.6(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
@@ -16840,15 +16855,19 @@ packages:
 
   yuku-ast@0.1.7:
     resolution: {integrity: sha512-2RiMEWv500TixY5rJy6OZd4fSy9WYZKWh6gGbIJ7y7vAGcuCugWOWwOLGaQcRZrXcPUfqtLtvpaJ3SdXtWlhKA==}
+    deprecated: 'Yuku is now one package with one core. Use "yuku" instead: https://yuku.fyi/javascript/. Existing installs keep working but get no more fixes.'
 
   yuku-ast@0.6.11:
     resolution: {integrity: sha512-ZfXkFYVsDewS45+kv3WiA/qNB73CRfxFDEQwfnRMUAR4AD5zRI7PRqxmI2U3Jz/oG41GneTVW6mxDOQal0lgeA==}
+    deprecated: 'Yuku is now one package with one core. Use "yuku" instead: https://yuku.fyi/javascript/. Existing installs keep working but get no more fixes.'
 
   yuku-codegen@0.6.12:
     resolution: {integrity: sha512-5cAJedx9MdKf/ngFpMYH9B1DKaB3FVJOPncl80M+8nNS2rEvrta17N59ryEVIewuHYS81o4XDb4Hg5/5hBdF7A==}
+    deprecated: 'Yuku is now one package with one core. Use "yuku" instead: https://yuku.fyi/javascript/. Existing installs keep working but get no more fixes.'
 
   yuku-parser@0.6.12:
     resolution: {integrity: sha512-A1+KVTvdm1pQmrl/cS5JlqFvUclKpM8I5MvAOoQnYSGmmJBVDKN24HNXiZmxE8Ndsl4g3qBliZBAxq8/J4pKxA==}
+    deprecated: 'Yuku is now one package with one core. Use "yuku" instead: https://yuku.fyi/javascript/. Existing installs keep working but get no more fixes.'
 
   yup@1.7.1:
     resolution: {integrity: sha512-GKHFX2nXul2/4Dtfxhozv701jLQHdf6J34YDh2cEkpqoo8le5Mg6/LrdseVLrFarmFygZTlfIhHx/QKfb/QWXw==}

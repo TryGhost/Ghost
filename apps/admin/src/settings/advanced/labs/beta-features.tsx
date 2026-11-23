@@ -3,7 +3,7 @@ import LabItem from './lab-item';
 import React, { useRef, useState } from 'react';
 import YamlFileEditorModal from './yaml-file-editor-modal';
 import {
-  ActionList,
+  List,
   Button,
   DropdownMenu,
   DropdownMenuContent,
@@ -118,7 +118,7 @@ const BetaFeatures: React.FC = () => {
 
   return (
     <>
-      <ActionList>
+      <List>
         {IS_AUTOMATIONS_BETA_ACTIVE ? (
           <LabItem
             action={
@@ -219,7 +219,7 @@ const BetaFeatures: React.FC = () => {
           testId="routes"
           title="Routes"
         />
-      </ActionList>
+      </List>
       {openEditor === 'redirects' && (
         <DialogPortal>
           <YamlFileEditorModal

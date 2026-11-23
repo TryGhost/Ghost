@@ -8,9 +8,8 @@ import {CallToActionCard} from '../components/ui/cards/CallToActionCard.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {getImageDimensions} from '../utils/getImageDimensions';
-import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext.jsx';
+import {useCardVisibilitySettings} from '../hooks/useCardVisibilitySettings';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {useVisibilityToggle} from '../hooks/useVisibilityToggle.js';
 
 export const CallToActionNodeComponent = ({
     nodeKey,
@@ -38,9 +37,7 @@ export const CallToActionNodeComponent = ({
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
     const imageDragHandler = useFileDragAndDrop({handleDrop: handleImageDrop});
 
-    const {isVisibilityEnabled, visibilityOptions, toggleVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
-
-    const {showVisibilitySettings} = useKoenigSelectedCardContext();
+    const {visibilitySettings, showVisibilitySettings} = useCardVisibilitySettings(nodeKey);
 
     const handleToolbarEdit = (event) => {
         event.preventDefault();
@@ -185,11 +182,10 @@ export const CallToActionNodeComponent = ({
                 setFileInputRef={ref => fileInputRef.current = ref}
                 showButton={showButton}
                 showDividers={showDividers}
-                showVisibilitySettings={isVisibilityEnabled && showVisibilitySettings}
+                showVisibilitySettings={showVisibilitySettings}
                 sponsorLabelHtmlEditor={sponsorLabelHtmlEditor}
                 sponsorLabelHtmlEditorInitialState={sponsorLabelHtmlEditorInitialState}
                 text={textValue}
-                toggleVisibility={toggleVisibility}
                 updateAlignment={handleUpdatingAlignment}
                 updateButtonText={handleButtonTextChange}
                 updateButtonUrl={handleButtonUrlChange}
@@ -197,7 +193,7 @@ export const CallToActionNodeComponent = ({
                 updateLayout={handleUpdatingLayout}
                 updateShowButton={toggleShowButton}
                 updateShowDividers={toggleShowDividers}
-                visibilityOptions={visibilityOptions}
+                visibilitySettings={visibilitySettings}
                 onFileChange={onFileChange}
                 onRemoveMedia={onRemoveMedia}
             />

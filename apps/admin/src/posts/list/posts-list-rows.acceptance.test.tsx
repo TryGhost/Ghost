@@ -9,6 +9,7 @@ import {
   fakePosts,
   fakePostsListScreen,
   post,
+  fakeAdminStats,
   renderAdminApp,
   settingsResponse,
   settleRequests,
@@ -33,6 +34,11 @@ const emailMetricsSettings = settingsResponse({
  * unit-tested in post-row-copy.test.ts; these check they reach the screen and
  * that the states switch correctly.
  */
+beforeEach(() => {
+  fakeAdminStats.memberCount();
+  fakeAdminStats.mrr();
+});
+
 describe('Posts list rows', () => {
   // The filter bar mounts with the screen and probes these to resolve any
   // author/tag slug in the URL into a name.
@@ -112,6 +118,26 @@ describe('Posts list rows', () => {
     await expect
       .element(postsListScreen.rowLink().first())
       .toHaveAttribute('href', `#/editor/post/${target.id}`);
+  });
+
+  it.each([false, true])('expands post hit areas with admin7Design %s', async (admin7Design) => {
+    const target = post({ title: 'Expanded target', status: 'draft' });
+    fakePosts([target]);
+    await renderAdminApp('/posts', { labs: { admin7Design } });
+
+    const row = postsListScreen.listItems().first();
+    const link = postsListScreen.rowLink().first();
+    await expect.element(link).toBeVisible();
+
+    await expect
+      .poll(() => {
+        const bounds = row.element().getBoundingClientRect();
+        const y = bounds.top + bounds.height / 2;
+        return [bounds.left - 8, bounds.right + 8].every(
+          (x) => document.elementFromPoint(x, y)?.closest('a') === link.element(),
+        );
+      })
+      .toBe(true);
   });
 
   describe('as a Contributor', () => {

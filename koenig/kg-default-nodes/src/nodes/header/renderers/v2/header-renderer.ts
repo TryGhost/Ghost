@@ -1,3 +1,4 @@
+import {renderWithVisibility, type Visibility} from '../../../../utils/visibility.js';
 import {addCreateDocumentOption} from '../../../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../../../export-dom.js';
 import {cssUrl} from '../../../../utils/css-url.js';
@@ -31,6 +32,7 @@ interface HeaderV2NodeData {
 }
 
 interface HeaderV2DatasetNode {
+    visibility?: Visibility;
     __alignment: string;
     __buttonText: string;
     __buttonEnabled: boolean;
@@ -279,7 +281,7 @@ export function renderHeaderNodeV2(dataset: HeaderV2DatasetNode, options: Header
 
         emailDiv.innerHTML = emailTemplate(node, options)?.trim();
 
-        return {element: getFirstHtmlElement(emailDiv, 'renderHeaderV2Node email') as HTMLDivElement, type: 'outer' as const};
+        return renderWithVisibility({element: getFirstHtmlElement(emailDiv, 'renderHeaderV2Node email') as HTMLDivElement, type: 'outer' as const}, dataset.visibility, options);
     }
 
     const htmlString = cardTemplate(node, options);
@@ -301,7 +303,7 @@ export function renderHeaderNodeV2(dataset: HeaderV2DatasetNode, options: Header
         }
     }
 
-    return {element: getFirstHtmlElement(element, 'renderHeaderV2Node') as HTMLDivElement, type: 'outer' as const};
+    return renderWithVisibility({element: getFirstHtmlElement(element, 'renderHeaderV2Node') as HTMLDivElement, type: 'outer' as const}, dataset.visibility, options);
 }
 
 export function getCardClasses(nodeData: HeaderV2NodeData) {
