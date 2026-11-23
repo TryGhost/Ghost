@@ -12,6 +12,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -218,10 +219,11 @@ export const ColorPickerRoot = ({
   const [mode, setMode] = useState('hex');
   // Several changes can land before a re-render, so each one builds on the latest colour.
   const colorRef = useRef(color);
-  // An eye dropper pick resolves later, so it reports to the latest onChange.
+  // An eye dropper pick resolves later, so it reports to the latest onChange. A layout effect
+  // updates it at commit, before a pick resolving after a slow commit can read it.
   const onChangeRef = useRef(onChange);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     onChangeRef.current = onChange;
   });
 
@@ -390,10 +392,11 @@ export type ColorPickerEyeDropperProps = ComponentProps<typeof Button>;
 
 export const ColorPickerEyeDropper = ({ className, ...props }: ColorPickerEyeDropperProps) => {
   const { setColor } = useColorPicker();
-  // A pick that resolves after the picker has gone away isn't reported.
+  // A pick that resolves after the picker has gone away isn't reported. A layout effect
+  // clears this as the picker is removed, not after the commit.
   const isMounted = useRef(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     isMounted.current = true;
     return () => {
       isMounted.current = false;
