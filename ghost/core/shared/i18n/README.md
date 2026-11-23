@@ -41,7 +41,7 @@ From `ghost/`, run the facade and translation-consumer tests:
 ```sh
 pnpm exec vitest run \
   test/unit/shared/i18n.test.ts \
-  test/unit/boot/init-core.test.ts \
+  test/unit/bootstrap/start.test.ts \
   test/unit/server/services/comments/comments-service-emails.test.js \
   test/unit/server/services/stripe/stripe-api.test.js \
   test/unit/server/services/members/members-api/services/payments-service.test.js \

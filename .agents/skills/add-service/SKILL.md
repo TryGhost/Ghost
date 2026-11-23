@@ -65,7 +65,7 @@ import, fix the wiring; do not widen the allowlist to make lint pass.
 
 ## 4. Initialize in boot
 
-The generator leaves [boot.js](../../../ghost/core/boot.js) to you.
+The generator leaves [the start list](../../../ghost/bootstrap/start.ts) to you.
 
 - **Phase.** Most roots belong in `initServices`. `initCore` and
   `initServicesForFrontend` run earlier, for roots that the frontend or later

@@ -7,7 +7,7 @@ const os = require('os');
 const crypto = require('crypto');
 
 // Ghost Internals
-const { bootGhost } = require('../../core/boot');
+const { bootGhost } = require('../../bootstrap/transition/boot');
 const models = require('../../core/server/models');
 const settingsService = require('../../core/server/services/settings/settings-service');
 const adapterManager = require('../../core/server/services/adapter-manager').default;

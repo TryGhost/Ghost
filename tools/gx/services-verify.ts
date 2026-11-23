@@ -11,7 +11,7 @@ import {
 } from '../configs/oxlint/legacy-services.ts';
 import { missingTypeScript, scannerTypeScript } from '../scripts/lib/dependency-boundaries.ts';
 
-const bootPath = 'ghost/core/boot.js';
+const bootPath = 'ghost/bootstrap/transition/steps.ts';
 const registryPath = 'ghost/bootstrap/services.ts';
 const allowlistPath = '.dependency-cruiser.cjs';
 const allowanceTestPath = 'tools/scripts/test/service-dependencies.test.ts';
@@ -289,7 +289,7 @@ export function registrationProblems({
 }: {
   service: string;
   root: string;
-  // The source of ghost/bootstrap/services.ts and ghost/core/boot.js.
+  // The source of ghost/bootstrap/services.ts and ghost/bootstrap/transition/steps.ts.
   registry: string;
   boot: string;
 }) {
@@ -302,12 +302,12 @@ export function registrationProblems({
   if (named(registry, '\\.\\./core')) {
     return [];
   }
-  // Boot starts a root itself when the start sequence must wait for it, as it does signing keys.
+  // An entry of Ghost's start list starts a root itself when the start must wait for it, as one
+  // does signing keys.
   if (
     declared.start &&
     !declared.listeners &&
-    named(boot, '\\.') &&
-    boot.includes('application.services.start(')
+    boot.includes(`services.start(core('server/services/${service}').default)`)
   ) {
     return [];
   }

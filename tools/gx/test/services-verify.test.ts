@@ -31,13 +31,13 @@ const inventory = `services:
   other:
     disposition: migrate
 `;
-// Boot opens the services and starts the one root the start sequence waits for.
-const boot = `async function initCore() {
-  const application = require('../bootstrap/app').default;
-  application.services.open();
-  const signingKeys = require('./server/services/signing-keys').default;
-  await application.services.start(signingKeys);
-}
+// The entries of Ghost's start: one opens the services and one starts the root the start waits for.
+const boot = `export const entries = {
+  openServices: { run: ({ services }) => services.open() },
+  signingKeys: {
+    run: ({ services }) => services.start(core('server/services/signing-keys').default),
+  },
+};
 `;
 const registryPath = 'ghost/bootstrap/services.ts';
 const registry = `export const listening = [
@@ -111,7 +111,7 @@ async function fixture(t: TestContext) {
   git('init', '-q');
   await write(inventoryPath, inventory);
   await write('ghost/core/server/services/staff/index.ts', 'export {};\n');
-  await write('ghost/core/boot.js', boot);
+  await write('ghost/bootstrap/transition/steps.ts', boot);
   await write(registryPath, registry);
   const base = commit('base');
   const calls: string[] = [];
@@ -369,16 +369,16 @@ test('a root that declares listeners or a start must be named in the bootstrap l
   // A longer name that contains this one does not register it.
   assert.equal(problems(listeningRoot, registry.replace('posts-public', 'staff-notes')).length, 3);
 
-  // Boot starts signing keys itself, so that root is in neither list.
+  // An entry of the start starts signing keys itself, so that root is in neither list.
   assert.deepEqual(problems(startingRoot, registry, boot, 'signing-keys'), []);
-  // Boot naming a root does not listen for its events.
+  // An entry starting a root does not listen for its events.
   assert.equal(problems(listeningRoot, registry, boot, 'signing-keys').length, 3);
-  // Nor does boot naming it without starting anything.
+  // Nor does an entry naming it without starting it.
   assert.equal(
     problems(
       startingRoot,
       registry,
-      "const signingKeys = require('./server/services/signing-keys').default;\n",
+      "const signingKeys = core('server/services/signing-keys').default;\n",
       'signing-keys',
     ).length,
     3,

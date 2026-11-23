@@ -12,10 +12,6 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const emailSuppressionList = { init: sinon.stub().resolves() };
   const email = sinon.stub().resolves();
   const linkTracking = sinon.stub().resolves();
-  // The service roots whose start is background work, and the application that starts them.
-  // Boot builds no other service root: each is built by whatever first uses it.
-  const background = [{ name: 'First background root' }, { name: 'Second background root' }];
-  const startService = sinon.stub().resolves();
   // Webhook listener registration is synchronous in production; boot awaits whatever it returns.
   const webhooks = sinon.stub();
   const register = sinon.stub();
@@ -51,8 +47,6 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
         deliveryService: {},
         service: {},
       },
-      '../bootstrap/app': { default: { services: { start: startService } } },
-      '../bootstrap/services': { background: background.map((root) => () => root) },
       './server/services/mentions': {
         default: { service: { controller: {}, sendingService: {} } },
       },
@@ -85,8 +79,6 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     email,
     linkTracking,
     webhooks,
-    background,
-    startService,
     register,
     signingKeys,
     start,
@@ -119,7 +111,7 @@ it('initializes dependencies and starts jobs before calling automations init', a
   const boot = createServicesHarness();
   await boot.initServices();
 
-  for (const dependency of [boot.gifts, boot.analytics, boot.email, boot.startService]) {
+  for (const dependency of [boot.gifts, boot.analytics, boot.email]) {
     sinon.assert.callOrder(dependency, boot.register);
   }
   sinon.assert.callOrder(boot.register, boot.start, boot.automations, boot.reschedule);
@@ -166,7 +158,6 @@ it('waits for Stripe initialization before initializing gifts and the other serv
     sinon.assert.calledOnce(boot.stripe);
     sinon.assert.notCalled(boot.gifts);
     sinon.assert.notCalled(boot.analytics);
-    sinon.assert.notCalled(boot.startService);
     sinon.assert.notCalled(boot.register);
     sinon.assert.notCalled(boot.start);
   } finally {
@@ -177,50 +168,6 @@ it('waits for Stripe initialization before initializing gifts and the other serv
   sinon.assert.calledOnce(boot.gifts);
   sinon.assert.calledOnce(boot.register);
   sinon.assert.calledOnce(boot.start);
-});
-
-it('starts each background root through the application, once the legacy services are ready and before jobs', async function () {
-  const boot = createServicesHarness();
-
-  await boot.initServices();
-
-  assert.deepEqual(
-    boot.startService.getCalls().map((call) => call.args),
-    boot.background.map((root) => [root]),
-  );
-  sinon.assert.callOrder(boot.email, boot.startService, boot.register, boot.start);
-});
-
-it('waits for a background root to start before registering or starting jobs', async function () {
-  const boot = createServicesHarness();
-  const ready = Promise.withResolvers<void>();
-  boot.startService.onFirstCall().returns(ready.promise);
-  const startup = boot.initServices();
-
-  try {
-    await setImmediate();
-    sinon.assert.calledOnce(boot.startService);
-    sinon.assert.notCalled(boot.register);
-  } finally {
-    ready.resolve();
-    await startup;
-  }
-
-  sinon.assert.calledTwice(boot.startService);
-  sinon.assert.calledOnce(boot.register);
-});
-
-it('propagates the error a background root fails to start with, without starting dependent work', async function () {
-  const boot = createServicesHarness();
-  const failure = new Error('background root failed to start');
-  boot.startService.rejects(failure);
-
-  await assert.rejects(boot.initServices(), (error) => error === failure);
-
-  sinon.assert.notCalled(boot.register);
-  sinon.assert.notCalled(boot.start);
-  sinon.assert.notCalled(boot.automations);
-  sinon.assert.notCalled(boot.reschedule);
 });
 
 it('registers the webhook listeners once', async function () {

@@ -28,12 +28,12 @@ const {
   listening,
   background,
 }: typeof import('../../../bootstrap/services') = require('../../../bootstrap/services');
-const boot = readFileSync(path.join(core, 'boot.js'), 'utf8');
+const steps = readFileSync(path.join(core, '../bootstrap/transition/steps.ts'), 'utf8');
 
-// Roots whose start boot awaits at a point of its own, because Ghost cannot serve before it has
-// finished. Each must be started there by name.
-const STARTED_BY_BOOT: Record<string, string> = {
-  'signing-keys': 'await application.services.start(signingKeys);',
+// Roots whose start is an entry of its own in Ghost's start list, because Ghost cannot serve
+// before it has finished. Each must be started there by name.
+const STARTED_BY_AN_ENTRY: Record<string, string> = {
+  'signing-keys': "await services.start(core('server/services/signing-keys').default);",
 };
 
 function rootOf(service: string): AnyServiceDefinition {
@@ -91,9 +91,12 @@ describe('Service roots and what the application is told about them', function (
 
       it('is started by the application if, and only if, it declares a start', function () {
         const root = rootOf(service);
-        const startedByBoot = STARTED_BY_BOOT[service];
+        const startedByBoot = STARTED_BY_AN_ENTRY[service];
         if (startedByBoot) {
-          assert.ok(boot.includes(startedByBoot), `boot.js must contain: ${startedByBoot}`);
+          assert.ok(
+            steps.includes(startedByBoot),
+            `bootstrap/transition/steps.ts must contain: ${startedByBoot}`,
+          );
         }
         const started = named(background).includes(root) || startedByBoot !== undefined;
 

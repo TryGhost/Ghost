@@ -19,7 +19,7 @@ const {
   waitForEmailStatus,
 } = require('../utils/batch-email-utils');
 const urlServiceUtils = require('../utils/url-service-utils');
-const { bootGhost } = require('../../core/boot');
+const { bootGhost } = require('../../bootstrap/transition/boot');
 const models = require('../../core/server/models');
 const adapterManager = require('../../core/server/services/adapter-manager').default;
 const settingsService = require('../../core/server/services/settings/settings-service');

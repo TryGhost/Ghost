@@ -89,8 +89,7 @@ function setEnvironmentVariables() {
 
 // Ghost config reads environment during module loading. Keep these imports after setup.
 async function loadRuntime() {
-  // @ts-expect-error Ghost boot has no TypeScript declarations.
-  const { bootGhost } = await import('../../ghost/core/boot.js');
+  const { bootGhost } = await import('../../ghost/bootstrap/transition/boot.ts');
   await bootGhost({ backend: false, frontend: false, server: false });
 
   const { default: db } = await import('../../ghost/core/server/data/db/index.js');

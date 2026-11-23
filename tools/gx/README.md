@@ -198,8 +198,8 @@ full unit suite and runs the changed unit tests shuffled and each one alone.
 For a standard service, it also reads the root's source. A root that declares
 `listeners` or a `start` must be named in `ghost/bootstrap/services.ts`, as
 `../core/server/services/<name>`. The one exception is a root with only a `start`
-that `ghost/core/boot.js` starts itself with `application.services.start()`, as it
-does signing keys. A root that declares neither needs no registration. A service
+that an entry in `ghost/bootstrap/transition/steps.ts` starts itself with
+`services.start()`, as one does signing keys. A root that declares neither needs no registration. A service
 is standard when the legacy service inventory does not list it.
 
 `--static` skips lint, types and tests. `review` lines are other inventory entries

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
-import { loadBootFunction } from '../../../boot/harness';
+import { loadBootstrapFile } from '../../../boot/harness';
 import { openServices, services } from '../../../../utils/services';
 
 const models = require('../../../../../core/server/models');
@@ -90,23 +90,23 @@ describe('Custom theme settings root and retained consumers', function () {
     }
   });
 
+  // The two entries of Ghost's start that load the active theme and then offers.
   function bootFrontend() {
     const offers = { init: sandbox.stub().resolves() };
-    const init = loadBootFunction(
-      'initServicesForFrontend',
-      {
-        './server/services/themes': themes,
-        './server/services/offers': offers,
+    const { entries } = loadBootstrapFile('transition/steps.ts', {
+      './server/services/themes': themes,
+      './server/services/offers': offers,
+    }) as unknown as {
+      entries: Record<string, { run(run: unknown): unknown }>;
+    };
+    const run = { state: { bootLogger: { metric() {} } } };
+    return {
+      init: async () => {
+        await entries.themes!.run(run);
+        await entries.offers!.run(run);
       },
-      {
-        // Unlisted frontend services answer both wrapper and defineService shapes.
-        fallback: () => {
-          const service = { init: async () => {} };
-          return { ...service, default: service };
-        },
-      },
-    );
-    return { init: () => init({ bootLogger: { metric() {} } }), offers };
+      offers,
+    };
   }
 
   it('builds on first use without querying settings, activating a theme or replacing the shared cache', function () {

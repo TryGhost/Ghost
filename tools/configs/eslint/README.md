@@ -105,7 +105,7 @@ synchronously and what it waits for belongs in `start`. It rejects a call to
 `.on()`, `.once()`, `.subscribe()`, `.addListener()` or `.addEventListener()`
 anywhere in a root file, because a root declares its events in `listeners`.
 
-No lint rule checks `ghost/core/boot.js` for service roots. Boot does not
+No lint rule checks Ghost's start for service roots. The start does not
 initialize them: Ghost's application builds each one the first time it is used.
 
 The Oxlint-only `ghost/no-injected-service-libraries` rule checks all TypeScript

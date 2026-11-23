@@ -25,7 +25,7 @@ services:
       sources:
         - core/server/services/activitypub/activity-pub-service-wrapper.js
         - core/server/services/activitypub/activity-pub-service.ts
-        - core/boot.js
+        - bootstrap/transition/steps.ts
         - core/server/services/settings/settings-service.js
       dependencies:
         complexity: straightforward
@@ -48,7 +48,7 @@ services:
           - core/server/services/activitypub/activity-pub-service-wrapper.js
           - core/server/services/activitypub/activity-pub-service.ts
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
-          - core/boot.js
+          - bootstrap/transition/steps.ts
     entryPoints:
       - activitypub/index.js
     notes: >-
@@ -84,7 +84,7 @@ services:
           importing this root. Direct implementation construction outside the wrapper is limited
           to unit tests in the searched repository.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/activitypub/activity-pub-service-wrapper.js
           - core/server/models/settings.js
           - core/server/models/base/plugins/events.js
@@ -100,7 +100,7 @@ services:
           launches configuration without awaiting enable/disable, so completion is not remote
           readiness and does not delay the server's readiness notification.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/activitypub/activity-pub-service-wrapper.js
         tests: []
       lifetime:
@@ -148,7 +148,7 @@ services:
           - core/server/services/activitypub/activity-pub-service.ts
           - core/server/data/schema/fixtures/fixtures.json
           - core/server/lib/common/events.js
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/ghost-server.ts
         tests:
           - test/unit/server/services/activitypub/activity-pub-service.test.ts
@@ -165,7 +165,7 @@ services:
           - core/server/services/activitypub/activity-pub-service.ts
           - core/server/services/activitypub/activity-pub-service-wrapper.js
           - core/server/lib/common/events.js
-          - core/boot.js
+          - bootstrap/transition/steps.ts
         tests:
           - test/unit/server/services/activitypub/activity-pub-service.test.ts
     unverified: []
@@ -214,7 +214,7 @@ services:
         - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
         - core/server/lib/image/index.js
         - core/server/services/post-scheduling/index.ts
-        - core/boot.js
+        - bootstrap/transition/steps.ts
       dependencies:
         complexity: complex
         reason: >-
@@ -305,7 +305,7 @@ services:
           Cited wiring tests cover route stores, not the complete consumer list; the S3
           integration suite runs only when GHOST_TEST_S3_AVAILABLE is 1.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/lib/image/index.js
           - core/server/lib/lexical.js
           - core/server/lib/mobiledoc.ts
@@ -347,7 +347,7 @@ services:
           can itself have effects. Unconfigured types are skipped. getAdapter has no init
           guard and import-time consumers can construct adapters independently of validation.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
           - ../tbd/kernel/src/adapter-manager/options.ts
           - core/server/services/post-scheduling/index.ts
@@ -420,7 +420,7 @@ services:
           - core/server/adapters/scheduling/scheduling-default.ts
           - core/server/adapters/jobs/InMemoryJobsBackend.ts
           - core/server/services/jobs-service/index.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/ghost-server.ts
         tests:
           - test/unit/server/adapters/lib/redis/redis-store-factory.test.ts
@@ -489,7 +489,7 @@ services:
         - core/server/services/automations/service.ts
         - core/server/services/automations/automations-api.ts
         - core/server/lib/soonest-timer.ts
-        - core/boot.js
+        - bootstrap/transition/steps.ts
       dependencies:
         complexity: complex
         reason: >-
@@ -519,7 +519,7 @@ services:
           - core/server/services/automations/welcome-email-automation-poll.ts
           - core/server/services/members/members-api/members-api.js
           - core/server/services/link-tracking/index.js
-          - core/boot.js
+          - bootstrap/transition/steps.ts
     entryPoints:
       - automations/index.ts
       - automations/automations-api.ts
@@ -591,7 +591,7 @@ services:
           selected wiring, not replacement compatibility or a durable signup-to-run outbox.
         sources:
           - core/server/lib/after-commit.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/api/endpoints/automations.ts
           - core/server/api/endpoints/automation-performance-stats.ts
           - core/server/api/endpoints/automation-runs.ts
@@ -621,7 +621,7 @@ services:
           Service units assert deferred dispatch, and Admin HTTP checks default creation/copying.
           None asserts failed first-poll recovery or first-poll completion as readiness.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/automations/service.ts
           - core/server/services/automations/automations-api.ts
           - core/server/services/automations/database-automations-repository.ts
@@ -787,7 +787,7 @@ services:
         - core/server/services/content-import/index.ts
         - core/server/services/content-import/import/importer.ts
         - core/server/services/jobs-service/register-job-handlers.ts
-        - core/boot.js
+        - bootstrap/transition/steps.ts
         - test/unit/server/services/content-import/index.test.ts
       dependencies:
         complexity: complex
@@ -881,7 +881,7 @@ services:
           include a normal-publish control, then assert two imported rows including an
           update, two completion emails, no Email rows and bounded webhook silence.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/api/endpoints/posts.js
           - core/server/web/api/endpoints/admin/routes.js
           - core/server/services/jobs-service/register-job-handlers.ts
@@ -904,7 +904,7 @@ services:
           and failed-construction retry; held boot readiness and same-process boot contracts
           remain outside their coverage.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/content-import/index.ts
           - core/server/services/content-import/import/importer.ts
           - core/server/services/jobs-service/register-job-handlers.ts
@@ -1059,7 +1059,7 @@ services:
         - core/server/services/custom-redirects/redirects-service.ts
         - core/frontend/web/site.js
         - core/server/api/endpoints/redirects.js
-        - core/boot.js
+        - bootstrap/transition/steps.ts
       dependencies:
         complexity: complex
         reason: >-
@@ -1122,7 +1122,7 @@ services:
           - core/server/services/custom-redirects/redirects-service.ts
           - core/server/services/adapter-manager/index.ts
           - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
         tests: []
       consumers:
         summary: >-
@@ -1155,7 +1155,7 @@ services:
           pin swallowed store failure and no clear on failed read, not pending root readiness,
           backend-only composition or early API calls.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/custom-redirects/index.js
           - core/server/services/custom-redirects/redirects-service.ts
           - core/frontend/web/site.js
@@ -1296,7 +1296,7 @@ services:
         - core/server/services/email-address/email-address-service-wrapper.js
         - core/server/services/member-welcome-emails/index.ts
         - core/server/api/endpoints/automated-email-design.js
-        - core/boot.js
+        - bootstrap/transition/steps.ts
         - test/unit/server/services/email-address/wrapper.test.ts
       dependencies:
         complexity: straightforward
@@ -1384,7 +1384,7 @@ services:
           persisted fields; renderer/sending units also use policy fakes. Inbox-link sender
           semantics remain less covered.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/members/api.js
           - core/server/services/members/members-api/controllers/router-controller.js
           - core/server/services/email-service/email-service-wrapper.js
@@ -1417,7 +1417,7 @@ services:
           guard; captured undefined dependencies would remain undefined. Initialization is
           synchronous composition without asynchronous readiness or validation of configuration.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/email-address/email-address-service-wrapper.js
           - core/server/services/member-welcome-emails/index.ts
           - core/server/api/endpoints/automated-emails.js
@@ -1533,7 +1533,7 @@ services:
         - core/server/services/email-analytics/index.ts
         - core/server/services/email-analytics/email-analytics-service-wrapper.ts
         - core/server/services/email-analytics/jobs/index.js
-        - core/boot.js
+        - bootstrap/transition/steps.ts
         - test/unit/server/services/email-analytics/index.test.ts
       dependencies:
         complexity: complex
@@ -1562,7 +1562,7 @@ services:
           - core/server/services/email-analytics/fetch-mailgun-events.ts
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/gifts/index.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
     entryPoints:
       - email-analytics/index.ts
       - email-analytics/jobs/index.js
@@ -1629,7 +1629,7 @@ services:
           integration also asserts replay does not double-count opens. These are database/job
           composition tests, not live transport, real cron or HTTP backfill/cancel coverage.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/jobs-service/register-job-handlers.ts
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/email-service/email-service.js
@@ -1660,7 +1660,7 @@ services:
           newsletter recovery is held, with analytics scheduling disabled in that test. These
           do not exercise partial analytics construction or real background provider readiness.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/email-analytics/index.ts
           - core/server/services/email-analytics/jobs/index.js
           - core/server/services/email-analytics/jobs/email-analytics-job-scheduler.ts
@@ -1736,7 +1736,7 @@ services:
           continuation is tested separately. Neither proves real analytics provider work and
           downstream events settle before GhostServer shutdown or restart.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/email-analytics/email-analytics-service-wrapper.ts
           - core/server/services/email-analytics/email-analytics-service.ts
           - core/server/services/email-analytics/jobs/email-analytics-job-scheduler.ts
@@ -1831,7 +1831,7 @@ services:
         - core/server/services/email-service/email-service-wrapper.js
         - core/server/services/email-service/batch-sending-service.js
         - core/server/services/email-service/README.md
-        - core/boot.js
+        - bootstrap/transition/steps.ts
         - test/unit/server/services/email-service/batch-sending-service.test.js
       dependencies:
         complexity: complex
@@ -1862,7 +1862,7 @@ services:
           - core/server/services/email-service/email-event-processor.js
           - core/server/services/email-analytics/index.ts
           - core/server/services/email-analytics/jobs/index.js
-          - core/boot.js
+          - bootstrap/transition/steps.ts
     entryPoints:
       - email-service/index.js
       - email-service/newsletter-email-event-storage.js
@@ -1938,7 +1938,7 @@ services:
           assert the injected job, two-slot email queue and rejection propagation. These do not
           prove every consumer survives root replacement or sibling reinitialization.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/posts/posts-service-instance.js
           - core/server/services/posts/post-email-handler.js
           - core/server/api/endpoints/email-previews.js
@@ -1976,7 +1976,7 @@ services:
           and asserts pending batches submit, submitted batches skip, and orphan batches fail
           the parent without another provider call.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/email-service/batch-sending-service.js
           - core/server/services/email-service/email-service.js
@@ -2194,7 +2194,7 @@ services:
         - core/server/services/email-suppression-list/mailgun-email-suppression-list.js
         - core/server/services/members/api.js
         - core/server/services/email-analytics/index.ts
-        - core/boot.js
+        - bootstrap/transition/steps.ts
       dependencies:
         complexity: straightforward
         reason: >-
@@ -2218,7 +2218,7 @@ services:
           - core/server/services/email-suppression-list/email-suppression-list.js
           - core/server/services/members/api.js
           - core/server/services/email-analytics/index.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
     entryPoints:
       - email-suppression-list/index.js
     notes: >-
@@ -2276,7 +2276,7 @@ services:
           its init. HTTP tests cover local projection/removal; storage unit tests inject cleanup
           stubs, not the root.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/members/api.js
           - core/server/services/members/members-api/members-api.js
           - core/server/services/members/members-api/services/member-bread-service.js
@@ -2304,7 +2304,7 @@ services:
           before init; booted integration tests exercise the resulting composition. Partial
           subscription failure is not characterized.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/email-suppression-list/mailgun-email-suppression-list.js
           - core/server/services/members/service.js
           - core/server/services/email-analytics/index.ts
@@ -2432,7 +2432,7 @@ services:
         - core/server/services/gifts/index.ts
         - core/server/services/stripe/service.js
         - core/server/services/members/api.js
-        - core/boot.js
+        - bootstrap/transition/steps.ts
         - test/unit/boot/init-services.test.ts
       dependencies:
         complexity: complex
@@ -2464,7 +2464,7 @@ services:
           - core/server/services/gifts/gift-email-renderer.ts
           - core/server/services/gifts/jobs/index.js
           - core/server/services/stripe/stripe-service.js
-          - core/boot.js
+          - bootstrap/transition/steps.ts
     entryPoints:
       - gifts/index.ts
       - gifts/jobs/index.js
@@ -2560,7 +2560,7 @@ services:
           always attempts due/stale deliveries; it does not rebuild reminder callbacks. Full
           boot consumer tests do not exercise this production-only recovery branch or failure.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/gifts/index.ts
           - core/server/services/gifts/jobs/index.js
           - core/server/services/jobs-service/register-job-handlers.ts
@@ -2753,7 +2753,7 @@ services:
           - core/server/services/identity-tokens/identity-token-service.ts
           - core/server/services/activitypub/activity-pub-service-wrapper.js
           - core/server/api/endpoints/identities.js
-          - core/boot.js
+          - bootstrap/transition/steps.ts
     entryPoints:
       - identity-tokens/index.js
     notes: >-
@@ -2797,7 +2797,7 @@ services:
           Root tests cover successful role loading through the identities controller; the
           failed-role fallback and ActivityPub's dependency hand-off are source evidence.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/api/endpoints/identities.js
           - core/server/web/api/endpoints/admin/routes.js
           - core/server/services/activitypub/activity-pub-service-wrapper.js
@@ -2816,7 +2816,7 @@ services:
           ordering, ActivityPub's background startup guard and the endpoint's unguarded
           pre-init access are source evidence.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/identity-tokens/identity-token-service-wrapper.js
           - core/server/api/endpoints/identities.js
           - core/server/services/activitypub/activity-pub-service-wrapper.js
@@ -2910,7 +2910,7 @@ services:
       sources:
         - core/server/services/jobs-service/index.ts
         - core/server/services/jobs-service/jobs-service.ts
-        - core/boot.js
+        - bootstrap/transition/steps.ts
         - test/unit/server/services/jobs-service/index.test.js
         - test/unit/server/services/jobs-service/retained-consumer.test.ts
       dependencies:
@@ -2937,7 +2937,7 @@ services:
           - core/server/services/jobs-service/register-job-handlers.ts
           - core/server/services/jobs-service/jobs-outbox.ts
           - core/server/services/jobs-service/outbox-relay.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
     entryPoints:
       - jobs-service/index.ts
       - jobs-service/register-job-handlers.ts
@@ -2960,7 +2960,7 @@ services:
         sources:
           - core/server/services/jobs-service/index.ts
           - core/server/services/jobs-service/register-job-handlers.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
         tests:
           - test/unit/server/services/jobs-service/index.test.js
       construction:
@@ -2979,7 +2979,7 @@ services:
           Boot registers handlers after asynchronous service prerequisites settle, awaits
           jobs.start, then starts automation polling.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/jobs-service/jobs-service.ts
         tests:
           - test/unit/boot/init-services.test.ts
@@ -3007,7 +3007,7 @@ services:
           The cited tests cover dispatch through a retained MentionController across restart
           and handler registration. The other consumer wiring is source-only evidence here.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/adapters/jobs/InMemoryJobsBackend.ts
           - core/server/services/jobs-service/register-job-handlers.ts
           - core/server/services/mentions/mention-controller.js
@@ -3040,7 +3040,7 @@ services:
           - core/server/services/jobs-service/register-job-handlers.ts
           - core/shared/config/defaults.json
           - core/server/adapters/jobs/InMemoryJobsBackend.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
         tests:
           - test/unit/server/services/jobs-service/index.test.js
           - test/unit/server/services/jobs-service/register-job-handlers.test.ts
@@ -3059,7 +3059,7 @@ services:
         sources:
           - core/server/adapters/jobs/InMemoryJobsBackend.ts
           - core/server/services/jobs-service/jobs-service.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/ghost-server.ts
         tests:
           - test/unit/server/adapters/jobs/in-memory-jobs-backend.test.ts
@@ -3080,7 +3080,7 @@ services:
           wrapping, every cleanup task before exit or all boot failure stages.
         sources:
           - core/server/ghost-server.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/jobs-service/jobs-service.ts
           - core/server/adapters/jobs/InMemoryJobsBackend.ts
         tests:
@@ -3123,7 +3123,7 @@ services:
       sources:
         - core/server/services/limits.ts
         - core/server/models/integration.js
-        - core/boot.js
+        - bootstrap/transition/steps.ts
         - test/utils/host-limits-utils.ts
         - test/unit/server/services/limits.test.js
       dependencies:
@@ -3145,7 +3145,7 @@ services:
           - core/server/models/user.js
           - core/server/models/invite.js
           - core/server/services/members-metafields/index.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
     entryPoints:
       - limits.ts
     notes: >-
@@ -3234,7 +3234,7 @@ services:
           the ordering or pre-init contract explicitly. Public-site startup tests stub the
           limit method, so they do not prove real configuration reaches that consumer.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/limits.ts
           - core/server/services/settings/settings-service.js
           - core/server/services/settings-helpers/settings-helpers.js
@@ -3370,7 +3370,7 @@ services:
         - core/server/services/link-tracking/index.js
         - core/server/services/link-tracking/link-click-tracking-service.js
         - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
-        - core/boot.js
+        - bootstrap/transition/steps.ts
         - test/unit/server/services/link-tracking/index.test.ts
       dependencies:
         complexity: straightforward
@@ -3438,7 +3438,7 @@ services:
           - core/server/services/automations/database-automations-repository.ts
           - core/server/lib/request-external.js
           - core/server/services/member-welcome-emails/member-welcome-email-renderer.js
-          - core/boot.js
+          - bootstrap/transition/steps.ts
         tests:
           - test/unit/server/services/link-tracking/index.test.ts
       consumers:
@@ -3479,7 +3479,7 @@ services:
           publication and one subscription for concurrent wrapper calls, not prerequisite errors,
           boot sequencing, early events or cleanup after partial subscription failure.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/link-tracking/index.js
           - core/server/services/link-tracking/link-click-tracking-service.js
           - core/server/services/link-redirection/index.ts
@@ -3718,7 +3718,7 @@ services:
           markdown/header copying, previews and HTML credential isolation but stub fulfillment;
           controller units cover the authorized-member refusal with a fake root.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/frontend/web/site.js
           - core/frontend/services/routing/controllers/entry/markdown.ts
           - core/frontend/services/routing/controllers/entry.ts
@@ -3740,7 +3740,7 @@ services:
           be challenge or fulfill. Frontend HTTP setup boots Ghost, but tests do not isolate
           concurrent root init, prewarm completion/failure, partial publication or request-init races.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/machine-payments/index.js
           - core/server/services/machine-payments/adapters/mpp-adapter.ts
           - core/server/services/machine-payments/adapters/x402-adapter.ts
@@ -3830,7 +3830,7 @@ services:
           - core/server/models/machine-payment-event.js
           - core/server/data/schema/schema.ts
           - core/server/data/exporter/table-lists.js
-          - core/boot.js
+          - bootstrap/transition/steps.ts
         tests:
           - test/unit/server/services/machine-payments/deposit-address-store.test.ts
           - test/unit/server/services/machine-payments/adapters.test.ts
@@ -3894,7 +3894,7 @@ services:
         - core/server/services/members/api.js
         - core/server/services/members/members-api/members-api.js
         - core/server/services/members/members-api/services/payments-service.js
-        - core/boot.js
+        - bootstrap/transition/steps.ts
       dependencies:
         complexity: complex
         reason: >-
@@ -3928,7 +3928,7 @@ services:
           - core/server/services/members/jobs/index.js
           - core/server/services/members/middleware.js
           - core/server/services/stripe/stripe-service.js
-          - core/boot.js
+          - bootstrap/transition/steps.ts
     entryPoints:
       - members/index.js
       - members/jobs/index.js
@@ -4013,7 +4013,7 @@ services:
           mail, and CSV fields/filtering. Those assertions do not prove every retained consumer
           survives dependency replacement.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/api/endpoints/members.js
           - core/server/api/endpoints/members-account.ts
           - core/server/api/endpoints/member-commenting.ts
@@ -4071,7 +4071,7 @@ services:
           selected schedules.
           Historical evidence removed after auditedAt: [Members migration tests](https://github.com/TryGhost/Ghost/blob/bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e/ghost/core/test/e2e-server/services/members-migrations.test.ts).
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/members/service.js
           - core/server/services/members/api.js
           - core/server/services/members/members-api/members-api.js
@@ -4271,7 +4271,7 @@ services:
         - core/server/services/members-events/index.js
         - core/server/services/members-events/last-seen-at-updater.js
         - core/server/services/members-events/last-seen-at-cache.js
-        - core/boot.js
+        - bootstrap/transition/steps.ts
       dependencies:
         complexity: straightforward
         reason: >-
@@ -4327,7 +4327,7 @@ services:
           the database. Unit tests inject collaborators and pin the missing-getter error, not the
           root graph or partial construction.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/members-events/index.js
           - core/server/services/members-events/last-seen-at-updater.js
           - core/server/services/members-events/last-seen-at-cache.js
@@ -4367,7 +4367,7 @@ services:
           public collaborators are absent and no handlers exist. Booted tests prove usable completed
           composition, not exact ordering, early events, failed publication or retry after failure.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/members-events/index.js
           - core/server/services/members-events/last-seen-at-updater.js
         tests:
@@ -4490,7 +4490,7 @@ services:
         - core/server/services/members-metafields/definitions-service.ts
         - core/server/services/members-metafields/bindings-service.ts
         - core/server/services/members/service.js
-        - core/boot.js
+        - bootstrap/transition/steps.ts
       dependencies:
         complexity: complex
         reason: >-
@@ -4631,7 +4631,7 @@ services:
           HTTP tests assert those direct route responses, not dependency ordering, pre-init
           calls or startup faults. Shipped ceiling validation runs at import.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/members-metafields/index.ts
           - core/server/services/members-metafields/config.ts
           - core/server/web/api/endpoints/admin/routes.js
@@ -4766,7 +4766,7 @@ services:
       sources:
         - core/server/services/milestones/service.js
         - core/server/services/milestones/milestones-service.js
-        - core/boot.js
+        - bootstrap/transition/steps.ts
       dependencies:
         complexity: straightforward
         reason: >-
@@ -4836,7 +4836,7 @@ services:
           them after its database write without awaiting consumers. The root has no HTTP or
           CLI caller and does not send mail itself.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/milestones/milestone.js
           - core/server/services/milestones/bookshelf-milestone-repository.js
           - core/server/services/staff/staff-service.js
@@ -4856,7 +4856,7 @@ services:
           milestone query or readiness check. First init also starts the private Slack
           notification subscriber once, before any check can dispatch a milestone event.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/milestones/service.js
           - core/server/services/milestones/slack-notifications/service.js
         tests:
@@ -4910,7 +4910,7 @@ services:
           - core/server/services/milestones/milestone-queries.js
           - core/server/services/milestones/bookshelf-milestone-repository.js
           - core/server/data/db/index.js
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/ghost-server.ts
           - core/server/services/staff/staff-service.js
           - core/server/services/milestones/slack-notifications/slack-notifications-service.js
@@ -4928,7 +4928,7 @@ services:
           - core/server/services/milestones/service.js
           - core/server/services/milestones/milestones-service.js
           - core/server/services/milestones/bookshelf-milestone-repository.js
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/staff/staff-service.js
           - core/server/services/milestones/slack-notifications/slack-notifications-service.js
         tests:
@@ -5098,7 +5098,7 @@ services:
           injected mail/template dependencies ready; update-check invokes it from initialized
           jobs, after resolving recipients.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/notifications/notifications.js
           - core/shared/settings-cache/cache-manager.js
           - core/server/services/notifications/notification-email.ts
@@ -5253,7 +5253,7 @@ services:
         - core/server/services/oembed/oembed-service.js
         - core/server/services/mentions/webmention-metadata.js
         - core/server/services/recommendations/index.ts
-        - core/boot.js
+        - bootstrap/transition/steps.ts
       dependencies:
         complexity: complex
         reason: >-
@@ -5373,7 +5373,7 @@ services:
           the module is required, import failure leaving no cached root, and repeated imports
           returning one instance without composing again.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/oembed/service.js
           - core/server/services/mentions/index.ts
           - core/server/services/mentions/webmention-metadata.js
@@ -5454,7 +5454,7 @@ services:
           - core/server/adapters/storage/LocalStorageBase.ts
           - core/server/adapters/storage/S3Storage.ts
           - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - package.json
         tests:
           - test/unit/server/services/oembed/oembed-service.test.js
@@ -5534,7 +5534,7 @@ services:
         - core/server/services/offers/offers-module.js
         - core/frontend/web/site.js
         - core/server/services/members/api.js
-        - core/boot.js
+        - bootstrap/transition/steps.ts
       dependencies:
         complexity: complex
         reason: >-
@@ -5606,7 +5606,7 @@ services:
           - core/server/services/offers/service.js
           - core/server/services/offers/offers-module.js
           - core/server/services/offers/offer-bookshelf-repository.js
-          - core/boot.js
+          - bootstrap/transition/steps.ts
         tests:
           - test/unit/server/services/offers/index.test.ts
       consumers:
@@ -5652,12 +5652,12 @@ services:
           awaiting offers after themes, the API published during a pending load and a rejected
           load leaving the API and subscriptions in place.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/offers/service.js
           - core/server/services/offers/offers-module.js
           - core/frontend/web/site.js
         tests:
-          - test/unit/boot/init-services-for-frontend.test.ts
+          - test/unit/bootstrap/start.test.ts
           - test/unit/server/services/offers/index.test.ts
           - test/e2e-api/admin/offers.test.js
           - test/e2e-api/content/offers.test.js
@@ -5815,7 +5815,7 @@ services:
         - core/server/services/post-scheduling/post-scheduling.ts
         - core/server/adapters/scheduling/error-capture.ts
         - core/server/auth/reset-authentication.ts
-        - core/boot.js
+        - bootstrap/transition/steps.ts
       dependencies:
         complexity: straightforward
         reason: >-
@@ -5836,7 +5836,7 @@ services:
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/server/adapters/scheduling/build-signed-job.ts
           - core/server/adapters/scheduling/get-scheduler-idempotency-key.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
     entryPoints:
       - post-scheduling/index.ts
     notes: >-
@@ -5856,7 +5856,7 @@ services:
         sources:
           - core/server/services/post-scheduling/index.ts
           - core/server/services/post-scheduling/post-scheduling.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
         tests:
           - test/unit/server/services/post-scheduling/post-scheduling.test.js
       construction:
@@ -5875,7 +5875,7 @@ services:
           - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
           - core/server/adapters/scheduling/error-capture.ts
           - core/server/api/endpoints/authentication.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
         tests:
           - test/unit/server/services/post-scheduling/post-scheduling.test.js
       consumers:
@@ -5891,7 +5891,7 @@ services:
           yield one published response and one email row. A deferred-read unit additionally
           pins the overlap no-op while the first publish is pending; neither proves adapter delivery.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/models/post.js
           - core/server/models/base/plugins/events.js
           - core/server/services/post-scheduling/post-scheduling.ts
@@ -5916,7 +5916,7 @@ services:
           rescheduling. Modules are fakes, so real adapter readiness/root import ordering and
           outstanding adapter operations are not protected by those assertions.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/post-scheduling/index.ts
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/server/adapters/scheduling/error-capture.ts
@@ -5982,7 +5982,7 @@ services:
           - core/server/adapters/scheduling/scheduling-default.ts
           - ../tbd/kernel/src/adapter-manager/adapter-manager.ts
           - core/server/lib/common/events.js
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/ghost-server.ts
         tests:
           - test/unit/server/adapters/scheduling/scheduling-default.test.ts
@@ -6181,7 +6181,7 @@ services:
           not initialization order for retained callers or rejection before readiness. A new
           managed root must explicitly coordinate these existing construction sites with boot.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/posts/posts-service-instance.js
           - core/server/services/posts/post-email-handler.js
           - core/server/api/endpoints/index.js
@@ -6348,7 +6348,7 @@ services:
         - core/server/services/remote-flags/index.ts
         - core/server/services/remote-flags/remote-flags-service.ts
         - core/shared/labs-flag-overrides.ts
-        - core/boot.js
+        - bootstrap/transition/steps.ts
       dependencies:
         complexity: straightforward
         reason: >-
@@ -6366,7 +6366,7 @@ services:
           - core/server/services/remote-flags/remote-flags-service.ts
           - core/server/services/remote-flags/resolve.ts
           - core/shared/labs-flag-overrides.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
     entryPoints:
       - remote-flags/index.ts
     notes: >-
@@ -6411,7 +6411,7 @@ services:
           theme validation and template options consume those effective values without
           importing the poller. Tests prove resolver/store/labs behavior, not those HTTP paths.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/remote-flags/index.ts
           - core/shared/labs-flag-overrides.ts
           - core/shared/labs.js
@@ -6433,7 +6433,7 @@ services:
           gate and works without a site UUID, applying full overrides while skipping ramps.
           The pending-refresh root test establishes nonblocking init, not boot readiness.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/remote-flags/index.ts
           - core/server/services/remote-flags/resolve.ts
         tests:
@@ -6484,7 +6484,7 @@ services:
         sources:
           - core/server/services/remote-flags/remote-flags-service.ts
           - core/server/services/remote-flags/index.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/ghost-server.ts
           - package.json
         tests:
@@ -6503,7 +6503,7 @@ services:
         sources:
           - core/server/services/remote-flags/index.ts
           - core/server/services/remote-flags/remote-flags-service.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
         tests:
           - test/unit/server/services/remote-flags/index.test.js
           - test/unit/server/services/remote-flags/remote-flags-service.test.js
@@ -6548,7 +6548,7 @@ services:
       sources:
         - core/server/services/route-settings/index.js
         - core/server/services/route-settings/dynamic-routing-service.js
-        - core/boot.js
+        - bootstrap/transition/steps.ts
         - core/bridge.js
         - core/server/api/endpoints/settings.js
       dependencies:
@@ -6574,7 +6574,7 @@ services:
           - core/server/adapters/route-settings/FileStore.ts
           - core/server/adapters/route-settings/S3RouteSettingsStore.ts
           - core/bridge.js
-          - core/boot.js
+          - bootstrap/transition/steps.ts
     entryPoints:
       - route-settings/index.js
     notes: >-
@@ -6640,7 +6640,7 @@ services:
           pin changed post/RSS/taxonomy routes; comments tests exercise HTTP upload followed
           by page URL serialization, not all new collection routes.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/api/endpoints/settings.js
           - core/server/api/endpoints/exports.js
           - core/server/web/api/endpoints/admin/routes.js
@@ -6672,7 +6672,7 @@ services:
           its original error in both modes. These do not pin repeated root init/start, a
           pending real store read or top-level boot awaiting initDynamicRouting.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/route-settings/index.js
           - core/server/services/route-settings/dynamic-routing-service.js
           - core/bridge.js
@@ -6759,7 +6759,7 @@ services:
           - core/server/adapters/route-settings/FileStore.ts
           - core/server/adapters/route-settings/S3RouteSettingsStore.ts
           - core/server/adapters/route-settings/utils.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/bridge.js
           - core/frontend/services/routing/registry.js
           - core/server/services/url/lazy-url-service.ts
@@ -6795,7 +6795,7 @@ services:
           - core/server/adapters/route-settings/S3RouteSettingsStore.ts
           - core/bridge.js
           - core/frontend/services/apps/index.js
-          - core/boot.js
+          - bootstrap/transition/steps.ts
         tests:
           - test/unit/boot/init-dynamic-routing.test.ts
           - test/unit/server/services/route-settings/dynamic-routing-service.test.ts
@@ -6846,7 +6846,7 @@ services:
         - core/shared/settings-cache/cache-manager.js
         - core/server/services/settings/settings-bread-service.js
         - core/server/services/settings-helpers/index.js
-        - core/boot.js
+        - bootstrap/transition/steps.ts
       dependencies:
         complexity: complex
         reason: >-
@@ -6875,7 +6875,7 @@ services:
           - >-
             core/server/data/migrations/versions/5.124/2025-06-06-23-12-11-create-site-uuid-setting.ts
           - core/server/api/endpoints/settings.js
-          - core/boot.js
+          - bootstrap/transition/steps.ts
     entryPoints:
       - settings/index.js
       - settings/settings-service.js
@@ -6940,7 +6940,7 @@ services:
           email-verification metadata/mail interception and DB-token update outcomes. Retained
           cache/helper refresh units use fake rows; these do not cover every retained BREAD caller.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/api/endpoints/settings.js
           - core/server/api/endpoints/notifications.js
           - core/server/api/endpoints/settings-public.js
@@ -6964,7 +6964,7 @@ services:
           - core/server/services/settings/settings-service.js
           - core/server/models/settings.js
           - core/shared/settings-cache/cache-manager.js
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/settings/private-site-access-code.js
         tests:
           - test/unit/server/services/settings/repeated-init.test.ts
@@ -7104,7 +7104,7 @@ services:
         - core/server/services/settings-helpers/settings-helpers.js
         - core/server/services/settings/settings-service.js
         - core/frontend/services/proxy.js
-        - core/boot.js
+        - bootstrap/transition/steps.ts
       dependencies:
         complexity: straightforward
         reason: >-
@@ -7226,7 +7226,7 @@ services:
           have different prerequisites. Repeated-settings tests pin retained helpers after init
           with fake DB rows, not early method calls or failure partway through calculated fields.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/settings-helpers/settings-helpers.js
           - core/server/services/settings/settings-service.js
           - core/shared/settings-cache/cache-manager.js
@@ -7356,7 +7356,7 @@ services:
       sources:
         - core/server/services/stripe/service.js
         - core/server/services/stripe/stripe-service.js
-        - core/boot.js
+        - bootstrap/transition/steps.ts
       dependencies:
         complexity: complex
         reason: >-
@@ -7384,7 +7384,7 @@ services:
           - core/server/services/stripe/config.js
           - core/server/services/stripe/services/webhook/checkout-session-event-service.js
           - core/server/services/members/api.js
-          - core/boot.js
+          - bootstrap/transition/steps.ts
     entryPoints:
       - stripe/index.js
     notes: >-
@@ -7481,7 +7481,7 @@ services:
           gifts initializes successfully. Normal booted webhook tests establish working
           composition, not failure at every acquisition stage or real remote registration.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/stripe/service.js
           - core/server/services/stripe/stripe-service.js
           - core/server/services/stripe/webhook-manager.js
@@ -7658,7 +7658,7 @@ services:
         - core/server/services/themes/activate.js
         - core/server/services/themes/activation-bridge.js
         - core/server/services/themes/validate.js
-        - core/boot.js
+        - bootstrap/transition/steps.ts
       dependencies:
         complexity: complex
         reason: >-
@@ -7767,7 +7767,7 @@ services:
           setting. Full export HTTP extracts a nested theme ZIP and checks package.json;
           re-upload of an exported theme asserts HTTP 200, not complete file equality.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/api/endpoints/themes.js
           - core/server/api/endpoints/exports.js
           - core/server/web/api/endpoints/admin/routes.js
@@ -7802,7 +7802,7 @@ services:
           fake and missing-theme responses. Real HTTP exercises
           normal boot/activation/rendering, not missing/fatal-theme boot or an init barrier.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/themes/index.js
           - core/server/services/themes/activate.js
           - core/server/services/themes/loader.js
@@ -8106,7 +8106,7 @@ services:
           analytics disabled, then asserts remote browse stats and no SQL run-stat query;
           it does not prove complete boot ordering or later gate transitions.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/stats/index.ts
           - core/server/services/stats/utils/tinybird.ts
           - core/server/services/tinybird/tinybird-service-wrapper.js
@@ -8254,7 +8254,7 @@ services:
         - core/server/services/tinybird-sync/sync-table-to-tinybird.ts
         - core/server/services/tinybird-sync/get-ingest-config.ts
         - core/server/services/jobs-service/register-job-handlers.ts
-        - core/boot.js
+        - bootstrap/transition/steps.ts
       dependencies:
         complexity: complex
         reason: >-
@@ -8329,7 +8329,7 @@ services:
           failures, using a stub root. Persisted cursor data also appears in the exporter backup
           table list; the exporter test asserts its output key, not a populated cursor round-trip.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/jobs-service/register-job-handlers.ts
           - core/server/services/tinybird-sync/jobs/tinybird-sync-job.ts
           - core/server/data/exporter/table-lists.js
@@ -8348,7 +8348,7 @@ services:
           the stub boot test
           proves reachability only, not complete startup readiness or failure ordering.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/tinybird-sync/tinybird-sync-service.ts
           - core/server/services/tinybird-sync/get-ingest-config.ts
           - core/server/services/jobs-service/cron.ts
@@ -8417,7 +8417,7 @@ services:
           - core/server/services/tinybird-sync/sync-table-to-tinybird.ts
           - core/server/services/jobs-service/jobs-service.ts
           - core/server/adapters/jobs/InMemoryJobsBackend.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
         tests:
           - test/unit/server/adapters/jobs/in-memory-jobs-backend.test.ts
           - test/unit/server/services/tinybird-sync/index.test.ts
@@ -8441,7 +8441,7 @@ services:
           - core/server/services/tinybird-sync/sync-table-to-tinybird.ts
           - core/server/services/jobs-service/jobs-service.ts
           - core/server/adapters/jobs/InMemoryJobsBackend.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
         tests:
           - test/unit/server/services/tinybird-sync/index.test.ts
           - test/unit/server/services/tinybird-sync/sync-table-to-tinybird.test.ts
@@ -8489,7 +8489,7 @@ services:
         - core/server/services/update-check/jobs/update-check-job.ts
         - core/server/services/notifications/notifications.js
         - core/server/services/jobs-service/register-job-handlers.ts
-        - core/boot.js
+        - bootstrap/transition/steps.ts
       dependencies:
         complexity: complex
         reason: >-
@@ -8512,7 +8512,7 @@ services:
           - core/server/services/update-check/jobs/update-check-job.ts
           - core/server/services/notifications/notification-email.ts
           - core/server/services/jobs-service/register-job-handlers.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
     entryPoints:
       - update-check/index.js
     notes: >-
@@ -8559,7 +8559,7 @@ services:
           context to read/write the due date, resolve active Owner/Administrator recipients
           for alerts and store notifications. Alerts await notification email before storage.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/jobs-service/register-job-handlers.ts
           - core/server/services/jobs-service/jobs-service.ts
           - core/server/adapters/jobs/InMemoryJobsBackend.ts
@@ -8580,7 +8580,7 @@ services:
           boot check. Enqueue completion does not wait for checking. There is no root readiness
           guard; direct calls rely on initialized API/settings and mail dependencies.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/update-check/index.js
           - core/server/services/jobs-service/jobs-service.ts
           - core/server/lib/mail/ghost-mailer.js
@@ -8602,7 +8602,7 @@ services:
           - core/server/services/jobs-service/index.ts
           - core/server/services/jobs-service/jobs-service.ts
           - core/server/adapters/jobs/InMemoryJobsBackend.ts
-          - core/boot.js
+          - bootstrap/transition/steps.ts
         tests:
           - test/unit/server/adapters/jobs/in-memory-jobs-backend.test.ts
           - test/unit/server/services/jobs-service/jobs-service.test.ts
@@ -8640,7 +8640,7 @@ services:
           but neither the root nor GhostMailer exposes disposal. The request function and
           template generator are shared imports; no update-check cancellation hook exists.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/jobs-service/jobs-service.ts
           - core/server/adapters/jobs/InMemoryJobsBackend.ts
           - core/server/services/update-check/index.js
@@ -8665,7 +8665,7 @@ services:
           propagated delivery errors; its in-memory backend catches them and continues other
           work without retrying that delivery.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/update-check/index.js
           - core/server/services/update-check/update-check-service.js
           - core/server/services/jobs-service/register-job-handlers.ts
@@ -8724,7 +8724,7 @@ services:
       sources:
         - core/server/services/url/index.js
         - core/server/services/url/lazy-url-service.ts
-        - core/boot.js
+        - bootstrap/transition/steps.ts
         - core/bridge.js
       dependencies:
         complexity: straightforward
@@ -8850,7 +8850,7 @@ services:
           They do not establish atomic readiness across all registrations or top-level boot
           awaiting a pending initDynamicRouting call.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/app.js
           - core/server/services/route-settings/dynamic-routing-service.js
           - core/frontend/services/routing/router-manager.js
@@ -9084,7 +9084,7 @@ services:
           persistence do. HTTP tests use completed boot and do not characterize import timing,
           pre-boot direct sends or partial members initialization.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/members/service.js
           - core/server/services/verification/verification-webhook-service.ts
         tests:
@@ -9289,7 +9289,7 @@ services:
           initialization failure can leave the published trigger and subscription in place.
           Existing HTTP coverage uses complete boot, not this partial-initialization boundary.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/members/service.js
           - core/server/services/email-service/email-service-wrapper.js
           - core/server/services/verification-trigger.js
@@ -9418,7 +9418,7 @@ services:
         - core/server/services/webhooks/listen.js
         - core/server/services/webhooks/webhooks-service.js
         - core/server/api/endpoints/webhooks.js
-        - core/boot.js
+        - bootstrap/transition/steps.ts
       dependencies:
         complexity: straightforward
         reason: >-
@@ -9441,7 +9441,7 @@ services:
           - core/server/services/webhooks/serialize.js
           - core/server/services/webhooks/webhook-trigger.js
           - core/server/services/webhooks/listen.js
-          - core/boot.js
+          - bootstrap/transition/steps.ts
     entryPoints:
       - webhooks/index.js
       - webhooks/webhooks-service.js
@@ -9511,7 +9511,7 @@ services:
           A focused local run completed custom-field payload assertions but reproducibly timed
           out draining DomainEvents after the create-with-fields case; settlement remains a gap.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/webhooks/listen.js
           - core/server/models/post.js
           - core/server/models/tag.js
@@ -9539,7 +9539,7 @@ services:
           before jobs and a failure stopping jobs. Explicit settings/member/URL readiness failures
           and rollback after a later initializer fails remain untested.
         sources:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
           - core/server/services/webhooks/index.js
           - core/server/services/webhooks/listen.js
           - core/server/web/parent/backend.js
@@ -9817,7 +9817,7 @@ followUps:
       scheduleCheckJob:
         purpose: Attach the jobs backend and register recurring checks for an active or subsequent key rotation.
         callers:
-          - core/boot.js
+          - bootstrap/transition/steps.ts
         timing: Background boot after signing-key readiness and jobs startup; initialization alone does not register jobs.
         dependencies:
           - A ready signing-key instance and the supplied jobs backend.

@@ -27,8 +27,6 @@ import configUtils from './config-utils';
 import * as urlServiceUtils from './url-service-utils';
 // @ts-expect-error This module lacks type definitions.
 import mockManager from './e2e-framework-mock-manager';
-// @ts-expect-error This module lacks type definitions.
-import { bootGhost } from '../../core/boot';
 import {
   AdminAPITestAgent,
   ContentAPITestAgent,
@@ -38,6 +36,12 @@ import {
 } from './agents';
 // @ts-expect-error This module lacks type definitions.
 import db from './db-utils';
+
+// Required, not imported: the server code requires Ghost's application, and an imported copy of
+// boot would start another.
+const {
+  bootGhost,
+}: typeof import('../../bootstrap/transition/boot') = require('../../bootstrap/transition/boot');
 // @ts-expect-error This module lacks type definitions.
 import settingsService from '../../core/server/services/settings/settings-service';
 import supertest from 'supertest';

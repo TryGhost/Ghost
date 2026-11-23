@@ -6,7 +6,7 @@ const routingService = require('../../../../core/frontend/services/routing');
 const settingsCache = require('../../../../core/shared/settings-cache');
 const imageLib = require('../../../../core/server/lib/image');
 
-const { bootGhost } = require('../../../../core/boot');
+const { bootGhost } = require('../../../../bootstrap/transition/boot');
 
 // Other Test Utilities
 const configUtils = require('../../../utils/config-utils');

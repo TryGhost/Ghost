@@ -492,7 +492,6 @@ module.exports = {
         pathNot: [
           '^ghost/bootstrap/',
           '^ghost/index\\.js$',
-          '^ghost/core/boot\\.js$',
           // Earmarked: hands endpoints their services from Ghost's one application.
           '^ghost/core/server/api/endpoints/index\\.js$',
         ],
