@@ -4,6 +4,8 @@ import schema from '../../data/schema/schema';
 import { ActionLog } from '../../lib/action-log/action-log';
 import { recordSegmentChanges } from '../../lib/action-log/segments';
 import { meter, tracer } from '../../lib/tracing';
+import { MirroringSegmentRepository } from './mirroring-repository';
+import { SegmentsTable } from './segments-table';
 import { SegmentsService } from './service';
 import { refreshSettingsCache } from './settings-cache';
 import { SettingsSegmentRepository } from './settings-repository';
@@ -29,10 +31,15 @@ export default defineService('Segments', () => {
 
   return new SegmentsService({
     knex: db.knex,
-    repository: new SettingsSegmentRepository({
-      key: SETTING_KEY,
-      logging,
-      maxValueLength: schema.settings.value.maxlength,
+    // The setting is the store that is read. Every change is also written to the segments
+    // table, which nothing reads yet.
+    repository: new MirroringSegmentRepository({
+      source: new SettingsSegmentRepository({
+        key: SETTING_KEY,
+        logging,
+        maxValueLength: schema.settings.value.maxlength,
+      }),
+      table: new SegmentsTable({ maxNameLength: schema.segments.name.maxlength }),
     }),
     tracking,
     // Each change is logged as a staff action inside the command that made it, and the settings

@@ -118,7 +118,8 @@ function isNameTaken(views: readonly Json[], name: string, exceptIndex?: number)
   });
 }
 
-function nameTaken(attempt: SegmentChangeAttempt): never {
+/** Rejects the change `attempt` tracks because another segment has the name. */
+export function nameTaken(attempt: SegmentChangeAttempt): never {
   attempt.rejecting('name_taken');
   throw new errors.ValidationError({
     message: 'A view with this name already exists',

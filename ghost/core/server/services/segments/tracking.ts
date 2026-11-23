@@ -8,7 +8,8 @@ import type { Tracer } from '../../lib/tracing/tracer';
  * Why a change to a segment was rejected:
  *
  * - `not_found`: no segment has the id in the request.
- * - `name_taken`: another saved member view already has the name.
+ * - `name_taken`: another saved member view already has the name, or a name the database
+ *   counts as the same.
  * - `filter_taken`: another segment already has the new segment's filter.
  * - `filter_changed`: the request has a filter that isn't the segment's own.
  * - `stored_views_too_long`: the saved views would exceed the maximum length of their store.

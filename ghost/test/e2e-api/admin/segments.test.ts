@@ -191,6 +191,8 @@ describe('Segments Admin API', function () {
     // A refresh still to come from this test's last write would otherwise land after the reset.
     await settledSharedViews();
     await saveSharedViews('[]');
+    // A settings save doesn't change the segments table, so the table is emptied directly.
+    await models.Base.knex('segments').del();
   });
 
   describe('GET /segments/', function () {
@@ -692,6 +694,120 @@ describe('Segments Admin API', function () {
     });
   });
 
+  describe('segments table', function () {
+    type Row = Pick<Segment, 'id' | 'name' | 'filter'>;
+
+    /** The table's rows, in the order a segment's position, creation time and id give. */
+    const tableSegments = (): Promise<Row[]> =>
+      models.Base.knex('segments')
+        .orderBy([{ column: 'sort_order' }, { column: 'created_at' }, { column: 'id' }])
+        .select('id', 'name', 'filter');
+
+    const tableNames = async () => (await tableSegments()).map(({ name }) => name);
+
+    it('holds the segments the API lists, in the same order, after each change', async function () {
+      await add('VIP', 'label:vip');
+      const gold = await add('Gold', 'label:gold');
+      await add('Free', 'status:free');
+      assert.deepEqual(await tableSegments(), await browse());
+
+      await rename(gold.id, 'Golden');
+      assert.deepEqual(await tableSegments(), await browse());
+      assert.deepEqual(await tableNames(), ['VIP', 'Golden', 'Free']);
+
+      await agent.delete(`segments/${gold.id}/`).expectStatus(204);
+      assert.deepEqual(await tableSegments(), await browse());
+      assert.deepEqual(await tableNames(), ['VIP', 'Free']);
+    });
+
+    it('copies views saved through the settings API when a segment next changes', async function () {
+      await saveSharedViews(
+        JSON.stringify([memberView('Free', 'status:free'), memberView('VIP', 'label:vip')]),
+      );
+      assert.deepEqual(await tableSegments(), []);
+
+      await add('Gold', 'label:gold');
+
+      assert.deepEqual(await tableSegments(), await browse());
+      assert.deepEqual(await tableNames(), ['Free', 'VIP', 'Gold']);
+    });
+
+    it('follows the saved views when their order changes', async function () {
+      const views = [
+        memberView('Free', 'status:free'),
+        memberView('VIP', 'label:vip'),
+        memberView('Gold', 'label:gold'),
+      ];
+      await saveSharedViews(JSON.stringify(views));
+      const [free] = await browse();
+      await rename(free.id, 'Free members');
+      assert.deepEqual(await tableNames(), ['Free members', 'VIP', 'Gold']);
+
+      // The settings save puts the views in another order, and the first name back.
+      await saveSharedViews(JSON.stringify([views[2], views[1], views[0]]));
+      await rename(free.id, 'Everyone free');
+
+      assert.deepEqual(await tableSegments(), await browse());
+      assert.deepEqual(await tableNames(), ['Gold', 'VIP', 'Everyone free']);
+    });
+
+    it("rejects a name the database counts as another segment's", async function () {
+      // Admin compares names by lower case alone, and the database also ignores accents.
+      const { id } = await add('Cafe', 'label:cafe');
+      await add('Gold', 'label:gold');
+      const before = await tableSegments();
+
+      assert.deepEqual(await addError({ name: 'Café', filter: 'label:accent' }), NAME_TAKEN);
+      assert.deepEqual(await renameError(id, { name: 'Göld' }), NAME_TAKEN);
+
+      assert.deepEqual(await tableSegments(), before);
+      assert.deepEqual(await browse(), before);
+    });
+
+    it('rejects every change while saved views have names the database counts as the same', async function () {
+      await saveSharedViews(
+        JSON.stringify([memberView('Cafe', 'label:cafe'), memberView('Café', 'label:accent')]),
+      );
+      const [, accented] = await browse();
+
+      assert.deepEqual(await addError({ name: 'Gold', filter: 'label:gold' }), NAME_TAKEN);
+      assert.deepEqual(await tableSegments(), []);
+
+      // Renaming one of them clears it.
+      await rename(accented.id, 'Coffee');
+      await add('Gold', 'label:gold');
+      assert.deepEqual(await tableSegments(), await browse());
+      assert.deepEqual(await tableNames(), ['Cafe', 'Coffee', 'Gold']);
+    });
+
+    it('lets a view take a name another view gave up through the settings API', async function () {
+      const views = [memberView('Top', 'label:top'), memberView('VIP', 'label:vip')];
+      await saveSharedViews(JSON.stringify(views));
+      const { id: goldId } = await add('Gold', 'label:gold');
+      assert.deepEqual(await tableNames(), ['Top', 'VIP', 'Gold']);
+
+      await saveSharedViews(
+        JSON.stringify([
+          { ...views[0], name: 'VIP' },
+          { ...views[1], name: 'Top' },
+          memberView('Gold', 'label:gold'),
+        ]),
+      );
+      await rename(goldId, 'Golden');
+
+      assert.deepEqual(await tableSegments(), await browse());
+      assert.deepEqual(await tableNames(), ['VIP', 'Top', 'Golden']);
+    });
+
+    it('cuts a name longer than the table holds', async function () {
+      await saveSharedViews(JSON.stringify([memberView('n'.repeat(200), 'label:long')]));
+
+      await add('Gold', 'label:gold');
+
+      assert.deepEqual(await tableNames(), ['n'.repeat(191), 'Gold']);
+    });
+  });
+
   describe('spans', function () {
     let metrics: { tracked(name: string): SpanDocument[] };
 
@@ -760,6 +876,16 @@ describe('Segments Admin API', function () {
         { event: { outcome: 'failure' }, error: { type: 'ValidationError' } },
       ]);
       assert.equal(spans('add')[0].labels.rejection, undefined);
+    });
+
+    it('records a name the database counts as taken as a rejection', async function () {
+      await add('Cafe', 'label:cafe');
+
+      await addError({ name: 'Café', filter: 'label:accent' });
+
+      expect(failedSpans('add')).toMatchObject([
+        { error: { type: 'ValidationError' }, labels: { rejection: 'name_taken' } },
+      ]);
     });
 
     it('marks a rename to the same name as unchanged', async function () {

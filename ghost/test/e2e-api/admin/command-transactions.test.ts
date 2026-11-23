@@ -324,14 +324,14 @@ describe('Commands and transactions', function () {
     },
     {
       name: 'segments: add',
-      tables: ['settings'],
+      tables: ['settings', 'segments'],
       recorded: true,
       arrange: async () => (executor) =>
         segments.default.service.add(context, newSegment(), executor),
     },
     {
       name: 'segments: edit',
-      tables: ['settings'],
+      tables: ['settings', 'segments'],
       recorded: true,
       arrange: async () => {
         const id = await addSegment();
@@ -341,7 +341,7 @@ describe('Commands and transactions', function () {
     },
     {
       name: 'segments: destroy',
-      tables: ['settings'],
+      tables: ['settings', 'segments'],
       recorded: true,
       arrange: async () => {
         const id = await addSegment();
