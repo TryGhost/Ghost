@@ -121,4 +121,11 @@ describe('HorizontalNode', function () {
             expect(node.getIsVisibilityActive()).toBe(false);
         }));
     });
+
+    describe('hasVisibility', function () {
+        it('returns false', editorTest(function () {
+            const node = $createHorizontalRuleNode();
+            expect(node.hasVisibility()).toBe(false);
+        }));
+    });
 });

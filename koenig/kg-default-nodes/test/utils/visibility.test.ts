@@ -1,6 +1,6 @@
 import {JSDOM} from 'jsdom';
 import type {Visibility} from '../../src/utils/visibility.js';
-import {hasRestrictedCards, isOldVisibilityFormat, isVisibilityRestricted, migrateOldVisibilityFormat, renderWithVisibility, buildDefaultVisibility} from '../../src/utils/visibility.js';
+import {getEmailMediaHref, hasRestrictedCards, isOldVisibilityFormat, isVisibilityRestricted, isWebVisibilityRestricted, migrateOldVisibilityFormat, renderWithVisibility, buildDefaultVisibility} from '../../src/utils/visibility.js';
 
 type VisibilityRenderOutput = Parameters<typeof renderWithVisibility>[0];
 
@@ -153,6 +153,53 @@ describe('Utils: visibility', function () {
         it('accepts a parsed document', function () {
             const lexical = JSON.parse(doc([card({showOnWeb: false})]));
             expect(hasRestrictedCards(lexical)).toBe(true);
+        });
+    });
+
+    describe('isWebVisibilityRestricted', function () {
+        const ALL = 'status:free,status:-free';
+
+        it('returns false without visibility', function () {
+            expect(isWebVisibilityRestricted(undefined)).toBe(false);
+        });
+
+        it('returns false when everyone can see the card on web', function () {
+            expect(isWebVisibilityRestricted({web: {nonMember: true, memberSegment: ALL}, email: {memberSegment: ''}})).toBe(false);
+        });
+
+        it('returns true when logged-out visitors cannot see the card', function () {
+            expect(isWebVisibilityRestricted({web: {nonMember: false, memberSegment: ALL}, email: {memberSegment: ALL}})).toBe(true);
+        });
+
+        it('returns true when only some members can see the card', function () {
+            expect(isWebVisibilityRestricted({web: {nonMember: true, memberSegment: 'status:-free'}, email: {memberSegment: ALL}})).toBe(true);
+        });
+
+        it('returns true when the card is hidden on web', function () {
+            expect(isWebVisibilityRestricted({web: {nonMember: false, memberSegment: ''}, email: {memberSegment: ALL}})).toBe(true);
+        });
+
+        it('reads the legacy format', function () {
+            expect(isWebVisibilityRestricted({emailOnly: true, segment: ''})).toBe(true);
+            expect(isWebVisibilityRestricted({showOnWeb: true, showOnEmail: true, segment: ''})).toBe(false);
+        });
+    });
+
+    describe('getEmailMediaHref', function () {
+        const ALL = 'status:free,status:-free';
+        const src = 'https://example.com/content/media/file.mp3';
+        const postUrl = 'https://example.com/post/';
+
+        it('links to the post when the card is public on web', function () {
+            expect(getEmailMediaHref(src, {web: {nonMember: true, memberSegment: ALL}, email: {memberSegment: ALL}}, postUrl)).toBe(postUrl);
+        });
+
+        it('links to the file when the card is restricted on web', function () {
+            expect(getEmailMediaHref(src, {web: {nonMember: false, memberSegment: ALL}, email: {memberSegment: ALL}}, postUrl)).toBe(src);
+        });
+
+        it('links to the file when there is no post URL', function () {
+            expect(getEmailMediaHref(src, undefined)).toBe(src);
         });
     });
 
