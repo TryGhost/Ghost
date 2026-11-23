@@ -1,12 +1,10 @@
-import { MobileFilterSheet } from './mobile-filter-sheet';
-import { Button } from '@tryghost/shade/components';
+import { useMobileFilters } from '@tryghost/shade/patterns';
 import { METAFIELDS_FIELD_PREFIX } from '@/members/member-fields';
 import { keyBelow } from '@/shared/filters';
 import ManageViewPopover from './manage-view-popover';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
-import { createPortal } from 'react-dom';
-import { cn, LucideIcon } from '@tryghost/shade/utils';
+import { cn } from '@tryghost/shade/utils';
 import {
   buildOfferOptions,
   fromOfferFilterDisplayValues,
@@ -36,7 +34,6 @@ import {
 import type { MemberView } from '@/members/hooks/use-member-views';
 
 interface MembersFiltersProps {
-  mobile?: boolean;
   mobileBarContainer?: HTMLElement | null;
   filters: Filter[];
   multipleActiveSubscriptionsCount: number;
@@ -89,7 +86,6 @@ function mapOfferRedemptionFilters(filters: Filter[], mapValues: (values: string
 
 const MembersFilters: React.FC<MembersFiltersProps> = ({
   filters,
-  mobile = false,
   mobileBarContainer,
   multipleActiveSubscriptionsCount,
   nql,
@@ -97,7 +93,6 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   savedViews = [],
   activeView,
 }) => {
-  const [backButtonContainer, setBackButtonContainer] = useState<HTMLSpanElement | null>(null);
   const { data: offersData } = useBrowseOffers({});
   const { data: newslettersData } = useBrowseNewsletters({ searchParams: { limit: '100' } });
   const { data: settingsData } = useBrowseSettings({});
@@ -188,40 +183,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     archivedCustomFields,
   });
 
-  const filterChips = useMemo(() => {
-    const fields = filterFields.flatMap((group) => group.fields);
-    return displayFilters.map((filter) => {
-      const field = fields.find((candidate) => candidate.key === filter.field);
-      const label = field?.pillLabel ?? field?.label ?? 'Filter';
-      const values = filter.values.map((value) => {
-        const option = field?.options?.find((candidate) => candidate.value === value);
-        return (
-          option?.label ??
-          (['text', 'email', 'url', 'tel', 'date', 'datetime', 'time'].includes(
-            field?.type ?? '',
-          ) && typeof value === 'string'
-            ? value.trim()
-            : '')
-        );
-      });
-      const operator = field?.operators?.find(
-        (candidate) => candidate.value === filter.operator,
-      )?.label;
-      const text =
-        values.length && values.every(Boolean)
-          ? `${label}${operator ? ` ${operator}` : ':'} ${values.join(', ')}`
-          : label;
-      const valueText = values.length && values.every(Boolean) ? values.join(', ') : '';
-      const qualifier = !['is', 'contains', 'is-any'].includes(filter.operator) ? operator : '';
-      return {
-        id: filter.id,
-        icon: field?.icon,
-        label: valueText ? `${qualifier ? `${qualifier} ` : ''}${valueText}` : label,
-        description: text,
-      };
-    });
-  }, [displayFilters, filterFields]);
-
+  const mobile = useMobileFilters();
   const hasFilters = filters.length > 0;
 
   const clearAndSaveButtons = hasFilters ? (
@@ -245,38 +207,19 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     </FilterBar.Actions>
   ) : undefined;
 
-  const filterControls = (
+  return (
     <Filters
-      addButton={
-        mobile ? (
-          <Button
-            className="shrink-0 px-0 [@media(hover:none)]:hover:bg-transparent"
-            variant="ghost"
-          >
-            <LucideIcon.Plus /> Add filter
-          </Button>
-        ) : (
-          <Filters.Trigger />
-        )
+      addButton={<Filters.Trigger />}
+      barContainer={mobileBarContainer}
+      className={
+        mobile ? undefined : cn('[&>button]:order-last', hasFilters ? 'sm:!pr-40' : 'w-auto')
       }
-      allowMultiple={true}
-      className={cn(
-        mobile
-          ? [
-              'w-full flex-col items-stretch gap-3',
-              '[&_[data-slot=filter-item]]:w-full [&_[data-slot=filter-item]]:min-w-0',
-              '[&_[data-slot=filter-item]>:nth-last-child(2)]:min-w-0 [&_[data-slot=filter-item]>:nth-last-child(2)]:flex-1 [&_[data-slot=filter-item]>:nth-last-child(2)]:overflow-hidden',
-              '[&_[data-slot=filter-item]_input]:min-w-0 [&_[data-slot=filters-input-wrapper]]:min-w-0 [&_[data-slot=filters-input-wrapper]]:flex-1',
-              '[&_[cmdk-group-heading]]:px-0! [&_[cmdk-group]]:px-0 [&_[cmdk-input-wrapper]]:px-0 [&_[cmdk-item]]:px-0 [&_[data-slot=command-list]]:px-0',
-              '[&_[cmdk-input]]:text-base [&_[cmdk-item]]:min-h-10 [&_[cmdk-root]]:h-auto [&_[data-slot=command-list]]:max-h-none',
-            ]
-          : ['[&>button]:order-last', hasFilters ? 'sm:!pr-40' : 'w-auto'],
-      )}
-      clearButton={mobile ? undefined : clearAndSaveButtons}
+
+      clearButton={clearAndSaveButtons}
       fields={filterFields}
       filters={displayFilters}
       inlineActions={
-        mobile && nql ? (
+        nql ? (
           <ManageViewPopover
             activeView={activeView}
             existingViews={savedViews}
@@ -285,52 +228,15 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
           />
         ) : undefined
       }
-      inlinePicker={mobile}
       keyboardShortcut="f"
-      popoverAlign={'start'}
-      popoverContentClassName={
-        mobile
-          ? 'z-[80] w-[min(360px,calc(100vw-32px))] max-h-(--radix-popover-content-available-height) [&_[data-slot=command-list]]:max-h-[min(450px,50dvh)]'
-          : 'z-[80] w-[280px] [&_[data-slot=command-list]]:max-h-[450px]'
-      }
-      renderPickerBack={
-        mobile
-          ? (onBack) =>
-              backButtonContainer &&
-              createPortal(
-                <Button
-                  aria-label="Back"
-                  className="-my-3 -mr-2 -ml-3 size-11 p-0 hover:bg-transparent"
-                  variant="ghost"
-                  onClick={onBack}
-                >
-                  <LucideIcon.ArrowLeft />
-                </Button>,
-                backButtonContainer,
-              )
-          : undefined
-      }
-      showClearButton={!mobile && hasFilters}
-      showSearchInput={true}
+      popoverAlign="start"
+      popoverContentClassName="z-[80] w-[280px] [&_[data-slot=command-list]]:max-h-[450px]"
+      showClearButton={hasFilters}
+      allowMultiple
+      showSearchInput
       onChange={handleFiltersChange}
     />
   );
-
-  if (mobile) {
-    return (
-      <MobileFilterSheet
-        backButtonRef={setBackButtonContainer}
-        barContainer={mobileBarContainer}
-        chips={filterChips}
-        count={filters.length}
-        onClear={() => onFiltersChange([])}
-      >
-        {filterControls}
-      </MobileFilterSheet>
-    );
-  }
-
-  return filterControls;
 };
 
 export default MembersFilters;

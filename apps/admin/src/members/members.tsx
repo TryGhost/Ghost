@@ -1,4 +1,4 @@
-import { useMobileMemberFilters } from './hooks/use-mobile-member-filters';
+import { useMobileFilters } from '@tryghost/shade/patterns';
 import MembersActions from './components/members-actions';
 import MembersEmptyState from './components/members-empty-state';
 import MembersFilters from './components/members-filters';
@@ -53,7 +53,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
 }) => {
   // Under a large title (admin7Design), a roomier row of column labels
   const { largeTitles } = usePageChrome();
-  const mobileFilters = useMobileMemberFilters();
+  const mobileFilters = useMobileFilters();
   const [mobileFilterBar, setMobileFilterBar] = useState<HTMLDivElement | null>(null);
   const headerRef = useRef<HTMLDivElement | null>(null);
   const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
@@ -177,7 +177,6 @@ const MembersPage: React.FC<MembersPageProps> = ({
     <MembersFilters
       activeView={activeView}
       filters={filters}
-      mobile={mobileFilters}
       mobileBarContainer={mobileFilterBar}
       multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
       nql={nql}

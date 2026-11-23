@@ -1,6 +1,8 @@
 'use client';
 
 import type React from 'react';
+import { SheetFilters } from '@/components/patterns/filters-sheet';
+import { useMobileFilters } from '@/components/patterns/use-mobile-filters';
 import {
   createContext,
   forwardRef,
@@ -2738,11 +2740,13 @@ const FiltersTrigger = forwardRef<HTMLButtonElement, FiltersTriggerProps>(
 );
 FiltersTrigger.displayName = 'Filters.Trigger';
 
-interface FiltersProps<T = unknown> {
+export interface FiltersProps<T = unknown> {
   filters: Filter<T>[];
   fields: FilterFieldsConfig<T>;
   onChange: (filters: Filter<T>[]) => void;
   className?: string;
+  /** Optional location for the active-filter summary outside the trigger. */
+  barContainer?: HTMLElement | null;
   showAddButton?: boolean;
   addButtonText?: string;
   addButtonIcon?: React.ReactNode;
@@ -2774,7 +2778,7 @@ interface FiltersProps<T = unknown> {
   onActiveFieldChange?: (fieldKey: string | null) => void;
 }
 
-export function Filters<T = unknown>({
+function InlineFilters<T = unknown>({
   filters,
   fields,
   onChange,
@@ -3394,6 +3398,48 @@ export function Filters<T = unknown>({
       </div>
     </FilterContext.Provider>
   );
+}
+
+export function Filters<T = unknown>(props: FiltersProps<T>) {
+  const mobile = useMobileFilters();
+  const filterChips = useMemo(() => {
+    const fields = flattenFields(props.fields);
+    return props.filters.map((filter) => {
+      const field = fields.find((candidate) => candidate.key === filter.field);
+      const label = field?.pillLabel ?? field?.label ?? 'Filter';
+      const values = filter.values.map((value) => {
+        const option = field?.options?.find((candidate) => candidate.value === value);
+        return (
+          option?.label ??
+          (['text', 'email', 'url', 'tel', 'date', 'datetime', 'time'].includes(
+            field?.type ?? '',
+          ) && typeof value === 'string'
+            ? value.trim()
+            : '')
+        );
+      });
+      const operator = field?.operators?.find(
+        (candidate) => candidate.value === filter.operator,
+      )?.label;
+      const text =
+        values.length && values.every(Boolean)
+          ? `${label}${operator ? ` ${operator}` : ':'} ${values.join(', ')}`
+          : label;
+      const valueText = values.length && values.every(Boolean) ? values.join(', ') : '';
+      const qualifier = !['is', 'contains', 'is-any'].includes(filter.operator) ? operator : '';
+      return {
+        id: filter.id,
+        icon: field?.icon,
+        label: valueText ? `${qualifier ? `${qualifier} ` : ''}${valueText}` : label,
+        description: text,
+      };
+    });
+  }, [props.filters, props.fields]);
+
+  if (mobile) {
+    return <SheetFilters {...props} chips={filterChips} controls={InlineFilters} />;
+  }
+  return <InlineFilters {...props} />;
 }
 
 Filters.Trigger = FiltersTrigger;

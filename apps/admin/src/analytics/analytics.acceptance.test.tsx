@@ -1,3 +1,4 @@
+import { page } from 'vitest/browser';
 import { describe, expect, it, onTestFinished } from 'vitest';
 
 import {
@@ -586,4 +587,31 @@ describe('Analytics newsletters', () => {
       .element(analyticsScreen.newslettersCard())
       .toHaveTextContent('Update Ghost to see newsletter statistics for the whole period.');
   });
+});
+
+it('uses the shared mobile sheet and summary for analytics filters', async () => {
+  await page.viewport(390, 844);
+  onTestFinished(async () => {
+    await page.viewport(1280, 800);
+  });
+  seedEmptyAnalyticsWorld();
+  seedEmptyWebTraffic();
+  await renderAdminApp('/analytics/web', {
+    boot: webAnalyticsBootOverrides(),
+    labs: { admin7Mobile: true, admin7Design: false },
+  });
+  await page.getByRole('button', { name: 'Filters', exact: true }).click();
+  await page.getByRole('option', { name: 'Audience', exact: true }).click();
+  await page.getByRole('option', { name: 'Free members', exact: true }).click();
+  const sheet = page.getByRole('dialog', { name: 'Filters', exact: true });
+  await expect.element(sheet).toBeVisible();
+  expect(sheet.element().scrollWidth).toBe(sheet.element().clientWidth);
+  await sheet.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect
+    .element(page.getByRole('button', { name: 'Edit active filters', exact: true }))
+    .toBeVisible();
+  await page.getByRole('button', { name: 'Clear', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Edit active filters', exact: true })).toHaveCount(
+    0,
+  );
 });
