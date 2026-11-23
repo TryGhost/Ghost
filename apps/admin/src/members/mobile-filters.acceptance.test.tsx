@@ -1,6 +1,6 @@
 import { afterEach, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { fakeMembers, fakeEditSettings, member, renderAdminApp } from '@test-utils/acceptance';
+import { fakeMembers, fakeSegmentWrites, member, renderAdminApp } from '@test-utils/acceptance';
 
 afterEach(async () => {
   await page.viewport(1280, 800);
@@ -48,7 +48,7 @@ it.each([320, 390, 820])('edits mobile filters in one sheet at %i', async (width
 it('adds a choice and date filter, saves a view, and keeps filters when resizing', async () => {
   await page.viewport(390, 844);
   fakeMembers([member({ name: 'Alice' })]);
-  const settingsApi = fakeEditSettings();
+  const segmentsApi = fakeSegmentWrites();
   await renderAdminApp('/members', { labs: { admin7Mobile: true, admin7Design: false } });
   await page.getByRole('button', { name: 'Filters', exact: true }).click();
   await page.getByRole('option', { name: 'Member status', exact: true }).click();
@@ -64,7 +64,15 @@ it('adds a choice and date filter, saves a view, and keeps filters when resizing
   await page.getByRole('button', { name: 'Save view', exact: true }).click();
   await page.getByPlaceholder('View name').fill('Mobile sync');
   await page.getByRole('button', { name: 'Save', exact: true }).click();
-  await expect.poll(() => settingsApi.requests.length).toBe(1);
+  await expect
+    .poll(() => segmentsApi.requests)
+    .toMatchObject([
+      {
+        method: 'POST',
+        path: '/segments/',
+        body: { segments: [{ name: 'Mobile sync' }] },
+      },
+    ]);
   await expect.element(sheet).toBeVisible();
   await page.viewport(1280, 800);
   await expect(sheet).toHaveCount(0);
