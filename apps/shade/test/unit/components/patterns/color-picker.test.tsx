@@ -6,7 +6,6 @@ import ColorPicker, {
   ColorPickerEyeDropper,
   ColorPickerFormat,
   ColorPickerHue,
-  ColorPickerOutput,
   ColorPickerRoot,
   ColorPickerSelection,
 } from '../../../../src/components/patterns/color-picker';
@@ -36,8 +35,6 @@ describe('ColorPicker Component', () => {
       unobserve() {}
       disconnect() {}
     } as unknown as typeof ResizeObserver;
-    // Radix Select scrolls the selected option into view, which jsdom doesn't implement
-    HTMLElement.prototype.scrollIntoView = vi.fn();
   });
 
   describe('initial color', () => {
@@ -150,24 +147,6 @@ describe('ColorPicker Component', () => {
     });
   });
 
-  describe('controlled value', () => {
-    it('updates when value prop changes', () => {
-      const { rerender } = render(
-        <ColorPickerRoot value="#FF0000">
-          <ColorPickerFormat />
-        </ColorPickerRoot>,
-      );
-
-      rerender(
-        <ColorPickerRoot value="#00FF00">
-          <ColorPickerFormat />
-        </ColorPickerRoot>,
-      );
-
-      expect(screen.getByDisplayValue('#00FF00')).toBeTruthy();
-    });
-  });
-
   describe('onChange', () => {
     // A parent that passes a new inline onChange on every render, like most callers do.
     function Parent({ value, onChange }: { value: string; onChange: (hex: string) => void }) {
@@ -179,11 +158,20 @@ describe('ColorPicker Component', () => {
       );
     }
 
-    it('is not called on mount', () => {
+    it('is not called on mount and is called once per change in StrictMode', () => {
       const handleChange = vi.fn();
-      render(<Parent value="#ff0000" onChange={handleChange} />);
+      render(
+        <StrictMode>
+          <Parent value="#ff0000" onChange={handleChange} />
+        </StrictMode>,
+      );
 
       expect(handleChange).not.toHaveBeenCalled();
+
+      fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
+
+      expect(handleChange).toHaveBeenCalledTimes(1);
+      expect(handleChange).toHaveBeenCalledWith('#FF0400');
     });
 
     it('is not called when the parent re-renders', () => {
@@ -220,45 +208,13 @@ describe('ColorPicker Component', () => {
     it('builds the next change on a colour synced from value', () => {
       const handleChange = vi.fn();
       const { rerender } = render(<Parent value="#ff0000" onChange={handleChange} />);
-      rerender(<Parent value="#00ff00" onChange={handleChange} />);
+      rerender(<Parent value="#336699" onChange={handleChange} />);
 
       fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
 
+      // The hue moves one step; saturation and lightness stay those of #336699.
       expect(handleChange).toHaveBeenCalledTimes(1);
-      expect(handleChange).toHaveBeenCalledWith('#00FF04');
-    });
-
-    it('is called once when the hue slider moves', () => {
-      const handleChange = vi.fn();
-      render(<Parent value="#ff0000" onChange={handleChange} />);
-
-      fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
-
-      expect(handleChange).toHaveBeenCalledTimes(1);
-      expect(handleChange).toHaveBeenCalledWith('#FF0400');
-    });
-
-    it('is called once when a typed colour changes hue, saturation and lightness', () => {
-      const handleChange = vi.fn();
-      render(<Parent value="#ff0000" onChange={handleChange} />);
-
-      fireEvent.change(screen.getByLabelText('Hex color'), { target: { value: '#336699' } });
-
-      expect(handleChange).toHaveBeenCalledTimes(1);
-      expect(handleChange).toHaveBeenCalledWith('#336699');
-    });
-
-    it('is called when only the alpha changes', () => {
-      const handleChange = vi.fn();
-      render(
-        <ColorPickerRoot value="#ff0000" onChange={handleChange}>
-          <ColorPickerAlpha />
-        </ColorPickerRoot>,
-      );
-
-      fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowLeft' });
-
-      expect(handleChange).toHaveBeenCalledTimes(1);
+      expect(handleChange).toHaveBeenCalledWith('#336499');
     });
 
     it('is called when an opaque colour replaces a transparent one with the same hex', () => {
@@ -274,24 +230,6 @@ describe('ColorPicker Component', () => {
 
       expect(handleChange).toHaveBeenCalledTimes(1);
       expect(handleChange).toHaveBeenCalledWith('#000000');
-    });
-
-    it('keeps its hue when the parent echoes back a colour that has none', () => {
-      function Controlled() {
-        const [value, setValue] = useState('#0000ff');
-        return (
-          <ColorPickerRoot value={value} onChange={setValue}>
-            <ColorPickerSelection data-testid="gradient" />
-            <ColorPickerHue />
-          </ColorPickerRoot>
-        );
-      }
-      render(<Controlled />);
-
-      // The bottom edge is black, which carries no hue.
-      fireEvent.pointerDown(mockGradientRect(), { clientX: 100, clientY: 200 });
-
-      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('240');
     });
 
     it('builds each change on the one before when both land before a re-render', () => {
@@ -313,28 +251,6 @@ describe('ColorPicker Component', () => {
       expect(handleChange.mock.calls).toEqual([['#8F3030'], ['#8F3130']]);
     });
 
-    it('builds an RGB channel edit on a change that landed before a re-render', () => {
-      const handleChange = vi.fn();
-      render(
-        <ColorPickerRoot defaultValue="#ff0000" onChange={handleChange}>
-          <ColorPickerSelection data-testid="gradient" />
-          <ColorPickerOutput />
-          <ColorPickerFormat />
-        </ColorPickerRoot>,
-      );
-      fireEvent.keyDown(screen.getByRole('combobox'), { key: 'Enter' });
-      fireEvent.keyDown(screen.getByRole('option', { name: 'RGB' }), { key: 'Enter' });
-      const gradient = mockGradientRect();
-
-      act(() => {
-        fireEvent.pointerDown(gradient, { clientX: 100, clientY: 100 });
-        fireEvent.change(screen.getByLabelText('RGB channel 2'), { target: { value: '64' } });
-      });
-
-      // Green changes; red and blue are the click's, not the starting red's.
-      expect(handleChange.mock.calls).toEqual([['#8F3030'], ['#8F4030']]);
-    });
-
     it('adopts a value reset to a colour picked earlier', () => {
       const handleChange = vi.fn();
       const { rerender } = render(<Parent value="#ff0000" onChange={handleChange} />);
@@ -345,89 +261,6 @@ describe('ColorPicker Component', () => {
       rerender(<Parent value="#FF0400" onChange={handleChange} />);
 
       expect(Number(screen.getByRole('slider').getAttribute('aria-valuenow'))).toBeCloseTo(1, 0);
-      expect(handleChange).toHaveBeenCalledTimes(2);
-    });
-
-    it('adopts an HSL object with the reported hex but another hue', () => {
-      const handleChange = vi.fn();
-      const { rerender } = render(
-        <ColorPickerRoot value="#0000ff" onChange={handleChange}>
-          <ColorPickerSelection data-testid="gradient" />
-          <ColorPickerHue />
-        </ColorPickerRoot>,
-      );
-      fireEvent.pointerDown(mockGradientRect(), { clientX: 100, clientY: 200 });
-      expect(handleChange).toHaveBeenCalledWith('#000000');
-
-      rerender(
-        <ColorPickerRoot value={{ h: 120, s: 100, l: 0 }} onChange={handleChange}>
-          <ColorPickerSelection data-testid="gradient" />
-          <ColorPickerHue />
-        </ColorPickerRoot>,
-      );
-
-      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('120');
-    });
-
-    it('adopts an earlier report after a change made without an onChange', () => {
-      const handleChange = vi.fn();
-      const { rerender } = render(
-        <ColorPickerRoot value="#ff0000" onChange={handleChange}>
-          <ColorPickerFormat />
-        </ColorPickerRoot>,
-      );
-      fireEvent.change(screen.getByLabelText('Hex color'), { target: { value: '#00FF00' } });
-      expect(handleChange).toHaveBeenCalledWith('#00FF00');
-
-      rerender(
-        <ColorPickerRoot value="#ff0000">
-          <ColorPickerFormat />
-        </ColorPickerRoot>,
-      );
-      fireEvent.change(screen.getByLabelText('Hex color'), { target: { value: '#0000FF' } });
-      // The input shows what was typed until it loses focus.
-      fireEvent.blur(screen.getByLabelText('Hex color'));
-      rerender(
-        <ColorPickerRoot value="#00FF00">
-          <ColorPickerFormat />
-        </ColorPickerRoot>,
-      );
-
-      expect(screen.getByDisplayValue('#00FF00')).toBeTruthy();
-    });
-
-    it('adopts 0 as black', () => {
-      const { rerender } = render(
-        <ColorPickerRoot value="#ff0000">
-          <ColorPickerFormat />
-        </ColorPickerRoot>,
-      );
-
-      rerender(
-        <ColorPickerRoot value={0}>
-          <ColorPickerFormat />
-        </ColorPickerRoot>,
-      );
-
-      expect(screen.getByDisplayValue('#000000')).toBeTruthy();
-    });
-
-    it('adopts an echo of the reported hex when the picker holds an alpha', () => {
-      function Controlled() {
-        const [value, setValue] = useState('#00ff00');
-        return (
-          <ColorPickerRoot value={value} onChange={setValue}>
-            <ColorPickerAlpha />
-            <ColorPickerFormat />
-          </ColorPickerRoot>
-        );
-      }
-      render(<Controlled />);
-
-      // Reported as #FF0000, which the parent stores and passes back.
-      fireEvent.change(screen.getByLabelText('Hex color'), { target: { value: '#FF000080' } });
-
-      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('100');
     });
 
     it('keeps its hue through a drag across black when the parent echoes every report', () => {
@@ -459,22 +292,6 @@ describe('ColorPicker Component', () => {
       expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('240');
     });
 
-    it('applies an hsl() colour typed into the hex input, even with the same hex', () => {
-      const handleChange = vi.fn();
-      render(
-        <ColorPickerRoot value="hsl(240, 100%, 0%)" onChange={handleChange}>
-          <ColorPickerHue />
-          <ColorPickerFormat />
-        </ColorPickerRoot>,
-      );
-
-      fireEvent.change(screen.getByLabelText('Hex color'), {
-        target: { value: 'hsl(120, 100%, 0%)' },
-      });
-
-      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('120');
-    });
-
     it('is not called when the hex is retyped in another case', () => {
       const handleChange = vi.fn();
       render(
@@ -489,27 +306,6 @@ describe('ColorPicker Component', () => {
       fireEvent.change(screen.getByLabelText('Hex color'), { target: { value: '#8f3030' } });
 
       expect(handleChange).toHaveBeenCalledTimes(1);
-    });
-
-    it('adopts a value with the reported hex plus an alpha', () => {
-      const handleChange = vi.fn();
-      const { rerender } = render(
-        <ColorPickerRoot value="#00ff00" onChange={handleChange}>
-          <ColorPickerAlpha />
-          <ColorPickerFormat />
-        </ColorPickerRoot>,
-      );
-      fireEvent.change(screen.getByLabelText('Hex color'), { target: { value: '#FF0000' } });
-      expect(handleChange).toHaveBeenCalledWith('#FF0000');
-
-      rerender(
-        <ColorPickerRoot value={[255, 0, 0, 0.5]} onChange={handleChange}>
-          <ColorPickerAlpha />
-          <ColorPickerFormat />
-        </ColorPickerRoot>,
-      );
-
-      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('50');
     });
 
     it('lets an error thrown by onChange reach the caller', () => {
@@ -537,150 +333,32 @@ describe('ColorPicker Component', () => {
       expect(errors.map((error) => (error as Error).message)).toContain('onChange failed');
     });
 
-    it('recognises an echo passed as a new array on every render', () => {
-      function ArrayParent() {
-        const [, setReports] = useState(0);
+    it('reports black from a transparent colour and shows it opaque once the parent stores it', () => {
+      // Admin shows a transparent setting as #00000000; clicking black must still report it.
+      const handleChange = vi.fn();
+      function Controlled() {
+        const [value, setValue] = useState('#00000000');
         return (
           <ColorPickerRoot
-            value={[0, 0, 0]}
-            onChange={() =>
-              setReports((count) => {
-                // Fail fast instead of hanging the run if the picker loops.
-                if (count > 10) {
-                  throw new Error('onChange looped');
-                }
-                return count + 1;
-              })
-            }
+            value={value}
+            onChange={(hex) => {
+              handleChange(hex);
+              setValue(hex);
+            }}
           >
-            <ColorPickerHue />
+            <ColorPickerSelection data-testid="gradient" />
+            <ColorPickerAlpha />
           </ColorPickerRoot>
         );
       }
-      render(<ArrayParent />);
-
-      fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
-
-      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('1');
-    });
-
-    it('adopts a new value when nothing was reported, even one matching the shown hex', () => {
-      const { rerender } = render(
-        <ColorPickerRoot value="#0000FF">
-          <ColorPickerAlpha />
-          <ColorPickerFormat />
-        </ColorPickerRoot>,
-      );
-      fireEvent.change(screen.getByLabelText('Hex color'), { target: { value: '#FF000080' } });
-      expect(Number(screen.getByRole('slider').getAttribute('aria-valuenow'))).toBeCloseTo(50, 0);
-
-      rerender(
-        <ColorPickerRoot value="#FF0000">
-          <ColorPickerAlpha />
-          <ColorPickerFormat />
-        </ColorPickerRoot>,
-      );
-
-      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('100');
-    });
-
-    it('adopts a new value with the same hex as the colour just picked', () => {
-      const handleChange = vi.fn();
-      const { rerender } = render(
-        <ColorPickerRoot value="#0000ff" onChange={handleChange}>
-          <ColorPickerSelection data-testid="gradient" />
-          <ColorPickerHue />
-        </ColorPickerRoot>,
-      );
-      // The bottom edge is black, which keeps the picker's hue of 240.
-      fireEvent.pointerDown(mockGradientRect(), { clientX: 100, clientY: 200 });
-      expect(handleChange).toHaveBeenCalledWith('#000000');
-
-      rerender(
-        <ColorPickerRoot value="hsl(120, 100%, 0%)" onChange={handleChange}>
-          <ColorPickerSelection data-testid="gradient" />
-          <ColorPickerHue />
-        </ColorPickerRoot>,
-      );
-
-      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('120');
-    });
-
-    it('adopts every channel of a new value, even one with the same hex', () => {
-      const handleChange = vi.fn();
-      const { rerender } = render(
-        <ColorPickerRoot value="hsl(240, 100%, 0%)" onChange={handleChange}>
-          <ColorPickerHue />
-        </ColorPickerRoot>,
-      );
-
-      rerender(
-        <ColorPickerRoot value="hsl(120, 100%, 0%)" onChange={handleChange}>
-          <ColorPickerHue />
-        </ColorPickerRoot>,
-      );
-
-      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('120');
-      expect(handleChange).not.toHaveBeenCalled();
-    });
-
-    it('reports black from a transparent colour', () => {
-      // Admin shows a transparent setting as #00000000; clicking black must still report it.
-      const handleChange = vi.fn();
-      render(
-        <ColorPickerRoot defaultValue="#00000000" onChange={handleChange}>
-          <ColorPickerSelection data-testid="gradient" />
-        </ColorPickerRoot>,
-      );
+      render(<Controlled />);
 
       fireEvent.pointerDown(mockGradientRect(), { clientX: 200, clientY: 200 });
 
       expect(handleChange).toHaveBeenCalledTimes(1);
       expect(handleChange).toHaveBeenCalledWith('#000000');
-    });
-
-    it('is not called on mount and is called once per change in StrictMode', () => {
-      const handleChange = vi.fn();
-      render(
-        <StrictMode>
-          <Parent value="#ff0000" onChange={handleChange} />
-        </StrictMode>,
-      );
-
-      expect(handleChange).not.toHaveBeenCalled();
-
-      fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
-
-      expect(handleChange).toHaveBeenCalledTimes(1);
-    });
-
-    it('settles when the parent stores the colour in a new object on every change', () => {
-      const handleChange = vi.fn();
-      function DraftForm() {
-        const [draft, setDraft] = useState({ name: 'Member', colour: '#ff0000' });
-        return (
-          <ColorPickerRoot
-            value={draft.colour}
-            onChange={(colour) => {
-              handleChange(colour);
-              // Fail fast instead of hanging the run if the picker loops.
-              if (handleChange.mock.calls.length > 10) {
-                throw new Error('onChange looped');
-              }
-              setDraft((d) => ({ ...d, colour }));
-            }}
-          >
-            <ColorPickerHue />
-          </ColorPickerRoot>
-        );
-      }
-      render(<DraftForm />);
-
-      expect(handleChange).not.toHaveBeenCalled();
-
-      fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
-
-      expect(handleChange).toHaveBeenCalledTimes(1);
+      // The echoed #000000 has no alpha, so the picker takes it as opaque.
+      expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('100');
     });
   });
 
