@@ -66,6 +66,7 @@ import { toast } from 'sonner';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { DEFAULT_CARD_DESIGN, type NewsletterCardDesign } from './newsletter-card';
 import { DEFAULT_TITLE_META, type NewsletterTitleMeta } from './newsletter-title-meta';
+import { MONO_FONT_CATEGORY, SYSTEM_MONO_CLASS } from './newsletter-fonts';
 import { DEFAULT_SPACING, type NewsletterSpacing, type PreviewDevice } from './newsletter-spacing';
 import { navigateTo } from '@/utils/navigation';
 
@@ -181,6 +182,8 @@ const Sidebar: React.FC<{
   const fontOptions: FontOption[] = [
     { value: 'serif', label: 'Elegant serif', className: 'font-serif' },
     { value: 'sans_serif', label: 'Clean sans-serif' },
+    // Prototype: preview only; saving it needs server support first.
+    { value: MONO_FONT_CATEGORY, label: 'System mono', className: SYSTEM_MONO_CLASS },
   ];
 
   const fontWeightOptions: Record<string, { options: FontOption[]; map?: Record<string, string> }> =
@@ -194,6 +197,17 @@ const Sidebar: React.FC<{
         ],
       },
       serif: {
+        options: [
+          { value: 'normal', label: 'Regular', className: 'font-normal' },
+          { value: 'bold', label: 'Bold', className: 'font-bold' },
+        ],
+        map: {
+          medium: 'normal',
+          semibold: 'bold',
+        },
+      },
+      // System monospace fonts reliably ship only regular and bold.
+      [MONO_FONT_CATEGORY]: {
         options: [
           { value: 'normal', label: 'Regular', className: 'font-normal' },
           { value: 'bold', label: 'Bold', className: 'font-bold' },

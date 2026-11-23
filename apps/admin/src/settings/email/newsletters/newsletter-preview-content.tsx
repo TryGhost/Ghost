@@ -14,6 +14,12 @@ import {
   resolveNewsletterSpacing,
 } from './newsletter-spacing';
 import { CARD_PAGE_BAND_PX, CARD_RADIUS_PX, type ContentCorners } from './newsletter-card';
+import {
+  MONO_BODY_FONT_SIZE,
+  MONO_BODY_TRACKING_CLASS,
+  MONO_FONT_CATEGORY,
+  SYSTEM_MONO_CLASS,
+} from './newsletter-fonts';
 
 // Phone sizes from the real email's `@media (max-width: 620px)` rules
 // (ghost/core/server/services/email-service/email-templates/partials/styles.hbs).
@@ -142,7 +148,14 @@ const NewsletterPreviewContent: React.FC<{
   // Header, body and footer all sit inside the same 600px column, so one gutter keeps them aligned.
   // The footer adds its own 30px on top (`px-[30px]`), as the real `.footer` cells do.
   const columnStyle = { paddingLeft: gutter, paddingRight: gutter };
-  const bodyFontSize = isPhone ? PHONE_BODY_FONT_SIZE : bodyFontCategory === 'serif' ? 18 : 17;
+  const bodyFontSize =
+    bodyFontCategory === MONO_FONT_CATEGORY
+      ? MONO_BODY_FONT_SIZE[isPhone ? 'mobile' : 'desktop']
+      : isPhone
+        ? PHONE_BODY_FONT_SIZE
+        : bodyFontCategory === 'serif'
+          ? 18
+          : 17;
   const paragraphStyle = { color: textColor, lineHeight, marginBottom: `${paragraphGap}em` };
   const latestPostTitleStyle = isPhone ? { fontSize: PHONE_LATEST_POST_TITLE_FONT_SIZE } : {};
   // On phones the card runs edge to edge, so its corners are always square.
@@ -203,6 +216,11 @@ const NewsletterPreviewContent: React.FC<{
     excerptClasses = clsx(excerptClasses, 'mb-8 text-[1.9rem] leading-tight tracking-tight');
   }
 
+  // The excerpt follows the heading font; a mono heading gets a mono excerpt.
+  if (titleFontCategory === MONO_FONT_CATEGORY) {
+    excerptClasses = clsx(excerptClasses, SYSTEM_MONO_CLASS, 'tracking-normal');
+  }
+
   if (titleAlignment === 'center') {
     excerptClasses = clsx(excerptClasses, 'text-center');
   }
@@ -242,7 +260,9 @@ const NewsletterPreviewContent: React.FC<{
       {showPostTitleSection && (
         <div
           className={clsx(
-            'flex flex-col py-8 first:pt-0',
+            'flex flex-col pt-8 first:pt-0',
+            // Bottom padding belongs to the meta row; without it the title or excerpt's own gap is enough.
+            (showByline || showViewInBrowser) && 'pb-8',
             titleAlignment === 'center' ? 'items-center' : 'items-start',
           )}
         >
@@ -250,6 +270,7 @@ const NewsletterPreviewContent: React.FC<{
             className={clsx(
               'text-4xl leading-supertight font-bold text-black',
               titleFontCategory === 'serif' && 'font-serif',
+              titleFontCategory === MONO_FONT_CATEGORY && SYSTEM_MONO_CLASS,
               titleFontWeight === 'normal' && 'font-normal',
               titleFontWeight === 'medium' && 'font-medium',
               titleFontWeight === 'semibold' && 'font-semibold',
@@ -338,7 +359,11 @@ const NewsletterPreviewContent: React.FC<{
           'max-w-[600px] border-b border-gray-200 pb-[52px] leading-[27.2px] text-black',
           dividerStyle === 'dashed' && 'border-dashed',
           dividerStyle === 'dotted' && 'border-b-2 border-dotted',
-          bodyFontCategory === 'serif' ? 'font-serif' : 'tracking-tight',
+          bodyFontCategory === 'serif' && 'font-serif',
+          bodyFontCategory === MONO_FONT_CATEGORY && [SYSTEM_MONO_CLASS, MONO_BODY_TRACKING_CLASS],
+          bodyFontCategory !== 'serif' &&
+            bodyFontCategory !== MONO_FONT_CATEGORY &&
+            'tracking-tight',
           showFeatureImage || showPostTitleSection ? '' : 'pt-8',
         )}
         style={{ borderColor: dividerColor, fontSize: bodyFontSize }}
@@ -370,6 +395,7 @@ const NewsletterPreviewContent: React.FC<{
           className={clsx(
             'mb-[13px] text-[2.6rem] leading-supertight',
             titleFontCategory === 'serif' && 'font-serif',
+            titleFontCategory === MONO_FONT_CATEGORY && SYSTEM_MONO_CLASS,
             titleFontCategory === 'sans_serif' && 'font-sans',
             titleFontWeight === 'normal' && 'font-normal',
             titleFontWeight === 'medium' && 'font-medium',
@@ -438,7 +464,7 @@ const NewsletterPreviewContent: React.FC<{
           <div className="grid auto-cols-fr grid-flow-col gap-4">
             {showFeedback && (
               <>
-                <div className="pointer-events-none flex min-w-[120px] cursor-default flex-col items-center gap-[11px] text-center">
+                <div className="pointer-events-none flex min-w-0 cursor-default flex-col items-center gap-[11px] text-center">
                   <span
                     className="inline-flex size-[54px] items-center justify-center rounded-full border"
                     style={{ borderColor: dividerColor, color: textColor }}
@@ -452,7 +478,7 @@ const NewsletterPreviewContent: React.FC<{
                     More like this
                   </span>
                 </div>
-                <div className="pointer-events-none flex min-w-[120px] cursor-default flex-col items-center gap-[11px] text-center">
+                <div className="pointer-events-none flex min-w-0 cursor-default flex-col items-center gap-[11px] text-center">
                   <span
                     className="inline-flex size-[54px] items-center justify-center rounded-full border"
                     style={{ borderColor: dividerColor, color: textColor }}
@@ -469,7 +495,7 @@ const NewsletterPreviewContent: React.FC<{
               </>
             )}
             {showCommentCta && (
-              <div className="pointer-events-none flex min-w-[120px] cursor-default flex-col items-center gap-[11px] text-center">
+              <div className="pointer-events-none flex min-w-0 cursor-default flex-col items-center gap-[11px] text-center">
                 <span
                   className="inline-flex size-[54px] items-center justify-center rounded-full border"
                   style={{ borderColor: dividerColor, color: textColor }}
@@ -485,7 +511,7 @@ const NewsletterPreviewContent: React.FC<{
               </div>
             )}
             {showShareButton && (
-              <div className="pointer-events-none flex min-w-[120px] cursor-default flex-col items-center gap-[11px] text-center">
+              <div className="pointer-events-none flex min-w-0 cursor-default flex-col items-center gap-[11px] text-center">
                 <span
                   className="inline-flex size-[54px] items-center justify-center rounded-full border"
                   style={{ borderColor: dividerColor, color: textColor }}
@@ -526,6 +552,7 @@ const NewsletterPreviewContent: React.FC<{
                 className={clsx(
                   'mt-0.5 text-[1.9rem] text-black',
                   titleFontCategory === 'serif' && 'font-serif',
+                  titleFontCategory === MONO_FONT_CATEGORY && SYSTEM_MONO_CLASS,
                   titleFontWeight === 'normal' && 'font-normal',
                   titleFontWeight === 'medium' && 'font-medium',
                   titleFontWeight === 'semibold' && 'font-semibold',
@@ -556,6 +583,7 @@ const NewsletterPreviewContent: React.FC<{
                 className={clsx(
                   'mt-0.5 text-[1.9rem] text-black',
                   titleFontCategory === 'serif' && 'font-serif',
+                  titleFontCategory === MONO_FONT_CATEGORY && SYSTEM_MONO_CLASS,
                   titleFontWeight === 'normal' && 'font-normal',
                   titleFontWeight === 'medium' && 'font-medium',
                   titleFontWeight === 'semibold' && 'font-semibold',
@@ -586,6 +614,7 @@ const NewsletterPreviewContent: React.FC<{
                 className={clsx(
                   'mt-0.5 text-[1.9rem] text-black',
                   titleFontCategory === 'serif' && 'font-serif',
+                  titleFontCategory === MONO_FONT_CATEGORY && SYSTEM_MONO_CLASS,
                   titleFontWeight === 'normal' && 'font-normal',
                   titleFontWeight === 'medium' && 'font-medium',
                   titleFontWeight === 'semibold' && 'font-semibold',
