@@ -1,4 +1,4 @@
-import { currencyToDecimal, getSymbol } from '@tryghost/admin-x-framework';
+import { currencyToDecimal, formatCurrencyAmount, getSymbol } from '@tryghost/admin-x-framework';
 import { formatNumber } from '@tryghost/shade/utils';
 import { cleanTrackedUrl } from '@/shared/clean-tracked-url';
 import {
@@ -8,7 +8,8 @@ import {
   type RawMemberEvent,
 } from '@/members/detail/member-event';
 
-const amountOptions = { minimumFractionDigits: 0, maximumFractionDigits: 2 };
+// Whole amounts show no decimals, amounts with cents always show two ($9.90).
+const formatAmount = (value: number) => formatCurrencyAmount(value * 100);
 
 function eventMoney(amount: unknown, currency: unknown) {
   if (
@@ -29,7 +30,7 @@ function subscriptionInfo(event: RawMemberEvent, ctx: MemberEventContext): strin
   if (!money || money.value === 0) {
     return undefined;
   }
-  const amount = `${money.symbol}${formatNumber(Math.abs(money.value), amountOptions)}`;
+  const amount = `${money.symbol}${formatAmount(Math.abs(money.value))}`;
   if (event.data.type === 'created') {
     const tierName =
       ctx.hasMultipleTiers && typeof event.data.tierName === 'string' && event.data.tierName.trim()
@@ -55,7 +56,7 @@ function giftAction(event: RawMemberEvent): string {
   ) {
     return 'Purchased gift subscription';
   }
-  const amount = `${money.symbol}${formatNumber(money.value, amountOptions)}`;
+  const amount = `${money.symbol}${formatAmount(money.value)}`;
   const cadenceLabel = duration === 1 ? cadence : `${cadence}s`;
   return `Purchased gift subscription for ${amount} (${tierName}, ${formatNumber(duration)} ${cadenceLabel})`;
 }
@@ -79,7 +80,7 @@ export function parseActivityEvent(
   }
   if (event.type === 'donation_event') {
     const money = eventMoney(event.data.amount, event.data.currency);
-    parsed.info = money ? `${money.symbol}${formatNumber(money.value, amountOptions)}` : undefined;
+    parsed.info = money ? `${money.symbol}${formatAmount(money.value)}` : undefined;
   }
   if (event.type === 'gift_purchase_event') {
     parsed.action = giftAction(event);

@@ -16,7 +16,7 @@ const event = (type: string, data: RawMemberEvent['data'] = {}): RawMemberEvent 
 describe('full Activity event presentation', () => {
   it.each([
     ['created', 1200, 'Paid $12/month'],
-    ['created', -1050, 'Paid -$10.5/month'],
+    ['created', -1050, 'Paid -$10.50/month'],
     ['updated', 101, 'MRR +$1.01'],
     ['updated', -101, 'MRR -$1.01'],
     ['canceled', -1200, 'MRR -$12'],
@@ -59,7 +59,7 @@ describe('full Activity event presentation', () => {
     [2500, 'usd', '$25'],
     [2501, 'usd', '$25.01'],
     [0, 'usd', '$0'],
-    [-1050, 'usd', '$-10.5'],
+    [-1050, 'usd', '$-10.50'],
     [123456, 'gbp', '£1,234.56'],
   ])('preserves donation amount %s %s', (amount, currency, expected) => {
     expect(parseActivityEvent(event('donation_event', { amount, currency }), context).info).toBe(
@@ -109,15 +109,15 @@ describe('full Activity event presentation', () => {
       cadence: 'month',
     });
     expect(parseActivityEvent(gift, context)).toMatchObject({
-      action: 'Purchased gift subscription for ¥1,234.5 (Supporter, 2 months)',
-      actionTitle: 'Purchased gift subscription for ¥1,234.5 (Supporter, 2 months)',
+      action: 'Purchased gift subscription for ¥1,234.50 (Supporter, 2 months)',
+      actionTitle: 'Purchased gift subscription for ¥1,234.50 (Supporter, 2 months)',
     });
     expect(
       parseActivityEvent(
         event('gift_purchase_event', { ...gift.data, amount: 1050, currency: 'usd', duration: 1 }),
         context,
       ).action,
-    ).toBe('Purchased gift subscription for $10.5 (Supporter, 1 month)');
+    ).toBe('Purchased gift subscription for $10.50 (Supporter, 1 month)');
   });
 
   it.each([0, -1, Infinity, Number.NaN, 1.5, null, '1'])(

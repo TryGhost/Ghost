@@ -38,6 +38,7 @@ import { useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
 import { useEffect, useMemo, useState } from 'react';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
+import useCurrencyInput from '@/settings/hooks/use-currency-input';
 
 // we should replace this with a library
 function slugify(text: string): string {
@@ -93,7 +94,7 @@ const calculateAmount = (formState: formStateTypes): number => {
 
   switch (formState.type) {
     case 'fixed':
-      return fixedAmount * 100;
+      return Math.round(fixedAmount * 100);
     case 'percent':
       return percentAmount;
     case 'trial':
@@ -119,6 +120,7 @@ type SidebarProps = {
   handleTextAreaInput: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   handleDisplayTitleInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleAmountInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  fixedAmountInput: ReturnType<typeof useCurrencyInput>;
   handleDurationInMonthsInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleCodeInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
   validate: () => void;
@@ -144,6 +146,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   handleDisplayTitleInput,
   handleDurationInMonthsInput,
   handleAmountInput,
+  fixedAmountInput,
   handleCodeInput,
   clearError,
   errors,
@@ -286,18 +289,22 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <InputGroup data-invalid={Boolean(errors.amount) || undefined}>
                     <InputGroupInput
                       id="offer-amount"
-                      type="number"
+                      inputMode={overrides.type === 'fixed' ? 'decimal' : undefined}
+                      type={overrides.type === 'fixed' ? 'text' : 'number'}
                       value={
                         overrides.type === 'fixed'
-                          ? overrides.fixedAmount === 0
-                            ? ''
-                            : overrides.fixedAmount?.toString()
+                          ? fixedAmountInput.value
                           : overrides.percentAmount === 0
                             ? ''
                             : overrides.percentAmount?.toString()
                       }
+                      onBlur={overrides.type === 'fixed' ? fixedAmountInput.onBlur : undefined}
                       onChange={(e) => {
-                        handleAmountInput(e);
+                        if (overrides.type === 'fixed') {
+                          fixedAmountInput.onChange(e.target.value);
+                        } else {
+                          handleAmountInput(e);
+                        }
                       }}
                       onKeyDown={() => clearError('amount')}
                     />
@@ -625,6 +632,11 @@ const AddOfferModal = () => {
     }));
   };
 
+  const fixedAmountInput = useCurrencyInput(
+    formState.fixedAmount ? Math.round(formState.fixedAmount * 100) : '',
+    (cents) => updateForm((state) => ({ ...state, fixedAmount: cents / 100 })),
+  );
+
   const handleAmountTypeChange = (amountType: string) => {
     updateForm((state) => ({
       ...state,
@@ -635,12 +647,7 @@ const AddOfferModal = () => {
   const handleAmountInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const target = e.target;
 
-    if (formState.type === 'fixed') {
-      updateForm((state) => ({
-        ...state,
-        fixedAmount: Number(target.value),
-      }));
-    } else if (formState.type === 'percent') {
+    if (formState.type === 'percent') {
       updateForm((state) => ({
         ...state,
         percentAmount: Number(target.value),
@@ -770,6 +777,7 @@ const AddOfferModal = () => {
       clearError={clearError}
       durationOptions={durationOptions}
       errors={errors}
+      fixedAmountInput={fixedAmountInput}
       handleAmountInput={handleAmountInput}
       handleAmountTypeChange={handleAmountTypeChange}
       handleCodeInput={handleCodeInput}

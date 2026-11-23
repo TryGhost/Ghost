@@ -39,6 +39,8 @@ export {
   currencyGroups,
   currencySelectGroups,
   currencyToDecimal,
+  formatCurrency,
+  formatCurrencyAmount,
   getSymbol,
   minimumAmountForCurrency,
   validateCurrencyAmount,

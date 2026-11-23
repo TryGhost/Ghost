@@ -1,5 +1,5 @@
 import { type Tier } from '@tryghost/admin-x-framework/api/tiers';
-import { currencyToDecimal, getSymbol } from '@tryghost/admin-x-framework';
+import { formatCurrency, formatCurrencyAmount } from '@tryghost/admin-x-framework';
 import { formatNumber } from '@tryghost/shade/utils';
 import { getGhostPaths } from '@tryghost/admin-x-framework/helpers';
 
@@ -109,19 +109,16 @@ export const getOfferDiscount = (
     cadence === 'month' ? (tier?.monthly_price ?? 0) : (tier?.yearly_price ?? 0);
   let updatedPrice = originalPrice;
 
-  const formatToTwoDecimals = (num: number): number => parseFloat(num.toFixed(2));
-  const formatPrice = (num: number): string =>
-    formatNumber(formatToTwoDecimals(currencyToDecimal(num)), { maximumFractionDigits: 2 });
-
-  let originalPriceWithCurrency = getSymbol(currency) + formatPrice(originalPrice);
+  let originalPriceWithCurrency = formatCurrency(originalPrice, currency);
 
   switch (type) {
     case 'percent':
       discountOffer = `${formatNumber(amount)}% off`;
-      updatedPrice = originalPrice - (originalPrice * amount) / 100;
+      // Round the discount, not the result, as Portal's getUpdatedOfferPrice does
+      updatedPrice = originalPrice - Math.round((originalPrice * amount) / 100);
       break;
     case 'fixed':
-      discountOffer = `${formatPrice(amount)} ${currency} off`;
+      discountOffer = `${formatCurrencyAmount(amount)} ${currency} off`;
       updatedPrice = originalPrice - amount;
       break;
     case 'trial':
@@ -136,7 +133,7 @@ export const getOfferDiscount = (
     updatedPrice = 0;
   }
 
-  const updatedPriceWithCurrency = getSymbol(currency) + formatPrice(updatedPrice);
+  const updatedPriceWithCurrency = formatCurrency(updatedPrice, currency);
 
   return {
     discountOffer,

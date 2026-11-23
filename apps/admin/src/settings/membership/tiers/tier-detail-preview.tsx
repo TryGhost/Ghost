@@ -4,7 +4,7 @@ import { Button } from '@tryghost/shade/components';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { Text } from '@tryghost/shade/primitives';
 import { type TierFormState } from './tier-detail-modal';
-import { currencyToDecimal, getSymbol } from '@tryghost/admin-x-framework';
+import { currencyToDecimal, formatCurrencyAmount, getSymbol } from '@tryghost/admin-x-framework';
 
 interface TierDetailPreviewProps {
   tier: TierFormState;
@@ -90,8 +90,10 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({ tier, isFreeTier 
 
   const defaultMonthlyPrice = isFreeTier ? 0 : 500;
   const defaultYearlyPrice = isFreeTier ? 0 : 5000;
-  const monthlyPrice = currencyToDecimal(tier?.monthly_price ?? defaultMonthlyPrice);
-  const yearlyPrice = currencyToDecimal(tier?.yearly_price ?? defaultYearlyPrice);
+  const monthlyPriceInCents = tier?.monthly_price ?? defaultMonthlyPrice;
+  const yearlyPriceInCents = tier?.yearly_price ?? defaultYearlyPrice;
+  const monthlyPrice = currencyToDecimal(monthlyPriceInCents);
+  const yearlyPrice = currencyToDecimal(yearlyPriceInCents);
   const yearlyDiscount =
     tier?.monthly_price && tier?.yearly_price
       ? Math.ceil(((monthlyPrice * 12 - yearlyPrice) / (monthlyPrice * 12)) * 100)
@@ -146,9 +148,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({ tier, isFreeTier 
                   {currencySymbol}
                 </span>
                 <span className="text-[3.4rem] leading-none font-bold tracking-tight break-all">
-                  {formatNumber(showingYearly ? yearlyPrice : monthlyPrice, {
-                    maximumFractionDigits: 20,
-                  })}
+                  {formatCurrencyAmount(showingYearly ? yearlyPriceInCents : monthlyPriceInCents)}
                 </span>
                 {!isFreeTier && (
                   <span className="ml-1 self-end text-[1.5rem] leading-snug text-gray-800">

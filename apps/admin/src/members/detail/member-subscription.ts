@@ -1,5 +1,4 @@
 import moment from 'moment-timezone';
-import { getSymbol } from '@tryghost/admin-x-framework';
 import type { MemberSubscription, MemberTier } from '@tryghost/admin-x-framework/api/members';
 
 export type SubscriptionKind = 'paid' | 'complimentary' | 'gift';
@@ -24,26 +23,6 @@ export function classifyMemberSubscription(sub: MemberSubscription): Subscriptio
     return 'gift';
   }
   return 'paid';
-}
-
-/**
- * Format a price amount (stored in the smallest currency unit, e.g. cents) with
- * the correct symbol AND locale thousands separators. Whole amounts show no
- * decimals; fractional amounts show two.
- *
- * The runtime locale comes from the user's browser. Tests should
- * therefore assert loosely (e.g. accepting either `,` or `.` as the thousands
- * separator) rather than pinning en-US.
- */
-export function formatSubscriptionAmount(amount: number, currency: string): string {
-  const symbol = getSymbol(currency);
-  const value = amount / 100;
-  const isWhole = value % 1 === 0;
-  const formatted = value.toLocaleString(
-    undefined,
-    isWhole ? undefined : { minimumFractionDigits: 2, maximumFractionDigits: 2 },
-  );
-  return `${symbol}${formatted}`;
 }
 
 export function formatSubscriptionInterval(

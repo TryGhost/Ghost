@@ -1,6 +1,5 @@
 import {
   classifyMemberSubscription,
-  formatSubscriptionAmount,
   formatSubscriptionInterval,
   getSubscriptionPriceLabel,
   getSubscriptionStatusLabel,
@@ -86,28 +85,6 @@ describe('classifyMemberSubscription', () => {
         }),
       ),
     ).toBe('paid');
-  });
-});
-
-describe('formatSubscriptionAmount', () => {
-  it('formats whole amounts without decimals', () => {
-    expect(formatSubscriptionAmount(500, 'usd')).toBe('$5');
-    expect(formatSubscriptionAmount(1000, 'eur')).toBe('€10');
-  });
-
-  it('formats fractional amounts with two decimals', () => {
-    expect(formatSubscriptionAmount(499, 'usd')).toBe('$4.99');
-  });
-
-  it('includes locale thousands separators', () => {
-    // Locale-tolerant: accept both `,` (en-US) and `.` (many EU locales), so
-    // this passes whichever locale the runtime is set to.
-    expect(formatSubscriptionAmount(1000000, 'usd')).toMatch(/^\$10[.,]000$/);
-    expect(formatSubscriptionAmount(1234567, 'usd')).toMatch(/^\$12[.,]345[.,]67$/);
-  });
-
-  it('formats zero', () => {
-    expect(formatSubscriptionAmount(0, 'usd')).toBe('$0');
   });
 });
 

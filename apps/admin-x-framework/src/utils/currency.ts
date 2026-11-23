@@ -1,3 +1,5 @@
+import { formatNumber } from '@tryghost/shade/utils';
+
 export interface CurrencySelectOptionGroup {
   key: string;
   label: string;
@@ -169,6 +171,39 @@ export function currencyToDecimal(integerAmount: number): number {
 
 export function currencyFromDecimal(decimalAmount: number): number {
   return decimalAmount * 100;
+}
+
+/**
+ * Formats an amount stored in the smallest currency unit (e.g. cents) for
+ * display, without a currency symbol. Whole amounts show no decimals (`5`),
+ * anything with cents always shows two (`9.90`, never `9.9`), matching
+ * Portal's `formatPrice()`.
+ *
+ * Thousands separators follow `locale`, which defaults to `en-US` like Shade's
+ * `formatNumber`, so prices match the other numbers on Admin screens and the
+ * `.` the price inputs accept.
+ */
+export function formatCurrencyAmount(
+  integerAmount: number,
+  { locale }: { locale?: string } = {},
+): string {
+  const value = currencyToDecimal(Math.round(integerAmount));
+  const options = Number.isInteger(value)
+    ? undefined
+    : { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+  return locale ? value.toLocaleString(locale, options) : formatNumber(value, options);
+}
+
+/**
+ * Formats an amount stored in the smallest currency unit (e.g. cents) with its
+ * currency symbol in front: `$5`, `€9.90`, `$1,234.50`.
+ */
+export function formatCurrency(
+  integerAmount: number,
+  currency: string,
+  options: { locale?: string } = {},
+): string {
+  return `${getSymbol(currency)}${formatCurrencyAmount(integerAmount, options)}`;
 }
 
 /*

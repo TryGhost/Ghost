@@ -15,18 +15,9 @@ import {
   groupSubscriptionsByTier,
 } from './member-subscription';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
-import { getSymbol } from '@tryghost/admin-x-framework';
+import { formatCurrencyAmount, getSymbol } from '@tryghost/admin-x-framework';
 import type { Member, MemberSubscription } from '@tryghost/admin-x-framework/api/members';
 import type { SubscriptionKind } from './member-subscription';
-
-const formatPriceBlockAmount = (amount: number) => {
-  const value = amount / 100;
-  // Whole = no decimals, fractional = 2 decimals with locale separators.
-  return value.toLocaleString(
-    undefined,
-    value % 1 === 0 ? undefined : { minimumFractionDigits: 2, maximumFractionDigits: 2 },
-  );
-};
 
 const PriceBlock: React.FC<{ sub: MemberSubscription; kind: SubscriptionKind }> = ({
   sub,
@@ -40,7 +31,7 @@ const PriceBlock: React.FC<{ sub: MemberSubscription; kind: SubscriptionKind }> 
     );
   }
   const symbol = getSymbol(sub.price.currency);
-  const amount = formatPriceBlockAmount(sub.price.amount);
+  const amount = formatCurrencyAmount(sub.price.amount);
   const interval = formatSubscriptionInterval(sub.price.interval);
   return (
     <div className="flex size-20 shrink-0 flex-col items-center justify-center rounded-lg bg-muted text-foreground">

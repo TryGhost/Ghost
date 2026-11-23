@@ -4,8 +4,7 @@ import { Button, Input } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { type Offer, useBrowseOffersById } from '@tryghost/admin-x-framework/api/offers';
 import { SettingsModal } from '@tryghost/shade/patterns';
-import { currencyToDecimal } from '@tryghost/admin-x-framework';
-import { formatNumber } from '@tryghost/shade/utils';
+import { formatCurrencyAmount } from '@tryghost/admin-x-framework';
 import { getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
 import { useEffect, useState } from 'react';
 import { useGlobalData } from '@/settings/providers/global-data-context';
@@ -39,11 +38,7 @@ const OfferSuccess: React.FC<{ id: string }> = ({ id }) => {
         discount = offer?.amount + '% discount';
         break;
       case 'fixed':
-        discount =
-          formatNumber(currencyToDecimal(offer?.amount), { maximumFractionDigits: 2 }) +
-          ' ' +
-          offer?.currency +
-          ' discount';
+        discount = formatCurrencyAmount(offer?.amount) + ' ' + offer?.currency + ' discount';
         break;
       case 'trial':
         discount = offer?.amount + ' days free trial';

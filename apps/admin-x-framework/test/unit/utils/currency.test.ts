@@ -1,4 +1,4 @@
-import { getSymbol } from '../../../src/utils/currency';
+import { formatCurrency, formatCurrencyAmount, getSymbol } from '../../../src/utils/currency';
 
 describe('currency utils', () => {
   describe('getSymbol', () => {
@@ -64,6 +64,43 @@ describe('currency utils', () => {
     it('throws error for currency codes with spaces', () => {
       expect(() => getSymbol(' USD ')).toThrow('Invalid currency code');
       expect(() => getSymbol('U SD')).toThrow('Invalid currency code');
+    });
+  });
+
+  describe('formatCurrencyAmount', () => {
+    it('formats whole amounts without decimals', () => {
+      expect(formatCurrencyAmount(500)).toBe('5');
+      expect(formatCurrencyAmount(0)).toBe('0');
+    });
+
+    it('keeps two decimals when an amount has cents', () => {
+      expect(formatCurrencyAmount(990)).toBe('9.90');
+      expect(formatCurrencyAmount(150)).toBe('1.50');
+      expect(formatCurrencyAmount(499)).toBe('4.99');
+    });
+
+    it('rounds fractional cents before choosing decimals', () => {
+      expect(formatCurrencyAmount(999.6)).toBe('10');
+      expect(formatCurrencyAmount(849.15)).toBe('8.49');
+    });
+
+    it('uses the given locale for separators', () => {
+      expect(formatCurrencyAmount(123450, { locale: 'en-US' })).toBe('1,234.50');
+      expect(formatCurrencyAmount(123450, { locale: 'de-DE' })).toBe('1.234,50');
+    });
+
+    it('defaults to en-US separators', () => {
+      expect(formatCurrencyAmount(1000000)).toBe('10,000');
+      expect(formatCurrencyAmount(1234567)).toBe('12,345.67');
+    });
+  });
+
+  describe('formatCurrency', () => {
+    it('puts the currency symbol in front of the amount', () => {
+      expect(formatCurrency(500, 'usd')).toBe('$5');
+      expect(formatCurrency(1000, 'eur')).toBe('€10');
+      expect(formatCurrency(990, 'usd')).toBe('$9.90');
+      expect(formatCurrency(123450, 'gbp', { locale: 'en-US' })).toBe('£1,234.50');
     });
   });
 });

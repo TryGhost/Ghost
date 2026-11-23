@@ -4,8 +4,7 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { NoValueLabel, NoValueLabelIcon } from '@tryghost/shade/components';
 import { type Tier } from '@tryghost/admin-x-framework/api/tiers';
 import { TrialDaysLabel } from './tier-detail-preview';
-import { currencyToDecimal, getSymbol } from '@tryghost/admin-x-framework';
-import { formatNumber } from '@tryghost/shade/utils';
+import { formatCurrencyAmount, getSymbol } from '@tryghost/admin-x-framework';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 
 interface TiersListProps {
@@ -42,7 +41,7 @@ const TierCard: React.FC<TierCardProps> = ({ tier }) => {
             {currencySymbol}
           </span>
           <span className="text-xl font-bold tracking-tighter">
-            {formatNumber(currencyToDecimal(tier.monthly_price || 0), { maximumFractionDigits: 2 })}
+            {formatCurrencyAmount(tier.monthly_price || 0)}
           </span>
           {tier.monthly_price && tier.monthly_price > 0 && (
             <span className="text-gray-700">/month</span>
