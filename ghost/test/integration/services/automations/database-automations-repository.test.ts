@@ -416,7 +416,7 @@ describe('database automations repository', function () {
         },
       });
 
-      await assert.rejects(api.finishStepAndEnqueueNext(step), failure);
+      await assert.rejects(api.finishStepAndEnqueueNext(step), (thrown) => thrown === failure);
 
       // The finish rolled back with the failed insert: the only step is unchanged.
       assert.deepEqual(await getRunSteps(runId), before);
