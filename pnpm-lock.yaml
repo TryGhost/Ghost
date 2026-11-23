@@ -4174,12 +4174,21 @@ importers:
       '@internal/cfg-eslint':
         specifier: workspace:*
         version: link:../../tools/configs/eslint
+      '@internal/cfg-typescript':
+        specifier: workspace:*
+        version: link:../../tools/configs/typescript
       '@internal/cfg-vitest':
         specifier: workspace:*
         version: link:../../tools/configs/vitest
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.5
+      '@types/sinon':
+        specifier: 'catalog:'
+        version: 22.0.2
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.12(@vitest/browser@4.1.12)(vitest@4.1.12)
@@ -4189,6 +4198,9 @@ importers:
       sinon:
         specifier: 'catalog:'
         version: 22.1.0
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
       vitest:
         specifier: 'catalog:'
         version: 4.1.12(@opentelemetry/api@1.9.1)(@types/node@22.20.5)(@vitest/browser-playwright@4.1.12)(@vitest/coverage-v8@4.1.12)(@vitest/ui@4.1.12)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.5)(@typescript/typescript6@6.0.2))(vite@8.1.6(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
