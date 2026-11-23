@@ -300,4 +300,15 @@ describe('isSameVisibility', function () {
     it('compares legacy visibility after migrating it', function () {
         expect(isSameVisibility({showOnWeb: true, showOnEmail: true, segment: ''}, everyone)).toBe(true);
     });
+
+    // the renderer only shows a card to public visitors when nonMember is exactly true
+    it('does not treat a nonMember value other than true as public', function () {
+        const nullNonMember = {...everyone, web: {...everyone.web, nonMember: null}};
+        const stringNonMember = {...everyone, web: {...everyone.web, nonMember: 'true'}};
+        const membersOnly = {...everyone, web: {...everyone.web, nonMember: false}};
+
+        expect(isSameVisibility(nullNonMember, everyone)).toBe(false);
+        expect(isSameVisibility(stringNonMember, everyone)).toBe(false);
+        expect(isSameVisibility(nullNonMember, membersOnly)).toBe(true);
+    });
 });

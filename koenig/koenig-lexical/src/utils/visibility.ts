@@ -150,7 +150,8 @@ function normalizeSegment(segment) {
 function normalizeVisibility(visibility) {
     const migrated = visibility ? migrateOldVisibilityFormat(visibility) : buildDefaultVisibility();
     return {
-        nonMember: migrated.web?.nonMember !== false,
+        // match the renderer, which only shows the card to public visitors when this is exactly true
+        nonMember: migrated.web?.nonMember === true,
         webSegment: normalizeSegment(migrated.web?.memberSegment),
         emailSegment: normalizeSegment(migrated.email?.memberSegment)
     };
