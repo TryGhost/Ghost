@@ -22,15 +22,23 @@ const byRegistryOrder = (keys: readonly AppPermissionKey[]) =>
  * stored in, the registry's order, so the same scopes always store, and digest, the same way.
  */
 export const AppScopesSchema = z.codec(
-  z.array(permissionKey, 'Expected a list of permission keys').superRefine((keys, ctx) => {
-    const seen = new Set<AppPermissionKey>();
-    keys.forEach((key, index) => {
-      if (seen.has(key)) {
-        ctx.addIssue({ code: 'custom', message: `Expected ${key} only once`, path: [index] });
-      }
-      seen.add(key);
-    });
-  }),
+  z.array(permissionKey, 'Expected a list of permission keys').superRefine(
+    (keys, ctx) => {
+      const seen = new Set<AppPermissionKey>();
+      keys.forEach((key, index) => {
+        if (!registryOrder.has(key)) {
+          return;
+        }
+        if (seen.has(key)) {
+          ctx.addIssue({ code: 'custom', message: `Expected ${key} only once`, path: [index] });
+        }
+        seen.add(key);
+      });
+    },
+    // Also when some keys are refused, so every problem is reported at once. Not when the
+    // value isn't a list at all.
+    { when: ({ issues }) => issues.every(({ path = [] }) => path.length > 0) },
+  ),
   z.array(z.enum(KEYS)),
   { decode: byRegistryOrder, encode: byRegistryOrder },
 );

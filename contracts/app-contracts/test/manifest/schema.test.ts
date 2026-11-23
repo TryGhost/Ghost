@@ -422,6 +422,13 @@ describe('scopes', () => {
     expect(errorsOf(withScopes([{ permission_key: 'post:read' }]))[0]?.path).toBe('scopes[0]');
   });
 
+  it('reports a key listed twice alongside a key Ghost doesn’t know', () => {
+    expect(errorsOf(withScopes(['post:read', 'post:read', 'post:publish']))).toEqual([
+      { path: 'scopes[2]', message: expect.stringContaining('permission key Ghost knows') },
+      { path: 'scopes[1]', message: 'Expected post:read only once' },
+    ]);
+  });
+
   it('refuses optional scopes until Ghost supports them', () => {
     expect(errorsOf(manifest({ optional_scopes: ['post:edit'] }))).toEqual([
       { path: '', message: 'Optional scopes aren’t supported yet' },
