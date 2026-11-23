@@ -406,7 +406,7 @@ In `defineService` (`kernel/src/define-service.ts`):
 1. `.service` builds the instance on first read when `create` is
    synchronous, instead of throwing. The experiment below did this for three
    roots in four lines. `init()` stays for an asynchronous `create`
-   (better-auth awaits one; the others were not counted) and for `start`.
+   (2 of the 30 roots: better-auth and tiers) and for `start`.
 2. A guard replaces the lost "used before init()" error: building is refused
    until the boot phase has finished. Without it, an early read would build
    against a settings cache that silently returns `undefined`.
@@ -631,7 +631,6 @@ Limits of the experiment:
   model registry, `shared/labs`, `lib/mail`.
 - Whether tiers' write paths assume the store is already filled, which
   matters for making tiers lazy.
-- How many of the 30 roots have an asynchronous `create`. better-auth does.
 - The cost in time of a lazy first request for themes, redirects and offers.
 - Which HTTP endpoint each job dispatch sits behind.
 - Whether anything depends on Mentions' listeners running before the
@@ -640,6 +639,30 @@ Limits of the experiment:
   grep heuristic that found 0 at module top level; it cannot see reads made
   inside a function called at import.
 - Nothing here was run on SQLite, in a browser, or through Ghost-CLI.
+
+## Recheck
+
+A second pass over this document, after it was first written. What was
+checked again, by running a command against the tree (verified):
+
+- The list sizes: 30 roots and 12 legacy entries in the services list, 15
+  background entries, 8 shared entries.
+- The counts table against the summary tables, recounted by script: the
+  five groups and the total of 94 match, and the order dependency table has
+  48 rows.
+- Which roots pass `start` and `stop` hooks: only indexnow-ping and
+  slack-ping.
+- Which roots have an asynchronous `create`: better-auth and tiers. This was
+  listed as not determined before.
+- These cited lines, re-read and found to say what the table says:
+  order dependencies 1, 8, 9, 11, 13, 15, 21 and 36; the checks in
+  stripe-checkout-config and app-installations; the silent `undefined` of
+  the settings cache; the maintenance gate in `ghost/core/app.js`; the
+  automation send in `poll.ts`; the email analytics status endpoint; the
+  apps that are built on first request; the Stripe billing portal call.
+
+Nothing was reclassified by the recheck. The other rows remain as the
+readers reported them: inferred, and not re-read.
 
 ## Reclassified against the appendix
 
