@@ -664,6 +664,46 @@ checked again, by running a command against the tree (verified):
 Nothing was reclassified by the recheck. The other rows remain as the
 readers reported them: inferred, and not re-read.
 
+## Recheck against main
+
+`main` was fetched at `25ce488` (2026-11-23), 228 commits after the commit
+this branch was cut from (`d116439b71`). The branch was not rebased. What
+was compared, by reading `git diff` and `git show` output (verified), and
+what it means for this inventory:
+
+- **Main starts the same things.** `ghost/core/boot.js` on `main` starts
+  every one of the 94 things listed here, and nothing else. There is no
+  kernel, foundry or `ghost/bootstrap` on `main`.
+- **The order differs, as the spike document says.** On `main` 25 services
+  start in one `Promise.all`, where this branch starts the standard roots one
+  after another and keeps ten legacy services in a `Promise.all`. The email
+  address policy starts with the services on `main`, not in a shared step.
+- **Start code that changed on `main` since the branch was cut.** Five root
+  files: content-import, editor-presence, email-analytics, jobs-service and
+  segments. Each diff was read. None changes a class: content-import gained
+  a download helper, editor-presence a second cache key, segments a tracking
+  object, jobs-service a `handles()` method.
+- **The claims that carry the most weight still hold on `main`.** The
+  settings start still destroys and recreates the pool
+  (`ghost/core/server/models/settings.js:351-352` on `main`). The root app
+  still answers 503 until the URL service has its routers
+  (`ghost/core/app.js:18` on `main`).
+- **One change in behaviour that this branch does not have.** Commit
+  `fc10cf6` on `main` skips "interrupted email sends" when the jobs outbox is
+  set to keep each row until its job settles (`keepUntilSettled`, off by
+  default). With that option on, the outbox hands an interrupted newsletter
+  send over again after a restart and the boot entry does nothing. With the
+  defaults nothing changes. This makes the outbox path in
+  [the job runner](#the-job-runner) stronger on `main` than described here:
+  one of the recovery entries stops being boot work.
+- **Already on both.** A failed ActivityPub start no longer stops the
+  background entries after it (`657c1e9` on `main`), and the image upload
+  config moved out of boot (`25ce488` on `main`).
+
+Not rechecked on `main`: the line numbers in this document, which are this
+branch's; and the other 29 files that changed under the inventoried service
+folders, which are not start code by their names and were not read.
+
 ## Reclassified against the appendix
 
 The appendix is what each reader wrote. Nine classes were changed for
