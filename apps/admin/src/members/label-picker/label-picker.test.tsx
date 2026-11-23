@@ -38,6 +38,19 @@ function renderAndSearch(searchText: string, selectedSlugs: string[] = []) {
 }
 
 describe('LabelPicker', () => {
+  it('dismisses on an outside click when an unrelated alert dialog is open', () => {
+    renderAndSearch('News');
+    const unrelated = render(
+      <div data-state="open" role="alertdialog">
+        Another dialog
+      </div>,
+    );
+
+    fireEvent.pointerDown(unrelated.container);
+
+    expect(screen.queryByRole('option')).not.toBeInTheDocument();
+  });
+
   it('clears the search after clicking a suggestion', () => {
     const { input, onToggle } = renderAndSearch('News');
 
