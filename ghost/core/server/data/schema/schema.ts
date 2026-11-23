@@ -8,6 +8,7 @@
  * Text = length 65535 (64 KiB)
  * Long text = length 1,000,000,000
  */
+import { sortableBy } from './lib/sortable';
 import type { TableDefinition } from './types';
 
 const schema = {
@@ -1181,6 +1182,21 @@ const schema = {
       cascadeDelete: true,
     },
     sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
+  },
+  // Named filters over members, which Admin shows as saved member views. Nothing reads or
+  // writes the table yet: the views are still stored in the `shared_views` setting.
+  segments: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    // Unique as the database's collation compares names, so the database decides which
+    // names clash.
+    name: { type: 'string', maxlength: 191, nullable: false, unique: true },
+    // An NQL filter. Not validated against the members' fields.
+    filter: { type: 'text', maxlength: 65535, nullable: false },
+    sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
+    // Segments are listed in the order they were added.
+    '@@SORTABLE@@': [sortableBy({ column: 'sort_order', tieBreak: ['created_at', 'id'] })],
   },
   members_metafields: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
