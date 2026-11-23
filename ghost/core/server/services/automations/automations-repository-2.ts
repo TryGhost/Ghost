@@ -6,6 +6,8 @@ import { addAutomationDataSchema } from './automations-schemas';
 
 export type AddAutomationData = z.infer<typeof addAutomationDataSchema>;
 
+export type AutomationStatus = 'inactive' | 'active' | 'archived';
+
 export type ActionToInsert = {
   id: string;
   created_at: Date;
@@ -62,6 +64,34 @@ export type LockedRunStep = Readonly<{
   id: string;
   locked_by: string;
 }>;
+
+/** A step this runner locked, with what it needs to run it. */
+export type LockedRunStepToRun = ReadonlyDeep<
+  {
+    id: string;
+    locked_by: string;
+    automation_run_id: string;
+    automation_id: string;
+    automation_status: AutomationStatus;
+    member_id: string | null;
+    member_email: string;
+    action_id: string;
+    automation_action_revision_id: string;
+    ready_at: Date;
+    step_attempts: number;
+  } & (
+    | {
+        type: 'wait';
+        wait_hours: number;
+      }
+    | {
+        type: 'send_email';
+        email_subject: string;
+        email_lexical: string;
+        email_design_setting_id: string | null;
+      }
+  )
+>;
 
 /** End a step, or put it back in the queue for another attempt. */
 export type LockedRunStepUpdate =
@@ -121,6 +151,16 @@ export type AutomationsRepository2<Connection> = {
     memberIds: ReadonlyArray<string>,
   ) => Promisable<Array<{ automation_id: string; member_id: string }>>;
 
+  /**
+   * Find up to `limit` steps a runner may claim, in the order to run them. A
+   * step is claimable while it is pending and either unlocked or locked
+   * before `staleLockCutoff`.
+   */
+  findClaimableRunStepIds: (
+    connection: Connection,
+    options: Readonly<{ readyBy: Date; staleLockCutoff: Date; limit: number }>,
+  ) => Promisable<string[]>;
+
   /** Find (and lock) a recipient with click tracking enabled. */
   findEmailRecipientForClick: (
     connection: Connection,
@@ -149,6 +189,13 @@ export type AutomationsRepository2<Connection> = {
     >,
   ) => Promisable<NextActionRevisionRow[]>;
 
+  /** Find the steps this runner locked, in the order to run them. */
+  findLockedRunStepsToRun: (
+    connection: Connection,
+    runStepIds: ReadonlyArray<string>,
+    lockedBy: string,
+  ) => Promisable<LockedRunStepToRun[]>;
+
   /**
    * Find the latest revision of the (non-deleted) action that follows this
    * one, if the run's automation is still active.
@@ -157,6 +204,21 @@ export type AutomationsRepository2<Connection> = {
     connection: Connection,
     options: Readonly<{ actionId: string; automationRunId: string }>,
   ) => Promisable<null | NextActionRevisionRow>;
+
+  /**
+   * Find the earliest ready time of the claimable steps (see
+   * `findClaimableRunStepIds`), including steps that are not ready yet.
+   */
+  findNextClaimableRunStepReadyAt: (
+    connection: Connection,
+    staleLockCutoff: Readonly<Date>,
+  ) => Promisable<Date | null>;
+
+  /** Find the trigger rules of some automations. */
+  findTriggerRules: (
+    connection: Connection,
+    automationIds: Iterable<string>,
+  ) => Promisable<AutomationTriggerRule[]>;
 
   /** Get the count of all automations. */
   getNumberOfAutomations: (connection: Connection) => Promisable<number>;
@@ -212,6 +274,17 @@ export type AutomationsRepository2<Connection> = {
    * foreign-key lock deadlocks.
    */
   lockActionRevisions: (connection: Connection, revisionIds: Iterable<string>) => Promisable<void>;
+
+  /**
+   * Lock these steps for this runner and count an attempt, skipping any that
+   * stopped being claimable and ready since they were found (for example,
+   * because another runner locked them first).
+   */
+  lockClaimableRunSteps: (
+    connection: Connection,
+    runStepIds: ReadonlyArray<string>,
+    options: Readonly<{ lockedBy: string; now: Date; staleLockCutoff: Date }>,
+  ) => Promisable<void>;
 
   /** Lock recipients whose first open has not yet been recorded. */
   lockNotYetOpenedEmailRecipients: (

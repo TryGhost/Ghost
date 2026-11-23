@@ -491,11 +491,7 @@ export const requestPoll = automationsApi2.requestPoll.bind(automationsApi2);
 
 export const notify = automationsApi2.notify.bind(automationsApi2);
 
-export async function fetchAndLockSteps(
-  ...args: Parameters<AutomationsRepository['fetchAndLockSteps']>
-) {
-  return await repository.fetchAndLockSteps(...args);
-}
+export const { fetchAndLockSteps } = automationsApi2;
 
 export const { finishStepAndEnqueueNext } = automationsApi2;
 

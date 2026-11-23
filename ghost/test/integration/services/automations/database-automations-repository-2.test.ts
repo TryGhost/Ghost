@@ -191,6 +191,86 @@ describe('database automations repository', function () {
     return { repository: fixture.repository, fixture, ids, earlier, laterEvent, getRecipient };
   };
 
+  // A run with a wait action, for steps to claim. Steps are inserted by each test.
+  const useClaimFixture = () => {
+    const repository = createDatabaseAutomationsRepository2({ knex });
+    const claimNow = new Date('2026-03-01T12:00:00Z');
+    const staleLockCutoff = new Date('2026-03-01T11:30:00Z');
+    const ids = { automation: '', action: '', revision: '', member: '', run: '' };
+
+    beforeEach(async function () {
+      const automation = createAutomation();
+      const action = createAction(automation.id);
+      const revision = { ...createRevision(action.id), wait_hours: 24 };
+      const member = createMember(ObjectId().toHexString());
+      const run = createRun(automation.id, member.id);
+      Object.assign(ids, {
+        automation: automation.id,
+        action: action.id,
+        revision: revision.id,
+        member: member.id,
+        run: run.id,
+      });
+      // Claims scan every pending step, so start without other tests' steps.
+      await knex('automation_run_steps').delete();
+      await knex('automations').insert(automation);
+      await knex('members').insert(member);
+      await knex('automation_actions').insert(action);
+      await knex('automation_action_revisions').insert(revision);
+      await knex('automation_runs').insert(run);
+    });
+
+    afterEach(async function () {
+      await knex('automation_run_steps').where('automation_run_id', ids.run).delete();
+      await knex('automation_trigger_rules').where('automation_id', ids.automation).delete();
+      await knex('automation_runs').where('id', ids.run).delete();
+      await knex('automation_action_revisions')
+        .whereIn(
+          'action_id',
+          knex('automation_actions').select('id').where('automation_id', ids.automation),
+        )
+        .delete();
+      await knex('automation_actions').where('automation_id', ids.automation).delete();
+      await knex('automations').where('id', ids.automation).delete();
+      await knex('members').where('id', ids.member).delete();
+    });
+
+    const insertStep = async (
+      overrides: Partial<{
+        id: string;
+        status: string;
+        ready_at: Date;
+        created_at: Date;
+        locked_by: string | null;
+        locked_at: Date | null;
+        step_attempts: number;
+      }> = {},
+    ) => {
+      const step = {
+        ...createRunStep(ids.run, ids.revision),
+        ready_at: new Date('2026-03-01T11:00:00Z'),
+        ...overrides,
+      };
+      await knex('automation_run_steps').insert(step);
+      return step.id;
+    };
+
+    const getStep = async (id: string) => {
+      const row = await knex('automation_run_steps').where({ id }).first();
+      const toDate = (value: DatabaseDate | null) =>
+        value === null ? null : fromDatabaseDate(value);
+      return {
+        locked_by: row.locked_by,
+        locked_at: toDate(row.locked_at),
+        started_at: toDate(row.started_at),
+        updated_at: toDate(row.updated_at),
+        step_attempts: row.step_attempts,
+      };
+    };
+
+    return { repository, claimNow, staleLockCutoff, ids, insertStep, getStep };
+  };
+
   beforeAll(async function () {
     await dbUtils.reset({ truncate: true });
     await testUtils.setup('default')();
@@ -335,6 +415,56 @@ describe('database automations repository', function () {
       expect(await repository.findAutomationMemberEnrollments(knex, [automationId], [])).toEqual(
         [],
       );
+    });
+  });
+
+  alphabeticalDescribe('findClaimableRunStepIds', function () {
+    const { repository, claimNow, staleLockCutoff, insertStep } = useClaimFixture();
+
+    const findClaimable = (limit = 10) =>
+      repository.findClaimableRunStepIds(knex, { readyBy: claimNow, staleLockCutoff, limit });
+
+    it('finds ready pending steps that are unlocked or whose lock went stale', async function () {
+      const unlocked = await insertStep();
+      const staleLock = await insertStep({
+        locked_by: 'stale-lock',
+        locked_at: new Date('2026-03-01T11:29:59Z'),
+      });
+      const readyNow = await insertStep({ ready_at: claimNow });
+      // Not claimable: locked at or after the cutoff, finished, or not ready yet.
+      await insertStep({ locked_by: 'fresh-lock', locked_at: staleLockCutoff });
+      await insertStep({ locked_by: 'fresh-lock', locked_at: new Date('2026-03-01T11:59:00Z') });
+      await insertStep({ status: 'finished' });
+      await insertStep({ ready_at: new Date('2026-03-01T12:00:01Z') });
+
+      expect((await findClaimable()).toSorted()).toEqual(
+        [unlocked, staleLock, readyNow].toSorted(),
+      );
+    });
+
+    it('finds the earliest-ready steps first, then the oldest, then by ID, up to the limit', async function () {
+      const tiedCreatedAt = new Date('2026-02-01T00:00:00Z');
+      // Inserted out of order so neither insertion order nor ID alone gives the answer.
+      await insertStep({ ready_at: new Date('2026-03-01T11:30:00Z') });
+      const lowerId = await insertStep({
+        id: 'ffffffffffffffffffff0001',
+        created_at: tiedCreatedAt,
+      });
+      const higherId = await insertStep({
+        id: 'ffffffffffffffffffff0002',
+        created_at: tiedCreatedAt,
+      });
+      const older = await insertStep({
+        id: 'ffffffffffffffffffff0003',
+        created_at: new Date('2026-01-01T00:00:00Z'),
+      });
+      const earliest = await insertStep({
+        id: 'ffffffffffffffffffff0004',
+        ready_at: new Date('2026-03-01T10:00:00Z'),
+      });
+
+      await expect(findClaimable(4)).resolves.toEqual([earliest, older, lowerId, higherId]);
+      await expect(findClaimable(2)).resolves.toEqual([earliest, older]);
     });
   });
 
@@ -797,6 +927,86 @@ describe('database automations repository', function () {
     });
   });
 
+  alphabeticalDescribe('findLockedRunStepsToRun', function () {
+    const { repository, ids, insertStep } = useClaimFixture();
+    const lockedAt = new Date('2026-03-01T12:00:00Z');
+
+    it('returns the listed steps locked by this runner, in run order, with their actions', async function () {
+      const emailAction = { ...createAction(ids.automation), type: 'send_email' };
+      const emailRevision = {
+        ...createRevision(emailAction.id),
+        wait_hours: null,
+        email_subject: 'Hello',
+        email_lexical: '{}',
+        email_design_setting_id: null,
+      };
+      await knex('automation_actions').insert(emailAction);
+      await knex('automation_action_revisions').insert(emailRevision);
+      const lock = { locked_by: 'this-lock', locked_at: lockedAt, step_attempts: 2 };
+      const waitStepId = await insertStep({ ...lock, ready_at: new Date('2026-03-01T11:00:00Z') });
+      const emailStepId = ObjectId().toHexString();
+      await knex('automation_run_steps').insert({
+        ...createRunStep(ids.run, emailRevision.id),
+        id: emailStepId,
+        ...lock,
+        ready_at: new Date('2026-03-01T10:00:00Z'),
+      });
+      const otherLock = await insertStep({ locked_by: 'other-lock', locked_at: lockedAt });
+      await insertStep(lock); // Locked by this runner, but not listed.
+
+      const steps = await repository.findLockedRunStepsToRun(
+        knex,
+        [waitStepId, emailStepId, otherLock],
+        'this-lock',
+      );
+
+      const base = {
+        locked_by: 'this-lock',
+        automation_run_id: ids.run,
+        automation_id: ids.automation,
+        automation_status: 'active',
+        member_id: ids.member,
+        member_email: `${ids.member}@example.com`,
+        step_attempts: 2,
+      };
+      expect(steps).toEqual([
+        {
+          ...base,
+          id: emailStepId,
+          action_id: emailAction.id,
+          automation_action_revision_id: emailRevision.id,
+          ready_at: new Date('2026-03-01T10:00:00Z'),
+          type: 'send_email',
+          email_subject: 'Hello',
+          email_lexical: '{}',
+          email_design_setting_id: null,
+        },
+        {
+          ...base,
+          id: waitStepId,
+          action_id: ids.action,
+          automation_action_revision_id: ids.revision,
+          ready_at: new Date('2026-03-01T11:00:00Z'),
+          type: 'wait',
+          wait_hours: 24,
+        },
+      ]);
+    });
+
+    it('returns no steps for no IDs', async function () {
+      await expect(repository.findLockedRunStepsToRun(knex, [], 'this-lock')).resolves.toEqual([]);
+    });
+
+    it('rejects a wait step without wait hours', async function () {
+      await knex('automation_action_revisions')
+        .where('id', ids.revision)
+        .update({ wait_hours: null });
+      const id = await insertStep({ locked_by: 'this-lock', locked_at: lockedAt });
+
+      await expect(repository.findLockedRunStepsToRun(knex, [id], 'this-lock')).rejects.toThrow();
+    });
+  });
+
   alphabeticalDescribe('findNextActionRevision', function () {
     const repository = createDatabaseAutomationsRepository2({ knex });
     let automationId: string;
@@ -913,6 +1123,120 @@ describe('database automations repository', function () {
         await expect(findNextActionRevision()).resolves.toBeNull();
       },
     );
+  });
+
+  alphabeticalDescribe('findNextClaimableRunStepReadyAt', function () {
+    const { repository, staleLockCutoff, insertStep } = useClaimFixture();
+    const findNext = () => repository.findNextClaimableRunStepReadyAt(knex, staleLockCutoff);
+
+    it('returns the earliest ready time of claimable steps, including future ones', async function () {
+      const soonest = new Date('2026-03-02T00:00:00Z');
+      await insertStep({ ready_at: new Date('2026-03-03T00:00:00Z') });
+      await insertStep({ ready_at: soonest });
+      // Earlier, but not claimable.
+      await insertStep({ ready_at: new Date('2026-03-01T09:00:00Z'), status: 'finished' });
+      await insertStep({
+        ready_at: new Date('2026-03-01T09:00:00Z'),
+        locked_by: 'fresh-lock',
+        locked_at: staleLockCutoff,
+      });
+
+      await expect(findNext()).resolves.toEqual(soonest);
+    });
+
+    it('counts a step whose lock went stale', async function () {
+      const staleReadyAt = new Date('2026-03-01T09:00:00Z');
+      await insertStep({ ready_at: new Date('2026-03-02T00:00:00Z') });
+      await insertStep({
+        ready_at: staleReadyAt,
+        locked_by: 'stale-lock',
+        locked_at: new Date('2026-03-01T11:29:59Z'),
+      });
+
+      await expect(findNext()).resolves.toEqual(staleReadyAt);
+    });
+
+    it('returns null when no step is claimable', async function () {
+      await insertStep({ locked_by: 'fresh-lock', locked_at: new Date('2026-03-01T11:59:00Z') });
+
+      await expect(findNext()).resolves.toBeNull();
+    });
+  });
+
+  alphabeticalDescribe('findTriggerRules', function () {
+    const { repository, ids } = useClaimFixture();
+    const tierId = ObjectId().toHexString();
+    let otherAutomationId: string;
+
+    const createRule = (automationId: string, overrides: Record<string, unknown> = {}) => ({
+      id: ObjectId().toHexString(),
+      automation_id: automationId,
+      created_at: now,
+      trigger_type: 'free_signup',
+      scope: null,
+      product_id: null,
+      direction: null,
+      label_id: null,
+      ...overrides,
+    });
+
+    beforeEach(async function () {
+      const other = createAutomation();
+      otherAutomationId = other.id;
+      await knex('automations').insert(other);
+      await knex('products').insert({
+        id: tierId,
+        name: `Tier ${tierId}`,
+        slug: tierId,
+        type: 'paid',
+        created_at: now,
+      });
+    });
+
+    afterEach(async function () {
+      await knex('automation_trigger_rules')
+        .whereIn('automation_id', [ids.automation, otherAutomationId])
+        .delete();
+      await knex('automations').where('id', otherAutomationId).delete();
+      await knex('products').where('id', tierId).delete();
+    });
+
+    it("returns the listed automations' rules, once each", async function () {
+      const free = createRule(ids.automation);
+      const tier = createRule(ids.automation, {
+        trigger_type: 'paid_subscription_started',
+        scope: 'specific_paid_tier',
+        product_id: tierId,
+      });
+      await knex('automation_trigger_rules').insert([free, tier, createRule(otherAutomationId)]);
+
+      const rules = await repository.findTriggerRules(knex, [ids.automation, ids.automation]);
+
+      // The schema drops `label_id` from rules that are not label rules.
+      const { label_id: _free, ...expectedFree } = free;
+      const { label_id: _tier, ...expectedTier } = tier;
+      expect(rules.toSorted((a, b) => a.id.localeCompare(b.id))).toEqual(
+        [expectedFree, expectedTier].toSorted((a, b) => a.id.localeCompare(b.id)),
+      );
+    });
+
+    it('returns no rules for no automations', async function () {
+      await expect(repository.findTriggerRules(knex, [])).resolves.toEqual([]);
+    });
+
+    it.each([
+      ['an unsupported trigger', { trigger_type: 'unsupported' }],
+      [
+        'a specific tier without a product',
+        { trigger_type: 'paid_subscription_started', scope: 'specific_paid_tier' },
+      ],
+    ])('rejects %s', async function (_, overrides) {
+      await knex('automation_trigger_rules').insert(createRule(ids.automation, overrides));
+
+      await expect(repository.findTriggerRules(knex, [ids.automation])).rejects.toMatchObject({
+        name: 'ZodError',
+      });
+    });
   });
 
   alphabeticalDescribe('getNumberOfAutomations', function () {
@@ -1400,6 +1724,68 @@ describe('database automations repository', function () {
       } finally {
         await trx.rollback();
       }
+    });
+  });
+
+  alphabeticalDescribe('lockClaimableRunSteps', function () {
+    const { repository, claimNow, staleLockCutoff, insertStep, getStep } = useClaimFixture();
+    const lock = (runStepIds: string[]) =>
+      repository.lockClaimableRunSteps(knex, runStepIds, {
+        lockedBy: 'this-lock',
+        now: claimNow,
+        staleLockCutoff,
+      });
+    const lockedNow = {
+      locked_by: 'this-lock',
+      locked_at: claimNow,
+      started_at: claimNow,
+      updated_at: claimNow,
+    };
+
+    it('locks ready unlocked steps and takes over stale locks, counting an attempt', async function () {
+      const unlocked = await insertStep({ ready_at: claimNow });
+      const staleLock = await insertStep({
+        locked_by: 'stale-lock',
+        locked_at: new Date('2026-03-01T11:29:59Z'),
+        step_attempts: 2,
+      });
+
+      await lock([unlocked, staleLock]);
+
+      expect(await getStep(unlocked)).toEqual({ ...lockedNow, step_attempts: 1 });
+      expect(await getStep(staleLock)).toEqual({ ...lockedNow, step_attempts: 3 });
+    });
+
+    it.each([
+      [
+        'locked at the stale-lock cutoff',
+        { locked_by: 'other-lock', locked_at: new Date('2026-03-01T11:30:00Z') },
+      ],
+      ['freshly locked', { locked_by: 'other-lock', locked_at: new Date('2026-03-01T11:59:00Z') }],
+      ['finished', { status: 'finished' }],
+      ['not ready yet', { ready_at: new Date('2026-03-01T12:00:01Z') }],
+    ])('leaves a step that is %s alone', async function (_, overrides) {
+      const id = await insertStep(overrides);
+      const before = await getStep(id);
+
+      await lock([id]);
+
+      expect(await getStep(id)).toEqual(before);
+    });
+
+    it('locks only the listed steps', async function () {
+      const listed = await insertStep();
+      const unlisted = await insertStep();
+      const before = await getStep(unlisted);
+
+      await lock([listed]);
+
+      expect((await getStep(listed)).locked_by).toBe('this-lock');
+      expect(await getStep(unlisted)).toEqual(before);
+    });
+
+    it('does nothing for no steps', async function () {
+      await expect(lock([])).resolves.toBeUndefined();
     });
   });
 

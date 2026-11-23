@@ -1,14 +1,45 @@
 import errors from '@tryghost/errors';
 import { type Knex } from 'knex';
 import { z } from 'zod';
-import { toDatabaseDate } from '../../lib/db-types/date';
+import { DbDate, toDatabaseDate } from '../../lib/db-types/date';
 import type { AutomationsRepository2 } from './automations-repository-2';
+import { automationTriggerRuleSchema } from './trigger-rules';
 
 type Connection = Knex | Knex.Transaction;
 
-const emailRecipientIdRowSchema = z.object({
+const idRowSchema = z.object({
   id: z.string(),
 });
+
+const nextReadyAtRowSchema = z.object({
+  next_ready_at: DbDate,
+});
+
+const lockedRunStepToRunBaseSchema = z.object({
+  id: z.string(),
+  locked_by: z.string(),
+  automation_run_id: z.string(),
+  automation_id: z.string(),
+  automation_status: z.enum(['inactive', 'active', 'archived']),
+  member_id: z.string().nullable(),
+  member_email: z.string(),
+  action_id: z.string(),
+  automation_action_revision_id: z.string(),
+  ready_at: DbDate,
+  step_attempts: z.number().int(),
+});
+const lockedRunStepToRunSchema = z.discriminatedUnion('type', [
+  lockedRunStepToRunBaseSchema.extend({
+    type: z.literal('wait'),
+    wait_hours: z.number().int().nonnegative(),
+  }),
+  lockedRunStepToRunBaseSchema.extend({
+    type: z.literal('send_email'),
+    email_subject: z.string(),
+    email_lexical: z.string(),
+    email_design_setting_id: z.string().nullable(),
+  }),
+]);
 
 const emailRecipientClickRowSchema = z.object({
   id: z.string(),
@@ -30,6 +61,13 @@ const nextActionRevisionRowSchema = z.discriminatedUnion('type', [
     wait_hours: z.null(),
   }),
 ]);
+
+/** A pending step is claimable when it is unlocked or its lock went stale. */
+const whereUnlockedOrStaleLock =
+  (staleLockCutoff: Readonly<Date>) =>
+  (builder: Knex.QueryBuilder): void => {
+    builder.whereNull('locked_by').orWhere('locked_at', '<', toDatabaseDate(staleLockCutoff));
+  };
 
 const selectExists = async (connection: Connection, query: Knex.QueryBuilder): Promise<boolean> => {
   const row = await connection
@@ -202,6 +240,17 @@ export const createDatabaseAutomationsRepository2 = ({
       return z.array(z.object({ automation_id: z.string(), member_id: z.string() })).parse(rows);
     },
 
+    async findClaimableRunStepIds(connection, { readyBy, staleLockCutoff, limit }) {
+      const rows: unknown[] = await connection('automation_run_steps')
+        .select('id')
+        .where('status', 'pending')
+        .where('ready_at', '<=', toDatabaseDate(readyBy))
+        .where(whereUnlockedOrStaleLock(staleLockCutoff))
+        .orderBy(['ready_at', 'created_at', 'id'])
+        .limit(limit);
+      return rows.map((row) => idRowSchema.parse(row).id);
+    },
+
     async findEmailRecipientForClick(
       connection,
       { automationActionRevisionId, automationRunStepId, memberId },
@@ -272,6 +321,43 @@ export const createDatabaseAutomationsRepository2 = ({
       return rows.map((row) => nextActionRevisionRowSchema.parse(row));
     },
 
+    async findLockedRunStepsToRun(connection, runStepIds, lockedBy) {
+      if (runStepIds.length === 0) {
+        return [];
+      }
+      const rows: unknown[] = await connection('automation_run_steps as step')
+        .select(
+          'step.id as id',
+          'step.locked_by as locked_by',
+          'step.automation_run_id as automation_run_id',
+          'run.automation_id as automation_id',
+          'automation.status as automation_status',
+          'run.member_id as member_id',
+          'run.member_email as member_email',
+          'action.id as action_id',
+          'revision.id as automation_action_revision_id',
+          'action.type as type',
+          'step.ready_at as ready_at',
+          'step.step_attempts as step_attempts',
+          'revision.wait_hours as wait_hours',
+          'revision.email_subject as email_subject',
+          'revision.email_lexical as email_lexical',
+          'revision.email_design_setting_id as email_design_setting_id',
+        )
+        .innerJoin('automation_runs as run', 'run.id', 'step.automation_run_id')
+        .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
+        .innerJoin(
+          'automation_action_revisions as revision',
+          'revision.id',
+          'step.automation_action_revision_id',
+        )
+        .innerJoin('automation_actions as action', 'action.id', 'revision.action_id')
+        .whereIn('step.id', runStepIds)
+        .where('step.locked_by', lockedBy)
+        .orderBy(['step.ready_at', 'step.created_at', 'step.id']);
+      return rows.map((row) => lockedRunStepToRunSchema.parse(row));
+    },
+
     async findNextActionRevision(connection, { actionId, automationRunId }) {
       const row: unknown = await connection('automation_action_edges as edge')
         .select(
@@ -302,6 +388,36 @@ export const createDatabaseAutomationsRepository2 = ({
         .orderBy('revision.id', 'desc')
         .first();
       return row === undefined ? null : nextActionRevisionRowSchema.parse(row);
+    },
+
+    async findNextClaimableRunStepReadyAt(connection, staleLockCutoff) {
+      const row: unknown = await connection('automation_run_steps')
+        .select({ next_ready_at: 'ready_at' })
+        .where('status', 'pending')
+        .where(whereUnlockedOrStaleLock(staleLockCutoff))
+        .orderBy('ready_at')
+        .first();
+      return row === undefined ? null : nextReadyAtRowSchema.parse(row).next_ready_at;
+    },
+
+    async findTriggerRules(connection, automationIds) {
+      const ids = [...new Set(automationIds)];
+      if (ids.length === 0) {
+        return [];
+      }
+      const rows: unknown[] = await connection('automation_trigger_rules')
+        .select(
+          'id',
+          'automation_id',
+          'created_at',
+          'trigger_type',
+          'scope',
+          'product_id',
+          'direction',
+          'label_id',
+        )
+        .whereIn('automation_id', ids);
+      return rows.map((row) => automationTriggerRuleSchema.parse(row));
     },
 
     async getNumberOfAutomations(connection) {
@@ -413,6 +529,25 @@ export const createDatabaseAutomationsRepository2 = ({
         .forUpdate();
     },
 
+    async lockClaimableRunSteps(connection, runStepIds, { lockedBy, now, staleLockCutoff }) {
+      if (runStepIds.length === 0) {
+        return;
+      }
+      const nowString = toDatabaseDate(now);
+      await connection('automation_run_steps')
+        .update({
+          locked_by: lockedBy,
+          locked_at: nowString,
+          started_at: nowString,
+          updated_at: nowString,
+        })
+        .increment('step_attempts', 1)
+        .whereIn('id', runStepIds)
+        .where('status', 'pending')
+        .where('ready_at', '<=', nowString)
+        .where(whereUnlockedOrStaleLock(staleLockCutoff));
+    },
+
     async lockNotYetOpenedEmailRecipients(connection, automatedEmailRecipientIds) {
       if (automatedEmailRecipientIds.length === 0) {
         return new Set<string>();
@@ -422,7 +557,7 @@ export const createDatabaseAutomationsRepository2 = ({
         .whereIn('id', automatedEmailRecipientIds)
         .whereNull('opened_at')
         .forUpdate();
-      return new Set(rows.map((row) => emailRecipientIdRowSchema.parse(row).id));
+      return new Set(rows.map((row) => idRowSchema.parse(row).id));
     },
 
     async setEmailRecipientClickedAt(connection, recipientId, clickedAt) {

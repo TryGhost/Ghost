@@ -2,6 +2,7 @@ import type DomainEvents from '@tryghost/domain-events';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import ObjectId from 'bson-objectid';
+import { randomUUID } from 'node:crypto';
 import type { ReadonlyDeep } from 'type-fest';
 import { AutoFillingMap } from '../../lib/auto-filling-map';
 import type { AutomationStepTerminalStatus } from './automation-step-status';
@@ -10,11 +11,14 @@ import type {
   AutomatedEmailRecipientTrackingData,
   EmailRecipientToInsert,
   LockedRunStep,
+  LockedRunStepToRun,
   RunStepToInsert,
   RunToInsert,
   TrackEmailClickedOptions,
 } from './automations-repository-2';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
+import { getStaleLockCutoff } from './stale-lock-cutoff';
+import type { AutomationTriggerRule } from './trigger-rules';
 import { getReadyAtForAction } from './util/get-ready-at-for-action';
 
 type Labs = { isSet(key: 'automations' | 'automationsLeadMagnets'): boolean };
@@ -32,6 +36,10 @@ export type RecordEmailSentOptions = Readonly<{
   trackClicks: boolean;
   trackOpens: boolean;
 }>;
+
+/** A step this runner claimed, with what the poller needs to run it. */
+export type AutomationStepToRun = LockedRunStepToRun &
+  ReadonlyDeep<{ automation_trigger_rules: AutomationTriggerRule[] }>;
 
 /**
  * What happened to a step that was retried:
@@ -84,6 +92,55 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
   };
 
   return {
+    /**
+     * Claim up to `limit` ready steps and return them, with the earliest ready
+     * time of the claimable steps left, if any.
+     *
+     * Concurrent callers, maybe in different processes sharing the database,
+     * must never claim the same step. Because an `UPDATE` cannot lock a fixed
+     * number of rows, this finds up to `limit` candidates, locks those that
+     * are still claimable with a new lock ID, and returns the ones that ended
+     * up with that lock ID.
+     */
+    fetchAndLockSteps: async (
+      limit: number,
+    ): Promise<{ steps: AutomationStepToRun[]; nextStepReadyAt: Date | null }> => {
+      return await repository.withTransaction(async (trx) => {
+        const now = new Date();
+        const staleLockCutoff = getStaleLockCutoff(now);
+        const lockedBy = randomUUID();
+
+        const candidateIds = await repository.findClaimableRunStepIds(trx, {
+          readyBy: now,
+          staleLockCutoff,
+          limit,
+        });
+        await repository.lockClaimableRunSteps(trx, candidateIds, {
+          lockedBy,
+          now,
+          staleLockCutoff,
+        });
+        const lockedSteps = await repository.findLockedRunStepsToRun(trx, candidateIds, lockedBy);
+
+        const rules = await repository.findTriggerRules(
+          trx,
+          lockedSteps.map((step) => step.automation_id),
+        );
+        const rulesByAutomation = new AutoFillingMap<string, AutomationTriggerRule[]>(() => []);
+        for (const rule of rules) {
+          rulesByAutomation.get(rule.automation_id).push(rule);
+        }
+
+        return {
+          steps: lockedSteps.map((step) => ({
+            ...step,
+            automation_trigger_rules: rulesByAutomation.get(step.automation_id),
+          })),
+          nextStepReadyAt: await repository.findNextClaimableRunStepReadyAt(trx, staleLockCutoff),
+        };
+      });
+    },
+
     /**
      * Atomically finish a locked step and enqueue the next one, so concurrent
      * runners cannot enqueue duplicates.
