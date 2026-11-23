@@ -130,7 +130,6 @@
     "postcss-import": "16.2.0",
     "prettier": "catalog:",
     "prettier-plugin-organize-attributes": "1.0.0",
-    "prop-types": "15.8.1",
     "react": "catalog:",
     "react-colorful": "5.7.0",
     "react-dom": "catalog:",

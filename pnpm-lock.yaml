@@ -3667,9 +3667,6 @@ importers:
       prettier-plugin-organize-attributes:
         specifier: 1.0.0
         version: 1.0.0(prettier@3.9.10)
-      prop-types:
-        specifier: 15.8.1
-        version: 15.8.1
       react:
         specifier: 'catalog:'
         version: 18.3.1
