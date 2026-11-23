@@ -110,6 +110,7 @@ describe('Exporter', function () {
       'redirects',
       'roles',
       'roles_users',
+      'segments',
       'sessions',
       'settings',
       'snippets',
