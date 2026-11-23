@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
+import { fakeAdminEndpoint, fakeAdminStats, renderAdminApp } from '@test-utils/acceptance';
 import { settleRequests } from '@test-utils/acceptance/worker';
 import {
   flags,
@@ -101,40 +101,55 @@ describe('Automation run selection and canvas transitions', () => {
     await expect.element(editingCanvas()).toHaveFocus();
   });
 
-  it('fetches by run ID only when selected, supports keyboard selection, and retains history across sidebar collapse', async () => {
-    const { list, counts } = setup();
-    const request = respond(history('a'));
-    await renderAdminApp('/automations/first', flags);
-    await open();
-    const selection = page.getByRole('button', { name: /View run history for Alex,/ });
-    await expect.element(selection).toBeVisible();
-    expect(request.requests).toHaveLength(0);
-    (selection.element() as HTMLElement).focus();
-    await userEvent.keyboard('{Enter}');
-    await expect.element(canvas()).toHaveTextContent('1 recorded step');
-    await expect
-      .element(canvas().getByRole('button', { name: 'Back to editing' }))
-      .toHaveTextContent('Alex');
-    await expect.element(selection).toHaveAttribute('aria-pressed', 'true');
-    await expect
-      .element(document.querySelector<HTMLElement>('[aria-label="Editing canvas"]'))
-      .not.toBeVisible();
-    await expect.poll(() => request.requests.length).toBe(1);
-    await expect.poll(() => canvas().element().getBoundingClientRect().width).toBe(800);
-    await page.getByRole('button', { name: 'Hide automation sidebar' }).click();
-    await expect.poll(() => canvas().element().getBoundingClientRect().width).toBe(1280);
-    await expect.element(canvas()).toHaveTextContent('Alex');
-    await open();
-    await expect.element(selection).toHaveAttribute('aria-pressed', 'true');
-    await expect.poll(() => canvas().element().getBoundingClientRect().width).toBe(800);
-    expect(request.requests).toHaveLength(1);
-    expect(list.requests).toHaveLength(1);
-    expect(counts.requests).toHaveLength(1);
-    await close();
-    await expect.element(canvas()).not.toBeInTheDocument();
-    await expect.element(editingCanvas()).toBeVisible();
-    await expect.element(selection).toHaveAttribute('aria-pressed', 'false');
-  });
+  it.each([false, true])(
+    'fetches by run ID only when selected, supports keyboard selection, and retains history across sidebar collapse: admin7Design %s',
+    async (admin7Design) => {
+      fakeAdminStats.memberCount();
+      fakeAdminStats.mrr();
+      const { list, counts } = setup();
+      const request = respond(history('a'));
+      await renderAdminApp('/automations/first', {
+        ...flags,
+        labs: { ...flags.labs, admin7Design },
+      });
+      await open();
+      const selection = page.getByRole('button', { name: /View run history for Alex,/ });
+      await expect.element(selection).toBeVisible();
+      expect(request.requests).toHaveLength(0);
+      (selection.element() as HTMLElement).focus();
+      await userEvent.keyboard('{Enter}');
+      await expect.element(canvas()).toHaveTextContent('1 recorded step');
+      await expect
+        .element(canvas().getByRole('button', { name: 'Back to editing' }))
+        .toHaveTextContent('Alex');
+      await expect.element(selection).toHaveAttribute('aria-pressed', 'true');
+      await expect
+        .element(document.querySelector<HTMLElement>('[aria-label="Editing canvas"]'))
+        .not.toBeVisible();
+      await expect.poll(() => request.requests.length).toBe(1);
+      await expect.poll(() => canvas().element().getBoundingClientRect().width).toBe(800);
+      await page.getByRole('button', { name: 'Hide automation sidebar' }).click();
+      await expect.poll(() => canvas().element().getBoundingClientRect().width).toBe(1280);
+      await expect.element(canvas()).toHaveTextContent('Alex');
+      await open();
+      await expect.element(selection).toHaveAttribute('aria-pressed', 'true');
+      await expect.poll(() => canvas().element().getBoundingClientRect().width).toBe(800);
+      expect(request.requests).toHaveLength(1);
+      expect(list.requests).toHaveLength(1);
+      expect(counts.requests).toHaveLength(1);
+      await close();
+      await expect.element(canvas()).not.toBeInTheDocument();
+      await expect.element(editingCanvas()).toBeVisible();
+      await expect.element(selection).toHaveAttribute('aria-pressed', 'false');
+      await selection.click();
+      await expect.element(canvas()).toHaveTextContent('Alex');
+      await close();
+      await expect.element(canvas()).not.toBeInTheDocument();
+      const row = selection.element().closest('tr')!;
+      await page.elementLocator(row.querySelectorAll('td')[1]).click();
+      await expect.element(canvas()).toHaveTextContent('Alex');
+    },
+  );
 
   it('keeps history when filtering removes the selected row', async () => {
     setup();

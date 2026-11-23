@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import {
   fakeAdminEndpoint,
+  fakeAdminStats,
   fakeEditorChrome,
   fakePosts,
   fakePostsListScreen,
@@ -133,16 +134,42 @@ describe('presence polling', () => {
     expect(users.requests.map((request) => request.filter)).toContain(`id:['${OTHER_USER}']`);
   });
 
-  it('shows who has a listed post open once both flags are on', async () => {
-    fakePostsListScreen();
-    fakePosts([post({ id: POST_ID, title: 'Presence example', status: 'draft' })]);
-    fakeUsers([staffUser({ id: OTHER_USER, name: 'Alex Smith', profile_image: null })]);
-    fakePresence();
-    await renderAdminApp('/posts?type=draft', INDICATORS_ON);
-    await expect
-      .element(page.getByRole('img', { name: 'Alex Smith has this post open' }))
-      .toBeVisible();
-  });
+  it.each([false, true])(
+    'shows interactive list presence indicators with admin7Design %s',
+    async (admin7Design) => {
+      fakePostsListScreen();
+      fakeAdminStats.memberCount();
+      fakeAdminStats.mrr();
+      fakePosts([post({ id: POST_ID, title: 'Presence example', status: 'draft' })]);
+      fakeUsers([staffUser({ id: OTHER_USER, name: 'Alex Smith', profile_image: null })]);
+      fakePresence();
+      await renderAdminApp('/posts?type=draft', {
+        labs: { ...INDICATORS_ON.labs, admin7Design },
+      });
+      await expect
+        .element(page.getByRole('img', { name: 'Alex Smith has this post open' }))
+        .toBeVisible();
+      const avatars = page.getByTestId('presence-avatars');
+      const bounds = avatars.element().getBoundingClientRect();
+      expect(
+        document
+          .elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2)
+          ?.closest('[data-testid="presence-avatars"]'),
+      ).toBe(avatars.element());
+      await avatars.hover();
+      await expect
+        .element(page.getByRole('tooltip', { name: 'Alex Smith has this post open' }))
+        .toBeVisible();
+      page
+        .getByRole('link', { name: /Presence example/ })
+        .element()
+        .focus();
+      await userEvent.tab();
+      await expect.element(avatars).toHaveFocus();
+      await avatars.click();
+      await expect.element(page.getByRole('link', { name: /Presence example/ })).toBeVisible();
+    },
+  );
 
   it('keeps the header clear while only polling is on', async () => {
     fakeEditorChrome();

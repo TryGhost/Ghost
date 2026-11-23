@@ -7,10 +7,10 @@ import clsx from 'clsx';
 import useQueryParams from '@/settings/hooks/use-query-params';
 import useStaffUsers from '@/settings/hooks/use-staff-users';
 import {
-  ActionList,
-  ActionListItem,
-  ActionListItemActions,
-  ActionListItemContent,
+  List,
+  ListItem,
+  ListItemActions,
+  ListItemContent,
   Avatar,
   NoValueLabel,
   NoValueLabelIcon,
@@ -125,7 +125,7 @@ const UsersList: React.FC<UsersListProps> = ({ users, groupname }) => {
   }
 
   return (
-    <ActionList>
+    <List>
       {users.map((user) => {
         let title = user.name || '';
         if (user.status === 'inactive') {
@@ -138,13 +138,8 @@ const UsersList: React.FC<UsersListProps> = ({ users, groupname }) => {
           currentUser.id === user.id;
 
         return (
-          <ActionListItem
-            key={user.id}
-            className="min-h-16"
-            data-testid="user-list-item"
-            hover={canEdit}
-          >
-            <ActionListItemContent asChild>
+          <ListItem key={user.id} className="min-h-16" data-testid="user-list-item" hover={canEdit}>
+            <ListItemContent asChild>
               {canEdit ? (
                 <button
                   className="flex w-full items-center gap-3 py-3 text-left"
@@ -179,9 +174,9 @@ const UsersList: React.FC<UsersListProps> = ({ users, groupname }) => {
                   </span>
                 </div>
               )}
-            </ActionListItemContent>
+            </ListItemContent>
             {canEdit && (
-              <ActionListItemActions visibility="hover">
+              <ListItemActions visibility="hover">
                 <Button
                   size="sm"
                   type="button"
@@ -190,12 +185,12 @@ const UsersList: React.FC<UsersListProps> = ({ users, groupname }) => {
                 >
                   Edit
                 </Button>
-              </ActionListItemActions>
+              </ListItemActions>
             )}
-          </ActionListItem>
+          </ListItem>
         );
       })}
-    </ActionList>
+    </List>
   );
 };
 
@@ -296,32 +291,24 @@ const InvitesUserList: React.FC<InviteListProps> = ({ users }) => {
   }
 
   return (
-    <ActionList>
+    <List>
       {users.map((user) => {
         return (
-          <ActionListItem
-            key={user.id}
-            className="min-h-16"
-            data-testid="user-invite"
-            hover={false}
-          >
-            <ActionListItemContent
-              className="flex items-center gap-3 py-3"
-              id={`list-item-${user.id}`}
-            >
+          <ListItem key={user.id} className="min-h-16" data-testid="user-invite" hover={false}>
+            <ListItemContent className="flex items-center gap-3 py-3" id={`list-item-${user.id}`}>
               <Avatar className="size-10" {...memberAvatarProps({ email: user.email })} />
               <span className="min-w-0 grow">
                 <span className="block">{user.email}</span>
                 <span className="block text-sm text-muted-foreground">{user.role}</span>
               </span>
-            </ActionListItemContent>
-            <ActionListItemActions>
+            </ListItemContent>
+            <ListItemActions>
               <UserInviteActions invite={user} />
-            </ActionListItemActions>
-          </ActionListItem>
+            </ListItemActions>
+          </ListItem>
         );
       })}
-    </ActionList>
+    </List>
   );
 };
 
