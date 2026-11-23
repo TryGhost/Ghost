@@ -4,10 +4,18 @@ import { createContext, useContext } from 'react';
 import { officialThemes } from '@/settings/data/official-themes';
 import { zapierTemplates } from '@/settings/data/zapier-templates';
 
+/**
+ * A theme's custom settings as a variant (or the theme's own demo) sets them,
+ * by key; every other setting stays at the theme's default
+ */
+export type ThemeSettingsPreset = Record<string, string | boolean>;
+
 export type ThemeVariant = {
   category: string;
   previewUrl: string;
   image: string;
+  /** The settings that make the theme look like this variant's demo */
+  settings?: ThemeSettingsPreset;
 };
 
 export type OfficialTheme = {
@@ -17,6 +25,8 @@ export type OfficialTheme = {
   ref: string;
   image: string;
   url?: string;
+  /** The settings of the theme's own demo, when it has variants (its defaults if empty) */
+  settings?: ThemeSettingsPreset;
   variants?: ThemeVariant[];
 };
 

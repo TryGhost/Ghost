@@ -4,6 +4,7 @@ const urlUtils = require('../../../../shared/url-utils').default;
 const customThemeSettingsCache = require('../../../../shared/custom-theme-settings-cache');
 const preview = require('../preview');
 const labs = require('../../../../shared/labs');
+const activeTheme = require('../active');
 
 function updateLocalTemplateOptions(req, res, next) {
   const localTemplateOptions = hbs.getLocalTemplateOptions(res.locals);
@@ -15,7 +16,11 @@ function updateLocalTemplateOptions(req, res, next) {
   };
 
   // @TODO: it would be nicer if this was proper middleware somehow...
-  const previewData = preview.handle(req, Object.keys(customThemeSettingsCache.getAll()));
+  const theme = activeTheme.get();
+  const customThemeSettingKeys = Object.keys(
+    theme && theme.isPreview ? theme.customSettingDefinitions : customThemeSettingsCache.getAll(),
+  );
+  const previewData = preview.handle(req, customThemeSettingKeys);
 
   // strip custom off of preview data so it doesn't get merged into @site
   const customData = previewData.custom;

@@ -95,20 +95,68 @@ module.exports = class CustomThemeSettingsService {
   }
 
   /**
-   * @param {Array} settings - array of setting objects with at least key and value properties
+   * Like listSettings(), for any installed theme: each setting the theme
+   * declares, with the value stored for that theme, or its default when the
+   * theme has never been set up. Reads only; activating a theme is what syncs
+   * its stored settings. Ghost Admin uses it to preview an inactive theme as it
+   * would look once activated.
+   *
+   * @param {string} name - the theme's name
+   * @param {Object} customSettings - the settings the theme declares (package.json `config.custom`)
+   * @returns {Promise<Array>}
    */
-  async updateSettings(settings) {
-    // abort if any settings do not match known settings
-    const firstUnknownSetting = settings.find((setting) => !this._activeThemeSettings[setting.key]);
+  async listSettingsForTheme(name, customSettings = {}) {
+    if (name === this.activeThemeName) {
+      return this.listSettings();
+    }
 
-    if (firstUnknownSetting) {
+    const stored = (await this._repository.browse({ filter: `theme:'${name}'` })).toJSON();
+    const storedByKey = Object.fromEntries(stored.map((setting) => [setting.key, setting]));
+
+    return Object.entries(customSettings).map(([key, setting]) => {
+      const known = storedByKey[key];
+      // As activation would: a stored value counts only while it still fits the setting
+      const usable =
+        known &&
+        known.type === setting.type &&
+        (!setting.options || setting.options.includes(known.value));
+
+      return Object.assign({}, setting, {
+        key,
+        id: usable ? known.id : null,
+        value: usable ? known.value : setting.default === undefined ? null : setting.default,
+      });
+    });
+  }
+
+  /**
+   * Throws a ValidationError unless every setting is one the definitions
+   * declare, with a value it allows. Used before saving, and before activating
+   * a theme with settings chosen in a preview, so a bad value never leaves a
+   * theme half set up.
+   *
+   * @param {Array} settings - setting objects with at least key and value properties
+   * @param {Object} definitions - settings by key, as a theme declares them
+   */
+  validateSettings(settings, definitions) {
+    // abort if any settings do not match known settings: well-formed, and declared
+    // by the theme itself (not a name every object has, such as "constructor")
+    const unknownIndex = settings.findIndex(
+      (setting) =>
+        !setting ||
+        typeof setting.key !== 'string' ||
+        !Object.hasOwn(definitions, setting.key) ||
+        (!['string', 'boolean'].includes(typeof setting.value) && setting.value !== null),
+    );
+
+    if (unknownIndex !== -1) {
       throw new ValidationError({
-        message: tpl(messages.problemFindingSetting, { key: firstUnknownSetting.key }),
+        message: tpl(messages.problemFindingSetting, { key: settings[unknownIndex]?.key }),
       });
     }
 
     settings.forEach((setting) => {
-      const definition = this._activeThemeSettings[setting.key];
+      const definition = definitions[setting.key];
       switch (definition.type) {
         case 'select':
           if (!definition.options.includes(setting.value)) {
@@ -144,6 +192,45 @@ module.exports = class CustomThemeSettingsService {
           break;
       }
     });
+  }
+
+  /**
+   * Stores settings for a theme that isn't active, ahead of activating it (with
+   * the settings chosen in a preview of it): activation then keeps them, as it
+   * keeps any stored value that still fits the theme. Validate them first.
+   *
+   * @param {string} name - the theme's name
+   * @param {Array} settings - setting objects with key and value
+   * @param {Object} definitions - the settings the theme declares, by key
+   */
+  async storeSettingsForTheme(name, settings, definitions) {
+    await this._repository.transaction(async (transacting) => {
+      for (const { key, value } of settings) {
+        const stored = await this._repository.read({ theme: name, key }, { transacting });
+
+        if (stored && stored.get('type') === definitions[key].type) {
+          stored.set('value', value);
+          if (stored.hasChanged()) {
+            await stored.save(null, { transacting });
+          }
+        } else {
+          if (stored) {
+            await this._repository.destroy({ id: stored.id, transacting });
+          }
+          await this._repository.add(
+            { theme: name, key, type: definitions[key].type, value },
+            { transacting },
+          );
+        }
+      }
+    });
+  }
+
+  /**
+   * @param {Array} settings - array of setting objects with at least key and value properties
+   */
+  async updateSettings(settings) {
+    this.validateSettings(settings, this._activeThemeSettings);
 
     // save the new values
     for (const setting of settings) {

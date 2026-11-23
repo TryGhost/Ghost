@@ -13,6 +13,8 @@ interface ThemeSettingsProps {
     settings: CustomThemeSetting[];
   }>;
   updateSetting: (setting: CustomThemeSetting) => void;
+  /** The theme these settings belong to: the active theme unless one is previewed */
+  theme?: Theme;
 }
 
 interface ThemeSettingsMap {
@@ -40,12 +42,21 @@ const themeSettingsMap: ThemeSettingsMap = {
   wave: ['title_font', 'body_font'],
 };
 
-const ThemeSettings: React.FC<ThemeSettingsProps> = ({ sections, updateSetting }) => {
+const ThemeSettings: React.FC<ThemeSettingsProps> = ({ sections, updateSetting, theme }) => {
   const { data: themesData } = useBrowseThemes();
-  const activeTheme = themesData?.themes.find((theme: Theme) => theme.active);
+  const activeTheme = theme || themesData?.themes.find((installed: Theme) => installed.active);
   const activeThemeName = activeTheme?.package.name?.toLowerCase() || '';
   const activeThemeAuthor = activeTheme?.package.author?.name || '';
   const { supportsCustomFonts } = useCustomFonts();
+
+  // hides typography related theme settings from official themes
+  // should be removed once we remove the settings from the themes in 6.0
+  const isHiddenTypographySetting = (key: string) =>
+    Boolean(
+      themeSettingsMap[activeThemeName]?.includes(key) &&
+      activeThemeAuthor === 'Ghost Foundation' &&
+      supportsCustomFonts,
+    );
 
   return (
     <>
@@ -57,35 +68,39 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ sections, updateSetting }
           ),
         );
 
+        const items = filteredSettings.map((setting) => {
+          const themeSetting = (
+            <ThemeSetting
+              key={setting.key}
+              setSetting={(value) => updateSetting({ ...setting, value } as CustomThemeSetting)}
+              setting={setting}
+            />
+          );
+
+          if (isHiddenTypographySetting(setting.key)) {
+            return (
+              <div key={setting.key} className="hidden">
+                {themeSetting}
+              </div>
+            );
+          }
+
+          return themeSetting;
+        });
+
+        // A section left with nothing to show (e.g. only an official theme's font settings)
+        // takes no room and has no heading; its hidden settings stay in the form
+        if (filteredSettings.every((setting) => isHiddenTypographySetting(setting.key))) {
+          return (
+            <div key={section.id} className="hidden">
+              {items}
+            </div>
+          );
+        }
+
         return (
           <FormSection key={section.id} title={section.title}>
-            {filteredSettings.map((setting) => {
-              const themeSetting = (
-                <ThemeSetting
-                  key={setting.key}
-                  setSetting={(value) => updateSetting({ ...setting, value } as CustomThemeSetting)}
-                  setting={setting}
-                />
-              );
-
-              // hides typography related theme settings from official themes
-              // should be removed once we remove the settings from the themes in 6.0
-              const hidingSettings = themeSettingsMap[activeThemeName];
-              if (
-                hidingSettings &&
-                hidingSettings.includes(setting.key) &&
-                activeThemeAuthor === 'Ghost Foundation' &&
-                supportsCustomFonts
-              ) {
-                return (
-                  <div key={setting.key} className="hidden">
-                    {themeSetting}
-                  </div>
-                );
-              }
-
-              return themeSetting;
-            })}
+            {items}
           </FormSection>
         );
       })}

@@ -56,6 +56,7 @@ const PRIVATE_FEATURES = [
   'admin7Design',
   'admin7Mobile',
   'admin7CustomizeFromViewSite',
+  'themePreview',
   'emailUniqueid',
   'themeTranslation',
   'pictureImageFormats',

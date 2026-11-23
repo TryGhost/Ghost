@@ -13,6 +13,7 @@ import { Text } from '@tryghost/shade/primitives';
 import { type Theme, useBrowseThemes } from '@tryghost/admin-x-framework/api/themes';
 import { downloadFromEndpoint } from '@tryghost/admin-x-framework/helpers';
 import { useCheckThemeLimitError } from '@/settings/hooks/use-check-theme-limit-error';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
@@ -26,6 +27,9 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const { showLimit } = useConfirmation();
   const { data: themesData } = useBrowseThemes();
   const activeTheme = themesData?.themes.find((theme: Theme) => theme.active);
+  // With theme previews, this section is where themes are found and managed;
+  // choosing one, and its settings, happen in the Design settings
+  const themePreviewEnabled = useFeatureFlag('themePreview');
 
   const openPreviewModal = async () => {
     const limitError = await checkThemeLimitError();
@@ -99,6 +103,14 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({ keywords }) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                {themePreviewEnabled && (
+                  <DropdownMenuItem
+                    data-testid="customize-active-theme"
+                    onSelect={() => updateRoute('design/edit?tab=theme')}
+                  >
+                    Customize
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onSelect={() => void openThemeEditor()}>
                   Edit code
                 </DropdownMenuItem>
@@ -121,14 +133,14 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({ keywords }) => {
           variant="ghost"
           onClick={() => void openPreviewModal()}
         >
-          Change theme
+          {themePreviewEnabled ? 'Browse themes' : 'Change theme'}
         </Button>
       }
       description="Browse and install official themes or upload one"
       keywords={keywords}
       navid="theme"
       testId="theme"
-      title="Theme"
+      title={themePreviewEnabled ? 'Themes' : 'Theme'}
       onOpen={() => void openPreviewModal()}
     >
       {values}

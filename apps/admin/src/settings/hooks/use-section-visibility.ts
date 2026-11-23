@@ -21,6 +21,8 @@ export interface SettingsSectionVisibility {
   tipsAndDonations: boolean;
   customFields: boolean;
   offers: boolean;
+  /** The themes section's title: "Themes" with theme previews, where it holds the collection */
+  themesTitle: string;
   /** Keywords of the email sections this site shows. */
   emailKeywords: string[];
 }
@@ -36,6 +38,7 @@ export function useSettingsSectionVisibility(): SettingsSectionVisibility {
   const hasNewslettersEnabled = useNewslettersEnabled() === true;
   const hasAutomations = useFeatureFlag('automations');
   const customFields = useFeatureFlag(CUSTOM_FIELDS_FLAG);
+  const themePreview = useFeatureFlag('themePreview');
 
   const settings = settingsData?.settings;
   const config = configData?.config;
@@ -70,6 +73,7 @@ export function useSettingsSectionVisibility(): SettingsSectionVisibility {
       tipsAndDonations,
       customFields,
       offers: hasStripeEnabled,
+      themesTitle: themePreview ? 'Themes' : 'Theme',
       emailKeywords,
     }),
     [
@@ -79,6 +83,7 @@ export function useSettingsSectionVisibility(): SettingsSectionVisibility {
       tipsAndDonations,
       customFields,
       hasStripeEnabled,
+      themePreview,
       emailKeywords,
     ],
   );

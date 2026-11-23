@@ -4,6 +4,7 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const hbs = require('../engine');
+const activeTheme = require('../active');
 
 const messages = {
   templateNotFound: 'Template {name} not found.',
@@ -12,7 +13,9 @@ const messages = {
 // Execute a template helper
 // All template helpers are register as partial view.
 templates.execute = function execute(name, context, data) {
-  const partial = hbs.handlebars.partials[name];
+  const theme = activeTheme.get();
+  const engine = theme && theme.isPreview ? theme.engine : hbs;
+  const partial = engine.handlebars.partials[name];
 
   if (partial === undefined) {
     throw new errors.IncorrectUsageError({
@@ -22,7 +25,7 @@ templates.execute = function execute(name, context, data) {
 
   // If the partial view is not compiled, it compiles and saves in handlebars
   if (typeof partial === 'string') {
-    hbs.registerPartial(partial);
+    engine.registerPartial(partial);
   }
 
   return new hbs.SafeString(partial(context, data));
