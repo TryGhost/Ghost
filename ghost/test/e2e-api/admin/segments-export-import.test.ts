@@ -4,6 +4,7 @@ import path from 'node:path';
 import fs from 'fs-extra';
 
 const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
+const { knex } = require('../../../core/server/data/db');
 
 type Segment = { id: string; name: string; filter: string };
 type Setting = { key: string; value: unknown };
@@ -71,10 +72,15 @@ describe('Segments in a site export and import', function () {
       .expectStatus(200);
   }
 
+  /** The `shared_views` setting, which holds the views of the posts list. */
+  async function sharedViews() {
+    const { body } = await agent.get('settings/').expectStatus(200);
+    return body.settings.find(({ key }) => key === 'shared_views')?.value;
+  }
+
   /** The views of the posts list, which stay in the `shared_views` setting. */
   async function postsViews() {
-    const { body } = await agent.get('settings/').expectStatus(200);
-    const value = body.settings.find(({ key }) => key === 'shared_views')?.value;
+    const value = await sharedViews();
     const views: { route: string }[] = JSON.parse(typeof value === 'string' ? value : '[]');
     return views.filter(({ route }) => route === 'posts');
   }
@@ -197,6 +203,93 @@ describe('Segments in a site export and import', function () {
     await importData({ settings: [{ key: 'shared_views', value: JSON.stringify(views) }] });
 
     assert.deepEqual(await names(), ['Gold', 'gold (3)', 'gold (2)']);
+  });
+
+  it("adds a segment that has the filter of the site's own under another name", async function () {
+    await saveSharedViews(JSON.stringify([postsView]));
+    await add('VIP', 'label:vip');
+    const views = [memberView('Very important', 'label:vip'), memberView('Free', 'status:free')];
+
+    await importData({ settings: [{ key: 'shared_views', value: JSON.stringify(views) }] });
+
+    assert.deepEqual(
+      (await browse()).map(({ name, filter }) => ({ name, filter })),
+      [
+        { name: 'VIP', filter: 'label:vip' },
+        { name: 'Very important', filter: 'label:vip' },
+        { name: 'Free', filter: 'status:free' },
+      ],
+    );
+  });
+
+  it('adds nothing when a file is imported again, numbered names included', async function () {
+    await add('VIP', 'label:vip');
+    const views = [memberView('VIP', 'label:gold'), memberView('Free', 'status:free')];
+    const file = { settings: [{ key: 'shared_views', value: JSON.stringify(views) }] };
+
+    await importData(file);
+    const imported = await browse();
+    await importData(file);
+
+    assert.deepEqual(await browse(), imported);
+    assert.deepEqual(await names(), ['VIP', 'VIP (2)', 'Free']);
+  });
+
+  it('brings segments back in their order, not the order they were added in', async function () {
+    await add('Free', 'status:free');
+    await add('VIP', 'label:vip');
+    // Nothing reorders segments yet, so the first one is moved to the end in the table.
+    await knex('segments').where({ name: 'Free' }).update({ sort_order: 5 });
+    const exported = await exportSavedViews();
+    await removeSegments();
+
+    await importData(exported);
+
+    assert.deepEqual(await names(), ['VIP', 'Free']);
+  });
+
+  it('adds nothing when a file is imported a second time', async function () {
+    const views = [memberView('VIP', 'label:vip'), memberView('Gold', 'label:vip')];
+    const file = { settings: [{ key: 'shared_views', value: JSON.stringify(views) }] };
+
+    await importData(file);
+    const imported = await browse();
+    await importData(file);
+
+    assert.deepEqual(await browse(), imported);
+    assert.deepEqual(await names(), ['VIP', 'Gold']);
+  });
+
+  it('numbers a name the database counts as another segment’s', async function () {
+    // The site and the file have names that differ by an accent, which the segments service
+    // tells apart and MySQL's default collation doesn't. The file's numbered names are its own.
+    await add('Café', 'label:accent');
+    const views = [
+      memberView('Cafe', 'label:cafe'),
+      memberView('Cafe (2)', 'label:two'),
+      memberView('Cafe (3)', 'label:three'),
+      memberView('Gold', 'label:gold'),
+      memberView('Göld', 'label:umlaut'),
+    ];
+
+    await importData({ settings: [{ key: 'shared_views', value: JSON.stringify(views) }] });
+
+    assert.deepEqual(await names(), [
+      'Café',
+      'Cafe (4)',
+      'Cafe (2)',
+      'Cafe (3)',
+      'Gold',
+      'Göld (2)',
+    ]);
+  });
+
+  it('does not write the saved member views of an older export into the setting', async function () {
+    const views = [postsView, memberView('VIP', 'label:vip')];
+
+    await importData({ settings: [{ key: 'shared_views', value: JSON.stringify(views) }] });
+
+    assert.equal(await sharedViews(), JSON.stringify([postsView]));
   });
 
   it('cuts a name that is too long and leaves out a view that cannot be a segment', async function () {

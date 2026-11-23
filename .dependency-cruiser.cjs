@@ -66,7 +66,9 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/services/jobs-service/job\\.ts$', // Job base class, not the running service.
   '^ghost/core/server/lib/after-commit\\.ts$', // Runs a callback after the caller's transaction commits.
   '^ghost/core/server/lib/sortable\\.ts$', // Ordered reads, inserts and reorders for a schema-declared collection, on the caller's connection; no application instances.
+  '^ghost/core/server/lib/db-errors\\.ts$', // Recognises the errors a database rejects a write with.
   '^ghost/core/server/lib/db-types/count\\.ts$', // Database count codec.
+  '^ghost/core/server/lib/db-types/text\\.ts$', // Byte-length check for text columns.
   '^ghost/core/server/lib/db-types/affected-rows\\.ts$', // Database affected-rows codec.
   '^ghost/core/server/lib/db-types/object-id\\.ts$', // Database ObjectId codec.
   '^ghost/core/server/lib/mailgun/mailgun-message-id\\.ts$', // Mailgun message ID normalisation; no client.
