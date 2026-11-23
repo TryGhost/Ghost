@@ -36,7 +36,7 @@ const IMAGE_CARD_LEXICAL = JSON.stringify({
   },
 });
 
-// Admin deploys ahead of Core on Ghost(Pro), so a card's visibility settings
+// Admin can deploy ahead of the server, so a card's visibility settings
 // appear only once the server lists the card in config.cardVisibility
 function withCardVisibility(cardVisibility: string[]): RenderAdminAppOptions {
   const response = configResponse();
