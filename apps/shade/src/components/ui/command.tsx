@@ -2,8 +2,6 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { type DialogProps } from '@radix-ui/react-dialog';
 import { Command as CommandPrimitive } from 'cmdk';
 import { Check, LucideIcon, Search } from 'lucide-react';
 
@@ -18,21 +16,6 @@ function Command({ className, ...props }: React.ComponentProps<typeof CommandPri
     />
   );
 }
-
-type CommandDialogProps = DialogProps & { className?: string };
-
-const CommandDialog = ({ children, className, ...props }: CommandDialogProps) => {
-  return (
-    <Dialog {...props}>
-      <DialogContent className={cn('overflow-hidden p-0 shadow-lg', className)}>
-        <DialogTitle className="hidden" />
-        <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:size-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:size-5">
-          {children}
-        </Command>
-      </DialogContent>
-    </Dialog>
-  );
-};
 
 function CommandInput({
   className,
@@ -147,7 +130,6 @@ function CommandCheck({ icon: Icon = Check, className, ...props }: ButtonArrowPr
 export {
   Command,
   CommandCheck,
-  CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
