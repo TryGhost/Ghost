@@ -121,6 +121,9 @@ test.describe('Content Visibility', async () => {
             await expect(card.getByTestId('visibility-toggle-email-freeMembers')).not.toBeChecked();
             const saved = await getEditorStateJSON(page);
             await initialize({page, uri: `/#/?content=${encodeURIComponent(saved)}`});
+            // the in-app reload leaves no document selection, which can make the
+            // button card lose its selection straight after the indicator opens it
+            await focusEditor(page);
             await page.getByTestId('visibility-indicator').click();
             await expectPanelOnTab(card, 'visibility');
             await expect(card.getByTestId('visibility-toggle-web-nonMembers')).not.toBeChecked();
