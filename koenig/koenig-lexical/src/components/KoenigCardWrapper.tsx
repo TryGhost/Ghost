@@ -43,15 +43,15 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
         event.target.blur?.();
     }, []);
 
-    // a control that had focus keeps it, so its keys and the clicks they make are refused, rendered
-    // or not yet. Shortcuts pass untouched, for the browser and the app, and Tab still moves focus
+    // a control that had focus keeps it, so its keys and the clicks they make are refused. Shortcuts
+    // pass once the card is no longer selected: until that renders, its editing controls would take them
     const refuseInput = React.useCallback((event) => {
         if (isDocumentEditable(editor) || !event.currentTarget.contains(event.target)) {
             return;
         }
 
         const isShortcut = event.ctrlKey || event.metaKey || ['Shift', 'Control', 'Alt', 'Meta'].includes(event.key);
-        if (event.type !== 'click' && isShortcut) {
+        if (event.type !== 'click' && isShortcut && !isSelected) {
             return;
         }
 
@@ -59,6 +59,20 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
 
         if (event.key !== 'Tab') {
             event.preventDefault();
+        }
+    }, [editor, isSelected]);
+
+    // a file chosen in a dialog that was opened before the document went read-only is not taken,
+    // nor kept by the input, which would not report the same file chosen again
+    const refuseChange = React.useCallback((event) => {
+        if (isDocumentEditable(editor) || !event.currentTarget.contains(event.target)) {
+            return;
+        }
+
+        event.stopPropagation();
+
+        if (event.target.type === 'file') {
+            event.target.value = '';
         }
     }, [editor]);
 
@@ -208,6 +222,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                 isSelected={isSelected}
                 isVisibilityActive={isVisibilityActive}
                 wrapperStyle={wrapperStyle}
+                onChangeCapture={refuseChange}
                 onClickCapture={refuseInput}
                 onFocusCapture={isReadOnly ? refuseFocus : undefined}
                 onIndicatorClick={handleVisibilityToggle}

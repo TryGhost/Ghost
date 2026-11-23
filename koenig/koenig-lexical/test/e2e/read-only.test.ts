@@ -19,6 +19,17 @@ async function setEditableAndRender(page, editable) {
     }
 }
 
+// the tab stays busy after the change, so a key sent meanwhile arrives before React has rendered it
+function setReadOnlyAndStayBusy(page) {
+    return page.evaluate(() => {
+        window.lexicalEditor.setEditable(false);
+        const end = performance.now() + 500;
+        while (performance.now() < end) {
+            // busy
+        }
+    });
+}
+
 const documentJson = page => page.evaluate(() => JSON.stringify(window.lexicalEditor.getEditorState().toJSON().root.children));
 const documentTypes = async page => JSON.parse(await documentJson(page)).map(node => node.type).join(',');
 const text = value => ({detail: 0, format: 0, mode: 'normal', style: '', text: value, type: 'text', version: 1});
@@ -244,14 +255,7 @@ test.describe('Read-only and back', () => {
         // Lexical folds a DOM text change into its state only once typing has paused
         await page.waitForTimeout(300);
 
-        // the tab stays busy after the change, so the key arrives before React has rendered it
-        const locked = page.evaluate(() => {
-            window.lexicalEditor.setEditable(false);
-            const end = performance.now() + 500;
-            while (performance.now() < end) {
-                // busy
-            }
-        });
+        const locked = setReadOnlyAndStayBusy(page);
         await page.waitForTimeout(150);
         await page.keyboard.press('Backspace');
         await locked;
@@ -260,6 +264,29 @@ test.describe('Read-only and back', () => {
         await expect(card.locator('[data-lexical-editor]')).toHaveText('Card text');
         expect(await calloutText(page)).toBe('Card text');
     });
+
+    for (const key of ['KeyZ', 'Backspace']) {
+        test(`a shortcut with ${key} pressed before the change reaches the screen does not change a code card being edited`, async ({page}) => {
+            await initialize({page});
+            await focusEditor(page);
+            const card = await insertCard(page, {cardName: 'html'});
+            await page.keyboard.type('Card text');
+            await expect(card).toHaveAttribute('data-kg-card-editing', 'true');
+            await page.waitForTimeout(500);
+            const before = await documentJson(page);
+            expect(before).toContain('Card text');
+
+            // the code editor is still there to undo, or delete to the start of the line
+            const locked = setReadOnlyAndStayBusy(page);
+            await page.waitForTimeout(150);
+            await page.keyboard.press(`${ctrlOrCmd(page)}+${key}`);
+            await locked;
+
+            await expect(card).toHaveAttribute('data-kg-card-editing', 'false');
+            await page.waitForTimeout(300);
+            expect(await documentJson(page)).toBe(before);
+        });
+    }
 
     test('opens the link prompt with the shortcut once editable again', async ({page}) => {
         await initialize({page});
@@ -341,12 +368,49 @@ test.describe('Read-only and back', () => {
         await page.locator('[data-kg-card="image"] img').click();
         await page.locator('[data-kg-card-toolbar="image"] [aria-label="Link"]').click();
         await expect(page.getByTestId('link-input')).toBeVisible();
+        const before = await documentJson(page);
 
         await setEditableAndRender(page, false);
         await setEditableAndRender(page, true);
         await page.waitForTimeout(300);
 
         await expect(page.getByTestId('link-input')).toHaveCount(0);
+        expect(await documentJson(page)).toBe(before);
+    });
+
+    test('does not bring a video card’s thumbnail picker back once editable again', async ({page}) => {
+        // not a video at all, so the picker needs no codec: it offers the thumbnail as it is
+        const videoCard = {type: 'video', src: PNG, width: 100, height: 100, duration: 60, thumbnailSrc: PNG};
+        await initialize({page, uri: withContent([videoCard, paragraph('After')])});
+        await page.locator('[data-kg-card="video"]').click();
+        await page.getByTestId('edit-video-card').click();
+        await page.getByTestId('media-upload-placeholder').click();
+        await expect(page.getByRole('dialog')).toBeVisible();
+        const before = await documentJson(page);
+
+        await setEditableAndRender(page, false);
+        await expect(page.getByRole('dialog')).toHaveCount(0);
+        await setEditableAndRender(page, true);
+        await page.waitForTimeout(300);
+
+        await expect(page.getByRole('dialog')).toHaveCount(0);
+        expect(await documentJson(page)).toBe(before);
+    });
+
+    test('takes no file chosen in a dialog that was opened before it went read-only', async ({page}) => {
+        await initialize({page, uri: withContent([imageCard({src: '', width: null, height: null}), paragraph('After')])});
+        const fileChooserPromise = page.waitForEvent('filechooser');
+        await page.locator('[data-kg-card="image"] button[name="placeholder-button"]').click();
+        const fileChooser = await fileChooserPromise;
+        const before = await documentJson(page);
+        await setEditableAndRender(page, false);
+
+        await fileChooser.setFiles('test/e2e/fixtures/large-image.png');
+        await page.waitForTimeout(1500);
+        expect(await documentJson(page)).toBe(before);
+
+        // the input lets go of the file, or choosing the same one again later would tell the card nothing
+        expect(await page.locator('[data-kg-card="image"] input[type="file"]').evaluate(input => input.files.length)).toBe(0);
     });
 
     test('does not bring a card’s snippet name field back once editable again', async ({page}) => {
@@ -504,6 +568,31 @@ test.describe('Read-only document', () => {
         await expect(page.getByTestId('at-link-popup')).toHaveCount(0);
     });
 
+    test('does not offer link search results again by itself once editable, only when the search is typed in', async ({page}) => {
+        await initialize({page});
+        await focusEditor(page);
+        await page.keyboard.type('First paragraph');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('@');
+        await expect(page.getByTestId('at-link-popup').locator('li[role="option"]').first()).toBeVisible();
+        const before = await documentJson(page);
+
+        // the cursor stays in the search
+        await setEditableAndRender(page, false);
+        await setEditableAndRender(page, true);
+        await page.waitForTimeout(300);
+        await expect(page.getByTestId('at-link-popup')).toHaveCount(0);
+
+        // shown, they would take Enter from wherever focus is
+        await page.keyboard.press('Enter');
+        await page.waitForTimeout(300);
+        expect(await documentJson(page)).toBe(before);
+
+        await page.locator('[data-lexical-editor]').first().focus();
+        await page.keyboard.type('E');
+        await expect(page.getByTestId('at-link-popup').locator('li[role="option"]').first()).toBeVisible();
+    });
+
     test('closes an image selector that was open, and keeps its card', async ({page}) => {
         await page.route('https://api.unsplash.com/**', route => route.fulfill({status: 200, body: '[]'}));
         await initialize({page});
@@ -611,6 +700,16 @@ test.describe('Read-only document', () => {
         await button.evaluate(element => element.click());
         await page.waitForTimeout(300);
         expect(await documentJson(page)).toBe(before);
+
+        // a shortcut is the browser's and the app's, and reaches them untouched. A plain key does not
+        await page.evaluate(() => {
+            window._seenKeys = [];
+            window.addEventListener('keydown', event => window._seenKeys.push(`${event.key}:${event.defaultPrevented}`));
+        });
+        await page.keyboard.press(`${ctrlOrCmd(page)}+KeyS`);
+        await page.keyboard.press('KeyX');
+        const seenKeys = await page.evaluate(() => window._seenKeys);
+        expect(seenKeys.filter(seen => /^[sx]:/.test(seen))).toEqual(['s:false']);
 
         // Tab is left to the browser, so focus is not held in the card
         await page.keyboard.press('Tab');

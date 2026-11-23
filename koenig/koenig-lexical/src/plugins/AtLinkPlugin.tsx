@@ -29,7 +29,7 @@ import {
 } from 'lexical';
 import {$insertFirst, mergeRegister} from '@lexical/utils';
 import {AtLinkResultsPopup} from '../components/ui/AtLinkResultsPopup';
-import {isDocumentEditable, useIsDocumentEditable} from '../hooks/useIsDocumentEditable';
+import {isDocumentEditable, useIsDocumentEditable, useResetWhenReadOnly} from '../hooks/useIsDocumentEditable';
 import {isInternalUrl} from '../utils/isInternalUrl';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useSearchLinks} from '../hooks/useSearchLinks';
@@ -65,6 +65,13 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
     const [focusedAtLinkNode, setFocusedAtLinkNode] = React.useState(null);
     const [query, setQuery] = React.useState('');
     const searchOptions = React.useMemo(() => ({noResultOptions}), []);
+
+    // results are offered again only once the cursor is put back in the search: shown
+    // by themselves they would take Enter from wherever focus is by then
+    useResetWhenReadOnly(() => {
+        setFocusedAtLinkNode(null);
+        setQuery('');
+    });
     const {isSearching, listOptions} = useSearchLinks(query, searchLinks, searchOptions);
 
     // register an event listener to detect '@' character being typed
@@ -197,20 +204,8 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
                 return;
             }
 
-            // a selection change is an update too. A read-only document keeps its unfinished
-            // search, and only stops offering results for one the cursor has left
+            // a selection change is an update too, and a read-only document keeps its unfinished search
             if (!isDocumentEditable(editor)) {
-                const isInSearch = editor.getEditorState().read(() => {
-                    const selection = $getSelection();
-                    const anchorNode = $isRangeSelection(selection) && selection.anchor.getNode();
-                    return !!anchorNode && ($isAtLinkNode(anchorNode) || $isAtLinkNode(anchorNode.getParent()));
-                });
-
-                if (!isInSearch) {
-                    setFocusedAtLinkNode(null);
-                    setQuery('');
-                }
-
                 return;
             }
 

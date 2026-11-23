@@ -84,8 +84,13 @@ does in the editor changes it:
   the browser and the app, and Tab still moves focus, so text can be copied and
   focus can leave the card. A card's text is still part of a selection drawn
   across it, of find-in-page and of the accessibility tree
+- a file chosen in a file dialog that was opened before the flag went off is
+  not taken
 - a picker, link field or name field a card had open is closed for good, not
-  shown again when the editor is editable
+  shown again when the editor is editable. Link search results are offered
+  again only once the cursor is put back in the search. The Unsplash and GIF
+  selectors are the exception: each is all there is of its card until an image
+  is chosen, so it is shown again
 
 The flag does not cover:
 
@@ -93,8 +98,8 @@ The flag does not cover:
   `registerAPI`, such as `insertParagraphAtTop`. Lexical allows those in a
   read-only editor. `insertFiles` is the exception: it inserts cards, which is
   refused
-- work a card had already started, such as fetching a bookmark, which fills
-  the card in when it finishes
+- work a card had already started, such as fetching a bookmark or picking a
+  colour from the screen, which fills the card in when it finishes
 - links in the text. They are ordinary links in a read-only document and open
   when clicked
 
