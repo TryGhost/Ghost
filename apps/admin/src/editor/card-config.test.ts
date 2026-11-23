@@ -137,6 +137,22 @@ describe('buildPostCardConfig', () => {
     expect(cardConfig.visibilityCardTypes).toEqual(cardVisibility);
   });
 
+  it.each([
+    ['a list with a non-string entry', ['html', 42]],
+    ['a string', 'image'],
+    ['null', null],
+  ])(
+    'offers visibility only for the older-server cards when the server sends %s',
+    (_, cardVisibility) => {
+      const cardConfig = buildPostCardConfig(
+        sources({ config: { ...config, cardVisibility: cardVisibility as unknown as string[] } }),
+        ports,
+      );
+
+      expect(cardConfig.visibilityCardTypes).toEqual(LEGACY_VISIBILITY_CARD_TYPES);
+    },
+  );
+
   it('carries the site images the social cards fall back to', () => {
     const cardConfig = buildPostCardConfig(
       sources({

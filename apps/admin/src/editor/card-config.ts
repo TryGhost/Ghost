@@ -6,6 +6,7 @@ import {
 } from '@tryghost/admin-x-framework/api/settings';
 import { type SiteData, getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
+import { z } from 'zod';
 import type { AutocompleteLink } from '@/shared/autocomplete-links';
 import type { LinkSearchGroup } from './link-suggestions';
 
@@ -110,10 +111,11 @@ export function getCardVisibilitySettings(
 // gets visibility settings for these.
 export const LEGACY_VISIBILITY_CARD_TYPES = ['html', 'call-to-action', 'transistor'];
 
+const cardVisibilitySchema = z.array(z.string());
+
 export function getVisibilityCardTypes(config: Pick<Config, 'cardVisibility'>): string[] {
-  return Array.isArray(config.cardVisibility)
-    ? config.cardVisibility
-    : LEGACY_VISIBILITY_CARD_TYPES;
+  const cardVisibility = cardVisibilitySchema.safeParse(config.cardVisibility);
+  return cardVisibility.success ? cardVisibility.data : LEGACY_VISIBILITY_CARD_TYPES;
 }
 
 function imageSetting(settings: Setting[], key: string): string | null {
