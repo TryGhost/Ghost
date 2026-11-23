@@ -2,11 +2,7 @@ import type { Knex } from 'knex';
 import { z } from 'zod';
 import segments from '../../../../services/segments';
 import { MAX_NAME_LENGTH, SegmentFilter, SegmentName } from '../../../../services/segments/models';
-import {
-  isFilterTakenError,
-  isNameTakenError,
-  normalizeName,
-} from '../../../../services/segments/rejections';
+import { isNameTakenError, normalizeName } from '../../../../services/segments/rejections';
 import {
   type ExportedSegment,
   SavedMemberView,
@@ -208,16 +204,13 @@ export class SegmentsImporter {
         this.importedDataToReturn.push(added);
         return;
       } catch (err) {
-        if (isFilterTakenError(err)) {
-          break;
-        }
         if (!isNameTakenError(err)) {
           throw err;
         }
         number = names.take(segment.name, number + 1);
       }
     }
-    this.skipped(segment, 'Segment was not imported because the site already has it.');
+    this.skipped(segment, 'Segment was not imported because no name was free for it.');
   }
 
   private skipped(segment: ExportedSegment, message: string): void {

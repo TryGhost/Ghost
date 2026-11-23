@@ -4,16 +4,15 @@ import type { SegmentChangeAttempt } from './tracking';
 
 /**
  * Where segments are stored. Reads go through the executor they're given and writes through the
- * transaction they're given. The repository rejects a name, or a new segment's filter, that
- * another segment already has. A method that writes reports to `attempt` why it rejects a
- * change, before it throws.
+ * transaction they're given. The repository rejects a name that another segment already has.
+ * A method that writes reports to `attempt` why it rejects a change, before it throws.
  */
 export interface SegmentRepository {
   /** Every segment, in order. */
   list(executor: Knex): Promise<Segment[]>;
   /** The segment with `id`, if there is one. */
   find(id: string, executor: Knex): Promise<Segment | undefined>;
-  /** The segment with `id`, if there is one. Other writes to segments wait until `trx` ends. */
+  /** The segment with `id`, if there is one, with its row locked until `trx` ends. */
   findForUpdate(id: string, trx: Knex.Transaction): Promise<Segment | undefined>;
   /** Stores a new segment after the others, and returns it. */
   insert(

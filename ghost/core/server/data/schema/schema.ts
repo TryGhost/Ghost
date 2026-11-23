@@ -1183,8 +1183,7 @@ const schema = {
     },
     sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
   },
-  // Named filters over members, which Admin shows as saved member views. Nothing reads or
-  // writes the table yet: the views are still stored in the `shared_views` setting.
+  // Named filters over members, which Admin shows as saved member views.
   segments: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     // Unique as the database's collation compares names, so the database decides which

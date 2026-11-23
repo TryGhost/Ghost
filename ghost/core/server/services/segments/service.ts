@@ -14,9 +14,9 @@ export interface NewSegment {
 }
 
 /**
- * A change to a segment. Only the name can change: the filter is what identifies a saved
- * member view, so a different filter is saved as a new segment instead. A change can give the
- * segment's own filter back, so that a segment as the API returns it is a valid change.
+ * A change to a segment. Only the name can change. A change can give the segment's own filter
+ * back, so that a segment as the API returns it is a valid change. Any other filter is
+ * rejected: changing a segment's filter isn't supported.
  */
 export interface SegmentEdit {
   name: SegmentName;
