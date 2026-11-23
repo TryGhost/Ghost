@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { toDatabaseDate } from '../../lib/db-types/date';
 import { DbJson } from '../../lib/db-types/json';
 import { type Segment, SegmentId } from './models';
+import { filterTakenError, nameTakenError, normalizeName } from './rejections';
 import type { SegmentRepository } from './repository';
 import type { SegmentChangeAttempt } from './tracking';
 
@@ -102,8 +103,6 @@ function listSegments(views: readonly Json[]): ListedSegment[] {
   });
 }
 
-const normalizeName = (name: string) => name.trim().toLowerCase();
-
 /**
  * Whether a saved member view, other than the one at `exceptIndex`, has `name`, ignoring case
  * and surrounding whitespace. Saved member views without a filter count, as they do in Admin.
@@ -120,10 +119,7 @@ function isNameTaken(views: readonly Json[], name: string, exceptIndex?: number)
 
 function nameTaken(attempt: SegmentChangeAttempt): never {
   attempt.rejecting('name_taken');
-  throw new errors.ValidationError({
-    message: 'A view with this name already exists',
-    property: 'name',
-  });
+  throw nameTakenError();
 }
 
 function notFound(attempt: SegmentChangeAttempt): never {
@@ -195,10 +191,7 @@ export class SettingsSegmentRepository implements SegmentRepository {
     }
     if (listSegments(views).some(({ segment }) => segment.filter === input.filter)) {
       attempt.rejecting('filter_taken');
-      throw new errors.ValidationError({
-        message: 'A view with this filter already exists',
-        property: 'filter',
-      });
+      throw filterTakenError();
     }
 
     const view = { name: input.name, route: 'members', filter: { filter: input.filter } };
