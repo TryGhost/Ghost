@@ -3,6 +3,7 @@ import { setImmediate } from 'node:timers/promises';
 import type { Knex } from 'knex';
 import sinon from 'sinon';
 import { afterEach, beforeEach, describe, it } from 'vitest';
+import { openServices, startAsBoot } from '../../../../utils/services';
 import type { JobsService } from '../../../../../core/server/services/jobs-service/jobs-service';
 
 // Use the same CommonJS modules as boot. Restore the original root after each
@@ -20,7 +21,6 @@ const models = require('../../../../../core/server/models') as {
   Base: { transaction: Dependencies['transaction'] };
 };
 const logging = require('@tryghost/logging');
-const { IncorrectUsageError } = require('@tryghost/errors');
 
 type SigningKeysModule = typeof import('../../../../../core/server/services/signing-keys');
 type Entry = { value: string | null; created_at: Date };
@@ -45,6 +45,7 @@ describe('signing-keys root', function () {
     scheduleRecurring = sandbox.stub().resolves();
     jobs = { scheduleRecurring } as unknown as JobsService;
     root = require(ROOT_PATH).default;
+    openServices(root);
     scheduleCheckJob = root.extras.scheduleCheckJob;
   });
 
@@ -64,24 +65,25 @@ describe('signing-keys root', function () {
     };
   }
 
-  it('does not check keys on import and rejects access before init', function () {
+  it('does not check keys on import or when the service is first used', function () {
     sinon.assert.notCalled(check);
-    assert.throws(() => root.service, IncorrectUsageError);
+
+    assert.ok(root.service instanceof SigningKeyService);
+    sinon.assert.notCalled(check);
   });
 
-  it('publishes the instance only after the initial key check and reuses it on repeated init', async function () {
+  it('does not finish starting until the key check completes', async function () {
     const ready = Promise.withResolvers<void>();
     check.returns(ready.promise);
     let finished = false;
-    const startup = root.init().then(() => {
+    const startup = startAsBoot(root).then(() => {
       finished = true;
     });
 
     try {
       await setImmediate();
       sinon.assert.calledOnce(check);
-      assert.equal(finished, false, 'init completed before the initial key check');
-      assert.throws(() => root.service, IncorrectUsageError);
+      assert.equal(finished, false, 'the start completed before the key check');
     } finally {
       ready.resolve();
       // Do not let a cleanup error replace an assertion failure.
@@ -89,46 +91,22 @@ describe('signing-keys root', function () {
     }
     await startup;
 
-    const service = root.service;
-    assert.equal(service, check.firstCall.thisValue);
-    await root.init();
-    assert.equal(root.service, service);
-    sinon.assert.calledOnce(check);
-  });
-
-  it('shares one pending key check between concurrent initialization calls', async function () {
-    const ready = Promise.withResolvers<void>();
-    check.returns(ready.promise);
-    const first = root.init();
-    const second = root.init();
-
-    try {
-      await setImmediate();
-      sinon.assert.calledOnce(check);
-      assert.equal(first, second);
-      assert.throws(() => root.service, IncorrectUsageError);
-    } finally {
-      ready.resolve();
-      await Promise.allSettled([first, second]);
-    }
-    await Promise.all([first, second]);
     assert.equal(root.service, check.firstCall.thisValue);
   });
 
-  it('propagates the initial check error without publication and permits a later retry', async function () {
+  it('fails the start with the key check error, and checks again when started again', async function () {
     const failure = new Error('Key check failed');
     check.onFirstCall().rejects(failure);
 
-    await assert.rejects(root.init(), (error) => error === failure);
-    assert.throws(() => root.service, IncorrectUsageError);
+    await assert.rejects(startAsBoot(root), (error) => error === failure);
 
-    await root.init();
+    await startAsBoot(root);
     sinon.assert.calledTwice(check);
     assert.equal(root.service, check.secondCall.thisValue);
   });
 
   it('does not schedule a recurring check when no rotation is pending', async function () {
-    await root.init();
+    await startAsBoot(root);
     await scheduleCheckJob(jobs);
 
     sinon.assert.notCalled(scheduleRecurring);
@@ -136,7 +114,7 @@ describe('signing-keys root', function () {
 
   it('waits for registration of the hourly check and does not register again after success', async function () {
     markRotating();
-    await root.init();
+    await startAsBoot(root);
     sandbox.stub(Math, 'random').onFirstCall().returns(0.25).onSecondCall().returns(0.75);
     const registered = Promise.withResolvers<void>();
     scheduleRecurring.returns(registered.promise);
@@ -164,7 +142,7 @@ describe('signing-keys root', function () {
 
   it('propagates a registration failure and allows scheduling to be retried', async function () {
     markRotating();
-    await root.init();
+    await startAsBoot(root);
     const failure = new Error('Jobs backend unavailable');
     scheduleRecurring.onFirstCall().rejects(failure);
 
@@ -196,7 +174,7 @@ describe('signing-keys root', function () {
 
   it('defers scheduling a rotation started before jobs arrive until background registration', async function () {
     stubRotationStorage();
-    await root.init();
+    await startAsBoot(root);
     const service = root.service;
 
     assert.equal(await service.rotate('members'), true);
@@ -209,7 +187,7 @@ describe('signing-keys root', function () {
 
   it('schedules through the supplied jobs service when a later rotation starts and awaits registration', async function () {
     stubRotationStorage();
-    await root.init();
+    await startAsBoot(root);
     await scheduleCheckJob(jobs);
     sinon.assert.notCalled(scheduleRecurring);
     const registered = Promise.withResolvers<void>();

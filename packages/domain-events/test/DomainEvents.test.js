@@ -60,6 +60,22 @@ describe('DomainEvents', function () {
     assert.equal(events[1], event);
   });
 
+  it('Stops calling a subscriber once it is unsubscribed, and keeps calling the others', async function () {
+    const first = sinon.stub();
+    const second = sinon.stub();
+    const unsubscribe = DomainEvents.subscribe(TestEvent, first);
+    DomainEvents.subscribe(TestEvent, second);
+
+    unsubscribe();
+    // Unsubscribing again does nothing.
+    unsubscribe();
+    DomainEvents.dispatch(new TestEvent('Hello, world!'));
+    await DomainEvents.allSettled();
+
+    sinon.assert.notCalled(first);
+    sinon.assert.calledOnce(second);
+  });
+
   it('Catches async errors in handlers', async function () {
     const event = new TestEvent('Hello, world!');
 

@@ -25,7 +25,10 @@ const controller = {
     headers: {
       cacheInvalidate: false,
     },
-    cache: postsPublicService.service.cache,
+    // Read for each request: the service is built on first use, not when this file loads.
+    get cache() {
+      return postsPublicService.service.cache;
+    },
     generateCacheKeyData(frame) {
       return {
         options: generateOptionsData(frame, [
@@ -81,7 +84,10 @@ const controller = {
     headers: {
       cacheInvalidate: false,
     },
-    cache: postsPublicService.service.cache,
+    // Read for each request: the service is built on first use, not when this file loads.
+    get cache() {
+      return postsPublicService.service.cache;
+    },
     async generateCacheKeyData(frame) {
       return {
         options: generateOptionsData(frame, ['include', 'fields', 'formats', 'absolute_urls']),

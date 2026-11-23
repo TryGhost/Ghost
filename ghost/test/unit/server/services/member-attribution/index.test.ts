@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import { IncorrectUsageError } from '@tryghost/errors';
+import { openServices } from '../../../../utils/services';
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const config = require('../../../../../core/shared/config');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
@@ -12,7 +12,6 @@ type Attribution = {
 };
 
 type Root = {
-  init(): Promise<void>;
   readonly service: {
     getAttributionFromContext(context: object): Promise<Attribution | null>;
     getAttribution(history: object[]): Promise<Attribution>;
@@ -51,6 +50,7 @@ describe('Member attribution service root', function () {
       .stub(models.Integration, 'findOne')
       .resolves({ get: () => 'Importer' });
     root = require('../../../../../core/server/services/member-attribution').default;
+    openServices();
   });
 
   afterEach(function () {
@@ -61,17 +61,12 @@ describe('Member attribution service root', function () {
     }
   });
 
-  it('retains the same usable graph across repeated initialization', async function () {
-    assert.throws(() => root.service, IncorrectUsageError);
-    assert.throws(() => root.service.attributionBuilder, IncorrectUsageError);
-    assert.throws(() => root.service.outboundLinkTagger, IncorrectUsageError);
-    assert.equal(await root.init(), undefined);
+  it('retains the same usable graph across repeated use', async function () {
     assert.ok(root.service);
     assert.ok(root.service.outboundLinkTagger);
     const service = root.service;
     const builder = root.service.attributionBuilder;
     const tagger = root.service.outboundLinkTagger;
-    await root.init();
     assert.ok(root.service);
     assert.ok(root.service.outboundLinkTagger);
 
@@ -89,7 +84,6 @@ describe('Member attribution service root', function () {
   });
 
   it('honours tracking changes for a valid context without reconstructing the root', async function () {
-    await root.init();
     assert.ok(root.service);
     assert.ok(root.service.outboundLinkTagger);
     const service = root.service;
@@ -114,7 +108,6 @@ describe('Member attribution service root', function () {
   });
 
   it('keeps API attribution when integration lookup rejects', async function () {
-    await root.init();
     assert.ok(root.service);
     assert.ok(root.service.outboundLinkTagger);
     lookupIntegration.rejects(new Error('Integration lookup failed'));
@@ -130,7 +123,6 @@ describe('Member attribution service root', function () {
   });
 
   it('honours tracking changes for valid history on the retained graph', async function () {
-    await root.init();
     assert.ok(root.service);
     assert.ok(root.service.outboundLinkTagger);
     const history = [{ referrerSource: 'Newsletter', referrerMedium: 'Email', time: now }];
@@ -146,7 +138,6 @@ describe('Member attribution service root', function () {
   });
 
   it('reads outbound tagging policy and source URL when the retained tagger is called', async function () {
-    await root.init();
     assert.ok(root.service);
     assert.ok(root.service.outboundLinkTagger);
     const tagger = root.service.outboundLinkTagger;
@@ -164,14 +155,15 @@ describe('Member attribution service root', function () {
     assert.equal(input.searchParams.has('ref'), false);
   });
 
-  it('allows initialization to retry after a URL prerequisite throws', async function () {
+  it('fails the first use when a URL prerequisite throws, and builds on a later use', function () {
     const failure = new Error('URL configuration unavailable');
     urlUtils.urlFor.withArgs('home', true).throws(failure);
-    await assert.rejects(root.init(), (error) => error === failure);
-    assert.throws(() => root.service, IncorrectUsageError);
+    assert.throws(
+      () => root.service,
+      (error) => error === failure,
+    );
 
     urlUtils.urlFor.withArgs('home', true).returns('https://publication.example/');
-    await root.init();
     assert.ok(root.service);
     assert.ok(root.service.outboundLinkTagger);
 
@@ -184,8 +176,7 @@ describe('Member attribution service root', function () {
     );
   });
 
-  it('captures parser URLs at init while retaining live tracking callbacks', async function () {
-    await root.init();
+  it('captures parser URLs when built while retaining live tracking callbacks', async function () {
     assert.ok(root.service);
     assert.ok(root.service.outboundLinkTagger);
     const service = root.service;
@@ -214,17 +205,18 @@ describe('Member attribution service root', function () {
     sinon.assert.calledOnceWithExactly(urlUtils.urlFor.withArgs('admin', true), 'admin', true);
   });
 
-  it('retries a failed composition after its helpers have been created', async function () {
+  it('builds again after a composition that failed once its helpers had been created', function () {
     const failure = new Error('Event model unavailable');
     const eventModel = models.MemberCreatedEvent;
     const readEventModel = sandbox.stub().onFirstCall().throws(failure);
     readEventModel.returns(eventModel);
     sandbox.stub(models, 'MemberCreatedEvent').get(readEventModel);
 
-    await assert.rejects(root.init(), (error) => error === failure);
-    assert.throws(() => root.service, IncorrectUsageError);
+    assert.throws(
+      () => root.service,
+      (error) => error === failure,
+    );
 
-    await root.init();
     assert.ok(root.service);
     assert.ok(root.service.outboundLinkTagger);
 

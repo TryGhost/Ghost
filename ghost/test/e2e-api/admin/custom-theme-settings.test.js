@@ -12,10 +12,8 @@ describe('Custom Theme Settings API', function () {
     await fixtureManager.init('users:extra', 'custom_theme_settings');
     await agent.loginAsOwner();
 
-    // require and init here so we know it's already been set up with models
     const customThemeSettingsService =
       require('../../../core/server/services/custom-theme-settings').default;
-    await customThemeSettingsService.init();
 
     // fake a theme activation with custom settings - settings match fixtures
     await customThemeSettingsService.service.activateTheme('casper', {

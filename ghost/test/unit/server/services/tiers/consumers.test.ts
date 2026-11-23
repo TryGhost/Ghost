@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import { openServices } from '../../../../utils/services';
 
 const DomainEvents = require('@tryghost/domain-events');
 // Load the real model registry before substituting the database connection.
@@ -48,7 +49,7 @@ describe('Tiers consumers', function () {
 
   let publishedApi: FakeTiersApi | undefined;
 
-  /** Publishes an API on the shared root, as init does, until the case ends. */
+  /** Makes the shared root give this API to whoever reads it, until the case ends. */
   function useTiersApi(api: FakeTiersApi) {
     publishedApi = api;
   }
@@ -179,7 +180,7 @@ describe('Tiers consumers', function () {
 
   describe('gifts', function () {
     it('builds gift services over the tiers root, reading its API at each use', function () {
-      sandbox.stub(DomainEvents, 'subscribe');
+      sandbox.stub(DomainEvents, 'subscribe').returns(() => {});
       forget(giftsPath);
       const gifts = require(giftsPath);
 
@@ -214,7 +215,7 @@ describe('Tiers consumers', function () {
       sandbox.stub(db, 'knex').get(() => sinon.stub());
       forget(checkoutConfigPath);
       const root = require(checkoutConfigPath).default;
-      await root.init();
+      openServices();
       const { readTier } = root.service.previews.deps;
 
       await assertReadsApiPerCall('read', () => readTier('tier-id'), ['tier-id']);

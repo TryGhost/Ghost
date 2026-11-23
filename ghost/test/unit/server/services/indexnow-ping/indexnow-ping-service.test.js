@@ -33,10 +33,7 @@ function createService() {
 
   const logging = createLoggingFake();
 
-  // Chainable so `events.removeListener(...).on(...)` works.
-  const events = { removeListener: sinon.stub().returnsThis(), on: sinon.stub().returnsThis() };
-
-  const deps = { settingsCache, config, urlService, urlUtils, request, logging, events };
+  const deps = { settingsCache, config, urlService, urlUtils, request, logging };
   const service = new IndexNowPingService(deps);
 
   return { service, deps };
@@ -46,18 +43,6 @@ describe('IndexNow', function () {
   afterEach(function () {
     sinon.restore();
     nock.cleanAll();
-  });
-
-  describe('subscribeEvents()', function () {
-    it('registers listeners for post.published and post.published.edited', function () {
-      const { service, deps } = createService();
-
-      service.subscribeEvents();
-
-      sinon.assert.calledTwice(deps.events.on);
-      sinon.assert.calledWith(deps.events.on, 'post.published');
-      sinon.assert.calledWith(deps.events.on, 'post.published.edited');
-    });
   });
 
   describe('handlePostEvent()', function () {

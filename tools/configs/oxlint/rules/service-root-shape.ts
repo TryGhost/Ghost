@@ -9,6 +9,9 @@ const serviceRoot = new RegExp(`^${servicesRoot}/([^/]+)/index\\.ts$`);
 // Read once per process, so every root in a run is checked against one list.
 let legacyServices: ReturnType<typeof readLegacyServices> | undefined;
 
+// Calls that attach a listener to an event bus or emitter.
+const SUBSCRIBES = new Set(['subscribe', 'on', 'once', 'addListener', 'addEventListener']);
+
 /**
  * Enforces the public source shape of every service root, unless the service
  * is listed in the legacy service inventory.
@@ -17,21 +20,27 @@ export const serviceRootShape: CreateRule = {
   meta: {
     type: 'problem',
     docs: {
-      description: 'Keep service roots limited to init, stop, service and declared extras',
+      description:
+        'Keep service roots to one synchronous definition with declared listeners and extras',
     },
     schema: [
       {
         type: 'object',
-        properties: { helperImport: { type: 'string' } },
-        required: ['helperImport'],
+        properties: { helperImports: { type: 'array', items: { type: 'string' } } },
+        required: ['helperImports'],
         additionalProperties: false,
       },
     ],
     messages: {
       runtimeExport: 'Named runtime exports belong in extras; type-only exports are allowed.',
-      defaultExport: 'Export a default initializer created by the kernel defineService helper.',
+      defaultExport: 'Export a default definition created by defineService.',
       alias: 'Initializer and extras aliases must resolve to local const declarations.',
-      arguments: 'Use defineService(name, create or { create, start?, stop? }, extras?).',
+      arguments:
+        'Use defineService(name, create or { needs?, create, listeners?, start?, stop? }, extras?).',
+      asyncCreate:
+        'A service is built synchronously. Move what create waits for into start, which the application awaits.',
+      subscribe:
+        'Declare the event in listeners instead of subscribing here: the application listens before the service exists and stops when it stops.',
       explicitExtras: 'Extras must be an explicit object so every member can be catalogued.',
       property: 'List extras explicitly with static names; no spreads or accessors.',
       duplicate: 'List each extra once.',
@@ -54,10 +63,13 @@ export const serviceRootShape: CreateRule = {
     }
     const sourceCode = context.sourceCode;
     const option = context.options[0];
-    const helperImport =
-      option && typeof option === 'object' && !Array.isArray(option)
-        ? option.helperImport
-        : undefined;
+    const helperImports: unknown[] =
+      option &&
+      typeof option === 'object' &&
+      !Array.isArray(option) &&
+      Array.isArray(option.helperImports)
+        ? option.helperImports
+        : [];
     const factories = new Set<Variable | undefined>();
     const constants = new Map<Variable | undefined, ESTree.Node>();
     const aliases: [Variable | undefined, ESTree.Node][] = [];
@@ -187,9 +199,39 @@ export const serviceRootShape: CreateRule = {
       }
     }
 
+    // The function a definition builds its service with: the callback, or `create` in the options.
+    function createOf(argument: ESTree.Node | undefined): ESTree.Node | undefined {
+      // A local const is followed; anything else is not this rule's to judge.
+      const definition =
+        argument?.type === 'Identifier' ? constants.get(variable(argument)) : argument;
+      if (!definition) {
+        return undefined;
+      }
+      if (
+        definition.type === 'ArrowFunctionExpression' ||
+        definition.type === 'FunctionExpression'
+      ) {
+        return definition;
+      }
+      if (definition.type !== 'ObjectExpression') {
+        return undefined;
+      }
+      for (const property of definition.properties) {
+        if (
+          property.type === 'Property' &&
+          !property.computed &&
+          property.key.type === 'Identifier' &&
+          property.key.name === 'create'
+        ) {
+          return property.value;
+        }
+      }
+      return undefined;
+    }
+
     return {
       ImportDeclaration(node) {
-        if (node.source.value === helperImport && node.importKind !== 'type') {
+        if (helperImports.includes(node.source.value) && node.importKind !== 'type') {
           for (const specifier of node.specifiers) {
             if (
               specifier.type === 'ImportSpecifier' &&
@@ -270,6 +312,20 @@ export const serviceRootShape: CreateRule = {
         ) {
           report(initializer, 'arguments');
           return;
+        }
+        const create = createOf(initializer.arguments[1]);
+        if (create && 'async' in create && create.async) {
+          report(create, 'asyncCreate');
+        }
+        for (const call of calls) {
+          if (
+            call.callee.type === 'MemberExpression' &&
+            !call.callee.computed &&
+            call.callee.property.type === 'Identifier' &&
+            SUBSCRIBES.has(call.callee.property.name)
+          ) {
+            report(call, 'subscribe');
+          }
         }
         if (initializer.arguments[2]) {
           const extras = resolve(initializer.arguments[2], managed);

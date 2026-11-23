@@ -27,6 +27,7 @@ const {
 } = require('./utils/serializers/output/posts-csv-transform');
 const { pipeline } = require('stream');
 const exportRequests = require('../../services/export-requests').default;
+const { defineEndpoints } = require('./utils/define-endpoints');
 
 const postsService = getPostServiceInstance();
 
@@ -111,93 +112,96 @@ function createSiteExporter() {
 }
 
 /** @type {import('@tryghost/api-framework').Controller} */
-const controller = {
-  docName: 'exports',
+// Handed the export requests service: nothing here reads it off the module it imports.
+const endpoints = defineEndpoints({ exportRequests }, (handed) => {
+  return {
+    docName: 'exports',
 
-  download: {
-    headers: {
-      cacheInvalidate: false,
-    },
-    options: ['components'],
-    validation: {
-      options: {
-        components: {
-          values: [...SYNC_EXPORT_COMPONENTS],
+    download: {
+      headers: {
+        cacheInvalidate: false,
+      },
+      options: ['components'],
+      validation: {
+        options: {
+          components: {
+            values: [...SYNC_EXPORT_COMPONENTS],
+          },
         },
       },
-    },
-    permissions: {
-      docName: 'db',
-      method: 'exportContent',
-    },
-    query(frame) {
-      // Absent means everything; explicitly empty means nothing selected
-      const components = frame.options.components ?? [...SYNC_EXPORT_COMPONENTS];
+      permissions: {
+        docName: 'db',
+        method: 'exportContent',
+      },
+      query(frame) {
+        // Absent means everything; explicitly empty means nothing selected
+        const components = frame.options.components ?? [...SYNC_EXPORT_COMPONENTS];
 
-      if (components.length === 0) {
-        throw new errors.ValidationError({
-          message: messages.noComponentsSelected,
+        if (components.length === 0) {
+          throw new errors.ValidationError({
+            message: messages.noComponentsSelected,
+          });
+        }
+
+        return {
+          archive: createSiteExporter().createArchive(components),
+          filename: getExportFileName('export', 'zip'),
+        };
+      },
+    },
+
+    add: {
+      statusCode: 202,
+      headers: {
+        cacheInvalidate: false,
+      },
+      validation(frame) {
+        const components = frame.data && frame.data.components;
+
+        if (!components || typeof components !== 'object' || Array.isArray(components)) {
+          throw new errors.BadRequestError({
+            message: 'components must be an object',
+          });
+        }
+
+        const keys = Object.keys(components);
+        const unknownKeys = keys.filter((key) => !ASYNC_EXPORT_COMPONENTS.includes(key));
+
+        if (unknownKeys.length > 0) {
+          throw new errors.BadRequestError({
+            message: `Unknown export components: ${unknownKeys.join(', ')}`,
+          });
+        }
+
+        if (keys.some((key) => typeof components[key] !== 'boolean')) {
+          throw new errors.BadRequestError({
+            message: 'Export component values must be booleans',
+          });
+        }
+
+        if (!keys.some((key) => components[key] === true)) {
+          throw new errors.BadRequestError({
+            message: 'At least one export component must be selected',
+          });
+        }
+      },
+      permissions: {
+        docName: 'db',
+        method: 'exportContent',
+      },
+      async query(frame) {
+        const components = {};
+        for (const key of ASYNC_EXPORT_COMPONENTS) {
+          components[key] = frame.data.components[key] === true;
+        }
+
+        await handed.exportRequests.requestExport({
+          components,
+          requestedByUserId: frame.options.context.user,
         });
-      }
-
-      return {
-        archive: createSiteExporter().createArchive(components),
-        filename: getExportFileName('export', 'zip'),
-      };
+      },
     },
-  },
+  };
+});
 
-  add: {
-    statusCode: 202,
-    headers: {
-      cacheInvalidate: false,
-    },
-    validation(frame) {
-      const components = frame.data && frame.data.components;
-
-      if (!components || typeof components !== 'object' || Array.isArray(components)) {
-        throw new errors.BadRequestError({
-          message: 'components must be an object',
-        });
-      }
-
-      const keys = Object.keys(components);
-      const unknownKeys = keys.filter((key) => !ASYNC_EXPORT_COMPONENTS.includes(key));
-
-      if (unknownKeys.length > 0) {
-        throw new errors.BadRequestError({
-          message: `Unknown export components: ${unknownKeys.join(', ')}`,
-        });
-      }
-
-      if (keys.some((key) => typeof components[key] !== 'boolean')) {
-        throw new errors.BadRequestError({
-          message: 'Export component values must be booleans',
-        });
-      }
-
-      if (!keys.some((key) => components[key] === true)) {
-        throw new errors.BadRequestError({
-          message: 'At least one export component must be selected',
-        });
-      }
-    },
-    permissions: {
-      docName: 'db',
-      method: 'exportContent',
-    },
-    async query(frame) {
-      const components = {};
-      for (const key of ASYNC_EXPORT_COMPONENTS) {
-        components[key] = frame.data.components[key] === true;
-      }
-
-      await exportRequests.service.requestExport({
-        components,
-        requestedByUserId: frame.options.context.user,
-      });
-    },
-  },
-};
-
-module.exports = controller;
+module.exports = endpoints;

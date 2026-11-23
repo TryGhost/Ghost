@@ -117,12 +117,10 @@ taxonomies:
     loggedError.resetHistory();
   });
 
-  it('returns HTTP success while a test notification is pending after repeated init, then absorbs delivery failure', async function () {
+  it('returns HTTP success while a test notification is pending, then absorbs delivery failure', async function () {
     const root: typeof import('../../core/server/services/slack-ping').default =
       require('../../core/server/services/slack-ping').default;
     const service = root.service;
-    await Promise.all([root.init(), root.init()]);
-    assert.equal(root.service, service);
     const received = Promise.withResolvers<unknown>();
     const release = Promise.withResolvers<void>();
     const scope = nock(webhook, { reqheaders: { 'content-type': 'application/json' } })

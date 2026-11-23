@@ -4,6 +4,7 @@ import type { Knex } from 'knex';
 import { portsOf } from '@tryghost/checkout';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 import { createLoggingFake } from '../../utils/logging-utils';
+import { services } from '../../utils/services';
 
 // Required rather than imported, so the test shares the module instances Ghost boots with.
 const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
@@ -114,7 +115,7 @@ describe('Commands and transactions', function () {
 
   /** Adds a segment in a transaction of its own, and returns its id. */
   async function addSegment(): Promise<string> {
-    return (await segments.default.service.add(context, newSegment())).id;
+    return (await services.get(segments.default).add(context, newSegment())).id;
   }
 
   /** `shared_views` as the settings cache holds it, which `GET /settings/` returns. */
@@ -320,7 +321,7 @@ describe('Commands and transactions', function () {
       tables: ['settings'],
       recorded: true,
       arrange: async () => (executor) =>
-        segments.default.service.add(context, newSegment(), executor),
+        services.get(segments.default).add(context, newSegment(), executor),
     },
     {
       name: 'segments: edit',
@@ -329,7 +330,7 @@ describe('Commands and transactions', function () {
       arrange: async () => {
         const id = await addSegment();
         const rename = { name: SegmentName.parse('Gold') };
-        return (executor) => segments.default.service.edit(context, id, rename, executor);
+        return (executor) => services.get(segments.default).edit(context, id, rename, executor);
       },
     },
     {
@@ -338,7 +339,7 @@ describe('Commands and transactions', function () {
       recorded: true,
       arrange: async () => {
         const id = await addSegment();
-        return (executor) => segments.default.service.destroy(context, id, executor);
+        return (executor) => services.get(segments.default).destroy(context, id, executor);
       },
     },
   ];
@@ -365,8 +366,8 @@ describe('Commands and transactions', function () {
     await knex('members').where('email', 'commands@example.com').del();
     // In one transaction, so every settings cache refresh it schedules reads the same state.
     await knex.transaction(async (trx) => {
-      for (const { id } of await segments.default.service.browse(trx)) {
-        await segments.default.service.destroy(context, id, trx);
+      for (const { id } of await services.get(segments.default).browse(trx)) {
+        await services.get(segments.default).destroy(context, id, trx);
       }
     });
     await knex('actions').whereIn('resource_type', HISTORY).del();
@@ -662,8 +663,8 @@ describe('Commands and transactions', function () {
     {
       name: 'segments: browse',
       arrange: async () => ({
-        change: (trx) => segments.default.service.add(context, newSegment(), trx),
-        read: (executor) => segments.default.service.browse(executor),
+        change: (trx) => services.get(segments.default).add(context, newSegment(), trx),
+        read: (executor) => services.get(segments.default).browse(executor),
       }),
     },
     {
@@ -672,13 +673,16 @@ describe('Commands and transactions', function () {
         let id = 'not-added-yet';
         return {
           change: async (trx) => {
-            id = (await segments.default.service.add(context, newSegment(), trx)).id;
+            id = (await services.get(segments.default).add(context, newSegment(), trx)).id;
           },
           read: (executor) =>
-            segments.default.service.read(id, executor).then(
-              (segment) => segment.name,
-              () => 'not found',
-            ),
+            services
+              .get(segments.default)
+              .read(id, executor)
+              .then(
+                (segment) => segment.name,
+                () => 'not found',
+              ),
         };
       },
     },
@@ -742,7 +746,7 @@ describe('Commands and transactions', function () {
       const recordedBefore = await recordedCount();
 
       const trx = await knex.transaction();
-      await segments.default.service.add(context, newSegment(), trx);
+      await services.get(segments.default).add(context, newSegment(), trx);
       await trx.rollback(new Error('The caller failed'));
       await afterTransaction(trx);
 
@@ -758,7 +762,7 @@ describe('Commands and transactions', function () {
       const cached = cachedEntry();
 
       const trx = await knex.transaction();
-      await segments.default.service.add(context, newSegment(), trx);
+      await services.get(segments.default).add(context, newSegment(), trx);
       await trx.rollback();
       await afterTransaction(trx);
       assert.equal(cachedSharedViews(), stored);
@@ -776,7 +780,9 @@ describe('Commands and transactions', function () {
     it('updates both when the transaction it joined commits', async function () {
       const recordedBefore = await recordedCount();
 
-      await knex.transaction((trx) => segments.default.service.add(context, newSegment(), trx));
+      await knex.transaction((trx) =>
+        services.get(segments.default).add(context, newSegment(), trx),
+      );
 
       assert.equal(
         await settledSharedViews(),
@@ -802,7 +808,7 @@ describe('Commands and transactions', function () {
       await assert.rejects(failing.add(context, newSegment()), /Reporting the change failed/);
 
       assert.equal(await storedSharedViews(), stored);
-      assert.deepEqual(await segments.default.service.browse(), []);
+      assert.deepEqual(await services.get(segments.default).browse(), []);
     });
 
     it('logs a refresh of the settings cache that fails, and keeps the change', async function () {
@@ -831,7 +837,7 @@ describe('Commands and transactions', function () {
         }),
       );
       assert.deepEqual(
-        (await segments.default.service.browse()).map((segment) => segment.name),
+        (await services.get(segments.default).browse()).map((segment) => segment.name),
         ['VIP'],
       );
     });

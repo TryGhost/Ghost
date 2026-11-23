@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import { openServices } from '../../../../utils/services';
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 import type { Invites } from '../../../../../core/server/services/invites/invites';
@@ -25,7 +26,7 @@ describe('Invites service root', function () {
   let getAdminUrl: sinon.SinonStub;
   let warn: sinon.SinonStub;
 
-  beforeEach(async function () {
+  beforeEach(function () {
     previousModule = require.cache[rootPath];
     delete require.cache[rootPath];
     const values: Record<string, string> = {
@@ -53,7 +54,7 @@ describe('Invites service root', function () {
       .returns('https://example.com/blog/ghost/');
     warn = sandbox.stub(logging, 'warn');
     const invites = require(rootPath).default;
-    await invites.init();
+    openServices();
     invitesService = invites.service;
     input = {
       api,
@@ -72,7 +73,7 @@ describe('Invites service root', function () {
     }
   });
 
-  it('retains one initialized instance without rendering or sending an invitation', function () {
+  it('builds one instance without rendering or sending an invitation', function () {
     assert.equal(require(rootPath).default.service, invitesService);
     sinon.assert.notCalled(render);
     sinon.assert.notCalled(api.mail.send);

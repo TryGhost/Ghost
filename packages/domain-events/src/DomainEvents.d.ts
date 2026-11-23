@@ -10,12 +10,12 @@
 interface DomainEvents {
   /**
    * Subscribe to an event class. Errors thrown by the handler are logged,
-   * not rethrown.
+   * not rethrown. Returns a function that stops the handler from being called.
    */
   subscribe<EventClass extends DomainEvents.IEvent<unknown>>(
     Event: DomainEvents.ConstructorOf<EventClass>,
     handler: (event: EventClass) => Promise<void> | void,
-  ): void;
+  ): () => void;
 
   /**
    * Dispatch an event instance to all subscribers of its class.

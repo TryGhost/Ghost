@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
-import { IncorrectUsageError, NotFoundError as UserNotFoundError } from '@tryghost/errors';
+import { NotFoundError as UserNotFoundError } from '@tryghost/errors';
 import sinon from 'sinon';
+import { openServices } from '../../../../utils/services';
 
 // require, not import: the service and its endpoints are CommonJS and must share these
 // module instances so prototype stubs and instanceof checks observe the real composition.
@@ -135,8 +136,8 @@ describe('Users service', function () {
   });
 
   describe('endpoint composition', function () {
-    // Each case evaluates the root and both endpoints afresh so the readiness guard and the
-    // endpoints' captured root are observed from an uninitialized state.
+    // Each case evaluates the root and both endpoints afresh, so the endpoints' captured root
+    // is observed before anything has used the service.
     const paths = [ROOT_PATH, USERS_ENDPOINT_PATH, AUTHENTICATION_ENDPOINT_PATH];
     let originalModules: Map<string, NodeJS.Module | undefined>;
     let root: Root;
@@ -159,16 +160,16 @@ describe('Users service', function () {
       }
     });
 
-    it('loads the users endpoint through the API registry before the service is ready', async function () {
+    it('loads the users endpoint through the API registry before services can be built', async function () {
       // The update check composes api.users.browse from this registry while it runs,
       // which can evaluate the users endpoint before any Admin request has.
       const endpoints = require('../../../../../core/server/api').endpoints;
       const destroyUser = sandbox.stub(Users.prototype, 'destroyUser').resolves();
 
-      assert.throws(() => root.service, IncorrectUsageError);
+      // Loading the endpoint must not use the service: nothing can build it yet.
       const controller = endpoints.users;
       const endpoint = require(USERS_ENDPOINT_PATH);
-      await root.init();
+      openServices();
       const first = { id: 'user-id', context: { user: 'actor' } };
       const second = { id: 'other-user-id', context: { user: 'actor' } };
       await endpoint.destroy.query({ options: first });
@@ -182,11 +183,11 @@ describe('Users service', function () {
       assert.ok(instance instanceof Users);
       assert.equal(instance.models, models);
       assert.equal(destroyUser.secondCall.thisValue, instance);
-      assert.equal(instance, root.service, 'the boot-owned instance handles every call');
+      assert.equal(instance, root.service, "the application's instance handles every call");
     });
 
-    it('passes the boot-owned instance to resetAuthentication on every reset', async function () {
-      await root.init();
+    it("passes the application's instance to resetAuthentication on every reset", async function () {
+      openServices();
       const resetAuthentication = sandbox.stub().resolves({ apiKeysRotated: 1, usersLocked: 2 });
       sandbox.stub(auth, 'resetAuthentication').get(() => resetAuthentication);
       const endpoint = require(AUTHENTICATION_ENDPOINT_PATH).default;
@@ -207,8 +208,8 @@ describe('Users service', function () {
       assert.equal(userService, root.service);
     });
 
-    it('shares the boot-owned instance between both endpoints', async function () {
-      await root.init();
+    it('shares one instance between both endpoints', async function () {
+      openServices();
       const destroyUser = sandbox.stub(Users.prototype, 'destroyUser').resolves();
       const resetAuthentication = sandbox.stub().resolves({ apiKeysRotated: 0, usersLocked: 0 });
       sandbox.stub(auth, 'resetAuthentication').get(() => resetAuthentication);

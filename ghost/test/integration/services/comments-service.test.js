@@ -3,6 +3,7 @@ const models = require('../../../core/server/models');
 const commentsService = require('../../../core/server/services/comments').default;
 const testUtils = require('../../utils');
 const { mockSetting, restore: restoreMocks } = require('../../utils/e2e-framework-mock-manager');
+const { openServices, services } = require('../../utils/services');
 
 describe('CommentsService', function () {
   beforeAll(testUtils.teardownDb);
@@ -10,12 +11,14 @@ describe('CommentsService', function () {
   afterEach(testUtils.teardownDb);
 
   beforeEach(async function () {
-    await commentsService.init();
+    // Ghost is not booted here, so the test lets services be built, as boot does.
+    openServices();
     mockSetting('comments_enabled', 'all');
   });
 
-  afterEach(function () {
+  afterEach(async function () {
     restoreMocks();
+    await services.close();
   });
 
   async function addComment(data) {
@@ -32,20 +35,10 @@ describe('CommentsService', function () {
   }
 
   describe('root', function () {
-    it('init resolves undefined and publishes a controller bound to the api', async function () {
-      const result = await commentsService.init();
-
-      // Compare the type: a failure message that inspects the service would
-      // serialise the whole model graph.
-      assert.equal(typeof result, 'undefined');
-      assert.equal(commentsService.service.controller.service, commentsService.service.api);
-    });
-
-    it('repeated init retains the api and the controller', async function () {
+    it('builds a controller bound to the api, and keeps both on later use', function () {
       const { api, controller } = commentsService.service;
 
-      await commentsService.init();
-
+      assert.equal(controller.service, api);
       assert.equal(commentsService.service.api, api);
       assert.equal(commentsService.service.controller, controller);
     });

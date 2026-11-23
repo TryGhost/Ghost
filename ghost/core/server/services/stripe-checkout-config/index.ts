@@ -1,6 +1,6 @@
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
-import { defineService } from '#kernel/define-service';
+import { defineService } from '../../../../bootstrap/transition/define-service';
 import urlUtils from '../../../shared/url-utils';
 import * as metafields from '../members-metafields';
 import { ActionLog } from '../../lib/action-log/action-log';
@@ -33,7 +33,7 @@ export interface StripeCheckoutServices {
   branding: CheckoutBrandingService;
 }
 
-// Constructed by init() at boot, not at import: knex is only available once the DB has
+// Built on first use, not at import: knex is only available once the DB has
 // connected.
 export default defineService('Stripe Checkout Config', (): StripeCheckoutServices => {
   const { knex } = require('../../data/db');

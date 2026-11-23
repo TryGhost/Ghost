@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
-import { defineService } from '#kernel/define-service';
+import { defineService } from '../../../../bootstrap/transition/define-service';
 import config from '../../../shared/config';
 import urlUtils from '../../../shared/url-utils';
 import { ActionLog } from '../../lib/action-log/action-log';
@@ -21,9 +21,9 @@ export type { AppInstallationPreview, AppSession } from './service';
  * - `localhostAlias` is set when Ghost runs in a container in development, where
  *   `localhost` is the container rather than the developer's machine. Ignored anywhere
  *   else.
- * - `trustedOrigins` lists the origins the site trusts to skip the challenge. It's read at
- *   boot, so an entry that isn't an origin stops Ghost starting instead of failing every
- *   app.
+ * - `trustedOrigins` lists the origins the site trusts to skip the challenge. It's checked when
+ *   the service is built, so an entry that isn't an origin fails the first use of app
+ *   installations instead of failing every app.
  */
 /** A config entry as an error shows it, which is logged, so without a URL's credentials. */
 function shown(entry: unknown): string {
@@ -83,10 +83,10 @@ function localhostAlias(): string | null {
   return appsConfig().localhostAlias;
 }
 
-// Constructed by init() at boot, not at import: knex is only available once the DB has connected.
+// Built on first use, not at import: knex is only available once the DB has connected.
 export default defineService('App Installations', () => {
-  // Checked now, so a mistake in it is found at boot. It's still read per use, as tests
-  // change config.
+  // Checked now, so a mistake in it is found when the service is built, not by one app later.
+  // It's still read per use, as tests change config.
   appsConfig();
   const { knex } = require('../../data/db');
   const externalRequest = require('../../lib/request-external');

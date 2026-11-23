@@ -6,14 +6,17 @@ const config = require('../../../../core/shared/config');
 const adapterManager = require('../../../../core/server/services/adapter-manager').default;
 const events = require('../../../../core/server/lib/common/events');
 const MemoryCache = require('../../../../core/server/adapters/cache/MemoryCache');
+const {
+  openServices,
+  services: application,
+}: typeof import('../../../utils/services') = require('../../../utils/services');
 
-function loadServices() {
-  return {
-    tags: require('../../../../core/server/services/tags-public').default,
-    posts: require('../../../../core/server/services/posts-public').default,
-  };
-}
-let services: ReturnType<typeof loadServices>;
+// The roots Ghost registers. A fresh copy would have to be registered too, and would then keep
+// listening for the rest of the worker's tests.
+const services = {
+  tags: require('../../../../core/server/services/tags-public').default,
+  posts: require('../../../../core/server/services/posts-public').default,
+};
 
 const endpointPaths = {
   tags: require.resolve('../../../../core/server/api/endpoints/tags-public'),
@@ -36,17 +39,15 @@ describe('Public response caches', function () {
   let getAdapter: sinon.SinonStub;
 
   beforeEach(function () {
-    const paths = [
-      ...Object.values(endpointPaths),
-      require.resolve('../../../../core/server/services/tags-public'),
-      require.resolve('../../../../core/server/services/posts-public'),
-    ];
+    const paths = Object.values(endpointPaths);
     previousModules = new Map(paths.map((path) => [path, require.cache[path]]));
     for (const path of paths) {
       delete require.cache[path];
     }
-    services = loadServices();
     previousListeners = events.rawListeners('site.changed');
+    // What boot does: Ghost listens for the events its roots declare, builds none of them, and
+    // lets services be built.
+    openServices();
 
     caches = { tags: new MemoryCache(), posts: new MemoryCache() };
     getAdapter = sandbox.stub(adapterManager, 'getAdapter');
@@ -54,13 +55,9 @@ describe('Public response caches', function () {
     getAdapter.withArgs('cache:postsPublic').returns(caches.posts);
   });
 
-  afterEach(function () {
+  afterEach(async function () {
+    await application.close();
     sandbox.restore();
-    for (const listener of events.rawListeners('site.changed')) {
-      if (!previousListeners.includes(listener)) {
-        events.removeListener('site.changed', listener);
-      }
-    }
     for (const [path, previous] of previousModules) {
       delete require.cache[path];
       if (previous) {
@@ -79,6 +76,19 @@ describe('Public response caches', function () {
     return services[resource].service.cache;
   }
 
+  // Delivers site.changed to the listeners Ghost attached when services opened, which reaches
+  // every root that declares one. Broadcasting on the shared emitter would also reach listeners
+  // other tests left behind. Actual event dispatch is covered by the isolated HTTP tests.
+  function siteChanged() {
+    const listeners = events
+      .rawListeners('site.changed')
+      .filter((listener: (...args: unknown[]) => void) => !previousListeners.includes(listener));
+    assert.ok(listeners.length >= 2);
+    for (const listener of listeners) {
+      listener.call(events);
+    }
+  }
+
   for (const resource of resources) {
     const other: Resource = resource === 'tags' ? 'posts' : 'tags';
 
@@ -88,54 +98,76 @@ describe('Public response caches', function () {
       it('uses its own adapter when its flag is enabled', async function () {
         setFlags({ [resource]: true, [other]: false } as Record<Resource, boolean>);
 
-        await services[resource].init();
-
         assert.equal(cacheFor(resource), caches[resource]);
         sinon.assert.calledOnceWithExactly(getAdapter, `cache:${resource}Public`);
       });
 
-      it('has no cache when its flag is disabled', async function () {
+      it('has no cache when its flag is disabled, and a site change then resets nothing', async function () {
         setFlags({ [resource]: false, [other]: true } as Record<Resource, boolean>);
-
-        await services[resource].init();
-
-        assert.equal(cacheFor(resource), undefined);
-        sinon.assert.notCalled(getAdapter);
-        assert.equal(events.listenerCount('site.changed'), previousListeners.length);
-      });
-
-      it('resets its cache on site.changed', async function () {
-        setFlags({ tags: true, posts: true });
-        await services[resource].init();
         caches[resource].set('key', 'value');
 
-        // Exercise only the listener registered by this init. Broadcasting on
-        // the shared emitter would also clear caches owned by other tests.
-        // Actual event dispatch is covered by the isolated HTTP tests.
-        const listeners = events
-          .rawListeners('site.changed')
-          .filter(
-            (listener: (...args: unknown[]) => void) => !previousListeners.includes(listener),
-          );
-        assert.equal(listeners.length, 1);
-        listeners[0].call(events);
+        assert.equal(cacheFor(resource), undefined);
+        siteChanged();
+
+        sinon.assert.neverCalledWith(getAdapter, `cache:${resource}Public`);
+        assert.deepEqual(caches[resource].keys(), ['key']);
+      });
+
+      // The listener is declared, so it is attached before the service exists.
+      it('resets its cache on a site.changed published before anything has used the service', async function () {
+        setFlags({ tags: true, posts: true });
+        caches[resource].set('key', 'value');
+        sinon.assert.notCalled(getAdapter);
+
+        siteChanged();
+
+        sinon.assert.calledWithExactly(getAdapter, `cache:${resource}Public`);
+        assert.deepEqual(caches[resource].keys(), []);
+        assert.equal(cacheFor(resource), caches[resource]);
+      });
+
+      it('resets its cache on site.changed once it has been used', async function () {
+        setFlags({ tags: true, posts: true });
+        cacheFor(resource).set('key', 'value');
+
+        siteChanged();
 
         assert.deepEqual(caches[resource].keys(), []);
       });
 
-      it('initializes only once', async function () {
+      it('is built only once, and a site change resets its cache once', async function () {
         setFlags({ tags: true, posts: true });
+        const reset = sandbox.spy(caches[resource], 'reset');
 
-        await services[resource].init();
         const cache = cacheFor(resource);
         cache.set('key', 'value');
-
-        await services[resource].init();
+        // Opening services that are already open changes nothing.
+        openServices();
 
         assert.equal(cacheFor(resource), cache);
         assert.equal(cache.get('key'), 'value');
-        sinon.assert.calledOnce(getAdapter);
-        assert.equal(events.listenerCount('site.changed'), previousListeners.length + 1);
+        sinon.assert.calledOnceWithExactly(getAdapter, `cache:${resource}Public`);
+
+        siteChanged();
+
+        sinon.assert.calledOnce(reset);
+      });
+
+      it('is built again after Ghost stops and starts, and a site change still resets its cache once', async function () {
+        setFlags({ tags: true, posts: true });
+        const reset = sandbox.spy(caches[resource], 'reset');
+        const first = services[resource].service;
+
+        await application.close();
+        // Nothing listens while Ghost is stopped.
+        assert.deepEqual(events.rawListeners('site.changed'), previousListeners);
+        openServices();
+
+        assert.notEqual(services[resource].service, first);
+
+        siteChanged();
+
+        sinon.assert.calledOnce(reset);
       });
     });
   }
@@ -144,11 +176,8 @@ describe('Public response caches', function () {
     for (const enabled of [true, false]) {
       it(`binds only enabled caches to their endpoints (enabled: ${enabled})`, async function () {
         setFlags({ tags: enabled, posts: enabled });
-        await services.tags.init();
-        await services.posts.init();
 
-        // Endpoints capture their cache when they load, as they do after
-        // boot has initialized the roots.
+        // Endpoints capture their cache when they load, so they are loaded once the flags are set.
         for (const path of Object.values(endpointPaths)) {
           delete require.cache[path];
         }

@@ -1,4 +1,4 @@
-import { defineService } from '#kernel/define-service';
+import { defineService } from '../../../../bootstrap/transition/define-service';
 import { DonationBookshelfRepository } from './donation-bookshelf-repository';
 
 export default defineService('Donations', () => {

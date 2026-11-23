@@ -52,7 +52,7 @@ workflow.
 
 ## Service generator
 
-Run `pnpm gx generate service <name>` to create a boot-owned TypeScript service.
+Run `pnpm gx generate service <name>` to create a TypeScript service.
 Use lowercase kebab-case beginning with a letter, for example:
 
 ```sh
@@ -65,10 +65,17 @@ lint, boundary lint and the inventory test apply to every service that is not
 listed in the legacy service inventory. Existing service files, directories and
 tests are never overwritten, and a name that is still listed as legacy is refused.
 
-The command prints the remaining steps: the lines that bind the root and await
-its `init()` in boot, when a boot test is needed, and
-`pnpm gx services verify <name>` on the committed result. `services verify` finds the `init()` call through that binding,
-so keep the printed form. See [creating a service](../../ghost/core/server/services/README.md#creating-a-service)
+The generated root is a definition that Ghost builds the first time the service
+is used, so it needs no change to boot. Comments in it show where `needs`,
+`listeners` and `start` go. The starter test opens the services with
+`openServices()` from `ghost/test/utils/services.ts`, checks that the root
+builds one wired instance, and checks that it is refused before services open.
+
+The command prints the remaining steps. There is nothing to register unless the
+root declares `listeners`, which adds it to `listening` in
+`ghost/bootstrap/services.ts`, or a background `start`, which adds it to
+`background` in the same file. The last step is
+`pnpm gx services verify <name>` on the committed result. See [creating a service](../../ghost/core/server/services/README.md#creating-a-service)
 for the ownership, implementation and testing requirements.
 
 ## Rebuild development tables
@@ -186,10 +193,15 @@ to the built output Ghost loads, and fails a run in which dependency-cruiser cou
 not load TypeScript. Built output must add no service rule violation,
 every part of an added allowance must match an import from a service, and each file
 an added allowance admits must be named in a boundary regression. It then runs the
-full unit suite, runs the changed unit tests shuffled and each one alone and, for a
-standard service, confirms a boot test fails when boot stops waiting for its
-`init()` but still sees it reject. A service is standard when the legacy service
-inventory does not list it.
+full unit suite and runs the changed unit tests shuffled and each one alone.
+
+For a standard service, it also reads the root's source. A root that declares
+`listeners` or a `start` must be named in `ghost/bootstrap/services.ts`, as
+`../core/server/services/<name>`. The one exception is a root with only a `start`
+that `ghost/core/boot.js` starts itself with `application.services.start()`, as it
+does signing keys. A root that declares neither needs no registration. A service
+is standard when the legacy service inventory does not list it.
+
 `--static` skips lint, types and tests. `review` lines are other inventory entries
 that mention the service, for the
 [verify-service-change skill](../../.agents/skills/verify-service-change/SKILL.md)

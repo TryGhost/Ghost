@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
-const EventEmitter = require('events').EventEmitter;
 
 const LinkRedirectRepository = require('../../../../../core/server/services/link-redirection/link-redirect-repository');
 const {
@@ -42,7 +41,6 @@ function createRedirectModel(values = {}) {
  * @param {object} [deps.LinkRedirect] - Stubbed LinkRedirect Bookshelf model
  * @param {object} [deps.urlUtils] - Stubbed URL Utils module
  * @param {object} [deps.cacheAdapter] - Stubbed cache adapter, or null is cache is disabled
- * @param {object} [deps.EventRegistry] - Stubbed EventRegistry
  * @returns {LinkRedirectRepository}
  */
 function createLinkRedirectRepository(deps = {}) {
@@ -70,7 +68,6 @@ function createLinkRedirectRepository(deps = {}) {
       absoluteToRelative: sinon.stub().returns('/r/1234abcd'),
     },
     cacheAdapter: deps.cacheAdapter || null,
-    EventRegistry: deps.EventRegistry || new EventEmitter(),
   });
 }
 
@@ -308,19 +305,23 @@ describe('LinkRedirectRepository class', function () {
       sinon.assert.calledOnce(cacheAdapterStub.set);
     });
 
-    it('should clear cache on site.changed event', function () {
+    it('should clear cache when resetCache() is called', function () {
       const reset = sinon.stub();
       const cacheAdapterStub = {
         reset: reset,
       };
-      const EventRegistry = new EventEmitter();
       linkRedirectRepository = createLinkRedirectRepository({
         cacheAdapter: cacheAdapterStub,
-        EventRegistry,
       });
 
-      EventRegistry.emit('site.changed');
+      linkRedirectRepository.resetCache();
       sinon.assert.calledOnce(reset);
+    });
+
+    it('should do nothing on resetCache() without a cache', function () {
+      linkRedirectRepository = createLinkRedirectRepository();
+
+      assert.doesNotThrow(() => linkRedirectRepository.resetCache());
     });
   });
 });

@@ -2,14 +2,18 @@ import sinon from 'sinon';
 
 import configUtils from '../../../utils/config-utils';
 import { mockManager } from '../../../utils/e2e-framework';
+import { openServices } from '../../../utils/services';
 
 // @ts-expect-error This module lacks type definitions.
 import proxy from '../../../../core/frontend/services/proxy';
-import internalKeysRoot, {
-  type InternalKeys,
-} from '../../../../core/server/services/internal-keys';
+import type { InternalKeys } from '../../../../core/server/services/internal-keys';
 import { html } from 'common-tags';
 const { settingsCache } = proxy;
+
+// Required, so that it is the root the helper reaches through its own requires, which asks the
+// application the test opens.
+const internalKeysRoot: typeof import('../../../../core/server/services/internal-keys').default =
+  require('../../../../core/server/services/internal-keys').default;
 
 // @ts-expect-error This module lacks type definitions.
 import { registerHelper, shouldCompileToExpected } from './utils/handlebars';
@@ -20,21 +24,20 @@ describe('{{comment_count}} helper', function () {
 
   let internalKeys: InternalKeys;
 
-  beforeAll(async function () {
-    await internalKeysRoot.init();
-    internalKeys = internalKeysRoot.service;
+  beforeAll(function () {
     registerHelper('comment_count');
   });
 
   beforeEach(function () {
-    internalKeys.clear();
+    // The helper asks the internal keys service for the key. Each test builds its own.
+    openServices();
+    internalKeys = internalKeysRoot.service;
     internalKeys.set('ghost-internal-frontend', Promise.resolve({ id: 'k', secret: 'xyz' }));
     mockManager.mockMail();
     sinon.stub(settingsCache, 'get');
   });
 
   afterEach(async function () {
-    internalKeys.clear();
     mockManager.restore();
     sinon.restore();
     await configUtils.restore();

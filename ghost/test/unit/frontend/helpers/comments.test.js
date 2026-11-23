@@ -3,6 +3,7 @@ const { assertExists } = require('../../../utils/assertions');
 const sinon = require('sinon');
 const configUtils = require('../../../utils/config-utils');
 const { mockManager } = require('../../../utils/e2e-framework');
+const { openServices } = require('../../../utils/services');
 
 const comments = require('../../../../core/frontend/helpers/comments');
 const proxy = require('../../../../core/frontend/services/proxy');
@@ -13,13 +14,10 @@ describe('{{comments}} helper', function () {
   let internalKeys;
   let settingsCacheGetStub;
 
-  beforeAll(async function () {
-    await internalKeysRoot.init();
-    internalKeys = internalKeysRoot.service;
-  });
-
   beforeEach(function () {
-    internalKeys.clear();
+    // The helper asks the internal keys service for the key. Each test builds its own.
+    openServices();
+    internalKeys = internalKeysRoot.service;
     internalKeys.set('ghost-internal-frontend', Promise.resolve({ id: 'k', secret: 'xyz' }));
     mockManager.mockMail();
     settingsCacheGetStub = sinon.stub(settingsCache, 'get');
@@ -27,7 +25,6 @@ describe('{{comments}} helper', function () {
   });
 
   afterEach(async function () {
-    internalKeys.clear();
     mockManager.restore();
     sinon.restore();
     await configUtils.restore();

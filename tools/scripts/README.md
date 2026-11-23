@@ -178,9 +178,8 @@ defines the policy.
 
 [`legacy-services.ts`](../configs/oxlint/legacy-services.ts) in the Oxlint
 configuration reads the legacy service inventory. Boundary lint, the
-`ghost/service-root-shape` and `ghost/boot-awaits-service-init` Oxlint rules, the
-service generator and the reports all use it, so there is one definition of a
-legacy service.
+`ghost/service-root-shape` Oxlint rule, the service generator and the reports
+all use it, so there is one definition of a legacy service.
 
 `ci/check-legacy-services.ts` (`pnpm lint:legacy-services`) fails when the
 checkout lists a legacy service, or defers dependency checks for one, that the

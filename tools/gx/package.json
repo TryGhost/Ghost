@@ -83,6 +83,8 @@
         "{workspaceRoot}/ghost/tsconfig.json",
         "{workspaceRoot}/ghost/test/tsconfig.json",
         "{workspaceRoot}/tbd/kernel/src/define-service.ts",
+        "{workspaceRoot}/ghost/bootstrap/**/*",
+        "{workspaceRoot}/ghost/test/utils/services.ts",
         "{workspaceRoot}/ghost/core/server/services/README.md",
         "{workspaceRoot}/ghost/test/unit/server/services/legacy-service-inventory.test.ts"
       ]

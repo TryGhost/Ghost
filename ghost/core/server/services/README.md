@@ -9,8 +9,8 @@ placement alone is not evidence that something belongs here.
 ## What belongs here
 
 A service root is the application entry point for a capability whose instance,
-dependencies, and availability are owned by Ghost's boot lifecycle. It wires
-an implementation for callers to use, rather than merely exporting a class
+dependencies, and availability are owned by Ghost's application. It describes how
+to wire an implementation for callers to use, rather than merely exporting a class
 for callers to construct themselves.
 
 This includes both:
@@ -69,12 +69,13 @@ pnpm gx generate service delivery-receipts
 The generator creates `index.ts`, a separate `delivery-receipts-service.ts`
 implementation, and `ghost/test/unit/server/services/delivery-receipts/index.test.ts`.
 The root default-exports `defineService` and injects logging. Commented examples
-show where models, settings, config, DomainEvents and other service instances
-belong. Import allowlisted libraries directly in the implementation; use
-`GhostLogger` for its injected logging type.
+show where models, settings, config and other services belong. Import
+allowlisted libraries directly in the implementation; use `GhostLogger` for its
+injected logging type.
 
-The generator does not register the service anywhere. Every service check
-applies to a service that is not listed in the
+The generator registers the service nowhere, and most services need no
+registration: the application builds a service the first time something uses it.
+Every service check applies to a service that is not listed in the
 [legacy service inventory](#standard-and-legacy-services), so a new service is
 checked from its first commit.
 
@@ -82,57 +83,37 @@ Complete the steps printed by the command:
 
 1. Implement the capability and wire only its required dependencies in the root.
    Preserve live settings reads and explain any deferred dependency lookups.
-2. In `ghost/core/boot.js`, bind the root and await its `init()`, as the roots
-   around it do:
-
-   ```js
-   const deliveryReceipts = require('./server/services/delivery-receipts').default;
-   await deliveryReceipts.init();
-   ```
-
-   Most roots belong in `initServices`. `initCore` and `initServicesForFrontend`
-   run earlier, for roots that later phases or the frontend read. Place the call
-   after its dependencies are ready and before its consumers run, on its own or
-   inside the phase's awaited `Promise.all`. Document those requirements above
-   `defineService`. Consumers read `.service` after initialization. Keep this
-   form: `pnpm lint:oxlint` and `gx services verify` find the call through the
-   binding, not through an inline `require(...).default.init()`.
-
-3. The [standard services boot test](../../../test/unit/boot/standard-services.test.ts)
-   already checks that boot waits for the root's `init()` and that its failure
-   fails boot. Add a test in `ghost/test/unit/boot/` only where order matters,
-   as for Mentions before Recommendations. The `initCore` and
-   `initServicesForFrontend` tests reject a root they do not list, so a root in
-   those phases needs a stub there.
-4. Await required startup work before returning the instance. If the service
-   owns listeners, timers or work to drain, acquire and release them in
-   [`start` and `stop` hooks](#starting-and-stopping).
-5. Extend the starter test with behavior, dependency timing, and failure/retry
+2. Name another service the root is built from in `needs`, and take its instance
+   from what `create` is given. See [how a service is built](#how-a-service-is-built).
+3. Declare any event the service handles in `listeners`, and name the root in
+   `listening` in [`ghost/bootstrap/services.ts`](../../../bootstrap/services.ts).
+   Do not subscribe in `create` or in a constructor.
+4. Put work that no caller asks for, such as polling, in `start`, with a `stop`
+   that releases it, and name the root in `background` in the same file.
+5. Extend the starter test with behavior, dependency timing, and first-use failure
    coverage. If the root declares extras, [catalogue them](#standard-root-contract).
-6. Run the generated root test, the boot tests and the repository checks:
+6. Run the generated root test, the definitions test and the repository checks:
 
    ```sh
    pnpm nx run ghost:test:unit test/unit/server/services/delivery-receipts/index.test.ts
-   pnpm nx run ghost:test:unit test/unit/boot/
+   pnpm nx run ghost:test:unit test/unit/boot/service-definitions.test.ts
    pnpm check
    ```
 
 7. Commit, then run `pnpm gx services verify delivery-receipts`. It needs a
-   clean tree on a branch that contains the fetched `origin/main`. It repeats
-   the checks and confirms a boot test fails when boot stops waiting for the
-   root's `init()`. See the
+   clean tree on a branch that contains the fetched `origin/main`. See the
    [gx guide](../../../../tools/gx/README.md#service-migration-reports).
 
 The generator rejects invalid names and existing service or test paths. See the
 [gx guide](../../../../tools/gx/README.md#service-generator) for command details and
-[initialization](#initialization) below for readiness and resource ownership.
+[how a service is built](#how-a-service-is-built) below.
 
 ## Implementation and migration
 
 The definition above guides new roots and directory cleanup. Legacy roots
 still use different construction and export patterns. Do not assume a legacy
 root exports `init`, `service`, and `shutdown`. Migrating one must include the
-implementation, boot wiring, and tests, not just a documentation change.
+implementation, its listeners and tests, not just a documentation change.
 
 ### Standard and legacy services
 
@@ -143,12 +124,14 @@ under `services` in the
 A service that is not listed is standard. It must be:
 
 - A directory with an `index.ts` root. The inventory test checks this.
-- A root that default-exports the
-  [kernel's `defineService` initializer](../../../../tbd/kernel/README.md#service-initialization).
+- A root that default-exports a
+  [`defineService` definition](../../../../tbd/kernel/README.md#services).
   See the [standard root contract](#standard-root-contract).
 - Free of hidden dependencies. See [dependency boundaries](#dependency-boundaries).
 
-[IndexNow](indexnow-ping/index.ts) (`indexnow-ping`) is the example to follow.
+[IndexNow](indexnow-ping/index.ts) (`indexnow-ping`) is the example to follow
+for a service that handles events, and [Donations](donations/index.ts) for one
+that does not.
 
 The inventory is temporary and boot never reads it. It has three sections:
 
@@ -238,12 +221,12 @@ The config's `serviceDependencyDecisions` records these for
 which groups every rejected dependency as an instance to inject, a wrong
 import form, one deferred to a named refactor or one with no decision yet.
 
-Require models, the database and other services inside the `create` callback
-rather than at module scope, so importing a root doesn't depend on how far boot
-has got. Keep each dependency's existing timing:
+Require models and the database inside the `create` callback rather than at
+module scope, so importing a root doesn't depend on how far boot has got. Name
+another standard service in `needs`. Keep each dependency's existing timing:
 
-- When a dependency is set up later in boot, pass a function that looks it up
-  on use and say why in a comment.
+- When a dependency is a legacy service that boot sets up later, pass a function
+  that looks it up on use and say why in a comment.
   [Stripe Checkout config](stripe-checkout-config/index.ts) reaches Stripe,
   tiers and members this way.
 - Pass a [site fact](../../../../docs/practices/dependencies.md#site-facts-and-process-facts),
@@ -481,24 +464,33 @@ because boot still uses `require()`.
 ## Standard root contract
 
 Every root that is not a legacy service default-exports a `defineService`
-initializer with `init`, `stop`, a guarded `service` getter, and optional typed `extras`. Type-only named
+definition: a name, a synchronous `create`, and the options it uses (`needs`,
+`listeners`, `start`, `stop`), with optional typed `extras`. Type-only named
 exports are allowed; other runtime exports belong in `extras` during migration.
 Implementation files may still export their classes and supporting contracts.
 
-Use the kernel helper directly, or default-export a local `const` created by it:
+Call the helper directly, or default-export a local `const` created by it:
 
 ```ts
 const extras = { isAvailable };
 export default defineService('Example', createService, extras);
 ```
 
+A root imports `defineService` from
+[`ghost/bootstrap/transition/define-service`](../../../bootstrap/transition/define-service.ts)
+while anything still reads its `.service`. That module adds the getter, which is
+transitional: it asks Ghost's one application for the instance. A root whose
+readers are all handed the service imports `#kernel/define-service` and has no
+getter. [Segments](segments/index.ts) is one, read only by
+[endpoints that are handed it](../api/endpoints/segments.ts).
+
 Declare extras as an explicit object literal, directly or through a local `const`.
 Use named helper references or function definitions; do not invoke helpers or
-construct extra instances on import. Do not mutate declared extras or spread, reconstruct or extend an
-initializer: spreading it evaluates the guarded getter before initialization.
+construct extra instances on import. Do not mutate declared extras or spread, reconstruct or extend a
+definition.
 
 Extras are a temporary home for concerns whose shared interfaces are not yet
-established. They do not imply readiness or automatic invocation by boot.
+established. They do not imply readiness or automatic invocation by the application.
 Availability, request identity conversion and later background activation have
 different callers and timing requirements; putting them in one object does not
 change their behaviour or ownership.
@@ -512,116 +504,101 @@ Catalogue every member under the service's `extras` in the inventory's
 - `dependencies` and `failurePolicy`, including retry and background-failure behaviour.
 - `destination`: the intended future owner or the interface still to be decided.
 
-The Oxlint rule `ghost/service-root-shape` enforces default initializers,
-explicit extras and the absence of other runtime exports or container mutations.
+The Oxlint rule `ghost/service-root-shape` enforces a default definition, a
+synchronous `create`, no subscription made in the root, explicit extras and the
+absence of other runtime exports or container mutations.
 It applies to every `services/*/index.ts` and reads the legacy service inventory
 for the roots to skip, so a new root needs no registration. Deleting a legacy
 entry applies the rule to that root. The separate inventory test requires
-declared extras names to match the catalogue exactly. Behavioural tests still establish readiness,
-boot ordering, resource cleanup and each extra's semantics.
+declared extras names to match the catalogue exactly. Behavioural tests still establish
+what a root builds, resource cleanup and each extra's semantics.
 
 An inline `oxlint-disable` or `eslint-disable` comment switches these rules off
-for a line, as it does any rule. Nothing disables `ghost/service-root-shape`,
-`ghost/no-injected-service-libraries` or `ghost/boot-awaits-service-init` today.
+for a line, as it does any rule. Nothing disables `ghost/service-root-shape`
+or `ghost/no-injected-service-libraries` today.
 Nothing but review stops one, so treat it as an exception: give the reason in
 the comment and expect it to be questioned.
 
-## Initialization
+## How a service is built
 
-Ghost's boot sequence owns service construction. A new service root must
-default-export the
-[kernel's `defineService` helper](../../../../tbd/kernel/README.md#service-initialization)
-and have its `init()` awaited from `ghost/core/boot.js` in the appropriate boot
-phase. Existing legacy roots keep their shape until migrated. Do not make the
-first request responsible for constructing the service.
+A root describes a service; Ghost's application builds it. Nothing in boot calls
+a root.
 
-The Oxlint rule `ghost/boot-awaits-service-init` checks this in `boot.js`. Every
-service that is not legacy must be bound there and have its `init()` awaited as
-a statement of a boot phase that `bootGhost` awaits, on its own or inside an
-awaited `Promise.all`. A new service directory fails lint until boot awaits it.
-The rule reads source only. The
-[standard services boot test](../../../test/unit/boot/standard-services.test.ts)
-runs each phase: for every standard service it holds `init()` pending and checks
-the phase waits, then checks a failed `init()` fails the phase. Neither can tell
-whether the order between services is right; that needs its own boot test.
-
-With `defineService`, the service author supplies a `create` callback that constructs and returns a
-ready instance. Boot awaits the root's `init()`; consumers then read `.service`.
-The kernel guide describes the full contract, including concurrent calls and
-explicit retries after failure.
+- **First use builds it.** Reading `.service`, being named in another root's
+  `needs`, or an event the root listens for builds the service, synchronously,
+  and the application keeps the instance until Ghost stops.
+- **Not before boot allows it.** Boot opens the application's services once
+  config, the database and settings are ready. A service used earlier, or after
+  Ghost has stopped, is refused with an `IncorrectUsageError`.
+- **A failed build keeps nothing.** The error reaches whoever used the service,
+  and the next use builds again. A mistake that used to fail boot now fails the
+  first use.
+- **Each start of Ghost builds its own.** Stopping Ghost forgets every instance.
+  Tests stop and boot Ghost again in one process, and the next boot builds new
+  instances, so do not keep an instance in a module variable.
 
 ### What `create` returns
 
-Return one ready instance. When a service is a set of objects built together,
-such as an API and its controller, return them as one object with a declared
-type, as [Stripe Checkout config](stripe-checkout-config/index.ts) does with
-`StripeCheckoutServices`.
-
-`.service` returns that same object for the life of the process, and consumers
-may hold on to it. Don't replace it or its members after `init()`.
-
-Keep the service's state on the instance. An extra that needs the ready
-instance reads it through the root's `service` getter, as
-[signing keys](signing-keys/index.ts) does, rather than keeping a second
-module variable with its own guard.
-
-### Startup work and boot order
-
-Await any work callers rely on before returning, such as loading data
-(`repository.init()` in [tiers](tiers/index.ts)) or applying a due key rotation
-(`check()` in signing keys).
-
-Initialize a root after everything its `create` callback reads. Say what it
-needs in a comment above `defineService` and keep that order in `boot.js`. For
-example, recommendations reads the Mentions root during `create`, so boot
-initializes Mentions first. Roots that don't depend on each other can start
-together.
-
-### Starting and stopping
-
-A service that owns listeners, timers or work to drain passes
-[lifecycle hooks](../../../../tbd/kernel/README.md#starting-and-stopping) instead of a
-callback. `create` builds the instance once per process; `start` and `stop`
-acquire and release what it needs on each boot. [IndexNow](indexnow-ping/index.ts)
-subscribes in `start` and unsubscribes in `stop`:
+`create` reads what it is given and returns the ready instance. It is handed the
+foundation and the instance of each service in `needs`:
 
 ```ts
-export default defineService('IndexNow', {
-  create: () => new IndexNowPingService(dependencies),
-  start: (service) => service.subscribeEvents(),
-  stop: (service) => service.unsubscribeEvents(),
+export default defineService('Explore ping', {
+  needs: { stats },
+  create: ({ stats }) => new ExplorePingService({ statsService: stats /* … */ }),
 });
 ```
 
-Boot registers `stop()` with the server beside the root's `init()`:
+It must not return a promise: the types and the lint rule refuse an `async`
+`create`, and the application refuses a promise. It must not subscribe, schedule
+or wait. Callers may hold on to what it returns, so don't replace it or its
+members afterwards.
 
-```js
-ghostServer.registerCleanupTask(() => indexnow.stop(), 'IndexNow');
+### Listeners
+
+Declare each event the service handles. The application listens from the moment
+services can be built, and an event that arrives builds the service before it is
+handled:
+
+```ts
+listeners: [
+  { event: MemberCreatedEvent, handle: (service, event) => service.notify(event) },
+  { event: legacyEvent('site.changed'), handle: ({ cache }) => cache?.reset() },
+],
 ```
 
-Cleanup tasks run together after the HTTP server has drained. Tests stop and boot
-Ghost again in one process, so the next `init()` runs `start` on the same
-instance. Anything `stop` releases must therefore be acquired in `start`, not in
-`create`.
+`event` is a domain event class, or `legacyEvent(name)` for the string-named bus
+in `server/lib/common/events`, which is transitional. Name a listening root in
+`listening` in [`ghost/bootstrap/services.ts`](../../../bootstrap/services.ts):
+the application has to know it before its first event. The
+[definitions test](../../../test/unit/boot/service-definitions.test.ts) fails for
+a listening root that is missing from the list, and the application refuses to
+build one it was never told about.
 
-### Failed startup
+### Starting and stopping
 
-If `start` fails, `defineService` calls `stop` before rejecting, so `stop` must
-be safe after a partial `start`. IndexNow's
-[root test](../../../test/unit/server/services/indexnow-ping/index.test.ts)
-checks that a failed subscription removes only that attempt's listeners, that a
-later `init()` succeeds without duplicates, and that `stop()` followed by
-`init()` delivers each event once. Cover the equivalent behavior when a root
-has hooks.
+`start` is for work that no caller asks for: a background refresh, or a check
+that must finish before Ghost serves. It runs only when boot starts the root, not
+on first use. `stop` releases what `start` acquired and also runs after a failed
+`start`. [Recommendations](recommendations/index.ts) refreshes in the background
+this way, and [signing keys](signing-keys/index.ts) advances a due key rotation
+in a `start` that boot awaits.
 
-The helper cannot clean up after `create`. If `create` acquires resources and
-then fails, it must release them before passing the error back, because a retry
-runs it again. Prefer acquiring them in `start`. Otherwise acquire them last, so
-nothing after them can fail, as [Mentions](mentions/index.ts) does when it
-starts listening for events as its final step.
+Name a root whose `start` is background work in `background` in
+[`ghost/bootstrap/services.ts`](../../../bootstrap/services.ts). When Ghost
+stops, the application runs each `stop`, last started first.
 
-Keep wrapper initialization idempotent when callers may safely reach it more
-than once.
+### Handing a service to its readers
+
+Prefer handing a service over reading it off its root:
+
+- Another service names it in `needs`.
+- An endpoints module declares it with
+  [`defineEndpoints`](../api/endpoints/utils/define-endpoints.ts) and reads it from
+  what its controller is handed.
+
+When nothing reads a root's `.service` any more, the root imports
+`#kernel/define-service` and the getter goes.
 
 ## Related guidance
 

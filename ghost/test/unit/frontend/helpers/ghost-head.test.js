@@ -18,6 +18,7 @@ const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
 const proxy = require('../../../../core/frontend/services/proxy');
 const assetHash = require('../../../../core/frontend/services/asset-hash');
 const internalKeysRoot = require('../../../../core/server/services/internal-keys').default;
+const { openServices } = require('../../../utils/services');
 const { settingsCache, settingsHelpers } = proxy;
 
 /**
@@ -66,11 +67,6 @@ describe('{{ghost_head}} helper', function () {
 
   let getStub;
   let routingRegistryGetRssUrlStub;
-
-  beforeAll(async function () {
-    await internalKeysRoot.init();
-    internalKeys = internalKeysRoot.service;
-  });
 
   const makeFixtures = () => {
     const { createPost, createUser, createTag } = testUtils.DataGenerator.forKnex;
@@ -447,12 +443,10 @@ describe('{{ghost_head}} helper', function () {
   };
 
   beforeEach(function () {
-    internalKeys.clear();
+    // The helper asks the internal keys service for the key. Each test builds its own.
+    openServices();
+    internalKeys = internalKeysRoot.service;
     internalKeys.set('ghost-internal-frontend', Promise.resolve({ id: 'k', secret: 'xyz' }));
-  });
-
-  afterEach(function () {
-    internalKeys.clear();
   });
 
   beforeEach(function () {

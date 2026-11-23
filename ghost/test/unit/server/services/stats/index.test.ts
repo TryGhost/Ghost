@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import { IncorrectUsageError } from '@tryghost/errors';
 import { pipeline } from '@tryghost/api-framework';
+import { openServices } from '../../../../utils/services';
 
 const config = require('../../../../../core/shared/config');
 const settingsCache = require('../../../../../core/shared/settings-cache');
@@ -101,22 +102,10 @@ describe('Stats service root', function () {
     }
   });
 
-  it('guards the service until init has resolved', async function () {
-    const root = loadRoot();
-    assert.throws(() => root.service, IncorrectUsageError);
-
-    const pending = root.init();
-
-    // Nothing is published while init is in flight, unlike the former wrapper.
-    assert.throws(() => root.service, IncorrectUsageError);
-    assert.equal(await pending, undefined);
-    assert.ok(root.service.api instanceof StatsService);
-  });
-
   it('publishes one Stats API over the shared database and URL service', async function () {
     const root = loadRoot();
 
-    await root.init();
+    openServices();
 
     const { api, cache: published } = root.service;
     assert.ok(api instanceof StatsService);
@@ -133,41 +122,29 @@ describe('Stats service root', function () {
   it('leaves the cache unset when the host stats cache is disabled', async function () {
     const root = loadRoot();
 
-    await root.init();
+    openServices();
 
-    sinon.assert.notCalled(getAdapter);
     assert.equal(root.service.cache, null);
+    sinon.assert.notCalled(getAdapter);
   });
 
   it('publishes the cache:stats adapter with the API when the host stats cache is enabled', async function () {
     getConfig.withArgs('hostSettings:statsCache:enabled').returns(true);
     const root = loadRoot();
 
-    await root.init();
+    openServices();
 
-    sinon.assert.calledOnceWithExactly(getAdapter, 'cache:stats');
     assert.equal(root.service.cache, cache);
+    sinon.assert.calledOnceWithExactly(getAdapter, 'cache:stats');
     assert.ok(root.service.api instanceof StatsService);
   });
 
-  it('retains the first aggregate on repeated init, even once the cache is enabled', async function () {
-    const root = loadRoot();
-    await root.init();
-    const aggregate = root.service;
-    getConfig.withArgs('hostSettings:statsCache:enabled').returns(true);
-
-    assert.equal(await root.init(), undefined);
-
-    assert.equal(root.service, aggregate);
-    assert.equal(root.service.cache, null);
-    sinon.assert.notCalled(getAdapter);
-  });
-
-  it('rejects init without publishing when the database connection is unavailable, then allows a retry', async function () {
+  it('fails the first use when the database connection is unavailable, and builds on a later use', function () {
     const failure = new Error('Database unavailable');
     const connection = Object.getOwnPropertyDescriptor(db, 'knex');
     assert.ok(connection);
     const root = loadRoot();
+    openServices();
     Object.defineProperty(db, 'knex', {
       configurable: true,
       enumerable: true,
@@ -177,40 +154,41 @@ describe('Stats service root', function () {
     });
 
     try {
-      await assert.rejects(root.init(), (error: unknown) => error === failure);
-      assert.throws(() => root.service, IncorrectUsageError);
+      assert.throws(
+        () => root.service,
+        (error: unknown) => error === failure,
+      );
     } finally {
       Object.defineProperty(db, 'knex', connection);
     }
 
-    assert.equal(await root.init(), undefined);
     assert.ok(root.service.api instanceof StatsService);
     assert.equal(root.service.api.mrr.knex, db.knex);
   });
 
-  it('rejects init without publishing when the cache adapter fails, then retries the whole aggregate', async function () {
+  it('fails the first use when the cache adapter fails, and builds the whole aggregate on a later use', function () {
     getConfig.withArgs('hostSettings:statsCache:enabled').returns(true);
     const failure = new Error('Cache unavailable');
     getAdapter.onFirstCall().throws(failure);
     const root = loadRoot();
+    openServices();
 
-    await assert.rejects(root.init(), (error: unknown) => error === failure);
+    // Nothing is kept from the failed build: no API without its cache.
+    assert.throws(
+      () => root.service,
+      (error: unknown) => error === failure,
+    );
 
-    // The former wrapper kept a cacheless API after this failure; the
-    // aggregate is now published atomically or not at all.
-    assert.throws(() => root.service, IncorrectUsageError);
-
-    assert.equal(await root.init(), undefined);
     assert.ok(root.service.api instanceof StatsService);
     assert.equal(root.service.cache, cache);
     sinon.assert.calledTwice(getAdapter);
   });
 
-  it('lets the Admin stats endpoint load before init and resolves the cache and API per request', async function () {
+  it('lets the Admin stats endpoint load before services can be built and resolves the cache and API per request', async function () {
     getConfig.withArgs('hostSettings:statsCache:enabled').returns(true);
     const root = loadRoot();
 
-    // The Admin routes load the endpoint before boot initializes Stats.
+    // The Admin routes load the endpoint before boot lets services be built.
     const endpoint = loadEndpoint();
     const names = Object.keys(endpoint);
     assert.ok(names.includes('subscriptions'));
@@ -223,7 +201,7 @@ describe('Stats service root', function () {
     }
     await assert.rejects(endpoint.subscriptions.query(), IncorrectUsageError);
 
-    await root.init();
+    openServices();
     const history = { data: [] };
     const fetchData = sandbox.stub().resolves(history);
     const adapter = root.service.cache as { get: sinon.SinonStub; set: sinon.SinonStub };
@@ -261,9 +239,9 @@ describe('Stats service root', function () {
   it('caches a stats request built by the API pipeline when the stats cache is enabled', async function () {
     getConfig.withArgs('hostSettings:statsCache:enabled').returns(true);
     const root = loadRoot();
-    // The pipeline builds the method from the controller before boot initializes Stats.
+    // The pipeline builds the method from the controller before boot lets services be built.
     const api = buildAdminMethods();
-    await root.init();
+    openServices();
     const history = { data: ['subscriptions'] };
     const query = sandbox.stub(root.service.api, 'getSubscriptionCountHistory').resolves(history);
     const adapter = root.service.cache as { get: sinon.SinonStub; set: sinon.SinonStub };
@@ -282,7 +260,7 @@ describe('Stats service root', function () {
   it('runs a stats request built by the API pipeline once per call without a stats cache', async function () {
     const root = loadRoot();
     const api = buildAdminMethods();
-    await root.init();
+    openServices();
     assert.equal(root.service.cache, null);
     const history = { data: ['subscriptions'] };
     const query = sandbox.stub(root.service.api, 'getSubscriptionCountHistory').resolves(history);
@@ -302,7 +280,7 @@ describe('Stats service root', function () {
   it('caches unpaginated newsletter stats but bypasses the cache for period pages', async function () {
     getConfig.withArgs('hostSettings:statsCache:enabled').returns(true);
     const root = loadRoot();
-    await root.init();
+    openServices();
     const endpoint = loadEndpoint().newsletterBasicStats;
     const basicCache = endpoint.cache as {
       get(key: string, getResponse: () => unknown): unknown;
@@ -334,7 +312,7 @@ describe('Stats service root', function () {
 
   it('separates strict click requests from legacy requests in the API and cache', async function () {
     const root = loadRoot();
-    await root.init();
+    openServices();
     const clicks = sandbox
       .stub(root.service.api.posts, 'getNewsletterClickStats')
       .resolves({ data: [] });
@@ -370,23 +348,24 @@ describe('Stats service root', function () {
         .returns(configured ? { endpoint: 'https://stats.example' } : null);
       const root = loadRoot();
 
-      await root.init();
+      openServices();
 
+      const { api } = root.service;
       sinon.assert.callCount(tinybirdInit, initialized ? 1 : 0);
-      assert.equal(Boolean(root.service.api.posts.tinybirdClient), webAnalytics);
-      assert.equal(Boolean(root.service.api.content.tinybirdClient), webAnalytics);
+      assert.equal(Boolean(api.posts.tinybirdClient), webAnalytics);
+      assert.equal(Boolean(api.content.tinybirdClient), webAnalytics);
     },
   );
 
-  it('shares one query client that keeps the Tinybird instance from init but rereads config and settings', async function () {
+  it('shares one query client that keeps the Tinybird instance it was built with but rereads config and settings', async function () {
     getSetting.withArgs('web_analytics_enabled').returns(true);
     getConfig.withArgs('tinybird:stats').returns({ endpoint: 'https://stats-a.example' });
     const root = loadRoot();
 
-    await root.init();
+    openServices();
 
-    sinon.assert.calledOnce(tinybirdInit);
     const client: TinybirdClient = root.service.api.posts.tinybirdClient;
+    sinon.assert.calledOnce(tinybirdInit);
     assert.ok(client);
     assert.equal(root.service.api.content.tinybirdClient, client);
     const first = client.buildRequest('api_kpis');
@@ -414,7 +393,7 @@ describe('Stats service root', function () {
     const get = sandbox.stub(requestExternal, 'get').resolves({ body: { data: [{ visits: 3 }] } });
     const root = loadRoot();
 
-    await root.init();
+    openServices();
 
     const client: TinybirdClient = root.service.api.posts.tinybirdClient;
     assert.deepEqual(await client.fetch('api_kpis'), [{ visits: 3 }]);

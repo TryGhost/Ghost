@@ -43,7 +43,7 @@ registerCommand({
         file: './generate-golden-email.ts',
       },
       { flags: 'migration', desc: 'Scaffold a database migration.', file: './create-migration.ts' },
-      { flags: 'service', desc: 'Scaffold a boot-owned service.', file: './create-service.ts' },
+      { flags: 'service', desc: 'Scaffold a Ghost Core service.', file: './create-service.ts' },
     ]) {
       group.command({
         flags: command.flags,

@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import type { EventEmitter } from 'node:events';
 import sinon from 'sinon';
 import nock from 'nock';
-import type indexNowRoot from '../../../../../core/server/services/indexnow-ping';
 import type { IndexNowPingServiceDeps } from '../../../../../core/server/services/indexnow-ping/indexnow-ping-service';
 
 const events: EventEmitter = require('../../../../../core/server/lib/common/events');
@@ -11,9 +10,33 @@ const settingsCache: IndexNowPingServiceDeps['settingsCache'] = require('../../.
 const urlService: IndexNowPingServiceDeps['urlService'] = require('../../../../../core/server/services/url');
 const logging: IndexNowPingServiceDeps['logging'] = require('@tryghost/logging');
 
-const { IncorrectUsageError } = require('@tryghost/errors');
+const root: typeof import('../../../../../core/server/services/indexnow-ping').default =
+  require('../../../../../core/server/services/indexnow-ping').default;
+const {
+  IndexNowPingService,
+}: typeof import('../../../../../core/server/services/indexnow-ping/indexnow-ping-service') = require('../../../../../core/server/services/indexnow-ping/indexnow-ping-service');
+const {
+  openServices,
+  services,
+}: typeof import('../../../../utils/services') = require('../../../../utils/services');
+const {
+  listening,
+}: typeof import('../../../../../bootstrap/services') = require('../../../../../bootstrap/services');
 
-const ROOT_PATH = require.resolve('../../../../../core/server/services/indexnow-ping');
+// Opening the services registers every root that declares listeners, and other roots listen for
+// the post events too. They are made inert, so that only this root reacts to an event.
+function silenceOtherRoots(sandbox: sinon.SinonSandbox) {
+  for (const named of listening) {
+    const other = named();
+    if (other !== root) {
+      sandbox.stub(other, 'create').returns({});
+      for (const listener of other.listeners) {
+        sandbox.stub(listener, 'handle');
+      }
+    }
+  }
+}
+
 const EVENT_NAMES = ['post.published', 'post.published.edited'];
 const KEY = '0123456789abcdef0123456789abcdef';
 
@@ -29,8 +52,6 @@ function postModel() {
 }
 
 describe('IndexNow service root', function () {
-  let originalModule: NodeJS.Module | undefined;
-  let root: typeof indexNowRoot | undefined;
   let sandbox: sinon.SinonSandbox;
   let getConfig: sinon.SinonStub<[string], unknown>;
   let getSetting: sinon.SinonStub<[string], unknown>;
@@ -43,11 +64,8 @@ describe('IndexNow service root', function () {
   let originalListeners: Map<string, ReturnType<EventEmitter['listeners']>>;
 
   beforeEach(function () {
-    // Only cold-load the root. Its dependencies and the shared event bus are real;
-    // restore the original cache entry so retained consumers keep their module.
-    originalModule = require.cache[ROOT_PATH];
+    // The root's dependencies and the shared event bus are real.
     originalListeners = new Map(EVENT_NAMES.map((name) => [name, events.listeners(name)]));
-    delete require.cache[ROOT_PATH];
     sandbox = sinon.createSandbox();
     getConfig = sandbox.stub(config, 'get').callThrough();
     getConfig.withArgs('env').returns('production');
@@ -65,6 +83,8 @@ describe('IndexNow service root', function () {
       .returns('https://example.com/news/a-post/');
     loggedInfo = sandbox.stub(logging, 'info');
     loggedWarning = sandbox.stub(logging, 'warn');
+    silenceOtherRoots(sandbox);
+    openServices();
   });
 
   afterEach(function () {
@@ -75,33 +95,14 @@ describe('IndexNow service root', function () {
         }
       }
     }
-    root = undefined;
     sandbox.restore();
     nock.cleanAll();
-    if (originalModule) {
-      require.cache[ROOT_PATH] = originalModule;
-    } else {
-      delete require.cache[ROOT_PATH];
-    }
   });
 
-  it('subscribes only at init and delivers each event once after repeated init', async function () {
-    const subscribe = sandbox.spy(events, 'on');
-    root = require(ROOT_PATH).default as typeof indexNowRoot;
-    assert.throws(() => root!.service, IncorrectUsageError);
-    sinon.assert.notCalled(subscribe);
-
-    await root.init();
+  it('builds one service that handles each post event once', async function () {
     const service = root.service;
-    assert.ok(service);
-    await root.init();
+    assert.ok(service instanceof IndexNowPingService);
     assert.equal(root.service, service);
-    for (const name of EVENT_NAMES) {
-      assert.equal(
-        events.listeners(name).filter((listener) => listener === service.listener).length,
-        1,
-      );
-    }
 
     const ping = sandbox.stub(service, 'ping').resolves();
     const model = postModel();
@@ -122,76 +123,39 @@ describe('IndexNow service root', function () {
     await Promise.all(ping.returnValues);
   });
 
-  it('removes a partial subscription after failure and retries without disturbing other listeners', async function () {
+  it('stops handling events when services close, and an event after they reopen builds a new instance', async function () {
     const unrelated = () => {};
     for (const name of EVENT_NAMES) {
       events.on(name, unrelated);
     }
-    const listenersBeforeInit = new Map(EVENT_NAMES.map((name) => [name, events.listeners(name)]));
-    const failure = new Error('Cannot subscribe to post edits');
-    const on = events.on;
-    const subscribe = sandbox.stub(events, 'on').callsFake(function (name, listener) {
-      on.call(events, name, listener);
-      if (name === 'post.published.edited') {
-        throw failure;
-      }
-      return events;
-    });
-    root = require(ROOT_PATH).default as typeof indexNowRoot;
-
-    await assert.rejects(root.init(), (error) => error === failure);
-    assert.throws(() => root!.service, IncorrectUsageError);
-    for (const [name, listeners] of listenersBeforeInit) {
-      assert.deepEqual(events.listeners(name), listeners);
-    }
-
-    subscribe.restore();
-    await root.init();
     const service = root.service;
-    for (const [name, listeners] of listenersBeforeInit) {
-      assert.deepEqual(events.listeners(name), [...listeners, service.listener]);
-    }
-    const ping = sandbox.stub(service, 'ping').resolves();
-    events.emit('post.published', postModel());
-    events.emit('post.published.edited', postModel());
-    sinon.assert.calledTwice(ping);
-    await Promise.all(ping.returnValues);
-  });
+    const ping = sandbox.stub(IndexNowPingService.prototype, 'ping').resolves();
 
-  it('stops listening on stop and delivers to the same instance once after the next init', async function () {
-    const unrelated = () => {};
+    await services.close();
     for (const name of EVENT_NAMES) {
-      events.on(name, unrelated);
-    }
-    const listenersBeforeInit = new Map(EVENT_NAMES.map((name) => [name, events.listeners(name)]));
-    root = require(ROOT_PATH).default as typeof indexNowRoot;
-    await root.init();
-    const service = root.service;
-    const ping = sandbox.stub(service, 'ping').resolves();
-
-    await root.stop();
-    for (const [name, listeners] of listenersBeforeInit) {
-      assert.deepEqual(events.listeners(name), listeners);
+      assert.deepEqual(
+        events
+          .listeners(name)
+          .filter((listener) => !originalListeners.get(name)!.includes(listener)),
+        [unrelated],
+      );
     }
     events.emit('post.published', postModel());
     sinon.assert.notCalled(ping);
-    assert.equal(root.service, service);
 
-    await root.init();
-    assert.equal(root.service, service);
-    for (const [name, listeners] of listenersBeforeInit) {
-      assert.deepEqual(events.listeners(name), [...listeners, service.listener]);
-    }
+    // Nothing reads the service before the events arrive: the first one builds it.
+    openServices();
     events.emit('post.published', postModel());
     events.emit('post.published.edited', postModel());
     sinon.assert.calledTwice(ping);
+    const rebuilt = root.service;
+    assert.notEqual(rebuilt, service);
+    sinon.assert.alwaysCalledOn(ping, rebuilt);
     await Promise.all(ping.returnValues);
   });
 
-  it('keeps the initialized listener while environment, privacy and site visibility change', async function () {
+  it('keeps handling events with one instance while environment, privacy and site visibility change', async function () {
     privacyDisabled.returns(true);
-    root = require(ROOT_PATH).default as typeof indexNowRoot;
-    await root.init();
     const service = root.service;
     assert.ok(service);
     const request = sandbox.stub(service, 'request').resolves({ statusCode: 200 });
@@ -222,8 +186,6 @@ describe('IndexNow service root', function () {
   });
 
   it('uses the current key and complete encoded URLs through the wired request helper', async function () {
-    root = require(ROOT_PATH).default as typeof indexNowRoot;
-    await root.init();
     const service = root.service;
     assert.ok(service);
     const ping = sandbox.spy(service, 'ping');
@@ -274,8 +236,6 @@ describe('IndexNow service root', function () {
   });
 
   it('starts a request during event delivery and logs a later transport failure', async function () {
-    root = require(ROOT_PATH).default as typeof indexNowRoot;
-    await root.init();
     const service = root.service;
     assert.ok(service);
     const { promise, reject } = Promise.withResolvers<{ statusCode: number }>();
@@ -296,8 +256,6 @@ describe('IndexNow service root', function () {
   });
 
   it('lets synchronous model errors escape, but swallows pre-request promise rejections', async function () {
-    root = require(ROOT_PATH).default as typeof indexNowRoot;
-    await root.init();
     const service = root.service;
     assert.ok(service);
     const error = new Error('Cannot read model');

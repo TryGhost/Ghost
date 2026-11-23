@@ -15,7 +15,7 @@ through `jobsService.handle(JobClass, handler)` in
 `ghost/core/server/services/jobs-service/register-job-handlers.ts`, which
 boot wires up before starting the service, and inject `JobsService` into the
 service that dispatches the job. Boot, or that service's root in its
-[`create` callback](../../ghost/core/server/services/README.md#initialization),
+[`create` callback](../../ghost/core/server/services/README.md#how-a-service-is-built),
 passes in `JobsService` or a dispatch function. Handlers should only route the
 rehydrated payload to an initialized service method. The queue options below
 are part of this API.

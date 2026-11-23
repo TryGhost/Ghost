@@ -96,13 +96,17 @@ reads the legacy names from the inventory, so a new root needs no configuration
 and deleting a legacy entry applies the rule. Lint fails if the inventory cannot
 be read. Catalogue metadata validation remains separate from linting.
 
-The Oxlint-only `ghost/boot-awaits-service-init` rule checks `ghost/core/boot.js`.
-Every service that is not listed in the legacy service inventory must be bound
-there and have its `init()` awaited in a boot phase that `bootGhost` awaits. It
-reads the service directories and the inventory, so a new service needs no
-configuration and fails lint until boot awaits it. Its implementation is
-`../oxlint/rules/boot-awaits-service-init.ts`; see
-[initialization](../../../ghost/core/server/services/README.md#initialization).
+A root must default-export one `defineService` definition. The `helperImports`
+option lists the modules `defineService` may be imported from:
+`#kernel/define-service` and the transitional
+`../../../../bootstrap/transition/define-service`, which adds the `.service`
+getter. The rule also rejects an `async` `create`, because a service is built
+synchronously and what it waits for belongs in `start`. It rejects a call to
+`.on()`, `.once()`, `.subscribe()`, `.addListener()` or `.addEventListener()`
+anywhere in a root file, because a root declares its events in `listeners`.
+
+No lint rule checks `ghost/core/boot.js` for service roots. Boot does not
+initialize them: Ghost's application builds each one the first time it is used.
 
 The Oxlint-only `ghost/no-injected-service-libraries` rule checks all TypeScript
 service roots for allowlisted libraries passed into local constructors. It
@@ -127,6 +131,3 @@ Run the rule and scope regression tests with
 
 Run service-root compatibility and scope tests with
 `pnpm --filter @internal/scripts exec node --test test/service-root-shape.test.ts`.
-
-Run the boot rule's tests with
-`pnpm --filter @internal/scripts exec node --test test/boot-awaits-service-init.test.ts`.

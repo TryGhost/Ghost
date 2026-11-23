@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import sinon from 'sinon';
 import type commentsRoot from '../../../../../core/server/services/comments';
+import { openServices } from '../../../../utils/services';
 
 const fs = require('node:fs/promises') as typeof import('node:fs/promises');
 const { IncorrectUsageError } = require('@tryghost/errors');
@@ -19,6 +20,7 @@ describe('Comments service root', function () {
     previousRenderer = Object.getOwnPropertyDescriptor(emailService, 'renderer');
     delete require.cache[ROOT_PATH];
     root = require(ROOT_PATH).default;
+    openServices();
   });
 
   afterEach(function () {
@@ -36,7 +38,6 @@ describe('Comments service root', function () {
 
   for (const name of ['new-comment', 'new-comment-reply', 'report']) {
     it(`wires the UTF-8 source of the ${name} template into the renderer`, async function () {
-      await root.init();
       const renderer = root.service.api.emails.commentsServiceEmailRenderer;
       const expected = await fs.readFile(
         path.join(path.dirname(ROOT_PATH), 'email-templates', `${name}.hbs`),
@@ -52,7 +53,6 @@ describe('Comments service root', function () {
 
   for (const name of ['unknown', '../index', 'toString', '__proto__']) {
     it(`rejects the template name ${name} before reading any file`, async function () {
-      await root.init();
       const readFile = sandbox.spy(fs, 'readFile');
       const renderer = root.service.api.emails.commentsServiceEmailRenderer;
 
@@ -69,10 +69,8 @@ describe('Comments service root', function () {
       get: getRenderer,
     });
 
-    await root.init();
-
-    sinon.assert.notCalled(getRenderer);
     const emails = root.service.api.emails;
+    sinon.assert.notCalled(getRenderer);
     const firstRenderer = {
       createUnsubscribeUrl: sandbox.stub().returns('https://example.com/first-unsubscribe/'),
     };

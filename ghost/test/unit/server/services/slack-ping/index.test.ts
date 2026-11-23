@@ -3,7 +3,12 @@ import type { EventEmitter } from 'node:events';
 import sinon from 'sinon';
 import type { SlackPingService as SlackPingServiceType } from '../../../../../core/server/services/slack-ping/slack-ping-service';
 
-const ROOT_PATH = require.resolve('../../../../../core/server/services/slack-ping/index.ts');
+const root: typeof import('../../../../../core/server/services/slack-ping').default =
+  require('../../../../../core/server/services/slack-ping').default;
+const {
+  openServices,
+  services,
+}: typeof import('../../../../utils/services') = require('../../../../utils/services');
 const {
   SlackPingService,
 }: typeof import('../../../../../core/server/services/slack-ping/slack-ping-service') = require('../../../../../core/server/services/slack-ping/slack-ping-service');
@@ -14,7 +19,24 @@ const { blogIcon } = require('../../../../../core/server/lib/image');
 const urlService = require('../../../../../core/server/services/url');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const requestExternal = require('../../../../../core/server/lib/request-external');
-const { IncorrectUsageError, InternalServerError } = require('@tryghost/errors');
+const { InternalServerError } = require('@tryghost/errors');
+const {
+  listening,
+}: typeof import('../../../../../bootstrap/services') = require('../../../../../bootstrap/services');
+
+// Opening the services registers every root that declares listeners, and other roots listen for
+// post.published too. They are made inert, so that only this root reacts to an event.
+function silenceOtherRoots(sandbox: sinon.SinonSandbox) {
+  for (const named of listening) {
+    const other = named();
+    if (other !== root) {
+      sandbox.stub(other, 'create').returns({});
+      for (const listener of other.listeners) {
+        sandbox.stub(listener, 'handle');
+      }
+    }
+  }
+}
 
 const postModel = {
   toJSON: () => ({ id: 'post-id', slug: 'a-post', title: 'A post', html: '<p>Hello.</p>' }),
@@ -22,22 +44,19 @@ const postModel = {
 };
 
 describe('Slack ping root', function () {
-  let root: typeof import('../../../../../core/server/services/slack-ping').default;
-  let originalRoot: NodeJS.Module | undefined;
   let originalListeners: Map<string, ReturnType<EventEmitter['rawListeners']>>;
   let sandbox: sinon.SinonSandbox;
 
   beforeEach(function () {
     sandbox = sinon.createSandbox();
-    originalRoot = require.cache[ROOT_PATH];
     originalListeners = new Map(
       ['post.published', 'slack.test'].map((name) => [name, events.rawListeners(name)]),
     );
     for (const name of originalListeners.keys()) {
       events.removeAllListeners(name);
     }
-    delete require.cache[ROOT_PATH];
-    root = require(ROOT_PATH).default;
+    silenceOtherRoots(sandbox);
+    openServices();
   });
 
   afterEach(function () {
@@ -48,28 +67,14 @@ describe('Slack ping root', function () {
         events.on(name, listener as (...args: unknown[]) => void);
       }
     }
-    if (originalRoot) {
-      require.cache[ROOT_PATH] = originalRoot;
-    } else {
-      delete require.cache[ROOT_PATH];
-    }
   });
 
-  it('wires the shared dependencies once and exposes the instance only after initialization', async function () {
-    assert.throws(() => root.service, IncorrectUsageError);
-    assert.deepEqual(events.listeners('post.published'), []);
-    assert.deepEqual(events.listeners('slack.test'), []);
-
-    const initializing = root.init();
-    assert.equal(root.init(), initializing);
-    assert.throws(() => root.service, IncorrectUsageError);
-    await initializing;
+  it('builds the service with the shared dependencies on first use and keeps it', function () {
     const service = root.service;
 
     assert.ok(service instanceof SlackPingService);
     for (const [name, dependency] of Object.entries({
       blogIcon,
-      events,
       logging,
       request: requestExternal,
       settingsCache,
@@ -78,17 +83,10 @@ describe('Slack ping root', function () {
     })) {
       assert.equal(service[name as keyof SlackPingServiceType], dependency, name);
     }
-    assert.deepEqual(events.listeners('post.published'), [service.postListener]);
-    assert.deepEqual(events.listeners('slack.test'), [service.testListener]);
-
-    await root.init();
     assert.equal(root.service, service);
-    assert.deepEqual(events.listeners('post.published'), [service.postListener]);
-    assert.deepEqual(events.listeners('slack.test'), [service.testListener]);
   });
 
   it('dispatches each real event once without waiting for transport and reads changed settings on the retained instance', async function () {
-    await root.init();
     const service = root.service;
     const settings: Record<string, string> = {
       slack_url: 'https://hooks.slack.com/services/first',
@@ -125,7 +123,6 @@ describe('Slack ping root', function () {
 
       settings.slack_url = 'https://hooks.slack.com/services/second';
       settings.slack_username = 'Second sender';
-      await root.init();
       assert.equal(root.service, service);
       assert.equal(events.emit('slack.test'), true);
       sinon.assert.calledTwice(request);
@@ -156,7 +153,6 @@ describe('Slack ping root', function () {
 
   for (const eventName of ['post.published', 'slack.test']) {
     it(`propagates a synchronous transport throw through ${eventName} dispatch`, async function () {
-      await root.init();
       const service = root.service;
       sandbox
         .stub(settingsCache, 'get')
@@ -184,7 +180,6 @@ describe('Slack ping root', function () {
   }
 
   it('logs a wrapped asynchronous request failure and fulfills both event pings', async function () {
-    await root.init();
     const service = root.service;
     sandbox
       .stub(settingsCache, 'get')
@@ -223,68 +218,29 @@ describe('Slack ping root', function () {
     }
   });
 
-  it('stops listening on stop and delivers to the same instance once after the next init', async function () {
+  it('stops handling events when services close, and an event after they reopen builds a new instance', async function () {
     const unrelated = () => {};
     for (const name of ['post.published', 'slack.test']) {
       events.on(name, unrelated);
     }
-    await root.init();
     const service = root.service;
-    const ping = sandbox.stub(service, 'ping');
+    const ping = sandbox.stub(SlackPingService.prototype, 'ping');
 
-    await root.stop();
+    await services.close();
     assert.deepEqual(events.listeners('post.published'), [unrelated]);
     assert.deepEqual(events.listeners('slack.test'), [unrelated]);
     events.emit('post.published', postModel);
     events.emit('slack.test');
     sinon.assert.notCalled(ping);
-    assert.equal(root.service, service);
 
-    await root.init();
-    assert.equal(root.service, service);
-    assert.deepEqual(events.listeners('post.published'), [unrelated, service.postListener]);
-    assert.deepEqual(events.listeners('slack.test'), [unrelated, service.testListener]);
+    // Nothing reads the service before the events arrive: the first one builds it.
+    openServices();
     events.emit('post.published', postModel);
     events.emit('slack.test');
     sinon.assert.calledTwice(ping);
+    const rebuilt = root.service;
+    assert.ok(rebuilt instanceof SlackPingService);
+    assert.notEqual(rebuilt, service);
+    sinon.assert.alwaysCalledOn(ping, rebuilt);
   });
-
-  for (const eventName of ['post.published', 'slack.test']) {
-    it(`removes its subscriptions when ${eventName} registration fails and allows an explicit retry`, async function () {
-      const unrelated = () => {};
-      for (const name of ['post.published', 'slack.test']) {
-        events.on(name, unrelated);
-      }
-      const failure = new Error(`Cannot subscribe ${eventName}`);
-      const originalOn = events.on.bind(events);
-      const on = sandbox.stub(events, 'on').callsFake((name, listener) => {
-        originalOn(name, listener);
-        if (name === eventName) {
-          throw failure;
-        }
-        return events;
-      });
-
-      const initializing = root.init();
-      assert.equal(root.init(), initializing);
-      await assert.rejects(initializing, (error) => error === failure);
-      assert.throws(() => root.service, IncorrectUsageError);
-      assert.deepEqual(events.listeners('post.published'), [unrelated]);
-      assert.deepEqual(events.listeners('slack.test'), [unrelated]);
-
-      on.restore();
-      await root.init();
-      const service = root.service;
-      assert.ok(service instanceof SlackPingService);
-      assert.deepEqual(events.listeners('post.published'), [unrelated, service.postListener]);
-      assert.deepEqual(events.listeners('slack.test'), [unrelated, service.testListener]);
-      await root.init();
-      assert.equal(root.service, service);
-
-      const ping = sandbox.stub(service, 'ping');
-      events.emit('post.published', postModel);
-      events.emit('slack.test');
-      sinon.assert.calledTwice(ping);
-    });
-  }
 });

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import { openServices } from '../../../../utils/services';
 import type { Knex } from 'knex';
 
 const rootPath = require.resolve('../../../../../core/server/services/app-installations');
@@ -10,7 +11,6 @@ const endpointPaths = [
 ];
 const requestPath = require.resolve('../../../../../core/server/lib/request-external');
 const db = require('../../../../../core/server/data/db');
-const { IncorrectUsageError } = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const config = require('../../../../../core/shared/config');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
@@ -84,6 +84,8 @@ describe('App installations composition root', function () {
   });
 
   beforeEach(function () {
+    // Before the database is substituted: opening loads the roots that listen for events.
+    openServices();
     previousModules = new Map(
       [rootPath, ...endpointPaths].map((path) => [path, require.cache[path]]),
     );
@@ -123,35 +125,32 @@ describe('App installations composition root', function () {
     }
   });
 
-  it('acquires the database only at init and retains one instance without queries or requests', async function () {
-    assert.throws(() => root.service, IncorrectUsageError);
+  it('acquires the database only on first use and builds without queries or requests', function () {
     sinon.assert.notCalled(readKnex);
-    await root.init();
     const service = root.service;
     assert.ok(service instanceof AppInstallationsService);
-    await root.init();
     assert.equal(root.service, service);
     sinon.assert.calledOnce(readKnex);
     sinon.assert.notCalled(query);
     sinon.assert.notCalled(request);
   });
 
-  it('leaves the root unpublished after a dependency failure and permits a later init', async function () {
+  it('fails the first use when the database is not ready, and builds on a later use', function () {
     const failure = new Error('Database is not ready');
     readKnex.onFirstCall().throws(failure);
-    await assert.rejects(root.init(), (error) => error === failure);
-    assert.throws(() => root.service, IncorrectUsageError);
-    await root.init();
+    assert.throws(
+      () => root.service,
+      (error) => error === failure,
+    );
     assert.ok(root.service instanceof AppInstallationsService);
     sinon.assert.calledTwice(readKnex);
   });
 
-  it('lets the controllers loaded before init use the initialized instance', async function () {
+  it('lets the controllers loaded before services can be built use the built instance', async function () {
     const installations = require(endpointPaths[0]);
     const previews = require(endpointPaths[1]);
     const sessions = require(endpointPaths[2]);
     sinon.assert.notCalled(readKnex);
-    await root.init();
     const browse = sandbox.stub(AppInstallationsService.prototype, 'browse').resolves([]);
     const preview = sandbox.spy(AppInstallationsService.prototype, 'preview');
     const startSession = sandbox
@@ -182,8 +181,6 @@ describe('App installations composition root', function () {
     request.returns({ on: () => {}, buffer: sandbox.stub().rejects(failure) });
     sandbox.stub(config, 'get').withArgs('env').returns('production');
     sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
-    await root.init();
-
     const manifestUrl = 'https://podcast.example/manifest.json';
     await assert.rejects(root.service.preview(manifestUrl), {
       code: 'APP_MANIFEST_UNREACHABLE',
@@ -207,8 +204,6 @@ describe('App installations composition root', function () {
     );
     sandbox.stub(config, 'get').withArgs('env').returns('production');
     sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
-    await root.init();
-
     const preview = await root.service.preview('https://podcast.example/manifest.json');
 
     assert.equal(request.lastCall.args[0].href, 'https://podcast.example/icon.svg');
@@ -242,7 +237,6 @@ describe('App installations composition root', function () {
     Object.assign(query, { transaction });
     sandbox.stub(config, 'get').withArgs('env').returns('production');
     sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
-    await root.init();
     const manifestUrl = 'https://podcast.example/manifest.json';
     const preview = await root.service.preview(manifestUrl);
 
@@ -277,7 +271,6 @@ describe('App installations composition root', function () {
     });
     sandbox.stub(config, 'get').withArgs('env').returns('production');
     sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
-    await root.init();
     const manifestUrl = 'https://podcast.example/manifest.json';
     const preview = await root.service.preview(manifestUrl);
 
@@ -294,18 +287,18 @@ describe('App installations composition root', function () {
     sinon.assert.notCalled(error);
   });
 
-  // Found at boot, rather than failing every app.
-  it('refuses to start with trusted origins that aren’t origins', async function () {
+  // Found when the service is built, rather than failing every app.
+  it('refuses to build with trusted origins that aren’t origins', function () {
     const getConfig = sandbox.stub(config, 'get').callThrough();
     getConfig.withArgs('apps').returns({ trustedOrigins: ['https://app.example.net/ghost'] });
 
-    await assert.rejects(root.init(), {
+    assert.throws(() => root.service, {
       errorType: 'InternalServerError',
       code: 'APP_CONFIG_INVALID',
     });
   });
 
-  it('names a refused trusted origin without its credentials', async function () {
+  it('names a refused trusted origin without its credentials', function () {
     // Put together here, as written out it would read as a real credential.
     const withCredentials = new URL('https://app.example.net');
     withCredentials.username = 'user';
@@ -313,14 +306,17 @@ describe('App installations composition root', function () {
     const getConfig = sandbox.stub(config, 'get').callThrough();
     getConfig.withArgs('apps').returns({ trustedOrigins: [withCredentials.href] });
 
-    await assert.rejects(root.init(), (error: { context: string }) => {
-      assert.match(error.context, /not "https:\/\/app\.example\.net\/"/);
-      assert.doesNotMatch(error.context, /user|secret/);
-      return true;
-    });
+    assert.throws(
+      () => root.service,
+      (error: { context: string }) => {
+        assert.match(error.context, /not "https:\/\/app\.example\.net\/"/);
+        assert.doesNotMatch(error.context, /user|secret/);
+        return true;
+      },
+    );
   });
 
-  it('names a trusted origin that isn’t a URL without its credentials', async function () {
+  it('names a trusted origin that isn’t a URL without its credentials', function () {
     // Put together here, as written out it would read as a real credential.
     const credentials = ['user', 'secret'].join(':');
     const getConfig = sandbox.stub(config, 'get').callThrough();
@@ -328,11 +324,14 @@ describe('App installations composition root', function () {
       trustedOrigins: [`https://${credentials}@app example.net`],
     });
 
-    await assert.rejects(root.init(), (error: { context: string }) => {
-      assert.match(error.context, /not "https:\/\/app example\.net"/);
-      assert.doesNotMatch(error.context, /user|secret/);
-      return true;
-    });
+    assert.throws(
+      () => root.service,
+      (error: { context: string }) => {
+        assert.match(error.context, /not "https:\/\/app example\.net"/);
+        assert.doesNotMatch(error.context, /user|secret/);
+        return true;
+      },
+    );
   });
 
   it('reads manifest rules and the development localhost alias per operation', async function () {
@@ -342,7 +341,6 @@ describe('App installations composition root', function () {
     const urlFor = sandbox.stub(urlUtils, 'urlFor');
     urlFor.withArgs('home', true).returns('https://publication.example/');
     urlFor.withArgs('admin', true).returns('https://publication.example/ghost/');
-    await root.init();
     const service = root.service;
 
     await service.preview('http://localhost:8080/manifest.json');

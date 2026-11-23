@@ -4,6 +4,9 @@ import assert from 'node:assert/strict';
 const { pipeline } = require('@tryghost/api-framework');
 const MemoryCache = require('../../../../../core/server/adapters/cache/MemoryCache');
 const gating = require('../../../../../core/server/api/endpoints/utils/serializers/output/utils/post-gating');
+const {
+  openServices,
+}: typeof import('../../../../utils/services') = require('../../../../utils/services');
 const pagesController = require('../../../../../core/server/api/endpoints/pages-public');
 
 interface Member {
@@ -28,8 +31,9 @@ interface Frame {
 const embed = '<iframe src="https://partner.transistor.fm/ghost/embed/%7Buuid%7D"></iframe>';
 
 describe('Public post response cache member isolation', function () {
-  beforeAll(async function () {
-    await require('../../../../../core/server/services/posts-public').default.init();
+  // The posts endpoint reads its response cache from a service built on first use.
+  beforeEach(function () {
+    openServices();
   });
 
   // Pages does not cache responses today, but its read key shares the helper

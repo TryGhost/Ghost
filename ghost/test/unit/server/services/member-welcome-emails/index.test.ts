@@ -17,11 +17,11 @@ const automatedEmails = require('../../../../../core/server/api/endpoints/automa
 const automationEmailPreviews = require('../../../../../core/server/api/endpoints/automation-email-previews');
 const constants = require('../../../../../core/server/services/member-welcome-emails/constants');
 const MemberWelcomeEmailService = require('../../../../../core/server/services/member-welcome-emails/member-welcome-email-service');
-// The API endpoints hold this instance, so the consumer suite stubs it rather than a fresh root
-const sharedRoot = require('../../../../../core/server/services/member-welcome-emails').default;
-const ROOT_PATH = require.resolve('../../../../../core/server/services/member-welcome-emails');
-
-type Root = (typeof import('../../../../../core/server/services/member-welcome-emails'))['default'];
+const root: (typeof import('../../../../../core/server/services/member-welcome-emails'))['default'] =
+  require('../../../../../core/server/services/member-welcome-emails').default;
+const {
+  openServices,
+}: typeof import('../../../../utils/services') = require('../../../../utils/services');
 
 const { MESSAGES } = constants;
 
@@ -95,23 +95,20 @@ const automationEmail = {
   automationRunStepId: 'step-id',
 };
 
-// The root retains one instance for the process, so each test loads a fresh copy and boots it
-// itself, always through a stubbed emitter so the shared bus never gets a listener from this file.
-// The cached module is put back afterwards, so no ready instance outlives this file.
+// Each test opens the services itself and builds the service by using it. Whatever else listens
+// for locale edits on the shared bus is set aside for the test, so only this root hears them.
 describe('Member welcome emails root', function () {
   const settings: Attributes = {};
   let sendTransactional: sinon.SinonStub;
-  let cachedRoot: NodeJS.Module | undefined;
-  let root: Root;
+  let otherLocaleListeners: ((...args: unknown[]) => void)[];
 
   beforeAll(function () {
     emailAddressService.init();
   });
 
   beforeEach(function () {
-    cachedRoot = require.cache[ROOT_PATH];
-    delete require.cache[ROOT_PATH];
-    root = require(ROOT_PATH).default;
+    otherLocaleListeners = events.rawListeners('settings.locale.edited');
+    events.removeAllListeners('settings.locale.edited');
 
     Object.assign(settings, { title: 'Test Site', locale: 'en', accent_color: '#15212A' });
     sinon.stub(settingsCache, 'get').callsFake((key) => settings[key as string]);
@@ -122,9 +119,9 @@ describe('Member welcome emails root', function () {
   });
 
   afterEach(function () {
-    delete require.cache[ROOT_PATH];
-    if (cachedRoot) {
-      require.cache[ROOT_PATH] = cachedRoot;
+    events.removeAllListeners('settings.locale.edited');
+    for (const listener of otherLocaleListeners) {
+      events.on('settings.locale.edited', listener);
     }
     sinon.restore();
     for (const key of Object.keys(settings)) {
@@ -132,60 +129,30 @@ describe('Member welcome emails root', function () {
     }
   });
 
-  async function initRoot() {
-    const on = sinon.stub(events, 'on');
+  // What the service needs before it can be built: link tracking ready, and services open.
+  function openRoot() {
     sinon.define(linkTracking, 'service', { addAutomationTrackingToUrl: sinon.stub() });
-    try {
-      await root.init();
-    } finally {
-      on.restore();
-    }
+    openServices();
   }
 
-  describe('initialization', function () {
-    it('exposes only init, stop and a guarded service getter', function () {
-      assert.deepEqual(Object.keys(root).sort(), ['init', 'service', 'stop']);
-      assert.equal(typeof root.init, 'function');
-      assert.throws(() => root.service, {
-        errorType: 'IncorrectUsageError',
-        message: /Member welcome emails used before init\(\)/,
-      });
-    });
+  const localeEdit = (locale: string) => ({
+    get: (key: string) => (key === 'value' ? locale : ''),
+  });
 
-    it('rejects init while link tracking is not ready and leaves no locale listener behind', async function () {
-      const on = sinon.stub(events, 'on');
+  describe('first use', function () {
+    it('fails while link tracking is not ready, and builds once it is', function () {
+      openServices();
 
-      await assert.rejects(root.init(), /Link tracking must be initialized/);
+      assert.throws(() => root.service, /Link tracking must be initialized/);
 
-      sinon.assert.notCalled(on);
-      assert.throws(() => root.service, { errorType: 'IncorrectUsageError' });
-    });
-
-    it('builds the service for the configured locale with one locale listener once dependencies are ready', async function () {
-      settings.locale = 'fr';
       sinon.define(linkTracking, 'service', { addAutomationTrackingToUrl: sinon.stub() });
-      const on = sinon.stub(events, 'on');
-
-      await root.init();
-
-      sinon.assert.calledOnceWithExactly(on, 'settings.locale.edited', sinon.match.func);
-      assert.ok(root.service instanceof MemberWelcomeEmailService);
-    });
-
-    it('retains the same instance and listener across repeated init', async function () {
-      await initRoot();
-      const on = sinon.stub(events, 'on');
       const service = root.service;
-
-      await root.init();
-      await Promise.all([root.init(), root.init()]);
-
+      assert.ok(service instanceof MemberWelcomeEmailService);
       assert.equal(root.service, service);
-      sinon.assert.notCalled(on);
     });
 
     it('has no welcome content to send until loadMemberWelcomeEmails runs', async function () {
-      await initRoot();
+      openRoot();
       const findAutomation = sinon.stub(models.Automation, 'findOne').resolves(welcomeRow());
 
       await assert.rejects(root.service.send({ member, memberStatus: 'free' }), {
@@ -198,11 +165,7 @@ describe('Member welcome emails root', function () {
 
     it('renders with the translator it built for the configured locale and follows locale edits', async function () {
       settings.locale = 'fr';
-      sinon.define(linkTracking, 'service', { addAutomationTrackingToUrl: sinon.stub() });
-      const on = sinon.stub(events, 'on');
-      await root.init();
-      const localeListener: (model: { get: (key: string) => string }) => unknown =
-        on.firstCall.args[1];
+      openRoot();
       sinon.stub(models.Newsletter, 'getDefaultNewsletter').resolves(newsletter('First'));
       sinon.stub(models.Automation, 'findOne').resolves(welcomeRow());
       await root.service.loadMemberWelcomeEmails();
@@ -210,12 +173,27 @@ describe('Member welcome emails root', function () {
       assert.notEqual(french, 'Manage your preferences');
 
       await root.service.send({ member, memberStatus: 'free' });
-      await localeListener({ get: (key) => (key === 'value' ? 'en' : '') });
+      events.emit('settings.locale.edited', localeEdit('en'));
       await root.service.send({ member, memberStatus: 'free' });
 
       // The HTML entity-encodes accents, so the finalized plaintext carries the footer label.
       assert.ok(sendTransactional.firstCall.args[0].text.includes(french));
       assert.ok(sendTransactional.secondCall.args[0].text.includes('Manage your preferences'));
+    });
+
+    it('builds the service for a locale edit that arrives before its first use, and follows the edit', async function () {
+      settings.locale = 'en';
+      openRoot();
+      const french = i18nLib('fr', 'ghost').t('Manage your preferences');
+
+      events.emit('settings.locale.edited', localeEdit('fr'));
+
+      sinon.stub(models.Newsletter, 'getDefaultNewsletter').resolves(newsletter('First'));
+      sinon.stub(models.Automation, 'findOne').resolves(welcomeRow());
+      await root.service.loadMemberWelcomeEmails();
+      await root.service.send({ member, memberStatus: 'free' });
+
+      assert.ok(sendTransactional.firstCall.args[0].text.includes(french));
     });
   });
 
@@ -232,7 +210,7 @@ describe('Member welcome emails root', function () {
         previewAutomationEmail: sinon.stub().resolves({ html: '<p>Preview</p>' }),
         sendTestAutomationEmail: sinon.stub().resolves(),
       };
-      sinon.stub(sharedRoot, 'service').get(() => api);
+      sinon.stub(root, 'service').get(() => api);
       sinon.stub(models.EmailDesignSetting, 'findOne').resolves(designSettings);
     });
 
@@ -336,7 +314,7 @@ describe('Member welcome emails root', function () {
     let sendBulk: sinon.SinonStub;
 
     beforeEach(async function () {
-      await initRoot();
+      openRoot();
       api = root.service;
       findAutomation = sinon.stub(models.Automation, 'findOne').resolves(welcomeRow());
       getDefaultNewsletter = sinon
@@ -416,7 +394,7 @@ describe('Member welcome emails root', function () {
     let findDesign: sinon.SinonStub;
 
     beforeEach(async function () {
-      await initRoot();
+      openRoot();
       api = root.service;
       sinon.stub(models.Automation, 'findOne').resolves(welcomeRow());
       sinon.stub(models.Newsletter, 'getDefaultNewsletter').resolves(newsletter('First'));
@@ -493,7 +471,7 @@ describe('Member welcome emails root', function () {
     let validate: sinon.SinonStub;
 
     beforeEach(async function () {
-      await initRoot();
+      openRoot();
       api = root.service;
       Object.assign(token, { created_at: new Date(), first_used_at: null, used_count: 0 });
       tokenModel = {

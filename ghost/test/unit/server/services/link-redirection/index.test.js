@@ -6,13 +6,26 @@ const config = require('../../../../../core/shared/config');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const models = require('../../../../../core/server/models');
 const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
+const root = require('../../../../../core/server/services/link-redirection').default;
+const { openServices } = require('../../../../utils/services');
+const { listening } = require('../../../../../bootstrap/services');
+
+// Opening the services registers every root that declares listeners, and other roots listen for
+// site.changed too. They are made inert, so that only this root reacts to an event.
+function silenceOtherRoots(sandbox) {
+  for (const named of listening) {
+    const other = named();
+    if (other !== root) {
+      sandbox.stub(other, 'create').returns({});
+      for (const listener of other.listeners) {
+        sandbox.stub(listener, 'handle');
+      }
+    }
+  }
+}
 
 describe('Link redirection service root', function () {
   const sandbox = sinon.createSandbox();
-  const modulePath = require.resolve('../../../../../core/server/services/link-redirection');
-  let savedModule;
-  let previousListeners;
-  let root;
   let getConfig;
   let getAdapter;
   let cache;
@@ -20,11 +33,6 @@ describe('Link redirection service root', function () {
   let dispatch;
 
   beforeEach(function () {
-    // The unit project shares one module registry, so each test loads a fresh
-    // wrapper and restores the original for the files that captured it.
-    savedModule = require.cache[modulePath];
-    delete require.cache[modulePath];
-    previousListeners = events.listeners('site.changed');
     getConfig = sandbox.stub(config, 'get').callThrough();
     getConfig.withArgs('hostSettings:linkRedirectsPublicCache:enabled').returns(false);
     const cachedLinks = new Map();
@@ -57,25 +65,13 @@ describe('Link redirection service root', function () {
       get: (property) => values[property],
     });
     dispatch = sandbox.stub(DomainEvents, 'dispatch');
-    root = require('../../../../../core/server/services/link-redirection').default;
+    silenceOtherRoots(sandbox);
+    openServices();
   });
 
   afterEach(function () {
-    for (const listener of ownedListeners()) {
-      events.removeListener('site.changed', listener);
-    }
     sandbox.restore();
-    delete require.cache[modulePath];
-    if (savedModule) {
-      require.cache[modulePath] = savedModule;
-    }
   });
-
-  function ownedListeners() {
-    return events
-      .listeners('site.changed')
-      .filter((listener) => !previousListeners.includes(listener));
-  }
 
   async function request() {
     const res = { setHeader: sandbox.stub(), redirect: sandbox.stub() };
@@ -88,32 +84,25 @@ describe('Link redirection service root', function () {
     return { res, next };
   }
 
-  it('rejects service and repository access before init', function () {
-    assert.throws(() => root.service, /Link redirection used before init/);
-    assert.throws(() => root.extras.linkRedirectRepository(), /Link redirection used before init/);
-  });
-
-  it('retains the first service and repository across repeated init', async function () {
-    await root.init();
+  it('keeps one service, and hands link tracking the repository that service was built with', function () {
     const service = root.service;
     const linkRedirectRepository = root.extras.linkRedirectRepository();
 
-    await root.init();
-
+    assert.equal(typeof linkRedirectRepository.resetCache, 'function');
     assert.equal(root.service, service);
     assert.equal(root.extras.linkRedirectRepository(), linkRedirectRepository);
   });
 
-  it('does not resolve a cache adapter or listen for site changes when caching is disabled', async function () {
-    await root.init();
+  it('does not resolve a cache adapter or reset a cache on site changes when caching is disabled', function () {
+    assert.ok(root.service);
+
+    events.emit('site.changed');
 
     sinon.assert.notCalled(getAdapter);
-    assert.equal(ownedListeners().length, 0);
+    sinon.assert.notCalled(cache.reset);
   });
 
   it('redirects a stored link and dispatches its redirect event', async function () {
-    await root.init();
-
     const { res, next } = await request();
 
     sinon.assert.calledOnceWithExactly(findOne, { from: '/r/link' }, {});
@@ -127,7 +116,6 @@ describe('Link redirection service root', function () {
   });
 
   it('builds slug URLs under the configured site URL', async function () {
-    await root.init();
     findOne.resolves(null);
 
     const url = await root.service.getSlugUrl();
@@ -137,8 +125,6 @@ describe('Link redirection service root', function () {
 
   it('resolves the configured cache adapter once and serves repeated requests from it', async function () {
     getConfig.withArgs('hostSettings:linkRedirectsPublicCache:enabled').returns(true);
-    await root.init();
-
     const responses = [await request(), await request()];
 
     sinon.assert.calledOnceWithExactly(getAdapter, 'cache:linkRedirectsPublic');
@@ -152,8 +138,6 @@ describe('Link redirection service root', function () {
 
   it('dispatches the same link identifiers from a database miss and a cache hit', async function () {
     getConfig.withArgs('hostSettings:linkRedirectsPublicCache:enabled').returns(true);
-    await root.init();
-
     await request();
     await request();
 
@@ -167,37 +151,51 @@ describe('Link redirection service root', function () {
     }
   });
 
-  it('resets the cache through one site.changed listener', async function () {
+  it('resets the cache once for each site.changed event', async function () {
     getConfig.withArgs('hostSettings:linkRedirectsPublicCache:enabled').returns(true);
-    await root.init();
+    await request();
+    await request();
+    sinon.assert.calledOnce(findOne);
 
-    const owned = ownedListeners();
-    assert.equal(owned.length, 1);
-    owned[0]();
+    events.emit('site.changed');
 
     sinon.assert.calledOnce(cache.reset);
+    await request();
+    sinon.assert.calledTwice(findOne);
   });
 
-  it('publishes nothing when the cache adapter cannot be resolved and allows an explicit retry', async function () {
+  it('builds the service for a site.changed event that arrives before its first use', function () {
+    getConfig.withArgs('hostSettings:linkRedirectsPublicCache:enabled').returns(true);
+
+    events.emit('site.changed');
+
+    sinon.assert.calledOnceWithExactly(getAdapter, 'cache:linkRedirectsPublic');
+    sinon.assert.calledOnce(cache.reset);
+    assert.ok(root.service);
+    sinon.assert.calledOnce(getAdapter);
+  });
+
+  it('fails the first use when the cache adapter cannot be resolved, and builds on a later use', async function () {
     getConfig.withArgs('hostSettings:linkRedirectsPublicCache:enabled').returns(true);
     const failure = new Error('Cache unavailable');
     getAdapter.throws(failure);
 
-    await assert.rejects(root.init(), (error) => error === failure);
-
-    assert.throws(() => root.service, /Link redirection used before init/);
-    assert.throws(() => root.extras.linkRedirectRepository(), /Link redirection used before init/);
-    assert.equal(ownedListeners().length, 0);
+    assert.throws(
+      () => root.service,
+      (error) => error === failure,
+    );
+    assert.throws(
+      () => root.extras.linkRedirectRepository(),
+      (error) => error === failure,
+    );
 
     getAdapter.returns(cache);
-    await root.init();
     const { res } = await request();
 
     sinon.assert.calledOnceWithExactly(res.redirect, 'https://destination.example/article');
   });
 
   it('passes a lookup failure to next without redirecting or dispatching', async function () {
-    await root.init();
     const failure = new Error('Redirect lookup failed');
     findOne.rejects(failure);
 

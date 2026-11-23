@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import { openServices } from '../../../../utils/services';
 
 const logging = require('@tryghost/logging');
 const models = require('../../../../../core/server/models');
@@ -9,8 +10,8 @@ const urlUtils = require('../../../../../core/shared/url-utils').default;
 const newsletters = require('../../../../../core/server/services/newsletters').default;
 
 describe('Newsletters Service', function () {
-  beforeAll(async function () {
-    await newsletters.init();
+  beforeEach(function () {
+    openServices();
   });
 
   describe('Newsletter Service', function () {

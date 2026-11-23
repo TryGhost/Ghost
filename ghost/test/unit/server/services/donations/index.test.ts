@@ -14,6 +14,10 @@ const labs = require('../../../../../core/shared/labs');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const ROOT_PATH = require.resolve('../../../../../core/server/services/donations');
 const { IncorrectUsageError } = require('@tryghost/errors');
+const {
+  openServices,
+  services,
+}: typeof import('../../../../utils/services') = require('../../../../utils/services');
 
 type DonationsRoot = typeof donationsRoot;
 
@@ -49,7 +53,7 @@ describe('donations root with its Stripe consumer', function () {
       .resolves();
     root = require(ROOT_PATH).default;
 
-    // Boot constructs Stripe before initializing donations. The consumer must
+    // Stripe is constructed before anything has used donations. The consumer must
     // look up the repository later, when the checkout webhook arrives.
     const shipNothing = { transport: { metric: async () => null }, logging: { error() {} } };
     stripe = new StripeService({
@@ -68,7 +72,8 @@ describe('donations root with its Stripe consumer', function () {
     });
   });
 
-  afterEach(function () {
+  afterEach(async function () {
+    await services.close();
     sandbox.restore();
     // Other suites may retain the old root. Restore its full cache entry,
     // rather than leaving them with a different instance from future imports.
@@ -78,25 +83,22 @@ describe('donations root with its Stripe consumer', function () {
     }
   });
 
-  it('constructs one ready repository during boot without writing or notifying staff', async function () {
+  it('constructs one repository on first use, once Ghost has started, without writing or notifying staff', async function () {
     assert.equal(require(ROOT_PATH).default, root);
     assert.throws(() => root.service, IncorrectUsageError);
     sinon.assert.notCalled(add);
     sinon.assert.notCalled(notifyDonationReceived);
 
-    const initialization = root.init();
-    assert.equal(root.init(), initialization);
-    await initialization;
+    openServices();
     const repository = root.service;
-    await root.init();
 
     assert.equal(root.service, repository);
     sinon.assert.notCalled(add);
     sinon.assert.notCalled(notifyDonationReceived);
   });
 
-  it('lets the earlier Stripe consumer save and notify through the initialized repository', async function () {
-    await root.init();
+  it('lets the earlier Stripe consumer save and notify through the repository built on first use', async function () {
+    openServices();
     const save = sandbox.spy(root.service, 'save');
 
     const result =
@@ -136,7 +138,7 @@ describe('donations root with its Stripe consumer', function () {
       releaseWrite = resolve;
     });
     add.returns(write);
-    await root.init();
+    openServices();
 
     let completed = false;
     const handling: Promise<void> = stripe.webhookController.checkoutSessionEventService
@@ -166,7 +168,7 @@ describe('donations root with its Stripe consumer', function () {
   it('propagates the model write failure unchanged without notifying staff', async function () {
     const failure = new Error('The donation could not be saved');
     add.rejects(failure);
-    await root.init();
+    openServices();
 
     await assert.rejects(
       stripe.webhookController.checkoutSessionEventService.handleEvent(donationSession()),

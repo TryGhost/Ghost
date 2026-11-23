@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import { openServices } from '../../../../utils/services';
 
 const rootPath = require.resolve('../../../../../core/server/services/audience-feedback');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
@@ -28,6 +29,7 @@ describe('Audience feedback service root', function () {
         sandbox.stub(models.MemberFeedback, method),
       ),
     ];
+    openServices();
   });
 
   afterEach(function () {
@@ -38,15 +40,13 @@ describe('Audience feedback service root', function () {
     }
   });
 
-  it('captures the home URL at initialization and retains the complete composition on repeated init', async function () {
+  it('captures the home URL on first use and retains the complete composition on later use', function () {
     const audienceFeedback = require(rootPath).default;
     sinon.assert.notCalled(homeUrl);
     homeUrl.returns('https://initialized.example/blog/');
 
-    await audienceFeedback.init();
     const { service, controller, repository } = audienceFeedback.service;
     homeUrl.returns('https://changed.example/');
-    await audienceFeedback.init();
 
     assert.equal(audienceFeedback.service.service, service);
     assert.equal(audienceFeedback.service.controller, controller);
@@ -69,7 +69,6 @@ describe('Audience feedback service root', function () {
   it('keeps the retained controller connected to its repository and live URL routing', async function () {
     const audienceFeedback = require(rootPath).default;
     homeUrl.returns('https://site.example/');
-    await audienceFeedback.init();
     const controller = audienceFeedback.service.controller;
     const post = { id: postId, status: 'published', tags: [], authors: [] };
     const req = {
@@ -81,7 +80,6 @@ describe('Audience feedback service root', function () {
     findPost.resolves(post);
     routePost.returns('https://site.example/current-slug/');
 
-    await audienceFeedback.init();
     await controller.redirectToPost(req, res, next);
 
     sinon.assert.calledOnceWithExactly(
@@ -97,15 +95,17 @@ describe('Audience feedback service root', function () {
     sinon.assert.notCalled(next);
   });
 
-  it('propagates home URL construction failure and permits a later initialization attempt', async function () {
+  it('fails the first use when the home URL cannot be built, and builds on a later use', function () {
     const audienceFeedback = require(rootPath).default;
     const failure = new Error('Home URL is unavailable');
     homeUrl.throws(failure);
 
-    await assert.rejects(audienceFeedback.init(), (error) => error === failure);
+    assert.throws(
+      () => audienceFeedback.service,
+      (error) => error === failure,
+    );
 
     homeUrl.returns('https://recovered.example/');
-    await audienceFeedback.init();
 
     assert.equal(
       audienceFeedback.service.service.buildEmailLink({ id: postId }, 0),

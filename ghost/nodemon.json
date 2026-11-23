@@ -1,6 +1,7 @@
 {
   "watch": [
     ".",
+    "../tbd/foundry/src",
     "../tbd/kernel/src",
     "../koenig/kg-card-factory/src",
     "../koenig/kg-clean-basic-html/src",

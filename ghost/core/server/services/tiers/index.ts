@@ -1,5 +1,5 @@
 import logging from '@tryghost/logging';
-import { defineService } from '#kernel/define-service';
+import { defineService } from '../../../../bootstrap/transition/define-service';
 import { TierRequirements } from './requirements';
 
 // Publishes the API and the cached tiers behind it together. The repository loads the tiers the

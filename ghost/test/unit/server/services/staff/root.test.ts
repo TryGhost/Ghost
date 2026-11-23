@@ -23,61 +23,55 @@ const InMemoryMilestoneRepository = require('../../../../../core/server/services
 const StaffService = require('../../../../../core/server/services/staff/staff-service');
 const StaffServiceEmails = require('../../../../../core/server/services/staff/staff-service-emails');
 const STAFF_PATH = require.resolve('../../../../../core/server/services/staff');
+const {
+  openServices,
+  services,
+}: typeof import('../../../../utils/services') = require('../../../../utils/services');
 const GIFTS_PATH = require.resolve('../../../../../core/server/services/gifts');
 const STRIPE_PATHS = [
   require.resolve('../../../../../core/server/services/stripe'),
   require.resolve('../../../../../core/server/services/stripe/service'),
 ];
 
-type Handler = (event: unknown) => Promise<void>;
-type Root = { init(): Promise<void>; readonly service: StaffApi };
-type StaffApi = {
-  emails: { mailer: unknown };
-  memberAttributionService: unknown;
-  DomainEvents: unknown;
-};
+type Root = typeof import('../../../../../core/server/services/staff').default;
 
-const SUBSCRIBED_EVENTS = [
+// The root Ghost registers. A fresh copy would have to be registered too, and would then keep
+// listening for the rest of the worker's tests.
+const root: Root = require(STAFF_PATH).default;
+
+const LISTENED_EVENTS = [
   MemberCreatedEvent,
   SubscriptionActivatedEvent,
   SubscriptionCancelledEvent,
   MilestoneCreatedEvent,
 ];
 
-// A freshly loaded root, so these cases never depend on, or change, the root
-// other files in this worker have initialized.
-function createRoot(): Root {
-  const saved = require.cache[STAFF_PATH];
-  delete require.cache[STAFF_PATH];
-  try {
-    return require(STAFF_PATH).default;
-  } finally {
-    delete require.cache[STAFF_PATH];
-    if (saved) {
-      require.cache[STAFF_PATH] = saved;
-    }
-  }
-}
+const CANNOT_BUILD = {
+  name: 'IncorrectUsageError',
+  message: /^Staff was used while Ghost cannot build services/,
+};
 
-const BEFORE_INIT = { name: 'IncorrectUsageError', message: /^Staff used before init\(\)/ };
+// Publishes an event as Ghost does and waits for every listener to finish.
+async function publish(event: unknown) {
+  DomainEvents.dispatch(event);
+  await DomainEvents.allSettled();
+}
 
 describe('Staff service root', function () {
   const sandbox = sinon.createSandbox();
-  let subscribe: sinon.SinonStub;
   let send: sinon.SinonStub;
   let attribution: Record<string, sinon.SinonStub>;
-  let getAttribution: sinon.SinonStub;
+  let createAttribution: sinon.SinonStub;
 
   beforeEach(function () {
-    // Capture the handlers instead of installing them on the shared event bus.
-    subscribe = sandbox.stub(DomainEvents, 'subscribe');
     send = sandbox.stub(mail.GhostMailer.prototype, 'send').resolves({});
     attribution = {
       getMemberCreatedAttribution: sandbox.stub().resolves(null),
       getSubscriptionCreatedAttribution: sandbox.stub().resolves(null),
       fetchResource: sandbox.stub().resolves(null),
     };
-    getAttribution = sandbox.stub(memberAttribution, 'service').get(() => attribution);
+    // Staff needs member attribution, so building Staff builds this first.
+    createAttribution = sandbox.stub(memberAttribution, 'create').returns(attribution);
     sandbox.stub(logging, 'warn');
     sandbox.stub(logging, 'error');
     const getSetting = sandbox.stub(settingsCache, 'get').callThrough();
@@ -94,150 +88,179 @@ describe('Staff service root', function () {
       .resolves([{ email: 'owner@site.example', slug: 'owner' }]);
   });
 
-  afterEach(function () {
+  afterEach(async function () {
+    await services.close();
     sandbox.restore();
   });
 
-  function handlerFor(Event: unknown): Handler {
-    const call = subscribe.getCalls().find((candidate) => candidate.args[0] === Event);
-    assert.ok(call, `no handler subscribed for ${String(Event)}`);
-    return call.args[1];
-  }
-
-  describe('exports and initialization', function () {
-    it('default-exports a root with only init, stop and a service getter that throws until init resolves', async function () {
+  describe('exports and building', function () {
+    it('default-exports a definition that builds nothing until the service is first used', function () {
       assert.deepEqual(Object.keys(require(STAFF_PATH)), ['default']);
-      const root = createRoot();
-      assert.deepEqual(Object.keys(root), ['init', 'stop', 'service']);
-      assert.throws(() => root.service, BEFORE_INIT);
+      assert.deepEqual(Object.keys(root), ['name', 'needs', 'create', 'listeners', 'service']);
+      assert.throws(() => root.service, CANNOT_BUILD);
+      sinon.assert.notCalled(createAttribution);
 
-      const initialization = root.init();
-      assert.ok(initialization instanceof Promise);
-      assert.equal(await initialization, undefined);
+      openServices();
+      sinon.assert.notCalled(createAttribution);
       assert.ok(root.service instanceof StaffService);
+      sinon.assert.calledOnce(createAttribution);
     });
 
-    it('composes the service with the ready attribution instance, its emails helper and mailer', async function () {
-      const root = createRoot();
-      await root.init();
+    it('composes the service with the attribution instance it is handed, its emails helper and mailer', function () {
+      openServices();
 
       const api = root.service;
       assert.equal(api.memberAttributionService, attribution);
-      assert.equal(api.DomainEvents, DomainEvents);
       assert.ok(api.emails instanceof StaffServiceEmails);
       assert.ok(api.emails.mailer instanceof mail.GhostMailer);
     });
 
-    it('subscribes the four notification handlers once, in order, across repeated init', async function () {
-      const root = createRoot();
-      await root.init();
-      const api = root.service;
-      const emails = api.emails;
-
-      await root.init();
-
-      assert.equal(root.service, api);
-      assert.equal(root.service.emails, emails);
+    it('declares the four notification listeners, and an event is delivered once however often services are opened', async function () {
       assert.deepEqual(
-        subscribe.getCalls().map((call) => call.args[0]),
-        SUBSCRIBED_EVENTS,
+        root.listeners.map((listener) => listener.event),
+        LISTENED_EVENTS,
       );
-      for (const call of subscribe.getCalls()) {
-        assert.equal(typeof call.args[1], 'function');
-      }
-    });
-
-    it('fails without subscribing while member attribution is unavailable, and a later init succeeds', async function () {
-      const failure = new Error('Member attribution used before init()');
-      getAttribution.get(() => {
-        throw failure;
-      });
-      const root = createRoot();
-
-      await assert.rejects(root.init(), (error) => error === failure);
-      assert.throws(() => root.service, BEFORE_INIT);
-      sinon.assert.notCalled(subscribe);
-
-      getAttribution.get(() => attribution);
-      await root.init();
-
-      assert.equal(root.service.memberAttributionService, attribution);
-      sinon.assert.callCount(subscribe, 4);
-    });
-
-    it('fails without subscribing when the renderer cannot be built, and a later init succeeds', async function () {
-      const failure = new Error('renderer unavailable');
-      const create = sandbox.stub(handlebars, 'create').throws(failure);
-      const root = createRoot();
-
-      await assert.rejects(root.init(), (error) => error === failure);
-      assert.throws(() => root.service, BEFORE_INIT);
-      sinon.assert.notCalled(subscribe);
-
-      create.restore();
-      await root.init();
-
-      assert.ok(root.service instanceof StaffService);
-      sinon.assert.callCount(subscribe, 4);
-    });
-
-    it('keeps partial subscriptions and blocks re-subscription after a subscription failure', async function () {
-      // A failed subscription leaves earlier handlers registered because the event
-      // bus has no unsubscribe, so the root refuses later init calls rather than
-      // registering those handlers twice.
-      const failure = new Error('subscription failed');
-      subscribe.onThirdCall().throws(failure);
-      const root = createRoot();
-
-      await assert.rejects(root.init(), (error) => error === failure);
-      assert.throws(() => root.service, BEFORE_INIT);
-      sinon.assert.callCount(subscribe, 3);
-
-      await assert.rejects(root.init(), {
-        name: 'IncorrectUsageError',
-        message: /partly subscribed by an earlier failed init/,
-      });
-
-      assert.throws(() => root.service, BEFORE_INIT);
-      sinon.assert.callCount(subscribe, 3);
-    });
-
-    it('keeps using the attribution instance captured at init after the attribution root changes', async function () {
-      const root = createRoot();
-      await root.init();
-      const replacement = {
-        getMemberCreatedAttribution: sandbox.stub().resolves(null),
-        fetchResource: sandbox.stub().resolves(null),
-      };
-      getAttribution.get(() => replacement);
       sandbox.stub(models.Member, 'findOne').resolves({
         toJSON: () => ({ id: 'member-1', email: 'member@example.com', status: 'free' }),
       });
 
-      await handlerFor(MemberCreatedEvent)(
-        MemberCreatedEvent.create({ source: 'member', memberId: 'member-1' }),
+      openServices();
+      openServices();
+      sinon.assert.notCalled(createAttribution);
+
+      await publish(MemberCreatedEvent.create({ source: 'member', memberId: 'member-1' }));
+
+      sinon.assert.calledOnce(send);
+    });
+
+    it('is refused when Ghost was not told about it, so that its listeners cannot be missed', function () {
+      // A fresh copy of the root, which nothing registers.
+      const saved = require.cache[STAFF_PATH];
+      delete require.cache[STAFF_PATH];
+      let unregistered: Root;
+      try {
+        unregistered = require(STAFF_PATH).default;
+      } finally {
+        delete require.cache[STAFF_PATH];
+        if (saved) {
+          require.cache[STAFF_PATH] = saved;
+        }
+      }
+      openServices();
+
+      assert.throws(() => unregistered.service, {
+        name: 'IncorrectUsageError',
+        message: /^Staff declares listeners or a start, but Ghost does not register it/,
+      });
+    });
+
+    it('builds the service for an event published before anything has used it', async function () {
+      openServices();
+      sandbox.stub(models.Member, 'findOne').resolves({
+        toJSON: () => ({ id: 'member-1', email: 'member@example.com', status: 'free' }),
+      });
+      sinon.assert.notCalled(createAttribution);
+
+      await publish(MemberCreatedEvent.create({ source: 'member', memberId: 'member-1' }));
+
+      sinon.assert.calledOnceWithExactly(attribution.getMemberCreatedAttribution, 'member-1');
+      sinon.assert.calledOnce(send);
+      assert.equal(root.service.memberAttributionService, attribution);
+    });
+
+    it('fails to build while member attribution is unavailable, and builds on a later use', function () {
+      const failure = new Error('Member attribution is unavailable');
+      createAttribution.throws(failure);
+      openServices();
+
+      assert.throws(
+        () => root.service,
+        (error) => error === failure,
       );
+
+      createAttribution.returns(attribution);
+
+      assert.equal(root.service.memberAttributionService, attribution);
+    });
+
+    it('fails to build when the renderer cannot be built, and builds on a later use', function () {
+      const failure = new Error('renderer unavailable');
+      const create = sandbox.stub(handlebars, 'create').throws(failure);
+      openServices();
+
+      assert.throws(
+        () => root.service,
+        (error) => error === failure,
+      );
+
+      create.restore();
+
+      assert.ok(root.service instanceof StaffService);
+    });
+
+    it('keeps using the attribution instance it was built with for as long as Ghost runs', async function () {
+      openServices();
+      assert.ok(root.service);
+      const replacement = {
+        getMemberCreatedAttribution: sandbox.stub().resolves(null),
+        fetchResource: sandbox.stub().resolves(null),
+      };
+      createAttribution.returns(replacement);
+      sandbox.stub(models.Member, 'findOne').resolves({
+        toJSON: () => ({ id: 'member-1', email: 'member@example.com', status: 'free' }),
+      });
+
+      await publish(MemberCreatedEvent.create({ source: 'member', memberId: 'member-1' }));
 
       assert.equal(root.service.memberAttributionService, attribution);
       sinon.assert.calledOnceWithExactly(attribution.getMemberCreatedAttribution, 'member-1');
       sinon.assert.notCalled(replacement.getMemberCreatedAttribution);
       sinon.assert.calledOnce(send);
     });
+
+    it('is built again after Ghost stops and starts, with the attribution built then, and delivers an event once', async function () {
+      openServices();
+      const first = root.service;
+      const replacement = {
+        getMemberCreatedAttribution: sandbox.stub().resolves(null),
+        fetchResource: sandbox.stub().resolves(null),
+      };
+      sandbox.stub(models.Member, 'findOne').resolves({
+        toJSON: () => ({ id: 'member-1', email: 'member@example.com', status: 'free' }),
+      });
+
+      await services.close();
+      assert.throws(() => root.service, CANNOT_BUILD);
+      // Nothing listens while Ghost is stopped.
+      await publish(MemberCreatedEvent.create({ source: 'member', memberId: 'member-1' }));
+      sinon.assert.notCalled(send);
+
+      createAttribution.returns(replacement);
+      openServices();
+
+      assert.notEqual(root.service, first);
+      assert.equal(first.memberAttributionService, attribution);
+      assert.equal(root.service.memberAttributionService, replacement);
+
+      await publish(MemberCreatedEvent.create({ source: 'member', memberId: 'member-1' }));
+
+      sinon.assert.notCalled(attribution.getMemberCreatedAttribution);
+      sinon.assert.calledOnceWithExactly(replacement.getMemberCreatedAttribution, 'member-1');
+      sinon.assert.calledOnce(send);
+    });
   });
 
   describe('consumers', function () {
-    const paths = [STAFF_PATH, GIFTS_PATH, ...STRIPE_PATHS];
+    const paths = [GIFTS_PATH, ...STRIPE_PATHS];
     let saved: (NodeJS.Module | undefined)[];
-    let staff: Root;
 
-    // Fresh Staff, Gifts and Stripe roots, so the consumers bind to an uninitialized
-    // Staff root and the singletons other files initialize are untouched.
+    // Fresh Gifts and Stripe roots, so the singletons other files initialize are untouched.
+    // They bind to the Staff root Ghost registers.
     beforeEach(function () {
       saved = paths.map((modulePath) => require.cache[modulePath]);
       for (const modulePath of paths) {
         delete require.cache[modulePath];
       }
-      staff = require(STAFF_PATH).default;
     });
 
     afterEach(function () {
@@ -250,24 +273,24 @@ describe('Staff service root', function () {
       });
     });
 
-    async function assertReadOnEachAccess(deps: { staffServiceEmails: unknown }) {
-      assert.throws(() => deps.staffServiceEmails, BEFORE_INIT);
+    function assertReadOnEachAccess(deps: { staffServiceEmails: unknown }) {
+      assert.throws(() => deps.staffServiceEmails, CANNOT_BUILD);
 
-      await staff.init();
-      assert.equal(deps.staffServiceEmails, staff.service.emails);
+      openServices();
+      assert.equal(deps.staffServiceEmails, root.service.emails);
 
       const replacement = {};
-      sandbox.stub(staff, 'service').get(() => ({ emails: replacement }));
+      sandbox.stub(root, 'service').get(() => ({ emails: replacement }));
       assert.equal(deps.staffServiceEmails, replacement);
     }
 
-    it('gives Stripe donation checkout the staff emails read at each access', async function () {
+    it('gives Stripe donation checkout the staff emails read at each access', function () {
       const stripe = require('../../../../../core/server/services/stripe');
 
-      await assertReadOnEachAccess(stripe.webhookController.checkoutSessionEventService.deps);
+      assertReadOnEachAccess(stripe.webhookController.checkoutSessionEventService.deps);
     });
 
-    it('gives Gifts the staff emails read at each access', async function () {
+    it('gives Gifts the staff emails read at each access', function () {
       const gifts = require('../../../../../core/server/services/gifts');
       gifts.init({
         apiUrl: 'https://site.example/ghost/api/admin/',
@@ -276,9 +299,7 @@ describe('Staff service root', function () {
         checkouts: { read: sandbox.stub() },
       });
 
-      await assertReadOnEachAccess(
-        (gifts.service as { deps: { staffServiceEmails: unknown } }).deps,
-      );
+      assertReadOnEachAccess((gifts.service as { deps: { staffServiceEmails: unknown } }).deps);
     });
   });
 
@@ -322,13 +343,12 @@ describe('Staff service root', function () {
     }
 
     it('mails a saved milestone whose email was scheduled', async function () {
-      const root = createRoot();
-      await root.init();
+      openServices();
       const event = await reachMembersMilestone();
       assert.ok(event instanceof MilestoneCreatedEvent);
       assert.ok(event.data.milestone instanceof Milestone);
 
-      await handlerFor(MilestoneCreatedEvent)(event);
+      await publish(event);
 
       sinon.assert.calledOnce(send);
       assert.equal(send.firstCall.args[0].to, 'owner@site.example');
@@ -337,14 +357,13 @@ describe('Staff service root', function () {
 
     it('does not mail a saved milestone suppressed by a recent import', async function () {
       hasImportedMembers = true;
-      const root = createRoot();
-      await root.init();
+      openServices();
       const event = await reachMembersMilestone();
       // The production entity carries the reason beside the milestone, not on it.
       assert.equal(event.data.meta.reason, 'import');
       assert.equal((event.data.milestone as { meta?: unknown }).meta, undefined);
 
-      await handlerFor(MilestoneCreatedEvent)(event);
+      await publish(event);
 
       sinon.assert.notCalled(send);
     });
@@ -353,8 +372,7 @@ describe('Staff service root', function () {
       // Pinned as current behaviour: Staff reads milestone.meta.reason, which the
       // entity never has. Production only attaches a reason when emailSentAt is
       // null, so this combination does not occur from MilestonesService today.
-      const root = createRoot();
-      await root.init();
+      openServices();
       const milestone = await Milestone.create({
         type: 'members',
         value: 1000,
@@ -364,7 +382,7 @@ describe('Staff service root', function () {
       const [event] = milestone.events;
       assert.equal(event.data.meta.reason, 'import');
 
-      await handlerFor(MilestoneCreatedEvent)(event);
+      await publish(event);
 
       sinon.assert.calledOnce(send);
     });

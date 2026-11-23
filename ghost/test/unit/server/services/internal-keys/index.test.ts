@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import type { InternalKeys } from '../../../../../core/server/services/internal-keys';
+import { openServices } from '../../../../utils/services';
 
 const internalKeysRoot = require('../../../../../core/server/services/internal-keys')
   .default as typeof import('../../../../../core/server/services/internal-keys').default;
@@ -15,12 +16,9 @@ describe('Internal keys root', function () {
   let lookup: sinon.SinonStub;
   let internalKeys: InternalKeys;
 
-  beforeAll(async function () {
-    await internalKeysRoot.init();
-    internalKeys = internalKeysRoot.service;
-  });
-
   beforeEach(function () {
+    openServices();
+    internalKeys = internalKeysRoot.service;
     previousEntries = Array.from(internalKeys.entries());
     internalKeys.clear();
     lookup = sandbox.stub(models.Integration, 'getApiKeyBySlug');

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import sinon from 'sinon';
+import { openServices } from '../../../../utils/services';
 import { JobsService } from '../../../../../core/server/services/jobs-service/jobs-service';
 import ExternalMediaInlinerJob from '../../../../../core/server/services/media-inliner/external-media-inliner-job';
 import { PostMediaInliner } from '../../../../../core/server/services/content-import/import/media';
@@ -10,7 +11,7 @@ import type { ExternalMediaImportResult } from '../../../../../core/server/servi
 import type { OriginSchemes } from '../../../../../core/server/services/media-inliner/origin-schemes';
 
 // Required rather than imported so the stubs land on the module instances the
-// root requires at init.
+// root requires when it is built.
 const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
 const config = require('../../../../../core/shared/config');
 const registerJobHandlers: typeof import('../../../../../core/server/services/jobs-service/register-job-handlers').default =
@@ -34,7 +35,6 @@ type MediaInliner = {
 };
 
 type Root = {
-  init(): Promise<void>;
   readonly service: MediaInliner;
 };
 
@@ -94,16 +94,9 @@ describe('Media inliner service root', function () {
     });
   });
 
-  it('rejects use before init without resolving storage adapters at import', function () {
+  it('builds one ready inliner on first use, resolving the storage adapters then and not at import', function () {
+    openServices();
     sinon.assert.notCalled(getAdapter);
-    assert.throws(() => root.service, {
-      errorType: 'IncorrectUsageError',
-      message: 'Media inliner used before init(). Call init() from boot first.',
-    });
-  });
-
-  it('publishes one ready inliner once init resolves and returns it synchronously afterwards', async function () {
-    assert.equal(await root.init(), undefined);
 
     const inliner = root.service;
     assert.equal(typeof inliner.inline, 'function');
@@ -116,15 +109,17 @@ describe('Media inliner service root', function () {
     ]);
   });
 
-  it('does not publish after storage resolution fails and allows an explicit retry', async function () {
+  it('fails the first use when a storage adapter cannot be resolved, and builds on a later use', async function () {
     const failure = new Error('File storage unavailable');
     getAdapter.withArgs('storage:files').throws(failure);
+    openServices();
 
-    await assert.rejects(root.init(), (error) => error === failure);
-    assert.throws(() => root.service, { errorType: 'IncorrectUsageError' });
+    assert.throws(
+      () => root.service,
+      (error) => error === failure,
+    );
 
     getAdapter.withArgs('storage:files').returns(storages['storage:files']);
-    await root.init();
 
     assert.equal(
       await root.service.getMediaStorage('.pdf', Buffer.alloc(0)),
@@ -132,22 +127,8 @@ describe('Media inliner service root', function () {
     );
   });
 
-  it('keeps the published inliner and does not resolve storage again on a later init', async function () {
-    await root.init();
-    const published = root.service;
-    const lookupsAtInit = getAdapter.callCount;
-    getAdapter.withArgs('storage:media').throws(new Error('Media storage unavailable'));
-
-    // Whether the second call rejects or shares the first attempt, the inliner
-    // handed to consumers must still be the published one.
-    await root.init().catch(() => undefined);
-
-    assert.equal(root.service, published);
-    assert.equal(getAdapter.callCount, lookupsAtInit);
-  });
-
   it('reads the upload extension policy and the active storage adapter on each storage selection', async function () {
-    await root.init();
+    openServices();
     const retained = root.service;
     const mediaStorage = storages['storage:media'];
     const imageStorage = storages['storage:images'];
@@ -170,8 +151,8 @@ describe('Media inliner service root', function () {
     assert.equal(await retained.getMediaStorage('.svg', Buffer.alloc(0)), replacementImages);
   });
 
-  it('retains the published inliner on repeated init, so the registered job handler keeps using it', async function () {
-    await root.init();
+  it('runs external media inliner jobs through the inliner handed to the job handlers', async function () {
+    openServices();
     const first = root.service;
     const jobsService = sinon.createStubInstance(JobsService);
     registerJobHandlers({
@@ -199,7 +180,6 @@ describe('Media inliner service root', function () {
     assert.ok(registration, 'boot registers the external media inliner job handler');
     const handler = registration!.args[1] as (job: ExternalMediaInlinerJob) => Promise<void>;
 
-    await root.init();
     assert.equal(root.service, first);
 
     const inline = sandbox.stub(first, 'inline').resolves();
@@ -209,7 +189,7 @@ describe('Media inliner service root', function () {
   });
 
   it('sniffs and converts downloads through the file type and codec loaders the root supplies', async function () {
-    await root.init();
+    openServices();
 
     // No extension in the URL and no Content-Type, so only file-type can name it.
     const sniffed = await root.service.extractFileDataFromResponse('https://cdn.example/logo', {
@@ -236,7 +216,7 @@ describe('Media inliner service root', function () {
     delete require.cache[codecPath];
 
     try {
-      await root.init();
+      openServices();
       await root.service.extractFileDataFromResponse('https://cdn.example/logo.png', pngResponse());
 
       assert.equal(require.cache[codecPath], undefined);
@@ -264,7 +244,7 @@ describe('Media inliner service root', function () {
       getUniqueFileName: async () => '/content/images/local.jpg',
       saveRaw: async () => '/content/images/local.jpg',
     };
-    await root.init();
+    openServices();
     const first = root.service;
     const firstImport = sandbox.stub(first, 'getRemoteMedia').callsFake(async () => pngResponse());
     const sourceUrl = 'https://cdn.example/photo.png';
@@ -287,10 +267,8 @@ describe('Media inliner service root', function () {
       sinon.match({ originSchemes: sinon.match.has('get').and(sinon.match.has('set')) }),
     );
 
-    await root.init();
-
-    // The run keeps its own cache after a re-init, and that cache does not
-    // carry over to the next run: the same URL downloads again.
+    // The run keeps its own cache, and that cache does not carry over to the
+    // next run: the same URL downloads again.
     await firstRun.inline(post());
     sinon.assert.calledOnce(firstImport);
 

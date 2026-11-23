@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { assertExists } from '../../../utils/assertions';
+import { openServices } from '../../../utils/services';
 import type { InternalKeys } from '../../../../core/server/services/internal-keys';
 
 const localRequire = createRequire(__filename);
@@ -14,18 +15,11 @@ import content_api_key from '../../../../core/frontend/helpers/content_api_key';
 describe('{{content_api_key}} helper', function () {
   let internalKeys: InternalKeys;
 
-  beforeAll(async function () {
-    await internalKeysRoot.init();
-    internalKeys = internalKeysRoot.service;
-  });
-
   beforeEach(function () {
-    internalKeys.clear();
+    // The helper asks the internal keys service for the key. Each test builds its own.
+    openServices();
+    internalKeys = internalKeysRoot.service;
     internalKeys.set('ghost-internal-frontend', Promise.resolve({ id: 'k', secret: 'xyz' }));
-  });
-
-  afterEach(function () {
-    internalKeys.clear();
   });
 
   it('returns the content API key', async function () {

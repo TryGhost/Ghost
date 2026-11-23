@@ -7,6 +7,11 @@ import { SafeString } from '../../../../core/frontend/services/handlebars';
 import configUtils from '../../../utils/config-utils';
 import loggingLib from '@tryghost/logging';
 
+// Required, so that it is the application the endpoints reach through their own requires.
+const {
+  openServices,
+}: typeof import('../../../utils/services') = require('../../../utils/services');
+
 // Stuff we are testing
 // @ts-expect-error This module lacks type definitions.
 import get from '../../../../core/frontend/helpers/get';
@@ -15,8 +20,9 @@ const { querySimplePath } = get;
 import { endpoints as api } from '../../../../core/server/api';
 
 describe('{{#get}} helper', function () {
-  beforeAll(async function () {
-    await require('../../../../core/server/services/posts-public').default.init();
+  // The posts endpoint reads its response cache, which a service holds, as it loads.
+  beforeEach(function () {
+    openServices();
   });
 
   let fn: SinonSpy;

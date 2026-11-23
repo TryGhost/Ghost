@@ -1,10 +1,9 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test, type TestContext } from 'node:test';
-import { runInNewContext } from 'node:vm';
 import {
   addedAllowances,
   allowanceProblems,
@@ -14,10 +13,11 @@ import {
   evaluateConfig,
   findInventoryReferences,
   fetchMain,
+  declaredByRoot,
   findNewJavaScript,
   fixturePath,
-  mutateBootInit,
   serviceTerms,
+  registrationProblems,
   specialistProblems,
   verifyService,
   type Cruise,
@@ -31,11 +31,34 @@ const inventory = `services:
   other:
     disposition: migrate
 `;
-// The root is bound inside its phase, as lint requires of boot.js.
-const boot = `async function initServices() {
-  const staffService = require('./server/services/staff').default;
-  await Promise.all([staffService.init()]);
+// Boot opens the services and starts the one root the start sequence waits for.
+const boot = `async function initCore() {
+  const application = require('../bootstrap/app').default;
+  application.services.open();
+  const signingKeys = require('./server/services/signing-keys').default;
+  await application.services.start(signingKeys);
 }
+`;
+const registryPath = 'ghost/bootstrap/services.ts';
+const registry = `export const listening = [
+  () => require('../core/server/services/posts-public').default,
+];
+export const background = [
+  () => require('../core/server/services/explore-ping').default,
+];
+`;
+const plainRoot = `export default defineService('Staff', () => new StaffService());\n`;
+const listeningRoot = `export default defineService('Staff', {
+  create: () => new StaffService(),
+  listeners: [{ event: legacyEvent('site.changed'), handle: (service) => service.reset() }],
+});
+`;
+const startingRoot = `export default defineService('Staff', {
+  create,
+  start(service) {
+    service.poll();
+  },
+});
 `;
 
 const rule: ServiceRule = {
@@ -89,6 +112,7 @@ async function fixture(t: TestContext) {
   await write(inventoryPath, inventory);
   await write('ghost/core/server/services/staff/index.ts', 'export {};\n');
   await write('ghost/core/boot.js', boot);
+  await write(registryPath, registry);
   const base = commit('base');
   const calls: string[] = [];
   const cruises: Record<string, Cruise> = { source: empty, built: empty };
@@ -300,95 +324,64 @@ test('the base config is evaluated with requires resolved from the repository', 
   });
 });
 
-test('the boot mutation stops boot waiting but keeps rejections', async () => {
-  const mutated = mutateBootInit(boot, 'staff');
-  assert.equal(mutated?.variable, 'staffService');
-  assert.match(
-    mutated?.source ?? '',
-    /Promise\.all\(\[Promise\.race\(\[staffService\.init\(\), Array\.from\(\{ length: 50 \}\)/,
+test('a root declares listeners or a start as properties of its definition', () => {
+  assert.deepEqual(declaredByRoot(plainRoot), { listeners: false, start: false });
+  assert.deepEqual(declaredByRoot(listeningRoot), { listeners: true, start: false });
+  assert.deepEqual(declaredByRoot(startingRoot), { listeners: false, start: true });
+  for (const start of [
+    'start: (service) => service.check(),',
+    'async start(service) { await service.check(); },',
+  ]) {
+    assert.deepEqual(
+      declaredByRoot(`export default defineService('Staff', {\n  create,\n  ${start}\n});\n`),
+      { listeners: false, start: true },
+      start,
+    );
+  }
+  assert.deepEqual(
+    declaredByRoot(`export default defineService('Staff', { create, listeners, start, stop });\n`),
+    { listeners: true, start: true },
   );
-  assert.equal(mutateBootInit(boot, 'tiers'), undefined);
-  const withArguments = mutateBootInit(
-    boot.replace('staffService.init()', 'staffService.init({ a: f(1) })'),
-    'staff',
-  );
-  assert.match(withArguments?.source ?? '', /race\(\[staffService\.init\(\{ a: f\(1\) \}\), Array/);
-
-  // Run the mutated boot as the boot tests do, in a context without Node globals,
-  // against the two kinds of init they use.
-  const startBoot = (init: () => Promise<unknown>) =>
-    runInNewContext(`${mutated?.source}\ninitServices();`, {
-      require: () => ({ default: { init } }),
-    }) as Promise<void>;
-  let released = false;
-  await startBoot(
-    () =>
-      new Promise((resolve) => {
-        setImmediate(() => {
-          released = true;
-          resolve(undefined);
-        });
-      }),
-  );
-  assert.equal(released, false, 'boot waited for an init that was still pending');
-  class InitFailure extends Error {}
-  const failure = new InitFailure('init failed');
-  await assert.rejects(
-    startBoot(async () => {
-      await null;
-      throw failure;
-    }),
-    (error) => error === failure,
+  // Using something that starts, or describing the options in a comment, declares nothing.
+  assert.deepEqual(
+    declaredByRoot(
+      `// start: (service) => service.poll(),\n// listeners: [],\nexport default defineService('Staff', () => {\n  const job = new Job();\n  job.start();\n  return new StaffService({ job });\n});\n`,
+    ),
+    { listeners: false, start: false },
   );
 });
 
-test('the boot mutation follows a binding only within its own phase', () => {
-  // The generator names a one-word service <name>Service, which earlier phases
-  // already use for other roots.
-  const earlier = `async function initServicesForFrontend() {
-  const themeService = require('./server/services/themes');
-  await themeService.init();
-}
-`;
-  const later = (body: string) => `async function initServices() {
-  const themeService = require('./server/services/theme').default;
-${body}
-}
-`;
-  const mutated = mutateBootInit(earlier + later('  await themeService.init();'), 'theme');
-  assert.ok(mutated, 'The binding in the later phase must be found');
-  assert.ok(mutated.source.startsWith(earlier), 'The earlier phase must be left alone');
-  assert.match(
-    mutated.source.slice(earlier.length),
-    /await Promise\.race\(\[themeService\.init\(\)/,
-  );
-  // A binding with no init() in its own phase is not found through another phase's call.
-  assert.equal(mutateBootInit(earlier + later('  use(themeService.service);'), 'theme'), undefined);
+test('a root that declares listeners or a start must be named in the bootstrap lists', () => {
+  const problems = (root: string, lists = registry, startSequence = boot, service = 'staff') =>
+    registrationProblems({ service, root, registry: lists, boot: startSequence });
+  const named = registry.replace('posts-public', 'staff');
+  assert.deepEqual(problems(plainRoot), []);
+  assert.deepEqual(problems(listeningRoot, named), []);
+  assert.deepEqual(problems(startingRoot, named), []);
+
+  const unlistened = problems(listeningRoot).join('\n');
+  assert.match(unlistened, /staff declares listeners, but ghost\/bootstrap\/services\.ts/);
+  assert.match(unlistened, /Add it to `listening`:/);
+  assert.match(unlistened, /\(\) => require\('\.\.\/core\/server\/services\/staff'\)\.default,/);
+  const unstarted = problems(startingRoot).join('\n');
+  assert.match(unstarted, /staff declares a start, but/);
+  assert.match(unstarted, /Add it to `background`:/);
+  // A longer name that contains this one does not register it.
+  assert.equal(problems(listeningRoot, registry.replace('posts-public', 'staff-notes')).length, 3);
+
+  // Boot starts signing keys itself, so that root is in neither list.
+  assert.deepEqual(problems(startingRoot, registry, boot, 'signing-keys'), []);
+  // Boot naming a root does not listen for its events.
+  assert.equal(problems(listeningRoot, registry, boot, 'signing-keys').length, 3);
+  // Nor does boot naming it without starting anything.
   assert.equal(
-    mutateBootInit(later('  use(themeService.service);') + earlier, 'theme'),
-    undefined,
-    'A later phase with the same binding name must not be mutated either',
-  );
-  // A root bound again, only to read the ready instance, does not hide its init().
-  const twice = `async function initCore() {
-  const keys = require('./server/services/keys').default;
-  await keys.init();
-}
-async function initServices() {
-  const keys = require('./server/services/keys').default;
-  use(keys.service);
-}
-`;
-  assert.match(
-    mutateBootInit(twice, 'keys')?.source ?? '',
-    /await Promise\.race\(\[keys\.init\(\)/,
-  );
-  const reversed = twice
-    .replace('await keys.init();', 'use(keys.service);')
-    .replace(/use\(keys\.service\);\n\}\n$/, 'await keys.init();\n}\n');
-  assert.match(
-    mutateBootInit(reversed, 'keys')?.source.split('async function initServices')[1] ?? '',
-    /await Promise\.race\(\[keys\.init\(\)/,
+    problems(
+      startingRoot,
+      registry,
+      "const signingKeys = require('./server/services/signing-keys').default;\n",
+      'signing-keys',
+    ).length,
+    3,
   );
 });
 
@@ -606,7 +599,7 @@ test('changed unit tests run shuffled and alone after the full suite', async (t)
   const runner: RunCommand = (command, args, options) => {
     if (command !== 'git' && args[1] !== 'depcruise') {
       seen.push([args.join(' '), options.cwd]);
-      return { status: args.includes('test/unit/boot') ? 1 : 0, output: '' };
+      return { status: 0, output: '' };
     }
     return f.run(command, args, options);
   };
@@ -619,45 +612,28 @@ test('changed unit tests run shuffled and alone after the full suite', async (t)
   assert.ok(checks.every((check) => check.status !== 'fail'));
 });
 
-test('the boot check fails when tests survive the mutation and restores boot.js', async (t) => {
+test('the registration check reads the committed root and passes a root with nothing to register', async (t) => {
   const f = await fixture(t);
-  let during = '';
-  const runner: RunCommand = (command, args, options) => {
-    if (command !== 'git' && args[1] !== 'depcruise' && args.includes('test/unit/boot')) {
-      during = execFileSync('cat', ['ghost/core/boot.js'], { cwd: f.root, encoding: 'utf8' });
-      return { status: 0, output: '' };
-    }
-    return command === 'git' || args[1] === 'depcruise'
-      ? f.run(command, args, options)
-      : { status: 0, output: '' };
-  };
-  await f.write('marker.ts', '');
-  f.commit('change');
-  const check = f.verify('staff', false, runner).at(-1);
-  assert.equal(check?.name, 'boot-waits-for-init');
-  assert.equal(check?.status, 'fail');
-  assert.match(during, /Promise\.race\(\[staffService\.init\(\)/);
-  assert.equal(await readFile(join(f.root, 'ghost/core/boot.js'), 'utf8'), boot);
+  const check = () => f.verify().find((item) => item.name === 'registered-with-application');
+  assert.equal(check()?.status, 'pass');
+
+  await f.write('ghost/core/server/services/staff/index.ts', listeningRoot);
+  f.commit('listen');
+  assert.equal(check()?.status, 'fail');
+  assert.match(check()?.details.join('\n') ?? '', /Add it to `listening`:/);
+
+  await f.write(registryPath, registry.replace('posts-public', 'staff'));
+  f.commit('register');
+  assert.deepEqual(check(), { name: 'registered-with-application', status: 'pass', details: [] });
 });
 
-test('the boot check says how to write the call when it cannot find one', async (t) => {
+test('the registration check is skipped for a legacy service', async (t) => {
   const f = await fixture(t);
-  // The inline form runs, but the check cannot follow it to mutate it.
-  await f.write(
-    'ghost/core/boot.js',
-    `async function initServices() {
-  await require('./server/services/staff').default.init();
-}
-`,
-  );
-  f.commit('inline');
-  const check = f.verify('staff', false).at(-1);
-  assert.equal(check?.name, 'boot-waits-for-init');
-  assert.equal(check?.status, 'fail');
-  assert.match(check?.details.join('\n') ?? '', /No init call for staff found in boot\.js/);
-  assert.match(
-    check?.details.join('\n') ?? '',
-    /const example = require\('\.\/server\/services\/staff'\)\.default;\n\s+await example\.init\(\);/,
+  await f.write('ghost/core/server/services/other/index.ts', listeningRoot);
+  f.commit('legacy root');
+  assert.equal(
+    f.verify('other').find((item) => item.name === 'registered-with-application'),
+    undefined,
   );
 });
 
@@ -673,7 +649,7 @@ test('a failing tool reports its failure and the end of its output', async (t) =
       ? { status: 1, output: 'first\nboom\n' }
       : args[0] === 'nx'
         ? { status: 1, output: 'noise\n FAIL  |unit| a test\nnoise\n' }
-        : { status: args.includes('test/unit/boot') ? 1 : 0, output: '' };
+        : { status: 0, output: '' };
   };
   const checks = f.verify('staff', false, runner);
   const check = checks.find((item) => item.name === 'oxlint');

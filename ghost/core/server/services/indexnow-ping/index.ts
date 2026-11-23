@@ -1,5 +1,7 @@
-import { defineService } from '#kernel/define-service';
+import { defineService, legacyEvent } from '../../../../bootstrap/transition/define-service';
 import { IndexNowPingService } from './indexnow-ping-service';
+
+type PostEvent = Parameters<IndexNowPingService['handlePostEvent']>;
 
 export default defineService('IndexNow', {
   create: () =>
@@ -10,9 +12,16 @@ export default defineService('IndexNow', {
       urlUtils: require('../../../shared/url-utils').default,
       request: require('@tryghost/request'),
       logging: require('@tryghost/logging'),
-      events: require('../../lib/common/events'),
     }),
-  start: (service) => service.subscribeEvents(),
-  // Also removes the listeners of a partial subscription when start fails.
-  stop: (service) => service.unsubscribeEvents(),
+  // A post being published, and a published post being edited.
+  listeners: [
+    {
+      event: legacyEvent('post.published'),
+      handle: (service, ...event: PostEvent) => service.handlePostEvent(...event),
+    },
+    {
+      event: legacyEvent('post.published.edited'),
+      handle: (service, ...event: PostEvent) => service.handlePostEvent(...event),
+    },
+  ],
 });

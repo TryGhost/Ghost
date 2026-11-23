@@ -19,8 +19,11 @@ const {
 } = require('../../../../../core/shared/events');
 const MilestoneCreatedEvent = require('../../../../../core/server/services/milestones/milestone-created-event');
 const STAFF_PATH = require.resolve('../../../../../core/server/services/staff');
+const {
+  openServices,
+  services,
+}: typeof import('../../../../utils/services') = require('../../../../utils/services');
 
-type Handler = (event: unknown) => Promise<void>;
 type Recipient = { email: string; slug: string };
 type Emails = {
   mailer: unknown;
@@ -71,7 +74,6 @@ function row(json: unknown) {
 
 describe('Staff notifications', function () {
   const sandbox = sinon.createSandbox();
-  let subscribe: sinon.SinonStub;
   let send: sinon.SinonStub;
   let warn: sinon.SinonStub;
   let error: sinon.SinonStub;
@@ -81,12 +83,11 @@ describe('Staff notifications', function () {
   let findMember: sinon.SinonStub;
   let findSubscription: sinon.SinonStub;
   let attribution: Record<string, sinon.SinonStub>;
-  let root: { init(): Promise<void>; readonly service: { emails: Emails } };
+  let root: typeof import('../../../../../core/server/services/staff').default;
   let emails: Emails;
 
   beforeEach(async function () {
     configUtils.set('mail', { transport: 'direct' });
-    subscribe = sandbox.stub(DomainEvents, 'subscribe');
     send = sandbox.stub(mail.GhostMailer.prototype, 'send').resolves({});
     warn = sandbox.stub(logging, 'warn');
     error = sandbox.stub(logging, 'error');
@@ -97,7 +98,8 @@ describe('Staff notifications', function () {
         .stub()
         .resolves({ title: 'Welcome post', url: '/welcome/', referrerSource: 'Direct' }),
     };
-    sandbox.stub(memberAttribution, 'service').get(() => attribution);
+    // Staff needs member attribution, so building Staff builds this first.
+    sandbox.stub(memberAttribution, 'create').returns(attribution);
     getSetting = sandbox.stub(settingsCache, 'get').callThrough();
     getSetting.withArgs('title').returns('First Title');
     getSetting.withArgs('accent_color').returns('#123456');
@@ -115,31 +117,22 @@ describe('Staff notifications', function () {
       .resolves(row(SUBSCRIPTION));
     sandbox.stub(models.Offer, 'findOne').resolves(null);
 
-    // A freshly loaded root, so these cases never depend on, or change, the root
-    // other files in this worker have initialized.
-    const saved = require.cache[STAFF_PATH];
-    delete require.cache[STAFF_PATH];
-    try {
-      root = require(STAFF_PATH).default;
-    } finally {
-      delete require.cache[STAFF_PATH];
-      if (saved) {
-        require.cache[STAFF_PATH] = saved;
-      }
-    }
-    await root.init();
-    emails = root.service.emails;
+    // As boot does: Ghost listens for the events Staff declares, then services may be built.
+    root = require(STAFF_PATH).default;
+    openServices();
+    emails = services.get(root).emails as unknown as Emails;
   });
 
   afterEach(async function () {
+    await services.close();
     sandbox.restore();
     await configUtils.restore();
   });
 
-  function handlerFor(Event: unknown): Handler {
-    const call = subscribe.getCalls().find((candidate) => candidate.args[0] === Event);
-    assert.ok(call, `no handler subscribed for ${String(Event)}`);
-    return call.args[1];
+  // Publishes an event as Ghost does and waits for every listener to finish.
+  async function publish(event: unknown) {
+    DomainEvents.dispatch(event);
+    await DomainEvents.allSettled();
   }
 
   // Holds the first delivery open and reports when it has started.
@@ -329,7 +322,7 @@ describe('Staff notifications', function () {
         const failure = new Error('SMTP down');
         send.rejects(failure);
 
-        await handlerFor(Event)(createEvent());
+        await publish(createEvent());
 
         sinon.assert.calledOnceWithExactly(error, failure, message);
       });
@@ -339,7 +332,7 @@ describe('Staff notifications', function () {
       const failure = new Error('resource lookup failed');
       attribution.fetchResource.rejects(failure);
 
-      await handlerFor(MemberCreatedEvent)(
+      await publish(
         MemberCreatedEvent.create({
           source: 'member',
           memberId: 'member-1',
@@ -359,7 +352,7 @@ describe('Staff notifications', function () {
     it('sends the signup notification without attribution when the historical lookup fails', async function () {
       attribution.getMemberCreatedAttribution.rejects(new Error('history unavailable'));
 
-      await handlerFor(MemberCreatedEvent)(created());
+      await publish(created());
 
       sinon.assert.calledOnceWithExactly(attribution.getMemberCreatedAttribution, 'member-1');
       sinon.assert.calledWith(warn, 'Failed to get attribution for member - member-1');
@@ -372,9 +365,7 @@ describe('Staff notifications', function () {
       const failure = new Error('resource lookup failed');
       attribution.fetchResource.rejects(failure);
 
-      await handlerFor(SubscriptionActivatedEvent)(
-        activated({ attribution: { id: 'post-1', type: 'post' } }),
-      );
+      await publish(activated({ attribution: { id: 'post-1', type: 'post' } }));
 
       sinon.assert.notCalled(attribution.getSubscriptionCreatedAttribution);
       sinon.assert.notCalled(send);
@@ -388,7 +379,7 @@ describe('Staff notifications', function () {
     it('sends the paid start notification without attribution when the historical lookup fails', async function () {
       attribution.getSubscriptionCreatedAttribution.rejects(new Error('history unavailable'));
 
-      await handlerFor(SubscriptionActivatedEvent)(activated());
+      await publish(activated());
 
       sinon.assert.calledOnceWithExactly(attribution.getSubscriptionCreatedAttribution, 'sub-1');
       sinon.assert.calledWith(warn, 'Failed to get attribution for member - member-1');
@@ -398,7 +389,7 @@ describe('Staff notifications', function () {
     });
 
     it('uses supplied attribution instead of the historical lookup', async function () {
-      await handlerFor(MemberCreatedEvent)(
+      await publish(
         MemberCreatedEvent.create({
           source: 'member',
           memberId: 'member-1',
@@ -437,7 +428,7 @@ describe('Staff notifications', function () {
       it(`logs a TypeError and sends nothing when ${description} is missing`, async function () {
         missing();
 
-        await handlerFor(Event)(createEvent());
+        await publish(createEvent());
 
         sinon.assert.notCalled(send);
         sinon.assert.calledOnceWithExactly(error, sinon.match.instanceOf(TypeError), message);
@@ -448,7 +439,7 @@ describe('Staff notifications', function () {
       const failure = new Error('template unavailable');
       sandbox.stub(emails, 'renderHTML').rejects(failure);
 
-      await handlerFor(MemberCreatedEvent)(created());
+      await publish(created());
 
       sinon.assert.notCalled(send);
       sinon.assert.calledOnceWithExactly(

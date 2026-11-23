@@ -10,22 +10,12 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const gifts = sinon.stub();
   const analytics = sinon.stub();
   const emailSuppressionList = { init: sinon.stub().resolves() };
-  const mentions = sinon.stub().resolves();
-  // Recommendations initializes synchronously and reads the mentions fields during its call.
-  const recommendations = sinon.stub();
-  const media = sinon.stub().resolves();
   const email = sinon.stub().resolves();
-  const donations = sinon.stub().resolves();
-  const tiers = sinon.stub().resolves();
-  const memberAttribution = sinon.stub().resolves();
-  // Staff captures the ready attribution service.
-  const staff = sinon.stub().resolves();
   const linkTracking = sinon.stub().resolves();
-  const memberWelcomeEmails = sinon.stub().resolves();
-  const indexnow = sinon.stub().resolves();
-  const indexnowStop = sinon.stub().resolves();
-  const slack = sinon.stub().resolves();
-  const slackStop = sinon.stub().resolves();
+  // The service roots whose start is background work, and the application that starts them.
+  // Boot builds no other service root: each is built by whatever first uses it.
+  const background = [{ name: 'First background root' }, { name: 'Second background root' }];
+  const startService = sinon.stub().resolves();
   // Webhook listener registration is synchronous in production; boot awaits whatever it returns.
   const webhooks = sinon.stub();
   const register = sinon.stub();
@@ -61,10 +51,11 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
         deliveryService: {},
         service: {},
       },
+      '../bootstrap/app': { default: { services: { start: startService } } },
+      '../bootstrap/services': { background: background.map((root) => () => root) },
       './server/services/mentions': {
-        default: { init: mentions, service: { controller: {}, sendingService: {} } },
+        default: { service: { controller: {}, sendingService: {} } },
       },
-      './server/services/recommendations': { default: { init: recommendations } },
       './server/services/email-analytics': {
         getGifts: () => ({}),
         getAutomations: () => ({}),
@@ -73,16 +64,9 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       },
       './server/services/email-service': { init: email, service: {} },
       './server/services/email-suppression-list': emailSuppressionList,
-      './server/services/donations': { default: { init: donations } },
-      './server/services/tiers': { default: { init: tiers } },
-      './server/services/member-attribution': { default: { init: memberAttribution } },
-      './server/services/staff': { default: { init: staff } },
       './server/services/link-tracking': { init: linkTracking },
-      './server/services/member-welcome-emails': { default: { init: memberWelcomeEmails } },
       './server/services/webhooks': { listen: webhooks },
-      './server/services/indexnow-ping': { default: { init: indexnow, stop: indexnowStop } },
-      './server/services/slack-ping': { default: { init: slack, stop: slackStop } },
-      './server/services/media-inliner': { default: { init: media, service: {} } },
+      './server/services/media-inliner': { default: { service: {} } },
       './server/services/post-scheduling': { default: { rescheduleAll: reschedule } },
       './server/services/jobs-service/register-job-handlers': { default: register },
       './server/services/signing-keys': { default: { service: signingKeys } },
@@ -96,23 +80,13 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     stripe,
     emailAddress,
     gifts,
-    mentions,
-    recommendations,
     analytics,
     emailSuppressionList,
-    media,
     email,
-    donations,
-    tiers,
-    memberAttribution,
-    staff,
     linkTracking,
-    memberWelcomeEmails,
     webhooks,
-    indexnow,
-    indexnowStop,
-    slack,
-    slackStop,
+    background,
+    startService,
     register,
     signingKeys,
     start,
@@ -145,7 +119,7 @@ it('initializes dependencies and starts jobs before calling automations init', a
   const boot = createServicesHarness();
   await boot.initServices();
 
-  for (const dependency of [boot.gifts, boot.mentions, boot.analytics, boot.media, boot.email]) {
+  for (const dependency of [boot.gifts, boot.analytics, boot.email, boot.startService]) {
     sinon.assert.callOrder(dependency, boot.register);
   }
   sinon.assert.callOrder(boot.register, boot.start, boot.automations, boot.reschedule);
@@ -191,9 +165,8 @@ it('waits for Stripe initialization before initializing gifts and the other serv
     await setImmediate();
     sinon.assert.calledOnce(boot.stripe);
     sinon.assert.notCalled(boot.gifts);
-    sinon.assert.notCalled(boot.mentions);
     sinon.assert.notCalled(boot.analytics);
-    sinon.assert.notCalled(boot.media);
+    sinon.assert.notCalled(boot.startService);
     sinon.assert.notCalled(boot.register);
     sinon.assert.notCalled(boot.start);
   } finally {
@@ -206,30 +179,41 @@ it('waits for Stripe initialization before initializing gifts and the other serv
   sinon.assert.calledOnce(boot.start);
 });
 
-it('waits for member attribution initialization before initializing staff', async function () {
+it('starts each background root through the application, once the legacy services are ready and before jobs', async function () {
+  const boot = createServicesHarness();
+
+  await boot.initServices();
+
+  assert.deepEqual(
+    boot.startService.getCalls().map((call) => call.args),
+    boot.background.map((root) => [root]),
+  );
+  sinon.assert.callOrder(boot.email, boot.startService, boot.register, boot.start);
+});
+
+it('waits for a background root to start before registering or starting jobs', async function () {
   const boot = createServicesHarness();
   const ready = Promise.withResolvers<void>();
-  boot.memberAttribution.returns(ready.promise);
+  boot.startService.onFirstCall().returns(ready.promise);
   const startup = boot.initServices();
 
   try {
     await setImmediate();
-    sinon.assert.calledOnce(boot.memberAttribution);
-    sinon.assert.notCalled(boot.staff);
+    sinon.assert.calledOnce(boot.startService);
     sinon.assert.notCalled(boot.register);
   } finally {
     ready.resolve();
     await startup;
   }
 
-  sinon.assert.calledOnce(boot.staff);
-  sinon.assert.callOrder(boot.memberAttribution, boot.staff, boot.register);
+  sinon.assert.calledTwice(boot.startService);
+  sinon.assert.calledOnce(boot.register);
 });
 
-it('propagates a synchronous recommendations initialization error without starting dependent work', async function () {
+it('propagates the error a background root fails to start with, without starting dependent work', async function () {
   const boot = createServicesHarness();
-  const failure = new Error('recommendations initialization failed');
-  boot.recommendations.throws(failure);
+  const failure = new Error('background root failed to start');
+  boot.startService.rejects(failure);
 
   await assert.rejects(boot.initServices(), (error) => error === failure);
 
@@ -239,54 +223,15 @@ it('propagates a synchronous recommendations initialization error without starti
   sinon.assert.notCalled(boot.reschedule);
 });
 
-it('registers the webhook listeners once, after mentions initialization', async function () {
+it('registers the webhook listeners once', async function () {
   const boot = createServicesHarness();
 
   await boot.initServices();
 
   sinon.assert.calledOnceWithExactly(boot.webhooks);
-  sinon.assert.callOrder(boot.mentions, boot.webhooks);
 });
 
-for (const [label, init, stop] of [
-  ['IndexNow', 'indexnow', 'indexnowStop'],
-  ['Slack ping', 'slack', 'slackStop'],
-] as const) {
-  it(`registers ${label} stop as a server cleanup task once it has initialized`, async function () {
-    const boot = createServicesHarness();
-    const registerCleanupTask = sinon.stub();
-
-    await boot.initServices({ registerCleanupTask });
-
-    const registrations = registerCleanupTask.getCalls().filter((call) => call.args[1] === label);
-    assert.equal(registrations.length, 1);
-    assert.ok(boot[init].firstCall.calledBefore(registrations[0]));
-    sinon.assert.notCalled(boot[stop]);
-
-    await registrations[0].args[0]();
-    sinon.assert.calledOnceWithExactly(boot[stop]);
-  });
-
-  it(`does not stop ${label} when boot has no server to register with`, async function () {
-    const boot = createServicesHarness();
-
-    await boot.initServices();
-
-    sinon.assert.calledOnce(boot[init]);
-    sinon.assert.notCalled(boot[stop]);
-  });
-}
-
-it('constructs gifts over the tiers root before tiers initialization starts', async function () {
-  const boot = createServicesHarness();
-
-  await boot.initServices();
-
-  sinon.assert.calledOnce(boot.tiers);
-  sinon.assert.callOrder(boot.gifts, boot.tiers);
-});
-
-it('waits for link tracking before initializing member welcome emails, then initializes it before jobs', async function () {
+it('waits for link tracking before registering jobs', async function () {
   const boot = createServicesHarness();
   const ready = Promise.withResolvers<void>();
   boot.linkTracking.returns(ready.promise);
@@ -295,35 +240,16 @@ it('waits for link tracking before initializing member welcome emails, then init
   try {
     await setImmediate();
     sinon.assert.calledOnce(boot.linkTracking);
-    sinon.assert.notCalled(boot.memberWelcomeEmails);
     sinon.assert.notCalled(boot.register);
   } finally {
     ready.resolve();
     await startup;
   }
 
-  sinon.assert.calledOnce(boot.memberWelcomeEmails);
-  sinon.assert.callOrder(
-    boot.emailAddress,
-    boot.linkTracking,
-    boot.memberWelcomeEmails,
-    boot.register,
-    boot.automations,
-  );
+  sinon.assert.callOrder(boot.emailAddress, boot.linkTracking, boot.register, boot.automations);
 });
 
-for (const dependency of [
-  'mentions',
-  'media',
-  'email',
-  'donations',
-  'memberWelcomeEmails',
-  'tiers',
-  'webhooks',
-  'staff',
-  'indexnow',
-  'slack',
-] as const) {
+for (const dependency of ['email', 'webhooks'] as const) {
   it(`waits for ${dependency} initialization to finish before registering or starting jobs`, async function () {
     const boot = createServicesHarness();
     const ready = Promise.withResolvers<void>();
@@ -361,25 +287,6 @@ for (const dependency of [
     sinon.assert.notCalled(boot.reschedule);
   });
 }
-
-it('waits for mentions initialization to finish before initializing recommendations', async function () {
-  // Recommendations reads the ready Mentions instance while it initializes.
-  const boot = createServicesHarness();
-  const ready = Promise.withResolvers<void>();
-  boot.mentions.returns(ready.promise);
-  const startup = boot.initServices();
-
-  try {
-    await setImmediate();
-    sinon.assert.calledOnce(boot.mentions);
-    sinon.assert.notCalled(boot.recommendations);
-  } finally {
-    ready.resolve();
-    await startup;
-  }
-
-  sinon.assert.calledOnce(boot.recommendations);
-});
 
 it('waits for jobs startup to finish before automations init and post rescheduling', async function () {
   const boot = createServicesHarness();

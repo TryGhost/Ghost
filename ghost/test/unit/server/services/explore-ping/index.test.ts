@@ -25,6 +25,11 @@ const POSTS_PATH =
 const postsFactory = require(POSTS_PATH);
 const ROOT_PATH = require.resolve('../../../../../core/server/services/explore-ping');
 const EXPLORE_URL = 'https://explore.example/update';
+const {
+  openServices,
+  services,
+  startAsBoot,
+}: typeof import('../../../../utils/services') = require('../../../../utils/services');
 
 type Root = (typeof import('../../../../../core/server/services/explore-ping'))['default'];
 type Response = Awaited<ReturnType<ExplorePingServiceDeps['request']>>;
@@ -33,6 +38,7 @@ describe('explore-ping root', function () {
   const sandbox = sinon.createSandbox();
   let originalModules: Map<string, NodeJS.Module | undefined>;
   let root: Root;
+  let stats: { api: unknown; cache: null };
   let createPosts: sinon.SinonSpy;
   let ping: sinon.SinonSpy<[], Promise<void>>;
   let getConfig: sinon.SinonStub;
@@ -43,8 +49,7 @@ describe('explore-ping root', function () {
   let warn: sinon.SinonStub;
 
   beforeEach(async function () {
-    originalModules = new Map([ROOT_PATH, POSTS_PATH].map((path) => [path, require.cache[path]]));
-    delete require.cache[ROOT_PATH];
+    originalModules = new Map([POSTS_PATH].map((path) => [path, require.cache[path]]));
     createPosts = sandbox.spy(postsFactory);
     const postsModule = require.cache[POSTS_PATH];
     assert.ok(postsModule);
@@ -66,18 +71,20 @@ describe('explore-ping root', function () {
     sandbox.stub(PostStats.prototype, 'getMostRecentlyPublishedPostDate').resolves(null);
     sandbox.stub(PostStats.prototype, 'getFirstPublishedPostDate').resolves(null);
     totalMembers = sandbox.stub(members.stats, 'getTotalMembers').resolves(7);
-    // Boot awaits Stats before Explore; the root passes its ready aggregate.
-    await statsRoot.init();
-    sandbox.stub(statsRoot.service, 'api').value(null);
+    // Explore needs Stats, so building Explore builds this first and hands it over.
+    stats = { api: null, cache: null };
+    sandbox.stub(statsRoot, 'create').returns(stats);
     info = sandbox.stub(logging, 'info');
     warn = sandbox.stub(logging, 'warn');
     root = require(ROOT_PATH).default;
+    openServices();
   });
 
   afterEach(async function () {
     try {
       await Promise.allSettled(ping.returnValues);
     } finally {
+      await services.close();
       sandbox.restore();
       for (const [path, original] of originalModules) {
         if (original) {
@@ -93,10 +100,10 @@ describe('explore-ping root', function () {
     it(`constructs with a fresh Posts service but does not ping in the ${env} environment`, async function () {
       getConfig.withArgs('env').returns(env);
 
-      assert.equal(await root.init(), undefined);
+      assert.equal(await startAsBoot(root), undefined);
 
       sinon.assert.calledOnce(createPosts);
-      assert.equal(root.service.posts, createPosts.firstCall.returnValue);
+      assert.equal(services.get(root).posts, createPosts.firstCall.returnValue);
       sinon.assert.notCalled(ping);
       sinon.assert.notCalled(totalPosts);
       sinon.assert.notCalled(info);
@@ -108,7 +115,7 @@ describe('explore-ping root', function () {
     it(`constructs with a fresh Posts service and pings in the ${env} environment`, async function () {
       getConfig.withArgs('env').returns(env);
 
-      assert.equal(await root.init(), undefined);
+      assert.equal(await startAsBoot(root), undefined);
 
       sinon.assert.calledOnce(createPosts);
       sinon.assert.calledOnce(ping);
@@ -125,7 +132,7 @@ describe('explore-ping root', function () {
     it(`constructs but does not ping for the local site URL ${url}`, async function () {
       getConfig.withArgs('url').returns(url);
 
-      assert.equal(await root.init(), undefined);
+      assert.equal(await startAsBoot(root), undefined);
 
       sinon.assert.calledOnce(createPosts);
       sinon.assert.notCalled(ping);
@@ -133,28 +140,44 @@ describe('explore-ping root', function () {
     });
   }
 
-  it('retains one instance and pings once across repeated init', async function () {
-    assert.equal(await root.init(), undefined);
-    assert.equal(await root.init(), undefined);
+  it('builds nothing until it is first used, and pings nothing until boot starts it', async function () {
+    sinon.assert.notCalled(createPosts);
+    sinon.assert.notCalled(ping);
+
+    assert.ok(root.service instanceof ExplorePingService);
+
+    sinon.assert.calledOnce(createPosts);
+    sinon.assert.notCalled(ping);
+
+    await startAsBoot(root);
 
     sinon.assert.calledOnce(createPosts);
     sinon.assert.calledOnce(ping);
-    assert.equal(root.service, ping.firstCall.thisValue);
-    assert.equal(root.service.posts, createPosts.firstCall.returnValue);
+    assert.equal(ping.firstCall.thisValue, root.service);
   });
 
-  it('finishes init before payload and request completion, reading the shared Stats API when ready', async function () {
+  it('retains one instance and pings once when started again', async function () {
+    assert.equal(await startAsBoot(root), undefined);
+    assert.equal(await startAsBoot(root), undefined);
+
+    sinon.assert.calledOnce(createPosts);
+    sinon.assert.calledOnce(ping);
+    assert.equal(services.get(root), ping.firstCall.thisValue);
+    assert.equal(services.get(root).posts, createPosts.firstCall.returnValue);
+  });
+
+  it('finishes starting before payload and request completion, reading the Stats API it was handed when ready', async function () {
     getSetting.withArgs('explore_ping').returns(true);
     const posts = Promise.withResolvers<number>();
     const response = Promise.withResolvers<Response>();
     totalPosts.returns(posts.promise);
-    let initialization: Promise<void> | undefined;
+    let starting: Promise<void> | undefined;
     try {
-      let initialized = false;
-      initialization = root.init().then(() => {
-        initialized = true;
+      let started = false;
+      starting = startAsBoot(root).then(() => {
+        started = true;
       });
-      void initialization.catch(() => {});
+      void starting.catch(() => {});
       sinon.assert.calledOnce(ping);
       const service = ping.firstCall.thisValue as ExploreService;
       const completion = ping.firstCall.returnValue;
@@ -171,15 +194,16 @@ describe('explore-ping root', function () {
       const send = sandbox.stub(service, 'request').returns(response.promise);
       assert.equal(wiredRequest, request);
       assert.equal(service.members, members);
-      assert.equal(service.statsService, statsRoot.service);
+      assert.equal(service.statsService, stats);
+      assert.equal(statsRoot.service, stats);
       await setImmediate();
-      assert.equal(initialized, true, 'Init waited for payload collection');
+      assert.equal(started, true, 'Start waited for payload collection');
       assert.equal(completed, false);
       sinon.assert.notCalled(send);
       sinon.assert.notCalled(totalMembers);
 
       const getCurrentMrr = sandbox.stub().resolves([{ currency: 'gbp', mrr: 2500 }]);
-      statsRoot.service.api = { mrr: { getCurrentMrr } };
+      stats.api = { mrr: { getCurrentMrr } };
       posts.resolve(5);
       await setImmediate();
 
@@ -218,19 +242,19 @@ describe('explore-ping root', function () {
       }
       posts.resolve(5);
       response.resolve({ statusCode: 202 });
-      await Promise.allSettled([initialization, ...ping.returnValues]);
+      await Promise.allSettled([starting, ...ping.returnValues]);
     }
   });
 
   it('logs a request rejection while the detached ping fulfills', async function () {
     getSetting.withArgs('explore_ping').returns(true);
-    const initialization = root.init();
-    void initialization.catch(() => {});
+    const starting = startAsBoot(root);
+    void starting.catch(() => {});
     sinon.assert.calledOnce(ping);
     const service = ping.firstCall.thisValue as ExploreService;
     const send = sandbox.stub(service, 'request').rejects(new Error('Explore unavailable'));
 
-    assert.equal(await initialization, undefined);
+    assert.equal(await starting, undefined);
     assert.equal(await ping.firstCall.returnValue, undefined);
 
     sinon.assert.calledOnce(send);
@@ -238,7 +262,7 @@ describe('explore-ping root', function () {
     assert.equal(info.calledWith('Explore Response'), false);
   });
 
-  it('rejects init with the original synchronous Posts construction error', async function () {
+  it('fails to start with the original Posts construction error', async function () {
     const failure = new Error('Post model unavailable');
     const originalPost = Object.getOwnPropertyDescriptor(models, 'Post');
     assert.ok(originalPost);
@@ -250,7 +274,7 @@ describe('explore-ping root', function () {
     });
 
     try {
-      await assert.rejects(root.init(), (error: unknown) => error === failure);
+      await assert.rejects(startAsBoot(root), (error: unknown) => error === failure);
 
       sinon.assert.calledOnce(createPosts);
       sinon.assert.notCalled(ping);
@@ -262,12 +286,12 @@ describe('explore-ping root', function () {
     assert.deepEqual(Object.getOwnPropertyDescriptor(models, 'Post'), originalPost);
   });
 
-  it('resolves init while an unexpected payload error rejects its detached ping', async function () {
+  it('finishes starting while an unexpected payload error rejects its detached ping', async function () {
     getSetting.withArgs('explore_ping').returns(true);
     const failure = new Error('Site metadata unavailable');
     getSetting.withArgs('site_uuid').throws(failure);
 
-    const initialization = root.init();
+    const starting = startAsBoot(root);
     // The root does not observe this promise. Attach immediately so the test
     // checks its rejection without leaking an unhandled rejection to the suite.
     const rejection = assert.rejects(
@@ -275,7 +299,7 @@ describe('explore-ping root', function () {
       (error: unknown) => error === failure,
     );
 
-    assert.equal(await initialization, undefined);
+    assert.equal(await starting, undefined);
     await rejection;
     sinon.assert.calledOnce(ping);
     sinon.assert.notCalled(totalPosts);

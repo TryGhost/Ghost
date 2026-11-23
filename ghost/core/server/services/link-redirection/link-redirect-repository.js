@@ -18,7 +18,6 @@ module.exports = class LinkRedirectRepository {
    * @param {object} deps.LinkRedirect - Bookshelf Model
    * @param {object} deps.urlUtils
    * @param {object} deps.cacheAdapter - Cache Adapter instance, or null if cache is disabled
-   * @param {object} deps.EventRegistry
    */
   constructor(deps) {
     debug('Creating LinkRedirectRepository');
@@ -28,16 +27,21 @@ module.exports = class LinkRedirectRepository {
     if (deps.cacheAdapter !== null) {
       debug('Caching enabled with adapter:', deps.cacheAdapter.constructor.name);
       this.#cache = deps.cacheAdapter;
-      // This is a bit of a blunt instrument, but it's the best we can do for now
-      // It covers all the cases we would need to invalidate the links cache
-      // We need to invalidate the cache when:
-      // - a redirect is edited
-      // - a site's subdirectory is changed (rare)
-      // - analytics settings are changed
-      deps.EventRegistry.on('site.changed', () => {
-        this.#cache.reset();
-      });
     }
+  }
+
+  /**
+   * Empties the links cache, if there is one. The service root calls this when the site changes.
+   *
+   * This is a bit of a blunt instrument, but it's the best we can do for now
+   * It covers all the cases we would need to invalidate the links cache
+   * We need to invalidate the cache when:
+   * - a redirect is edited
+   * - a site's subdirectory is changed (rare)
+   * - analytics settings are changed
+   */
+  resetCache() {
+    this.#cache?.reset();
   }
 
   /**

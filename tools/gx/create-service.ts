@@ -14,7 +14,7 @@ const TESTS = 'ghost/test/unit/server/services';
 const FORMATTER = fileURLToPath(new URL('./bin/oxfmt', import.meta.resolve('oxfmt/package.json')));
 const USAGE = `Usage: pnpm gx generate service <name>
 
-Create a boot-owned TypeScript service and starter root test.
+Create a TypeScript service and starter root test.
 Use lowercase kebab-case beginning with a letter, e.g. delivery-receipts.
 `;
 
@@ -24,28 +24,39 @@ function templates(name: string) {
     .map((part) => part[0]!.toUpperCase() + part.slice(1))
     .join('')}Service`;
   return {
-    [`${SERVICES}/${name}/index.ts`]: `import { defineService } from '#kernel/define-service';
+    [`${SERVICES}/${name}/index.ts`]: `import { defineService } from '../../../../bootstrap/transition/define-service';
 import { ${className} } from './${name}-service';
 
-// Boot must initialize this root after any dependencies added below.
+// A definition: importing it builds nothing. Ghost builds the service the first time it is
+// used, and keeps that instance until it stops.
 export default defineService('${className}', () => {
   // Require application instances here, so importing the root does no startup work.
   // Add only the dependencies this service needs, with matching implementation types:
   // const models = require('../../models');
   // const settingsCache = require('../../../shared/settings-cache');
   // const config = require('../../../shared/config');
-  // const DomainEvents = require('@tryghost/domain-events');
-  // const tiers: typeof import('../tiers').default = require('../tiers').default;
-  const service = new ${className}({
+  return new ${className}({
     logging: require('@tryghost/logging'),
-    // models, DomainEvents, tiers: tiers.service,
+    // models,
     // Keep settings live when they can change: getTitle: () => settingsCache.get('title'),
   });
-
-  // Complete required startup work before returning. If it can fail after acquiring
-  // resources, release those resources before rethrowing so init() can be retried.
-  return service;
 });
+
+// create builds and returns, synchronously: it does not subscribe, schedule or wait. When the
+// service needs more, pass options in place of the callback:
+//
+// export default defineService('${className}', {
+//   // Other service roots. Ghost builds them first and hands create their instances.
+//   needs: { tiers },
+//   create: ({ tiers }) => new ${className}({ logging: require('@tryghost/logging'), tiers }),
+//   // Events the service handles. Ghost listens for them and builds the service when one
+//   // arrives. Add the root to \`listening\` in ghost/bootstrap/services.ts.
+//   listeners: [{ event: legacyEvent('site.changed'), handle: (service) => service.reset() }],
+//   // Work with no caller behind it, such as polling. It may be awaited. Add the root to
+//   // \`background\` in ghost/bootstrap/services.ts, and release in stop what start acquired.
+//   start: (service) => service.poll(),
+//   stop: (service) => service.close(),
+// });
 `,
     [`${SERVICES}/${name}/${name}-service.ts`]: `import type { GhostLogger } from '@tryghost/logging';
 
@@ -67,82 +78,49 @@ export class ${className} {
 `,
     [`${TESTS}/${name}/index.test.ts`]: `import assert from 'node:assert/strict';
 import { IncorrectUsageError } from '@tryghost/errors';
-import type serviceRoot from '../../../../../core/server/services/${name}';
+import { openServices } from '../../../../utils/services';
 
-// Match the root's CommonJS loading path so instanceof uses the same constructor.
+// Required, as server code requires them, so the root and its class are the copies Ghost uses.
+const root = require('../../../../../core/server/services/${name}')
+  .default as typeof import('../../../../../core/server/services/${name}').default;
 const { ${className} } = require('../../../../../core/server/services/${name}/${name}-service') as typeof import('../../../../../core/server/services/${name}/${name}-service');
-const ROOT_PATH = require.resolve('../../../../../core/server/services/${name}');
 
 describe('${className} root', function () {
-  let originalModule: NodeJS.Module | undefined;
-  let root: typeof serviceRoot;
-
-  beforeEach(function () {
-    // Reload only the root and restore its cache entry for other tests' consumers.
-    originalModule = require.cache[ROOT_PATH];
-    delete require.cache[ROOT_PATH];
-    root = require(ROOT_PATH).default as typeof serviceRoot;
-  });
-
-  afterEach(function () {
-    if (originalModule) {
-      require.cache[ROOT_PATH] = originalModule;
-    } else {
-      delete require.cache[ROOT_PATH];
-    }
-  });
-
-  it('requires initialization and retains one wired instance', async function () {
+  it('is refused before Ghost can build services', function () {
     assert.throws(() => root.service, IncorrectUsageError);
+  });
 
-    await Promise.all([root.init(), root.init()]);
+  it('builds one wired instance on first use', function () {
+    // What boot does once settings are loaded. The unit setup closes services after each test.
+    openServices();
+
     const service = root.service;
     assert.ok(service instanceof ${className});
     assert.equal(service.logging, require('@tryghost/logging'));
-
-    await root.init();
     assert.equal(root.service, service);
   });
 
-  // Add behavior, dependency timing, and partial-startup failure/retry tests as needed.
+  // Add tests of what the service does. Test a listener by emitting its event after
+  // openServices(), and a start with startAsBoot(root) from the same helper.
 });
 `,
   };
 }
 
-// The boot call an author adds. `gx services verify` finds a root's init() through
-// this binding, so the printed steps, the guides and that check use one form.
-export function bootLines(name: string) {
-  const [first, ...rest] = name.split('-');
-  // A one-word name can be a reserved word, such as "new", so it gets a suffix.
-  const binding = rest.length
-    ? first + rest.map((part) => part[0]!.toUpperCase() + part.slice(1)).join('')
-    : `${first}Service`;
-  return [
-    `const ${binding} = require('./server/services/${name}').default;`,
-    `await ${binding}.init();`,
-  ];
-}
-
 export function nextSteps(name: string) {
   return `Next steps:
   1. Implement the capability and inject its application dependencies in index.ts.
-  2. In ghost/core/boot.js, bind the root and await its init() in the right phase,
-     after its dependencies are ready and before its consumers run:
-${bootLines(name)
-  .map((line) => `       ${line}`)
-  .join('\n')}
-     Document that order above defineService.
-  3. The boot tests already check that boot waits for init() and that its failure
-     fails boot. Add one in ghost/test/unit/boot/ only where order matters. A root in
-     initCore or initServicesForFrontend needs a stub in that phase's test.
-  4. If the service owns listeners, timers or work to drain, acquire and release them
-     in start and stop hooks, and register stop() with the server in boot.
-  5. Extend the root test. If the root declares extras, catalogue them in
+     Name other service roots in needs, so create is handed their instances.
+  2. There is nothing to register and no boot change: Ghost builds the service the
+     first time it is used. Only two kinds of root are listed in
+     ghost/bootstrap/services.ts:
+       - a root that declares listeners is added to \`listening\`;
+       - a root whose start is background work is added to \`background\`.
+  3. Extend the root test. If the root declares extras, catalogue them in
      ${legacyInventoryFile}.
-  6. Run pnpm nx run ghost:test:unit test/unit/server/services/${name}/index.test.ts,
-     pnpm nx run ghost:test:unit test/unit/boot/ and pnpm check.
-  7. Commit, then run pnpm gx services verify ${name}.
+  4. Run pnpm nx run ghost:test:unit test/unit/server/services/${name}/index.test.ts
+     and pnpm check.
+  5. Commit, then run pnpm gx services verify ${name}.
 `;
 }
 
@@ -227,7 +205,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       });
       process.stdout.write(`Created:\n${files.map((file) => `  ${file}`).join('\n')}\n
 Lint, boundary lint and the inventory test already check it: a service needs
-no inventory entry or lint registration. Lint fails until boot awaits its init().
+no inventory entry or lint registration.
 
 ${nextSteps(name)}
 See ghost/core/server/services/README.md for the service contract.\n`);

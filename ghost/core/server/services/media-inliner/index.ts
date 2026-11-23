@@ -1,4 +1,4 @@
-import { defineService } from '#kernel/define-service';
+import { defineService } from '../../../../bootstrap/transition/define-service';
 import type ExternalMediaInliner from './external-media-inliner';
 import type ExternalMediaInlinerJob from './external-media-inliner-job';
 
@@ -19,7 +19,7 @@ export default defineService('Media inliner', (): ExternalMediaInliner => {
     isSvgExtension,
   } = require('../../lib/image/image-content');
 
-  // Resolved here so a missing or broken adapter fails init rather than the
+  // Resolved here so a missing or broken adapter fails the first use rather than the
   // first import.
   adapterManager.getAdapter('storage:media');
   adapterManager.getAdapter('storage:images');

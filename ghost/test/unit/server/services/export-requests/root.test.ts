@@ -2,6 +2,11 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import sinon from 'sinon';
 import type { buildSignedWebhookRequest } from '../../../../../core/server/lib/signed-webhook';
+import { openServices, services } from '../../../../utils/services';
+
+const {
+  withServices,
+}: typeof import('../../../../../core/server/api/endpoints/utils/define-endpoints') = require('../../../../../core/server/api/endpoints/utils/define-endpoints');
 
 const rootPath = require.resolve('../../../../../core/server/services/export-requests');
 const endpointPath = require.resolve('../../../../../core/server/api/endpoints/exports');
@@ -26,7 +31,7 @@ describe('Export requests root with its endpoint', function () {
   let request: sinon.SinonStub;
   let getConfig: sinon.SinonStub;
 
-  beforeEach(async function () {
+  beforeEach(function () {
     previousModules = new Map([rootPath, endpointPath].map((path) => [path, require.cache[path]]));
     for (const path of previousModules.keys()) {
       delete require.cache[path];
@@ -43,12 +48,15 @@ describe('Export requests root with its endpoint', function () {
     try {
       transportModule.exports = request;
       root = require(rootPath).default;
-      await root.init();
+      openServices();
+      // Built here, so that the service holds the substituted transport.
+      assert.ok(services.get(root));
     } finally {
       transportModule.exports = previousTransport;
     }
     // Other modules loaded by the endpoint must retain the real transport.
-    endpoint = require(endpointPath);
+    // The endpoints module is handed the service: build its controller as the registry does.
+    endpoint = withServices(services, require(endpointPath)) as typeof endpoint;
   });
 
   afterEach(function () {
@@ -76,7 +84,7 @@ describe('Export requests root with its endpoint', function () {
     sinon.assert.notCalled(request);
     assert.equal(getConfig.calledWith('hostSettings:export:webhookUrl'), false);
     // The endpoint must call the root's singleton, not an instance of its own.
-    const requestExport = sandbox.spy(root.service, 'requestExport');
+    const requestExport = sandbox.spy(services.get(root), 'requestExport');
 
     for (const [host, secret, siteId] of [
       ['https://first.example/export/', 'first-test-secret', 'first-site'],

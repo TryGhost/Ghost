@@ -16,10 +16,9 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { Script } from 'node:vm';
 import yaml from 'js-yaml';
-import { bootLines, createService } from '../create-service.ts';
-import { mutateBootInit } from '../services-verify.ts';
+import { createService } from '../create-service.ts';
+import { registrationProblems } from '../services-verify.ts';
 import { readDependencyBoundaries } from '../../scripts/lib/dependency-boundaries.ts';
 import { legacyInventoryFile as inventoryPath } from '../../configs/oxlint/legacy-services.ts';
 
@@ -122,7 +121,29 @@ test('creates source and a root test without registering the service anywhere', 
   ]);
   // Not being listed as legacy is what applies every check to the new service.
   assert.deepEqual(metadata(root), before);
-  assert.match(read(root, files[0]!), /default defineService\('DeliveryReceiptsService'/);
+  const source = read(root, files[0]!);
+  assert.match(source, /default defineService\('DeliveryReceiptsService', \(\) => \{/);
+  assert.match(
+    source,
+    /import \{ defineService \} from '\.\.\/\.\.\/\.\.\/\.\.\/bootstrap\/transition\/define-service';/,
+  );
+  // The options a root can grow into are shown, not declared.
+  for (const option of ['needs', 'listeners', 'start', 'stop']) {
+    assert.match(source, new RegExp(`^// {3}${option}: `, 'm'), option);
+  }
+  assert.doesNotMatch(source, /init\(\)/);
+  // So the new root asks nothing of the application, and services verify agrees.
+  assert.deepEqual(
+    registrationProblems({ service: name, root: source, registry: '', boot: '' }),
+    [],
+  );
+  const starter = read(root, files[2]!);
+  assert.match(
+    starter,
+    /import \{ openServices \} from '\.\.\/\.\.\/\.\.\/\.\.\/utils\/services';/,
+  );
+  assert.match(starter, /assert\.throws\(\(\) => root\.service, IncorrectUsageError\);/);
+  assert.doesNotMatch(starter, /init\(\)/);
   assert.match(read(root, files[1]!), /import type \{ GhostLogger \}/);
 });
 
@@ -214,7 +235,7 @@ test('reads the legacy inventory before writing and removes new directories afte
   assert.deepEqual(readdirSync(path.join(root, services)), [inventoryName]);
 });
 
-test('gx routes service generation to its checkout and prints boot instructions', () => {
+test('gx routes service generation to its checkout and prints what is left to the author', () => {
   const root = fixture();
   for (const file of ['cli.ts', 'create-service.ts', 'run-ghost-command.ts', 'package.json']) {
     copy(root, `tools/gx/${file}`);
@@ -227,12 +248,12 @@ test('gx routes service generation to its checkout and prints boot instructions'
   const cli = path.join(root, 'tools/gx/cli.ts');
   const result = run(tmpdir(), cli, ['generate', 'service', name]);
   success(result);
-  assert.match(result.stdout, /ghost\/core\/boot\.js/);
-  for (const line of bootLines(name)) {
-    assert.ok(result.stdout.includes(line), line);
-  }
-  assert.match(result.stdout, /after its dependencies are ready/);
-  assert.match(result.stdout, /ghost\/test\/unit\/boot\//);
+  // Nothing tells the author to change boot: a root is built on first use.
+  assert.doesNotMatch(result.stdout, /boot\.js|init\(\)/);
+  assert.match(result.stdout, /nothing to register and no boot change/);
+  assert.match(result.stdout, /ghost\/bootstrap\/services\.ts/);
+  assert.match(result.stdout, /declares listeners is added to `listening`/);
+  assert.match(result.stdout, /start is background work is added to `background`/);
   assert.match(result.stdout, /pnpm check/);
   assert.ok(result.stdout.includes(`pnpm gx services verify ${name}`));
   assert.match(result.stdout, /no inventory entry or lint registration/);
@@ -242,36 +263,6 @@ test('gx routes service generation to its checkout and prints boot instructions'
   const help = run(tmpdir(), cli, ['generate', 'service', '--help']);
   success(help);
   assert.match(help.stdout, /Usage: pnpm gx generate service <name>/);
-});
-
-test('the boot call the generator prints and the guides show is the one services verify finds', () => {
-  const phase = (lines: string[]) => `async function initServices() {\n${lines.join('\n')}\n}\n`;
-  // One-word names, which can be reserved words, and digits still give a valid binding.
-  for (const service of [name, 'new', 'tiers', 'oauth-2']) {
-    const lines = bootLines(service);
-    assert.doesNotThrow(() => new Script(phase(lines)), service);
-    assert.equal(lines.length, 2, service);
-    assert.ok(mutateBootInit(phase(lines), service), service);
-  }
-  const inline = /require\('[^']+'\)\.default\.init\(/;
-  assert.equal(
-    mutateBootInit(phase([`await require('./server/services/${name}').default.init();`]), name),
-    undefined,
-    'services verify does not follow an inline call, so nothing may tell an author to write one',
-  );
-  for (const [guide, service] of [
-    ['ghost/core/server/services/README.md', name],
-    ['tbd/kernel/README.md', 'example'],
-    ['.agents/skills/add-service/SKILL.md', name],
-  ] as const) {
-    const source = readFileSync(path.join(repo, guide), 'utf8');
-    assert.doesNotMatch(source, inline, guide);
-    const blocks = [...source.matchAll(/```js\n([\s\S]*?)```/g)]
-      .map((match) => match[1]!)
-      .filter((block) => block.includes(`'./server/services/${service}'`));
-    assert.equal(blocks.length, 1, `${guide} shows the boot call once`);
-    assert.ok(mutateBootInit(phase(blocks[0]!.split('\n')), service), guide);
-  }
 });
 
 test('generated output passes real lint, boundary and inventory checks with no registration, and they reject regressions', () => {
@@ -285,6 +276,11 @@ test('generated output passes real lint, boundary and inventory checks with no r
     'ghost/package.json',
     'ghost/tsconfig.json',
     'ghost/test/tsconfig.json',
+    'ghost/bootstrap/app.ts',
+    'ghost/bootstrap/transition/define-service.ts',
+    'ghost/bootstrap/transition/legacy-events.ts',
+    'ghost/bootstrap/transition/legacy-foundation.ts',
+    'ghost/test/utils/services.ts',
     `${services}/README.md`,
     `${tests}/legacy-service-inventory.test.ts`,
   ]) {
@@ -305,6 +301,16 @@ test('generated output passes real lint, boundary and inventory checks with no r
   // No legacy entries: the generated service is the only one, and it is not listed.
   writeFileSync(path.join(root, inventoryPath), inventory());
   createService({ name, rootDir: root });
+  // The real lists name roots this checkout does not have. The generated root is in neither.
+  writeFileSync(
+    path.join(root, 'ghost/bootstrap/services.ts'),
+    `import type { AnyServiceDefinition } from '#kernel/define-service';
+
+type Named = () => AnyServiceDefinition;
+export const listening: readonly Named[] = [];
+export const background: readonly Named[] = [];
+`,
+  );
   writeFileSync(
     path.join(root, 'ghost/vitest.config.mts'),
     `export default { test: { globals: true, setupFiles: ['./setup.cjs'], include: ['test/unit/**/*.test.ts'], maxWorkers: 1 } };\n`,

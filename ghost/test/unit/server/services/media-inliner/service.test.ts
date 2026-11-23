@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import sinon from 'sinon';
+import { openServices } from '../../../../utils/services';
 
 // Required rather than imported so the stub lands on the same module instance
 // the service requires
@@ -18,7 +19,7 @@ describe('media-inliner service', function () {
 
   let getMediaStorage: (extension: string, fileBuffer: Buffer) => Promise<unknown>;
 
-  beforeEach(async function () {
+  beforeEach(function () {
     const storages: Record<string, unknown> = {
       'storage:images': imageStorage,
       'storage:media': mediaStorage,
@@ -26,7 +27,7 @@ describe('media-inliner service', function () {
     };
     sinon.stub(adapterManager, 'getAdapter').callsFake((name) => storages[name as string]);
 
-    await mediaInlinerService.init();
+    openServices();
     getMediaStorage = mediaInlinerService.service.getMediaStorage;
   });
 

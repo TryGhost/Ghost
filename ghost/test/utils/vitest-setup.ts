@@ -136,6 +136,10 @@ afterEach(async () => {
 
   clearTimeout(timeout);
 
+  // Forget every service the test built, as Ghost stopping does, so that no test reads a service
+  // another test built. A test that reads a service opens them first: see ./services.ts.
+  await require('../../bootstrap/app').default.services.close();
+
   try {
     const { mochaHooks } = snapshotExports;
     if (mochaHooks?.afterEach) {

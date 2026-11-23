@@ -4,6 +4,7 @@ const db = require('../../../core/server/data/db');
 const metafields = require('../../../core/server/services/members-metafields');
 const tiersService = require('../../../core/server/services/tiers').default;
 const testUtils = require('../../utils');
+const { openServices, services } = require('../../utils/services');
 
 // The tiers are loaded into memory the first time one is read. These cover that first read
 // against a real database.
@@ -15,7 +16,12 @@ describe('Tiers repository', function () {
   beforeAll(async function () {
     // Tier requirements read which ports are bound to a custom field.
     metafields.init();
-    await tiersService.init();
+    // Ghost is not booted here, so the test lets services be built, as boot does.
+    openServices();
+  });
+
+  afterAll(async function () {
+    await services.close();
   });
 
   beforeEach(function () {

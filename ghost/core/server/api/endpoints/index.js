@@ -1,5 +1,17 @@
 const apiFramework = require('@tryghost/api-framework');
 const localUtils = require('./utils');
+const { withServices } = require('./utils/define-endpoints');
+
+/**
+ * EARMARKED. Builds the controller of an endpoints module that declares the services it needs,
+ * handing them in from the services of Ghost's one application.
+ *
+ * This line is the only place the endpoints handed their services assume one application in the
+ * process. It leaves when this registry is built for an application, with that application's
+ * services, instead of being a module that everything requires.
+ */
+const handed = (endpoints) =>
+  withServices(require('../../../../bootstrap/app').default.services, endpoints);
 
 // ESLint Override Notice
 // This is a valid index.js file - it just exports a lot of stuff!
@@ -40,7 +52,7 @@ module.exports = {
   },
 
   get exports() {
-    return apiFramework.pipeline(require('./exports'), localUtils);
+    return apiFramework.pipeline(handed(require('./exports')), localUtils);
   },
 
   get identities() {
@@ -177,7 +189,7 @@ module.exports = {
   },
 
   get upgrades() {
-    return apiFramework.pipeline(require('./upgrades'), localUtils);
+    return apiFramework.pipeline(handed(require('./upgrades')), localUtils);
   },
 
   get users() {
@@ -373,7 +385,7 @@ module.exports = {
   },
 
   get segments() {
-    return apiFramework.pipeline(require('./segments'), localUtils);
+    return apiFramework.pipeline(handed(require('./segments')), localUtils);
   },
 
   get recommendationsPublic() {

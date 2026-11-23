@@ -8,12 +8,22 @@ function createCoreHarness({ isBetterAuth = false } = {}) {
     init: sinon.stub().resolves(),
     syncEmailSettings: sinon.stub().resolves(),
   };
+  // Boot starts signing keys through the application. `init` stands for that start.
+  const signingKeysRoot = { name: 'Signing keys' };
   const signingKeys = { init: sinon.stub().resolves() };
+  const listening = [{ name: 'A listening root' }];
+  const services = {
+    register: sinon.stub(),
+    open: sinon.stub(),
+    start: sinon.spy((root: unknown) => {
+      assert.equal(root, signingKeysRoot);
+      return signingKeys.init();
+    }),
+  };
   const i18n = { init: sinon.stub().resolves() };
-  const giftLinks = { init: sinon.stub().resolves() };
+  // The step that follows Better Auth in initCore.
+  const metafields = { init: sinon.stub() };
   const betterAuth = { start: sinon.stub().resolves() };
-  const integrations = { init: sinon.stub().resolves() };
-  const stripeCheckoutConfig = { init: sinon.stub().resolves() };
   const initCore = loadBootFunction('initCore', {
     './server/services/adapter-manager': { default: { init() {} } },
     './server/lib/image/image-decoders': { restrictImageDecoders() {} },
@@ -24,28 +34,26 @@ function createCoreHarness({ isBetterAuth = false } = {}) {
     './shared/url-utils': {},
     './server/services/limits': { init: async () => {} },
     './server/services/settings/settings-service': settings,
-    './server/services/signing-keys': { default: signingKeys },
-    './server/services/internal-keys': { default: { init() {} } },
+    '../bootstrap/app': { default: { services } },
+    '../bootstrap/services': { listening: listening.map((root) => () => root) },
+    './server/services/signing-keys': { default: signingKeysRoot },
     './server/lib/common/events': {},
     './shared/i18n': i18n,
     './server/auth': { isBetterAuth, betterAuth },
-    './server/services/gift-links': { default: giftLinks },
-    './server/services/members-metafields': { init() {} },
-    './server/services/app-installations': { default: { init() {} } },
-    './server/services/export-requests': { default: { init() {} } },
-    './server/services/invites': { default: { init() {} } },
-    './server/services/integrations': { default: integrations },
-    './server/services/stripe-checkout-config': { default: stripeCheckoutConfig },
+    './server/services/members-metafields': metafields,
+    // Only loaded with a server, to register its shutdown.
+    './server/services/jobs-service': {},
   });
   return {
-    init: (): Promise<void> => initCore({ config: { get: () => ({}) } }),
+    init: (ghostServer?: { registerCleanupTask: sinon.SinonStub }): Promise<void> =>
+      initCore({ config: { get: () => ({}) }, ghostServer }),
     settings,
     signingKeys,
     i18n,
     betterAuth,
-    giftLinks,
-    integrations,
-    stripeCheckoutConfig,
+    metafields,
+    services,
+    listening,
   };
 }
 
@@ -131,7 +139,7 @@ it('waits for Better Auth to start under its engine, after settings and before c
     await setImmediate();
     sinon.assert.calledOnce(boot.betterAuth.start);
     sinon.assert.callOrder(boot.settings.init, boot.i18n.init, boot.betterAuth.start);
-    sinon.assert.notCalled(boot.giftLinks.init);
+    sinon.assert.notCalled(boot.metafields.init);
     assert.equal(completed, false);
   } finally {
     ready.resolve();
@@ -139,7 +147,7 @@ it('waits for Better Auth to start under its engine, after settings and before c
   }
   await startup;
 
-  sinon.assert.calledOnce(boot.giftLinks.init);
+  sinon.assert.calledOnce(boot.metafields.init);
   assert.equal(completed, true);
 });
 
@@ -150,7 +158,7 @@ it('fails initCore with the error Better Auth failed to start with', async funct
 
   await assert.rejects(boot.init(), (error) => error === failure);
 
-  sinon.assert.notCalled(boot.giftLinks.init);
+  sinon.assert.notCalled(boot.metafields.init);
 });
 
 it('waits for i18n initialization before continuing or resolving initCore', async function () {
@@ -165,7 +173,7 @@ it('waits for i18n initialization before continuing or resolving initCore', asyn
   try {
     await setImmediate();
     sinon.assert.calledOnce(boot.i18n.init);
-    sinon.assert.notCalled(boot.giftLinks.init);
+    sinon.assert.notCalled(boot.metafields.init);
     assert.equal(completed, false);
   } finally {
     ready.resolve();
@@ -173,7 +181,7 @@ it('waits for i18n initialization before continuing or resolving initCore', asyn
   }
   await startup;
 
-  sinon.assert.calledOnce(boot.giftLinks.init);
+  sinon.assert.calledOnce(boot.metafields.init);
   assert.equal(completed, true);
 });
 
@@ -185,40 +193,39 @@ it('propagates the original i18n initialization error without continuing initCor
   await assert.rejects(boot.init(), (error) => error === failure);
 
   sinon.assert.calledOnce(boot.i18n.init);
-  sinon.assert.notCalled(boot.giftLinks.init);
+  sinon.assert.notCalled(boot.metafields.init);
 });
 
-it('waits for Integrations initialization before continuing or resolving initCore', async function () {
+it('registers the listening roots, then lets services be built, once settings are loaded', async function () {
   const boot = createCoreHarness();
-  const ready = Promise.withResolvers<void>();
-  boot.integrations.init.returns(ready.promise);
-  let completed = false;
-  const startup = boot.init().then(() => {
-    completed = true;
-  });
 
-  try {
-    await setImmediate();
-    sinon.assert.calledOnce(boot.integrations.init);
-    sinon.assert.notCalled(boot.stripeCheckoutConfig.init);
-    assert.equal(completed, false);
-  } finally {
-    ready.resolve();
-    await Promise.allSettled([startup]);
-  }
-  await startup;
+  await boot.init();
 
-  sinon.assert.calledOnce(boot.stripeCheckoutConfig.init);
-  assert.equal(completed, true);
+  assert.deepEqual(
+    boot.services.register.getCalls().map((call) => call.args),
+    boot.listening.map((root) => [root]),
+  );
+  sinon.assert.calledOnce(boot.services.open);
+  sinon.assert.callOrder(
+    boot.settings.init,
+    boot.settings.syncEmailSettings,
+    boot.services.register,
+    boot.services.open,
+    boot.signingKeys.init,
+  );
 });
 
-it('propagates the original Integrations initialization error without continuing initCore', async function () {
+it('closes the services when the server shuts down', async function () {
+  const close = sinon.stub().resolves();
   const boot = createCoreHarness();
-  const failure = new Error('Integrations initialization failed');
-  boot.integrations.init.rejects(failure);
+  Object.assign(boot.services, { close });
+  const registerCleanupTask = sinon.stub();
 
-  await assert.rejects(boot.init(), (error) => error === failure);
+  await boot.init({ registerCleanupTask });
 
-  sinon.assert.calledOnce(boot.integrations.init);
-  sinon.assert.notCalled(boot.stripeCheckoutConfig.init);
+  const registration = registerCleanupTask.getCalls().find((call) => call.args[1] === 'Services');
+  assert.ok(registration);
+  sinon.assert.notCalled(close);
+  await registration.args[0]();
+  sinon.assert.calledOnce(close);
 });

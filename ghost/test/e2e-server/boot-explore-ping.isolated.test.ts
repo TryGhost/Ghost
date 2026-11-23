@@ -72,17 +72,18 @@ describe('Explore ping during boot', function () {
       };
       return originalPing.call(this);
     });
-    const originalInit = explore.init;
+    const originalStart = explore.start;
+    assert.ok(originalStart);
     const originalPolicy = config.isProductionOrDevelopment;
     sandbox.stub(config, 'isProductionOrDevelopment').callsFake(() => {
       return allowExplore || originalPolicy();
     });
-    // Enable only this initializer's environment gate. Other boot services keep
+    // Enable only this start's environment gate. Other boot services keep
     // their test-environment behavior; the root unit tests cover the real policy.
-    sandbox.stub(explore, 'init').callsFake(() => {
+    sandbox.stub(explore, 'start').callsFake((...args) => {
       allowExplore = true;
       try {
-        return originalInit();
+        return originalStart(...args);
       } finally {
         allowExplore = false;
         initialized.resolve();

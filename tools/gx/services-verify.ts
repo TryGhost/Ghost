@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
@@ -12,6 +12,7 @@ import {
 import { missingTypeScript, scannerTypeScript } from '../scripts/lib/dependency-boundaries.ts';
 
 const bootPath = 'ghost/core/boot.js';
+const registryPath = 'ghost/bootstrap/services.ts';
 const allowlistPath = '.dependency-cruiser.cjs';
 const allowanceTestPath = 'tools/scripts/test/service-dependencies.test.ts';
 const lifecycleWords = /\binit|on[- ]demand|lazy|lazily|boot|wrapper|construct|captur|import/i;
@@ -266,54 +267,57 @@ export function specialistProblems({
   });
 }
 
-// Finds a root's init() through its binding in boot.js, the one form the generator
-// and the guides give: `const x = require('./server/services/<name>').default;`
-// followed by `x.init()`. An inline `require(...).default.init()` is not found.
-export function mutateBootInit(boot: string, service: string) {
-  const folder = service.replace(/\.[a-z]+$/, '');
-  const bindings = boot.matchAll(
+// What a root asks of the application beyond building it on first use. Read from the root's
+// source, where each is a property of the options passed to defineService: `listeners: [...]`,
+// `start: ...`, `start(service) {...}` or a shorthand `{ create, start, stop }`.
+export function declaredByRoot(root: string) {
+  const declares = (property: string) =>
     new RegExp(
-      `const (\\w+) = require\\('\\./server/services/${folder}(?:/index)?'\\)(?:\\.default)?;`,
-      'g',
-    ),
-  );
-  // A binding is local to its boot phase and other phases reuse names, such as
-  // themeService. Look for its init() only from the binding to the end of that phase.
-  let found: { variable: string; index: number; length: number } | undefined;
-  for (const required of bindings) {
-    const from = required.index + required[0].length;
-    const next = /^(?:async )?function /m.exec(boot.slice(from));
-    const call = new RegExp(`\\b${required[1]}\\.init\\(`).exec(
-      boot.slice(from, next ? from + next.index : undefined),
-    );
-    if (call) {
-      found = { variable: required[1] as string, index: from + call.index, length: call[0].length };
-      break;
-    }
+      `^\\s*(?:async\\s+)?${property}\\s*[:(,]|[{,]\\s*(?:async\\s+)?${property}\\s*[:(,}]`,
+      'm',
+    ).test(root.replace(/^\s*(?:\/\/|\*|\/\*).*$/gm, ''));
+  return { listeners: declares('listeners'), start: declares('start') };
+}
+
+// A root that declares listeners or a start must be registered with Ghost's application before
+// it is used: unregistered, its first use throws. Returns what is missing, as lines to print.
+export function registrationProblems({
+  service,
+  root,
+  registry,
+  boot,
+}: {
+  service: string;
+  root: string;
+  // The source of ghost/bootstrap/services.ts and ghost/core/boot.js.
+  registry: string;
+  boot: string;
+}) {
+  const declared = declaredByRoot(root);
+  if (!declared.listeners && !declared.start) {
+    return [];
   }
-  if (!found) {
-    return undefined;
+  const named = (source: string, prefix: string) =>
+    new RegExp(`['"]${prefix}/server/services/${service}(?:/index)?['"]`).test(source);
+  if (named(registry, '\\.\\./core')) {
+    return [];
   }
-  // Find the end of the call, including its arguments.
-  let depth = 0;
-  let end = found.index + found.length - 1;
-  for (; end < boot.length; end++) {
-    depth += boot[end] === '(' ? 1 : boot[end] === ')' ? -1 : 0;
-    if (depth === 0) {
-      break;
-    }
+  // Boot starts a root itself when the start sequence must wait for it, as it does signing keys.
+  if (
+    declared.start &&
+    !declared.listeners &&
+    named(boot, '\\.') &&
+    boot.includes('application.services.start(')
+  ) {
+    return [];
   }
-  const call = boot.slice(found.index, end + 1);
-  // Boot moves on after a chain of promise steps. An init that rejects within them,
-  // like a stub behind an async wrapper, still fails boot; one a test holds pending
-  // until a timer or setImmediate does not stop it. Only a test that holds init
-  // pending can tell the difference. Boot tests run boot.js in a vm context without
-  // Node globals, so this uses Promise alone.
-  const movedOn = 'Array.from({ length: 50 }).reduce((step) => step.then(), Promise.resolve())';
-  return {
-    variable: found.variable,
-    source: `${boot.slice(0, found.index)}Promise.race([${call}, ${movedOn}])${boot.slice(end + 1)}`,
-  };
+  return [
+    `${service} declares ${[declared.listeners && 'listeners', declared.start && 'a start'].filter(Boolean).join(' and ')}, but ${registryPath} does not name it.`,
+    declared.listeners
+      ? `Add it to \`listening\`${declared.start ? ', and to `background` if its start is background work' : ''}:`
+      : 'Add it to `background`:',
+    `  () => require('../core/server/services/${service}').default,`,
+  ];
 }
 
 export function verifyService({
@@ -450,6 +454,18 @@ export function verifyService({
   );
   record('inventory-references', references.length ? 'review' : 'pass', references);
 
+  const rootPath = `${servicesRoot}/${service}/index.ts`;
+  if (standard && existsSync(path.join(repository, rootPath))) {
+    const sourceOf = (file: string) => (existsSync(path.join(repository, file)) ? read(file) : '');
+    const problems = registrationProblems({
+      service,
+      root: read(rootPath),
+      registry: sourceOf(registryPath),
+      boot: sourceOf(bootPath),
+    });
+    record('registered-with-application', problems.length ? 'fail' : 'pass', problems);
+  }
+
   const tools: Array<[string, string, string[], string, NodeJS.ProcessEnv?]> = [];
   const ghostFiles = changed
     .filter((file) => file.startsWith('ghost/') && /\.(?:js|ts|cjs|mjs)$/.test(file))
@@ -519,35 +535,6 @@ export function verifyService({
     record(name, result.status === 0 ? 'pass' : 'fail', failureOutput(result));
   }
 
-  if (standard) {
-    const absolute = path.join(repository, bootPath);
-    const original = readFileSync(absolute, 'utf8');
-    const mutated = mutateBootInit(original, service);
-    if (!mutated) {
-      record('boot-waits-for-init', 'fail', [
-        `No init call for ${service} found in boot.js.`,
-        `Bind the root, then await init() on the binding:`,
-        `  const example = require('./server/services/${service}').default;`,
-        `  await example.init();`,
-      ]);
-    } else {
-      try {
-        writeFileSync(absolute, mutated.source);
-        const result = run('pnpm', [...vitest, 'test/unit/boot'], {
-          cwd: path.join(repository, 'ghost'),
-        });
-        record(
-          'boot-waits-for-init',
-          result.status === 0 ? 'fail' : 'pass',
-          result.status === 0
-            ? [`Boot tests still pass when boot does not wait for ${mutated.variable}.init().`]
-            : [],
-        );
-      } finally {
-        writeFileSync(absolute, original);
-      }
-    }
-  }
   return checks;
 }
 

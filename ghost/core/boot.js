@@ -145,16 +145,27 @@ async function initCore({ ghostServer, config }) {
   await settings.syncEmailSettings(config.get('hostSettings:emailVerification:verified'));
   debug('End: settings');
 
-  // Signing keys come from settings and must be ready before anything signs or serves a JWKS
+  // Services are built on first use, which is safe from here: config, the database and settings
+  // are ready. A service used earlier is refused.
+  debug('Begin: services');
+  const application = require('../bootstrap/app').default;
+  // The application listens for the events these roots declare. None is built until it is used
+  // or one of its events arrives.
+  for (const named of require('../bootstrap/services').listening) {
+    application.services.register(named());
+  }
+  application.services.open();
+  if (ghostServer) {
+    ghostServer.registerCleanupTask(() => application.services.close(), 'Services');
+  }
+  debug('End: services');
+
+  // Signing keys come from settings and must be ready before anything signs or serves a JWKS.
+  // Starting the service advances any rotation that is due.
   debug('Begin: signing keys');
   const signingKeys = require('./server/services/signing-keys').default;
-  await signingKeys.init();
+  await application.services.start(signingKeys);
   debug('End: signing keys');
-
-  debug('Begin: Internal Keys Service');
-  const internalKeys = require('./server/services/internal-keys').default;
-  await internalKeys.init();
-  debug('End: Internal Keys Service');
 
   debug('Begin: i18n');
   const i18n = require('./shared/i18n');
@@ -169,44 +180,11 @@ async function initCore({ ghostServer, config }) {
     debug('End: Better Auth');
   }
 
-  // Gift links service: wires the (knex-backed) repository once the DB is ready.
-  debug('Begin: Gift Links Service');
-  const giftLinksService = require('./server/services/gift-links').default;
-  await giftLinksService.init();
-  debug('End: Gift Links Service');
-
   // Member metafields service: knex-backed, wired once the DB is ready.
   debug('Begin: Member Metafields Service');
   const memberMetafieldsService = require('./server/services/members-metafields');
   memberMetafieldsService.init();
   debug('End: Member Metafields Service');
-
-  // App installations service: knex-backed, wired once the DB is ready.
-  debug('Begin: App Installations Service');
-  const appInstallationsService = require('./server/services/app-installations').default;
-  await appInstallationsService.init();
-  debug('End: App Installations Service');
-
-  debug('Begin: Export Requests Service');
-  const exportRequests = require('./server/services/export-requests').default;
-  await exportRequests.init();
-  debug('End: Export Requests Service');
-
-  debug('Begin: Invites Service');
-  const invites = require('./server/services/invites').default;
-  await invites.init();
-  debug('End: Invites Service');
-
-  debug('Begin: Integrations Service');
-  const integrations = require('./server/services/integrations').default;
-  await integrations.init();
-  debug('End: Integrations Service');
-
-  // Stripe Checkout config service: knex-backed, wired once the DB is ready.
-  debug('Begin: Stripe Checkout Config Service');
-  const stripeCheckoutConfig = require('./server/services/stripe-checkout-config').default;
-  await stripeCheckoutConfig.init();
-  debug('End: Stripe Checkout Config Service');
 
   if (ghostServer) {
     // Jobs Service allows parts of Ghost to run in the background
@@ -241,16 +219,7 @@ async function initServicesForFrontend({ bootLogger }) {
   await customRedirects.init();
   debug('End: Redirects');
 
-  debug('Begin: Link Redirects');
-  const linkRedirects = require('./server/services/link-redirection').default;
-  await linkRedirects.init();
-  debug('End: Link Redirects');
-
   debug('Begin: Themes');
-  // Custom theme settings must be initialized before any theme activation occurs
-  const customThemeSettingsService = require('./server/services/custom-theme-settings').default;
-  await customThemeSettingsService.init();
-
   const themeService = require('./server/services/themes');
   const themeServiceStart = Date.now();
   await themeService.init();
@@ -378,41 +347,25 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   debug('Begin: initServices');
 
   debug('Begin: Services');
+  const application = require('../bootstrap/app').default;
+  const { background } = require('../bootstrap/services');
+
   const identityTokens = require('./server/services/identity-tokens');
   const stripe = require('./server/services/stripe');
   const members = require('./server/services/members');
-  const tiers = require('./server/services/tiers').default;
-  const indexnow = require('./server/services/indexnow-ping').default;
-  const upgrades = require('./server/services/upgrades').default;
-  const slack = require('./server/services/slack-ping').default;
   const webhooks = require('./server/services/webhooks');
   const postScheduling = require('./server/services/post-scheduling').default;
-  const comments = require('./server/services/comments').default;
-  const staffService = require('./server/services/staff').default;
-  const memberAttribution = require('./server/services/member-attribution').default;
   const membersEvents = require('./server/services/members-events');
   const linkTracking = require('./server/services/link-tracking');
-  const audienceFeedback = require('./server/services/audience-feedback').default;
   const emailSuppressionList = require('./server/services/email-suppression-list');
   const emailService = require('./server/services/email-service');
   const emailAnalytics = require('./server/services/email-analytics');
   const mentionsService = require('./server/services/mentions').default;
-  const tagsPublic = require('./server/services/tags-public').default;
-  const postsPublic = require('./server/services/posts-public').default;
   const mediaInliner = require('./server/services/media-inliner').default;
   const contentImport = require('./server/services/content-import');
-  const donationService = require('./server/services/donations').default;
   const giftService = require('./server/services/gifts');
   const machinePaymentsService = require('./server/services/machine-payments');
-  const recommendationsService = require('./server/services/recommendations').default;
   const emailAddressService = require('./server/services/email-address');
-  const newsletters = require('./server/services/newsletters').default;
-  const statsService = require('./server/services/stats').default;
-  const explorePingService = require('./server/services/explore-ping').default;
-  const users = require('./server/services/users').default;
-  const memberWelcomeEmails = require('./server/services/member-welcome-emails').default;
-  const editorPresence = require('./server/services/editor-presence').default;
-  const segments = require('./server/services/segments').default;
   const domainEvents = require('@tryghost/domain-events');
   const { automationsService } = require('./server/services/automations');
   const automationsApi = require('./server/services/automations/automations-api');
@@ -448,27 +401,10 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     }, 'Stripe');
   }
 
-  await memberAttribution.init();
-  // Email captures Audience Feedback's ready link service during initialization.
-  await audienceFeedback.init();
-  // Members captures the ready Newsletters instance during initialization.
-  await newsletters.init();
-  // Recommendations reads the ready Mentions instance during initialization.
-  await mentionsService.init();
-  // Explore captures the ready Stats aggregate during initialization.
-  await statsService.init();
-
   await Promise.all([
     identityTokens.init(),
-    staffService.init(),
     members.init(),
-    tiers.init(),
-    tagsPublic.init(),
-    postsPublic.init(),
     membersEvents.init(),
-    indexnow.init(),
-    upgrades.init(),
-    slack.init(),
     emailService.init({ ghostServer, jobsService }),
     emailAnalytics.init({
       automationsApi,
@@ -484,27 +420,15 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
       settingsCache,
     }),
     webhooks.listen(),
-    comments.init(),
     linkTracking.init(),
     emailSuppressionList.init(),
-    mediaInliner.init(),
     contentImport.init(),
-    donationService.init(),
-    recommendationsService.init(),
-    explorePingService.init(),
-    users.init(),
-    editorPresence.init(),
     machinePaymentsService.init(),
-    segments.init(),
   ]);
-  if (ghostServer) {
-    // Each releases what its start acquired; the next boot in this process starts it again.
-    ghostServer.registerCleanupTask(() => indexnow.stop(), 'IndexNow');
-    ghostServer.registerCleanupTask(() => slack.stop(), 'Slack ping');
+  // Background work that service roots declare as a start. Building one builds what it needs.
+  for (const named of background) {
+    await application.services.start(named());
   }
-  // Member welcome emails captures the ready Email address and Link tracking instances during
-  // initialization, and automation polling sends through it once jobs start.
-  await memberWelcomeEmails.init();
 
   debug('Begin: Register job handlers');
   const registerJobHandlers =

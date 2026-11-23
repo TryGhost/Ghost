@@ -62,13 +62,6 @@ type PostModel = {
   toJSON(): Record<string, unknown>;
 };
 
-type ModelEventListener = (model: PostModel, options?: { importing?: boolean }) => void;
-
-type ModelEvents = {
-  removeListener(event: string, listener: ModelEventListener): ModelEvents;
-  on(event: string, listener: ModelEventListener): ModelEvents;
-};
-
 type Post = {
   id?: string;
   slug?: string;
@@ -83,7 +76,6 @@ export type IndexNowPingServiceDeps = {
   urlUtils: UrlUtils;
   request: RequestFn;
   logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
-  events: ModelEvents;
 };
 
 export class IndexNowPingService {
@@ -93,8 +85,6 @@ export class IndexNowPingService {
   urlUtils: UrlUtils;
   request: RequestFn;
   logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
-  events: ModelEvents;
-  listener: ModelEventListener;
 
   constructor({
     settingsCache,
@@ -103,7 +93,6 @@ export class IndexNowPingService {
     urlUtils,
     request,
     logging,
-    events,
   }: IndexNowPingServiceDeps) {
     this.settingsCache = settingsCache;
     this.config = config;
@@ -111,10 +100,6 @@ export class IndexNowPingService {
     this.urlUtils = urlUtils;
     this.request = request;
     this.logging = logging;
-    this.events = events;
-
-    // Stable reference so removeListener() can de-register it across reboots.
-    this.listener = this.handlePostEvent.bind(this);
   }
 
   /**
@@ -289,7 +274,8 @@ export class IndexNowPingService {
   }
 
   /**
-   * Event listener for post.published / post.published.edited.
+   * Handles post.published and post.published.edited, which the service root declares
+   * listeners for.
    */
   handlePostEvent(model: PostModel, options?: { importing?: boolean }): void {
     // CASE: do not ping if we import a database
@@ -314,23 +300,5 @@ export class IndexNowPingService {
       // Errors are already logged inside ping()
       // This catch is just to prevent unhandled rejection warnings
     });
-  }
-
-  /**
-   * Register event listeners for IndexNow.
-   */
-  subscribeEvents(): void {
-    // Listen for new posts being published
-    this.events.removeListener('post.published', this.listener).on('post.published', this.listener);
-
-    // Also listen for published posts being edited
-    this.events
-      .removeListener('post.published.edited', this.listener)
-      .on('post.published.edited', this.listener);
-  }
-
-  unsubscribeEvents(): void {
-    this.events.removeListener('post.published', this.listener);
-    this.events.removeListener('post.published.edited', this.listener);
   }
 }

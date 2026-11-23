@@ -66,100 +66,60 @@ server does.
 [`resolveAdapterOptions`](src/adapter-manager/options.ts) are exported for callers
 that need resolution without a manager, such as the validation CLI.
 
-## Service initialization
+## Services
 
-[`defineService(name, create)`](src/define-service.ts) gives a service root `init()`,
-`stop()` and a `.service` getter. `name` identifies the service in the error raised
-when it is used before initialization. The `create` callback runs when `init()` is
-called, not when the service root is declared.
-
-### Responsibilities
-
-- **Boot** binds the root and awaits `init()` in the appropriate startup phase,
-  before code uses the service. It must await `init()` even when `create`
-  returns synchronously:
-
-  ```js
-  const example = require('./server/services/example').default;
-  await example.init();
-  ```
-
-- **The author of the `create` callback** constructs the instance, completes
-  any required startup work, and returns the ready instance. The callback may
-  return it synchronously or through a promise. It must not recursively
-  initialize its own service root.
-- **Consumers** use `.service` after initialization. Reading it earlier throws.
-
-### Readiness and retries
-
-Concurrent calls to `init()` share one attempt. After successful initialization,
-subsequent calls retain the same instance. If `create` throws or rejects,
-`init()` rejects with that error and `.service` remains unavailable. A later
-explicit call to `init()` invokes `create` again; there is no automatic retry.
-
-The callback author must release resources acquired during a failed attempt
-before passing the error back. For example, remove listeners already registered,
-stop timers already started, or close connections opened by that attempt. Await
-any asynchronous cleanup before rejecting so another attempt cannot overlap it.
-
-`defineService` resets its own initialization state after failure. It cannot
-release those resources: it has no knowledge of the callback's startup work and
-has not received a ready instance. Without cleanup, a retry could leave both the
-failed and successful instances listening for the same event.
-
-A service that acquires resources can leave this cleanup to `defineService` by
-acquiring them in a `start` hook instead.
-
-### Starting and stopping
-
-Pass an object instead of a callback to separate what a service builds once from
-what it acquires on each boot:
+[`defineService(name, definition, extras?)`](src/define-service.ts) describes how
+to build a service. It returns the description and keeps nothing: no instance, no
+flag, no registry. Whoever builds from a definition holds what it built, so one
+definition can be built once for each application that uses it. Ghost's
+application builds each service the first time it is used; see the
+[foundry](../foundry/README.md#services).
 
 ```ts
-defineService('Example', {
-  create: () => new ExampleService(dependencies),
-  start: (service) => service.subscribeEvents(),
-  stop: (service) => service.unsubscribeEvents(),
+export default defineService('Example', () => new ExampleService());
+```
+
+`definition` is a `create` callback, or an object that adds the options a service
+uses. A service that uses none of them is complete without them.
+
+```ts
+export default defineService('Example', {
+  needs: { store },
+  create: ({ foundation, store }) => new ExampleService({ store, logger: foundation.logger }),
+  listeners: [{ event: PostPublished, handle: (service, event) => service.record(event) }],
+  start: (service) => service.poll(),
+  stop: (service) => service.stopPolling(),
 });
 ```
 
-- **`create`** runs once per process. The instance survives `stop()`, so consumers
-  that hold it keep a valid reference.
-- **`start`** runs after `create`, and again on each `init()` that follows a
-  `stop()`. `.service` is unavailable until the first `start` resolves.
-- **`stop`** drains pending work and releases what `start` acquired. `root.stop()`
-  does nothing unless the service is started. `.service` stays readable afterwards.
-
-Call `stop()` only after `init()` has resolved, and `init()` only after a `stop()`
-has resolved. Overlapping the two is not supported.
-
-If `start` fails, `defineService` calls `stop` and rejects `init()` with the
-original error, so `stop` must be safe after a partial `start`. A retry runs
-`start` again without calling `create`. If that cleanup throws, its error
-replaces the original. If `stop` fails, `stop()` rejects and a later `init()`
-still starts the service.
-
-`defineService` does not know when the application stops. Boot connects the two,
-for example by registering `root.stop()` as a server cleanup task. Hooks run with
-no deadline of their own. A root without hooks has a `stop()` that does nothing.
-
-See the [service-author example](../../ghost/core/server/services/README.md#initialization)
-for IndexNow's hooks and their tests. Background job registration remains with its
-existing owners; `defineService` does not provide that hook.
+- **`needs`** names other definitions. Their instances are handed to `create`
+  under the same names, with the [foundation](src/foundation.ts).
+- **`create`** builds the instance, synchronously. A `create` that returns a
+  promise does not compile. It reads what it is given and builds; it does not
+  subscribe, schedule or wait.
+- **`listeners`** declares the events the service handles, so that an application
+  can listen before the service exists and build it when an event arrives.
+- **`start`** is work that runs with no caller behind it. It runs only when an
+  application starts the service, and may be awaited. **`stop`** releases what
+  `start` acquired, and also runs after a failed `start`.
 
 ### Transitional extras
 
-An optional third argument preserves helpers that still accompany a service root:
+An optional third argument keeps helpers that still accompany a service root:
 
 ```ts
 const example = defineService('Example', createService, { isAvailable });
 example.extras.isAvailable();
 ```
 
-The supplied object and its member types are retained. Without that argument the
-root exposes only `init`, `stop` and `service`. The helper never invokes extras or assigns
-them lifecycle meaning. They do not change readiness, initialization retries or
-resource ownership; each caller must respect the extra's documented timing.
+The object and its member types are kept as given. Nothing invokes extras or
+gives them lifecycle meaning. This is a temporary migration interface. The
+[services guide](../../ghost/core/server/services/README.md) describes how to
+catalogue extras while their eventual ownership is established.
 
-This is a temporary migration interface. The [services guide](../../ghost/core/server/services/README.md)
-describes how to catalogue extras while their eventual ownership is established.
+## Foundation
+
+[`foundation.ts`](src/foundation.ts) holds the types of what an application is
+built on: config, a logger, the database handle, the event bus and a clock. They
+are types only. The [foundry](../foundry/README.md) builds a foundation and hands
+it to what the application builds; nothing imports one.

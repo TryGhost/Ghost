@@ -13,7 +13,9 @@ const requireRoot = createRequire(path.join(root, 'package.json'));
 const binary = path.join(path.dirname(requireRoot.resolve('oxlint/package.json')), 'bin/oxlint');
 const config = JSON.parse(readFileSync(path.join(root, '.oxlintrc.json'), 'utf8'));
 const ruleName = 'ghost/service-root-shape';
-const helperImport = '#kernel/define-service';
+// Roots import the transitional helper, which adds the `.service` getter to the kernel's.
+const helperImport = '../../../../bootstrap/transition/define-service';
+const kernelImport = '#kernel/define-service';
 const prefix = `import { defineService } from '${helperImport}';\n`;
 const factory = `defineService('Example', () => ({}))`;
 
@@ -96,6 +98,16 @@ const valid = [
     'lifecycle hooks with extras',
     `export default defineService('Example', { create, start, stop }, { scheduleCheckJob });`,
   ],
+  [
+    'declared needs, listeners and background work',
+    `export default defineService('Example', {
+      needs: { tiers },
+      create: ({ tiers }) => new Service(tiers),
+      listeners: [{ event: legacyEvent('site.changed'), handle: (service) => service.reset() }],
+      start: async (service) => { await service.poll(); },
+      stop: (service) => service.close(),
+    });`,
+  ],
   ['initializer alias', `const first = ${factory}; const second = first; export default second;`],
   [
     'shadowed root',
@@ -122,11 +134,19 @@ for (const [name, code] of valid) {
   });
 }
 
-test('accepts an aliased kernel import', () => {
+test('accepts an aliased helper import', () => {
   const result = lint(
     `import { defineService as managed } from '${helperImport}'; export default managed('Example', create);`,
   );
   assert.equal(result.status, 0, JSON.stringify(result.diagnostics));
+});
+
+test('accepts a root that imports the kernel helper directly', () => {
+  const result = lint(
+    `import { defineService } from '${kernelImport}'; export default ${factory};`,
+  );
+  assert.equal(result.status, 0, JSON.stringify(result.diagnostics));
+  assert.deepEqual(result.diagnostics, []);
 });
 
 const rejected = [
@@ -219,6 +239,41 @@ const rejected = [
     'escape',
   ],
   [
+    'async create callback',
+    `export default defineService('Example', async () => new Service());`,
+    'asyncCreate',
+  ],
+  [
+    'async create in the options',
+    `export default defineService('Example', { create: async () => new Service(), stop });`,
+    'asyncCreate',
+  ],
+  [
+    'async create method in the options',
+    `export default defineService('Example', { async create() { return new Service(); } });`,
+    'asyncCreate',
+  ],
+  [
+    'async create through a local const',
+    `const create = async () => new Service(); export default defineService('Example', create);`,
+    'asyncCreate',
+  ],
+  [
+    'legacy event subscription in create',
+    `export default defineService('Example', () => { const service = new Service(); events.on('site.changed', () => service.reset()); return service; });`,
+    'subscribe',
+  ],
+  [
+    'domain event subscription in create',
+    `export default defineService('Example', { create: () => { const service = new Service(); DomainEvents.subscribe(MemberCreatedEvent, (event) => service.handle(event)); return service; } });`,
+    'subscribe',
+  ],
+  [
+    'subscription in start',
+    `export default defineService('Example', { create, start: (service) => { emitter.once('ready', () => service.run()); } });`,
+    'subscribe',
+  ],
+  [
     'nested extras extension',
     `const root = defineService('Example', create, { helper }); Object.assign(root.extras, { other }); export default root;`,
     'escape',
@@ -226,7 +281,9 @@ const rejected = [
 ] as const;
 const messages: Record<string, RegExp> = {
   runtimeExport: /Named runtime exports/,
-  defaultExport: /Export a default initializer/,
+  defaultExport: /Export a default definition created by defineService/,
+  asyncCreate: /built synchronously/,
+  subscribe: /Declare the event in listeners/,
   alias: /resolve to local const/,
   explicitExtras: /explicit object/,
   property: /static names/,
@@ -377,7 +434,7 @@ test('fails instead of skipping roots when the legacy service inventory cannot b
   }
 });
 
-test('configures the rule for every service root with the kernel helper', () => {
+test('configures the rule for every service root with both helper imports', () => {
   const overrides = config.overrides.filter(
     (override: { rules: Record<string, unknown> }) => override.rules[ruleName],
   );
@@ -388,5 +445,5 @@ test('configures the rule for every service root with the kernel helper', () => 
   );
   const settings = overrides[0].rules[ruleName];
   assert.equal(settings[0], 'error');
-  assert.equal(settings[1].helperImport, '#kernel/define-service');
+  assert.deepEqual(settings[1], { helperImports: [kernelImport, helperImport] });
 });

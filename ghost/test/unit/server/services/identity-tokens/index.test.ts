@@ -3,6 +3,7 @@ import { generateKeyPairSync, type KeyPairKeyObjectResult } from 'node:crypto';
 import { setImmediate } from 'node:timers/promises';
 import { decode, verify, type JwtPayload, type VerifyOptions } from 'jsonwebtoken';
 import sinon from 'sinon';
+import { openServices, startAsBoot } from '../../../../utils/services';
 import type { IdentityTokenService } from '../../../../../core/server/services/identity-tokens/identity-token-service';
 
 type SigningKeys = typeof import('../../../../../core/server/services/signing-keys').default;
@@ -73,6 +74,12 @@ describe('Identity tokens root', function () {
     root = require(rootPaths[1]);
   });
 
+  /** What boot does before anything signs: lets services be built and starts signing keys. */
+  async function startSigningKeys() {
+    openServices(signingKeys);
+    await startAsBoot(signingKeys);
+  }
+
   afterEach(function () {
     sandbox.restore();
     for (const [path, previous] of originalModules) {
@@ -84,8 +91,8 @@ describe('Identity tokens root', function () {
   });
 
   it('does not obtain signing keys or publish an instance merely by importing', async function () {
-    // Initialize signing keys first so an import-time init would be able to succeed.
-    await signingKeys.init();
+    // Start signing keys first so an import-time init would be able to succeed.
+    await startSigningKeys();
     check.resetHistory();
     rootPaths.slice(1).forEach((path) => delete require.cache[path]);
     root = require(rootPaths[1]);
@@ -98,7 +105,7 @@ describe('Identity tokens root', function () {
   });
 
   it('signs an identities endpoint response with the staff provider and configured admin issuer', async function () {
-    await signingKeys.init();
+    await startSigningKeys();
     await root.init();
     const user = {
       load: sandbox.stub().resolves(),
@@ -118,7 +125,7 @@ describe('Identity tokens root', function () {
   });
 
   it('retains the initialized instance and issuer while asking its provider for the current key', async function () {
-    await signingKeys.init();
+    await startSigningKeys();
     await root.init();
     const retained = root.instance!;
     const firstToken = await retained.getTokenForUser('staff@example.com');
@@ -141,10 +148,10 @@ describe('Identity tokens root', function () {
     sinon.assert.calledTwice(getSigningKey);
   });
 
-  it('can retry after signing keys are initialized, without publishing early', async function () {
-    await assert.rejects(root.init(), /Signing keys used before init/);
+  it('can retry once signing keys can be built, without publishing early', async function () {
+    await assert.rejects(root.init(), /Signing keys was used while Ghost cannot build services/);
     assert.equal(root.instance, undefined);
-    await signingKeys.init();
+    await startSigningKeys();
     await root.init();
 
     const token = await root.instance!.getTokenForUser('staff@example.com');
@@ -152,7 +159,7 @@ describe('Identity tokens root', function () {
   });
 
   it('can retry after selecting the staff provider fails', async function () {
-    await signingKeys.init();
+    await startSigningKeys();
     const failure = new Error('Staff signing keys are unavailable');
     forPurpose.onFirstCall().throws(failure);
 
@@ -165,7 +172,7 @@ describe('Identity tokens root', function () {
   });
 
   it('propagates key lookup failures without replacing the usable service', async function () {
-    await signingKeys.init();
+    await startSigningKeys();
     await root.init();
     const retained = root.instance!;
     const failure = new Error('Key lookup failed');

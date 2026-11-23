@@ -26,10 +26,10 @@ class DomainEvents {
    * @param {ConstructorOf<EventClass>} Event
    * @param {(event: EventClass) => Promise<void> | void} handler
    *
-   * @returns {void}
+   * @returns {() => void} Stops the handler from being called
    */
   static subscribe(Event, handler) {
-    DomainEvents.ee.on(Event.name, async (event) => {
+    const listener = async (event) => {
       try {
         await handler(event);
       } catch (e) {
@@ -41,7 +41,11 @@ class DomainEvents {
       } else {
         // Tracking is disabled outside tests.
       }
-    });
+    };
+    DomainEvents.ee.on(Event.name, listener);
+    return () => {
+      DomainEvents.ee.off(Event.name, listener);
+    };
   }
 
   /**

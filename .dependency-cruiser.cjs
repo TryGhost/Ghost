@@ -460,7 +460,62 @@ module.exports = {
       comment: 'Kernel code must not import application code, including shared.',
       severity: 'error',
       from: { path: '^tbd/kernel/' },
+      to: { path: '^ghost/|^tbd/foundry/' },
+    },
+    // The foundry is told what an application is; it never looks.
+    {
+      name: 'foundry-not-application',
+      comment:
+        'The foundry never imports the application it builds. Hand it what it needs from the bootstrap.',
+      severity: 'error',
+      from: { path: '^tbd/foundry/' },
       to: { path: '^ghost/' },
+    },
+    {
+      name: 'foundry-only-from-bootstrap',
+      comment:
+        "Only an application's bootstrap imports the foundry. Other code is handed what the foundry built; a type-only import is allowed.",
+      severity: 'error',
+      from: { path: '^ghost/', pathNot: '^ghost/bootstrap/' },
+      to: {
+        path: '^tbd/foundry/|^#foundry/',
+        dependencyTypesNot: ['type-only', 'type-import'],
+      },
+    },
+    {
+      name: 'bootstrap-only-from-boot',
+      comment:
+        "Only Ghost's entry point and boot import the bootstrap. The two earmarked exceptions are a service root importing the defineService that adds the .service getter, and the endpoints registry reading the application's services.",
+      severity: 'error',
+      from: {
+        path: '^ghost/',
+        pathNot: [
+          '^ghost/bootstrap/',
+          '^ghost/index\\.js$',
+          '^ghost/core/boot\\.js$',
+          // Earmarked: hands endpoints their services from Ghost's one application.
+          '^ghost/core/server/api/endpoints/index\\.js$',
+        ],
+      },
+      to: {
+        path: '^ghost/bootstrap/',
+        pathNot: [
+          // From service roots only: see the next rule.
+          '^ghost/bootstrap/transition/define-service\\.ts$',
+        ],
+        dependencyTypesNot: ['type-only', 'type-import'],
+      },
+    },
+    {
+      name: 'service-alias-only-from-service-roots',
+      comment:
+        'Only a service root imports the defineService that adds the .service getter. It is transitional: do not spread it.',
+      severity: 'error',
+      from: {
+        path: '^ghost/',
+        pathNot: [`^${servicesRoot}/[^/]+/index\\.ts$`, '^ghost/bootstrap/'],
+      },
+      to: { path: '^ghost/bootstrap/transition/define-service\\.ts$' },
     },
     // ============================================================
     // shared/ must not require server/* or frontend/*

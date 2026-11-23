@@ -9,7 +9,6 @@ class StaffService {
     settingsHelpers,
     urlUtils,
     blogIcon,
-    DomainEvents,
     labs,
     memberAttributionService,
     events,
@@ -20,7 +19,6 @@ class StaffService {
     /** @private */
     this.settingsCache = settingsCache;
     this.models = models;
-    this.DomainEvents = DomainEvents;
     this.memberAttributionService = memberAttributionService;
     /** @private */
     this.events = events;
@@ -173,55 +171,40 @@ class StaffService {
     }
   }
 
-  subscribeEvents() {
+  /**
+   * Handles one of the events the service root declares a listener for. A
+   * failure is logged, not thrown: a notification that cannot be sent must not
+   * fail whatever published the event.
+   */
+  async notify(type, event) {
     const {
       MemberCreatedEvent,
       SubscriptionActivatedEvent,
       SubscriptionCancelledEvent,
       MilestoneCreatedEvent,
     } = this.events;
+    const failure = new Map([
+      // Trigger email for free member signup
+      [MemberCreatedEvent, `Failed to notify free member signup - ${event?.data?.memberId}`],
+      // Trigger email on paid subscription start
+      [
+        SubscriptionActivatedEvent,
+        `Failed to notify paid member subscription start - ${event?.data?.memberId}`,
+      ],
+      // Trigger email when a member cancels their subscription
+      [
+        SubscriptionCancelledEvent,
+        `Failed to notify paid member subscription cancel - ${event?.data?.memberId}`,
+      ],
+      // Trigger email when a new milestone is reached
+      [MilestoneCreatedEvent, `Failed to notify milestone`],
+    ]);
 
-    // Trigger email for free member signup
-    this.DomainEvents.subscribe(MemberCreatedEvent, async (event) => {
-      try {
-        await this.handleEvent(MemberCreatedEvent, event);
-      } catch (e) {
-        this.logging.error(e, `Failed to notify free member signup - ${event?.data?.memberId}`);
-      }
-    });
-
-    // Trigger email on paid subscription start
-    this.DomainEvents.subscribe(SubscriptionActivatedEvent, async (event) => {
-      try {
-        await this.handleEvent(SubscriptionActivatedEvent, event);
-      } catch (e) {
-        this.logging.error(
-          e,
-          `Failed to notify paid member subscription start - ${event?.data?.memberId}`,
-        );
-      }
-    });
-
-    // Trigger email when a member cancels their subscription
-    this.DomainEvents.subscribe(SubscriptionCancelledEvent, async (event) => {
-      try {
-        await this.handleEvent(SubscriptionCancelledEvent, event);
-      } catch (e) {
-        this.logging.error(
-          e,
-          `Failed to notify paid member subscription cancel - ${event?.data?.memberId}`,
-        );
-      }
-    });
-
-    // Trigger email when a new milestone is reached
-    this.DomainEvents.subscribe(MilestoneCreatedEvent, async (event) => {
-      try {
-        await this.handleEvent(MilestoneCreatedEvent, event);
-      } catch (e) {
-        this.logging.error(e, `Failed to notify milestone`);
-      }
-    });
+    try {
+      await this.handleEvent(type, event);
+    } catch (e) {
+      this.logging.error(e, failure.get(type));
+    }
   }
 }
 

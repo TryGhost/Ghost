@@ -1,4 +1,4 @@
-import { defineService } from '#kernel/define-service';
+import { defineService } from '../../../../bootstrap/transition/define-service';
 
 const urlService = require('../url');
 const urlUtils = require('../../../shared/url-utils').default;

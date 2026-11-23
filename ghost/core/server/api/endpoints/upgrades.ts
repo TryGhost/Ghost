@@ -8,6 +8,7 @@ import {
   upgradeVersionSchema,
 } from '@tryghost/adapter-base-upgrade';
 import upgrades from '../../services/upgrades';
+import { defineEndpoints } from './utils/define-endpoints';
 
 // Unknown keys are rejected, not stripped: a dropped execution control would otherwise go unnoticed.
 const UpgradeRequestBody = z
@@ -56,56 +57,59 @@ const toApi = <T extends Record<string, unknown>>(resource: T) =>
 
 const noCacheInvalidation = { cacheInvalidate: false };
 
-const controller = {
-  docName: 'upgrades',
+// Handed the upgrades service: nothing here reads it off the module it imports.
+const endpoints = defineEndpoints({ upgrades }, (handed) => {
+  return {
+    docName: 'upgrades',
 
-  browse: {
-    headers: noCacheInvalidation,
-    permissions: true,
-    async query() {
-      return toApi(await upgrades.service.getStatus());
+    browse: {
+      headers: noCacheInvalidation,
+      permissions: true,
+      async query() {
+        return toApi(await handed.upgrades.getStatus());
+      },
     },
-  },
 
-  add: {
-    headers: { ...noCacheInvalidation, location: false },
-    statusCode: 202,
-    // A validation function replaces the framework's defaults, which expect resource bodies.
-    validation(frame) {
-      parseRequest(frame);
-    },
-    permissions: true,
-    async query(frame) {
-      const input = parseRequest(frame);
-      const user = frame.options.context.user;
-      if (!user) {
-        throw new errors.NoPermissionError({ message: 'Only staff users can request updates.' });
-      }
+    add: {
+      headers: { ...noCacheInvalidation, location: false },
+      statusCode: 202,
+      // A validation function replaces the framework's defaults, which expect resource bodies.
+      validation(frame) {
+        parseRequest(frame);
+      },
+      permissions: true,
+      async query(frame) {
+        const input = parseRequest(frame);
+        const user = frame.options.context.user;
+        if (!user) {
+          throw new errors.NoPermissionError({ message: 'Only staff users can request updates.' });
+        }
 
-      const job = await upgrades.service.createRequest(
-        {
-          component: input.component,
-          toVersion: input.to_version,
-          idempotencyKey: input.idempotency_key,
-        },
-        user,
-      );
-      return toApi(job);
+        const job = await handed.upgrades.createRequest(
+          {
+            component: input.component,
+            toVersion: input.to_version,
+            idempotencyKey: input.idempotency_key,
+          },
+          user,
+        );
+        return toApi(job);
+      },
     },
-  },
 
-  read: {
-    headers: noCacheInvalidation,
-    options: ['id'],
-    // The framework's id validator only accepts ObjectIds; jobs use UUIDs.
-    validation(frame) {
-      parseJobId(frame);
+    read: {
+      headers: noCacheInvalidation,
+      options: ['id'],
+      // The framework's id validator only accepts ObjectIds; jobs use UUIDs.
+      validation(frame) {
+        parseJobId(frame);
+      },
+      permissions: true,
+      async query(frame) {
+        return toApi(await handed.upgrades.getJob(parseJobId(frame)));
+      },
     },
-    permissions: true,
-    async query(frame) {
-      return toApi(await upgrades.service.getJob(parseJobId(frame)));
-    },
-  },
-} satisfies Controller<{ browse: UpgradeFrame; add: UpgradeFrame; read: UpgradeFrame }>;
+  } satisfies Controller<{ browse: UpgradeFrame; add: UpgradeFrame; read: UpgradeFrame }>;
+});
 
-module.exports = controller;
+module.exports = endpoints;

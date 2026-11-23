@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
 import { loadBootFunction } from '../../../boot/harness';
+import { openServices, services } from '../../../../utils/services';
 
 const models = require('../../../../../core/server/models');
 const cache = require('../../../../../core/shared/custom-theme-settings-cache');
@@ -40,7 +41,7 @@ describe('Custom theme settings root and retained consumers', function () {
   const sandbox = sinon.createSandbox();
   let previousModules: Map<string, NodeJS.Module | undefined>;
   let previousCache: Record<string, unknown>;
-  let root: { init(): Promise<void>; service: { listSettings(): unknown[] } };
+  let root: { service: { listSettings(): unknown[] } };
   let activation: Record<
     'activateFromBoot' | 'activateFromAPI' | 'activateFromAPIOverride',
     (name: string, loaded: typeof theme, checked: typeof checkedTheme) => Promise<void>
@@ -66,7 +67,7 @@ describe('Custom theme settings root and retained consumers', function () {
     sandbox.stub(themeLoader, 'loadOneTheme').resolves(theme);
     sandbox.stub(settingsCache, 'get').callThrough().withArgs('active_theme').returns('casper');
 
-    // These real consumers retain the root before boot constructs its implementation.
+    // These real consumers retain the root before anything builds its service.
     root = require(ROOT_PATH).default;
     activation = require(BRIDGE_PATH);
     controller = require(CONTROLLER_PATH);
@@ -94,7 +95,6 @@ describe('Custom theme settings root and retained consumers', function () {
     const init = loadBootFunction(
       'initServicesForFrontend',
       {
-        './server/services/custom-theme-settings': { default: root },
         './server/services/themes': themes,
         './server/services/offers': offers,
       },
@@ -109,12 +109,8 @@ describe('Custom theme settings root and retained consumers', function () {
     return { init: () => init({ bootLogger: { metric() {} } }), offers };
   }
 
-  it('constructs without querying settings, activating a theme or replacing the shared cache', async function () {
-    sinon.assert.notCalled(findAll);
-    sinon.assert.notCalled(populate);
-    sinon.assert.notCalled(activateFrontend);
-
-    await root.init();
+  it('builds on first use without querying settings, activating a theme or replacing the shared cache', function () {
+    openServices();
 
     assert.deepEqual(controller.browse.query(), []);
     assert.deepEqual(cache.getAll(), { previous: 'still cached' });
@@ -129,7 +125,7 @@ describe('Custom theme settings root and retained consumers', function () {
     'activateFromAPIOverride',
   ] as const) {
     it(`${method} waits for custom settings before activating the frontend`, async function () {
-      await root.init();
+      openServices();
       const read = Promise.withResolvers<ReturnType<typeof settingsCollection>>();
       findAll.onFirstCall().returns(read.promise);
       let completed = false;
@@ -165,66 +161,22 @@ describe('Custom theme settings root and retained consumers', function () {
     });
   }
 
-  it('waits for custom settings initialization before theme startup or resolving frontend initialization', async function () {
+  it('is built by theme startup and activates on every boot through retained consumers', async function () {
+    openServices();
     const boot = bootFrontend();
-    const ready = Promise.withResolvers<void>();
-    const initialize = root.init.bind(root);
-    const init = sandbox.stub(root, 'init').callsFake(async () => {
-      await ready.promise;
-      await initialize();
-    });
-    const initializeThemes = sandbox.spy(themes, 'init');
-    let completed = false;
-    const startup = boot.init().then(() => {
-      completed = true;
-    });
-
-    try {
-      await setImmediate();
-      sinon.assert.calledOnce(init);
-      sinon.assert.notCalled(initializeThemes);
-      sinon.assert.notCalled(boot.offers.init);
-      assert.equal(completed, false);
-    } finally {
-      ready.resolve();
-      await Promise.allSettled([startup]);
-    }
-    await startup;
-
-    sinon.assert.calledOnce(initializeThemes);
-    sinon.assert.calledOnce(boot.offers.init);
-    assert.equal(completed, true);
-  });
-
-  it('propagates the original custom settings initialization error without starting themes', async function () {
-    const boot = bootFrontend();
-    const failure = new Error('Custom settings initialization failed');
-    const init = sandbox.stub(root, 'init').rejects(failure);
-    const initializeThemes = sandbox.spy(themes, 'init');
-
-    await assert.rejects(boot.init(), (error) => error === failure);
-
-    sinon.assert.calledOnce(init);
-    sinon.assert.notCalled(initializeThemes);
-    sinon.assert.notCalled(boot.offers.init);
-  });
-
-  it('initializes before theme startup and activates on every boot through retained consumers', async function () {
-    const boot = bootFrontend();
-    const init = sandbox.spy(root, 'init');
 
     await boot.init();
     assert.deepEqual(cache.getAll(), { accent_color: '#112233' });
+    // The controller reads the instance theme startup built.
     assert.equal(controller.browse.query().length, 1);
-    sinon.assert.calledOnce(init);
+    assert.equal(root.service.listSettings().length, 1);
     sinon.assert.calledTwice(findAll);
-    sinon.assert.callOrder(init, findAll, activateFrontend, boot.offers.init);
+    sinon.assert.callOrder(findAll, activateFrontend, boot.offers.init);
 
     findAll.resetHistory();
     activateFrontend.resetHistory();
     await boot.init();
 
-    sinon.assert.calledTwice(init);
     sinon.assert.calledTwice(findAll);
     sinon.assert.calledOnceWithExactly(activateFrontend, theme, checkedTheme);
     assert.deepEqual(cache.getAll(), { accent_color: '#112233' });
@@ -235,6 +187,7 @@ describe('Custom theme settings root and retained consumers', function () {
     const failure = new Error('Custom setting lookup failed');
     findAll.rejects(failure);
     const error = sandbox.stub(logging, 'error');
+    openServices();
     const boot = bootFrontend();
 
     await boot.init();
@@ -247,8 +200,8 @@ describe('Custom theme settings root and retained consumers', function () {
     assert.deepEqual(controller.browse.query(), []);
   });
 
-  it('keeps an in-flight activation usable after another init and lets retained consumers activate again', async function () {
-    await root.init();
+  it('keeps an in-flight activation usable after the services are closed and reopened, and lets retained consumers activate again', async function () {
+    openServices();
     const retained = root.service;
     const read = Promise.withResolvers<ReturnType<typeof settingsCollection>>();
     findAll.onFirstCall().returns(read.promise);
@@ -258,7 +211,10 @@ describe('Custom theme settings root and retained consumers', function () {
     try {
       await setImmediate();
       sinon.assert.calledOnce(findAll);
-      await root.init();
+      // What a second boot in one process does: the next use builds a new instance.
+      await services.close();
+      openServices();
+      assert.notEqual(root.service, retained);
       assert.deepEqual(cache.getAll(), { previous: 'still cached' });
       read.resolve(settingsCollection());
       await activationPromise;

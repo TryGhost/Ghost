@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import sinon from 'sinon';
+import { openServices } from '../../../../utils/services';
 
 const DomainEvents = require('@tryghost/domain-events');
 const { IncorrectUsageError } = require('@tryghost/errors');
@@ -14,7 +15,7 @@ const tiersApiPath = require.resolve('../../../../../core/server/services/tiers/
 const metafieldsPath = require.resolve('../../../../../core/server/services/members-metafields');
 // The real check, which refuses until boot has set the custom fields services up. No unit test
 // sets them up.
-const { booted: bootedBeforeInit } = require(metafieldsPath);
+const { booted: bootedBeforeSetUp } = require(metafieldsPath);
 
 const FREE_ID = '0000000000000000000000a1';
 const PAID_ID = '0000000000000000000000a2';
@@ -84,7 +85,7 @@ describe('Tiers root', function () {
   let dispatch: sinon.SinonStub;
   let metafields: { booted: () => unknown };
 
-  /** A fresh root, so each case starts uninitialized. */
+  /** A fresh root, so each case loads the root against its own doubles. */
   function loadRoot() {
     delete require.cache[rootPath];
     return require(rootPath).default;
@@ -114,31 +115,27 @@ describe('Tiers root', function () {
     cached.clear();
   });
 
-  it('exports one root, with nothing published or loaded before init', function () {
+  it('fails its first use before the custom fields services are set up, and builds once they are', function () {
+    const booted = metafields.booted;
+    metafields.booted = bootedBeforeSetUp;
     const root = loadRoot();
+    openServices();
 
-    assert.equal(typeof root.init, 'function');
     assert.throws(() => root.service, IncorrectUsageError);
     sinon.assert.notCalled(Product.findAll);
-  });
 
-  it('refuses to start before the custom fields services are set up', async function () {
-    metafields.booted = bootedBeforeInit;
-    const root = loadRoot();
-
-    await assert.rejects(root.init(), IncorrectUsageError);
-    assert.throws(() => root.service, IncorrectUsageError);
-    sinon.assert.notCalled(Product.findAll);
+    metafields.booted = booted;
+    assert.ok(root.service.api instanceof TiersAPI);
   });
 
   it('publishes a repository that reads nothing until a tier is first read', async function () {
     const root = loadRoot();
 
-    await root.init();
+    openServices();
 
-    sinon.assert.notCalled(Product.findAll);
     assert.ok(root.service.repository instanceof TierRepository);
     assert.ok(root.service.api instanceof TiersAPI);
+    sinon.assert.notCalled(Product.findAll);
 
     const page = await root.service.api.browse();
     sinon.assert.calledOnceWithExactly(Product.findAll, { withRelated: ['benefits'] });
@@ -167,7 +164,7 @@ describe('Tiers root', function () {
     const loading = deferred<unknown[]>();
     Product.findAll.returns(loading.promise);
     const root = loadRoot();
-    await root.init();
+    openServices();
 
     const first = root.service.api.browse();
     const second = root.service.api.read(PAID_ID);
@@ -191,7 +188,7 @@ describe('Tiers root', function () {
     const failure = new Error('Products unavailable');
     Product.findAll.onFirstCall().rejects(failure);
     const root = loadRoot();
-    await root.init();
+    openServices();
 
     await assert.rejects(root.service.api.browse(), (error) => error === failure);
 
@@ -203,7 +200,7 @@ describe('Tiers root', function () {
 
   it('reads the tiers again after the repository is told to reload', async function () {
     const root = loadRoot();
-    await root.init();
+    openServices();
     await root.service.api.browse();
     Product.findAll.resolves([paidRow]);
 
@@ -221,7 +218,7 @@ describe('Tiers root', function () {
 
   it('loads through the transaction of a first read made inside one, and keeps nothing from it', async function () {
     const root = loadRoot();
-    await root.init();
+    openServices();
     const transacting = { id: 'transaction' };
 
     const tier = await root.service.api.read(PAID_ID, { transacting });
@@ -242,7 +239,7 @@ describe('Tiers root', function () {
     sinon.assert.calledTwice(Product.findAll);
   });
 
-  it('publishes no API when its construction fails, and builds one on the next init', async function () {
+  it('fails the first use when the API cannot be constructed, and builds one on the next use', function () {
     const failure = new Error('API unavailable');
     const tiersApiModule = require.cache[tiersApiPath];
     assert.ok(tiersApiModule);
@@ -259,44 +256,21 @@ describe('Tiers root', function () {
       },
     );
     const root = loadRoot();
+    openServices();
 
-    await assert.rejects(root.init(), (error) => error === failure);
-    assert.throws(() => root.service, IncorrectUsageError);
+    assert.throws(
+      () => root.service,
+      (error) => error === failure,
+    );
 
-    await root.init();
-
-    sinon.assert.calledTwice(construct);
     assert.ok(root.service.api instanceof RealTiersAPI);
+    sinon.assert.calledTwice(construct);
     assert.equal(construct.secondCall.args[0].repository, root.service.repository);
   });
 
-  it('keeps the same repository and API across later init calls, reading nothing', async function () {
+  it('generates slugs through the current Product model and saves through the one it was built with', async function () {
     const root = loadRoot();
-    await root.init();
-    const { repository, api } = root.service;
-
-    await root.init();
-
-    assert.equal(root.service.repository, repository);
-    assert.equal(root.service.api, api);
-    sinon.assert.notCalled(Product.findAll);
-  });
-
-  it('settles overlapping init calls with an API reading through the published repository', async function () {
-    // defineService shares one pending initialization between overlapping calls; its own
-    // tests cover that. Boot calls init once, so only the settled state is pinned here.
-    const root = loadRoot();
-
-    await Promise.all([root.init(), root.init()]);
-
-    const sentinel = { id: 'sentinel' };
-    sandbox.stub(root.service.repository, 'getById').resolves(sentinel);
-    assert.equal(await root.service.api.read(PAID_ID), sentinel);
-  });
-
-  it('generates slugs through the current Product model and saves through the one given at init', async function () {
-    const root = loadRoot();
-    await root.init();
+    openServices();
     const tierData = {
       name: 'Silver',
       visibility: 'public',
@@ -331,7 +305,7 @@ describe('Tiers root', function () {
 
   it('needs the API as the receiver of its operations', async function () {
     const root = loadRoot();
-    await root.init();
+    openServices();
     const { browse, read } = root.service.api;
 
     await assert.rejects(browse(), TypeError);
