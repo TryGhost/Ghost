@@ -20,7 +20,6 @@ import {
   settleRequests,
   staffRole,
   withSavedViews,
-  withoutSegmentsApi,
   type SegmentWritesCapture,
   type StoredView,
 } from '@test-utils/acceptance';
@@ -71,21 +70,25 @@ describe('Members saved views', () => {
     await expect.element(membersScreen.manageViewButton()).toHaveTextContent('Edit view');
   });
 
-  it('shows the views from the settings while the segments list loads', async () => {
+  it('shows the views once the segments list has loaded', async () => {
     vipMembers();
     const releaseSegments = holdSegmentsList();
     await renderAdminApp(vipRoute, withSavedViews(vips));
 
     try {
-      await expect.element(sidebarScreen.navLink('VIPs')).toHaveAttribute('aria-current', 'page');
-      await expect.element(membersScreen.manageViewButton()).toHaveTextContent('Edit view');
+      await expect.element(membersScreen.manageViewButton()).toHaveTextContent('Save view');
+      await expect.element(sidebarScreen.navLink('VIPs')).not.toBeInTheDocument();
     } finally {
       releaseSegments();
     }
+
+    await expect.element(sidebarScreen.navLink('VIPs')).toHaveAttribute('aria-current', 'page');
+    await expect.element(membersScreen.manageViewButton()).toHaveTextContent('Edit view');
   });
 
-  it('shows the views from the settings, and no error, when the segments list fails', async () => {
+  it('shows no views and no error toast when the segments list fails, and asks again on the next visit', async () => {
     vipMembers();
+    fakeTags([]);
     fakeAdminEndpoint(
       'GET',
       '/segments/',
@@ -94,9 +97,67 @@ describe('Members saved views', () => {
     );
     await renderAdminApp(vipRoute, withSavedViews(vips));
 
+    await expect.element(membersScreen.manageViewButton()).toHaveTextContent('Save view');
+    await settleRequests();
+    await expect.element(sidebarScreen.navLink('VIPs')).not.toBeInTheDocument();
+    await expect(sidebarScreen.errorToast()).toHaveCount(0);
+
+    // The server recovers, and the members screen is opened again.
+    fakeAdminEndpoint('GET', '/segments/', {
+      segments: [{ id: 'vips', name: 'VIPs', filter: vipFilter }],
+    });
+    await sidebarScreen.navLink('Tags').click();
+    await expect.element(membersScreen.manageViewButton()).not.toBeInTheDocument();
+    window.history.back();
+
     await expect.element(sidebarScreen.navLink('VIPs')).toHaveAttribute('aria-current', 'page');
     await expect.element(membersScreen.manageViewButton()).toHaveTextContent('Edit view');
+  });
+
+  it('shows no views and fails a save on a server without the segments API', async () => {
+    vipMembers();
+    fakeAdminEndpoint('GET', '/segments/', notFound, { status: 404 });
+    fakeAdminEndpoint('POST', '/segments/', notFound, { status: 404 });
+    await renderAdminApp(vipRoute, withSavedViews(vips));
+
+    await expect.element(membersScreen.manageViewButton()).toHaveTextContent('Save view');
+    await settleRequests();
+    await expect.element(sidebarScreen.navLink('VIPs')).not.toBeInTheDocument();
     await expect(sidebarScreen.errorToast()).toHaveCount(0);
+
+    await membersScreen.saveView('VIPs');
+    await expect.element(membersScreen.dialog()).toHaveTextContent('Failed to save view');
+    await expect.element(membersScreen.dialog()).not.toHaveTextContent('no longer exists');
+  });
+
+  it('saves a new view, not a rename, when the list arrives while the popover is open', async () => {
+    vipMembers();
+    const segmentsApi = fakeSegmentWrites();
+    const releaseSegments = holdSegmentsList();
+    await renderAdminApp(vipRoute, withSavedViews(vips));
+
+    try {
+      await expect.element(membersScreen.manageViewButton()).toHaveTextContent('Save view');
+      await membersScreen.manageViewButton().click();
+      await membersScreen.viewNameInput().fill('Gold');
+    } finally {
+      releaseSegments();
+    }
+    await expect.element(sidebarScreen.navLink('VIPs')).toBeVisible();
+
+    await membersScreen.viewPopoverButton('Save').click();
+
+    await expect
+      .element(membersScreen.dialog())
+      .toHaveTextContent('A view with this filter already exists');
+    expect(sentWrites(segmentsApi)).toEqual([
+      {
+        method: 'POST',
+        path: '/segments/',
+        body: { segments: [{ name: 'Gold', filter: vipFilter }] },
+      },
+    ]);
+    await expect.element(sidebarScreen.navLink('VIPs')).toBeVisible();
   });
 
   it('asks for segments only for staff who are shown member views', async () => {
@@ -175,31 +236,6 @@ describe('Members saved views', () => {
       .element(sidebarScreen.navLink('Very important'))
       .toHaveAttribute('aria-current', 'page');
     await expect.element(sidebarScreen.navLink('VIPs')).not.toBeInTheDocument();
-    expect(sentWrites(segmentsApi)).toEqual([
-      { method: 'PUT', path: '/segments/:id/', body: { segments: [{ name: 'Very important' }] } },
-    ]);
-  });
-
-  it('renames a view opened while the segments list was still loading', async () => {
-    vipMembers();
-    const segmentsApi = fakeSegmentWrites();
-    const releaseSegments = holdSegmentsList();
-    await renderAdminApp(vipRoute, withSavedViews(vips, gold));
-
-    try {
-      await expect.element(membersScreen.manageViewButton()).toHaveTextContent('Edit view');
-      await membersScreen.saveView('Very important');
-      // The save has started and is waiting for the list, so a write sent without it would
-      // have been sent by now.
-      await expect.element(membersScreen.viewPopoverButton('Saving...')).toBeVisible();
-      expect(segmentsApi.requests).toHaveLength(0);
-    } finally {
-      releaseSegments();
-    }
-
-    await expect
-      .element(sidebarScreen.navLink('Very important'))
-      .toHaveAttribute('aria-current', 'page');
     expect(sentWrites(segmentsApi)).toEqual([
       { method: 'PUT', path: '/segments/:id/', body: { segments: [{ name: 'Very important' }] } },
     ]);
@@ -406,79 +442,6 @@ describe('Members saved views', () => {
       await expect.element(sidebarScreen.navLink('VIPs')).toHaveAttribute('aria-current', 'page');
       await expect.element(sidebarScreen.navLink('Members only')).toBeVisible();
       expect(settingsApi.requests).toHaveLength(1);
-    });
-  });
-
-  describe('on a server without the segments API', () => {
-    it('lists the views from the setting, asks for segments once and shows no error', async () => {
-      vipMembers();
-      fakeTags([]);
-      const segmentsApi = fakeAdminEndpoint('GET', '/segments/', notFound, { status: 404 });
-      await renderAdminApp(vipRoute, withSavedViews(vips));
-
-      await expect.element(sidebarScreen.navLink('VIPs')).toHaveAttribute('aria-current', 'page');
-      await expect.element(membersScreen.manageViewButton()).toHaveTextContent('Edit view');
-
-      await sidebarScreen.navLink('Tags').click();
-      await expect.element(membersScreen.manageViewButton()).not.toBeInTheDocument();
-      await sidebarScreen.navLink('VIPs').click();
-
-      await expect.element(membersScreen.manageViewButton()).toHaveTextContent('Edit view');
-      await settleRequests();
-      expect(segmentsApi.requests).toHaveLength(1);
-      await expect(sidebarScreen.errorToast()).toHaveCount(0);
-    });
-
-    it('saves, renames and deletes views through the setting', async () => {
-      vipMembers();
-      const settingsApi = fakeEditSettings();
-      await renderAdminApp(vipRoute, { boot: withoutSegmentsApi });
-      await expect.element(membersScreen.manageViewButton()).toHaveTextContent('Save view');
-
-      await membersScreen.saveView('VIPs');
-      await expect(settingsApi).toHaveEditedSettings([
-        { key: 'shared_views', value: JSON.stringify([vips]) },
-      ]);
-      await expect.element(sidebarScreen.navLink('VIPs')).toHaveAttribute('aria-current', 'page');
-      await expect.element(membersScreen.manageViewButton()).toHaveTextContent('Edit view');
-
-      await membersScreen.saveView('Very important');
-      await expect(settingsApi).toHaveEditedSettings([
-        { key: 'shared_views', value: JSON.stringify([{ ...vips, name: 'Very important' }]) },
-      ]);
-      await expect
-        .element(sidebarScreen.navLink('Very important'))
-        .toHaveAttribute('aria-current', 'page');
-
-      await membersScreen.deleteView();
-      await expect(settingsApi).toHaveEditedSettings([{ key: 'shared_views', value: '[]' }]);
-      await expect.element(sidebarScreen.navLink('Very important')).not.toBeInTheDocument();
-      await expect.poll(currentRoute).toBe('/members');
-    });
-
-    it('saves through the setting once a server that had the segments API loses it', async () => {
-      vipMembers();
-      const settingsApi = fakeEditSettings();
-      await renderAdminApp(vipRoute, withSavedViews(gold));
-      await expect.element(sidebarScreen.navLink('Gold')).toBeVisible();
-      // The sidebar shows views from the cached settings before the segments list arrives, so
-      // wait for the page's requests: the list has to load before the server loses the API.
-      await settleRequests();
-      // The server is rolled back to a version without the segments API.
-      fakeAdminEndpoint('GET', '/segments/', notFound, { status: 404 });
-      fakeAdminEndpoint('POST', '/segments/', notFound, { status: 404 });
-
-      await membersScreen.saveView('VIPs');
-      await expect.element(membersScreen.dialog()).toHaveTextContent('Failed to save view');
-      await expect.element(membersScreen.dialog()).not.toHaveTextContent('no longer exists');
-      await settleRequests();
-
-      await membersScreen.viewPopoverButton('Save').click();
-      await expect(settingsApi).toHaveEditedSettings([
-        { key: 'shared_views', value: JSON.stringify([gold, vips]) },
-      ]);
-      await expect.element(sidebarScreen.navLink('VIPs')).toHaveAttribute('aria-current', 'page');
-      await expect.element(sidebarScreen.navLink('Gold')).toBeVisible();
     });
   });
 });

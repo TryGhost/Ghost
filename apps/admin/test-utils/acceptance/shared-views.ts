@@ -1,7 +1,6 @@
 import { HttpResponse } from 'msw';
 import { settingsResponse } from '@tryghost/test-data';
 
-import type { BootOverrides } from './boot';
 import type { RenderAdminAppOptions } from './render-admin-app';
 import { registerAdminApiHandler, registerRoute } from './worker';
 
@@ -202,23 +201,6 @@ export function withSavedViews(...views: StoredView[]): RenderAdminAppOptions {
     },
   };
 }
-
-/** Boot overrides for a server older than the segments API, which answers its list with 404. */
-export const withoutSegmentsApi: BootOverrides = {
-  browseSegments: {
-    response: { errors: [{ type: 'NotFoundError', message: 'Resource not found' }] },
-    responseStatus: 404,
-  },
-};
-
-/**
- * The servers Admin reads member views from, for a spec that runs against both: one with the
- * segments API, and one older than it, where member views come from the settings alone.
- */
-export const segmentsApiServers: ReadonlyArray<{ server: string; boot: BootOverrides }> = [
-  { server: 'with the segments API', boot: {} },
-  { server: 'without the segments API', boot: withoutSegmentsApi },
-];
 
 /** Replaces the stored views as another session would, without Admin's caches knowing. */
 export function replaceSavedViewsElsewhere(...views: StoredView[]): void {

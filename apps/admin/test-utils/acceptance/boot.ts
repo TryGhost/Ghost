@@ -47,7 +47,7 @@ export function defaultBootRequests() {
       response: settingsResponse(),
     },
     // The sidebar's member views. Served from the test's `shared_views` setting (see
-    // shared-views.ts); override with a 404 for a server older than the segments API.
+    // shared-views.ts).
     browseSegments: {
       method: 'GET',
       path: '/segments/',

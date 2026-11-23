@@ -93,7 +93,7 @@ await renderAdminApp("/tags", {boot: {browseMe: {response: me}}});
 
 Boot responses are STATELESS — a canned reply per request, nothing is stored — with two exceptions. `editUserPreferences` echoes the PUT's user fields back, because the framework replaces its cached current user with that response (a canned reply would silently wipe every preferences write). The `shared_views` setting is stored, as described next.
 
-The fake stores the `shared_views` setting in `shared-views.ts`. Ghost serves the saved member views in it through both `/settings/` and `/segments/`, so the fake keeps one copy for both: `browseSegments` lists the member views in the `shared_views` value of the test's `browseSettings` response, with ids derived from each view's filter as Ghost derives them, and a `shared_views` saved through `fakeEditSettings` replaces that value for the rest of the test, in later `GET /settings/` responses and the PUT's own echo too. Seed saved views with `withSavedViews(...)`. Spread `withoutSegmentsApi` into `boot` for a server older than the segments API, or run a spec against both servers with `it.each(segmentsApiServers)`.
+The fake stores the `shared_views` setting in `shared-views.ts`. Ghost serves the saved member views in it through both `/settings/` and `/segments/`, so the fake keeps one copy for both: `browseSegments` lists the member views in the `shared_views` value of the test's `browseSettings` response, with ids derived from each view's filter as Ghost derives them, and a `shared_views` saved through `fakeEditSettings` replaces that value for the rest of the test, in later `GET /settings/` responses and the PUT's own echo too. Seed saved views with `withSavedViews(...)`.
 
 ## Faking a resource that has no fake yet
 
