@@ -65,6 +65,7 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/image/svg-sanitizer\\.ts$', // SVG buffer sanitization; no application instances.
   '^ghost/core/server/services/jobs-service/job\\.ts$', // Job base class, not the running service.
   '^ghost/core/server/lib/after-commit\\.ts$', // Runs a callback after the caller's transaction commits.
+  '^ghost/core/server/lib/sortable\\.ts$', // Ordered reads, inserts and reorders for a schema-declared collection, on the caller's connection; no application instances.
   '^ghost/core/server/lib/db-types/count\\.ts$', // Database count codec.
   '^ghost/core/server/lib/db-types/affected-rows\\.ts$', // Database affected-rows codec.
   '^ghost/core/server/lib/db-types/object-id\\.ts$', // Database ObjectId codec.
