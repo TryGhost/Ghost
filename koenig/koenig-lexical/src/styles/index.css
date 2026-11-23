@@ -52,11 +52,8 @@
     }
 }
 
-/*
-    A read-only editor's cards take no pointer input. Every descendant too, and
-    with !important: card controls such as the image buttons set
-    pointer-events themselves.
-*/
+/* a read-only editor's cards take no pointer input. Every descendant, and with
+   !important: card controls such as the image buttons set pointer-events themselves */
 .koenig-lexical [data-kg-card][data-kg-read-only],
 .koenig-lexical [data-kg-card][data-kg-read-only] * {
     pointer-events: none !important;

@@ -35,10 +35,8 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     const isSelected = selectedCardKey === nodeKey;
     const isEditing = isSelected && isEditingCard;
 
-    // a card's own controls change the document, so nothing in a read-only
-    // editor's card is clicked, dragged or keeps focus: the stylesheet takes the
-    // pointer from the card and everything in it. Not `inert`, which would also
-    // keep the card's text out of selections, find-in-page and screen readers
+    // the stylesheet takes the pointer from a read-only card, and new focus is refused here. Not
+    // `inert`, which would also keep its text out of selections, find-in-page and screen readers
     const refuseFocus = React.useCallback((event) => {
         event.target.blur?.();
     }, []);

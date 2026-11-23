@@ -204,10 +204,8 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             setIsEditingCard(false);
             setShowVisibilitySettings(false);
 
-            // Lexical's own selection of the card goes too, or the card would come
-            // back selected with the next update once editable. In a microtask, as
-            // Lexical queues an update made from this listener and runs it inside
-            // the next one, whatever that turns out to be
+            // or the card comes back selected with the next update once editable. In a microtask:
+            // Lexical queues an update made from this listener and runs it inside the next one
             queueMicrotask(() => {
                 if (editor.isEditable()) {
                     return;
@@ -221,9 +219,8 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
         });
     }, [editor, isNested, setSelectedCardKey, setIsEditingCard, setShowVisibilitySettings]);
 
-    // the editor's elements stop being editable a render after the flag goes off.
-    // Until then the browser would still apply a key to whichever has focus, and
-    // Lexical would take the changed DOM into the document
+    // the editor's elements stop being editable a render after the flag goes off: until then the
+    // browser would apply a key to whichever has focus, and Lexical take the changed DOM as input
     React.useEffect(() => {
         if (isNested) {
             return;

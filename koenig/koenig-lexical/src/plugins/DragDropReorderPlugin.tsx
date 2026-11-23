@@ -7,7 +7,7 @@ import {DragDropHandler} from '../utils/draggable/DragDropHandler.jsx';
 import {createRoot} from 'react-dom/client';
 import {flushSync} from 'react-dom';
 import {isCardDropAllowed} from '../utils/draggable/draggable-utils.js';
-import {useIsDocumentEditable} from '../hooks/useIsDocumentEditable';
+import {useIsDocumentEditable, useResetWhenReadOnly} from '../hooks/useIsDocumentEditable';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -239,9 +239,8 @@ function useDragDropReorder(editor) {
         });
     }, [editor]);
 
-    // Disable drag-drop-reorder when editing a card, and in a read-only document.
-    // The plugin stays mounted there: it is what stops the browser's own drags.
-    // Run again with the container, which is made anew, enabled, whenever `koenig` changes
+    // Disable drag-drop-reorder when editing a card, and in a read-only document, where the plugin
+    // stays mounted to stop the browser's own drags. `koenig`: its container is made anew, enabled
     React.useEffect(() => {
         if (isEditingCard || !isEditable) {
             cardContainer.current?.disableDrag();
@@ -251,11 +250,7 @@ function useDragDropReorder(editor) {
     }, [isEditingCard, isEditable, koenig]);
 
     // a drag under way when the document goes read-only is abandoned, not dropped
-    React.useEffect(() => {
-        if (!isEditable) {
-            koenig.dragDropHandler?.cancelDrag();
-        }
-    }, [isEditable, koenig]);
+    useResetWhenReadOnly(() => koenig.dragDropHandler?.cancelDrag());
 }
 
 export default function DragDropReorderPlugin() {

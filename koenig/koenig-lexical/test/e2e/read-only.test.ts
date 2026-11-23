@@ -19,15 +19,35 @@ async function setEditableAndRender(page, editable) {
     }
 }
 
-// the tab stays busy after the change, so a key sent meanwhile arrives before React has rendered it
-function setReadOnlyAndStayBusy(page) {
-    return page.evaluate(() => {
+// the tab stays busy after the change, so the key arrives before React has rendered it. Modifiers
+// go down first and the key is sent once the change is made, then checked to have arrived in time
+async function pressBeforeReadOnlyRenders(page, shortcut) {
+    const modifiers = shortcut.split('+');
+    const key = modifiers.pop();
+    for (const modifier of modifiers) {
+        await page.keyboard.down(modifier);
+    }
+
+    const changed = page.waitForEvent('console', message => message.text() === 'read-only');
+    const arrivedInTime = page.evaluate(() => new Promise((resolve) => {
+        window.addEventListener('keydown', () => {
+            const root = document.querySelector('[data-lexical-editor]');
+            resolve(!window.lexicalEditor.isEditable() && root.getAttribute('contenteditable') === 'true');
+        }, {capture: true, once: true});
         window.lexicalEditor.setEditable(false);
+        console.log('read-only');
         const end = performance.now() + 500;
         while (performance.now() < end) {
             // busy
         }
-    });
+    }));
+    await changed;
+    await page.keyboard.press(key);
+    expect(await arrivedInTime).toBe(true);
+
+    for (const modifier of modifiers) {
+        await page.keyboard.up(modifier);
+    }
 }
 
 const documentJson = page => page.evaluate(() => JSON.stringify(window.lexicalEditor.getEditorState().toJSON().root.children));
@@ -246,6 +266,19 @@ test.describe('Read-only and back', () => {
         await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain('Card text');
     });
 
+    test('a key pressed before the change reaches the screen does not change the text', async ({page}) => {
+        await initialize({page});
+        await focusEditor(page);
+        await page.keyboard.type('Some text');
+        await page.waitForTimeout(300);
+        const before = await documentJson(page);
+
+        await pressBeforeReadOnlyRenders(page, 'KeyX');
+
+        await expect(page.locator('[data-lexical-editor] > p')).toHaveText('Some text');
+        expect(await documentJson(page)).toBe(before);
+    });
+
     test('a key pressed before the change reaches the screen does not change a card being edited', async ({page}) => {
         await initialize({page});
         await focusEditor(page);
@@ -255,10 +288,7 @@ test.describe('Read-only and back', () => {
         // Lexical folds a DOM text change into its state only once typing has paused
         await page.waitForTimeout(300);
 
-        const locked = setReadOnlyAndStayBusy(page);
-        await page.waitForTimeout(150);
-        await page.keyboard.press('Backspace');
-        await locked;
+        await pressBeforeReadOnlyRenders(page, 'Backspace');
 
         await expect(card).toHaveAttribute('data-kg-card-editing', 'false');
         await expect(card.locator('[data-lexical-editor]')).toHaveText('Card text');
@@ -277,10 +307,7 @@ test.describe('Read-only and back', () => {
             expect(before).toContain('Card text');
 
             // the code editor is still there to undo, or delete to the start of the line
-            const locked = setReadOnlyAndStayBusy(page);
-            await page.waitForTimeout(150);
-            await page.keyboard.press(`${ctrlOrCmd(page)}+${key}`);
-            await locked;
+            await pressBeforeReadOnlyRenders(page, `${ctrlOrCmd(page)}+${key}`);
 
             await expect(card).toHaveAttribute('data-kg-card-editing', 'false');
             await page.waitForTimeout(300);

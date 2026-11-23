@@ -10,9 +10,8 @@ function topLevelEditor(editor: LexicalEditor): LexicalEditor {
     return topLevel;
 }
 
-// whether the document can be changed at all is the top-level editor's editable
-// flag. A nested editor has a flag of its own, which its card switches as the
-// card is edited, so it says nothing about the document
+// the top-level editor's flag says whether the document can change. A nested editor's
+// own flag follows its card's edit mode, so it says nothing about the document
 export function isDocumentEditable(editor: LexicalEditor): boolean {
     return topLevelEditor(editor).isEditable();
 }
@@ -28,10 +27,8 @@ export function useIsDocumentEditable(): boolean {
     return React.useSyncExternalStore(subscribe, () => topLevel.isEditable());
 }
 
-// Lexical copies the top-level editor's editable flag to every nested editor
-// when it changes. A card whose editors follow its edit mode puts them back
-// afterwards, or a card that is not being edited would be typable once a
-// read-only editor is editable again
+// Lexical copies the top-level flag to every nested editor when it changes, so a card puts its
+// editors back to its edit mode, or a closed card would be typable once editable again
 export function useEditModeAfterReadOnly(isEditing: boolean, ...editors: LexicalEditor[]): void {
     const [editor] = useLexicalComposerContext();
     const topLevel = topLevelEditor(editor);
