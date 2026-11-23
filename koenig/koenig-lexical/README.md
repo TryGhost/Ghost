@@ -88,9 +88,9 @@ does in the editor changes it:
   not taken
 - a picker, link field or name field a card had open is closed for good, not
   shown again when the editor is editable. Link search results are offered
-  again only once the cursor is put back in the search. The Unsplash and GIF
-  selectors are the exception: each is all there is of its card until an image
-  is chosen, so it is shown again
+  again with the editor's next change, if the cursor is still in the search.
+  The Unsplash and GIF selectors are the exception: each is all there is of
+  its card until an image is chosen, so it is shown again
 
 The flag does not cover:
 

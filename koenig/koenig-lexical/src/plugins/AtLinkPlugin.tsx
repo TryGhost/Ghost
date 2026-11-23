@@ -66,8 +66,8 @@ export const KoenigAtLinkPlugin = ({searchLinks, siteUrl}) => {
     const [query, setQuery] = React.useState('');
     const searchOptions = React.useMemo(() => ({noResultOptions}), []);
 
-    // results are offered again only once the cursor is put back in the search: shown
-    // by themselves they would take Enter from wherever focus is by then
+    // results wait for the editor's next update with the cursor in the search: shown
+    // as soon as it is editable, they would take Enter from wherever focus is by then
     useResetWhenReadOnly(() => {
         setFocusedAtLinkNode(null);
         setQuery('');

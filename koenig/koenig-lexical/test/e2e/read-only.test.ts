@@ -716,6 +716,26 @@ test.describe('Read-only document', () => {
         await expect(button).not.toBeFocused();
     });
 
+    test('lets a shortcut through from a card that was selected when it went read-only', async ({page}) => {
+        await initialize({page, uri: withContent([headerCard, paragraph('After')])});
+        const card = page.locator('[data-kg-card="header"]');
+        await card.click();
+        await expect(card).toHaveAttribute('data-kg-card-selected', 'true');
+        const button = card.getByTestId('media-upload-size');
+        await button.focus();
+        await setEditableAndRender(page, false);
+        await expect(card).toHaveAttribute('data-kg-card-selected', 'false');
+        await expect(button).toBeFocused();
+
+        await page.evaluate(() => {
+            window._seenKeys = [];
+            window.addEventListener('keydown', event => window._seenKeys.push(`${event.key}:${event.defaultPrevented}`));
+        });
+        await page.keyboard.press(`${ctrlOrCmd(page)}+KeyS`);
+        const seenKeys = await page.evaluate(() => window._seenKeys);
+        expect(seenKeys.filter(seen => /^s:/.test(seen))).toEqual(['s:false']);
+    });
+
     test('does not select again, once editable, a card that was selected when it went read-only', async ({page}) => {
         await initialize({page});
         await focusEditor(page);
