@@ -45,8 +45,8 @@ function createBetterAuth(): Authenticate {
 
   const resolver = createPrincipalResolver({
     getSession(headers) {
-      // Read per call: this module can load before boot builds the instance
-      return betterAuth.service.api.getSession({ headers: fromNodeHeaders(headers) });
+      // Read per call: this module can load before boot starts the instance
+      return betterAuth.instance.api.getSession({ headers: fromNodeHeaders(headers) });
     },
     getOriginOfRequest: session.getOriginOfRequest,
     getAdminOrigin: () => urlUtils.getAdminOrigin(),

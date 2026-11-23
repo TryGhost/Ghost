@@ -82,7 +82,7 @@ describe.skipIf(isSQLite)('ghostDeviceVerification under auth:engine better-auth
     return SUBJECT.exec(sent.subject)![1];
   }
 
-  const api = () => auth.betterAuth.service.api;
+  const api = () => auth.betterAuth.instance.api;
   const sessionsOf = (userId: string) => db.knex('user_sessions').where({ user_id: userId });
   const codesOf = async (userId: string) =>
     db.knex('verifications').whereIn(
