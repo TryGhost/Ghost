@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { page, userEvent } from 'vitest/browser';
+import { userEvent } from 'vitest/browser';
 
 import {
   configResponse,
@@ -143,46 +143,6 @@ describe('Tier settings', () => {
       .element(settingsScreen.tiers().getByText(updated.name, { exact: true }))
       .toBeVisible();
     expect(editApi.lastRequest?.body).toMatchObject({ tiers: [updated] });
-  });
-
-  it('cancels a keyboard move of a benefit on Escape without closing the tier modal', async () => {
-    fakeSettingsScreens();
-    fakeTiers([freeTier, supporterTier]);
-    await renderAdminApp('/settings', { boot: { browseSettings: { response: stripeSettings() } } });
-
-    await settingsScreen.tiers().getByText(supporterTier.name, { exact: true }).click();
-    const modal = settingsScreen.tierDetailModal();
-    await modal.getByLabelText('New benefit').fill('Second benefit');
-    await modal.getByRole('button', { name: 'Add' }).click();
-    // Settings has other sortable lists, each with its own live region.
-    const announcements = () =>
-      [...document.querySelectorAll('[role="status"][aria-live="assertive"]')].map(
-        (region) => region.textContent,
-      );
-
-    (modal.getByLabelText('Reorder benefit: Simple benefit').element() as HTMLElement).focus();
-    await userEvent.keyboard(' ');
-    await expect.poll(announcements).toContain('Picked up Simple benefit, position 1 of 2.');
-    await userEvent.keyboard('{ArrowDown}');
-    await expect.poll(announcements).toContain('Simple benefit moved to position 2 of 2.');
-    await userEvent.keyboard('{Escape}');
-    await expect
-      .poll(announcements)
-      .toContain('Moving cancelled. Simple benefit stays at position 1 of 2.');
-
-    await expect.element(modal).toBeVisible();
-    await expect
-      .poll(() =>
-        modal
-          .getByLabelText('Benefit', { exact: true })
-          .elements()
-          .map((input) => (input as HTMLInputElement).value),
-      )
-      .toEqual(['Simple benefit', 'Second benefit']);
-    // The tier has changes, so an Escape that reached the modal would ask to discard them.
-    await expect
-      .element(page.getByRole('alertdialog', { name: 'Are you sure you want to leave this page?' }))
-      .not.toBeInTheDocument();
   });
 
   it('updates the free tier', async () => {

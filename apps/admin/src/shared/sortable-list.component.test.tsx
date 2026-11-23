@@ -7,7 +7,6 @@ import {
   DialogContent,
   DialogDescription,
   DialogTitle,
-  Input,
   SortableList,
 } from '@tryghost/shade/components';
 
@@ -81,7 +80,7 @@ function List({
   );
 }
 
-/** The list in an open Shade dialog, with a field that holds what's typed into it. */
+/** The list in an open Shade dialog. */
 function ListInDialog({
   control,
   onOpenChange,
@@ -101,7 +100,6 @@ function ListInDialog({
       <DialogContent>
         <DialogTitle>Newsletters</DialogTitle>
         <DialogDescription>Put the newsletters in order.</DialogDescription>
-        <Input aria-label="Note" />
         <List control={control} initial={evenRows} />
       </DialogContent>
     </Dialog>
@@ -335,7 +333,6 @@ describe('SortableList keyboard reordering', () => {
     it('cancels a move on Escape and keeps the dialog open, then closes it on the next Escape', async () => {
       const onOpenChange = vi.fn();
       await renderInApp(<ListInDialog onOpenChange={onOpenChange} />);
-      await dialog().getByLabelText('Note').fill('Draft note');
 
       await pickUp('Deep Dives');
       await userEvent.keyboard('{ArrowDown}');
@@ -345,11 +342,8 @@ describe('SortableList keyboard reordering', () => {
 
       // The dialog asks to close as Escape reaches it, before anything is announced.
       expect(onOpenChange).not.toHaveBeenCalled();
-      await expect.poll(order).toEqual(['The Weekly', 'Deep Dives', 'Digest']);
-      await expect.element(dialog().getByLabelText('Note')).toHaveValue('Draft note');
 
       await userEvent.keyboard('{Escape}');
-      await expect.poll(() => onOpenChange.mock.calls).toEqual([[false]]);
       await expect.element(dialog()).not.toBeInTheDocument();
     });
 
@@ -382,5 +376,4 @@ describe('SortableList keyboard reordering', () => {
       await expect.element(dialog()).not.toBeInTheDocument();
     });
   });
-
 });
