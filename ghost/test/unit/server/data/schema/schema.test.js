@@ -5,6 +5,9 @@ const _ = require('lodash');
 const schema = require('../../../../../core/server/data/schema/schema').default;
 const { foreignKeysOf } = require('../../../../../core/server/data/schema/lib/foreign-keys');
 const { patternChecksOf } = require('../../../../../core/server/data/schema/lib/column-patterns');
+const {
+  sortableDeclarationProblems,
+} = require('../../../../../core/server/data/schema/lib/sortable');
 
 const VALID_KEYS = {
   bigInteger: ['nullable'],
@@ -39,9 +42,13 @@ describe('schema validations', function () {
 
       _.each(table, function (column, columnName) {
         if (
-          ['@@INDEXES@@', '@@UNIQUE_CONSTRAINTS@@', '@@PRIMARY_KEY@@', '@@FOREIGN_KEYS@@'].includes(
-            columnName,
-          )
+          [
+            '@@INDEXES@@',
+            '@@UNIQUE_CONSTRAINTS@@',
+            '@@PRIMARY_KEY@@',
+            '@@FOREIGN_KEYS@@',
+            '@@SORTABLE@@',
+          ].includes(columnName)
         ) {
           return;
         }
@@ -129,6 +136,14 @@ describe('schema validations', function () {
       [],
       `These names exceed MySQL's ${MAX_IDENTIFIER}-character limit. Give the index an explicit, shorter \`indexName\`.`,
     );
+  });
+
+  it('declares sortable collections that can be used', function () {
+    const problems = Object.entries(schema).flatMap(([tableName, table]) =>
+      sortableDeclarationProblems(table).map((problem) => `${tableName}: ${problem}`),
+    );
+
+    assert.deepEqual(problems, []);
   });
 
   // MySQL needs an index that starts with the referenced columns, in the same order, and
