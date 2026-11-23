@@ -67,7 +67,6 @@ const fakeWaitHoursMultiplier = parseFakeWaitHoursMultiplier(
 
 const repository = createDatabaseAutomationsRepository({
   knex,
-  fakeWaitHoursMultiplier,
 });
 
 // NOTE: We are transitioning to this new API. This will be removed soon. See NY-1704.
@@ -498,17 +497,11 @@ export async function fetchAndLockSteps(
   return await repository.fetchAndLockSteps(...args);
 }
 
-export async function finishStepAndEnqueueNext(
-  ...args: Parameters<AutomationsRepository['finishStepAndEnqueueNext']>
-) {
-  return await repository.finishStepAndEnqueueNext(...args);
-}
+export const { finishStepAndEnqueueNext } = automationsApi2;
 
 export const markStepTerminal = automationsApi2.markStepTerminal.bind(automationsApi2);
 
-export async function retryStep(...args: Parameters<AutomationsRepository['retryStep']>) {
-  return await repository.retryStep(...args);
-}
+export const { retryStep } = automationsApi2;
 
 export const recordEmailSent = automationsApi2.recordEmailSent.bind(automationsApi2);
 

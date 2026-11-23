@@ -66,7 +66,7 @@ describe('Automation run history from the execution', function () {
       created_at: new Date(),
     };
     await db('members').insert(member);
-    repository = createDatabaseAutomationsRepository({ knex: db, fakeWaitHoursMultiplier: null });
+    repository = createDatabaseAutomationsRepository({ knex: db });
     automationsApi2 = createAutomationsApi2({
       repository: createDatabaseAutomationsRepository2({ knex: db }),
       fakeWaitHoursMultiplier: null,
@@ -76,8 +76,10 @@ describe('Automation run history from the execution', function () {
     pollOptions = {
       automationsApi: {
         ...repository,
+        finishStepAndEnqueueNext: automationsApi2.finishStepAndEnqueueNext,
         markStepTerminal: automationsApi2.markStepTerminal,
         recordEmailSent: automationsApi2.recordEmailSent,
+        retryStep: automationsApi2.retryStep,
       },
       enqueueAnotherPollAt: sinon.stub(),
       scheduleAutomationEmailAnalyticsJob: sinon.stub().resolves(),

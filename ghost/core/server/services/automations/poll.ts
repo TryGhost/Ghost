@@ -43,11 +43,11 @@ type MemberModel = {
 };
 
 type PollOptions = {
-  automationsApi: Pick<
-    AutomationsRepository,
-    'fetchAndLockSteps' | 'finishStepAndEnqueueNext' | 'retryStep'
-  > &
-    Pick<AutomationsApi2<unknown>, 'markStepTerminal' | 'recordEmailSent'>;
+  automationsApi: Pick<AutomationsRepository, 'fetchAndLockSteps'> &
+    Pick<
+      AutomationsApi2<unknown>,
+      'finishStepAndEnqueueNext' | 'markStepTerminal' | 'recordEmailSent' | 'retryStep'
+    >;
   enqueueAnotherPollAt: (date: Readonly<Date>) => unknown;
   scheduleAutomationEmailAnalyticsJob: () => Promise<void>;
   memberWelcomeEmailService: MemberWelcomeEmailService;
@@ -177,8 +177,7 @@ const handleStepExecutionFailure = async ({
 
   if (step.step_attempts < MAX_ATTEMPTS) {
     const retryAt = new Date(Date.now() + RETRY_DELAY_MS);
-    const didRetry = await automationsApi.retryStep(step, retryAt);
-    if (didRetry) {
+    if ((await automationsApi.retryStep(step, retryAt)) === 'requeued') {
       return retryAt;
     }
   } else {

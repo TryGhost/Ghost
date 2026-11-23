@@ -154,7 +154,7 @@ describe('automations poll', function () {
       finishStepAndEnqueueNext: fake<AutomationsApi['finishStepAndEnqueueNext']>().resolves(null),
       markStepTerminal: fake<AutomationsApi['markStepTerminal']>().resolves(true),
       recordEmailSent: fake<AutomationsApi['recordEmailSent']>().resolves(),
-      retryStep: fake<AutomationsApi['retryStep']>().resolves(true),
+      retryStep: fake<AutomationsApi['retryStep']>().resolves('requeued'),
     };
 
     memberWelcomeEmailService = {
@@ -965,6 +965,21 @@ describe('automations poll', function () {
     sinon.assert.calledOnceWithExactly(automationsApi.retryStep, step, retryAt);
     sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, retryAt);
   });
+
+  it.each(['automation disabled', 'lock lost'] as const)(
+    'does not enqueue a retry poll when retrying results in "%s"',
+    async function (result) {
+      const step = buildEmailStep({ step_attempts: 1 });
+      automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+      automationsApi.retryStep.resolves(result);
+      memberWelcomeEmailService.sendAutomationEmail.rejects(new Error('send failed'));
+
+      await poll(options);
+
+      sinon.assert.calledOnce(automationsApi.retryStep);
+      sinon.assert.notCalled(options.enqueueAnotherPollAt);
+    },
+  );
 
   it('logs native send errors unchanged', async function () {
     const step = buildEmailStep();

@@ -42,7 +42,7 @@ describe('Bounded search traversal with SQLite', () => {
       connection: { filename: ':memory:' },
       useNullAsDefault: true,
     });
-    repository = createDatabaseAutomationsRepository({ knex: db, fakeWaitHoursMultiplier: null });
+    repository = createDatabaseAutomationsRepository({ knex: db });
     await db.schema.createTable('members', (t) => {
       t.string('id').primary();
       t.string('name');

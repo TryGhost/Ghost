@@ -50,6 +50,143 @@ describe('automations API', function () {
     });
   });
 
+  alphabeticalDescribe('finishStepAndEnqueueNext', function () {
+    const HOUR_MS = 60 * 60 * 1000;
+    const now = new Date('2026-01-02T03:04:05Z');
+    const step = {
+      id: 'step-id',
+      locked_by: 'lock-id',
+      action_id: 'action-id',
+      automation_run_id: 'run-id',
+    };
+    const nextAction = {
+      automation_id: 'automation-id',
+      action_id: 'next-action-id',
+      automation_action_revision_id: 'next-revision-id',
+    };
+
+    const transaction: TestAutomationsRepositoryConnection =
+      createTestAutomationsRepository2().withConnection((connection) => connection);
+    let calls: string[];
+    let updated: boolean;
+    let next: Awaited<ReturnType<Repository['findNextActionRevision']>>;
+    let repository: Repository;
+    let updateLockedRunStep: ReturnType<typeof vi.fn<Repository['updateLockedRunStep']>>;
+    let findNextActionRevision: ReturnType<typeof vi.fn<Repository['findNextActionRevision']>>;
+    let insertRunSteps: ReturnType<typeof vi.fn<Repository['insertRunSteps']>>;
+
+    beforeEach(function () {
+      vi.useFakeTimers();
+      vi.setSystemTime(now);
+      calls = [];
+      updated = true;
+      next = { ...nextAction, type: 'send_email' };
+      updateLockedRunStep = vi.fn<Repository['updateLockedRunStep']>((connection) => {
+        calls.push(`update ${String(connection === transaction)}`);
+        return updated;
+      });
+      findNextActionRevision = vi.fn<Repository['findNextActionRevision']>((connection) => {
+        calls.push(`find ${String(connection === transaction)}`);
+        return next;
+      });
+      insertRunSteps = vi.fn<Repository['insertRunSteps']>((connection) => {
+        calls.push(`insert ${String(connection === transaction)}`);
+      });
+      repository = createTestAutomationsRepository2({
+        findNextActionRevision,
+        insertRunSteps,
+        updateLockedRunStep,
+        withTransaction: async (fn) => {
+          calls.push('begin');
+          const result = await fn(transaction);
+          calls.push('commit');
+          return result;
+        },
+      });
+    });
+
+    afterEach(function () {
+      vi.useRealTimers();
+    });
+
+    it('finishes the step and enqueues the next action in one transaction', async function () {
+      await expect(createApi({ repository }).finishStepAndEnqueueNext(step)).resolves.toEqual(now);
+
+      expect(calls).toEqual(['begin', 'update true', 'find true', 'insert true', 'commit']);
+      expect(updateLockedRunStep).toHaveBeenCalledExactlyOnceWith(transaction, step, {
+        status: 'finished',
+        finished_at: now,
+        updated_at: now,
+      });
+      expect(findNextActionRevision).toHaveBeenCalledExactlyOnceWith(transaction, {
+        actionId: step.action_id,
+        automationRunId: step.automation_run_id,
+      });
+      expect(insertRunSteps).toHaveBeenCalledExactlyOnceWith(transaction, [
+        {
+          id: expect.stringMatching(/^[0-9a-f]{24}$/),
+          created_at: now,
+          updated_at: now,
+          automation_run_id: step.automation_run_id,
+          automation_action_revision_id: nextAction.automation_action_revision_id,
+          ready_at: now,
+        },
+      ]);
+    });
+
+    it.each([
+      [null, 72 * HOUR_MS],
+      [2500, 72 * 2500],
+    ])(
+      'delays a next wait action by its wait hours (fake multiplier %s)',
+      async function (fakeWaitHoursMultiplier, delayMs) {
+        next = { ...nextAction, type: 'wait', wait_hours: 72 };
+        const readyAt = new Date(now.getTime() + delayMs);
+
+        await expect(
+          createApi({ repository, fakeWaitHoursMultiplier }).finishStepAndEnqueueNext(step),
+        ).resolves.toEqual(readyAt);
+
+        expect(insertRunSteps.mock.calls[0][1]).toEqual([
+          expect.objectContaining({ created_at: now, ready_at: readyAt }),
+        ]);
+      },
+    );
+
+    it('does not look for or enqueue a next step when the runner lost the lock', async function () {
+      updated = false;
+
+      await expect(createApi({ repository }).finishStepAndEnqueueNext(step)).resolves.toBeNull();
+
+      expect(calls).toEqual(['begin', 'update true', 'commit']);
+    });
+
+    it('finishes the step without enqueueing when there is no next action', async function () {
+      next = null;
+
+      await expect(createApi({ repository }).finishStepAndEnqueueNext(step)).resolves.toBeNull();
+
+      expect(calls).toEqual(['begin', 'update true', 'find true', 'commit']);
+    });
+
+    it.each(['updateLockedRunStep', 'findNextActionRevision', 'insertRunSteps'] as const)(
+      'propagates %s failures without committing',
+      async function (method) {
+        const failure = new Error(`${method} failed`);
+        ({ updateLockedRunStep, findNextActionRevision, insertRunSteps })[
+          method
+        ].mockImplementation(() => {
+          throw failure;
+        });
+
+        await expect(createApi({ repository }).finishStepAndEnqueueNext(step)).rejects.toBe(
+          failure,
+        );
+        expect(calls).not.toContain('commit');
+      },
+    );
+  });
+
   alphabeticalDescribe('getNumberOfAutomations', function () {
     it('returns the number of automations', async function () {
       const repository = createTestAutomationsRepository2({
@@ -746,6 +883,95 @@ describe('automations API', function () {
         expect.any(StartAutomationsPollEvent),
       );
     });
+  });
+
+  alphabeticalDescribe('retryStep', function () {
+    const now = new Date('2026-01-02T03:04:05Z');
+    const retryAt = new Date('2026-01-02T03:09:05Z');
+    const step = { id: 'step-id', locked_by: 'lock-id' };
+    const transaction: TestAutomationsRepositoryConnection =
+      createTestAutomationsRepository2().withConnection((connection) => connection);
+
+    let isActive: boolean;
+    let updated: boolean;
+    let calls: string[];
+    let repository: Repository;
+    let isAutomationActiveForRunStep: ReturnType<
+      typeof vi.fn<Repository['isAutomationActiveForRunStep']>
+    >;
+    let updateLockedRunStep: ReturnType<typeof vi.fn<Repository['updateLockedRunStep']>>;
+
+    beforeEach(function () {
+      vi.useFakeTimers();
+      vi.setSystemTime(now);
+      isActive = true;
+      updated = true;
+      calls = [];
+      isAutomationActiveForRunStep = vi.fn<Repository['isAutomationActiveForRunStep']>(
+        (connection) => {
+          calls.push(`isActive ${String(connection === transaction)}`);
+          return isActive;
+        },
+      );
+      updateLockedRunStep = vi.fn<Repository['updateLockedRunStep']>((connection) => {
+        calls.push(`update ${String(connection === transaction)}`);
+        return updated;
+      });
+      repository = createTestAutomationsRepository2({
+        isAutomationActiveForRunStep,
+        updateLockedRunStep,
+        withTransaction: async (fn) => {
+          calls.push('begin');
+          const result = await fn(transaction);
+          calls.push('commit');
+          return result;
+        },
+      });
+    });
+
+    afterEach(function () {
+      vi.useRealTimers();
+    });
+
+    it('requeues the step in one transaction when its automation is active', async function () {
+      await expect(createApi({ repository }).retryStep(step, retryAt)).resolves.toBe('requeued');
+
+      expect(calls).toEqual(['begin', 'isActive true', 'update true', 'commit']);
+      expect(isAutomationActiveForRunStep).toHaveBeenCalledExactlyOnceWith(transaction, step.id);
+      expect(updateLockedRunStep).toHaveBeenCalledExactlyOnceWith(transaction, step, {
+        status: 'pending',
+        started_at: null,
+        finished_at: null,
+        ready_at: retryAt,
+        updated_at: now,
+      });
+    });
+
+    it('marks the step "automation disabled" instead when its automation is no longer active', async function () {
+      isActive = false;
+
+      await expect(createApi({ repository }).retryStep(step, retryAt)).resolves.toBe(
+        'automation disabled',
+      );
+
+      expect(calls).toEqual(['begin', 'isActive true', 'update true', 'commit']);
+      // Completion only: no started_at or ready_at changes.
+      expect(updateLockedRunStep).toHaveBeenCalledExactlyOnceWith(transaction, step, {
+        status: 'automation disabled',
+        finished_at: now,
+        updated_at: now,
+      });
+    });
+
+    it.each([true, false])(
+      'reports a lost lock when the step cannot be updated (automation active: %s)',
+      async function (active) {
+        isActive = active;
+        updated = false;
+
+        await expect(createApi({ repository }).retryStep(step, retryAt)).resolves.toBe('lock lost');
+      },
+    );
   });
 
   alphabeticalDescribe('trackEmailClicked', function () {

@@ -6,10 +6,7 @@ import {
 } from './trigger-rules';
 import errors from '@tryghost/errors';
 import { z } from 'zod';
-import {
-  AUTOMATION_STEP_TERMINAL_STATUSES,
-  type AutomationStepTerminalStatus,
-} from './automation-step-status';
+import { AUTOMATION_STEP_TERMINAL_STATUSES } from './automation-step-status';
 import tpl from '@tryghost/tpl';
 import crypto from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
@@ -69,7 +66,6 @@ function withSearchTimeout<T extends Knex.QueryBuilder>(knex: Knex, query: T): T
   return query;
 }
 
-const HOUR_MS = 60 * 60 * 1000;
 const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [
   {
     name: 'Free member welcome flow',
@@ -172,14 +168,6 @@ type ActionRevisionRow = {
   email_design_setting_id: string | null;
 };
 
-type NextActionRevisionRow = {
-  automation_id: string;
-  action_id: string;
-  automation_action_revision_id: string;
-  type: 'wait' | 'send_email';
-  wait_hours: number | null;
-};
-
 type StepToRunRow = {
   id: string;
   locked_by: string;
@@ -215,10 +203,8 @@ type ActionRevisionToInsert = {
 
 export function createDatabaseAutomationsRepository({
   knex,
-  fakeWaitHoursMultiplier,
 }: {
   knex: Knex;
-  fakeWaitHoursMultiplier: number | null;
 }): AutomationsRepository {
   // NOTE: We are transitioning to this new API. This will be removed soon. See NY-1704.
   const repository2 = createDatabaseAutomationsRepository2({
@@ -509,19 +495,6 @@ export function createDatabaseAutomationsRepository({
       nextStepReadyAt: null | Date;
     }> {
       return await knex.transaction((trx) => fetchAndLockSteps(trx, limit));
-    },
-
-    async finishStepAndEnqueueNext(step: AutomationStepToRun): Promise<Date | null> {
-      return await knex.transaction((trx) =>
-        finishStepAndEnqueueNext(repository2, trx, {
-          step,
-          fakeWaitHoursMultiplier,
-        }),
-      );
-    },
-
-    async retryStep(step: AutomationStepToRun, retryAt: Date): Promise<boolean> {
-      return await knex.transaction((trx) => retryStep(repository2, trx, step, retryAt));
     },
 
     async getAutomatedEmailRecipientsByMailgunIds(mailgunMessageIds) {
@@ -1023,142 +996,6 @@ function buildStepToRun(
       throw new errors.InternalServerError({
         message: `Unexpected action type from database: ${row.type}`,
       });
-  }
-}
-
-async function finishStepAndEnqueueNext(
-  repository2: AutomationsRepository2<Knex | Knex.Transaction>,
-  trx: Knex.Transaction,
-  options: Readonly<{
-    step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>;
-    fakeWaitHoursMultiplier: number | null;
-  }>,
-): Promise<Date | null> {
-  const { step, fakeWaitHoursMultiplier } = options;
-
-  const didFinish = await markStepTerminal(repository2, trx, step, 'finished');
-  if (!didFinish) {
-    return null;
-  }
-
-  const next = await findNextActionRevision(trx, step.action_id, step.automation_run_id);
-
-  if (!next) {
-    return null;
-  }
-
-  const now = new Date();
-  const nextReadyAt = getReadyAtForAction(next, now, fakeWaitHoursMultiplier);
-
-  await repository2.insertRunSteps(trx, [
-    {
-      id: ObjectId().toHexString(),
-      created_at: now,
-      updated_at: now,
-      automation_run_id: step.automation_run_id,
-      automation_action_revision_id: next.automation_action_revision_id,
-      ready_at: nextReadyAt,
-    },
-  ]);
-
-  return nextReadyAt;
-}
-
-async function findNextActionRevision(
-  trx: Knex.Transaction,
-  sourceActionId: string,
-  automationRunId: string,
-): Promise<NextActionRevisionRow | null> {
-  const row = await trx('automation_action_edges as edge')
-    .select(
-      'action.id as action_id',
-      'revision.id as automation_action_revision_id',
-      'action.type as type',
-      'revision.wait_hours as wait_hours',
-    )
-    .innerJoin('automation_actions as action', 'action.id', 'edge.target_action_id')
-    .innerJoin('automation_action_revisions as revision', 'revision.action_id', 'action.id')
-    .where('edge.source_action_id', sourceActionId)
-    .whereExists(function () {
-      this.select(trx.raw('1'))
-        .from('automation_runs as run')
-        .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
-        .where('run.id', automationRunId)
-        .where('automation.status', 'active');
-    })
-    .whereNull('action.deleted_at')
-    .where(
-      'revision.created_at',
-      trx('automation_action_revisions').max('created_at').where('action_id', trx.ref('action.id')),
-    )
-    .orderBy('revision.created_at', 'desc')
-    .orderBy('revision.id', 'desc')
-    .first();
-
-  return row ?? null;
-}
-
-async function markStepTerminal(
-  repository2: AutomationsRepository2<Knex | Knex.Transaction>,
-  trx: Knex.Transaction,
-  step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
-  status: AutomationStepTerminalStatus,
-): Promise<boolean> {
-  const now = new Date();
-  return await repository2.updateLockedRunStep(trx, step, {
-    status,
-    finished_at: now,
-    updated_at: now,
-  });
-}
-
-async function retryStep(
-  repository2: AutomationsRepository2<Knex | Knex.Transaction>,
-  trx: Knex.Transaction,
-  step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
-  retryAt: Readonly<Date>,
-): Promise<boolean> {
-  if (!(await repository2.isAutomationActiveForRunStep(trx, step.id))) {
-    await markStepTerminal(repository2, trx, step, 'automation disabled');
-    return false;
-  }
-
-  return await repository2.updateLockedRunStep(trx, step, {
-    status: 'pending',
-    started_at: null,
-    finished_at: null,
-    ready_at: retryAt,
-    updated_at: new Date(),
-  });
-}
-
-function getReadyAtForAction(
-  action: ReadonlyDeep<Pick<NextActionRevisionRow, 'action_id' | 'type' | 'wait_hours'>>,
-  now: Readonly<Date>,
-  fakeWaitHoursMultiplier: number | null,
-): Date {
-  switch (action.type) {
-    case 'wait': {
-      const waitHours = requireValue(
-        {
-          ...action,
-          id: action.action_id,
-        },
-        'wait_hours',
-      );
-      const waitMs = waitHours * (fakeWaitHoursMultiplier || HOUR_MS);
-      return new Date(now.getTime() + waitMs);
-    }
-    case 'send_email':
-      return now;
-    /* v8 ignore start -- @preserve */
-    default: {
-      const _exhaustive: never = action.type;
-      throw new errors.IncorrectUsageError({
-        message: `Unexpected action type ${_exhaustive}`,
-      });
-    }
-    /* v8 ignore stop -- @preserve */
   }
 }
 

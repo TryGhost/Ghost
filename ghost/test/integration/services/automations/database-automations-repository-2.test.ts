@@ -797,6 +797,124 @@ describe('database automations repository', function () {
     });
   });
 
+  alphabeticalDescribe('findNextActionRevision', function () {
+    const repository = createDatabaseAutomationsRepository2({ knex });
+    let automationId: string;
+    let memberId: string;
+    let runId: string;
+    let actionIds: string[];
+    let source: ReturnType<typeof createAction>;
+
+    const insertAction = async (
+      actionOverrides: Partial<ReturnType<typeof createAction>> = {},
+      revisions: Array<Partial<ReturnType<typeof createRevision>>> = [{}],
+    ) => {
+      const action = { ...createAction(automationId), ...actionOverrides };
+      actionIds.push(action.id);
+      await knex('automation_actions').insert(action);
+      const rows = revisions.map((overrides) => ({ ...createRevision(action.id), ...overrides }));
+      await knex('automation_action_revisions').insert(rows);
+      return { action, revisions: rows };
+    };
+
+    const connect = async (targetActionId: string, sourceActionId = source.id) => {
+      await knex('automation_action_edges').insert({
+        source_action_id: sourceActionId,
+        target_action_id: targetActionId,
+      });
+    };
+
+    const findNextActionRevision = (actionId = source.id) =>
+      repository.findNextActionRevision(knex, { actionId, automationRunId: runId });
+
+    beforeEach(async function () {
+      const automation = createAutomation();
+      const member = createMember(ObjectId().toHexString());
+      const run = createRun(automation.id, member.id);
+      automationId = automation.id;
+      memberId = member.id;
+      runId = run.id;
+      actionIds = [];
+      await knex('automations').insert(automation);
+      await knex('members').insert(member);
+      await knex('automation_runs').insert(run);
+      ({ action: source } = await insertAction());
+    });
+
+    afterEach(async function () {
+      await knex('automation_action_edges').whereIn('source_action_id', actionIds).delete();
+      await knex('automation_runs').where('id', runId).delete();
+      await knex('automation_action_revisions').whereIn('action_id', actionIds).delete();
+      await knex('automation_actions').whereIn('id', actionIds).delete();
+      await knex('automations').where('id', automationId).delete();
+      await knex('members').where('id', memberId).delete();
+    });
+
+    it("returns the latest revision of the action this one leads to, with the target's wait hours", async function () {
+      const {
+        action: target,
+        revisions: [, latest],
+      } = await insertAction({}, [
+        { created_at: now, wait_hours: 1 },
+        { created_at: later, wait_hours: 72 },
+      ]);
+      // An action connected from elsewhere is not this step's next action, even
+      // with a newer revision.
+      const { action: unrelated } = await insertAction({}, [
+        { created_at: new Date('2026-01-05T00:00:00Z') },
+      ]);
+      await connect(target.id);
+      await connect(unrelated.id, target.id);
+
+      await expect(findNextActionRevision()).resolves.toEqual({
+        automation_id: automationId,
+        action_id: target.id,
+        automation_action_revision_id: latest.id,
+        type: 'wait',
+        wait_hours: 72,
+      });
+    });
+
+    it('returns a send-email action without wait hours', async function () {
+      const {
+        action: target,
+        revisions: [revision],
+      } = await insertAction({ type: 'send_email' }, [{ wait_hours: null }]);
+      await connect(target.id);
+
+      await expect(findNextActionRevision()).resolves.toEqual({
+        automation_id: automationId,
+        action_id: target.id,
+        automation_action_revision_id: revision.id,
+        type: 'send_email',
+        wait_hours: null,
+      });
+    });
+
+    it('returns null when no action follows this one', async function () {
+      await expect(findNextActionRevision()).resolves.toBeNull();
+    });
+
+    it('returns null when the next action was deleted', async function () {
+      const { action: target } = await insertAction();
+      await connect(target.id);
+      await knex('automation_actions').where('id', target.id).update({ deleted_at: later });
+
+      await expect(findNextActionRevision()).resolves.toBeNull();
+    });
+
+    it.each(['inactive', 'archived'])(
+      "returns null when the run's automation is %s",
+      async function (status) {
+        const { action: target } = await insertAction();
+        await connect(target.id);
+        await knex('automations').where('id', automationId).update({ status });
+
+        await expect(findNextActionRevision()).resolves.toBeNull();
+      },
+    );
+  });
+
   alphabeticalDescribe('getNumberOfAutomations', function () {
     it('returns the number of automations', async function () {
       const repository = createDatabaseAutomationsRepository2({ knex });

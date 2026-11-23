@@ -129,7 +129,7 @@ describe('database automations repository', function () {
 
   describe('add', function () {
     it('saves a new active automation with actions and edges', async function () {
-      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const repo = createDatabaseAutomationsRepository({ knex });
       const actions = [1, 2].map((wait_hours) => ({
         id: ObjectId().toHexString(),
         type: 'wait' as const,
@@ -335,10 +335,68 @@ describe('database automations repository', function () {
     });
   });
 
+  describe('finishStepAndEnqueueNext', function () {
+    it('enqueues the next step once when two runners finish the same step at the same time', async function () {
+      const concurrentAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });
+      const firstAction = await knex('automation_actions')
+        .where('automation_id', concurrentAutomationId)
+        .first();
+      const nextActionId = ObjectId().toHexString();
+      const now = toDatabaseDate(new Date());
+      await knex('automation_actions').insert({
+        id: nextActionId,
+        automation_id: concurrentAutomationId,
+        type: 'send_email',
+        created_at: now,
+        updated_at: now,
+      });
+      await knex('automation_action_revisions').insert({
+        id: ObjectId().toHexString(),
+        action_id: nextActionId,
+        email_subject: 'Next',
+        email_lexical: '{}',
+        created_at: now,
+      });
+      await knex('automation_action_edges').insert({
+        source_action_id: firstAction.id,
+        target_action_id: nextActionId,
+      });
+      const memberId = ObjectId().toHexString();
+      await insertMember(memberId);
+      const api = createApi();
+      await api.notify({
+        eventName: 'membership_started',
+        source: 'member' as const,
+        memberId,
+        memberStatus: 'paid',
+        previousMemberStatus: null,
+        memberTierIds: selectedTierIds,
+      });
+      const run = await knex('automation_runs')
+        .where({ automation_id: concurrentAutomationId, member_id: memberId })
+        .first();
+      await knex('automation_run_steps')
+        .where('automation_run_id', run.id)
+        .update({ ready_at: toDatabaseDate(new Date('2024-01-01')) });
+      const { steps } = await createDatabaseAutomationsRepository({ knex }).fetchAndLockSteps(100);
+      const step = steps.find((candidate) => candidate.automation_run_id === run.id);
+      assert(step);
+
+      const results = await Promise.all([
+        api.finishStepAndEnqueueNext(step),
+        api.finishStepAndEnqueueNext(step),
+      ]);
+
+      assert.equal(results.filter((result) => result !== null).length, 1);
+      const runSteps = await knex('automation_run_steps').where('automation_run_id', run.id);
+      assert.deepEqual(runSteps.map((runStep) => runStep.status).sort(), ['finished', 'pending']);
+    });
+  });
+
   describe('fetchAndLockSteps', function () {
     it("returns each step once with the automation's current selected tiers", async function () {
       const selectedAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });
-      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const repo = createDatabaseAutomationsRepository({ knex });
       const api = createApi();
       for (const memberId of [ObjectId().toHexString(), ObjectId().toHexString()]) {
         await insertMember(memberId);
@@ -367,7 +425,7 @@ describe('database automations repository', function () {
         [...selectedTierIds].sort(),
       );
 
-      await repo.finishStepAndEnqueueNext(first.steps[0]);
+      await api.finishStepAndEnqueueNext(first.steps[0]);
       await knex('automation_trigger_rules')
         .where({ automation_id: selectedAutomationId, product_id: selectedTierIds[0] })
         .delete();
