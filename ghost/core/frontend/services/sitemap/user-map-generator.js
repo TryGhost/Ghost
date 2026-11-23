@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const validator = require('@tryghost/validator');
 const BaseMapGenerator = require('./base-site-map-generator');
 
@@ -7,7 +6,7 @@ class UserMapGenerator extends BaseMapGenerator {
     super();
 
     this.name = 'authors';
-    _.extend(this, opts);
+    Object.assign(this, opts);
   }
 
   validateImageUrl(imageUrl) {

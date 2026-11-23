@@ -115,6 +115,11 @@ the enabled design as the intended default so retiring a flag means removing
 compatibility branches, without changing ordinary component calls. Document
 milestone-specific scope and exclusions alongside the affected design.
 
+Content-list and table row behavior follows Shade's
+[Lists and tables contract](../../apps/shade/src/docs/list-rows.mdx#shared-defaults)
+in both the current and upcoming UI. Row alignment, feedback, primary actions
+and press behavior are shared defaults, independent of `admin7Design`.
+
 Test the flag boundary and preserve existing behavioral coverage. Styling-only
 changes need visual review, not tests that assert appearance. Keep permanent
 permission and backend capability checks independent of the temporary flag.

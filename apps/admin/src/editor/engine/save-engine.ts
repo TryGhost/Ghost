@@ -18,6 +18,11 @@ export type SaveIntent =
   | 'schedule'
   | 'revert';
 
+export interface ReloadOptions {
+  /** The writer confirmed that the server's copy may replace their unsaved work. */
+  discardUnsaved?: boolean;
+}
+
 /** `timed` is engine-internal: an autosave dispatch arms the 60s cycle. */
 export type DispatchIntent = Exclude<SaveIntent, 'timed'>;
 
@@ -263,7 +268,7 @@ export interface SaveEngine {
   reauthSucceeded(): void;
   reauthAbandoned(): void;
   /** Validates recovery, calls the synchronous non-throwing adoption, then notifies subscribers. */
-  contentReloaded(updatedAt?: string, adopt?: () => void): boolean;
+  contentReloaded(updatedAt?: string, adopt?: () => void, options?: ReloadOptions): boolean;
   leaveRequested(): Promise<LeaveDecision>;
   /** Also aborts the in-flight signal; a response arriving afterwards is never reconciled. */
   dispose(): void;
@@ -1145,7 +1150,11 @@ export function createSaveEngine<
 
   // A server document that no longer carries the rejected updated_at ends the
   // halt the collision caused. A candidate lets the caller check before replacing it.
-  function contentReloaded(updatedAt?: string, adopt?: () => void): boolean {
+  function contentReloaded(
+    updatedAt?: string,
+    adopt?: () => void,
+    options: ReloadOptions = {},
+  ): boolean {
     const candidate = updatedAt ?? readSnapshot()?.updatedAt;
     if (
       adopting ||
@@ -1154,8 +1163,10 @@ export function createSaveEngine<
       inFlight ||
       frozen ||
       !isCollisionToken(candidate) ||
-      // Without a collision to recover from, only a post with nothing unsaved is replaced.
-      (conflict ? candidate === conflict.updatedAt : readSnapshot()?.isDirty !== false)
+      // Without a collision to recover from, unsaved work is replaced only when the writer chose that.
+      (conflict
+        ? candidate === conflict.updatedAt
+        : !options.discardUnsaved && readSnapshot()?.isDirty !== false)
     ) {
       return false;
     }

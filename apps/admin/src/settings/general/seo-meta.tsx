@@ -56,7 +56,7 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
         <div className="rounded-t-sm bg-white px-5 py-3 shadow-lg dark:bg-gray-950">
           <div className="mt-3 flex items-center">
             <div>
-              <GoogleLogo className="mr-7 h-7" />
+              <GoogleLogo className="mr-7 h-7" title="Google" />
             </div>
             <div className="grow">
               <div className="flex w-full items-center justify-end rounded-full bg-white p-3 px-4 shadow dark:bg-gray-900">

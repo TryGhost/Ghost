@@ -2,7 +2,6 @@
 const { config } = require('../services/proxy');
 const { SafeString, localUtils } = require('../services/handlebars');
 
-const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
@@ -19,7 +18,7 @@ module.exports = function link_class(options) {
   options.data = options.data || {};
 
   // If there is no for provided, this is theme dev error, so we throw an error to make this clear.
-  if (!_.has(options.hash, 'for')) {
+  if (!Object.hasOwn(options.hash, 'for')) {
     throw new errors.IncorrectUsageError({
       message: tpl(messages.forIsRequired),
     });

@@ -1,5 +1,20 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
+exports[`Presence API gives the lease to the first tab that asks and moves it on take 1: [body] 1`] = `
+Object {
+  "presence": Array [
+    Object {
+      "active": Array [],
+      "lease": Object {
+        "mine": true,
+        "userId": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      },
+      "serverTime": Any<Number>,
+    },
+  ],
+}
+`;
+
 exports[`Presence API is not found while polling is disabled 1: [body] 1`] = `
 Object {
   "errors": Array [
@@ -13,6 +28,18 @@ Object {
       "message": "Resource not found",
       "property": null,
       "type": "NotFoundError",
+    },
+  ],
+}
+`;
+
+exports[`Presence API lets a tab watch a document without holding it 1: [body] 1`] = `
+Object {
+  "presence": Array [
+    Object {
+      "active": Array [],
+      "lease": null,
+      "serverTime": Any<Number>,
     },
   ],
 }

@@ -2846,6 +2846,9 @@ const schema = {
     },
     // Whether this manifest had changes that needed approval when it was added.
     requires_approval: { type: 'boolean', nullable: false, defaultTo: false },
+    // What differs from the manifest approved when the row was added, as JSON, which the history
+    // shows. Defined by services/app-installations/schema.ts.
+    changes: { type: 'text', maxlength: 65535, nullable: false },
     created_at: { type: 'dateTime', nullable: false },
   },
   jobs_outbox: {

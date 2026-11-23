@@ -253,6 +253,17 @@ describe('JobsService', function () {
     });
   });
 
+  describe('keepsJobsUntilSettled', function () {
+    it('is true only when the outbox keeps rows until their jobs settle', function () {
+      assert.equal(makeService({ outbox: makeOutbox() }).keepsJobsUntilSettled(), true);
+      assert.equal(
+        makeService({ outbox: makeOutbox({ tracked: false }) }).keepsJobsUntilSettled(),
+        false,
+      );
+      assert.equal(makeService().keepsJobsUntilSettled(), false);
+    });
+  });
+
   describe('dispatch', function () {
     it('enqueues a versioned dispatch envelope with a dispatch id, not the live instance', async function () {
       const service = makeService();
@@ -794,7 +805,7 @@ describe('JobsService', function () {
       });
       assert.equal(
         message,
-        '[Jobs Outbox] Dropped 1 submitted rows whose job types recover on their own',
+        '[Jobs Outbox] Dropped 1 submitted rows whose job types are not replayed after a restart',
       );
     });
 

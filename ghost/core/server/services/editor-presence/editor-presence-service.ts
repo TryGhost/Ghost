@@ -17,8 +17,19 @@ const pollSchema = z
     resources: z.array(resourceSchema).max(50).default([]),
     editing: resourceSchema.optional(),
     tab: tabId.optional(),
+    /** `hold` holds the edited document if nobody does, `take` whoever does, and `watch` only asks. */
+    lease: z.enum(['hold', 'take', 'watch']).optional(),
   })
-  .strict();
+  .strict()
+  .refine((value) => !value.lease || value.editing, {
+    path: ['lease'],
+    message: 'A lease needs the document being edited',
+  })
+  // Without one, a user's tabs are a single member and would each be told the lease is theirs.
+  .refine((value) => !value.lease || value.tab, {
+    path: ['tab'],
+    message: 'A lease needs the tab that asks for it',
+  });
 const leaveSchema = z.object({ resource: resourceSchema, tab: tabId.optional() }).strict();
 
 export interface ActivePresence {
@@ -28,8 +39,17 @@ export interface ActivePresence {
   ts: number;
 }
 
+export interface PresenceLease {
+  /** The user whose tab may edit the document now. */
+  userId: string;
+  /** Whether that tab is the caller's. False for the caller's other tabs. */
+  mine: boolean;
+}
+
 export interface PollResult {
   active: ActivePresence[];
+  /** Present when the caller asked about the lease on the document it is editing; null while nobody holds it. */
+  lease?: PresenceLease | null;
   serverTime: number;
 }
 
@@ -43,15 +63,19 @@ export interface EditorPresenceServiceOptions {
   now?: () => number;
   /** Heartbeats newer than this are reported as active. */
   activeWindowMs?: number;
+  /** A tab keeps a document while it last asked for the lease within this long. */
+  leaseWindowMs?: number;
   /** Members older than this are dropped from the store. */
   retentionMs?: number;
   storeTimeoutMs?: number;
 }
 
 export const DEFAULT_ACTIVE_WINDOW_MS = 60_000;
-export const DEFAULT_RETENTION_MS = DEFAULT_ACTIVE_WINDOW_MS;
-/** A retention below the active window trims members that are still reported as active. */
-export const MIN_RETENTION_MS = DEFAULT_ACTIVE_WINDOW_MS;
+/** Longer than the active window: a hidden tab's timers slow to one a minute, and it must not lose its place. */
+export const DEFAULT_LEASE_WINDOW_MS = 150_000;
+export const DEFAULT_RETENTION_MS = DEFAULT_LEASE_WINDOW_MS;
+/** A retention below the lease window would expire the lease key under a hold that had not lapsed. */
+export const MIN_RETENTION_MS = DEFAULT_LEASE_WINDOW_MS;
 /** A store call past this answers 503; ioredis has no deadline of its own on a stalled connection. */
 export const DEFAULT_STORE_TIMEOUT_MS = 2_000;
 
@@ -63,7 +87,7 @@ export function resolveRetentionMs(ttlSeconds: unknown): number {
   return Math.max(MIN_RETENTION_MS, Math.round(ttlSeconds * 1000));
 }
 
-type StoreOperation = 'touch' | 'read' | 'remove';
+type StoreOperation = 'touch' | 'read' | 'remove' | 'hold' | 'holders' | 'release';
 
 function failureReason(error: unknown): string {
   const details = error as { code?: unknown; name?: unknown; message?: unknown };
@@ -102,6 +126,11 @@ function withDeadline<T>(run: () => Promise<T>, ms: number): Promise<T> {
   return Promise.race([pending, deadline]).finally(() => clearTimeout(timer));
 }
 
+function isFor(member: string, resource: { id: string; type: ResourceType }): boolean {
+  const decoded = decodeMember(member);
+  return decoded?.type === resource.type && decoded.resourceId === resource.id;
+}
+
 function parse<T>(schema: z.ZodType<T>, input: unknown): T {
   const result = schema.safeParse(input);
   if (!result.success) {
@@ -122,6 +151,7 @@ export class EditorPresenceService {
   private readonly metrics?: PresenceMetrics;
   private readonly now: () => number;
   private readonly activeWindowMs: number;
+  private readonly leaseWindowMs: number;
   private readonly retentionMs: number;
   private readonly storeTimeoutMs: number;
 
@@ -130,6 +160,7 @@ export class EditorPresenceService {
     this.now = options.now ?? Date.now;
     this.metrics = options.metrics;
     this.activeWindowMs = options.activeWindowMs ?? DEFAULT_ACTIVE_WINDOW_MS;
+    this.leaseWindowMs = options.leaseWindowMs ?? DEFAULT_LEASE_WINDOW_MS;
     this.retentionMs = options.retentionMs ?? DEFAULT_RETENTION_MS;
     this.storeTimeoutMs = options.storeTimeoutMs ?? DEFAULT_STORE_TIMEOUT_MS;
   }
@@ -142,10 +173,11 @@ export class EditorPresenceService {
    * Record that `userId` has `editing` open, then return everyone else active on
    * the requested resources. Callers see only the ids they asked about. `tab`
    * keeps each of the caller's editor tabs as its own member, so closing one
-   * does not clear the others.
+   * does not clear the others. With `lease`, the answer also names the user
+   * whose tab holds the document.
    */
   async poll(userId: string, input: unknown): Promise<PollResult> {
-    const { resources, editing, tab } = parse(pollSchema, input);
+    const { resources, editing, tab, lease } = parse(pollSchema, input);
     const now = this.now();
 
     const requested = new Set(resources.map((resource) => resource.id));
@@ -157,24 +189,31 @@ export class EditorPresenceService {
     }
 
     const started = performance.now();
+    const measured = { write: Boolean(editing), lease: lease ?? 'none' };
     try {
-      if (editing) {
-        await this.fromStore('touch', () =>
-          this.store.touch(
-            encodeMember({ type: editing.type, resourceId: editing.id, userId, tab }),
-            now,
-            this.retentionMs,
-          ),
-        );
+      const caller =
+        editing && encodeMember({ type: editing.type, resourceId: editing.id, userId, tab });
+      if (caller) {
+        await this.fromStore('touch', () => this.store.touch(caller, now, this.retentionMs));
       }
+      const holders = caller && lease ? await this.lease(caller, lease, now) : undefined;
       const stored = await this.fromStore('read', () => this.store.read(now - this.activeWindowMs));
-      this.record('presence-poll', started, { outcome: 'ok', write: Boolean(editing) });
+      const holder = editing && holders?.find((member) => isFor(member, editing));
+      const who = holder ? decodeMember(holder) : null;
+      const held = who ? { userId: who.userId, mine: holder === caller } : null;
+      this.record('presence-poll', started, { outcome: 'ok', ...measured });
 
       // A user with the document open in several tabs is reported once, with the latest heartbeat.
+      const activeSince = now - this.activeWindowMs;
       const latest = new Map<string, ActivePresence>();
       for (const { member, ts } of stored) {
         const decoded = decodeMember(member);
-        if (!decoded || decoded.userId === userId || !requested.has(decoded.resourceId)) {
+        if (
+          ts < activeSince ||
+          !decoded ||
+          decoded.userId === userId ||
+          !requested.has(decoded.resourceId)
+        ) {
           continue;
         }
         const key = `${decoded.resourceId}:${decoded.userId}`;
@@ -188,11 +227,40 @@ export class EditorPresenceService {
           });
         }
       }
-      return { active: [...latest.values()], serverTime: now };
+      return {
+        active: [...latest.values()],
+        ...(holders ? { lease: held } : {}),
+        serverTime: now,
+      };
     } catch (error) {
-      this.record('presence-poll', started, { outcome: 'error', write: Boolean(editing) });
+      this.record('presence-poll', started, { outcome: 'error', ...measured });
       throw error;
     }
+  }
+
+  /**
+   * Answers the member holding each document. `hold` holds the caller's if
+   * nobody does and `take` holds it whoever does. `watch` only reads, after
+   * giving up any hold the caller had, so a tab that stopped editing is never
+   * left holding its document.
+   */
+  private async lease(
+    caller: string,
+    mode: 'hold' | 'take' | 'watch',
+    now: number,
+  ): Promise<string[]> {
+    const since = now - this.leaseWindowMs;
+    if (mode !== 'watch') {
+      const time = { now, since, retentionMs: this.retentionMs };
+      return this.fromStore('hold', () => this.store.hold(caller, time, mode === 'take'));
+    }
+    const holders = await this.fromStore('holders', () => this.store.holders(since));
+    if (!holders.includes(caller)) {
+      return holders;
+    }
+    await this.fromStore('release', () => this.store.release(caller));
+    // Read again: what was read before giving it up may not be who holds it now.
+    return this.fromStore('holders', () => this.store.holders(since));
   }
 
   async leave(userId: string, input: unknown): Promise<void> {

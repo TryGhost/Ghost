@@ -58,8 +58,10 @@ module.exports.buildLinkClasses = function buildLinkClasses(siteUrl, href, optio
   const relativeHref = href.replace(siteUrl, '');
   const location = options.data.root.relativeUrl;
   const classes = options.hash.class ? options.hash.class.toString().split(' ') : [];
-  const activeClass = _.has(options.hash, 'activeClass') ? options.hash.activeClass : 'nav-current';
-  const parentActiveClass = _.has(options.hash, 'parentActiveClass')
+  const activeClass = Object.hasOwn(options.hash, 'activeClass')
+    ? options.hash.activeClass
+    : 'nav-current';
+  const parentActiveClass = Object.hasOwn(options.hash, 'parentActiveClass')
     ? options.hash.parentActiveClass
     : `${activeClass || 'nav-current'}-parent`;
 

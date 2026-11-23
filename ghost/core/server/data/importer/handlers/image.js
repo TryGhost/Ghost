@@ -54,16 +54,16 @@ const ImageHandler = {
 
     const baseDirRegex = baseDir ? new RegExp('^' + _.escapeRegExp(baseDir) + '/') : new RegExp('');
 
-    const imageFolderRegexes = _.map(store.staticFileURLPrefix.split('/'), function (dir) {
+    const imageFolderRegexes = store.staticFileURLPrefix.split('/').map(function (dir) {
       return new RegExp('^' + _.escapeRegExp(dir) + '/');
     });
 
     // normalize the directory structure
-    files = _.map(files, function (file) {
+    files = files.map(function (file) {
       const noBaseDir = file.name.replace(baseDirRegex, '');
       let noGhostDirs = noBaseDir;
 
-      _.each(imageFolderRegexes, function (regex) {
+      imageFolderRegexes.forEach(function (regex) {
         noGhostDirs = noGhostDirs.replace(regex, '');
       });
 

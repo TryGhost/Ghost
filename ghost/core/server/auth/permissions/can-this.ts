@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import errors from '@tryghost/errors';
 import { actionsMap, forRoles, type Permission } from './role-permissions';
 import { ANONYMOUS, type Principal, type RoleView, type UserView } from '../principal';
@@ -128,83 +127,79 @@ class CanThisResultBuilder {
     };
 
     // Iterate through the object types, i.e. ['post', 'tag', 'user']
-    return _.reduce(
-      objTypes,
-      function (objTypeHandlers: Record<string, ObjectTypeHandler>, objType) {
-        // Grab the TargetModel through the objectTypeModelMap
-        const TargetModel = objectTypeModelMap[objType];
+    return objTypes.reduce(function (objTypeHandlers: Record<string, ObjectTypeHandler>, objType) {
+      // Grab the TargetModel through the objectTypeModelMap
+      const TargetModel = objectTypeModelMap[objType];
 
-        // Create the 'handler' for the object type;
-        // the '.post()' in canThis(user).edit.post()
-        objTypeHandlers[objType] = function (modelOrId, unsafeAttrs) {
-          let modelId: string | number | undefined;
-          unsafeAttrs = unsafeAttrs || {};
+      // Create the 'handler' for the object type;
+      // the '.post()' in canThis(user).edit.post()
+      objTypeHandlers[objType] = function (modelOrId, unsafeAttrs) {
+        let modelId: string | number | undefined;
+        unsafeAttrs = unsafeAttrs || {};
 
-          // If it's an internal request, resolve immediately
-          if (context.internal) {
-            return Promise.resolve();
-          }
+        // If it's an internal request, resolve immediately
+        if (context.internal) {
+          return Promise.resolve();
+        }
 
-          // Until PLA-639, an app needs a user to act for, whatever its scopes
-          if (isAppWithoutUser(context)) {
+        // Until PLA-639, an app needs a user to act for, whatever its scopes
+        if (isAppWithoutUser(context)) {
+          return Promise.reject(noPermission());
+        }
+
+        if (typeof modelOrId === 'number' || typeof modelOrId === 'string') {
+          // It's an id already, do nothing
+          modelId = modelOrId;
+        } else if (modelOrId) {
+          // It's a model, get the id
+          modelId = modelOrId.id;
+        }
+        // A context missing its principal fails here, not when canThis is called
+        if (actors instanceof Error) {
+          return Promise.reject(actors);
+        }
+
+        // Only `context.internal` grants everything, never a principal claiming it
+        const principal =
+          !context.principal || context.principal.kind === 'internal'
+            ? ANONYMOUS
+            : context.principal;
+
+        return Promise.resolve(actors).then(function (loadedPermissions) {
+          // Scopes cap the hooks as they will cap row rules; unscoped principals pass
+          const { scopes } = capabilities(principal);
+          if (!scopesAllow(scopes, capabilityKey(objType, actType))) {
             return Promise.reject(noPermission());
           }
 
-          if (_.isNumber(modelOrId) || _.isString(modelOrId)) {
-            // It's an id already, do nothing
-            modelId = modelOrId;
-          } else if (modelOrId) {
-            // It's a model, get the id
-            modelId = modelOrId.id;
+          // Offer a chance for the TargetModel to override the results
+          if (TargetModel && typeof TargetModel.permissible === 'function') {
+            const { hasUserPermission, hasApiKeyPermission } = getGrantFlags(
+              principal,
+              actType,
+              objType,
+            );
+
+            return TargetModel.permissible(
+              modelId,
+              actType,
+              context,
+              unsafeAttrs,
+              loadedPermissions,
+              hasUserPermission,
+              hasApiKeyPermission,
+            );
           }
-          // A context missing its principal fails here, not when canThis is called
-          if (actors instanceof Error) {
-            return Promise.reject(actors);
-          }
 
-          // Only `context.internal` grants everything, never a principal claiming it
-          const principal =
-            !context.principal || context.principal.kind === 'internal'
-              ? ANONYMOUS
-              : context.principal;
+          return authorize(principal, actType, objType, {
+            resource: modelId,
+            attrs: unsafeAttrs,
+          }).then(toCheckResult);
+        });
+      };
 
-          return Promise.resolve(actors).then(function (loadedPermissions) {
-            // Scopes cap the hooks as they will cap row rules; unscoped principals pass
-            const { scopes } = capabilities(principal);
-            if (!scopesAllow(scopes, capabilityKey(objType, actType))) {
-              return Promise.reject(noPermission());
-            }
-
-            // Offer a chance for the TargetModel to override the results
-            if (TargetModel && _.isFunction(TargetModel.permissible)) {
-              const { hasUserPermission, hasApiKeyPermission } = getGrantFlags(
-                principal,
-                actType,
-                objType,
-              );
-
-              return TargetModel.permissible(
-                modelId,
-                actType,
-                context,
-                unsafeAttrs,
-                loadedPermissions,
-                hasUserPermission,
-                hasApiKeyPermission,
-              );
-            }
-
-            return authorize(principal, actType, objType, {
-              resource: modelId,
-              attrs: unsafeAttrs,
-            }).then(toCheckResult);
-          });
-        };
-
-        return objTypeHandlers;
-      },
-      {},
-    );
+      return objTypeHandlers;
+    }, {});
   }
 
   beginCheck(rawContext: unknown): CanThisResult {
@@ -215,7 +210,7 @@ class CanThisResultBuilder {
 
   buildHandlers(context: ParsedContext, actors: LoadedActors | Error): CanThisResult {
     // Iterate through the actions and their related object types
-    _.each(actionsMap, (objTypes, actType) => {
+    for (const [actType, objTypes] of Object.entries(actionsMap)) {
       // Build up the object type handlers;
       // the '.post()' parts in canThis(user).edit.post()
       const objTypeHandlers = this.buildObjectTypeHandlers(objTypes, actType, context, actors);
@@ -228,7 +223,7 @@ class CanThisResultBuilder {
         configurable: false,
         value: objTypeHandlers,
       });
-    });
+    }
 
     // Return this for chaining
     return this as unknown as CanThisResult;

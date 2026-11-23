@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const ghostBookshelf = require('./base');
 const urlUtils = require('../../shared/url-utils').default;
 
@@ -42,7 +41,7 @@ const CustomThemeSetting = ghostBookshelf.Model.extend({
         attrs.value = JSON.parse(attrs.value);
       }
 
-      if (_.isBoolean(attrs.value)) {
+      if (typeof attrs.value === 'boolean') {
         attrs.value = attrs.value.toString();
       }
     }

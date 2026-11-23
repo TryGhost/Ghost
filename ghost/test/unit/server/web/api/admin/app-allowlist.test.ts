@@ -22,9 +22,9 @@ const examplePath = (path: string) =>
 describe('the app bridge allowlist', function () {
   const layers = (apiRoutes() as Router).stack as unknown as RouteLayer[];
 
-  for (const scope of ADMIN_API_ALLOWLIST) {
-    for (const entry of scope.routes) {
-      it(`matches a registered route: ${entry} (${scope.name})`, function () {
+  for (const group of Object.values(ADMIN_API_ALLOWLIST).flatMap(({ groups }) => groups)) {
+    for (const entry of group.routes) {
+      it(`matches a registered route: ${entry} (${group.scope ?? 'no scope'})`, function () {
         const [method = '', path = ''] = entry.split(' ');
         const example = examplePath(path);
         const route = layers.find(

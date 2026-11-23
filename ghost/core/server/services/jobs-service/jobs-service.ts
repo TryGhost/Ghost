@@ -131,6 +131,10 @@ export class JobsService {
     this.#registry.set(type, (payload) => handler(new JobClass(JSON.parse(payload))));
   }
 
+  handles(type: string): boolean {
+    return this.#registry.has(type);
+  }
+
   #declareQueue(type: string, options?: JobHandlingOptions): void {
     if (!options) {
       return;
@@ -271,6 +275,12 @@ export class JobsService {
     );
   }
 
+  // True when the outbox keeps each job's row until the job settles, so a job
+  // a restart or crash cut short is handed over again
+  keepsJobsUntilSettled(): boolean {
+    return this.#outboxMode() === 'retain';
+  }
+
   // Only the store that keeps rows until settlement gets a tracker
   #outboxMode(): 'off' | 'on' | 'retain' {
     if (!this.#outbox) {
@@ -290,7 +300,7 @@ export class JobsService {
     if (dropped.length > 0) {
       this.#logging.info(
         { system: { event: 'jobs_outbox.dropped', count: dropped.length, rows: dropped } },
-        `[Jobs Outbox] Dropped ${dropped.length} submitted rows whose job types recover on their own`,
+        `[Jobs Outbox] Dropped ${dropped.length} submitted rows whose job types are not replayed after a restart`,
       );
     }
     if (released.length > 0) {

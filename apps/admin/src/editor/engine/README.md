@@ -117,7 +117,9 @@ collision token is safe.
 collision record rather than the latest activity label. It accepts a valid
 timestamp different from the rejected token, only while the engine is recoverable
 and no attempt is active or frozen for authentication. With no collision
-retained, it accepts one only while the post is clean. An optional synchronous
+retained, it accepts one only while the post is clean, or when called with
+`discardUnsaved` because the writer confirmed that the server's copy may
+replace their unsaved work. An optional synchronous
 adoption callback, which must not throw, replaces the document before recovery
 is announced to subscribers. With no argument it checks the current snapshot. A
 successful save or accepted reload releases the collision. Other states:

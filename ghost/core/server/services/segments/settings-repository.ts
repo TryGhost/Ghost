@@ -8,6 +8,7 @@ import { toDatabaseDate } from '../../lib/db-types/date';
 import { DbJson } from '../../lib/db-types/json';
 import { type Segment, SegmentId } from './models';
 import type { SegmentRepository } from './repository';
+import type { SegmentChangeAttempt } from './tracking';
 
 type Json = z.core.util.JSONType;
 type JsonObject = { [key: string]: Json };
@@ -117,14 +118,16 @@ function isNameTaken(views: readonly Json[], name: string, exceptIndex?: number)
   });
 }
 
-function nameTaken(): never {
+function nameTaken(attempt: SegmentChangeAttempt): never {
+  attempt.rejecting('name_taken');
   throw new errors.ValidationError({
     message: 'A view with this name already exists',
     property: 'name',
   });
 }
 
-function notFound(): never {
+function notFound(attempt: SegmentChangeAttempt): never {
+  attempt.rejecting('not_found');
   throw new errors.NotFoundError({ message: 'Segment not found.' });
 }
 
@@ -181,12 +184,17 @@ export class SettingsSegmentRepository implements SegmentRepository {
     return listSegments(views).find(({ segment }) => segment.id === id)?.segment;
   }
 
-  async insert(input: Omit<Segment, 'id'>, trx: Knex.Transaction): Promise<Segment> {
+  async insert(
+    input: Omit<Segment, 'id'>,
+    trx: Knex.Transaction,
+    attempt: SegmentChangeAttempt,
+  ): Promise<Segment> {
     const { settingId, views } = await this.lockedViews(trx);
     if (isNameTaken(views, input.name)) {
-      nameTaken();
+      nameTaken(attempt);
     }
     if (listSegments(views).some(({ segment }) => segment.filter === input.filter)) {
+      attempt.rejecting('filter_taken');
       throw new errors.ValidationError({
         message: 'A view with this filter already exists',
         property: 'filter',
@@ -194,17 +202,21 @@ export class SettingsSegmentRepository implements SegmentRepository {
     }
 
     const view = { name: input.name, route: 'members', filter: { filter: input.filter } };
-    await this.save(trx, settingId, [...views, view]);
+    await this.save(trx, settingId, [...views, view], attempt);
     // No other segment has this filter, so this is its first occurrence.
     return { id: segmentId(input.filter, 1), name: input.name, filter: input.filter };
   }
 
-  async update(segment: Segment, trx: Knex.Transaction): Promise<Segment> {
+  async update(
+    segment: Segment,
+    trx: Knex.Transaction,
+    attempt: SegmentChangeAttempt,
+  ): Promise<Segment> {
     const { settingId, views } = await this.lockedViews(trx);
     const target =
-      listSegments(views).find((listed) => listed.segment.id === segment.id) ?? notFound();
+      listSegments(views).find((listed) => listed.segment.id === segment.id) ?? notFound(attempt);
     if (isNameTaken(views, segment.name, target.index)) {
-      nameTaken();
+      nameTaken(attempt);
     }
 
     // A segment's filter is its id, so only the name can differ from what's stored.
@@ -213,19 +225,25 @@ export class SettingsSegmentRepository implements SegmentRepository {
       trx,
       settingId,
       views.map((view, index) => (index === target.index ? renamed : view)),
+      attempt,
     );
     return { ...target.segment, name: segment.name };
   }
 
-  async delete(segment: Segment, trx: Knex.Transaction): Promise<void> {
+  async delete(
+    segment: Segment,
+    trx: Knex.Transaction,
+    attempt: SegmentChangeAttempt,
+  ): Promise<void> {
     const { settingId, views } = await this.lockedViews(trx);
     const target =
-      listSegments(views).find((listed) => listed.segment.id === segment.id) ?? notFound();
+      listSegments(views).find((listed) => listed.segment.id === segment.id) ?? notFound(attempt);
 
     await this.save(
       trx,
       settingId,
       views.filter((_view, index) => index !== target.index),
+      attempt,
     );
   }
 
@@ -268,12 +286,18 @@ export class SettingsSegmentRepository implements SegmentRepository {
    * found when the row is missing, and a validation error when the value is longer than the
    * column holds.
    */
-  private async save(trx: Knex.Transaction, settingId: string | null, views: Json[]) {
+  private async save(
+    trx: Knex.Transaction,
+    settingId: string | null,
+    views: Json[],
+    attempt: SegmentChangeAttempt,
+  ) {
     if (settingId === null) {
       throw new errors.NotFoundError({ message: `Unable to find setting to update: ${this.key}` });
     }
     const value = z.encode(StoredViews, views);
     if (!validator.isLength(value, 0, this.maxValueLength)) {
+      attempt.rejecting('stored_views_too_long');
       throw new errors.ValidationError({
         message: `Value in [settings.value] exceeds maximum length of ${this.maxValueLength} characters.`,
         context: 'settings.value',

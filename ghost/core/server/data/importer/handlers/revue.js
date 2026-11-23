@@ -3,7 +3,7 @@ const fs = require('fs-extra');
 const debug = require('@tryghost/debug')('importer:handler:revue');
 
 const hasIssuesCSV = (files, startDirRegex) => {
-  return _.some(files, (file) => {
+  return files.some((file) => {
     const name = file.name.replace(startDirRegex, '');
     return name.match(/^issues.*?\.csv/);
   });
@@ -29,7 +29,7 @@ const RevueHandler = {
       return Promise.resolve();
     }
 
-    _.each(files, function (file) {
+    files.forEach(function (file) {
       ops.push(
         fs.readFile(file.path).then(function (content) {
           // normalize the file name

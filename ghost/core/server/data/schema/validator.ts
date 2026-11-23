@@ -50,7 +50,7 @@ export function validateSchema(tableName: string, model: Model, options?: Option
   );
   let validationErrors: errors.ValidationError[] = [];
 
-  _.each(columns, function each([columnKey, column]) {
+  columns.forEach(function each([columnKey, column]) {
     let message = ''; // KEEP: Validator.js only validates strings.
     const strVal = _.toString(model.get(columnKey));
 

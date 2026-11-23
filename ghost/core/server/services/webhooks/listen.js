@@ -1,5 +1,3 @@
-const _ = require('lodash');
-
 const WEBHOOKS = [
   'site.changed',
 
@@ -41,7 +39,7 @@ const WEBHOOKS = [
 // trigger is built by the composition root (index.js) and injected here so
 // this module owns only the event-to-trigger wiring.
 const registerListeners = ({ events, trigger }) => {
-  _.each(WEBHOOKS, (event) => {
+  WEBHOOKS.forEach((event) => {
     // @NOTE: The early exit makes sure the listeners are only registered once.
     //        During testing the "events" instance is kept around with all the
     //        listeners even after a reboot. This method could be removed once

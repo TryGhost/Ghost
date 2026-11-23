@@ -238,6 +238,13 @@ describe('createSaveEngine', () => {
       expect(h.engine.contentReloaded(FUTURE)).toBe(true);
     });
 
+    it('replaces unsaved work without a collision only when the writer chose to discard it', () => {
+      const h = setup({ isDirty: true });
+      expect(h.engine.contentReloaded(FUTURE)).toBe(false);
+      expect(h.engine.contentReloaded(FUTURE, undefined, { discardUnsaved: true })).toBe(true);
+      expect(h.engine.getState()).toEqual({ kind: 'idle' });
+    });
+
     it('retires a validation hold belonging to the document replaced after conflict', async () => {
       const h = setup();
       const first = h.engine.dispatch('explicit');

@@ -348,6 +348,44 @@ describe('useEditorSession reload', () => {
     vi.restoreAllMocks();
   });
 
+  it('puts the loaded copy back over unsaved work, with no request', () => {
+    const { result } = setup();
+    const loadedTitle = result.current.bind.title;
+    act(() => result.current.bind.onTitleChange('Typed and not wanted'));
+    expect(result.current.isDirty()).toBe(true);
+    const requests = stable.fetchApi.mock.calls.length;
+
+    let reverted = false;
+    act(() => {
+      reverted = result.current.revert();
+    });
+
+    expect(reverted).toBe(true);
+    expect(result.current.bind.title).toBe(loadedTitle);
+    expect(result.current.isDirty()).toBe(false);
+    expect(stable.fetchApi.mock.calls.length).toBe(requests);
+  });
+
+  it('reads the latest copy and leaves the document alone when the caller no longer wants it', async () => {
+    const newer = record({ title: 'Their title', updated_at: '2026-01-02T00:00:00.000Z' });
+    stable.fetchApi.mockResolvedValueOnce({ posts: [newer] });
+    const { result } = setup();
+    const loaded = result.current.loadedRecord;
+    act(() => result.current.bind.onTitleChange('Unsaved and still wanted'));
+    const onlyIf = vi.fn(() => false);
+
+    let outcome = '';
+    await act(async () => {
+      outcome = await result.current.reload({ discardUnsaved: true, onlyIf });
+    });
+
+    expect(outcome).toBe('abandoned');
+    expect(onlyIf).toHaveBeenCalledTimes(1);
+    expect(result.current.loadedRecord).toBe(loaded);
+    expect(result.current.bind.title).toBe('Unsaved and still wanted');
+    expect(result.current.isDirty()).toBe(true);
+  });
+
   it('refuses a newer version when the writer edits while the reload waits', async () => {
     const newer = record({ title: 'Their title', updated_at: '2026-01-02T00:00:00.000Z' });
     stable.fetchApi.mockResolvedValueOnce({ posts: [newer] });

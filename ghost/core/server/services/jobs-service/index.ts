@@ -42,6 +42,7 @@ export function init({ knex, config }: JobsServiceInitOptions): JobsService {
     const relay = new OutboxRelay({
       outbox: store,
       backend,
+      handles: (type) => getInstance().handles(type),
       logging,
       sentry,
       pollIntervalMs: outboxConfig.pollIntervalMs,

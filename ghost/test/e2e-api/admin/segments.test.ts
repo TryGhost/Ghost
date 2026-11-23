@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
+import type { SpanDocument } from '../../../core/server/lib/tracing/create-tracer';
 
 const {
   agentProvider,
@@ -7,6 +8,7 @@ const {
   dbUtils,
   fixtureManager,
   matchers,
+  mockManager,
 } = require('../../utils/e2e-framework');
 // Required, not imported, so the test uses the instances Ghost runs with.
 const logging = require('@tryghost/logging');
@@ -687,6 +689,94 @@ describe('Segments Admin API', function () {
         written.value,
         JSON.stringify([memberView('Free', 'status:free'), memberView('VIP', 'label:vip')]),
       );
+    });
+  });
+
+  describe('spans', function () {
+    let metrics: { tracked(name: string): SpanDocument[] };
+
+    type Command = 'add' | 'edit' | 'delete';
+    const spans = (command: Command) => metrics.tracked(`segments.${command}`);
+    const failedSpans = (command: Command) =>
+      spans(command).filter(({ event }) => event.outcome === 'failure');
+
+    beforeEach(function () {
+      metrics = mockManager.mockMetrics();
+    });
+
+    afterEach(function () {
+      mockManager.restore();
+    });
+
+    it('records a successful span for each add, rename and delete', async function () {
+      const { id } = await add('VIP', 'label:vip');
+      await rename(id, 'Gold');
+      await agent.delete(`segments/${id}/`).expectStatus(204);
+
+      for (const command of ['add', 'edit', 'delete'] as const) {
+        expect(spans(command)).toMatchObject([{ event: { outcome: 'success' }, labels: {} }]);
+        assert.deepEqual(spans(command)[0].labels, {});
+      }
+    });
+
+    it('records why a change was rejected', async function () {
+      const { id } = await add('VIP', 'label:vip');
+      await add('Free', 'status:free');
+
+      await addError({ name: 'vip', filter: 'label:gold' });
+      await addError({ name: 'Gold', filter: 'label:vip' });
+      await addError({ name: 'Long', filter: 'x'.repeat(65535) });
+      await renameError(id, { name: 'Free' });
+      await renameError(id, { name: 'VIP', filter: 'label:gold' });
+      await agent
+        .put(`segments/${UNKNOWN_ID}/`)
+        .body({ segments: [{ name: 'Gold' }] })
+        .expectStatus(404);
+      await agent.delete(`segments/${UNKNOWN_ID}/`).expectStatus(404);
+
+      const rejected = (type: string, rejection: string) => ({
+        error: { type },
+        labels: { rejection },
+      });
+      expect(failedSpans('add')).toMatchObject([
+        rejected('ValidationError', 'name_taken'),
+        rejected('ValidationError', 'filter_taken'),
+        rejected('ValidationError', 'stored_views_too_long'),
+      ]);
+      expect(failedSpans('edit')).toMatchObject([
+        rejected('ValidationError', 'name_taken'),
+        rejected('ValidationError', 'filter_changed'),
+        rejected('NotFoundError', 'not_found'),
+      ]);
+      expect(failedSpans('delete')).toMatchObject([rejected('NotFoundError', 'not_found')]);
+    });
+
+    it('records a failure, not a rejection, when shared_views is invalid', async function () {
+      await saveSharedViews(JSON.stringify('VIP'));
+
+      await addError({ name: 'Gold', filter: 'label:gold' });
+
+      expect(spans('add')).toMatchObject([
+        { event: { outcome: 'failure' }, error: { type: 'ValidationError' } },
+      ]);
+      assert.equal(spans('add')[0].labels.rejection, undefined);
+    });
+
+    it('marks a rename to the same name as unchanged', async function () {
+      const { id } = await add('VIP', 'label:vip');
+
+      await rename(id, 'VIP');
+
+      expect(spans('edit')).toMatchObject([
+        { event: { outcome: 'success' }, labels: { unchanged: true } },
+      ]);
+    });
+
+    it('records no span for a request that fails body validation, or for a read', async function () {
+      await addBodyError({ segments: [{ name: '', filter: 'label:vip' }] });
+      await browse();
+
+      assert.deepEqual([...spans('add'), ...spans('edit'), ...spans('delete')], []);
     });
   });
 

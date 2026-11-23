@@ -8,7 +8,6 @@ const { checks } = require('../services/data');
 
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
-const get = require('lodash/get');
 const moment = require('moment');
 
 const messages = {
@@ -38,12 +37,12 @@ const buildApiOptions = function buildApiOptions(options, post) {
     context: { member: options.data.member },
   };
 
-  if (get(options, 'hash.in')) {
-    if (options.hash.in === 'primary_tag' && get(post, 'primary_tag.slug')) {
+  if (options.hash?.in) {
+    if (options.hash.in === 'primary_tag' && post.primary_tag?.slug) {
       apiOptions.filter += '+primary_tag:' + post.primary_tag.slug;
-    } else if (options.hash.in === 'primary_author' && get(post, 'primary_author.slug')) {
+    } else if (options.hash.in === 'primary_author' && post.primary_author?.slug) {
       apiOptions.filter += '+primary_author:' + post.primary_author.slug;
-    } else if (options.hash.in === 'author' && get(post, 'author.slug')) {
+    } else if (options.hash.in === 'author' && post.author?.slug) {
       apiOptions.filter += '+author:' + post.author.slug;
     }
   }

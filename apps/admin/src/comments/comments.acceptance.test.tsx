@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { page, userEvent } from 'vitest/browser';
 
 import {
   browseResponse,
@@ -6,6 +7,7 @@ import {
   commentThread,
   currentRoute,
   fakeAdminEndpoint,
+  fakeAdminStats,
   fakeComments,
   renderAdminApp,
   reply,
@@ -17,6 +19,34 @@ import { commentsScreen } from './comments.screen';
 function fakeCommentRead(entity: Comment): void {
   fakeAdminEndpoint('GET', new RegExp(`^/comments/${entity.id}/\\?`), { comments: [entity] });
 }
+
+describe('Static comment rows', () => {
+  it.each([false, true])(
+    'keeps row hover and focus static with admin7Design %s',
+    async (admin7Design) => {
+      fakeComments([comment({ html: '<p>A static comment</p>' })]);
+      fakeAdminStats.memberCount();
+      fakeAdminStats.mrr();
+      await renderAdminApp('/comments', { labs: { admin7Design } });
+      const row = commentsScreen.commentRow('A static comment');
+      await expect.element(row).toBeVisible();
+      const background = getComputedStyle(row.element()).backgroundColor;
+      const separator = getComputedStyle(row.element()).borderBottomColor;
+      await row.hover();
+      expect(getComputedStyle(row.element()).backgroundColor).toBe(background);
+      expect(getComputedStyle(row.element(), '::before').opacity).toBe('0');
+      expect(getComputedStyle(row.element()).borderBottomColor).toBe(separator);
+      const hide = row.getByRole('button', { name: 'Hide', exact: true });
+      await page.getByRole('heading', { name: 'Comments', exact: true }).hover({ force: true });
+      for (let tab = 0; tab < 50 && document.activeElement !== hide.element(); tab += 1) {
+        await userEvent.tab();
+      }
+      await expect.element(hide).toHaveFocus();
+      expect(getComputedStyle(row.element()).backgroundColor).toBe(background);
+      expect(getComputedStyle(row.element(), '::before').opacity).toBe('0');
+    },
+  );
+});
 
 describe('Comments deep linking', () => {
   it('filters to the linked comment and shows all comments on demand', async () => {

@@ -1,7 +1,7 @@
 import FeatureToggle from './feature-toggle';
 import LabItem from './lab-item';
 import React, { useEffect, useState } from 'react';
-import { ActionList } from '@tryghost/shade/components';
+import { List } from '@tryghost/shade/components';
 import { HostLimitError } from '@tryghost/admin-x-framework/errors';
 import { useLimiter } from '@tryghost/admin-x-framework/hooks';
 
@@ -114,6 +114,12 @@ const features: Feature[] = [
     flag: 'editorPresence',
   },
   {
+    title: 'Editor lease',
+    description:
+      'Let one editor tab at a time edit a post or page. Others open it read-only and can take over. Needs editor presence polling.',
+    flag: 'editorLease',
+  },
+  {
     title: 'Comments analytics',
     description: 'Show comment volume, top posts and top commenters beside the comments list.',
     flag: 'commentsAnalytics',
@@ -148,7 +154,7 @@ const AlphaFeatures: React.FC = () => {
   }, [limiter]);
 
   return (
-    <ActionList>
+    <List>
       {allowedFeatures.map((feature) => (
         <LabItem
           key={feature.flag}
@@ -157,7 +163,7 @@ const AlphaFeatures: React.FC = () => {
           title={feature.title}
         />
       ))}
-    </ActionList>
+    </List>
   );
 };
 

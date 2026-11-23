@@ -1,9 +1,16 @@
 import React from 'react';
 import {createEmptyHistoryState} from '@lexical/react/LexicalHistoryPlugin';
+import type {HistoryState} from '@lexical/react/LexicalHistoryPlugin';
 
-const Context = React.createContext({});
+export interface SharedHistoryContextValue {
+    historyState?: HistoryState;
+}
 
-export const SharedHistoryContext = ({children}) => {
+// No default history state: editors rendered without a provider must each keep
+// their own undo stack, which HistoryPlugin creates when it gets `undefined`
+const Context = React.createContext<SharedHistoryContextValue>({});
+
+export const SharedHistoryContext = ({children}: {children: React.ReactNode}) => {
     const historyContext = React.useMemo(
         () => ({historyState: createEmptyHistoryState()}),
         []

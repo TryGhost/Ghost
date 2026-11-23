@@ -2112,6 +2112,89 @@ describe('Email renderer', function () {
       assert.equal($('.preheader').text(), 'Lexical Test some text for both');
     });
 
+    describe('preheader for posts with card visibility', function () {
+      const ALL = 'status:free,status:-free';
+
+      function postWithCard({ emailSegment, plaintext }) {
+        return createModel({
+          ...basePost,
+          plaintext,
+          lexical: JSON.stringify({
+            root: {
+              children: [
+                {
+                  type: 'html',
+                  html: '<p>card text</p>',
+                  visibility: {
+                    web: { nonMember: true, memberSegment: ALL },
+                    email: { memberSegment: emailSegment },
+                  },
+                },
+              ],
+            },
+          }),
+        });
+      }
+
+      it('leaves free-only card text out of the preheader for paid members', async function () {
+        renderedPost =
+          '<p>Lexical Test</p><div data-gh-segment="status:free"><p>free only section</p></div><p>some text for both</p>';
+        // The stored plaintext is built from the web render, which keeps every card
+        const post = postWithCard({
+          emailSegment: 'status:free',
+          plaintext: 'Lexical Test free only section some text for both',
+        });
+
+        const response = await emailRenderer.renderBody(
+          post,
+          createModel(baseNewsletter),
+          'status:-free',
+          {},
+        );
+
+        const preheader = cheerio.load(response.html)('.preheader').text();
+        assert(!preheader.includes('free only section'), preheader);
+        assert(preheader.includes('some text for both'), preheader);
+      });
+
+      it('leaves web-only card text out of the preheader when every member gets the same email', async function () {
+        // The email render drops cards hidden from email, so there is no wrapper to filter
+        renderedPost = '<p>Lexical Test</p><p>some text for both</p>';
+        const post = postWithCard({
+          emailSegment: '',
+          plaintext: 'Lexical Test web only section some text for both',
+        });
+
+        const response = await emailRenderer.renderBody(
+          post,
+          createModel(baseNewsletter),
+          null,
+          {},
+        );
+
+        const preheader = cheerio.load(response.html)('.preheader').text();
+        assert(!preheader.includes('web only section'), preheader);
+        assert(preheader.includes('some text for both'), preheader);
+      });
+
+      it('keeps the stored plaintext preheader for paid members when no card is restricted', async function () {
+        renderedPost = '<p>Lexical Test</p><blockquote>A quote</blockquote>';
+        const post = postWithCard({
+          emailSegment: ALL,
+          plaintext: 'Stored plaintext for post',
+        });
+
+        const response = await emailRenderer.renderBody(
+          post,
+          createModel(baseNewsletter),
+          'status:-free',
+          {},
+        );
+
+        assert.equal(cheerio.load(response.html)('.preheader').text(), 'Stored plaintext for post');
+      });
+    });
+
     it('excludes preheader spacing characters from plaintext', async function () {
       const post = createModel(basePost);
       const newsletter = createModel(baseNewsletter);

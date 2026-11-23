@@ -1,9 +1,33 @@
 import React from 'react';
 import throttle from 'lodash/throttle';
+import type {NodeKey} from 'lexical';
 
-const Context = React.createContext({});
+// Sparse: only top-level nodes that contain TK nodes have an entry
+export interface TKNodeMap {
+    [topLevelNodeKey: NodeKey]: NodeKey[] | undefined;
+}
 
-export const TKContext = ({children}) => {
+type EditorTKNodeMap = Map<string, Map<NodeKey, {topLevelNodeKey: NodeKey}>>;
+
+export interface TKContextValue {
+    tkNodeMap: TKNodeMap;
+    tkCount: number;
+    addEditorTkNode: (editorKey: string, topLevelNodeKey: NodeKey, tkNodeKey: NodeKey) => void;
+    removeEditorTkNode: (editorKey: string, tkNodeKey: NodeKey) => void;
+    removeEditor: (editorKey: string) => void;
+}
+
+const noop = () => {};
+
+const Context = React.createContext<TKContextValue>({
+    tkNodeMap: {},
+    tkCount: 0,
+    addEditorTkNode: noop,
+    removeEditorTkNode: noop,
+    removeEditor: noop
+});
+
+export const TKContext = ({children}: {children: React.ReactNode}) => {
     // Map(
     //   editorKey: Map(
     //     tkNodeKey: {topLevelNodeKey}
@@ -13,10 +37,10 @@ export const TKContext = ({children}) => {
     // We store under the editor key because a top level node (i.e. a decorator)
     // may contain multiple nested editors and it's easier for the plugin in each
     // editor to only know about it's own nodes
-    const editorTkNodeMapRef = React.useRef(new Map());
+    const editorTkNodeMapRef = React.useRef<EditorTKNodeMap>(new Map());
 
     // node map used in top-level editor to display indicators
-    const [tkNodeMap, setTkNodeMap] = React.useState({});
+    const [tkNodeMap, setTkNodeMap] = React.useState<TKNodeMap>({});
     const [tkCount, setTkCount] = React.useState(0);
 
     // throttled update function to update the top-level node map
@@ -29,17 +53,19 @@ export const TKContext = ({children}) => {
             // derive a top-level tk node map to use for rendering indicators
             const editorTkNodeMap = editorTkNodeMapRef.current;
 
-            const newTkNodeMap = {};
+            const newTkNodeMap: TKNodeMap = {};
             let newTkCount = 0;
 
             editorTkNodeMap.forEach((nodeMap) => {
                 nodeMap.forEach(({topLevelNodeKey}, tkNodeKey) => {
                     newTkCount = newTkCount + 1;
 
-                    if (newTkNodeMap[topLevelNodeKey] === undefined) {
-                        newTkNodeMap[topLevelNodeKey] = [tkNodeKey];
+                    const tkNodeKeys = newTkNodeMap[topLevelNodeKey];
+
+                    if (tkNodeKeys) {
+                        tkNodeKeys.push(tkNodeKey);
                     } else {
-                        newTkNodeMap[topLevelNodeKey].push(tkNodeKey);
+                        newTkNodeMap[topLevelNodeKey] = [tkNodeKey];
                     }
                 });
             });
@@ -51,19 +77,22 @@ export const TKContext = ({children}) => {
         return throttle(updateFn, 5, {trailing: true});
     }, []);
 
-    const addEditorTkNode = React.useCallback((editorKey, topLevelNodeKey, tkNodeKey) => {
+    const addEditorTkNode = React.useCallback((editorKey: string, topLevelNodeKey: NodeKey, tkNodeKey: NodeKey) => {
         const editorTkNodeMap = editorTkNodeMapRef.current;
 
-        if (!editorTkNodeMap.has(editorKey)) {
-            editorTkNodeMap.set(editorKey, new Map());
+        let nodeMap = editorTkNodeMap.get(editorKey);
+
+        if (!nodeMap) {
+            nodeMap = new Map();
+            editorTkNodeMap.set(editorKey, nodeMap);
         }
 
-        editorTkNodeMap.get(editorKey).set(tkNodeKey, {topLevelNodeKey});
+        nodeMap.set(tkNodeKey, {topLevelNodeKey});
 
         updateTkNodeMap();
     }, [updateTkNodeMap]);
 
-    const removeEditorTkNode = React.useCallback((editorKey, tkNodeKey) => {
+    const removeEditorTkNode = React.useCallback((editorKey: string, tkNodeKey: NodeKey) => {
         const editorTkNodeMap = editorTkNodeMapRef.current;
 
         editorTkNodeMap.get(editorKey)?.delete(tkNodeKey);
@@ -75,7 +104,7 @@ export const TKContext = ({children}) => {
         updateTkNodeMap();
     }, [updateTkNodeMap]);
 
-    const removeEditor = React.useCallback((editorKey) => {
+    const removeEditor = React.useCallback((editorKey: string) => {
         editorTkNodeMapRef.current.delete(editorKey);
         updateTkNodeMap();
     }, [updateTkNodeMap]);

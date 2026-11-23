@@ -1,4 +1,4 @@
-import type { AppFailureCode } from '@tryghost/app-contracts';
+import type { AppFailureCode, ManifestChange } from '@tryghost/app-contracts';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
@@ -13,13 +13,7 @@ import {
 } from './app-installations-repository';
 import type { AppInstallationHistoryEntry, Installation, InstallationWithHistory } from './codec';
 import { ensureTransaction, transactionOf } from '../../lib/ensure-transaction';
-import {
-  approvalWrite,
-  changesFrom,
-  recheckWrite,
-  type AppManifestChange,
-  type ManifestWrite,
-} from './decide-on-manifest';
+import { approvalWrite, changesFrom, recheckWrite, type ManifestWrite } from './decide-on-manifest';
 import type { FetchIcon } from './fetch-icon';
 import { approvalManifestIds, buildHistory } from './history';
 import type { IdentityChecker, PinnedIdentity, StartedChallenge } from './identity-check';
@@ -27,7 +21,6 @@ import type { LoadedManifest, LoadManifest } from './load-manifest';
 import type { AppInstallationStatus } from './schema';
 
 export type { AppInstallationHistoryEntry } from './codec';
-export type { AppManifestChange } from './decide-on-manifest';
 
 /** What a publisher reviews before installing an app, or before approving changes to one. */
 export interface AppInstallationPreview {
@@ -59,7 +52,7 @@ export interface AppInstallationPreview {
     manifest_url: string;
     manifest: AppManifest;
     icon_data_url: string | null;
-    changes: AppManifestChange[];
+    changes: ManifestChange[];
   } | null;
 }
 

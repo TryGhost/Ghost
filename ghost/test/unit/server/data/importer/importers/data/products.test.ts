@@ -95,6 +95,17 @@ const fakePrices = [
 ];
 
 describe('ProductsImporter', function () {
+  it('Rejects products data that is not an array', function () {
+    assert.throws(
+      () =>
+        new ProductsImporter({
+          products: { product_1: fakeProducts[0] },
+          stripe_prices: fakePrices,
+        }),
+      { errorType: 'IncorrectUsageError' },
+    );
+  });
+
   describe('#beforeImport', function () {
     it('Uses the stripe_prices to populate pricing data', function () {
       const importer = new ProductsImporter({ products: fakeProducts, stripe_prices: fakePrices });

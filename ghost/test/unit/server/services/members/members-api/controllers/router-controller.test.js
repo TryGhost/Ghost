@@ -101,6 +101,7 @@ describe('RouterController', function () {
     settingsHelpers = {
       getMembersSupportAddress: sinon.stub().returns('noreply@example.com'),
       arePaidMembersEnabled: sinon.stub().returns(true),
+      isStripeConnected: sinon.stub().returns(true),
       areDonationsEnabled: sinon.stub().returns(true),
       isMembersInviteOnly: sinon.stub().returns(false),
     };
@@ -1869,6 +1870,7 @@ describe('RouterController', function () {
     it('does not add welcomePageUrl to response when tier has no welcomePageURL', async function () {
       const routerController = new RouterController({
         tracking,
+        settingsHelpers,
         tiersService: {
           api: {
             read: sinon.stub().resolves({

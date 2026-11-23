@@ -1,14 +1,8 @@
+import type { ManifestChange } from '@tryghost/app-contracts';
 import { compareManifests } from '@tryghost/app-contracts/manifest';
 import type { AddedRow } from './app-installations-repository';
 import type { Installation } from './codec';
 import type { LoadedManifest } from './load-manifest';
-
-/** One field that differs from what the publisher approved. */
-export interface AppManifestChange {
-  /** Where the change is: a path in the manifest, such as `surfaces[0].url`. */
-  path: string;
-  requires_approval: boolean;
-}
 
 type Approved = Pick<Installation, 'manifest'>;
 
@@ -16,19 +10,8 @@ type Approved = Pick<Installation, 'manifest'>;
  * Lists what differs between the approved manifest and a loaded one. The preview shows
  * this list and decisions are made from it, so a review always matches what happens.
  */
-export function changesFrom(approved: Approved, loaded: LoadedManifest): AppManifestChange[] {
-  return compare(approved, loaded).changes;
-}
-
-function compare(approved: Approved, loaded: LoadedManifest) {
-  const { changes, requiresApproval } = compareManifests(approved.manifest, loaded.manifest);
-  return {
-    changes: changes.map(({ path, requiresApproval: requires }) => ({
-      path,
-      requires_approval: requires,
-    })),
-    requiresApproval,
-  };
+export function changesFrom(approved: Approved, loaded: LoadedManifest): ManifestChange[] {
+  return compareManifests(approved.manifest, loaded.manifest).changes;
 }
 
 /** The approved, pending and just-loaded manifests. */
@@ -40,8 +23,8 @@ interface Manifests {
 
 /** See `decideOnManifest` for each kind. Carries the changes so callers don't compare again. */
 export type ManifestDecision =
-  | { kind: 'unchanged' | 'apply' | 'resume' | 'suspend'; changes: AppManifestChange[] }
-  | { kind: 'use_pending'; changes: AppManifestChange[]; pendingManifestId: string };
+  | { kind: 'unchanged' | 'apply' | 'resume' | 'suspend'; changes: ManifestChange[] }
+  | { kind: 'use_pending'; changes: ManifestChange[]; pendingManifestId: string };
 
 /**
  * Decides what to do with a loaded manifest, given the approved manifest and the pending
@@ -60,7 +43,7 @@ export type ManifestDecision =
  * instead of leaving it pending.
  */
 export function decideOnManifest({ current, pending, loaded }: Manifests): ManifestDecision {
-  const { changes, requiresApproval } = compare(current, loaded);
+  const { changes, requiresApproval } = compareManifests(current.manifest, loaded.manifest);
   if (pending && pending.digest === loaded.digest) {
     return { kind: 'use_pending', changes, pendingManifestId: pending.id };
   }
@@ -121,6 +104,7 @@ export function approvalWrite(manifests: Manifests): ApprovalWrite {
           loaded: manifests.loaded,
           source: 'approval',
           requiresApproval: decision.kind === 'suspend',
+          changes: decision.changes,
         },
       };
   }
@@ -146,13 +130,14 @@ export function recheckWrite(manifests: Manifests): ManifestWrite {
           loaded,
           source: decision.kind === 'resume' ? 'resume' : 'update',
           requiresApproval: false,
+          changes: decision.changes,
         },
       };
     // Replaces any older pending manifest, since only the latest is worth reviewing.
     case 'suspend':
       return {
         kind: 'add_pending',
-        row: { loaded, source: 'update', requiresApproval: true },
+        row: { loaded, source: 'update', requiresApproval: true, changes: decision.changes },
       };
   }
 }

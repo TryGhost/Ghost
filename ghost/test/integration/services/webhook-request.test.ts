@@ -167,7 +167,7 @@ describe('Webhook delivery', function () {
         assert.equal(data.last_triggered_error, 'Request failed: ETIMEDOUT');
       });
 
-      it('does not retry a POST outside the test environment, despite the retry limit', async function () {
+      it('does not retry a POST outside the test environment', async function () {
         deliveryTo(WEBHOOK_PATH).reply(503);
         const retry = deliveryTo(WEBHOOK_PATH).reply(200);
         const trigger = new WebhookTrigger({ models, payload, limitService });
