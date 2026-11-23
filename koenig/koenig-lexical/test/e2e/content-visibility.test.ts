@@ -347,6 +347,23 @@ test.describe('Content Visibility', async () => {
         });
     });
 
+    test('empty image placeholder with a restriction shows no indicator', async function () {
+        await initialize({page, uri: `/#/?content=${content(paragraph('some text'), {...image(), src: '', visibility: hidden})}`});
+        await expect(page.locator('[data-kg-card="image"]')).toBeVisible();
+        await expect(page.getByTestId('visibility-indicator')).toHaveCount(0);
+    });
+
+    test('v1 header opens its visibility settings from the indicator', async function () {
+        const header = {type: 'header', version: 1, size: 'small', style: 'dark', header: 'Member banner', subheader: '', buttonEnabled: false, visibility: hidden};
+        await initialize({page, uri: `/#/?content=${content(paragraph('some text'), header)}`});
+        const card = page.locator('[data-kg-card="header"]');
+        await page.getByTestId('visibility-indicator').click();
+        await expectPanelOnTab(card, 'visibility');
+        await expect(card.getByTestId('visibility-toggle-web-nonMembers')).not.toBeChecked();
+        await card.getByTestId('visibility-toggle-web-nonMembers').click();
+        await expect(page.getByTestId('visibility-indicator')).toHaveCount(0);
+    });
+
     test.describe('Card with design and visibility settings (video)', async function () {
         test.beforeEach(async () => {
             await initialize({page, uri: `/#/?content=${content(paragraph('some text'), video({visibility: hidden}))}`});

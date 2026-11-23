@@ -173,11 +173,14 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
         };
     }, [editor, isSelected, isEditing, nodeKey, containerRef, cardConfig]);
 
+    // only show the indicator when clicking it can open the card's visibility
+    // settings, e.g. not on an empty image placeholder
     let isVisibilityActive = false;
     editor.getEditorState().read(() => {
         const cardNode = $getNodeByKey(nodeKey);
         isVisibilityActive = $isKoenigCard(cardNode)
             && isCardVisibilityAvailable(cardNode.getType(), cardConfig)
+            && cardHasEditMode(cardNode, cardConfig)
             && cardNode.getIsVisibilityActive();
     });
 
