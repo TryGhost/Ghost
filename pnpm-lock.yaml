@@ -602,6 +602,9 @@ catalogs:
     html-to-text:
       specifier: 10.0.1
       version: 10.0.1
+    html2canvas-pro:
+      specifier: 2.2.1
+      version: 2.2.1
     inquirer:
       specifier: 8.2.7
       version: 8.2.7
@@ -1147,6 +1150,9 @@ importers:
       flexsearch:
         specifier: 'catalog:'
         version: 0.7.43
+      html2canvas-pro:
+        specifier: 'catalog:'
+        version: 2.2.1
       i18n-iso-countries:
         specifier: 7.14.0
         version: 7.14.0

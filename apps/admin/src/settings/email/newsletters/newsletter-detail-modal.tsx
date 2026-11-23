@@ -67,6 +67,7 @@ import { useGlobalData } from '@/settings/providers/global-data-context';
 import { DEFAULT_CARD_DESIGN, type NewsletterCardDesign } from './newsletter-card';
 import { DEFAULT_TITLE_META, type NewsletterTitleMeta } from './newsletter-title-meta';
 import { MONO_FONT_CATEGORY, SYSTEM_MONO_CLASS } from './newsletter-fonts';
+import { downloadPreviewPng } from './newsletter-preview-screenshot';
 import { DEFAULT_SPACING, type NewsletterSpacing, type PreviewDevice } from './newsletter-spacing';
 import { navigateTo } from '@/utils/navigation';
 
@@ -1077,7 +1078,22 @@ const NewsletterDetailModalContent: React.FC<{ newsletter: Newsletter; onlyOne: 
       />
     </Stack>
   );
-  const deviceSelector = (
+  // TEMPORARY (prototype): saves the preview as a PNG for sharing design variations.
+  const [savingPng, setSavingPng] = useState(false);
+  const savePreviewPng = async () => {
+    setSavingPng(true);
+    try {
+      await downloadPreviewPng(previewDevice);
+    } catch (error) {
+      toast.error('Could not save the preview as a PNG');
+      // eslint-disable-next-line no-console
+      console.error(error);
+    } finally {
+      setSavingPng(false);
+    }
+  };
+
+  const deviceToggle = (
     <ToggleGroup
       size="default"
       type="single"
@@ -1095,6 +1111,15 @@ const NewsletterDetailModalContent: React.FC<{ newsletter: Newsletter; onlyOne: 
         <LucideIcon.Smartphone />
       </ToggleGroupItem>
     </ToggleGroup>
+  );
+  const deviceSelector = (
+    <Inline align="center" gap="md">
+      <Button disabled={savingPng} variant="outline" onClick={() => void savePreviewPng()}>
+        <LucideIcon.Camera />
+        {savingPng ? 'Saving…' : 'Save PNG'}
+      </Button>
+      {deviceToggle}
+    </Inline>
   );
   const sidebar = (
     <Sidebar

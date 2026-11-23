@@ -20,6 +20,7 @@ import {
   MONO_FONT_CATEGORY,
   SYSTEM_MONO_CLASS,
 } from './newsletter-fonts';
+import { PREVIEW_CAPTURE_ATTRIBUTE } from './newsletter-preview-screenshot';
 
 // Phone sizes from the real email's `@media (max-width: 620px)` rules
 // (ghost/core/server/services/email-service/email-templates/partials/styles.hbs).
@@ -781,13 +782,20 @@ const NewsletterPreviewContent: React.FC<{
     <div className="relative flex grow flex-col">
       <div className="absolute inset-0 m-5 flex items-center justify-center">
         {isPhone ? (
-          <PreviewChrome className="max-h-full" device="mobile">
+          <PreviewChrome
+            className="max-h-full"
+            device="mobile"
+            {...{ [PREVIEW_CAPTURE_ATTRIBUTE]: '' }}
+          >
             <div className="flex min-h-full flex-col text-black" style={{ backgroundColor }}>
               {email}
             </div>
           </PreviewChrome>
         ) : (
-          <div className="mx-auto my-0 flex max-h-full w-full max-w-[700px] flex-col overflow-hidden rounded-[4px] text-black shadow-sm">
+          <div
+            className="mx-auto my-0 flex max-h-full w-full max-w-[700px] flex-col overflow-hidden rounded-[4px] text-black shadow-sm"
+            {...{ [PREVIEW_CAPTURE_ATTRIBUTE]: '' }}
+          >
             {email}
           </div>
         )}

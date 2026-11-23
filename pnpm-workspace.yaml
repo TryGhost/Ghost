@@ -172,6 +172,7 @@ catalog:
   got: 16.0.0
   html-minifier-next: 8.11.0
   html-to-text: 10.0.1
+  html2canvas-pro: 2.2.1
   ipaddr.js: 2.5.0
   jiti: 2.7.0
   jose: 6.2.17
