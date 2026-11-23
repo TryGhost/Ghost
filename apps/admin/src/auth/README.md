@@ -45,6 +45,14 @@ fifteen seconds after each code that goes out. A failure is handed to the caller
 as the text to show, and the button is offered again. It is exported through
 `api.ts` for sign-in prompts outside these screens.
 
+The verification screen submits as soon as six digits are entered or pasted,
+trimming surrounding whitespace. It sends only one verification request at a
+time; rejected codes can be corrected or retried with the submit button.
+
+Auth inputs keep their field surface when autofilled, so inline actions such as
+Forgot and Resend blend with the input. Focus and validation use Shade's shared
+field borders and rings.
+
 ## Session changes reload the page
 
 Every successful sign in, verification, reset, signup and setup, and every
