@@ -1,4 +1,4 @@
-import { IncorrectUsageError } from '@tryghost/errors';
+import errors from '@tryghost/errors';
 import type {
   AnyServiceDefinition,
   Given,
@@ -72,7 +72,7 @@ export function createServices({
 
   function build(definition: AnyServiceDefinition): Built {
     if (!open) {
-      throw new IncorrectUsageError({
+      throw new errors.IncorrectUsageError({
         message: `${definition.name} was used while ${name} cannot build services. A service is built on first use, from the point in the start sequence where building is safe until the application stops.`,
       });
     }
@@ -82,12 +82,12 @@ export function createServices({
       return built;
     }
     if ((definition.listeners.length > 0 || definition.start) && !registered.has(definition)) {
-      throw new IncorrectUsageError({
+      throw new errors.IncorrectUsageError({
         message: `${definition.name} declares listeners or a start, but ${name} does not register it. Unregistered, its events are missed until its first use and its start never runs.`,
       });
     }
     if (building.has(definition)) {
-      throw new IncorrectUsageError({
+      throw new errors.IncorrectUsageError({
         message: `${definition.name} needs itself, directly or through what it needs.`,
       });
     }
@@ -103,7 +103,7 @@ export function createServices({
       if (isPromise(service)) {
         // Whoever built it is told; the promise's own failure has nobody waiting for it.
         Promise.resolve(service).catch(() => {});
-        throw new IncorrectUsageError({
+        throw new errors.IncorrectUsageError({
           message: `${definition.name} is built asynchronously. A service is built synchronously: move what it waits for into its start.`,
         });
       }
