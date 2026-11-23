@@ -9,7 +9,6 @@ const SendWebmentionsJob =
   require('../../../core/server/services/mentions/send-webmentions-job').default;
 const jobsService = require('../../../core/server/services/jobs-service');
 const urlService = require('../../../core/server/services/url');
-const events = require('../../../core/server/lib/common/events');
 
 let agent;
 const mentionUrl = new URL('https://www.otherghostsite.com/');
@@ -26,38 +25,27 @@ const DomainEvents = require('@tryghost/domain-events');
 
 // sendForPost runs from model events that fire on transaction commit and
 // awaits DB work before dispatching. Track every run so tests can drain them.
-const mentionEvents = [
-  'post.published',
-  'post.published.edited',
-  'post.unpublished',
-  'page.published',
-  'page.published.edited',
-  'page.unpublished',
-];
+// The Mentions root declares the listeners, and each hands its event to the
+// sending service, so the runs are tracked there.
 const pendingSendForPost = [];
-const wrappedListeners = [];
+let restoreSendForPost;
 
 function trackSendForPost() {
-  for (const eventName of mentionEvents) {
-    const original = events.listeners(eventName).find((l) => l.name === 'bound sendForPost');
-    assert.ok(original, `expected a sendForPost listener on ${eventName}`);
-    const wrapper = (...args) => {
-      const run = original(...args);
-      pendingSendForPost.push(run);
-      return run;
-    };
-    events.removeListener(eventName, original);
-    events.on(eventName, wrapper);
-    wrappedListeners.push({ eventName, original, wrapper });
-  }
+  const sendingService = mentionsService.service.sendingService;
+  const original = sendingService.sendForPost;
+  sendingService.sendForPost = function (...args) {
+    const run = original.apply(this, args);
+    pendingSendForPost.push(run);
+    return run;
+  };
+  restoreSendForPost = () => {
+    sendingService.sendForPost = original;
+  };
 }
 
 function untrackSendForPost() {
-  for (const { eventName, original, wrapper } of wrappedListeners) {
-    events.removeListener(eventName, wrapper);
-    events.on(eventName, original);
-  }
-  wrappedListeners.length = 0;
+  restoreSendForPost?.();
+  restoreSendForPost = undefined;
 }
 
 // Draining the runs proves no job was dispatched - for the cases whose

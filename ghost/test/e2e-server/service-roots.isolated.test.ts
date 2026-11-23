@@ -75,8 +75,10 @@ describe('Service roots in a booted Ghost', function () {
           'undefined',
           `${service} is built asynchronously`,
         );
-        // The root's own getter reads the same instance from Ghost's one application.
-        assert.equal((root as unknown as { service: unknown }).service, built);
+        // A root that still has the transitional getter reads the same instance through it.
+        if ('service' in root) {
+          assert.equal(root.service, built);
+        }
       } finally {
         building = '';
       }

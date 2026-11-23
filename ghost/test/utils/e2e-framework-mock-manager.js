@@ -430,12 +430,14 @@ const mockMetrics = () => {
 let fakedSettings = {};
 const originalSettingsGetter = settingsCache.get;
 
-const fakeSettingsGetter = (setting) => {
+// Passes the options on: a reader that asks for the stored row (`{ resolve: false }`), as the
+// signing keys check does on every boot, must not be handed the bare value.
+const fakeSettingsGetter = (setting, options) => {
   if (fakedSettings.hasOwnProperty(setting)) {
     return fakedSettings[setting];
   }
 
-  return originalSettingsGetter(setting);
+  return originalSettingsGetter(setting, options);
 };
 
 const mockSetting = (key, value) => {

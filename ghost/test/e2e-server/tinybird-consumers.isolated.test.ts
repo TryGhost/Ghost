@@ -47,7 +47,7 @@ describe('Tinybird provider consumers after boot', function () {
     featureFlags.withArgs('automations').returns(true);
   });
 
-  it('keeps automations on the last published provider across requests and a same-process reboot', async function () {
+  it('keeps automations on the last published provider across requests, and a reboot in the same process publishes the provider configured then', async function () {
     ghostServer = await startGhost({ server: true });
     assert.ok(ghostServer);
     await fixtureManager.init();
@@ -126,8 +126,8 @@ describe('Tinybird provider consumers after boot', function () {
     await assertCount(11);
     refreshed.done();
 
-    // Stats keeps its API across same-process boots, so its construction path
-    // does not publish the newly configured provider during this second boot.
+    // Each boot builds its own Stats service on first use, and building it
+    // publishes the provider configured then.
     const previousStatsAPI = stats.service.api;
     assert.ok(previousStatsAPI);
     await ghostServer.stop();
@@ -135,8 +135,8 @@ describe('Tinybird provider consumers after boot', function () {
     configUtils.set('tinybird', configFor('provider-c'));
     ghostServer = await startGhost({ server: true });
     assert.ok(ghostServer);
-    assert.equal(stats.service.api, previousStatsAPI);
-    assert.equal(tinybird.instance, publishedB);
+    assert.notEqual(stats.service.api, previousStatsAPI);
+    assert.notEqual(tinybird.instance, publishedB);
     await fixtureManager.init();
     await setupAutomationsFixture();
     automationId = (await knex('automations').select('id').orderBy('name').first()).id;
@@ -145,7 +145,7 @@ describe('Tinybird provider consumers after boot', function () {
       originURL,
     });
     cookies = await rebootedAdmin.loginAs(null, null, 'owner');
-    const afterReboot = intercept('provider-b', 13);
+    const afterReboot = intercept('provider-c', 13);
     await assertCount(13);
     afterReboot.done();
     const tokenC = await get('tinybird/token');
