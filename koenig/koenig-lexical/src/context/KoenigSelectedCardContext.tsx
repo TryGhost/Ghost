@@ -1,8 +1,9 @@
 import React from 'react';
+import type {NodeKey} from 'lexical';
 
 export interface KoenigSelectedCardContextValue {
-    selectedCardKey: string | null;
-    setSelectedCardKey: React.Dispatch<React.SetStateAction<string | null>>;
+    selectedCardKey: NodeKey | null;
+    setSelectedCardKey: React.Dispatch<React.SetStateAction<NodeKey | null>>;
     isEditingCard: boolean;
     setIsEditingCard: React.Dispatch<React.SetStateAction<boolean>>;
     isDragging: boolean;
@@ -25,7 +26,7 @@ const Context = React.createContext<KoenigSelectedCardContextValue>({
 });
 
 export const KoenigSelectedCardContext = ({children}: {children: React.ReactNode}) => {
-    const [selectedCardKey, setSelectedCardKey] = React.useState<string | null>(null);
+    const [selectedCardKey, setSelectedCardKey] = React.useState<NodeKey | null>(null);
     const [isEditingCard, setIsEditingCard] = React.useState(false);
     const [isDragging, setIsDragging] = React.useState(false);
     const [showVisibilitySettings, setShowVisibilitySettings] = React.useState(false);
