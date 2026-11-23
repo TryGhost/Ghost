@@ -140,6 +140,12 @@ export type AutomationsRepository2<Connection> = {
     >,
   ) => Promisable<NextActionRevisionRow[]>;
 
+  /** Find every automation a member has entered, regardless of run progress. */
+  getMemberEnrollments: (
+    connection: Connection,
+    memberId: string,
+  ) => Promisable<Array<{ automation_id: string }>>;
+
   /** Get the count of all automations. */
   getNumberOfAutomations: (connection: Connection) => Promisable<number>;
 

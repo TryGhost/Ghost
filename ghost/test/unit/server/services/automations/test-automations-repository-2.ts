@@ -25,6 +25,7 @@ export const createTestAutomationsRepository2 = (
       'findAutomationMemberEnrollments',
       'findEmailRecipientForClick',
       'findFirstActionRevisions',
+      'getMemberEnrollments',
       'getNumberOfAutomations',
       'incrementEmailClickedCount',
       'incrementEmailOpenedCount',

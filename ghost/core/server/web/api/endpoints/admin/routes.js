@@ -189,6 +189,12 @@ module.exports = function apiRoutes() {
   router.get('/members/stats/count', mw.authAdminApi, http(api.members.memberStats));
   router.get('/members/stats/mrr', mw.authAdminApi, http(api.members.mrrStats));
 
+  router.get(
+    '/members/:id/automation-enrollments',
+    mw.authAdminApi,
+    http(api.automationEnrollments.browse),
+  );
+
   router.get('/members/events', mw.authAdminApi, http(api.members.activityFeed));
 
   router.get('/members/upload', mw.authAdminApi, http(api.members.exportCSV));
