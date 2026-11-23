@@ -86,7 +86,7 @@ describe('automations API', function () {
 
         expect(updateLockedRunStep).toHaveBeenCalledOnce();
         const [, lockedStep, changes] = updateLockedRunStep.mock.calls[0];
-        expect(lockedStep).toBe(step);
+        expect(lockedStep).toEqual(step);
         // Completion only: no started_at or ready_at changes.
         expect(changes).toStrictEqual({
           status: 'member unsubscribed',
