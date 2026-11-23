@@ -3,10 +3,12 @@ import { cn } from '@/lib/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { previewChromeVariants } from '@/components/ui/preview-chrome-variants';
 
-const previewViewportVariants = cva('size-full overflow-hidden', {
+// Overflow lives in the variants, not the base: cva doesn't merge classes, so a base
+// `overflow-hidden` next to the mobile `overflow-auto` left phone content unscrollable.
+const previewViewportVariants = cva('size-full', {
   variants: {
     device: {
-      desktop: 'rounded-t-xs shadow-sm',
+      desktop: 'overflow-hidden rounded-t-xs shadow-sm',
       mobile: 'overflow-auto rounded-2xl border border-border-default',
     },
   },
