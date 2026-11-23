@@ -116,7 +116,7 @@ it('does not automatically submit incomplete or malformed codes', async () => {
   }
 });
 
-it('keeps verification pending when the code changes and Enter is pressed', async () => {
+it('locks the code while verification is pending and ignores Enter', async () => {
   const response = deferred<void>();
   const verifyApi = fakeAdminEndpoint(
     'PUT',
@@ -132,8 +132,8 @@ it('keeps verification pending when the code changes and Enter is pressed', asyn
   try {
     await authScreen.codeInput().fill('123456');
     await expect.poll(() => verifyApi.requests.length).toBe(1);
+    await expect.element(authScreen.codeInput()).toBeDisabled();
     await expect.element(authScreen.verifyButton()).toBeDisabled();
-    await authScreen.codeInput().fill('654321');
     await userEvent.keyboard('{Enter}');
     await expect.element(authScreen.verifyButton()).toBeDisabled();
     expect(verifyApi.requests).toHaveLength(1);
@@ -146,19 +146,30 @@ it('keeps verification pending when the code changes and Enter is pressed', asyn
 });
 
 it('automatically verifies a corrected code after a rejection', async () => {
+  const rejection = deferred<void>();
   const verifyApi = fakeAdminEndpoint(
     'PUT',
     '/session/verify/',
-    ({ body }) =>
-      (body as { token: string }).token === '654321'
-        ? plainText('OK')
-        : new Response('Unauthorized', { status: 401 }),
+    async ({ body }) => {
+      if ((body as { token: string }).token === '654321') {
+        return plainText('OK');
+      }
+      await rejection.promise;
+      return new Response('Unauthorized', { status: 401 });
+    },
     textReply,
   );
   await renderAdminApp('/signin/verify', signedOut());
 
-  await authScreen.codeInput().fill('123456');
+  try {
+    await authScreen.codeInput().fill('123456');
+    await expect.poll(() => verifyApi.requests.length).toBe(1);
+    await expect.element(authScreen.codeInput()).toBeDisabled();
+  } finally {
+    rejection.resolve();
+  }
   await expect.element(authScreen.text('Your verification code is incorrect.')).toBeVisible();
+  await expect.element(authScreen.codeInput()).toBeEnabled();
   await authScreen.codeInput().fill('654321');
 
   await expect.poll(() => vi.mocked(reloadAdmin).mock.calls).toEqual([['/']]);

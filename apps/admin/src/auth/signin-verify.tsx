@@ -100,6 +100,7 @@ export default function SigninVerify() {
                 aria-invalid={Boolean(codeError) || undefined}
                 autoComplete="one-time-code"
                 data-test-input="token"
+                disabled={submitState === 'running'}
                 id="token"
                 inputMode="numeric"
                 name="token"
