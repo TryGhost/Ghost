@@ -45,28 +45,44 @@ function withCardVisibility(cardVisibility: string[]): RenderAdminAppOptions {
   };
 }
 
-async function doubleClickImageCard(options?: RenderAdminAppOptions) {
+async function selectImageCard(options?: RenderAdminAppOptions) {
   fakeEditorChrome();
   fakeEditorPost({ id: POST_ID, lexical: IMAGE_CARD_LEXICAL });
   await renderAdminApp(`/editor/post/${POST_ID}`, options);
 
-  const card = page.getByTestId(editorBody).getByTestId('image-card-populated');
+  const body = page.getByTestId(editorBody);
+  const card = body.getByTestId('image-card-populated');
   await expect.element(card).toBeVisible();
-  await card.dblClick();
+  await card.click();
+
+  // the image toolbar is hidden while a card is in edit mode
+  const toolbarLink = body.getByRole('button', { name: 'Link', exact: true });
+  await expect.element(toolbarLink).toBeVisible();
+
+  return { body, card, toolbarLink };
 }
 
 describe('Card visibility settings', () => {
   it('are not offered for media cards on a server that does not list them', async () => {
     // configResponse() matches an older server: no cardVisibility
-    await doubleClickImageCard();
+    const { body, card, toolbarLink } = await selectImageCard();
 
+    await expect.element(body.getByTestId('edit-image-card')).not.toBeInTheDocument();
+
+    await card.dblClick();
+
+    await expect.element(toolbarLink).toBeVisible();
     await expect.element(page.getByTestId('visibility-settings')).not.toBeInTheDocument();
   });
 
   it('are offered for media cards the server lists', async () => {
-    await doubleClickImageCard(
+    const { body, card } = await selectImageCard(
       withCardVisibility(['html', 'call-to-action', 'transistor', 'image']),
     );
+
+    await expect.element(body.getByTestId('edit-image-card')).toBeVisible();
+
+    await card.dblClick();
 
     await expect.element(page.getByTestId('visibility-settings').first()).toBeVisible();
   });
