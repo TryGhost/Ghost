@@ -1,7 +1,7 @@
 import { areTriggerRulesValid } from './util/are-trigger-rules-valid';
 import ObjectId from 'bson-objectid';
 import { z } from 'zod';
-import { automationTriggerRuleDefinitionSchema } from './trigger-rules';
+import { automationTriggerRuleInputSchema } from './trigger-rules';
 
 const MAX_AUTOMATION_ACTIONS = 50;
 const MAX_TRIGGER_RULES = 100;
@@ -51,7 +51,7 @@ export const editAutomationStatusOnlySchema = z.strictObject({
 });
 
 const triggerRulesSchema = z
-  .array(automationTriggerRuleDefinitionSchema)
+  .array(automationTriggerRuleInputSchema)
   .min(1)
   .max(MAX_TRIGGER_RULES)
   .refine(areTriggerRulesValid, {

@@ -96,6 +96,9 @@ type NextActionRevisionRow = {
  * NOTE: `AutomationsRepository2` will soon subsume `AutomationsRepository`. See NY-1704.
  */
 export type AutomationsRepository2<Connection> = {
+  /** Clear deleted label references without losing the trigger type. */
+  clearLabelReferences: (connection: Connection, labelId: string) => Promisable<void>;
+
   /** Delete all trigger rules for an automation. */
   deleteTriggerRules: (connection: Connection, automationId: string) => Promisable<void>;
 
@@ -149,6 +152,9 @@ export type AutomationsRepository2<Connection> = {
   /** Get the count of all automations. */
   getNumberOfAutomations: (connection: Connection) => Promisable<number>;
 
+  /** Check for a current active automation referencing a label. */
+  hasActiveLabelAutomation: (connection: Connection, labelId: string) => Promisable<boolean>;
+
   /** Increment the number of recipients that clicked this revision. */
   incrementEmailClickedCount: (connection: Connection, revisionId: string) => Promisable<void>;
 
@@ -200,6 +206,9 @@ export type AutomationsRepository2<Connection> = {
    * foreign-key lock deadlocks.
    */
   lockActionRevisions: (connection: Connection, revisionIds: Iterable<string>) => Promisable<void>;
+
+  /** Prevent concurrent publication and deletion of an automation's trigger label. */
+  lockAutomationChanges: (connection: Connection) => Promisable<void>;
 
   /** Lock recipients whose first open has not yet been recorded. */
   lockNotYetOpenedEmailRecipients: (

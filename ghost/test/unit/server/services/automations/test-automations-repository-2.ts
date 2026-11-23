@@ -20,6 +20,7 @@ export const createTestAutomationsRepository2 = (
     withConnection: (fn) => fn(fakeConnection),
     withTransaction: (fn) => fn(fakeConnection),
     ...errorIfCalled([
+      'clearLabelReferences',
       'deleteTriggerRules',
       'fetchAndLockMembers',
       'findAutomationMemberEnrollments',
@@ -27,6 +28,7 @@ export const createTestAutomationsRepository2 = (
       'findFirstActionRevisions',
       'getMemberEnrollments',
       'getNumberOfAutomations',
+      'hasActiveLabelAutomation',
       'incrementEmailClickedCount',
       'incrementEmailOpenedCount',
       'incrementEmailSentCount',
@@ -38,6 +40,7 @@ export const createTestAutomationsRepository2 = (
       'isAutomationActiveForRunStep',
       'loadEdgeRows',
       'lockActionRevisions',
+      'lockAutomationChanges',
       'lockNotYetOpenedEmailRecipients',
       'setEmailRecipientClickedAt',
       'setEmailRecipientDeliveredAndOpenedAt',

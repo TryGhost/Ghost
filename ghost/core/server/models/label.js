@@ -2,6 +2,9 @@ const ghostBookshelf = require('./base');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const DatabaseInfo = require('@tryghost/database-info');
+const {
+  createDatabaseAutomationsRepository2,
+} = require('../services/automations/database-automations-repository-2');
 
 const messages = {
   labelNotFound: 'Label not found.',
@@ -147,7 +150,19 @@ const Label = ghostBookshelf.Model.extend(
       });
       options.withRelated = ['members'];
 
+      const automations = createDatabaseAutomationsRepository2({ knex: ghostBookshelf.knex });
       const destroyLabel = async (transacting) => {
+        // Prevent an automation from being published while its trigger label is being deleted.
+        // Take the shared lock before touching labels or members.
+        await automations.lockAutomationChanges(transacting);
+        if (await automations.hasActiveLabelAutomation(transacting, options.id)) {
+          throw new errors.ValidationError({
+            message: 'Cannot delete a label used by an active automation.',
+            code: 'LABEL_IN_ACTIVE_AUTOMATION',
+          });
+        }
+        await automations.clearLabelReferences(transacting, options.id);
+
         // Detaching changes the relations of the members, so lock them as an edit would
         await ghostBookshelf
           .model('Member')
