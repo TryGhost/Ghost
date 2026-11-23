@@ -222,7 +222,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
         ref={ref}
         {...rest}
         className={cn(
-          'group border-b border-border-default',
+          'group border-b border-border-default in-data-[admin7-mobile=true]:max-lg:border-b-border in-data-[admin7-mobile=true]:max-lg:[--table-row-hover:transparent]',
           // A light blue rather than a grey: selection is a different
           // kind of state from hover, and two greys a step apart read as
           // degrees of the same thing.
@@ -237,7 +237,6 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
         )}
         data-presence-id={post.id}
         data-selected={isSelected ? 'true' : undefined}
-        data-state={isSelected ? 'selected' : undefined}
         data-testid="posts-list-item"
         onClickCapture={onSelectClick}
         onMouseDownCapture={(event) => {
@@ -282,7 +281,12 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                   // a long author-and-tag line runs to three lines on
                   // a narrow window and drives the row's height,
                   // which reads as the metrics squashing it.
-                  <Text className="truncate" size="sm" title={dateTooltip} tone="secondary">
+                  <Text
+                    className="relative z-10 truncate"
+                    size="sm"
+                    title={dateTooltip}
+                    tone="secondary"
+                  >
                     {metaParts.join(' - ')}
                   </Text>
                 )}
@@ -322,7 +326,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
               postId={post.id}
               surface="list"
             />
-          ) : !editingLock.isDemoPost && presenceActive && presenceActive.length > 0 ? (
+          ) : presenceActive && presenceActive.length > 0 ? (
             <PresenceAvatars
               active={presenceActive}
               // Under 360px the title has no room left to give.
@@ -358,7 +362,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                   // Below 1200px the metrics are hidden, so with avatars beside it the
                   // action needs no extra separation and the title keeps the room.
                   ((editingLock.isDemoPost && editingLock.present.length > 0) ||
-                    (presenceActive && presenceActive.length > 0)) &&
+                    (!editingLock.isDemoPost && presenceActive && presenceActive.length > 0)) &&
                     'max-[1200px]:ms-2',
                   'text-muted-foreground hover:bg-background hover:text-foreground',
                   isHovered && 'bg-background',

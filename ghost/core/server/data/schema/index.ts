@@ -1,10 +1,10 @@
 import tables from './schema';
 import * as inDevelopment from './in-development';
 import { validateSchema as validate } from './validator';
+import * as views from './views';
+import * as commands from './commands';
 
 // Still JavaScript.
-const views = require('./views');
-const commands = require('./commands');
 const defaultSettings = require('./default-settings');
 
 export { tables, views, commands, inDevelopment, defaultSettings, validate };

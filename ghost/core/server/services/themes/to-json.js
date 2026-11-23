@@ -40,8 +40,9 @@ module.exports = function toJSON(name, themeErrors) {
   }
 
   // CASE: if you want a JSON response for a single theme, which is not active.
-  if (_.find(themeResult, { active: true }) && bridge.getActiveTheme()) {
-    _.find(themeResult, { active: true }).templates = bridge.getActiveTheme().customTemplates;
+  if (themeResult.find((theme) => theme.active === true) && bridge.getActiveTheme()) {
+    themeResult.find((theme) => theme.active === true).templates =
+      bridge.getActiveTheme().customTemplates;
   }
 
   return { themes: themeResult };

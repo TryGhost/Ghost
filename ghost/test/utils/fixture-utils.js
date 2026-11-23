@@ -302,12 +302,22 @@ const fixtures = {
     return models.User.findOne({ id: addedUser.id, status: 'all' }, context.internal);
   },
 
-  insertRoles: function insertRoles() {
-    return Promise.all(
-      DataGenerator.forKnex.roles.map((role) => {
-        return models.Role.add(role, context.internal);
-      }),
-    );
+  /**
+   * Adds the role fixtures one at a time. A teardown or reset has usually just
+   * deleted roles with the same names, and MySQL keeps those deleted rows in the
+   * unique index on the role name until its purge thread removes them. An insert
+   * that finds one takes a shared gap lock in the index, so two concurrent
+   * inserts can each hold a gap lock that blocks the other, and MySQL rolls one
+   * of them back with a deadlock error.
+   */
+  insertRoles: async function insertRoles() {
+    const roles = [];
+
+    for (const role of DataGenerator.forKnex.roles) {
+      roles.push(await models.Role.add(role, context.internal));
+    }
+
+    return roles;
   },
 
   initOwnerUser: function initOwnerUser() {
@@ -316,11 +326,7 @@ const fixtures = {
     user = DataGenerator.forKnex.createBasic(user);
     user = _.extend({}, user, { status: 'inactive' });
 
-    return Promise.all(
-      DataGenerator.forKnex.roles.map((role) => {
-        return models.Role.add(role, context.internal);
-      }),
-    ).then(function () {
+    return fixtures.insertRoles().then(function () {
       const userRolesRelation = _.cloneDeep(DataGenerator.forKnex.roles_users[0]);
       user.roles = _.filter(DataGenerator.forKnex.roles, { id: userRolesRelation.role_id });
       return fixtures.addUser(user);
@@ -368,11 +374,7 @@ const fixtures = {
   },
 
   createUsersWithRoles: function createUsersWithRoles() {
-    return Promise.all(
-      DataGenerator.forKnex.roles.map((role) => {
-        return models.Role.add(role, context.internal);
-      }),
-    ).then(async function () {
+    return fixtures.insertRoles().then(async function () {
       // One at a time: concurrent credential inserts over keys the reset just
       // deleted deadlock in MySQL
       for (const user of _.cloneDeep(DataGenerator.forKnex.users)) {

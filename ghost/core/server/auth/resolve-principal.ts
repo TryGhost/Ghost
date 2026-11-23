@@ -2,11 +2,16 @@ import errors from '@tryghost/errors';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import {
   ANONYMOUS,
+  apiKeyView,
   applyPrincipal,
+  integrationView,
+  sessionView,
+  userView,
   type ApiKey,
   type AuthenticatedRequest,
   type Principal,
   type Session,
+  type SessionView,
   type User,
 } from './principal';
 
@@ -36,22 +41,95 @@ export function principalFromApiKey(
 ): Principal {
   // Staff tokens have a user and no integration
   if (apiKey.get('user_id') && user) {
-    return { kind: 'user', method: 'staff_token', user, apiKey };
+    return {
+      kind: 'user',
+      method: 'staff_token',
+      user: userView(user),
+      apiKey: apiKeyView(apiKey),
+    };
   }
 
+  // A key whose integration row is gone loads an empty, id-less model
   const integration = apiKey.relations?.integration;
-  return { kind: 'integration', method, apiKey, integration: integration ?? null };
+  return {
+    kind: 'integration',
+    method,
+    apiKey: apiKeyView(apiKey),
+    integration: integration?.id ? integrationView(integration) : null,
+  };
 }
+
+/** Sets the principal for a verified key, keeping the key middleware's models on the request. */
+function applyKeyPrincipal(
+  keyed: ApiKeyRequest,
+  apiKey: ApiKey,
+  method: 'admin_api_key' | 'content_api_key',
+) {
+  applyPrincipal(keyed, principalFromApiKey(apiKey, keyed.user, method), {
+    user: keyed.user,
+    apiKey,
+  });
+}
+
+/** Runs after a key middleware that has no cookie fallback. */
+export function fromApiKey(method: 'admin_api_key' | 'content_api_key'): RequestHandler {
+  return function resolveKeyPrincipal(req: Request, _res: Response, next: NextFunction) {
+    const keyed = req as ApiKeyRequest;
+    if (keyed.api_key) {
+      applyKeyPrincipal(keyed, keyed.api_key, method);
+    } else {
+      applyPrincipal(keyed, ANONYMOUS);
+    }
+    next();
+  };
+}
+
+/**
+ * Under the legacy engine, runs the session middleware only when no key was
+ * verified, so a cookie's user never replaces a key's caller, as under better-auth.
+ */
+export function unlessKeyed(handler: RequestHandler): RequestHandler {
+  return function skipWhenKeyed(req: Request, res: Response, next: NextFunction) {
+    if ((req as ApiKeyRequest).api_key) {
+      return next();
+    }
+    return handler(req, res, next);
+  };
+}
+
+/**
+ * The legacy engine's Admin API principal, read from what the key and session
+ * middleware already set, so `req.user` and `req.api_key` keep their values.
+ */
+export const legacyAdminApi: RequestHandler = function resolveLegacyAdminPrincipal(
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+) {
+  const keyed = req as ApiKeyRequest;
+  if (keyed.api_key) {
+    applyKeyPrincipal(keyed, keyed.api_key, 'admin_api_key');
+  } else if (keyed.user) {
+    const principal: Principal = { kind: 'user', method: 'session', user: userView(keyed.user) };
+    applyPrincipal(keyed, principal, { user: keyed.user });
+  } else {
+    applyPrincipal(keyed, ANONYMOUS);
+  }
+  next();
+};
 
 export function createPrincipalResolver(deps: ResolvePrincipalDeps) {
   /**
    * The cookie branch: Better Auth's session, pinned to the admin origin and
    * to the origin it was created from. An unverified session is anonymous.
    */
-  async function resolveSession(req: Request, res: Response): Promise<Principal> {
+  async function resolveSession(
+    req: Request,
+    res: Response,
+  ): Promise<{ user: User; session: SessionView } | null> {
     // Fall through to other auth or the final authorization check
     if (!req.headers?.cookie) {
-      return ANONYMOUS;
+      return null;
     }
 
     // Lets a route opt out, as with the legacy session (OAuth callbacks)
@@ -65,16 +143,14 @@ export function createPrincipalResolver(deps: ResolvePrincipalDeps) {
 
     const result = await deps.getSession(req.headers);
     if (!result) {
-      return ANONYMOUS;
+      return null;
     }
 
-    // Only these fields, so the session token never rides on req.auth
-    const { id, userId, expiresAt, verified, origin: sessionOrigin } = result.session;
-    const session: Session = { id, userId, expiresAt, verified, origin: sessionOrigin };
+    const session = sessionView(result.session);
 
     // Every session is pinned to its origin; one without is never trusted
     if (!session.origin) {
-      return ANONYMOUS;
+      return null;
     }
 
     if (checkOrigin && session.origin !== origin) {
@@ -82,7 +158,7 @@ export function createPrincipalResolver(deps: ResolvePrincipalDeps) {
     }
 
     if (session.verified !== true) {
-      return ANONYMOUS;
+      return null;
     }
 
     let user: User | null = null;
@@ -92,7 +168,7 @@ export function createPrincipalResolver(deps: ResolvePrincipalDeps) {
       // A failed lookup is anonymous, as with the legacy session
     }
 
-    return user ? { kind: 'user', method: 'session', user, session } : ANONYMOUS;
+    return user ? { user, session } : null;
   }
 
   /**
@@ -107,32 +183,27 @@ export function createPrincipalResolver(deps: ResolvePrincipalDeps) {
   ) {
     try {
       const keyed = req as ApiKeyRequest;
-      let principal: Principal;
       if (keyed.api_key) {
-        principal = principalFromApiKey(keyed.api_key, keyed.user, 'admin_api_key');
-      } else if (req.headers?.authorization) {
-        principal = ANONYMOUS;
-      } else {
-        principal = await resolveSession(req, res);
+        applyKeyPrincipal(keyed, keyed.api_key, 'admin_api_key');
+        return next();
       }
-      applyPrincipal(keyed, principal);
+
+      const resolved = req.headers?.authorization ? null : await resolveSession(req, res);
+      if (resolved) {
+        const { user, session } = resolved;
+        applyPrincipal(
+          keyed,
+          { kind: 'user', method: 'session', user: userView(user), session },
+          { user },
+        );
+      } else {
+        applyPrincipal(keyed, ANONYMOUS);
+      }
       next();
     } catch (err) {
       next(err);
     }
   };
-
-  /** Runs after a key middleware that has no cookie fallback. */
-  function fromApiKey(method: 'admin_api_key' | 'content_api_key'): RequestHandler {
-    return function resolveKeyPrincipal(req: Request, _res: Response, next: NextFunction) {
-      const keyed = req as ApiKeyRequest;
-      applyPrincipal(
-        keyed,
-        keyed.api_key ? principalFromApiKey(keyed.api_key, keyed.user, method) : ANONYMOUS,
-      );
-      next();
-    };
-  }
 
   return {
     adminApi,

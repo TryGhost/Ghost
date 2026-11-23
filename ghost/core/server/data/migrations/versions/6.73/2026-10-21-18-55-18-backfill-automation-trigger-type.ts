@@ -1,0 +1,14 @@
+import logging from '@tryghost/logging';
+import { createTransactionalMigration } from '../../utils';
+
+export default createTransactionalMigration(
+  async function up(knex) {
+    const updatedRows = await knex('automations')
+      .whereNull('trigger_type')
+      .update({ trigger_type: 'membership_started' });
+    logging.info(`Set trigger type for ${updatedRows} automations`);
+  },
+  async function down() {
+    logging.info('Keeping automation trigger types until column rollback');
+  },
+);

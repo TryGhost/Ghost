@@ -14,7 +14,7 @@ const messages = {
 };
 
 function handleCount(ctxAttr, data) {
-  if (!data || !_.isFinite(data.length)) {
+  if (!data || !Number.isFinite(data.length)) {
     return false;
   }
   let count;
@@ -42,7 +42,7 @@ function evaluateTagList(expr, tags) {
     .reduce(function (p, c) {
       return (
         p ||
-        _.findIndex(tags, function (item) {
+        tags.findIndex(function (item) {
           // Escape regex special characters
           item = item.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
           item = new RegExp('^' + item + '$', 'i');
@@ -70,7 +70,7 @@ function evaluateAuthorList(expr, authors) {
   });
 
   return _.filter(authors, (author) => {
-    return _.includes(authorList, author.name.toLocaleLowerCase());
+    return authorList.includes(author.name.toLocaleLowerCase());
   }).length;
 }
 
@@ -172,7 +172,7 @@ module.exports = function has(options) {
     return;
   }
 
-  const result = _.some(attrs, function (value, attr) {
+  const result = Object.keys(attrs).some(function (attr) {
     return checks[attr]();
   });
 

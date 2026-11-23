@@ -48,7 +48,7 @@ class Base {
       this.options.requiredFromFile.push('users');
     }
 
-    _.each(this.options.requiredFromFile, (key) => {
+    this.options.requiredFromFile.forEach((key) => {
       this.requiredFromFile[key] = _.cloneDeep(allDataFromFile[key]);
     });
   }
@@ -58,7 +58,7 @@ class Base {
    */
   stripProperties(properties) {
     _.each(this.dataToImport, (obj) => {
-      _.each(properties, (property) => {
+      properties.forEach((property) => {
         delete obj[property];
       });
     });
@@ -117,7 +117,7 @@ class Base {
       errs = [errs];
     }
 
-    _.each(errs, (err) => {
+    errs.forEach((err) => {
       if (err.code && err.message.toLowerCase().indexOf('unique') !== -1) {
         if (this.errorConfig.allowDuplicates) {
           if (this.errorConfig.returnDuplicates) {
@@ -287,12 +287,12 @@ class Base {
      */
     // Iterate over all possible user relations
     _.each(this.dataToImport, (obj) => {
-      _.each(['author_id', 'published_by'], (key) => {
+      ['author_id', 'published_by'].forEach((key) => {
         return handleObject(obj, key);
       });
     });
 
-    _.each(userReferenceProblems, (entry) => {
+    Object.values(userReferenceProblems).forEach((entry) => {
       this.problems.push({
         message:
           'Entry was imported, but we were not able to resolve the following user references: ' +

@@ -171,8 +171,9 @@ export class JobsOutbox {
   }
 
   // Hands over again rows no process has renewed within staleAfterMs. A job
-  // type that is not replayed has its own recovery, so its rows are deleted
-  // rather than handed over again.
+  // type that is not replayed may not be safe to run again from the start, so
+  // its rows are deleted rather than handed over again. Only some of those
+  // types recover the work another way.
   async releaseSubmitted({
     replays,
     staleAfterMs,

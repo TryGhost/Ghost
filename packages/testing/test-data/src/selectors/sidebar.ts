@@ -7,6 +7,10 @@
 export const adminSidebar = 'admin-sidebar';
 export const networkNotificationBadge = 'network-notification-badge';
 
+// element ids
+/** The member views submenu, which the "Toggle member views" button controls. */
+export const memberViewsMenu = 'members-submenu';
+
 // accessible names
 export const postsToggle = 'Toggle post views';
 export const createPostLink = 'Create new post';

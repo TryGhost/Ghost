@@ -87,12 +87,12 @@ function TagsList({
                 key={key}
                 {...props}
                 className={cn(
-                  'group grid w-full items-center gap-x-4 py-2 lg:table-row lg:p-0',
+                  'group grid w-full items-center gap-x-4 py-2 in-data-[admin7-mobile=true]:max-lg:border-b-border in-data-[admin7-mobile=true]:max-lg:px-0 in-data-[admin7-mobile=true]:max-lg:py-4 in-data-[admin7-mobile=true]:max-lg:[--table-row-hover:transparent] lg:table-row lg:p-0',
                   'grid-cols-1 md:grid-cols-[1fr_auto]',
                 )}
                 data-testid="tag-list-row"
               >
-                <TableCell className="relative col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 lg:table-cell lg:w-1/2 lg:p-4 xl:w-3/5">
+                <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 lg:table-cell lg:w-1/2 lg:p-4 xl:w-3/5">
                   <RowPrimaryAction asChild>
                     <AdminLink to={`/tags/${item.slug}`}>
                       <span className="block truncate text-base text-md font-semibold">

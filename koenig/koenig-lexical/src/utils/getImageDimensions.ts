@@ -1,6 +1,6 @@
 // gets image dimensions from a given Url
 
-export async function getImageDimensions(url) {
+export async function getImageDimensions(url: string): Promise<{width: number; height: number}> {
     const img = new Image();
     return new Promise((resolve, reject) => {
         img.onload = () => {

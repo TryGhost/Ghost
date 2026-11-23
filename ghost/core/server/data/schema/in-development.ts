@@ -1,8 +1,7 @@
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
 import config from '../../../shared/config';
-// @ts-expect-error This module lacks type definitions.
-import commands from './commands';
+import * as commands from './commands';
 import schema from './schema';
 
 /**
@@ -21,12 +20,7 @@ import schema from './schema';
  * Code that reads or writes these tables must stay dormant wherever the tables
  * are not created.
  */
-export const IN_DEVELOPMENT_TABLES: string[] = [
-  'user_accounts',
-  'user_sessions',
-  'verifications',
-  'user_two_factors',
-];
+export const IN_DEVELOPMENT_TABLES: string[] = ['user_two_factors'];
 
 export function isInDevelopmentTable(tableName: string): boolean {
   return IN_DEVELOPMENT_TABLES.includes(tableName);

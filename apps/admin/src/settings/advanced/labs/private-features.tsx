@@ -45,6 +45,11 @@ const features: Feature[] = [
     flag: 'admin7Design',
   },
   {
+    title: 'Admin 7 · Mobile hardening',
+    description: 'Preview responsive Admin improvements, independently of Admin 7 · Design.',
+    flag: 'admin7Mobile',
+  },
+  {
     title: 'Admin 7 · Customize from View site',
     description:
       'Customize the site design from View site, with a live preview. Needs Admin 7 · Design.',
@@ -107,6 +112,17 @@ const features: Feature[] = [
     description:
       'Show who else has a post or page open, in the editor header and on list rows. Needs editor presence polling.',
     flag: 'editorPresence',
+  },
+  {
+    title: 'Editor lease',
+    description:
+      'Let one editor tab at a time edit a post or page. Others open it read-only and can take over. Needs editor presence polling.',
+    flag: 'editorLease',
+  },
+  {
+    title: 'Comments analytics',
+    description: 'Show comment volume, top posts and top commenters beside the comments list.',
+    flag: 'commentsAnalytics',
   },
 ];
 

@@ -8,26 +8,21 @@ for the design.
 ## Engine
 
 `auth:engine` is `legacy` (default) or `better-auth`. Under `legacy` boot never
-loads Better Auth, so Ghost runs without its tables. Under `better-auth` boot
-builds the instance after settings and refuses to start on SQLite or without
-`auth:betterAuthDev`.
+loads Better Auth, but its tables are there and the legacy engine keeps
+passwords in `user_accounts` (see [Passwords](#passwords)). Under
+`better-auth` boot builds the instance after settings.
 
-`auth:betterAuthDev` (default `false`) decides whether Ghost keeps Better
-Auth's data, under either engine: boot seeds credential rows and the legacy
-engine stores passwords in them (see [Passwords](#passwords)). It only applies
-where the in-development tables exist, and boot refuses it elsewhere. It's
-hidden from generated config docs, and it's an opt-in separate from
-`createInDevelopmentTables` because the published `config.development.json`
-turns that on, and an older Ghost-CLI local install runs as development; such
-an install gets the tables but keeps its passwords in `users.password`. The
-testing configs and the monorepo's `ghost/config.development.json` turn it on.
-Boot creates the tables before anything reads them, so these checks read config
-rather than the database; they and the flag go away when the tables get a
-migration.
+Better Auth needs MySQL. On SQLite the config schema
+([`shared/config/schema.ts`](../../../shared/config/schema.ts)) turns
+`better-auth` into `legacy` with a warning, so everything that reads
+`auth:engine` sees the engine in use. SQLite installs stay on legacy until 7.0
+drops SQLite.
 
 Under `better-auth` the Admin API serves the handler on `/auth/*`
-(`web/api/endpoints/admin/better-auth.ts`), after the private cache header and ahead of body parsing because
-Better Auth reads the request stream. Better Auth's limiter runs on Ghost's
+(`web/api/endpoints/admin/better-auth.ts`), after the private cache header and ahead of the API's body
+parsers. Better Auth's Node handler reads bodies with no size limit, so the
+router reads them first, capped at 64 KB, and Better Auth takes the result
+from `req.body`. Better Auth's limiter runs on Ghost's
 `spam` limiters through `customStorage`, in every environment: each native
 credential route counts against its compatibility route's limiters, sharing
 their counters, and a successful sign-in or password reset clears `userLogin`
@@ -51,8 +46,7 @@ the cookie. Legacy session cookies are not read. `Bearer` is still rejected
 until Phase 4.
 
 - `create-auth.ts`: `createAuth()` builds the instance with Ghost's options
-  (plan §3.1) from injected dependencies; `assertDatabaseSupported()` is the
-  boot check above.
+  (plan §3.1) from injected dependencies.
 - `rate-limit.ts`: the `customStorage` that maps native credential routes to
   Ghost's limiters.
 - `index.ts`: the boot-owned service root, exposed as `auth.betterAuth`. Boot
@@ -78,20 +72,32 @@ until Phase 4.
   while a session is being created can leave a session row, which
   `revokeUserSessions` in the same gap misses. Anything that trusts a session
   or token (the Admin API resolver, revocation, app tokens) must check the
-  user's status too. A successful `/reset-password` sets a `locked` user
-  `active`, as legacy `doReset` does; it refuses an `inactive` user's token
+  user's status too. For Better Auth's own endpoints, including the
+  `/session/verify` compatibility routes, `ghostSessionGate` does (below). A
+  successful `/reset-password` sets a `locked` user `active`, as legacy
+  `doReset` does; it refuses an `inactive` user's token
   before changing the password, and a suspension that lands during the reset
   stands. Server-only: `createVerifiedSession`, which requires the
   admin origin, `revokeUserSessions` and `revokeAllSessions`.
 - `cleanup.ts`: the daily `clear-expired-auth-rows` job (plan §4.6), which
   deletes expired `user_sessions` and `verifications` rows. Better Auth checks
-  expiry on read but never deletes them. It runs under either engine wherever
-  `auth:betterAuthDev` is on, and deletes in batches by primary key, as the
+  expiry on read but never deletes them. It runs under either engine, since
+  sessions outlive a rollback, and deletes in batches by primary key, as the
   `rate_limits` cleanup does, so it doesn't deadlock with live writes.
 - `plugins/sso.ts` (`ghostSso`): server-only `createSsoSession`, for the SSO
   adapter hook described below. It applies the passwordless rules above
   (unlocks `locked`, refuses `inactive`) and creates a verified session pinned
   to the admin origin. Team SSO is `@better-auth/sso` (Phase 8).
+- `plugins/session-gate.ts`: `ghostSessionGate`, registered first, decides
+  from one session lookup per request whether the session cookie reaches the
+  endpoint. A session whose user is not active (one that outlived a
+  suspension, above) is deleted; an unverified one is anonymous outside
+  `/device-verification/*` and `/sign-out` (see
+  [Device verification](#device-verification)). Either way the endpoint runs
+  without the cookie, keeping the other cookies as sent, as
+  `resolvePrincipal` treats the session. Better Auth's server-side `auth.api`
+  calls run it too, so the compatibility routes are covered. `/sign-out`
+  skips it: it deletes the session itself.
 - `plugins/device-verification.ts`: `ghostDeviceVerification`, email-code
   verification of new devices, described below.
 - The plugin emails codes through `auth/emails/sign-in-code.ts`, which the
@@ -141,21 +147,17 @@ IPv6 counts per /64, the block a single subscriber usually holds.
 - `ghost-models.ts`: maps Better Auth's `user`, `session`, `account` and
   `verification` models onto `users`, `user_sessions`, `user_accounts` and
   `verifications`, plus the `users` gaps described below.
-- `seed-credential-accounts.ts`: gives each user a `credential` row in
-  `user_accounts` with the hash from `users.password` (plan §4.4). Boot runs
-  it with `auth:betterAuthDev`; it skips users that already have one.
-- `enabled.ts`: `usesBetterAuth()`, which throws where `auth:betterAuthDev`
-  is on without the tables. Boot's seeder calls it, so that fails boot.
 - `credential-password.ts`: the legacy engine's password store. See
   [Passwords](#passwords).
 
 ## Passwords
 
 Both engines hash with bcrypt and read and write the same `credential` row in
-`user_accounts` with `auth:betterAuthDev` (plan §4.5), so a password changed
-through one engine works in the other. There is no dual write: `users.password`
-holds the `!` placeholder once the row has the hash, and only users the seeder
-copied still carry their old hash there, unread.
+`user_accounts` (plan §4.5), so a password changed through one engine works in
+the other. There is no dual write: `users.password` holds the `!` placeholder
+once the row has the hash. The 6.79 migrations that created the tables copied
+every user's hash into a row and left `users.password` as it was, so users
+whose password hasn't changed since still carry their old hash there, unread.
 
 - The `User` model hashes in `onSaving`, then `onSaved` writes the row with
   the save's transaction, inserting it for a new user. `add`, `changePassword`
@@ -166,47 +168,29 @@ copied still carry their old hash there, unread.
   with the hash, so a password change through either engine invalidates it.
 - A user without a credential row has no password.
 
-Without `auth:betterAuthDev` (the default, and always in production until the
-table graduates), all of this uses `users.password` as before.
-
 > [!WARNING]
-> With the flag on, the credential row is the only copy of a user's current
-> password. On a development database, anything that drops it or stops reading
-> it can lock users out or bring back an old password:
->
-> - **Turning `auth:betterAuthDev` off** puts `users.password` back in use as
->   it stands. A user whose password changed through legacy has the `!`
->   placeholder there and can't sign in. A seeded user whose password changed
->   only through Better Auth signs in with their old password.
-> - **Turning it back on** keeps any credential rows left from before, so a
->   password changed while it was off is ignored for those users.
-> - **`pnpm gx db rebuild-development-tables`** drops `user_accounts`. The
->   seeder then copies `users.password`, placeholders included, so anyone
->   whose password changed is locked out.
->
-> There's no migration path between these states. Reset the database instead
-> (`pnpm reset:db`, or `pnpm reset:data` for generated content), or reset the
-> affected users' passwords.
+> The credential row is the only copy of a user's current password. A release
+> from before 6.79 reads `users.password` instead, so rolling back to one
+> without rolling the migrations back locks out or reverts anyone whose
+> password changed since. Plan §8 has the recovery.
 
 ## Running Better Auth locally
 
-The monorepo's development config already has the tables and
-`auth:betterAuthDev`, so only the engine needs switching:
+On MySQL, as the Docker dev setup uses, only the engine needs switching (on
+SQLite Ghost stays on `legacy`):
 
 ```bash
 auth__engine=better-auth pnpm dev:up
 ```
 
-Or set `"auth": {"engine": "better-auth"}` in `ghost/config.local.json`.
-Outside the monorepo's config, also set `auth:betterAuthDev` to `true`. Legacy
+Or set `"auth": {"engine": "better-auth"}` in `ghost/config.local.json`. Legacy
 session cookies are not read, so staff sign in again once, and again after
 switching back to `legacy`. Sign-in pins each session to the admin origin, so
 sign in through the admin URL Ghost is configured with; a session used from
 another origin is refused. Development config has
 `security:staffDeviceVerification` off, so every new session is verified; with
-it on, native sign-in asks for an email code (see
-[Device verification](#device-verification)), but `POST /session` can't
-complete until its compatibility routes move (plan Phase 3, step 2).
+it on, sign-in asks for an email code (see
+[Device verification](#device-verification)).
 
 ## Compatibility routes
 
@@ -231,7 +215,7 @@ A `session.create.before` hook in `create-auth.ts` sets what
   legacy does, or when `verifiesNewSession` from `ghostDeviceVerification`
   says so.
 
-A rotation (`/change-password` with `revokeOtherSessions`) carries `origin`
+A rotation (`/change-password`, which always revokes other sessions) carries `origin`
 and `verified` over from the replaced session. The hook keeps the `origin`
 that `createVerifiedSession` requires, and never sets `verified` back to
 `false`.
@@ -277,10 +261,19 @@ replaces the browser's unverified session, as legacy regenerates it.
   unless `require_email_mfa` is on. The server refuses it after that expiry,
   even if the browser kept it. Sign-out clears it when `require_email_mfa` is
   on.
-- A global before-hook makes an unverified session anonymous everywhere except
+- `ghostSessionGate` makes an unverified session anonymous everywhere except
   `/device-verification/*` and `/sign-out`: it removes the session cookie from
   the request, so session-protected endpoints such as `/change-password`
   answer `401`. `resolvePrincipal` already treats one as anonymous.
+- A session revoked mid-request is cut off at one write, which answers
+  `401 SESSION_EXPIRED` when the row is gone. Sending reads the session
+  before it spends the email budget, then locks the row before it stores a
+  code; a revocation between the two spends budget but stores and sends
+  nothing, and one after the commit still gets the email, whose code can't
+  verify a deleted session. Verifying consumes the code, then marks the session verified and
+  sets device trust with no await in between; a revocation after that
+  update still leaves the device-trust cookie, as it would for any session
+  revoked after verifying.
 
 The plugin's endpoints and the inline `token` work through `auth.api` with
 the request's headers, for the `/session/verify` compatibility routes. Those,
@@ -298,17 +291,22 @@ Under `better-auth`, security events go through `staff-sessions.ts` (plan §5.4)
   every other session ends. `PUT /authentication/password_reset` skips the
   legacy `initSession`, and a route middleware keeps the legacy admin-origin
   check, since the controller can't see the request.
+- Native `/change-password` ignores the client's `revokeOtherSessions` and
+  always revokes the user's other sessions and legacy `sessions` rows, so it
+  matches `PUT /users/password`. The rotated session keeps the browser signed
+  in.
 - Suspending or locking a user (`PUT /users/:id` with an inactive status) and
   deleting one revoke their sessions. Deletion revokes after its transaction
   commits, which holds the user's rows until then.
 - The authentication reset (`POST /authentication/reset`) calls
-  `revokeAllSessions` after it deletes every legacy session, as it does under
-  either engine.
+  `revokeAllSessions` after it deletes every legacy session.
 
 Revoking a user's sessions also deletes their legacy `sessions` rows, so a
 rollback to `legacy` (plan §8) can't revive a session a security event ended.
-Under `legacy` nothing here runs: a password change and a reset already delete
-the user's legacy rows, and suspension and deletion keep legacy behaviour.
+The other way round, under `legacy` a password change and the authentication
+reset delete `user_sessions` rows along with the legacy ones, so switching to
+`better-auth` again can't revive a session from an earlier switch. Suspension
+and deletion keep legacy behaviour.
 The API controllers pass the request's IP (`frame.options.ip`) and user agent
 (`frame.options.userAgent`) to `createVerifiedSession`, which Better Auth
 can't see on a server-side call, so those sessions record them as sign-in does.
@@ -325,18 +323,18 @@ carries on, as under `legacy`.
 
 ## Tables
 
-`user_accounts`, `user_sessions` and `verifications` are defined in
-`schema.ts` and listed in `IN_DEVELOPMENT_TABLES`, so they exist only in
-development and testing databases and have no migration yet. Their dates are
+`user_accounts`, `user_sessions` and `verifications` are created by the 6.79
+migrations, which also backfill credential rows (plan §4.4). Their dates are
 `DATETIME(3)` (the `precision` column option), because Better Auth expects
-dates to round-trip with their milliseconds.
+dates to round-trip with their milliseconds. On a development database that had
+the in-development copies, the 6.79 migrations replace them and backfill from
+`users.password`, which holds the `!` placeholder for anyone whose password
+changed there, so reset the database (`pnpm reset:db`).
 
-`verifications.attempts` counts wrong device verification codes. A
-development database created before it was added needs the table dropped
-(boot recreates missing in-development tables).
+`verifications.attempts` counts wrong device verification codes.
 
-`user_two_factors`, the `twoFactor` plugin's model, is an in-development table
-too, ahead of the plugin (plan §5). It holds TOTP secrets and backup codes, so
+`user_two_factors`, the `twoFactor` plugin's model, is still an in-development
+table, ahead of the plugin (plan §5). It holds TOTP secrets and backup codes, so
 like the other three it is left out of exports by default.
 
 ## Columns `users` does not have
@@ -361,7 +359,7 @@ so this only matters once Better Auth provisions users (SSO, Phase 8).
 ## Adapter suite
 
 `test/integration/auth/knex-adapter.test.ts` runs Better Auth's adapter suite
-(`normal`, `joins`, `transactions`, `case-insensitive`, `auth-flow`) on MySQL
+(`normal`, `transactions`, `case-insensitive`, `auth-flow`) on MySQL
 in two lanes, each in its own database:
 
 - **better-auth tables**: every model in Better Auth's shape under Ghost's
@@ -374,19 +372,22 @@ in two lanes, each in its own database:
   keys follow a renamed user table.
 
 `numberIdTestSuite` and `uuidTestSuite` are not run: Ghost ids are ObjectIds.
+`joinsTestSuite` is not run: the adapter has no native joins and rejects
+`advanced.database.joins`, so Better Auth fetches relations with separate
+queries. The `normal` suite's join tests cover that path.
 
-Last run (Better Auth 1.7.15, MySQL 8): 480 tests, 465 pass, 15 skipped, 0
+Last run (Better Auth 1.7.22, MySQL 8): 266 tests, 257 pass, 9 skipped, 0
 fail. Each skip is a test that cannot pass against Ghost's schema. None comes
 from the three new tables: their millisecond dates round-trip, and their
 foreign keys and `NOT NULL` columns hold for every test.
 
-| Test                                                                                                                                                                                                                                    | Lanes                         | Cause                                                                                                                                                                  |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `findOne - eq with mode sensitive (default) should not match different case`                                                                                                                                                            | both                          | MySQL's default `_ci` collation compares case-insensitively. A binary collation per query would stop token and email lookups using their indexes, so this is accepted. |
-| `create - should create a model`                                                                                                                                                                                                        | ghost users, normal and joins | `users.created_at`/`updated_at` are `DATETIME` without fractional seconds, so dates lose their milliseconds. The new tables use `DATETIME(3)` and are unaffected.      |
-| `update - should return null when a multi-predicate where matches no row`, `deleteMany - should delete many models with boolean values`, `findMany - eq and ne operators with null value in AND group should use IS NULL / IS NOT NULL` | ghost users, normal and joins | Virtual `emailVerified` is always `true`, so `false` is never stored or matched.                                                                                       |
-| `should successfully sign up`                                                                                                                                                                                                           | ghost users                   | Expects a new user's `emailVerified` to be `false`, for the same reason.                                                                                               |
-| `findOne - should find a model with modified field name`, `findOne - should join a model with modified field name`                                                                                                                      | ghost users, normal and joins | The suite renames `users.email`, which Ghost's fixed table cannot follow.                                                                                              |
+| Test                                                                                                                                                                                                                                    | Lanes       | Cause                                                                                                                                                                  |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `findOne - eq with mode sensitive (default) should not match different case`                                                                                                                                                            | both        | MySQL's default `_ci` collation compares case-insensitively. A binary collation per query would stop token and email lookups using their indexes, so this is accepted. |
+| `create - should create a model`                                                                                                                                                                                                        | ghost users | `users.created_at`/`updated_at` are `DATETIME` without fractional seconds, so dates lose their milliseconds. The new tables use `DATETIME(3)` and are unaffected.      |
+| `update - should return null when a multi-predicate where matches no row`, `deleteMany - should delete many models with boolean values`, `findMany - eq and ne operators with null value in AND group should use IS NULL / IS NOT NULL` | ghost users | Virtual `emailVerified` is always `true`, so `false` is never stored or matched.                                                                                       |
+| `should successfully sign up`                                                                                                                                                                                                           | ghost users | Expects a new user's `emailVerified` to be `false`, for the same reason.                                                                                               |
+| `findOne - should find a model with modified field name`, `findOne - should join a model with modified field name`                                                                                                                      | ghost users | The suite renames `users.email`, which Ghost's fixed table cannot follow.                                                                                              |
 
 The virtual columns cost only the tests that store `emailVerified: false`, so
 they stay (plan §10).
@@ -459,7 +460,10 @@ dependency, so the hooks see the transaction. Calling the adapter's
 `transaction` alone does not. `acceptInvitation` also writes Ghost tables
 through Bookshelf, which cannot join Better Auth's transaction: the
 transaction adapter does not expose its Knex `trx`. Plan §3.3 needs a bridge
-for it before Phase 6. Inside a hook
+for it before Phase 6. For the same reason, nothing inside a transaction may call
+something that takes its own pool connection, such as Ghost's limiters: each
+caller would hold one connection while waiting for another, and concurrent
+callers can drain the pool. Inside a hook
 or plugin, write through `getCurrentAdapter(ctx.context.adapter)` (exported
 from `better-auth`); `ctx.context.adapter` is outside the transaction, so a
 write through it survives a rollback.

@@ -21,8 +21,8 @@ describe('compareManifests', function () {
   it('lets the description and accent colour change silently', function () {
     assert.deepEqual(compareWith({ description: 'New words.', accent_color: '#000000' }), {
       changes: [
-        { path: 'accent_color', requiresApproval: false },
-        { path: 'description', requiresApproval: false },
+        { kind: 'field', path: 'accent_color', requires_approval: false },
+        { kind: 'field', path: 'description', requires_approval: false },
       ],
       requiresApproval: false,
     });
@@ -38,27 +38,27 @@ describe('compareManifests', function () {
   // The identity key vouches for it, so a leaked one can be replaced without a review.
   it('lets the backend key change silently', function () {
     assert.deepEqual(compareWith({ backend_key: OTHER_KEY }), {
-      changes: [{ path: 'backend_key.x', requiresApproval: false }],
+      changes: [{ kind: 'field', path: 'backend_key.x', requires_approval: false }],
       requiresApproval: false,
     });
   });
 
   it('needs approval for a new identity key', function () {
     assert.deepEqual(compareWith({ identity_key: OTHER_KEY }).changes, [
-      { path: 'identity_key.x', requiresApproval: true },
+      { kind: 'field', path: 'identity_key.x', requires_approval: true },
     ]);
   });
 
   it('needs approval to become, or stop being, a development build', function () {
     assert.deepEqual(compareWith({ development: true }), {
-      changes: [{ path: 'development', requiresApproval: true }],
+      changes: [{ kind: 'field', path: 'development', requires_approval: true }],
       requiresApproval: true,
     });
   });
 
   it('needs approval for a new name or author', function () {
     assert.deepEqual(compareWith({ name: 'Podcasts' }).changes, [
-      { path: 'name', requiresApproval: true },
+      { kind: 'field', path: 'name', requires_approval: true },
     ]);
     assert.equal(
       compareWith({ author: { name: 'Example Audio', url: 'https://example.com/team' } })
@@ -73,7 +73,7 @@ describe('compareManifests', function () {
         surfaces: [{ type: 'admin_page', url: '/dashboard' }],
       }),
       {
-        changes: [{ path: 'surfaces[0].url', requiresApproval: true }],
+        changes: [{ kind: 'field', path: 'surfaces[0].url', requires_approval: true }],
         requiresApproval: true,
       },
     );
@@ -85,9 +85,9 @@ describe('compareManifests', function () {
     // Every path resolves against the manifest's address, so they all move with it.
     assert.deepEqual(compareWith({ manifest_url: manifestUrl }, { ...options, manifestUrl }), {
       changes: [
-        { path: 'icon.url', requiresApproval: true },
-        { path: 'manifest_url', requiresApproval: true },
-        { path: 'surfaces[0].url', requiresApproval: true },
+        { kind: 'field', path: 'icon.url', requires_approval: true },
+        { kind: 'field', path: 'manifest_url', requires_approval: true },
+        { kind: 'field', path: 'surfaces[0].url', requires_approval: true },
       ],
       requiresApproval: true,
     });
@@ -106,7 +106,7 @@ describe('compareManifests', function () {
     const withCards = { ...approved, cards: [] } as unknown as typeof approved;
 
     assert.deepEqual(compareManifests(approved, withCards).changes, [
-      { path: 'cards', requiresApproval: true },
+      { kind: 'field', path: 'cards', requires_approval: true },
     ]);
   });
 
@@ -114,8 +114,8 @@ describe('compareManifests', function () {
     const before = manifestOf(manifest({ icon: { name: 'mic' } }));
 
     assert.deepEqual(compareManifests(before, approved).changes, [
-      { path: 'icon.name', requiresApproval: false },
-      { path: 'icon.url', requiresApproval: true },
+      { kind: 'field', path: 'icon.name', requires_approval: false },
+      { kind: 'field', path: 'icon.url', requires_approval: true },
     ]);
   });
 });

@@ -19,9 +19,10 @@ const RowPrimaryAction = React.forwardRef<HTMLButtonElement, RowPrimaryActionPro
       child &&
       typeof child.type === 'string' &&
       !['a', 'button', 'input', 'select', 'textarea'].includes(child.type) &&
-      Boolean(child.props.onClick) &&
-      child.props['aria-disabled'] !== true &&
-      child.props['aria-disabled'] !== 'true';
+      Boolean(child.props.onClick || props.onClick) &&
+      !props.disabled &&
+      (child.props['aria-disabled'] ?? props['aria-disabled']) !== true &&
+      (child.props['aria-disabled'] ?? props['aria-disabled']) !== 'true';
     const childContent = child ? React.cloneElement(child, { className: undefined }) : children;
     return (
       <Component

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import {
   Table,
@@ -263,54 +264,63 @@ export const InteractiveRows: Story = {
       },
     },
   },
-  render: () => (
-    <Box padding="lg">
-      <Table className="table-fixed">
-        <colgroup>
-          <col className="w-4/5" />
-          <col className="w-1/5" />
-        </colgroup>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Publication</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow interactive>
-            <TableCell className="static">
-              <a className={rowSurfaceClasses.primaryAction} href="#publication">
-                A linked publication
-              </a>
-            </TableCell>
-            <TableCell className="static text-right">
-              <Button className="relative z-10 text-foreground" size="sm" variant="ghost">
-                Edit
-              </Button>
-            </TableCell>
-          </TableRow>
-          <TableRow data-state="selected" interactive>
-            <TableCell className="static">
-              <a className={rowSurfaceClasses.primaryAction} href="#selected">
-                Selected publication
-              </a>
-            </TableCell>
-            <TableCell className="static text-right">Selected</TableCell>
-          </TableRow>
-          <TableRow data-state="selected" interactive>
-            <TableCell className="static">
-              <a className={rowSurfaceClasses.primaryAction} href="#adjacent">
-                Adjacent selected publication
-              </a>
-            </TableCell>
-            <TableCell className="static text-right">Selected</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Static publication information</TableCell>
-            <TableCell className="text-right">No row action</TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-    </Box>
-  ),
+  render: function Render() {
+    const [status, setStatus] = useState('');
+    return (
+      <Box padding="lg">
+        <Table className="table-fixed">
+          <colgroup>
+            <col className="w-4/5" />
+            <col className="w-1/5" />
+          </colgroup>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Publication</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow interactive>
+              <TableCell className="static">
+                <a className={rowSurfaceClasses.primaryAction} href="#publication">
+                  A linked publication
+                </a>
+              </TableCell>
+              <TableCell className="static text-right">
+                <Button
+                  className="relative z-10 text-foreground"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setStatus('Editing A linked publication')}
+                >
+                  Edit
+                </Button>
+              </TableCell>
+            </TableRow>
+            <TableRow data-state="selected" interactive>
+              <TableCell className="static">
+                <a className={rowSurfaceClasses.primaryAction} href="#selected">
+                  Selected publication
+                </a>
+              </TableCell>
+              <TableCell className="static text-right">Selected</TableCell>
+            </TableRow>
+            <TableRow data-state="selected" interactive>
+              <TableCell className="static">
+                <a className={rowSurfaceClasses.primaryAction} href="#adjacent">
+                  Adjacent selected publication
+                </a>
+              </TableCell>
+              <TableCell className="static text-right">Selected</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Static publication information</TableCell>
+              <TableCell className="text-right">No row action</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+        <p role="status">{status}</p>
+      </Box>
+    );
+  },
 };

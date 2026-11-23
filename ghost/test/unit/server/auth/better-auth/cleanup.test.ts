@@ -3,7 +3,6 @@ import sinon from 'sinon';
 import logging from '@tryghost/logging';
 
 // require, not import: these must be the CommonJS instances cleanup itself loads
-const configUtils = require('../../../../utils/config-utils');
 const cleanup: typeof import('../../../../../core/server/auth/better-auth/cleanup') = require('../../../../../core/server/auth/better-auth/cleanup');
 const ClearExpiredAuthRowsJob =
   require('../../../../../core/server/auth/better-auth/clear-expired-auth-rows-job').default;
@@ -27,22 +26,11 @@ describe('scheduleClearExpiredJob', function () {
     sinon.stub(logging, 'info');
   });
 
-  afterEach(async function () {
+  afterEach(function () {
     sinon.restore();
-    await configUtils.restore();
-  });
-
-  it('schedules nothing without the Better Auth tables', async function () {
-    configUtils.set({ createInDevelopmentTables: true, 'auth:betterAuthDev': false });
-
-    await cleanup.scheduleClearExpiredJob(jobsService as never);
-
-    sinon.assert.notCalled(jobsService.scheduleRecurring);
   });
 
   it('schedules a daily off-peak job once', async function () {
-    configUtils.set({ createInDevelopmentTables: true, 'auth:betterAuthDev': true });
-
     await cleanup.scheduleClearExpiredJob(jobsService as never);
     await cleanup.scheduleClearExpiredJob(jobsService as never);
 

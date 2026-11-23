@@ -1,5 +1,5 @@
 /**
- * Filename must match the docName specified in core/server/api/endpoints/authentication.js
+ * Filename must match the docName specified in core/server/api/endpoints/authentication.ts
  */
 /* oxlint-disable local-filenames/match-regex */
 const validator = require('@tryghost/validator');

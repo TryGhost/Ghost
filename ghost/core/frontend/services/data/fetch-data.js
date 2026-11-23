@@ -91,7 +91,7 @@ function processQuery(query, slugParam, locals) {
 
   // Replace any slugs, see TaxonomyRouter. We replace any '%s' by the slug
   _.each(query.options, function (option, name) {
-    query.options[name] = _.isString(option) ? option.replace(/%s/g, slugParam) : option;
+    query.options[name] = typeof option === 'string' ? option.replace(/%s/g, slugParam) : option;
   });
 
   query.options.context = { member: locals.member };

@@ -10,7 +10,7 @@ import {
   UnauthorizedError,
   ValidationError,
 } from '@tryghost/admin-x-framework/errors';
-import type { SaveEngineState, SaveError } from '@/editor/engine/save-engine';
+import type { PendingSave, SaveEngineState, SaveError } from '@/editor/engine/save-engine';
 
 /** What a halt on a post deleted elsewhere tells the writer. */
 export const POST_DELETED: SaveError = {
@@ -37,6 +37,18 @@ export function terminalSaveError(state: SaveEngineState): SaveError | null {
     return state.error.kind === 'forbidden' ? ACCESS_LOST : POST_DELETED;
   }
   return state.kind === 'crashed' ? EDITOR_CRASHED : null;
+}
+
+/** The collision or halt the session's banner reports, if it shows one. */
+export function bannerSaveError(
+  state: SaveEngineState,
+  pendingSave?: PendingSave | null,
+): SaveError | null {
+  if (state.kind === 'conflict') {
+    return state.error;
+  }
+  const blockedBy = pendingSave?.blockedBy;
+  return terminalSaveError(state) ?? (blockedBy?.kind === 'conflict' ? blockedBy : null);
 }
 
 /** The failed save an engine state reports, if it reports one. */

@@ -22,7 +22,7 @@ import { getPeriodText } from '@/shared/analytics/chart-helpers';
 import { getPostDestination } from '@/analytics/utils/url-helpers';
 import { getPostStatusText } from '@tryghost/admin-x-framework/utils/post-utils';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
-import { useLocation, useNavigate } from '@tryghost/admin-x-framework';
+import { Link, useLocation, useNavigate } from '@tryghost/admin-x-framework';
 import { editorReturnState } from '@/editor/api';
 import {
   useEmailTrackClicks,
@@ -159,18 +159,14 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                       </div>
                     </div>
                   </RowPrimaryAction>
-                  <div
-                    className="z-10 flex flex-col items-end justify-center gap-0.5 text-sm md:flex-row md:items-center md:justify-end md:gap-3"
-                    data-row-secondary
-                  >
+                  <div className="flex flex-col items-end justify-center gap-0.5 text-sm md:flex-row md:items-center md:justify-end md:gap-3">
                     {showWebAnalytics && (
-                      <div
-                        className="group/tooltip relative flex w-[66px] lg:w-[92px]"
+                      <Link
+                        aria-describedby={`top-post-${post.post_id}-web-value`}
+                        aria-label="Web traffic"
+                        className="group/tooltip relative z-10 flex w-[66px] rounded-sm focus-visible:ring-1 focus-visible:ring-focus-ring lg:w-[92px]"
                         data-testid="statistics-visitors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/posts/analytics/${post.post_id}/web`);
-                        }}
+                        to={`/posts/analytics/${post.post_id}/web`}
                       >
                         <PostListTooltip
                           metrics={[
@@ -188,7 +184,7 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                           ]}
                           title="Web traffic"
                         />
-                        <div className={metricClass}>
+                        <div className={metricClass} id={`top-post-${post.post_id}-web-value`}>
                           <LucideIcon.Globe
                             className="text-muted-foreground group-hover:text-foreground"
                             size={16}
@@ -196,15 +192,14 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                           />
                           {abbreviateNumber(post.views)}
                         </div>
-                      </div>
+                      </Link>
                     )}
                     {post.sent_count !== null && (
-                      <div
-                        className="group/tooltip relative flex w-[66px] lg:w-[92px]"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/posts/analytics/${post.post_id}/newsletter`);
-                        }}
+                      <Link
+                        aria-describedby={`top-post-${post.post_id}-newsletter-value`}
+                        aria-label="Newsletter performance"
+                        className="group/tooltip relative z-10 flex w-[66px] rounded-sm focus-visible:ring-1 focus-visible:ring-focus-ring lg:w-[92px]"
+                        to={`/posts/analytics/${post.post_id}/newsletter`}
                       >
                         <PostListTooltip
                           metrics={[
@@ -255,7 +250,10 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                           ]}
                           title="Newsletter performance"
                         />
-                        <div className={metricClass}>
+                        <div
+                          className={metricClass}
+                          id={`top-post-${post.post_id}-newsletter-value`}
+                        >
                           {(() => {
                             // If clicks and opens are enabled, show open rate %
                             // If clicks are disabled but opens enabled, show open rate %
@@ -297,16 +295,15 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                             }
                           })()}
                         </div>
-                      </div>
+                      </Link>
                     )}
                     {membersTrackSources && (
-                      <div
-                        className="group/tooltip relative flex w-[66px] lg:w-[92px]"
+                      <Link
+                        aria-describedby={`top-post-${post.post_id}-growth-value`}
+                        aria-label="New members"
+                        className="group/tooltip relative z-10 flex w-[66px] rounded-sm focus-visible:ring-1 focus-visible:ring-focus-ring lg:w-[92px]"
                         data-testid="statistics-members"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/posts/analytics/${post.post_id}/growth`);
-                        }}
+                        to={`/posts/analytics/${post.post_id}/growth`}
                       >
                         <PostListTooltip
                           metrics={[
@@ -344,7 +341,7 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                           ]}
                           title="New members"
                         />
-                        <div className={metricClass}>
+                        <div className={metricClass} id={`top-post-${post.post_id}-growth-value`}>
                           <LucideIcon.UserPlus
                             className="text-muted-foreground group-hover:text-foreground"
                             size={16}
@@ -352,7 +349,7 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                           />
                           {post.members > 0 ? `+${formatNumber(post.members)}` : '0'}
                         </div>
-                      </div>
+                      </Link>
                     )}
                   </div>
                 </div>

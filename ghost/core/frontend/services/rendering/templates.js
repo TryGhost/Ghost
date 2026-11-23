@@ -125,9 +125,9 @@ templates.pickTemplate = function pickTemplate(templateList, fallback) {
   if (!themeEngine.getActive()) {
     template = fallback;
   } else {
-    template = _.find(templateList, function (templateName) {
+    template = templateList.find(function (templateName) {
       if (!templateName) {
-        return;
+        return false;
       }
 
       return themeEngine.getActive().hasTemplate(templateName);
@@ -137,7 +137,7 @@ templates.pickTemplate = function pickTemplate(templateList, fallback) {
   if (!template) {
     if (!fallback) {
       template = 'index';
-    } else if (_.isFunction(fallback)) {
+    } else if (typeof fallback === 'function') {
       fallback();
     } else {
       template = fallback;

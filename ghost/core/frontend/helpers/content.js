@@ -47,7 +47,7 @@ module.exports = function content(options = {}) {
     this.html = '';
   }
 
-  if (!_.isUndefined(this.access) && !this.access) {
+  if (this.access !== undefined && !this.access) {
     return restrictedCta.apply(self, args);
   }
 

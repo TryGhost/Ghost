@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
 const { mockMail, restore } = require('../../utils/e2e-framework-mock-manager');
 const settingsCache = require('../../../core/shared/settings-cache');
+const models = require('../../../core/server/models');
 
 const owner = { name: 'Owner', email: 'setup-owner@example.com', password: 'thisissupersafe' };
 
@@ -43,6 +44,19 @@ describe('Setup API', function () {
     assert.equal(body.users[0].email, owner.email);
     assert.equal(await isSetup(), true);
     assert.equal(settingsCache.get('title'), 'A blog');
+  });
+
+  it('rewrites the sample posts with the site details', async function () {
+    await agent
+      .post('authentication/setup')
+      .body({ setup: [{ ...owner, blogTitle: 'A blog' }] })
+      .expectStatus(201);
+
+    // The doFixtures unit tests cover the ordering; the test fixtures only include the about page
+    const about = await models.Post.findOne({ slug: 'about' }, { require: true });
+
+    assert.match(about.get('html'), /A blog is an independent publication launched in .+ by Owner/);
+    assert.doesNotMatch(about.get('html'), /{{/);
   });
 
   for (const blogTitle of [undefined, 42, '', null, 'a'.repeat(151)]) {

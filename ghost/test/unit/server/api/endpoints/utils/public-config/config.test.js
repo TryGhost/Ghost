@@ -50,7 +50,7 @@ describe('Public-config response builders', function () {
     it('should return the auth engine outside security', function () {
       assert.deepEqual(getConfigProperties().auth, { engine: 'legacy' });
 
-      configUtils.set('auth:engine', 'better-auth');
+      configUtils.set({ 'database:client': 'mysql2', 'auth:engine': 'better-auth' });
       assert.deepEqual(getConfigProperties().auth, { engine: 'better-auth' });
     });
 

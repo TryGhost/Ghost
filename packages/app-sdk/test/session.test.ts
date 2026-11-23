@@ -1,3 +1,6 @@
+import assert from 'node:assert/strict';
+import { setImmediate } from 'node:timers/promises';
+
 import {
   ARGUMENT_MESSAGES,
   CONNECT_MESSAGE_TYPE,
@@ -210,6 +213,62 @@ describe('fetch', () => {
     expect(host.fetch).toHaveBeenCalledWith(expect.objectContaining({ body: '{"a":1}' }));
   });
 
+  it('sends request data created in a same-origin child iframe as JSON', async () => {
+    const { ghost, host } = await started();
+    const iframe = document.createElement('iframe');
+    document.body.append(iframe);
+    try {
+      const child = iframe.contentWindow as Window & typeof globalThis;
+      const body = child.JSON.parse('{"posts":[{"title":"From child frame"}]}') as Record<
+        string,
+        unknown
+      >;
+      assert.equal(Object.getPrototypeOf(body), child.Object.prototype);
+      assert.notEqual(Object.getPrototypeOf(body), Object.prototype);
+
+      await ghost.fetch('/posts/', { method: 'POST', body });
+
+      assert.deepEqual(host.fetch.mock.calls, [
+        [{ path: '/posts/', method: 'POST', body: '{"posts":[{"title":"From child frame"}]}' }],
+      ]);
+    } finally {
+      iframe.remove();
+    }
+  });
+
+  it.each(['constructor descriptor', 'prototype parent', 'revoked prototype'])(
+    'rejects with invalid_argument when the body has an unreadable %s',
+    async (unreadable) => {
+      const { ghost, host } = await started();
+      const failure = new Error('Cannot inspect this prototype');
+      let prototype: object;
+      if (unreadable === 'revoked prototype') {
+        const revocable = Proxy.revocable({}, {});
+        revocable.revoke();
+        prototype = revocable.proxy;
+      } else {
+        const fail = () => {
+          throw failure;
+        };
+        prototype = new Proxy(
+          {},
+          unreadable === 'constructor descriptor'
+            ? { getOwnPropertyDescriptor: fail }
+            : { getPrototypeOf: fail },
+        );
+      }
+      const body = Object.create(prototype) as Record<string, unknown>;
+
+      const error: unknown = await ghost
+        .fetch('/posts/', { method: 'POST', body })
+        .catch((e: unknown) => e);
+
+      assert.ok(error instanceof sdk.GhostAppError);
+      assert.equal(error.code, 'invalid_argument');
+      assert.deepEqual(host.fetch.mock.calls, []);
+    },
+  );
+
   it.each([
     ['nothing', undefined],
     ['a status out of range', { status: 101, statusText: '', headers: {}, body: '' }],
@@ -413,6 +472,87 @@ describe('path', () => {
 
     expect(ghost.path.current).toBe('/episodes/13');
   });
+
+  it('keeps the path Admin moved the page to when an earlier page move is acknowledged', async () => {
+    const host = hostExports();
+    let reportMove!: () => void;
+    let answerMove!: (path: string) => void;
+    const reported = new Promise<void>((resolve) => {
+      reportMove = resolve;
+    });
+    const answer = new Promise<string>((resolve) => {
+      answerMove = resolve;
+    });
+    host.pathChanged.mockImplementationOnce(() => {
+      reportMove();
+      return answer;
+    });
+    const { admin: fake, ghost } = await started(host);
+
+    window.history.pushState(null, '', '/episodes/12');
+    await reported;
+    await fake.thread.imports.pathChanged('/episodes/13#top');
+    answerMove('/episodes/12');
+    // Let the held handler finish, then cross the same port after its response was sent.
+    await setImmediate();
+    await fake.thread.imports.themeChanged({ mode: 'light', accent_color: '#ff5500' });
+
+    expect(ghost.path.current).toBe('/episodes/13#top');
+    expect(window.location.pathname + window.location.hash).toBe('/episodes/13#top');
+  });
+
+  it('keeps a pending acknowledgement eligible when Admin sends an invalid path', async () => {
+    const host = hostExports();
+    let reportMove!: () => void;
+    let answerMove!: (path: string) => void;
+    const reported = new Promise<void>((resolve) => {
+      reportMove = resolve;
+    });
+    const answer = new Promise<string>((resolve) => {
+      answerMove = resolve;
+    });
+    host.pathChanged.mockImplementationOnce(() => {
+      reportMove();
+      return answer;
+    });
+    const { admin: fake, ghost } = await started(host);
+
+    window.history.pushState(null, '', '/a');
+    await reported;
+    await expect(fake.thread.imports.pathChanged('//elsewhere.example')).rejects.toThrow(
+      'invalid_argument',
+    );
+    answerMove('/accepted');
+    await setImmediate();
+    await fake.thread.imports.themeChanged({ mode: 'light', accent_color: '#ff5500' });
+
+    expect(ghost.path.current).toBe('/accepted');
+  });
+
+  it.each(['popstate', 'onPathChange'] as const)(
+    'accepts the acknowledgement of a page move made during Admin’s %s notification',
+    async (notification) => {
+      const host = hostExports();
+      host.pathChanged.mockResolvedValue('/redirect?accepted=1');
+      const { admin: fake, ghost } = await started(host);
+      const redirect = () => window.history.replaceState(null, '', '/redirect');
+      const unsubscribe = notification === 'onPathChange' ? ghost.onPathChange(redirect) : () => {};
+      if (notification === 'popstate') {
+        window.addEventListener('popstate', redirect, { once: true });
+      }
+      try {
+        await fake.thread.imports.pathChanged('/c#top');
+        await setImmediate();
+        await fake.thread.imports.themeChanged({ mode: 'light', accent_color: '#ff5500' });
+
+        expect(ghost.path.current).toBe('/redirect?accepted=1');
+        expect(window.location.pathname).toBe('/redirect');
+      } finally {
+        unsubscribe();
+        window.removeEventListener('popstate', redirect);
+      }
+    },
+  );
 
   it('stays where the page is when Admin refuses the move, or answers with something else', async () => {
     const host = hostExports();
@@ -706,6 +846,56 @@ describe('the end of the session', () => {
     // The page has its own history back.
     expect(window.history.pushState).toBe(History.prototype.pushState);
   });
+
+  it.each(['accepted', 'refused'] as const)(
+    'does not load a pending link after the session ends and its move is %s',
+    async (answer) => {
+      const history = await import('../src/history.ts');
+      const watchHistory = history.watchHistory;
+      const load = vi.fn();
+      const watching = vi
+        .spyOn(history, 'watchHistory')
+        .mockImplementation((moved) => watchHistory(moved, load));
+      const host = hostExports();
+      let reportMove!: () => void;
+      let accept!: (path: string) => void;
+      let refuse!: (error: Error) => void;
+      const reported = new Promise<void>((resolve) => {
+        reportMove = resolve;
+      });
+      const pending = new Promise<string>((resolve, reject) => {
+        accept = resolve;
+        refuse = reject;
+      });
+      host.pathChanged.mockImplementationOnce(() => {
+        reportMove();
+        return pending;
+      });
+      const { admin: fake, ghost } = await started(host);
+      expect(watching).toHaveBeenCalledOnce();
+      const ended = new Promise((resolve) => {
+        ghost.onSessionEnd(resolve);
+      });
+      const link = document.createElement('a');
+      link.href = '/a';
+      document.body.append(link);
+      link.click();
+      link.remove();
+      await reported;
+      fake.close();
+      await ended;
+      if (answer === 'accepted') {
+        accept('/a');
+      } else {
+        refuse(new Error('The move was refused'));
+      }
+      await pending.catch(() => {});
+      await setImmediate();
+
+      expect(ghost.connected).toBe(false);
+      expect(load).not.toHaveBeenCalled();
+    },
+  );
 
   it('notifies a subscriber that joins after the session has ended', async () => {
     const { admin: fake, ghost } = await started();

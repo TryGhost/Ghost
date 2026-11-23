@@ -33,9 +33,8 @@ export const setSiteTimezoneFallback = (timezone: string | undefined) => {
 const getCurrentTimezone = () =>
   Intl.DateTimeFormat().resolvedOptions().timeZone || siteTimezoneFallback || 'Etc/UTC';
 
-// Return today and startdate for charts
-export const getRangeDates = (range: number) => {
-  const timezone = getCurrentTimezone();
+// Return today and startdate for charts, in the browser's timezone unless given one
+export const getRangeDates = (range: number, timezone = getCurrentTimezone()) => {
   const endDate = moment().tz(timezone).endOf('day');
   let startDate;
 

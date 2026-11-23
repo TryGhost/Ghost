@@ -149,6 +149,8 @@ export interface PostSettingsSidebarProps {
   opensInPlace?: boolean;
   /** The writer's editor font, chosen in the panel. */
   editorFont?: EditorFontControl;
+  /** Another tab holds the document. The screen makes the frame inert; dialogs opened from it are outside it. */
+  locked?: boolean;
 }
 
 /**
@@ -167,6 +169,7 @@ export function PostSettingsSidebar({
   frameRef,
   opensInPlace = false,
   editorFont,
+  locked = false,
 }: PostSettingsSidebarProps) {
   const ownFrameRef = useRef<HTMLDivElement>(null);
   const asideRef = useRef<HTMLElement>(null);
@@ -245,12 +248,13 @@ export function PostSettingsSidebar({
     // not an empty wrapper.
     delete: isNewPost(session) ? null : (
       <Box className="mt-auto">
-        <MemoDeleteSection postType={postType} session={session} />
+        <MemoDeleteSection locked={locked} postType={postType} session={session} />
       </Box>
     ),
     'post-history': (
       <MemoPostHistorySection
         cardConfig={cardConfig}
+        locked={locked}
         postType={postType}
         session={session}
         showExcerpt={hasInlineExcerpt}

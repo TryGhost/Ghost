@@ -272,7 +272,7 @@ export const RunList: React.FC<{
         aria-label="Automation runs"
         role="region"
       >
-        <Table aria-label="Automation runs" className="table-fixed">
+        <Table aria-label="Automation runs" className="[&_.shade-row]:shade-row-inset table-fixed">
           <TableHeader
             ref={headerRef}
             className="sticky z-10 bg-surface-elevated"

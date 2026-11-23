@@ -8,17 +8,18 @@
 const { urlService } = require('../services/proxy');
 const { SafeString, escapeExpression, templates } = require('../services/handlebars');
 
-const isString = require('lodash/isString');
 const ghostHelperUtils = require('@tryghost/helpers').utils;
 
 module.exports = function tags(options) {
   options = options || {};
   options.hash = options.hash || {};
 
-  const autolink = !(isString(options.hash.autolink) && options.hash.autolink === 'false');
-  const separator = isString(options.hash.separator) ? options.hash.separator : ', ';
-  const prefix = isString(options.hash.prefix) ? options.hash.prefix : '';
-  const suffix = isString(options.hash.suffix) ? options.hash.suffix : '';
+  const autolink = !(
+    typeof options.hash.autolink === 'string' && options.hash.autolink === 'false'
+  );
+  const separator = typeof options.hash.separator === 'string' ? options.hash.separator : ', ';
+  const prefix = typeof options.hash.prefix === 'string' ? options.hash.prefix : '';
+  const suffix = typeof options.hash.suffix === 'string' ? options.hash.suffix : '';
   const limit = options.hash.limit ? parseInt(options.hash.limit, 10) : undefined;
   let output = '';
   let from = options.hash.from ? parseInt(options.hash.from, 10) : 1;

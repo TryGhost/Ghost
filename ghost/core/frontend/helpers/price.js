@@ -32,13 +32,13 @@ function formatter({
     currencyDisplay: currencyFormat,
   };
   if (numberFormat === 'short') {
-    if (_.isNumber(amount) && amount % 1 !== 0) {
+    if (typeof amount === 'number' && amount % 1 !== 0) {
       formatterOptions.minimumFractionDigits = 2;
     } else {
       formatterOptions.minimumFractionDigits = 0;
     }
   }
-  if (_.isNumber(amount)) {
+  if (typeof amount === 'number') {
     return new Intl.NumberFormat(locale, formatterOptions).format(amount);
   } else {
     const val = new Intl.NumberFormat('en', {
@@ -60,7 +60,7 @@ module.exports = function price(planOrAmount, options) {
   }
 
   if (arguments.length === 2) {
-    if (_.isNumber(planOrAmount)) {
+    if (typeof planOrAmount === 'number') {
       amount = planOrAmount;
     } else if (_.isObject(planOrAmount)) {
       plan = planOrAmount;
@@ -107,7 +107,7 @@ module.exports = function price(planOrAmount, options) {
     return '';
   }
 
-  if (!_.isNumber(amount)) {
+  if (typeof amount !== 'number') {
     logging.warn(tpl(messages.attrMustBeNumeric));
     return '';
   }

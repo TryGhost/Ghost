@@ -1,14 +1,16 @@
 import crypto from 'node:crypto';
+import errors from '@tryghost/errors';
 import type { StorageBase } from 'ghost-storage-base';
 import type { MemberImportRow } from './row';
 
 // write() returns the key the rows are stored under: a plain string a background job can
 // carry and hand back to read() and remove(), whichever spool instance its process built.
-// remove() lets its failures out rather than hiding them: the file holds member names,
-// emails and Stripe customer ids, so one left behind is worth knowing about.
+// read() returns null once the rows are removed. remove() lets its failures out rather
+// than hiding them: the file holds member names, emails and Stripe customer ids, so one
+// left behind is worth knowing about.
 export interface RowSpool {
   write(rows: MemberImportRow[]): Promise<string>;
-  read(key: string): Promise<MemberImportRow[]>;
+  read(key: string): Promise<MemberImportRow[] | null>;
   remove(key: string): Promise<void>;
 }
 
@@ -24,7 +26,16 @@ export function createRowSpool(storage: StorageBase): RowSpool {
       return key;
     },
     async read(key) {
-      return JSON.parse((await storage.read({ path: key })).toString('utf8'));
+      let stored: Buffer;
+      try {
+        stored = await storage.read({ path: key });
+      } catch (error) {
+        if (error instanceof errors.NotFoundError) {
+          return null;
+        }
+        throw error;
+      }
+      return JSON.parse(stored.toString('utf8'));
     },
     async remove(key) {
       await storage.delete(key);

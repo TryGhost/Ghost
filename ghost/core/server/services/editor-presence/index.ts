@@ -4,7 +4,7 @@ import { MemoryPresenceStore } from './memory-presence-store';
 import { RedisPresenceStore, type RedisPresenceClient } from './redis-presence-store';
 import type { PresenceStore } from './presence-store';
 
-export type { ActivePresence, PollResult } from './editor-presence-service';
+export type { ActivePresence, PollResult, PresenceLease } from './editor-presence-service';
 
 interface RedisBackedCache {
   redisClient: RedisPresenceClient;
@@ -28,10 +28,11 @@ export default defineService('Editor Presence', () => {
   const cache = adapterManager.getAdapter('cache:presence');
   // The adapter's `ttl` (seconds) sets how long a site's key may live.
   const retentionMs = resolveRetentionMs((cache as { ttl?: unknown }).ttl);
-  // An empty prefix would leave a bare `active` key in a shared keyspace, so it gets a namespace.
-  const key = `${isRedisBacked(cache) && cache.rawKeyPrefix ? cache.rawKeyPrefix : 'presence:'}active`;
+  // An empty prefix would leave bare keys in a shared keyspace, so they get a namespace.
+  const prefix = isRedisBacked(cache) && cache.rawKeyPrefix ? cache.rawKeyPrefix : 'presence:';
+  const key = `${prefix}active`;
   const store: PresenceStore = isRedisBacked(cache)
-    ? new RedisPresenceStore({ client: cache.redisClient, key })
+    ? new RedisPresenceStore({ client: cache.redisClient, key, leaseKey: `${prefix}leases` })
     : new MemoryPresenceStore();
   logging.info(
     `Editor presence using ${store.kind} store${store.kind === 'redis' ? ` at ${key}` : ''}, retention ${retentionMs / 1000}s`,

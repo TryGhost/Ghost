@@ -2,6 +2,7 @@
 # Every service check applies to every service that is not listed under `services`.
 # That list only shrinks: migrating a service deletes its entry.
 # `followUps` records what is still open for services that already use defineService.
+# `knownBugs` records bugs found while auditing or migrating a service, until they are fixed.
 # Entry points are relative to this directory; evidence paths are relative to ghost.
 # An unverified facet is an open audit question, not an empty/no-op contract.
 services:
@@ -308,7 +309,7 @@ services:
           - core/server/lib/image/index.js
           - core/server/lib/lexical.js
           - core/server/lib/mobiledoc.ts
-          - core/server/api/endpoints/authentication.js
+          - core/server/api/endpoints/authentication.ts
           - core/server/api/endpoints/images.js
           - core/server/api/endpoints/media.js
           - core/server/api/endpoints/files.js
@@ -350,7 +351,7 @@ services:
           - core/kernel/adapter-manager/adapter-manager.ts
           - core/kernel/adapter-manager/options.ts
           - core/server/services/post-scheduling/index.ts
-          - core/server/api/endpoints/authentication.js
+          - core/server/api/endpoints/authentication.ts
           - core/server/lib/image/index.js
         tests:
           - test/unit/kernel/adapter-manager/adapter-manager.test.ts
@@ -5080,7 +5081,7 @@ services:
         sources:
           - core/server/api/endpoints/notifications.js
           - core/server/web/api/endpoints/admin/routes.js
-          - core/server/api/endpoints/utils/serializers/output/notifications.js
+          - core/server/api/endpoints/utils/serializers/output/notifications.ts
           - core/server/api/endpoints/mail.js
           - core/server/services/update-check/index.js
           - core/server/services/update-check/update-check-service.js
@@ -5415,7 +5416,8 @@ services:
           or production retry policy. Root units pin credentials copied at import: a later
           config value is not sent. Provider units pin the NFT asset request with its optional
           key header, and the Twitter API request, query fields, bearer header, tweet_data and
-          x.com rewrite, with the provider endpoint fetched through the injected client.
+          x.com rewrite, with the provider endpoint fetched through the injected client. Root
+          units pin the upload extension allowlist read again for each image operation.
         sources:
           - core/server/services/oembed/service.js
           - core/server/services/oembed/oembed-service.js
@@ -5444,6 +5446,8 @@ services:
           probe fixture does not prove early cancellation of a large/chunked response. HTTP tests
           restore real image fetching for private-address and nonimage cases, not successful
           persistence through real storage. Nested client/native cleanup remains uncharacterized.
+          Root units pin an SVG converted to PNG and written through the captured adapter's fake
+          saveRaw.
         sources:
           - core/server/services/oembed/oembed-service.js
           - core/server/lib/request-external.js
@@ -5454,6 +5458,7 @@ services:
           - package.json
         tests:
           - test/unit/server/services/oembed/oembed-service.test.js
+          - test/unit/server/services/oembed/index.test.ts
           - test/e2e-api/admin/oembed.test.js
       failures:
         summary: >-
@@ -5469,7 +5474,11 @@ services:
           failures. Root units pin a mention page without a content type becoming an
           unknown-provider rejection with the TypeError logged, and a plain-text mention page
           failing for insufficient metadata. NFT units pin API failure propagation; its parsed
-          response assumption remains a source risk without a reproduction.
+          response assumption remains a source risk without a reproduction. Root units pin a
+          failed Twitter API request logged through the application logger with the base embed
+          kept. Class units pin the logged error and fallback for a page decode failure, a failed
+          mention icon check and failed bookmark icon and thumbnail stores, and the logged message
+          for a metadata extraction failure.
         sources:
           - core/server/services/oembed/oembed-service.js
           - core/server/services/oembed/extract-oembed.ts
@@ -5865,7 +5874,7 @@ services:
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/kernel/adapter-manager/adapter-manager.ts
           - core/server/adapters/scheduling/error-capture.ts
-          - core/server/api/endpoints/authentication.js
+          - core/server/api/endpoints/authentication.ts
           - core/boot.js
         tests:
           - test/unit/server/services/post-scheduling/post-scheduling.test.js
@@ -5887,7 +5896,7 @@ services:
           - core/server/models/base/plugins/events.js
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/server/auth/reset-authentication.ts
-          - core/server/api/endpoints/authentication.js
+          - core/server/api/endpoints/authentication.ts
           - core/server/web/api/endpoints/admin/routes.js
           - core/server/api/endpoints/schedules.js
           - core/server/services/posts/post-scheduling.js
@@ -6860,11 +6869,11 @@ services:
         sources:
           - core/server/services/settings/settings-service.js
           - core/server/services/settings/settings-bread-service.js
-          - core/server/services/settings/settings-utils.js
+          - core/server/services/settings/settings-utils.ts
           - core/server/services/settings-helpers/index.js
           - core/server/models/settings.js
           - >-
-            core/server/data/migrations/versions/5.124/2025-06-06-23-12-11-create-site-uuid-setting.js
+            core/server/data/migrations/versions/5.124/2025-06-06-23-12-11-create-site-uuid-setting.ts
           - core/server/api/endpoints/settings.js
           - core/boot.js
     entryPoints:
@@ -6894,7 +6903,7 @@ services:
           - core/server/services/settings/index.js
           - core/server/services/settings/settings-service.js
           - core/server/services/settings/settings-bread-service.js
-          - core/server/services/settings/settings-utils.js
+          - core/server/services/settings/settings-utils.ts
         tests:
           - test/unit/server/services/settings/settings-bread-service.test.js
           - test/unit/server/services/settings/settings-service.test.js
@@ -6910,13 +6919,13 @@ services:
         sources:
           - core/server/services/settings/settings-service.js
           - core/server/services/settings/settings-bread-service.js
-          - core/server/services/settings/settings-utils.js
+          - core/server/services/settings/settings-utils.ts
           - core/server/api/endpoints/settings.js
           - core/server/api/endpoints/notifications.js
           - core/server/api/endpoints/index.js
           - core/server/services/recommendations/index.ts
           - core/server/models/settings.js
-          - core/server/data/migrations/versions/5.124/2025-06-06-23-12-11-create-site-uuid-setting.js
+          - core/server/data/migrations/versions/5.124/2025-06-06-23-12-11-create-site-uuid-setting.ts
         tests:
           - test/unit/server/services/settings/settings-bread-service.test.js
           - test/e2e-api/admin/settings.test.js
@@ -8030,7 +8039,7 @@ services:
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/services/tinybird/tinybird-service.js
           - core/server/api/endpoints/tinybird.js
-          - core/server/api/endpoints/utils/serializers/output/tinybird.js
+          - core/server/api/endpoints/utils/serializers/output/tinybird.ts
         tests:
           - test/unit/server/services/tinybird/tinybird-service.test.js
           - test/e2e-api/admin/tinybird.test.js
@@ -8069,7 +8078,7 @@ services:
         sources:
           - core/server/api/endpoints/tinybird.js
           - core/server/web/api/endpoints/admin/routes.js
-          - core/server/api/endpoints/utils/serializers/output/tinybird.js
+          - core/server/api/endpoints/utils/serializers/output/tinybird.ts
           - core/server/services/stats/index.ts
           - core/server/services/stats/utils/tinybird.ts
           - core/server/services/stats/posts-stats-service.js
@@ -9117,10 +9126,9 @@ services:
       resources:
         summary: >-
           Each send awaits shared HTTP infrastructure with a 30-second request timeout and
-          retry.limit zero in test environments or five elsewhere. The installed request/got
-          defaults exclude POST from normal retries, so that option alone does not establish
-          retry delivery. The request module owns a shared DNS cache/resolver and unref'd
-          housekeeping timers; this root owns no dedicated transport, timer or listener.
+          sets no retries; got never retries a POST. The request module owns a shared DNS
+          cache/resolver and unref'd housekeeping timers; this root owns no dedicated
+          transport, timer or listener.
           It exposes no abort, outstanding-request tracking or shutdown drain. Trigger event
           subscriptions and database work belong to its consumer. Existing tests intercept
           successful HTTP or inject a rejection; they do not exercise timeout/retry/drain.
@@ -9574,9 +9582,8 @@ services:
           members API are read during serialization. Every delivery reads stored target/secret,
           sends current Ghost Content-Version rather than stored api_version, and optionally
           signs JSON body plus timestamp with HMAC-SHA256. Request options ask for two seconds
-          and retry limit five outside tests, zero in tests; installed Got excludes POST from
-          retry methods, so the limit alone does not enable retries. Units assert transport,
-          exact request options and retry limits, body/headers and exact signature; root units
+          and set no retries; got never retries a POST. Units assert transport,
+          exact request options, body/headers and exact signature; root units
           assert each transport's user agent and the safe-version Content-Version on the wire;
           the integration suite shows @tryghost/request abandoning a target slower than two
           seconds and not retrying a POST outside tests. request-external's test-only init hook
@@ -9688,9 +9695,10 @@ followUps:
     lifecycle:
       - >-
         Establish pending-delivery and shared transport ownership before adding disposal.
-        Retry limit zero is asserted, but actual timeout, redirect and shutdown behavior is
-        not. The installed transport follows redirects; zero retries alone is not proof of
-        one outbound request or safe cancellation after a lost response.
+        A unit sends through the real request client and shows a failed delivery is not
+        retried; actual timeout, redirect and shutdown behavior is not asserted. The client
+        follows redirects, and one attempt is no proof of safe cancellation after a lost
+        response.
   gift-links:
     lifecycle:
       - >-
@@ -9880,3 +9888,34 @@ followUps:
         Test repeated boot for the shared composition. Units pin one retained instance across
         both endpoints within a single module instance, not module reload or same-process
         reboot.
+knownBugs:
+  notifications:
+    - summary: >-
+        The notifications unit tests stub the Ghost version and never restore it. A test file
+        that runs after them in the same worker reads the stubbed version, so the Explore ping
+        root test then fails on the version in its expected payload.
+      sources:
+        - test/unit/server/services/notifications/notifications.test.js
+      tests:
+        - test/unit/server/services/explore-ping/index.test.ts
+  oembed:
+    - summary: >-
+        Custom providers run before mention and bookmark dispatch, and their results need not
+        carry metadata. WebmentionMetadata reads the metadata without a guard, so a mention of a
+        URL a custom provider handles throws a TypeError. Recommendations falls back to null
+        fields for the same result. Root units pin both as current behaviour; whether mention
+        requests should skip custom providers is undecided.
+      sources:
+        - core/server/services/oembed/oembed-service.js
+        - core/server/services/mentions/webmention-metadata.js
+      tests:
+        - test/unit/server/services/oembed/index.test.ts
+    - summary: >-
+        The NFT provider calls json() on the request and then reads body from the result,
+        although json() already returns the parsed body. A successful OpenSea response therefore
+        throws a TypeError. Units pin the request and failure propagation, not a successful
+        payload.
+      sources:
+        - core/server/services/oembed/nft-oembed-provider.js
+      tests:
+        - test/unit/server/services/oembed/nft-oembed.test.ts

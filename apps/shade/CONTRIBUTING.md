@@ -265,6 +265,15 @@ Guardrails:
 - Don't write `dark:` variants for colour — semantic tokens flip automatically. Exceptions: assets like logos and illustrations.
 - New tokens go in `apps/shade/theme-variables.css` (semantic) or `apps/shade/tailwind.theme.css` (raw `@theme`). Don't introduce ad-hoc CSS variables in component files.
 
+### Logos and icons
+
+SVGs in `src/assets/images` and `src/assets/icons` render through
+`svgGraphic` (`src/lib/svg-graphic.ts`), so they're decorative unless the
+caller names them. When you add one, remove the vendor `<title>` and
+`<desc>`, and any `id` that nothing in the SVG refers to. An `id` the SVG
+does refer to, such as a gradient, mask or clip path, has to be unique for
+each copy on the page instead.
+
 ### Common anti-patterns
 
 - Don't import from the root `@tryghost/shade` barrel. Use the layer-specific

@@ -85,32 +85,68 @@ interface ListItemContentProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const ListItemContent = React.forwardRef<HTMLDivElement, ListItemContentProps>(
-  ({ asChild = false, className, ...props }, ref) => {
+  ({ asChild = false, className, children, ...props }, ref) => {
+    // Composed links render controls; layout components do not.
+    const [nativeControl, setNativeControl] = React.useState(false);
+    const setRef = React.useCallback(
+      (element: HTMLDivElement | null) => {
+        setNativeControl(
+          Boolean(
+            asChild &&
+            element?.matches(
+              'a[href], button, input[type="submit"], input[type="button"], [role="button"], [role="link"]',
+            ),
+          ),
+        );
+        if (typeof ref === 'function') {
+          ref(element);
+        } else if (ref) {
+          ref.current = element;
+        }
+      },
+      [asChild, ref],
+    );
+    const child =
+      asChild && React.isValidElement<React.AnchorHTMLAttributes<HTMLElement>>(children)
+        ? children
+        : undefined;
+    const isAction =
+      child &&
+      (nativeControl ||
+        (typeof child.type === 'string' && ['a', 'button'].includes(child.type)) ||
+        child.props.href !== undefined ||
+        child.props.onClick ||
+        props.onClick);
     const Component = asChild ? Slot : 'div';
 
     return (
       <Component
-        ref={ref}
-        className={cn('z-10 min-w-0 grow', asChild && rowSurfaceClasses.primaryAction, className)}
+        ref={setRef}
+        className={cn('min-w-0 grow', isAction && rowSurfaceClasses.primaryAction, className)}
         {...props}
-      />
+      >
+        {children}
+      </Component>
     );
   },
 );
 ListItemContent.displayName = 'ListItemContent';
 
-const listItemActionsVariants = cva('relative z-10 flex shrink-0 items-center py-3 pl-2', {
-  variants: {
-    visibility: {
-      always: '',
-      hover:
-        'md:opacity-0 md:transition-opacity md:group-focus-within/action-list-item:opacity-100 md:group-hover/action-list-item:opacity-100',
+const listItemActionsVariants = cva(
+  'flex shrink-0 items-center py-3 pl-2 [&>*]:relative [&>*]:z-10',
+  {
+    variants: {
+      visibility: {
+        always: '',
+        hover:
+          'md:opacity-0 md:transition-opacity md:group-focus-within/action-list-item:opacity-100 md:group-hover/action-list-item:opacity-100',
+      },
+    },
+    defaultVariants: {
+      visibility: 'always',
     },
   },
-  defaultVariants: {
-    visibility: 'always',
-  },
-});
+);
 
 interface ListItemActionsProps
   extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof listItemActionsVariants> {}
@@ -120,10 +156,7 @@ const ListItemActions = React.forwardRef<HTMLDivElement, ListItemActionsProps>(
     return (
       <div
         ref={ref}
-        className={cn(
-          listItemActionsVariants({ visibility, className }),
-          'pointer-events-none [&>*]:pointer-events-auto',
-        )}
+        className={cn(listItemActionsVariants({ visibility, className }))}
         {...props}
       />
     );

@@ -3,7 +3,6 @@ import { ListItem } from '@/components/ui/list';
 import { RowPrimaryAction } from '@/components/ui/row-primary-action';
 import { Button } from '@/components/ui/button';
 import { Box, Stack } from '@/primitives';
-import ShadeApp from '@/shade-app';
 
 const meta: Meta<typeof RowPrimaryAction> = {
   title: 'Components / Row Primary Action',
@@ -21,45 +20,43 @@ const meta: Meta<typeof RowPrimaryAction> = {
 export default meta;
 type Story = StoryObj<typeof RowPrimaryAction>;
 
-function Rows({ admin7Design = true }: { admin7Design?: boolean }) {
+function Rows() {
   return (
-    <ShadeApp admin7Design={admin7Design} darkMode={false}>
-      <Box className="max-w-lg" padding="lg">
-        <Stack gap="none">
-          <ListItem asChild>
-            <div className="flex items-center justify-between gap-3 border-b py-4">
-              <RowPrimaryAction asChild>
-                <a href="#native-destination">Open an item — hover or press Tab</a>
-              </RowPrimaryAction>
-              <Button size="sm" variant="ghost" data-row-secondary>
-                Another action
-              </Button>
-            </div>
-          </ListItem>
-          <ListItem asChild>
-            <div className="border-b py-4">
-              <RowPrimaryAction asChild>
-                <div onClick={() => window.alert('Existing action')}>
-                  Run an existing action — press Enter or Space
-                </div>
-              </RowPrimaryAction>
-            </div>
-          </ListItem>
-          <ListItem asChild>
-            <div className="border-b py-4">
-              <RowPrimaryAction asChild>
-                <button type="button" disabled>
-                  Unavailable action
-                </button>
-              </RowPrimaryAction>
-            </div>
-          </ListItem>
-          <ListItem asChild>
-            <div className="border-b py-4">Information only</div>
-          </ListItem>
-        </Stack>
-      </Box>
-    </ShadeApp>
+    <Box className="max-w-lg" padding="lg">
+      <Stack gap="none">
+        <ListItem asChild>
+          <div className="flex items-center justify-between gap-3 border-b py-4">
+            <RowPrimaryAction asChild>
+              <a href="#native-destination">Open an item — hover or press Tab</a>
+            </RowPrimaryAction>
+            <Button size="sm" variant="ghost" data-row-secondary>
+              Another action
+            </Button>
+          </div>
+        </ListItem>
+        <ListItem asChild>
+          <div className="border-b py-4">
+            <RowPrimaryAction asChild>
+              <div onClick={() => window.alert('Existing action')}>
+                Run an existing action — press Enter or Space
+              </div>
+            </RowPrimaryAction>
+          </div>
+        </ListItem>
+        <ListItem asChild>
+          <div className="border-b py-4">
+            <RowPrimaryAction asChild>
+              <button type="button" disabled>
+                Unavailable action
+              </button>
+            </RowPrimaryAction>
+          </div>
+        </ListItem>
+        <ListItem asChild>
+          <div className="border-b py-4">Information only</div>
+        </ListItem>
+      </Stack>
+    </Box>
   );
 }
 
@@ -84,5 +81,6 @@ export const CurrentInterface: Story = {
       },
     },
   },
-  render: () => <Rows admin7Design={false} />,
+  globals: { admin7Design: 'off' },
+  render: () => <Rows />,
 };

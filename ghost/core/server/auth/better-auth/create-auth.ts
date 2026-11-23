@@ -2,7 +2,6 @@
 // Ghost brings its own Knex adapter and knex-migrator
 import { betterAuth } from 'better-auth/minimal';
 import { createAuthMiddleware, isAPIError } from 'better-auth/api';
-import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { CLIENT_IP_HEADER } from './client-ip';
 import { createKnexAdapter } from './knex-adapter';
@@ -14,6 +13,7 @@ import {
   verifiesNewSession,
   type DeviceVerificationCode,
 } from './plugins/device-verification';
+import { ghostSessionGate } from './plugins/session-gate';
 import { ghostStaffLifecycle } from './plugins/staff-lifecycle';
 import { ROUTES } from './routes';
 import {
@@ -60,40 +60,6 @@ export type CreateAuthDeps = {
 };
 
 type SessionPins = { userId?: string; verified?: boolean; origin?: string | null };
-
-/**
- * Refuses a database Better Auth can't run on (plan §3.2): SQLite, or one
- * that doesn't keep Better Auth's data. `auth:betterAuthDev` only applies where
- * boot creates the in-development tables, so it stands in for a table check
- * until they graduate to a migration.
- */
-export function assertDatabaseSupported({
-  client,
-  usesBetterAuth,
-}: {
-  /** `config.get('database:client')`, where the loader normalizes `mysql` to `mysql2` */
-  client: string;
-  /** `usesBetterAuth()` */
-  usesBetterAuth: boolean;
-}): void {
-  const help =
-    'Set auth:engine to legacy, or use MySQL in development with createInDevelopmentTables and auth:betterAuthDev enabled.';
-
-  if (client !== 'mysql2') {
-    throw new errors.IncorrectUsageError({
-      message: 'auth:engine better-auth requires MySQL; SQLite is not supported.',
-      help,
-    });
-  }
-
-  if (!usesBetterAuth) {
-    throw new errors.IncorrectUsageError({
-      message:
-        'auth:engine better-auth requires auth:betterAuthDev and the in-development auth tables, which only exist in development and testing with createInDevelopmentTables enabled.',
-      help,
-    });
-  }
-}
 
 const CLEARS_FAILED_SIGN_INS: string[] = [ROUTES.signInEmail, ROUTES.resetPassword];
 
@@ -191,7 +157,19 @@ export function createAuth(deps: CreateAuthDeps) {
       ROUTES.signInSocial,
     ],
     hooks: {
+      // A password change ends every other session, as PUT /users/password does
+      before: createAuthMiddleware(async (ctx) => {
+        if (ctx.path === ROUTES.changePassword) {
+          return { context: { body: { ...ctx.body, revokeOtherSessions: true } } };
+        }
+      }),
       after: createAuthMiddleware(async (ctx) => {
+        // So a rollback to legacy can't revive them, as revokeUserSessions does
+        const changed = ctx.path === ROUTES.changePassword && ctx.context.newSession;
+        if (changed && !isAPIError(ctx.context.returned)) {
+          await deps.db('sessions').where({ user_id: changed.user.id }).del();
+        }
+
         // Server-side `auth.api` calls have no request and keep their tokens
         if (!ctx.request) {
           return;
@@ -244,6 +222,8 @@ export function createAuth(deps: CreateAuthDeps) {
       },
     },
     plugins: [
+      // First, so every other plugin's hooks see the gated request
+      ghostSessionGate(),
       ghostStaffLifecycle({ sendPasswordResetEmail: deps.sendPasswordResetEmail }),
       ghostSso(),
       ghostDeviceVerification({

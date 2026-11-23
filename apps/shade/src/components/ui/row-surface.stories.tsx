@@ -119,7 +119,7 @@ export const DuringDrag: Story = {
     docs: {
       description: {
         story:
-          'While an item is being dragged, ordinary row highlights stay hidden and selected rows keep their selection color.',
+          'This simulates dragging: hover and focus highlights are hidden, while selection stays visible. Use SortableList to try an actual drag.',
       },
     },
   },

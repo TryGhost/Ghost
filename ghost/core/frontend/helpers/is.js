@@ -14,7 +14,7 @@ module.exports = function is(context, options) {
 
   const currentContext = options.data.root.context;
 
-  if (!_.isString(context)) {
+  if (typeof context !== 'string') {
     logging.warn(tpl(messages.invalidAttribute));
     return;
   }

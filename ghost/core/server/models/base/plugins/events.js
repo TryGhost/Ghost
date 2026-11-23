@@ -19,7 +19,7 @@ module.exports = function (Bookshelf) {
         this.on('saving', function onSaving(newObj, attrs, options) {
           if (options.method === 'insert') {
             // id = 0 is still a valid value for external usage
-            if (_.isUndefined(newObj.id) || _.isNull(newObj.id)) {
+            if (newObj.id === undefined || newObj.id === null) {
               newObj.setId();
             }
           }
@@ -174,14 +174,13 @@ module.exports = function (Bookshelf) {
            *
            * Happens after validation to ensure we don't set fields which are not nullable on db level.
            */
-          _.each(
-            Object.keys(schema.tables[this.tableName]).filter((key) => key.indexOf('@@') === -1),
-            (columnKey) => {
+          Object.keys(schema.tables[this.tableName])
+            .filter((key) => key.indexOf('@@') === -1)
+            .forEach((columnKey) => {
               if (model.get(columnKey) === undefined) {
                 model.set(columnKey, null);
               }
-            },
-          );
+            });
 
           model._changed = _.cloneDeep(model.changed);
         });

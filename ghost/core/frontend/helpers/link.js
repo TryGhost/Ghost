@@ -29,7 +29,7 @@ module.exports = function link(options) {
   options.data = options.data || {};
 
   // If there is no href provided, this is theme dev error, so we throw an error to make this clear.
-  if (!_.has(options.hash, 'href')) {
+  if (!Object.hasOwn(options.hash, 'href')) {
     throw new errors.IncorrectUsageError({
       message: tpl(messages.hrefIsRequired),
     });

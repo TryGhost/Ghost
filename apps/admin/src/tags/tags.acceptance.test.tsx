@@ -68,6 +68,12 @@ describe('Tags list', () => {
       await expect.element(row).toBeVisible();
       const firstCell = row.getByRole('cell').elements()[0];
       expect(getComputedStyle(firstCell).paddingLeft).toBe('0px');
+      const slugCell = row.getByRole('cell').elements()[1].getBoundingClientRect();
+      expect(
+        document
+          .elementFromPoint(slugCell.x + slugCell.width / 2, slugCell.y + slugCell.height / 2)
+          ?.closest('a'),
+      ).toBe(tagsScreen.link('News').element());
       await row.click({ position: { x: -8, y: 12 } });
 
       await expect.poll(currentRoute).toBe('/tags/news');

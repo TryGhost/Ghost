@@ -26,8 +26,6 @@ type VerificationWebhookServiceDependencies = {
   request: (url: string, options: unknown) => Promise<unknown>;
 };
 
-const MAX_RETRY_LIMIT = 5;
-
 export class VerificationWebhookService {
   #config: VerificationWebhookServiceDependencies['config'];
   #logging: VerificationWebhookServiceDependencies['logging'];
@@ -83,7 +81,6 @@ export class VerificationWebhookService {
     const requestOptions = buildSignedWebhookRequest({
       payload,
       secret: typeof webhookSecret === 'string' && webhookSecret !== '' ? webhookSecret : undefined,
-      retryLimit: process.env.NODE_ENV?.startsWith('test') ? 0 : MAX_RETRY_LIMIT,
     });
 
     const sanitizedWebhookUrl = sanitizeWebhookUrl(webhookUrl);

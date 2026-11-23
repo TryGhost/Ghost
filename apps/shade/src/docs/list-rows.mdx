@@ -27,6 +27,11 @@ A row's **main action** is what happens when someone clicks it: for example,
 opening a post. Other controls, such as an Edit button, checkbox, or drag handle,
 keep their own actions. Clicking one of those controls must not also open the row.
 
+Shade keeps standard links, buttons, form controls and their labels above the
+row's clickable area automatically. Mark a custom control with
+`data-row-secondary` so it gets the same treatment. Put the marker on the
+control itself, so gaps around it still open the row.
+
 ### Lists
 
 Put the main link or button in `ListItemContent asChild`. Put other
@@ -34,8 +39,8 @@ buttons in `ListItemActions`. Shade makes the whole row, including its
 highlighted edges, activate the main link or button.
 
 Use `hover={false}` on `ListItem` when only the individual controls
-should look clickable. This hides the row highlight; its buttons and links
-still work normally.
+should look clickable. This hides the row highlight and stops empty row space from activating the
+main control. Its buttons and links still work normally when clicked directly.
 
 ### Custom rows
 
@@ -87,6 +92,10 @@ and clicks on the empty space around the main link. You do not need to repeat
 that code in each screen. Your screen still decides where a link goes, what a
 button does, and who is allowed to use it.
 
+A row’s own `onClick` takes precedence over forwarding to its main control.
+Remove handlers that only click the main link; Shade already does that and
+preserves modifier keys. Keep handlers that perform a different row action.
+
 ## Spacing and dividing lines
 
 Line up row content with the page or section heading and with the table's
@@ -122,8 +131,8 @@ settings help keep its rows working the same way:
 - Set `data-state="selected"` on selected rows.
 - Keep elements between the main link and the row at `position: static` so the
   link's clickable area can cover the row. This is why the table example uses
-  `className="static"` on its first cell. Give other controls `relative z-10`
-  so they remain above that clickable area.
+  `className="static"` on its first cell. Standard controls already stay above
+  that clickable area; use `data-row-secondary` for a custom control.
 - Use `rowSurfaceClasses.inset` when a scrolling container has no room for a
   highlight outside its edges. The highlight will stay inside the row.
 - When columns disappear on smaller screens, add `max-sm:shade-row-end` or a

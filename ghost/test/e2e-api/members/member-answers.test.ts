@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 
 const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
 const { stripeMocker } = require('../../utils/e2e-framework-mock-manager');
-const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
+const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
 const nock = require('nock');
 const sinon = require('sinon');

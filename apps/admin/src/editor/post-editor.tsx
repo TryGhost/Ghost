@@ -55,8 +55,6 @@ export interface PostEditorProps {
   cardConfig: PostCardConfig;
   showExcerpt: boolean;
   autofocusTitle?: boolean;
-  /** Prototype lock: keeps text selectable while blocking edits. */
-  readOnly?: boolean;
   onTitleChange: (title: string) => void;
   onTitleBlur?: () => void;
   onExcerptChange: (excerpt: string) => void;
@@ -78,6 +76,8 @@ export interface PostEditorProps {
   writingFocus?: WritingFocus;
   /** The font the writer reads the post in, set on the canvas as `data-editor-font`. */
   font?: EditorFont;
+  /** Another tab holds the document: it can be read, selected and scrolled, and nothing in it can be changed. */
+  readOnly?: boolean;
 }
 
 export interface PostEditorHandle {
@@ -86,6 +86,13 @@ export interface PostEditorHandle {
 }
 
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
+
+type LexicalEditable = { setEditable: (editable: boolean) => void };
+
+/** Lexical's own flag: the body can still be read, selected and copied. */
+function setBodyEditable(api: KoenigInstance | null, editable: boolean): void {
+  (api?.editorInstance as LexicalEditable | undefined)?.setEditable(editable);
+}
 
 // Admin's element styles give textareas a min-height and a 250–500px width; the
 // fields opt out of both so they span the writing column and grow from one line.
@@ -195,7 +202,6 @@ export function PostEditor({
   cardConfig,
   showExcerpt,
   autofocusTitle = false,
-  readOnly = false,
   onTitleChange,
   onTitleBlur,
   onExcerptChange,
@@ -211,18 +217,28 @@ export function PostEditor({
   settingsMoving = false,
   writingFocus,
   font,
+  readOnly = false,
 }: PostEditorProps) {
   const { darkMode } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
   const scrollPaneRef = useRef<HTMLDivElement>(null);
   const writingAreaRef = useRef<HTMLDivElement>(null);
+  const featureImageRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const excerptRef = useRef<HTMLTextAreaElement>(null);
   const titleErrorId = useId();
   const excerptErrorId = useId();
   const editorApiRef = useRef<KoenigInstance | null>(null);
   const readOnlyRef = useRef(readOnly);
-  const featureImageControlsRef = useRef<HTMLDivElement>(null);
+  // The feature image's controls have no read-only state of their own. Through a ref
+  // because React 18 has no inert prop.
+  useEffect(() => {
+    readOnlyRef.current = readOnly;
+    setBodyEditable(editorApiRef.current, !readOnly);
+    if (featureImageRef.current) {
+      featureImageRef.current.inert = readOnly;
+    }
+  }, [readOnly]);
   const skipFocusEditorRef = useRef(false);
   const [wordCount, setWordCount] = useState(0);
   const [selectionWordCount, setSelectionWordCount] = useState<number | null>(null);
@@ -232,14 +248,6 @@ export function PostEditor({
 
   useAutosize(titleRef, title, font);
   useAutosize(excerptRef, excerpt, font);
-
-  // Lexical's read-only mode preserves text selection. Only the separate feature
-  // image controls remain inert in this prototype.
-  useLayoutEffect(() => {
-    readOnlyRef.current = readOnly;
-    editorApiRef.current?.editorInstance.setEditable?.(!readOnly);
-    featureImageControlsRef.current?.toggleAttribute('inert', readOnly);
-  }, [readOnly]);
 
   // Koenig's breakout cards are sized in viewport units less
   // `--kg-breakout-adjustment`, the width beside the writing area. The settings
@@ -335,7 +343,8 @@ export function PostEditor({
   const registerApi = useCallback(
     (api: KoenigInstance | null) => {
       editorApiRef.current = api;
-      api?.editorInstance.setEditable?.(!readOnlyRef.current);
+      // A reload mounts a new instance, which starts out editable.
+      setBodyEditable(api, !readOnlyRef.current);
       registerEditorApi?.(api);
     },
     [registerEditorApi],
@@ -354,9 +363,6 @@ export function PostEditor({
   };
 
   const onTitleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (readOnly) {
-      return;
-    }
     const { key } = event;
     const { value, selectionStart } = event.currentTarget;
     const couldLeaveTitle = !value || selectionStart === value.length;
@@ -386,9 +392,6 @@ export function PostEditor({
   };
 
   const onExcerptKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (readOnly) {
-      return;
-    }
     const { key } = event;
     const { value, selectionStart } = event.currentTarget;
 
@@ -409,9 +412,6 @@ export function PostEditor({
   };
 
   const cleanPastedTitle = (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    if (readOnly) {
-      return;
-    }
     const pastedText = event.clipboardData.getData('text');
     if (!pastedText) {
       return;
@@ -445,10 +445,6 @@ export function PostEditor({
   };
 
   const onPaneDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    if (readOnly) {
-      event.preventDefault();
-      return;
-    }
     if (event.dataTransfer.files.length > 0) {
       event.preventDefault();
       editorApiRef.current?.insertFiles(Array.from(event.dataTransfer.files));
@@ -475,34 +471,20 @@ export function PostEditor({
             chromeEntrance && 'screen-enter-rise',
             'transition-opacity duration-200 motion-reduce:transition-none',
             readOnly && 'opacity-60',
+            // Not every Koenig build closes its cards to input with Lexical's flag.
+            readOnly && '[&_[data-kg-card]]:pointer-events-none',
           )}
           data-editing-locked={readOnly || undefined}
           gap="none"
-          onBeforeInputCapture={(event) => {
-            if (readOnly) {
-              event.preventDefault();
-              event.stopPropagation();
-            }
-          }}
-          onClickCapture={(event) => {
-            if (
-              readOnly &&
-              event.target instanceof Element &&
-              event.target.closest('button, input, select')
-            ) {
-              event.preventDefault();
-              event.stopPropagation();
-            }
-          }}
           onDragOver={(event) => event.preventDefault()}
-          onDrop={onPaneDrop}
+          onDrop={readOnly ? undefined : onPaneDrop}
           onMouseDown={trackMouseDown}
-          onMouseUp={focusEditorOnPaneClick}
+          onMouseUp={readOnly ? undefined : focusEditorOnPaneClick}
         >
           <div className="relative mx-auto w-full max-w-[740px]">
             {/* Only the bar offering an image is chrome; an image is the post's own. */}
             <div
-              ref={featureImageControlsRef}
+              ref={featureImageRef}
               data-writing-focus={hasFeatureImage ? undefined : writingFocus}
             >
               <FeatureImage
@@ -563,8 +545,8 @@ export function PostEditor({
                 value={title}
                 onBlur={onTitleBlur}
                 onChange={(event) => onTitleChange(event.target.value)}
-                onKeyDown={onTitleKeyDown}
-                onPaste={cleanPastedTitle}
+                onKeyDown={readOnly ? undefined : onTitleKeyDown}
+                onPaste={readOnly ? undefined : cleanPastedTitle}
               />
             </div>
             {titleError ? (
@@ -597,7 +579,7 @@ export function PostEditor({
                   value={excerpt}
                   onBlur={onExcerptBlur}
                   onChange={(event) => onExcerptChange(event.target.value)}
-                  onKeyDown={onExcerptKeyDown}
+                  onKeyDown={readOnly ? undefined : onExcerptKeyDown}
                 />
                 <hr
                   className={cn(

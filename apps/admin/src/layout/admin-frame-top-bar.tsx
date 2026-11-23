@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from '@tryghost/admin-x-framework';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { cn, formatNumber, LucideIcon } from '@tryghost/shade/utils';
 import { useOpenGlobalSearch } from '@/global-search/global-search-context';
 import { searchShortcutLabel } from '@/global-search/search-shortcut';
@@ -202,6 +203,32 @@ function CustomizeToggle() {
 }
 
 /**
+ * Help, on every screen with the frame, Settings included. Marked for a host
+ * script that provides in-app support, as the other Help links are.
+ */
+function HelpLink() {
+  const inAppSupport = useFeatureFlag('inAppSupport');
+
+  if (!inAppSupport) {
+    return null;
+  }
+
+  return (
+    <a
+      aria-label="Help"
+      className={cn('flex h-full items-center transition-colors hover:text-white', MUTED)}
+      data-ghost-help=""
+      href="https://ghost.org/help?utm_source=admin&utm_campaign=help"
+      rel="noopener noreferrer"
+      target="_blank"
+      title="Help"
+    >
+      <LucideIcon.HelpCircle className="size-4" strokeWidth={2} />
+    </a>
+  );
+}
+
+/**
  * The frame's top bar: places on the left, search in the middle, and the
  * time and the site's numbers on the right. A three-column grid, so search
  * stays centred whatever is either side of it. On View site, the right side
@@ -229,6 +256,7 @@ export function AdminFrameTopBar({ hidden = false }: { hidden?: boolean }) {
       </div>
       <div className="flex h-full items-center justify-end gap-5 pr-6">
         {isViewSite && canCustomize ? <CustomizeToggle /> : <SiteNumbers />}
+        <HelpLink />
       </div>
     </div>
   );

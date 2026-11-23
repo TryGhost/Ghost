@@ -1,5 +1,6 @@
 import type { AutomationTriggerRuleDefinition } from './trigger-rules';
 import type { AutomationStepToRun, AutomationsRepository } from './automations-repository';
+import type { RecordEmailSentOptions } from './automations-repository-2';
 import { getMailgunMessageId } from '../../lib/mailgun/mailgun-message-id';
 import { getMailgunError } from '../../lib/mailgun/mailgun-error';
 import logging from '@tryghost/logging';
@@ -44,12 +45,10 @@ type MemberModel = {
 type PollOptions = {
   automationsApi: Pick<
     AutomationsRepository,
-    | 'fetchAndLockSteps'
-    | 'finishStepAndEnqueueNext'
-    | 'markStepTerminal'
-    | 'recordEmailSent'
-    | 'retryStep'
-  >;
+    'fetchAndLockSteps' | 'finishStepAndEnqueueNext' | 'markStepTerminal' | 'retryStep'
+  > & {
+    recordEmailSent: (options: RecordEmailSentOptions) => Promise<void>;
+  };
   enqueueAnotherPollAt: (date: Readonly<Date>) => unknown;
   scheduleAutomationEmailAnalyticsJob: () => Promise<void>;
   memberWelcomeEmailService: MemberWelcomeEmailService;

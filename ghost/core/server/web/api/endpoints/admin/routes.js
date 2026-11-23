@@ -110,6 +110,13 @@ module.exports = function apiRoutes() {
   router.put('/gifts/flush_reminders', mw.authAdminApiWithUrl, http(api.gifts.flushReminders));
   router.put('/gifts/flush_deliveries', mw.authAdminApiWithUrl, http(api.gifts.flushDeliveries));
 
+  // ## Segments
+  router.get('/segments', mw.authAdminApi, http(api.segments.browse));
+  router.post('/segments', mw.authAdminApi, http(api.segments.add));
+  router.get('/segments/:id', mw.authAdminApi, http(api.segments.read));
+  router.put('/segments/:id', mw.authAdminApi, http(api.segments.edit));
+  router.delete('/segments/:id', mw.authAdminApi, http(api.segments.destroy));
+
   // ## Settings
   router.get('/settings/routes/yaml', mw.authAdminApi, http(api.settings.download));
   router.post(
@@ -282,6 +289,14 @@ module.exports = function apiRoutes() {
   router.get('/stats/subscriptions', mw.authAdminApi, http(api.stats.subscriptions));
   router.get('/stats/referrers', mw.authAdminApi, http(api.stats.referrersHistory));
   router.get('/stats/posts/:id/stats', mw.authAdminApi, http(api.stats.postStats));
+  const commentsStats = [mw.authAdminApi, labs.enabledMiddleware('commentsAnalytics')];
+  router.get('/stats/comments', commentsStats, http(api.stats.commentsOverview));
+  router.get('/stats/comments/top-posts', commentsStats, http(api.stats.commentsTopPosts));
+  router.get(
+    '/stats/comments/top-commenters',
+    commentsStats,
+    http(api.stats.commentsTopCommenters),
+  );
   router.get('/stats/top-posts', mw.authAdminApi, http(api.stats.topPosts));
   router.get('/stats/top-posts-views', mw.authAdminApi, http(api.stats.topPostsViews));
   router.get('/stats/top-content', mw.authAdminApi, http(api.stats.topContent));

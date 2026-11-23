@@ -23,7 +23,12 @@
   * {
     @apply border-border;
   }
+
+  /* The body's reset sits here, not in preflight.css: preflight is scoped to
+     .shade, which is inside body. In this layer, an app's unlayered body styles,
+     or a later base-layer rule, win over it. */
   body {
+    margin: 0;
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
@@ -465,12 +470,13 @@ tr:is(
   position: static;
 }
 
-.shade-row .shade-row-primary::after {
+.shade-row:is(.shade-row-interactive, .shade-row-auto)
+  .shade-row-primary:not(:disabled, [aria-disabled='true'])::after {
   content: '';
   display: block;
   position: absolute;
   inset: 0 calc(-4 * var(--spacing));
-  z-index: 0;
+  z-index: 1;
 }
 
 .shade-row.shade-row-inset::before,
@@ -520,14 +526,14 @@ tr.shade-row.shade-row-inset > :is(td, th)::before {
 }
 
 .shade-row:where(
-    [data-state='selected'],
+    :is([data-state='selected'], [data-selected='true']),
     :not([data-row-dragging='true'], [data-row-dragging='true'] *):is(
         .shade-row-interactive,
         .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
       ):is([data-row-pressed='true'], :active, :focus-visible, :has(:focus-visible))
   )::before,
 tr.shade-row:where(
-    [data-state='selected'],
+    :is([data-state='selected'], [data-selected='true']),
     :not([data-row-dragging='true'], [data-row-dragging='true'] *):is(
         .shade-row-interactive,
         .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
@@ -538,7 +544,7 @@ tr.shade-row:where(
 }
 
 .shade-row:where(
-    [data-state='selected'],
+    :is([data-state='selected'], [data-selected='true']),
     :not([data-row-dragging='true'], [data-row-dragging='true'] *):is(
         .shade-row-interactive,
         .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
@@ -549,7 +555,7 @@ tr.shade-row:where(
 }
 
 .shade-row:where(
-    [data-state='selected'],
+    :is([data-state='selected'], [data-selected='true']),
     :not([data-row-dragging='true'], [data-row-dragging='true'] *):is(
         .shade-row-interactive,
         .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
@@ -560,7 +566,7 @@ tr.shade-row:where(
 }
 
 .shade-row:where(
-    [data-state='selected'],
+    :is([data-state='selected'], [data-selected='true']),
     :not([data-row-dragging='true'], [data-row-dragging='true'] *):is(
         .shade-row-interactive,
         .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
@@ -574,14 +580,14 @@ tr.shade-row:where(
    Only body separators disappear; outer rules are preserved. */
 .shade-row
   + .shade-row:where(
-    [data-state='selected'],
+    :is([data-state='selected'], [data-selected='true']),
     :not([data-row-dragging='true'], [data-row-dragging='true'] *):is(
         .shade-row-interactive,
         .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
       ):is([data-row-pressed='true'], :active, :focus-visible, :has(:focus-visible))
   ),
 .shade-row:where(
-    [data-state='selected'],
+    :is([data-state='selected'], [data-selected='true']),
     :not([data-row-dragging='true'], [data-row-dragging='true'] *):is(
         .shade-row-interactive,
         .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
@@ -592,13 +598,13 @@ tr.shade-row:where(
 }
 
 .shade-row:where(
-    [data-state='selected'],
+    :is([data-state='selected'], [data-selected='true']),
     :not([data-row-dragging='true'], [data-row-dragging='true'] *):is(
         .shade-row-interactive,
         .shade-row-auto:has(.shade-row-primary:not(:disabled, [aria-disabled='true']))
       ):is([data-row-pressed='true'], :active, :focus-visible, :has(:focus-visible))
   ):has(+ .shade-row),
-.shade-row:has(+ .shade-row[data-state='selected']),
+.shade-row:has(+ .shade-row:is([data-state='selected'], [data-selected='true'])),
 .shade-row:has(
   + .shade-row-interactive:not([data-row-dragging='true'], [data-row-dragging='true'] *):is(
       [data-row-pressed='true'],
@@ -707,9 +713,9 @@ tr.shade-row:where(
 
 /* Selection wins over hover and keyboard/press fills without merging adjacent
  rows or changing the focused control's own ring. */
-.shade-row[data-state='selected']::before,
-tr.shade-row[data-state='selected'] > :is(td, th)::before,
-.shade-row[data-state='selected'] > [data-row-pinned] {
+.shade-row:is([data-state='selected'], [data-selected='true'])::before,
+tr.shade-row:is([data-state='selected'], [data-selected='true']) > :is(td, th)::before,
+.shade-row:is([data-state='selected'], [data-selected='true']) > [data-row-pinned] {
   background-color: var(--table-row-selected);
 }
 
@@ -723,4 +729,17 @@ tr.shade-row[data-state='selected'] > :is(td, th)::before,
 .shade-row [data-row-secondary] {
   position: relative;
   z-index: 10;
+}
+
+/* Explicit positioning utilities take precedence over these control defaults. */
+@layer base {
+  .shade-row:is(.shade-row-interactive, .shade-row-auto):has(
+      .shade-row-primary:not(:disabled, [aria-disabled='true'])
+    )
+    :is(a, button, input, select, textarea, label, [role='checkbox'], [role='button']):not(
+      .shade-row-primary
+    ) {
+    position: relative;
+    z-index: 10;
+  }
 }

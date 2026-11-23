@@ -5,7 +5,6 @@ import { knex } from '../../../core/server/data/db';
 import config from '../../../core/shared/config';
 import urlUtils from '../../../core/shared/url-utils';
 import { createAuth } from '../../../core/server/auth/better-auth/create-auth';
-import { seedCredentialAccounts } from '../../../core/server/auth/better-auth/seed-credential-accounts';
 import legacySession from '../../../core/server/auth/session';
 
 // Never blocks; the rate limits have their own tests
@@ -30,10 +29,6 @@ describe.skipIf(isSQLite)('Better Auth instance', function () {
 
   beforeAll(testUtils.teardownDb);
   beforeAll(testUtils.setup('users:roles'));
-
-  beforeAll(async function () {
-    await seedCredentialAccounts(knex);
-  });
 
   afterEach(function () {
     sinon.restore();

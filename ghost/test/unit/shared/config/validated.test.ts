@@ -5,7 +5,7 @@ import _ from 'lodash';
 import { z } from 'zod';
 import { formatIssues } from '../../../../core/shared/config/report';
 import { configSchema } from '../../../../core/shared/config/schema';
-import { createConfig, deepFreeze, validateConfig } from '../../../../core/shared/config/validated';
+import { createConfig, validateConfig } from '../../../../core/shared/config/validated';
 import { configSources } from '../../../utils/config-sources';
 
 const sloppy = require('../../../utils/fixtures/sloppy-config-writer');
@@ -293,6 +293,113 @@ describe('Config Schema', function () {
     });
   });
 
+  describe('auth', function () {
+    afterEach(function () {
+      vi.unstubAllEnvs();
+    });
+
+    const mysql = {
+      client: 'mysql2',
+      connection: { host: '127.0.0.1', user: 'root', password: '', database: 'ghost' },
+    };
+
+    it('keeps better-auth on MySQL', function () {
+      const parsed = configSchema.parse({
+        ...configSources(),
+        database: mysql,
+        auth: { engine: 'better-auth' },
+      });
+
+      assert.equal(parsed.auth.engine, 'better-auth');
+    });
+
+    for (const client of ['sqlite3', 'better-sqlite3']) {
+      it(`falls back to legacy on ${client}, with a warning`, function () {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+        const parsed = configSchema.parse({
+          ...configSources(),
+          database: { client, connection: { filename: '/a.db' } },
+          auth: { engine: 'better-auth' },
+        });
+
+        assert.equal(parsed.auth.engine, 'legacy');
+        assert.equal(warn.mock.calls.length, 1);
+        assert.match(String(warn.mock.calls[0][0]), /needs MySQL/);
+      });
+    }
+
+    it('does not warn for legacy on SQLite', function () {
+      const warn = vi.spyOn(console, 'warn');
+
+      assert.equal(configSchema.parse(configSources()).auth.engine, 'legacy');
+      assert.equal(warn.mock.calls.length, 0);
+    });
+
+    it('rejects an engine it does not know', function () {
+      const result = configSchema.safeParse(configSources({ auth: { engine: 'nope' } }));
+
+      assert.deepEqual(result.error?.issues[0]?.path, ['auth', 'engine']);
+    });
+
+    // main has no Better Auth key yet, so any key stands in for one
+    describe('a key the engine does not read', function () {
+      it('fails the parse under test', function () {
+        const issues = configSchema.safeParse(
+          configSources({ auth: { engine: 'legacy', sso: { enabled: true } } }),
+        ).error?.issues;
+
+        assert.deepEqual(
+          issues?.map((issue) => ({ code: issue.code, path: issue.path })),
+          [{ code: 'unrecognized_keys', path: ['auth'] }],
+        );
+      });
+
+      it('warns under legacy outside test, then strips it', function () {
+        vi.stubEnv('NODE_ENV', 'production');
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+        const parsed = configSchema.parse(
+          configSources({ auth: { engine: 'legacy', sso: { enabled: true } } }),
+        );
+
+        assert.deepEqual(parsed.auth, { engine: 'legacy' });
+        assert.match(String(warn.mock.calls[0]?.[0]), /auth:sso/);
+      });
+
+      it('drops it with the SQLite fallback to legacy', function () {
+        vi.stubEnv('NODE_ENV', 'production');
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+        const parsed = configSchema.parse(
+          configSources({
+            database: { client: 'sqlite3', connection: { filename: '/a.db' } },
+            auth: { engine: 'better-auth', sso: { enabled: true } },
+          }),
+        );
+
+        assert.deepEqual(parsed.auth, { engine: 'legacy' });
+        assert.ok(warn.mock.calls.some(([message]) => /needs MySQL/.test(String(message))));
+      });
+    });
+
+    it('falls back to legacy without the stray key under a lenient parse', function () {
+      vi.stubEnv('NODE_ENV', 'production');
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const validated = validateConfig(
+        configSources({
+          env: 'production',
+          database: { client: 'sqlite3', connection: { filename: '/a.db' } },
+          auth: { engine: 'better-auth', sso: { enabled: true } },
+        }),
+      );
+
+      assert.deepEqual(validated.auth, { engine: 'legacy' });
+      assert.ok(warn.mock.calls.some(([message]) => /needs MySQL/.test(String(message))));
+    });
+  });
+
   describe('spam', function () {
     const withSpam = (spam: Record<string, unknown>) =>
       configSources({ spam: _.merge({}, readJson('defaults.json').spam, spam) });
@@ -408,23 +515,6 @@ describe('Config Schema', function () {
 });
 
 describe('Validated Config', function () {
-  describe('deepFreeze', function () {
-    it('freezes nested objects and arrays', function () {
-      const frozen = deepFreeze({ a: { b: [{ c: 1 }] } });
-
-      assert.ok(Object.isFrozen(frozen.a));
-      assert.ok(Object.isFrozen(frozen.a.b));
-      assert.ok(Object.isFrozen(frozen.a.b[0]));
-    });
-
-    it('tolerates cycles', function () {
-      const cyclic: Record<string, unknown> = {};
-      cyclic.self = cyclic;
-
-      assert.ok(Object.isFrozen(deepFreeze(cyclic)));
-    });
-  });
-
   describe('validateConfig', function () {
     // in hooks, so a failing assertion can't leave GHOST_CONFIG_SCHEMA_STRICT
     // set or console.error mocked for every later test

@@ -255,14 +255,17 @@ const MembersListItem = forwardRef<
     <TableRow
       {...props}
       ref={ref}
-      className={cn('group cursor-pointer', props.className)}
+      className={cn(
+        'group cursor-pointer in-data-[admin7-mobile=true]:max-lg:border-b-border in-data-[admin7-mobile=true]:max-lg:[--table-row-hover:transparent] in-data-[admin7-mobile=true]:max-lg:[&>td]:py-4',
+        props.className,
+      )}
       data-testid="members-list-item"
       onAuxClick={handleRowAuxClick}
       onClick={handleRowClick}
     >
       <TableCell
         className={cn(
-          'min-w-0 bg-background px-4 py-3 group-hover:bg-table-row-hover max-sm:shade-row-end max-sm:!w-full max-sm:!min-w-0 lg:sticky lg:left-0 lg:z-20',
+          'min-w-0 bg-background px-4 py-3 group-hover:bg-table-row-hover in-data-[admin7-mobile=true]:max-lg:ps-0 in-data-[admin7-mobile=true]:max-lg:group-hover:bg-background max-sm:shade-row-end max-sm:!w-full max-sm:!min-w-0 in-data-[admin7-mobile=true]:max-sm:pe-0 lg:sticky lg:left-0 lg:z-20',
         )}
         data-row-pinned
       >
@@ -293,7 +296,7 @@ const MembersListItem = forwardRef<
         )}
       </TableCell>
       <TableCell
-        className="hidden px-4 py-3 sm:table-cell sm:max-lg:shade-row-end"
+        className="hidden px-4 py-3 in-data-[admin7-mobile=true]:max-lg:pe-0 sm:table-cell sm:max-lg:shade-row-end"
         style={columnStyles.status}
       >
         <MembersListItemStatus status={item.status} tiers={item.tiers} />
