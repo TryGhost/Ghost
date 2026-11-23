@@ -5,6 +5,7 @@ import type settingsCache from '../../../shared/settings-cache';
 import { afterCommit } from '../../lib/after-commit';
 import { DbDate } from '../../lib/db-types/date';
 import type { OnSegmentUpdated } from './changes';
+import type { SegmentsTracking } from './tracking';
 
 /**
  * A settings row as the settings cache holds it after a settings save: every column, with the
@@ -26,6 +27,7 @@ interface RefreshDeps {
   knex: Knex;
   cache: Pick<typeof settingsCache, 'set'>;
   logging: Pick<GhostLogger, 'error'>;
+  tracking: Pick<SegmentsTracking, 'settingsCacheRefreshFailed'>;
   /** The key of the setting the segments are stored in. */
   settingKey: string;
 }
@@ -46,7 +48,8 @@ async function refreshCache({ knex, cache, settingKey }: RefreshDeps): Promise<v
  * returns, so a `GET /settings/` in that moment can still return the previous value. In return,
  * the cache only ever holds what is stored: the refresh reads committed state, so running it
  * after a transaction that was rolled back without an error, which settles as a commit does,
- * leaves the cache as it was. A failed refresh is logged and leaves the cache as it was.
+ * leaves the cache as it was. A failed refresh is logged and counted, and leaves the cache as it
+ * was.
  *
  * Refreshes run one after another, each reading only once the one before it has set the cache,
  * so an earlier read can never land after a later one and put an older value back.
@@ -65,6 +68,7 @@ export function refreshSettingsCache(deps: RefreshDeps): OnSegmentUpdated {
               { event: { name: 'segments.refresh-settings-cache.failed' }, err },
               'Could not refresh the settings cache after a segment change',
             );
+            deps.tracking.settingsCacheRefreshFailed();
           });
         return lastRefresh;
       },
