@@ -1138,6 +1138,19 @@ describe('Create Stripe Checkout Session', function () {
       },
     );
 
+    it('refuses on a site that hasn’t connected Stripe, as gift and donation checkouts do', async function () {
+      mockManager.mockSetting('stripe_connect_publishable_key', null);
+      mockManager.mockSetting('stripe_connect_secret_key', null);
+
+      const { body } = await membersAgent
+        .post('/api/create-stripe-checkout-session/')
+        .body({ tierId: paidTierId, cadence: 'month' })
+        .expectStatus(409);
+
+      assert.equal(body.errors[0].message, 'This site is not accepting payments at the moment.');
+      assert.deepEqual(stripeMocker.checkoutSessions, []);
+    });
+
     it('answers that it couldn’t start a checkout Stripe failed', async function () {
       stripeMocker.checkoutSessionError = { type: 'api_error', message: 'Stripe is down' };
 
