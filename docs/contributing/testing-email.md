@@ -72,7 +72,6 @@ Mailgun API instead of Mailpit. On startup they print
 `Email: all email is sent through Mailgun`; `pnpm dev:up` writes it to the log
 file it names. Without credentials, those variants capture transactional email
 in Mailpit and cannot send newsletters, as described above.
-`pnpm dev:mailgun` always selects Mailgun, and
 `pnpm dev:fake-mailgun` keeps using the fake Mailgun server even when
 credentials are set. To use Mailpit for one run while credentials are set,
 clear the key:
