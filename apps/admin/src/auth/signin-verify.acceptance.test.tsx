@@ -52,6 +52,16 @@ it('says a rejected code is incorrect, and clears that when typing again', async
   await authScreen.codeInput().fill('123456');
 
   await expect.element(authScreen.text('Your verification code is incorrect.')).toBeVisible();
+  await authScreen.codeInput().click();
+  await expect
+    .poll(
+      () =>
+        getComputedStyle(authScreen.codeInput().element().closest('[data-slot="input-group"]')!)
+          .borderColor,
+    )
+    .toBe(
+      getComputedStyle(authScreen.text('Your verification code is incorrect.').element()).color,
+    );
   await authScreen.codeInput().fill('65432');
   await expect(authScreen.text('Your verification code is incorrect.')).toHaveCount(0);
   await expect.element(authScreen.verifyButton()).toBeVisible();

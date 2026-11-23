@@ -360,7 +360,7 @@ export const ErrorState: Story = {
     docs: {
       description: {
         story:
-          'Error state indicated by aria-invalid attribute. The entire group displays error styling for clear feedback.',
+          'Error state indicated by aria-invalid attribute. The entire group keeps its error border and ring color when the input is focused for correction.',
       },
     },
   },
