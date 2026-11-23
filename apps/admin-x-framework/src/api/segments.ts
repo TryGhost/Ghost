@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import { createMutation, createQuery } from '../utils/api/hooks';
 
@@ -23,9 +25,7 @@ const parseSegmentsResponse = (data: unknown) => SegmentsResponseSchema.parse(da
 
 const dataType = 'SegmentsResponseType';
 
-// Ghost stores segments in the `shared_views` setting, which also holds the posts views,
-// so every segment write changes the settings too.
-const changedDataTypes = { dataType: [dataType, 'SettingsResponseType'] };
+const changedDataTypes = { dataType };
 
 /**
  * A cached segments list with `change` applied. Each write also changes the cached list from its
@@ -48,6 +48,15 @@ export const useBrowseSegments = createQuery<SegmentsResponseType>({
   path: '/segments/',
   parseResponse: parseSegmentsResponse,
 });
+
+/** Marks the cached segments list as out of date, so it is fetched again. */
+export const useInvalidateSegments = () => {
+  const queryClient = useQueryClient();
+
+  return useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: [dataType] });
+  }, [queryClient]);
+};
 
 /** Adds a segment after the existing ones. */
 export const useAddSegment = createMutation<SegmentsResponseType, Pick<Segment, 'name' | 'filter'>>(

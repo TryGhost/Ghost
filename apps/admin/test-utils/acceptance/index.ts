@@ -21,10 +21,8 @@ export {
   fakeSegmentWrites,
   holdSegmentsList,
   replaceSavedViewsElsewhere,
-  segmentsApiServers,
   segmentsBodyError,
   withSavedViews,
-  withoutSegmentsApi,
 } from './shared-views';
 export type {
   FakeSegmentWritesOptions,
