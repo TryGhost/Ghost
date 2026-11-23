@@ -19,9 +19,6 @@ const {
   SegmentsService,
 }: typeof import('../../../core/server/services/segments/service') = require('../../../core/server/services/segments/service');
 const {
-  TableSegmentRepository,
-}: typeof import('../../../core/server/services/segments/table-repository') = require('../../../core/server/services/segments/table-repository');
-const {
   segmentsTracking,
 }: typeof import('../../../core/server/services/segments/tracking') = require('../../../core/server/services/segments/tracking');
 const {
@@ -724,7 +721,6 @@ describe('Commands and transactions', function () {
       const metrics = mockManager.mockMetrics();
       const failing = new SegmentsService({
         knex,
-        repository: new TableSegmentRepository(),
         tracking: segmentsTracking({ tracer }),
         onSegmentUpdated: async () => {
           throw new Error('Reporting the change failed');

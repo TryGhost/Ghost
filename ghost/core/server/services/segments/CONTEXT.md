@@ -14,8 +14,9 @@ What Admin's members list calls a segment. Segments were first stored as entries
 **Segment id**:
 An ObjectID the segment is given when it is added, as the rows of Ghost's other tables have. Callers treat it as opaque. A saved member view in the setting had no stored id, so the API made one from the view's filter; the migration gave each moved view a new id.
 
-**Segment repository**:
-Where segments are stored, behind the `SegmentRepository` interface. `TableSegmentRepository` stores them as rows of the `segments` table, in the order of the table's sortable collection. It rejects a name another segment has. Two segments can have the same filter under different names.
+## Storage
+
+Segments are rows of the `segments` table, in the order of the table's sortable collection. The service reads and writes the table itself, with Knex. It rejects a name another segment has. Two segments can have the same filter under different names.
 
 ## Names
 
