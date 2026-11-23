@@ -116,9 +116,11 @@ async function loadRuntime() {
     repository: createDatabaseAutomationsRepository2({ knex }),
   });
   const automationsApi: Parameters<typeof poll>[0]['automationsApi'] = {
-    ...createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: 1 }),
+    ...createDatabaseAutomationsRepository({ knex }),
+    finishStepAndEnqueueNext: automationsApi2.finishStepAndEnqueueNext,
     markStepTerminal: automationsApi2.markStepTerminal,
     recordEmailSent: automationsApi2.recordEmailSent,
+    retryStep: automationsApi2.retryStep,
   };
 
   return { knex, poll, toDatabaseDate, welcomeEmails, automationsApi };
