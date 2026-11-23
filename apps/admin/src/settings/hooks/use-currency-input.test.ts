@@ -23,7 +23,23 @@ const renderCurrencyInput = (initialCents: number) => {
   return { hook, onChange, type, typeKeys };
 };
 
+/** Makes the viewer's locale write decimals with `mark`, as the hook detects it. */
+const useLocaleDecimalMark = (mark: '.' | ',') => {
+  beforeEach(() => {
+    vi.spyOn(Intl.NumberFormat.prototype, 'formatToParts').mockReturnValue([
+      { type: 'integer', value: '1' },
+      { type: 'decimal', value: mark },
+      { type: 'fraction', value: '5' },
+    ]);
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+};
+
 describe('useCurrencyInput', () => {
+  useLocaleDecimalMark('.');
+
   it('shows whole amounts without decimals', () => {
     const { hook } = renderCurrencyInput(500);
     expect(hook.result.current.value).toBe('5');
@@ -69,26 +85,6 @@ describe('useCurrencyInput', () => {
     expect(onChange).toHaveBeenLastCalledWith(100050);
   });
 
-  it('treats comma-decimal input as cents', () => {
-    const { hook, onChange, typeKeys } = renderCurrencyInput(0);
-    typeKeys('9,90');
-    expect(hook.result.current.value).toBe('9,90');
-    expect(onChange).toHaveBeenLastCalledWith(990);
-    act(() => hook.result.current.onBlur());
-    expect(hook.result.current.value).toBe('9.90');
-  });
-
-  it.each([
-    ['1,000', '1000', 100000],
-    ['12,500', '12500', 1250000],
-    ['1,000.50', '1000.50', 100050],
-  ])('reads %s typed key by key as thousands', (keys, shown, cents) => {
-    const { hook, onChange, typeKeys } = renderCurrencyInput(0);
-    typeKeys(keys);
-    expect(hook.result.current.value).toBe(shown);
-    expect(onChange).toHaveBeenLastCalledWith(cents);
-  });
-
   it('reads a leading decimal point as cents', () => {
     const { hook, onChange, type } = renderCurrencyInput(0);
     type('.5');
@@ -121,5 +117,71 @@ describe('useCurrencyInput', () => {
     const { hook } = renderCurrencyInput(500);
     hook.rerender({ value: 1250 });
     expect(hook.result.current.value).toBe('12.50');
+  });
+});
+
+describe('useCurrencyInput in a dot-decimal locale', () => {
+  useLocaleDecimalMark('.');
+
+  it.each([
+    ['1,000', '1000', 100000],
+    ['12,500', '12500', 1250000],
+    ['1,000.50', '1000.50', 100050],
+  ])('reads %s typed key by key as thousands', (keys, shown, cents) => {
+    const { hook, onChange, typeKeys } = renderCurrencyInput(0);
+    typeKeys(keys);
+    expect(hook.result.current.value).toBe(shown);
+    expect(onChange).toHaveBeenLastCalledWith(cents);
+  });
+
+  it('ignores a stray second decimal point', () => {
+    const { hook, onChange, typeKeys } = renderCurrencyInput(0);
+    typeKeys('1.5.');
+    expect(hook.result.current.value).toBe('1.5');
+    expect(onChange).toHaveBeenLastCalledWith(150);
+  });
+});
+
+describe('useCurrencyInput in a comma-decimal locale', () => {
+  useLocaleDecimalMark(',');
+
+  it('reads a decimal comma as cents', () => {
+    const { hook, onChange, typeKeys } = renderCurrencyInput(0);
+    typeKeys('9,90');
+    expect(hook.result.current.value).toBe('9,90');
+    expect(onChange).toHaveBeenLastCalledWith(990);
+    act(() => hook.result.current.onBlur());
+    expect(hook.result.current.value).toBe('9.90');
+  });
+
+  it.each(['9,901', '9,9012'])(
+    'drops extra decimals in %s instead of making the amount bigger',
+    (keys) => {
+      const { hook, onChange, typeKeys } = renderCurrencyInput(0);
+      typeKeys(keys);
+      expect(hook.result.current.value).toBe('9,90');
+      expect(onChange).toHaveBeenLastCalledWith(990);
+      act(() => hook.result.current.onBlur());
+      expect(hook.result.current.value).toBe('9.90');
+    },
+  );
+
+  it.each([
+    ['1.000,50', '1000,50', 100050],
+    ['1,000.50', '1000.50', 100050],
+  ])('reads pasted %s with the last separator as the decimal mark', (text, shown, cents) => {
+    const { hook, onChange, type } = renderCurrencyInput(0);
+    type(text);
+    expect(hook.result.current.value).toBe(shown);
+    expect(onChange).toHaveBeenLastCalledWith(cents);
+  });
+
+  it('still reads a lone dot as the decimal mark', () => {
+    // Typed a key at a time, "1.000" can't be told from 1.00 with one digit
+    // too many, so a dot on its own stays a decimal mark here too.
+    const { hook, onChange, typeKeys } = renderCurrencyInput(0);
+    typeKeys('1.5');
+    expect(hook.result.current.value).toBe('1.5');
+    expect(onChange).toHaveBeenLastCalledWith(150);
   });
 });

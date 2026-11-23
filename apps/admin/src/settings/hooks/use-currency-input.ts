@@ -1,52 +1,79 @@
 import { useEffect, useRef, useState } from 'react';
 
-const stripNonNumeric = (input: string) => input.replace(/[^\d.,]+/g, '');
+type DecimalMark = '.' | ',';
 
 /**
- * Mobile keyboards in comma-decimal locales type `,` even in text inputs, so a
- * final comma followed by at most two digits ("9,90", "1,") reads as the
- * decimal mark. Until a third digit arrives the comma could still be grouping
- * ("1," on the way to "1,000"), so callers keep that text as typed.
+ * The decimal mark of the viewer's locale. Phone keyboards in comma-decimal
+ * locales type `,` for decimals, even in text inputs.
  */
-const hasDecimalComma = (text: string) => {
-  const lastComma = text.lastIndexOf(',');
-  return lastComma > text.lastIndexOf('.') && text.length - lastComma - 1 <= 2;
-};
-
-/** Reads typed text as a plain decimal string with at most two decimals ("1000.50"). */
-const normalizedCurrencyValue = (input: string) => {
-  const text = stripNonNumeric(input);
-  const lastComma = text.lastIndexOf(',');
-  const decimal = hasDecimalComma(text)
-    ? `${text.slice(0, lastComma).replace(/[.,]/g, '')}.${text.slice(lastComma + 1)}`
-    : text.replace(/,/g, '');
-  return decimal.match(/^\d*\.?\d{0,2}/)?.[0] ?? '';
+const localeDecimalMark = (): DecimalMark => {
+  try {
+    const decimal = new Intl.NumberFormat()
+      .formatToParts(1.5)
+      .find((part) => part.type === 'decimal');
+    return decimal?.value === ',' ? ',' : '.';
+  } catch {
+    return '.';
+  }
 };
 
 /**
- * Parses the field's text into cents, accepting either `.` or `,` as the
- * decimal mark, so the amount the form saves matches what is on screen.
+ * Finds the decimal mark in typed text, or -1 when there is none. When both
+ * separators appear, the last kind is the decimal mark ("1,000.50", "1.000,50").
+ * A `.` on its own always is. A `,` on its own is only in comma-decimal
+ * locales; elsewhere it groups thousands ("1,000"). Text alone can't tell
+ * "1,00" on the way to "1,000" from "9,90" with one digit too many, so the
+ * locale decides instead of the digit count.
  */
-const forceCurrencyValue = (input: string) => {
-  const amount = parseFloat(normalizedCurrencyValue(input));
+const decimalMarkIndex = (text: string, localeMark: DecimalMark) => {
+  const lastDot = text.lastIndexOf('.');
+  const lastComma = text.lastIndexOf(',');
+  let mark: DecimalMark;
+  if (lastDot !== -1 && lastComma !== -1) {
+    mark = lastDot > lastComma ? '.' : ',';
+  } else if (lastDot !== -1) {
+    mark = '.';
+  } else if (lastComma !== -1 && localeMark === ',') {
+    mark = ',';
+  } else {
+    return -1;
+  }
+  // The first mark after the last separator of the other kind, so a stray
+  // second mark ("1.5.") is dropped rather than moving the decimal point.
+  const otherIndex = text.lastIndexOf(mark === '.' ? ',' : '.');
+  return text.indexOf(mark, otherIndex + 1);
+};
+
+/**
+ * Keeps digits and the decimal mark, as typed, with at most two decimals.
+ * Thousands separators are removed. Digits past the second decimal are
+ * dropped, never moved into the whole amount.
+ */
+const cleanInput = (input: string, localeMark: DecimalMark) => {
+  const text = input.replace(/[^\d.,]+/g, '');
+  const markIndex = decimalMarkIndex(text, localeMark);
+  if (markIndex === -1) {
+    return text.replace(/[.,]/g, '');
+  }
+  const whole = text.slice(0, markIndex).replace(/[.,]/g, '');
+  const fraction = text
+    .slice(markIndex + 1)
+    .replace(/[.,]/g, '')
+    .slice(0, 2);
+  return `${whole}${text[markIndex]}${fraction}`;
+};
+
+/** Parses cleaned field text into cents, so the saved amount matches the screen. */
+const toCents = (cleanText: string) => {
+  const amount = parseFloat(cleanText.replace(',', '.'));
   return Number.isNaN(amount) ? 0 : Math.round(amount * 100);
-};
-
-/**
- * What the field shows while typing: the normalized amount, except while a
- * trailing comma could still be either decimal mark or thousands separator.
- * Blur normalizes that case too.
- */
-const displayValue = (input: string) => {
-  const text = stripNonNumeric(input);
-  return hasDecimalComma(text) ? text : normalizedCurrencyValue(text);
 };
 
 /**
  * The editable text for an amount in cents. Uses the same rule as
  * `formatCurrencyAmount` (whole amounts show no decimals, anything with cents
- * shows two), but always with a `.` decimal point and no thousands separators,
- * because that is the only shape `forceCurrencyValue` can parse back.
+ * shows two), always with a `.` decimal point, which every locale accepts,
+ * and no thousands separators.
  */
 const formatInputValue = (cents: number) => {
   const value = cents / 100;
@@ -54,6 +81,7 @@ const formatInputValue = (cents: number) => {
 };
 
 const useCurrencyInput = (valueInCents: number | '', onChange?: (cents: number) => void) => {
+  const [localeMark] = useState(localeDecimalMark);
   const [value, setValue] = useState(
     valueInCents === '' ? '' : formatInputValue(valueInCents || 0),
   );
@@ -72,11 +100,13 @@ const useCurrencyInput = (valueInCents: number | '', onChange?: (cents: number) 
 
   return {
     value,
-    onBlur: () => setValue(value === '' ? '' : formatInputValue(forceCurrencyValue(value))),
+    onBlur: () =>
+      setValue(value === '' ? '' : formatInputValue(toCents(cleanInput(value, localeMark)))),
     onChange: (input: string) => {
-      const cents = forceCurrencyValue(input);
+      const cleanText = cleanInput(input, localeMark);
+      const cents = toCents(cleanText);
 
-      setValue(displayValue(input));
+      setValue(cleanText);
       lastEmittedValue.current = cents;
       onChange?.(cents);
     },
