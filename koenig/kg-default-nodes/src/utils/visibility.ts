@@ -22,13 +22,6 @@ function isNullish(value: unknown) {
     return value === null || value === undefined;
 }
 
-function withoutNullish(obj: Record<string, unknown> | undefined) {
-    if (!obj || typeof obj !== 'object') {
-        return {};
-    }
-    return Object.fromEntries(Object.entries(obj).filter(([, value]) => !isNullish(value)));
-}
-
 // ensure we always work with a deep copy to avoid accidental ref mutations
 export function buildDefaultVisibility(): typeof DEFAULT_VISIBILITY {
     return JSON.parse(JSON.stringify(DEFAULT_VISIBILITY));
@@ -129,8 +122,7 @@ export function migrateOldVisibilityFormat(visibility: Visibility) {
 
     // convert web visibility, old formats only had on/off for web visibility rather than specific segments
     if (isNullish(visibility.showOnWeb) && isNullish(visibility.emailOnly)) {
-        // no legacy web keys, so keep any supplied new-format values and default the rest
-        newVisibility.web = {...buildDefaultVisibility().web, ...withoutNullish(visibility.web)};
+        newVisibility.web = buildDefaultVisibility().web;
     } else if (!isNullish(visibility.emailOnly)) {
         newVisibility.web.nonMember = !visibility.emailOnly;
         newVisibility.web.memberSegment = visibility.emailOnly ? NO_MEMBERS_SEGMENT : ALL_MEMBERS_SEGMENT;
@@ -141,7 +133,7 @@ export function migrateOldVisibilityFormat(visibility: Visibility) {
 
     // convert email visibility, taking into account the old (and sometimes incorrect) segment formats
     if (isNullish(visibility.showOnEmail) && isNullish(visibility.emailOnly)) {
-        newVisibility.email = {...buildDefaultVisibility().email, ...withoutNullish(visibility.email)};
+        newVisibility.email = buildDefaultVisibility().email;
     } else if (visibility.showOnEmail === false) {
         newVisibility.email.memberSegment = NO_MEMBERS_SEGMENT;
     } else if (visibility.segment === 'status:-free+status:-paid') {
