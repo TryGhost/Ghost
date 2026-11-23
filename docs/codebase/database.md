@@ -120,6 +120,62 @@ schema definition, migration, exporter table lists, and integrity tests in sync.
 For initial data and settings defaults, see the
 [schema and default data guide](../../ghost/core/server/data/schema/README.md).
 
+## Sortable collections
+
+A sortable collection is a set of rows kept in an order, such as a list a
+publisher arranges. A table declares one in `schema.ts`, beside its columns:
+
+```ts
+'@@SORTABLE@@': [sortableBy({ column: 'sort_order', tieBreak: ['created_at', 'id'] })],
+```
+
+- `column` is the integer column that holds each row's position.
+- `within` names the column that scopes the order to a parent, such as
+  `post_id` for a post's tags. Leave it out when the whole table is one
+  collection.
+- `tieBreak` lists the columns that order rows with the same position. The id
+  always comes last, so the order is the same on every read.
+
+`sortable(table, column)` in `server/lib/sortable.ts` reads the declaration
+and gives the three operations a collection has. A table can declare several
+collections, so one is always asked for by its position column. `sortableBy`
+keeps the declaration's column names as literal types, so the compiler checks
+the table, the column and the scope of every call. Each takes a connection or transaction,
+and the collection's parent as `{[within]: id}`, or `{}` without one:
+
+```ts
+const collection = sortable('<table>', 'sort_order');
+
+await collection.inOrder(db, scope); // the rows in order
+await collection.append(db, scope, id); // move a new row to the end
+await collection.reorder(db, scope, orderedIds); // replace the whole order
+```
+
+The three operations take no lock that keeps other writers out of the
+collection. Where the order under writes at the same time matters, take a lock
+that every writer of the collection takes before calling them, and before the
+transaction reads anything else. For a collection scoped to a parent, that is
+the parent's row lock, as [row locking](#row-locking) requires. Without one,
+rows appended at the same time can share a position, or get positions out of
+the order they were added, and a reorder can deadlock with another write to
+the parent's rows, such as a delete.
+
+Don't index the position column. A reorder locks rows in id order so that two
+reorders can't deadlock, and MySQL would read through an index that contains
+the position and lock them in position order. The schema's unit test rejects
+one.
+
+A position only says where a row comes in the order. Code outside the
+primitive doesn't read or write the position column, and the column has no
+unique constraint: two rows can hold the same position, and the tie-break
+orders them. `reorder` takes the id of every row exactly once and rejects
+anything else, so an order made from an out-of-date list isn't half applied.
+
+The declaration changes no SQL. Add the column in a migration as any other.
+The collections Ghost already orders (newsletters, a post's tags and authors,
+a tier's benefits, custom fields) have their own code and don't use the
+primitive yet.
+
 ## Row locking
 
 Inside a transaction (`options.transacting`), `Model.edit` and

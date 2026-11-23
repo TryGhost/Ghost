@@ -2,6 +2,7 @@
 
 import type { PatternColumn } from './lib/column-patterns';
 import type { ForeignKeyColumn, ForeignKeySpec } from './lib/foreign-keys';
+import type { SortableDefinition } from './lib/sortable';
 
 export interface ColumnValidations {
   isUUID?: boolean;
@@ -79,6 +80,8 @@ type TableOptions = {
   '@@PRIMARY_KEY@@'?: string[];
   /** Composite foreign keys; a single-column one goes on the column as `references` */
   '@@FOREIGN_KEYS@@'?: ForeignKeySpec[];
+  /** The sortable collections in the table. Declares how they are ordered; changes no SQL. */
+  '@@SORTABLE@@'?: SortableDefinition[];
 };
 
 export type TableDefinition = TableOptions & {
