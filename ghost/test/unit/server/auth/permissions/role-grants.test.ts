@@ -224,7 +224,7 @@ const GRANTS: [string, string, string[]][] = [
   ['add', 'member_custom_field', ['Administrator', 'Admin Integration']],
   ['edit', 'member_custom_field', ['Administrator', 'Admin Integration']],
   ['destroy', 'member_custom_field', ['Administrator', 'Admin Integration']],
-  ['read', 'identity', ['Administrator']],
+  ['read', 'identity', ['Administrator', 'Editor', 'Author', 'Contributor', 'Super Editor']],
   ['auth', 'members_stripe_connect', ['Administrator']],
   [
     'browse',
