@@ -1,4 +1,4 @@
-import type { AutomationStepStatus, AutomationStepToRun } from './automations-repository';
+import type { AutomationStepTerminalStatus } from './automation-step-status';
 import type { AutomationTriggerRule } from './trigger-rules';
 import type { Promisable, ReadonlyDeep } from 'type-fest';
 import type { z } from 'zod';
@@ -43,18 +43,6 @@ export type AutomatedEmailRecipientTrackingData = {
   automationActionRevisionId: string;
 };
 
-export type RecordEmailSentOptions = Readonly<{
-  automationActionRevisionId: string;
-  automationRunStepId: string;
-  mailgunMessageId?: string;
-  memberEmail: string;
-  memberId: string;
-  memberName: string | null;
-  memberUuid: string;
-  trackClicks: boolean;
-  trackOpens: boolean;
-}>;
-
 export type EmailRecipientToInsert = {
   id: string;
   created_at: Date;
@@ -70,13 +58,25 @@ export type EmailRecipientToInsert = {
   track_opens: boolean;
 };
 
-export type LockedRunStepUpdate = {
-  status: AutomationStepStatus;
-  started_at?: null;
-  finished_at?: Date | null;
-  ready_at?: Date;
-  updated_at: Date;
-};
+export type LockedRunStep = Readonly<{
+  id: string;
+  locked_by: string;
+}>;
+
+/** End a step, or put it back in the queue for another attempt. */
+export type LockedRunStepUpdate =
+  | {
+      status: AutomationStepTerminalStatus;
+      finished_at: Date;
+      updated_at: Date;
+    }
+  | {
+      status: 'pending';
+      started_at: null;
+      finished_at: null;
+      ready_at: Date;
+      updated_at: Date;
+    };
 
 export type TrackEmailClickedOptions = ReadonlyDeep<{
   automationActionRevisionId: string;
@@ -237,7 +237,7 @@ export type AutomationsRepository2<Connection> = {
    */
   updateLockedRunStep: (
     connection: Connection,
-    step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
+    step: LockedRunStep,
     changes: Readonly<LockedRunStepUpdate>,
   ) => Promisable<boolean>;
 

@@ -1,4 +1,5 @@
 import type { ReadonlyDeep } from 'type-fest';
+import type { AutomationStepStatus } from './automation-step-status';
 import type { AddAutomationData, EditAutomationData } from './automations-schemas';
 import type { AutomationTriggerRule, AutomationTriggerRuleDefinition } from './trigger-rules';
 
@@ -119,18 +120,6 @@ export type AutomationStepToRun = ReadonlyDeep<
         }
     )
 >;
-
-export const AUTOMATION_STEP_TERMINAL_STATUSES = [
-  'automation disabled',
-  'failed',
-  'finished',
-  'member changed status',
-  'member changed tier',
-  'member unsubscribed',
-] as const;
-
-export type AutomationStepTerminalStatus = (typeof AUTOMATION_STEP_TERMINAL_STATUSES)[number];
-export type AutomationStepStatus = 'pending' | AutomationStepTerminalStatus;
 
 export type AutomationRunHistoryAction =
   | WaitAction

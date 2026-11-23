@@ -7,6 +7,7 @@ import type {
   ActionToInsert,
   EdgeRow,
   EmailRecipientToInsert,
+  LockedRunStep,
   RunStepToInsert,
 } from '../../../../core/server/services/automations/automations-repository-2';
 import { createDatabaseAutomationsRepository2 } from '../../../../core/server/services/automations/database-automations-repository-2';
@@ -1460,7 +1461,7 @@ describe('database automations repository', function () {
     let revisionId: string;
     let memberId: string;
     let runId: string;
-    let step: { id: string; locked_by: string };
+    let step: LockedRunStep;
     let otherStepId: string;
 
     const getStep = async (id: string) => {

@@ -428,18 +428,24 @@ export const createDatabaseAutomationsRepository2 = ({
     },
 
     async updateLockedRunStep(connection, step, changes) {
-      const { finished_at: finishedAt, ready_at: readyAt } = changes;
+      const statusChanges =
+        changes.status === 'pending'
+          ? {
+              status: changes.status,
+              started_at: changes.started_at,
+              finished_at: changes.finished_at,
+              ready_at: toDatabaseDate(changes.ready_at),
+            }
+          : {
+              status: changes.status,
+              finished_at: toDatabaseDate(changes.finished_at),
+            };
       const updated = await connection('automation_run_steps')
         .update({
-          status: changes.status,
+          ...statusChanges,
           updated_at: toDatabaseDate(changes.updated_at),
           locked_by: null,
           locked_at: null,
-          ...(changes.started_at === undefined ? {} : { started_at: changes.started_at }),
-          ...(finishedAt === undefined
-            ? {}
-            : { finished_at: finishedAt && toDatabaseDate(finishedAt) }),
-          ...(readyAt === undefined ? {} : { ready_at: toDatabaseDate(readyAt) }),
         })
         .where('id', step.id)
         .where('status', 'pending')

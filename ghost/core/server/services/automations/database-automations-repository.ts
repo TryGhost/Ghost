@@ -6,7 +6,10 @@ import {
 } from './trigger-rules';
 import errors from '@tryghost/errors';
 import { z } from 'zod';
-import { AUTOMATION_STEP_TERMINAL_STATUSES } from './automations-repository';
+import {
+  AUTOMATION_STEP_TERMINAL_STATUSES,
+  type AutomationStepTerminalStatus,
+} from './automation-step-status';
 import tpl from '@tryghost/tpl';
 import crypto from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
@@ -31,7 +34,6 @@ import type {
   AutomationRunHistory,
   AutomationRunHistoryStep,
   AutomationRunHistoryAction,
-  AutomationStepTerminalStatus,
   AutomationStepToRun,
   AutomationsRepository,
   Page,
