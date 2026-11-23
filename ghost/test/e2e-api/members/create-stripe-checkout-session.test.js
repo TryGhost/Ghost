@@ -1,5 +1,7 @@
 const assert = require('node:assert/strict');
 const querystring = require('querystring');
+const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const {
   agentProvider,
   mockManager,
@@ -1115,12 +1117,26 @@ describe('Create Stripe Checkout Session', function () {
       assert.equal(await models.StripeProduct.findOne({ product_id: freeTierId }), null);
     });
 
-    it('answers a malformed tier id with a server error, as the tiers read throws on one', async function () {
-      await membersAgent
-        .post('/api/create-stripe-checkout-session/')
-        .body({ tierId: 'not-an-id', cadence: 'month' })
-        .expectStatus(500);
-    });
+    it.each([
+      ['a word', 'free'],
+      ['an id too short', '0123456789abcdef'],
+      ['a 12-character id', '0123456789ab'],
+      ['an id that isn’t hex', 'zzzzzzzzzzzzzzzzzzzzzzzz'],
+      ['a number', 123],
+    ])(
+      'answers that a tier named by %s doesn’t exist, logging the id it was sent',
+      async function (_name, tierId) {
+        sinon.stub(logging, 'error');
+
+        const error = await failedCheckout({ tierId });
+
+        assert.equal(error.message, 'This tier does not exist.');
+        sinon.assert.calledWithMatch(logging.error, {
+          event: { name: 'stripe_checkout.session.tier_not_found' },
+          tier_id: tierId,
+        });
+      },
+    );
 
     it('answers that it couldn’t start a checkout Stripe failed', async function () {
       stripeMocker.checkoutSessionError = { type: 'api_error', message: 'Stripe is down' };
