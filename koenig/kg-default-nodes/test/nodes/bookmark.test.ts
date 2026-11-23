@@ -268,6 +268,34 @@ describe('BookmarkNode', function () {
                 });
             });
         });
+
+        it('migrates legacy visibility to the current format', function () {
+            const serializedState = JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'bookmark',
+                        ...dataset,
+                        visibility: {showOnWeb: true, showOnEmail: false, segment: ''}
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            editor.setEditorState(editor.parseEditorState(serializedState));
+
+            editor.getEditorState().read(() => {
+                const [bookmarkNode] = $getRoot().getChildren() as BookmarkNode[];
+
+                expect(bookmarkNode.visibility).toMatchObject({
+                    web: {nonMember: true, memberSegment: 'status:free,status:-free'},
+                    email: {memberSegment: ''}
+                });
+            });
+        });
     });
 
     describe('static properties', function () {

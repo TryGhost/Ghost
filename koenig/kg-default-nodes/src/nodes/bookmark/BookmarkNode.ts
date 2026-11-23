@@ -1,4 +1,4 @@
-import type {Visibility} from '../../utils/visibility.js';
+import {migrateOldVisibilityFormat, type Visibility} from '../../utils/visibility.js';
 import {generateDecoratorNode, type DecoratorNodePropertyMap} from '../../generate-decorator-node.js';
 import {parseBookmarkNode} from './bookmark-parser.js';
 import {renderBookmarkNode} from './bookmark-renderer.js';
@@ -74,11 +74,12 @@ export class BookmarkNode extends generateDecoratorNode({
     /* @override */
     static importJSON(serializedNode: Record<string, unknown>) {
         const {url, metadata, caption, visibility} = serializedNode as BookmarkData;
+        // migrate older nodes that were saved with an earlier version of the visibility format
         const node = new this({
             url,
             metadata,
             caption,
-            visibility
+            visibility: migrateOldVisibilityFormat(visibility as Visibility)
         });
         return node;
     }
