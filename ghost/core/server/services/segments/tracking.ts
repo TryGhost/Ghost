@@ -1,7 +1,7 @@
 import type { Tracer } from '../../lib/tracing/tracer';
 
-// The span names, attribute names and counter names for segments, which dashboards query. The
-// service and its repository report what happened, and this module decides how it is recorded.
+// The span names and attribute names for segments, which dashboards query. The service reports
+// what happened, and this module decides how it is recorded.
 
 /**
  * Why a change to a segment was rejected:
@@ -15,7 +15,7 @@ import type { Tracer } from '../../lib/tracing/tracer';
  */
 export type SegmentRejection = 'not_found' | 'name_taken' | 'filter_changed';
 
-/** What a command that changes a segment, and the repository the command uses, report. */
+/** What a command that changes a segment reports. */
 export interface SegmentChangeAttempt {
   /**
    * Call before throwing the error that rejects the change. The span still fails with that
