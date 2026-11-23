@@ -47,6 +47,7 @@ function notFound(attempt: SegmentChangeAttempt): never {
  * through `onSegmentUpdated` as its last step inside the transaction, so a failure there fails
  * the command. A command that opened its own transaction rolls the change back. A command that
  * joined a transaction leaves the rollback to the caller, who must not commit after a failure.
+ * A change that is rejected has written nothing, so a caller's transaction can go on after it.
  *
  * Each command records a span through `tracking`, with whether it succeeded, was rejected or
  * failed.
