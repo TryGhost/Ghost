@@ -17,9 +17,9 @@ describe('database automations repository', function () {
 
   const selectedTierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
 
-  const createApi = () =>
+  const createApi = (repository = createDatabaseAutomationsRepository2({ knex })) =>
     createAutomationsApi2({
-      repository: createDatabaseAutomationsRepository2({ knex }),
+      repository,
       fakeWaitHoursMultiplier: null,
       labs: { isSet: () => true },
       domainEvents: { dispatch: () => {} },
@@ -336,16 +336,17 @@ describe('database automations repository', function () {
   });
 
   describe('finishStepAndEnqueueNext', function () {
-    it('enqueues the next step once when two runners finish the same step at the same time', async function () {
-      const concurrentAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });
+    // A run whose first step is locked by this runner and has a next action.
+    const insertLockedStepWithNextAction = async () => {
+      const stepAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });
       const firstAction = await knex('automation_actions')
-        .where('automation_id', concurrentAutomationId)
+        .where('automation_id', stepAutomationId)
         .first();
       const nextActionId = ObjectId().toHexString();
       const now = toDatabaseDate(new Date());
       await knex('automation_actions').insert({
         id: nextActionId,
-        automation_id: concurrentAutomationId,
+        automation_id: stepAutomationId,
         type: 'send_email',
         created_at: now,
         updated_at: now,
@@ -363,8 +364,7 @@ describe('database automations repository', function () {
       });
       const memberId = ObjectId().toHexString();
       await insertMember(memberId);
-      const api = createApi();
-      await api.notify({
+      await createApi().notify({
         eventName: 'membership_started',
         source: 'member' as const,
         memberId,
@@ -373,7 +373,7 @@ describe('database automations repository', function () {
         memberTierIds: selectedTierIds,
       });
       const run = await knex('automation_runs')
-        .where({ automation_id: concurrentAutomationId, member_id: memberId })
+        .where({ automation_id: stepAutomationId, member_id: memberId })
         .first();
       await knex('automation_run_steps')
         .where('automation_run_id', run.id)
@@ -381,6 +381,15 @@ describe('database automations repository', function () {
       const { steps } = await createDatabaseAutomationsRepository({ knex }).fetchAndLockSteps(100);
       const step = steps.find((candidate) => candidate.automation_run_id === run.id);
       assert(step);
+      return { runId: run.id, step };
+    };
+
+    const getRunSteps = (runId: string) =>
+      knex('automation_run_steps').where('automation_run_id', runId);
+
+    it('enqueues the next step once when two runners finish the same step at the same time', async function () {
+      const { runId, step } = await insertLockedStepWithNextAction();
+      const api = createApi();
 
       const results = await Promise.all([
         api.finishStepAndEnqueueNext(step),
@@ -388,8 +397,29 @@ describe('database automations repository', function () {
       ]);
 
       assert.equal(results.filter((result) => result !== null).length, 1);
-      const runSteps = await knex('automation_run_steps').where('automation_run_id', run.id);
+      const runSteps = await getRunSteps(runId);
       assert.deepEqual(runSteps.map((runStep) => runStep.status).sort(), ['finished', 'pending']);
+    });
+
+    it('leaves the step pending and locked when enqueueing the next step fails', async function () {
+      const { runId, step } = await insertLockedStepWithNextAction();
+      const before = await getRunSteps(runId);
+      assert.equal(before.length, 1);
+      assert.equal(before[0].status, 'pending');
+      assert.equal(before[0].locked_by, step.locked_by);
+      assert.notEqual(before[0].locked_at, null);
+      const failure = new Error('Could not insert the next step');
+      const api = createApi({
+        ...createDatabaseAutomationsRepository2({ knex }),
+        insertRunSteps: () => {
+          throw failure;
+        },
+      });
+
+      await assert.rejects(api.finishStepAndEnqueueNext(step), failure);
+
+      // The finish rolled back with the failed insert: the only step is unchanged.
+      assert.deepEqual(await getRunSteps(runId), before);
     });
   });
 
