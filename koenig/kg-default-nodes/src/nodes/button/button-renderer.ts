@@ -1,3 +1,4 @@
+import {renderWithVisibility, type Visibility} from '../../utils/visibility.js';
 import {addCreateDocumentOption} from '../../utils/add-create-document-option.js';
 import type {ExportDOMOptions} from '../../export-dom.js';
 import {renderEmptyContainer} from '../../utils/render-empty-container.js';
@@ -5,6 +6,7 @@ import {renderEmailButton} from '../../utils/render-helpers/email-button.js';
 import {html} from '../../utils/tagged-template-fns.js';
 
 interface ButtonNodeData {
+    visibility?: Visibility;
     buttonUrl: string;
     buttonText: string;
     alignment: string;
@@ -21,9 +23,9 @@ export function renderButtonNode(node: ButtonNodeData, options: RenderOptions = 
     }
 
     if (options.target === 'email') {
-        return emailTemplate(node, document);
+        return renderWithVisibility(emailTemplate(node, document), node.visibility, options);
     } else {
-        return frontendTemplate(node, document);
+        return renderWithVisibility(frontendTemplate(node, document), node.visibility, options);
     }
 }
 

@@ -6,7 +6,7 @@ import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity'
 import { createLoggingFake } from '../../utils/logging-utils';
 
 // Required rather than imported, so the test shares the module instances Ghost boots with.
-const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
+const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const metafields: typeof import('../../../core/server/services/members-metafields') = require('../../../core/server/services/members-metafields');
 const giftLinks: typeof import('../../../core/server/services/gift-links') = require('../../../core/server/services/gift-links');
@@ -26,6 +26,13 @@ const {
 const {
   refreshSettingsCache,
 }: typeof import('../../../core/server/services/segments/settings-cache') = require('../../../core/server/services/segments/settings-cache');
+const {
+  segmentsTracking,
+}: typeof import('../../../core/server/services/segments/tracking') = require('../../../core/server/services/segments/tracking');
+const {
+  meter,
+  tracer,
+}: typeof import('../../../core/server/lib/tracing') = require('../../../core/server/lib/tracing');
 const settingsCache: typeof import('../../../core/shared/settings-cache') = require('../../../core/shared/settings-cache');
 
 /** Runs a command on the connection or transaction it is given, or on its own when given none. */
@@ -737,6 +744,10 @@ describe('Commands and transactions', function () {
       );
     }
 
+    afterEach(function () {
+      mockManager.restore();
+    });
+
     it('leaves both as they were when the transaction it joined is rolled back', async function () {
       const stored = await settledSharedViews();
       const recordedBefore = await recordedCount();
@@ -786,6 +797,7 @@ describe('Commands and transactions', function () {
     });
 
     it('rolls the change back when the function it reports the change to fails', async function () {
+      const metrics = mockManager.mockMetrics();
       const failing = new SegmentsService({
         knex,
         repository: new SettingsSegmentRepository({
@@ -793,6 +805,7 @@ describe('Commands and transactions', function () {
           logging: createLoggingFake(),
           maxValueLength: 65535,
         }),
+        tracking: segmentsTracking({ tracer, meter }),
         onSegmentUpdated: async () => {
           throw new Error('Reporting the change failed');
         },
@@ -803,10 +816,19 @@ describe('Commands and transactions', function () {
 
       assert.equal(await storedSharedViews(), stored);
       assert.deepEqual(await segments.default.service.browse(), []);
+      // The span fails without a rejection, so a dashboard counts it as a failure.
+      await vi.waitFor(() =>
+        expect(metrics.tracked('segments.add')).toMatchObject([
+          { event: { outcome: 'failure' }, error: { type: 'Error' } },
+        ]),
+      );
+      assert.deepEqual(metrics.tracked('segments.add')[0].labels, {});
     });
 
-    it('logs a refresh of the settings cache that fails, and keeps the change', async function () {
+    it('logs and counts a refresh of the settings cache that fails, and keeps the change', async function () {
+      const metrics = mockManager.mockMetrics();
       const logging = createLoggingFake();
+      const tracking = segmentsTracking({ tracer, meter });
       const refreshingNothing = new SegmentsService({
         knex,
         repository: new SettingsSegmentRepository({
@@ -814,11 +836,13 @@ describe('Commands and transactions', function () {
           logging: createLoggingFake(),
           maxValueLength: 65535,
         }),
+        tracking,
         // No setting has this key, so the refresh finds nothing to cache.
         onSegmentUpdated: refreshSettingsCache({
           knex,
           cache: settingsCache,
           logging,
+          tracking,
           settingKey: 'not_a_setting',
         }),
       });
@@ -829,6 +853,11 @@ describe('Commands and transactions', function () {
         sinon.assert.calledOnceWithMatch(logging.error, {
           event: { name: 'segments.refresh-settings-cache.failed' },
         }),
+      );
+      await vi.waitFor(() =>
+        expect(metrics.tracked('segments.failed_settings_cache_refreshes')).toMatchObject([
+          { value: 1 },
+        ]),
       );
       assert.deepEqual(
         (await segments.default.service.browse()).map((segment) => segment.name),

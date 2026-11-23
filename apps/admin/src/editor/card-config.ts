@@ -6,6 +6,7 @@ import {
 } from '@tryghost/admin-x-framework/api/settings';
 import { type SiteData, getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
+import { z } from 'zod';
 import type { AutocompleteLink } from '@/shared/autocomplete-links';
 import type { LinkSearchGroup } from './link-suggestions';
 
@@ -77,6 +78,7 @@ export interface PostCardConfig extends PostCardConfigPorts {
   post: CardConfigPost | undefined;
   snippets: CardConfigSnippet[];
   visibilitySettings: CardVisibilitySettings;
+  visibilityCardTypes: string[];
 }
 
 // An unsaved post has no visibility until the first save applies the site
@@ -102,6 +104,18 @@ export function getCardVisibilitySettings(
 ): CardVisibilitySettings {
   const isPage = post?.isPage || post?.displayName === 'page';
   return isPage ? 'web only' : 'web and email';
+}
+
+// Cards that had visibility before the server started listing supported cards
+// in config. Admin can deploy ahead of the server, so an older server only
+// gets visibility settings for these.
+export const LEGACY_VISIBILITY_CARD_TYPES = ['html', 'call-to-action', 'transistor'];
+
+const cardVisibilitySchema = z.array(z.string());
+
+export function getVisibilityCardTypes(config: Pick<Config, 'cardVisibility'>): string[] {
+  const cardVisibility = cardVisibilitySchema.safeParse(config.cardVisibility);
+  return cardVisibility.success ? cardVisibility.data : LEGACY_VISIBILITY_CARD_TYPES;
 }
 
 function imageSetting(settings: Setting[], key: string): string | null {
@@ -146,6 +160,7 @@ export function buildPostCardConfig(
     createSnippet: ports.createSnippet,
     deleteSnippet: ports.deleteSnippet,
     visibilitySettings: getCardVisibilitySettings(sources.post),
+    visibilityCardTypes: getVisibilityCardTypes(config),
   };
 }
 

@@ -7,6 +7,7 @@ import usePinturaEditor from '../hooks/usePinturaEditor';
 import {$createGalleryNode} from './GalleryNode';
 import {$createNodeSelection, $getNodeByKey, $setSelection} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
+import {CardSettingsPanel} from '../components/CardSettingsPanel';
 import {ImageCard} from '../components/ui/cards/ImageCard';
 import {ImageUploadForm} from '../components/ui/ImageUploadForm';
 import {LinkInput} from '../components/ui/LinkInput';
@@ -19,7 +20,9 @@ import {getImageFilenameFromSrc} from '../utils/getImageFilenameFromSrc';
 import {imageUploadHandler} from '../utils/imageUploadHandler';
 import {isCardWidth} from '@tryghost/kg-default-nodes';
 import {isGif} from '../utils/isGif';
+import {isSameVisibility} from '../utils/visibility';
 import {openFileSelection} from '../utils/openFileSelection';
+import {useCardVisibilityAvailable} from '../hooks/useCardVisibilitySettings';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useResetWhenReadOnly} from '../hooks/useIsDocumentEditable';
 
@@ -28,10 +31,17 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
     const [showLink, setShowLink] = React.useState(false);
     useResetWhenReadOnly(() => setShowLink(false));
     const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
-    const {isSelected, cardWidth, setCardWidth} = React.useContext(CardContext);
+    const {isSelected, isEditing, cardWidth, setCardWidth, setEditing} = React.useContext(CardContext);
     const fileInputRef = React.useRef();
     const toolbarFileInputRef = React.useRef();
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
+    const isVisibilityEnabled = useCardVisibilityAvailable(nodeKey);
+
+    const handleToolbarEdit = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setEditing(true);
+    };
 
     const imageUploader = fileUploader.useFileUpload('image');
     const imageFileDragHandler = useFileDragAndDrop({handleDrop: handleImageDrop});
@@ -39,10 +49,14 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
     // stable fn refs to avoid excessive re-inits of the drag/drop handler effects
     // which can cause unexpected side-effects with event handling
     const canDropImageCard = React.useCallback((draggable) => {
-        return draggable.type === 'card'
-            && draggable.cardName === 'image'
-            && draggable.nodeKey !== nodeKey;
-    }, [nodeKey]);
+        if (draggable.type !== 'card' || draggable.cardName !== 'image' || draggable.nodeKey === nodeKey) {
+            return false;
+        }
+
+        // a gallery has one audience, so only merge images that share one
+        const targetVisibility = editor.getEditorState().read(() => $getNodeByKey(nodeKey)?.visibility);
+        return isSameVisibility(draggable.dataset?.visibility, targetVisibility);
+    }, [editor, nodeKey]);
     const onDropImageCard = React.useCallback((draggable) => {
         const {type, cardName, nodeKey: draggedNodeKey, dataset} = draggable;
 
@@ -50,7 +64,8 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
             editor.update(() => {
                 const targetImageNode = $getNodeByKey(nodeKey);
                 const droppedImageNode = $getNodeByKey(draggedNodeKey);
-                const galleryNode = $createGalleryNode();
+                // keep the shared audience (canDropImageCard only allows matching ones)
+                const galleryNode = $createGalleryNode({visibility: targetImageNode.visibility});
 
                 // images don't contain the filename dataset property so we need to add it
                 dataset.fileName = dataset?.fileName || getImageFilenameFromSrc(dataset.src);
@@ -268,7 +283,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
 
             <ActionToolbar
                 data-kg-card-toolbar="image"
-                isVisible={src && isSelected && !showLink && !showSnippetToolbar}
+                isVisible={src && isSelected && !isEditing && !showLink && !showSnippetToolbar}
             >
                 <ImageUploadForm
                     fileInputRef={toolbarFileInputRef}
@@ -301,6 +316,15 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
                     <ToolbarMenuItem icon="link" isActive={href || false} label="Link" onClick = {() => {
                         setShowLink(true);
                     }} />
+                    <ToolbarMenuSeparator hide={!isVisibilityEnabled} />
+                    <ToolbarMenuItem
+                        dataTestId="edit-image-card"
+                        hide={!isVisibilityEnabled}
+                        icon="edit"
+                        isActive={false}
+                        label="Edit"
+                        onClick={handleToolbarEdit}
+                    />
                     <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                     <ToolbarMenuItem
                         dataTestId="create-snippet"
@@ -312,6 +336,8 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
                     />
                 </ToolbarMenu>
             </ActionToolbar>
+
+            <CardSettingsPanel />
         </>
     );
 }

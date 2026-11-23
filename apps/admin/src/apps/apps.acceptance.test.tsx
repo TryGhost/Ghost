@@ -223,6 +223,28 @@ describe('Managing apps', () => {
     await expect.poll(() => callAppFrame(elsewhere, 'canShare').catch(() => undefined)).toBe(false);
   });
 
+  it.each([
+    { admin7Design: false, edge: false },
+    { admin7Design: false, edge: true },
+    { admin7Design: true, edge: false },
+    { admin7Design: true, edge: true },
+  ])(
+    'opens from blank action-cell space with admin7Design $admin7Design and edge $edge',
+    async ({ admin7Design, edge }) => {
+      fakeInstallations([installation()]);
+      fakeAdminStats.memberCount();
+      fakeAdminStats.mrr();
+      await fakeAppPage(installation());
+      await renderAdminApp('/apps', { labs: { ...labs, admin7Design } });
+      const row = appsScreen.row('Podcast');
+      await expect.element(row).toBeVisible();
+      const bounds = row.element().getBoundingClientRect();
+      await row.click({ position: { x: bounds.width + (edge ? 8 : -8), y: bounds.height - 4 } });
+      await expect.poll(currentRoute).toBe(APP_ROUTE);
+      await expect.element(appsScreen.frame()).toBeVisible();
+    },
+  );
+
   it('opens an app’s details from the row’s menu, and the app from its details', async () => {
     fakeInstallations([installation()]);
     await fakeAppPage(installation({ history: [installedOn('2026-10-01T10:00:00.000Z')] }));
@@ -1487,24 +1509,36 @@ describe('Managing apps', () => {
     });
   });
 
-  it('opens an app in a new tab from a modified click on its row', async () => {
+  it('preserves the native app link and modifiers when its row is clicked', async () => {
     fakeInstallations([installation()]);
-    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
+    await renderAdminApp('/apps', { labs });
+    const link = appsScreen.row('Podcast').getByRole('link', { name: 'Podcast', exact: true });
+    await expect.element(link).toBeVisible();
+    const activation = vi.fn<(event: { modified: boolean; prevented: boolean }) => void>();
+    const linkElement = link.element();
+    const observeActivation = (event: Event) => {
+      if (
+        !(event instanceof MouseEvent) ||
+        !(event.target instanceof Node) ||
+        !linkElement.contains(event.target)
+      ) {
+        return;
+      }
+      activation({ modified: event.ctrlKey || event.metaKey, prevented: event.defaultPrevented });
+      // Observe the app's result, then prevent a popup from opening another test runner.
+      event.preventDefault();
+    };
+    document.addEventListener('click', observeActivation);
     try {
-      await renderAdminApp('/apps', { labs });
       await appsScreen
         .row('Podcast')
         .getByText('Publish episodes and embed players.')
         .click({ modifiers: ['ControlOrMeta'] });
-
-      expect(openSpy).toHaveBeenCalledWith(
-        expect.stringMatching(/#\/apps\/installation-1$/),
-        '_blank',
-        'noopener',
-      );
+      expect(activation).toHaveBeenCalledExactlyOnceWith({ modified: true, prevented: false });
+      await expect.element(link).toHaveAttribute('href', '#/apps/installation-1');
       await expect.poll(currentRoute).toBe('/apps');
     } finally {
-      openSpy.mockRestore();
+      document.removeEventListener('click', observeActivation);
     }
   });
 

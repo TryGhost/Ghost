@@ -15,6 +15,10 @@
     },
     "include": [
         "src/context/KoenigComposerContext.tsx",
+        "src/context/KoenigSelectedCardContext.tsx",
+        "src/context/SharedHistoryContext.tsx",
+        "src/context/SharedOnChangeContext.tsx",
+        "src/context/TKContext.tsx",
         "src/components/ui/cards/PaywallCard.tsx",
         "src/utils/audioUploadHandler.ts",
         "src/utils/dataSrcToFile.ts",

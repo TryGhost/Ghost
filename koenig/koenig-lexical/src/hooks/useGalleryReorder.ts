@@ -2,8 +2,12 @@ import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import pick from 'lodash/pick';
 import {getImageFilenameFromSrc} from '../utils/getImageFilenameFromSrc';
+import {isSameVisibility} from '../utils/visibility';
 
-export default function useGalleryReorder({images, updateImages, isSelected = false, maxImages = 9, disabled = false}) {
+// getVisibility returns the gallery's current visibility. A gallery has one
+// audience, so images only move in from cards with the same audience, and an
+// image dragged out keeps the gallery's audience instead of becoming public.
+export default function useGalleryReorder({images, updateImages, isSelected = false, maxImages = 9, disabled = false, getVisibility = () => undefined}) {
     const koenig = React.useContext(KoenigComposerContext);
 
     const [containerRef, setContainerRef] = React.useState(null);
@@ -14,7 +18,7 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
     const onDragStart = (draggableInfo) => {
         // enable dropping when an image is dragged in from outside of this card
         const isImageDrag = draggableInfo.type === 'image' || draggableInfo.cardName === 'image';
-        if (isImageDrag && draggableInfo.dataset.src && images.length !== maxImages) {
+        if (isImageDrag && draggableInfo.dataset.src && images.length !== maxImages && isSameVisibility(draggableInfo.dataset.visibility, getVisibility())) {
             dragDropContainer.current.enableDrag();
         }
     };
@@ -46,10 +50,17 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
             insertIndex = 0;
         }
 
+        // external images must share the gallery's audience
+        if (draggableIndex === -1 && !isSameVisibility(draggableInfo.dataset.visibility, getVisibility())) {
+            return false;
+        }
+
         if (isDropAllowed(draggableIndex, insertIndex)) {
             if (draggableIndex === -1) {
                 // external image being added
-                const {dataset} = draggableInfo;
+                // the gallery's own visibility applies, so drop the image card's copy
+                const dataset = {...draggableInfo.dataset};
+                delete dataset.visibility;
                 const img = draggableInfo.element.querySelector(`img[src="${dataset.src}"]`);
 
                 // image card datasets may not have all of the details we need but we can fill them in
@@ -100,7 +111,10 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
     const getDraggableInfo = (draggableElement) => {
         let src = draggableElement.querySelector('img').getAttribute('src');
         let image = images.find(i => i.src === src) || images.find(i => i.previewSrc === src);
-        let dataset = image && pick(image, ['fileName', 'src', 'row', 'width', 'height', 'caption']);
+        let dataset = image && {
+            ...pick(image, ['fileName', 'src', 'row', 'width', 'height', 'caption']),
+            visibility: getVisibility()
+        };
 
         if (image) {
             return {

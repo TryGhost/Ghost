@@ -4,6 +4,7 @@ const settingsCache = require('../../../../../shared/settings-cache');
 const labs = require('../../../../../shared/labs');
 const databaseInfo = require('../../../../data/db/info');
 const ghostVersion = require('@tryghost/version');
+const lexicalLib = require('../../../../lib/lexical');
 
 const tinybirdStatsPayloadProperties = ['endpoint', 'endpointBrowser', 'version', 'datasource'];
 
@@ -68,6 +69,7 @@ module.exports = function getConfigProperties() {
     security: config.get('security'),
     // Allowlisted, unlike `security`, which is exposed verbatim
     auth: pick(config.get('auth'), ['engine']),
+    cardVisibility: lexicalLib.cardVisibilityNodeTypes,
   };
 
   if (config.get('explore') && config.get('explore:testimonials_url')) {

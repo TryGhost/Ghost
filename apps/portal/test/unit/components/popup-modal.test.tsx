@@ -1,8 +1,9 @@
+import type { ContextOverrides } from '../../utils/test-utils';
 import { fireEvent, render } from '../../utils/test-utils';
 import { PopupContent } from '../../../src/components/popup-modal';
 import { getPriceData, getProductData, getSiteData } from '../../../src/utils/fixtures-generator';
 
-const renderPopup = (overrideContext) =>
+const renderPopup = (overrideContext: ContextOverrides = {}) =>
   render(<PopupContent isMobile={false} />, { overrideContext });
 
 /** Portal's popup at the gift flow's delivery step, which holds a textarea and a date picker. */

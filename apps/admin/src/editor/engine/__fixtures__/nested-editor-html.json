@@ -31,13 +31,31 @@
           "version": 1,
           "calloutText": "<p><span style=\"white-space: pre-wrap;\">Callout with </span><b><strong style=\"white-space: pre-wrap;\">bold</strong></b><span style=\"white-space: pre-wrap;\"> and </span><i><em class=\"italic\" style=\"white-space: pre-wrap;\">italic</em></i></p>",
           "calloutEmoji": "💡",
-          "backgroundColor": "blue"
+          "backgroundColor": "blue",
+          "visibility": {
+            "web": {
+              "nonMember": true,
+              "memberSegment": "status:free,status:-free"
+            },
+            "email": {
+              "memberSegment": "status:free,status:-free"
+            }
+          }
         },
         {
           "type": "toggle",
           "version": 1,
           "heading": "<span style=\"white-space: pre-wrap;\">Toggle </span><i><em class=\"italic\" style=\"white-space: pre-wrap;\">heading</em></i>",
-          "content": "<p><span style=\"white-space: pre-wrap;\">First paragraph</span></p><p><span style=\"white-space: pre-wrap;\">Second with a </span><a href=\"https://example.com/\"><span style=\"white-space: pre-wrap;\">link</span></a></p>"
+          "content": "<p><span style=\"white-space: pre-wrap;\">First paragraph</span></p><p><span style=\"white-space: pre-wrap;\">Second with a </span><a href=\"https://example.com/\"><span style=\"white-space: pre-wrap;\">link</span></a></p>",
+          "visibility": {
+            "web": {
+              "nonMember": true,
+              "memberSegment": "status:free,status:-free"
+            },
+            "email": {
+              "memberSegment": "status:free,status:-free"
+            }
+          }
         }
       ],
       "direction": null,

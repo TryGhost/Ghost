@@ -2,10 +2,10 @@ import InvalidThemeModal, { type FatalErrors } from './invalid-theme-modal';
 import React, { useState } from 'react';
 import useCustomFonts from '@/settings/hooks/use-custom-fonts';
 import {
-  ActionList,
-  ActionListItem,
-  ActionListItemActions,
-  ActionListItemContent,
+  List,
+  ListItem,
+  ListItemActions,
+  ListItemContent,
   Button,
   DropdownMenu,
   DropdownMenuContent,
@@ -230,24 +230,24 @@ const ThemeList: React.FC<ThemeSettingProps> = ({ themes }) => {
   return (
     <>
       <h1 className="mb-5 text-2xl font-bold">Installed themes</h1>
-      <ActionList className="border-t border-border">
+      <List className="border-t border-border">
         {themes.map((theme) => {
           const label = getThemeLabel(theme);
           const detail = getThemeVersion(theme);
 
           return (
-            <ActionListItem key={theme.name} data-testid="theme-list-item">
-              <ActionListItemContent className="py-3 pr-6" id={`theme-${theme.name}`}>
+            <ListItem key={theme.name} data-testid="theme-list-item">
+              <ListItemContent className="py-3 pr-6" id={`theme-${theme.name}`}>
                 <div>{label}</div>
                 {detail && <div className="text-sm text-muted-foreground">{detail}</div>}
-              </ActionListItemContent>
-              <ActionListItemActions>
+              </ListItemContent>
+              <ListItemActions>
                 <ThemeActions theme={theme} />
-              </ActionListItemActions>
-            </ActionListItem>
+              </ListItemActions>
+            </ListItem>
           );
         })}
-      </ActionList>
+      </List>
     </>
   );
 };

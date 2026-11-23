@@ -3,9 +3,9 @@ import React, { useState } from 'react';
 import RecommendationIcon from './recommendation-icon';
 import useSettingGroup from '@/settings/hooks/use-setting-group';
 import {
-  ActionList,
-  ActionListItem,
-  ActionListItemContent,
+  List,
+  ListItem,
+  ListItemContent,
   Button,
   Link,
   LoadingIndicator,
@@ -38,8 +38,8 @@ const RecommendationItem: React.FC<{ recommendation: Recommendation; onEdit: () 
   const clicks = count === 1 ? 'click' : 'clicks';
 
   return (
-    <ActionListItem className="group" data-testid="recommendation-list-item">
-      <ActionListItemContent asChild>
+    <ListItem className="group" data-testid="recommendation-list-item">
+      <ListItemContent asChild>
         <button className="flex w-full text-left" type="button" onClick={onEdit}>
           <div className="grow py-3 pr-6">
             <Inline gap="md">
@@ -63,8 +63,8 @@ const RecommendationItem: React.FC<{ recommendation: Recommendation; onEdit: () 
             )}
           </div>
         </button>
-      </ActionListItemContent>
-    </ActionListItem>
+      </ListItemContent>
+    </ListItem>
   );
 };
 
@@ -108,7 +108,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
             onClose={() => setEditingRecommendation(null)}
           />
         )}
-        <ActionList>
+        <List>
           {recommendations.map((recommendation) => (
             <RecommendationItem
               key={recommendation.id}
@@ -116,7 +116,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({
               onEdit={() => setEditingRecommendation(recommendation)}
             />
           ))}
-        </ActionList>
+        </List>
         <div className="border-t border-border pt-2">
           {showMore?.hasMore && (
             <Button

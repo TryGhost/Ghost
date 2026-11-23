@@ -68,7 +68,7 @@ export const init = ({
   >;
   config: Pick<ConfigInstance, 'get'>;
   db: { knex: Knex };
-  domainEvents: Pick<DomainEvents, 'dispatch'>;
+  domainEvents: Pick<typeof DomainEvents, 'dispatch'>;
   emailSuppressionList: Pick<typeof EmailSuppressionList, 'removeComplaint' | 'removeUnsubscribe'>;
   giftDeliveryService: Pick<GiftDeliveryService, 'recordOutcome'>;
   membersRepository: Pick<typeof membersService.api.members, 'get' | 'update'>;

@@ -3,10 +3,10 @@ import TopLevelGroup from '@/settings/components/top-level-group';
 import trackEvent from '@/settings/utils/analytics';
 import useStaffUsers from '@/settings/hooks/use-staff-users';
 import {
-  ActionList,
-  ActionListItem,
-  ActionListItemActions,
-  ActionListItemContent,
+  List,
+  ListItem,
+  ListItemActions,
+  ListItemContent,
   Button,
 } from '@tryghost/shade/components';
 import { formatNumber } from '@tryghost/shade/utils';
@@ -119,15 +119,15 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       testId="dangerzone"
       title="Danger zone"
     >
-      <ActionList>
-        <ActionListItem data-testid="delete-all-content" hover={false}>
-          <ActionListItemContent className="py-3 pr-6">
+      <List>
+        <ListItem data-testid="delete-all-content" hover={false}>
+          <ListItemContent className="py-3 pr-6">
             <div>Delete all content</div>
             <div className="text-sm text-muted-foreground">
               Permanently delete all posts and tags from the database.
             </div>
-          </ActionListItemContent>
-          <ActionListItemActions>
+          </ListItemContent>
+          <ListItemActions>
             <Button
               aria-label="Delete all content"
               size="sm"
@@ -137,17 +137,17 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({ keywords }) => {
             >
               Delete
             </Button>
-          </ActionListItemActions>
-        </ActionListItem>
-        <ActionListItem data-testid="reset-all-authentication" hover={false}>
-          <ActionListItemContent className="py-3 pr-6">
+          </ListItemActions>
+        </ListItem>
+        <ListItem data-testid="reset-all-authentication" hover={false}>
+          <ListItemContent className="py-3 pr-6">
             <div>Reset all authentication</div>
             <div className="text-sm text-muted-foreground">
               Rotate every API key, sign out every staff user, and require a password reset. Use
               after a suspected credential compromise.
             </div>
-          </ActionListItemContent>
-          <ActionListItemActions>
+          </ListItemContent>
+          <ListItemActions>
             <Button
               aria-label="Reset all authentication"
               size="sm"
@@ -157,17 +157,17 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({ keywords }) => {
             >
               Reset
             </Button>
-          </ActionListItemActions>
-        </ActionListItem>
-        <ActionListItem data-testid="reset-all-gift-links" hover={false}>
-          <ActionListItemContent className="py-3 pr-6">
+          </ListItemActions>
+        </ListItem>
+        <ListItem data-testid="reset-all-gift-links" hover={false}>
+          <ListItemContent className="py-3 pr-6">
             <div>Reset all gift links</div>
             <div className="text-sm text-muted-foreground">
               Invalidate every active gift link across your site. Anyone holding one will lose
               access.
             </div>
-          </ActionListItemContent>
-          <ActionListItemActions>
+          </ListItemContent>
+          <ListItemActions>
             <Button
               aria-label="Reset all gift links"
               size="sm"
@@ -177,9 +177,9 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({ keywords }) => {
             >
               Reset
             </Button>
-          </ActionListItemActions>
-        </ActionListItem>
-      </ActionList>
+          </ListItemActions>
+        </ListItem>
+      </List>
     </TopLevelGroup>
   );
 };

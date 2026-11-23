@@ -47,6 +47,13 @@ const sharedSsrConfig = {
   resolve: { conditions: ['source', 'node'] },
 };
 
+// See test/utils/domain-events-bridge.ts for why this one is aliased.
+const sharedResolveConfig = {
+  alias: {
+    '@tryghost/domain-events': path.resolve(__dirname, 'test/utils/domain-events-bridge.ts'),
+  },
+};
+
 /*
  * Vitest defaults maxWorkers to availableParallelism() - 1, which is 1 on a
  * 2-core runner — the whole DB suite then runs serially. Floor it at 2: a
@@ -160,6 +167,7 @@ export default defineConfig({
     projects: [
       {
         ssr: sharedSsrConfig,
+        resolve: sharedResolveConfig,
         test: {
           ...sharedDbConfig,
           name: 'e2e',
@@ -180,6 +188,7 @@ export default defineConfig({
       },
       {
         ssr: sharedSsrConfig,
+        resolve: sharedResolveConfig,
         test: {
           ...sharedDbConfig,
           name: 'integration',
@@ -200,6 +209,7 @@ export default defineConfig({
       },
       {
         ssr: sharedSsrConfig,
+        resolve: sharedResolveConfig,
         test: {
           ...sharedDbConfig,
           name: 'integration-migrations',
@@ -214,6 +224,7 @@ export default defineConfig({
       },
       {
         ssr: sharedSsrConfig,
+        resolve: sharedResolveConfig,
         test: {
           ...sharedDbConfig,
           name: 'legacy',
@@ -242,6 +253,7 @@ export default defineConfig({
       },
       {
         ssr: sharedSsrConfig,
+        resolve: sharedResolveConfig,
         test: {
           ...sharedDbConfig,
           name: 'e2e-api',
@@ -256,6 +268,7 @@ export default defineConfig({
       },
       {
         ssr: sharedSsrConfig,
+        resolve: sharedResolveConfig,
         test: {
           ...sharedDbConfig,
           name: 'e2e-isolated',

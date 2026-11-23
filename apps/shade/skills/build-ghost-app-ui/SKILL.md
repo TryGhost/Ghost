@@ -62,7 +62,9 @@ Check each step against the app, and do the ones it's missing:
    [`shade-tokens-not-hex`](../shade-tokens-not-hex/SKILL.md) for colour,
    [`shade-no-dark-variants`](../shade-no-dark-variants/SKILL.md) for dark
    mode and [`shade-imports`](../shade-imports/SKILL.md) for imports.
-3. Read only the [docs that apply to apps](https://shade.ghost.org/docs/ghost-apps.md#docs-that-apply-to-apps).
+3. When building or changing content lists, tables, or custom rows, read
+   [Lists and tables](https://shade.ghost.org/docs/list-rows.md) to choose the right row components.
+4. Read only the [docs that apply to apps](https://shade.ghost.org/docs/ghost-apps.md#docs-that-apply-to-apps).
 
 ## Self-check
 

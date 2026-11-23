@@ -37,7 +37,7 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
   labs,
   repository,
 }: Readonly<{
-  domainEvents: Pick<DomainEvents, 'dispatch'>;
+  domainEvents: Pick<typeof DomainEvents, 'dispatch'>;
   fakeWaitHoursMultiplier: null | number;
   labs: Labs;
   repository: AutomationsRepository2<RepositoryTransaction>;

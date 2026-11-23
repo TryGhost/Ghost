@@ -5,6 +5,7 @@ import { ensureTransaction } from '../../lib/ensure-transaction';
 import type { OnSegmentUpdated } from './changes';
 import type { Segment, SegmentFilter, SegmentName } from './models';
 import type { SegmentRepository } from './repository';
+import type { SegmentChangeAttempt, SegmentsTracking } from './tracking';
 
 /** A segment a command adds. */
 export interface NewSegment {
@@ -25,12 +26,17 @@ export interface SegmentEdit {
 interface SegmentsServiceDeps {
   knex: Knex;
   repository: SegmentRepository;
+  tracking: Pick<SegmentsTracking, 'change'>;
   /** Called with each change a command makes, inside the command's transaction. */
   onSegmentUpdated: OnSegmentUpdated;
 }
 
-function notFound(): never {
-  throw new errors.NotFoundError({ message: 'Segment not found.' });
+const notFoundError = () => new errors.NotFoundError({ message: 'Segment not found.' });
+
+/** Rejects a change because no segment has the id in the request. */
+function notFound(attempt: SegmentChangeAttempt): never {
+  attempt.rejecting('not_found');
+  throw notFoundError();
 }
 
 /**
@@ -41,15 +47,20 @@ function notFound(): never {
  * through `onSegmentUpdated` as its last step inside the transaction, so a failure there fails
  * the command. A command that opened its own transaction rolls the change back. A command that
  * joined a transaction leaves the rollback to the caller, who must not commit after a failure.
+ *
+ * Each command records a span through `tracking`, with whether it succeeded, was rejected or
+ * failed.
  */
 export class SegmentsService {
   private readonly knex: Knex;
   private readonly repository: SegmentRepository;
+  private readonly tracking: Pick<SegmentsTracking, 'change'>;
   private readonly onSegmentUpdated: OnSegmentUpdated;
 
-  constructor({ knex, repository, onSegmentUpdated }: SegmentsServiceDeps) {
+  constructor({ knex, repository, tracking, onSegmentUpdated }: SegmentsServiceDeps) {
     this.knex = knex;
     this.repository = repository;
+    this.tracking = tracking;
     this.onSegmentUpdated = onSegmentUpdated;
   }
 
@@ -60,20 +71,26 @@ export class SegmentsService {
 
   /** The segment with `id`. Fails with a NotFoundError when there's no such segment. */
   async read(id: string, executor: Knex = this.knex): Promise<Segment> {
-    return (await this.repository.find(id, executor)) ?? notFound();
+    const segment = await this.repository.find(id, executor);
+    if (!segment) {
+      throw notFoundError();
+    }
+    return segment;
   }
 
   /** Adds a segment after the others, and returns it. */
   add(context: RequestContext, input: NewSegment, executor: Knex = this.knex): Promise<Segment> {
-    return ensureTransaction(executor, async (trx) => {
-      const segment = await this.repository.insert(input, trx);
-      await this.onSegmentUpdated(trx, context, {
-        type: 'SegmentAdded',
-        verb: 'added',
-        next: segment,
-      });
-      return segment;
-    });
+    return this.tracking.change('add', (attempt) =>
+      ensureTransaction(executor, async (trx) => {
+        const segment = await this.repository.insert(input, trx, attempt);
+        await this.onSegmentUpdated(trx, context, {
+          type: 'SegmentAdded',
+          verb: 'added',
+          next: segment,
+        });
+        return segment;
+      }),
+    );
   }
 
   /**
@@ -88,27 +105,35 @@ export class SegmentsService {
     input: SegmentEdit,
     executor: Knex = this.knex,
   ): Promise<Segment> {
-    return ensureTransaction(executor, async (trx) => {
-      const previous = (await this.repository.findForUpdate(id, trx)) ?? notFound();
-      if (input.filter !== undefined && input.filter !== previous.filter) {
-        throw new errors.ValidationError({
-          message: "A segment's filter cannot be changed",
-          property: 'filter',
-        });
-      }
-      if (input.name === previous.name) {
-        return previous;
-      }
+    return this.tracking.change('edit', (attempt) =>
+      ensureTransaction(executor, async (trx) => {
+        const previous = (await this.repository.findForUpdate(id, trx)) ?? notFound(attempt);
+        if (input.filter !== undefined && input.filter !== previous.filter) {
+          attempt.rejecting('filter_changed');
+          throw new errors.ValidationError({
+            message: "A segment's filter cannot be changed",
+            property: 'filter',
+          });
+        }
+        if (input.name === previous.name) {
+          attempt.unchanged();
+          return previous;
+        }
 
-      const segment = await this.repository.update({ ...previous, name: input.name }, trx);
-      await this.onSegmentUpdated(trx, context, {
-        type: 'SegmentRenamed',
-        verb: 'edited',
-        previous,
-        next: segment,
-      });
-      return segment;
-    });
+        const segment = await this.repository.update(
+          { ...previous, name: input.name },
+          trx,
+          attempt,
+        );
+        await this.onSegmentUpdated(trx, context, {
+          type: 'SegmentRenamed',
+          verb: 'edited',
+          previous,
+          next: segment,
+        });
+        return segment;
+      }),
+    );
   }
 
   /**
@@ -116,15 +141,17 @@ export class SegmentsService {
    * such segment.
    */
   destroy(context: RequestContext, id: string, executor: Knex = this.knex): Promise<Segment> {
-    return ensureTransaction(executor, async (trx) => {
-      const segment = (await this.repository.findForUpdate(id, trx)) ?? notFound();
-      await this.repository.delete(segment, trx);
-      await this.onSegmentUpdated(trx, context, {
-        type: 'SegmentDeleted',
-        verb: 'deleted',
-        previous: segment,
-      });
-      return segment;
-    });
+    return this.tracking.change('delete', (attempt) =>
+      ensureTransaction(executor, async (trx) => {
+        const segment = (await this.repository.findForUpdate(id, trx)) ?? notFound(attempt);
+        await this.repository.delete(segment, trx, attempt);
+        await this.onSegmentUpdated(trx, context, {
+          type: 'SegmentDeleted',
+          verb: 'deleted',
+          previous: segment,
+        });
+        return segment;
+      }),
+    );
   }
 }
