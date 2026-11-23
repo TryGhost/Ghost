@@ -22,6 +22,8 @@ for (const {name, type, card, params, input, submitted} of variants) {
 
         test.beforeAll(async ({browser}) => {
             page = await browser.newPage();
+            // submitted cards render third-party iframes and images
+            await page.route(url => url.protocol.startsWith('http') && url.hostname !== 'localhost', route => route.abort());
         });
 
         test.afterAll(async () => {
