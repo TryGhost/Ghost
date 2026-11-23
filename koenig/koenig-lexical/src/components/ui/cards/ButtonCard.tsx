@@ -66,10 +66,11 @@ export function ButtonCard({
             <ReadOnlyOverlay />
             {isEditing && (
                 <SettingsPanel
-                    defaultTab={showVisibilitySettings && visibilitySettings ? 'visibility' : 'content'}
-                    tabs={[{id: 'content', label: 'Content'}, ...(visibilitySettings ? [{id: 'visibility', label: 'Visibility'}] : [])]}
+                    settingsLabel="Content"
+                    showVisibilitySettings={showVisibilitySettings}
+                    visibilitySettings={visibilitySettings}
                 >
-                    {{content: contentSettings, visibility: visibilitySettings}}
+                    {contentSettings}
                 </SettingsPanel>
             )}
         </>

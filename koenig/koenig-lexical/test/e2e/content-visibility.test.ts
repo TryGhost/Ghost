@@ -127,12 +127,14 @@ test.describe('Content Visibility', async () => {
             await expect(card.getByTestId('visibility-toggle-email-freeMembers')).not.toBeChecked();
         });
 
+        // without visibility the card's own settings show untabbed, as before visibility existed
         test(`${name} retains settings when visibility is disabled`, async function () {
             await initialize({page, uri: `/#/?visibility=none&content=${content(paragraph('some text'), node)}`});
             await focusEditor(page);
             const card = await selectCard(name);
             await page.keyboard.press(`${ctrlOrCmd(page)}+Enter`);
-            await expectPanelOnTab(card, tab);
+            await expect(card.getByTestId('settings-panel')).toBeVisible();
+            await expect(card.getByTestId(`tab-${tab}`)).toHaveCount(0);
             await expect(card.getByTestId('tab-visibility')).toHaveCount(0);
         });
     }

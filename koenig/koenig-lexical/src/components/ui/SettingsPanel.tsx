@@ -15,36 +15,47 @@ import {TabView} from './TabView';
 import {Toggle} from './Toggle';
 import {useKoenigSelectedCardContext} from '../../context/KoenigSelectedCardContext';
 
-export function SettingsPanel({children, darkMode, cardWidth, tabs, defaultTab}) {
+// A card's settings panel. Pass `visibilitySettings` to add a Visibility tab
+// after the card's own settings: untabbed settings then get a tab named
+// `settingsLabel`, and `showVisibilitySettings` opens the panel on Visibility.
+export function SettingsPanel({children, darkMode, cardWidth, tabs, defaultTab, settingsLabel = 'Design', visibilitySettings = null, showVisibilitySettings = false}) {
     const {ref} = useSettingsPanelReposition({}, cardWidth);
     const {visibilitySettingsRequestId} = useKoenigSelectedCardContext();
 
-    const tabContent = React.useMemo(() => {
-        if (!tabs) {
-            return {default: children};
-        }
-        return typeof children === 'object' && children !== null ? children : {default: children};
-    }, [tabs, children]);
+    let panelTabs = tabs;
+    let panelChildren = children;
+    let panelDefaultTab = defaultTab;
+    if (visibilitySettings) {
+        const settingsTab = {id: settingsLabel.toLowerCase(), label: settingsLabel};
+        const ownTabs = tabs ?? [settingsTab];
+        panelTabs = [...ownTabs, {id: 'visibility', label: 'Visibility'}];
+        panelChildren = {...(tabs ? children : {[settingsTab.id]: children}), visibility: visibilitySettings};
+        panelDefaultTab = showVisibilitySettings ? 'visibility' : (defaultTab ?? panelTabs[0].id);
+    }
+
+    const tabContent = panelTabs && typeof panelChildren === 'object' && panelChildren !== null
+        ? panelChildren
+        : {default: panelChildren};
 
     return (
         // Ideally we would use Portal to avoid issues with transformed ancestors (https://bugs.chromium.org/p/chromium/issues/detail?id=20574)
         // However, Portal causes problems with drag/drop, focus, etc
         <div className={`!mt-0 touch-none ${darkMode ? 'dark' : ''}`}>
 
-            {tabs ? (
+            {panelTabs ? (
                 <div ref={ref}
                     className="not-kg-prose fixed left-0 top-0 z-[9999999] m-0 flex w-[320px] flex-col rounded-lg bg-white bg-clip-padding font-sans shadow-lg will-change-transform dark:bg-grey-950 dark:shadow-xl"
                     data-testid="settings-panel"
                     data-kg-settings-panel
                 >
-                    <TabView defaultTab={defaultTab} defaultTabKey={visibilitySettingsRequestId} tabContent={tabContent} tabs={tabs} />
+                    <TabView defaultTab={panelDefaultTab} defaultTabKey={visibilitySettingsRequestId} tabContent={tabContent} tabs={panelTabs} />
                 </div>
             ) : (
                 <div ref={ref}
                     className="not-kg-prose fixed left-0 top-0 z-[9999999] m-0 flex w-[320px] flex-col gap-3 rounded-lg bg-white bg-clip-padding p-6 font-sans shadow-lg will-change-transform dark:bg-grey-950 dark:shadow-xl"
                     data-testid="settings-panel"
                     data-kg-settings-panel
-                >{children}</div>
+                >{panelChildren}</div>
             )}
         </div>
     );

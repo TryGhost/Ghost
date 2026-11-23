@@ -119,10 +119,10 @@ function PopulatedVideoCard({
             {
                 !!thumbnail && !videoUploader.isLoading && isEditing && (
                     <SettingsPanel
-                        defaultTab={showVisibilitySettings ? 'visibility' : 'design'}
-                        tabs={visibilitySettings ? [{id: 'design', label: 'Design'}, {id: 'visibility', label: 'Visibility'}] : undefined}
+                        showVisibilitySettings={showVisibilitySettings}
+                        visibilitySettings={visibilitySettings}
                     >
-                        {visibilitySettings ? {design: designSettings, visibility: visibilitySettings} : designSettings}
+                        {designSettings}
                     </SettingsPanel>
                 )
             }

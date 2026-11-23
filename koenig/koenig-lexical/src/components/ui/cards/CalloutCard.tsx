@@ -167,13 +167,10 @@ export function CalloutCard({
                 isEditing ? (
                     <SettingsPanel
                         darkMode={darkMode}
-                        defaultTab={showVisibilitySettings && visibilitySettings ? 'visibility' : 'design'}
-                        tabs={[{id: 'design', label: 'Design'}, ...(visibilitySettings ? [{id: 'visibility', label: 'Visibility'}] : [])]}
+                        showVisibilitySettings={showVisibilitySettings}
+                        visibilitySettings={visibilitySettings}
                     >
-                        {{
-                            design: designSettings,
-                            visibility: visibilitySettings
-                        }}
+                        {designSettings}
                     </SettingsPanel>
                 ) : (
                     <ReadOnlyOverlay />
