@@ -140,6 +140,9 @@ export const editorScreen = {
     page.getByTestId(editorBody).getByText(`Begin writing your ${postType}...`, { exact: true }),
   /** The body's container: readable while an open dialog hides the page from role queries. */
   bodyBehindDialog: () => page.getByTestId(editorBody),
+  /** An image card's caption in the body, by Koenig's own test id. */
+  imageCardCaption: () =>
+    page.getByTestId(editorBody).getByTestId('image-caption-editor').getByRole('textbox'),
   /** Koenig's Signup card and its labels setting, by Koenig's own test ids. */
   signupCard: () => page.getByTestId(editorBody).getByTestId('signup-card-container'),
   signupLabelsInput: () => page.getByTestId('labels-dropdown').getByRole('textbox'),

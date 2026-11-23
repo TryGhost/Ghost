@@ -672,6 +672,32 @@ describe('Post editor refetch of another writer’s alt text and caption', () =>
     });
   });
 
+  it('leaves the writer typing in a body image caption when their caption arrives', async () => {
+    const lexical = JSON.parse(buildLexicalParagraph('Below the image')) as {
+      root: { children: Record<string, unknown>[] };
+    };
+    lexical.root.children.unshift({
+      type: 'image',
+      version: 1,
+      src: 'https://example.com/content/images/valley.png',
+      alt: 'A valley',
+      caption: 'Body caption',
+      width: 1600,
+      height: 400,
+    });
+
+    await theirAltAndCaptionLanded({ lexical: JSON.stringify(lexical) }, () =>
+      editorScreen.imageCardCaption().click(),
+    );
+
+    await expect.element(editorScreen.featureImageCaption()).toHaveTextContent('Their caption');
+    await expect.element(editorScreen.imageCardCaption()).toHaveFocus();
+    await userEvent.keyboard('{End} more');
+
+    await expect.element(editorScreen.imageCardCaption()).toHaveTextContent('Body caption more');
+    await expect.element(editorScreen.featureImageCaption()).toHaveTextContent('Their caption');
+  });
+
   it('stays saved on a published post when a keystroke in their alt text is undone', async () => {
     const shared = await theirAltAndCaptionLanded({
       status: 'published',
