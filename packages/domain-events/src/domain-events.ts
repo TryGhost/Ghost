@@ -20,10 +20,9 @@ export interface IEvent<Data = unknown> {
  * class name, so subscribers pass the event class and dispatchers pass an
  * instance of it.
  *
- * At runtime this is a class with only static members. It is typed as a
- * singleton object, and the package exports this interface under the same
- * name as the bus, so that both `DomainEvents` and `typeof DomainEvents`
- * describe it, e.g. `Pick<DomainEvents, 'dispatch' | 'subscribe'>`.
+ * At runtime this is a class with only static members, typed as a singleton
+ * object. To name its type, use `typeof DomainEvents`, e.g.
+ * `Pick<typeof DomainEvents, 'dispatch' | 'subscribe'>`.
  */
 export interface DomainEventsApi {
   /**

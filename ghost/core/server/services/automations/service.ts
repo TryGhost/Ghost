@@ -20,7 +20,7 @@ import memberWelcomeEmails from '../member-welcome-emails';
 
 type AutomationsServiceOptions = {
   apiUrl: string;
-  domainEvents: Pick<DomainEvents, 'dispatch' | 'subscribe'>;
+  domainEvents: Pick<typeof DomainEvents, 'dispatch' | 'subscribe'>;
   internalKeys: InternalKeys;
   schedulerAdapter: Pick<SchedulerAdapter, 'schedule' | 'register'>;
   siteUuid: unknown;
