@@ -9,8 +9,8 @@ import {BookmarkCard} from '../components/ui/cards/BookmarkCard.jsx';
 import {CardSettingsPanel} from '../components/CardSettingsPanel';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
-import {isCardVisibilityAvailable} from '../utils/visibility';
 import {isInternalUrl} from '../utils/isInternalUrl.js';
+import {useCardVisibilityAvailable} from '../hooks/useCardVisibilitySettings';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function BookmarkNodeComponent({author, nodeKey, url, icon, title, description, publisher, thumbnail, captionEditor, captionEditorInitialState, createdWithUrl}) {
@@ -18,7 +18,7 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
 
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const {isSelected, isEditing, setEditing} = React.useContext(CardContext);
-    const canEditVisibility = isCardVisibilityAvailable('bookmark', cardConfig);
+    const canEditVisibility = useCardVisibilityAvailable(nodeKey);
     const [urlInputValue, setUrlInputValue] = React.useState(url);
     const [loading, setLoading] = React.useState(false);
     const [urlError, setUrlError] = React.useState(false);

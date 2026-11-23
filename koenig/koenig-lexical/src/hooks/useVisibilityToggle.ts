@@ -2,7 +2,10 @@ import {$getNodeByKey} from 'lexical';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {VISIBILITY_SETTINGS, getVisibilityOptions, isCardVisibilityAvailable, parseVisibilityToToggles, serializeOptionsToVisibility} from '../utils/visibility';
 
-export const useVisibilityToggle = (editor, nodeKey, cardConfig) => {
+// Reads a card's visibility and builds its toggle options. A plain function, so
+// callers can skip the work when no settings are shown; useVisibilityToggle is
+// the same function for callers that always need it.
+export const getVisibilityToggle = (editor, nodeKey, cardConfig) => {
     const isStripeEnabled = cardConfig?.stripeEnabled;
     const visibilitySetting = cardConfig?.visibilitySettings ?? VISIBILITY_SETTINGS.WEB_AND_EMAIL;
     const showWeb = visibilitySetting === VISIBILITY_SETTINGS.WEB_AND_EMAIL || visibilitySetting === VISIBILITY_SETTINGS.WEB_ONLY;
@@ -45,3 +48,5 @@ export const useVisibilityToggle = (editor, nodeKey, cardConfig) => {
         }
     };
 };
+
+export const useVisibilityToggle = getVisibilityToggle;

@@ -8,20 +8,18 @@ import {CardSettingsPanel} from '../components/CardSettingsPanel';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {TransistorCard} from '../components/ui/cards/TransistorCard.jsx';
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {useVisibilityToggle} from '../hooks/useVisibilityToggle.js';
+import {useCardVisibilityAvailable} from '../hooks/useCardVisibilitySettings';
 
 export const TransistorNodeComponent = ({
     nodeKey,
     accentColor,
     backgroundColor
 }) => {
-    const [editor] = useLexicalComposerContext();
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
-    const {isVisibilityEnabled} = useVisibilityToggle(editor, nodeKey, cardConfig);
+    const isVisibilityEnabled = useCardVisibilityAvailable(nodeKey);
 
     const handleToolbarEdit = (event) => {
         event.preventDefault();

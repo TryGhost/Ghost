@@ -11,8 +11,8 @@ import {MAX_IMAGES, recalculateImageRows} from './GalleryNode';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {getImageDimensions} from '../utils/getImageDimensions';
+import {useCardVisibilityAvailable} from '../hooks/useCardVisibilitySettings';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {useVisibilityToggle} from '../hooks/useVisibilityToggle';
 
 export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorInitialState}) {
     const [editor] = useLexicalComposerContext();
@@ -129,7 +129,7 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
         await handleImageUploads(files);
     }
 
-    const {isVisibilityEnabled} = useVisibilityToggle(editor, nodeKey, cardConfig);
+    const isVisibilityEnabled = useCardVisibilityAvailable(nodeKey);
 
     const handleToolbarEdit = (event) => {
         event.preventDefault();

@@ -22,8 +22,8 @@ import {isCardWidth} from '@tryghost/kg-default-nodes';
 import {isGif} from '../utils/isGif';
 import {isSameVisibility} from '../utils/visibility';
 import {openFileSelection} from '../utils/openFileSelection';
+import {useCardVisibilityAvailable} from '../hooks/useCardVisibilitySettings';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {useVisibilityToggle} from '../hooks/useVisibilityToggle';
 
 export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionEditor, captionEditorInitialState, triggerFileDialog, previewSrc, href}) {
     const [editor] = useLexicalComposerContext();
@@ -33,7 +33,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
     const fileInputRef = React.useRef();
     const toolbarFileInputRef = React.useRef();
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
-    const {isVisibilityEnabled} = useVisibilityToggle(editor, nodeKey, cardConfig);
+    const isVisibilityEnabled = useCardVisibilityAvailable(nodeKey);
 
     const handleToolbarEdit = (event) => {
         event.preventDefault();

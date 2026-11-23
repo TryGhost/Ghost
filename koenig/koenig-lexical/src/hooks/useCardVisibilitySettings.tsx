@@ -4,29 +4,43 @@ import React from 'react';
 import {$getNodeByKey} from 'lexical';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {VisibilitySettings} from '../components/ui/VisibilitySettings';
+import {getVisibilityToggle} from './useVisibilityToggle';
+import {isCardVisibilityAvailable} from '../utils/visibility';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {useVisibilityToggle} from './useVisibilityToggle';
 
-// Returns the contents of a card's Visibility tab, or null when the card has no
-// visibility property or the site has visibility settings turned off.
+// Whether the editor offers visibility settings for this card: it has a
+// visibility property and the host supports visibility for its type.
+export function useCardVisibilityAvailable(nodeKey) {
+    const [editor] = useLexicalComposerContext();
+    const {cardConfig} = React.useContext(KoenigComposerContext);
+
+    let isAvailable = false;
+    editor.getEditorState().read(() => {
+        const cardNode = $getNodeByKey(nodeKey);
+        isAvailable = $isKoenigCard(cardNode)
+            && cardNode.hasVisibility?.() === true
+            && isCardVisibilityAvailable(cardNode.getType(), cardConfig);
+    });
+    return isAvailable;
+}
+
+// Returns the contents of a card's Visibility tab while the card is being
+// edited, or null when it isn't or the card has no visibility settings.
 // `showVisibilitySettings` is true when the panel should open on that tab.
 export function useCardVisibilitySettings(nodeKey, {hiddenToggles = []} = {}) {
     const [editor] = useLexicalComposerContext();
-    const {setEditing} = React.useContext(CardContext);
+    const {isEditing, setEditing} = React.useContext(CardContext);
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const {showVisibilitySettings} = useKoenigSelectedCardContext();
-    const {isVisibilityEnabled, visibilityOptions, toggleVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
+    const isAvailable = useCardVisibilityAvailable(nodeKey);
 
-    let hasVisibility = false;
-    editor.getEditorState().read(() => {
-        const cardNode = $getNodeByKey(nodeKey);
-        hasVisibility = $isKoenigCard(cardNode) && cardNode.hasVisibility?.() === true;
-    });
-
-    if (!hasVisibility || !isVisibilityEnabled) {
+    // the panel is only shown in edit mode, so don't build options for every card
+    if (!isEditing || !isAvailable) {
         return {visibilitySettings: null, showVisibilitySettings: false};
     }
+
+    const {visibilityOptions, toggleVisibility} = getVisibilityToggle(editor, nodeKey, cardConfig);
 
     const options = visibilityOptions.map(group => ({
         ...group,
