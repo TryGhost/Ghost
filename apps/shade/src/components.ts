@@ -63,6 +63,7 @@ export * from './components/ui/sheet';
 export * from './components/ui/sidebar';
 export { useSidebar } from './components/ui/sidebar-context';
 export * from './components/ui/skeleton';
+export * from './components/ui/slider';
 export * from './components/ui/sonner';
 export * from './components/ui/sortable-list';
 export * from './components/ui/input-surface';
