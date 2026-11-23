@@ -1165,3 +1165,15 @@ export const HeaderTrigger: Story = {
     </Stack>
   ),
 };
+
+export const InlineFieldPicker: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Keep field selection inside an enclosing panel or sheet, with a back action to return to active filters.',
+      },
+    },
+  },
+  render: () => <FilterDemo fields={basicFields} inlinePicker />,
+};
