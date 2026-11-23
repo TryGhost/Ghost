@@ -72,7 +72,7 @@ is used, so it needs no change to boot. Comments in it show where `needs`,
 builds one wired instance, and checks that it is refused before services open.
 
 The command prints the remaining steps. There is nothing to register unless the
-root declares `listeners`, which adds it to `listening` in
+root declares `listeners`, which adds it to `reacting` in
 `ghost/bootstrap/services.ts`, or a background `start`, which adds it to
 `background` in the same file. The last step is
 `pnpm gx services verify <name>` on the committed result. See [creating a service](../../ghost/core/server/services/README.md#creating-a-service)

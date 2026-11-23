@@ -50,7 +50,7 @@ export default defineService('${className}', () => {
 //   needs: { tiers },
 //   create: ({ tiers }) => new ${className}({ logging: require('@tryghost/logging'), tiers }),
 //   // Events the service handles. Ghost listens for them and builds the service when one
-//   // arrives. Add the root to \`listening\` in ghost/bootstrap/services.ts.
+//   // arrives. Add the root to \`reacting\` in ghost/bootstrap/services.ts.
 //   listeners: [{ event: legacyEvent('site.changed'), handle: (service) => service.reset() }],
 //   // Work with no caller behind it, such as polling. It may be awaited. Add the root to
 //   // \`background\` in ghost/bootstrap/services.ts, and release in stop what start acquired.
@@ -114,7 +114,7 @@ export function nextSteps(name: string) {
   2. There is nothing to register and no boot change: Ghost builds the service the
      first time it is used. Only two kinds of root are listed in
      ghost/bootstrap/services.ts:
-       - a root that declares listeners is added to \`listening\`;
+       - a root that declares listeners is added to \`reacting\`;
        - a root whose start is background work is added to \`background\`.
   3. Extend the root test. If the root declares extras, catalogue them in
      ${legacyInventoryFile}.

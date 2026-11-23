@@ -252,7 +252,7 @@ test('gx routes service generation to its checkout and prints what is left to th
   assert.doesNotMatch(result.stdout, /boot\.js|init\(\)/);
   assert.match(result.stdout, /nothing to register and no boot change/);
   assert.match(result.stdout, /ghost\/bootstrap\/services\.ts/);
-  assert.match(result.stdout, /declares listeners is added to `listening`/);
+  assert.match(result.stdout, /declares listeners is added to `reacting`/);
   assert.match(result.stdout, /start is background work is added to `background`/);
   assert.match(result.stdout, /pnpm check/);
   assert.ok(result.stdout.includes(`pnpm gx services verify ${name}`));

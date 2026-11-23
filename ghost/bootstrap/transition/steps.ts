@@ -158,15 +158,28 @@ export const entries = {
   // ---- Register: everything declares itself; nothing is built or used ----
 
   registerServices: {
-    name: 'register the service roots that listen',
+    name: 'register the service roots that react to events',
     kind: 'framework',
     leavesWhen:
       'it stays; the list becomes whatever collects declarations, so that settings, flags and listeners are declared one way',
     run({ services }) {
-      const { listening }: typeof import('../services') = require('../services');
+      const { reacting }: typeof import('../services') = require('../services');
       // The application listens for the events these roots declare. None is built until it is
       // used or one of its events arrives.
-      for (const named of listening) {
+      for (const named of reacting) {
+        services.register(named());
+      }
+    },
+  },
+
+  registerProcessLocalState: {
+    name: 'register the service roots that keep in-memory state in step',
+    kind: 'earmarked',
+    leavesWhen:
+      'each of these roots reads what it holds through a cache that expires or is shared between processes; an event only reaches the process it happened in, so a second process is not kept in step',
+    run({ services }) {
+      const { keepingInStep }: typeof import('../services') = require('../services');
+      for (const named of keepingInStep) {
         services.register(named());
       }
     },
@@ -236,9 +249,9 @@ export const entries = {
 
   settings: {
     name: 'settings: load',
-    kind: 'framework',
+    kind: 'earmarked',
     leavesWhen:
-      'it stays, as the boot hook the settings module declares; what it loads becomes one site of several',
+      'settings are read when a request needs them, through a cache that expires or is shared between processes; today they are loaded into memory once, so nothing is loaded before serving and a change reaches every process only after that',
     async run(run) {
       const settings = core('server/services/settings/settings-service');
       await settings.init();
@@ -387,9 +400,9 @@ export const entries = {
 
   dynamicRouters: {
     name: 'dynamic routers: register',
-    kind: 'framework',
+    kind: 'earmarked',
     leavesWhen:
-      'it stays, as the boot hook the routing module declares: without it every resource resolves to a 404',
+      'a URL is resolved when a request needs it, from route settings read through a cache that expires or is shared between processes; today the routers and the URL map are built in memory at start, and without them every resource resolves to a 404',
     async run() {
       await phases().initDynamicRouting();
     },

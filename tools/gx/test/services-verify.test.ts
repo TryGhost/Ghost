@@ -361,7 +361,7 @@ test('a root that declares listeners or a start must be named in the bootstrap l
 
   const unlistened = problems(listeningRoot).join('\n');
   assert.match(unlistened, /staff declares listeners, but ghost\/bootstrap\/services\.ts/);
-  assert.match(unlistened, /Add it to `listening`:/);
+  assert.match(unlistened, /Add it to `reacting`:/);
   assert.match(unlistened, /\(\) => require\('\.\.\/core\/server\/services\/staff'\)\.default,/);
   const unstarted = problems(startingRoot).join('\n');
   assert.match(unstarted, /staff declares a start, but/);
@@ -620,7 +620,7 @@ test('the registration check reads the committed root and passes a root with not
   await f.write('ghost/core/server/services/staff/index.ts', listeningRoot);
   f.commit('listen');
   assert.equal(check()?.status, 'fail');
-  assert.match(check()?.details.join('\n') ?? '', /Add it to `listening`:/);
+  assert.match(check()?.details.join('\n') ?? '', /Add it to `reacting`:/);
 
   await f.write(registryPath, registry.replace('posts-public', 'staff'));
   f.commit('register');

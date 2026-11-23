@@ -86,7 +86,7 @@ Complete the steps printed by the command:
 2. Name another service the root is built from in `needs`, and take its instance
    from what `create` is given. See [how a service is built](#how-a-service-is-built).
 3. Declare any event the service handles in `listeners`, and name the root in
-   `listening` in [`ghost/bootstrap/services.ts`](../../../bootstrap/services.ts).
+   `reacting` in [`ghost/bootstrap/services.ts`](../../../bootstrap/services.ts).
    Do not subscribe in `create` or in a constructor.
 4. Put work that no caller asks for, such as polling, in `start`, with a `stop`
    that releases it, and name the root in `background` in the same file.
@@ -571,11 +571,19 @@ listeners: [
 
 `event` is a domain event class, or `legacyEvent(name)` for the string-named bus
 in `server/lib/common/events`, which is transitional. Name a listening root in
-`listening` in [`ghost/bootstrap/services.ts`](../../../bootstrap/services.ts):
+`reacting` in [`ghost/bootstrap/services.ts`](../../../bootstrap/services.ts):
 the application has to know it before its first event. The
 [definitions test](../../../test/unit/boot/service-definitions.test.ts) fails for
 a listening root that is missing from the list, and the application refuses to
 build one it was never told about.
+
+A listener reacts to something that happened: it sends, notifies or records. Do
+not add a listener that keeps something the service holds in memory in step with
+the site, such as clearing a cache when the site changes. The event only reaches
+the process it happened in, so a second process would keep what it held, which
+the Stateless Ghost proposal rules out. Read through a cache that expires or is
+shared between processes instead. The four roots that still do this are named in
+`keepingInStep` in the same file, which is earmarked; do not add to it.
 
 ### Starting and stopping
 

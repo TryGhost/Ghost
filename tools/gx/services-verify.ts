@@ -314,7 +314,7 @@ export function registrationProblems({
   return [
     `${service} declares ${[declared.listeners && 'listeners', declared.start && 'a start'].filter(Boolean).join(' and ')}, but ${registryPath} does not name it.`,
     declared.listeners
-      ? `Add it to \`listening\`${declared.start ? ', and to `background` if its start is background work' : ''}:`
+      ? `Add it to \`reacting\`${declared.start ? ', and to `background` if its start is background work' : ''}:`
       : 'Add it to `background`:',
     `  () => require('../core/server/services/${service}').default,`,
   ];

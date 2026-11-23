@@ -24,7 +24,9 @@ this folder holds only what Ghost tells the foundry.
   a process with that role; `GHOST_ROLES` names a process's roles and the default
   is both.
   [`services.ts`](services.ts) names the service roots the application is told
-  about: `listening`, the roots that declare listeners, and `background`, the
+  about: `reacting`, the roots that declare listeners for something that
+  happened; `keepingInStep`, the earmarked roots whose listeners keep in-memory
+  state in step, which would not work across processes; and `background`, the
   roots whose `start` is work no request asks for. A list names a root and loads
   nothing until the start uses the list.
 - **[`transition/`](transition/)**: code that Ghost needs for now and that would

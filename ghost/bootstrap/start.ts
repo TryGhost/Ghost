@@ -27,6 +27,7 @@ const list: readonly Entry[] = [
 
   // 2. Register.
   entries.registerServices,
+  entries.registerProcessLocalState,
 
   // 3. Boot.
   entries.database,

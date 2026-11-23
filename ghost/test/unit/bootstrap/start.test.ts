@@ -53,24 +53,55 @@ describe("Ghost's start list", function () {
 
   it('keeps the framework entries to the ones a stateless Ghost would still run', function () {
     assert.deepEqual(names(everyEntry.filter((entry) => entry.kind === 'framework')), [
-      'register the service roots that listen',
+      'register the service roots that react to events',
       'services: allow building',
-      'settings: load',
-      'dynamic routers: register',
       'lift maintenance',
       'service roots with background work',
     ]);
   });
 
+  // The approved "Stateless Ghost" proposal: nothing is loaded or precomputed at startup, and
+  // nothing needs keeping in step between processes. What Ghost still does of either is earmarked.
+  it('earmarks what loads state at startup or keeps in-memory state in step', function () {
+    const earmarked = names(everyEntry.filter((entry) => entry.kind === 'earmarked'));
+    for (const name of [
+      'settings: load',
+      'dynamic routers: register',
+      'register the service roots that keep in-memory state in step',
+      'themes: load the active theme',
+      'custom redirects',
+    ]) {
+      assert.ok(earmarked.includes(name), `${name} is not earmarked`);
+    }
+  });
+
+  it('lists every root that declares listeners once, as reacting or as keeping state in step', function () {
+    const lists: typeof import('../../../bootstrap/services') = require('../../../bootstrap/services');
+    const named = (list: readonly (() => { name: string })[]) => list.map((root) => root().name);
+
+    assert.deepEqual(named(lists.keepingInStep).sort(), [
+      'Link redirection',
+      'Member welcome emails',
+      'Posts Public',
+      'Tags Public',
+    ]);
+    assert.deepEqual(named(lists.listening), [
+      ...named(lists.reacting),
+      ...named(lists.keepingInStep),
+    ]);
+    assert.equal(new Set(named(lists.listening)).size, lists.listening.length);
+  });
+
   it('listens in maintenance mode before the database is touched or anything is registered', function () {
     const server = position('HTTP server, in maintenance mode');
-    assert.ok(server < position('register the service roots that listen'));
+    assert.ok(server < position('register the service roots that react to events'));
     assert.ok(server < position('database: check the schema state, and migrate'));
   });
 
   it('registers the listening roots before services can be built, and allows building once the database is ready and before settings are loaded', function () {
     assert.ok(
-      position('register the service roots that listen') < position('services: allow building'),
+      position('register the service roots that react to events') <
+        position('services: allow building'),
     );
     // Loading settings reads the limits, which is built on first use.
     assert.equal(
@@ -125,16 +156,23 @@ describe("Ghost's start list", function () {
 });
 
 describe('Entries of the start list', function () {
-  it('registers every listening root and builds none', function () {
-    const roots = [{ name: 'First' }, { name: 'Second' }];
-    const entries = loadEntries({ '../services': { listening: roots.map((root) => () => root) } });
+  it('registers every listening root, in its two entries, and builds none', function () {
+    const reacting = [{ name: 'First' }, { name: 'Second' }];
+    const keepingInStep = [{ name: 'Third' }];
+    const entries = loadEntries({
+      '../services': {
+        reacting: reacting.map((root) => () => root),
+        keepingInStep: keepingInStep.map((root) => () => root),
+      },
+    });
     const run = fakeRun();
 
     entries.registerServices!.run(run);
+    entries.registerProcessLocalState!.run(run);
 
     assert.deepEqual(
       run.services.register.getCalls().map((call) => call.args),
-      roots.map((root) => [root]),
+      [...reacting, ...keepingInStep].map((root) => [root]),
     );
     sinon.assert.notCalled(run.services.open);
   });
