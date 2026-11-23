@@ -463,6 +463,31 @@ test.describe('Content Visibility', async () => {
             expect(indicatorBox.y - videoBox.y).toBeLessThan(24);
         });
 
+        test('the visibility indicator of a full-width video stays over the video while its settings are open', async function () {
+            // a short, wide video leaves the Design tab's thumbnail preview below the video
+            await page.route('**/test-panorama.svg', route => route.fulfill({
+                contentType: 'image/svg+xml',
+                body: '<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="200"><rect width="1600" height="200" fill="#ccc"/></svg>'
+            }));
+            const panoramicVideo = {...video({cardWidth: 'full', visibility: hidden}), thumbnailSrc: '/test-panorama.svg', thumbnailHeight: 200, customThumbnailSrc: '/Koenig-editor-1.png'};
+            await initialize({page, uri: `/#/?content=${content(paragraph('some text'), panoramicVideo)}`});
+            const card = page.locator('[data-kg-card="video"]');
+            const indicator = card.getByTestId('visibility-indicator');
+            await expect(indicator).toBeVisible();
+            await expectImageLoaded(card);
+
+            await indicator.click();
+            await card.getByTestId('tab-design').click();
+            await expectPanelOnTab(card, 'design');
+            const preview = card.getByTestId('settings-panel').locator('img').first();
+            await expect.poll(() => preview.evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+
+            // the indicator can stick anywhere within this area while the page scrolls
+            const area = await indicator.locator('xpath=../..').boundingBox();
+            const videoBox = await card.getByAltText('Video thumbnail').boundingBox();
+            expect(area.y + area.height).toBeLessThanOrEqual(videoBox.y + videoBox.height + 1);
+        });
+
         test('the visibility indicator sits on an image that is narrower than the card', async function () {
             // a small portrait image is centred in a wide card, with space either side
             await page.route('**/test-portrait.svg', route => route.fulfill({

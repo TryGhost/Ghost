@@ -96,6 +96,8 @@ export const CardWrapper = React.forwardRef<HTMLDivElement, CardWrapperProps>(({
             // so use the area covered by the card's images: one image, a video thumbnail
             // or every image of a gallery
             const rects = [...figure.querySelectorAll('img')]
+                // settings panels can render inside the figure, e.g. a video's thumbnail preview
+                .filter(img => !img.closest('[data-kg-settings-panel]'))
                 .map(img => img.getBoundingClientRect())
                 .filter(rect => rect.width > 0 && rect.height > 0);
             if (rects.length === 0 && figure.firstElementChild) {
